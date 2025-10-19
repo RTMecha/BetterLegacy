@@ -447,6 +447,52 @@ namespace BetterLegacy.Configs
 
         #endregion
 
+        #region Camera
+
+        public bool EditorCameraEnabled => CoreHelper.InEditor && EditorCamEnabled.Value;
+
+        /// <summary>
+        /// Enabling this will disable all regular Camera events (move, zoom, etc) and allow you to move the camera around freely. WASD to move, + and - to zoom and numpad 4 / numpad 6 to rotate.
+        /// </summary>
+        public Setting<bool> EditorCamEnabled { get; set; }
+
+        /// <summary>
+        /// How fast the editor camera moves.
+        /// </summary>
+        public Setting<float> EditorCamSpeed { get; set; }
+
+        /// <summary>
+        /// Press this key to toggle the Editor Camera on or off.
+        /// </summary>
+        public Setting<KeyCode> EditorCamToggle { get; set; }
+
+        /// <summary>
+        /// How slow the editor camera is when left trigger is held.
+        /// </summary>
+        public Setting<float> EditorCamSlowSpeed { get; set; }
+
+        /// <summary>
+        /// How fast the editor camera is when right trigger is held.
+        /// </summary>
+        public Setting<float> EditorCamFastSpeed { get; set; }
+
+        /// <summary>
+        /// If the editor camera can use your keyboard or not.
+        /// </summary>
+        public Setting<bool> EditorCamUseKeys { get; set; }
+
+        /// <summary>
+        /// If the offset values should reset when the editor camera is disabled.
+        /// </summary>
+        public Setting<bool> EditorCamResetValues { get; set; }
+
+        /// <summary>
+        /// If the camera area should display when the editor camera is on.
+        /// </summary>
+        public Setting<bool> ShowCameraArea { get; set; }
+
+        #endregion
+
         #endregion
 
         /// <summary>
@@ -917,6 +963,18 @@ namespace BetterLegacy.Configs
             CreateObjectPositionKFRelativeDefault = Bind(this, CREATION, "Object Position KF Relative Default", false, "The default value for new objects' position keyframe relative toggle.");
             CreateObjectScaleKFRelativeDefault = Bind(this, CREATION, "Object Scale KF Relative Default", false, "The default value for new objects' scale keyframe relative toggle.");
             CreateObjectRotationKFRelativeDefault = Bind(this, CREATION, "Object Rotation KF Relative Default", true, "The default value for new objects' rotation keyframe relative toggle.");
+
+            #endregion
+
+            #region Freecam
+
+            EditorCamSpeed = Bind(this, FREECAM, "Editor Camera Speed", 1f, "How fast the editor camera moves.");
+            EditorCamToggle = BindEnum(this, FREECAM, "Editor Camera Toggle Key", KeyCode.F3, "Press this key to toggle the Editor Camera on or off.");
+            EditorCamSlowSpeed = Bind(this, FREECAM, "Editor Camera Slow Speed", 0.5f, "How slow the editor camera is when left trigger is held.");
+            EditorCamFastSpeed = Bind(this, FREECAM, "Editor Camera Fast Speed", 2f, "How fast the editor camera is when right trigger is held.");
+            EditorCamUseKeys = Bind(this, FREECAM, "Editor Camera Use Keys", false, "If the editor camera can use your keyboard or not.");
+            EditorCamResetValues = Bind(this, FREECAM, "Editor Camera Reset Values", true, "If the offset values should reset when the editor camera is disabled.");
+            ShowCameraArea = Bind(this, FREECAM, "Show Camera Area", true, "If the camera area should display when the editor camera is on.");
 
             #endregion
 
@@ -1598,6 +1656,7 @@ namespace BetterLegacy.Configs
         public const string PREVIEW = "Preview";
         public const string MODIFIERS = "Modifiers";
         public const string CREATION = "Creation";
+        public const string FREECAM = "Freecam";
 
         #endregion
     }

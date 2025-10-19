@@ -45,47 +45,6 @@ namespace BetterLegacy.Configs
 
         #endregion
 
-        #region Camera
-
-        public bool EditorCameraEnabled => CoreHelper.InEditor && EditorCamEnabled.Value;
-
-        /// <summary>
-        /// Enabling this will disable all regular Camera events (move, zoom, etc) and allow you to move the camera around freely. WASD to move, + and - to zoom and numpad 4 / numpad 6 to rotate.
-        /// </summary>
-        public Setting<bool> EditorCamEnabled { get; set; }
-
-        /// <summary>
-        /// How fast the editor camera moves.
-        /// </summary>
-        public Setting<float> EditorCamSpeed { get; set; }
-
-        /// <summary>
-        /// Press this key to toggle the Editor Camera on or off.
-        /// </summary>
-        public Setting<KeyCode> EditorCamToggle { get; set; }
-
-        /// <summary>
-        /// How slow the editor camera is when left trigger is held.
-        /// </summary>
-        public Setting<float> EditorCamSlowSpeed { get; set; }
-
-        /// <summary>
-        /// How fast the editor camera is when right trigger is held.
-        /// </summary>
-        public Setting<float> EditorCamFastSpeed { get; set; }
-
-        /// <summary>
-        /// If the editor camera can use your keyboard or not.
-        /// </summary>
-        public Setting<bool> EditorCamUseKeys { get; set; }
-
-        /// <summary>
-        /// If the offset values should reset when the editor camera is disabled.
-        /// </summary>
-        public Setting<bool> EditorCamResetValues { get; set; }
-
-        #endregion
-
         #region Game
 
         /// <summary>
@@ -124,18 +83,6 @@ namespace BetterLegacy.Configs
             ShowFX = Bind(this, GENERAL, "Show Effects", true, "If disabled, effects like chroma, bloom, etc will be disabled.");
             ShakeAffectsController = Bind(this, GENERAL, "Shake Affects Controller", true, "If the shake event affects the controller rumble.");
             ShakeEventMode = BindEnum(this, GENERAL, "Shake Mode", ShakeType.Catalyst, "Catalyst shake supports shake smoothness and speed. If you don't like how Catalyst shake looks, you can use the original shake type, just know these features will not be present with it.");
-
-            #endregion
-
-            #region Camera
-
-            EditorCamEnabled = Bind(this, CAMERA, "Editor Camera Enabled", false, "Enabling this will disable all regular Camera transform events (move, zoom, etc) and allow you to move the camera around freely. WASD to move, + and - to zoom and numpad 4 / numpad 6 to rotate.");
-            EditorCamSpeed = Bind(this, CAMERA, "Editor Camera Speed", 1f, "How fast the editor camera moves.");
-            EditorCamToggle = BindEnum(this, CAMERA, "Editor Camera Toggle Key", KeyCode.F3, "Press this key to toggle the Editor Camera on or off.");
-            EditorCamSlowSpeed = Bind(this, CAMERA, "Editor Camera Slow Speed", 0.5f, "How slow the editor camera is when left trigger is held.");
-            EditorCamFastSpeed = Bind(this, CAMERA, "Editor Camera Fast Speed", 2f, "How fast the editor camera is when right trigger is held.");
-            EditorCamUseKeys = Bind(this, CAMERA, "Editor Camera Use Keys", true, "If the editor camera can use your keyboard or not.");
-            EditorCamResetValues = Bind(this, CAMERA, "Editor Camera Reset Values", true, "If the offset values should reset when the editor camera is disabled.");
 
             #endregion
 

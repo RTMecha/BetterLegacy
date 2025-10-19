@@ -287,7 +287,7 @@ namespace BetterLegacy.Editor.Managers
             if (!CurrentProfile)
                 return;
 
-            if (!CoreHelper.IsUsingInputField && EditorManager.inst.isEditing && Application.isFocused && (EditorConfig.Instance.AllowEditorKeybindsWithEditorCam.Value || !EventsConfig.Instance.EditorCamEnabled.Value))
+            if (!CoreHelper.IsUsingInputField && EditorManager.inst.isEditing && Application.isFocused && (EditorConfig.Instance.AllowEditorKeybindsWithEditorCam.Value || !RTEditor.inst.Freecam))
             {
                 var keybinds = CurrentProfile.keybinds;
                 foreach (var keybind in keybinds)

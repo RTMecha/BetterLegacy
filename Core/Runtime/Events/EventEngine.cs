@@ -13,6 +13,7 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Editor.Managers;
 
 using UnityRandom = UnityEngine.Random;
 using Ease = BetterLegacy.Core.Animation.Ease;
@@ -761,7 +762,7 @@ namespace BetterLegacy.Core.Runtime.Events
             if (float.IsNaN(EventManager.inst.camZoom) || EventManager.inst.camZoom == 0f)
                 EventManager.inst.camZoom = 20f;
 
-            var editorCam = EventsConfig.Instance.EditorCameraEnabled;
+            var editorCam = RTEditor.inst && RTEditor.inst.Freecam;
 
             SetCameraRotation(editorCam ? new Vector3(editorCamPerRotate.x, editorCamPerRotate.y, editorCamRotate) : new Vector3(camRotOffset.x, camRotOffset.y, EventManager.inst.camRot));
 
@@ -2078,19 +2079,19 @@ namespace BetterLegacy.Core.Runtime.Events
                 return;
 
             var editorCamera = RTEventManager.inst.editorCamera;
-            var editorSpeed = EventsConfig.Instance.EditorCamSpeed.Value;
+            var editorSpeed = EditorConfig.Instance.EditorCamSpeed.Value;
 
             if (editorCamera.Activate.WasPressed)
-                EventsConfig.Instance.EditorCamEnabled.Value = !EventsConfig.Instance.EditorCamEnabled.Value;
+                RTEditor.inst.Freecam = !RTEditor.inst.Freecam;
 
-            if (EventsConfig.Instance.EditorCamEnabled.Value)
+            if (RTEditor.inst.Freecam)
             {
                 float multiplyController = 1f;
 
                 if (editorCamera.SlowDown.IsPressed)
-                    multiplyController = EventsConfig.Instance.EditorCamSlowSpeed.Value;
+                    multiplyController = EditorConfig.Instance.EditorCamSlowSpeed.Value;
                 if (editorCamera.SpeedUp.IsPressed)
-                    multiplyController = EventsConfig.Instance.EditorCamFastSpeed.Value;
+                    multiplyController = EditorConfig.Instance.EditorCamFastSpeed.Value;
 
                 float x = editorCamera.Move.Vector.x;
                 float y = editorCamera.Move.Vector.y;
@@ -2131,7 +2132,7 @@ namespace BetterLegacy.Core.Runtime.Events
                     editorCamPerRotate = Vector2.zero;
                 }
 
-                if (CoreHelper.IsUsingInputField || !EventsConfig.Instance.EditorCamUseKeys.Value)
+                if (CoreHelper.IsUsingInputField || !EditorConfig.Instance.EditorCamUseKeys.Value)
                     return;
 
                 float multiply = 1f;
@@ -2180,7 +2181,7 @@ namespace BetterLegacy.Core.Runtime.Events
                     editorCamPerRotate = Vector2.zero;
                 }
             }
-            else if (EventsConfig.Instance.EditorCamResetValues.Value)
+            else if (EditorConfig.Instance.EditorCamResetValues.Value)
             {
                 editorCamPosition = EventManager.inst.camPos;
                 if (!float.IsNaN(EventManager.inst.camZoom))

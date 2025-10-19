@@ -772,6 +772,7 @@ namespace BetterLegacy.Editor.Managers
             CreateScreenshotsView();
             CreateFontSelector();
             SetupEaseDropdowns();
+            CreateCameraArea();
 
             ProgressPopup = new ProgressPopup(EditorPopup.PROGRESS_POPUP);
             ProgressPopup.Init();
@@ -896,6 +897,7 @@ namespace BetterLegacy.Editor.Managers
             EditorTimeline.inst.UpdateTimeChange();
             UpdatePreview();
             UpdateKey();
+            UpdateCameraArea();
 
             if (editorInfo.time > 36000f)
                 AchievementManager.inst.UnlockAchievement("serious_dedication");
@@ -1016,10 +1018,10 @@ namespace BetterLegacy.Editor.Managers
                         cachePos = RTLevel.Current.eventEngine.editorCamPosition;
 
                         if (EditorConfig.Instance.EnableEditorCameraOnDrag.Value)
-                            EventsConfig.Instance.EditorCamEnabled.Value = true;
+                            Freecam = true;
                     }
 
-                    if (EventsConfig.Instance.EditorCameraEnabled)
+                    if (Freecam)
                     {
                         var amount = Input.GetKey(EditorConfig.Instance.ScrollwheelLargeAmountKey.Value) ? 10f : Input.GetKey(EditorConfig.Instance.ScrollwheelSmallAmountKey.Value) ? 1f : 5f;
 
@@ -1030,17 +1032,29 @@ namespace BetterLegacy.Editor.Managers
                     }
                 }
 
-                if (!Input.GetMouseButton((int)PointerEventData.InputButton.Middle) || !EventsConfig.Instance.EditorCameraEnabled)
+                if (!Input.GetMouseButton((int)PointerEventData.InputButton.Middle) || !Freecam)
                     draggingCamera = false;
 
                 if (draggingCamera)
                 {
-                    var amount = Input.GetKey(EditorConfig.Instance.ScrollwheelLargeAmountKey.Value) ? 40f : Input.GetKey(EditorConfig.Instance.ScrollwheelSmallAmountKey.Value) ? 500f : 100f;
+                    if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+                    {
+                        var amount = Input.GetKey(EditorConfig.Instance.ScrollwheelLargeAmountKey.Value) ? 40f : Input.GetKey(EditorConfig.Instance.ScrollwheelSmallAmountKey.Value) ? 500f : 100f;
 
-                    var val = RTLevel.Current.eventEngine.editorCamZoom / amount;
-                    var mousePosition = (startDragPos - (Vector2)Input.mousePosition) * val;
-                    RTLevel.Current.eventEngine.editorCamPosition += mousePosition;
-                    startDragPos = Input.mousePosition;
+                        var val = RTLevel.Current.eventEngine.editorCamZoom / amount;
+                        var mousePosition = (startDragPos - (Vector2)Input.mousePosition) * val;
+                        RTLevel.Current.eventEngine.editorCamRotate += mousePosition.x;
+                        startDragPos = Input.mousePosition;
+                    }
+                    else
+                    {
+                        var amount = Input.GetKey(EditorConfig.Instance.ScrollwheelLargeAmountKey.Value) ? 40f : Input.GetKey(EditorConfig.Instance.ScrollwheelSmallAmountKey.Value) ? 500f : 100f;
+
+                        var val = RTLevel.Current.eventEngine.editorCamZoom / amount;
+                        var mousePosition = (startDragPos - (Vector2)Input.mousePosition) * val;
+                        RTLevel.Current.eventEngine.editorCamPosition += mousePosition;
+                        startDragPos = Input.mousePosition;
+                    }
                 }
             }
 
@@ -1105,6 +1119,23 @@ namespace BetterLegacy.Editor.Managers
             setKey?.Invoke(key);
         }
 
+        void UpdateCameraArea()
+        {
+            var enabled = Freecam && EditorConfig.Instance.ShowCameraArea.Value && EditorManager.inst.hasLoadedLevel;
+            if (editorCameraEnabled != enabled)
+            {
+                editorCameraEnabled = enabled;
+                cameraArea.gameObject.SetActive(enabled);
+            }
+
+            if (!enabled || !EventManager.inst || !RTEventManager.inst || !RTEventManager.inst.delayTracker || !RTLevel.Current || !RTLevel.Current.eventEngine)
+                return;
+
+            cameraAreaCanvas.anchoredPosition = (Vector2)RTEventManager.inst.delayTracker.target + EventManager.inst.camPos + (Vector2)RTLevel.Current.eventEngine.GetShake() + new Vector2(RTLevel.Current.eventEngine.camOffsetX, RTLevel.Current.eventEngine.camOffsetY);
+            cameraArea.sizeDelta = new Vector2(96f, 54f) * 12f * (EventManager.inst.camZoom / 20f);
+            cameraArea.localEulerAngles = new Vector3(0f, 0f, EventManager.inst.camRot);
+        }
+
         #endregion
 
         #region Constants
@@ -1129,6 +1160,8 @@ namespace BetterLegacy.Editor.Managers
         #region Variables
 
         #region Misc
+
+        public bool Freecam { get; set; }
 
         /// <summary>
         /// Custom editor thread for performing larger tasks.
@@ -1202,6 +1235,10 @@ namespace BetterLegacy.Editor.Managers
         Text folderCreatorSubmitText;
 
         GameObject fontSelectionPrefab;
+
+        RectTransform cameraAreaCanvas;
+        RectTransform cameraArea;
+        bool editorCameraEnabled;
 
         #endregion
 
@@ -4931,6 +4968,23 @@ namespace BetterLegacy.Editor.Managers
             }
 
             EasingDropdowns = easingDropdowns;
+        }
+
+        void CreateCameraArea()
+        {
+            var canvas = UIManager.GenerateUICanvas("Camera Area", null);
+            canvas.SetWorldSpace(RTLevel.UI_LAYER, RTLevel.Cameras.FG);
+            cameraAreaCanvas = canvas.GameObject.transform.AsRT();
+            var gameObject = Creator.NewUIObject("Camera", cameraAreaCanvas);
+            cameraArea = gameObject.transform.AsRT();
+            var image = gameObject.AddComponent<Image>();
+            image.type = Image.Type.Tiled;
+            image.sprite = EditorManager.inst.SelectionBoxImage.sprite;
+
+            new Labels(Labels.InitSettings.Default.Parent(gameObject.transform).Rect(RectValues.BottomLeftAnchored.Pivot(0f, 1f).SizeDelta(0f, 20f)), "Camera Area");
+
+            editorCameraEnabled = false;
+            gameObject.SetActive(false);
         }
 
         #endregion

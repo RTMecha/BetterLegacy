@@ -1449,7 +1449,7 @@ namespace BetterLegacy.Core.Components.Player
             UpdateTailTransform(); UpdateTailDev(); UpdateTailSizes();
 
             // Here we handle the player's bounds to the camera. It is possible to include negative zoom in those bounds but it might not be a good idea since people have already utilized it.
-            if (!OutOfBounds && !EventsConfig.Instance.EditorCameraEnabled && CoreHelper.Playing)
+            if (!OutOfBounds && !(RTEditor.inst && RTEditor.inst.Freecam) && CoreHelper.Playing)
             {
                 var cameraToViewportPoint = Camera.main.WorldToViewportPoint(rb.position);
                 cameraToViewportPoint.x = Mathf.Clamp(cameraToViewportPoint.x, 0f, 1f);
@@ -1717,7 +1717,7 @@ namespace BetterLegacy.Core.Components.Player
 
             if (Alive && Actions != null && Core.active && CanMove && !CoreHelper.Paused &&
                 (CoreConfig.Instance.AllowControlsInputField.Value || !CoreHelper.IsUsingInputField) &&
-                movementMode == MovementMode.KeyboardController && (!CoreHelper.InEditor || !EventsConfig.Instance.EditorCamEnabled.Value))
+                movementMode == MovementMode.KeyboardController && (!CoreHelper.InEditor || !RTEditor.inst.Freecam))
             {
                 colliding = false;
                 var x = !LockXMovement ? Actions.Move.Vector.x : 0f;

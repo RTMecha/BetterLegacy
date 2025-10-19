@@ -255,11 +255,10 @@ namespace BetterLegacy
             if (CoreHelper.IsUsingInputField)
                 return;
 
-            if (CoreHelper.InEditor && Input.GetKeyDown(EventsConfig.Instance.EditorCamToggle.Value))
+            if (CoreHelper.InEditor && Input.GetKeyDown(EditorConfig.Instance.EditorCamToggle.Value))
             {
-                EventsConfig.Instance.EditorCamEnabled.Value = !EventsConfig.Instance.EditorCamEnabled.Value; // Enables / disables editor camera via the custom keybind.
-                if (CoreHelper.InEditor)
-                    EditorManager.inst.DisplayNotification($"{(EventsConfig.Instance.EditorCamEnabled.Value ? "Enabled" : "Disabled")} editor freecam.", 2f);
+                RTEditor.inst.Freecam = !RTEditor.inst.Freecam; // Enables / disables editor camera via the custom keybind.
+                EditorManager.inst.DisplayNotification($"{(RTEditor.inst.Freecam ? "Enabled" : "Disabled")} editor freecam.", 2f);
             }
 
             if (Input.GetKeyDown(EventsConfig.Instance.ShowGUIToggle.Value))

@@ -8194,7 +8194,7 @@ namespace BetterLegacy.Core.Helpers
                     camera.transform.localEulerAngles = Vector3.zero;
                 }
 
-                var editorCam = EventsConfig.Instance.EditorCameraEnabled;
+                var editorCam = RTEditor.inst && RTEditor.inst.Freecam;
 
                 RTLevel.Current.eventEngine.SetCameraRotation(editorCam ?
                     new Vector3(RTLevel.Current.eventEngine.editorCamPerRotate.x, RTLevel.Current.eventEngine.editorCamPerRotate.y, RTLevel.Current.eventEngine.editorCamRotate) :
@@ -8302,7 +8302,7 @@ namespace BetterLegacy.Core.Helpers
                 camera.transform.localPosition = Vector3.zero;
                 camera.transform.localEulerAngles = Vector3.zero;
 
-                var editorCam = EventsConfig.Instance.EditorCameraEnabled;
+                var editorCam = RTEditor.inst && RTEditor.inst.Freecam;
 
                 RTLevel.Current.eventEngine.SetCameraRotation(editorCam ?
                     new Vector3(RTLevel.Current.eventEngine.editorCamPerRotate.x, RTLevel.Current.eventEngine.editorCamPerRotate.y, RTLevel.Current.eventEngine.editorCamRotate) :
