@@ -1,0 +1,177 @@
+{
+  "layout": {
+    "cell_size": [ 210.0, 32.0 ],
+    "spacing": [ 0.0, 0.0 ],
+    "constraint": 1,
+    "constraint_count": 3
+  },
+  "template_rect": {
+    "anc_pos": [ -150, 2 ],
+    "anc_max": [ 1, 0 ],
+    "anc_min": [ 0, 0 ],
+    "pivot": [ 0.5, 1 ],
+    "size": [ 300, 280 ]
+  },
+  "options": [
+    {
+      "name": "InSine",
+      "index": 2,
+      "icon_ref": "core/sprites/ease/InSine.png"
+    },
+    {
+      "name": "OutSine",
+      "index": 3,
+      "icon_ref": "core/sprites/ease/OutSine.png"
+    },
+    {
+      "name": "InOutSine",
+      "index": 4,
+      "icon_ref": "core/sprites/ease/InOutSine.png"
+    },
+    {
+      "name": "InElastic",
+      "index": 5,
+      "icon_ref": "core/sprites/ease/InElastic.png"
+    },
+    {
+      "name": "OutElastic",
+      "index": 6,
+      "icon_ref": "core/sprites/ease/OutElastic.png"
+    },
+    {
+      "name": "InOutElastic",
+      "index": 7,
+      "icon_ref": "core/sprites/ease/InOutElastic.png"
+    },
+    {
+      "name": "InBack",
+      "index": 8,
+      "icon_ref": "core/sprites/ease/InBack.png"
+    },
+    {
+      "name": "OutBack",
+      "index": 9,
+      "icon_ref": "core/sprites/ease/OutBack.png"
+    },
+    {
+      "name": "InOutBack",
+      "index": 10,
+      "icon_ref": "core/sprites/ease/InOutBack.png"
+    },
+    {
+      "name": "InBounce",
+      "index": 11,
+      "icon_ref": "core/sprites/ease/InBounce.png"
+    },
+    {
+      "name": "OutBounce",
+      "index": 12,
+      "icon_ref": "core/sprites/ease/OutBounce.png"
+    },
+    {
+      "name": "InOutBounce",
+      "index": 13,
+      "icon_ref": "core/sprites/ease/InOutBounce.png"
+    },
+    {
+      "name": "InQuad",
+      "index": 14,
+      "icon_ref": "core/sprites/ease/InQuad.png"
+    },
+    {
+      "name": "OutQuad",
+      "index": 15,
+      "icon_ref": "core/sprites/ease/OutQuad.png"
+    },
+    {
+      "name": "InOutQuad",
+      "index": 16,
+      "icon_ref": "core/sprites/ease/InOutQuad.png"
+    },
+    {
+      "name": "InCirc",
+      "index": 17,
+      "icon_ref": "core/sprites/ease/InCirc.png"
+    },
+    {
+      "name": "OutCirc",
+      "index": 18,
+      "icon_ref": "core/sprites/ease/OutCirc.png"
+    },
+    {
+      "name": "InOutCirc",
+      "index": 19,
+      "icon_ref": "core/sprites/ease/InOutCirc.png"
+    },
+    {
+      "name": "InExpo",
+      "index": 20,
+      "icon_ref": "core/sprites/ease/InExpo.png"
+    },
+    {
+      "name": "OutExpo",
+      "index": 21,
+      "icon_ref": "core/sprites/ease/OutExpo.png"
+    },
+    {
+      "name": "InOutExpo",
+      "index": 22,
+      "icon_ref": "core/sprites/ease/InOutExpo.png"
+    },
+    {
+      "name": "InCubic",
+      "index": 23,
+      "icon_ref": "core/sprites/ease/InCubic.png"
+    },
+    {
+      "name": "OutCubic",
+      "index": 24,
+      "icon_ref": "core/sprites/ease/OutCubic.png"
+    },
+    {
+      "name": "InOutCubic",
+      "index": 25,
+      "icon_ref": "core/sprites/ease/InOutCubic.png"
+    },
+    {
+      "name": "InQuart",
+      "index": 26,
+      "icon_ref": "core/sprites/ease/InQuart.png"
+    },
+    {
+      "name": "OutQuart",
+      "index": 27,
+      "icon_ref": "core/sprites/ease/OutQuart.png"
+    },
+    {
+      "name": "InOutQuart",
+      "index": 28,
+      "icon_ref": "core/sprites/ease/InOutQuart.png"
+    },
+    {
+      "name": "InQuint",
+      "index": 29,
+      "icon_ref": "core/sprites/ease/InQuint.png"
+    },
+    {
+      "name": "OutQuint",
+      "index": 30,
+      "icon_ref": "core/sprites/ease/OutQuint.png"
+    },
+    {
+      "name": "InOutQuint",
+      "index": 31,
+      "icon_ref": "core/sprites/ease/InOutQuint.png"
+    },
+    {
+      "name": "Linear",
+      "index": 0,
+      "icon_ref": "core/sprites/ease/Linear.png"
+    },
+    {
+      "name": "Instant",
+      "index": 1,
+      "icon_ref": "core/sprites/ease/Instant.png"
+    }
+  ]
+}
