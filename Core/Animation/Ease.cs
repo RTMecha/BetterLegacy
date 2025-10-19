@@ -101,6 +101,15 @@ namespace BetterLegacy.Core.Animation
 
         public static EaseFunction GetEaseFunction(string name, EaseFunction defaultEase) => TryGetEaseFunction(name, out EaseFunction easeFunction) ? easeFunction : defaultEase;
 
+        public static EaseFunction CustomEaseFunction(string input) => t =>
+        {
+            var variables = new Dictionary<string, float>()
+            {
+                { "t", t }
+            };
+            return RTMath.Parse(input, variables);
+        };
+
         const float PI = 3.14159265359f;
         const float PI2 = PI / 2;
         const float B1 = 1 / 2.75f;
