@@ -34,7 +34,7 @@ Shader"Unlit/NoCullRadialTransparentShader"
 
             struct v2f
             {
-                float2 objectPos : TEXCOORD0; 
+                float3 objectPos : TEXCOORD0; 
                 float4 vertex : SV_POSITION;
             };
             
@@ -61,7 +61,7 @@ Shader"Unlit/NoCullRadialTransparentShader"
                 dist = smoothstep(0, 1, dist);
                
                 _Color = lerp(_Color, _ColorSecondary, dist);
-                return tex2D(_MainTex, TRANSFORM_TEX(i.objectPos, _MainTex)) * _Color;
+                return tex2D(_MainTex, TRANSFORM_TEX(i.objectPos.xy, _MainTex)) * _Color;
             }
             ENDCG
         }

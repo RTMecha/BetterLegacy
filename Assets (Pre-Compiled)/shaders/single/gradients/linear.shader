@@ -36,7 +36,7 @@ Shader"Unlit/GradientTransparentShader"
 
             struct v2f
             {
-                float2 objectPos : TEXCOORD0; 
+                float3 objectPos : TEXCOORD0; 
                 float4 vertex : SV_POSITION;
             };
             
@@ -87,7 +87,7 @@ Shader"Unlit/GradientTransparentShader"
                 RotateGradient(i.objectPos, float2(0,0), _Rotation, rotated);
                 
                 _Color = lerp(_Color, _ColorSecondary, smoothstep(-0.4,0.4, rotated.x * _Scale));
-                return tex2D(_MainTex, TRANSFORM_TEX(i.objectPos, _MainTex)) * _Color;
+                return tex2D(_MainTex, TRANSFORM_TEX(i.objectPos.xy, _MainTex)) * _Color;
             }
             ENDCG
         }
