@@ -1138,7 +1138,19 @@ namespace BetterLegacy
         Normal,
         Multiply,
         Additive,
+
+        // it might be possible to add these other color blend modes using GrabPass
         // ColorBurn,
+        // ColorDodge,
+        // Reflect,
+        // Glow,
+        // Overlay,
+        // Difference,
+        // Negation,
+        // Lighten,
+        // Darken,
+        // Screen,
+        // Xor,
     }
 
     /// <summary>

@@ -54,6 +54,8 @@ namespace BetterLegacy
             public Shader shader;
             public Material material;
 
+            public override string ToString() => key;
+
             public static implicit operator Material(MaterialGroup materialGroup) => materialGroup.material;
             public static implicit operator Shader(MaterialGroup materialGroup) => materialGroup.shader;
         }
