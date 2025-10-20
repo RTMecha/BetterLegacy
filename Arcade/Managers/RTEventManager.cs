@@ -28,6 +28,8 @@ namespace BetterLegacy.Arcade.Managers
 
             editorCamera = EditorCameraController.Bind();
 
+            EventManager.inst.camPer.cullingMask = 566;
+
             // Create a new camera since putting the glitch effects on the Main Camera make the objects disappear.
             var glitchCamera = new GameObject("Glitch Camera");
             glitchCamera.transform.SetParent(EventManager.inst.cam.transform);
