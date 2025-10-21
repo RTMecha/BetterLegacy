@@ -5,11 +5,14 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 using UnityEngine;
 
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
+
+using Task = System.Threading.Tasks.Task;
 
 namespace BetterLegacy.Core
 {
@@ -368,6 +371,17 @@ namespace BetterLegacy.Core
         }
 
         /// <summary>
+        /// Writes text to a file asynchronously.
+        /// </summary>
+        /// <param name="path">The file to write to.</param>
+        /// <param name="json">The text to write.</param>
+        public static async Task WriteToFileAsync(string path, string json)
+        {
+            using var streamWriter = new StreamWriter(path);
+            await streamWriter.WriteAsync(json);
+        }
+
+        /// <summary>
         /// Serializes an object and writes it to a file.
         /// </summary>
         /// <typeparam name="T">Type of <typeparamref name="T"/>. Must be serializable.</typeparam>
@@ -413,6 +427,20 @@ namespace BetterLegacy.Core
 
             using var streamReader = new StreamReader(path);
             var result = streamReader.ReadToEnd().ToString();
+            return result;
+        }
+
+        /// <summary>
+        /// Reads text from a file asynchronously.
+        /// </summary>
+        /// <param name="path">The file to read from.</param>
+        /// <returns>If the file exists, returns the text from the file, otherwise returns null.</returns>
+        public static async Task<string> ReadFromFileAsync(string path)
+        {
+            if (!FileExists(path))
+                return null;
+            using var streamReader = new StreamReader(path);
+            var result = await streamReader.ReadToEndAsync();
             return result;
         }
 
