@@ -4,6 +4,7 @@
     {
         _MainTex ("Texture", 2D) = "white" {}
         _Color ("Main Color", COLOR) = (1,1,1,1)
+        _BlendMode ("Blend Mode", float) = 0
     }
     SubShader
     {
@@ -43,6 +44,7 @@
             sampler2D _MainTex;
             float4 _Color;
             float4 _MainTex_ST;
+            float _BlendMode;
             
             sampler2D _BackgroundTexture;
 
@@ -57,7 +59,48 @@
             
             fixed4 frag (v2f i) : SV_Target
             {
-                return (1 - tex2D(_BackgroundTexture, i.objectPos)) * _Color;
+                float4 target = _Color;
+                float4 blend = tex2D(_BackgroundTexture, i.objectPos);
+                // multply
+                if (_BlendMode == 1.0) {
+                    return target * blend;
+                }
+                // additive
+                if (_BlendMode == 2.0) {
+
+                }
+                // color burn
+                if (_BlendMode == 3.0) {
+                    return 1 - (1 - target) / blend;
+                }
+                // color dodge
+                if (_BlendMode == 4.0) {
+                    return target / (1 - blend);
+                }
+                // reflect
+                if (_BlendMode == 5.0) {
+
+                }
+                // glow
+                if (_BlendMode == 6.0) {
+
+                }
+                // overlay
+                if (_BlendMode == 7.0) {
+                    //return (target > 0.5) * (1 - (1 - 2 * (target - 0.5)) * (1 - blend)) + (target <= 0.5) * ((2 * target) * blend);
+                    if (blend < 0.5) {
+                        return 2 * target * blend;
+                    }
+                    else {
+                        return 2 * blend * (1 - target) + sqrt(blend) * (2 * target - 1);
+                    }
+                }
+                // difference
+                if (_BlendMode == 7.0) {
+                    return target - blend;
+                }
+
+                return (1 - blend) * target;
             }
             ENDCG
         }
