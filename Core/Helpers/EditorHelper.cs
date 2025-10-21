@@ -71,10 +71,12 @@ namespace BetterLegacy.Core.Helpers
                 return;
             }
 
-            var obj = gameObject.AddComponent<ComplexityObject>();
+            var obj = gameObject.GetOrAddComponent<ComplexityObject>();
             obj.complexity = (Complexity)referenceJSON["complexity"].AsInt;
             obj.onlySpecificComplexity = referenceJSON["only_this"].AsBool;
             obj.disabled = referenceJSON["disabled"].AsBool;
+            if (referenceJSON["active"] != null)
+                obj.active = referenceJSON["active"].AsBool;
             obj.path = path;
             obj.UpdateActiveState();
         }
