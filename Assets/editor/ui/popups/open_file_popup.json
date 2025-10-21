@@ -36,7 +36,7 @@
     "theme_group": "Light_Text"
   },
   "layout": {
-    "cell_size": [ 784.0, 32.0 ],
+    "cell_size": [ 584.0, 32.0 ],
     "spacing": [ 0.0, 8.0 ],
     "constraint": 1,
     "constraint_count": 1
