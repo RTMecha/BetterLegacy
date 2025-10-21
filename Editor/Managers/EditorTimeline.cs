@@ -112,9 +112,9 @@ namespace BetterLegacy.Editor.Managers
         {
             float position = 0f;
             if (EditorConfig.Instance.UseMouseAsZoomPoint.Value)
-                position = (float)((double)GetTimelineTime(false) / AudioManager.inst.CurrentAudioSource.clip.length);
+                position = Mathf.Clamp((float)((double)GetTimelineTime(false) / AudioManager.inst.CurrentAudioSource.clip.length), 0.05f, 0.95f);
             else if (AudioManager.inst.CurrentAudioSource.clip)
-                position = (float)((double)AudioManager.inst.CurrentAudioSource.time / AudioManager.inst.CurrentAudioSource.clip.length);
+                position = Mathf.Clamp((float)((double)AudioManager.inst.CurrentAudioSource.time / AudioManager.inst.CurrentAudioSource.clip.length), 0.05f, 0.95f);
 
             SetTimeline(zoom, position);
         }
