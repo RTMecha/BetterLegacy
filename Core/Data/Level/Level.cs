@@ -61,7 +61,7 @@ namespace BetterLegacy.Core.Data.Level
             UpdateDefaults();
         }
 
-        #region Fields
+        #region Values
 
         /// <summary>
         /// Unique Arcade / Steam Workshop ID.
@@ -113,6 +113,11 @@ namespace BetterLegacy.Core.Data.Level
         /// </summary>
         public List<Achievement> achievements = new List<Achievement>();
 
+        /// <summary>
+        /// Reference level collection.
+        /// </summary>
+        public LevelCollection levelCollection;
+
         #region Level Context
 
         /// <summary>
@@ -156,10 +161,6 @@ namespace BetterLegacy.Core.Data.Level
         public bool loadedAchievements;
 
         #endregion
-
-        #endregion
-
-        #region Properties
 
         /// <summary>
         /// Gets the level paths' folder name.
@@ -425,11 +426,16 @@ namespace BetterLegacy.Core.Data.Level
             }
         }
 
+        /// <summary>
+        /// Gets the levels' achievements.
+        /// </summary>
+        /// <returns>Returns a list of the achievements in the level and the levels collection, if it exists.</returns>
         public List<Achievement> GetAchievements()
         {
             var list = achievements;
-            if (LevelManager.CurrentLevelCollection && LevelManager.CurrentLevelCollection.achievements != null)
-                list.AddRange(LevelManager.CurrentLevelCollection.achievements);
+            var levelCollection = this.levelCollection ?? LevelManager.CurrentLevelCollection;
+            if (levelCollection && levelCollection.achievements != null)
+                list.AddRange(levelCollection.achievements);
             return list;
         }
 

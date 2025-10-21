@@ -346,16 +346,16 @@ namespace BetterLegacy.Core.Data.Level
                     return;
 
                 metadata.VerifyID(levelFolder);
-                levelInfo.level = NewCollectionLevel(levelFolder);
+                levelInfo.level = NewCollectionLevel(levelFolder, this);
             }
 
             // load via arcade ID
             else if (levelInfo.arcadeID != null && LevelManager.Levels.TryFind(x => x.id == levelInfo.arcadeID, out Level arcadeLevel))
-                levelInfo.level = NewCollectionLevel(arcadeLevel.path);
+                levelInfo.level = NewCollectionLevel(arcadeLevel.path, this);
 
             // load via workshop ID
             else if (levelInfo.workshopID != null && SteamWorkshopManager.inst.Levels.TryFind(x => x.id == levelInfo.workshopID, out Level steamLevel))
-                levelInfo.level = NewCollectionLevel(steamLevel.path);
+                levelInfo.level = NewCollectionLevel(steamLevel.path, this);
 
             if (levelInfo.level)
                 levelInfo.Overwrite(levelInfo.level);
@@ -363,7 +363,7 @@ namespace BetterLegacy.Core.Data.Level
             levels.Add(levelInfo.level);
         }
 
-        static Level NewCollectionLevel(string path) => new Level(path) { fromCollection = true };
+        static Level NewCollectionLevel(string path, LevelCollection levelCollection) => new Level(path) { fromCollection = true, levelCollection = levelCollection };
 
         /// <summary>
         /// Downloads a level if it doesn't exist.
@@ -397,7 +397,7 @@ namespace BetterLegacy.Core.Data.Level
 
                 if (SteamWorkshopManager.inst.Levels.TryFind(x => x.id == levelInfo.workshopID, out level))
                 {
-                    level = NewCollectionLevel(level.path);
+                    level = NewCollectionLevel(level.path, collection);
                     levelInfo.Overwrite(level);
                     if (collection)
                         collection[levelInfo.index] = level;
@@ -427,7 +427,7 @@ namespace BetterLegacy.Core.Data.Level
                             {
                                 AlephNetwork.DownloadLevel(jsonObject, level =>
                                 {
-                                    level = NewCollectionLevel(level.path);
+                                    level = NewCollectionLevel(level.path, collection);
                                     levelInfo.Overwrite(level);
                                     if (collection)
                                         collection[levelInfo.index] = level;
@@ -446,7 +446,7 @@ namespace BetterLegacy.Core.Data.Level
                                 DownloadLevelMenu.Init(jsonObject);
                                 DownloadLevelMenu.Current.onDownloadComplete = level =>
                                 {
-                                    level = NewCollectionLevel(level.path);
+                                    level = NewCollectionLevel(level.path, collection);
                                     levelInfo.Overwrite(level);
                                     if (collection)
                                         collection[levelInfo.index] = level;
@@ -467,7 +467,7 @@ namespace BetterLegacy.Core.Data.Level
                                 DownloadLevelMenu.Init(jsonObject);
                                 DownloadLevelMenu.Current.onDownloadComplete = level =>
                                 {
-                                    level = NewCollectionLevel(level.path);
+                                    level = NewCollectionLevel(level.path, collection);
                                     levelInfo.Overwrite(level);
                                     if (collection)
                                         collection[levelInfo.index] = level;
@@ -535,7 +535,7 @@ namespace BetterLegacy.Core.Data.Level
             {
                 CoroutineHelper.StartCoroutine(SteamWorkshopManager.inst.ToggleSubscribedState(item, level =>
                 {
-                    level = NewCollectionLevel(level.path);
+                    level = NewCollectionLevel(level.path, collection);
                     levelInfo.Overwrite(level);
                     if (collection)
                         collection[levelInfo.index] = level;
@@ -550,7 +550,7 @@ namespace BetterLegacy.Core.Data.Level
             SteamLevelMenu.Init(item);
             SteamLevelMenu.Current.onSubscribedLevel = level =>
             {
-                level = NewCollectionLevel(level.path);
+                level = NewCollectionLevel(level.path, collection);
                 levelInfo.Overwrite(level);
                 if (collection)
                     collection[levelInfo.index] = level;
@@ -676,7 +676,7 @@ namespace BetterLegacy.Core.Data.Level
             if (!levels.IsEmpty() && levels.Any(x => x && x.id == level.id)) // don't want to have duplicate levels
                 return;
 
-            var actualLevel = new Level(level.path);
+            var actualLevel = NewCollectionLevel(level.path, this);
             var levelInfo = LevelInfo.FromLevel(actualLevel);
             levelInfo.collection = this;
             levelInfo.index = levelInformation.Count;
@@ -711,7 +711,7 @@ namespace BetterLegacy.Core.Data.Level
                 RTFile.CopyFile(file, copyToPath);
             }
 
-            var actualLevel = new Level(levelPath);
+            var actualLevel = NewCollectionLevel(levelPath, this);
             var levelInfo = LevelInfo.FromLevel(actualLevel);
             levelInfo.collection = this;
             levelInfo.index = levelInformation.Count;
