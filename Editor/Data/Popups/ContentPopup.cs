@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -88,6 +89,14 @@ namespace BetterLegacy.Editor.Data.Popups
         public int MaxPageCount => getMaxPageCount?.Invoke() ?? int.MaxValue;
 
         public Func<int> getMaxPageCount;
+
+        #endregion
+
+        #region Sort
+
+        public Dropdown SortDropdown { get; set; }
+
+        public Toggle AscendToggle { get; set; }
 
         #endregion
 
@@ -280,32 +289,40 @@ namespace BetterLegacy.Editor.Data.Popups
 
             var topElements = Creator.NewUIObject("elements", TopPanel);
             TopElements = topElements.transform.AsRT();
-            new RectValues(Vector2.zero, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), Vector2.one, new Vector2(0f, 32f)).AssignToRectTransform(TopElements);
+            //new RectValues(Vector2.zero, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), Vector2.one, new Vector2(0f, 32f)).AssignToRectTransform(TopElements);
+            new RectValues(new Vector2(-32f, 0f), Vector2.one, new Vector2(0f, 1f), Vector2.one, new Vector2(0f, 32f)).AssignToRectTransform(TopElements);
             var topElementsLayout = topElements.AddComponent<HorizontalLayoutGroup>();
             topElementsLayout.childControlHeight = true;
             topElementsLayout.childControlWidth = false;
             topElementsLayout.childForceExpandHeight = true;
             topElementsLayout.childForceExpandWidth = false;
             topElementsLayout.spacing = 2f;
+            topElementsLayout.childAlignment = TextAnchor.UpperRight;
         }
 
         /// <summary>
         /// Initializes the path field.
         /// </summary>
-        public void InitPath()
+        public void InitPath(Func<string> getValue, Action<string> setValue, Action<string> onEndEdit = null)
         {
             if (!TopElements)
                 InitTopElementsParent();
             if (!TopElements)
                 return;
 
-            var path = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(TopElements, "editor path");
+            var path = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(TopElements, "path");
             path.transform.AsRT().sizeDelta = new Vector2(104f, 32f);
 
             PathField = path.GetComponent<InputField>();
             PathField.characterValidation = InputField.CharacterValidation.None;
             PathField.textComponent.alignment = TextAnchor.MiddleLeft;
             PathField.textComponent.fontSize = 16;
+            PathField.SetTextWithoutNotify(getValue?.Invoke() ?? string.Empty);
+            PathField.onValueChanged.NewListener(_val => setValue?.Invoke(_val));
+            if (onEndEdit != null)
+                PathField.onEndEdit.NewListener(_val => onEndEdit?.Invoke(_val));
+            else
+                PathField.onEndEdit.ClearAll();
 
             EditorThemeManager.AddInputField(PathField);
         }
@@ -313,7 +330,7 @@ namespace BetterLegacy.Editor.Data.Popups
         /// <summary>
         /// Initializes the reload button.
         /// </summary>
-        public void InitReload()
+        public void InitReload(Action action)
         {
             if (!TopElements)
                 InitTopElementsParent();
@@ -330,7 +347,7 @@ namespace BetterLegacy.Editor.Data.Popups
             });
 
             ReloadButton = reload.GetComponent<Button>();
-            ReloadButton.onClick.NewListener(EditorLevelManager.inst.LoadLevels);
+            ReloadButton.onClick.NewListener(() => action?.Invoke());
 
             EditorThemeManager.AddSelectable(ReloadButton, ThemeGroup.Function_2, false);
 
@@ -367,19 +384,16 @@ namespace BetterLegacy.Editor.Data.Popups
                 if (int.TryParse(PageField.inputField.text, out int p))
                     PageField.inputField.text = "0";
             });
-
             PageField.leftButton.onClick.NewListener(() =>
             {
                 if (int.TryParse(PageField.inputField.text, out int p))
                     PageField.inputField.text = Mathf.Clamp(p - 1, 0, MaxPageCount).ToString();
             });
-
             PageField.rightButton.onClick.NewListener(() =>
             {
                 if (int.TryParse(PageField.inputField.text, out int p))
                     PageField.inputField.text = Mathf.Clamp(p + 1, 0, MaxPageCount).ToString();
             });
-
             PageField.rightGreaterButton.onClick.NewListener(() =>
             {
                 if (int.TryParse(PageField.inputField.text, out int p))
@@ -389,6 +403,53 @@ namespace BetterLegacy.Editor.Data.Popups
             CoreHelper.Delete(PageField.middleButton);
 
             EditorThemeManager.AddInputField(PageField);
+        }
+
+        /// <summary>
+        /// Initializes the sort dropdown.
+        /// </summary>
+        /// <param name="getValue">Value to get.</param>
+        /// <param name="setValue">Function to run on value set..</param>
+        /// <param name="options">List of options for the dropdown.</param>
+        public void InitSortDropdown(Func<int> getValue, Action<int> setValue, List<Dropdown.OptionData> options)
+        {
+            if (!TopElements)
+                InitTopElementsParent();
+            if (!TopElements)
+                return;
+
+            var sortList = EditorPrefabHolder.Instance.Dropdown.Duplicate(TopElements, "sort");
+            //new RectValues(new Vector2(-132f, 0f), new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), RectValues.CenterPivot, new Vector2(200f, 32f)).AssignToRectTransform(sortList.transform.AsRT());
+            RectValues.Default.SizeDelta(200f, 32f).AssignToRectTransform(sortList.transform.AsRT());
+
+            SortDropdown = sortList.GetComponent<Dropdown>();
+
+            CoreHelper.Destroy(sortList.GetComponent<HideDropdownOptions>());
+            SortDropdown.options.Clear();
+            SortDropdown.options = options;
+            SortDropdown.SetValueWithoutNotify(getValue?.Invoke() ?? 0);
+            SortDropdown.onValueChanged.NewListener(_val => setValue?.Invoke(_val));
+
+            EditorThemeManager.AddDropdown(SortDropdown);
+        }
+
+        /// <summary>
+        /// Initializes the ascend toggle.
+        /// </summary>
+        /// <param name="getValue">Value to get.</param>
+        /// <param name="setValue">Function to run on value set..</param>
+        public void InitAscendToggle(Func<bool> getValue, Action<bool> setValue)
+        {
+            var checkDes = EditorPrefabHolder.Instance.Toggle.Duplicate(TopElements, "ascend");
+            //new RectValues(new Vector2(-252f, 0f), new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), RectValues.CenterPivot, new Vector2(32f, 32f)).AssignToRectTransform(checkDes.transform.AsRT());
+            //RectValues.Default.SizeDelta(32f, 32f).AssignToRectTransform(checkDes.transform.AsRT());
+
+            AscendToggle = checkDes.GetComponent<Toggle>();
+            AscendToggle.SetIsOnWithoutNotify(getValue?.Invoke() ?? false);
+            AscendToggle.onValueChanged.NewListener(_val => setValue?.Invoke(_val));
+
+            EditorThemeManager.AddToggle(AscendToggle);
+
         }
 
         #endregion

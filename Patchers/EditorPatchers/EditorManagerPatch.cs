@@ -17,6 +17,7 @@ using BetterLegacy.Arcade.Managers;
 using BetterLegacy.Companion.Entity;
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
@@ -700,10 +701,9 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool OpenBeatmapPopupPrefix()
         {
-            CoreHelper.Log("Open Beatmap Popup");
             var component = Instance.GetDialog("Open File Popup").Dialog.Find("search-box/search").GetComponent<InputField>();
             if (Instance.openFileSearch == null)
-                Instance.openFileSearch = "";
+                Instance.openFileSearch = string.Empty;
 
             LevelTemplateEditor.inst.choosingLevelTemplate = false;
             component.text = Instance.openFileSearch;
@@ -711,25 +711,20 @@ namespace BetterLegacy.Patchers
             Instance.RenderOpenBeatmapPopup();
             EditorLevelManager.inst.OpenLevelPopup.Open();
 
-            var config = EditorConfig.Instance;
-
             try
             {
-                //Create Local Variables
                 var openLevel = EditorLevelManager.inst.OpenLevelPopup.GameObject;
-                var openTLevel = openLevel.transform;
-                var openRTLevel = openLevel.transform.AsRT();
-                var openGridLVL = openTLevel.Find("mask/content").GetComponent<GridLayoutGroup>();
+                var gridLayoutGroup = openLevel.transform.Find("mask/content").GetComponent<GridLayoutGroup>();
 
-                //Set Open File Popup RectTransform
-                openRTLevel.anchoredPosition = config.OpenLevelPosition.Value;
-                openRTLevel.sizeDelta = config.OpenLevelScale.Value;
+                if (AssetPack.TryReadFromFile("editor/ui/popups/open_file_popup.json", out string uiFile))
+                {
+                    var jn = JSON.Parse(uiFile);
+                    RectValues.TryParse(jn["base"]["rect"], RectValues.Default.SizeDelta(600f, 400f)).AssignToRectTransform(openLevel.transform.AsRT());
 
-                //Set Open FIle Popup content GridLayoutGroup
-                openGridLVL.cellSize = config.OpenLevelCellSize.Value;
-                openGridLVL.constraint = config.OpenLevelCellConstraintType.Value;
-                openGridLVL.constraintCount = config.OpenLevelCellConstraintCount.Value;
-                openGridLVL.spacing = config.OpenLevelCellSpacing.Value;
+                    var layoutValues = LayoutValues.Parse(jn["layout"]);
+                    if (layoutValues is GridLayoutValues gridLayoutValues)
+                        gridLayoutValues.AssignToLayout(gridLayoutGroup);
+                }
             }
             catch (Exception ex)
             {

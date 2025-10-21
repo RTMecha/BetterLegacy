@@ -185,32 +185,7 @@ namespace BetterLegacy.Configs
         public Setting<Vector2Int> RenderDepthRange { get; set; }
         public Setting<bool> OpenNewLevelCreatorIfNoLevels { get; set; }
 
-        public Setting<Vector2> OpenLevelPosition { get; set; }
-        public Setting<Vector2> OpenLevelScale { get; set; }
-        public Setting<Vector2> OpenLevelEditorPathPos { get; set; }
-        public Setting<float> OpenLevelEditorPathLength { get; set; }
-        public Setting<Vector2> OpenLevelListRefreshPosition { get; set; }
-        public Setting<Vector2> OpenLevelTogglePosition { get; set; }
-        public Setting<Vector2> OpenLevelDropdownPosition { get; set; }
-        public Setting<Vector2> OpenLevelCellSize { get; set; }
-        public Setting<GridLayoutGroup.Constraint> OpenLevelCellConstraintType { get; set; }
-        public Setting<int> OpenLevelCellConstraintCount { get; set; }
-        public Setting<Vector2> OpenLevelCellSpacing { get; set; }
-        public Setting<HorizontalWrapMode> OpenLevelTextHorizontalWrap { get; set; }
-        public Setting<VerticalWrapMode> OpenLevelTextVerticalWrap { get; set; }
-        public Setting<int> OpenLevelTextFontSize { get; set; }
-
-        public Setting<int> OpenLevelFolderNameMax { get; set; }
-        public Setting<int> OpenLevelSongNameMax { get; set; }
-        public Setting<int> OpenLevelArtistNameMax { get; set; }
-        public Setting<int> OpenLevelCreatorNameMax { get; set; }
-        public Setting<int> OpenLevelDescriptionMax { get; set; }
-        public Setting<int> OpenLevelDateMax { get; set; }
-        public Setting<string> OpenLevelTextFormatting { get; set; }
-
         public Setting<float> OpenLevelButtonHoverSize { get; set; }
-        public Setting<Vector2> OpenLevelCoverPosition { get; set; }
-        public Setting<Vector2> OpenLevelCoverScale { get; set; }
 
         public Setting<bool> ChangesRefreshLevelList { get; set; }
         public Setting<bool> OpenLevelShowDeleteButton { get; set; }
@@ -630,33 +605,7 @@ namespace BetterLegacy.Configs
             RenderDepthRange = Bind(this, EDITOR_GUI, "Render Depth Range", new Vector2Int(219, -98), "The range the Render Depth slider will show. Vanilla Legacy range is 30 and 0.");
             OpenNewLevelCreatorIfNoLevels = Bind(this, EDITOR_GUI, "Open New Level Creator If No Levels", false, "If the New Level Creator popup should open when there are no levels in a level folder.");
 
-            OpenLevelPosition = Bind(this, EDITOR_GUI, "Open Level Position", Vector2.zero, "The position of the Open Level popup.");
-            OpenLevelScale = Bind(this, EDITOR_GUI, "Open Level Scale", new Vector2(600f, 400f), "The size of the Open Level popup.");
-            OpenLevelEditorPathPos = Bind(this, EDITOR_GUI, "Open Level Editor Path Pos", new Vector2(275f, 16f), "The position of the editor path input field.");
-            OpenLevelEditorPathLength = Bind(this, EDITOR_GUI, "Open Level Editor Path Length", 104f, "The length of the editor path input field.");
-            OpenLevelListRefreshPosition = Bind(this, EDITOR_GUI, "Open Level List Refresh Position", new Vector2(330f, 432f), "The position of the refresh button.");
-            OpenLevelTogglePosition = Bind(this, EDITOR_GUI, "Open Level Toggle Position", new Vector2(600f, 16f), "The position of the descending toggle.");
-            OpenLevelDropdownPosition = Bind(this, EDITOR_GUI, "Open Level Dropdown Position", new Vector2(501f, 416f), "The position of the sort dropdown.");
-            OpenLevelCellSize = Bind(this, EDITOR_GUI, "Open Level Cell Size", new Vector2(584f, 32f), "Size of each cell.");
-            OpenLevelCellConstraintType = BindEnum(this, EDITOR_GUI, "Open Level Cell Constraint Type", GridLayoutGroup.Constraint.FixedColumnCount, "How the cells are layed out.");
-            OpenLevelCellConstraintCount = Bind(this, EDITOR_GUI, "Open Level Cell Constraint Count", 1, "How many rows / columns there are, depending on Constraint Type.");
-            OpenLevelCellSpacing = Bind(this, EDITOR_GUI, "Open Level Cell Spacing", new Vector2(0f, 8f), "The space between each cell.");
-            OpenLevelTextHorizontalWrap = BindEnum(this, EDITOR_GUI, "Open Level Text Horizontal Wrap", HorizontalWrapMode.Wrap, "Horizontal Wrap Mode of the folder button text.");
-            OpenLevelTextVerticalWrap = BindEnum(this, EDITOR_GUI, "Open Level Text Vertical Wrap", VerticalWrapMode.Truncate, "Vertical Wrap Mode of the folder button text.");
-            OpenLevelTextFontSize = Bind(this, EDITOR_GUI, "Open Level Text Font Size", 20, "Font size of the folder button text.", 1, 40);
-
-            OpenLevelFolderNameMax = Bind(this, EDITOR_GUI, "Open Level Folder Name Max", 14, "Limited length of the folder name.", 1, 40);
-            OpenLevelSongNameMax = Bind(this, EDITOR_GUI, "Open Level Song Name Max", 22, "Limited length of the song name.", 1, 40);
-            OpenLevelArtistNameMax = Bind(this, EDITOR_GUI, "Open Level Artist Name Max", 16, "Limited length of the artist name.", 1, 40);
-            OpenLevelCreatorNameMax = Bind(this, EDITOR_GUI, "Open Level Creator Name Max", 16, "Limited length of the creator name.", 1, 40);
-            OpenLevelDescriptionMax = Bind(this, EDITOR_GUI, "Open Level Description Max", 16, "Limited length of the description.", 1, 40);
-            OpenLevelDateMax = Bind(this, EDITOR_GUI, "Open Level Date Max", 16, "Limited length of the date.", 1, 40);
-            OpenLevelTextFormatting = Bind(this, EDITOR_GUI, "Open Level Text Formatting", ".  /{0} : {1} by {2}",
-                    "The way the text is formatted for each level. {0} is folder, {1} is song, {2} is artist, {3} is creator, {4} is difficulty, {5} is description and {6} is last edited.");
-
             OpenLevelButtonHoverSize = Bind(this, EDITOR_GUI, "Open Level Button Hover Size", 1f, "How big the button gets when hovered.", 0.7f, 1.4f);
-            OpenLevelCoverPosition = Bind(this, EDITOR_GUI, "Open Level Cover Position", new Vector2(-276f, 0f), "Position of the level cover.");
-            OpenLevelCoverScale = Bind(this, EDITOR_GUI, "Open Level Cover Scale", new Vector2(26f, 26f), "Size of the level cover.");
 
             ChangesRefreshLevelList = Bind(this, EDITOR_GUI, "Changes Refresh Level List", false, "If the level list reloads whenever a change is made.");
             OpenLevelShowDeleteButton = Bind(this, EDITOR_GUI, "Open Level Show Delete Button", false, "Shows a delete button that can be used to move levels to a recycling folder.");

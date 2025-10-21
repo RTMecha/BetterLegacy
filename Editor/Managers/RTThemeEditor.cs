@@ -59,8 +59,11 @@ namespace BetterLegacy.Editor.Managers
 
                 Popup.getMaxPageCount = () => ExternalThemesCount / themesPerPage;
                 Popup.InitPageField();
-                Popup.InitReload();
-                Popup.InitPath();
+                Popup.InitReload(() => CoroutineHelper.StartCoroutine(LoadThemes()));
+                Popup.InitPath(
+                    getValue: () => RTEditor.inst.ThemePath,
+                    setValue: _val => RTEditor.inst.ThemePath = _val,
+                    onEndEdit: _val => RTEditor.inst.UpdateThemePath(false));
 
                 Popup.PathField.SetTextWithoutNotify(RTEditor.inst.ThemePath);
                 Popup.PathField.onValueChanged.NewListener(_val => RTEditor.inst.ThemePath = _val);
@@ -101,8 +104,6 @@ namespace BetterLegacy.Editor.Managers
                             EditorManager.inst.DisplayNotification($"Removed default theme folder.", 5f, EditorManager.NotificationType.Success);
                         }, "Theme Default Path"));
                 };
-
-                Popup.ReloadButton.onClick.NewListener(() => CoroutineHelper.StartCoroutine(LoadThemes()));
 
                 EditorHelper.AddEditorDropdown("View Themes", "", "View", EditorSprites.SearchSprite, OpenExternalThemesPopup);
 

@@ -35,6 +35,7 @@ using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
+using BetterLegacy.Editor.Data.Elements;
 using BetterLegacy.Editor.Data.Popups;
 using BetterLegacy.Editor.Data.Timeline;
 
@@ -140,7 +141,7 @@ namespace BetterLegacy.Editor.Managers
                             EditorLevelManager.inst.LoadLevel(level);
                         else if (EditorLevelManager.inst.OpenLevelPopup.IsOpen && dropInfo.filePath.Contains(RTFile.ApplicationDirectory + "beatmaps/"))
                         {
-                            editorPathField.text = dropInfo.filePath.Remove(RTFile.ApplicationDirectory + "beatmaps/");
+                            EditorLevelManager.inst.OpenLevelPopup.PathField.text = dropInfo.filePath.Remove(RTFile.ApplicationDirectory + "beatmaps/");
                             UpdateEditorPath(false);
                         }
                         else
@@ -754,6 +755,24 @@ namespace BetterLegacy.Editor.Managers
         // 5 - setup misc editor UI
         void InitUI()
         {
+            if (AssetPack.TryReadFromFile("editor/ui/elements/level_panel.json", out string levelPanelFile))
+            {
+                var jn = JSON.Parse(levelPanelFile);
+                LevelPanel.labelRect = RectValues.TryParse(jn["label"]["rect"], RectValues.FullAnchored.AnchoredPosition(32f, 0f).SizeDelta(-12f, -8f));
+                LevelPanel.labelFormat = jn["label"]["format"] != null ? jn["label"]["format"] : "/{0} : {1} by {2}";
+                LevelPanel.labelHorizontalWrap = (HorizontalWrapMode)jn["label"]["horizontal_wrap"].AsInt;
+                LevelPanel.labelVerticalWrap = (VerticalWrapMode)jn["label"]["vertical_wrap"].AsInt;
+                LevelPanel.labelFontSize = jn["label"]["font_size"].AsInt;
+                LevelPanel.labelFolderNameMax = jn["label"]["folder_name_max"].AsInt;
+                LevelPanel.labelSongTitleMax = jn["label"]["song_title_max"].AsInt;
+                LevelPanel.labelArtistNameMax = jn["label"]["artist_name_max"].AsInt;
+                LevelPanel.labelCreatorNameMax = jn["label"]["creator_name_max"].AsInt;
+                LevelPanel.labelDescriptionMax = jn["label"]["description_max"].AsInt;
+                LevelPanel.labelDateMax = jn["label"]["date_max"].AsInt;
+
+                LevelPanel.iconRect = RectValues.TryParse(jn["icon"]["rect"], RectValues.Default.AnchoredPosition(-276f, 0f).SizeDelta(26f, 26f));
+            }
+
             SetupNotificationValues();
             SetupTimelineBar();
             SetupTimelineTriggers();
@@ -1300,11 +1319,7 @@ namespace BetterLegacy.Editor.Managers
         public bool canUpdateThemes = true;
         public bool canUpdatePrefabs = true;
 
-        public Dropdown levelOrderDropdown;
-        public Toggle levelAscendToggle;
-        public InputField editorPathField;
         public InputField prefabPathField;
-        public InputField levelCollectionPathField;
 
         #endregion
 
@@ -1767,7 +1782,7 @@ namespace BetterLegacy.Editor.Managers
             BasePath = RTFile.DirectoryExists(basePath) ? basePath : RTFile.ApplicationDirectory;
             this.beatmapsFolder = beatmapsFolder;
 
-            editorPathField.text = "editor";
+            EditorLevelManager.inst.OpenLevelPopup.PathField.text = "editor";
             UpdateEditorPath(false);
             RTThemeEditor.inst.Popup.PathField.text = "themes";
             UpdateThemePath(false);
@@ -1794,7 +1809,7 @@ namespace BetterLegacy.Editor.Managers
             var editorPath = RTFile.CombinePaths(BeatmapsPath, EditorPath);
             if (!RTFile.DirectoryExists(editorPath))
             {
-                editorPathField.interactable = false;
+                EditorLevelManager.inst.OpenLevelPopup.PathField.interactable = false;
                 ShowWarningPopup("No directory exists for this path. Do you want to create a new folder?", () =>
                 {
                     RTFile.CreateDirectory(editorPath);
@@ -1804,12 +1819,12 @@ namespace BetterLegacy.Editor.Managers
                     EditorLevelManager.inst.LoadLevels();
 
                     HideWarningPopup();
-                    editorPathField.interactable = true;
+                    EditorLevelManager.inst.OpenLevelPopup.PathField.interactable = true;
                 },
                 () =>
                 {
                     HideWarningPopup();
-                    editorPathField.interactable = true;
+                    EditorLevelManager.inst.OpenLevelPopup.PathField.interactable = true;
                 });
 
                 return;
@@ -1901,12 +1916,11 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void UpdateOrderDropdown()
         {
-            if (!levelOrderDropdown)
+            if (!EditorLevelManager.inst || !EditorLevelManager.inst.OpenLevelPopup || !EditorLevelManager.inst.OpenLevelPopup.SortDropdown)
                 return;
 
-            levelOrderDropdown.onValueChanged.ClearAll();
-            levelOrderDropdown.value = (int)levelSort;
-            levelOrderDropdown.onValueChanged.AddListener(_val =>
+            EditorLevelManager.inst.OpenLevelPopup.SortDropdown.SetValueWithoutNotify((int)levelSort);
+            EditorLevelManager.inst.OpenLevelPopup.SortDropdown.onValueChanged.NewListener(_val =>
             {
                 levelSort = (LevelSort)_val;
                 EditorLevelManager.inst.RenderLevels();
@@ -1919,12 +1933,11 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void UpdateAscendToggle()
         {
-            if (!levelAscendToggle)
+            if (!EditorLevelManager.inst || !EditorLevelManager.inst.OpenLevelPopup || !EditorLevelManager.inst.OpenLevelPopup.AscendToggle)
                 return;
 
-            levelAscendToggle.onValueChanged.ClearAll();
-            levelAscendToggle.isOn = levelAscend;
-            levelAscendToggle.onValueChanged.AddListener(_val =>
+            EditorLevelManager.inst.OpenLevelPopup.AscendToggle.SetIsOnWithoutNotify(levelAscend);
+            EditorLevelManager.inst.OpenLevelPopup.AscendToggle.onValueChanged.NewListener(_val =>
             {
                 levelAscend = _val;
                 EditorLevelManager.inst.RenderLevels();
@@ -3826,52 +3839,44 @@ namespace BetterLegacy.Editor.Managers
 
         void SetupPaths()
         {
-            var openFilePopup = EditorLevelManager.inst.OpenLevelPopup.GameObject.transform;
+            EditorLevelManager.inst.OpenLevelPopup.InitTopElementsParent();
+            EditorLevelManager.inst.OpenLevelPopup.InitPath(
+                getValue: () => EditorPath,
+                setValue: _val => EditorPath = _val,
+                onEndEdit: _val => UpdateEditorPath(false));
+            EditorLevelManager.inst.OpenLevelPopup.InitReload(EditorLevelManager.inst.LoadLevels);
+            EditorLevelManager.inst.OpenLevelPopup.InitAscendToggle(
+                getValue: () => levelAscend,
+                setValue: _val =>
+                {
+                    levelAscend = _val;
+                    EditorLevelManager.inst.RenderLevels();
+                    SaveGlobalSettings();
+                });
+            EditorLevelManager.inst.OpenLevelPopup.InitSortDropdown(
+                getValue: () => (int)levelSort,
+                setValue: _val =>
+                {
+                    levelSort = (LevelSort)_val;
+                    EditorLevelManager.inst.RenderLevels();
+                    SaveGlobalSettings();
+                },
+                options: CoreHelper.StringToOptionData("Cover", "Artist", "Creator", "Folder", "Title", "Difficulty", "Date Edited", "Date Created"));
+            EditorLevelManager.inst.OpenLevelPopup.TopElements.sizeDelta = new Vector2(90f, 32f);
+
             var panel = EditorLevelManager.inst.OpenLevelPopup.TopPanel;
 
-            var sortList = EditorPrefabHolder.Instance.Dropdown.Duplicate(panel, "level sort");
-            new RectValues(new Vector2(-132f, 0f), new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), RectValues.CenterPivot, new Vector2(200f, 32f)).AssignToRectTransform(sortList.transform.AsRT());
+            TooltipHelper.RemoveTooltip(EditorLevelManager.inst.OpenLevelPopup.SortDropdown.gameObject);
+            TooltipHelper.AssignTooltip(EditorLevelManager.inst.OpenLevelPopup.SortDropdown.gameObject, "Level Sort Dropdown");
 
-            levelOrderDropdown = sortList.GetComponent<Dropdown>();
-            EditorThemeManager.AddDropdown(levelOrderDropdown);
+            EditorHelper.SetComplexity(EditorLevelManager.inst.OpenLevelPopup.SortDropdown.gameObject, Complexity.Normal);
 
-            var config = EditorConfig.Instance;
+            TooltipHelper.RemoveTooltip(EditorLevelManager.inst.OpenLevelPopup.AscendToggle.gameObject);
+            TooltipHelper.AssignTooltip(EditorLevelManager.inst.OpenLevelPopup.AscendToggle.gameObject, "Level Ascend Toggle");
 
-            TooltipHelper.RemoveTooltip(sortList);
-            TooltipHelper.AssignTooltip(sortList, "Level Sort Dropdown");
+            EditorHelper.SetComplexity(EditorLevelManager.inst.OpenLevelPopup.AscendToggle.gameObject, Complexity.Normal);
 
-            Destroy(sortList.GetComponent<HideDropdownOptions>());
-            levelOrderDropdown.options.Clear();
-            levelOrderDropdown.options = CoreHelper.StringToOptionData("Cover", "Artist", "Creator", "Folder", "Title", "Difficulty", "Date Edited", "Date Created");
-            levelOrderDropdown.SetValueWithoutNotify((int)levelSort);
-            levelOrderDropdown.onValueChanged.NewListener(_val =>
-            {
-                levelSort = (LevelSort)_val;
-                EditorLevelManager.inst.RenderLevels();
-                SaveGlobalSettings();
-            });
-            EditorHelper.SetComplexity(sortList, Complexity.Normal);
-
-            var checkDes = EditorPrefabHolder.Instance.Toggle.Duplicate(panel, "ascend");
-            new RectValues(new Vector2(-252f, 0f), new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), RectValues.CenterPivot, new Vector2(32f, 32f)).AssignToRectTransform(checkDes.transform.AsRT());
-
-            TooltipHelper.RemoveTooltip(checkDes);
-            TooltipHelper.AssignTooltip(checkDes, "Level Ascend Toggle");
-
-            levelAscendToggle = checkDes.GetComponent<Toggle>();
-            levelAscendToggle.SetIsOnWithoutNotify(levelAscend);
-            levelAscendToggle.onValueChanged.NewListener(_val =>
-            {
-                levelAscend = _val;
-                EditorLevelManager.inst.RenderLevels();
-                SaveGlobalSettings();
-            });
-
-            EditorThemeManager.AddToggle(levelAscendToggle);
-
-            EditorHelper.SetComplexity(checkDes, Complexity.Normal);
-
-            var contextClickable = openFilePopup.gameObject.AddComponent<ContextClickable>();
+            var contextClickable = EditorLevelManager.inst.OpenLevelPopup.GameObject.AddComponent<ContextClickable>();
             contextClickable.onClick = eventData =>
             {
                 if (eventData.button != PointerEventData.InputButton.Right)
@@ -3887,25 +3892,10 @@ namespace BetterLegacy.Editor.Managers
                     new ButtonFunction("Open List in File Explorer", OpenLevelListFolder));
             };
 
-            #region Level Path
+            TooltipHelper.AssignTooltip(EditorLevelManager.inst.OpenLevelPopup.PathField.gameObject, "Editor Path", 3f);
+            EditorHelper.SetComplexity(EditorLevelManager.inst.OpenLevelPopup.PathField.gameObject, Complexity.Advanced);
 
-            var levelPathGameObject = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(openFilePopup, "editor path");
-            ((RectTransform)levelPathGameObject.transform).anchoredPosition = config.OpenLevelEditorPathPos.Value;
-            ((RectTransform)levelPathGameObject.transform).sizeDelta = new Vector2(config.OpenLevelEditorPathLength.Value, 32f);
-
-            TooltipHelper.AssignTooltip(levelPathGameObject, "Editor Path", 3f);
-
-            editorPathField = levelPathGameObject.GetComponent<InputField>();
-            editorPathField.characterValidation = InputField.CharacterValidation.None;
-            editorPathField.textComponent.alignment = TextAnchor.MiddleLeft;
-            editorPathField.textComponent.fontSize = 16;
-            editorPathField.SetTextWithoutNotify(EditorPath);
-            editorPathField.onValueChanged.NewListener(_val => EditorPath = _val);
-            editorPathField.onEndEdit.NewListener(_val => UpdateEditorPath(false));
-
-            EditorThemeManager.AddInputField(editorPathField);
-
-            var levelClickable = levelPathGameObject.AddComponent<Clickable>();
+            var levelClickable = EditorLevelManager.inst.OpenLevelPopup.PathField.gameObject.AddComponent<Clickable>();
             levelClickable.onDown = pointerEventData =>
             {
                 if (pointerEventData.button != PointerEventData.InputButton.Right)
@@ -3923,7 +3913,7 @@ namespace BetterLegacy.Editor.Managers
                                 return;
                             }
 
-                            editorPathField.text = _val.Replace("\\", "/").Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
+                            EditorLevelManager.inst.OpenLevelPopup.PathField.text = _val.Replace("\\", "/").Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
                             EditorManager.inst.DisplayNotification($"Set Editor path to {EditorPath}!", 2f, EditorManager.NotificationType.Success);
                             BrowserPopup.Close();
                             UpdateEditorPath(false);
@@ -3931,33 +3921,13 @@ namespace BetterLegacy.Editor.Managers
                     }),
                     new ButtonFunction("Open List in File Explorer", OpenLevelListFolder));
             };
-            EditorHelper.SetComplexity(levelPathGameObject, Complexity.Advanced);
-
-            var levelListReloader = EditorPrefabHolder.Instance.SpriteButton.Duplicate(openFilePopup, "reload");
-            levelListReloader.transform.AsRT().anchoredPosition = config.OpenLevelListRefreshPosition.Value;
-            levelListReloader.transform.AsRT().sizeDelta = new Vector2(32f, 32f);
-
-            (levelListReloader.GetOrAddComponent<HoverTooltip>()).tooltipLangauges.Add(new HoverTooltip.Tooltip
-            {
-                desc = "Refresh level list",
-                hint = "Clicking this will reload the level list."
-            });
-
-            var levelListReloaderButton = levelListReloader.GetComponent<Button>();
-            levelListReloaderButton.onClick.NewListener(EditorLevelManager.inst.LoadLevels);
-
-            EditorThemeManager.AddSelectable(levelListReloaderButton, ThemeGroup.Function_2, false);
-
-            levelListReloaderButton.image.sprite = EditorSprites.ReloadSprite;
-
-            #endregion
 
             #region Prefab Path
 
             var prefabPathGameObject = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(PrefabPopups.External.GameObject.transform, "prefabs path");
 
-            prefabPathGameObject.transform.AsRT().anchoredPosition = config.PrefabExternalPrefabPathPos.Value;
-            prefabPathGameObject.transform.AsRT().sizeDelta = new Vector2(config.PrefabExternalPrefabPathLength.Value, 32f);
+            prefabPathGameObject.transform.AsRT().anchoredPosition = EditorConfig.Instance.PrefabExternalPrefabPathPos.Value;
+            prefabPathGameObject.transform.AsRT().sizeDelta = new Vector2(EditorConfig.Instance.PrefabExternalPrefabPathLength.Value, 32f);
 
             TooltipHelper.AssignTooltip(prefabPathGameObject, "Prefab Path", 3f);
 
@@ -4011,7 +3981,7 @@ namespace BetterLegacy.Editor.Managers
             EditorHelper.SetComplexity(prefabPathGameObject, Complexity.Advanced);
 
             var prefabListReload = EditorPrefabHolder.Instance.SpriteButton.Duplicate(PrefabPopups.External.GameObject.transform, "reload prefabs");
-            prefabListReload.transform.AsRT().anchoredPosition = config.PrefabExternalPrefabRefreshPos.Value;
+            prefabListReload.transform.AsRT().anchoredPosition = EditorConfig.Instance.PrefabExternalPrefabRefreshPos.Value;
             prefabListReload.transform.AsRT().sizeDelta = new Vector2(32f, 32f);
 
             (prefabListReload.GetComponent<HoverTooltip>() ?? prefabListReload.AddComponent<HoverTooltip>()).tooltipLangauges.Add(new HoverTooltip.Tooltip
@@ -6274,6 +6244,17 @@ namespace BetterLegacy.Editor.Managers
                 if (!failed)
                     BrowserPopup.Close();
             });
+        }
+        
+        public void SetCurrentPath(string path)
+        {
+            var fullPath = RTFile.RemoveEndSlash(path);
+            var name = Path.GetFileName(fullPath);
+
+            EditorManager.inst.currentLoadedLevel = name;
+            GameManager.inst.path = RTFile.CombinePaths(fullPath, Level.LEVEL_LSB);
+            RTFile.BasePath = RTFile.AppendEndSlash(fullPath);
+            GameManager.inst.levelName = name;
         }
 
         #endregion

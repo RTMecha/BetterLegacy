@@ -68,19 +68,19 @@ namespace BetterLegacy.Editor.Data.Elements
             get
             {
                 if (Info)
-                    return $".  /{Info.arcadeID} - {Info.name}";
+                    return $"/{Info.arcadeID} - {Info.name}";
 
                 var metadata = Item.metadata;
-                return string.Format(EditorConfig.Instance.OpenLevelTextFormatting.Value,
-                    LSText.ClampString(Name, EditorConfig.Instance.OpenLevelFolderNameMax.Value),
-                    LSText.ClampString(metadata.song.title, EditorConfig.Instance.OpenLevelSongNameMax.Value),
-                    LSText.ClampString(metadata.artist.name, EditorConfig.Instance.OpenLevelArtistNameMax.Value),
-                    LSText.ClampString(metadata.creator.name, EditorConfig.Instance.OpenLevelCreatorNameMax.Value),
-                    metadata.song.difficulty,
-                    LSText.ClampString(metadata.song.description, EditorConfig.Instance.OpenLevelDescriptionMax.Value),
-                    LSText.ClampString(metadata.beatmap.dateEdited, EditorConfig.Instance.OpenLevelDateMax.Value),
-                    LSText.ClampString(metadata.beatmap.dateCreated, EditorConfig.Instance.OpenLevelDateMax.Value),
-                    LSText.ClampString(metadata.beatmap.datePublished, EditorConfig.Instance.OpenLevelDateMax.Value));
+                return string.Format(labelFormat,
+                    LSText.ClampString(Name, labelFolderNameMax),
+                    LSText.ClampString(metadata.song.title, labelSongTitleMax),
+                    LSText.ClampString(metadata.artist.name, labelArtistNameMax),
+                    LSText.ClampString(metadata.creator.name, labelCreatorNameMax),
+                    metadata.song.DifficultyType.DisplayName,
+                    LSText.ClampString(metadata.song.description, labelDescriptionMax),
+                    LSText.ClampString(metadata.beatmap.dateEdited, labelDateMax),
+                    LSText.ClampString(metadata.beatmap.dateCreated, labelDateMax),
+                    LSText.ClampString(metadata.beatmap.datePublished, labelDateMax));
             }
         }
 
@@ -99,11 +99,6 @@ namespace BetterLegacy.Editor.Data.Elements
         }
 
         /// <summary>
-        /// If the level is selected in the editor.
-        /// </summary>
-        public bool combinerSelected;
-
-        /// <summary>
         /// Names of all the level difficulties
         /// </summary>
         public static string[] difficultyNames = new string[]
@@ -120,6 +115,34 @@ namespace BetterLegacy.Editor.Data.Elements
 
         #endregion
 
+        #region Asset Pack
+
+        public static RectValues labelRect = RectValues.FullAnchored.AnchoredPosition(32f, 0f).SizeDelta(-12f, -8f);
+
+        public static RectValues iconRect = RectValues.Default.AnchoredPosition(-276f, 0f).SizeDelta(26f, 26f);
+
+        public static string labelFormat = "/{0} : {1} by {2}";
+
+        public static HorizontalWrapMode labelHorizontalWrap = HorizontalWrapMode.Wrap;
+
+        public static VerticalWrapMode labelVerticalWrap = VerticalWrapMode.Truncate;
+
+        public static int labelFontSize = 20;
+
+        public static int labelFolderNameMax = 16;
+
+        public static int labelSongTitleMax = 22;
+
+        public static int labelArtistNameMax = 16;
+
+        public static int labelCreatorNameMax = 16;
+
+        public static int labelDescriptionMax = 16;
+
+        public static int labelDateMax = 16;
+
+        #endregion
+
         #endregion
 
         #region Methods
@@ -133,7 +156,7 @@ namespace BetterLegacy.Editor.Data.Elements
             if (gameObject)
                 CoreHelper.Destroy(gameObject);
 
-            gameObject = EditorManager.inst.spriteFolderButtonPrefab.Duplicate(EditorLevelManager.inst.OpenLevelPopup.Content, $"Folder [{Name}]");
+            gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(EditorLevelManager.inst.OpenLevelPopup.Content, $"Folder [{Name}]");
             GameObject = gameObject;
 
             Button = gameObject.AddComponent<FolderButtonFunction>();
@@ -143,11 +166,23 @@ namespace BetterLegacy.Editor.Data.Elements
             HoverFocus.animatePos = false;
             HoverFocus.animateSca = true;
 
-            var folderButtonStorage = gameObject.GetComponent<SpriteFunctionButtonStorage>();
+            var folderButtonStorage = gameObject.GetComponent<FunctionButtonStorage>();
             Label = folderButtonStorage.label;
             Label.enabled = true;
+            labelRect.AssignToRectTransform(Label.rectTransform);
             folderButtonStorage.button.onClick.ClearAll();
-            IconImage = folderButtonStorage.image;
+
+            var iconBase = Creator.NewUIObject("icon base", gameObject.transform);
+            var iconBaseImage = iconBase.AddComponent<Image>();
+            iconBase.AddComponent<Mask>().showMaskGraphic = false;
+            iconRect.AssignToRectTransform(iconBaseImage.rectTransform);
+            EditorThemeManager.ApplyGraphic(iconBaseImage, ThemeGroup.Null, true);
+
+            var icon = Creator.NewUIObject("icon", iconBase.transform);
+            RectValues.FullAnchored.AssignToRectTransform(icon.transform.AsRT());
+            var iconImage = icon.AddComponent<Image>();
+            iconImage.sprite = EditorSprites.OpenSprite;
+            IconImage = iconImage;
 
             EditorThemeManager.ApplySelectable(folderButtonStorage.button, ThemeGroup.List_Button_1);
             EditorThemeManager.ApplyLightText(folderButtonStorage.label);
@@ -178,6 +213,7 @@ namespace BetterLegacy.Editor.Data.Elements
             var folderButtonStorage = gameObject.GetComponent<FunctionButtonStorage>();
             Label = folderButtonStorage.label;
             Label.enabled = true;
+            labelRect.AssignToRectTransform(Label.rectTransform);
             folderButtonStorage.button.onClick.ClearAll();
             Button = folderButtonFunction;
             EditorThemeManager.ApplySelectable(folderButtonStorage.button, ThemeGroup.List_Button_1);
@@ -186,13 +222,11 @@ namespace BetterLegacy.Editor.Data.Elements
             var iconBase = Creator.NewUIObject("icon base", gameObject.transform);
             var iconBaseImage = iconBase.AddComponent<Image>();
             iconBase.AddComponent<Mask>().showMaskGraphic = false;
-            iconBase.transform.AsRT().anchoredPosition = EditorConfig.Instance.OpenLevelCoverPosition.Value;
-            iconBase.transform.AsRT().sizeDelta = EditorConfig.Instance.OpenLevelCoverScale.Value;
+            iconRect.AssignToRectTransform(iconBaseImage.rectTransform);
             EditorThemeManager.ApplyGraphic(iconBaseImage, ThemeGroup.Null, true);
 
             var icon = Creator.NewUIObject("icon", iconBase.transform);
-            icon.transform.AsRT().anchoredPosition = Vector3.zero;
-            icon.transform.AsRT().sizeDelta = EditorConfig.Instance.OpenLevelCoverScale.Value;
+            RectValues.FullAnchored.AssignToRectTransform(icon.transform.AsRT());
 
             var iconImage = icon.AddComponent<Image>();
             iconImage.sprite = Item.icon;
@@ -239,6 +273,7 @@ namespace BetterLegacy.Editor.Data.Elements
             var folderButtonStorage = gameObject.GetComponent<FunctionButtonStorage>();
             Label = folderButtonStorage.label;
             Label.enabled = true;
+            labelRect.AssignToRectTransform(Label.rectTransform);
             folderButtonStorage.button.onClick.ClearAll();
             Button = folderButtonFunction;
             EditorThemeManager.ApplySelectable(folderButtonStorage.button, ThemeGroup.List_Button_1);
@@ -247,14 +282,11 @@ namespace BetterLegacy.Editor.Data.Elements
             var iconBase = Creator.NewUIObject("icon base", gameObject.transform);
             var iconBaseImage = iconBase.AddComponent<Image>();
             iconBase.AddComponent<Mask>().showMaskGraphic = false;
-            iconBase.transform.AsRT().anchoredPosition = EditorConfig.Instance.OpenLevelCoverPosition.Value;
-            iconBase.transform.AsRT().sizeDelta = EditorConfig.Instance.OpenLevelCoverScale.Value;
+            iconRect.AssignToRectTransform(iconBaseImage.rectTransform);
             EditorThemeManager.ApplyGraphic(iconBaseImage, ThemeGroup.Null, true);
 
             var icon = Creator.NewUIObject("icon", iconBase.transform);
-            icon.transform.AsRT().anchoredPosition = Vector3.zero;
-            icon.transform.AsRT().sizeDelta = EditorConfig.Instance.OpenLevelCoverScale.Value;
-
+            RectValues.FullAnchored.AssignToRectTransform(icon.transform.AsRT());
             var iconImage = icon.AddComponent<Image>();
             iconImage.sprite = Info?.level?.icon ?? LegacyPlugin.AtanPlaceholder;
             IconImage = iconImage;
@@ -326,9 +358,9 @@ namespace BetterLegacy.Editor.Data.Elements
         {
             Label.text = text;
 
-            Label.horizontalOverflow = EditorConfig.Instance.OpenLevelTextHorizontalWrap.Value;
-            Label.verticalOverflow = EditorConfig.Instance.OpenLevelTextVerticalWrap.Value;
-            Label.fontSize = EditorConfig.Instance.OpenLevelTextFontSize.Value;
+            Label.horizontalOverflow = labelHorizontalWrap;
+            Label.verticalOverflow = labelVerticalWrap;
+            Label.fontSize = labelFontSize;
         }
 
         public override void RenderTooltip()
@@ -384,7 +416,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         EditorContextMenu.inst.ShowContextMenu(
                             new ButtonFunction("Open folder", () =>
                             {
-                                RTEditor.inst.editorPathField.text = path.Replace(RTEditor.inst.BeatmapsPath + "/", "");
+                                EditorLevelManager.inst.OpenLevelPopup.PathField.text = path.Replace(RTEditor.inst.BeatmapsPath + "/", string.Empty);
                                 RTEditor.inst.UpdateEditorPath(false);
                             }, "Level Panel Open Folder"),
                             new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.EditorPath), EndFolderCreation), "Level Panel Create Folder"),
@@ -512,7 +544,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         return;
                     }
 
-                    RTEditor.inst.editorPathField.text = path.Replace(RTEditor.inst.BeatmapsPath + "/", string.Empty);
+                    EditorLevelManager.inst.OpenLevelPopup.PathField.text = path.Replace(RTEditor.inst.BeatmapsPath + "/", string.Empty);
                     RTEditor.inst.UpdateEditorPath(false);
                 };
                 return;
@@ -582,10 +614,21 @@ namespace BetterLegacy.Editor.Data.Elements
                             new ButtonFunction(true),
                             new ButtonFunction("Rename", () => RTEditor.inst.ShowNameEditor("Level Renamer", "Level name", "Rename", () =>
                             {
+                                var currentPath = Item.path;
+
                                 var destination = RTFile.ReplaceSlash(Item.path.Replace(Item.FolderName, RTFile.ValidateDirectory(RTEditor.inst.folderCreatorName.text)));
                                 RTFile.MoveDirectory(Item.path, destination);
                                 Item.metadata.beatmap.name = RTEditor.inst.folderCreatorName.text;
                                 RTFile.WriteToFile(RTFile.CombinePaths(destination, Level.METADATA_LSB), Item.metadata.ToJSON().ToString());
+
+                                if (currentPath == EditorLevelManager.inst.CurrentLevel.path)
+                                {
+                                    RTEditor.inst.SetCurrentPath(destination);
+                                    // set new path in case the current level is a separate instance.
+                                    EditorLevelManager.inst.CurrentLevel.path = destination;
+                                }
+
+                                Item.path = destination;
 
                                 EditorLevelManager.inst.LoadLevels();
                                 RTEditor.inst.HideNameEditor();

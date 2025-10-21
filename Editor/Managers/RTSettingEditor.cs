@@ -120,6 +120,7 @@ namespace BetterLegacy.Editor.Managers
                     EditorTimeline.inst.SetTimelineGridSize();
                 }
             });
+            input.onEndEdit.NewListener(_val => RenderDialog());
         }
 
         void SetBPMOffsetSlider(Slider slider, InputField input)
@@ -152,6 +153,7 @@ namespace BetterLegacy.Editor.Managers
                     EditorTimeline.inst.SetTimelineGridSize();
                 }
             });
+            input.onEndEdit.NewListener(_val => RenderDialog());
         }
 
         void SetBPMTimingSlider(Slider slider, InputField input)
@@ -184,6 +186,7 @@ namespace BetterLegacy.Editor.Managers
                     EditorTimeline.inst.SetTimelineGridSize();
                 }
             });
+            input.onEndEdit.NewListener(_val => RenderDialog());
         }
 
         public void OpenDialog()

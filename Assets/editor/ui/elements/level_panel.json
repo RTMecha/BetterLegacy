@@ -1,0 +1,30 @@
+﻿{
+  "label": {
+    "rect": {
+      "anc_pos": [ 32, 0 ],
+      "anc_max": [ 1, 1 ],
+      "anc_min": [ 0, 0 ],
+      "pivot": [ 0.5, 0.5 ],
+      "size": [ -12, -8 ]
+    },
+    "format": "/{0} : {1} by {2}",
+    "horizontal_wrap": 0, // Wrap
+    "vertical_wrap": 0, // Truncate
+    "font_size": 20,
+    "folder_name_max": 14,
+    "song_title_max": 22,
+    "artist_name_max": 16,
+    "creator_name_max": 16,
+    "description_max": 16,
+    "date_max": 16
+  },
+  "icon": {
+    "rect": {
+      "anc_pos": [ -276, 0 ],
+      "anc_max": [ 0.5, 0.5 ],
+      "anc_min": [ 0.5, 0.5 ],
+      "pivot": [ 0.5, 0.5 ],
+      "size": [ 26, 26 ]
+    }
+  }
+}
