@@ -44,16 +44,6 @@ namespace BetterLegacy.Core.Helpers
             obj.complexity = complexity;
             obj.onlySpecificComplexity = complexity == Complexity.Simple || onlySpecificComplexity;
             obj.UpdateActiveState();
-
-            //if (complexity == Complexity.Simple || onlySpecificComplexity)
-            //{
-            //    CoreHelper.SetGameObjectActive(gameObject, complexity == EditorConfig.Instance.EditorComplexity.Value);
-            //    EditorConfig.UpdateEditorComplexity += () => CoreHelper.SetGameObjectActive(gameObject, complexity == EditorConfig.Instance.EditorComplexity.Value);
-            //    return;
-            //}
-
-            //CoreHelper.SetGameObjectActive(gameObject, complexity <= EditorConfig.Instance.EditorComplexity.Value);
-            //EditorConfig.UpdateEditorComplexity += () => CoreHelper.SetGameObjectActive(gameObject, complexity <= EditorConfig.Instance.EditorComplexity.Value);
         }
 
         public static void SetComplexity(GameObject gameObject, string path, Complexity defaultComplexity, bool defaultOnlySpecificComplexity = false)
