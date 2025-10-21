@@ -819,55 +819,7 @@ namespace BetterLegacy.Editor.Managers
             });
         }
 
-        public void RenderPrefabObjectLayer(PrefabObject prefabObject)
-        {
-            PrefabObjectEditor.EditorLayerField.image.color = EditorTimeline.GetLayerColor(prefabObject.editorData.Layer);
-            PrefabObjectEditor.EditorLayerField.SetTextWithoutNotify((prefabObject.editorData.Layer + 1).ToString());
-            PrefabObjectEditor.EditorLayerField.onValueChanged.NewListener(_val =>
-            {
-                if (int.TryParse(_val, out int n))
-                {
-                    n = n - 1;
-                    if (n < 0)
-                        n = 0;
-
-                    prefabObject.editorData.Layer = EditorTimeline.GetLayer(n);
-                    EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(prefabObject));
-                    RenderPrefabObjectLayer(prefabObject);
-                }
-                else
-                    EditorManager.inst.DisplayNotification("Text is not correct format!", 1f, EditorManager.NotificationType.Error);
-            });
-
-            TriggerHelper.AddEventTriggers(PrefabObjectEditor.EditorLayerField.gameObject, TriggerHelper.ScrollDeltaInt(PrefabObjectEditor.EditorLayerField, min: 1, max: int.MaxValue));
-
-            var editorLayerContextMenu = PrefabObjectEditor.EditorLayerField.gameObject.GetOrAddComponent<ContextClickable>();
-            editorLayerContextMenu.onClick = eventData =>
-            {
-                if (eventData.button != PointerEventData.InputButton.Right)
-                    return;
-
-                EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction("Go to Editor Layer", () => EditorTimeline.inst.SetLayer(prefabObject.editorData.Layer, EditorTimeline.LayerType.Objects))
-                    );
-            };
-
-            if (PrefabObjectEditor.EditorLayerToggles == null)
-                return;
-
-            for (int i = 0; i < PrefabObjectEditor.EditorLayerToggles.Length; i++)
-            {
-                var index = i;
-                var toggle = PrefabObjectEditor.EditorLayerToggles[i];
-                toggle.SetIsOnWithoutNotify(index == prefabObject.editorData.Layer);
-                toggle.onValueChanged.NewListener(_val =>
-                {
-                    prefabObject.editorData.Layer = index;
-                    EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(prefabObject));
-                    RenderPrefabObjectLayer(prefabObject);
-                });
-            }
-        }
+        public void RenderPrefabObjectLayer(PrefabObject prefabObject) => RTEditor.inst.RenderEditorLayer(prefabObject, PrefabObjectEditor);
 
         public void RenderPrefabObjectBin(PrefabObject prefabObject)
         {

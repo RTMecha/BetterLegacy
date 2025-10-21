@@ -29,7 +29,7 @@ using ObjectType = BetterLegacy.Core.Data.Beatmap.BeatmapObject.ObjectType;
 
 namespace BetterLegacy.Editor.Managers
 {
-    public class EditorTimeline : MonoBehaviour
+    public class EditorTimeline : MonoBehaviour, IEditorLayerUI
     {
         #region Init
 
@@ -1464,6 +1464,10 @@ namespace BetterLegacy.Editor.Managers
 
         #region Layers
 
+        public InputField EditorLayerField { get; set; }
+        public RectTransform EditorLayerTogglesParent { get; set; }
+        public Toggle[] EditorLayerToggles { get; set; }
+
         /// <summary>
         /// The current editor layer.
         /// </summary>
@@ -1531,27 +1535,12 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="layerType">Layer type to render.</param>
         public void RenderLayerInput(int layer, LayerType layerType)
         {
-            var color = GetLayerColor(layer, layerType);
-            timelineOverlayImage.color = color;
-            RTEditor.inst.editorLayerImage.color = color;
+            timelineOverlayImage.color = GetLayerColor(layer, layerType);
 
-            RTEditor.inst.editorLayerField.SetTextWithoutNotify(GetLayerString(layer));
-            RTEditor.inst.editorLayerField.onValueChanged.NewListener(_val =>
-            {
-                if (int.TryParse(_val, out int num))
-                    SetLayer(Mathf.Clamp(num - 1, 0, int.MaxValue));
-            });
-
-            if (RTEditor.inst.editorLayerToggles != null)
-            {
-                for (int i = 0; i < RTEditor.inst.editorLayerToggles.Length; i++)
-                {
-                    var toggle = RTEditor.inst.editorLayerToggles[i];
-                    var index = i;
-                    toggle.SetIsOnWithoutNotify(index == layer);
-                    toggle.onValueChanged.NewListener(_val => SetLayer(index));
-                }
-            }
+            RTEditor.inst.RenderEditorLayer(
+                editorLayerUI: this,
+                getLayer: () => layer,
+                setLayer: _val => SetLayer(_val));
 
             RTEditor.inst.eventLayerToggle.SetIsOnWithoutNotify(layerType == LayerType.Events);
             RTEditor.inst.eventLayerToggle.onValueChanged.NewListener(_val => SetLayer(_val ? LayerType.Events : LayerType.Objects));

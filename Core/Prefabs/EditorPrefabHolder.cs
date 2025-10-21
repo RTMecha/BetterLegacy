@@ -34,6 +34,7 @@ namespace BetterLegacy.Core.Prefabs
         public GameObject Labels { get; set; }
         public GameObject ScrollView { get; set; }
 
+        public GameObject EditorLayerToggle { get; set; }
         public GameObject CollapseToggle { get; set; }
         public GameObject CloseButton { get; set; }
         public GameObject ColorsLayout { get; set; }

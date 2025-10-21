@@ -26,7 +26,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
     /// <summary>
     /// Represents the object editor dialog for editing a <see cref="Core.Data.Beatmap.BeatmapObject"/>.
     /// </summary>
-    public class ObjectEditorDialog : EditorDialog, ITagDialog, IParentDialog, IAnimationDialog
+    public class ObjectEditorDialog : EditorDialog, ITagDialog, IParentDialog, IAnimationDialog, IEditorLayerUI
     {
         public ObjectEditorDialog() : base(OBJECT_EDITOR) { }
 
@@ -124,8 +124,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public RectTransform EditorSettingsParent { get; set; }
         public InputField EditorLayerField { get; set; }
-        public Slider BinSlider { get; set; }
+        public RectTransform EditorLayerTogglesParent { get; set; }
         public Toggle[] EditorLayerToggles { get; set; }
+        public Slider BinSlider { get; set; }
 
         public InputFieldStorage EditorIndexField { get; set; }
 
@@ -1781,6 +1782,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             #region Editor Settings
 
             EditorSettingsParent = Content.Find("editor").AsRT();
+            EditorSettingsParent.GetComponent<HorizontalLayoutGroup>().childControlWidth = true;
 
             var editorSettingsIndex = EditorSettingsParent.GetSiblingIndex() + 1;
             var editorIndexLabel = EditorPrefabHolder.Instance.Labels.Duplicate(Content, "indexer_label", editorSettingsIndex);
@@ -1798,28 +1800,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
             EditorLayerField = EditorSettingsParent.Find("layers").GetComponent<InputField>();
             EditorLayerField.image = EditorLayerField.GetComponent<Image>();
             BinSlider = EditorSettingsParent.Find("bin").GetComponent<Slider>();
-            EditorLayerToggles = EditorSettingsParent.Find("layer").GetComponentsInChildren<Toggle>();
-            CoreHelper.Destroy(EditorSettingsParent.Find("layer").GetComponent<ToggleGroup>());
-            int layerNum = 0;
-            foreach (var toggle in EditorLayerToggles)
-            {
-                toggle.group = null;
-                CoreHelper.Destroy(toggle.GetComponent<EventTrigger>());
-                EditorThemeManager.AddGraphic(toggle.image, layerNum switch
-                {
-                    0 => ThemeGroup.Layer_1,
-                    1 => ThemeGroup.Layer_2,
-                    2 => ThemeGroup.Layer_3,
-                    3 => ThemeGroup.Layer_4,
-                    4 => ThemeGroup.Layer_5,
-                    _ => ThemeGroup.Null,
-                });
-                EditorThemeManager.AddGraphic(toggle.graphic, ThemeGroup.Timeline_Bar);
-                toggle.gameObject.AddComponent<ContrastColors>().Init(toggle.transform.Find("Background/Text").GetComponent<Text>(), toggle.image);
-                layerNum++;
-            }
+            EditorLayerTogglesParent = EditorSettingsParent.Find("layer").AsRT();
+            EditorLayerToggles = EditorLayerTogglesParent.GetComponentsInChildren<Toggle>();
+            CoreHelper.Destroy(EditorLayerTogglesParent.GetComponent<ToggleGroup>());
+            RTEditor.inst.SetupEditorLayers(this);
 
-            EditorHelper.SetComplexity(EditorSettingsParent.Find("layer").gameObject, "editor_layer_toggles", Complexity.Simple);
+            EditorHelper.SetComplexity(EditorLayerTogglesParent.gameObject, "editor_layer_toggles", Complexity.Simple);
             EditorHelper.SetComplexity(EditorLayerField.gameObject, "editor_layer_field", Complexity.Normal);
 
             var baseColorParent = EditorPrefabHolder.Instance.Labels.Duplicate(Content, "base color", editorSettingsIndex + 2);

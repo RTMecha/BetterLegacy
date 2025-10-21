@@ -749,6 +749,10 @@ namespace BetterLegacy.Editor.Managers
 
                 prefabHolder.ColorsLayout = ObjEditor.inst.KeyframeDialogs[3].transform.Find("color").gameObject.Duplicate(prefabHolder.PrefabParent, "color");
                 prefabHolder.Slider = ObjEditor.inst.ObjectView.transform.Find("depth/depth").gameObject.Duplicate(prefabHolder.PrefabParent, "Slider");
+
+                prefabHolder.EditorLayerToggle = ObjEditor.inst.ObjectView.transform.Find("editor/layer").GetChild(0).gameObject.Duplicate(prefabHolder.PrefabParent, "editor layer");
+                prefabHolder.EditorLayerToggle.GetComponent<Toggle>().group = null;
+                CoreHelper.Destroy(prefabHolder.EditorLayerToggle.GetComponent<EventTrigger>(), true);
             }
 
             if (PrefabEditor.inst)
@@ -901,6 +905,16 @@ namespace BetterLegacy.Editor.Managers
                 PrefabPanel.externalTypeLabelFontSize = jn["type_label"]["font_size"] != null ? jn["type_label"]["font_size"].AsInt : 20;
 
                 PrefabPanel.externalDeleteRect = RectValues.TryParse(jn["delete"]["rect"], new RectValues(new Vector2(467f, -16f), new Vector2(0f, 1f), new Vector2(0f, 1f), RectValues.CenterPivot, new Vector2(32f, 32f)));
+            }
+            if (AssetPack.TryReadFromFile("editor/data/editor_layers.json", out string editorLayersFile))
+            {
+                var jn = JSON.Parse(editorLayersFile);
+                EditorLayers.Clear();
+                for (int i = 0; i < jn["layers"].Count; i++)
+                {
+                    var jnLayer = jn["layers"][i];
+                    EditorLayers.Add(new EditorLayer(jnLayer["layer"], Parser.TryParse(jnLayer["theme_group"], ThemeGroup.Null), jnLayer["color"]));
+                }
             }
 
             SetupNotificationValues();
@@ -1502,21 +1516,6 @@ namespace BetterLegacy.Editor.Managers
         public InputField pitchField;
 
         /// <summary>
-        /// The modded editor layer field.
-        /// </summary>
-        public InputField editorLayerField;
-
-        /// <summary>
-        /// The modded editor layer fields' image.
-        /// </summary>
-        public Image editorLayerImage;
-
-        /// <summary>
-        /// The vanilla editor layer toggles.
-        /// </summary>
-        public Toggle[] editorLayerToggles;
-
-        /// <summary>
         /// The event layer toggle. If on, renders <see cref="LayerType.Events"/>, otherwise renders <see cref="LayerType.Objects"/>.
         /// </summary>
         public Toggle eventLayerToggle;
@@ -1571,6 +1570,28 @@ namespace BetterLegacy.Editor.Managers
         public int MaxScreenshots => CurrentScreenshotPage * screenshotsPerPage;
 
         public int screenshotCount;
+
+        #endregion
+
+        #region Editor Layer
+
+        public List<EditorLayer> EditorLayers { get; set; } = new List<EditorLayer>();
+
+        public class EditorLayer : Exists
+        {
+            public EditorLayer() { }
+
+            public EditorLayer(int layer, ThemeGroup themeGroup, string color)
+            {
+                this.layer = layer;
+                this.themeGroup = themeGroup;
+                this.color = color;
+            }
+
+            public int layer;
+            public ThemeGroup themeGroup;
+            public string color;
+        }
 
         #endregion
 
@@ -2974,6 +2995,29 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
+        public void SetupEditorLayers(IEditorLayerUI editorLayerUI, float size = 30.5f)
+        {
+            CoreHelper.DestroyChildren(editorLayerUI.EditorLayerTogglesParent);
+            editorLayerUI.EditorLayerToggles = new Toggle[EditorLayers.Count];
+            for (int i = 0; i < EditorLayers.Count; i++)
+            {
+                var editorLayer = EditorLayers[i];
+                var gameObject = EditorPrefabHolder.Instance.EditorLayerToggle.Duplicate(editorLayerUI.EditorLayerTogglesParent, (i + 1).ToString());
+                gameObject.GetOrAddComponent<LayoutElement>().minWidth = size;
+                var toggle = gameObject.GetComponent<Toggle>();
+                editorLayerUI.EditorLayerToggles[i] = toggle;
+                if (!string.IsNullOrEmpty(editorLayer.color))
+                    toggle.image.color = RTColors.HexToColor(editorLayer.color);
+                else
+                    EditorThemeManager.AddGraphic(toggle.image, editorLayer.themeGroup);
+                EditorThemeManager.AddGraphic(toggle.graphic, ThemeGroup.Timeline_Bar);
+
+                var label = toggle.transform.Find("Background/Text").GetComponent<Text>();
+                label.text = (i + 1).ToString();
+                toggle.gameObject.AddComponent<ContrastColors>().Init(label, toggle.image);
+            }
+        }
+
         /// <summary>
         /// Sets up an easing dropdown.
         /// </summary>
@@ -3022,31 +3066,14 @@ namespace BetterLegacy.Editor.Managers
                 EditorManager.inst.markerTimeline.SetActive(EditorConfig.Instance.ShowMarkers.Value);
 
             var layers = Creator.NewUIObject("layer toggles", timelineBar.transform, 7);
+            EditorTimeline.inst.EditorLayerTogglesParent = layers.transform.AsRT();
             var layersLayout = layers.AddComponent<HorizontalLayoutGroup>();
             layersLayout.childControlWidth = true;
             layersLayout.spacing = 8f;
 
             for (int i = 1; i <= 5; i++)
-                timelineBar.transform.Find(i.ToString()).SetParent(layers.transform);
-            editorLayerToggles = layers.GetComponentsInChildren<Toggle>();
-            int layerNum = 0;
-            foreach (var toggle in editorLayerToggles)
-            {
-                toggle.group = null;
-                CoreHelper.Destroy(toggle.GetComponent<EventTrigger>());
-                EditorThemeManager.AddGraphic(toggle.image, layerNum switch
-                {
-                    0 => ThemeGroup.Layer_1,
-                    1 => ThemeGroup.Layer_2,
-                    2 => ThemeGroup.Layer_3,
-                    3 => ThemeGroup.Layer_4,
-                    4 => ThemeGroup.Layer_5,
-                    _ => ThemeGroup.Null,
-                });
-                EditorThemeManager.AddGraphic(toggle.graphic, ThemeGroup.Timeline_Bar);
-                toggle.gameObject.AddComponent<ContrastColors>().Init(toggle.transform.Find("Background/Text").GetComponent<Text>(), toggle.image);
-                layerNum++;
-            }
+                timelineBar.transform.Find(i.ToString()).SetParent(null);
+            SetupEditorLayers(EditorTimeline.inst, 34f);
             EditorHelper.SetComplexity(layers, "editor_layer_toggles", Complexity.Simple);
 
             eventLayerToggle = timelineBar.transform.Find("6").GetComponent<Toggle>();
@@ -3085,33 +3112,31 @@ namespace BetterLegacy.Editor.Managers
 
             TooltipHelper.AssignTooltip(layersObj, "Editor Layer", 3f);
 
-            editorLayerField = layersObj.GetComponent<InputField>();
-            editorLayerField.textComponent.alignment = TextAnchor.MiddleCenter;
+            EditorTimeline.inst.EditorLayerField = layersObj.GetComponent<InputField>();
+            EditorTimeline.inst.EditorLayerField.textComponent.alignment = TextAnchor.MiddleCenter;
 
-            editorLayerField.text = EditorTimeline.GetLayerString(EditorManager.inst.layer);
+            EditorTimeline.inst.EditorLayerField.text = EditorTimeline.GetLayerString(EditorManager.inst.layer);
 
-            editorLayerImage = editorLayerField.image;
+            layersObj.AddComponent<ContrastColors>().Init(EditorTimeline.inst.EditorLayerField.textComponent, EditorTimeline.inst.EditorLayerField.image);
 
-            layersObj.AddComponent<ContrastColors>().Init(editorLayerField.textComponent, editorLayerImage);
-
-            editorLayerField.textComponent.alignment = TextAnchor.MiddleCenter;
-            editorLayerField.textComponent.fontSize = 16;
-            editorLayerField.characterValidation = InputField.CharacterValidation.None;
-            editorLayerField.contentType = InputField.ContentType.Standard;
-            editorLayerField.GetPlaceholderText().text = "Set layer...";
-            editorLayerField.GetPlaceholderText().alignment = TextAnchor.MiddleLeft;
-            editorLayerField.GetPlaceholderText().fontSize = 16;
-            editorLayerField.GetPlaceholderText().horizontalOverflow = HorizontalWrapMode.Overflow;
-            editorLayerField.onValueChanged.NewListener(_val =>
+            EditorTimeline.inst.EditorLayerField.textComponent.alignment = TextAnchor.MiddleCenter;
+            EditorTimeline.inst.EditorLayerField.textComponent.fontSize = 16;
+            EditorTimeline.inst.EditorLayerField.characterValidation = InputField.CharacterValidation.None;
+            EditorTimeline.inst.EditorLayerField.contentType = InputField.ContentType.Standard;
+            EditorTimeline.inst.EditorLayerField.GetPlaceholderText().text = "Set layer...";
+            EditorTimeline.inst.EditorLayerField.GetPlaceholderText().alignment = TextAnchor.MiddleLeft;
+            EditorTimeline.inst.EditorLayerField.GetPlaceholderText().fontSize = 16;
+            EditorTimeline.inst.EditorLayerField.GetPlaceholderText().horizontalOverflow = HorizontalWrapMode.Overflow;
+            EditorTimeline.inst.EditorLayerField.onValueChanged.NewListener(_val =>
             {
                 if (int.TryParse(_val, out int num))
                     EditorTimeline.inst.SetLayer(Mathf.Clamp(num - 1, 0, int.MaxValue));
             });
 
-            editorLayerImage.color = EditorTimeline.GetLayerColor(EditorManager.inst.layer);
+            EditorTimeline.inst.EditorLayerField.image.color = EditorTimeline.GetLayerColor(EditorManager.inst.layer);
 
             TriggerHelper.AddEventTriggers(layersObj,
-                TriggerHelper.ScrollDeltaInt(editorLayerField, 1, 1, int.MaxValue), TriggerHelper.CreateEntry(EventTriggerType.PointerDown, eventData =>
+                TriggerHelper.ScrollDeltaInt(EditorTimeline.inst.EditorLayerField, 1, 1, int.MaxValue), TriggerHelper.CreateEntry(EventTriggerType.PointerDown, eventData =>
                 {
                     if (((PointerEventData)eventData).button == PointerEventData.InputButton.Middle)
                         CoreHelper.ListObjectLayers();
@@ -3175,7 +3200,7 @@ namespace BetterLegacy.Editor.Managers
             EditorThemeManager.AddSelectable(rightPitchButton, ThemeGroup.Function_2, false);
 
             // Leave this group empty since the color is already handled via the custom layer colors. This is only here for the rounded corners.
-            EditorThemeManager.AddGraphic(editorLayerField.image, ThemeGroup.Null, true);
+            EditorThemeManager.AddGraphic(EditorTimeline.inst.EditorLayerField.image, ThemeGroup.Null, true);
             EditorThemeManager.AddGraphic(eventLayerToggle.image, ThemeGroup.Event_Check, true);
             EditorThemeManager.AddGraphic(eventLayerToggle.transform.Find("Background/Text").GetComponent<Text>(), ThemeGroup.Event_Check_Text);
 
@@ -5535,6 +5560,69 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
+        public void RenderEditorLayer(IEditable editable, IEditorLayerUI editorLayerUI)
+        {
+            RenderEditorLayer(
+                editorLayerUI: editorLayerUI,
+                getLayer: () => editable.EditorData.Layer,
+                setLayer: _val =>
+                {
+                    editable.EditorData.Layer = _val;
+                    EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(editable));
+                    RenderEditorLayer(editable, editorLayerUI);
+                });
+            var editorLayerContextMenu = editorLayerUI.EditorLayerField.gameObject.GetOrAddComponent<ContextClickable>();
+            editorLayerContextMenu.onClick = eventData =>
+            {
+                if (eventData.button != PointerEventData.InputButton.Right)
+                    return;
+
+                EditorContextMenu.inst.ShowContextMenu(
+                    new ButtonFunction("Go to Editor Layer", () => EditorTimeline.inst.SetLayer(editable.EditorData.Layer, EditorTimeline.LayerType.Objects))
+                    );
+            };
+        }
+
+        public void RenderEditorLayer(IEditorLayerUI editorLayerUI, Func<int> getLayer, Action<int> setLayer)
+        {
+            var layer = getLayer?.Invoke() ?? 0;
+            editorLayerUI.EditorLayerField.image.color = EditorTimeline.GetLayerColor(layer);
+            editorLayerUI.EditorLayerField.SetTextWithoutNotify((layer + 1).ToString());
+            editorLayerUI.EditorLayerField.onValueChanged.NewListener(_val =>
+            {
+                if (int.TryParse(_val, out int num))
+                {
+                    num = Mathf.Clamp(num - 1, 0, int.MaxValue);
+                    setLayer?.Invoke(num);
+                }
+            });
+
+            if (editorLayerUI.EditorLayerField.gameObject)
+                TriggerHelper.AddEventTriggers(editorLayerUI.EditorLayerField.gameObject, TriggerHelper.ScrollDeltaInt(editorLayerUI.EditorLayerField, 1, 1, int.MaxValue));
+
+            if (editorLayerUI.EditorLayerToggles == null)
+                return;
+
+            for (int i = 0; i < editorLayerUI.EditorLayerToggles.Length; i++)
+            {
+                var index = EditorLayers.TryGetAt(i, out EditorLayer editorLayer) ? editorLayer.layer : 0;
+                var toggle = editorLayerUI.EditorLayerToggles[i];
+                toggle.SetIsOnWithoutNotify(index == layer);
+                toggle.onValueChanged.NewListener(_val => setLayer?.Invoke(index));
+
+                TriggerHelper.AddEventTriggers(toggle.gameObject,
+                    TriggerHelper.CreateEntry(EventTriggerType.Scroll, eventData =>
+                    {
+                        var layer = getLayer?.Invoke() ?? 0;
+                        var pointerEventData = (PointerEventData)eventData;
+                        if (pointerEventData.scrollDelta.y > 0f)
+                            setLayer?.Invoke((int)RTMath.Clamp((long)layer + 1, 0, int.MaxValue));
+                        if (pointerEventData.scrollDelta.y < 0f)
+                            setLayer?.Invoke(RTMath.Clamp(layer - 1, 0, int.MaxValue));
+                    }));
+            }
+        }
+
         public void ShowFontSelector(Action<string> onFontSelected)
         {
             FontSelectorPopup.Open();
@@ -6070,6 +6158,8 @@ namespace BetterLegacy.Editor.Managers
         public string GetEaseName(int index) => EasingOptions.TryFind(x => x.index == index, out EasingOption easingOption) ? easingOption.name : "Linear";
 
         public Easing GetEasing(int index) => EasingOptions.TryGetAt(index, out EasingOption easingOption) ? (Easing)easingOption.index : Easing.Linear;
+
+        public int GetEditorLayer(int index) => EditorLayers.TryGetAt(index, out EditorLayer editorLayer) ? editorLayer.layer : 0;
 
         public void ConvertVGToLS()
         {

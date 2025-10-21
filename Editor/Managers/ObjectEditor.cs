@@ -2477,51 +2477,7 @@ namespace BetterLegacy.Editor.Managers
         /// Renders the Layers InputField.
         /// </summary>
         /// <param name="beatmapObject">The BeatmapObject to set.</param>
-        public void RenderLayers(BeatmapObject beatmapObject)
-        {
-            Dialog.EditorLayerField.image.color = EditorTimeline.GetLayerColor(beatmapObject.editorData.Layer);
-            Dialog.EditorLayerField.SetTextWithoutNotify((beatmapObject.editorData.Layer + 1).ToString());
-            Dialog.EditorLayerField.onValueChanged.NewListener(_val =>
-            {
-                if (int.TryParse(_val, out int num))
-                {
-                    num = Mathf.Clamp(num - 1, 0, int.MaxValue);
-                    beatmapObject.editorData.Layer = num;
-                    EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
-                    RenderLayers(beatmapObject);
-                }
-            });
-
-            if (Dialog.EditorLayerField.gameObject)
-                TriggerHelper.AddEventTriggers(Dialog.EditorLayerField.gameObject, TriggerHelper.ScrollDeltaInt(Dialog.EditorLayerField, 1, 1, int.MaxValue));
-
-            var editorLayerContextMenu = Dialog.EditorLayerField.gameObject.GetOrAddComponent<ContextClickable>();
-            editorLayerContextMenu.onClick = eventData =>
-            {
-                if (eventData.button != PointerEventData.InputButton.Right)
-                    return;
-
-                EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction("Go to Editor Layer", () => EditorTimeline.inst.SetLayer(beatmapObject.editorData.Layer, EditorTimeline.LayerType.Objects))
-                    );
-            };
-
-            if (Dialog.EditorLayerToggles == null)
-                return;
-
-            for (int i = 0; i < Dialog.EditorLayerToggles.Length; i++)
-            {
-                var index = i;
-                var toggle = Dialog.EditorLayerToggles[i];
-                toggle.SetIsOnWithoutNotify(index == beatmapObject.editorData.Layer);
-                toggle.onValueChanged.NewListener(_val =>
-                {
-                    beatmapObject.editorData.Layer = index;
-                    EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
-                    RenderLayers(beatmapObject);
-                });
-            }
-        }
+        public void RenderLayers(BeatmapObject beatmapObject) => RTEditor.inst.RenderEditorLayer(beatmapObject, Dialog);
 
         /// <summary>
         /// Renders the Bin Slider.

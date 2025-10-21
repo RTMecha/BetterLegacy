@@ -1,0 +1,24 @@
+﻿{
+  "layers": [
+    {
+      "layer": 0,
+      "theme_group": "Layer_1"
+    },
+    {
+      "layer": 1,
+      "theme_group": "Layer_2"
+    },
+    {
+      "layer": 2,
+      "theme_group": "Layer_3"
+    },
+    {
+      "layer": 3,
+      "theme_group": "Layer_4"
+    },
+    {
+      "layer": 4,
+      "theme_group": "Layer_5"
+    }
+  ]
+}
