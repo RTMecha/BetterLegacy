@@ -9,6 +9,8 @@ namespace BetterLegacy.Core.Helpers
 {
     public static class SpriteHelper
     {
+        public static Sprite BorderSprite { get; set; }
+
         public static List<List<Sprite>> RoundedSprites = new List<List<Sprite>>
         {
             new List<Sprite>(),
@@ -31,18 +33,22 @@ namespace BetterLegacy.Core.Helpers
 
                 for (int i = 0; i < allAssetNames.Length; i++)
                 {
-                    var name = allAssetNames[i].Replace(Path.GetDirectoryName(allAssetNames[i]).Replace("\\", "/") + "/", "");
+                    var name = allAssetNames[i].Remove(Path.GetDirectoryName(allAssetNames[i]).Replace("\\", "/") + "/");
 
                     var sprite = assetBundle.LoadAsset<Sprite>(name);
+
+                    if (name.Contains("border"))
+                    {
+                        BorderSprite = sprite;
+                        continue;
+                    }
 
                     var regex = new Regex("square_([1-5])_");
 
                     var match = regex.Match(name);
 
                     if (match.Success && int.TryParse(match.Groups[1].ToString(), out int num))
-                    {
                         RoundedSprites[num - 1].Add(sprite);
-                    }
                 }
             }
             catch (Exception ex)

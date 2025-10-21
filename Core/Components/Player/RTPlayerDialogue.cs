@@ -1,12 +1,14 @@
 ﻿using System.Collections.Generic;
 
 using UnityEngine;
+using UnityEngine.UI;
 
 using TMPro;
 
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Runtime;
 
 namespace BetterLegacy.Core.Components.Player
 {
@@ -37,27 +39,80 @@ namespace BetterLegacy.Core.Components.Player
             if (runtimePlayer.dialogue)
                 CoreHelper.Delete(runtimePlayer.dialogue);
 
-            var gameObject = Creator.NewGameObject("Dialogue", runtimePlayer.gameObject.transform);
-            runtimePlayer.dialogue = gameObject.AddComponent<RTPlayerDialogue>();
+            var canvas = UIManager.GenerateUICanvas("Dialogue Canvas", runtimePlayer.gameObject.transform);
+            canvas.SetWorldSpace(RTLevel.UI_LAYER, RTLevel.Cameras.FG);
+            canvas.GameObject.transform.localScale = Vector3.one;
+            runtimePlayer.dialogue = canvas.GameObject.AddComponent<RTPlayerDialogue>();
             runtimePlayer.dialogue.runtimePlayer = runtimePlayer;
+            runtimePlayer.dialogue.canvas = canvas;
+            runtimePlayer.dialogue.InternalInit();
         }
 
-        void Awake()
+        void InternalInit()
         {
-            // the object this component is on is treated as the parent.
-
-            canvas = UIManager.GenerateUICanvas("Dialogue Canvas", gameObject.transform);
+            baseObject = Creator.NewUIObject("Base", canvas.GameObject.transform);
 
             for (int i = 0; i < styles.Length; i++)
             {
                 var style = styles[i];
-                var box = Creator.NewUIObject($"Dialogue Box [{style}]", canvas.GameObject.transform);
+                var box = Creator.NewUIObject($"Dialogue Box [{style}]", baseObject.transform);
+                box.transform.AsRT().anchoredPosition = Vector2.zero;
+                box.transform.AsRT().anchorMax = new Vector2(0.5f, 0f);
+                box.transform.AsRT().anchorMin = new Vector2(0.5f, 0f);
+                box.transform.AsRT().pivot = new Vector2(0.5f, 0f);
+                box.transform.AsRT().sizeDelta = Vector2.zero;
+                var boxImage = box.AddComponent<Image>();
+                var verticalLayoutGroup = box.AddComponent<VerticalLayoutGroup>();
+                verticalLayoutGroup.childControlHeight = true;
+                verticalLayoutGroup.childControlWidth = true;
+                verticalLayoutGroup.childForceExpandHeight = false;
+                verticalLayoutGroup.childForceExpandWidth = false;
+                verticalLayoutGroup.childScaleHeight = false;
+                verticalLayoutGroup.childScaleWidth = false;
+
+                var contentSizeFitter = box.AddComponent<ContentSizeFitter>();
+                contentSizeFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+                contentSizeFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
                 var text = UIManager.GenerateTextMeshPro("Text", box.transform);
+                text.rectTransform.anchoredPosition = Vector2.zero;
+                text.rectTransform.anchorMax = new Vector2(0f, 1f);
+                text.rectTransform.anchorMin = new Vector2(0f, 1f);
+                text.rectTransform.pivot = RectValues.CenterPivot;
+                text.rectTransform.sizeDelta = Vector2.zero;
+
+                text.autoSizeTextContainer = true;
+                text.fontSize = 1.2f;
+                //text.fontSize = 20f;
+                text.alignment = TextAlignmentOptions.Center;
+                text.color = Color.white;
 
                 switch (style)
                 {
                     case PlayerDialogueStyle.Legacy: {
-                            // setup Legacy style...
+                            boxImage.color = new Color(0f, 0f, 0f, 1f);
+
+                            var border = Creator.NewUIObject("Border", boxImage.transform, 0);
+                            var layoutElement = border.AddComponent<LayoutElement>();
+                            layoutElement.ignoreLayout = true;
+                            RectValues.FullAnchored.AssignToRectTransform(border.transform.AsRT());
+                            var borderImage = border.AddComponent<Image>();
+                            borderImage.sprite = SpriteHelper.BorderSprite;
+                            borderImage.type = Image.Type.Tiled;
+                            borderImage.color = Color.white;
+                            break;
+                        }
+                    case PlayerDialogueStyle.Modern: {
+                            boxImage.color = new Color(0.0902f, 0.0902f, 0.098f, 0.8f);
+
+                            var border = Creator.NewUIObject("Border", boxImage.transform, 0);
+                            var layoutElement = border.AddComponent<LayoutElement>();
+                            layoutElement.ignoreLayout = true;
+                            RectValues.FullAnchored.AssignToRectTransform(border.transform.AsRT());
+                            var borderImage = border.AddComponent<Image>();
+                            borderImage.sprite = SpriteHelper.BorderSprite;
+                            borderImage.type = Image.Type.Tiled;
+                            borderImage.color = Color.white;
                             break;
                         }
                 }
@@ -72,6 +127,12 @@ namespace BetterLegacy.Core.Components.Player
             }
 
             canvas.GameObject.SetActive(false);
+        }
+
+        void Update()
+        {
+            if (runtimePlayer && runtimePlayer.rb && baseObject)
+                baseObject.transform.localPosition = runtimePlayer.rb.position + positionOffset;
         }
 
         #endregion
@@ -96,6 +157,9 @@ namespace BetterLegacy.Core.Components.Player
             set => boxStyles[(int)currentStyle] = value;
         }
 
+        /// <summary>
+        /// List of dialogue box styles.
+        /// </summary>
         public List<BoxStyle> boxStyles = new List<BoxStyle>();
 
         /// <summary>
@@ -103,11 +167,14 @@ namespace BetterLegacy.Core.Components.Player
         /// </summary>
         public PlayerDialogueStyle currentStyle;
 
+        public Vector2 positionOffset = new Vector2(0f, 2f);
+
         public RectValues boxRect = new RectValues(new Vector2(0f, 0f), RectValues.CenterPivot, RectValues.CenterPivot, RectValues.CenterPivot, new Vector2(100f, 100f));
         public RectValues textRect = new RectValues(new Vector2(0f, 0f), RectValues.CenterPivot, RectValues.CenterPivot, RectValues.CenterPivot, new Vector2(100f, 100f));
 
         UICanvas canvas;
         RTPlayer runtimePlayer;
+        GameObject baseObject;
 
         static readonly PlayerDialogueStyle[] styles = new PlayerDialogueStyle[]
         {
@@ -154,7 +221,7 @@ namespace BetterLegacy.Core.Components.Player
         /// <summary>
         /// Represents a dialogue box style.
         /// </summary>
-        public class BoxStyle
+        public class BoxStyle : Exists
         {
             /// <summary>
             /// Game object reference.
