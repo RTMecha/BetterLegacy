@@ -546,21 +546,21 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (string.IsNullOrEmpty(path))
                 return;
             
-            if (!path.EndsWith(FileFormat.Dot()))
-                path = path += FileFormat.Dot();
-
             var file = RTFile.ReadFromFile(path);
             if (string.IsNullOrEmpty(file))
                 return;
 
+            filePath = path;
             switch (RTFile.GetFileFormat(path))
             {
-                case FileFormat.LST:
-                    ReadJSON(JSON.Parse(file));
-                    break;
-                case FileFormat.VGT:
-                    ReadJSONVG(JSON.Parse(file));
-                    break;
+                case FileFormat.LST: {
+                        ReadJSON(JSON.Parse(file));
+                        break;
+                    }
+                case FileFormat.VGT: {
+                        ReadJSONVG(JSON.Parse(file));
+                        break;
+                    }
             }
         }
 

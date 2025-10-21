@@ -23,7 +23,7 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// <summary>
     /// Represents a Project Arrhythmia level.
     /// </summary>
-    public class GameData : PAObject<GameData>, IModifyable, IModifierReference, IBeatmap
+    public class GameData : PAObject<GameData>, IModifyable, IModifierReference, IBeatmap, IFile
     {
         public GameData() { }
 
@@ -1658,6 +1658,50 @@ namespace BetterLegacy.Core.Data.Beatmap
                         jn["events"][EventTypes[i]][j] = events[i][j].ToJSON();
 
             return jn;
+        }
+
+        FileFormat fileFormat;
+        public FileFormat FileFormat => fileFormat;
+
+        public string GetFileName() => $"level{FileFormat.Dot()}";
+
+        public void ReadFromFile(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+                return;
+
+            var file = RTFile.ReadFromFile(path);
+            if (string.IsNullOrEmpty(file))
+                return;
+
+            switch (RTFile.GetFileFormat(path))
+            {
+                case FileFormat.LSB: {
+                        fileFormat = FileFormat.LSB;
+                        ReadJSON(JSON.Parse(file));
+                        break;
+                    }
+                case FileFormat.VGD: {
+                        fileFormat = FileFormat.VGD;
+                        ReadJSONVG(JSON.Parse(file));
+                        break;
+                    }
+            }
+        }
+
+        public void WriteToFile(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+                return;
+
+            var jn = RTFile.GetFileFormat(path) switch
+            {
+                FileFormat.LSB => ToJSON(),
+                FileFormat.VGD => ToJSONVG(),
+                _ => null,
+            };
+            if (jn != null)
+                RTFile.WriteToFile(path, jn.ToString());
         }
 
         /// <summary>
