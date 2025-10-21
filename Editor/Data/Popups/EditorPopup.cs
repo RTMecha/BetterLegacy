@@ -137,6 +137,11 @@ namespace BetterLegacy.Editor.Data.Popups
         /// </summary>
         public Action close;
 
+        /// <summary>
+        /// Function to run on render.
+        /// </summary>
+        public Action onRender;
+
         #endregion
 
         #region Methods
@@ -149,6 +154,7 @@ namespace BetterLegacy.Editor.Data.Popups
             // display the popup in front of others
             if (GameObject)
                 GameObject.transform.SetAsLastSibling();
+            Render();
             PlayAnimation(true);
         }
 
@@ -360,6 +366,14 @@ namespace BetterLegacy.Editor.Data.Popups
         /// </summary>
         public virtual void Render()
         {
+            try
+            {
+                onRender?.Invoke();
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Render Popup error: {ex}");
+            }
             RenderTitle();
             RenderSize();
             UpdateCloseFunction(close);

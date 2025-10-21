@@ -152,7 +152,7 @@ namespace BetterLegacy.Editor.Managers
                     EditorContextMenu.inst.ShowContextMenu(
                         new ButtonFunction("Create folder", () =>
                         {
-                            RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath), () => { RTEditor.inst.UpdatePrefabPath(true); RTEditor.inst.HideNameEditor(); });
+                            RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath), () => { LoadPrefabs(RenderExternalPrefabs); ; RTEditor.inst.HideNameEditor(); });
                         }),
                         new ButtonFunction("Create Prefab", () =>
                         {
@@ -2002,7 +2002,7 @@ namespace BetterLegacy.Editor.Managers
                     if (eventData.button == PointerEventData.InputButton.Right)
                     {
                         EditorContextMenu.inst.ShowContextMenu(
-                            new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath), () => { RTEditor.inst.UpdatePrefabPath(true); RTEditor.inst.HideNameEditor(); })),
+                            new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath), () => { RTPrefabEditor.inst.LoadPrefabs(RTPrefabEditor.inst.RenderExternalPrefabs); RTEditor.inst.HideNameEditor(); })),
                             new ButtonFunction("Create prefab", () =>
                             {
                                 PrefabEditor.inst.OpenDialog();
@@ -2061,15 +2061,15 @@ namespace BetterLegacy.Editor.Managers
                     if (eventData.button == PointerEventData.InputButton.Right)
                     {
                         EditorContextMenu.inst.ShowContextMenu(
-                            new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath), () => { RTEditor.inst.UpdatePrefabPath(true); RTEditor.inst.HideNameEditor(); })),
+                            new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath), () => { LoadPrefabs(RenderExternalPrefabs); RTEditor.inst.HideNameEditor(); })),
                             new ButtonFunction("Paste Prefab", PastePrefab));
 
                         return;
                     }
 
-                    if (RTEditor.inst.prefabPathField.text == RTEditor.inst.PrefabPath)
+                    if (RTEditor.inst.PrefabPopups.External.PathField.text == RTEditor.inst.PrefabPath)
                     {
-                        RTEditor.inst.prefabPathField.text = RTFile.GetDirectory(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath)).Replace(RTEditor.inst.BeatmapsPath + "/", "");
+                        RTEditor.inst.PrefabPopups.External.PathField.text = RTFile.GetDirectory(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath)).Replace(RTEditor.inst.BeatmapsPath + "/", "");
                         RTEditor.inst.UpdatePrefabPath(false);
                     }
                 };
@@ -2652,42 +2652,6 @@ namespace BetterLegacy.Editor.Managers
             savingToPrefab = false;
             prefabToSaveFrom = null;
 
-            //Internal Config
-            {
-                var internalPrefab = PrefabEditor.inst.internalPrefabDialog;
-
-                var internalPrefabGLG = internalPrefab.Find("mask/content").GetComponent<GridLayoutGroup>();
-
-                internalPrefabGLG.spacing = EditorConfig.Instance.PrefabInternalSpacing.Value;
-                internalPrefabGLG.cellSize = EditorConfig.Instance.PrefabInternalCellSize.Value;
-                internalPrefabGLG.constraint = EditorConfig.Instance.PrefabInternalConstraintMode.Value;
-                internalPrefabGLG.constraintCount = EditorConfig.Instance.PrefabInternalConstraint.Value;
-                internalPrefabGLG.startAxis = EditorConfig.Instance.PrefabInternalStartAxis.Value;
-
-                internalPrefab.AsRT().anchoredPosition = EditorConfig.Instance.PrefabInternalPopupPos.Value;
-                internalPrefab.AsRT().sizeDelta = EditorConfig.Instance.PrefabInternalPopupSize.Value;
-
-                internalPrefab.GetComponent<ScrollRect>().horizontal = EditorConfig.Instance.PrefabInternalHorizontalScroll.Value;
-            }
-
-            //External Config
-            {
-                var externalPrefab = PrefabEditor.inst.externalPrefabDialog;
-
-                var externalPrefabGLG = externalPrefab.Find("mask/content").GetComponent<GridLayoutGroup>();
-
-                externalPrefabGLG.spacing = EditorConfig.Instance.PrefabExternalSpacing.Value;
-                externalPrefabGLG.cellSize = EditorConfig.Instance.PrefabExternalCellSize.Value;
-                externalPrefabGLG.constraint = EditorConfig.Instance.PrefabExternalConstraintMode.Value;
-                externalPrefabGLG.constraintCount = EditorConfig.Instance.PrefabExternalConstraint.Value;
-                externalPrefabGLG.startAxis = EditorConfig.Instance.PrefabExternalStartAxis.Value;
-
-                externalPrefab.AsRT().anchoredPosition = EditorConfig.Instance.PrefabExternalPopupPos.Value;
-                externalPrefab.AsRT().sizeDelta = EditorConfig.Instance.PrefabExternalPopupSize.Value;
-
-                externalPrefab.GetComponent<ScrollRect>().horizontal = EditorConfig.Instance.PrefabExternalHorizontalScroll.Value;
-            }
-
             StartCoroutine(IRenderExternalPrefabs());
             StartCoroutine(RefreshInternalPrefabs());
         }
@@ -3000,7 +2964,7 @@ namespace BetterLegacy.Editor.Managers
                     EditorManager.inst.DisplayNotification($"Succesfully pasted {Path.GetFileName(destination)}!", 2f, EditorManager.NotificationType.Success);
             }
 
-            RTEditor.inst.UpdatePrefabPath(true);
+            LoadPrefabs(RenderExternalPrefabs);
         }
 
         /// <summary>

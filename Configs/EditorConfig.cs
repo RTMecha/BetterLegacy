@@ -195,45 +195,6 @@ namespace BetterLegacy.Configs
         public Setting<float> TimelineBarButtonsHoverSize { get; set; }
         public Setting<float> PrefabButtonHoverSize { get; set; }
 
-        //Prefab Internal
-        public Setting<Vector2> PrefabInternalPopupPos { get; set; }
-        public Setting<Vector2> PrefabInternalPopupSize { get; set; }
-        public Setting<bool> PrefabInternalHorizontalScroll { get; set; }
-        public Setting<Vector2> PrefabInternalCellSize { get; set; }
-        public Setting<GridLayoutGroup.Constraint> PrefabInternalConstraintMode { get; set; }
-        public Setting<int> PrefabInternalConstraint { get; set; }
-        public Setting<Vector2> PrefabInternalSpacing { get; set; }
-        public Setting<GridLayoutGroup.Axis> PrefabInternalStartAxis { get; set; }
-        public Setting<Vector2> PrefabInternalDeleteButtonPos { get; set; }
-        public Setting<Vector2> PrefabInternalDeleteButtonSca { get; set; }
-        public Setting<HorizontalWrapMode> PrefabInternalNameHorizontalWrap { get; set; }
-        public Setting<VerticalWrapMode> PrefabInternalNameVerticalWrap { get; set; }
-        public Setting<int> PrefabInternalNameFontSize { get; set; }
-        public Setting<HorizontalWrapMode> PrefabInternalTypeHorizontalWrap { get; set; }
-        public Setting<VerticalWrapMode> PrefabInternalTypeVerticalWrap { get; set; }
-        public Setting<int> PrefabInternalTypeFontSize { get; set; }
-
-        //Prefab External
-        public Setting<Vector2> PrefabExternalPopupPos { get; set; }
-        public Setting<Vector2> PrefabExternalPopupSize { get; set; }
-        public Setting<Vector2> PrefabExternalPrefabPathPos { get; set; }
-        public Setting<float> PrefabExternalPrefabPathLength { get; set; }
-        public Setting<Vector2> PrefabExternalPrefabRefreshPos { get; set; }
-        public Setting<bool> PrefabExternalHorizontalScroll { get; set; }
-        public Setting<Vector2> PrefabExternalCellSize { get; set; }
-        public Setting<GridLayoutGroup.Constraint> PrefabExternalConstraintMode { get; set; }
-        public Setting<int> PrefabExternalConstraint { get; set; }
-        public Setting<Vector2> PrefabExternalSpacing { get; set; }
-        public Setting<GridLayoutGroup.Axis> PrefabExternalStartAxis { get; set; }
-        public Setting<Vector2> PrefabExternalDeleteButtonPos { get; set; }
-        public Setting<Vector2> PrefabExternalDeleteButtonSca { get; set; }
-        public Setting<HorizontalWrapMode> PrefabExternalNameHorizontalWrap { get; set; }
-        public Setting<VerticalWrapMode> PrefabExternalNameVerticalWrap { get; set; }
-        public Setting<int> PrefabExternalNameFontSize { get; set; }
-        public Setting<HorizontalWrapMode> PrefabExternalTypeHorizontalWrap { get; set; }
-        public Setting<VerticalWrapMode> PrefabExternalTypeVerticalWrap { get; set; }
-        public Setting<int> PrefabExternalTypeFontSize { get; set; }
-
         #endregion
 
         #region Markers
@@ -605,52 +566,14 @@ namespace BetterLegacy.Configs
             RenderDepthRange = Bind(this, EDITOR_GUI, "Render Depth Range", new Vector2Int(219, -98), "The range the Render Depth slider will show. Vanilla Legacy range is 30 and 0.");
             OpenNewLevelCreatorIfNoLevels = Bind(this, EDITOR_GUI, "Open New Level Creator If No Levels", false, "If the New Level Creator popup should open when there are no levels in a level folder.");
 
-            OpenLevelButtonHoverSize = Bind(this, EDITOR_GUI, "Open Level Button Hover Size", 1f, "How big the button gets when hovered.", 0.7f, 1.4f);
-
             ChangesRefreshLevelList = Bind(this, EDITOR_GUI, "Changes Refresh Level List", false, "If the level list reloads whenever a change is made.");
             OpenLevelShowDeleteButton = Bind(this, EDITOR_GUI, "Open Level Show Delete Button", false, "Shows a delete button that can be used to move levels to a recycling folder.");
 
-            TimelineObjectHoverSize = Bind(this, EDITOR_GUI, "Timeline Object Hover Size", 1f, "How big the button gets when hovered.", 0.7f, 1.4f);
-            KeyframeHoverSize = Bind(this, EDITOR_GUI, "Keyframe Hover Size", 1f, "How big the button gets when hovered.", 0.7f, 1.4f);
-            TimelineBarButtonsHoverSize = Bind(this, EDITOR_GUI, "Timeline Bar Buttons Hover Size", 1.05f, "How big the button gets when hovered.", 0.7f, 1.4f);
-            PrefabButtonHoverSize = Bind(this, EDITOR_GUI, "Prefab Button Hover Size", 1.05f, "How big the button gets when hovered.", 0.7f, 1.4f);
-
-            PrefabInternalPopupPos = Bind(this, EDITOR_GUI, "Prefab Internal Popup Pos", new Vector2(-80f, -16f), "Position of the internal prefabs popup.");
-            PrefabInternalPopupSize = Bind(this, EDITOR_GUI, "Prefab Internal Popup Size", new Vector2(500f, -32f), "Scale of the internal prefabs popup.");
-            PrefabInternalHorizontalScroll = Bind(this, EDITOR_GUI, "Prefab Internal Horizontal Scroll", false, "If you can scroll left / right or not.");
-            PrefabInternalCellSize = Bind(this, EDITOR_GUI, "Prefab Internal Cell Size", new Vector2(483f, 32f), "Size of each Prefab Item.");
-            PrefabInternalConstraintMode = BindEnum(this, EDITOR_GUI, "Prefab Internal Constraint Mode", GridLayoutGroup.Constraint.FixedColumnCount, "Which direction the prefab list goes.");
-            PrefabInternalConstraint = Bind(this, EDITOR_GUI, "Prefab Internal Constraint", 1, "How many columns the prefabs are divided into.");
-            PrefabInternalSpacing = Bind(this, EDITOR_GUI, "Prefab Internal Spacing", new Vector2(8f, 8f), "Distance between each Prefab Cell.");
-            PrefabInternalStartAxis = BindEnum(this, EDITOR_GUI, "Prefab Internal Start Axis", GridLayoutGroup.Axis.Horizontal, "Start axis of the prefab list.");
-            PrefabInternalDeleteButtonPos = Bind(this, EDITOR_GUI, "Prefab Internal Delete Button Pos", new Vector2(467f, -16f), "Position of the Delete Button.");
-            PrefabInternalDeleteButtonSca = Bind(this, EDITOR_GUI, "Prefab Internal Delete Button Sca", new Vector2(32f, 32f), "Scale of the Delete Button.");
-            PrefabInternalNameHorizontalWrap = BindEnum(this, EDITOR_GUI, "Prefab Internal Name Horizontal Wrap", HorizontalWrapMode.Overflow, "If the text overflows into another line or keeps going.");
-            PrefabInternalNameVerticalWrap = BindEnum(this, EDITOR_GUI, "Prefab Internal Name Vertical Wrap", VerticalWrapMode.Overflow, "If the text overflows into another line or keeps going.");
-            PrefabInternalNameFontSize = Bind(this, EDITOR_GUI, "Prefab Internal Name Font Size", 20, "Size of the text font.", 1, 40);
-            PrefabInternalTypeHorizontalWrap = BindEnum(this, EDITOR_GUI, "Prefab Internal Type Horizontal Wrap", HorizontalWrapMode.Overflow, "If the text overflows into another line or keeps going.");
-            PrefabInternalTypeVerticalWrap = BindEnum(this, EDITOR_GUI, "Prefab Internal Type Vertical Wrap", VerticalWrapMode.Overflow, "If the text overflows into another line or keeps going.");
-            PrefabInternalTypeFontSize = Bind(this, EDITOR_GUI, "Prefab Internal Type Font Size", 20, "Size of the text font.", 1, 40);
-
-            PrefabExternalPopupPos = Bind(this, EDITOR_GUI, "Prefab External Popup Pos", new Vector2(60f, -16f), "Position of the external prefabs popup.");
-            PrefabExternalPopupSize = Bind(this, EDITOR_GUI, "Prefab External Popup Size", new Vector2(500f, -32f), "Scale of the external prefabs popup.");
-            PrefabExternalPrefabPathPos = Bind(this, EDITOR_GUI, "Prefab External Prefab Path Pos", new Vector2(325f, 16f), "Position of the prefab path input field.");
-            PrefabExternalPrefabPathLength = Bind(this, EDITOR_GUI, "Prefab External Prefab Path Length", 150f, "Length of the prefab path input field.");
-            PrefabExternalPrefabRefreshPos = Bind(this, EDITOR_GUI, "Prefab External Prefab Refresh Pos", new Vector2(310f, 450f), "Position of the prefab refresh button.");
-            PrefabExternalHorizontalScroll = Bind(this, EDITOR_GUI, "Prefab External Horizontal Scroll", false, "If you can scroll left / right or not.");
-            PrefabExternalCellSize = Bind(this, EDITOR_GUI, "Prefab External Cell Size", new Vector2(483f, 32f), "Size of each Prefab Item.");
-            PrefabExternalConstraintMode = BindEnum(this, EDITOR_GUI, "Prefab External Constraint Mode", GridLayoutGroup.Constraint.FixedColumnCount, "Which direction the prefab list goes.");
-            PrefabExternalConstraint = Bind(this, EDITOR_GUI, "Prefab External Constraint", 1, "How many columns the prefabs are divided into.");
-            PrefabExternalSpacing = Bind(this, EDITOR_GUI, "Prefab External Spacing", new Vector2(8f, 8f), "Distance between each Prefab Cell.");
-            PrefabExternalStartAxis = BindEnum(this, EDITOR_GUI, "Prefab External Start Axis", GridLayoutGroup.Axis.Horizontal, "Start axis of the prefab list.");
-            PrefabExternalDeleteButtonPos = Bind(this, EDITOR_GUI, "Prefab External Delete Button Pos", new Vector2(467f, -16f), "Position of the Delete Button.");
-            PrefabExternalDeleteButtonSca = Bind(this, EDITOR_GUI, "Prefab External Delete Button Sca", new Vector2(32f, 32f), "Scale of the Delete Button.");
-            PrefabExternalNameHorizontalWrap = BindEnum(this, EDITOR_GUI, "Prefab External Name Horizontal Wrap", HorizontalWrapMode.Overflow, "If the text overflows into another line or keeps going.");
-            PrefabExternalNameVerticalWrap = BindEnum(this, EDITOR_GUI, "Prefab External Name Vertical Wrap", VerticalWrapMode.Overflow, "If the text overflows into another line or keeps going.");
-            PrefabExternalNameFontSize = Bind(this, EDITOR_GUI, "Prefab External Name Font Size", 20, "Size of the text font.", 1, 40);
-            PrefabExternalTypeHorizontalWrap = BindEnum(this, EDITOR_GUI, "Prefab External Type Horizontal Wrap", HorizontalWrapMode.Overflow, "If the text overflows into another line or keeps going.");
-            PrefabExternalTypeVerticalWrap = BindEnum(this, EDITOR_GUI, "Prefab External Type Vertical Wrap", VerticalWrapMode.Overflow, "If the text overflows into another line or keeps going.");
-            PrefabExternalTypeFontSize = Bind(this, EDITOR_GUI, "Prefab External Type Font Size", 20, "Size of the text font.", 1, 40);
+            OpenLevelButtonHoverSize = Bind(this, EDITOR_GUI, "Level Panel Focus Size", 1.05f, "How big the button gets when hovered.", 0.7f, 1.4f);
+            TimelineObjectHoverSize = Bind(this, EDITOR_GUI, "Timeline Object Focus Size", 1f, "How big the button gets when hovered.", 0.7f, 1.4f);
+            KeyframeHoverSize = Bind(this, EDITOR_GUI, "Keyframe Focus Size", 1f, "How big the button gets when hovered.", 0.7f, 1.4f);
+            TimelineBarButtonsHoverSize = Bind(this, EDITOR_GUI, "Timeline Bar Buttons Focus Size", 1.05f, "How big the button gets when hovered.", 0.7f, 1.4f);
+            PrefabButtonHoverSize = Bind(this, EDITOR_GUI, "Prefab Panel Focus Size", 1.05f, "How big the button gets when hovered.", 0.7f, 1.4f);
 
             #endregion
 
@@ -1195,45 +1118,6 @@ namespace BetterLegacy.Configs
             PreviewGridThickness.SettingChanged += PreviewGridChanged;
             PreviewGridColor.SettingChanged += PreviewGridChanged;
 
-            PrefabInternalPopupPos.SettingChanged += PrefabPopupsChanged;
-            PrefabInternalPopupSize.SettingChanged += PrefabPopupsChanged;
-            PrefabInternalSpacing.SettingChanged += PrefabPopupsChanged;
-            PrefabInternalCellSize.SettingChanged += PrefabPopupsChanged;
-            PrefabInternalConstraintMode.SettingChanged += PrefabPopupsChanged;
-            PrefabInternalConstraint.SettingChanged += PrefabPopupsChanged;
-            PrefabInternalStartAxis.SettingChanged += PrefabPopupsChanged;
-            PrefabInternalHorizontalScroll.SettingChanged += PrefabPopupsChanged;
-
-            PrefabInternalDeleteButtonPos.SettingChanged += PrefabPopupsItemsChanged;
-            PrefabInternalDeleteButtonSca.SettingChanged += PrefabPopupsItemsChanged;
-            PrefabInternalNameFontSize.SettingChanged += PrefabPopupsItemsChanged;
-            PrefabInternalNameHorizontalWrap.SettingChanged += PrefabPopupsItemsChanged;
-            PrefabInternalNameVerticalWrap.SettingChanged += PrefabPopupsItemsChanged;
-            PrefabInternalTypeFontSize.SettingChanged += PrefabPopupsItemsChanged;
-            PrefabInternalTypeHorizontalWrap.SettingChanged += PrefabPopupsItemsChanged;
-            PrefabInternalTypeVerticalWrap.SettingChanged += PrefabPopupsItemsChanged;
-
-            PrefabExternalPopupPos.SettingChanged += PrefabPopupsChanged;
-            PrefabExternalPopupSize.SettingChanged += PrefabPopupsChanged;
-            PrefabExternalSpacing.SettingChanged += PrefabPopupsChanged;
-            PrefabExternalCellSize.SettingChanged += PrefabPopupsChanged;
-            PrefabExternalConstraintMode.SettingChanged += PrefabPopupsChanged;
-            PrefabExternalConstraint.SettingChanged += PrefabPopupsChanged;
-            PrefabExternalStartAxis.SettingChanged += PrefabPopupsChanged;
-            PrefabExternalHorizontalScroll.SettingChanged += PrefabPopupsChanged;
-            PrefabExternalPrefabRefreshPos.SettingChanged += PrefabPopupsChanged;
-            PrefabExternalPrefabPathPos.SettingChanged += PrefabPopupsChanged;
-            PrefabExternalPrefabPathLength.SettingChanged += PrefabPopupsChanged;
-
-            PrefabExternalDeleteButtonPos.SettingChanged += PrefabPopupsItemsChanged;
-            PrefabExternalDeleteButtonSca.SettingChanged += PrefabPopupsItemsChanged;
-            PrefabExternalNameFontSize.SettingChanged += PrefabPopupsItemsChanged;
-            PrefabExternalNameHorizontalWrap.SettingChanged += PrefabPopupsItemsChanged;
-            PrefabExternalNameVerticalWrap.SettingChanged += PrefabPopupsItemsChanged;
-            PrefabExternalTypeFontSize.SettingChanged += PrefabPopupsItemsChanged;
-            PrefabExternalTypeHorizontalWrap.SettingChanged += PrefabPopupsItemsChanged;
-            PrefabExternalTypeVerticalWrap.SettingChanged += PrefabPopupsItemsChanged;
-
             UserPreference.SettingChanged += UserPreferenceChanged;
             ShowMarkers.SettingChanged += ShowMarkersChanged;
 
@@ -1270,88 +1154,10 @@ namespace BetterLegacy.Configs
 
         void UserPreferenceChanged() => CoreHelper.SetConfigPreset(UserPreference.Value);
 
-        void PrefabPopupsItemsChanged()
-        {
-            if (PrefabEditor.inst.internalPrefabDialog.gameObject.activeInHierarchy)
-                CoroutineHelper.StartCoroutine(RTPrefabEditor.inst.RefreshInternalPrefabs());
-
-            if (!PrefabEditor.inst.externalPrefabDialog.gameObject.activeInHierarchy)
-                return;
-
-            for (int i = 0; i < RTPrefabEditor.inst.PrefabPanels.Count; i++)
-            {
-                var prefabPanel = RTPrefabEditor.inst.PrefabPanels[i];
-                prefabPanel.DeleteButton.transform.AsRT().anchoredPosition = PrefabExternalDeleteButtonPos.Value;
-                prefabPanel.DeleteButton.transform.AsRT().sizeDelta = PrefabExternalDeleteButtonSca.Value;
-
-                prefabPanel.Label.fontSize = PrefabExternalNameFontSize.Value;
-                prefabPanel.Label.horizontalOverflow = PrefabExternalNameHorizontalWrap.Value;
-                prefabPanel.Label.verticalOverflow = PrefabExternalNameVerticalWrap.Value;
-
-                prefabPanel.TypeText.fontSize = PrefabExternalTypeFontSize.Value;
-                prefabPanel.TypeText.horizontalOverflow = PrefabExternalTypeHorizontalWrap.Value;
-                prefabPanel.TypeText.verticalOverflow = PrefabExternalTypeVerticalWrap.Value;
-            }
-        }
-
-        void PrefabPopupsChanged()
-        {
-            try
-            {
-                //Internal Config
-                {
-                    var internalPrefab = PrefabEditor.inst.internalPrefabDialog;
-
-                    var internalPrefabGLG = internalPrefab.Find("mask/content").GetComponent<GridLayoutGroup>();
-
-                    internalPrefabGLG.spacing = PrefabInternalSpacing.Value;
-                    internalPrefabGLG.cellSize = PrefabInternalCellSize.Value;
-                    internalPrefabGLG.constraint = PrefabInternalConstraintMode.Value;
-                    internalPrefabGLG.constraintCount = PrefabInternalConstraint.Value;
-                    internalPrefabGLG.startAxis = PrefabInternalStartAxis.Value;
-
-                    internalPrefab.AsRT().anchoredPosition = PrefabInternalPopupPos.Value;
-                    internalPrefab.AsRT().sizeDelta = PrefabInternalPopupSize.Value;
-
-                    internalPrefab.GetComponent<ScrollRect>().horizontal = PrefabInternalHorizontalScroll.Value;
-                }
-
-                //External Config
-                {
-                    var externalPrefab = PrefabEditor.inst.externalPrefabDialog;
-
-                    var externalPrefabGLG = externalPrefab.Find("mask/content").GetComponent<GridLayoutGroup>();
-
-                    externalPrefabGLG.spacing = PrefabExternalSpacing.Value;
-                    externalPrefabGLG.cellSize = PrefabExternalCellSize.Value;
-                    externalPrefabGLG.constraint = PrefabExternalConstraintMode.Value;
-                    externalPrefabGLG.constraintCount = PrefabExternalConstraint.Value;
-                    externalPrefabGLG.startAxis = PrefabExternalStartAxis.Value;
-
-                    externalPrefab.AsRT().anchoredPosition = PrefabExternalPopupPos.Value;
-                    externalPrefab.AsRT().sizeDelta = PrefabExternalPopupSize.Value;
-
-                    externalPrefab.GetComponent<ScrollRect>().horizontal = PrefabExternalHorizontalScroll.Value;
-
-                    RTEditor.inst.prefabPathField.transform.AsRT().anchoredPosition = PrefabExternalPrefabPathPos.Value;
-                    RTEditor.inst.prefabPathField.transform.AsRT().sizeDelta = new Vector2(PrefabExternalPrefabPathLength.Value, 32f);
-
-                    PrefabEditor.inst.externalPrefabDialog.Find("reload prefabs").AsRT().anchoredPosition = PrefabExternalPrefabRefreshPos.Value;
-
-                }
-            }
-            catch (Exception ex)
-            {
-                CoreHelper.LogError($"Couldn't update Prefab Popups.\nException: {ex}");
-            }
-        }
-
         void PreviewGridChanged()
         {
             if (RTEditor.inst && RTEditor.inst.previewGrid)
-            {
                 RTEditor.inst.UpdateGrid();
-            }
         }
 
         void TimelineCollapseLengthChanged()
@@ -1483,8 +1289,6 @@ namespace BetterLegacy.Configs
                 return;
 
             EditorManager.inst.zoomBounds = MainZoomBounds.Value;
-
-            AdjustPositionInputsChanged?.Invoke();
 
             if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
                 RTEventEditor.inst.RenderLayerBins();

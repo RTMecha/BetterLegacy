@@ -1,0 +1,60 @@
+﻿{
+  "type": {
+    "base": {
+      "rect": {
+        "anc_pos": [ 0, -16 ],
+        "anc_max": [ 0, 1 ],
+        "anc_min": [ 0, 1 ],
+        "pivot": [ 0, 0.5 ],
+        "size": [ 32, 32 ]
+      }
+    },
+    "shade": {
+      "rect": {
+        "anc_pos": [ 0, 0 ],
+        "anc_max": [ 1, 1 ],
+        "anc_min": [ 0, 0 ],
+        "pivot": [ 0.5, 0.5 ],
+        "size": [ -4, -4 ]
+      }
+    },
+    "icon": {
+      "rect": "FullAnchored"
+    }
+  },
+  "name_label": {
+    "rect": {
+      "anc_pos": [ 163.4375, -16 ],
+      "anc_max": [ 0, 1 ],
+      "anc_min": [ 0, 1 ],
+      "pivot": [ 0.5, 0.5 ],
+      "size": [ 246.875, 32 ]
+    },
+    "alignment": 3, // MiddleLeft
+    "horizontal_wrap": 1, // Overflow
+    "vertical_wrap": 1, // Overflow
+    "font_size": 20
+  },
+  "type_label": {
+    "rect": {
+      "anc_pos": [ 368.9375, -16 ],
+      "anc_max": [ 0, 1 ],
+      "anc_min": [ 0, 1 ],
+      "pivot": [ 0.5, 0.5 ],
+      "size": [ 148.125, 32 ]
+    },
+    "alignment": 5, // MiddleRight
+    "horizontal_wrap": 1, // Overflow
+    "vertical_wrap": 1, // Overflow
+    "font_size": 20
+  },
+  "delete": {
+    "rect": {
+      "anc_pos": [ 467, -16 ],
+      "anc_max": [ 0, 1 ],
+      "anc_min": [ 0, 1 ],
+      "pivot": [ 0.5, 0.5 ],
+      "size": [ 32, 32 ]
+    }
+  }
+}

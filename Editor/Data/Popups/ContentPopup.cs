@@ -163,12 +163,20 @@ namespace BetterLegacy.Editor.Data.Popups
             InitTopElementsParent();
 
             Render();
+            RenderSize();
         }
 
         public override void Render()
         {
+            try
+            {
+                onRender?.Invoke();
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Render Popup error: {ex}");
+            }
             RenderTitle();
-            RenderSize();
             RenderPlaceholderText();
             UpdateSearchFunction(refreshSearch);
             UpdateCloseFunction(close);

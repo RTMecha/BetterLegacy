@@ -1,4 +1,12 @@
 ﻿{
+  "base": {
+    "rect": {
+      "anc_max": [ 0, 1 ],
+      "anc_min": [ 0, 1 ],
+      "pivot": [ 0.5, 0.5 ],
+      "size": [ 584, 32 ]
+    }
+  },
   "label": {
     "rect": {
       "anc_pos": [ 32, 0 ],
@@ -8,6 +16,7 @@
       "size": [ -12, -8 ]
     },
     "format": "/{0} : {1} by {2}",
+    "alignment": 3, // MiddleLeft
     "horizontal_wrap": 0, // Wrap
     "vertical_wrap": 0, // Truncate
     "font_size": 20,
@@ -20,11 +29,20 @@
   },
   "icon": {
     "rect": {
-      "anc_pos": [ -276, 0 ],
+      "anc_pos": [ -374, 0 ],
       "anc_max": [ 0.5, 0.5 ],
       "anc_min": [ 0.5, 0.5 ],
       "pivot": [ 0.5, 0.5 ],
       "size": [ 26, 26 ]
+    }
+  },
+  "delete": {
+    "rect": {
+      "anc_pos": [ 0, 0 ],
+      "anc_max": [ 1, 1 ],
+      "anc_min": [ 1, 0 ],
+      "pivot": [ 1, 0.5 ],
+      "size": [ 32, 0 ]
     }
   }
 }

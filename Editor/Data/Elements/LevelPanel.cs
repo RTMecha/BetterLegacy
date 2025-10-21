@@ -117,11 +117,17 @@ namespace BetterLegacy.Editor.Data.Elements
 
         #region Asset Pack
 
+        public static RectValues baseRect = new RectValues(Vector2.zero, new Vector2(0f, 1f), new Vector2(0f, 1f), RectValues.CenterPivot, new Vector2(584f, 32f));
+
         public static RectValues labelRect = RectValues.FullAnchored.AnchoredPosition(32f, 0f).SizeDelta(-12f, -8f);
 
         public static RectValues iconRect = RectValues.Default.AnchoredPosition(-276f, 0f).SizeDelta(26f, 26f);
 
+        public static RectValues deleteRect = new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(1f, 0.5f), new Vector2(32f, 0f));
+
         public static string labelFormat = "/{0} : {1} by {2}";
+
+        public static TextAnchor labelAlignment = TextAnchor.MiddleLeft;
 
         public static HorizontalWrapMode labelHorizontalWrap = HorizontalWrapMode.Wrap;
 
@@ -237,7 +243,7 @@ namespace BetterLegacy.Editor.Data.Elements
             var deleteStorage = delete.GetComponent<DeleteButtonStorage>();
             DeleteButton = deleteStorage;
 
-            new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(1f, 0.5f), new Vector2(32f, 0f)).AssignToRectTransform(delete.transform.AsRT());
+            deleteRect.AssignToRectTransform(delete.transform.AsRT());
 
             EditorThemeManager.ApplyGraphic(deleteStorage.baseImage, ThemeGroup.Delete, true, roundedSide: SpriteHelper.RoundedSide.W);
             EditorThemeManager.ApplyGraphic(deleteStorage.image, ThemeGroup.Delete_Text, false, roundedSide: SpriteHelper.RoundedSide.W);
@@ -314,6 +320,9 @@ namespace BetterLegacy.Editor.Data.Elements
 
         public override void Render()
         {
+            if (GameObject)
+                baseRect.AssignToRectTransform(GameObject.transform.AsRT());
+
             RenderIcon();
             RenderLabel();
             RenderHover();
@@ -358,6 +367,7 @@ namespace BetterLegacy.Editor.Data.Elements
         {
             Label.text = text;
 
+            Label.alignment = labelAlignment;
             Label.horizontalOverflow = labelHorizontalWrap;
             Label.verticalOverflow = labelVerticalWrap;
             Label.fontSize = labelFontSize;

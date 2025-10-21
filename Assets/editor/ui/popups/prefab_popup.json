@@ -1,0 +1,105 @@
+﻿{
+  "base": {
+    "rect": {
+      "anc_pos": [ 0, 0 ],
+      "anc_max": [ 0.5, 0.5 ],
+      "anc_min": [ 0.5, 0.5 ],
+      "pivot": [ 0.5, 0.5 ],
+      "size": [ 920, 450 ]
+    }
+  },
+  "internal": {
+    "base": {
+      "rect": {
+        "anc_pos": [ -80, -16 ],
+        "anc_max": [ 0, 1 ],
+        "anc_min": [ 0, 0 ],
+        "pivot": [ 0, 0.5 ],
+        "size": [ 500, -32 ]
+      },
+      "theme_group": "Background_1"
+    },
+    "top_panel": {
+      "rect": {
+        "anc_pos": [ 0, 0 ],
+        "anc_max": [ 1, 1 ],
+        "anc_min": [ 0, 1 ],
+        "pivot": [ 0, 0 ],
+        "size": [ 32, 32 ]
+      },
+      "theme_group": "Background_1"
+    },
+    "title": {
+      "rect": {
+        "anc_pos": [ 0, 0 ],
+        "anc_max": [ 1, 1 ],
+        "anc_min": [ 0, 0 ],
+        "pivot": [ 0.5, 0.5 ],
+        "size": [ -8, -8 ]
+      },
+      "alignment": 3, // MiddleLeft
+      "text": "Internal Prefabs",
+      "font_size": 20,
+      "font_style": 0, // Normal
+      "horizontal_overflow": 0, // Wrap
+      "vertical_overflow": 1, // Overflow
+      "theme_group": "Light_Text"
+    },
+    "layout": {
+      "cell_size": [ 483.0, 32.0 ],
+      "spacing": [ 0.0, 8.0 ],
+      "constraint": 1,
+      "constraint_count": 1
+    },
+    "scroll": {
+      "horizontal": false
+    }
+  },
+  "external": {
+    "base": {
+      "rect": {
+        "anc_pos": [ 60, -16 ],
+        "anc_max": [ 1, 1 ],
+        "anc_min": [ 1, 0 ],
+        "pivot": [ 1, 0.5 ],
+        "size": [ 500, -32 ]
+      },
+      "theme_group": "Background_1"
+    },
+    "top_panel": {
+      "rect": {
+        "anc_pos": [ 0, 0 ],
+        "anc_max": [ 1, 1 ],
+        "anc_min": [ 0, 1 ],
+        "pivot": [ 0, 0 ],
+        "size": [ 32, 32 ]
+      },
+      "theme_group": "Background_1"
+    },
+    "title": {
+      "rect": {
+        "anc_pos": [ 0, 0 ],
+        "anc_max": [ 1, 1 ],
+        "anc_min": [ 0, 0 ],
+        "pivot": [ 0.5, 0.5 ],
+        "size": [ -8, -8 ]
+      },
+      "alignment": 3, // MiddleLeft
+      "text": "External Prefabs",
+      "font_size": 20,
+      "font_style": 0, // Normal
+      "horizontal_overflow": 0, // Wrap
+      "vertical_overflow": 1, // Overflow
+      "theme_group": "Light_Text"
+    },
+    "layout": {
+      "cell_size": [ 483.0, 32.0 ],
+      "spacing": [ 0.0, 8.0 ],
+      "constraint": 1,
+      "constraint_count": 1
+    },
+    "scroll": {
+      "horizontal": false
+    }
+  }
+}

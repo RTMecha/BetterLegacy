@@ -484,6 +484,35 @@ namespace BetterLegacy.Editor.Managers
                 EditorLevelManager.inst.OpenLevelPopup.title = EditorLevelManager.inst.OpenLevelPopup.Title.text;
                 EditorLevelManager.inst.OpenLevelPopup.size = EditorLevelManager.inst.OpenLevelPopup.GameObject.transform.AsRT().sizeDelta;
                 EditorLevelManager.inst.OpenLevelPopup.refreshSearch = EditorManager.inst.UpdateOpenBeatmapSearch;
+                EditorLevelManager.inst.OpenLevelPopup.onRender = () =>
+                {
+                    var openLevel = EditorLevelManager.inst.OpenLevelPopup.GameObject;
+
+                    if (AssetPack.TryReadFromFile("editor/ui/popups/open_file_popup.json", out string uiFile))
+                    {
+                        var jn = JSON.Parse(uiFile);
+                        RectValues.TryParse(jn["base"]["rect"], RectValues.Default.SizeDelta(600f, 400f)).AssignToRectTransform(EditorLevelManager.inst.OpenLevelPopup.GameObject.transform.AsRT());
+
+                        var layoutValues = LayoutValues.Parse(jn["layout"]);
+                        if (layoutValues is GridLayoutValues gridLayoutValues)
+                            gridLayoutValues.AssignToLayout(EditorLevelManager.inst.OpenLevelPopup.Grid ? EditorLevelManager.inst.OpenLevelPopup.Grid : openLevel.transform.Find("mask/content").GetComponent<GridLayoutGroup>());
+
+                        RectValues.TryParse(jn["top_panel"]["rect"], RectValues.FullAnchored.AnchorMin(0, 1).Pivot(0f, 0f).SizeDelta(32f, 32f)).AssignToRectTransform(EditorLevelManager.inst.OpenLevelPopup.TopPanel);
+
+                        if (jn["title"] != null)
+                        {
+                            EditorLevelManager.inst.OpenLevelPopup.title = jn["title"]["text"] != null ? jn["title"]["text"] : "Pick a Level to Open";
+
+                            var title = EditorLevelManager.inst.OpenLevelPopup.Title;
+                            RectValues.TryParse(jn["title"]["rect"], RectValues.FullAnchored.AnchoredPosition(2f, 0f).SizeDelta(-12f, -8f)).AssignToRectTransform(title.rectTransform);
+                            title.alignment = jn["title"]["alignment"] != null ? (TextAnchor)jn["title"]["alignment"].AsInt : TextAnchor.MiddleLeft;
+                            title.fontSize = jn["title"]["font_size"] != null ? jn["title"]["font_size"].AsInt : 20;
+                            title.fontStyle = (FontStyle)jn["title"]["font_style"].AsInt;
+                            title.horizontalOverflow = jn["title"]["horizontal_overflow"] != null ? (HorizontalWrapMode)jn["title"]["horizontal_overflow"].AsInt : HorizontalWrapMode.Wrap;
+                            title.verticalOverflow = jn["title"]["vertical_overflow"] != null ? (VerticalWrapMode)jn["title"]["vertical_overflow"].AsInt : VerticalWrapMode.Overflow;
+                        }
+                    }
+                };
 
                 InfoPopup = new InfoPopup(EditorPopup.FILE_INFO_POPUP);
                 InfoPopup.Assign(InfoPopup.GetLegacyDialog().Dialog.gameObject);
@@ -517,6 +546,54 @@ namespace BetterLegacy.Editor.Managers
                 PrefabPopups.Internal.RenderTitle();
                 PrefabPopups.External.title = "External Prefabs";
                 PrefabPopups.External.RenderTitle();
+                PrefabPopups.onRender = () =>
+                {
+                    if (AssetPack.TryReadFromFile("editor/ui/popups/prefab_popup.json", out string uiFile))
+                    {
+                        var jn = JSON.Parse(uiFile);
+                        RectValues.TryParse(jn["base"]["rect"], RectValues.Default.SizeDelta(920f, 450f)).AssignToRectTransform(PrefabPopups.GameObject.transform.AsRT());
+
+                        RectValues.TryParse(jn["internal"]["base"]["rect"], new RectValues(new Vector2(-80f, -16f), new Vector2(0f, 1f), Vector2.zero, new Vector2(0f, 0.5f), new Vector2(500f, -32f))).AssignToRectTransform(PrefabPopups.Internal.GameObject.transform.AsRT());
+                        RectValues.TryParse(jn["external"]["base"]["rect"], new RectValues(new Vector2(60f, -16f), Vector2.one, new Vector2(1f, 0f), new Vector2(1f, 0.5f), new Vector2(500f, -32f))).AssignToRectTransform(PrefabPopups.External.GameObject.transform.AsRT());
+
+                        var internalLayoutValues = LayoutValues.Parse(jn["internal"]["layout"]);
+                        if (internalLayoutValues is GridLayoutValues internalGrid)
+                            internalGrid.AssignToLayout(PrefabPopups.Internal.GameObject.transform.Find("mask/content").GetComponent<GridLayoutGroup>());
+                        
+                        var externalLayoutValues = LayoutValues.Parse(jn["external"]["layout"]);
+                        if (externalLayoutValues is GridLayoutValues externalGrid)
+                            externalGrid.AssignToLayout(PrefabPopups.External.GameObject.transform.Find("mask/content").GetComponent<GridLayoutGroup>());
+
+                        PrefabPopups.Internal.GameObject.GetComponent<ScrollRect>().horizontal = jn["internal"]["scroll"]["horizontal"].AsBool;
+                        PrefabPopups.External.GameObject.GetComponent<ScrollRect>().horizontal = jn["external"]["scroll"]["horizontal"].AsBool;
+
+                        if (jn["internal"]["title"] != null)
+                        {
+                            PrefabPopups.Internal.title = jn["internal"]["title"]["text"];
+
+                            var title = PrefabPopups.Internal.Title;
+                            RectValues.TryParse(jn["internal"]["title"]["rect"], RectValues.FullAnchored.AnchoredPosition(2f, 0f).SizeDelta(-12f, -8f)).AssignToRectTransform(title.rectTransform);
+                            title.alignment = (TextAnchor)jn["internal"]["title"]["alignment"].AsInt;
+                            title.fontSize = jn["internal"]["title"]["font_size"].AsInt;
+                            title.fontStyle = (FontStyle)jn["internal"]["title"]["font_style"].AsInt;
+                            title.horizontalOverflow = (HorizontalWrapMode)jn["internal"]["title"]["horizontal_overflow"].AsInt;
+                            title.verticalOverflow = (VerticalWrapMode)jn["internal"]["title"]["vertical_overflow"].AsInt;
+                        }
+
+                        if (jn["external"]["title"] != null)
+                        {
+                            PrefabPopups.External.title = jn["external"]["title"]["text"];
+
+                            var title = PrefabPopups.External.Title;
+                            RectValues.TryParse(jn["external"]["title"]["rect"], RectValues.FullAnchored.AnchoredPosition(2f, 0f).SizeDelta(-12f, -8f)).AssignToRectTransform(title.rectTransform);
+                            title.alignment = (TextAnchor)jn["external"]["title"]["alignment"].AsInt;
+                            title.fontSize = jn["external"]["title"]["font_size"].AsInt;
+                            title.fontStyle = (FontStyle)jn["external"]["title"]["font_style"].AsInt;
+                            title.horizontalOverflow = (HorizontalWrapMode)jn["external"]["title"]["horizontal_overflow"].AsInt;
+                            title.verticalOverflow = (VerticalWrapMode)jn["external"]["title"]["vertical_overflow"].AsInt;
+                        }
+                    }
+                };
 
                 ObjectOptionsPopup = new EditorPopup(EditorPopup.OBJECT_OPTIONS_POPUP);
                 ObjectOptionsPopup.GameObject = ObjectOptionsPopup.GetLegacyDialog().Dialog.gameObject;
@@ -760,9 +837,10 @@ namespace BetterLegacy.Editor.Managers
                 var jn = JSON.Parse(levelPanelFile);
                 LevelPanel.labelRect = RectValues.TryParse(jn["label"]["rect"], RectValues.FullAnchored.AnchoredPosition(32f, 0f).SizeDelta(-12f, -8f));
                 LevelPanel.labelFormat = jn["label"]["format"] != null ? jn["label"]["format"] : "/{0} : {1} by {2}";
+                LevelPanel.labelAlignment = jn["label"]["alignment"] != null ? (TextAnchor)jn["label"]["alignment"].AsInt : TextAnchor.MiddleLeft;
                 LevelPanel.labelHorizontalWrap = (HorizontalWrapMode)jn["label"]["horizontal_wrap"].AsInt;
                 LevelPanel.labelVerticalWrap = (VerticalWrapMode)jn["label"]["vertical_wrap"].AsInt;
-                LevelPanel.labelFontSize = jn["label"]["font_size"].AsInt;
+                LevelPanel.labelFontSize = jn["label"]["font_size"] != null ? jn["label"]["font_size"].AsInt : 20;
                 LevelPanel.labelFolderNameMax = jn["label"]["folder_name_max"].AsInt;
                 LevelPanel.labelSongTitleMax = jn["label"]["song_title_max"].AsInt;
                 LevelPanel.labelArtistNameMax = jn["label"]["artist_name_max"].AsInt;
@@ -771,6 +849,49 @@ namespace BetterLegacy.Editor.Managers
                 LevelPanel.labelDateMax = jn["label"]["date_max"].AsInt;
 
                 LevelPanel.iconRect = RectValues.TryParse(jn["icon"]["rect"], RectValues.Default.AnchoredPosition(-276f, 0f).SizeDelta(26f, 26f));
+                LevelPanel.deleteRect = RectValues.TryParse(jn["delete"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(1f, 0.5f), new Vector2(32f, 0f)));
+            }
+            if (AssetPack.TryReadFromFile("editor/ui/elements/internal_prefab_panel.json", out string internalPrefabPanelFile))
+            {
+                var jn = JSON.Parse(internalPrefabPanelFile);
+                PrefabPanel.internalTypeBaseRect = RectValues.TryParse(jn["type"]["base"]["rect"], new RectValues(new Vector2(0f, -16f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 0.5f), new Vector2(32f, 32f)));
+                PrefabPanel.internalTypeShadeRect = RectValues.TryParse(jn["type"]["shade"]["rect"], RectValues.FullAnchored.SizeDelta(-4f, -4f));
+                PrefabPanel.internalTypeIconRect = RectValues.TryParse(jn["type"]["icon"]["rect"], RectValues.FullAnchored);
+
+                PrefabPanel.internalNameLabelRect = RectValues.TryParse(jn["name_label"]["rect"], new RectValues(new Vector2(163.4375f, -16f), new Vector2(0f, 1f), new Vector2(0f, 1f), RectValues.CenterPivot, new Vector2(246.875f, 32f)));
+                PrefabPanel.internalNameLabelAlignment = jn["name_label"]["alignment"] != null ? (TextAnchor)jn["name_label"]["alignment"].AsInt : TextAnchor.MiddleLeft;
+                PrefabPanel.internalNameLabelHorizontalWrap = jn["name_label"]["horizontal_wrap"] != null ? (HorizontalWrapMode)jn["name_label"]["horizontal_wrap"].AsInt : HorizontalWrapMode.Overflow;
+                PrefabPanel.internalNameLabelVerticalWrap = jn["name_label"]["vertical_wrap"] != null ? (VerticalWrapMode)jn["name_label"]["vertical_wrap"].AsInt : VerticalWrapMode.Overflow;
+                PrefabPanel.internalNameLabelFontSize = jn["name_label"]["font_size"] != null ? jn["name_label"]["font_size"].AsInt : 20;
+
+                PrefabPanel.internalTypeLabelRect = RectValues.TryParse(jn["type_label"]["rect"], new RectValues(new Vector2(368.9375f, -16f), new Vector2(0f, 1f), new Vector2(0f, 1f), RectValues.CenterPivot, new Vector2(148.125f, 32f)));
+                PrefabPanel.internalTypeLabelAlignment = jn["type_label"]["alignment"] != null ? (TextAnchor)jn["type_label"]["alignment"].AsInt : TextAnchor.MiddleRight;
+                PrefabPanel.internalTypeLabelHorizontalWrap = jn["type_label"]["horizontal_wrap"] != null ? (HorizontalWrapMode)jn["type_label"]["horizontal_wrap"].AsInt : HorizontalWrapMode.Overflow;
+                PrefabPanel.internalTypeLabelVerticalWrap = jn["type_label"]["vertical_wrap"] != null ? (VerticalWrapMode)jn["type_label"]["vertical_wrap"].AsInt : VerticalWrapMode.Overflow;
+                PrefabPanel.internalTypeLabelFontSize = jn["type_label"]["font_size"] != null ? jn["type_label"]["font_size"].AsInt : 20;
+
+                PrefabPanel.internalDeleteRect = RectValues.TryParse(jn["delete"]["rect"], new RectValues(new Vector2(467f, -16f), new Vector2(0f, 1f), new Vector2(0f, 1f), RectValues.CenterPivot, new Vector2(32f, 32f)));
+            }
+            if (AssetPack.TryReadFromFile("editor/ui/elements/external_prefab_panel.json", out string externalPrefabPanelFile))
+            {
+                var jn = JSON.Parse(externalPrefabPanelFile);
+                PrefabPanel.externalTypeBaseRect = RectValues.TryParse(jn["type"]["base"]["rect"], new RectValues(new Vector2(0f, -16f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 0.5f), new Vector2(32f, 32f)));
+                PrefabPanel.externalTypeShadeRect = RectValues.TryParse(jn["type"]["shade"]["rect"], RectValues.FullAnchored.SizeDelta(-4f, -4f));
+                PrefabPanel.externalTypeIconRect = RectValues.TryParse(jn["type"]["icon"]["rect"], RectValues.FullAnchored);
+
+                PrefabPanel.externalNameLabelRect = RectValues.TryParse(jn["name_label"]["rect"], new RectValues(new Vector2(163.4375f, -16f), new Vector2(0f, 1f), new Vector2(0f, 1f), RectValues.CenterPivot, new Vector2(246.875f, 32f)));
+                PrefabPanel.externalNameLabelAlignment = jn["name_label"]["alignment"] != null ? (TextAnchor)jn["name_label"]["alignment"].AsInt : TextAnchor.MiddleLeft;
+                PrefabPanel.externalNameLabelHorizontalWrap = jn["name_label"]["horizontal_wrap"] != null ? (HorizontalWrapMode)jn["name_label"]["horizontal_wrap"].AsInt : HorizontalWrapMode.Overflow;
+                PrefabPanel.externalNameLabelVerticalWrap = jn["name_label"]["vertical_wrap"] != null ? (VerticalWrapMode)jn["name_label"]["vertical_wrap"].AsInt : VerticalWrapMode.Overflow;
+                PrefabPanel.externalNameLabelFontSize = jn["name_label"]["font_size"] != null ? jn["name_label"]["font_size"].AsInt : 20;
+
+                PrefabPanel.externalTypeLabelRect = RectValues.TryParse(jn["type_label"]["rect"], new RectValues(new Vector2(368.9375f, -16f), new Vector2(0f, 1f), new Vector2(0f, 1f), RectValues.CenterPivot, new Vector2(148.125f, 32f)));
+                PrefabPanel.externalTypeLabelAlignment = jn["type_label"]["alignment"] != null ? (TextAnchor)jn["type_label"]["alignment"].AsInt : TextAnchor.MiddleRight;
+                PrefabPanel.externalTypeLabelHorizontalWrap = jn["type_label"]["horizontal_wrap"] != null ? (HorizontalWrapMode)jn["type_label"]["horizontal_wrap"].AsInt : HorizontalWrapMode.Overflow;
+                PrefabPanel.externalTypeLabelVerticalWrap = jn["type_label"]["vertical_wrap"] != null ? (VerticalWrapMode)jn["type_label"]["vertical_wrap"].AsInt : VerticalWrapMode.Overflow;
+                PrefabPanel.externalTypeLabelFontSize = jn["type_label"]["font_size"] != null ? jn["type_label"]["font_size"].AsInt : 20;
+
+                PrefabPanel.externalDeleteRect = RectValues.TryParse(jn["delete"]["rect"], new RectValues(new Vector2(467f, -16f), new Vector2(0f, 1f), new Vector2(0f, 1f), RectValues.CenterPivot, new Vector2(32f, 32f)));
             }
 
             SetupNotificationValues();
@@ -1319,8 +1440,6 @@ namespace BetterLegacy.Editor.Managers
         public bool canUpdateThemes = true;
         public bool canUpdatePrefabs = true;
 
-        public InputField prefabPathField;
-
         #endregion
 
         #region Mouse Picker & Tooltip
@@ -1786,7 +1905,7 @@ namespace BetterLegacy.Editor.Managers
             UpdateEditorPath(false);
             RTThemeEditor.inst.Popup.PathField.text = "themes";
             UpdateThemePath(false);
-            prefabPathField.text = "prefabs";
+            PrefabPopups.External.PathField.text = "prefabs";
             UpdatePrefabPath(false);
 
             CoroutineHelper.StartCoroutine(RTPrefabEditor.inst.LoadPrefabTypes());
@@ -1886,7 +2005,7 @@ namespace BetterLegacy.Editor.Managers
             var prefabPath = RTFile.CombinePaths(BeatmapsPath, PrefabPath);
             if (!RTFile.DirectoryExists(prefabPath))
             {
-                prefabPathField.interactable = false;
+                PrefabPopups.External.PathField.interactable = false;
                 ShowWarningPopup("No directory exists for this path. Do you want to create a new folder?", () =>
                 {
                     RTFile.CreateDirectory(prefabPath);
@@ -1896,11 +2015,11 @@ namespace BetterLegacy.Editor.Managers
                     RTPrefabEditor.inst.LoadPrefabs(RTPrefabEditor.inst.RenderExternalPrefabs);
 
                     HideWarningPopup();
-                    prefabPathField.interactable = true;
+                    PrefabPopups.External.PathField.interactable = true;
                 }, () =>
                 {
                     HideWarningPopup();
-                    prefabPathField.interactable = true;
+                    PrefabPopups.External.PathField.interactable = true;
                 });
 
                 return;
@@ -3922,26 +4041,16 @@ namespace BetterLegacy.Editor.Managers
                     new ButtonFunction("Open List in File Explorer", OpenLevelListFolder));
             };
 
-            #region Prefab Path
+            PrefabPopups.External.InitTopElementsParent();
+            PrefabPopups.External.InitReload(() => RTPrefabEditor.inst.LoadPrefabs(RTPrefabEditor.inst.RenderExternalPrefabs));
+            PrefabPopups.External.InitPath(
+                getValue: () => PrefabPath,
+                setValue: _val => PrefabPath = _val,
+                onEndEdit: _val => UpdatePrefabPath(false));
 
-            var prefabPathGameObject = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(PrefabPopups.External.GameObject.transform, "prefabs path");
+            TooltipHelper.AssignTooltip(PrefabPopups.External.PathField.gameObject, "Prefab Path", 3f);
 
-            prefabPathGameObject.transform.AsRT().anchoredPosition = EditorConfig.Instance.PrefabExternalPrefabPathPos.Value;
-            prefabPathGameObject.transform.AsRT().sizeDelta = new Vector2(EditorConfig.Instance.PrefabExternalPrefabPathLength.Value, 32f);
-
-            TooltipHelper.AssignTooltip(prefabPathGameObject, "Prefab Path", 3f);
-
-            prefabPathField = prefabPathGameObject.GetComponent<InputField>();
-            prefabPathField.characterValidation = InputField.CharacterValidation.None;
-            prefabPathField.textComponent.alignment = TextAnchor.MiddleLeft;
-            prefabPathField.textComponent.fontSize = 16;
-            prefabPathField.SetTextWithoutNotify(PrefabPath);
-            prefabPathField.onValueChanged.NewListener(_val => PrefabPath = _val);
-            prefabPathField.onEndEdit.NewListener(_val => UpdatePrefabPath(false));
-
-            EditorThemeManager.AddInputField(prefabPathField);
-
-            var prefabPathClickable = prefabPathGameObject.AddComponent<Clickable>();
+            var prefabPathClickable = PrefabPopups.External.PathField.gameObject.AddComponent<Clickable>();
             prefabPathClickable.onDown = pointerEventData =>
             {
                 if (pointerEventData.button != PointerEventData.InputButton.Right)
@@ -3959,7 +4068,7 @@ namespace BetterLegacy.Editor.Managers
                                 return;
                             }
 
-                            prefabPathField.text = _val.Replace("\\", "/").Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
+                            PrefabPopups.External.PathField.text = _val.Replace("\\", "/").Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
                             EditorManager.inst.DisplayNotification($"Set Prefab path to {PrefabPath}!", 2f, EditorManager.NotificationType.Success);
                             BrowserPopup.Close();
                             UpdatePrefabPath(false);
@@ -3978,26 +4087,7 @@ namespace BetterLegacy.Editor.Managers
                     }, "Prefab Default Path"));
             };
 
-            EditorHelper.SetComplexity(prefabPathGameObject, Complexity.Advanced);
-
-            var prefabListReload = EditorPrefabHolder.Instance.SpriteButton.Duplicate(PrefabPopups.External.GameObject.transform, "reload prefabs");
-            prefabListReload.transform.AsRT().anchoredPosition = EditorConfig.Instance.PrefabExternalPrefabRefreshPos.Value;
-            prefabListReload.transform.AsRT().sizeDelta = new Vector2(32f, 32f);
-
-            (prefabListReload.GetComponent<HoverTooltip>() ?? prefabListReload.AddComponent<HoverTooltip>()).tooltipLangauges.Add(new HoverTooltip.Tooltip
-            {
-                desc = "Refresh prefab list",
-                hint = "Clicking this will reload the prefab list."
-            });
-
-            var prefabListReloadButton = prefabListReload.GetComponent<Button>();
-            prefabListReloadButton.onClick.NewListener(() => UpdatePrefabPath(true));
-
-            EditorThemeManager.AddSelectable(prefabListReloadButton, ThemeGroup.Function_2, false);
-
-            prefabListReloadButton.image.sprite = EditorSprites.ReloadSprite;
-
-            #endregion
+            EditorHelper.SetComplexity(PrefabPopups.External.PathField.gameObject, Complexity.Advanced);
         }
 
         void SetupFileBrowser()

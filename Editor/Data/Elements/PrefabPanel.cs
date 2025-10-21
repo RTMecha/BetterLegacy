@@ -79,6 +79,78 @@ namespace BetterLegacy.Editor.Data.Elements
 
         #endregion
 
+        #region Asset Packs
+
+        #region Internal
+
+        public static RectValues internalBaseRect = new RectValues(Vector2.zero, new Vector2(0f, 1f), new Vector2(0f, 1f), RectValues.CenterPivot, new Vector2(584f, 32f));
+
+        public static RectValues internalTypeBaseRect = new RectValues(new Vector2(0f, -16f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 0.5f), new Vector2(32f, 32f));
+
+        public static RectValues internalTypeShadeRect = RectValues.FullAnchored.SizeDelta(-4f, -4f);
+
+        public static RectValues internalTypeIconRect = RectValues.FullAnchored;
+
+        public static RectValues internalNameLabelRect = new RectValues(new Vector2(163.4375f, -16f), new Vector2(0f, 1f), new Vector2(0f, 1f), RectValues.CenterPivot, new Vector2(246.875f, 32f));
+
+        public static TextAnchor internalNameLabelAlignment = TextAnchor.MiddleLeft;
+
+        public static HorizontalWrapMode internalNameLabelHorizontalWrap = HorizontalWrapMode.Overflow;
+
+        public static VerticalWrapMode internalNameLabelVerticalWrap = VerticalWrapMode.Overflow;
+
+        public static int internalNameLabelFontSize = 20;
+
+        public static RectValues internalTypeLabelRect = new RectValues(new Vector2(368.9375f, -16f), new Vector2(0f, 1f), new Vector2(0f, 1f), RectValues.CenterPivot, new Vector2(148.125f, 32f));
+
+        public static TextAnchor internalTypeLabelAlignment = TextAnchor.MiddleLeft;
+
+        public static HorizontalWrapMode internalTypeLabelHorizontalWrap = HorizontalWrapMode.Overflow;
+
+        public static VerticalWrapMode internalTypeLabelVerticalWrap = VerticalWrapMode.Overflow;
+
+        public static int internalTypeLabelFontSize = 20;
+
+        public static RectValues internalDeleteRect = new RectValues(new Vector2(467f, -16f), new Vector2(0f, 1f), new Vector2(0f, 1f), RectValues.CenterPivot, new Vector2(32f, 32f));
+
+        #endregion
+
+        #region External
+
+        public static RectValues externalBaseRect = new RectValues(Vector2.zero, new Vector2(0f, 1f), new Vector2(0f, 1f), RectValues.CenterPivot, new Vector2(584f, 32f));
+
+        public static RectValues externalTypeBaseRect = new RectValues(new Vector2(0f, -16f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 0.5f), new Vector2(32f, 32f));
+
+        public static RectValues externalTypeShadeRect = RectValues.FullAnchored.SizeDelta(-4f, -4f);
+
+        public static RectValues externalTypeIconRect = RectValues.FullAnchored;
+
+        public static RectValues externalNameLabelRect = new RectValues(new Vector2(163.4375f, -16f), new Vector2(0f, 1f), new Vector2(0f, 1f), RectValues.CenterPivot, new Vector2(246.875f, 32f));
+
+        public static TextAnchor externalNameLabelAlignment = TextAnchor.MiddleLeft;
+
+        public static HorizontalWrapMode externalNameLabelHorizontalWrap = HorizontalWrapMode.Overflow;
+
+        public static VerticalWrapMode externalNameLabelVerticalWrap = VerticalWrapMode.Overflow;
+
+        public static int externalNameLabelFontSize = 20;
+
+        public static RectValues externalTypeLabelRect = new RectValues(new Vector2(368.9375f, -16f), new Vector2(0f, 1f), new Vector2(0f, 1f), RectValues.CenterPivot, new Vector2(148.125f, 32f));
+
+        public static TextAnchor externalTypeLabelAlignment = TextAnchor.MiddleLeft;
+
+        public static HorizontalWrapMode externalTypeLabelHorizontalWrap = HorizontalWrapMode.Overflow;
+
+        public static VerticalWrapMode externalTypeLabelVerticalWrap = VerticalWrapMode.Overflow;
+
+        public static int externalTypeLabelFontSize = 20;
+
+        public static RectValues externalDeleteRect = new RectValues(new Vector2(467f, -16f), new Vector2(0f, 1f), new Vector2(0f, 1f), RectValues.CenterPivot, new Vector2(32f, 32f));
+
+        #endregion
+
+        #endregion
+
         #endregion
 
         #region Methods
@@ -110,16 +182,16 @@ namespace BetterLegacy.Editor.Data.Elements
                     EditorContextMenu.inst.ShowContextMenu(
                         new ButtonFunction("Open folder", () =>
                         {
-                            RTEditor.inst.prefabPathField.text = path.Replace(RTEditor.inst.BeatmapsPath + "/", "");
+                            RTEditor.inst.PrefabPopups.External.PathField.text = path.Replace(RTEditor.inst.BeatmapsPath + "/", "");
                             RTEditor.inst.UpdatePrefabPath(false);
                         }),
-                        new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath), () => { RTEditor.inst.UpdatePrefabPath(true); RTEditor.inst.HideNameEditor(); })),
+                        new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath), () => { RTPrefabEditor.inst.LoadPrefabs(RTPrefabEditor.inst.RenderExternalPrefabs); RTEditor.inst.HideNameEditor(); })),
                         new ButtonFunction(true),
                         new ButtonFunction("Paste Prefab", RTPrefabEditor.inst.PastePrefab),
                         new ButtonFunction("Delete", () => RTEditor.inst.ShowWarningPopup("Are you <b>100%</b> sure you want to delete this folder? This <b>CANNOT</b> be undone! Always make sure you have backups.", () =>
                         {
                             RTFile.DeleteDirectory(path);
-                            RTEditor.inst.UpdatePrefabPath(true);
+                            RTPrefabEditor.inst.LoadPrefabs(RTPrefabEditor.inst.RenderExternalPrefabs);
                             EditorManager.inst.DisplayNotification("Deleted folder!", 2f, EditorManager.NotificationType.Success);
                             RTEditor.inst.HideWarningPopup();
                         }, RTEditor.inst.HideWarningPopup)),
@@ -212,7 +284,7 @@ namespace BetterLegacy.Editor.Data.Elements
                     return;
                 }
 
-                RTEditor.inst.prefabPathField.text = path.Replace(RTEditor.inst.BeatmapsPath + "/", "");
+                RTEditor.inst.PrefabPopups.External.PathField.text = path.Replace(RTEditor.inst.BeatmapsPath + "/", "");
                 RTEditor.inst.UpdatePrefabPath(false);
             };
 
@@ -289,6 +361,9 @@ namespace BetterLegacy.Editor.Data.Elements
             if (!gameObject)
                 return;
 
+            var rect = IsExternal ? externalBaseRect : internalBaseRect;
+            rect.AssignToRectTransform(GameObject.transform.AsRT());
+
             RenderHover();
 
             RenderIcon();
@@ -328,9 +403,10 @@ namespace BetterLegacy.Editor.Data.Elements
         {
             Label.text = name;
             var isExternal = IsExternal;
-            Label.horizontalOverflow = isExternal ? EditorConfig.Instance.PrefabExternalNameHorizontalWrap.Value : EditorConfig.Instance.PrefabInternalNameHorizontalWrap.Value;
-            Label.verticalOverflow = isExternal ? EditorConfig.Instance.PrefabExternalNameVerticalWrap.Value : EditorConfig.Instance.PrefabInternalNameVerticalWrap.Value;
-            Label.fontSize = isExternal ? EditorConfig.Instance.PrefabExternalNameFontSize.Value : EditorConfig.Instance.PrefabInternalNameFontSize.Value;
+            Label.alignment = isExternal ? externalNameLabelAlignment : internalNameLabelAlignment;
+            Label.horizontalOverflow = isExternal ? externalNameLabelHorizontalWrap : internalNameLabelHorizontalWrap;
+            Label.verticalOverflow = isExternal ? externalNameLabelVerticalWrap : internalNameLabelVerticalWrap;
+            Label.fontSize = isExternal ? externalNameLabelFontSize : internalNameLabelFontSize;
         }
 
         /// <summary>
@@ -357,9 +433,10 @@ namespace BetterLegacy.Editor.Data.Elements
             TypeIcon.sprite = icon;
 
             var isExternal = IsExternal;
-            TypeText.horizontalOverflow = isExternal ? EditorConfig.Instance.PrefabExternalTypeHorizontalWrap.Value : EditorConfig.Instance.PrefabInternalTypeHorizontalWrap.Value;
-            TypeText.verticalOverflow = isExternal ? EditorConfig.Instance.PrefabExternalTypeVerticalWrap.Value : EditorConfig.Instance.PrefabInternalTypeVerticalWrap.Value;
-            TypeText.fontSize = isExternal ? EditorConfig.Instance.PrefabExternalTypeFontSize.Value : EditorConfig.Instance.PrefabInternalTypeFontSize.Value;
+            TypeText.alignment = isExternal ? externalTypeLabelAlignment : internalTypeLabelAlignment;
+            TypeText.horizontalOverflow = isExternal ? externalTypeLabelHorizontalWrap : internalTypeLabelHorizontalWrap;
+            TypeText.verticalOverflow = isExternal ? externalTypeLabelVerticalWrap : internalTypeLabelVerticalWrap;
+            TypeText.fontSize = isExternal ? externalTypeLabelFontSize : internalTypeLabelFontSize;
         }
 
         public override void RenderTooltip()
@@ -551,7 +628,7 @@ namespace BetterLegacy.Editor.Data.Elements
                                     new ButtonFunction("Convert to VG", () => RTPrefabEditor.inst.ConvertPrefab(Item)),
                                     new ButtonFunction("Open", () =>  RTPrefabEditor.inst.OpenPrefabEditorDialog(this)),
                                     new ButtonFunction(true),
-                                    new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath), () => { RTEditor.inst.UpdatePrefabPath(true); RTEditor.inst.HideNameEditor(); })),
+                                    new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath), () => { RTPrefabEditor.inst.LoadPrefabs(RTPrefabEditor.inst.RenderExternalPrefabs); RTEditor.inst.HideNameEditor(); })),
                                     new ButtonFunction("Create Prefab", () =>
                                     {
                                         PrefabEditor.inst.OpenDialog();
@@ -599,10 +676,9 @@ namespace BetterLegacy.Editor.Data.Elements
         public void RenderDeleteButton()
         {
             var deleteButton = DeleteButton;
-            var deleteRT = deleteButton.transform.AsRT();
-            var isExternal = IsExternal;
-            deleteRT.anchoredPosition = isExternal ? EditorConfig.Instance.PrefabExternalDeleteButtonPos.Value : EditorConfig.Instance.PrefabInternalDeleteButtonPos.Value;
-            deleteRT.sizeDelta = isExternal ? EditorConfig.Instance.PrefabExternalDeleteButtonSca.Value : EditorConfig.Instance.PrefabInternalDeleteButtonSca.Value;
+
+            var rect = IsExternal ? externalDeleteRect : internalDeleteRect;
+            rect.AssignToRectTransform(deleteButton.transform.AsRT());
 
             deleteButton.onClick.NewListener(() => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this prefab? (This is permanent!)", () =>
             {

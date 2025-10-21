@@ -1,7 +1,8 @@
-﻿using UnityEngine.UI;
+﻿using System;
 
 using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
+using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Managers;
 
@@ -32,6 +33,7 @@ namespace BetterLegacy.Editor.Data.Popups
 
         public string internalTitle;
         public string externalTitle;
+        public bool closeAll = true;
 
         /// <summary>
         /// Gets the internal / external popup.
@@ -74,8 +76,22 @@ namespace BetterLegacy.Editor.Data.Popups
 
         public override void Render()
         {
+            try
+            {
+                onRender?.Invoke();
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Render Popup error: {ex}");
+            }
             Internal?.Render();
             External?.Render();
+
+            if (closeAll)
+            {
+                Internal?.UpdateCloseFunction(Close);
+                External?.UpdateCloseFunction(Close);
+            }
         }
     }
 }

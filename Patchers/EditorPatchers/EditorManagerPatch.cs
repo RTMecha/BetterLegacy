@@ -17,7 +17,6 @@ using BetterLegacy.Arcade.Managers;
 using BetterLegacy.Companion.Entity;
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
-using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
@@ -710,26 +709,6 @@ namespace BetterLegacy.Patchers
             Instance.ClearPopups();
             Instance.RenderOpenBeatmapPopup();
             EditorLevelManager.inst.OpenLevelPopup.Open();
-
-            try
-            {
-                var openLevel = EditorLevelManager.inst.OpenLevelPopup.GameObject;
-                var gridLayoutGroup = openLevel.transform.Find("mask/content").GetComponent<GridLayoutGroup>();
-
-                if (AssetPack.TryReadFromFile("editor/ui/popups/open_file_popup.json", out string uiFile))
-                {
-                    var jn = JSON.Parse(uiFile);
-                    RectValues.TryParse(jn["base"]["rect"], RectValues.Default.SizeDelta(600f, 400f)).AssignToRectTransform(openLevel.transform.AsRT());
-
-                    var layoutValues = LayoutValues.Parse(jn["layout"]);
-                    if (layoutValues is GridLayoutValues gridLayoutValues)
-                        gridLayoutValues.AssignToLayout(gridLayoutGroup);
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.Log($"OpenBeatmapPopup {ex}");
-            }
 
             return false;
         }
