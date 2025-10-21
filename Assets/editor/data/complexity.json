@@ -1,0 +1,22 @@
+﻿{
+  "beatmapobject/origin_fields": {
+    "complexity": 0,
+    "only_this": true
+  },
+  "beatmapobject/origin_toggles": {
+    "complexity": 1,
+    "only_this": false
+  },
+  "editor_layer_toggles": {
+    "complexity": 0,
+    "only_this": true
+  },
+  "editor_layer_field": {
+    "complexity": 1,
+    "only_this": false
+  },
+  "time_field": {
+    "complexity": 1,
+    "only_this": false
+  }
+}

@@ -810,6 +810,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         layerNum++;
                     }
 
+                    EditorHelper.SetComplexity(EditorSettingsParent.Find("layer").gameObject, "editor_layer_toggles", Complexity.Simple);
+                    EditorHelper.SetComplexity(EditorLayerField.gameObject, "editor_layer_field", Complexity.Normal);
+
                     RTEditor.GenerateLabels("indexer_label", LeftContent, 37, false,
                         new Label("Editor Index") { horizontalWrap = HorizontalWrapMode.Overflow });
 

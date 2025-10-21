@@ -69,6 +69,16 @@ namespace BetterLegacy.Editor.Managers
 
             try
             {
+                if (AssetPack.TryReadFromFile("editor/data/complexity.json", out string complexityFile))
+                    EditorHelper.complexityJSON = JSON.Parse(complexityFile);
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"There was an error with loading the complexity setting in the editor: {ex}");
+            }
+
+            try
+            {
                 ShapeManager.inst.SetupShapes();
             }
             catch (Exception ex)
@@ -436,7 +446,6 @@ namespace BetterLegacy.Editor.Managers
         void OnDestroy()
         {
             CoreHelper.LogError($"RTEditor was destroyed!");
-            EditorConfig.UpdateEditorComplexity = null;
             EditorConfig.AdjustPositionInputsChanged = null;
         }
 
@@ -3038,7 +3047,7 @@ namespace BetterLegacy.Editor.Managers
                 toggle.gameObject.AddComponent<ContrastColors>().Init(toggle.transform.Find("Background/Text").GetComponent<Text>(), toggle.image);
                 layerNum++;
             }
-            EditorHelper.SetComplexity(layers, Complexity.Simple);
+            EditorHelper.SetComplexity(layers, "editor_layer_toggles", Complexity.Simple);
 
             eventLayerToggle = timelineBar.transform.Find("6").GetComponent<Toggle>();
             eventLayerToggle.group = null;
@@ -3068,10 +3077,10 @@ namespace BetterLegacy.Editor.Managers
 
             TriggerHelper.AddEventTriggers(timeObj, TriggerHelper.ScrollDelta(timeField));
 
-            EditorHelper.SetComplexity(timeField.gameObject, Complexity.Normal);
+            EditorHelper.SetComplexity(timeField.gameObject, "time_field", Complexity.Normal);
 
             var layersObj = timeObj.Duplicate(timelineBar.transform, "layers", 7);
-            EditorHelper.SetComplexity(layersObj, Complexity.Normal);
+            EditorHelper.SetComplexity(layersObj, "editor_layer_field", Complexity.Normal);
             layersObj.transform.localScale = Vector3.one;
 
             TooltipHelper.AssignTooltip(layersObj, "Editor Layer", 3f);
@@ -3093,8 +3102,7 @@ namespace BetterLegacy.Editor.Managers
             editorLayerField.GetPlaceholderText().alignment = TextAnchor.MiddleLeft;
             editorLayerField.GetPlaceholderText().fontSize = 16;
             editorLayerField.GetPlaceholderText().horizontalOverflow = HorizontalWrapMode.Overflow;
-            editorLayerField.onValueChanged.ClearAll();
-            editorLayerField.onValueChanged.AddListener(_val =>
+            editorLayerField.onValueChanged.NewListener(_val =>
             {
                 if (int.TryParse(_val, out int num))
                     EditorTimeline.inst.SetLayer(Mathf.Clamp(num - 1, 0, int.MaxValue));
@@ -3121,8 +3129,7 @@ namespace BetterLegacy.Editor.Managers
             pitchField.GetPlaceholderText().alignment = TextAnchor.MiddleLeft;
             pitchField.GetPlaceholderText().fontSize = 16;
             pitchField.GetPlaceholderText().horizontalOverflow = HorizontalWrapMode.Overflow;
-            pitchField.onValueChanged.ClearAll();
-            pitchField.onValueChanged.AddListener(_val =>
+            pitchField.onValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
                 {

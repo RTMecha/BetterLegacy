@@ -2479,44 +2479,34 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="beatmapObject">The BeatmapObject to set.</param>
         public void RenderLayers(BeatmapObject beatmapObject)
         {
-            Dialog.EditorLayerField.gameObject.SetActive(RTEditor.NotSimple);
-
-            if (RTEditor.NotSimple)
+            Dialog.EditorLayerField.image.color = EditorTimeline.GetLayerColor(beatmapObject.editorData.Layer);
+            Dialog.EditorLayerField.SetTextWithoutNotify((beatmapObject.editorData.Layer + 1).ToString());
+            Dialog.EditorLayerField.onValueChanged.NewListener(_val =>
             {
-                Dialog.EditorLayerField.SetTextWithoutNotify((beatmapObject.editorData.Layer + 1).ToString());
-                Dialog.EditorLayerField.image.color = EditorTimeline.GetLayerColor(beatmapObject.editorData.Layer);
-                Dialog.EditorLayerField.onValueChanged.NewListener(_val =>
+                if (int.TryParse(_val, out int num))
                 {
-                    if (int.TryParse(_val, out int num))
-                    {
-                        num = Mathf.Clamp(num - 1, 0, int.MaxValue);
-                        beatmapObject.editorData.Layer = num;
-                        EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
-                        RenderLayers(beatmapObject);
-                    }
-                });
+                    num = Mathf.Clamp(num - 1, 0, int.MaxValue);
+                    beatmapObject.editorData.Layer = num;
+                    EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
+                    RenderLayers(beatmapObject);
+                }
+            });
 
-                if (Dialog.EditorLayerField.gameObject)
-                    TriggerHelper.AddEventTriggers(Dialog.EditorLayerField.gameObject, TriggerHelper.ScrollDeltaInt(Dialog.EditorLayerField, 1, 1, int.MaxValue));
+            if (Dialog.EditorLayerField.gameObject)
+                TriggerHelper.AddEventTriggers(Dialog.EditorLayerField.gameObject, TriggerHelper.ScrollDeltaInt(Dialog.EditorLayerField, 1, 1, int.MaxValue));
 
-                var editorLayerContextMenu = Dialog.EditorLayerField.gameObject.GetOrAddComponent<ContextClickable>();
-                editorLayerContextMenu.onClick = eventData =>
-                {
-                    if (eventData.button != PointerEventData.InputButton.Right)
-                        return;
+            var editorLayerContextMenu = Dialog.EditorLayerField.gameObject.GetOrAddComponent<ContextClickable>();
+            editorLayerContextMenu.onClick = eventData =>
+            {
+                if (eventData.button != PointerEventData.InputButton.Right)
+                    return;
 
-                    EditorContextMenu.inst.ShowContextMenu(
-                        new ButtonFunction("Go to Editor Layer", () => EditorTimeline.inst.SetLayer(beatmapObject.editorData.Layer, EditorTimeline.LayerType.Objects))
-                        );
-                };
-            }
+                EditorContextMenu.inst.ShowContextMenu(
+                    new ButtonFunction("Go to Editor Layer", () => EditorTimeline.inst.SetLayer(beatmapObject.editorData.Layer, EditorTimeline.LayerType.Objects))
+                    );
+            };
 
             if (Dialog.EditorLayerToggles == null)
-                return;
-
-            Dialog.EditorSettingsParent.Find("layer").gameObject.SetActive(!RTEditor.NotSimple);
-
-            if (RTEditor.NotSimple)
                 return;
 
             for (int i = 0; i < Dialog.EditorLayerToggles.Length; i++)

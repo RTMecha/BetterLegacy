@@ -672,6 +672,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 layerNum++;
             }
 
+            EditorHelper.SetComplexity(EditorSettingsParent.Find("layer").gameObject, "editor_layer_toggles", Complexity.Simple);
+            EditorHelper.SetComplexity(EditorLayerField.gameObject, "editor_layer_field", Complexity.Normal);
+
             var label = EditorPrefabHolder.Instance.Labels.Duplicate(LeftContent, "indexer_label");
 
             var labelText = label.transform.GetChild(0).GetComponent<Text>();

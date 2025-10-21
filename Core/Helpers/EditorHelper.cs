@@ -8,6 +8,8 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
+using SimpleJSON;
+
 using BetterLegacy.Companion.Entity;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Components;
@@ -31,17 +33,50 @@ namespace BetterLegacy.Core.Helpers
         public const string UPLOAD_DROPDOWN = "Steam";
         public const string HELP_DROPDOWN = "Help";
 
+        public static JSONNode complexityJSON;
+
         public static void SetComplexity(GameObject gameObject, Complexity complexity, bool onlySpecificComplexity = false)
         {
-            if (complexity == Complexity.Simple || onlySpecificComplexity)
+            if (!gameObject)
+                return;
+
+            var obj = gameObject.AddComponent<ComplexityObject>();
+            obj.complexity = complexity;
+            obj.onlySpecificComplexity = complexity == Complexity.Simple || onlySpecificComplexity;
+            obj.UpdateActiveState();
+
+            //if (complexity == Complexity.Simple || onlySpecificComplexity)
+            //{
+            //    CoreHelper.SetGameObjectActive(gameObject, complexity == EditorConfig.Instance.EditorComplexity.Value);
+            //    EditorConfig.UpdateEditorComplexity += () => CoreHelper.SetGameObjectActive(gameObject, complexity == EditorConfig.Instance.EditorComplexity.Value);
+            //    return;
+            //}
+
+            //CoreHelper.SetGameObjectActive(gameObject, complexity <= EditorConfig.Instance.EditorComplexity.Value);
+            //EditorConfig.UpdateEditorComplexity += () => CoreHelper.SetGameObjectActive(gameObject, complexity <= EditorConfig.Instance.EditorComplexity.Value);
+        }
+
+        public static void SetComplexity(GameObject gameObject, string path, Complexity defaultComplexity, bool defaultOnlySpecificComplexity = false)
+        {
+            if (complexityJSON == null)
             {
-                CoreHelper.SetGameObjectActive(gameObject, complexity == EditorConfig.Instance.EditorComplexity.Value);
-                EditorConfig.UpdateEditorComplexity += () => CoreHelper.SetGameObjectActive(gameObject, complexity == EditorConfig.Instance.EditorComplexity.Value);
+                SetComplexity(gameObject, defaultComplexity, defaultOnlySpecificComplexity);
                 return;
             }
 
-            CoreHelper.SetGameObjectActive(gameObject, complexity <= EditorConfig.Instance.EditorComplexity.Value);
-            EditorConfig.UpdateEditorComplexity += () => CoreHelper.SetGameObjectActive(gameObject, complexity <= EditorConfig.Instance.EditorComplexity.Value);
+            var referenceJSON = complexityJSON[path];
+            if (referenceJSON == null)
+            {
+                SetComplexity(gameObject, defaultComplexity, defaultOnlySpecificComplexity);
+                return;
+            }
+
+            var obj = gameObject.AddComponent<ComplexityObject>();
+            obj.complexity = (Complexity)referenceJSON["complexity"].AsInt;
+            obj.onlySpecificComplexity = referenceJSON["only_this"].AsBool;
+            obj.disabled = referenceJSON["disabled"].AsBool;
+            obj.path = path;
+            obj.UpdateActiveState();
         }
 
         public static void AddEditorPopup(string name, GameObject gameObject)
@@ -725,6 +760,35 @@ namespace BetterLegacy.Core.Helpers
                 if (prefabable.PrefabInstanceID == oldID)
                     prefabable.PrefabInstanceID = newID;
             }
+        }
+    }
+
+    public class ComplexityObject : MonoBehaviour
+    {
+        public Complexity complexity;
+        public bool onlySpecificComplexity;
+        public string path;
+        public bool disabled;
+        public bool active = true;
+
+        public static void UpdateAll()
+        {
+            var objs = FindObjectsOfType<ComplexityObject>();
+            for (int i = 0; i < objs.Length; i++)
+                objs[i].UpdateActiveState();
+        }
+
+        public void UpdateActiveState()
+        {
+            if (disabled)
+            {
+                CoreHelper.SetGameObjectActive(gameObject, active);
+                return;
+            }
+            CoreHelper.SetGameObjectActive(gameObject,
+                onlySpecificComplexity ?
+                    complexity == EditorConfig.Instance.EditorComplexity.Value :
+                    complexity <= EditorConfig.Instance.EditorComplexity.Value);
         }
     }
 }

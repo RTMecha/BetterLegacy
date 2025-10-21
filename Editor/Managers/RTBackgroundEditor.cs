@@ -897,58 +897,46 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderLayers(BackgroundObject backgroundObject)
         {
-            Dialog.EditorLayerField.gameObject.SetActive(RTEditor.NotSimple);
-
-            if (RTEditor.NotSimple)
+            Dialog.EditorLayerField.image.color = EditorTimeline.GetLayerColor(backgroundObject.editorData.Layer);
+            Dialog.EditorLayerField.SetTextWithoutNotify((backgroundObject.editorData.Layer + 1).ToString());
+            Dialog.EditorLayerField.onValueChanged.NewListener(_val =>
             {
-                Dialog.EditorLayerField.image.color = EditorTimeline.GetLayerColor(backgroundObject.editorData.Layer);
-                Dialog.EditorLayerField.onValueChanged.ClearAll();
-                Dialog.EditorLayerField.text = (backgroundObject.editorData.Layer + 1).ToString();
-                Dialog.EditorLayerField.onValueChanged.AddListener(_val =>
+                if (int.TryParse(_val, out int n))
                 {
-                    if (int.TryParse(_val, out int n))
-                    {
-                        n = n - 1;
-                        if (n < 0)
-                            n = 0;
+                    n = n - 1;
+                    if (n < 0)
+                        n = 0;
 
-                        backgroundObject.editorData.Layer = EditorTimeline.GetLayer(n);
-                        EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(backgroundObject));
-                        RenderLayers(backgroundObject);
-                    }
-                    else
-                        EditorManager.inst.DisplayNotification("Text is not correct format!", 1f, EditorManager.NotificationType.Error);
-                });
+                    backgroundObject.editorData.Layer = EditorTimeline.GetLayer(n);
+                    EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(backgroundObject));
+                    RenderLayers(backgroundObject);
+                }
+                else
+                    EditorManager.inst.DisplayNotification("Text is not correct format!", 1f, EditorManager.NotificationType.Error);
+            });
 
-                TriggerHelper.AddEventTriggers(Dialog.EditorLayerField.gameObject, TriggerHelper.ScrollDeltaInt(Dialog.EditorLayerField, min: 1, max: int.MaxValue));
+            TriggerHelper.AddEventTriggers(Dialog.EditorLayerField.gameObject, TriggerHelper.ScrollDeltaInt(Dialog.EditorLayerField, min: 1, max: int.MaxValue));
 
-                var editorLayerContextMenu = Dialog.EditorLayerField.gameObject.GetOrAddComponent<ContextClickable>();
-                editorLayerContextMenu.onClick = eventData =>
-                {
-                    if (eventData.button != PointerEventData.InputButton.Right)
-                        return;
+            var editorLayerContextMenu = Dialog.EditorLayerField.gameObject.GetOrAddComponent<ContextClickable>();
+            editorLayerContextMenu.onClick = eventData =>
+            {
+                if (eventData.button != PointerEventData.InputButton.Right)
+                    return;
 
-                    EditorContextMenu.inst.ShowContextMenu(
-                        new ButtonFunction("Go to Editor Layer", () => EditorTimeline.inst.SetLayer(backgroundObject.editorData.Layer, EditorTimeline.LayerType.Objects))
-                        );
-                };
-            }
+                EditorContextMenu.inst.ShowContextMenu(
+                    new ButtonFunction("Go to Editor Layer", () => EditorTimeline.inst.SetLayer(backgroundObject.editorData.Layer, EditorTimeline.LayerType.Objects))
+                    );
+            };
 
             if (Dialog.EditorLayerToggles == null)
-                return;
-
-            Dialog.EditorSettingsParent.Find("layer").gameObject.SetActive(!RTEditor.NotSimple);
-
-            if (RTEditor.NotSimple)
                 return;
 
             for (int i = 0; i < Dialog.EditorLayerToggles.Length; i++)
             {
                 var index = i;
                 var toggle = Dialog.EditorLayerToggles[i];
-                toggle.onValueChanged.ClearAll();
-                toggle.isOn = index == backgroundObject.editorData.Layer;
-                toggle.onValueChanged.AddListener(_val =>
+                toggle.SetIsOnWithoutNotify(index == backgroundObject.editorData.Layer);
+                toggle.onValueChanged.NewListener(_val =>
                 {
                     backgroundObject.editorData.Layer = index;
                     EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(backgroundObject));

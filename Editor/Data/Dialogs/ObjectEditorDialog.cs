@@ -343,8 +343,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
             {
                 var contentOriginTF = Content.transform.Find("origin").transform;
 
-                EditorHelper.SetComplexity(contentOriginTF.Find("origin-x").gameObject, Complexity.Simple);
-                EditorHelper.SetComplexity(contentOriginTF.Find("origin-y").gameObject, Complexity.Simple);
+                EditorHelper.SetComplexity(contentOriginTF.Find("origin-x").gameObject, "beatmapobject/origin_toggles", Complexity.Simple);
+                EditorHelper.SetComplexity(contentOriginTF.Find("origin-y").gameObject, "beatmapobject/origin_toggles", Complexity.Simple);
 
                 try
                 {
@@ -398,8 +398,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 EditorThemeManager.AddSelectable(originYInputFieldStorage.leftButton, ThemeGroup.Function_2, false);
                 EditorThemeManager.AddSelectable(originYInputFieldStorage.rightButton, ThemeGroup.Function_2, false);
 
-                EditorHelper.SetComplexity(originX, Complexity.Normal);
-                EditorHelper.SetComplexity(originY, Complexity.Normal);
+                EditorHelper.SetComplexity(originX, "beatmapobject/origin_fields", Complexity.Normal);
+                EditorHelper.SetComplexity(originY, "beatmapobject/origin_fields", Complexity.Normal);
             }
 
             // Layers
@@ -1818,6 +1818,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 toggle.gameObject.AddComponent<ContrastColors>().Init(toggle.transform.Find("Background/Text").GetComponent<Text>(), toggle.image);
                 layerNum++;
             }
+
+            EditorHelper.SetComplexity(EditorSettingsParent.Find("layer").gameObject, "editor_layer_toggles", Complexity.Simple);
+            EditorHelper.SetComplexity(EditorLayerField.gameObject, "editor_layer_field", Complexity.Normal);
 
             var baseColorParent = EditorPrefabHolder.Instance.Labels.Duplicate(Content, "base color", editorSettingsIndex + 2);
             baseColorParent.transform.AsRT().sizeDelta = new Vector2(351f, 32f);

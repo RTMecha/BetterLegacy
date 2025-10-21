@@ -1010,8 +1010,6 @@ namespace BetterLegacy.Configs
 
         #region Setting Changed
 
-        public static Action UpdateEditorComplexity { get; set; }
-
         public override void SetupSettingChanged()
         {
             SettingChanged += UpdateSettings;
@@ -1204,7 +1202,7 @@ namespace BetterLegacy.Configs
         {
             RTEditor.ShowModdedUI = EditorComplexity.Value == Complexity.Advanced;
 
-            UpdateEditorComplexity?.Invoke();
+            ComplexityObject.UpdateAll();
             AdjustPositionInputsChanged?.Invoke();
 
             if (EditorTimeline.inst && EditorTimeline.inst.SelectedObjectCount == 1 && EditorTimeline.inst.CurrentSelection.isBeatmapObject)
