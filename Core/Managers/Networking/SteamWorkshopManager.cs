@@ -527,7 +527,7 @@ namespace BetterLegacy.Core.Managers.Networking
         /// Opens an item's Steam Workshop page.
         /// </summary>
         /// <param name="id">ID to open.</param>
-        public void OpenWorkshop(PublishedFileId publishedFileID) => Application.OpenURL($"https://steamcommunity.com/sharedfiles/filedetails/?id={publishedFileID}");
+        public void OpenWorkshop(PublishedFileId publishedFileID) => Application.OpenURL($"steam://url/CommunityFilePage/{publishedFileID}");
 
         #endregion
 
