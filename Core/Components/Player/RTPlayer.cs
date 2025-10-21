@@ -33,7 +33,7 @@ using Ease = BetterLegacy.Core.Animation.Ease;
 namespace BetterLegacy.Core.Components.Player
 {
     /// <summary>
-    /// Modded player component.
+    /// Runtime Player component.
     /// </summary>
     public class RTPlayer : MonoBehaviour, IRTObject, ITransformable
     {
@@ -163,6 +163,8 @@ namespace BetterLegacy.Core.Components.Player
         /// A list of temporary spawned objects.
         /// </summary>
         public List<EmittedObject> emitted = new List<EmittedObject>();
+
+        public RTPlayerDialogue dialogue;
 
         public RTLevelBase ParentRuntime { get; set; }
 
@@ -1371,6 +1373,8 @@ namespace BetterLegacy.Core.Components.Player
             Core = null;
             Model = null;
         }
+
+        public void InitDialogue() => RTPlayerDialogue.Init(this);
 
         #endregion
 
