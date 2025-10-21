@@ -241,7 +241,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             BaseTab.HitCooldown = SetupNumber("Base Hit Cooldown", PlayerEditor.Tab.Base, editorTab: BaseTab);
             BaseTab.RotateMode = SetupDropdown("Base Rotate Mode", CoreHelper.StringToOptionData("Face Direction", "None", "Flip X", "Flip Y", "Rotate Reset", "Rotate Flip X", "Rotate Flip Y"), PlayerEditor.Tab.Base, editorTab: BaseTab);
             BaseTab.RotationSpeed = SetupNumber("Base Rotation Speed", PlayerEditor.Tab.Base, editorTab: BaseTab);
-            BaseTab.RotationCurve = SetupDropdown("Base Rotation Curve", EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList(), PlayerEditor.Tab.Base, editorTab: BaseTab);
+            BaseTab.RotationCurve = SetupDropdown("Base Rotation Curve", RTEditor.inst.GetEaseOptions(), PlayerEditor.Tab.Base, editorTab: BaseTab);
             BaseTab.CollisionAccurate = SetupBool("Base Collision Accurate", PlayerEditor.Tab.Base, editorTab: BaseTab);
             BaseTab.SprintSneakActive = SetupBool("Base Sprint Sneak Active", PlayerEditor.Tab.Base, editorTab: BaseTab);
             BaseTab.SprintSpeed = SetupNumber("Base Sprint Speed", PlayerEditor.Tab.Base, editorTab: BaseTab);
@@ -256,7 +256,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             BaseTab.StretchActive = SetupBool("Stretch Active", PlayerEditor.Tab.Base, editorTab: BaseTab);
             BaseTab.StretchAmount = SetupNumber("Stretch Amount", PlayerEditor.Tab.Base, editorTab: BaseTab);
-            BaseTab.StretchEasing = SetupDropdown("Stretch Easing", EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList(), PlayerEditor.Tab.Base, editorTab: BaseTab);
+            BaseTab.StretchEasing = SetupDropdown("Stretch Easing", RTEditor.inst.GetEaseOptions(), PlayerEditor.Tab.Base, editorTab: BaseTab);
 
             BaseTab.FacePosition = SetupVector2("Face Position", PlayerEditor.Tab.Base, editorTab: BaseTab);
             BaseTab.FaceControlActive = SetupBool("Face Control Active", PlayerEditor.Tab.Base, editorTab: BaseTab);
@@ -307,18 +307,18 @@ namespace BetterLegacy.Editor.Data.Dialogs
             SpawnerTab.PulseEndColor = SetupColor("Pulse End Color", PlayerEditor.Tab.Spawners, editorTab: SpawnerTab);
             SpawnerTab.PulseEndCustomColor = SetupString("Pulse End Custom Color", PlayerEditor.Tab.Spawners, editorTab: SpawnerTab);
             SpawnerTab.PulseEndOpacity = SetupNumber("Pulse End Opacity", PlayerEditor.Tab.Spawners, editorTab: SpawnerTab);
-            SpawnerTab.PulseColorEasing = SetupDropdown("Pulse Color Easing", EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList(), PlayerEditor.Tab.Spawners, editorTab: SpawnerTab);
-            SpawnerTab.PulseOpacityEasing = SetupDropdown("Pulse Opacity Easing", EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList(), PlayerEditor.Tab.Spawners, editorTab: SpawnerTab);
+            SpawnerTab.PulseColorEasing = SetupDropdown("Pulse Color Easing", RTEditor.inst.GetEaseOptions(), PlayerEditor.Tab.Spawners, editorTab: SpawnerTab);
+            SpawnerTab.PulseOpacityEasing = SetupDropdown("Pulse Opacity Easing", RTEditor.inst.GetEaseOptions(), PlayerEditor.Tab.Spawners, editorTab: SpawnerTab);
             SpawnerTab.PulseDepth = SetupNumber("Pulse Depth", PlayerEditor.Tab.Spawners, editorTab: SpawnerTab);
             SpawnerTab.PulseStartPosition = SetupVector2("Pulse Start Position", PlayerEditor.Tab.Spawners, editorTab: SpawnerTab);
             SpawnerTab.PulseEndPosition = SetupVector2("Pulse End Position", PlayerEditor.Tab.Spawners, editorTab: SpawnerTab);
-            SpawnerTab.PulsePositionEasing = SetupDropdown("Pulse Position Easing", EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList(), PlayerEditor.Tab.Spawners, editorTab: SpawnerTab);
+            SpawnerTab.PulsePositionEasing = SetupDropdown("Pulse Position Easing", RTEditor.inst.GetEaseOptions(), PlayerEditor.Tab.Spawners, editorTab: SpawnerTab);
             SpawnerTab.PulseStartScale = SetupVector2("Pulse Start Scale", PlayerEditor.Tab.Spawners, editorTab: SpawnerTab);
             SpawnerTab.PulseEndScale = SetupVector2("Pulse End Scale", PlayerEditor.Tab.Spawners, editorTab: SpawnerTab);
-            SpawnerTab.PulseScaleEasing = SetupDropdown("Pulse Scale Easing", EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList(), PlayerEditor.Tab.Spawners, editorTab: SpawnerTab);
+            SpawnerTab.PulseScaleEasing = SetupDropdown("Pulse Scale Easing", RTEditor.inst.GetEaseOptions(), PlayerEditor.Tab.Spawners, editorTab: SpawnerTab);
             SpawnerTab.PulseStartRotation = SetupNumber("Pulse Start Rotation", PlayerEditor.Tab.Spawners, editorTab: SpawnerTab);
             SpawnerTab.PulseEndRotation = SetupNumber("Pulse End Rotation", PlayerEditor.Tab.Spawners, editorTab: SpawnerTab);
-            SpawnerTab.PulseRotationEasing = SetupDropdown("Pulse Rotation Easing", EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList(), PlayerEditor.Tab.Spawners, editorTab: SpawnerTab);
+            SpawnerTab.PulseRotationEasing = SetupDropdown("Pulse Rotation Easing", RTEditor.inst.GetEaseOptions(), PlayerEditor.Tab.Spawners, editorTab: SpawnerTab);
 
             #endregion
 
@@ -340,22 +340,22 @@ namespace BetterLegacy.Editor.Data.Dialogs
             SpawnerTab.BulletEndCustomColor = SetupString("Bullet End Custom Color", PlayerEditor.Tab.Spawners, editorTab: SpawnerTab);
             SpawnerTab.BulletEndOpacity = SetupNumber("Bullet End Opacity", PlayerEditor.Tab.Spawners, editorTab: SpawnerTab);
             SpawnerTab.BulletColorDuration = SetupNumber("Bullet Color Duration", PlayerEditor.Tab.Spawners, editorTab: SpawnerTab);
-            SpawnerTab.BulletColorEasing = SetupDropdown("Bullet Color Easing", EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList(), PlayerEditor.Tab.Spawners, editorTab: SpawnerTab);
+            SpawnerTab.BulletColorEasing = SetupDropdown("Bullet Color Easing", RTEditor.inst.GetEaseOptions(), PlayerEditor.Tab.Spawners, editorTab: SpawnerTab);
             SpawnerTab.BulletOpacityDuration = SetupNumber("Bullet Opacity Duration", PlayerEditor.Tab.Spawners, editorTab: SpawnerTab);
-            SpawnerTab.BulletOpacityEasing = SetupDropdown("Bullet Opacity Easing", EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList(), PlayerEditor.Tab.Spawners, editorTab: SpawnerTab);
+            SpawnerTab.BulletOpacityEasing = SetupDropdown("Bullet Opacity Easing", RTEditor.inst.GetEaseOptions(), PlayerEditor.Tab.Spawners, editorTab: SpawnerTab);
             SpawnerTab.BulletDepth = SetupNumber("Bullet Depth", PlayerEditor.Tab.Spawners, editorTab: SpawnerTab);
             SpawnerTab.BulletStartPosition = SetupVector2("Bullet Start Position", PlayerEditor.Tab.Spawners, editorTab: SpawnerTab);
             SpawnerTab.BulletEndPosition = SetupVector2("Bullet End Position", PlayerEditor.Tab.Spawners, editorTab: SpawnerTab);
             SpawnerTab.BulletPositionDuration = SetupNumber("Bullet Position Duration", PlayerEditor.Tab.Spawners, editorTab: SpawnerTab);
-            SpawnerTab.BulletPositionEasing = SetupDropdown("Bullet Position Easing", EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList(), PlayerEditor.Tab.Spawners, editorTab: SpawnerTab);
+            SpawnerTab.BulletPositionEasing = SetupDropdown("Bullet Position Easing", RTEditor.inst.GetEaseOptions(), PlayerEditor.Tab.Spawners, editorTab: SpawnerTab);
             SpawnerTab.BulletStartScale = SetupVector2("Bullet Start Scale", PlayerEditor.Tab.Spawners, editorTab: SpawnerTab);
             SpawnerTab.BulletEndScale = SetupVector2("Bullet End Scale", PlayerEditor.Tab.Spawners, editorTab: SpawnerTab);
             SpawnerTab.BulletScaleDuration = SetupNumber("Bullet Scale Duration", PlayerEditor.Tab.Spawners, editorTab: SpawnerTab);
-            SpawnerTab.BulletScaleEasing = SetupDropdown("Bullet Scale Easing", EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList(), PlayerEditor.Tab.Spawners, editorTab: SpawnerTab);
+            SpawnerTab.BulletScaleEasing = SetupDropdown("Bullet Scale Easing", RTEditor.inst.GetEaseOptions(), PlayerEditor.Tab.Spawners, editorTab: SpawnerTab);
             SpawnerTab.BulletStartRotation = SetupNumber("Bullet Start Rotation", PlayerEditor.Tab.Spawners, editorTab: SpawnerTab);
             SpawnerTab.BulletEndRotation = SetupNumber("Bullet End Rotation", PlayerEditor.Tab.Spawners, editorTab: SpawnerTab);
             SpawnerTab.BulletRotationDuration = SetupNumber("Bullet Rotation Duration", PlayerEditor.Tab.Spawners, editorTab: SpawnerTab);
-            SpawnerTab.BulletRotationEasing = SetupDropdown("Bullet Rotation Easing", EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList(), PlayerEditor.Tab.Spawners, editorTab: SpawnerTab);
+            SpawnerTab.BulletRotationEasing = SetupDropdown("Bullet Rotation Easing", RTEditor.inst.GetEaseOptions(), PlayerEditor.Tab.Spawners, editorTab: SpawnerTab);
 
             #endregion
 

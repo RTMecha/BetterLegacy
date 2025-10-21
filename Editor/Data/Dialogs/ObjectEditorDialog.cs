@@ -1203,8 +1203,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 var curves = EditorPrefabHolder.Instance.CurvesDropdown.Duplicate(curveBase.transform, "curves");
                 curves.transform.AsRT().sizeDelta = new Vector2(230f, 38f);
                 var curvesDropdown = curves.GetComponent<Dropdown>();
-                curvesDropdown.options = EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList();
                 EditorThemeManager.AddDropdown(curvesDropdown);
+                RTEditor.inst.SetupEaseDropdown(curvesDropdown);
 
                 var curvesApply = EditorPrefabHolder.Instance.Function1Button.Duplicate(curveBase.transform, "apply");
                 curvesApply.transform.AsRT().sizeDelta = new Vector2(132f, 38f);
