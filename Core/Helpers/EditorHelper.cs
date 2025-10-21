@@ -40,7 +40,7 @@ namespace BetterLegacy.Core.Helpers
             if (!gameObject)
                 return;
 
-            var obj = gameObject.AddComponent<ComplexityObject>();
+            var obj = gameObject.GetOrAddComponent<ComplexityObject>();
             obj.complexity = complexity;
             obj.onlySpecificComplexity = complexity == Complexity.Simple || onlySpecificComplexity;
             obj.UpdateActiveState();
