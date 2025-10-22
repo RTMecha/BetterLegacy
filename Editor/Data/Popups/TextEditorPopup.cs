@@ -49,7 +49,7 @@ namespace BetterLegacy.Editor.Data.Popups
             EditorField.GetPlaceholderText().alignment = TextAnchor.UpperLeft;
             EditorField.lineType = InputField.LineType.MultiLineNewline;
             EditorField.onValueChanged.ClearAll();
-            EditorField.text = "";
+            EditorField.text = string.Empty;
             EditorField.characterLimit = 0;
 
             var overlay = Creator.NewUIObject("overlay", EditorField.transform);
