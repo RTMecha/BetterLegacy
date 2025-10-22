@@ -86,28 +86,6 @@ namespace BetterLegacy.Editor.Managers
                 CoreHelper.LogError($"There was an error with loading the shapes in the editor: {ex}");
             }
 
-            // do this before everything else
-            var openFilePopup = EditorManager.inst.GetDialog("Open File Popup").Dialog;
-            var parentSelector = EditorManager.inst.GetDialog("Parent Selector").Dialog;
-            var saveAsPopup = EditorManager.inst.GetDialog("Save As Popup").Dialog;
-            var quickActionsPopup = EditorManager.inst.GetDialog("Quick Actions Popup").Dialog;
-
-            var openFilePopupSelect = openFilePopup.gameObject.AddComponent<SelectGUI>();
-            openFilePopupSelect.target = openFilePopup;
-            openFilePopupSelect.ogPos = openFilePopup.position;
-
-            var parentSelectorSelect = parentSelector.gameObject.AddComponent<SelectGUI>();
-            parentSelectorSelect.target = parentSelector;
-            parentSelectorSelect.ogPos = parentSelector.position;
-
-            var saveAsPopupSelect = saveAsPopup.Find("New File Popup").gameObject.AddComponent<SelectGUI>();
-            saveAsPopupSelect.target = saveAsPopup;
-            saveAsPopupSelect.ogPos = saveAsPopup.position;
-
-            var quickActionsPopupSelect = quickActionsPopup.gameObject.AddComponent<SelectGUI>();
-            quickActionsPopupSelect.target = quickActionsPopup;
-            quickActionsPopupSelect.ogPos = quickActionsPopup.position;
-
             CoreHelper.Log($"RTEDITOR INIT -> {nameof(CacheEditor)}");
             CacheEditor();
             CoreHelper.Log($"RTEDITOR INIT -> {nameof(CacheSprites)}");
@@ -483,8 +461,17 @@ namespace BetterLegacy.Editor.Managers
         {
             try
             {
+                var quickActionsPopup = EditorManager.inst.GetDialog("Quick Actions Popup").Dialog;
+
+                var quickActionsPopupSelect = quickActionsPopup.gameObject.AddComponent<DraggableUI>();
+                quickActionsPopupSelect.target = quickActionsPopup;
+                quickActionsPopupSelect.ogPos = quickActionsPopup.position;
+
                 EditorLevelManager.inst.NewLevelPopup = new NewLevelPopup();
                 EditorLevelManager.inst.NewLevelPopup.Assign(EditorLevelManager.inst.NewLevelPopup.GetLegacyDialog().Dialog.gameObject);
+                EditorLevelManager.inst.NewLevelPopup.Dragger = EditorLevelManager.inst.NewLevelPopup.GameObject.AddComponent<DraggableUI>();
+                EditorLevelManager.inst.NewLevelPopup.Dragger.target = EditorLevelManager.inst.NewLevelPopup.GameObject.transform;
+                EditorLevelManager.inst.NewLevelPopup.Dragger.ogPos = EditorLevelManager.inst.NewLevelPopup.GameObject.transform.position;
                 EditorLevelManager.inst.NewLevelPopup.title = EditorLevelManager.inst.NewLevelPopup.TMPTitle.text;
                 EditorLevelManager.inst.NewLevelPopup.size = EditorLevelManager.inst.NewLevelPopup.GameObject.transform.GetChild(0).AsRT().sizeDelta;
                 EditorLevelManager.inst.NewLevelPopup.onRender = () =>
@@ -505,11 +492,17 @@ namespace BetterLegacy.Editor.Managers
 
                         if (jn["anim"] != null)
                             EditorLevelManager.inst.NewLevelPopup.ReadAnimationJSON(jn["anim"]);
+
+                        if (jn["drag_mode"] != null && EditorLevelManager.inst.NewLevelPopup.Dragger)
+                            EditorLevelManager.inst.NewLevelPopup.Dragger.mode = (DraggableUI.DragMode)jn["drag_mode"].AsInt;
                     }
                 };
 
                 EditorLevelManager.inst.OpenLevelPopup = new ContentPopup(EditorPopup.OPEN_FILE_POPUP);
                 EditorLevelManager.inst.OpenLevelPopup.Assign(EditorLevelManager.inst.OpenLevelPopup.GetLegacyDialog().Dialog.gameObject);
+                EditorLevelManager.inst.OpenLevelPopup.Dragger = EditorLevelManager.inst.OpenLevelPopup.GameObject.AddComponent<DraggableUI>();
+                EditorLevelManager.inst.OpenLevelPopup.Dragger.target = EditorLevelManager.inst.OpenLevelPopup.GameObject.transform;
+                EditorLevelManager.inst.OpenLevelPopup.Dragger.ogPos = EditorLevelManager.inst.OpenLevelPopup.GameObject.transform.position;
                 EditorLevelManager.inst.OpenLevelPopup.title = EditorLevelManager.inst.OpenLevelPopup.Title.text;
                 EditorLevelManager.inst.OpenLevelPopup.size = EditorLevelManager.inst.OpenLevelPopup.GameObject.transform.AsRT().sizeDelta;
                 EditorLevelManager.inst.OpenLevelPopup.refreshSearch = EditorManager.inst.UpdateOpenBeatmapSearch;
@@ -540,6 +533,9 @@ namespace BetterLegacy.Editor.Managers
 
                         if (jn["anim"] != null)
                             EditorLevelManager.inst.OpenLevelPopup.ReadAnimationJSON(jn["anim"]);
+
+                        if (jn["drag_mode"] != null && EditorLevelManager.inst.OpenLevelPopup.Dragger)
+                            EditorLevelManager.inst.OpenLevelPopup.Dragger.mode = (DraggableUI.DragMode)jn["drag_mode"].AsInt;
                     }
                 };
 
@@ -548,12 +544,18 @@ namespace BetterLegacy.Editor.Managers
 
                 ParentSelectorPopup = new ContentPopup(EditorPopup.PARENT_SELECTOR);
                 ParentSelectorPopup.Assign(ParentSelectorPopup.GetLegacyDialog().Dialog.gameObject);
+                ParentSelectorPopup.Dragger = ParentSelectorPopup.GameObject.AddComponent<DraggableUI>();
+                ParentSelectorPopup.Dragger.target = ParentSelectorPopup.GameObject.transform;
+                ParentSelectorPopup.Dragger.ogPos = ParentSelectorPopup.GameObject.transform.position;
                 ParentSelectorPopup.title = ParentSelectorPopup.Title.text;
                 ParentSelectorPopup.size = ParentSelectorPopup.GameObject.transform.AsRT().sizeDelta;
                 ParentSelectorPopup.refreshSearch = EditorManager.inst.UpdateParentSearch;
 
                 SaveAsPopup = new EditorPopup(EditorPopup.SAVE_AS_POPUP);
                 SaveAsPopup.Assign(SaveAsPopup.GetLegacyDialog().Dialog.gameObject);
+                SaveAsPopup.Dragger = SaveAsPopup.GameObject.AddComponent<DraggableUI>();
+                SaveAsPopup.Dragger.target = SaveAsPopup.GameObject.transform;
+                SaveAsPopup.Dragger.ogPos = SaveAsPopup.GameObject.transform.position;
                 SaveAsPopup.title = SaveAsPopup.Title.text;
                 SaveAsPopup.size = SaveAsPopup.GameObject.transform.AsRT().sizeDelta;
 
@@ -562,14 +564,14 @@ namespace BetterLegacy.Editor.Managers
                 PrefabPopups.GameObject = prefabDialog.gameObject;
                 PrefabPopups.Internal = new ContentPopup("internal prefabs");
                 PrefabPopups.Internal.Assign(prefabDialog.Find("internal prefabs").gameObject);
-                var internalSelectGUI = PrefabPopups.Internal.GameObject.GetOrAddComponent<SelectGUI>();
-                internalSelectGUI.ogPos = PrefabPopups.Internal.GameObject.transform.position;
-                internalSelectGUI.target = PrefabPopups.Internal.GameObject.transform;
+                PrefabPopups.Internal.Dragger = PrefabPopups.Internal.GameObject.GetOrAddComponent<DraggableUI>();
+                PrefabPopups.Internal.Dragger.ogPos = PrefabPopups.Internal.GameObject.transform.position;
+                PrefabPopups.Internal.Dragger.target = PrefabPopups.Internal.GameObject.transform;
                 PrefabPopups.External = new ContentPopup("external prefabs");
                 PrefabPopups.External.Assign(prefabDialog.Find("external prefabs").gameObject);
-                var externalSelectGUI = PrefabPopups.External.GameObject.GetOrAddComponent<SelectGUI>();
-                externalSelectGUI.ogPos = PrefabPopups.External.GameObject.transform.position;
-                externalSelectGUI.target = PrefabPopups.External.GameObject.transform;
+                PrefabPopups.External.Dragger = PrefabPopups.External.GameObject.GetOrAddComponent<DraggableUI>();
+                PrefabPopups.External.Dragger.ogPos = PrefabPopups.External.GameObject.transform.position;
+                PrefabPopups.External.Dragger.target = PrefabPopups.External.GameObject.transform;
 
                 PrefabPopups.Internal.title = "Internal Prefabs";
                 PrefabPopups.Internal.RenderTitle();
@@ -608,7 +610,6 @@ namespace BetterLegacy.Editor.Managers
                             title.horizontalOverflow = (HorizontalWrapMode)jn["internal"]["title"]["horizontal_overflow"].AsInt;
                             title.verticalOverflow = (VerticalWrapMode)jn["internal"]["title"]["vertical_overflow"].AsInt;
                         }
-
                         if (jn["external"]["title"] != null)
                         {
                             PrefabPopups.External.title = jn["external"]["title"]["text"];
@@ -624,6 +625,11 @@ namespace BetterLegacy.Editor.Managers
 
                         if (jn["anim"] != null)
                             PrefabPopups.ReadAnimationJSON(jn["anim"]);
+
+                        if (jn["internal"]["drag_mode"] != null && PrefabPopups.Internal.Dragger)
+                            PrefabPopups.Internal.Dragger.mode = (DraggableUI.DragMode)jn["internal"]["drag_mode"].AsInt;
+                        if (jn["external"]["drag_mode"] != null && PrefabPopups.External.Dragger)
+                            PrefabPopups.External.Dragger.mode = (DraggableUI.DragMode)jn["external"]["drag_mode"].AsInt;
                     }
                 };
 
@@ -4204,12 +4210,11 @@ namespace BetterLegacy.Editor.Managers
             fileBrowser.gameObject.SetActive(false);
             UIManager.SetRectTransform(fileBrowser.transform.AsRT(), Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(600f, 364f));
             var close = fileBrowser.transform.Find("Panel/x").GetComponent<Button>();
-            close.onClick.ClearAll();
-            close.onClick.AddListener(() => BrowserPopup.Close());
+            close.onClick.NewListener(() => BrowserPopup.Close());
             fileBrowser.transform.Find("GameObject").gameObject.SetActive(false);
 
-            var selectGUI = fileBrowser.AddComponent<SelectGUI>();
-            selectGUI.target = fileBrowser.transform;
+            var dragger = fileBrowser.AddComponent<DraggableUI>();
+            dragger.target = fileBrowser.transform;
 
             var rtfb = fileBrowser.AddComponent<RTFileBrowser>();
             var fileBrowserBase = fileBrowser.GetComponent<FileBrowserTest>();
@@ -4249,6 +4254,7 @@ namespace BetterLegacy.Editor.Managers
                 BrowserPopup = new EditorPopup(EditorPopup.BROWSER_POPUP);
                 BrowserPopup.Assign(BrowserPopup.GetLegacyDialog().Dialog.gameObject);
                 BrowserPopup.size = BrowserPopup.GameObject.transform.AsRT().sizeDelta;
+                BrowserPopup.Dragger = dragger;
                 editorPopups.Add(BrowserPopup);
 
                 if (BrowserPopup.Title)
@@ -4395,7 +4401,7 @@ namespace BetterLegacy.Editor.Managers
             var newFilePopupTitle = newFilePopupPanel.transform.Find("Title").gameObject;
             EditorThemeManager.AddLightText(newFilePopupPanel.transform.Find("Title").GetComponent<TextMeshProUGUI>());
 
-            var openFilePopupSelect = newFilePopup.gameObject.AddComponent<SelectGUI>();
+            var openFilePopupSelect = newFilePopup.gameObject.AddComponent<DraggableUI>();
             openFilePopupSelect.target = newFilePopup;
             openFilePopupSelect.ogPos = newFilePopup.position;
 

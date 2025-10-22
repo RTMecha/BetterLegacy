@@ -1,4 +1,8 @@
 ﻿{
+  // 0 = no drag, regardless of settings
+  // 1 = optional drag
+  // 2 = forced drag, regardless of settings
+  "drag_mode": 1,
   "base": {
     "rect": {
       "anc_pos": [ 0, 0 ],
@@ -40,7 +44,7 @@
     "spacing": [ 0.0, 8.0 ],
     "constraint": 1,
     "constraint_count": 1
-  }//,
+  } //,
   //"anim": {
   //  "open": {
   //    "anim": {

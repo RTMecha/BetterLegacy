@@ -3,6 +3,7 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 
+using BetterLegacy.Configs;
 using BetterLegacy.Core.Managers;
 
 namespace BetterLegacy.Core.Components
@@ -10,7 +11,7 @@ namespace BetterLegacy.Core.Components
     /// <summary>
     /// Component for dragging UI elements around.
     /// </summary>
-    public class SelectGUI : MonoBehaviour, IEventSystemHandler, IPointerDownHandler, IPointerUpHandler
+    public class DraggableUI : MonoBehaviour, IEventSystemHandler, IPointerDownHandler, IPointerUpHandler
     {
         public bool dragging;
         Vector3 startMousePos;
@@ -20,11 +21,24 @@ namespace BetterLegacy.Core.Components
         public Transform target;
         public float scale = 1.03f;
 
-        public static bool DragGUI { get; set; }
-        public bool OverrideDrag { get; set; }
-        public bool CanDrag => DragGUI || OverrideDrag;
+        public bool CanDrag => mode switch
+        {
+            DragMode.NoDrag => false,
+            DragMode.OptionalDrag => EditorConfig.Instance.DragUI.Value,
+            DragMode.RequiredDrag => true,
+            _ => false,
+        };
 
         public Action<Vector2> draggingAction;
+
+        public DragMode mode = DragMode.OptionalDrag;
+
+        public enum DragMode
+        {
+            NoDrag,
+            OptionalDrag,
+            RequiredDrag,
+        }
 
         void Start()
         {

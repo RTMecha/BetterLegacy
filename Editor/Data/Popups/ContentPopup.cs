@@ -116,6 +116,7 @@ namespace BetterLegacy.Editor.Data.Popups
         public override void Assign(GameObject popup)
         {
             GameObject = popup;
+            Dragger = popup.GetComponent<DraggableUI>();
             if (popup.transform.TryFind("Panel", out Transform topPanel))
             {
                 TopPanel = topPanel.AsRT();

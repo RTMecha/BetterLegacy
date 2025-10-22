@@ -38,9 +38,9 @@ namespace BetterLegacy.Editor.Managers
 
 			var dialog = EditorManager.inst.GetDialog(EditorPopup.COLOR_PICKER).Dialog.Find("content");
 			baseColorPicker = dialog.Find("Color Picker").GetComponent<ColorPicker>();
-			var draggable = dialog.gameObject.AddComponent<SelectGUI>();
+			var draggable = dialog.gameObject.AddComponent<DraggableUI>();
 			draggable.target = dialog;
-			draggable.OverrideDrag = true;
+            draggable.mode = DraggableUI.DragMode.RequiredDrag;
 
 			baseColorPicker.hueSliderTexture = new Texture2D(1, 359, TextureFormat.ARGB32, false);
 			Color[] array = new Color[359];

@@ -1524,13 +1524,13 @@ namespace BetterLegacy.Editor.Managers
 
             var baseImage = gameObject.AddComponent<Image>();
             EditorThemeManager.AddGraphic(baseImage, ThemeGroup.Background_1);
-            var baseSelectGUI = gameObject.AddComponent<SelectGUI>();
+            var baseSelectGUI = gameObject.AddComponent<DraggableUI>();
 
             gameObject.transform.AsRT().anchoredPosition = new Vector2(340f, 0f);
             gameObject.transform.AsRT().sizeDelta = new Vector2(400f, 600f);
 
             baseSelectGUI.target = gameObject.transform;
-            baseSelectGUI.OverrideDrag = true;
+            baseSelectGUI.mode = DraggableUI.DragMode.RequiredDrag;
 
             var panel = EditorManager.inst.GetDialog("Save As Popup").Dialog.Find("New File Popup/Panel").gameObject.Duplicate(gameObject.transform, "Panel");
             var panelRT = (RectTransform)panel.transform;

@@ -37,9 +37,9 @@ namespace BetterLegacy.Editor.Data.Popups
 
             EditorThemeManager.AddGraphic(baseImage, ThemeGroup.Background_1, true);
 
-            var selectGUI = GameObject.AddComponent<SelectGUI>();
-            selectGUI.target = GameObject.transform;
-            selectGUI.ogPos = GameObject.transform.position;
+            Dragger = GameObject.AddComponent<DraggableUI>();
+            Dragger.target = GameObject.transform;
+            Dragger.ogPos = GameObject.transform.position;
 
             var progressBase = Creator.NewUIObject("Progress Base", GameObject.transform);
             RectValues.Default.AnchoredPosition(0f, -100f).SizeDelta(300f, 32f).AssignToRectTransform(progressBase.transform.AsRT());

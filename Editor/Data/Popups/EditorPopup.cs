@@ -12,6 +12,7 @@ using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;
+using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Editor.Managers;
@@ -85,6 +86,10 @@ namespace BetterLegacy.Editor.Data.Popups
         /// Game object of the editor popup.
         /// </summary>
         public GameObject GameObject { get; set; }
+        /// <summary>
+        /// Component that handles popup dragging.
+        /// </summary>
+        public DraggableUI Dragger { get; set; }
         /// <summary>
         /// Close button of the editor popup.
         /// </summary>
@@ -319,6 +324,7 @@ namespace BetterLegacy.Editor.Data.Popups
         public virtual void Assign(GameObject popup)
         {
             GameObject = popup;
+            Dragger = popup.GetComponent<DraggableUI>();
             if (popup.transform.TryFind("New File Popup", out Transform n))
                 popup = n.gameObject;
 

@@ -55,8 +55,8 @@ namespace BetterLegacy.Companion.Entity
             var chatterImage = chatterBase.gameObject.AddComponent<Image>();
             EditorThemeManager.ApplyGraphic(chatterImage, ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Top);
 
-            var draggable = chatterBase.gameObject.AddComponent<SelectGUI>();
-            draggable.OverrideDrag = true;
+            var draggable = chatterBase.gameObject.AddComponent<DraggableUI>();
+            draggable.mode = DraggableUI.DragMode.RequiredDrag;
             draggable.target = chatterBase;
             draggable.ogPos = chatterBase.anchoredPosition;
 

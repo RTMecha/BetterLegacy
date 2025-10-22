@@ -63,13 +63,13 @@ namespace BetterLegacy.Editor.Data.Popups
             GameObject = popup;
             Internal = new ContentPopup("internal");
             Internal.Assign(popup.transform.Find("internal").gameObject);
-            var internalSelectGUI = Internal.GameObject.GetOrAddComponent<SelectGUI>();
+            var internalSelectGUI = Internal.GameObject.GetOrAddComponent<DraggableUI>();
             internalSelectGUI.ogPos = Internal.GameObject.transform.position;
             internalSelectGUI.target = Internal.GameObject.transform;
 
             External = new ContentPopup("external");
             External.Assign(popup.transform.Find("external").gameObject);
-            var externalSelectGUI = External.GameObject.GetOrAddComponent<SelectGUI>();
+            var externalSelectGUI = External.GameObject.GetOrAddComponent<DraggableUI>();
             externalSelectGUI.ogPos = External.GameObject.transform.position;
             externalSelectGUI.target = External.GameObject.transform;
         }

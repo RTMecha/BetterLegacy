@@ -2,6 +2,7 @@
 using UnityEngine.UI;
 
 using BetterLegacy.Core;
+using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Prefabs;
@@ -28,6 +29,11 @@ namespace BetterLegacy.Editor.Data.Popups
         {
             var textEditor = RTEditor.inst.SaveAsPopup.GameObject.Duplicate(RTEditor.inst.popups, "Text Editor");
             textEditor.transform.AsRT().anchoredPosition = Vector3.zero;
+
+            Dragger = textEditor.GetComponent<DraggableUI>();
+            Dragger.target = textEditor.transform;
+            Dragger.ogPos = textEditor.transform.position;
+            Dragger.mode = DraggableUI.DragMode.RequiredDrag;
 
             var textEditorPopup = textEditor.transform.GetChild(0);
             textEditorPopup.GetComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.Unconstrained;
@@ -80,9 +86,8 @@ namespace BetterLegacy.Editor.Data.Popups
             RectValues.Default.AnchoredPosition(226f, 0f).SizeDelta(32f, 32f).AssignToRectTransform(toggle.transform.AsRT());
 
             AutoUpdateToggle = toggle;
-            AutoUpdateToggle.onValueChanged.ClearAll();
-            AutoUpdateToggle.isOn = RTTextEditor.inst.autoUpdate;
-            AutoUpdateToggle.onValueChanged.AddListener(_val => RTTextEditor.inst.autoUpdate = _val);
+            AutoUpdateToggle.SetIsOnWithoutNotify(RTTextEditor.inst.autoUpdate);
+            AutoUpdateToggle.onValueChanged.NewListener(_val => RTTextEditor.inst.autoUpdate = _val);
 
             var update = EditorPrefabHolder.Instance.Function2Button.Duplicate(updateLayout.transform, "update").GetComponent<FunctionButtonStorage>();
             update.label.text = "Update";

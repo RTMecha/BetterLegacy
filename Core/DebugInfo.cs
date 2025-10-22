@@ -55,7 +55,7 @@ namespace BetterLegacy.Core.Managers
 
         public static TextMeshProUGUI Info { get; set; }
 
-        public static SelectGUI InfoSelection { get; set; }
+        public static DraggableUI InfoSelection { get; set; }
 
         public static bool init;
 
@@ -87,9 +87,9 @@ namespace BetterLegacy.Core.Managers
 
             UIManager.SetRectTransform(Info.rectTransform, CoreConfig.Instance.DebugPosition.Value, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 1f), new Vector2(800f, 200f));
 
-            InfoSelection = info.AddComponent<SelectGUI>();
-            InfoSelection.OverrideDrag = true;
-            InfoSelection.draggingAction = vector2 => { CoreConfig.Instance.DebugPosition.Value = vector2; };
+            InfoSelection = info.AddComponent<DraggableUI>();
+            InfoSelection.mode = DraggableUI.DragMode.RequiredDrag;
+            InfoSelection.draggingAction = vector2 => CoreConfig.Instance.DebugPosition.Value = vector2;
             InfoSelection.target = Info.rectTransform;
 
             init = true;

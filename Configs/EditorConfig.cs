@@ -33,7 +33,6 @@ namespace BetterLegacy.Configs
             Instance = this;
             BindSettings();
 
-            SelectGUI.DragGUI = DragUI.Value;
             ObjectEditor.TimelineObjectHoverSize = TimelineObjectHoverSize.Value;
             ObjectEditor.HideVisualElementsWhenObjectIsEmpty = HideVisualElementsWhenObjectIsEmpty.Value;
             RTPrefabEditor.ImportPrefabsDirectly = ImportPrefabsDirectly.Value;
@@ -1018,8 +1017,6 @@ namespace BetterLegacy.Configs
             TimelineGridThickness.SettingChanged += TimelineGridChanged;
             TimelineGridColor.SettingChanged += TimelineGridChanged;
 
-            DragUI.SettingChanged += DragUIChanged;
-
             AutoPolygonRadius.SettingChanged += ObjectEditorChanged;
             HideVisualElementsWhenObjectIsEmpty.SettingChanged += ObjectEditorChanged;
             KeyframeZoomBounds.SettingChanged += ObjectEditorChanged;
@@ -1271,8 +1268,6 @@ namespace BetterLegacy.Configs
         }
 
         void ThemeTemplateChanged() => UpdateDefaultThemeValues();
-
-        void DragUIChanged() => SelectGUI.DragGUI = DragUI.Value;
 
         public static Action AdjustPositionInputsChanged { get; set; }
 

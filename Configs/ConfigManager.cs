@@ -71,8 +71,8 @@ namespace BetterLegacy.Configs
 
             EditorThemeManager.ApplyGraphic(configBaseImage, ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Bottom);
 
-            var selectable = configBase.AddComponent<SelectGUI>();
-            selectable.target = configBase.transform;
+            var draggable = configBase.AddComponent<DraggableUI>();
+            draggable.target = configBase.transform;
 
             var panel = Creator.NewUIObject("Panel", configBase.transform);
             new RectValues(Vector2.zero, Vector2.one, new Vector2(0f, 1f), Vector2.zero, new Vector2(0f, 32f)).AssignToRectTransform(panel.transform.AsRT());
