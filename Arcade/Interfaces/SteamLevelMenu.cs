@@ -191,15 +191,16 @@ namespace BetterLegacy.Arcade.Interfaces
                 func = DownloadLevel().Start,
             });
 
-            int pos = 2;
+            bool foundLevel = false;
             if (SteamWorkshopManager.inst.Levels.TryFind(x => x.metadata != null && x.id == CurrentSteamItem.Id.ToString(), out Level level))
             {
+                foundLevel = true;
                 elements.Add(new MenuButton
                 {
                     id = "498145857",
                     name = "Play Button",
                     rect = RectValues.Default.AnchoredPosition(-500f, -360f).SizeDelta(600f, 64f),
-                    selectionPosition = new Vector2Int(0, pos),
+                    selectionPosition = new Vector2Int(0, 2),
                     text = "<size=40><b><align=center>[ OPEN LEVEL ]",
                     opacity = 0.1f,
                     selectedOpacity = 1f,
@@ -211,14 +212,13 @@ namespace BetterLegacy.Arcade.Interfaces
                     playBlipSound = true,
                     func = () => PlayLevelMenu.Init(level),
                 });
-                pos = 3;
             }
             elements.Add(new MenuButton
             {
                 id = "498145857",
                 name = "Play Button",
-                rect = RectValues.Default.AnchoredPosition(-500f, -360f).SizeDelta(600f, 64f),
-                selectionPosition = new Vector2Int(0, pos),
+                rect = RectValues.Default.AnchoredPosition(-500f, foundLevel ? -460f : -360f).SizeDelta(600f, 64f),
+                selectionPosition = new Vector2Int(0, foundLevel ? 3 : 2),
                 text = "<size=40><b><align=center>[ OPEN WORKSHOP ]",
                 opacity = 0.1f,
                 selectedOpacity = 1f,
