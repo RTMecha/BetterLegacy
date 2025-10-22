@@ -1217,6 +1217,13 @@ namespace BetterLegacy
         ModifierBlock,
     }
 
+    public enum ModifierBehaviorType
+    {
+        AllTriggers,
+        OrderMatters,
+        //Node,
+    }
+
     public enum HomingPriority
     {
         Closest,
