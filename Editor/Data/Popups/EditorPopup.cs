@@ -31,36 +31,7 @@ namespace BetterLegacy.Editor.Data.Popups
             UpdateCustom();
         }
 
-        #region Properties
-
-        /// <summary>
-        /// Name of the editor popup.
-        /// </summary>
-        public string Name { get; set; }
-        /// <summary>
-        /// Game object of the editor popup.
-        /// </summary>
-        public GameObject GameObject { get; set; }
-        /// <summary>
-        /// Close button of the editor popup.
-        /// </summary>
-        public Button CloseButton { get; set; }
-        /// <summary>
-        /// Top panel of the editor popup.
-        /// </summary>
-        public RectTransform TopPanel { get; set; }
-        /// <summary>
-        /// Title of the editor popup.
-        /// </summary>
-        public Text Title { get; set; }
-        public TextMeshProUGUI TMPTitle { get; set; }
-
-        /// <summary>
-        /// If the editor popup is open.
-        /// </summary>
-        public bool IsOpen => GameObject && GameObject.activeInHierarchy;
-
-        #endregion
+        #region Values
 
         #region Constants
 
@@ -106,7 +77,35 @@ namespace BetterLegacy.Editor.Data.Popups
 
         #endregion
 
-        #region Fields
+        /// <summary>
+        /// Name of the editor popup.
+        /// </summary>
+        public string Name { get; set; }
+        /// <summary>
+        /// Game object of the editor popup.
+        /// </summary>
+        public GameObject GameObject { get; set; }
+        /// <summary>
+        /// Close button of the editor popup.
+        /// </summary>
+        public Button CloseButton { get; set; }
+        /// <summary>
+        /// Top panel of the editor popup.
+        /// </summary>
+        public RectTransform TopPanel { get; set; }
+        /// <summary>
+        /// Title of the editor popup.
+        /// </summary>
+        public Text Title { get; set; }
+        /// <summary>
+        /// Title of the editor popup.
+        /// </summary>
+        public TextMeshProUGUI TMPTitle { get; set; }
+
+        /// <summary>
+        /// If the editor popup is open.
+        /// </summary>
+        public bool IsOpen => GameObject && GameObject.activeInHierarchy;
 
         /// <summary>
         /// Animation of the editor popup.
@@ -375,7 +374,6 @@ namespace BetterLegacy.Editor.Data.Popups
                 CoreHelper.LogError($"Render Popup error: {ex}");
             }
             RenderTitle();
-            RenderSize();
             UpdateCloseFunction(close);
         }
 
@@ -392,6 +390,8 @@ namespace BetterLegacy.Editor.Data.Popups
         {
             if (Title)
                 Title.text = title;
+            if (TMPTitle)
+                TMPTitle.text = title;
         }
 
         /// <summary>
