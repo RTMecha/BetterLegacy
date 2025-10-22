@@ -783,4 +783,10 @@ namespace BetterLegacy.Core.Helpers
                     complexity <= EditorConfig.Instance.EditorComplexity.Value);
         }
     }
+
+    public class EditorLayerToggles : MonoBehaviour
+    {
+        public IEditorLayerUI editorLayerUI;
+        public float size = 30.5f;
+    }
 }
