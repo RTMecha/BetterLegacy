@@ -33,6 +33,8 @@ namespace BetterLegacy.Core.Animation
 
             timeOffset = GlobalTime - startTime;
 
+            onInterpolate?.Invoke(time);
+
             if (events != null && !events.IsEmpty())
             {
                 for (int i = 0; i < events.Count; i++)
@@ -288,6 +290,11 @@ namespace BetterLegacy.Core.Animation
                 anim.Interpolate(time - anim.offsetTime);
             }
         };
+
+        /// <summary>
+        /// Function to run per tick.
+        /// </summary>
+        public Action<float> onInterpolate;
 
         /// <summary>
         /// Function to run when the animation is done.

@@ -502,6 +502,9 @@ namespace BetterLegacy.Editor.Managers
                             var title = EditorLevelManager.inst.NewLevelPopup.TMPTitle;
                             RectValues.TryParse(jn["title"]["rect"], RectValues.FullAnchored.AnchoredPosition(2f, 0f).SizeDelta(-12f, -8f)).AssignToRectTransform(title.rectTransform);
                         }
+
+                        if (jn["anim"] != null)
+                            EditorLevelManager.inst.NewLevelPopup.ReadAnimationJSON(jn["anim"]);
                     }
                 };
 
@@ -534,6 +537,9 @@ namespace BetterLegacy.Editor.Managers
                             title.horizontalOverflow = jn["title"]["horizontal_overflow"] != null ? (HorizontalWrapMode)jn["title"]["horizontal_overflow"].AsInt : HorizontalWrapMode.Wrap;
                             title.verticalOverflow = jn["title"]["vertical_overflow"] != null ? (VerticalWrapMode)jn["title"]["vertical_overflow"].AsInt : VerticalWrapMode.Overflow;
                         }
+
+                        if (jn["anim"] != null)
+                            EditorLevelManager.inst.OpenLevelPopup.ReadAnimationJSON(jn["anim"]);
                     }
                 };
 
@@ -615,6 +621,9 @@ namespace BetterLegacy.Editor.Managers
                             title.horizontalOverflow = (HorizontalWrapMode)jn["external"]["title"]["horizontal_overflow"].AsInt;
                             title.verticalOverflow = (VerticalWrapMode)jn["external"]["title"]["vertical_overflow"].AsInt;
                         }
+
+                        if (jn["anim"] != null)
+                            PrefabPopups.ReadAnimationJSON(jn["anim"]);
                     }
                 };
 

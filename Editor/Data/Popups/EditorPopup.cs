@@ -178,7 +178,17 @@ namespace BetterLegacy.Editor.Data.Popups
                     cachedRTAnim = null;
                 }
 
+                var dialog = GameObject.transform;
+
+                var scrollbar = dialog.GetComponentsInChildren<Scrollbar>();
+                var scrollAmounts = scrollbar.Select(x => x.value).ToList();
+
                 cachedRTAnim = customEditorAnimation.Play(active, this);
+                cachedRTAnim.onInterpolate = time =>
+                {
+                    for (int i = 0; i < scrollbar.Length; i++)
+                        scrollbar[i].value = scrollAmounts[i];
+                };
                 return;
             }
 
@@ -465,23 +475,32 @@ namespace BetterLegacy.Editor.Data.Popups
                     }
                 }
 
-                if (jn["open"] == null || jn["close"] == null)
-                {
-                    customEditorAnimation = null;
-                    return;
-                }
-
-                customEditorAnimation = new CustomEditorAnimation(Name);
-                if (jn["open"] != null)
-                    customEditorAnimation.OpenAnimation = PAAnimation.Parse(jn["open"]);
-                if (jn["close"] != null)
-                    customEditorAnimation.CloseAnimation = PAAnimation.Parse(jn["close"]);
+                ReadAnimationJSON(jn);
             }
             catch (Exception ex)
             {
                 CoreHelper.LogException(ex);
                 customEditorAnimation = null;
             }
+        }
+
+        /// <summary>
+        /// Reads a custom animation from JSON.
+        /// </summary>
+        /// <param name="jn">JSON to parse.</param>
+        public void ReadAnimationJSON(JSONNode jn)
+        {
+            if (jn["open"] == null || jn["close"] == null)
+            {
+                customEditorAnimation = null;
+                return;
+            }
+
+            customEditorAnimation = new CustomEditorAnimation(Name);
+            if (jn["open"] != null)
+                customEditorAnimation.OpenAnimation = PAAnimation.Parse(jn["open"]);
+            if (jn["close"] != null)
+                customEditorAnimation.CloseAnimation = PAAnimation.Parse(jn["close"]);
         }
 
         /// <summary>
