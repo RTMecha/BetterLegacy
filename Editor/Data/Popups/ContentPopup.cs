@@ -58,7 +58,20 @@ namespace BetterLegacy.Editor.Data.Popups
         /// <summary>
         /// Gets and sets the search input field text.
         /// </summary>
-        public string SearchTerm { get => SearchField.text; set => SearchField.text = value; }
+        public string SearchTerm
+        {
+            get
+            {
+                if (SearchField)
+                    return SearchField.text;
+                return string.Empty;
+            }
+            set
+            {
+                if (SearchField)
+                    SearchField.text = value;
+            }
+        }
 
         /// <summary>
         /// Refresh search function.
@@ -230,8 +243,8 @@ namespace BetterLegacy.Editor.Data.Popups
         /// <param name="onSearch">Runs when the user types in the search field.</param>
         public void UpdateSearchFunction(Action<string> onSearch)
         {
-            SearchField.onValueChanged.ClearAll();
-            SearchField.onValueChanged.AddListener(_val => onSearch?.Invoke(_val));
+            if (SearchField)
+                SearchField.onValueChanged.NewListener(_val => onSearch?.Invoke(_val));
         }
 
         /// <summary>
