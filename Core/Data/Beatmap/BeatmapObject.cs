@@ -1827,105 +1827,107 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <returns>Returns an accurate object position.</returns>
         public Vector3 InterpolateChainPosition(float time, bool includeDepth = false, bool includeOffsets = true, bool includeSelf = true)
         {
-            Vector3 result = Vector3.zero;
+            //Vector3 result = Vector3.zero;
 
-            var parents = GetParentChain();
-            parents.Reverse();
+            //var parents = GetParentChain();
+            //parents.Reverse();
 
-            bool animatePosition = true;
-            bool animateScale = true;
-            bool animateRotation = true;
+            //bool animatePosition = true;
+            //bool animateScale = true;
+            //bool animateRotation = true;
 
-            for (int i = 0; i < parents.Count; i++)
-            {
-                if (!includeSelf && i == 0)
-                    continue;
+            //for (int i = 0; i < parents.Count; i++)
+            //{
+            //    if (!includeSelf && i == 0)
+            //        continue;
 
-                var parent = parents[i];
-                var timeOffset = parent.StartTime;
+            //    var parent = parents[i];
+            //    var timeOffset = parent.StartTime;
 
-                if (animateScale)
-                    result = RTMath.Scale(result, new Vector2(parent.Interpolate(1, 0, time - timeOffset), parent.Interpolate(1, 1, time - timeOffset)));
+            //    if (animateScale)
+            //        result = RTMath.Scale(result, new Vector2(parent.Interpolate(1, 0, time - timeOffset), parent.Interpolate(1, 1, time - timeOffset)));
 
-                if (animateRotation)
-                    result = RTMath.Rotate(result, parent.Interpolate(2, 0, time - timeOffset));
+            //    if (animateRotation)
+            //        result = RTMath.Rotate(result, parent.Interpolate(2, 0, time - timeOffset));
 
-                if (animatePosition)
-                    result = RTMath.Move(result, new Vector3(parent.Interpolate(0, 0, time - timeOffset), parent.Interpolate(0, 1, time - timeOffset), parent.Interpolate(0, 2, time - timeOffset)));
+            //    if (animatePosition)
+            //        result = RTMath.Move(result, new Vector3(parent.Interpolate(0, 0, time - timeOffset), parent.Interpolate(0, 1, time - timeOffset), parent.Interpolate(0, 2, time - timeOffset)));
 
-                animatePosition = parent.GetParentType(0);
-                animateScale = parent.GetParentType(1);
-                animateRotation = parent.GetParentType(2);
+            //    animatePosition = parent.GetParentType(0);
+            //    animateScale = parent.GetParentType(1);
+            //    animateRotation = parent.GetParentType(2);
 
-                if (includeOffsets)
-                    result += parent.positionOffset;
-            }
+            //    if (includeOffsets)
+            //        result += parent.positionOffset;
+            //}
 
-            if (includeDepth)
-                result.z += Depth;
-            return result;
+            //if (includeDepth)
+            //    result.z += Depth;
+            return InterpolateChain(time, includeDepth, includeOffsets, includeSelf).position;
         }
 
         public Vector2 InterpolateChainScale(bool includeOffsets = true, bool includeSelf = true) => InterpolateChainScale(this.GetParentRuntime().CurrentTime, includeOffsets, includeSelf);
 
         public Vector2 InterpolateChainScale(float time, bool includeOffsets = true, bool includeSelf = true)
         {
-            Vector2 result = Vector2.one;
+            //Vector2 result = Vector2.one;
 
-            var parents = GetParentChain();
-            parents.Reverse();
+            //var parents = GetParentChain();
+            //parents.Reverse();
 
-            bool animateScale = true;
+            //bool animateScale = true;
 
-            for (int i = 0; i < parents.Count; i++)
-            {
-                if (!includeSelf && i == 0)
-                    continue;
+            //for (int i = 0; i < parents.Count; i++)
+            //{
+            //    if (!includeSelf && i == 0)
+            //        continue;
 
-                var parent = parents[i];
-                var timeOffset = parent.StartTime;
+            //    var parent = parents[i];
+            //    var timeOffset = parent.StartTime;
 
-                if (animateScale)
-                    result = RTMath.Scale(result, new Vector2(parent.Interpolate(1, 0, time - timeOffset), parent.Interpolate(1, 1, time - timeOffset)));
+            //    if (animateScale)
+            //        result = RTMath.Scale(result, new Vector2(parent.Interpolate(1, 0, time - timeOffset), parent.Interpolate(1, 1, time - timeOffset)));
 
-                animateScale = parent.GetParentType(1);
+            //    animateScale = parent.GetParentType(1);
 
-                if (includeOffsets)
-                    result = new Vector2(result.x + parent.scaleOffset.x, result.y + parent.scaleOffset.y);
-            }
+            //    if (includeOffsets)
+            //        result = new Vector2(result.x + parent.scaleOffset.x, result.y + parent.scaleOffset.y);
+            //}
 
-            return result;
+            // all transform values need to be accounted for unfortunately
+            return InterpolateChain(time, false, includeOffsets, includeSelf).scale;
         }
 
         public float InterpolateChainRotation(bool includeOffsets = true, bool includeSelf = true) => InterpolateChainRotation(this.GetParentRuntime().CurrentTime, includeOffsets, includeSelf);
 
         public float InterpolateChainRotation(float time, bool includeOffsets = true, bool includeSelf = true)
         {
-            float result = 0f;
+            //float result = 0f;
 
-            var parents = GetParentChain();
-            parents.Reverse();
+            //var parents = GetParentChain();
+            //parents.Reverse();
 
-            bool animateRotation = true;
+            //bool animateRotation = true;
 
-            for (int i = 0; i < parents.Count; i++)
-            {
-                if (!includeSelf && i == 0)
-                    continue;
+            //for (int i = 0; i < parents.Count; i++)
+            //{
+            //    if (!includeSelf && i == 0)
+            //        continue;
 
-                var parent = parents[i];
-                var timeOffset = parent.StartTime;
+            //    var parent = parents[i];
+            //    var timeOffset = parent.StartTime;
 
-                if (animateRotation)
-                    result += parent.Interpolate(2, 0, time - timeOffset);
+            //    if (animateRotation)
+            //        result += parent.Interpolate(2, 0, time - timeOffset);
 
-                animateRotation = parent.GetParentType(2);
+            //    animateRotation = parent.GetParentType(2);
 
-                if (includeOffsets)
-                    result += parent.rotationOffset.z;
-            }
+            //    if (includeOffsets)
+            //        result += parent.rotationOffset.z;
+            //}
 
-            return result;
+            // all transform values need to be accounted for unfortunately
+            return InterpolateChain(time, false, includeOffsets, includeSelf).rotation;
         }
 
         public ObjectTransform InterpolateChain(bool includeDepth = false, bool includeOffsets = true, bool includeSelf = true) => InterpolateChain(this.GetParentRuntime().CurrentTime, includeDepth, includeOffsets, includeSelf);
@@ -1937,9 +1939,23 @@ namespace BetterLegacy.Core.Data.Beatmap
             var parents = GetParentChain();
             parents.Reverse();
 
+            float positionOffset = 0.0f;
+            float scaleOffset = 0.0f;
+            float rotationOffset = 0.0f;
+
+            float positionAddedOffset = 0.0f;
+            float scaleAddedOffset = 0.0f;
+            float rotationAddedOffset = 0.0f;
+
             bool animatePosition = true;
             bool animateScale = true;
             bool animateRotation = true;
+
+            float positionParallax = 1f;
+            float scaleParallax = 1f;
+            float rotationParallax = 1f;
+
+            Vector2 currentScale = Vector2.one;
 
             for (int i = 0; i < parents.Count; i++)
             {
@@ -1949,22 +1965,53 @@ namespace BetterLegacy.Core.Data.Beatmap
                 var parent = parents[i];
                 var timeOffset = parent.StartTime;
 
-                if (animateScale)
+                if (parent.GetParentAdditive(0))
+                    positionAddedOffset += parent.GetParentOffset(0);
+                if (parent.GetParentAdditive(1))
+                    scaleAddedOffset += parent.GetParentOffset(1);
+                if (parent.GetParentAdditive(2))
+                    rotationAddedOffset += parent.GetParentOffset(2);
+
+                if (animatePosition)
                 {
-                    var scale = new Vector2(parent.Interpolate(1, 0, time - timeOffset), parent.Interpolate(1, 1, time - timeOffset));
-                    result.position = RTMath.Scale(result.position, scale);
-                    result.scale = RTMath.Scale(result.scale, scale);
+                    var t = time - timeOffset - (positionOffset + positionAddedOffset);
+                    var position = new Vector3(parent.Interpolate(0, 0, t), parent.Interpolate(0, 1, t), parent.Interpolate(0, 2, t));
+                    if (animateRotation)
+                        position = RTMath.Rotate(position, result.rotation);
+                    if (animateScale)
+                        position = RTMath.Scale(position, currentScale);
+
+                    result.position = RTMath.Move(result.position, position) * positionParallax;
                 }
 
                 if (animateRotation)
                 {
-                    var rotation = parent.Interpolate(2, 0, time - timeOffset);
-                    result.position = RTMath.Rotate(result.position, rotation);
-                    result.rotation += parent.Interpolate(2, 0, time);
+                    if (!animatePosition)
+                        result.position = RTMath.Rotate(result.position, result.rotation);
+
+                    var rotation = parent.Interpolate(2, 0, time - timeOffset - (rotationOffset + rotationAddedOffset));
+                    result.rotation = (result.rotation + rotation) * rotationParallax;
                 }
 
-                if (animatePosition)
-                    result.position = RTMath.Move(result.position, new Vector3(parent.Interpolate(0, 0, time - timeOffset), parent.Interpolate(0, 1, time - timeOffset), parent.Interpolate(0, 2, time - timeOffset)));
+                if (animateScale)
+                {
+                    if (!animatePosition)
+                        result.position *= currentScale;
+
+                    var t = time - timeOffset - (scaleOffset + scaleAddedOffset);
+                    var scale = new Vector2(parent.Interpolate(1, 0, t), parent.Interpolate(1, 1, t));
+                    result.scale = RTMath.Scale(result.scale, scale) * scaleParallax;
+                    currentScale = scale;
+                }
+
+                // Cache parent values to use for next parent
+                positionOffset = parent.GetParentOffset(0);
+                scaleOffset = parent.GetParentOffset(1);
+                rotationOffset = parent.GetParentOffset(2);
+
+                positionParallax = parent.parallaxSettings[0];
+                scaleParallax = parent.parallaxSettings[1];
+                rotationParallax = parent.parallaxSettings[1];
 
                 animatePosition = parent.GetParentType(0);
                 animateScale = parent.GetParentType(1);
@@ -1976,6 +2023,9 @@ namespace BetterLegacy.Core.Data.Beatmap
                     result.scale = new Vector2(result.scale.x + parent.scaleOffset.x, result.scale.y + parent.scaleOffset.y);
                     result.rotation += parent.rotationOffset.z;
                 }
+
+                if (result.scale == Vector2.zero) // optimize scaled zero
+                    break;
             }
 
             result.position.z += includeDepth ? Depth : 0f;
