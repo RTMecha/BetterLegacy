@@ -1158,9 +1158,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="beatmapObject">The Beatmap Object to set.</param>
         public void RenderID(BeatmapObject beatmapObject)
         {
-            Dialog.IDBase.gameObject.SetActive(RTEditor.NotSimple);
-            if (!RTEditor.NotSimple)
-                return;
+            EditorHelper.SetComplexity(Dialog.IDBase.gameObject, "beatmapobject/idldm", Complexity.Normal);
 
             Dialog.IDText.text = $"ID: {beatmapObject.id}";
 
@@ -1200,11 +1198,8 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="beatmapObject">The Beatmap Object to set.</param>
         public void RenderLDM(BeatmapObject beatmapObject)
         {
-            Dialog.LDMLabel.gameObject.SetActive(RTEditor.ShowModdedUI);
-            Dialog.LDMToggle.gameObject.SetActive(RTEditor.ShowModdedUI);
-
-            if (!RTEditor.ShowModdedUI)
-                return;
+            EditorHelper.SetComplexity(Dialog.LDMLabel.gameObject, "beatmapobject/ldm", Complexity.Advanced);
+            EditorHelper.SetComplexity(Dialog.LDMToggle.gameObject, "beatmapobject/ldm", Complexity.Advanced);
 
             Dialog.LDMToggle.SetIsOnWithoutNotify(beatmapObject.LDM);
             Dialog.LDMToggle.onValueChanged.NewListener(_val =>
@@ -1246,10 +1241,13 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="beatmapObject">The Beatmap Object to set.</param>
         public void RenderObjectType(BeatmapObject beatmapObject)
         {
-            Dialog.ObjectTypeDropdown.options =
-                EditorConfig.Instance.EditorComplexity.Value == Complexity.Advanced ?
-                    CoreHelper.StringToOptionData("Normal", "Helper", "Decoration", "Empty", "Solid") :
-                    CoreHelper.StringToOptionData("Normal", "Helper", "Decoration", "Empty"); // don't show solid object type 
+            //Dialog.ObjectTypeDropdown.options = EditorConfig.Instance.EditorComplexity.Value == Complexity.Advanced ?
+            //    CoreHelper.StringToOptionData("Normal", "Helper", "Decoration", "Empty", "Solid") :
+            //    CoreHelper.StringToOptionData("Normal", "Helper", "Decoration", "Empty"); // don't show solid object type 
+
+            Dialog.ObjectTypeDropdown.options = CustomObjectType.objectTypes
+                .Where(x => x.editor && EditorHelper.CheckComplexity(x.editor.complexity, x.editor.onlySpecificComplexity))
+                .Select(x => new Dropdown.OptionData(x.name)).ToList();
 
             Dialog.ObjectTypeDropdown.SetValueWithoutNotify(Mathf.Clamp((int)beatmapObject.objectType, 0, Dialog.ObjectTypeDropdown.options.Count - 1));
             Dialog.ObjectTypeDropdown.onValueChanged.NewListener(_val =>
@@ -1524,9 +1522,12 @@ namespace BetterLegacy.Editor.Managers
         {
             var active = !HideVisualElementsWhenObjectIsEmpty || beatmapObject.objectType != BeatmapObject.ObjectType.Empty;
 
-            var originTF = Dialog.OriginParent;
-            originTF.parent.GetChild(originTF.GetSiblingIndex() - 1).gameObject.SetActive(active);
-            originTF.gameObject.SetActive(active);
+            Dialog.OriginParent.gameObject.SetActive(active);
+            EditorHelper.SetComplexity(Dialog.OriginParent.parent.GetChild(Dialog.OriginParent.GetSiblingIndex() - 1).gameObject, "beatmapobject/origin_labels", Complexity.Simple, false, () => active);
+            EditorHelper.SetComplexity(Dialog.OriginParent.Find("origin-x").gameObject, "beatmapobject/origin_toggles", Complexity.Simple, true, () => active);
+            EditorHelper.SetComplexity(Dialog.OriginParent.Find("origin-y").gameObject, "beatmapobject/origin_toggles", Complexity.Simple, true, () => active);
+            EditorHelper.SetComplexity(Dialog.OriginXField.gameObject, "beatmapobject/origin_fields", Complexity.Normal, visible: () => active);
+            EditorHelper.SetComplexity(Dialog.OriginYField.gameObject, "beatmapobject/origin_fields", Complexity.Normal, visible: () => active);
 
             if (!active)
                 return;
@@ -1755,12 +1756,16 @@ namespace BetterLegacy.Editor.Managers
                 })
                 );
         }
-        
+
+        /// <summary>
+        /// Renders the Color Blend Mode Dropdown.
+        /// </summary>
+        /// <param name="beatmapObject">The BeatmapObject to set.</param>
         public void RenderBlendMode(BeatmapObject beatmapObject)
         {
-            var active = (!HideVisualElementsWhenObjectIsEmpty || beatmapObject.objectType != BeatmapObject.ObjectType.Empty) && RTEditor.NotSimple;
-            Dialog.ColorBlendModeLabel.gameObject.SetActive(active);
-            Dialog.ColorBlendModeDropdown.gameObject.SetActive(active);
+            var active = !HideVisualElementsWhenObjectIsEmpty || beatmapObject.objectType != BeatmapObject.ObjectType.Empty;
+            EditorHelper.SetComplexity(Dialog.ColorBlendModeLabel.gameObject, "beatmapobject/colorblend", Complexity.Advanced, false, () => active);
+            EditorHelper.SetComplexity(Dialog.ColorBlendModeDropdown.gameObject, "beatmapobject/colorblend", Complexity.Advanced, false, () => active);
 
             Dialog.ColorBlendModeDropdown.SetValueWithoutNotify((int)beatmapObject.colorBlendMode);
             Dialog.ColorBlendModeDropdown.onValueChanged.NewListener(_val =>
@@ -1787,19 +1792,19 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="beatmapObject">The BeatmapObject to set.</param>
         public void RenderGradient(BeatmapObject beatmapObject)
         {
-            var active = (!HideVisualElementsWhenObjectIsEmpty || beatmapObject.objectType != BeatmapObject.ObjectType.Empty) && RTEditor.NotSimple;
+            var active = !HideVisualElementsWhenObjectIsEmpty || beatmapObject.objectType != BeatmapObject.ObjectType.Empty;
             var gradientScaleActive = beatmapObject.gradientType != GradientType.Normal;
             var gradientRotationActive = beatmapObject.gradientType == GradientType.LeftLinear || beatmapObject.gradientType == GradientType.RightLinear;
 
-            Dialog.GradientShapesLabel.transform.parent.gameObject.SetActive(active);
-            Dialog.GradientParent.gameObject.SetActive(active);
-            Dialog.GradientScale.gameObject.SetActive(active && gradientScaleActive);
-            Dialog.GradientRotation.gameObject.SetActive(active && gradientRotationActive);
+            EditorHelper.SetComplexity(Dialog.GradientShapesLabel.transform.parent.gameObject, "beatmapobject/gradient_shapes_label", Complexity.Simple, false, () => active);
+            EditorHelper.SetComplexity(Dialog.GradientParent.gameObject, "beatmapobject/gradient", Complexity.Normal, false, () => active);
+            EditorHelper.SetComplexity(Dialog.GradientScale.gameObject, "beatmapobject/gradient", Complexity.Normal, false, () => active && gradientScaleActive);
+            EditorHelper.SetComplexity(Dialog.GradientRotation.gameObject, "beatmapobject/gradient", Complexity.Normal, false, () => active && gradientRotationActive);
 
             if (!active)
                 return;
 
-            Dialog.GradientShapesLabel.text = RTEditor.NotSimple ? "Gradient / Shape" : "Shape";
+            Dialog.GradientShapesLabel.text = Dialog.GradientParent.gameObject.activeSelf ? "Gradient / Shape" : "Shape";
 
             for (int i = 0; i < Dialog.GradientToggles.Count; i++)
             {
@@ -2391,12 +2396,14 @@ namespace BetterLegacy.Editor.Managers
 
             var depthTf = Dialog.DepthField.transform.parent;
             depthTf.parent.GetChild(depthTf.GetSiblingIndex() - 1).gameObject.SetActive(active);
-            depthTf.gameObject.SetActive(RTEditor.NotSimple && active);
-            Dialog.DepthSlider.transform.AsRT().sizeDelta = new Vector2(RTEditor.NotSimple ? 352f : 292f, 32f);
+            EditorHelper.SetComplexity(Dialog.DepthField.transform.parent.gameObject, "beatmapobject/depth_field", Complexity.Normal, false, () => active, obj =>
+            {
+                Dialog.DepthSlider.transform.AsRT().sizeDelta = new Vector2(Dialog.DepthField.transform.parent.gameObject.activeSelf ? 352f : 292f, 32f);
+            });
+            Dialog.DepthSlider.transform.AsRT().sizeDelta = new Vector2(Dialog.DepthField.transform.parent.gameObject.activeSelf ? 352f : 292f, 32f);
 
-            var renderTypeTF = Dialog.RenderTypeDropdown.transform;
-            renderTypeTF.parent.GetChild(renderTypeTF.GetSiblingIndex() - 1).gameObject.SetActive(active && RTEditor.ShowModdedUI);
-            renderTypeTF.gameObject.SetActive(active && RTEditor.ShowModdedUI);
+            EditorHelper.SetComplexity(Dialog.RenderTypeDropdown.transform.parent.GetChild(Dialog.RenderTypeDropdown.transform.GetSiblingIndex() - 1).gameObject, "beatmapobject/rendertype", Complexity.Advanced, false, () => active);
+            EditorHelper.SetComplexity(Dialog.RenderTypeDropdown.gameObject, "beatmapobject/rendertype", Complexity.Advanced, false, () => active);
 
             if (!active)
                 return;
@@ -2485,10 +2492,9 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="beatmapObject">The BeatmapObject to set.</param>
         public void RenderBin(BeatmapObject beatmapObject)
         {
-            Dialog.BinSlider.onValueChanged.ClearAll();
             Dialog.BinSlider.maxValue = EditorTimeline.inst.BinCount;
-            Dialog.BinSlider.value = beatmapObject.editorData.Bin;
-            Dialog.BinSlider.onValueChanged.AddListener(_val =>
+            Dialog.BinSlider.SetValueWithoutNotify(beatmapObject.editorData.Bin);
+            Dialog.BinSlider.onValueChanged.NewListener(_val =>
             {
                 beatmapObject.editorData.Bin = Mathf.Clamp((int)_val, 0, EditorTimeline.inst.BinCount);
 
@@ -2506,17 +2512,17 @@ namespace BetterLegacy.Editor.Managers
             if (!Dialog.EditorIndexField)
                 return;
 
-            Dialog.Content.Find("indexer_label").gameObject.SetActive(RTEditor.ShowModdedUI);
-            Dialog.EditorIndexField.gameObject.SetActive(RTEditor.ShowModdedUI);
+            EditorHelper.SetComplexity(Dialog.Content.Find("indexer_label").gameObject, "indexer", Complexity.Advanced);
+            EditorHelper.SetComplexity(Dialog.EditorIndexField.gameObject, "indexer", Complexity.Advanced);
 
-            if (!RTEditor.ShowModdedUI)
+            if (!Dialog.EditorIndexField.gameObject.activeSelf)
                 return;
 
             var currentIndex = GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObject.id);
             Dialog.EditorIndexField.inputField.onEndEdit.ClearAll();
             Dialog.EditorIndexField.inputField.onValueChanged.ClearAll();
-            Dialog.EditorIndexField.inputField.text = currentIndex.ToString();
-            Dialog.EditorIndexField.inputField.onEndEdit.AddListener(_val =>
+            Dialog.EditorIndexField.inputField.SetTextWithoutNotify(currentIndex.ToString());
+            Dialog.EditorIndexField.inputField.onEndEdit.NewListener(_val =>
             {
                 if (currentIndex < 0)
                 {
@@ -2706,6 +2712,11 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="beatmapObject">The BeatmapObject to set.</param>
         public void RenderEditorColors(BeatmapObject beatmapObject)
         {
+            EditorHelper.SetComplexity(Dialog.BaseColorField.transform.parent.gameObject, "timelineobject_color", Complexity.Normal);
+            EditorHelper.SetComplexity(Dialog.SelectColorField.transform.parent.gameObject, "timelineobject_color", Complexity.Normal);
+            EditorHelper.SetComplexity(Dialog.TextColorField.transform.parent.gameObject, "timelineobject_color", Complexity.Normal);
+            EditorHelper.SetComplexity(Dialog.MarkColorField.transform.parent.gameObject, "timelineobject_color", Complexity.Normal);
+
             Dialog.BaseColorField.SetTextWithoutNotify(beatmapObject.editorData.color);
             Dialog.BaseColorField.onValueChanged.NewListener(_val =>
             {

@@ -274,7 +274,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 EditorThemeManager.AddSelectable(depthLeft.GetComponent<Button>(), ThemeGroup.Function_2, false);
                 EditorThemeManager.AddSelectable(depthRight.GetComponent<Button>(), ThemeGroup.Function_2, false);
 
-                sliderObject.transform.AsRT().sizeDelta = new Vector2(RTEditor.NotSimple ? 352f : 292f, 32f);
+                sliderObject.transform.AsRT().sizeDelta = new Vector2(352f, 32f);
                 Content.Find("depth").AsRT().sizeDelta = new Vector2(261f, 32f);
 
                 EditorThemeManager.AddInputField(depthInputFieldStorage.inputField);
@@ -344,9 +344,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
             {
                 var contentOriginTF = Content.transform.Find("origin").transform;
 
-                EditorHelper.SetComplexity(contentOriginTF.Find("origin-x").gameObject, "beatmapobject/origin_toggles", Complexity.Simple);
-                EditorHelper.SetComplexity(contentOriginTF.Find("origin-y").gameObject, "beatmapobject/origin_toggles", Complexity.Simple);
-
                 try
                 {
                     for (int i = 1; i <= 3; i++)
@@ -398,9 +395,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 EditorThemeManager.AddInputField(originYInputFieldStorage.inputField);
                 EditorThemeManager.AddSelectable(originYInputFieldStorage.leftButton, ThemeGroup.Function_2, false);
                 EditorThemeManager.AddSelectable(originYInputFieldStorage.rightButton, ThemeGroup.Function_2, false);
-
-                EditorHelper.SetComplexity(originX, "beatmapobject/origin_fields", Complexity.Normal);
-                EditorHelper.SetComplexity(originY, "beatmapobject/origin_fields", Complexity.Normal);
             }
 
             // Layers
@@ -590,17 +584,26 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     var type = parent.GetChild(2).gameObject;
                     var offset = parent.GetChild(3).gameObject;
 
+                    var lel = offset.GetComponent<LayoutElement>();
+                    lel.minWidth = 64f;
+                    lel.preferredWidth = 64f;
+
                     EditorThemeManager.AddToggle(type.GetComponent<Toggle>(), ThemeGroup.Background_1);
-                    EditorThemeManager.AddGraphic(type.transform.Find("Image").GetComponent<Image>(), ThemeGroup.Toggle_1_Check);
+                    var typeImage = type.transform.Find("Image").GetComponent<Image>();
+                    EditorThemeManager.AddGraphic(typeImage, ThemeGroup.Toggle_1_Check);
                     EditorThemeManager.AddInputField(offset.GetComponent<InputField>());
                     EditorThemeManager.AddToggle(additive.GetComponent<Toggle>(), ThemeGroup.Background_1);
                     var additiveImage = additive.transform.Find("Image").GetComponent<Image>();
                     EditorThemeManager.AddGraphic(additiveImage, ThemeGroup.Toggle_1_Check);
                     EditorThemeManager.AddInputField(parallax.GetComponent<InputField>());
 
-                    var path = AssetPack.GetFile($"core/sprites/icons/{array[i]}_addtoggle.png");
-                    if (RTFile.FileExists(path))
-                        additiveImage.sprite = SpriteHelper.LoadSprite(path);
+                    var typePath = AssetPack.GetFile($"core/sprites/icons/{array[i]}_toggle.png");
+                    if (RTFile.FileExists(typePath))
+                        typeImage.sprite = SpriteHelper.LoadSprite(typePath);
+                    
+                    var addPath = AssetPack.GetFile($"core/sprites/icons/{array[i]}_addtoggle.png");
+                    if (RTFile.FileExists(addPath))
+                        additiveImage.sprite = SpriteHelper.LoadSprite(addPath);
                 }
             }
 
@@ -666,7 +669,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             // Parent Desync
             {
                 var parentMore = Content.Find("parent_more");
-                var parentDesync = EditorPrefabHolder.Instance.ToggleButton.Duplicate(parentMore, "spawn_once", 1);
+                var parentDesync = EditorPrefabHolder.Instance.ToggleButton.Duplicate(parentMore, "desync", 1);
                 var parentDesyncButtonToggle = parentDesync.GetComponent<ToggleButtonStorage>();
                 parentDesyncButtonToggle.label.text = "Parent Desync";
 
@@ -1510,10 +1513,13 @@ namespace BetterLegacy.Editor.Data.Dialogs
             ParentInfo = ParentButton.GetComponent<HoverTooltip>();
             ParentMoreButton = Content.Find("parent/more").GetComponent<Button>();
             ParentSettingsParent = Content.Find("parent_more").gameObject;
-            ParentDesyncToggle = ParentSettingsParent.transform.Find("spawn_once").GetComponent<Toggle>();
+            ParentDesyncToggle = ParentSettingsParent.transform.Find("desync").GetComponent<Toggle>();
             ParentSearchButton = Content.Find("parent/parent").GetComponent<Button>();
             ParentClearButton = Content.Find("parent/clear parent").GetComponent<Button>();
             ParentPickerButton = Content.Find("parent/parent picker").GetComponent<Button>();
+
+            var parentSettingsSizeFitter = ParentSettingsParent.gameObject.GetOrAddComponent<ContentSizeFitter>();
+            parentSettingsSizeFitter.verticalFit = ContentSizeFitter.FitMode.MinSize;
 
             for (int i = 0; i < 3; i++)
             {

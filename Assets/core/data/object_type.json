@@ -1,0 +1,58 @@
+﻿{
+  // collide_type
+  // 0 = None
+  // 1 = Damage
+  // 2 = Solid
+  "types": [
+    {
+      "name": "Normal",
+      "collide_type": 1,
+      "render": true,
+      "opacity": 1.0,
+      "editor": {
+        "complexity": 0,
+        "only_this": false
+      }
+    },
+    {
+      "name": "Helper",
+      "collide_type": 0,
+      "render": true,
+      "opacity": 0.35,
+      "editor": {
+        "complexity": 0,
+        "only_this": false
+      }
+    },
+    {
+      "name": "Decoration",
+      "collide_type": 0,
+      "render": true,
+      "opacity": 1.0,
+      "editor": {
+        "complexity": 0,
+        "only_this": false
+      }
+    },
+    {
+      "name": "Empty",
+      "collide_type": 0,
+      "render": false,
+      "opacity": 0.0,
+      "editor": {
+        "complexity": 0,
+        "only_this": false
+      }
+    },
+    {
+      "name": "Solid",
+      "collide_type": 2,
+      "render": true,
+      "opacity": 1.0,
+      "editor": {
+        "complexity": 2,
+        "only_this": false
+      }
+    }
+  ]
+}

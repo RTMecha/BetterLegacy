@@ -35,29 +35,31 @@ namespace BetterLegacy.Core.Helpers
 
         public static JSONNode complexityJSON;
 
-        public static void SetComplexity(GameObject gameObject, Complexity complexity, bool onlySpecificComplexity = false)
+        public static void SetComplexity(GameObject gameObject, Complexity complexity, bool onlySpecificComplexity = false, Func<bool> visible = null, Action<ComplexityObject> onUpdate = null, bool autoSpecify = true)
         {
             if (!gameObject)
                 return;
 
             var obj = gameObject.GetOrAddComponent<ComplexityObject>();
             obj.complexity = complexity;
-            obj.onlySpecificComplexity = complexity == Complexity.Simple || onlySpecificComplexity;
+            obj.onlySpecificComplexity = autoSpecify ? complexity == Complexity.Simple || onlySpecificComplexity : onlySpecificComplexity;
+            obj.visible = visible;
+            obj.onUpdate = onUpdate;
             obj.UpdateActiveState();
         }
 
-        public static void SetComplexity(GameObject gameObject, string path, Complexity defaultComplexity, bool defaultOnlySpecificComplexity = false)
+        public static void SetComplexity(GameObject gameObject, string path, Complexity defaultComplexity, bool defaultOnlySpecificComplexity = false, Func<bool> visible = null, Action<ComplexityObject> onUpdate = null)
         {
             if (complexityJSON == null)
             {
-                SetComplexity(gameObject, defaultComplexity, defaultOnlySpecificComplexity);
+                SetComplexity(gameObject, defaultComplexity, defaultOnlySpecificComplexity, visible, onUpdate, false);
                 return;
             }
 
             var referenceJSON = complexityJSON[path];
             if (referenceJSON == null)
             {
-                SetComplexity(gameObject, defaultComplexity, defaultOnlySpecificComplexity);
+                SetComplexity(gameObject, defaultComplexity, defaultOnlySpecificComplexity, visible, onUpdate, false);
                 return;
             }
 
@@ -68,7 +70,23 @@ namespace BetterLegacy.Core.Helpers
             if (referenceJSON["active"] != null)
                 obj.active = referenceJSON["active"].AsBool;
             obj.path = path;
+            obj.visible = visible;
+            obj.onUpdate = onUpdate;
             obj.UpdateActiveState();
+        }
+
+        public static bool CheckComplexity(Complexity complexity, bool onlySpecificComplexity = false) => onlySpecificComplexity ?
+                    complexity == EditorConfig.Instance.EditorComplexity.Value :
+                    complexity <= EditorConfig.Instance.EditorComplexity.Value;
+
+        public static Complexity GetComplexity(string path, Complexity defaultComplexity)
+        {
+            if (complexityJSON == null)
+                return defaultComplexity;
+            var referenceJSON = complexityJSON[path];
+            if (referenceJSON == null)
+                return defaultComplexity;
+            return (Complexity)referenceJSON["complexity"].AsInt;
         }
 
         public static void AddEditorPopup(string name, GameObject gameObject)
@@ -762,6 +780,8 @@ namespace BetterLegacy.Core.Helpers
         public string path;
         public bool disabled;
         public bool active = true;
+        public Func<bool> visible;
+        public Action<ComplexityObject> onUpdate;
 
         public static void UpdateAll()
         {
@@ -772,15 +792,21 @@ namespace BetterLegacy.Core.Helpers
 
         public void UpdateActiveState()
         {
+            try
+            {
+                onUpdate?.Invoke(this);
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Could not run {nameof(onUpdate)} function due to the exception: {ex}");
+            }
+
             if (disabled)
             {
-                CoreHelper.SetGameObjectActive(gameObject, active);
+                CoreHelper.SetGameObjectActive(gameObject, active && (visible == null || visible.Invoke()));
                 return;
             }
-            CoreHelper.SetGameObjectActive(gameObject,
-                onlySpecificComplexity ?
-                    complexity == EditorConfig.Instance.EditorComplexity.Value :
-                    complexity <= EditorConfig.Instance.EditorComplexity.Value);
+            CoreHelper.SetGameObjectActive(gameObject, EditorHelper.CheckComplexity(complexity, onlySpecificComplexity) && (visible == null || visible.Invoke()));
         }
     }
 

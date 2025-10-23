@@ -1,9 +1,57 @@
 ﻿{
+  // complexity
+  // 0 = Simple
+  // 1 = Normal
+  // 2 = Advanced
+  "beatmapobject/idldm": {
+    "complexity": 1,
+    "only_this": false
+  },
+  "beatmapobject/ldm": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "beatmapobject/origin_labels": {
+    "complexity": 0,
+    "only_this": false
+  },
   "beatmapobject/origin_fields": {
     "complexity": 0,
     "only_this": true
   },
   "beatmapobject/origin_toggles": {
+    "complexity": 1,
+    "only_this": false
+  },
+  "beatmapobject/gradient_shapes_label": {
+    "complexity": 0,
+    "only_this": false
+  },
+  "beatmapobject/gradient": {
+    "complexity": 1,
+    "only_this": false
+  },
+  "beatmapobject/rendertype": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "color_keyframe/opacity": {
+    "complexity": 1,
+    "only_this": false
+  },
+  "color_keyframe/opacity_collision": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "color_keyframe/hsv": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "marker/layers": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "timelineobject_color": {
     "complexity": 1,
     "only_this": false
   },
@@ -17,6 +65,34 @@
   },
   "time_field": {
     "complexity": 1,
+    "only_this": false
+  },
+  "tags": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "indexer": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "parent/desync": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "parent/active": {
+    "complexity": 0,
+    "only_this": false
+  },
+  "parent/offset": {
+    "complexity": 0,
+    "only_this": false
+  },
+  "parent/additive": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "parent/parallax": {
+    "complexity": 2,
     "only_this": false
   }
 }

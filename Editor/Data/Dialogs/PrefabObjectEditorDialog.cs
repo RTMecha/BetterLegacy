@@ -320,6 +320,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             var parentUI = ObjEditor.inst.ObjectView.transform.Find("parent").gameObject.Duplicate(LeftContent, "parent");
             ParentSettingsParent = ObjEditor.inst.ObjectView.transform.Find("parent_more").gameObject.Duplicate(LeftContent, "parent_more");
+            var parentSettingsSizeFitter = ParentSettingsParent.gameObject.GetOrAddComponent<ContentSizeFitter>();
+            parentSettingsSizeFitter.verticalFit = ContentSizeFitter.FitMode.MinSize;
 
             ParentButton = parentUI.transform.Find("text").GetComponent<FunctionButtonStorage>();
             ParentInfo = ParentButton.label.gameObject.GetOrAddComponent<HoverTooltip>();
@@ -329,7 +331,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             ParentSearchButton = parentUI.transform.Find("parent").GetComponent<Button>();
             ParentClearButton = parentUI.transform.Find("clear parent").GetComponent<Button>();
             ParentPickerButton = parentUI.transform.Find("parent picker").GetComponent<Button>();
-            ParentDesyncToggle = ParentSettingsParent.transform.Find("spawn_once").GetComponent<Toggle>();
+            ParentDesyncToggle = ParentSettingsParent.transform.Find("desync").GetComponent<Toggle>();
 
             EditorThemeManager.AddGraphic(ParentSearchButton.image, ThemeGroup.Function_3, true);
             EditorThemeManager.AddGraphic(ParentSearchButton.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Function_3_Text);

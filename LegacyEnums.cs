@@ -4,6 +4,7 @@ namespace BetterLegacy
 {
     #region Custom
 
+    using System.Collections.Generic;
     using System.Linq;
     using System.Runtime.CompilerServices;
 
@@ -1232,6 +1233,57 @@ namespace BetterLegacy
         HighestHealth,
         LowestHealth,
         // Random, // todo
+    }
+
+    public class CustomObjectType : Exists
+    {
+        public static void LoadObjectTypes()
+        {
+            if (!AssetPack.TryReadFromFile("core/data/object_type.json", out string file))
+                return;
+
+            var jn = SimpleJSON.JSON.Parse(file);
+            for (int i = 0; i < jn["types"].Count; i++)
+            {
+                var jnType = jn["types"][i];
+                objectTypes.Add(new CustomObjectType
+                {
+                    name = jnType["name"],
+                    colliderType = (ColliderType)jnType["collide_type"].AsInt,
+                    render = jnType["render"].AsBool,
+                    opacity = jnType["opacity"].AsFloat,
+                    editor = new Editor((Complexity)jnType["editor"]["complexity"].AsInt, jnType["editor"]["only_this"].AsBool)
+                });
+            }
+        }
+
+        public static List<CustomObjectType> objectTypes = new List<CustomObjectType>();
+
+        public string name;
+        public ColliderType colliderType;
+        public enum ColliderType
+        {
+            None,
+            Damage,
+            Solid,
+        }
+        public bool render;
+        public float opacity;
+
+        public Editor editor;
+
+        public class Editor : Exists
+        {
+            public Editor() { }
+            public Editor(Complexity complexity, bool onlySpecificComplexity)
+            {
+                this.complexity = complexity;
+                this.onlySpecificComplexity = onlySpecificComplexity;
+            }
+
+            public Complexity complexity;
+            public bool onlySpecificComplexity;
+        }
     }
 
     #endregion

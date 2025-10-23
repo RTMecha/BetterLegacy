@@ -1319,11 +1319,6 @@ namespace BetterLegacy.Editor.Managers
         public static bool ShowModdedUI { get; set; }
 
         /// <summary>
-        /// If the editor shouldn't be simple.
-        /// </summary>
-        public static bool NotSimple => EditorConfig.Instance.EditorComplexity.Value != Complexity.Simple;
-
-        /// <summary>
         /// Hides the preview area until a level is loaded.
         /// </summary>
         public EditorThemeManager.Element PreviewCover { get; set; }
@@ -5385,12 +5380,12 @@ namespace BetterLegacy.Editor.Managers
         public void RenderTags(IModifyable modifyable, ITagDialog dialog)
         {
             var tagsScrollView = dialog.TagsScrollView;
-            tagsScrollView.parent.GetChild(tagsScrollView.GetSiblingIndex() - 1).gameObject.SetActive(ShowModdedUI);
-            tagsScrollView.gameObject.SetActive(ShowModdedUI);
+            EditorHelper.SetComplexity(tagsScrollView.parent.GetChild(tagsScrollView.GetSiblingIndex() - 1).gameObject, "tags", Complexity.Advanced);
+            EditorHelper.SetComplexity(tagsScrollView.gameObject, "tags", Complexity.Advanced);
 
             LSHelpers.DeleteChildren(dialog.TagsContent);
 
-            if (!ShowModdedUI)
+            if (!tagsScrollView.gameObject.activeSelf)
                 return;
 
             int num = 0;
@@ -5459,8 +5454,6 @@ namespace BetterLegacy.Editor.Managers
             dialog.ParentPickerButton.onClick.NewListener(() => parentPickerEnabled = true);
 
             dialog.ParentClearButton.gameObject.SetActive(!string.IsNullOrEmpty(parent));
-
-            dialog.ParentSettingsParent.transform.AsRT().sizeDelta = new Vector2(351f, ShowModdedUI ? 152f : 112f);
 
             var parentContextMenu = dialog.ParentButton.gameObject.GetOrAddComponent<ContextClickable>();
             parentContextMenu.onClick = eventData =>
@@ -5573,16 +5566,13 @@ namespace BetterLegacy.Editor.Managers
             });
             dialog.ParentSettingsParent.gameObject.SetActive(ObjEditor.inst.advancedParent);
 
-            dialog.ParentDesyncToggle.gameObject.SetActive(ShowModdedUI);
-            if (ShowModdedUI)
+            EditorHelper.SetComplexity(dialog.ParentDesyncToggle.gameObject, "parent/desync", Complexity.Advanced);
+            dialog.ParentDesyncToggle.SetIsOnWithoutNotify(parentable.ParentDesync);
+            dialog.ParentDesyncToggle.onValueChanged.NewListener(_val =>
             {
-                dialog.ParentDesyncToggle.SetIsOnWithoutNotify(parentable.ParentDesync);
-                dialog.ParentDesyncToggle.onValueChanged.NewListener(_val =>
-                {
-                    parentable.ParentDesync = _val;
-                    parentable.UpdateParentChain();
-                });
-            }
+                parentable.ParentDesync = _val;
+                parentable.UpdateParentChain();
+            });
 
             for (int i = 0; i < dialog.ParentSettings.Count; i++)
             {
@@ -5599,9 +5589,6 @@ namespace BetterLegacy.Editor.Managers
                 });
 
                 // Parent Offset
-                var lel = parentSetting.offsetField.GetComponent<LayoutElement>();
-                lel.minWidth = ShowModdedUI ? 64f : 128f;
-                lel.preferredWidth = ShowModdedUI ? 64f : 128f;
                 parentSetting.offsetField.SetTextWithoutNotify(parentable.GetParentOffset(i).ToString());
                 parentSetting.offsetField.onValueChanged.NewListener(_val =>
                 {
@@ -5614,20 +5601,15 @@ namespace BetterLegacy.Editor.Managers
 
                 TriggerHelper.AddEventTriggers(parentSetting.offsetField.gameObject, TriggerHelper.ScrollDelta(parentSetting.offsetField));
 
-                parentSetting.additiveToggle.onValueChanged.ClearAll();
-                parentSetting.parallaxField.onValueChanged.ClearAll();
-                parentSetting.additiveToggle.gameObject.SetActive(ShowModdedUI);
-                parentSetting.parallaxField.gameObject.SetActive(ShowModdedUI);
-
-                if (!ShowModdedUI)
-                    continue;
-
+                // Parent Additive
                 parentSetting.additiveToggle.SetIsOnWithoutNotify(parentable.GetParentAdditive(i));
-                parentSetting.additiveToggle.onValueChanged.AddListener(_val =>
+                parentSetting.additiveToggle.onValueChanged.NewListener(_val =>
                 {
                     parentable.SetParentAdditive(index, _val);
                     parentable.UpdateParentChain();
                 });
+
+                // Parent Parallax
                 parentSetting.parallaxField.SetTextWithoutNotify(parentable.ParentParallax[index].ToString());
                 parentSetting.parallaxField.onValueChanged.NewListener(_val =>
                 {
@@ -5639,6 +5621,11 @@ namespace BetterLegacy.Editor.Managers
                 });
 
                 TriggerHelper.AddEventTriggers(parentSetting.parallaxField.gameObject, TriggerHelper.ScrollDelta(parentSetting.parallaxField));
+
+                EditorHelper.SetComplexity(parentSetting.activeToggle.gameObject, "parent/active", Complexity.Simple);
+                EditorHelper.SetComplexity(parentSetting.offsetField.gameObject, "parent/offset", Complexity.Simple);
+                EditorHelper.SetComplexity(parentSetting.additiveToggle.gameObject, "parent/additive", Complexity.Advanced);
+                EditorHelper.SetComplexity(parentSetting.parallaxField.gameObject, "parent/parallax", Complexity.Advanced);
             }
         }
 
