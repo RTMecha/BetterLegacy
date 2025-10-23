@@ -29,13 +29,13 @@ namespace BetterLegacy.Editor.Data.Popups
         {
             var textEditor = RTEditor.inst.SaveAsPopup.GameObject.Duplicate(RTEditor.inst.popups, "Text Editor");
             textEditor.transform.AsRT().anchoredPosition = Vector3.zero;
+            var textEditorPopup = textEditor.transform.GetChild(0);
 
-            Dragger = textEditor.GetComponent<DraggableUI>();
+            Dragger = textEditorPopup.gameObject.GetOrAddComponent<DraggableUI>();
             Dragger.target = textEditor.transform;
             Dragger.ogPos = textEditor.transform.position;
             Dragger.mode = DraggableUI.DragMode.RequiredDrag;
 
-            var textEditorPopup = textEditor.transform.GetChild(0);
             textEditorPopup.GetComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.Unconstrained;
             textEditorPopup.transform.AsRT().sizeDelta = new Vector2(500f, 420f);
 
