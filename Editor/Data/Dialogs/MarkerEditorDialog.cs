@@ -24,11 +24,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public InputFieldStorage TimeField { get; set; }
 
-        public FunctionButtonStorage SnapBPMButton { get; set; }
-
         public InputField DescriptionField { get; set; }
-
-        public FunctionButtonStorage ConvertToPlannerNoteButton { get; set; }
 
         public RectTransform ColorsParent { get; set; }
 
@@ -90,6 +86,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             NameField = MarkerEditor.inst.left.Find("name").GetComponent<InputField>();
             DescriptionField = MarkerEditor.inst.left.Find("desc").GetComponent<InputField>();
+            //DescriptionField.transform.AsRT().sizeDelta = new Vector2(371f, 192f);
+            DescriptionField.transform.AsRT().sizeDelta = new Vector2(371f, 256f);
 
             EditorThemeManager.AddInputField(NameField);
             EditorThemeManager.AddInputField(DescriptionField);
@@ -105,39 +103,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
             // fixes color slot spacing
             MarkerEditor.inst.left.Find("color").GetComponent<GridLayoutGroup>().spacing = new Vector2(8f, 8f);
 
-            if (!EditorPrefabHolder.Instance.Function2Button)
-            {
-                CoreHelper.LogError("No Function 2 button for some reason.");
-                return;
-            }
-
-            var makeNote = EditorPrefabHolder.Instance.Function2Button.Duplicate(MarkerEditor.inst.left, "convert to note", 7);
-            ConvertToPlannerNoteButton = makeNote.GetComponent<FunctionButtonStorage>();
-            ConvertToPlannerNoteButton.label.text = "Convert to Planner Note";
-            ConvertToPlannerNoteButton.button.onClick.ClearAll();
-
-            EditorThemeManager.AddSelectable(ConvertToPlannerNoteButton.button, ThemeGroup.Function_2);
-            EditorThemeManager.AddGraphic(ConvertToPlannerNoteButton.label, ThemeGroup.Function_2_Text);
-
-            EditorHelper.SetComplexity(makeNote, Complexity.Advanced);
-
-            var snapToBPM = EditorPrefabHolder.Instance.Function2Button.Duplicate(MarkerEditor.inst.left, "snap bpm", 5);
-            SnapBPMButton = snapToBPM.GetComponent<FunctionButtonStorage>();
-            SnapBPMButton.label.text = "Snap BPM";
-            SnapBPMButton.button.onClick.ClearAll();
-
-            EditorThemeManager.AddSelectable(SnapBPMButton.button, ThemeGroup.Function_2);
-            EditorThemeManager.AddGraphic(SnapBPMButton.label, ThemeGroup.Function_2_Text);
-
-            EditorHelper.SetComplexity(snapToBPM, Complexity.Normal);
-
             ColorsParent = MarkerEditor.inst.left.Find("color").AsRT();
 
-            var layersParent = Creator.NewUIObject("layers", MarkerEditor.inst.left);
-
-            var label = EditorPrefabHolder.Instance.Labels.Duplicate(MarkerEditor.inst.left, "layers_label");
-
-            label.transform.GetChild(0).GetComponent<Text>().text = "Layers to appear on";
+            new Labels(Labels.InitSettings.Default.Parent(MarkerEditor.inst.left).Name("layers_label"), "Layers to appear on");
 
             var tagScrollView = Creator.NewUIObject("Layers Scroll View", MarkerEditor.inst.left);
 
@@ -152,26 +120,35 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             var mask = tagScrollView.AddComponent<Mask>();
 
-            var tagViewport = Creator.NewUIObject("Viewport", tagScrollView.transform);
-            RectValues.FullAnchored.AssignToRectTransform(tagViewport.transform.AsRT());
+            var layersViewport = Creator.NewUIObject("Viewport", tagScrollView.transform);
+            RectValues.FullAnchored.AssignToRectTransform(layersViewport.transform.AsRT());
 
-            var tagContent = Creator.NewUIObject("Content", tagViewport.transform);
+            var layersContent = Creator.NewUIObject("Content", layersViewport.transform);
 
-            var tagContentGLG = tagContent.AddComponent<GridLayoutGroup>();
-            tagContentGLG.cellSize = new Vector2(200f, 32f);
-            tagContentGLG.constraint = GridLayoutGroup.Constraint.FixedRowCount;
-            tagContentGLG.constraintCount = 1;
-            tagContentGLG.childAlignment = TextAnchor.MiddleLeft;
-            tagContentGLG.spacing = new Vector2(8f, 0f);
+            var layersContentGLG = layersContent.AddComponent<GridLayoutGroup>();
+            layersContentGLG.cellSize = new Vector2(200f, 32f);
+            layersContentGLG.constraint = GridLayoutGroup.Constraint.FixedRowCount;
+            layersContentGLG.constraintCount = 1;
+            layersContentGLG.childAlignment = TextAnchor.MiddleLeft;
+            layersContentGLG.spacing = new Vector2(8f, 0f);
 
-            var tagContentCSF = tagContent.AddComponent<ContentSizeFitter>();
+            var tagContentCSF = layersContent.AddComponent<ContentSizeFitter>();
             tagContentCSF.horizontalFit = ContentSizeFitter.FitMode.MinSize;
             tagContentCSF.verticalFit = ContentSizeFitter.FitMode.MinSize;
 
-            scroll.viewport = tagViewport.transform.AsRT();
-            scroll.content = tagContent.transform.AsRT();
+            scroll.viewport = layersViewport.transform.AsRT();
+            scroll.content = layersContent.transform.AsRT();
 
             LayersContent = scroll.content;
+
+            var button = EditorPrefabHolder.Instance.DeleteButton.Duplicate(DescriptionField.transform, "edit");
+            var buttonStorage = button.GetComponent<DeleteButtonStorage>();
+            buttonStorage.image.sprite = EditorSprites.EditSprite;
+            EditorThemeManager.ApplySelectable(buttonStorage.button, ThemeGroup.Function_2);
+            EditorThemeManager.ApplyGraphic(buttonStorage.image, ThemeGroup.Function_2_Text);
+            buttonStorage.button.onClick.NewListener(() => RTTextEditor.inst.SetInputField(DescriptionField));
+            RectValues.Default.AnchoredPosition(171f, 112f).SizeDelta(22f, 22f).AssignToRectTransform(buttonStorage.baseImage.rectTransform);
+            EditorHelper.SetComplexity(button, "marker/layers", Complexity.Advanced);
 
             var prefab = MarkerEditor.inst.markerPrefab;
             var prefabCopy = prefab.Duplicate(RTMarkerEditor.inst.transform, prefab.name);
@@ -192,15 +169,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
             markerStorage.label = prefabCopy.transform.Find("Text").GetComponent<Text>();
             markerStorage.hoverTooltip = prefabCopy.GetComponent<HoverTooltip>();
             MarkerEditor.inst.markerPrefab = prefabCopy;
-
-            var button = EditorPrefabHolder.Instance.DeleteButton.Duplicate(DescriptionField.transform, "edit");
-            var buttonStorage = button.GetComponent<DeleteButtonStorage>();
-            buttonStorage.image.sprite = EditorSprites.EditSprite;
-            EditorThemeManager.ApplySelectable(buttonStorage.button, ThemeGroup.Function_2);
-            EditorThemeManager.ApplyGraphic(buttonStorage.image, ThemeGroup.Function_2_Text);
-            buttonStorage.button.onClick.NewListener(() => RTTextEditor.inst.SetInputField(DescriptionField));
-            UIManager.SetRectTransform(buttonStorage.baseImage.rectTransform, new Vector2(171f, 51f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(22f, 22f));
-            EditorHelper.SetComplexity(button, Complexity.Advanced);
         }
     }
 }

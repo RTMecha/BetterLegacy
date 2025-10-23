@@ -368,6 +368,25 @@ namespace BetterLegacy.Editor.Data.Timeline
                 FlagEnd.gameObject.SetActive(end);
         }
 
+        /// <summary>
+        /// Converts the marker to a planner note.
+        /// </summary>
+        public void ToPlannerNote()
+        {
+            if (!Marker)
+                return;
+
+            ProjectPlanner.inst.AddPlanner(new Planners.NotePlanner
+            {
+                Active = true,
+                Name = Marker.name,
+                Color = Marker.color,
+                Position = new Vector2(Screen.width / 2, Screen.height / 2),
+                Text = Marker.desc,
+            });
+            ProjectPlanner.inst.SaveNotes();
+        }
+
         #endregion
     }
 }

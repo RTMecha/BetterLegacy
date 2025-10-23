@@ -227,19 +227,6 @@ namespace BetterLegacy.Editor.Managers
             RenderDescriptionEditor(marker);
             RenderTime(marker);
 
-            Dialog.ConvertToPlannerNoteButton.button.onClick.NewListener(() =>
-            {
-                ProjectPlanner.inst.AddPlanner(new NotePlanner
-                {
-                    Active = true,
-                    Name = marker.name,
-                    Color = marker.color,
-                    Position = new Vector2(Screen.width / 2, Screen.height / 2),
-                    Text = marker.desc,
-                });
-                ProjectPlanner.inst.SaveNotes();
-            });
-
             CheckDescription(marker);
         }
 
@@ -286,7 +273,9 @@ namespace BetterLegacy.Editor.Managers
             TriggerHelper.IncreaseDecreaseButtons(Dialog.TimeField);
 
             Dialog.TimeField.middleButton.onClick.NewListener(() => Dialog.TimeField.inputField.text = AudioManager.inst.CurrentAudioSource.time.ToString());
-            Dialog.SnapBPMButton.button.onClick.NewListener(() => Dialog.TimeField.inputField.text = RTEditor.SnapToBPM(marker.time).ToString());
+
+            EditorContextMenu.inst.AddContextMenu(Dialog.TimeField.inputField.gameObject,
+                new ButtonFunction("Snap to BPM", () => Dialog.TimeField.inputField.text = RTEditor.SnapToBPM(marker.time).ToString()));
         }
 
         /// <summary>
@@ -717,7 +706,9 @@ namespace BetterLegacy.Editor.Managers
                     EditorManager.inst.DisplayNotification("Stopped and cleared Marker loop.", 3f, EditorManager.NotificationType.Success);
                 }),
                 new ButtonFunction(true),
-                new ButtonFunction("Run Functions", () => RunMarkerFunctions(timelineMarker.Marker))
+                new ButtonFunction("Run Functions", () => RunMarkerFunctions(timelineMarker.Marker)),
+                new ButtonFunction(true),
+                new ButtonFunction("Convert to Planner Note", timelineMarker.ToPlannerNote)
                 );
         }
 
