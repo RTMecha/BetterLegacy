@@ -1,0 +1,54 @@
+﻿{
+  "drag_mode": 1,
+  "base": {
+    "rect": {
+      "anc_pos": [ 0, 0 ],
+      "anc_max": [ 0.5, 0.5 ],
+      "anc_min": [ 0.5, 0.5 ],
+      "pivot": [ 0.5, 0.5 ],
+      "size": [ 300, 450 ]
+    },
+    "theme_group": "Background_1"
+  },
+  "top_panel": {
+    "rect": {
+      "anc_pos": [ 0, 0 ],
+      "anc_max": [ 1, 1 ],
+      "anc_min": [ 0, 1 ],
+      "pivot": [ 0, 0 ],
+      "size": [ 32, 32 ]
+    },
+    "theme_group": "Background_1"
+  },
+  "title": {
+    "rect": {
+      "anc_pos": [ 2, 0 ],
+      "anc_max": [ 1, 1 ],
+      "anc_min": [ 0, 0 ],
+      "pivot": [ 0.5, 0.5 ],
+      "size": [ -12, -8 ]
+    },
+    "alignment": 3, // MiddleLeft
+    "text": "Select a Parent",
+    "font_size": 20,
+    "font_style": 0, // Normal
+    "horizontal_overflow": 0, // Wrap
+    "vertical_overflow": 1, // Overflow
+    "theme_group": "Light_Text"
+  },
+  "search": {
+    "rect": {
+      "anc_pos": [ 0, 0 ],
+      "anc_max": [ 1, 1 ],
+      "anc_min": [ 0, 1 ],
+      "pivot": [ 0.5, 1 ],
+      "size": [ 0, 32 ]
+    }
+  },
+  "layout": {
+    "cell_size": [ 300.0, 32.0 ],
+    "spacing": [ 0.0, 8.0 ],
+    "constraint": 1,
+    "constraint_count": 1
+  }
+}

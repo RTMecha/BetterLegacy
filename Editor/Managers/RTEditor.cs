@@ -462,7 +462,6 @@ namespace BetterLegacy.Editor.Managers
             try
             {
                 var quickActionsPopup = EditorManager.inst.GetDialog("Quick Actions Popup").Dialog;
-
                 var quickActionsPopupSelect = quickActionsPopup.gameObject.AddComponent<DraggableUI>();
                 quickActionsPopupSelect.target = quickActionsPopup;
                 quickActionsPopupSelect.ogPos = quickActionsPopup.position;
@@ -513,6 +512,7 @@ namespace BetterLegacy.Editor.Managers
                         var jn = JSON.Parse(uiFile);
                         RectValues.TryParse(jn["base"]["rect"], RectValues.Default.SizeDelta(600f, 400f)).AssignToRectTransform(EditorLevelManager.inst.OpenLevelPopup.GameObject.transform.AsRT());
                         RectValues.TryParse(jn["top_panel"]["rect"], RectValues.FullAnchored.AnchorMin(0, 1).Pivot(0f, 0f).SizeDelta(32f, 32f)).AssignToRectTransform(EditorLevelManager.inst.OpenLevelPopup.TopPanel);
+                        RectValues.TryParse(jn["search"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(0f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, 32f))).AssignToRectTransform(EditorLevelManager.inst.OpenLevelPopup.GameObject.transform.Find("search-box").AsRT());
 
                         var layoutValues = LayoutValues.Parse(jn["layout"]);
                         if (layoutValues is GridLayoutValues gridLayoutValues)
@@ -541,6 +541,52 @@ namespace BetterLegacy.Editor.Managers
 
                 InfoPopup = new InfoPopup(EditorPopup.FILE_INFO_POPUP);
                 InfoPopup.Assign(InfoPopup.GetLegacyDialog().Dialog.gameObject);
+                InfoPopup.onRender = () =>
+                {
+                    if (AssetPack.TryReadFromFile("editor/ui/popups/file_info_popup.json", out string uiFile))
+                    {
+                        var jn = JSON.Parse(uiFile);
+                        RectValues.TryParse(jn["base"]["rect"], RectValues.Default.SizeDelta(500f, 320f)).AssignToRectTransform(InfoPopup.GameObject.transform.AsRT());
+
+                        if (jn["title"] != null)
+                        {
+                            InfoPopup.title = jn["title"]["text"] != null ? jn["title"]["text"] : "Loading Level";
+
+                            var title = InfoPopup.Title;
+                            RectValues.TryParse(jn["title"]["rect"], RectValues.FullAnchored.AnchoredPosition(2f, 0f).SizeDelta(-12f, -8f)).AssignToRectTransform(title.rectTransform);
+                            title.alignment = jn["title"]["alignment"] != null ? (TextAnchor)jn["title"]["alignment"].AsInt : TextAnchor.MiddleLeft;
+                            title.fontSize = jn["title"]["font_size"] != null ? jn["title"]["font_size"].AsInt : 20;
+                            title.fontStyle = (FontStyle)jn["title"]["font_style"].AsInt;
+                            title.horizontalOverflow = jn["title"]["horizontal_overflow"] != null ? (HorizontalWrapMode)jn["title"]["horizontal_overflow"].AsInt : HorizontalWrapMode.Wrap;
+                            title.verticalOverflow = jn["title"]["vertical_overflow"] != null ? (VerticalWrapMode)jn["title"]["vertical_overflow"].AsInt : VerticalWrapMode.Overflow;
+                        }
+                        
+                        if (jn["message"] != null)
+                        {
+                            var title = InfoPopup.Info;
+                            RectValues.TryParse(jn["message"]["rect"], new RectValues(new Vector2(8f, -176f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 0.5f), new Vector2(484f, 272f))).AssignToRectTransform(title.rectTransform);
+                            title.alignment = jn["message"]["alignment"] != null ? (TextAnchor)jn["message"]["alignment"].AsInt : TextAnchor.MiddleCenter;
+                            title.fontSize = jn["message"]["font_size"] != null ? jn["message"]["font_size"].AsInt : 20;
+                            title.fontStyle = (FontStyle)jn["message"]["font_style"].AsInt;
+                            title.horizontalOverflow = jn["message"]["horizontal_overflow"] != null ? (HorizontalWrapMode)jn["message"]["horizontal_overflow"].AsInt : HorizontalWrapMode.Wrap;
+                            title.verticalOverflow = jn["message"]["vertical_overflow"] != null ? (VerticalWrapMode)jn["message"]["vertical_overflow"].AsInt : VerticalWrapMode.Truncate;
+                        }
+
+                        if (jn["loading"] != null)
+                        {
+                            InfoPopup.Doggo.gameObject.SetActive(jn["loading"]["active"].AsBool);
+                            RectValues.TryParse(jn["loading"]["rect"], RectValues.Default.AnchoredPosition(0f, -75f).SizeDelta(122f, 122f)).AssignToRectTransform(InfoPopup.Doggo.transform.parent.AsRT());
+                            if (jn["loading"]["color"] != null)
+                                InfoPopup.Doggo.color = RTColors.HexToColor(jn["loading"]["color"]);
+                        }
+
+                        if (jn["anim"] != null)
+                            InfoPopup.ReadAnimationJSON(jn["anim"]);
+
+                        if (jn["drag_mode"] != null && InfoPopup.Dragger)
+                            InfoPopup.Dragger.mode = (DraggableUI.DragMode)jn["drag_mode"].AsInt;
+                    }
+                };
 
                 ParentSelectorPopup = new ContentPopup(EditorPopup.PARENT_SELECTOR);
                 ParentSelectorPopup.Assign(ParentSelectorPopup.GetLegacyDialog().Dialog.gameObject);
@@ -550,14 +596,70 @@ namespace BetterLegacy.Editor.Managers
                 ParentSelectorPopup.title = ParentSelectorPopup.Title.text;
                 ParentSelectorPopup.size = ParentSelectorPopup.GameObject.transform.AsRT().sizeDelta;
                 ParentSelectorPopup.refreshSearch = EditorManager.inst.UpdateParentSearch;
+                ParentSelectorPopup.onRender = () =>
+                {
+                    if (AssetPack.TryReadFromFile("editor/ui/popups/parent_selector.json", out string uiFile))
+                    {
+                        var jn = JSON.Parse(uiFile);
+                        RectValues.TryParse(jn["base"]["rect"], RectValues.Default.SizeDelta(600f, 400f)).AssignToRectTransform(ParentSelectorPopup.GameObject.transform.AsRT());
+                        RectValues.TryParse(jn["top_panel"]["rect"], RectValues.FullAnchored.AnchorMin(0, 1).Pivot(0f, 0f).SizeDelta(32f, 32f)).AssignToRectTransform(ParentSelectorPopup.TopPanel);
+                        RectValues.TryParse(jn["search"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(0f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, 32f))).AssignToRectTransform(ParentSelectorPopup.GameObject.transform.Find("search-box").AsRT());
+
+                        var layoutValues = LayoutValues.Parse(jn["layout"]);
+                        if (layoutValues is GridLayoutValues gridLayoutValues)
+                            gridLayoutValues.AssignToLayout(ParentSelectorPopup.Grid ? ParentSelectorPopup.Grid : ParentSelectorPopup.GameObject.transform.Find("mask/content").GetComponent<GridLayoutGroup>());
+
+                        if (jn["title"] != null)
+                        {
+                            ParentSelectorPopup.title = jn["title"]["text"] != null ? jn["title"]["text"] : "Pick a Level to Open";
+
+                            var title = ParentSelectorPopup.Title;
+                            RectValues.TryParse(jn["title"]["rect"], RectValues.FullAnchored.AnchoredPosition(2f, 0f).SizeDelta(-12f, -8f)).AssignToRectTransform(title.rectTransform);
+                            title.alignment = jn["title"]["alignment"] != null ? (TextAnchor)jn["title"]["alignment"].AsInt : TextAnchor.MiddleLeft;
+                            title.fontSize = jn["title"]["font_size"] != null ? jn["title"]["font_size"].AsInt : 20;
+                            title.fontStyle = (FontStyle)jn["title"]["font_style"].AsInt;
+                            title.horizontalOverflow = jn["title"]["horizontal_overflow"] != null ? (HorizontalWrapMode)jn["title"]["horizontal_overflow"].AsInt : HorizontalWrapMode.Wrap;
+                            title.verticalOverflow = jn["title"]["vertical_overflow"] != null ? (VerticalWrapMode)jn["title"]["vertical_overflow"].AsInt : VerticalWrapMode.Overflow;
+                        }
+
+                        if (jn["anim"] != null)
+                            ParentSelectorPopup.ReadAnimationJSON(jn["anim"]);
+
+                        if (jn["drag_mode"] != null && ParentSelectorPopup.Dragger)
+                            ParentSelectorPopup.Dragger.mode = (DraggableUI.DragMode)jn["drag_mode"].AsInt;
+                    }
+                };
 
                 SaveAsPopup = new EditorPopup(EditorPopup.SAVE_AS_POPUP);
                 SaveAsPopup.Assign(SaveAsPopup.GetLegacyDialog().Dialog.gameObject);
-                SaveAsPopup.Dragger = SaveAsPopup.GameObject.AddComponent<DraggableUI>();
+                SaveAsPopup.Dragger = SaveAsPopup.GameObject.transform.GetChild(0).gameObject.AddComponent<DraggableUI>();
                 SaveAsPopup.Dragger.target = SaveAsPopup.GameObject.transform;
                 SaveAsPopup.Dragger.ogPos = SaveAsPopup.GameObject.transform.position;
                 SaveAsPopup.title = SaveAsPopup.Title.text;
                 SaveAsPopup.size = SaveAsPopup.GameObject.transform.AsRT().sizeDelta;
+                SaveAsPopup.onRender = () =>
+                {
+                    if (AssetPack.TryReadFromFile("editor/ui/popups/save_as_popup.json", out string uiFile))
+                    {
+                        var jn = JSON.Parse(uiFile);
+                        RectValues.TryParse(jn["base"]["rect"], new RectValues(new Vector2(0f, -72f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 0.5f), new Vector2(300f, 144f))).AssignToRectTransform(SaveAsPopup.GameObject.transform.GetChild(0).AsRT());
+                        RectValues.TryParse(jn["top_panel"]["rect"], RectValues.FullAnchored.AnchoredPosition(0f, -32f).AnchorMin(0, 1).Pivot(0f, 0f).SizeDelta(0f, 32f)).AssignToRectTransform(SaveAsPopup.TopPanel);
+
+                        if (jn["title"] != null)
+                        {
+                            SaveAsPopup.title = jn["title"]["text"] != null ? jn["title"]["text"] : "Save Level As";
+
+                            var title = SaveAsPopup.Title;
+                            RectValues.TryParse(jn["title"]["rect"], RectValues.FullAnchored.AnchoredPosition(2f, 0f).SizeDelta(-12f, -8f)).AssignToRectTransform(title.rectTransform);
+                        }
+
+                        if (jn["anim"] != null)
+                            SaveAsPopup.ReadAnimationJSON(jn["anim"]);
+
+                        if (jn["drag_mode"] != null && SaveAsPopup.Dragger)
+                            SaveAsPopup.Dragger.mode = (DraggableUI.DragMode)jn["drag_mode"].AsInt;
+                    }
+                };
 
                 PrefabPopups = new DoubleContentPopup(EditorPopup.PREFAB_POPUP);
                 var prefabDialog = PrefabPopups.GetLegacyDialog().Dialog;
@@ -4054,12 +4156,9 @@ namespace BetterLegacy.Editor.Managers
             EditorThemeManager.AddGraphic(doggoBaseImage, ThemeGroup.Null, true);
 
             var doggoObject = Creator.NewUIObject("loading", doggoBase.transform);
-            doggoObject.transform.localScale = Vector3.one;
+            RectValues.FullAnchored.AssignToRectTransform(doggoObject.transform.AsRT());
 
             InfoPopup.Doggo = doggoObject.AddComponent<Image>();
-
-            doggoObject.transform.AsRT().anchoredPosition = Vector2.zero;
-            doggoObject.transform.AsRT().sizeDelta = new Vector2(122f, 122f);
             InfoPopup.Doggo.sprite = EditorManager.inst.loadingImage.sprite;
 
             InfoPopup.RenderSize(new Vector2(500f, 320f));

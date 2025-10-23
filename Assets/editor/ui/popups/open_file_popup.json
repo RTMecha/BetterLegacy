@@ -39,6 +39,15 @@
     "vertical_overflow": 1, // Overflow
     "theme_group": "Light_Text"
   },
+  "search": {
+    "rect": {
+      "anc_pos": [ 0, 0 ],
+      "anc_max": [ 1, 1 ],
+      "anc_min": [ 0, 1 ],
+      "pivot": [ 0.5, 1 ],
+      "size": [ 0, 32 ]
+    }
+  },
   "layout": {
     "cell_size": [ 584.0, 32.0 ],
     "spacing": [ 0.0, 8.0 ],

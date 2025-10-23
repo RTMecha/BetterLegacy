@@ -2,11 +2,11 @@
   "drag_mode": 1,
   "base": {
     "rect": {
-      "anc_pos": [ 0, -270 ],
+      "anc_pos": [ 0, -72 ],
       "anc_max": [ 0, 1 ],
       "anc_min": [ 0, 1 ],
       "pivot": [ 0, 0.5 ],
-      "size": [ 500, 540 ]
+      "size": [ 300, 144 ]
     },
     "theme_group": "Background_1"
   },
@@ -28,7 +28,7 @@
       "pivot": [ 0.5, 0.5 ],
       "size": [ -12, -8 ]
     },
-    "text": "New Level Creator",
+    "text": "Save Level As",
     "theme_group": "Light_Text"
   }
 }
