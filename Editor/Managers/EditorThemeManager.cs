@@ -528,6 +528,118 @@ namespace BetterLegacy.Editor.Managers
             fadeDuration = 0.2f,
         };
 
+        public static void ApplyTheme(EditorTheme theme, ThemeGroup themeGroup, bool isSelectable, params Component[] components)
+        {
+            try
+            {
+                if (themeGroup == ThemeGroup.Null)
+                    return;
+
+                if (!theme.ColorGroups.TryGetValue(themeGroup, out Color color))
+                    return;
+
+                if (!isSelectable)
+                    SetColor(color, components);
+                else
+                {
+                    var colorBlock = new ColorBlock
+                    {
+                        colorMultiplier = 1f,
+                        fadeDuration = 0.1f
+                    };
+
+                    var space = EditorTheme.GetString(themeGroup);
+                    var normalGroup = EditorTheme.GetGroup(space + " Normal");
+                    var highlightGroup = EditorTheme.GetGroup(space + " Highlight");
+                    var selectedGroup = EditorTheme.GetGroup(space + " Selected");
+                    var pressedGroup = EditorTheme.GetGroup(space + " Pressed");
+                    var disabledGroup = EditorTheme.GetGroup(space + " Disabled");
+
+                    if (theme.ColorGroups.TryGetValue(normalGroup, out Color normalColor))
+                        colorBlock.normalColor = normalColor;
+
+                    if (theme.ColorGroups.TryGetValue(highlightGroup, out Color highlightedColor))
+                        colorBlock.highlightedColor = highlightedColor;
+
+                    if (theme.ColorGroups.TryGetValue(selectedGroup, out Color selectedColor))
+                        colorBlock.selectedColor = selectedColor;
+
+                    if (theme.ColorGroups.TryGetValue(pressedGroup, out Color pressedColor))
+                        colorBlock.pressedColor = pressedColor;
+
+                    if (theme.ColorGroups.TryGetValue(disabledGroup, out Color disabledColor))
+                        colorBlock.disabledColor = disabledColor;
+
+                    SetColor(color, colorBlock, components);
+                }
+            }
+            catch
+            {
+
+            }
+        }
+
+        public static void SetColor(Color color, params Component[] components)
+        {
+            try
+            {
+                foreach (var component in components)
+                {
+                    if (component is Graphic graphic)
+                        graphic.color = color;
+                }
+            }
+            catch
+            {
+                foreach (var component in components)
+                {
+                    if (component is Text text)
+                    {
+                        var str = text.text;
+                        text.text = string.Empty;
+                        text.text = str;
+                    }
+                }
+            }
+        }
+
+        public static void SetColor(Color color, ColorBlock colorBlock, params Component[] components)
+        {
+            foreach (var component in components)
+            {
+                if (component is Image image)
+                    image.color = color;
+                if (component is Selectable button)
+                    button.colors = colorBlock;
+            }
+        }
+
+        public static void SetRounded(bool canSetRounded, int rounded, SpriteHelper.RoundedSide roundedSide, params Component[] components)
+        {
+            try
+            {
+                if (!canSetRounded)
+                    return;
+
+                var canSet = EditorConfig.Instance.RoundedUI.Value;
+
+                foreach (var component in components)
+                {
+                    if (component is not Image image)
+                        continue;
+
+                    if (rounded != 0 && canSet)
+                        SpriteHelper.SetRoundedSprite(image, rounded, roundedSide);
+                    else
+                        image.sprite = null;
+                }
+            }
+            catch
+            {
+
+            }
+        }
+
         public class Element
         {
             public Element(ThemeGroup group, GameObject gameObject, List<Component> components, bool canSetRounded = false, int rounded = 0, SpriteHelper.RoundedSide roundedSide = SpriteHelper.RoundedSide.W, bool isSelectable = false)
@@ -565,110 +677,11 @@ namespace BetterLegacy.Editor.Managers
 
             public void ApplyTheme(EditorTheme theme)
             {
-                try
-                {
-                    SetRounded();
-
-                    if (themeGroup == ThemeGroup.Null)
-                        return;
-
-                    if (!theme.ColorGroups.TryGetValue(themeGroup, out Color color))
-                        return;
-
-                    if (!isSelectable)
-                        SetColor(color);
-                    else
-                    {
-                        var colorBlock = new ColorBlock
-                        {
-                            colorMultiplier = 1f,
-                            fadeDuration = 0.1f
-                        };
-
-                        var space = EditorTheme.GetString(themeGroup);
-                        var normalGroup = EditorTheme.GetGroup(space + " Normal");
-                        var highlightGroup = EditorTheme.GetGroup(space + " Highlight");
-                        var selectedGroup = EditorTheme.GetGroup(space + " Selected");
-                        var pressedGroup = EditorTheme.GetGroup(space + " Pressed");
-                        var disabledGroup = EditorTheme.GetGroup(space + " Disabled");
-
-                        if (theme.ColorGroups.TryGetValue(normalGroup, out Color normalColor))
-                            colorBlock.normalColor = normalColor;
-
-                        if (theme.ColorGroups.TryGetValue(highlightGroup, out Color highlightedColor))
-                            colorBlock.highlightedColor = highlightedColor;
-
-                        if (theme.ColorGroups.TryGetValue(selectedGroup, out Color selectedColor))
-                            colorBlock.selectedColor = selectedColor;
-
-                        if (theme.ColorGroups.TryGetValue(pressedGroup, out Color pressedColor))
-                            colorBlock.pressedColor = pressedColor;
-
-                        if (theme.ColorGroups.TryGetValue(disabledGroup, out Color disabledColor))
-                            colorBlock.disabledColor = disabledColor;
-
-                        SetColor(color, colorBlock);
-                    }
-                }
-                catch
-                {
-
-                }
+                SetRounded();
+                EditorThemeManager.ApplyTheme(theme, themeGroup, isSelectable, components);
             }
 
-            public void SetColor(Color color)
-            {
-                try
-                {
-                    foreach (var component in components)
-                    {
-                        if (component is Graphic graphic)
-                            graphic.color = color;
-                    }
-                }
-                catch
-                {
-                    foreach (var component in components)
-                    {
-                        if (component is Text text)
-                        {
-                            var str = text.text;
-                            text.text = "";
-                            text.text = str;
-                        }
-                    }
-                }
-            }
-
-            public void SetColor(Color color, ColorBlock colorBlock)
-            {
-                foreach (var component in components)
-                {
-                    if (component is Image image)
-                        image.color = color;
-                    if (component is Selectable button)
-                        button.colors = colorBlock;
-                }
-            }
-
-            public void SetRounded()
-            {
-                if (!canSetRounded)
-                    return;
-
-                var canSet = EditorConfig.Instance.RoundedUI.Value;
-
-                foreach (var component in components)
-                {
-                    if (component is Image image)
-                    {
-                        if (rounded != 0 && canSet)
-                            SpriteHelper.SetRoundedSprite(image, rounded, roundedSide);
-                        else
-                            image.sprite = null;
-                    }
-                }
-            }
+            public void SetRounded() => EditorThemeManager.SetRounded(canSetRounded, rounded, roundedSide, components);
 
             public override string ToString() => gameObject.name;
         }
