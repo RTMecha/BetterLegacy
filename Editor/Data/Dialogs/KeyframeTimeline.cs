@@ -1747,6 +1747,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         var gradientHSVObj = kfdialog.Find("gradient_huesatval").gameObject;
                         gradientColorToggles.SetActive(showGradient);
                         kfdialog.Find("gradient_color").gameObject.SetActive(showGradient);
+                        EditorHelper.SetComplexity(kfdialog.Find("gradient_color_label").gameObject, "color_keyframe/gradient", Complexity.Normal, visible: () => showGradient);
                         EditorHelper.SetComplexity(kfdialog.Find("gradient_opacity_label").gameObject, "color_keyframe/gradient_opacity", Complexity.Advanced, visible: () => showGradient);
                         EditorHelper.SetComplexity(gradientOpacityObj, "color_keyframe/gradient_opacity", Complexity.Advanced, visible: () => showGradient);
                         EditorHelper.SetComplexity(kfdialog.Find("gradient_huesatval_label").gameObject, "color_keyframe/gradient_hsv", Complexity.Advanced, visible: () => showGradient);
