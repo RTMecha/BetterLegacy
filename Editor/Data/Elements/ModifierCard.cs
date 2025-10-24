@@ -5595,7 +5595,7 @@ namespace BetterLegacy.Editor.Data.Elements
         
         public GameObject EaseGenerator<T>(Modifier modifier, T reference, int type)
         {
-            var dd = ModifiersEditor.inst.dropdownBar.Duplicate(layout, "Easing");
+            var dd = ModifiersEditor.inst.easingBar.Duplicate(layout, "Easing");
             dd.transform.localScale = Vector3.one;
             var labelText = dd.transform.Find("Text").GetComponent<Text>();
             labelText.text = "Easing";
@@ -5610,13 +5610,13 @@ namespace BetterLegacy.Editor.Data.Elements
             dropdown.SetValueWithoutNotify(RTEditor.inst.GetEaseIndex(modifier.GetValue(type)));
             dropdown.onValueChanged.NewListener(_val =>
             {
-                modifier.SetValue(type, RTEditor.inst.GetEaseName(_val));
+                modifier.SetValue(type, RTEditor.inst.GetEasing(_val).ToString());
 
                 Update(modifier, reference);
             });
 
-            if (dropdown.template)
-                dropdown.template.sizeDelta = new Vector2(80f, 192f);
+            //if (dropdown.template)
+            //    dropdown.template.sizeDelta = new Vector2(80f, 192f);
 
             EditorThemeManager.ApplyLightText(labelText);
             EditorThemeManager.ApplyDropdown(dropdown);

@@ -6319,7 +6319,15 @@ namespace BetterLegacy.Editor.Managers
 
         public int GetEaseIndex(string name)
         {
-            var index = EasingOptions.FindIndex(x => x.name == name);
+            int index = -1;
+
+            if (int.TryParse(name, out int easeIndex))
+            {
+                index = EasingOptions.FindIndex(x => x.index == easeIndex);
+                return index < 0 ? 0 : index;
+            }
+
+            index = EasingOptions.FindIndex(x => x.name == name);
             return index < 0 ? 0 : index;
         }
 

@@ -117,6 +117,8 @@ namespace BetterLegacy.Editor.Managers
 
             dropdownBar = Dropdown();
 
+            easingBar = EasingDropdown();
+
             #endregion
 
             DefaultModifiersPopup = RTEditor.inst.GeneratePopup(EditorPopup.DEFAULT_MODIFIERS_POPUP, "Choose a modifer to add", Vector2.zero, new Vector2(600f, 400f), _val =>
@@ -287,6 +289,8 @@ namespace BetterLegacy.Editor.Managers
 
         public GameObject dropdownBar;
 
+        public GameObject easingBar;
+
         GameObject Base(string name)
         {
             var gameObject = new GameObject(name);
@@ -417,6 +421,20 @@ namespace BetterLegacy.Editor.Managers
         }
 
         GameObject Dropdown()
+        {
+            var gameObject = Base("Dropdown");
+            var rectTransform = (RectTransform)gameObject.transform;
+            rectTransform.localScale = Vector2.one;
+
+            ((RectTransform)rectTransform.Find("Text")).sizeDelta = new Vector2(153f, 32f);
+
+            var dropdownInput = EditorPrefabHolder.Instance.Dropdown.Duplicate(rectTransform, "Dropdown");
+            dropdownInput.transform.localScale = Vector2.one;
+
+            return gameObject;
+        }
+        
+        GameObject EasingDropdown()
         {
             var gameObject = Base("Dropdown");
             var rectTransform = (RectTransform)gameObject.transform;

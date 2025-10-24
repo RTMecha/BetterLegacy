@@ -219,6 +219,13 @@ namespace BetterLegacy.Editor.Managers
 
         }
 
+        void RenderEasing(Dropdown dropdown, int value, Action<int> onValueChanged)
+        {
+            RTEditor.inst.SetupEaseDropdown(dropdown);
+            RenderDropdown(dropdown, RTEditor.inst.GetEaseIndex(((Easing)value).ToString()),
+                onValueChanged: _val => onValueChanged?.Invoke((int)RTEditor.inst.GetEasing(_val)));
+        }
+
         void RenderDropdown(Dropdown dropdown, int value, Action<int> onValueChanged)
         {
             dropdown.SetValueWithoutNotify(value);
@@ -966,7 +973,7 @@ namespace BetterLegacy.Editor.Managers
                     PlayerManager.UpdatePlayerModels();
                 });
 
-            RenderDropdown(Dialog.BaseTab.RotationCurve.Dropdown, (int)currentModel.basePart.rotationCurveType,
+            RenderEasing(Dialog.BaseTab.RotationCurve.Dropdown, (int)currentModel.basePart.rotationCurveType,
                 onValueChanged: _val =>
                 {
                     currentModel.basePart.rotationCurveType = (Easing)_val;
@@ -1121,7 +1128,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-            RenderDropdown(Dialog.BaseTab.StretchEasing.Dropdown, currentModel.stretchPart.easing,
+            RenderEasing(Dialog.BaseTab.StretchEasing.Dropdown, currentModel.stretchPart.easing,
                 onValueChanged: _val =>
                 {
                     currentModel.stretchPart.easing = _val;
@@ -1311,14 +1318,14 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-            RenderDropdown(Dialog.SpawnerTab.PulseColorEasing.Dropdown, currentModel.pulsePart.easingColor,
+            RenderEasing(Dialog.SpawnerTab.PulseColorEasing.Dropdown, currentModel.pulsePart.easingColor,
                 onValueChanged: _val =>
                 {
                     currentModel.pulsePart.easingColor = _val;
                     PlayerManager.UpdatePlayerModels();
                 });
 
-            RenderDropdown(Dialog.SpawnerTab.PulseOpacityEasing.Dropdown, currentModel.pulsePart.easingOpacity,
+            RenderEasing(Dialog.SpawnerTab.PulseOpacityEasing.Dropdown, currentModel.pulsePart.easingOpacity,
                 onValueChanged: _val =>
                 {
                     currentModel.pulsePart.easingOpacity = _val;
@@ -1371,7 +1378,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-            RenderDropdown(Dialog.SpawnerTab.PulsePositionEasing.Dropdown, currentModel.pulsePart.easingPosition,
+            RenderEasing(Dialog.SpawnerTab.PulsePositionEasing.Dropdown, currentModel.pulsePart.easingPosition,
                 onValueChanged: _val =>
                 {
                     currentModel.pulsePart.easingPosition = _val;
@@ -1414,10 +1421,10 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-            RenderDropdown(Dialog.SpawnerTab.PulseScaleEasing.Dropdown, currentModel.pulsePart.easingScale,
+            RenderEasing(Dialog.SpawnerTab.PulseScaleEasing.Dropdown, currentModel.pulsePart.easingScale,
                 onValueChanged: _val =>
                 {
-                    currentModel.pulsePart.easingScale = _val;
+                    currentModel.pulsePart.easingScale = (int)RTEditor.inst.GetEasing(_val);
                     PlayerManager.UpdatePlayerModels();
                 });
 
@@ -1441,7 +1448,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-            RenderDropdown(Dialog.SpawnerTab.PulseRotationEasing.Dropdown, currentModel.pulsePart.easingRotation,
+            RenderEasing(Dialog.SpawnerTab.PulseRotationEasing.Dropdown, currentModel.pulsePart.easingRotation,
                 onValueChanged: _val =>
                 {
                     currentModel.pulsePart.easingRotation = _val;
@@ -1588,7 +1595,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-            RenderDropdown(Dialog.SpawnerTab.BulletColorEasing.Dropdown, currentModel.bulletPart.easingColor,
+            RenderEasing(Dialog.SpawnerTab.BulletColorEasing.Dropdown, currentModel.bulletPart.easingColor,
                 onValueChanged: _val =>
                 {
                     currentModel.bulletPart.easingColor = _val;
@@ -1605,7 +1612,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-            RenderDropdown(Dialog.SpawnerTab.BulletOpacityEasing.Dropdown, currentModel.bulletPart.easingOpacity,
+            RenderEasing(Dialog.SpawnerTab.BulletOpacityEasing.Dropdown, currentModel.bulletPart.easingOpacity,
                 onValueChanged: _val =>
                 {
                     currentModel.bulletPart.easingOpacity = _val;
@@ -1668,7 +1675,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-            RenderDropdown(Dialog.SpawnerTab.BulletPositionEasing.Dropdown, currentModel.bulletPart.easingPosition,
+            RenderEasing(Dialog.SpawnerTab.BulletPositionEasing.Dropdown, currentModel.bulletPart.easingPosition,
                 onValueChanged: _val =>
                 {
                     currentModel.bulletPart.easingPosition = _val;
@@ -1721,7 +1728,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-            RenderDropdown(Dialog.SpawnerTab.BulletScaleEasing.Dropdown, currentModel.bulletPart.easingScale,
+            RenderEasing(Dialog.SpawnerTab.BulletScaleEasing.Dropdown, currentModel.bulletPart.easingScale,
                 onValueChanged: _val =>
                 {
                     currentModel.bulletPart.easingScale = _val;
@@ -1758,7 +1765,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-            RenderDropdown(Dialog.SpawnerTab.BulletRotationEasing.Dropdown, currentModel.bulletPart.easingRotation,
+            RenderEasing(Dialog.SpawnerTab.BulletRotationEasing.Dropdown, currentModel.bulletPart.easingRotation,
                 onValueChanged: _val =>
                 {
                     currentModel.bulletPart.easingRotation = _val;
