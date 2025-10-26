@@ -27,7 +27,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// The time the level should start at.
         /// </summary>
         public float levelStartOffset;
-        public float LevelStartOffset { get => Mathf.Clamp(levelStartOffset, 0.1f, float.MaxValue); set => levelStartOffset = Mathf.Clamp(value, 0.1f, float.MaxValue); }
+        public float LevelStartOffset { get => Mathf.Clamp(levelStartOffset, 0f, float.MaxValue); set => levelStartOffset = Mathf.Clamp(value, 0f, float.MaxValue); }
 
         /// <summary>
         /// If the song should reverse at all when all players are dead.
