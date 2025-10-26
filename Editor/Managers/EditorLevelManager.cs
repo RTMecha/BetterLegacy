@@ -73,7 +73,45 @@ namespace BetterLegacy.Editor.Managers
                 getValue: () => RTEditor.inst.CollectionsPath,
                 setValue: _val => RTEditor.inst.CollectionsPath = _val,
                 onEndEdit: _val => LoadLevelCollections());
-            LevelCollectionPopup.InitReload(LoadLevelCollections);
+            LevelCollectionPopup.InitReload(() =>
+            {
+                RTEditor.inst.LoadLevelCollectionPanelUI(false);
+                LoadLevelCollections();
+            });
+            LevelCollectionPopup.onRender = () =>
+            {
+                if (AssetPack.TryReadFromFile("editor/ui/popups/level_collection_popup.json", out string uiFile))
+                {
+                    var jn = JSON.Parse(uiFile);
+                    RectValues.TryParse(jn["base"]["rect"], RectValues.Default.SizeDelta(600f, 400f)).AssignToRectTransform(LevelCollectionPopup.GameObject.transform.AsRT());
+                    RectValues.TryParse(jn["top_panel"]["rect"], RectValues.FullAnchored.AnchorMin(0, 1).Pivot(0f, 0f).SizeDelta(32f, 32f)).AssignToRectTransform(LevelCollectionPopup.TopPanel);
+                    RectValues.TryParse(jn["search"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(0f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, 32f))).AssignToRectTransform(LevelCollectionPopup.GameObject.transform.Find("search-box").AsRT());
+                    RectValues.TryParse(jn["scrollbar"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(0f, 0.5f), new Vector2(32f, 0f))).AssignToRectTransform(LevelCollectionPopup.GameObject.transform.Find("Scrollbar").AsRT());
+
+                    var layoutValues = LayoutValues.Parse(jn["layout"]);
+                    if (layoutValues is GridLayoutValues gridLayoutValues)
+                        gridLayoutValues.AssignToLayout(LevelCollectionPopup.Grid ? LevelCollectionPopup.Grid : LevelCollectionPopup.GameObject.transform.Find("mask/content").GetComponent<GridLayoutGroup>());
+
+                    if (jn["title"] != null)
+                    {
+                        LevelCollectionPopup.title = jn["title"]["text"] != null ? jn["title"]["text"] : "Pick a Level to Open";
+
+                        var title = LevelCollectionPopup.Title;
+                        RectValues.TryParse(jn["title"]["rect"], RectValues.FullAnchored.AnchoredPosition(2f, 0f).SizeDelta(-12f, -8f)).AssignToRectTransform(title.rectTransform);
+                        title.alignment = jn["title"]["alignment"] != null ? (TextAnchor)jn["title"]["alignment"].AsInt : TextAnchor.MiddleLeft;
+                        title.fontSize = jn["title"]["font_size"] != null ? jn["title"]["font_size"].AsInt : 20;
+                        title.fontStyle = (FontStyle)jn["title"]["font_style"].AsInt;
+                        title.horizontalOverflow = jn["title"]["horizontal_overflow"] != null ? (HorizontalWrapMode)jn["title"]["horizontal_overflow"].AsInt : HorizontalWrapMode.Wrap;
+                        title.verticalOverflow = jn["title"]["vertical_overflow"] != null ? (VerticalWrapMode)jn["title"]["vertical_overflow"].AsInt : VerticalWrapMode.Overflow;
+                    }
+
+                    if (jn["anim"] != null)
+                        LevelCollectionPopup.ReadAnimationJSON(jn["anim"]);
+
+                    if (jn["drag_mode"] != null && LevelCollectionPopup.Dragger)
+                        LevelCollectionPopup.Dragger.mode = (DraggableUI.DragMode)jn["drag_mode"].AsInt;
+                }
+            };
 
             TooltipHelper.AssignTooltip(LevelCollectionPopup.PathField.gameObject, "Editor Path", 3f);
 
@@ -395,15 +433,22 @@ namespace BetterLegacy.Editor.Managers
                     });
                 });
 
+                currentLevelCollection.levels.Clear();
+
                 foreach (var levelInfo in currentLevelCollection.levelInformation)
                 {
                     var path = !string.IsNullOrEmpty(levelInfo.editorPath) ? levelInfo.editorPath : levelInfo.path;
+                    var full = fullPath;
+                    if (string.IsNullOrEmpty(levelInfo.editorPath))
+                        full = currentLevelCollection.path;
                     Level level;
-                    if (!(!string.IsNullOrEmpty(path) && Level.TryVerify(RTFile.CombinePaths(fullPath, path), false, out level) ||
+                    if (!(!string.IsNullOrEmpty(path) && Level.TryVerify(RTFile.CombinePaths(full, path), false, out level) ||
                         Level.TryVerify(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, path), false, out level) ||
                         (SteamWorkshopManager.inst && SteamWorkshopManager.inst.Initialized && SteamWorkshopManager.inst.Levels.TryFind(x => x && x.id == levelInfo.workshopID, out level)) ||
                         LevelManager.Levels.TryFind(x => x && x.id == levelInfo.arcadeID, out level)))
                     {
+                        currentLevelCollection.levels.Add(null);
+
                         var levelPanel = new LevelPanel();
                         levelPanel.Init(levelInfo);
 
@@ -422,17 +467,18 @@ namespace BetterLegacy.Editor.Managers
                         var levelPanel = new LevelPanel();
                         levelPanel.Init(levelInfo.level);
 
+                        LevelPanels.Add(levelPanel);
+
                         if (RTFile.FileExists(levelInfo.level.GetFile(Level.LEVEL_JPG)))
-                            list.Add(levelPanel.LoadImageCoroutine(Level.LEVEL_JPG, LevelPanels.Add));
+                            list.Add(levelPanel.LoadImageCoroutine(Level.LEVEL_JPG));
                         else if (RTFile.FileExists(levelInfo.level.GetFile(Level.COVER_JPG)))
-                            list.Add(levelPanel.LoadImageCoroutine(Level.COVER_JPG, LevelPanels.Add));
+                            list.Add(levelPanel.LoadImageCoroutine(Level.COVER_JPG));
                         else
                         {
                             if (levelInfo.icon)
                                 levelPanel.SetIcon(levelInfo.icon);
                             else
                                 levelPanel.SetDefaultIcon();
-                            LevelPanels.Add(levelPanel);
                         }
                     }
                 }
@@ -1377,7 +1423,7 @@ namespace BetterLegacy.Editor.Managers
             }
             else
             {
-                levelPanels = levelPanels.Order(x => x.Item?.collectionInfo?.index ?? 0, true);
+                levelPanels = levelPanels.Order(x => x.GetLevelInfo()?.index ?? 0, !RTEditor.inst.levelAscend);
                 levelPanels = levelPanels.Order(x => x.isFolder, true); // folders should always be at the top.
             }
 

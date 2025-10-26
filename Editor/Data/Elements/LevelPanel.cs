@@ -17,7 +17,6 @@ using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Managers;
@@ -163,6 +162,7 @@ namespace BetterLegacy.Editor.Data.Elements
                 CoreHelper.Destroy(gameObject);
 
             gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(EditorLevelManager.inst.OpenLevelPopup.Content, $"Folder [{Name}]");
+            baseRect.AssignToRectTransform(gameObject.transform.AsRT());
             GameObject = gameObject;
 
             Button = gameObject.AddComponent<FolderButtonFunction>();
@@ -209,6 +209,7 @@ namespace BetterLegacy.Editor.Data.Elements
                 CoreHelper.Destroy(gameObject);
 
             gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(EditorLevelManager.inst.OpenLevelPopup.Content, $"Folder [{Name}]");
+            baseRect.AssignToRectTransform(gameObject.transform.AsRT());
             GameObject = gameObject;
             var folderButtonFunction = gameObject.AddComponent<FolderButtonFunction>();
 
@@ -269,6 +270,7 @@ namespace BetterLegacy.Editor.Data.Elements
                 CoreHelper.Destroy(gameObject);
 
             gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(EditorLevelManager.inst.OpenLevelPopup.Content, $"Folder [{Name}]");
+            baseRect.AssignToRectTransform(gameObject.transform.AsRT());
             GameObject = gameObject;
             var folderButtonFunction = gameObject.AddComponent<FolderButtonFunction>();
 
@@ -294,7 +296,7 @@ namespace BetterLegacy.Editor.Data.Elements
             var icon = Creator.NewUIObject("icon", iconBase.transform);
             RectValues.FullAnchored.AssignToRectTransform(icon.transform.AsRT());
             var iconImage = icon.AddComponent<Image>();
-            iconImage.sprite = Info?.level?.icon ?? LegacyPlugin.AtanPlaceholder;
+            iconImage.sprite = Info?.icon ?? Info?.level?.icon ?? LegacyPlugin.AtanPlaceholder;
             IconImage = iconImage;
 
             var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(gameObject.transform, "delete");
@@ -385,17 +387,18 @@ namespace BetterLegacy.Editor.Data.Elements
 
             if (!Item)
             {
-                if (!Info)
+                var info = GetLevelInfo();
+                if (!info)
                     return;
 
-                TooltipHelper.AddHoverTooltip(GameObject, $"{Info.songTitle} by {Info.creator}",
-                    $"<br>Folder: {Info.path}<br>" +
-                    $"<br>Folder: {Info.path}<br>" +
-                    $"Editor Folder: {Info.editorPath}<br>" +
-                    $"ID: {Info.id}<br>" +
-                    $"Find Arcade ID: {Info.arcadeID}" +
-                    $"Find Server ID: {Info.serverID}" +
-                    $"Find Workshop ID: {Info.workshopID}");
+                TooltipHelper.AddHoverTooltip(GameObject, $"{info.songTitle} by {info.creator}",
+                    $"<br>Folder: {info.path}<br>" +
+                    $"<br>Folder: {info.path}<br>" +
+                    $"Editor Folder: {info.editorPath}<br>" +
+                    $"ID: {info.id}<br>" +
+                    $"Find Arcade ID: {info.arcadeID}" +
+                    $"Find Server ID: {info.serverID}" +
+                    $"Find Workshop ID: {info.workshopID}");
                 return;
             }
 
@@ -572,6 +575,8 @@ namespace BetterLegacy.Editor.Data.Elements
                 var selectedLevels = EditorLevelManager.inst.SelectedLevels;
                 var currentLevelCollection = EditorLevelManager.inst.CurrentLevelCollection ?? EditorLevelManager.inst.OpenLevelCollection;
 
+                var info = GetLevelInfo();
+
                 if (eventData.button == PointerEventData.InputButton.Right)
                 {
                     var list = new List<ButtonFunction>();
@@ -728,9 +733,9 @@ namespace BetterLegacy.Editor.Data.Elements
 
                     if (currentLevelCollection)
                     {
-                        if (Info)
+                        if (info)
                         {
-                            list.Add(new ButtonFunction("Edit Info", () => EditorLevelManager.inst.OpenLevelInfoEditor(Info)));
+                            list.Add(new ButtonFunction("Edit Info", () => EditorLevelManager.inst.OpenLevelInfoEditor(info)));
                             list.Add(new ButtonFunction("Remove from Collection", () =>
                             {
                                 RTEditor.inst.ShowWarningPopup("Are you sure you want to remove the level from the current collection?", () =>
@@ -738,7 +743,7 @@ namespace BetterLegacy.Editor.Data.Elements
                                     if (Item)
                                         currentLevelCollection.RemoveLevelFromFolder(Item);
                                     else
-                                        currentLevelCollection.Remove(Info);
+                                        currentLevelCollection.Remove(info);
                                     currentLevelCollection.Save();
 
                                     EditorLevelManager.inst.LoadLevels();
@@ -749,7 +754,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         list.Add(new ButtonFunction("Move Earlier", () =>
                         {
-                            var info = Item?.collectionInfo ?? Info;
+                            var info = GetLevelInfo();
                             if (!info)
                                 return;
 
@@ -765,7 +770,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         }));
                         list.Add(new ButtonFunction("Move Later", () =>
                         {
-                            var info = Item?.collectionInfo ?? Info;
+                            var info = GetLevelInfo();
                             if (!info)
                                 return;
 
@@ -799,9 +804,9 @@ namespace BetterLegacy.Editor.Data.Elements
                     return;
                 }
 
-                if (currentLevelCollection && Info)
+                if (currentLevelCollection && info)
                 {
-                    EditorLevelManager.inst.OpenLevelInfoEditor(Info);
+                    EditorLevelManager.inst.OpenLevelInfoEditor(info);
                     return;
                 }
 
@@ -824,7 +829,7 @@ namespace BetterLegacy.Editor.Data.Elements
             if (!DeleteButton)
                 return;
 
-            var active = Info || EditorConfig.Instance.OpenLevelShowDeleteButton.Value;
+            var active = GetLevelInfo() || EditorConfig.Instance.OpenLevelShowDeleteButton.Value;
 
             DeleteButton.gameObject.SetActive(active);
 
@@ -836,12 +841,13 @@ namespace BetterLegacy.Editor.Data.Elements
 
         public void Delete(bool recycle = false)
         {
-            if (Info)
+            var info = GetLevelInfo();
+            if (info)
             {
                 RTEditor.inst.ShowWarningPopup("Are you sure you want to remove this level from the current collection? This cannot be undone!", () =>
                     {
                         var currentLevelCollection = EditorLevelManager.inst.CurrentLevelCollection ?? EditorLevelManager.inst.OpenLevelCollection;
-                        currentLevelCollection.Remove(Info);
+                        currentLevelCollection.Remove(info);
                         currentLevelCollection.Save();
                         EditorLevelManager.inst.LoadLevels();
                         RTEditor.inst.HideWarningPopup();
@@ -930,6 +936,8 @@ namespace BetterLegacy.Editor.Data.Elements
             EditorLevelManager.inst.LoadLevels();
             RTEditor.inst.HideNameEditor();
         }
+
+        public LevelInfo GetLevelInfo() => Item?.collectionInfo ?? Info;
 
         public override string ToString() => isFolder ? Name : Item?.ToString();
 

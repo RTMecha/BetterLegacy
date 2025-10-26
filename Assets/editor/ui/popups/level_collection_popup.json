@@ -32,7 +32,7 @@
       "size": [ -12, -8 ]
     },
     "alignment": 3, // MiddleLeft
-    "text": "Pick a Level to Open",
+    "text": "Level Collections",
     "font_size": 20,
     "font_style": 0, // Normal
     "horizontal_overflow": 0, // Wrap

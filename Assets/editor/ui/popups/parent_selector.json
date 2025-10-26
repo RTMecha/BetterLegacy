@@ -49,6 +49,12 @@
     "cell_size": [ 300.0, 32.0 ],
     "spacing": [ 0.0, 8.0 ],
     "constraint": 1,
-    "constraint_count": 1
+    "constraint_count": 1,
+    "padding": {
+      "top": 40,
+      "bottom": 4,
+      "left": 8,
+      "right": 8
+    }
   }
 }

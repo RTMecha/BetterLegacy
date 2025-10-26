@@ -43,7 +43,14 @@ namespace BetterLegacy.Editor.Data.Elements
 
         #region Data
 
-        public override string DisplayName => "/" + Item.name;
+        public override string DisplayName => string.Format(labelFormat,
+            LSText.ClampString(Item.name, labelFolderNameMax),
+            LSText.ClampString(Item.creator, labelCreatorNameMax),
+            Item.Difficulty.DisplayName,
+            LSText.ClampString(Item.description, labelDescriptionMax),
+            LSText.ClampString(Item.dateEdited, labelDateMax),
+            LSText.ClampString(Item.dateCreated, labelDateMax),
+            LSText.ClampString(Item.datePublished, labelDateMax));
 
         public override float FocusSize => EditorConfig.Instance.OpenLevelButtonHoverSize.Value;
 
@@ -63,6 +70,36 @@ namespace BetterLegacy.Editor.Data.Elements
 
         #endregion
 
+        #region Asset Pack
+
+        public static RectValues baseRect = new RectValues(Vector2.zero, new Vector2(0f, 1f), new Vector2(0f, 1f), RectValues.CenterPivot, new Vector2(584f, 32f));
+
+        public static RectValues labelRect = RectValues.FullAnchored.AnchoredPosition(32f, 0f).SizeDelta(-12f, -8f);
+
+        public static RectValues iconRect = RectValues.Default.AnchoredPosition(-276f, 0f).SizeDelta(26f, 26f);
+
+        public static RectValues deleteRect = new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(1f, 0.5f), new Vector2(32f, 0f));
+
+        public static string labelFormat = "/{0}";
+
+        public static TextAnchor labelAlignment = TextAnchor.MiddleLeft;
+
+        public static HorizontalWrapMode labelHorizontalWrap = HorizontalWrapMode.Wrap;
+
+        public static VerticalWrapMode labelVerticalWrap = VerticalWrapMode.Truncate;
+
+        public static int labelFontSize = 20;
+
+        public static int labelFolderNameMax = 40;
+
+        public static int labelCreatorNameMax = 16;
+
+        public static int labelDescriptionMax = 16;
+
+        public static int labelDateMax = 16;
+
+        #endregion
+
         #endregion
 
         #region Methods
@@ -77,6 +114,7 @@ namespace BetterLegacy.Editor.Data.Elements
                 CoreHelper.Destroy(gameObject);
 
             gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(EditorLevelManager.inst.LevelCollectionPopup.Content, $"Folder [{Name}]");
+            baseRect.AssignToRectTransform(gameObject.transform.AsRT());
             GameObject = gameObject;
 
             Button = gameObject.AddComponent<FolderButtonFunction>();
@@ -89,13 +127,13 @@ namespace BetterLegacy.Editor.Data.Elements
             var folderButtonStorage = gameObject.GetComponent<FunctionButtonStorage>();
             Label = folderButtonStorage.label;
             Label.enabled = true;
-            LevelPanel.labelRect.AssignToRectTransform(Label.rectTransform);
+            labelRect.AssignToRectTransform(Label.rectTransform);
             folderButtonStorage.button.onClick.ClearAll();
 
             var iconBase = Creator.NewUIObject("icon base", gameObject.transform);
             var iconBaseImage = iconBase.AddComponent<Image>();
             iconBase.AddComponent<Mask>().showMaskGraphic = false;
-            LevelPanel.iconRect.AssignToRectTransform(iconBaseImage.rectTransform);
+            iconRect.AssignToRectTransform(iconBaseImage.rectTransform);
             EditorThemeManager.ApplyGraphic(iconBaseImage, ThemeGroup.Null, true);
 
             var icon = Creator.NewUIObject("icon", iconBase.transform);
@@ -122,6 +160,7 @@ namespace BetterLegacy.Editor.Data.Elements
                 CoreHelper.Destroy(gameObject);
 
             gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(EditorLevelManager.inst.LevelCollectionPopup.Content, $"Folder [{Name}]");
+            baseRect.AssignToRectTransform(gameObject.transform.AsRT());
             GameObject = gameObject;
             var folderButtonFunction = gameObject.AddComponent<FolderButtonFunction>();
 
@@ -132,7 +171,7 @@ namespace BetterLegacy.Editor.Data.Elements
             var folderButtonStorage = gameObject.GetComponent<FunctionButtonStorage>();
             Label = folderButtonStorage.label;
             Label.enabled = true;
-            LevelPanel.labelRect.AssignToRectTransform(Label.rectTransform);
+            labelRect.AssignToRectTransform(Label.rectTransform);
             folderButtonStorage.button.onClick.ClearAll();
             Button = folderButtonFunction;
             EditorThemeManager.ApplySelectable(folderButtonStorage.button, ThemeGroup.List_Button_1);
@@ -141,7 +180,7 @@ namespace BetterLegacy.Editor.Data.Elements
             var iconBase = Creator.NewUIObject("icon base", gameObject.transform);
             var iconBaseImage = iconBase.AddComponent<Image>();
             iconBase.AddComponent<Mask>().showMaskGraphic = false;
-            LevelPanel.iconRect.AssignToRectTransform(iconBaseImage.rectTransform);
+            iconRect.AssignToRectTransform(iconBaseImage.rectTransform);
             EditorThemeManager.ApplyGraphic(iconBaseImage, ThemeGroup.Null, true);
 
             var icon = Creator.NewUIObject("icon", iconBase.transform);
@@ -206,9 +245,9 @@ namespace BetterLegacy.Editor.Data.Elements
         {
             Label.text = text;
 
-            Label.horizontalOverflow = LevelPanel.labelHorizontalWrap;
-            Label.verticalOverflow = LevelPanel.labelVerticalWrap;
-            Label.fontSize = LevelPanel.labelFontSize;
+            Label.horizontalOverflow = labelHorizontalWrap;
+            Label.verticalOverflow = labelVerticalWrap;
+            Label.fontSize = labelFontSize;
         }
 
         public override void RenderTooltip()

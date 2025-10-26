@@ -513,6 +513,7 @@ namespace BetterLegacy.Editor.Managers
                         RectValues.TryParse(jn["base"]["rect"], RectValues.Default.SizeDelta(600f, 400f)).AssignToRectTransform(EditorLevelManager.inst.OpenLevelPopup.GameObject.transform.AsRT());
                         RectValues.TryParse(jn["top_panel"]["rect"], RectValues.FullAnchored.AnchorMin(0, 1).Pivot(0f, 0f).SizeDelta(32f, 32f)).AssignToRectTransform(EditorLevelManager.inst.OpenLevelPopup.TopPanel);
                         RectValues.TryParse(jn["search"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(0f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, 32f))).AssignToRectTransform(EditorLevelManager.inst.OpenLevelPopup.GameObject.transform.Find("search-box").AsRT());
+                        RectValues.TryParse(jn["scrollbar"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(0f, 0.5f), new Vector2(32f, 0f))).AssignToRectTransform(EditorLevelManager.inst.OpenLevelPopup.GameObject.transform.Find("Scrollbar").AsRT());
 
                         var layoutValues = LayoutValues.Parse(jn["layout"]);
                         if (layoutValues is GridLayoutValues gridLayoutValues)
@@ -2948,6 +2949,7 @@ namespace BetterLegacy.Editor.Managers
         public void LoadEditorAssetPack(bool update = true)
         {
             LoadLevelPanelUI(update);
+            LoadLevelCollectionPanelUI(update);
             LoadInternalPrefabPanelUI(update);
             LoadExternalPrefabPanelUI(update);
             LoadEditorLayers(update);
@@ -2959,6 +2961,7 @@ namespace BetterLegacy.Editor.Managers
                 return;
 
             var jn = JSON.Parse(levelPanelFile);
+            LevelPanel.labelRect = RectValues.TryParse(jn["base"]["rect"], new RectValues(Vector2.zero, new Vector2(0f, 1f), new Vector2(0f, 1f), RectValues.CenterPivot, new Vector2(584f, 32f)));
             LevelPanel.labelRect = RectValues.TryParse(jn["label"]["rect"], RectValues.FullAnchored.AnchoredPosition(32f, 0f).SizeDelta(-12f, -8f));
             LevelPanel.labelFormat = jn["label"]["format"] != null ? jn["label"]["format"] : "/{0} : {1} by {2}";
             LevelPanel.labelAlignment = jn["label"]["alignment"] != null ? (TextAnchor)jn["label"]["alignment"].AsInt : TextAnchor.MiddleLeft;
@@ -2977,6 +2980,31 @@ namespace BetterLegacy.Editor.Managers
 
             if (update)
                 EditorLevelManager.inst.LoadLevels();
+        }
+
+        public void LoadLevelCollectionPanelUI(bool update = true)
+        {
+            if (!AssetPack.TryReadFromFile("editor/ui/elements/level_collection_panel.json", out string levelPanelFile))
+                return;
+
+            var jn = JSON.Parse(levelPanelFile);
+            LevelCollectionPanel.labelRect = RectValues.TryParse(jn["base"]["rect"], new RectValues(Vector2.zero, new Vector2(0f, 1f), new Vector2(0f, 1f), RectValues.CenterPivot, new Vector2(584f, 32f)));
+            LevelCollectionPanel.labelRect = RectValues.TryParse(jn["label"]["rect"], RectValues.FullAnchored.AnchoredPosition(32f, 0f).SizeDelta(-12f, -8f));
+            LevelCollectionPanel.labelFormat = jn["label"]["format"] != null ? jn["label"]["format"] : "/{0}";
+            LevelCollectionPanel.labelAlignment = jn["label"]["alignment"] != null ? (TextAnchor)jn["label"]["alignment"].AsInt : TextAnchor.MiddleLeft;
+            LevelCollectionPanel.labelHorizontalWrap = (HorizontalWrapMode)jn["label"]["horizontal_wrap"].AsInt;
+            LevelCollectionPanel.labelVerticalWrap = (VerticalWrapMode)jn["label"]["vertical_wrap"].AsInt;
+            LevelCollectionPanel.labelFontSize = jn["label"]["font_size"] != null ? jn["label"]["font_size"].AsInt : 20;
+            LevelCollectionPanel.labelFolderNameMax = jn["label"]["folder_name_max"].AsInt;
+            LevelCollectionPanel.labelCreatorNameMax = jn["label"]["creator_name_max"].AsInt;
+            LevelCollectionPanel.labelDescriptionMax = jn["label"]["description_max"].AsInt;
+            LevelCollectionPanel.labelDateMax = jn["label"]["date_max"].AsInt;
+
+            LevelCollectionPanel.iconRect = RectValues.TryParse(jn["icon"]["rect"], RectValues.Default.AnchoredPosition(-276f, 0f).SizeDelta(26f, 26f));
+            LevelCollectionPanel.deleteRect = RectValues.TryParse(jn["delete"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(1f, 0.5f), new Vector2(32f, 0f)));
+
+            if (update)
+                EditorLevelManager.inst.LoadLevelCollections();
         }
 
         public void LoadInternalPrefabPanelUI(bool update = true)
@@ -4171,7 +4199,11 @@ namespace BetterLegacy.Editor.Managers
                 getValue: () => EditorPath,
                 setValue: _val => EditorPath = _val,
                 onEndEdit: _val => UpdateEditorPath(false));
-            EditorLevelManager.inst.OpenLevelPopup.InitReload(EditorLevelManager.inst.LoadLevels);
+            EditorLevelManager.inst.OpenLevelPopup.InitReload(() =>
+            {
+                LoadLevelPanelUI(false);
+                EditorLevelManager.inst.LoadLevels();
+            });
             EditorLevelManager.inst.OpenLevelPopup.InitAscendToggle(
                 getValue: () => levelAscend,
                 setValue: _val =>
@@ -4250,7 +4282,13 @@ namespace BetterLegacy.Editor.Managers
             };
 
             PrefabPopups.External.InitTopElementsParent();
-            PrefabPopups.External.InitReload(() => RTPrefabEditor.inst.LoadPrefabs(RTPrefabEditor.inst.RenderExternalPrefabs));
+            PrefabPopups.External.InitReload(() =>
+            {
+                LoadInternalPrefabPanelUI(false);
+                LoadExternalPrefabPanelUI(false);
+                RTPrefabEditor.inst.RefreshInternalPrefabs();
+                RTPrefabEditor.inst.LoadPrefabs(RTPrefabEditor.inst.RenderExternalPrefabs);
+            });
             PrefabPopups.External.InitPath(
                 getValue: () => PrefabPath,
                 setValue: _val => PrefabPath = _val,
