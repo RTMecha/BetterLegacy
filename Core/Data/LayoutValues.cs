@@ -5,9 +5,17 @@ using SimpleJSON;
 
 namespace BetterLegacy.Core.Data
 {
-    public abstract class LayoutValues
+    public abstract class LayoutValues : Exists
     {
+        /// <summary>
+        /// Alignment of the layout group.
+        /// </summary>
         public TextAnchor childAlignment;
+
+        /// <summary>
+        /// Padding of the layout group.
+        /// </summary>
+        public RectOffset padding;
 
         public static LayoutValues Parse(JSONNode jn)
         {
@@ -38,6 +46,25 @@ namespace BetterLegacy.Core.Data
         {
             if (jn["child_alignment"] != null)
                 childAlignment = (TextAnchor)jn["child_alignment"].AsInt;
+            if (jn["padding"] != null)
+                padding = new RectOffset
+                {
+                    top = jn["padding"]["top"].AsInt,
+                    bottom = jn["padding"]["bottom"].AsInt,
+                    left = jn["padding"]["left"].AsInt,
+                    right = jn["padding"]["right"].AsInt,
+                };
+        }
+
+        public void AssignPadding(LayoutGroup layout)
+        {
+            if (!layout || padding == null)
+                return;
+
+            layout.padding.top = padding.top;
+            layout.padding.bottom = padding.bottom;
+            layout.padding.left = padding.left;
+            layout.padding.right = padding.right;
         }
     }
 
@@ -112,6 +139,9 @@ namespace BetterLegacy.Core.Data
         /// <param name="layout">Layout to assign to.</param>
         public void AssignToLayout(GridLayoutGroup layout)
         {
+            if (!layout)
+                return;
+
             layout.cellSize = cellSize;
             layout.spacing = spacing;
             layout.constraintCount = constraintCount;
@@ -119,6 +149,8 @@ namespace BetterLegacy.Core.Data
             layout.startCorner = startCorner;
             layout.startAxis = startAxis;
             layout.childAlignment = childAlignment;
+
+            AssignPadding(layout);
         }
     }
 
@@ -201,6 +233,9 @@ namespace BetterLegacy.Core.Data
         /// <param name="layout">Layout to assign to.</param>
         public void AssignToLayout(HorizontalOrVerticalLayoutGroup layout)
         {
+            if (!layout)
+                return;
+
             layout.childControlHeight = childControlHeight;
             layout.childControlWidth = childControlWidth;
             layout.childForceExpandHeight = childForceExpandHeight;
@@ -209,6 +244,8 @@ namespace BetterLegacy.Core.Data
             layout.childScaleWidth = childScaleWidth;
             layout.spacing = spacing;
             layout.childAlignment = childAlignment;
+
+            AssignPadding(layout);
         }
     }
 }
