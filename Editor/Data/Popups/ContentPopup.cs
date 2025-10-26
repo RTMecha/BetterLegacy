@@ -306,7 +306,7 @@ namespace BetterLegacy.Editor.Data.Popups
 
         public void InitTopElementsParent()
         {
-            if (!TopPanel)
+            if (!TopPanel || TopElements)
                 return;
 
             var topElements = Creator.NewUIObject("elements", TopPanel);
