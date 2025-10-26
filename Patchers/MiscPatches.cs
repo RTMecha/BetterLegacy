@@ -7,6 +7,8 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
+using LSFunctions;
+
 using HarmonyLib;
 
 using MP3Sharp;
@@ -78,10 +80,10 @@ namespace BetterLegacy.Patchers
         }
     }
 
-    [HarmonyPatch(typeof(LSFunctions.LSHelpers))]
+    [HarmonyPatch(typeof(LSHelpers))]
     public class LSHelpersPatch
     {
-        [HarmonyPatch(nameof(LSFunctions.LSHelpers.IsUsingInputField))]
+        [HarmonyPatch(nameof(LSHelpers.IsUsingInputField))]
         [HarmonyPrefix]
         static bool IsUsingInputFieldPrefix(ref bool __result)
         {
@@ -91,10 +93,10 @@ namespace BetterLegacy.Patchers
         }
     }
 
-    [HarmonyPatch(typeof(LSFunctions.LSAudio))]
+    [HarmonyPatch(typeof(LSAudio))]
     public class LSAudioPatch
     {
-        [HarmonyPatch(nameof(LSFunctions.LSAudio.CreateAudioClipUsingMP3File))]
+        [HarmonyPatch(nameof(LSAudio.CreateAudioClipUsingMP3File))]
         [HarmonyPrefix]
         static bool CreateAudioClipUsingMP3FilePrefix(ref AudioClip __result, string __0)
         {
@@ -123,6 +125,40 @@ namespace BetterLegacy.Patchers
             var audioClip = AudioClip.Create("audio", num3, channelCount, frequency, false);
             audioClip.SetData(data.ToArray(), 0);
             return audioClip;
+        }
+    }
+
+    [HarmonyPatch(typeof(LSText))]
+    public class LSTextPatch
+    {
+        [HarmonyPatch(nameof(LSText.ClampString))]
+        [HarmonyPrefix]
+        static bool ClampStringPrefix(ref string __result, string __0, int __1)
+        {
+            var input = __0;
+            var maxLength = __1;
+
+            if (string.IsNullOrEmpty(input))
+            {
+                __result = input;
+                return false;
+            }
+
+            if (input.Length > maxLength)
+            {
+                __result = input.Substring(0, maxLength - 3) + "...";
+                return false;
+            }
+            if (input.Length < maxLength)
+            {
+                string text = string.Empty;
+                for (int i = 0; i < maxLength - input.Length; i++)
+                    text += " ";
+                __result = input + text;
+                return false;
+            }
+            __result = input;
+            return false;
         }
     }
 
