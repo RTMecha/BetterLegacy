@@ -16,12 +16,12 @@
     "only_this": false
   },
   "beatmapobject/origin_fields": {
-    "complexity": 0,
-    "only_this": true
-  },
-  "beatmapobject/origin_toggles": {
     "complexity": 1,
     "only_this": false
+  },
+  "beatmapobject/origin_toggles": {
+    "complexity": 0,
+    "only_this": true
   },
   "beatmapobject/gradient_shapes_label": {
     "complexity": 0,
