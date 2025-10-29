@@ -197,20 +197,20 @@ namespace BetterLegacy.Arcade.Interfaces
 
                 if (!metadata)
                 {
-                    UpdateInfo(SteamWorkshop.inst.defaultSteamImageSprite, $"<color=$FF0000>No metadata in {name}</color>", i, true);
+                    UpdateInfo(LegacyPlugin.AtanPlaceholder, $"<color=$FF0000>No metadata in {name}</color>", i, true);
                     continue;
                 }
 
                 if (!RTFile.FileExists(RTFile.CombinePaths(path, Level.LEVEL_OGG)) && !RTFile.FileExists(RTFile.CombinePaths(path, Level.LEVEL_WAV)) && !RTFile.FileExists(RTFile.CombinePaths(path, Level.LEVEL_MP3))
                     && !RTFile.FileExists(RTFile.CombinePaths(path, Level.AUDIO_OGG)) && !RTFile.FileExists(RTFile.CombinePaths(path, Level.AUDIO_WAV)) && !RTFile.FileExists(RTFile.CombinePaths(path, Level.AUDIO_MP3)))
                 {
-                    UpdateInfo(SteamWorkshop.inst.defaultSteamImageSprite, $"<color=$FF0000>No song in {name}</color>", i, true);
+                    UpdateInfo(LegacyPlugin.AtanPlaceholder, $"<color=$FF0000>No song in {name}</color>", i, true);
                     continue;
                 }
 
                 if (!RTFile.FileExists(RTFile.CombinePaths(path, Level.LEVEL_LSB)) && !RTFile.FileExists(RTFile.CombinePaths(path, Level.LEVEL_VGD)))
                 {
-                    UpdateInfo(SteamWorkshop.inst.defaultSteamImageSprite, $"<color=$FF0000>No song in {name}</color>", i, true);
+                    UpdateInfo(LegacyPlugin.AtanPlaceholder, $"<color=$FF0000>No song in {name}</color>", i, true);
                     continue;
                 }
 
@@ -249,14 +249,26 @@ namespace BetterLegacy.Arcade.Interfaces
 
             int collectionIndex = 0;
             totalLevelCount = levelCollections.Count;
-            while (levelCollections.Count > 0)
+            while (!levelCollections.IsEmpty())
             {
                 var path = levelCollections.Dequeue();
                 var name = Path.GetFileName(path);
 
-                var levelCollection = !RTFile.FileExists(RTFile.CombinePaths(path, LevelCollection.COLLECTION_LSCO)) ?
-                    new LevelCollection() { path = path, isFolder = true, icon = LegacyPlugin.AtanPlaceholder, name = name, id = PAObjectBase.GetNumberID(), } :
-                    LevelCollection.Parse(path, JSON.Parse(RTFile.ReadFromFile(RTFile.CombinePaths(path, LevelCollection.COLLECTION_LSCO))));
+                LevelCollection levelCollection = null;
+
+                if (!RTFile.FileExists(RTFile.CombinePaths(path, LevelCollection.COLLECTION_LSCO)))
+                {
+                    if (!ArcadeConfig.Instance.LoadFolders.Value)
+                    {
+                        collectionIndex++;
+                        continue;
+                    }
+                    levelCollection = new LevelCollection() { path = path, isFolder = true, icon = LegacyPlugin.AtanPlaceholder, name = name, id = PAObjectBase.GetNumberID(), };
+                }
+                else
+                    levelCollection = LevelCollection.Parse(path, JSON.Parse(RTFile.ReadFromFile(RTFile.CombinePaths(path, LevelCollection.COLLECTION_LSCO)))); 
+
+                LevelManager.AssignSaveData(levelCollection);
 
                 LevelManager.LevelCollections.Add(levelCollection);
                 UpdateInfo(levelCollection.icon, $"Loading {name}", collectionIndex);
