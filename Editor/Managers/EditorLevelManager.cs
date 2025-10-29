@@ -678,6 +678,8 @@ namespace BetterLegacy.Editor.Managers
             var currentFile = level.CurrentFile;
             level.currentFile = null; // reset since autosave loading should be temporary.
 
+            level.saveData = new SaveData(level);
+
             var sw = CoreHelper.StartNewStopwatch();
 
             RTPlayer.GameMode = GameMode.Regular;
