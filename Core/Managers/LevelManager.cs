@@ -587,7 +587,7 @@ namespace BetterLegacy.Core.Managers
         /// <returns>Returns a sorted Level list.</returns>
         public static List<Level> SortLevels(List<Level> levels, LevelSort sort, bool ascend) => sort switch
         {
-            LevelSort.Cover => levels.Order(x => x.icon != SteamWorkshop.inst.defaultSteamImageSprite, !ascend),
+            LevelSort.Cover => levels.Order(x => x.icon != LegacyPlugin.AtanPlaceholder, !ascend),
             LevelSort.Artist => levels.Order(x => x.metadata.artist.name, !ascend),
             LevelSort.Creator => levels.Order(x => x.metadata.creator.name, !ascend),
             LevelSort.File => levels.Order(x => System.IO.Path.GetFileName(x.path), !ascend),
@@ -721,6 +721,8 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         public static List<SaveData> Saves { get; set; } = new List<SaveData>();
 
+        public static List<SaveCollectionData> CollectionSaves { get; set; } = new List<SaveCollectionData>();
+
         /// <summary>
         /// The current save file for the Arcade.
         /// </summary>
@@ -747,6 +749,25 @@ namespace BetterLegacy.Core.Managers
             }
 
             level.LoadAchievements();
+        }
+
+        public static void AssignSaveData(LevelCollection levelCollection)
+        {
+            if (!levelCollection)
+                return;
+
+            if (CollectionSaves.TryFind(x => x.ID == levelCollection.id, out SaveCollectionData saveData))
+            {
+                levelCollection.saveData = saveData;
+                saveData.LevelCollectionName = levelCollection.name;
+            }
+            else
+            {
+                levelCollection.saveData = new SaveCollectionData(levelCollection);
+                CollectionSaves.Add(levelCollection.saveData);
+            }
+
+            levelCollection.LoadAchievements();
         }
 
         /// <summary>
@@ -780,14 +801,18 @@ namespace BetterLegacy.Core.Managers
 
         static void SetLevelData(List<Level> levels, Level currentLevel, bool update)
         {
+            if (!currentLevel)
+                return;
+
             bool makeNewSaveData = false;
             if (!currentLevel.saveData)
             {
                 makeNewSaveData = true;
                 currentLevel.saveData = new SaveData(currentLevel);
             }
-            if (currentLevel && currentLevel.saveData)
-                currentLevel.saveData.LevelName = currentLevel.metadata?.beatmap?.name; // update level name
+
+            currentLevel.saveData.LevelName = currentLevel.metadata?.beatmap?.name; // update level name
+            currentLevel.saveData.LastPlayed = DateTime.Now;
 
             if (update && currentLevel.metadata && currentLevel.metadata.song.DifficultyType == DifficultyType.Animation) // animation levels shouldn't update rank data
             {
@@ -795,19 +820,19 @@ namespace BetterLegacy.Core.Managers
 
                 try
                 {
-                    if (!AudioManager.inst.CurrentAudioSource.clip)
-                        return;
+                    if (AudioManager.inst.CurrentAudioSource.clip)
+                    {
+                        var length = AudioManager.inst.CurrentAudioSource.clip.length;
+                        if (currentLevel.saveData.LevelLength != length)
+                            currentLevel.saveData.LevelLength = length;
 
-                    var length = AudioManager.inst.CurrentAudioSource.clip.length;
-                    if (currentLevel.saveData.LevelLength != length)
-                        currentLevel.saveData.LevelLength = length;
+                        float calc = AudioManager.inst.CurrentAudioSource.time / length * 100f;
 
-                    float calc = AudioManager.inst.CurrentAudioSource.time / length * 100f;
+                        if (currentLevel.saveData.Percentage < calc)
+                            currentLevel.saveData.Percentage = calc;
 
-                    if (currentLevel.saveData.Percentage < calc)
-                        currentLevel.saveData.Percentage = calc;
-
-                    currentLevel.saveData.TimeInLevel = RTBeatmap.Current.levelTimer.time;
+                        currentLevel.saveData.TimeInLevel = RTBeatmap.Current.levelTimer.time;
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -856,7 +881,17 @@ namespace BetterLegacy.Core.Managers
                 jn["lvl"][num] = save.ToJSON();
                 num++;
             }
-            jn["played_count"] = PlayedLevelCount.ToString();
+            num = 0;
+            for (int i = 0; i < CollectionSaves.Count; i++)
+            {
+                var save = CollectionSaves[i];
+                if (!save.ShouldSerialize)
+                    continue;
+
+                jn["lvl_col"][num] = save.ToJSON();
+                num++;
+            }
+            jn["played_count"] = PlayedLevelCount;
 
             var profilePath = RTFile.ApplicationDirectory + "profile";
             RTFile.CreateDirectory(profilePath);
@@ -871,6 +906,7 @@ namespace BetterLegacy.Core.Managers
         public static void LoadProgress()
         {
             Saves.Clear();
+            CollectionSaves.Clear();
 
             var profilePath = RTFile.ApplicationDirectory + "profile";
             JSONNode jn;
@@ -896,10 +932,16 @@ namespace BetterLegacy.Core.Managers
             else
                 jn = JSON.Parse(RTFile.ReadFromFile(RTFile.CombinePaths(profilePath, CurrentSaveFile)));
 
+            if (jn == null)
+                return;
+
             for (int i = 0; i < jn["lvl"].Count; i++)
                 Saves.Add(SaveData.Parse(jn["lvl"][i]));
+            if (jn["lvl_col"] != null)
+                for (int i = 0; i < jn["lvl_col"].Count; i++)
+                    CollectionSaves.Add(SaveCollectionData.Parse(jn["lvl_col"][i]));
 
-            if (!string.IsNullOrEmpty(jn["played_count"]))
+            if (jn["played_count"] != null)
                 PlayedLevelCount = jn["played_count"].AsInt;
         }
 

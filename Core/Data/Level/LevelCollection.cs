@@ -140,6 +140,11 @@ namespace BetterLegacy.Core.Data.Level
         public List<LevelInfo> levelInformation = new List<LevelInfo>();
 
         /// <summary>
+        /// Saved player data.
+        /// </summary>
+        public SaveCollectionData saveData;
+
+        /// <summary>
         /// Achievements to be loaded for a collection.
         /// </summary>
         public List<Achievement> achievements = new List<Achievement>();
@@ -519,7 +524,7 @@ namespace BetterLegacy.Core.Data.Level
                 {
                     LegacyPlugin.MainTick += () =>
                     {
-                        var sprite = SteamWorkshop.inst.defaultSteamImageSprite;
+                        var sprite = LegacyPlugin.AtanPlaceholder;
                         ArcadeMenu.OnlineSteamLevelIcons[levelInfo.workshopID] = sprite;
                         InitSteamItem(collection, levelInfo, onDownload, item);
                     };
