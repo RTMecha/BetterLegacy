@@ -889,6 +889,14 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction(nameof(ModifierFunctions.getCurrentLevelID),  ModifierFunctions.getCurrentLevelID),
             new ModifierAction(nameof(ModifierFunctions.getCurrentLevelName),  ModifierFunctions.getCurrentLevelName),
             new ModifierAction(nameof(ModifierFunctions.getCurrentLevelRank),  ModifierFunctions.getCurrentLevelRank),
+            new ModifierAction(nameof(ModifierFunctions.getLevelVariable),  ModifierFunctions.getLevelVariable),
+            new ModifierAction(nameof(ModifierFunctions.setLevelVariable),  ModifierFunctions.setLevelVariable, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.removeLevelVariable),  ModifierFunctions.removeLevelVariable, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.clearLevelVariables),  ModifierFunctions.clearLevelVariables, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.getCurrentLevelVariable),  ModifierFunctions.getCurrentLevelVariable),
+            new ModifierAction(nameof(ModifierFunctions.setCurrentLevelVariable),  ModifierFunctions.setCurrentLevelVariable, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.removeCurrentLevelVariable),  ModifierFunctions.removeCurrentLevelVariable, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.clearCurrentLevelVariables),  ModifierFunctions.clearCurrentLevelVariables, ModifierCompatibility.LevelControlCompatible),
 
             #endregion
 
@@ -4261,6 +4269,106 @@ namespace BetterLegacy.Core.Helpers
         public static void getCurrentLevelRank(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             variables[modifier.GetValue(0)] = LevelManager.GetLevelRank(RTBeatmap.Current.hits).Ordinal.ToString();
+        }
+
+        public static void getLevelVariable(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            var id = modifier.GetValue(0, variables);
+            var levelVariableName = modifier.GetValue(1, variables);
+            var defaultValue = modifier.GetValue(2, variables);
+            var variableName = modifier.GetValue(3, variables);
+            if (string.IsNullOrEmpty(variableName) || string.IsNullOrEmpty(levelVariableName))
+                return;
+
+            var level = LevelManager.Levels.Find(x => x.id == id);
+
+            var val = level && level.saveData && level.saveData.Variables != null && level.saveData.Variables.TryGetValue(levelVariableName, out string value) ? value : defaultValue;
+            if (!string.IsNullOrEmpty(val))
+                variables[variableName] = val;
+        }
+
+        public static void setLevelVariable(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            var id = modifier.GetValue(0, variables);
+            var level = LevelManager.Levels.Find(x => x.id == id);
+            if (!level || !level.saveData || level.saveData.Variables == null)
+                return;
+
+            var levelVariableName = modifier.GetValue(1, variables);
+            var value = modifier.GetValue(2, variables);
+
+            level.saveData.Variables[levelVariableName] = value;
+            LevelManager.SaveProgress();
+        }
+
+        public static void removeLevelVariable(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            var id = modifier.GetValue(0, variables);
+            var level = LevelManager.Levels.Find(x => x.id == id);
+            if (!level || !level.saveData || level.saveData.Variables == null)
+                return;
+
+            level.saveData.Variables.Remove(modifier.GetValue(0, variables));
+            LevelManager.SaveProgress();
+        }
+
+        public static void clearLevelVariables(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            var id = modifier.GetValue(0, variables);
+            var level = LevelManager.Levels.Find(x => x.id == id);
+            level?.saveData?.Variables?.Clear();
+        }
+
+        public static void getCurrentLevelVariable(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            var levelVariableName = modifier.GetValue(0, variables);
+            var defaultValue = modifier.GetValue(1, variables);
+            var variableName = modifier.GetValue(2, variables);
+            if (string.IsNullOrEmpty(variableName) || string.IsNullOrEmpty(levelVariableName))
+                return;
+
+            var level = LevelManager.CurrentLevel;
+            if (CoreHelper.InEditor && EditorLevelManager.inst)
+                level = EditorLevelManager.inst.CurrentLevel;
+
+            var val = level && level.saveData && level.saveData.Variables != null && level.saveData.Variables.TryGetValue(levelVariableName, out string value) ? value : defaultValue;
+            if (!string.IsNullOrEmpty(val))
+                variables[variableName] = val;
+        }
+
+        public static void setCurrentLevelVariable(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            var level = LevelManager.CurrentLevel;
+            if (CoreHelper.InEditor && EditorLevelManager.inst)
+                level = EditorLevelManager.inst.CurrentLevel;
+            if (!level || !level.saveData || level.saveData.Variables == null)
+                return;
+
+            var levelVariableName = modifier.GetValue(0, variables);
+            var value = modifier.GetValue(1, variables);
+
+            level.saveData.Variables[levelVariableName] = value;
+            LevelManager.SaveProgress();
+        }
+
+        public static void removeCurrentLevelVariable(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            var level = LevelManager.CurrentLevel;
+            if (CoreHelper.InEditor && EditorLevelManager.inst)
+                level = EditorLevelManager.inst.CurrentLevel;
+            if (!level || !level.saveData || level.saveData.Variables == null)
+                return;
+
+            level.saveData.Variables.Remove(modifier.GetValue(0, variables));
+            LevelManager.SaveProgress();
+        }
+
+        public static void clearCurrentLevelVariables(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            var level = LevelManager.CurrentLevel;
+            if (CoreHelper.InEditor && EditorLevelManager.inst)
+                level = EditorLevelManager.inst.CurrentLevel;
+            level?.saveData?.Variables?.Clear();
         }
 
         #endregion

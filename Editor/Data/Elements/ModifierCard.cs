@@ -839,6 +839,54 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
+                case nameof(ModifierFunctions.getLevelVariable): {
+                        StringGenerator(modifier, reference, "ID", 0);
+                        StringGenerator(modifier, reference, "Level Variable Name", 1);
+                        StringGenerator(modifier, reference, "Default Value", 2);
+                        StringGenerator(modifier, reference, "Variable Name", 3);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.setLevelVariable): {
+                        StringGenerator(modifier, reference, "ID", 0);
+                        StringGenerator(modifier, reference, "Level Variable Name", 1);
+                        StringGenerator(modifier, reference, "Value", 2);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.removeLevelVariable): {
+                        StringGenerator(modifier, reference, "ID", 0);
+                        StringGenerator(modifier, reference, "Level Variable Name", 1);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.clearLevelVariables): {
+                        StringGenerator(modifier, reference, "ID", 0);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.getCurrentLevelVariable): {
+                        StringGenerator(modifier, reference, "Level Variable Name", 0);
+                        StringGenerator(modifier, reference, "Default Value", 1);
+                        StringGenerator(modifier, reference, "Variable Name", 2);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.setCurrentLevelVariable): {
+                        StringGenerator(modifier, reference, "Level Variable Name", 0);
+                        StringGenerator(modifier, reference, "Value", 1);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.removeCurrentLevelVariable): {
+                        StringGenerator(modifier, reference, "Level Variable Name", 0);
+
+                        break;
+                    }
+                //case nameof(ModifierFunctions.clearCurrentLevelVariables): {
+
+                //        break;
+                //    }
 
                 #endregion
 

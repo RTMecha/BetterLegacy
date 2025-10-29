@@ -984,7 +984,55 @@
         "commands": [ "getDeathCount" ],
         "value": "DEATH_COUNT_VAR",
         "const": "True"
-      } // getDeathCount
+      }, // getDeathCount
+      {
+        "type": 1,
+        "name": "getLevelVariable",
+        "values": [ "", "VAR", "", "LEVEL_VAR" ],
+        "const": "True"
+      }, // getLevelVariable
+      {
+        "type": 1,
+        "name": "setLevelVariable",
+        "values": [ "", "VAR", "" ],
+        "const": "True"
+      }, // setLevelVariable
+      {
+        "type": 1,
+        "name": "removeLevelVariable",
+        "values": [ "", "VAR" ],
+        "const": "True"
+      }, // removeLevelVariable
+      {
+        "type": 1,
+        "name": "clearLevelVariables",
+        "values": [ "" ],
+        "const": "True"
+      }, // clearLevelVariables
+      {
+        "type": 1,
+        "name": "getCurrentLevelVariable",
+        "values": [ "VAR", "", "LEVEL_VAR" ],
+        "const": "True"
+      }, // getCurrentLevelVariable
+      {
+        "type": 1,
+        "name": "setCurrentLevelVariable",
+        "values": [ "VAR", "" ],
+        "const": "True"
+      }, // setCurrentLevelVariable
+      {
+        "type": 1,
+        "name": "removeCurrentLevelVariable",
+        "values": [ "VAR" ],
+        "const": "True"
+      }, // removeCurrentLevelVariable
+      {
+        "type": 1,
+        "name": "clearCurrentLevelVariables",
+        "values": [],
+        "const": "True"
+      } // clearCurrentLevelVariables
     ],
 
     // Game State
