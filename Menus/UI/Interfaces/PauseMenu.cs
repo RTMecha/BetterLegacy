@@ -105,7 +105,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 SceneHelper.LoadEditorWithProgress, // 2
                 ConfigManager.inst.Show, // 3
                 ArcadeHelper.QuitToArcade, // 4
-                Application.Quit, // 5
+                LegacyPlugin.QuitGame, // 5
             };
 
             int num = 0;

@@ -311,6 +311,20 @@ namespace BetterLegacy
             } // Splash text
         }
 
+        public static void QuitGame()
+        {
+            if (CoreHelper.InEditor && EditorManager.inst.hasLoadedLevel)
+            {
+                GameData.Current.SaveData(RTFile.CombinePaths(EditorLevelManager.inst.CurrentLevel.path, "quit-game-backup.lsb"), Application.Quit);
+                return;
+            }
+
+            if (SceneHelper.CurrentSceneType == SceneType.Game)
+                LevelManager.SaveProgress();
+
+            Application.Quit();
+        }
+
         #region Profile
 
         /// <summary>

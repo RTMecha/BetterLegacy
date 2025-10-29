@@ -1092,7 +1092,7 @@ namespace BetterLegacy.Core
                 // Exits the game.
                 // Function has no parameters.
                 case "ExitGame": {
-                        Application.Quit();
+                        LegacyPlugin.QuitGame();
                         break;
                     }
 

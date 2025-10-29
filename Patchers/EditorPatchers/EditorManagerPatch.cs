@@ -812,13 +812,13 @@ namespace BetterLegacy.Patchers
                     {
                         CoreHelper.UpdateDiscordStatus(string.Empty, string.Empty, CoreHelper.discordIcon);
                         Debug.Log($"{Instance.className}Quit Game");
-                        Application.Quit();
+                        LegacyPlugin.QuitGame();
                     });
                 else
                 {
                     CoreHelper.UpdateDiscordStatus(string.Empty, string.Empty, CoreHelper.discordIcon);
                     Debug.Log($"{Instance.className}Quit Game");
-                    Application.Quit();
+                    LegacyPlugin.QuitGame();
                 }
             }, RTEditor.inst.HideWarningPopup);
 
