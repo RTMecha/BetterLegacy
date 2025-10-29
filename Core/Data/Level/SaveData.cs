@@ -12,7 +12,7 @@ namespace BetterLegacy.Core.Data.Level
     /// <summary>
     /// Represents the saved data of a played level.
     /// </summary>
-    public class SaveData : Exists
+    public class SaveData : Exists, IAchievementData
     {
         public SaveData() { }
 
@@ -22,12 +22,12 @@ namespace BetterLegacy.Core.Data.Level
             LevelName = level.metadata?.beatmap?.name;
         }
 
-        #region Properties
+        #region Values
 
         /// <summary>
         /// If the saved data should write to JSON.
         /// </summary>
-        public bool ShouldSerialize => !string.IsNullOrEmpty(ID) && ID != "0" && !ID.Contains("-") && (Hits >= 0 || Deaths >= 0 || Boosts >= 0 || Completed || Unlocked || UnlockedAchievements != null && !UnlockedAchievements.IsEmpty());
+        public bool ShouldSerialize => !string.IsNullOrEmpty(ID) && ID != "0" && !ID.Contains("-") && (Hits >= 0 || Deaths >= 0 || Boosts >= 0 || Completed || Unlocked || UnlockedAchievements != null && !UnlockedAchievements.IsEmpty() || Variables != null && !Variables.IsEmpty());
 
         /// <summary>
         /// Level name for readable display.
@@ -88,6 +88,16 @@ namespace BetterLegacy.Core.Data.Level
         /// All unlocked custom achievements.
         /// </summary>
         public Dictionary<string, bool> UnlockedAchievements { get; set; }
+
+        /// <summary>
+        /// Last time the user played the level.
+        /// </summary>
+        public DateTime? LastPlayed { get; set; }
+
+        /// <summary>
+        /// Dictionary of stored variables.
+        /// </summary>
+        public Dictionary<string, string> Variables { get; set; } = new Dictionary<string, string>();
 
         #endregion
 
@@ -305,6 +315,18 @@ namespace BetterLegacy.Core.Data.Level
                 }
             }
 
+            if (saveData.Variables == null)
+                saveData.Variables = new Dictionary<string, string>();
+            saveData.Variables.Clear();
+
+            if (jn["vars"] != null)
+                for (int i = 0; i < jn["vars"].Count; i++)
+                {
+                    var jnVar = jn["vars"][i];
+                    if (jnVar["n"] != null)
+                        saveData.Variables[jnVar["n"]] = jnVar["v"];
+                }
+
             return saveData;
         }
 
@@ -328,6 +350,7 @@ namespace BetterLegacy.Core.Data.Level
         public JSONNode ToJSON()
         {
             var jn = Parser.NewJSONObject();
+
             if (!string.IsNullOrEmpty(LevelName))
                 jn["n"] = LevelName;
             jn["id"] = ID;
@@ -360,6 +383,16 @@ namespace BetterLegacy.Core.Data.Level
                     ach["u"] = keyValuePair.Value;
                     jn["ach"][num] = ach;
                     num++;
+                }
+            }
+
+            if (Variables != null)
+            {
+                int index = 0;
+                foreach (var variable in Variables)
+                {
+                    jn["vars"][index]["n"] = variable.Key;
+                    jn["vars"][index]["v"] = variable.Value;
                 }
             }
 
