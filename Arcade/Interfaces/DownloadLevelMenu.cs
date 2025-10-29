@@ -109,7 +109,7 @@ namespace BetterLegacy.Arcade.Interfaces
                 id = "84682758635",
                 name = "Cover",
                 rect = RectValues.Default.AnchoredPosition(-500f, 100f).SizeDelta(600f, 600f),
-                icon = ArcadeMenu.OnlineLevelIcons.TryGetValue(jn["id"], out Sprite sprite) ? sprite : SteamWorkshop.inst.defaultSteamImageSprite,
+                icon = ArcadeMenu.OnlineLevelIcons.TryGetValue(jn["id"], out Sprite sprite) ? sprite : LegacyPlugin.AtanPlaceholder,
                 opacity = 1f,
                 val = 40f,
                 length = 0f,

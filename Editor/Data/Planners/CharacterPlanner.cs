@@ -22,7 +22,7 @@ namespace BetterLegacy.Editor.Data.Planners
 
         public CharacterPlanner(string fullPath) : this()
         {
-            CharacterSprite = RTFile.FileExists(RTFile.CombinePaths(fullPath, $"profile{FileFormat.PNG.Dot()}")) ? SpriteHelper.LoadSprite(RTFile.CombinePaths(fullPath, $"profile{FileFormat.PNG.Dot()}")) : SteamWorkshop.inst.defaultSteamImageSprite;
+            CharacterSprite = RTFile.FileExists(RTFile.CombinePaths(fullPath, $"profile{FileFormat.PNG.Dot()}")) ? SpriteHelper.LoadSprite(RTFile.CombinePaths(fullPath, $"profile{FileFormat.PNG.Dot()}")) : LegacyPlugin.AtanPlaceholder;
 
             if (RTFile.FileExists(RTFile.CombinePaths(fullPath, $"info{FileFormat.LSN.Dot()}")))
             {

@@ -37,7 +37,7 @@ namespace BetterLegacy.Core.Data.Level
                 icon =
                     RTFile.FileExists(GetFile(LEVEL_JPG)) ? SpriteHelper.LoadSprite(GetFile(LEVEL_JPG)) :
                     RTFile.FileExists(GetFile(COVER_JPG)) ? SpriteHelper.LoadSprite(GetFile(COVER_JPG)) :
-                    SteamWorkshop.inst.defaultSteamImageSprite;
+                    LegacyPlugin.AtanPlaceholder;
 
             UpdateDefaults();
         }
@@ -53,7 +53,7 @@ namespace BetterLegacy.Core.Data.Level
                 icon =
                     RTFile.FileExists(GetFile(LEVEL_JPG)) ? SpriteHelper.LoadSprite(GetFile(LEVEL_JPG)) :
                     RTFile.FileExists(GetFile(COVER_JPG)) ? SpriteHelper.LoadSprite(GetFile(COVER_JPG)) :
-                    SteamWorkshop.inst.defaultSteamImageSprite;
+                    LegacyPlugin.AtanPlaceholder;
 
                 lockedIcon = RTFile.FileExists(GetFile(LOCKED_JPG)) ? SpriteHelper.LoadSprite(GetFile(LOCKED_JPG)) : null;
             }    
@@ -199,7 +199,7 @@ namespace BetterLegacy.Core.Data.Level
         /// <summary>
         /// If the level has no set icon, therefore it has the default icon.
         /// </summary>
-        public bool HasNoIcon => icon == SteamWorkshop.inst.defaultSteamImageSprite;
+        public bool HasNoIcon => icon == LegacyPlugin.AtanPlaceholder;
 
         #endregion
 

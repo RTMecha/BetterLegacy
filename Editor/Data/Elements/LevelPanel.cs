@@ -929,7 +929,7 @@ namespace BetterLegacy.Editor.Data.Elements
         /// <summary>
         /// Sets the default icon.
         /// </summary>
-        public void SetDefaultIcon() => SetIcon(isFolder ? EditorSprites.OpenSprite : SteamWorkshop.inst.defaultSteamImageSprite);
+        public void SetDefaultIcon() => SetIcon(isFolder ? EditorSprites.OpenSprite : LegacyPlugin.AtanPlaceholder);
 
         void EndFolderCreation()
         {

@@ -256,10 +256,17 @@ namespace BetterLegacy.Core.Data.Level
             if (overwriteUnlockAfterCompletion)
                 jn["unlock_complete"] = unlockAfterCompletion;
 
-            if (icon)
-                jn["icon"] = SpriteHelper.SpriteToString(icon);
-            if (lockedIcon)
-                jn["locked_icon"] = SpriteHelper.SpriteToString(lockedIcon);
+            try
+            {
+                if (icon && icon != LegacyPlugin.AtanPlaceholder)
+                    jn["icon"] = SpriteHelper.SpriteToString(icon);
+                if (lockedIcon && lockedIcon != LegacyPlugin.AtanPlaceholder)
+                    jn["locked_icon"] = SpriteHelper.SpriteToString(lockedIcon);
+            }
+            catch
+            {
+
+            }
 
             return jn;
         }
@@ -279,8 +286,9 @@ namespace BetterLegacy.Core.Data.Level
             songTitle = level.metadata?.song?.title ?? string.Empty,
             songArtist = level.metadata?.artist?.name ?? string.Empty,
             difficulty = level.metadata?.song?.difficulty ?? 0,
-            icon = level.icon,
-            lockedIcon = level.lockedIcon,
+
+            icon = !level.HasNoIcon ? level.icon : null,
+            lockedIcon = level.lockedIcon != LegacyPlugin.AtanPlaceholder ? level.lockedIcon : null,
 
             arcadeID = level.metadata?.arcadeID ?? string.Empty,
             serverID = level.metadata?.serverID ?? string.Empty,

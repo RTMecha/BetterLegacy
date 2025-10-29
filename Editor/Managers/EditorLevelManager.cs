@@ -1407,7 +1407,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 levelPanels = RTEditor.inst.levelSort switch
                 {
-                    LevelSort.Cover => LevelPanels.Order(x => x.Item && x.Item.icon != SteamWorkshop.inst.defaultSteamImageSprite, !RTEditor.inst.levelAscend),
+                    LevelSort.Cover => LevelPanels.Order(x => x.Item && x.Item.icon != LegacyPlugin.AtanPlaceholder, !RTEditor.inst.levelAscend),
                     LevelSort.Artist => LevelPanels.Order(x => x.Item?.metadata?.artist?.name ?? string.Empty, !RTEditor.inst.levelAscend),
                     LevelSort.Creator => LevelPanels.Order(x => x.Item?.metadata?.creator?.name ?? string.Empty, !RTEditor.inst.levelAscend),
                     LevelSort.File => LevelPanels.Order(x => x.Path, !RTEditor.inst.levelAscend),

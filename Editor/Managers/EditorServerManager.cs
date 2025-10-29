@@ -1393,7 +1393,7 @@ namespace BetterLegacy.Editor.Managers
                                     iconImage.sprite = sprite;
                             }, onError =>
                             {
-                                var sprite = SteamWorkshop.inst.defaultSteamImageSprite;
+                                var sprite = LegacyPlugin.AtanPlaceholder;
                                 OnlineIcons[id] = sprite;
                                 if (iconImage)
                                     iconImage.sprite = sprite;
@@ -1608,7 +1608,7 @@ namespace BetterLegacy.Editor.Managers
                                     iconImage.sprite = sprite;
                             }, onError =>
                             {
-                                var sprite = SteamWorkshop.inst.defaultSteamImageSprite;
+                                var sprite = LegacyPlugin.AtanPlaceholder;
                                 OnlineIcons[id] = sprite;
                                 if (iconImage)
                                     iconImage.sprite = sprite;
@@ -1834,7 +1834,7 @@ namespace BetterLegacy.Editor.Managers
                                     iconImage.sprite = sprite;
                             }, onError =>
                             {
-                                var sprite = SteamWorkshop.inst.defaultSteamImageSprite;
+                                var sprite = LegacyPlugin.AtanPlaceholder;
                                 OnlineIcons[id] = sprite;
                                 if (iconImage)
                                     iconImage.sprite = sprite;

@@ -1994,7 +1994,7 @@ namespace BetterLegacy.Arcade.Interfaces
                                 text = "<size=24>" + name,
                                 textRect = RectValues.FullAnchored.AnchoredPosition(20f, -50f),
                                 enableWordWrapping = true,
-                                icon = SteamWorkshop.inst.defaultSteamImageSprite,
+                                icon = LegacyPlugin.AtanPlaceholder,
                                 color = 6,
                                 opacity = 0.1f,
                                 textColor = 6,
@@ -2032,7 +2032,7 @@ namespace BetterLegacy.Arcade.Interfaces
                                         button.iconUI.sprite = sprite;
                                 }, onError =>
                                 {
-                                    var sprite = SteamWorkshop.inst.defaultSteamImageSprite;
+                                    var sprite = LegacyPlugin.AtanPlaceholder;
                                     OnlineLevelIcons[id] = sprite;
                                     button.icon = sprite;
                                     if (button.iconUI)
@@ -2815,7 +2815,7 @@ namespace BetterLegacy.Arcade.Interfaces
                     text = "<size=24>" + $"{item.Title}",
                     textRect = RectValues.FullAnchored.AnchorMin(0.24f, 0f),
                     enableWordWrapping = true,
-                    icon = SteamWorkshop.inst.defaultSteamImageSprite,
+                    icon = LegacyPlugin.AtanPlaceholder,
                     color = 6,
                     opacity = 0.1f,
                     textColor = 6,
@@ -2844,7 +2844,7 @@ namespace BetterLegacy.Arcade.Interfaces
                     {
                         LegacyPlugin.MainTick += () =>
                         {
-                            var sprite = SteamWorkshop.inst.defaultSteamImageSprite;
+                            var sprite = LegacyPlugin.AtanPlaceholder;
                             OnlineSteamLevelIcons[id] = sprite;
                             button.icon = sprite;
                             if (button.iconUI)
