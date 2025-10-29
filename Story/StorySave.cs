@@ -74,9 +74,9 @@ namespace BetterLegacy.Story
         /// </summary>
         public void UpdateCurrentLevelProgress()
         {
-            var level = LevelManager.CurrentLevel;
+            var currentLevel = LevelManager.CurrentLevel;
 
-            if (!level)
+            if (!currentLevel)
                 return;
 
             CoreHelper.Log($"Setting Player Data");
@@ -85,23 +85,24 @@ namespace BetterLegacy.Story
             //if (PlayerManager.IsZenMode || PlayerManager.IsPractice)
             //    return;
 
-            bool makeNewSaveData = !level.saveData;
+            bool makeNewSaveData = !currentLevel.saveData;
             if (makeNewSaveData)
-                level.saveData = new SaveData(level);
-            level.saveData.LevelName = level.metadata?.beatmap?.name; // update level name
+                currentLevel.saveData = new SaveData(currentLevel);
+            currentLevel.saveData.LevelName = currentLevel.metadata?.beatmap?.name; // update level name
 
             CoreHelper.Log($"Updating save data\n" +
                 $"New Player Data = {makeNewSaveData}\n" +
-                $"Deaths [OLD = {level.saveData.Deaths} > NEW = {RTBeatmap.Current.deaths.Count}]\n" +
-                $"Hits: [OLD = {level.saveData.Hits} > NEW = {RTBeatmap.Current.hits.Count}]\n" +
-                $"Boosts: [OLD = {level.saveData.Boosts} > NEW = {RTBeatmap.Current.boosts.Count}]");
+                $"Deaths [OLD = {currentLevel.saveData.Deaths} > NEW = {RTBeatmap.Current.deaths.Count}]\n" +
+                $"Hits: [OLD = {currentLevel.saveData.Hits} > NEW = {RTBeatmap.Current.hits.Count}]\n" +
+                $"Boosts: [OLD = {currentLevel.saveData.Boosts} > NEW = {RTBeatmap.Current.boosts.Count}]");
 
-            level.saveData.Update(RTBeatmap.Current.deaths.Count, RTBeatmap.Current.hits.Count, RTBeatmap.Current.boosts.Count, true);
+            currentLevel.saveData.LastPlayed = DateTime.Now;
+            currentLevel.saveData.Update(RTBeatmap.Current.deaths.Count, RTBeatmap.Current.hits.Count, RTBeatmap.Current.boosts.Count, true);
 
-            if (Saves.TryFindIndex(x => x.ID == level.id, out int saveIndex))
-                Saves[saveIndex] = level.saveData;
+            if (Saves.TryFindIndex(x => x.ID == currentLevel.id, out int saveIndex))
+                Saves[saveIndex] = currentLevel.saveData;
             else
-                Saves.Add(level.saveData);
+                Saves.Add(currentLevel.saveData);
 
             SaveProgress();
         }
