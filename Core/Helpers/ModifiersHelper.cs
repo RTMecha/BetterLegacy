@@ -11263,6 +11263,51 @@ namespace BetterLegacy.Core.Helpers
 
         #region Misc
 
+        public static void spawnClone(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            var startIndex = modifier.GetInt(0, 0, variables);
+            var endCount = modifier.GetInt(1, 0, variables);
+            var increment = modifier.GetInt(2, 1, variables);
+
+            if (endCount <= startIndex)
+                return;
+
+            var pos = new Vector3(modifier.GetFloat(3, 0f, variables), modifier.GetFloat(4, 0f, variables), modifier.GetFloat(5, 0f, variables));
+            var sca = new Vector2(modifier.GetFloat(6, 0f, variables), modifier.GetFloat(7, 0f, variables));
+            var rot = modifier.GetFloat(8, 0, variables);
+
+            //var enabledArray = modifier.GetValue(9, variables).Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+
+            var basePos = Vector3.zero;
+            var baseSca = Vector2.zero;
+            var baseRot = 0f;
+
+            int index = 0;
+            for (int i = startIndex; i < endCount; i += increment)
+            {
+                var calcPos = basePos + (i * pos);
+                var calcSca = baseSca + (i * sca);
+                var calcRot = baseRot + (i * rot);
+
+                // enabled (group based)
+                //if (modifier.GetBool(index + 9, true, variables))
+                //{
+
+                //}
+                // enabled (string array based)
+                //if (enabledArray.Contains(i.ToString()))
+                //{
+
+                //}
+
+                basePos = calcPos;
+                baseSca = calcSca;
+                baseRot = calcRot;
+
+                index++;
+            }
+        }
+
         public static void setBGActive(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             var active = modifier.GetBool(0, false, variables);
