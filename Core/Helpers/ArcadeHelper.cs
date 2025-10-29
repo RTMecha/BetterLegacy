@@ -199,6 +199,7 @@ namespace BetterLegacy.Core.Helpers
             LevelManager.Clear();
             ResetModifiedStates();
 
+            LevelManager.SaveProgress(); // save current progress
             LevelManager.LevelEnded = false;
             LevelManager.Hub = null;
             LevelManager.PreviousLevel = null;
@@ -231,6 +232,7 @@ namespace BetterLegacy.Core.Helpers
             LevelManager.Clear();
             ResetModifiedStates();
 
+            LevelManager.SaveProgress(); // save current progress
             LevelManager.LevelEnded = false;
             LevelManager.Hub = null;
             LevelManager.PreviousLevel = null;

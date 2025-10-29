@@ -789,10 +789,13 @@ namespace BetterLegacy.Core.Managers
             if (Saves.Where(x => x.Completed).Count() >= 100)
                 AchievementManager.inst.UnlockAchievement("one_hundred_levels");
 
-            var levels = CurrentLevelCollection ? CurrentLevelCollection.levels : Levels;
-
             if (RTBeatmap.Current.challengeMode.Invincible)
+            {
+                SaveProgress();
                 return;
+            }
+
+            var levels = CurrentLevelCollection ? CurrentLevelCollection.levels : Levels;
 
             if (NextLevelInCollection)
                 SetLevelData(levels, NextLevelInCollection, false);

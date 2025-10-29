@@ -279,6 +279,18 @@ namespace BetterLegacy.Core.Runtime
                 RTBeatmap.Current.LevelStarted = false;
             }
 
+            try
+            {
+                var level = LevelManager.CurrentLevel;
+                if (CoreHelper.InEditor)
+                    level = Editor.Managers.EditorLevelManager.inst?.CurrentLevel;
+                level?.saveData?.UpdateState();
+            }
+            catch
+            {
+
+            }
+
             if (logTick)
                 Log($"Start post-tick at: {sw.Elapsed}");
             sw?.Stop();

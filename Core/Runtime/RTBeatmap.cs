@@ -142,8 +142,13 @@ namespace BetterLegacy.Core.Runtime
 
             try
             {
+                if (LevelManager.CurrentLevel && LevelManager.CurrentLevel.saveData)
+                    LevelManager.CurrentLevel.saveData.Percentage = 100f;
+
                 if (endLevelUpdateProgress)
                     LevelManager.UpdateCurrentLevelProgress();
+                else
+                    LevelManager.SaveProgress();
 
                 switch (endLevelFunc)
                 {
