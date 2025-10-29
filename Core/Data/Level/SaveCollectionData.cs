@@ -8,7 +8,7 @@ using BetterLegacy.Core.Managers;
 
 namespace BetterLegacy.Core.Data.Level
 {
-    public class SaveCollectionData : Exists, IAchievementData
+    public class SaveCollectionData : PAObject<SaveCollectionData>, IAchievementData
     {
         public SaveCollectionData() { }
 
@@ -60,6 +60,17 @@ namespace BetterLegacy.Core.Data.Level
         #endregion
 
         #region Methods
+
+        public override void CopyData(SaveCollectionData orig, bool newID = true)
+        {
+            LevelCollectionName = orig.LevelCollectionName;
+            ID = orig.ID;
+            Completed = orig.Completed;
+            PlayedTimes = orig.PlayedTimes;
+            UnlockedAchievements = new Dictionary<string, bool>(orig.UnlockedAchievements);
+            Variables = new Dictionary<string, string>(orig.Variables);
+            LastPlayed = orig.LastPlayed;
+        }
 
         #region Updating
 
@@ -173,52 +184,38 @@ namespace BetterLegacy.Core.Data.Level
 
         #region JSON
 
-        /// <summary>
-        /// Parses a <see cref="SaveCollectionData"/> from JSON.
-        /// </summary>
-        /// <param name="jn">JSON to parse.</param>
-        /// <returns>Returns a parsed save data.</returns>
-        public static SaveCollectionData Parse(JSONNode jn)
+        public override void ReadJSON(JSONNode jn)
         {
-            var saveData = new SaveCollectionData
-            {
-                LevelCollectionName = jn["n"],
-                ID = jn["id"],
-                Completed = jn["c"].AsBool,
-                PlayedTimes = jn["pt"].AsInt,
-            };
+            LevelCollectionName = jn["n"];
+            ID = jn["id"];
+            Completed = jn["c"].AsBool;
+            PlayedTimes = jn["pt"].AsInt;
 
             if (jn["ach"] != null)
             {
-                saveData.UnlockedAchievements = new Dictionary<string, bool>();
+                UnlockedAchievements = new Dictionary<string, bool>();
                 for (int i = 0; i < jn["ach"].Count; i++)
                 {
                     var unlocked = jn["ach"][i]["u"].AsBool;
                     if (unlocked)
-                        saveData.UnlockedAchievements[jn["ach"][i]["id"]] = unlocked;
+                        UnlockedAchievements[jn["ach"][i]["id"]] = unlocked;
                 }
             }
 
-            if (saveData.Variables == null)
-                saveData.Variables = new Dictionary<string, string>();
-            saveData.Variables.Clear();
-
             if (jn["vars"] != null)
+            {
+                Variables = new Dictionary<string, string>();
                 for (int i = 0; i < jn["vars"].Count; i++)
                 {
                     var jnVar = jn["vars"][i];
                     if (jnVar["n"] != null)
-                        saveData.Variables[jnVar["n"]] = jnVar["v"];
+                        Variables[jnVar["n"]] = jnVar["v"];
                 }
+            }
 
-            return saveData;
         }
 
-        /// <summary>
-        /// Converts the save data to a JSON node.
-        /// </summary>
-        /// <returns>Returns a JSON representing the player data.</returns>
-        public JSONNode ToJSON()
+        public override JSONNode ToJSON()
         {
             var jn = Parser.NewJSONObject();
 
