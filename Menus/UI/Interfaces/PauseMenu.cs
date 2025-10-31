@@ -80,63 +80,32 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
             elements.AddRange(GenerateTopBar("Pause Menu"));
 
-            string[] names = new string[6]
+            for (int i = 0; i < buttonElements.Length; i++)
             {
-                "Continue Button", // 0
-                "Restart Button", // 1
-                "Editor Button", // 2
-                "Config Button", // 3
-                "Arcade Button", // 4
-                "Exit Button", // 5
-            };
-            string[] texts = new string[6]
-            {
-                "<b> [ CONTINUE ]", // 0
-                "<b> [ RESTART ]", // 1
-                "<b> [ EDITOR ]", // 2
-                "<b> [ CONFIG ]", // 3
-                CoreHelper.InStory ? "<b> [ QUIT TO MAIN MENU ]" : "<b> [ RETURN TO ARCADE ]", // 4
-                "<b> [ QUIT GAME ]", // 5
-            };
-            Action[] actions = new Action[6]
-            {
-                UnPause, // 0
-                () => UnPause(ArcadeHelper.RestartLevel), // 1
-                SceneHelper.LoadEditorWithProgress, // 2
-                ConfigManager.inst.Show, // 3
-                ArcadeHelper.QuitToArcade, // 4
-                LegacyPlugin.QuitGame, // 5
-            };
+                var buttonElement = buttonElements[i];
 
-            int num = 0;
-            for (int i = 0; i < names.Length; i++)
-            {
-                var name = names[i];
-                var text = texts[i];
-                var action = actions[i];
+                var active = buttonElement.check == null || buttonElement.check.Invoke();
 
-                if (i == 5)
-                {
-                    elements.Add(new MenuImage
+                if (!active)
+                    continue;
+
+                MenuImage element = buttonElement.isSpacer ?
+                    new MenuImage
                     {
-                        id = "5",
+                        id = i.ToString(),
                         name = "Spacer",
                         parentLayout = "buttons",
                         rect = RectValues.Default.SizeDelta(200f, 64f),
                         opacity = 0f,
                         length = 0f,
-                    });
-                }
-
-                if (i == 3 && ModCompatibility.UnityExplorerInstalled)
-                {
-                    elements.Add(new MenuButton
+                    } :
+                    new MenuButton
                     {
-                        id = num.ToString(),
-                        name = "Explorer Button",
-                        text = "<b> [ SHOW EXPLORER ]",
+                        id = i.ToString(),
+                        name = buttonElement.name,
+                        text = buttonElement.text,
                         parentLayout = "buttons",
-                        selectionPosition = new Vector2Int(0, num),
+                        selectionPosition = new Vector2Int(0, i),
                         rect = RectValues.Default.SizeDelta(200f, 64f),
                         opacity = 0.1f,
                         val = -40f,
@@ -146,190 +115,25 @@ namespace BetterLegacy.Menus.UI.Interfaces
                         selectedTextVal = -40f,
                         length = 1f,
                         playBlipSound = true,
-                        func = ModCompatibility.ShowExplorer,
-                    });
-                    num++;
-                }
-
-                if (i == 4 && LevelManager.Hub)
-                {
-                    elements.Add(new MenuButton
-                    {
-                        id = num.ToString(),
-                        name = "Return Button",
-                        text = "<b> [ RETURN TO HUB ]",
-                        parentLayout = "buttons",
-                        selectionPosition = new Vector2Int(0, num),
-                        rect = RectValues.Default.SizeDelta(200f, 64f),
-                        opacity = 0.1f,
-                        val = -40f,
-                        textVal = 40f,
-                        selectedOpacity = 1f,
-                        selectedVal = 40f,
-                        selectedTextVal = -40f,
-                        length = 1f,
-                        playBlipSound = true,
-                        func = ArcadeHelper.ReturnToHub,
-                    });
-                    num++;
-                }
-
-                if (i == 4 && CoreHelper.InStory)
-                {
-                    elements.Add(new MenuButton
-                    {
-                        id = num.ToString(),
-                        name = "Return Button",
-                        text = "<b> [ RETURN TO INTERFACE ]",
-                        parentLayout = "buttons",
-                        selectionPosition = new Vector2Int(0, num),
-                        rect = RectValues.Default.SizeDelta(200f, 64f),
-                        opacity = 0.1f,
-                        val = -40f,
-                        textVal = 40f,
-                        selectedOpacity = 1f,
-                        selectedVal = 40f,
-                        selectedTextVal = -40f,
-                        length = 1f,
-                        playBlipSound = true,
-                        func = SceneHelper.LoadInterfaceScene,
-                    });
-                    num++;
-                }
-
-                elements.Add(new MenuButton
-                {
-                    id = num.ToString(),
-                    name = name,
-                    text = text,
-                    parentLayout = "buttons",
-                    selectionPosition = new Vector2Int(0, num),
-                    rect = RectValues.Default.SizeDelta(200f, 64f),
-                    opacity = 0.1f,
-                    val = -40f,
-                    textVal = 40f,
-                    selectedOpacity = 1f,
-                    selectedVal = 40f,
-                    selectedTextVal = -40f,
-                    length = 1f,
-                    playBlipSound = true,
-                    func = action,
-                });
-                num++;
+                        func = buttonElement.func,
+                    };
+                elements.Add(element);
             }
 
-            elements.Add(new MenuText
+            for (int i = 0; i < infoElements.Length; i++)
             {
-                id = "463472367",
-                name = "Info Text",
-                text = $"<align=right>Times hit: {RTBeatmap.Current.hits.Count}",
-                rect = RectValues.Default.SizeDelta(300f, 32f),
-                hideBG = true,
-                textVal = 40f,
-                length = 0.3f,
-                parentLayout = "info",
-            });
-            
-            elements.Add(new MenuText
-            {
-                id = "738347853",
-                name = "Info Text",
-                text = $"<align=right>Times died: {RTBeatmap.Current.deaths.Count}",
-                rect = RectValues.Default.SizeDelta(300f, 32f),
-                hideBG = true,
-                textVal = 40f,
-                length = 0.3f,
-                parentLayout = "info",
-            });
+                var infoElement = infoElements[i];
 
-            var rank = LevelManager.GetLevelRank(LevelManager.CurrentLevel);
+                var active = infoElement.check == null || infoElement.check.Invoke();
 
-            elements.Add(new MenuText
-            {
-                id = "738347853",
-                name = "Info Text",
-                text = $"<align=right>Previous rank: <b><size=60><#{LSColors.ColorToHex(rank.Color)}>{rank.DisplayName}</color>",
-                rect = RectValues.Default.SizeDelta(300f, 32f),
-                hideBG = true,
-                textVal = 40f,
-                length = 0.3f,
-                parentLayout = "info",
-            });
+                if (!active)
+                    continue;
 
-            rank = LevelManager.GetLevelRank(RTBeatmap.Current.hits);
-
-            elements.Add(new MenuText
-            {
-                id = "248576321",
-                name = "Info Text",
-                text = $"<align=right>Current rank: <b><size=60><#{LSColors.ColorToHex(rank.Color)}>{rank.DisplayName}</color>",
-                rect = RectValues.Default.SizeDelta(300f, 32f),
-                hideBG = true,
-                textVal = 40f,
-                length = 0.3f,
-                parentLayout = "info",
-            });
-
-            elements.Add(new MenuText
-            {
-                id = "738347853",
-                name = "Info Text",
-                text = $"<align=right>Time in level: {RTBeatmap.Current.levelTimer.time}",
-                rect = RectValues.Default.SizeDelta(300f, 32f),
-                hideBG = true,
-                textVal = 40f,
-                length = 0.3f,
-                parentLayout = "info",
-            });
-            
-            elements.Add(new MenuText
-            {
-                id = "738347853",
-                name = "Info Text",
-                text = $"<align=right>Level completed: {RTString.Percentage(AudioManager.inst.CurrentAudioSource.time, AudioManager.inst.CurrentAudioSource.clip.length)}%",
-                rect = RectValues.Default.SizeDelta(300f, 32f),
-                hideBG = true,
-                textVal = 40f,
-                length = 0.3f,
-                parentLayout = "info",
-            });
-
-            if (!CoreHelper.InStory)
-            {
-                // game speed
                 elements.Add(new MenuText
                 {
-                    id = "51625256325",
+                    id = "463472367",
                     name = "Info Text",
-                    text = $"<align=right>Game Speed: {RTBeatmap.Current.gameSpeed.DisplayName}",
-                    rect = RectValues.Default.SizeDelta(300f, 32f),
-                    hideBG = true,
-                    textVal = 40f,
-                    length = 0.3f,
-                    parentLayout = "info",
-                });
-
-                // challenge mode
-                elements.Add(new MenuText
-                {
-                    id = "7463783",
-                    name = "Info Text",
-                    text = $"<align=right>Challenge mode: {RTBeatmap.Current.challengeMode.DisplayName}",
-                    rect = RectValues.Default.SizeDelta(300f, 32f),
-                    hideBG = true,
-                    textVal = 40f,
-                    length = 0.3f,
-                    parentLayout = "info",
-                });
-            }
-
-            if (LevelManager.HasQueue)
-            {
-                elements.Add(new MenuText
-                {
-                    id = "7463783",
-                    name = "Info Text",
-                    text = $"<align=right>Queue: {LevelManager.currentQueueIndex + 1} / {LevelManager.ArcadeQueue.Count}",
+                    text = infoElement.text?.Invoke() ?? string.Empty,
                     rect = RectValues.Default.SizeDelta(300f, 32f),
                     hideBG = true,
                     textVal = 40f,
@@ -453,5 +257,151 @@ namespace BetterLegacy.Menus.UI.Interfaces
         }
 
         #endregion
+
+        /// <summary>
+        /// Array of pause menu elements.
+        /// </summary>
+        public ButtonElement[] buttonElements = new ButtonElement[]
+        {
+            new ButtonElement
+            {
+                name = "Continue Button",
+                text = "<b> [ CONTINUE ]",
+                func = UnPause,
+            },
+            new ButtonElement
+            {
+                name = "Restart Button",
+                text = "<b> [ RESTART ]",
+                func = () => UnPause(ArcadeHelper.RestartLevel),
+            },
+            new ButtonElement
+            {
+                name = "Editor Button",
+                text = "<b> [ EDITOR ]",
+                func = SceneHelper.LoadEditorWithProgress,
+            },
+            new ButtonElement
+            {
+                check = () => ModCompatibility.UnityExplorerInstalled,
+                name = "Explorer Button",
+                text = "<b> [ SHOW EXPLORER ]",
+                func = ModCompatibility.ShowExplorer,
+            },
+            new ButtonElement
+            {
+                name = "Config Button",
+                text = "<b> [ CONFIG ]",
+                func = ConfigManager.inst.Show,
+            },
+            new ButtonElement
+            {
+                check = () => LevelManager.Hub,
+                name = "Return Button",
+                text = "<b> [ RETURN TO HUB ]",
+                func = ArcadeHelper.ReturnToHub,
+            },
+            new ButtonElement
+            {
+                check = () => CoreHelper.InStory,
+                name = "Return Button",
+                text = "<b> [ RETURN TO INTERFACE ]",
+                func = SceneHelper.LoadInterfaceScene,
+            },
+            new ButtonElement
+            {
+                name = "Arcade Button",
+                text = CoreHelper.InStory ? "<b> [ QUIT TO MAIN MENU ]" : "<b> [ RETURN TO ARCADE ]",
+                func = ArcadeHelper.QuitToArcade,
+            },
+            new ButtonElement
+            {
+                isSpacer = true,
+            },
+            new ButtonElement
+            {
+                name = "Exit Button",
+                text = "<b> [ QUIT GAME ]",
+                func = LegacyPlugin.QuitGame,
+            },
+        };
+
+        /// <summary>
+        /// Represents a pause menu button.
+        /// </summary>
+        public class ButtonElement
+        {
+            /// <summary>
+            /// Checks if the element should spawn.
+            /// </summary>
+            public Func<bool> check;
+            public string name;
+            public string text;
+            public Action func;
+            public bool isSpacer;
+        }
+
+        /// <summary>
+        /// Array of pause menu information elements.
+        /// </summary>
+        public InfoElement[] infoElements = new InfoElement[]
+        {
+            new InfoElement
+            {
+                text = () => $"<align=right>Times hit: {RTBeatmap.Current.hits.Count}",
+            },
+            new InfoElement
+            {
+                text = () => $"<align=right>Times died: {RTBeatmap.Current.deaths.Count}",
+            },
+            new InfoElement
+            {
+                text = () =>
+                {
+                    var rank = LevelManager.GetLevelRank(LevelManager.CurrentLevel);
+                    return $"<align=right>Previous rank: <b><#{LSColors.ColorToHex(rank.Color)}>{rank.DisplayName}</color></b>";
+                },
+            },
+            new InfoElement
+            {
+                text = () =>
+                {
+                    var rank = LevelManager.GetLevelRank(RTBeatmap.Current.hits);
+                    return $"<align=right>Current rank: <b><#{LSColors.ColorToHex(rank.Color)}>{rank.DisplayName}</color></b>";
+                },
+            },
+            new InfoElement
+            {
+                text = () => $"<align=right>Time in level: {RTBeatmap.Current.levelTimer.time}",
+            },
+            new InfoElement
+            {
+                text = () => $"<align=right>Level completed: {RTString.Percentage(AudioManager.inst.CurrentAudioSource.time, AudioManager.inst.CurrentAudioSource.clip.length)}%",
+            },
+            new InfoElement
+            {
+                check = () => !CoreHelper.InStory || LevelManager.CurrentLevel.saveData && LevelManager.CurrentLevel.saveData.Completed,
+                text = () => $"<align=right>Game Speed: {RTBeatmap.Current.gameSpeed.DisplayName}",
+            },
+            new InfoElement
+            {
+                check = () => !CoreHelper.InStory || LevelManager.CurrentLevel.saveData && LevelManager.CurrentLevel.saveData.Completed,
+                text = () => $"<align=right>Challenge mode: {RTBeatmap.Current.challengeMode.DisplayName}",
+            },
+            new InfoElement
+            {
+                check = () => LevelManager.HasQueue,
+                text = () => $"<align=right>Queue: {LevelManager.currentQueueIndex + 1} / {LevelManager.ArcadeQueue.Count}",
+            },
+        };
+
+        /// <summary>
+        /// Represents information the pause menu displays.
+        /// </summary>
+        public class InfoElement
+        {
+            public Func<bool> check;
+            public Func<string> text;
+        }
     }
 }
