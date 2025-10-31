@@ -1,33 +1,12 @@
-# 1.8.9 [Oct 24, 2025]
+# 1.8.10 [Oct 31, 2025]
 ## Features
 ### Core
-- Added Store Recent Levels setting to Config Manager > Core > Level. This setting stores levels you open / save in a list inside of the stats.json file. Off by default.
-- applyColorGroup modifier now has Override Opacity toggles.
-- Added new easings: Cubic, Quart and Quint.
-- Moved Config Manager > Events > Camera sub tab to Config Manager > Editor > Freecam.
+- Added Last Played value to level save data.
+- Level save data can now store custom variables. In order to use these, you can use the level variable modifiers.
+- Added collection save data.
 
 ### Editor
-- The easing dropdowns can now be customized via Asset Packs using the editor/data/ease.json file.
-- Editor layer toggles can be customized similarly to the easing dropdowns.
-- Editor Complexity can now support Asset Packs. Not everything has this yet.
-- The New Level Creator, Open Level, File Info, Parent Selector, Prefab and Save As Popups now uses Asset Packs for UI customization. Due to this, settings related to customizing this UI have been removed.
-- Level Panels and Prefab Panels also support Asset Packs.
-- While the editor freecam is on, you can hold shift to rotate the camera.
-- Added a camera area UI that shows the normal non-editor freecam when editor freecam is on and the Config Manger > Editor > Freecam > Show Camera Area setting is on.
-- The editor layer toggles can now be scrolled on to change the layer.
-
-## Changes
-### Arcade
-- [ OPEN WORKSHOP ] button in the Steam Level Menu now opens Steam directly.
-
-### Editor
-- You can now undo / redo pasting objects.
-- Moved the Convert to Planner Note button in the Marker Editor to a context menu function.
-- Moved the Snap BPM button in the Marker Editor to a time context menu function.
+- Continued adding onto Asset Pack features in the editor.
 
 ## Fixes
-- Fixed the blur modifier being the incorrect material.
-- Fixed FinishTransform keybind not working.
-- Fixed All Cameras value in the actorFrameTexture modifier not allowing for position.
-- Fixed object layering being inconsistent if objects share the same layer. This broke when textures were implemented.
-- Some parent chain calculations where the object is empty should be a bit more accurate. (the Select Object Helper point should be more accurate)
+- Fixed origin toggles and input fields being assigned the incorrect complexity in the default Asset Pack.
