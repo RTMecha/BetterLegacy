@@ -3079,7 +3079,7 @@ namespace BetterLegacy.Editor.Managers
             if (!update)
                 return;
 
-            var allEditorLayerToggles = FindObjectsOfType<EditorLayerToggles>();
+            var allEditorLayerToggles = FindObjectsOfType<EditorLayerUI>();
             for (int i = 0; i < allEditorLayerToggles.Length; i++)
             {
                 var editorLayerToggles = allEditorLayerToggles[i];
@@ -3200,7 +3200,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void SetupEditorLayers(IEditorLayerUI editorLayerUI, float size = 30.5f)
         {
-            var editorLayerToggles = editorLayerUI.EditorLayerTogglesParent.gameObject.GetOrAddComponent<EditorLayerToggles>();
+            var editorLayerToggles = editorLayerUI.EditorLayerTogglesParent.gameObject.GetOrAddComponent<EditorLayerUI>();
             editorLayerToggles.editorLayerUI = editorLayerUI;
             editorLayerToggles.size = size;
 

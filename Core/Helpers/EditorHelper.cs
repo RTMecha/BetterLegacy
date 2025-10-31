@@ -17,6 +17,7 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Runtime;
+using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
 using BetterLegacy.Editor.Data.Timeline;
@@ -771,48 +772,5 @@ namespace BetterLegacy.Core.Helpers
                     prefabable.PrefabInstanceID = newID;
             }
         }
-    }
-
-    public class ComplexityObject : MonoBehaviour
-    {
-        public Complexity complexity;
-        public bool onlySpecificComplexity;
-        public string path;
-        public bool disabled;
-        public bool active = true;
-        public Func<bool> visible;
-        public Action<ComplexityObject> onUpdate;
-
-        public static void UpdateAll()
-        {
-            var objs = FindObjectsOfType<ComplexityObject>();
-            for (int i = 0; i < objs.Length; i++)
-                objs[i].UpdateActiveState();
-        }
-
-        public void UpdateActiveState()
-        {
-            try
-            {
-                onUpdate?.Invoke(this);
-            }
-            catch (Exception ex)
-            {
-                CoreHelper.LogError($"Could not run {nameof(onUpdate)} function due to the exception: {ex}");
-            }
-
-            if (disabled)
-            {
-                CoreHelper.SetGameObjectActive(gameObject, active && (visible == null || visible.Invoke()));
-                return;
-            }
-            CoreHelper.SetGameObjectActive(gameObject, EditorHelper.CheckComplexity(complexity, onlySpecificComplexity) && (visible == null || visible.Invoke()));
-        }
-    }
-
-    public class EditorLayerToggles : MonoBehaviour
-    {
-        public IEditorLayerUI editorLayerUI;
-        public float size = 30.5f;
     }
 }
