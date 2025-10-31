@@ -12,7 +12,6 @@ using InControl;
 
 using BetterLegacy.Arcade.Interfaces;
 using BetterLegacy.Configs;
-using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Managers.Networking;
