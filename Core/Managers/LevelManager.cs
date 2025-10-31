@@ -775,6 +775,16 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         public static void UpdateCurrentLevelProgress()
         {
+            if (CurrentLevelCollection && CurrentLevelCollection.saveData)
+            {
+                if (currentLevelIndex + 1 >= CurrentLevelCollection.Count)
+                {
+                    CurrentLevelCollection.saveData.Completed = true;
+                    CurrentLevelCollection.saveData.PlayedTimes++;
+                }
+                CurrentLevelCollection.saveData.LastPlayed = DateTime.Now;
+            }
+
             if (!IsArcade || !CurrentLevel && !NextLevelInCollection)
                 return;
 
@@ -820,6 +830,7 @@ namespace BetterLegacy.Core.Managers
             if (update && currentLevel.metadata && currentLevel.metadata.song.DifficultyType == DifficultyType.Animation) // animation levels shouldn't update rank data
             {
                 currentLevel.saveData.Completed = true;
+                currentLevel.saveData.PlayedTimes++;
 
                 try
                 {
@@ -851,6 +862,7 @@ namespace BetterLegacy.Core.Managers
                     $"Boosts: [OLD = {currentLevel.saveData.Boosts} > NEW = {RTBeatmap.Current.boosts.Count}]");
 
                 currentLevel.saveData.Update(RTBeatmap.Current.deaths.Count, RTBeatmap.Current.hits.Count, RTBeatmap.Current.boosts.Count, true);
+                currentLevel.saveData.PlayedTimes++;
             }
 
             if (currentLevel.metadata && currentLevel.metadata.unlockAfterCompletion)
