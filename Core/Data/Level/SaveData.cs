@@ -123,6 +123,9 @@ namespace BetterLegacy.Core.Data.Level
 
         #region Updating
 
+        /// <summary>
+        /// Updates the current state of the save.
+        /// </summary>
         public void UpdateState()
         {
             LastPlayed = DateTime.Now;
