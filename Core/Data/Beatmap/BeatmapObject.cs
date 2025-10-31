@@ -1445,9 +1445,8 @@ namespace BetterLegacy.Core.Data.Beatmap
                     return;
                 }
 
-                while (!string.IsNullOrEmpty(parent) && beatmapObjects.Any(x => x.id == parent))
+                while (!string.IsNullOrEmpty(parent) && beatmapObjects.TryFind(x => x.id == parent, out beatmapObject))
                 {
-                    beatmapObject = beatmapObjects.Find(x => x.id == parent);
                     parent = beatmapObject.Parent;
 
                     if (beatmapObject.events != null && !beatmapObject.events.IsEmpty() && beatmapObject.events[1].Last().time < spawnDuration &&
