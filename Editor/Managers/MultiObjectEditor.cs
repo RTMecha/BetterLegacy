@@ -2671,22 +2671,22 @@ namespace BetterLegacy.Editor.Managers
 
                 var labels6 = GenerateLabels(parent, 32f, "Secondary Opacity");
 
-                var opacityGradientIF = CreateInputField("opacity", "", "Enter value... (Keep empty to not set)", parent, isInteger: false);
+                var opacityGradientIF = CreateInputField("opacity", string.Empty, "Enter value... (Keep empty to not set)", parent, isInteger: false);
                 ((Text)opacityGradientIF.placeholder).fontSize = 13;
 
                 var labels7 = GenerateLabels(parent, 32f, "Secondary Hue");
 
-                var hueGradientIF = CreateInputField("hue", "", "Enter value... (Keep empty to not set)", parent, isInteger: false);
+                var hueGradientIF = CreateInputField("hue", string.Empty, "Enter value... (Keep empty to not set)", parent, isInteger: false);
                 ((Text)hueGradientIF.placeholder).fontSize = 13;
 
                 var labels8 = GenerateLabels(parent, 32f, "Secondary Saturation");
 
-                var satGradientIF = CreateInputField("sat", "", "Enter value... (Keep empty to not set)", parent, isInteger: false);
+                var satGradientIF = CreateInputField("sat", string.Empty, "Enter value... (Keep empty to not set)", parent, isInteger: false);
                 ((Text)satGradientIF.placeholder).fontSize = 13;
 
                 var labels9 = GenerateLabels(parent, 32f, "Secondary Value (Brightness)");
 
-                var valGradientIF = CreateInputField("val", "", "Enter value... (Keep empty to not set)", parent, isInteger: false);
+                var valGradientIF = CreateInputField("val", string.Empty, "Enter value... (Keep empty to not set)", parent, isInteger: false);
                 ((Text)valGradientIF.placeholder).fontSize = 13;
 
                 var labels10 = GenerateLabels(parent, 32f, "Ease Type");
