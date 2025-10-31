@@ -5,6 +5,9 @@ using UnityEngine;
 
 using HarmonyLib;
 
+using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Runtime;
+
 namespace BetterLegacy.Core.Managers
 {
     /// <summary>
@@ -83,6 +86,15 @@ namespace BetterLegacy.Core.Managers
 
             if (!enabled)
                 AchievementManager.inst.UnlockAchievement("hackerman");
+        }
+
+        InspectorDebugList inspectorDebugList = new InspectorDebugList();
+
+        class InspectorDebugList
+        {
+            public GameData CurrentGameData => GameData.Current;
+            public RTLevel CurrentRuntimeLevel => RTLevel.Current;
+            public RTBeatmap CurrentBeatmap => RTBeatmap.Current;
         }
     }
 }
