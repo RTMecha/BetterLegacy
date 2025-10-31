@@ -985,6 +985,7 @@
         "value": "DEATH_COUNT_VAR",
         "const": "True"
       }, // getDeathCount
+
       {
         "type": 1,
         "name": "getLevelVariable",

@@ -2279,7 +2279,88 @@
                 "lang": 0
               }
             ]
-          } // subDeath
+          }, // subDeath
+
+          {
+            "name": "Object Modifier - getLevelVariable (Action)",
+            "tooltips": [
+              {
+                "desc": "getLevelVariable (Action)",
+                "hint": "Gets a custom variable stored in a levels' save data.",
+                "lang": 0
+              }
+            ]
+          }, // getLevelVariable
+          {
+            "name": "Object Modifier - setLevelVariable (Action)",
+            "tooltips": [
+              {
+                "desc": "setLevelVariable (Action)",
+                "hint": "Sets a custom variable stored in a levels' save data.",
+                "lang": 0
+              }
+            ]
+          }, // setLevelVariable
+          {
+            "name": "Object Modifier - removeLevelVariable (Action)",
+            "tooltips": [
+              {
+                "desc": "removeLevelVariable (Action)",
+                "hint": "Removes a custom variable stored in a levels' save data.",
+                "lang": 0
+              }
+            ]
+          }, // removeLevelVariable
+          {
+            "name": "Object Modifier - clearLevelVariables (Action)",
+            "tooltips": [
+              {
+                "desc": "clearLevelVariables (Action)",
+                "hint": "Clears all custom variables stored in a levels' save data.",
+                "lang": 0
+              }
+            ]
+          }, // clearLevelVariables
+          {
+            "name": "Object Modifier - getCurrentLevelVariable (Action)",
+            "tooltips": [
+              {
+                "desc": "getCurrentLevelVariable (Action)",
+                "hint": "Gets a custom variable stored in the current levels' save data.",
+                "lang": 0
+              }
+            ]
+          }, // getCurrentLevelVariable
+          {
+            "name": "Object Modifier - setCurrentLevelVariable (Action)",
+            "tooltips": [
+              {
+                "desc": "setCurrentLevelVariable (Action)",
+                "hint": "Sets a custom variable stored in the current levels' save data.",
+                "lang": 0
+              }
+            ]
+          }, // setCurrentLevelVariable
+          {
+            "name": "Object Modifier - removeCurrentLevelVariable (Action)",
+            "tooltips": [
+              {
+                "desc": "removeCurrentLevelVariable (Action)",
+                "hint": "Removes a custom variable stored in the current levels' save data.",
+                "lang": 0
+              }
+            ]
+          }, // removeCurrentLevelVariable
+          {
+            "name": "Object Modifier - clearCurrentLevelVariables (Action)",
+            "tooltips": [
+              {
+                "desc": "clearCurrentLevelVariables (Action)",
+                "hint": "Clears all custom variables stored in the current levels' save data.",
+                "lang": 0
+              }
+            ]
+          } // clearCurrentLevelVariables
         ],
 
         // Game State
