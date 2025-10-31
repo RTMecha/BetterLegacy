@@ -285,6 +285,7 @@ namespace BetterLegacy.Core.Runtime
                 if (CoreHelper.InEditor)
                     level = Editor.Managers.EditorLevelManager.inst?.CurrentLevel;
                 level?.saveData?.UpdateState();
+                LevelManager.CurrentLevelCollection?.saveData?.UpdateState();
             }
             catch
             {

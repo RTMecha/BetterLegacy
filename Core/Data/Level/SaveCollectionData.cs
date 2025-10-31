@@ -75,20 +75,10 @@ namespace BetterLegacy.Core.Data.Level
         #region Updating
 
         /// <summary>
-        /// Updates several values of the save data.
+        /// Updates the current state of the save.
         /// </summary>
-        public void Update()
+        public void UpdateState()
         {
-            LastPlayed = DateTime.Now;
-        }
-
-        /// <summary>
-        /// Updates several values of the save data.
-        /// </summary>
-        /// <param name="completed">Completed count.</param>
-        public void Update(bool completed)
-        {
-            Completed = completed;
             LastPlayed = DateTime.Now;
         }
 
