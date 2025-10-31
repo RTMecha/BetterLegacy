@@ -1,4 +1,19 @@
-﻿# 1.8.9 [Oct 24, 2025]
+﻿# 1.8.10 [Oct 31, 2025]
+## Features
+### Core
+- Added Last Played value to level save data.
+- Level save data can now store custom variables. In order to use these, you can use the level variable modifiers.
+- Added collection save data.
+
+### Editor
+- Continued adding onto Asset Pack features in the editor.
+
+## Fixes
+- Fixed origin toggles and input fields being assigned the incorrect complexity in the default Asset Pack.
+
+------------------------------------------------------------------------------------------
+
+# 1.8.9 [Oct 24, 2025]
 ## Features
 ### Core
 - Added Store Recent Levels setting to Config Manager > Core > Level. This setting stores levels you open / save in a list inside of the stats.json file. Off by default.
