@@ -1102,7 +1102,7 @@ namespace BetterLegacy.Editor.Managers
                 var modeLabel = strength["Label"].Duplicate(ripples.transform);
                 GenerateLabels(modeLabel.transform, "Mode");
 
-                var mode = ripples.transform.Find("curves").gameObject.Duplicate(ripples.transform, "mode");
+                var mode = EditorPrefabHolder.Instance.Dropdown.Duplicate(ripples.transform, "mode");
                 var modeDropdown = mode.GetComponent<Dropdown>();
                 modeDropdown.options = CoreHelper.StringToOptionData("Radial", "Omni-Directional");
 
@@ -1130,7 +1130,7 @@ namespace BetterLegacy.Editor.Managers
                 var modeLabel = offset["Label"].Duplicate(colorSplit.transform);
                 GenerateLabels(modeLabel.transform, "Mode");
 
-                var mode = colorSplit.transform.Find("curves").gameObject.Duplicate(colorSplit.transform, "mode");
+                var mode = EditorPrefabHolder.Instance.Dropdown.Duplicate(colorSplit.transform, "mode");
                 var modeDropdown = mode.GetComponent<Dropdown>();
                 modeDropdown.options = CoreHelper.StringToOptionData("Single", "Single Box Filtered", "Double", "Double Box Filtered");
 
@@ -1155,7 +1155,7 @@ namespace BetterLegacy.Editor.Managers
                 var modeLabel = intensity["Label"].Duplicate(gradient.transform);
                 GenerateLabels(modeLabel.transform, "Mode");
 
-                var mode = gradient.transform.Find("curves").gameObject.Duplicate(gradient.transform, "mode");
+                var mode = EditorPrefabHolder.Instance.Dropdown.Duplicate(gradient.transform, "mode");
                 var modeDropdown = mode.GetComponent<Dropdown>();
                 modeDropdown.options = CoreHelper.StringToOptionData("Linear", "Additive", "Multiply", "Screen");
 
@@ -1172,13 +1172,12 @@ namespace BetterLegacy.Editor.Managers
                 var modeLabel = intensity["Label"].Duplicate(doubleVision.transform);
                 GenerateLabels(modeLabel.transform, "Mode");
 
-                var mode = doubleVision.transform.Find("curves").gameObject.Duplicate(doubleVision.transform, "mode");
+                var mode = EditorPrefabHolder.Instance.Dropdown.Duplicate(doubleVision.transform, "mode");
                 var modeDropdown = mode.GetComponent<Dropdown>();
                 modeDropdown.options = CoreHelper.StringToOptionData("Split", "Edges");
 
                 EditorThemeManager.AddInputFields(intensity["UI"], true, "Event Editor");
                 EditorThemeManager.AddDropdown(modeDropdown);
-
             }
 
             var scanLines = GenerateEventDialog("scanlines");
@@ -1270,7 +1269,6 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.AddInputFields(position["UI"], true, "Event Editor");
                 EditorThemeManager.AddInputFields(rotation["UI"], true, "Event Editor");
                 EditorThemeManager.AddToggle(outOfBounds["UI"].GetComponent<Toggle>(), graphic: outOfBoundsText);
-
             }
 
             var follow = GenerateEventDialog("follow");
@@ -1330,7 +1328,7 @@ namespace BetterLegacy.Editor.Managers
                 var modeLabel = position["Label"].Duplicate(videoBG.transform);
                 GenerateLabels(modeLabel.transform, "Render Type");
 
-                var renderTypeD = gradient.transform.Find("curves").gameObject.Duplicate(videoBG.transform, "rendertype");
+                var renderTypeD = EditorPrefabHolder.Instance.Dropdown.Duplicate(videoBG.transform, "rendertype");
                 var renderTypeDropdown = renderTypeD.GetComponent<Dropdown>();
                 renderTypeDropdown.options = CoreHelper.StringToOptionData("Background", "Foreground");
 
@@ -1354,7 +1352,7 @@ namespace BetterLegacy.Editor.Managers
                 var modeLabel = intensity["Label"].Duplicate(bars.transform);
                 GenerateLabels(modeLabel.transform, "Direction");
 
-                var direction = gradient.transform.Find("curves").gameObject.Duplicate(bars.transform, "direction");
+                var direction = EditorPrefabHolder.Instance.Dropdown.Duplicate(bars.transform, "direction");
                 var directionDropdown = direction.GetComponent<Dropdown>();
                 directionDropdown.options = CoreHelper.StringToOptionData("Horizontal", "Vertical");
 
@@ -1472,7 +1470,6 @@ namespace BetterLegacy.Editor.Managers
 
             #region Multi Event Keyframe Editor
 
-            var move = EventEditor.inst.dialogRight.Find("move");
             var multiKeyframeEditor = EditorManager.inst.GetDialog("Multi Keyframe Editor").Dialog;
 
             multiKeyframeEditor.Find("Text").gameObject.SetActive(false);
@@ -1553,7 +1550,7 @@ namespace BetterLegacy.Editor.Managers
             var curveBaseRT = curveBase.AddComponent<RectTransform>();
             curveBaseRT.sizeDelta = new Vector2(765f, 38f);
 
-            var curves = move.Find("curves").gameObject.Duplicate(curveBaseRT, "curves");
+            var curves = EditorPrefabHolder.Instance.CurvesDropdown.Duplicate(curveBaseRT, "curves");
             curves.transform.AsRT().anchoredPosition = new Vector2(191f, 0f);
 
             EditorThemeManager.AddDropdown(curves.GetComponent<Dropdown>());
