@@ -6,6 +6,7 @@ using LSFunctions;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers.Settings;
 using BetterLegacy.Menus;
 
 namespace BetterLegacy.Core.Managers
@@ -13,23 +14,58 @@ namespace BetterLegacy.Core.Managers
     /// <summary>
     /// Manager class for handling the cursor.
     /// </summary>
-    public class CursorManager : MonoBehaviour
+    public class CursorManager : BaseManager<CursorManager, ManagerSettings>
     {
-        #region Init
+        #region Values
 
         /// <summary>
-        /// The <see cref="CursorManager"/> global instance reference.
+        /// If the <see cref="CursorManager"/> state is active.
         /// </summary>
-        public static CursorManager inst;
+        public bool Enabled { get; set; } = true;
 
         /// <summary>
-        /// Initializes <see cref="CursorManager"/>.
+        /// Position of the cursor.
         /// </summary>
-        public static void Init() => Creator.NewGameObject(nameof(CursorManager), SystemManager.inst.transform).AddComponent<CursorManager>();
+        public static Vector2 CursorPosition => new Vector2(Input.mousePosition.x, Input.mousePosition.y);
 
-        void Awake() => inst = this;
+        /// <summary>
+        /// Velocity of the cursor.
+        /// </summary>
+        public static Vector2 CursorVelocity { get; private set; }
 
-        void Update()
+        /// <summary>
+        /// Changed cursor position.
+        /// </summary>
+        public Vector2 cursorPosition = Vector2.zero;
+
+        /// <summary>
+        /// Function fired when cursor moves.
+        /// </summary>
+        public Action<Vector2> onCursorMoved;
+
+        /// <summary>
+        /// How long the cursor should be visible for.
+        /// </summary>
+        public static float onScreenTime = 1f;
+
+        /// <summary>
+        /// Cursor moved timer.
+        /// </summary>
+        public RTTimer cursorTimer;
+
+        #region Internal
+
+        bool cursorEnabled;
+        bool initCursorPosition;
+        Vector2 prevCursorVelocityPos;
+
+        #endregion
+
+        #endregion
+
+        #region Functions
+
+        public override void OnTick()
         {
             cursorTimer.Update();
 
@@ -75,61 +111,6 @@ namespace BetterLegacy.Core.Managers
             if (cursorEnabled && onScreenTime < cursorTimer.time)
                 HideCursor();
         }
-
-        #endregion
-
-        #region Properties
-
-        /// <summary>
-        /// If the <see cref="CursorManager"/> state is active.
-        /// </summary>
-        public bool Enabled { get; set; } = true;
-
-        /// <summary>
-        /// Position of the cursor.
-        /// </summary>
-        public static Vector2 CursorPosition => new Vector2(Input.mousePosition.x, Input.mousePosition.y);
-
-        /// <summary>
-        /// Velocity of the cursor.
-        /// </summary>
-        public static Vector2 CursorVelocity { get; private set; }
-
-        #endregion
-
-        #region Fields
-
-        /// <summary>
-        /// Changed cursor position.
-        /// </summary>
-        public Vector2 cursorPosition = Vector2.zero;
-
-        /// <summary>
-        /// Function fired when cursor moves.
-        /// </summary>
-        public Action<Vector2> onCursorMoved;
-
-        /// <summary>
-        /// How long the cursor should be visible for.
-        /// </summary>
-        public static float onScreenTime = 1f;
-
-        /// <summary>
-        /// Cursor moved timer.
-        /// </summary>
-        public RTTimer cursorTimer;
-
-        #region Internal
-
-        bool cursorEnabled;
-        bool initCursorPosition;
-        Vector2 prevCursorVelocityPos;
-
-        #endregion
-
-        #endregion
-
-        #region Methods
 
         /// <summary>
         /// Shows the cursor temporarily.

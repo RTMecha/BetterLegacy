@@ -15,7 +15,6 @@ using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
-using BetterLegacy.Core.Managers.Networking;
 using BetterLegacy.Menus;
 using BetterLegacy.Menus.UI.Interfaces;
 
@@ -197,7 +196,7 @@ namespace BetterLegacy.Core.Runtime
 
                             if (LevelManager.Levels.TryFind(x => x.id == endLevelData, out Level level))
                                 LevelManager.Play(level);
-                            else if (SteamWorkshopManager.inst.Levels.TryFind(x => x.id == endLevelData, out Level steamLevel))
+                            else if (RTSteamManager.inst.Levels.TryFind(x => x.id == endLevelData, out Level steamLevel))
                                 LevelManager.Play(steamLevel);
 
                             break;

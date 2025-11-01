@@ -6,6 +6,7 @@ using UnityEngine;
 using HarmonyLib;
 
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Managers.Settings;
 using BetterLegacy.Core.Runtime;
 
 namespace BetterLegacy.Core.Managers
@@ -13,35 +14,55 @@ namespace BetterLegacy.Core.Managers
     /// <summary>
     /// This class is used to share mod variables and functions, as well as check if a mod is installed.
     /// </summary>
-    public class ModCompatibility : MonoBehaviour
+    public class ModCompatibility : BaseManager<ModCompatibility, ManagerSettings>
     {
-        public static ModCompatibility inst;
-
-        public static GameObject bepinex;
-
-        public static Dictionary<string, object> sharedFunctions = new Dictionary<string, object>();
+        #region Values
 
         /// <summary>
-        /// Inits ModCompatibility.
+        /// BepInEx game object.
         /// </summary>
-        public static void Init() => Creator.NewGameObject(nameof(ModCompatibility), SystemManager.inst.transform).AddComponent<ModCompatibility>();
+        public static GameObject bepinex;
 
-        void Awake()
+        /// <summary>
+        /// Dictionary of shared values.
+        /// </summary>
+        public static Dictionary<string, object> sharedValues = new Dictionary<string, object>();
+
+        /// <summary>
+        /// If EditorOnStartup is installed.
+        /// </summary>
+        public static bool EditorOnStartupInstalled { get; set; }
+
+        /// <summary>
+        /// If Example should be loaded due to EditorOnStartup loading a scene differently.
+        /// </summary>
+        public static bool ShouldLoadExample { get; set; }
+
+        /// <summary>
+        /// If UnityExplorer is installed.
+        /// </summary>
+        public static bool UnityExplorerInstalled { get; private set; }
+
+        /// <summary>
+        /// UnityExplorer Inspector type.
+        /// </summary>
+        public static Type UEInspector => UnityExplorerInstalled ? AccessTools.TypeByName("UnityExplorer.InspectorManager") : null;
+
+        /// <summary>
+        /// UnityExplorer UI Manager type.
+        /// </summary>
+        public static Type UEUIManager => UnityExplorerInstalled ? AccessTools.TypeByName("UnityExplorer.UI.UIManager") : null;
+
+        #endregion
+
+        #region Functions
+
+        public override void OnInit()
         {
-            inst = this;
-
             bepinex = GameObject.Find("BepInEx_Manager");
 
             UnityExplorerInstalled = bepinex.GetComponentByName("ExplorerBepInPlugin");
         }
-
-        public static bool EditorOnStartupInstalled { get; set; }
-
-        public static bool ShouldLoadExample { get; set; }
-
-        public static bool UnityExplorerInstalled { get; private set; }
-        public static Type UEInspector => UnityExplorerInstalled ? AccessTools.TypeByName("UnityExplorer.InspectorManager") : null;
-        public static Type UEUIManager => UnityExplorerInstalled ? AccessTools.TypeByName("UnityExplorer.UI.UIManager") : null;
 
         public static void Inspect(object obj)
         {
@@ -87,6 +108,8 @@ namespace BetterLegacy.Core.Managers
             if (!enabled)
                 AchievementManager.inst.UnlockAchievement("hackerman");
         }
+
+        #endregion
 
         InspectorDebugList inspectorDebugList = new InspectorDebugList();
 

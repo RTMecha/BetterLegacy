@@ -8,30 +8,66 @@ using SimpleJSON;
 using BetterLegacy.Arcade.Managers;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers.Settings;
 
 namespace BetterLegacy.Core.Managers
 {
     /// <summary>
     /// Manages themes.
     /// </summary>
-    public class ThemeManager : MonoBehaviour
+    public class ThemeManager : BaseManager<ThemeManager, ManagerSettings>
     {
-        #region Init
+        #region Values
 
         /// <summary>
-        /// The <see cref="ThemeManager"/> global instance reference.
+        /// The current interpolated theme.
         /// </summary>
-        public static ThemeManager inst;
+        public BeatmapTheme Current { get; set; }
 
         /// <summary>
-        /// Initializes <see cref="ThemeManager"/>.
+        /// Total amount of themes.
         /// </summary>
-        public static void Init() => Creator.NewGameObject(nameof(ThemeManager), SystemManager.inst.transform).AddComponent<ThemeManager>();
+        public int ThemeCount => defaultThemes.Count + GameData.Current.beatmapThemes.Count;
 
-        void Awake()
+        /// <summary>
+        /// All themes.
+        /// </summary>
+        public List<BeatmapTheme> AllThemes { get; set; }
+
+        /// <summary>
+        /// List of default themes.
+        /// </summary>
+        public List<BeatmapTheme> defaultThemes = new List<BeatmapTheme>();
+
+        /// <summary>
+        /// List of default themes.
+        /// </summary>
+        public List<BeatmapTheme> DefaultThemes
         {
-            inst = this;
+            get => defaultThemes;
+            set
+            {
+                defaultThemes = value;
+                UpdateAllThemes();
+            }
+        }
 
+        /// <summary>
+        /// Lerped color for the background.
+        /// </summary>
+        public Color bgColorToLerp;
+
+        /// <summary>
+        /// Lerped color for the timeline GUI.
+        /// </summary>
+        public Color timelineColorToLerp;
+
+        #endregion
+
+        #region Functions
+
+        public override void OnInit()
+        {
             var jn = JSON.Parse(RTFile.ReadFromFile(RTFile.GetAsset($"builtin/default_themes{FileFormat.LST.Dot()}")));
             for (int i = 0; i < jn["themes"].Count; i++)
             {
@@ -44,30 +80,6 @@ namespace BetterLegacy.Core.Managers
 
             UpdateAllThemes();
         }
-
-        #endregion
-
-        #region Themes
-
-        public BeatmapTheme Current { get; set; }
-
-        public int ThemeCount => defaultThemes.Count + GameData.Current.beatmapThemes.Count;
-
-        public List<BeatmapTheme> AllThemes { get; set; }
-
-        public List<BeatmapTheme> defaultThemes = new List<BeatmapTheme>();
-        public List<BeatmapTheme> DefaultThemes
-        {
-            get => defaultThemes;
-            set
-            {
-                defaultThemes = value;
-                UpdateAllThemes();
-            }
-        }
-
-        public Color bgColorToLerp;
-        public Color timelineColorToLerp;
 
         /// <summary>
         /// Gets a theme based on the ID.
@@ -83,8 +95,14 @@ namespace BetterLegacy.Core.Managers
         /// <returns>Returns the current theme.</returns>
         public BeatmapTheme GetTheme(int id) => AllThemes.TryFind(x => Parser.TryParse(x.id, 0) == id, out BeatmapTheme beatmapTheme) ? beatmapTheme : DefaultThemes[0];
 
+        /// <summary>
+        /// Updates <see cref="AllThemes"/> to include both default themes and custom themes.
+        /// </summary>
         public void UpdateAllThemes() => AllThemes = !GameData.Current || GameData.Current.beatmapThemes.IsEmpty() ? defaultThemes : defaultThemes.Union(GameData.Current.beatmapThemes).ToList();
 
+        /// <summary>
+        /// Updates misc elements to use the current theme colors.
+        /// </summary>
         public void UpdateThemes()
         {
             if (RTGameManager.inst && EventManager.inst)

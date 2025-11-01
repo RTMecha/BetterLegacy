@@ -2,7 +2,6 @@
 
 using BetterLegacy.Arcade.Interfaces;
 using BetterLegacy.Core.Managers;
-using BetterLegacy.Core.Managers.Networking;
 
 namespace BetterLegacy.Configs
 {
@@ -271,7 +270,7 @@ namespace BetterLegacy.Configs
 
         void SteamLevelSortChanged()
         {
-            SteamWorkshopManager.inst.Levels = LevelManager.SortLevels(SteamWorkshopManager.inst.Levels, SteamLevelOrderby.Value, SteamLevelAscend.Value);
+            RTSteamManager.inst.Levels = LevelManager.SortLevels(RTSteamManager.inst.Levels, SteamLevelOrderby.Value, SteamLevelAscend.Value);
 
             if (ArcadeMenu.Current && ArcadeMenu.CurrentTab == ArcadeMenu.Tab.Steam)
             {

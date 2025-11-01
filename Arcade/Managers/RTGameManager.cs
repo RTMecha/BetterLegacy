@@ -15,7 +15,7 @@ using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
-using BetterLegacy.Core.Runtime;
+using BetterLegacy.Core.Managers.Settings;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Managers;
 
@@ -23,13 +23,10 @@ using Axis = BetterLegacy.Editor.Components.SelectObject.Axis;
 
 namespace BetterLegacy.Arcade.Managers
 {
-    public class RTGameManager : MonoBehaviour
+    public class RTGameManager : BaseManager<RTGameManager, GameManagerSettings>
     {
-        public static RTGameManager inst;
-
-        void Awake()
+        public override void OnInit()
         {
-            inst = this;
             postProcessLayer = Camera.main.gameObject.GetComponent<PostProcessLayer>();
             extraBG = GameObject.Find("ExtraBG").transform;
             video = extraBG.GetChild(0);
@@ -80,7 +77,7 @@ namespace BetterLegacy.Arcade.Managers
             objectScalerRight = CreateScaler(Axis.NegX, Color.red);
         }
 
-        void Update()
+        public override void OnTick()
         {
             if (GameManager.inst && GameManager.inst.introMain && GameManager.inst.introMain.transform.TryFind("blur", out Transform blur))
                 blur.gameObject.SetActive(false);

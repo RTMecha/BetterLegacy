@@ -12,7 +12,6 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
-using BetterLegacy.Core.Managers.Networking;
 using BetterLegacy.Story;
 
 using UnityRandom = UnityEngine.Random;
@@ -1198,7 +1197,7 @@ namespace BetterLegacy.Core
 
                         if (LevelManager.Levels.TryFind(x => x.id == id, out Level level))
                             LevelManager.Play(level);
-                        else if (SteamWorkshopManager.inst && SteamWorkshopManager.inst.Initialized && SteamWorkshopManager.inst.Levels.TryFind(x => x.id == id, out Level steamLevel))
+                        else if (RTSteamManager.inst && RTSteamManager.inst.Initialized && RTSteamManager.inst.Levels.TryFind(x => x.id == id, out Level steamLevel))
                             LevelManager.Play(steamLevel);
 
                         break;

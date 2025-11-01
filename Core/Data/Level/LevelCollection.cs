@@ -12,7 +12,6 @@ using SteamworksFacepunch.Ugc;
 using BetterLegacy.Arcade.Interfaces;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
-using BetterLegacy.Core.Managers.Networking;
 using BetterLegacy.Editor.Data.Elements;
 using BetterLegacy.Menus;
 using BetterLegacy.Menus.UI.Interfaces;
@@ -359,7 +358,7 @@ namespace BetterLegacy.Core.Data.Level
                 levelInfo.level = NewCollectionLevel(arcadeLevel.path, this);
 
             // load via workshop ID
-            else if (levelInfo.workshopID != null && SteamWorkshopManager.inst.Levels.TryFind(x => x.id == levelInfo.workshopID, out Level steamLevel))
+            else if (levelInfo.workshopID != null && RTSteamManager.inst.Levels.TryFind(x => x.id == levelInfo.workshopID, out Level steamLevel))
                 levelInfo.level = NewCollectionLevel(steamLevel.path, this);
 
             if (levelInfo.level)
@@ -393,14 +392,14 @@ namespace BetterLegacy.Core.Data.Level
 
             if (!string.IsNullOrEmpty(levelInfo.workshopID))
             {
-                if (!SteamWorkshopManager.inst.Initialized)
+                if (!RTSteamManager.inst.Initialized)
                 {
                     CoreHelper.Log($"Steam was not initialized. Please open Steam.");
                     ArcadeHelper.QuitToArcade();
                     return;
                 }
 
-                if (SteamWorkshopManager.inst.Levels.TryFind(x => x.id == levelInfo.workshopID, out level))
+                if (RTSteamManager.inst.Levels.TryFind(x => x.id == levelInfo.workshopID, out level))
                 {
                     level = NewCollectionLevel(level.path, collection);
                     levelInfo.Overwrite(level);
@@ -495,7 +494,7 @@ namespace BetterLegacy.Core.Data.Level
 
         static IEnumerator SubscribeToSteamLevel(LevelCollection collection, LevelInfo levelInfo, Action<Level> onDownload = null, Action onFail = null)
         {
-            var workshopID = SteamWorkshopManager.GetWorkshopID(levelInfo.workshopID);
+            var workshopID = RTSteamManager.GetWorkshopID(levelInfo.workshopID);
             if (workshopID.Value == 0)
             {
                 InterfaceManager.inst.CloseMenus();
@@ -509,7 +508,7 @@ namespace BetterLegacy.Core.Data.Level
             }
 
             CoreHelper.Log($"Updating {workshopID}");
-            yield return SteamWorkshopManager.GetItem(workshopID, item =>
+            yield return RTSteamManager.GetItem(workshopID, item =>
             {
                 CoreHelper.Log($"Got item: {item}");
                 CoroutineHelper.StartCoroutineAsync(AlephNetwork.DownloadBytes(item.PreviewImageUrl, bytes =>
@@ -538,7 +537,7 @@ namespace BetterLegacy.Core.Data.Level
             CoreHelper.Log($"Init Steam Item: {item}");
             if (CoreHelper.InGame)
             {
-                CoroutineHelper.StartCoroutine(SteamWorkshopManager.inst.ToggleSubscribedState(item, level =>
+                CoroutineHelper.StartCoroutine(RTSteamManager.inst.ToggleSubscribedState(item, level =>
                 {
                     level = NewCollectionLevel(level.path, collection);
                     levelInfo.Overwrite(level);

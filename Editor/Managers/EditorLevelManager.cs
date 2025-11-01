@@ -25,7 +25,6 @@ using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
-using BetterLegacy.Core.Managers.Networking;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Editor.Components;
@@ -444,7 +443,7 @@ namespace BetterLegacy.Editor.Managers
                     Level level;
                     if (!(!string.IsNullOrEmpty(path) && Level.TryVerify(RTFile.CombinePaths(full, path), false, out level) ||
                         Level.TryVerify(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, path), false, out level) ||
-                        (SteamWorkshopManager.inst && SteamWorkshopManager.inst.Initialized && SteamWorkshopManager.inst.Levels.TryFind(x => x && x.id == levelInfo.workshopID, out level)) ||
+                        (RTSteamManager.inst && RTSteamManager.inst.Initialized && RTSteamManager.inst.Levels.TryFind(x => x && x.id == levelInfo.workshopID, out level)) ||
                         LevelManager.Levels.TryFind(x => x && x.id == levelInfo.arcadeID, out level)))
                     {
                         currentLevelCollection.levels.Add(null);

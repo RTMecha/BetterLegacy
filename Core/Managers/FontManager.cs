@@ -11,17 +11,17 @@ using TMPro;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers.Settings;
 using BetterLegacy.Core.Runtime.Objects.Visual;
 
 namespace BetterLegacy.Core.Managers
 {
     /// <summary>
-    /// This class is used to store fonts from the customfonts.asset file.
+    /// Manages the custom fonts in BetterLegacy.
     /// </summary>
-    public class FontManager : MonoBehaviour
+    public class FontManager : BaseManager<FontManager, FontManagerSettings>
     {
-        public static FontManager inst;
-        public static string className = "[<color=#A100FF>FontManager</color>] \n";
+        #region Values
 
         public Dictionary<string, Font> allFonts = new Dictionary<string, Font>();
         public Dictionary<string, TMP_FontAsset> allFontAssets = new Dictionary<string, TMP_FontAsset>();
@@ -40,23 +40,18 @@ namespace BetterLegacy.Core.Managers
                 if (allFonts.TryGetValue(defaultFont, out Font defaultFontValue))
                     return defaultFontValue;
 
-                Debug.Log($"{className}Font doesn't exist.");
+                LogError($"Font doesn't exist.");
                 return Font.GetDefault();
             }
         }
 
-        /// <summary>
-        /// Inits FontManager.
-        /// </summary>
-        public static void Init() => Creator.NewGameObject(nameof(FontManager), SystemManager.inst.transform).AddComponent<FontManager>();
+        #endregion
 
-        void Awake()
-        {
-            inst = this;
-            StartCoroutine(SetupCustomFonts());
-        }
+        #region Functions
 
-        void Update()
+        public override void OnInit() => StartCoroutine(SetupCustomFonts());
+
+        public override void OnTick()
         {
             if (!CoreHelper.Playing && !CoreHelper.Reversing && !GameData.Current)
                 return;
@@ -104,7 +99,7 @@ namespace BetterLegacy.Core.Managers
             var path = RTFile.GetAsset($"builtin/customfonts{FileFormat.ASSET.Dot()}");
             if (!RTFile.FileExists(path))
             {
-                Debug.LogError($"{className}customfonts{FileFormat.ASSET.Dot()} does not exist in the BepInEx/plugins/Assets/builtin folder.");
+                LogError($"customfonts{FileFormat.ASSET.Dot()} does not exist in the BepInEx/plugins/Assets/builtin folder.");
                 yield break;
             }
 
@@ -116,7 +111,7 @@ namespace BetterLegacy.Core.Managers
 
                 if (font == null)
                 {
-                    Debug.LogError($"{className}The font ({fontName}) does not exist in the asset bundle for some reason.");
+                    LogError($"The font ({fontName}) does not exist in the asset bundle for some reason.");
                     continue;
                 }
 
@@ -138,7 +133,7 @@ namespace BetterLegacy.Core.Managers
 
                 if (dictionary.ContainsKey(e.hashCode))
                 {
-                    Debug.LogError($"{className}Could not convert the font to TextMeshPro Font Asset. Hashcode: {e.hashCode}");
+                    LogError($"Could not convert the font to TextMeshPro Font Asset. Hashcode: {e.hashCode}");
                     continue;
                 }
 
@@ -331,5 +326,7 @@ namespace BetterLegacy.Core.Managers
 
             _ => name,
         };
+
+        #endregion
     }
 }

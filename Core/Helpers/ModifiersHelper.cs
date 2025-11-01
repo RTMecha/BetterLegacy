@@ -3901,8 +3901,8 @@ namespace BetterLegacy.Core.Helpers
 
             if (!loop)
                 CoroutineHelper.StartCoroutine(AudioManager.inst.DestroyWithDelay(audioSource, clip.clip.length / x));
-            else if (!ModifiersManager.audioSources.ContainsKey(id))
-                ModifiersManager.audioSources.Add(id, audioSource);
+            else
+                ModifiersManager.audioSources.TryAdd(id, audioSource);
         }
 
         public static void audioSource(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -4170,7 +4170,7 @@ namespace BetterLegacy.Core.Helpers
             var entryLevelIndex = levelCollection.EntryLevelIndex;
             if (!string.IsNullOrEmpty(levelID) && LevelManager.Levels.TryFindIndex(x => x && x.id == levelID, out int arcadeLevelIndex))
                 entryLevelIndex = arcadeLevelIndex;
-            if (!string.IsNullOrEmpty(levelID) && Core.Managers.Networking.SteamWorkshopManager.inst.Levels.TryFindIndex(x => x && x.id == levelID, out int steamLevelIndex))
+            if (!string.IsNullOrEmpty(levelID) && RTSteamManager.inst.Levels.TryFindIndex(x => x && x.id == levelID, out int steamLevelIndex))
                 entryLevelIndex = steamLevelIndex;
 
             if (entryLevelIndex < 0)

@@ -17,6 +17,7 @@ using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers.Settings;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Story;
 
@@ -27,36 +28,9 @@ namespace BetterLegacy.Core.Managers
     /// <summary>
     /// Manages <see cref="Level"/>, <see cref="LevelCollection"/> and Arcade player data.
     /// </summary>
-    public class LevelManager : MonoBehaviour
+    public class LevelManager : BaseManager<LevelManager, LevelManagerSettings>
     {
-        #region Init
-
-        /// <summary>
-        /// The <see cref="LevelManager"/> global instance reference.
-        /// </summary>
-        public static LevelManager inst;
-
-        /// <summary>
-        /// Manager class name.
-        /// </summary>
-        public static string className = "[<color=#7F00FF>LevelManager</color>] \n";
-
-        /// <summary>
-        /// Initializes <see cref="LevelManager"/>.
-        /// </summary>
-        public static void Init() => Creator.NewGameObject(nameof(LevelManager), SystemManager.inst.transform).AddComponent<LevelManager>();
-
-        void Awake()
-        {
-            inst = this;
-            Levels = new List<Level>();
-            ArcadeQueue = new List<Level>();
-            LevelCollections = new List<LevelCollection>();
-
-            LoadProgress();
-        }
-
-        #endregion
+        #region Values
 
         #region Path
 
@@ -72,7 +46,7 @@ namespace BetterLegacy.Core.Managers
 
         #endregion
 
-        #region Data
+        #region Levels & Level Collections
 
         /// <summary>
         /// Whether the scene after Input Select should be the Arcade scene or the Interface scene.
@@ -185,6 +159,43 @@ namespace BetterLegacy.Core.Managers
 
         #endregion
 
+        #region Saves
+
+        /// <summary>
+        /// Arcade saves list.
+        /// </summary>
+        public static List<SaveData> Saves { get; set; } = new List<SaveData>();
+
+        /// <summary>
+        /// Arcade saves list.
+        /// </summary>
+        public static List<SaveCollectionData> CollectionSaves { get; set; } = new List<SaveCollectionData>();
+
+        /// <summary>
+        /// The current save file for the Arcade.
+        /// </summary>
+        public static string CurrentSaveFile { get; set; } = $"arcade_saves{FileFormat.LSS.Dot()}";
+
+        /// <summary>
+        /// Maximum amount of data points for the End Level Menu.
+        /// </summary>
+        public const int DATA_POINT_MAX = 24;
+
+        #endregion
+
+        #endregion
+
+        #region Functions
+
+        public override void OnInit()
+        {
+            Levels = new List<Level>();
+            ArcadeQueue = new List<Level>();
+            LevelCollections = new List<LevelCollection>();
+
+            LoadProgress();
+        }
+
         #region Loading & Sorting
 
         /// <summary>
@@ -217,7 +228,7 @@ namespace BetterLegacy.Core.Managers
         /// <param name="level">The level to play.</param>
         public static IEnumerator IPlay(Level level)
         {
-            Debug.Log($"{className}Start playing level:\n{level}\nIs Story: {level.isStory}");
+            Log($"Start playing level:\n{level}\nIs Story: {level.isStory}");
 
             LoadingFromHere = true;
             LevelEnded = false;
@@ -234,12 +245,12 @@ namespace BetterLegacy.Core.Managers
 
             RandomHelper.UpdateSeed();
 
-            Debug.Log($"{className}Updating scene.");
+            Log($"Updating scene.");
 
             bool inGame = CoreHelper.InGame;
             if (!inGame || CoreHelper.InEditor)
             {
-                Debug.Log($"{className}Switching to Game scene.");
+                Log($"Switching to Game scene.");
                 SceneHelper.LoadGameWithProgress();
             }
 
@@ -250,17 +261,17 @@ namespace BetterLegacy.Core.Managers
                 {
                     logged = true;
                     if (CoreHelper.InEditor)
-                        Debug.Log($"{className}Have to switch to the game scene from the editor.");
+                        Log($"Have to switch to the game scene from the editor.");
                     if (!CoreHelper.InGame)
-                        Debug.Log($"{className}Have to switch to the game scene.");
+                        Log($"Have to switch to the game scene.");
                     if (!ShapeManager.inst.loadedShapes)
-                        Debug.Log($"{className}Shapes haven't initialized yet.");
+                        Log($"Shapes haven't initialized yet.");
                 }
 
                 yield return null;
             }
 
-            Debug.Log($"{className}Resetting window states.");
+            Log($"Resetting window states.");
             ProjectArrhythmia.Window.ResetPosition();
             ProjectArrhythmia.Window.ApplySettings();
             ProjectArrhythmia.Window.ResetTitle();
@@ -291,7 +302,7 @@ namespace BetterLegacy.Core.Managers
 
             #region Parsing
 
-            Debug.Log($"{className}Parsing level...");
+            Log($"Parsing level...");
 
             GameManager.inst.gameState = GameManager.State.Parsing;
 
@@ -307,7 +318,7 @@ namespace BetterLegacy.Core.Managers
 
             ThemeManager.inst.UpdateAllThemes();
 
-            Debug.Log($"{className}Setting paths...");
+            Log($"Setting paths...");
 
             MetaData.Current = level.metadata;
             GameManager.inst.currentLevelName = level.metadata.song.title;
@@ -317,7 +328,7 @@ namespace BetterLegacy.Core.Managers
 
             #region States
 
-            Debug.Log($"{className}Updating states...");
+            Log($"Updating states...");
 
             if (IsArcade || !CoreHelper.InStory)
                 CoreHelper.UpdateDiscordStatus($"Level: {level.metadata.beatmap.name}",
@@ -344,12 +355,12 @@ namespace BetterLegacy.Core.Managers
 
             #region Music
 
-            Debug.Log($"{className}Loading music...\nMusic is null: {!level.music}");
+            Log($"Loading music...\nMusic is null: {!level.music}");
 
             if (!level.music)
                 yield return CoroutineHelper.StartCoroutine(level.LoadAudioClipRoutine());
 
-            Debug.Log($"{className}Playing music... music state: {level.music}");
+            Log($"Playing music... music state: {level.music}");
 
             while (!level.music)
                 yield return null;
@@ -370,7 +381,7 @@ namespace BetterLegacy.Core.Managers
 
             #region Camera
 
-            Debug.Log($"{className}Setting Camera...");
+            Log($"Setting Camera...");
 
             if (!storyLevel)
                 yield return RTVideoManager.inst.Setup(level.path);
@@ -383,7 +394,7 @@ namespace BetterLegacy.Core.Managers
 
             #region Checkpoints
 
-            Debug.Log($"{className}Updating checkpoints...");
+            Log($"Updating checkpoints...");
 
             GameManager.inst.UpdateTimeline();
             RTBeatmap.Current.ResetCheckpoint();
@@ -392,7 +403,7 @@ namespace BetterLegacy.Core.Managers
 
             #region Spawning
 
-            Debug.Log($"{className}Spawning...");
+            Log($"Spawning...");
 
             if (!storyLevel)
                 PlayersData.Load(level.GetFile(Level.PLAYERS_LSB));
@@ -423,7 +434,7 @@ namespace BetterLegacy.Core.Managers
 
             #region Done
 
-            Debug.Log($"{className}Done!");
+            Log($"Done!");
 
             GameManager.inst.gameState = GameManager.State.Playing;
             AudioManager.inst.SetMusicTime(GameData.Current.data.level.LevelStartOffset);
@@ -450,11 +461,11 @@ namespace BetterLegacy.Core.Managers
         {
             if (!RTFile.FileExists(path))
             {
-                Debug.LogError($"{className}Couldn't load level from {path} as it doesn't exist.");
+                LogError($"Couldn't load level from {path} as it doesn't exist.");
                 return;
             }
 
-            Debug.Log($"{className}Loading level from {path}");
+            Log($"Loading level from {path}");
 
             OnLevelEnd = RTBeatmap.Current.EndOfLevel;
 
@@ -632,7 +643,7 @@ namespace BetterLegacy.Core.Managers
             // 3.7.26
             if (version.Major <= 3 && version.Minor <= 7 && version.Patch <= 26)
             {
-                Debug.Log("value_x -> x & value_y -> y");
+                Log("value_x -> x & value_y -> y");
                 json = json.Replace("\"value_x\"", "\"x\"");
                 json = json.Replace("\"value_y\"", "\"y\"");
             }
@@ -640,58 +651,58 @@ namespace BetterLegacy.Core.Managers
             // 3.7.42
             if (version.Major <= 3 && version.Minor <= 7 && version.Patch <= 42)
             {
-                Debug.Log("text 4 -> 5");
+                Log("text 4 -> 5");
                 json = json.Replace("\"shape\": \"4\"", "\"shape\": \"5\"");
             }
 
             // 3.8.15
             if (version.Major <= 3 && version.Minor <= 8 && version.Patch <= 15)
-                Debug.Log("Add parent relationship if none");
+                Log("Add parent relationship if none");
 
             // 3.8.25
             if (version.Major <= 3 && version.Minor <= 8 && version.Patch <= 25)
             {
-                Debug.Log("background_objects -> bg_objects");
+                Log("background_objects -> bg_objects");
                 json = json.Replace("\"background_objects\"", "\"bg_objects\"");
-                Debug.Log("reactive_settings -> r_set");
+                Log("reactive_settings -> r_set");
                 json = json.Replace("\"reactive_settings\"", "\"r_set\"");
             }
 
             // 3.8.48
             if (version.Major <= 3 && version.Minor <= 8 && version.Patch <= 48)
             {
-                Debug.Log("is_random -> r");
+                Log("is_random -> r");
                 json = json.Replace("\"is_random\":\"False\"", "\"r\":\"0\"").Replace("\"is_random\":\"True\"", "\"r\":\"1\"");
                 json = json.Replace("\"is_random\": \"False\"", "\"r\": \"0\"").Replace("\"is_random\": \"True\"", "\"r\": \"1\"");
-                Debug.Log("origin -> o");
+                Log("origin -> o");
                 json = json.Replace("\"origin\"", "\"o\"");
-                Debug.Log("time -> t");
+                Log("time -> t");
                 json = json.Replace("\"time\"", "\"t\"");
-                Debug.Log("start_time -> st");
+                Log("start_time -> st");
                 json = json.Replace("\"start_time\"", "\"st\"");
-                Debug.Log("editor_data -> ed");
+                Log("editor_data -> ed");
                 json = json.Replace("\"editor_data\"", "\"ed\"");
-                Debug.Log("value_random_x -> rx");
+                Log("value_random_x -> rx");
                 json = json.Replace("\"value_random_x\"", "\"rx\"");
-                Debug.Log("value_random_y -> ry");
+                Log("value_random_y -> ry");
                 json = json.Replace("\"value_random_y\"", "\"ry\"");
-                Debug.Log("value_z -> z");
+                Log("value_z -> z");
                 json = json.Replace("\"value_z\"", "\"z\"").Replace("\"value_z2\"", "\"z2\"");
-                Debug.Log("curve_type -> ct");
+                Log("curve_type -> ct");
                 json = json.Replace("\"curve_type\"", "\"ct\"");
-                Debug.Log("p_type -> pt");
+                Log("p_type -> pt");
                 json = json.Replace("\"p_type\"", "\"pt\"");
-                Debug.Log("parent -> p");
+                Log("parent -> p");
                 json = json.Replace("\"parent\"", "\"p\"");
-                Debug.Log("helper -> h");
+                Log("helper -> h");
                 json = json.Replace("\"helper\"", "\"h\"");
-                Debug.Log("depth -> d");
+                Log("depth -> d");
                 json = json.Replace("\"depth\"", "\"d\"");
-                Debug.Log("prefab_id -> pid");
+                Log("prefab_id -> pid");
                 json = json.Replace("\"prefab_id\"", "\"pid\"");
-                Debug.Log("prefab_inst_id -> piid");
+                Log("prefab_inst_id -> piid");
                 json = json.Replace("\"prefab_inst_id\"", "\"piid\"");
-                Debug.Log("shape_option -> so");
+                Log("shape_option -> so");
                 json = json.Replace("\"shape_option\"", "\"so\"");
             }
 
@@ -715,18 +726,6 @@ namespace BetterLegacy.Core.Managers
         #endregion
 
         #region Save Data
-
-        /// <summary>
-        /// Arcade saves list.
-        /// </summary>
-        public static List<SaveData> Saves { get; set; } = new List<SaveData>();
-
-        public static List<SaveCollectionData> CollectionSaves { get; set; } = new List<SaveCollectionData>();
-
-        /// <summary>
-        /// The current save file for the Arcade.
-        /// </summary>
-        public static string CurrentSaveFile { get; set; } = $"arcade_saves{FileFormat.LSS.Dot()}";
 
         /// <summary>
         /// Finds and sets the levels' save data.
@@ -978,11 +977,6 @@ namespace BetterLegacy.Core.Managers
         public static SaveData GetSaveData(string id) => Saves.Find(x => x.ID == id);
 
         /// <summary>
-        /// Maximum amount of data points for the End Level Menu.
-        /// </summary>
-        public const int DATA_POINT_MAX = 24;
-
-        /// <summary>
         /// Gets the normalized amount of hits.
         /// </summary>
         /// <param name="hits">Hits to normalize.</param>
@@ -1046,6 +1040,8 @@ namespace BetterLegacy.Core.Managers
         /// <param name="length">Total length of the level contributes to the accuracy.</param>
         /// <returns>Returns a calculated accuracy.</returns>
         public static float CalculateAccuracy(int hits, float length) => 100f / ((hits / (length / 10f)) + 1f);
+
+        #endregion
 
         #endregion
     }

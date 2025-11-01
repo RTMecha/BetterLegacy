@@ -1,26 +1,22 @@
-﻿using System.Collections;
-using System.Linq;
+﻿using System.Linq;
 
 using UnityEngine;
 using UnityEngine.UI;
 
 using TMPro;
 
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Runtime;
+using BetterLegacy.Core.Managers.Settings;
 
 namespace BetterLegacy.Core.Managers
 {
-    public class UIManager : MonoBehaviour
+    // TODO: rework / remove
+    public class UIManager : BaseManager<UIManager, ManagerSettings>
     {
         public static GameObject textMeshPro;
 
-        /// <summary>
-        /// Inits UIManager.
-        /// </summary>
-        public static void Init() => Creator.NewGameObject(nameof(UIManager), SystemManager.inst.transform).AddComponent<UIManager>();
-
-        void Awake()
+        public override void OnInit()
         {
             var findButton = (from x in Resources.FindObjectsOfTypeAll<GameObject>()
                               where x.name == "Text Element"
@@ -222,64 +218,9 @@ namespace BetterLegacy.Core.Managers
 
         public static UICanvas GenerateUICanvas(string name, Transform parent, bool dontDestroy = false, int sortingOrder = 10000)
         {
-            var gameObject = new GameObject(name);
-            gameObject.transform.SetParent(parent);
-            if (dontDestroy)
-                DontDestroyOnLoad(gameObject);
-
-            gameObject.transform.localScale = Vector3.one * CoreHelper.ScreenScale;
-            var rectTransform = gameObject.AddComponent<RectTransform>();
-            rectTransform.anchoredPosition = new Vector2(960f, 540f);
-            rectTransform.sizeDelta = new Vector2(1920f, 1080f);
-            rectTransform.pivot = new Vector2(0.5f, 0.5f);
-            rectTransform.anchorMin = Vector2.zero;
-            rectTransform.anchorMax = Vector2.zero;
-
-            var canvas = gameObject.AddComponent<Canvas>();
-            canvas.additionalShaderChannels = AdditionalCanvasShaderChannels.None | AdditionalCanvasShaderChannels.TexCoord1 | AdditionalCanvasShaderChannels.Tangent | AdditionalCanvasShaderChannels.Normal;
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.scaleFactor = CoreHelper.ScreenScale;
-            canvas.sortingOrder = sortingOrder;
-
-            var canvasGroup = gameObject.AddComponent<CanvasGroup>();
-
-            var canvasScaler = gameObject.AddComponent<CanvasScaler>();
-            canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            canvasScaler.referenceResolution = new Vector2(1920f, 1080f);
-
-            gameObject.AddComponent<GraphicRaycaster>();
-
-            CoreHelper.Log($"Canvas Scale Factor: {canvas.scaleFactor}\nResoultion: {new Vector2(Screen.width, Screen.height)}");
-            return new UICanvas(gameObject, canvas, canvasGroup, canvasScaler);
-        }
-    }
-
-    public class UICanvas
-    {
-        public UICanvas(GameObject gameObject, Canvas canvas, CanvasGroup canvasGroup, CanvasScaler canvasScaler)
-        {
-            GameObject = gameObject;
-            Canvas = canvas;
-            CanvasGroup = canvasGroup;
-            CanvasScaler = canvasScaler;
-        }
-
-        public GameObject GameObject { get; set; }
-        public Canvas Canvas { get; set; }
-        public CanvasGroup CanvasGroup { get; set; }
-        public CanvasScaler CanvasScaler { get; set; }
-
-        public void SetWorldSpace(int layer, Camera worldCamera) => CoroutineHelper.StartCoroutine(ISetWorldSpace(layer, worldCamera));
-
-        IEnumerator ISetWorldSpace(int layer, Camera worldCamera)
-        {
-            Canvas.scaleFactor = 1f;
-            CanvasScaler.referenceResolution = new Vector2(1920f, 1080f);
-            GameObject.layer = layer;
-            Canvas.worldCamera = worldCamera;
-            Canvas.renderMode = RenderMode.ScreenSpaceCamera;
-            yield return null;
-            Canvas.renderMode = RenderMode.WorldSpace;
+            var canvas = new UICanvas();
+            canvas.Init(name, parent, dontDestroy, sortingOrder);
+            return canvas;
         }
     }
 }

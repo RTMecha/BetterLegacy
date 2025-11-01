@@ -6,20 +6,16 @@ using UnityEngine;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers.Settings;
 
 namespace BetterLegacy.Core.Managers
 {
     /// <summary>
     /// <see cref="AudioManager"/> and <see cref="SoundLibrary"/> wrapper.
     /// </summary>
-    public class SoundManager : MonoBehaviour
+    public class SoundManager : BaseManager<SoundManager, SoundManagerSettings>
     {
-        #region Init
-
-        /// <summary>
-        /// The <see cref="SoundManager"/> global instance reference.
-        /// </summary>
-        public static SoundManager inst;
+        #region Values
 
         AudioManager BaseManager => AudioManager.inst;
         SoundLibrary Library => AudioManager.inst.library;
@@ -29,18 +25,36 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         public static float musicVolume = 1f;
 
-        void Awake() => inst = this;
-
-        public float MasterVolume => CoreConfig.Instance.MasterVol.Value / 9f;
-
-        #endregion
-
-        #region Playing State
-
         /// <summary>
         /// If the current audio source is playing.
         /// </summary>
         public bool Playing => BaseManager.CurrentAudioSource.isPlaying;
+
+        /// <summary>
+        /// Total volume.
+        /// </summary>
+        public float MasterVolume => CoreConfig.Instance.MasterVol.Value / 9f;
+
+        /// <summary>
+        /// Sound effect volume.
+        /// </summary>
+        public float SFXVolume => CoreConfig.Instance.SFXVol.Value / 9f;
+
+        /// <summary>
+        /// Music volume.
+        /// </summary>
+        public float MusicVolume => CoreConfig.Instance.MusicVol.Value / 9f;
+
+        /// <summary>
+        /// Length of the current audio clip.
+        /// </summary>
+        public float MusicLength => BaseManager && BaseManager.CurrentAudioSource && BaseManager.CurrentAudioSource.clip ? BaseManager.CurrentAudioSource.clip.length : 0f;
+
+        #endregion
+
+        #region Functions
+
+        #region Playing State
 
         /// <summary>
         /// Sets the playing state of the current audio source.
@@ -56,8 +70,6 @@ namespace BetterLegacy.Core.Managers
         #endregion
 
         #region Sound
-
-        public float SFXVolume => CoreConfig.Instance.SFXVol.Value / 9f;
 
         public AudioSource PlaySound(AudioClip clip, AudioSourceSettings settings) => PlaySound(Camera.main.gameObject, clip, settings);
 
@@ -129,13 +141,6 @@ namespace BetterLegacy.Core.Managers
 
         #region Music
 
-        public float MusicVolume => CoreConfig.Instance.MusicVol.Value / 9f;
-
-        /// <summary>
-        /// Length of the current audio clip.
-        /// </summary>
-        public float MusicLength => BaseManager && BaseManager.CurrentAudioSource && BaseManager.CurrentAudioSource.clip ? BaseManager.CurrentAudioSource.clip.length : 0f;
-
         public void PlayMusic(DefaultMusic defaultMusic, float volume = 1f, float pitch = 1f, float fadeDuration = 0.5f, bool loop = true, bool allowSame = false) => PlayMusic(defaultMusic.ToString(), volume, pitch, fadeDuration, loop, allowSame);
 
         public void PlayMusic(string musicName, float volume = 1f, float pitch = 1f, float fadeDuration = 0.5f, bool loop = true, bool allowSame = false) => PlayMusic(Library.GetMusicFromName(musicName), volume, pitch, fadeDuration, loop, allowSame);
@@ -161,7 +166,7 @@ namespace BetterLegacy.Core.Managers
 
         public void AddMusic(string id, List<SoundGroup.AudioClipWrapper> audioClips)
         {
-            if (Library == null)
+            if (!Library)
                 return;
 
             var musicGroup = new MusicGroup
@@ -176,8 +181,6 @@ namespace BetterLegacy.Core.Managers
         }
 
         #endregion
-
-        #region Functions
 
         /// <summary>
         /// Fade transitions between two audio sources.

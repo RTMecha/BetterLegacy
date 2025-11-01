@@ -1,15 +1,15 @@
 ﻿using UnityEngine;
  
 using BetterLegacy.Core.Components;
+using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Managers.Settings;
 using BetterLegacy.Editor;
 
 namespace BetterLegacy.Arcade.Managers
 {
-    public class RTEventManager : MonoBehaviour
+    public class RTEventManager : BaseManager<RTEventManager, GameManagerSettings>
     {
         public EventDelayTracker delayTracker;
-
-        public static RTEventManager inst;
 
         public EditorCameraController editorCamera;
 
@@ -19,13 +19,8 @@ namespace BetterLegacy.Arcade.Managers
 
         public Camera uiCam;
 
-        void Awake()
+        public override void OnInit()
         {
-            if (inst == null)
-                inst = this;
-            else if (inst != this)
-                Destroy(gameObject);
-
             editorCamera = EditorCameraController.Bind();
 
             EventManager.inst.camPer.cullingMask = 566;

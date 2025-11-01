@@ -6,109 +6,16 @@ using SimpleJSON;
 
 using BetterLegacy.Core.Data.Modifiers;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers.Settings;
 
 namespace BetterLegacy.Core.Managers
 {
-    public class ModifiersManager : MonoBehaviour
+    public class ModifiersManager : BaseManager<ModifiersManager, ManagerSettings>
     {
+        #region Values
+
+        // TODO: change soundlibrary to be based on Asset Packs.
         public const string SOUNDLIBRARY_PATH = "beatmaps/soundlibrary";
-
-        public static ModifiersManager inst;
-
-        public static List<KeyValuePair<string, AudioSource>> queuedAudioToDelete = new List<KeyValuePair<string, AudioSource>>();
-
-        /// <summary>
-        /// Inits ModifiersManager.
-        /// </summary>
-        public static void Init() => Creator.NewGameObject(nameof(ModifiersManager), SystemManager.inst.transform).AddComponent<ModifiersManager>();
-
-        void Awake()
-        {
-            inst = this;
-            modifiers.Clear();
-
-            LoadFile(modifiers, RTFile.GetAsset("builtin/default_modifiers.json"));
-
-            AddDevelopmentModifiers();
-
-            modifiers.AddRange(defaultPlayerModifiers);
-            modifiers.ForLoop(modifier =>
-            {
-                var name = modifier.Name;
-
-                if (modifier.type == Modifier.Type.Trigger && ModifiersHelper.triggers.TryFind(x => x.name == name, out ModifierTrigger trigger))
-                    modifier.Trigger = trigger.function;
-
-                if (modifier.type == Modifier.Type.Action && ModifiersHelper.actions.TryFind(x => x.name == name, out ModifierAction action))
-                    modifier.Action = action.function;
-
-                if (ModifiersHelper.inactives.TryFind(x => x.name == name, out ModifierInactive inactive))
-                    modifier.Inactive = inactive.function;
-            });
-        }
-
-        void LoadFile(List<Modifier> modifiers, string path)
-        {
-            if (!RTFile.FileExists(path))
-                return;
-
-            var jn = JSON.Parse(RTFile.ReadFromFile(path));
-
-            for (int i = 0; i < jn["modifiers"].Count; i++)
-                LoadModifiers(modifiers, jn["modifiers"][i]);
-        }
-
-        void LoadModifiers(List<Modifier> modifiers, JSONNode jn)
-        {
-            if (jn.IsArray)
-            {
-                for (int i = 0; i < jn.Count; i++)
-                    LoadModifiers(modifiers, jn[i]);
-                return;
-            }
-
-            var modifier = Modifier.Parse(jn);
-            modifier.compatibility = ModifierCompatibility.Parse(jn["compat"]);
-            modifiers.Add(modifier);
-        }
-
-        void AddDevelopmentModifiers()
-        {
-            modifiers.Add(new Modifier(ModifierCompatibility.LevelControlCompatible.WithStoryOnly(), Modifier.Type.Action, "loadSceneDEVONLY", false, "Interface", "False"));
-            modifiers.Add(new Modifier(ModifierCompatibility.LevelControlCompatible.WithStoryOnly(), Modifier.Type.Action, "loadStoryLevelDEVONLY", false, "False", "0", "0", "False", "0"));
-
-            modifiers.Add(new Modifier(ModifierCompatibility.LevelControlCompatible.WithStoryOnly(), Modifier.Type.Action, "storySaveBoolDEVONLY", false, "BoolVariable", "True"));
-            modifiers.Add(new Modifier(ModifierCompatibility.LevelControlCompatible.WithStoryOnly(), Modifier.Type.Action, "storySaveIntDEVONLY", false, "IntVariable", "0"));
-            modifiers.Add(new Modifier(ModifierCompatibility.LevelControlCompatible.WithStoryOnly(), Modifier.Type.Action, "storySaveFloatDEVONLY", false, "FloatVariable", "0"));
-            modifiers.Add(new Modifier(ModifierCompatibility.LevelControlCompatible.WithStoryOnly(), Modifier.Type.Action, "storySaveStringDEVONLY", false, "StringVariable", "Value"));
-            modifiers.Add(new Modifier(ModifierCompatibility.LevelControlCompatible.WithStoryOnly(), Modifier.Type.Action, "storySaveIntVariableDEVONLY", false, "IntVariable"));
-            modifiers.Add(new Modifier(ModifierCompatibility.AllCompatible.WithStoryOnly(), Modifier.Type.Action, "getStorySaveBoolDEVONLY", true, "STORY_BOOL_VAR", "BoolVariable", "False"));
-            modifiers.Add(new Modifier(ModifierCompatibility.AllCompatible.WithStoryOnly(), Modifier.Type.Action, "getStorySaveIntDEVONLY", true, "STORY_INT_VAR", "IntVariable", "0"));
-            modifiers.Add(new Modifier(ModifierCompatibility.AllCompatible.WithStoryOnly(), Modifier.Type.Action, "getStorySaveFloatDEVONLY", true, "STORY_FLOAT_VAR", "FloatVariable", "0"));
-            modifiers.Add(new Modifier(ModifierCompatibility.AllCompatible.WithStoryOnly(), Modifier.Type.Action, "getStorySaveStringDEVONLY", true, "STORY_STRING_VAR", "StringVariable", string.Empty));
-
-            modifiers.Add(new Modifier(ModifierCompatibility.LevelControlCompatible.WithStoryOnly(), Modifier.Type.Action, "exampleEnableDEVONLY", false, "False"));
-            modifiers.Add(new Modifier(ModifierCompatibility.LevelControlCompatible.WithStoryOnly(), Modifier.Type.Action, "exampleSayDEVONLY", false, "Something!"));
-
-            modifiers.Add(new Modifier(ModifierCompatibility.AllCompatible.WithStoryOnly(), Modifier.Type.Trigger, "storyLoadIntEqualsDEVONLY", false, "IntVariable", "0", "0"));
-            modifiers.Add(new Modifier(ModifierCompatibility.AllCompatible.WithStoryOnly(), Modifier.Type.Trigger, "storyLoadIntLesserEqualsDEVONLY", false, "IntVariable", "0", "0"));
-            modifiers.Add(new Modifier(ModifierCompatibility.AllCompatible.WithStoryOnly(), Modifier.Type.Trigger, "storyLoadIntGreaterEqualsDEVONLY", false, "IntVariable", "0", "0"));
-            modifiers.Add(new Modifier(ModifierCompatibility.AllCompatible.WithStoryOnly(), Modifier.Type.Trigger, "storyLoadIntLesserDEVONLY", false, "IntVariable", "0", "0"));
-            modifiers.Add(new Modifier(ModifierCompatibility.AllCompatible.WithStoryOnly(), Modifier.Type.Trigger, "storyLoadIntGreaterDEVONLY", false, "IntVariable", "0", "0"));
-            modifiers.Add(new Modifier(ModifierCompatibility.AllCompatible.WithStoryOnly(), Modifier.Type.Trigger, "storyLoadBoolDEVONLY", false, "BoolVariable", "False"));
-        }
-
-        public static void DeleteKey(string id, AudioSource audioSource)
-        {
-            Destroy(audioSource);
-            audioSources.Remove(id);
-        }
-
-        public static Dictionary<string, AudioSource> audioSources = new Dictionary<string, AudioSource>();
-
-        static Modifier RegisterModifier(Modifier.Type type, string name, bool constant, params string[] values) => new Modifier(type, name, constant, values);
-        
-        static Modifier RegisterModifierDEVONLY(Modifier.Type type, string name, bool constant, params string[] values) => new Modifier(ModifierCompatibility.LevelControlCompatible.WithStoryOnly(), type, name, constant, values);
 
         public List<Modifier> modifiers = new List<Modifier>();
 
@@ -208,5 +115,92 @@ namespace BetterLegacy.Core.Managers
             new Modifier(ModifierCompatibility.FullPlayerCompatible, Modifier.Type.Trigger, nameof(ModifierFunctions.isColliding), true, "0"),
             new Modifier(ModifierCompatibility.FullPlayerCompatible, Modifier.Type.Trigger, nameof(ModifierFunctions.isSolidColliding), true, "0"),
         };
+
+        public static Dictionary<string, AudioSource> audioSources = new Dictionary<string, AudioSource>();
+
+        #endregion
+
+        #region Functions
+
+        public override void OnInit()
+        {
+            modifiers.Clear();
+
+            LoadFile(modifiers, RTFile.GetAsset("builtin/default_modifiers.json"));
+
+            AddDevelopmentModifiers();
+
+            modifiers.AddRange(defaultPlayerModifiers);
+            modifiers.ForLoop(modifier =>
+            {
+                var name = modifier.Name;
+
+                if (modifier.type == Modifier.Type.Trigger && ModifiersHelper.triggers.TryFind(x => x.name == name, out ModifierTrigger trigger))
+                    modifier.Trigger = trigger.function;
+
+                if (modifier.type == Modifier.Type.Action && ModifiersHelper.actions.TryFind(x => x.name == name, out ModifierAction action))
+                    modifier.Action = action.function;
+
+                if (ModifiersHelper.inactives.TryFind(x => x.name == name, out ModifierInactive inactive))
+                    modifier.Inactive = inactive.function;
+            });
+        }
+
+        void LoadFile(List<Modifier> modifiers, string path)
+        {
+            if (!RTFile.FileExists(path))
+                return;
+
+            var jn = JSON.Parse(RTFile.ReadFromFile(path));
+
+            for (int i = 0; i < jn["modifiers"].Count; i++)
+                LoadModifiers(modifiers, jn["modifiers"][i]);
+        }
+
+        void LoadModifiers(List<Modifier> modifiers, JSONNode jn)
+        {
+            if (jn.IsArray)
+            {
+                for (int i = 0; i < jn.Count; i++)
+                    LoadModifiers(modifiers, jn[i]);
+                return;
+            }
+
+            var modifier = Modifier.Parse(jn);
+            modifier.compatibility = ModifierCompatibility.Parse(jn["compat"]);
+            modifiers.Add(modifier);
+        }
+
+        void AddDevelopmentModifiers()
+        {
+            modifiers.Add(new Modifier(ModifierCompatibility.LevelControlCompatible.WithStoryOnly(), Modifier.Type.Action, "loadSceneDEVONLY", false, "Interface", "False"));
+            modifiers.Add(new Modifier(ModifierCompatibility.LevelControlCompatible.WithStoryOnly(), Modifier.Type.Action, "loadStoryLevelDEVONLY", false, "False", "0", "0", "False", "0"));
+
+            modifiers.Add(new Modifier(ModifierCompatibility.LevelControlCompatible.WithStoryOnly(), Modifier.Type.Action, "storySaveBoolDEVONLY", false, "BoolVariable", "True"));
+            modifiers.Add(new Modifier(ModifierCompatibility.LevelControlCompatible.WithStoryOnly(), Modifier.Type.Action, "storySaveIntDEVONLY", false, "IntVariable", "0"));
+            modifiers.Add(new Modifier(ModifierCompatibility.LevelControlCompatible.WithStoryOnly(), Modifier.Type.Action, "storySaveFloatDEVONLY", false, "FloatVariable", "0"));
+            modifiers.Add(new Modifier(ModifierCompatibility.LevelControlCompatible.WithStoryOnly(), Modifier.Type.Action, "storySaveStringDEVONLY", false, "StringVariable", "Value"));
+            modifiers.Add(new Modifier(ModifierCompatibility.LevelControlCompatible.WithStoryOnly(), Modifier.Type.Action, "storySaveIntVariableDEVONLY", false, "IntVariable"));
+            modifiers.Add(new Modifier(ModifierCompatibility.AllCompatible.WithStoryOnly(), Modifier.Type.Action, "getStorySaveBoolDEVONLY", true, "STORY_BOOL_VAR", "BoolVariable", "False"));
+            modifiers.Add(new Modifier(ModifierCompatibility.AllCompatible.WithStoryOnly(), Modifier.Type.Action, "getStorySaveIntDEVONLY", true, "STORY_INT_VAR", "IntVariable", "0"));
+            modifiers.Add(new Modifier(ModifierCompatibility.AllCompatible.WithStoryOnly(), Modifier.Type.Action, "getStorySaveFloatDEVONLY", true, "STORY_FLOAT_VAR", "FloatVariable", "0"));
+            modifiers.Add(new Modifier(ModifierCompatibility.AllCompatible.WithStoryOnly(), Modifier.Type.Action, "getStorySaveStringDEVONLY", true, "STORY_STRING_VAR", "StringVariable", string.Empty));
+
+            modifiers.Add(new Modifier(ModifierCompatibility.LevelControlCompatible.WithStoryOnly(), Modifier.Type.Action, "exampleEnableDEVONLY", false, "False"));
+            modifiers.Add(new Modifier(ModifierCompatibility.LevelControlCompatible.WithStoryOnly(), Modifier.Type.Action, "exampleSayDEVONLY", false, "Something!"));
+
+            modifiers.Add(new Modifier(ModifierCompatibility.AllCompatible.WithStoryOnly(), Modifier.Type.Trigger, "storyLoadIntEqualsDEVONLY", false, "IntVariable", "0", "0"));
+            modifiers.Add(new Modifier(ModifierCompatibility.AllCompatible.WithStoryOnly(), Modifier.Type.Trigger, "storyLoadIntLesserEqualsDEVONLY", false, "IntVariable", "0", "0"));
+            modifiers.Add(new Modifier(ModifierCompatibility.AllCompatible.WithStoryOnly(), Modifier.Type.Trigger, "storyLoadIntGreaterEqualsDEVONLY", false, "IntVariable", "0", "0"));
+            modifiers.Add(new Modifier(ModifierCompatibility.AllCompatible.WithStoryOnly(), Modifier.Type.Trigger, "storyLoadIntLesserDEVONLY", false, "IntVariable", "0", "0"));
+            modifiers.Add(new Modifier(ModifierCompatibility.AllCompatible.WithStoryOnly(), Modifier.Type.Trigger, "storyLoadIntGreaterDEVONLY", false, "IntVariable", "0", "0"));
+            modifiers.Add(new Modifier(ModifierCompatibility.AllCompatible.WithStoryOnly(), Modifier.Type.Trigger, "storyLoadBoolDEVONLY", false, "BoolVariable", "False"));
+        }
+
+        static Modifier RegisterModifier(Modifier.Type type, string name, bool constant, params string[] values) => new Modifier(type, name, constant, values);
+
+        static Modifier RegisterModifierDEVONLY(Modifier.Type type, string name, bool constant, params string[] values) => new Modifier(ModifierCompatibility.LevelControlCompatible.WithStoryOnly(), type, name, constant, values);
+
+        #endregion
     }
 }

@@ -6,15 +6,16 @@ using SimpleJSON;
 
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers.Settings;
 
 namespace BetterLegacy.Core.Managers
 {
     /// <summary>
     /// This class handles everything to do with Custom Shapes.
     /// </summary>
-    public class ShapeManager : MonoBehaviour
+    public class ShapeManager : BaseManager<ShapeManager, ManagerSettings>
     {
-        public static ShapeManager inst;
+        #region Values
 
         public bool loadedShapes;
         public Transform shapeParent;
@@ -35,14 +36,21 @@ namespace BetterLegacy.Core.Managers
         };
 
         /// <summary>
-        /// Initializes ShapeManager.
+        /// List of 2D shapes.
         /// </summary>
-        public static void Init() => Creator.NewGameObject(nameof(ShapeManager), SystemManager.inst.transform).AddComponent<ShapeManager>();
+        public List<ShapeGroup> Shapes2D { get; set; } = new List<ShapeGroup>();
 
-        void Awake()
+        /// <summary>
+        /// List of 3D shapes.
+        /// </summary>
+        public List<ShapeGroup> Shapes3D { get; set; } = new List<ShapeGroup>();
+
+        #endregion
+
+        #region Functions
+
+        public override void OnInit()
         {
-            inst = this;
-
             if (!RTFile.FileExists(RTFile.GetAsset($"builtin/shapes{FileFormat.JSON.Dot()}")))
             {
                 System.Windows.Forms.MessageBox.Show("Shapes Setup file does not exist.\nYou may run into issues with playing the game from here on, so it is recommended to\ndownload the proper assets from Github and place them into the appropriate folders.", "Error!");
@@ -295,18 +303,10 @@ namespace BetterLegacy.Core.Managers
             loadedShapes = true;
         }
 
-        /// <summary>
-        /// List of 2D shapes.
-        /// </summary>
-        public List<ShapeGroup> Shapes2D { get; set; } = new List<ShapeGroup>();
-
-        /// <summary>
-        /// List of 3D shapes.
-        /// </summary>
-        public List<ShapeGroup> Shapes3D { get; set; } = new List<ShapeGroup>();
-
         public Shape GetShape(int shape, int shapeOption) => Shapes2D[Mathf.Clamp(shape, 0, Shapes2D.Count - 1)].GetShape(shapeOption);
 
         public Shape GetShape3D(int shape, int shapeOption) => Shapes3D[Mathf.Clamp(shape, 0, Shapes3D.Count - 1)].GetShape(shapeOption);
+
+        #endregion
     }
 }

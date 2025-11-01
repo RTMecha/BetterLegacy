@@ -16,7 +16,6 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
-using BetterLegacy.Core.Managers.Networking;
 using BetterLegacy.Menus;
 using BetterLegacy.Menus.UI.Elements;
 using BetterLegacy.Menus.UI.Interfaces;
@@ -228,9 +227,9 @@ namespace BetterLegacy.Arcade.Interfaces
 
             if (ArcadeConfig.Instance.LoadSteamLevels.Value)
             {
-                yield return CoroutineHelper.StartCoroutine(SteamWorkshopManager.inst.GetSubscribedItems((Level level, int i) =>
+                yield return CoroutineHelper.StartCoroutine(RTSteamManager.inst.GetSubscribedItems((Level level, int i) =>
                 {
-                    totalLevelCount = (int)SteamWorkshopManager.inst.LevelCount;
+                    totalLevelCount = (int)RTSteamManager.inst.LevelCount;
                     UpdateInfo(level.icon, $"Steam: Loading {Path.GetFileName(RTFile.RemoveEndSlash(level.path))}", i);
                 }));
 
@@ -245,7 +244,7 @@ namespace BetterLegacy.Arcade.Interfaces
 
             LevelManager.Sort(ArcadeConfig.Instance.LocalLevelOrderby.Value, ArcadeConfig.Instance.LocalLevelAscend.Value);
 
-            SteamWorkshopManager.inst.Levels = LevelManager.SortLevels(SteamWorkshopManager.inst.Levels, ArcadeConfig.Instance.SteamLevelOrderby.Value, ArcadeConfig.Instance.SteamLevelAscend.Value);
+            RTSteamManager.inst.Levels = LevelManager.SortLevels(RTSteamManager.inst.Levels, ArcadeConfig.Instance.SteamLevelOrderby.Value, ArcadeConfig.Instance.SteamLevelAscend.Value);
 
             int collectionIndex = 0;
             totalLevelCount = levelCollections.Count;
@@ -276,7 +275,7 @@ namespace BetterLegacy.Arcade.Interfaces
             }
 
             sw.Stop();
-            CoreHelper.Log($"Total levels: {LevelManager.Levels.Union(SteamWorkshopManager.inst.Levels).Count()}\nTime taken: {sw.Elapsed}");
+            CoreHelper.Log($"Total levels: {LevelManager.Levels.Union(RTSteamManager.inst.Levels).Count()}\nTime taken: {sw.Elapsed}");
             sw = null;
 
             currentlyLoading = false;

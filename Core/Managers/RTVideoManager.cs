@@ -8,43 +8,84 @@ using UnityEngine.Video;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers.Settings;
 
 namespace BetterLegacy.Core.Managers
 {
-    public class RTVideoManager : MonoBehaviour
+    /// <summary>
+    /// Manages the video that can play in a level.
+    /// <br></br>Wraps <see cref="VideoManager"/>.
+    /// </summary>
+    public class RTVideoManager : BaseManager<RTVideoManager, ManagerSettings>
     {
-        public static RTVideoManager inst;
+        #region Values
 
-        public static string className = "[<color=#e65100>RTVideoManager</color>] \n";
-
+        /// <summary>
+        /// Way to render the video.
+        /// </summary>
         public enum RenderType
         {
-            Camera, // Always renders at the camera's resolution and position.
-            Background // Renders at a set spot.
+            /// <summary>
+            /// Always renders at the camera's resolution and position.
+            /// </summary>
+            Camera,
+            /// <summary>
+            /// Renders onto an object.
+            /// </summary>
+            Background,
         }
 
+        /// <summary>
+        /// The way the video player renders.
+        /// </summary>
         public RenderType renderType = RenderType.Background;
 
+        /// <summary>
+        /// Video player component.
+        /// </summary>
         public VideoPlayer videoPlayer;
 
+        /// <summary>
+        /// Video texture.
+        /// </summary>
         public GameObject videoTexture;
 
+        /// <summary>
+        /// Event to run on audio update.
+        /// </summary>
         public event Action<bool, float, float> UpdatedAudioPos;
 
+        /// <summary>
+        /// List of video player components.
+        /// </summary>
         public List<RTVideoPlayer> videoPlayers = new List<RTVideoPlayer>();
 
-        public static void Init() => Creator.NewGameObject(nameof(VideoManager), SystemManager.inst.transform).AddComponent<RTVideoManager>();
+        /// <summary>
+        /// If the video is currently being seeked.
+        /// </summary>
+        public bool Seeking { get; private set; }
 
-        void Awake()
+        /// <summary>
+        /// The current URL / path of the video.
+        /// </summary>
+        public string currentURL;
+
+        /// <summary>
+        /// The current opacity of the video.
+        /// </summary>
+        public float currentAlpha;
+
+        /// <summary>
+        /// If the video didn't play.
+        /// </summary>
+        public bool didntPlay;
+
+        #endregion
+
+        #region Functions
+
+        public override void OnInit()
         {
-            if (inst)
-            {
-                Debug.LogWarning($"{className}Init was already called!");
-                return;
-            }    
-
-            inst = this;
-
             videoPlayer = gameObject.AddComponent<VideoPlayer>();
             videoPlayer.renderMode = renderType == RenderType.Camera ? VideoRenderMode.CameraFarPlane : VideoRenderMode.MaterialOverride;
             videoPlayer.source = VideoSource.VideoClip;
@@ -58,16 +99,16 @@ namespace BetterLegacy.Core.Managers
             UpdatedAudioPos += UpdateTime;
         }
 
-        bool seeking = false;
-
-        void SeekCompleted(VideoPlayer source) => seeking = false;
-
-        void Update()
+        public override void OnTick()
         {
             if (videoPlayer && videoPlayer.enabled && videoPlayer.isPlaying != AudioManager.inst.CurrentAudioSource.isPlaying)
                 UpdateVideo();
         }
 
+        /// <summary>
+        /// Sets the render type of the video player.
+        /// </summary>
+        /// <param name="renderType">Render type to set.</param>
         public void SetType(RenderType renderType)
         {
             this.renderType = renderType;
@@ -81,6 +122,9 @@ namespace BetterLegacy.Core.Managers
             Play(currentURL, currentAlpha);
         }
 
+        /// <summary>
+        /// Updates the video player.
+        /// </summary>
         public void UpdateVideo()
         {
             UpdatedAudioPos?.Invoke(AudioManager.inst.CurrentAudioSource.isPlaying, AudioManager.inst.CurrentAudioSource.time, AudioManager.inst.CurrentAudioSource.pitch);
@@ -88,55 +132,41 @@ namespace BetterLegacy.Core.Managers
                 videoPlayers[i].UpdateVideo();
         }
 
-        void UpdateTime(bool isPlaying, float time, float pitch)
+        /// <summary>
+        /// Sets up the video player with a set path.
+        /// </summary>
+        /// <param name="fullPath">Path to the folder that contains the video.</param>
+        public IEnumerator Setup(string folder)
         {
-            if (!videoPlayer || !videoPlayer.enabled)
-                return;
-
-            if (videoPlayer.isPlaying != isPlaying)
-                (isPlaying ? (Action)videoPlayer.Play : videoPlayer.Pause).Invoke();
-
-            if (videoPlayer.playbackSpeed != pitch)
-                videoPlayer.playbackSpeed = pitch;
-            if (RTMath.Distance(videoPlayer.time, time) > 0.1 && !seeking)
-            {
-                seeking = true;
-                videoPlayer.time = time;
-            }
-        }
-
-        public string currentURL;
-        public float currentAlpha;
-        public bool didntPlay = false;
-
-        public IEnumerator Setup(string fullPath)
-        {
-            if (!CoreConfig.Instance.EnableVideoBackground.Value || !RTFile.FileExists(RTFile.CombinePaths(fullPath, "bg.mp4")) && !RTFile.FileExists(RTFile.CombinePaths(fullPath, "bg.mov")))
+            if (!CoreConfig.Instance.EnableVideoBackground.Value || !RTFile.FileExists(RTFile.CombinePaths(folder, "bg.mp4")) && !RTFile.FileExists(RTFile.CombinePaths(folder, "bg.mov")))
             {
                 Stop();
                 yield break;
             }
 
-            if (RTFile.FileExists(RTFile.CombinePaths(fullPath, "bg.mp4")))
+            if (RTFile.FileExists(RTFile.CombinePaths(folder, "bg.mp4")))
             {
-                Play(RTFile.CombinePaths(fullPath, "bg.mp4"), 1f);
+                Play(RTFile.CombinePaths(folder, "bg.mp4"), 1f);
                 while (!videoPlayer.isPrepared)
                     yield return null;
             }
-            else if (RTFile.FileExists(RTFile.CombinePaths(fullPath, "bg.mov")))
+            else if (RTFile.FileExists(RTFile.CombinePaths(folder, "bg.mov")))
             {
-                Play(RTFile.CombinePaths(fullPath, "bg.mov"), 1f);
+                Play(RTFile.CombinePaths(folder, "bg.mov"), 1f);
                 while (!videoPlayer.isPrepared)
                     yield return null;
             }
-
         }
 
+        /// <summary>
+        /// Plays a stored video clip.
+        /// </summary>
+        /// <param name="videoClip">Video clip to play.</param>
         public void Play(VideoClip videoClip)
         {
-            if (videoPlayer == null)
+            if (!videoPlayer)
             {
-                Debug.LogError($"{className}VideoPlayer does not exist so the set video cannot play.");
+                LogError($"VideoPlayer does not exist so the set video cannot play.");
                 return;
             }
 
@@ -154,7 +184,7 @@ namespace BetterLegacy.Core.Managers
                 videoPlayer.targetMaterialRenderer = videoTexture.GetComponent<MeshRenderer>();
             }
 
-            Debug.Log($"{className}Playing Video from VideoClip");
+            Log($"Playing Video from VideoClip");
             videoTexture?.SetActive(renderType == RenderType.Background);
             videoPlayer.enabled = true;
             videoPlayer.targetCameraAlpha = 1f;
@@ -164,11 +194,16 @@ namespace BetterLegacy.Core.Managers
             didntPlay = false;
         }
 
+        /// <summary>
+        /// Plays a video at a set file path or URL.
+        /// </summary>
+        /// <param name="url">URL to play.</param>
+        /// <param name="alpha">Opacity of the video.</param>
         public void Play(string url, float alpha)
         {
-            if (videoPlayer == null)
+            if (!videoPlayer)
             {
-                Debug.LogError($"{className}VideoPlayer does not exist so the set video cannot play.");
+                LogError($"VideoPlayer does not exist so the set video cannot play.");
                 return;
             }
 
@@ -189,7 +224,7 @@ namespace BetterLegacy.Core.Managers
                 videoPlayer.targetMaterialRenderer = videoTexture.GetComponent<MeshRenderer>();
             }
 
-            Debug.Log($"{className}Playing Video from {url}");
+            Log($"Playing Video from {url}");
             videoTexture?.SetActive(renderType == RenderType.Background);
             videoPlayer.enabled = true;
             videoPlayer.targetCameraAlpha = alpha;
@@ -199,16 +234,43 @@ namespace BetterLegacy.Core.Managers
             didntPlay = false;
         }
 
+        /// <summary>
+        /// Stops the video from playing.
+        /// </summary>
         public void Stop()
         {
-            Debug.Log($"{className}Stopping Video.");
+            Log($"Stopping Video.");
             if (videoPlayer)
                 videoPlayer.enabled = false;
-
-            if (videoPlayer == null)
-                Debug.LogError($"{className}VideoPlayer does not exist so it wasn't disabled. Continuing...");
+            else
+                LogError($"VideoPlayer does not exist so it wasn't disabled. Continuing...");
 
             videoTexture?.SetActive(false);
         }
+
+        #region Internal
+
+        void UpdateTime(bool isPlaying, float time, float pitch)
+        {
+            if (!videoPlayer || !videoPlayer.enabled)
+                return;
+
+            if (videoPlayer.isPlaying != isPlaying)
+                (isPlaying ? (Action)videoPlayer.Play : videoPlayer.Pause).Invoke();
+
+            if (videoPlayer.playbackSpeed != pitch)
+                videoPlayer.playbackSpeed = pitch;
+            if (RTMath.Distance(videoPlayer.time, time) > 0.1 && !Seeking)
+            {
+                Seeking = true;
+                videoPlayer.time = time;
+            }
+        }
+
+        void SeekCompleted(VideoPlayer source) => Seeking = false;
+
+        #endregion
+
+        #endregion
     }
 }

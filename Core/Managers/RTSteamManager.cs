@@ -12,36 +12,21 @@ using SteamworksFacepunch.Ugc;
 
 using BetterLegacy.Arcade.Interfaces;
 using BetterLegacy.Configs;
-using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers.Settings;
 using BetterLegacy.Menus;
 using BetterLegacy.Menus.UI.Interfaces;
 
-namespace BetterLegacy.Core.Managers.Networking
+namespace BetterLegacy.Core.Managers
 {
     /// <summary>
-    /// <see cref="SteamManager"/>, <see cref="SteamWorkshop"/> and <see cref="SteamWrapper"/> wrapper.
+    /// Manages Steam integrations.
+    /// <br></br>Wraps <see cref="SteamManager"/>, <see cref="SteamWorkshop"/> and <see cref="SteamWrapper"/>.
     /// </summary>
-    public class SteamWorkshopManager : MonoBehaviour
+    public class RTSteamManager : BaseManager<RTSteamManager, RTSteamManagerSettings>
     {
-        #region Init
-
-        /// <summary>
-        /// The <see cref="SteamWorkshopManager"/> global instance reference.
-        /// </summary>
-        public static SteamWorkshopManager inst;
-
-        /// <summary>
-        /// Manager class name.
-        /// </summary>
-        public static string className = "[<color=#e81e62>Steam</color>] \n";
-
-        /// <summary>
-        /// Initializes <see cref="SteamWorkshopManager"/>.
-        /// </summary>
-        /// <param name="steamManager">Wrap.</param>
-        public static void Init(SteamManager steamManager) => steamManager.gameObject.AddComponent<SteamWorkshopManager>();
+        #region Values
 
         /// <summary>
         /// If Steam Client was initialized.
@@ -52,58 +37,6 @@ namespace BetterLegacy.Core.Managers.Networking
         /// Error message to show if Steam was not initialized.
         /// </summary>
         public const string NOT_INIT_MESSAGE = "Steam was not initialized. Open Steam if it isn't already, otherwise if it is then please replace the steam_api64.dll in Project Arrhythmia_Data/Plugins with the newer version provided.";
-
-        #region Internal
-
-        void Awake()
-        {
-            if (!inst)
-                inst = this;
-            else
-                Destroy(gameObject);
-        }
-
-        void Start()
-        {
-            try
-            {
-                SteamClient.Init(ProjectArrhythmia.STEAM_APP_ID);
-                steamUser = new SteamUser(SteamClient.SteamId, SteamClient.SteamId.Value, SteamClient.Name);
-                Debug.Log($"{className}Init Steam User: {SteamClient.Name}");
-                Initialized = true;
-                try
-                {
-                    var displayName = CoreConfig.Instance.DisplayName;
-                    if (displayName.Value == displayName.Default)
-                        displayName.Value = steamUser.name;
-                }
-                catch (Exception ex)
-                {
-                    Debug.LogError($"{className}Had an error setting the default config: {ex}");
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError($"{className}Steam Workshop Init failed.\nPlease replace the steam_api64.dll in Project Arrhythmia_Data/Plugins with the newer version!\n{ex}");
-                Initialized = false;
-            }
-        }
-
-        void Update()
-        {
-            if (Initialized)
-                SteamClient.RunCallbacks();
-        }
-
-        void OnApplicationQuit()
-        {
-            if (Initialized)
-                SteamClient.Shutdown();
-        }
-
-        #endregion
-
-        #endregion
 
         #region Levels
 
@@ -137,6 +70,139 @@ namespace BetterLegacy.Core.Managers.Networking
         /// </summary>
         public uint LevelCount { get; set; }
 
+        #endregion
+
+        #region User
+
+        /// <summary>
+        /// Local Steam User reference.
+        /// </summary>
+        public SteamUser steamUser;
+
+        /// <summary>
+        /// Steam User wrapper.
+        /// </summary>
+        public class SteamUser
+        {
+            public SteamUser() { }
+
+            public SteamUser(SteamId steamID, ulong id, string name)
+            {
+                this.steamID = steamID;
+                this.id = id;
+                this.name = name;
+            }
+
+            /// <summary>
+            /// Steam ID of the user.
+            /// </summary>
+            public SteamId steamID;
+            /// <summary>
+            /// ID of the user.
+            /// </summary>
+            public ulong id;
+            /// <summary>
+            /// Name of the user.
+            /// </summary>
+            public string name = "No Steam User";
+
+            /// <summary>
+            /// Unlocks an achievement.
+            /// </summary>
+            /// <param name="achievement">Achievement to unlock.</param>
+            public void SetAchievement(string achievement)
+            {
+                if (!inst.Initialized)
+                    return;
+
+                SteamUserStats.Internal.SetAchievement(achievement);
+                bool flag = false;
+                SteamUserStats.Internal.GetAchievement(achievement, ref flag);
+                Log($" Set Achievement : [{achievement}] -> [{flag}]");
+                SteamUserStats.StoreStats();
+            }
+
+            /// <summary>
+            /// Gets an achievements' status.
+            /// </summary>
+            /// <param name="achievement">Achievement to get.</param>
+            /// <returns>Returns true if the achievement is unlocked, otherwise returns false.</returns>
+            public bool GetAchievement(string achievement)
+            {
+                if (!inst.Initialized)
+                    return false;
+
+                bool flag = false;
+                SteamUserStats.Internal.GetAchievement(achievement, ref flag);
+                return flag;
+            }
+
+            /// <summary>
+            /// Clears an achievement.
+            /// </summary>
+            /// <param name="achievement">Achievement to clear.</param>
+            public void ClearAchievement(string achievement)
+            {
+                if (!inst.Initialized)
+                    return;
+
+                SteamUserStats.Internal.ClearAchievement(achievement);
+                Log($" Cleared Achievement : [{achievement}]");
+            }
+        }
+
+        #endregion
+
+        #endregion
+
+        #region Functions
+
+        public override void OnManagerStart()
+        {
+            try
+            {
+                SteamClient.Init(ProjectArrhythmia.STEAM_APP_ID);
+                steamUser = new SteamUser(SteamClient.SteamId, SteamClient.SteamId.Value, SteamClient.Name);
+                Log($"Init Steam User: {SteamClient.Name}");
+                Initialized = true;
+                try
+                {
+                    var displayName = CoreConfig.Instance.DisplayName;
+                    if (displayName.Value == displayName.Default)
+                        displayName.Value = steamUser.name;
+                }
+                catch (Exception ex)
+                {
+                    LogError($"Had an error setting the default config: {ex}");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogError($"Steam Workshop Init failed.\nPlease replace the steam_api64.dll in Project Arrhythmia_Data/Plugins with the newer version!\n{ex}");
+                Initialized = false;
+            }
+        }
+
+        public override void OnTick()
+        {
+            if (Initialized)
+                SteamClient.RunCallbacks();
+        }
+
+        public override void OnAppExit()
+        {
+            if (Initialized)
+                SteamClient.Shutdown();
+        }
+
+        /// <summary>
+        /// Opens an item's Steam Workshop page.
+        /// </summary>
+        /// <param name="id">ID to open.</param>
+        public void OpenWorkshop(PublishedFileId publishedFileID) => Application.OpenURL($"steam://url/CommunityFilePage/{publishedFileID}");
+
+        #region Levels
+
         /// <summary>
         /// Loads all subscribed Steam levels.
         /// </summary>
@@ -149,7 +215,7 @@ namespace BetterLegacy.Core.Managers.Networking
 
             if (!Initialized)
             {
-                Debug.LogError($"{className}{NOT_INIT_MESSAGE}");
+                LogError(NOT_INIT_MESSAGE);
                 yield break;
             }
 
@@ -252,7 +318,7 @@ namespace BetterLegacy.Core.Managers.Networking
         {
             if (!Initialized)
             {
-                Debug.LogError($"{className}{NOT_INIT_MESSAGE}");
+                LogError(NOT_INIT_MESSAGE);
                 yield break;
             }
 
@@ -354,7 +420,7 @@ namespace BetterLegacy.Core.Managers.Networking
         {
             if (!Initialized)
             {
-                Debug.LogError($"{className}{NOT_INIT_MESSAGE}");
+                LogError(NOT_INIT_MESSAGE);
                 yield break;
             }
 
@@ -464,12 +530,12 @@ namespace BetterLegacy.Core.Managers.Networking
         {
             if (!Initialized)
             {
-                Debug.LogError($"{className}{NOT_INIT_MESSAGE}");
+                LogError(NOT_INIT_MESSAGE);
                 return;
             }
 
             if (search == null)
-                search = "";
+                search = string.Empty;
 
             page = Mathf.Clamp(page, 1, int.MaxValue);
 
@@ -490,7 +556,7 @@ namespace BetterLegacy.Core.Managers.Networking
 
             if (resultPage == null || !resultPage.HasValue || resultPage.Value.ResultCount <= 0)
             {
-                Debug.LogError($"{className}Page has no content.");
+                LogError($"Page has no content.");
                 return;
             }
 
@@ -523,83 +589,7 @@ namespace BetterLegacy.Core.Managers.Networking
                 onFail?.Invoke();
         }
 
-        /// <summary>
-        /// Opens an item's Steam Workshop page.
-        /// </summary>
-        /// <param name="id">ID to open.</param>
-        public void OpenWorkshop(PublishedFileId publishedFileID) => Application.OpenURL($"steam://url/CommunityFilePage/{publishedFileID}");
-
         #endregion
-
-        #region User
-
-        /// <summary>
-        /// Local Steam User reference.
-        /// </summary>
-        public SteamUser steamUser;
-
-        /// <summary>
-        /// Steam User wrapper.
-        /// </summary>
-        public class SteamUser
-        {
-            public SteamUser() { }
-
-            public SteamUser(SteamId steamID, ulong id, string name)
-            {
-                this.steamID = steamID;
-                this.id = id;
-                this.name = name;
-            }
-
-            public SteamId steamID;
-            public ulong id;
-            public string name = "No Steam User";
-
-            /// <summary>
-            /// Unlocks an achievement.
-            /// </summary>
-            /// <param name="achievement">Achievement to unlock.</param>
-            public void SetAchievement(string achievement)
-            {
-                if (!inst.Initialized)
-                    return;
-
-                SteamUserStats.Internal.SetAchievement(achievement);
-                bool flag = false;
-                SteamUserStats.Internal.GetAchievement(achievement, ref flag);
-                Debug.Log($"{className} Set Achievement : [{achievement}] -> [{flag}]");
-                SteamUserStats.StoreStats();
-            }
-
-            /// <summary>
-            /// Gets an achievements' status.
-            /// </summary>
-            /// <param name="achievement">Achievement to get.</param>
-            /// <returns>Returns true if the achievement is unlocked, otherwise returns false.</returns>
-            public bool GetAchievement(string achievement)
-            {
-                if (!inst.Initialized)
-                    return false;
-
-                bool flag = false;
-                SteamUserStats.Internal.GetAchievement(achievement, ref flag);
-                return flag;
-            }
-
-            /// <summary>
-            /// Clears an achievement.
-            /// </summary>
-            /// <param name="achievement">Achievement to clear.</param>
-            public void ClearAchievement(string achievement)
-            {
-                if (!inst.Initialized)
-                    return;
-
-                SteamUserStats.Internal.ClearAchievement(achievement);
-                Debug.Log($"{className} Cleared Achievement : [{achievement}]");
-            }
-        }
 
         #endregion
     }

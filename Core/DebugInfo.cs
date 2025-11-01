@@ -6,6 +6,7 @@ using TMPro;
 
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Components;
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 
@@ -25,7 +26,7 @@ namespace BetterLegacy.Core.Managers
             // Mod Class Names
             var str = $"\n{LegacyPlugin.className}";
 
-            str += RTVideoManager.className;
+            str += RTVideoManager.managerSettings.ClassName;
 
             // Base Class Names
             str += DataManager.inst.className;

@@ -12,7 +12,7 @@ using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Managers.Networking;
+using BetterLegacy.Core.Managers;
 using BetterLegacy.Menus;
 using BetterLegacy.Menus.UI.Elements;
 using BetterLegacy.Menus.UI.Interfaces;
@@ -192,7 +192,7 @@ namespace BetterLegacy.Arcade.Interfaces
             });
 
             bool foundLevel = false;
-            if (SteamWorkshopManager.inst.Levels.TryFind(x => x.metadata != null && x.id == CurrentSteamItem.Id.ToString(), out Level level))
+            if (RTSteamManager.inst.Levels.TryFind(x => x.metadata != null && x.id == CurrentSteamItem.Id.ToString(), out Level level))
             {
                 foundLevel = true;
                 elements.Add(new MenuButton
@@ -228,7 +228,7 @@ namespace BetterLegacy.Arcade.Interfaces
                 selectedTextColor = 7,
                 length = 0.5f,
                 playBlipSound = true,
-                func = () => SteamWorkshopManager.inst.OpenWorkshop(CurrentSteamItem.Id),
+                func = () => RTSteamManager.inst.OpenWorkshop(CurrentSteamItem.Id),
             });
 
             exitFunc = Close;
@@ -244,7 +244,7 @@ namespace BetterLegacy.Arcade.Interfaces
         public IEnumerator DownloadLevel()
         {
             downloading = true;
-            yield return CoroutineHelper.StartCoroutine(SteamWorkshopManager.inst.ToggleSubscribedState(CurrentSteamItem, onSubscribedLevel));
+            yield return CoroutineHelper.StartCoroutine(RTSteamManager.inst.ToggleSubscribedState(CurrentSteamItem, onSubscribedLevel));
             downloading = false;
             CurrentSteamItem = default;
         }

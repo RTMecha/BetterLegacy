@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 using HarmonyLib;
@@ -10,11 +9,8 @@ using LSFunctions;
 using SimpleJSON;
 
 using BetterLegacy.Companion;
-using BetterLegacy.Companion.Entity;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Animation;
-using BetterLegacy.Core.Data;
-using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
@@ -46,7 +42,7 @@ namespace BetterLegacy.Patchers
             StoryManager.Init();
             CompanionManager.Init();
 
-            AudioManager.inst.gameObject.AddComponent<SoundManager>();
+            SoundManager.Init();
 
             try
             {
@@ -274,7 +270,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool HasKeyPrefix(ref bool __result, string __0)
         {
-            __result = ModCompatibility.sharedFunctions.ContainsKey(Instance.settingPrefix + __0);
+            __result = ModCompatibility.sharedValues.ContainsKey(Instance.settingPrefix + __0);
             return false;
         }
 
@@ -282,7 +278,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool SettingHasKeyPrefix(ref bool __result, string __0)
         {
-            __result = ModCompatibility.sharedFunctions.ContainsKey(Instance.settingPrefix + __0);
+            __result = ModCompatibility.sharedValues.ContainsKey(Instance.settingPrefix + __0);
             return false;
         }
 
@@ -290,7 +286,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool UpdateSettingEnumPrefix(string __0, int __1)
         {
-            ModCompatibility.sharedFunctions[Instance.settingPrefix + __0] = __1;
+            ModCompatibility.sharedValues[Instance.settingPrefix + __0] = __1;
             return false;
         }
 
@@ -298,7 +294,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool GetSettingEnumPrefix(ref int __result, string __0, int __1)
         {
-            if (ModCompatibility.sharedFunctions.TryGetValue(Instance.settingPrefix + __0, out object settingEnum) && settingEnum is int num)
+            if (ModCompatibility.sharedValues.TryGetValue(Instance.settingPrefix + __0, out object settingEnum) && settingEnum is int num)
             {
                 __result = num;
                 return false;
@@ -312,7 +308,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool UpdateSettingStringPrefix(string __0, string __1)
         {
-            ModCompatibility.sharedFunctions[Instance.settingPrefix + __0] = __1;
+            ModCompatibility.sharedValues[Instance.settingPrefix + __0] = __1;
             return false;
         }
 
@@ -320,7 +316,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool GetSettingStringPrefix1(ref string __result, string __0)
         {
-            if (ModCompatibility.sharedFunctions.TryGetValue(Instance.settingPrefix + __0, out object settingString) && settingString is string num)
+            if (ModCompatibility.sharedValues.TryGetValue(Instance.settingPrefix + __0, out object settingString) && settingString is string num)
             {
                 __result = num;
                 return false;
@@ -334,7 +330,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool GetSettingStringPrefix2(ref string __result, string __0, string __1)
         {
-            if (ModCompatibility.sharedFunctions.TryGetValue(Instance.settingPrefix + __0, out object settingString) && settingString is string num)
+            if (ModCompatibility.sharedValues.TryGetValue(Instance.settingPrefix + __0, out object settingString) && settingString is string num)
             {
                 __result = num;
                 return false;
@@ -348,7 +344,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool UpdateSettingIntPrefix(string __0, int __1)
         {
-            ModCompatibility.sharedFunctions[Instance.settingPrefix + __0] = __1;
+            ModCompatibility.sharedValues[Instance.settingPrefix + __0] = __1;
 
             return false;
         }
@@ -357,7 +353,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool GetSettingIntPrefix1(ref int __result, string __0)
         {
-            if (ModCompatibility.sharedFunctions.TryGetValue(Instance.settingPrefix + __0, out object settingInt) && settingInt is int num)
+            if (ModCompatibility.sharedValues.TryGetValue(Instance.settingPrefix + __0, out object settingInt) && settingInt is int num)
             {
                 __result = num;
                 return false;
@@ -371,7 +367,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool GetSettingIntPrefix2(ref int __result, string __0, int __1)
         {
-            if (ModCompatibility.sharedFunctions.TryGetValue(Instance.settingPrefix + __0, out object settingInt) && settingInt is int num)
+            if (ModCompatibility.sharedValues.TryGetValue(Instance.settingPrefix + __0, out object settingInt) && settingInt is int num)
             {
                 __result = num;
                 return false;
@@ -385,7 +381,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool UpdateSettingFloatPrefix(string __0, float __1)
         {
-            ModCompatibility.sharedFunctions[Instance.settingPrefix + __0] = __1;
+            ModCompatibility.sharedValues[Instance.settingPrefix + __0] = __1;
             return false;
         }
 
@@ -393,7 +389,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool GetSettingFloatPrefix1(ref float __result, string __0)
         {
-            if (ModCompatibility.sharedFunctions.TryGetValue(Instance.settingPrefix + __0, out object settingFloat) && settingFloat is float num)
+            if (ModCompatibility.sharedValues.TryGetValue(Instance.settingPrefix + __0, out object settingFloat) && settingFloat is float num)
             {
                 __result = num;
                 return false;
@@ -407,7 +403,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool GetSettingFloatPrefix2(ref float __result, string __0, float __1)
         {
-            if (ModCompatibility.sharedFunctions.TryGetValue(Instance.settingPrefix + __0, out object settingFloat) && settingFloat is float num)
+            if (ModCompatibility.sharedValues.TryGetValue(Instance.settingPrefix + __0, out object settingFloat) && settingFloat is float num)
             {
                 __result = num;
                 return false;
@@ -421,7 +417,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool UpdateSettingBoolPrefix(string __0, bool __1)
         {
-            ModCompatibility.sharedFunctions[Instance.settingPrefix + __0] = __1;
+            ModCompatibility.sharedValues[Instance.settingPrefix + __0] = __1;
 
             return false;
         }
@@ -430,7 +426,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool GetSettingBoolPrefix1(ref bool __result, string __0)
         {
-            if (ModCompatibility.sharedFunctions.TryGetValue(Instance.settingPrefix + __0, out object settingBool) && settingBool is bool num)
+            if (ModCompatibility.sharedValues.TryGetValue(Instance.settingPrefix + __0, out object settingBool) && settingBool is bool num)
             {
                 __result = num;
                 return false;
@@ -444,7 +440,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool GetSettingBoolPrefix2(ref bool __result, string __0, bool __1)
         {
-            if (ModCompatibility.sharedFunctions.TryGetValue(Instance.settingPrefix + __0, out object settingBool) && settingBool is bool num)
+            if (ModCompatibility.sharedValues.TryGetValue(Instance.settingPrefix + __0, out object settingBool) && settingBool is bool num)
             {
                 __result = num;
                 return false;
@@ -458,9 +454,9 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool UpdateSettingVector2DPrefix(string __0, int __1, Vector2[] __2)
         {
-            ModCompatibility.sharedFunctions[Instance.settingPrefix + __0 + "_i"] = __1;
-            ModCompatibility.sharedFunctions[Instance.settingPrefix + __0 + "_x"] = __2[__1].x;
-            ModCompatibility.sharedFunctions[Instance.settingPrefix + __0 + "_y"] = __2[__1].y;
+            ModCompatibility.sharedValues[Instance.settingPrefix + __0 + "_i"] = __1;
+            ModCompatibility.sharedValues[Instance.settingPrefix + __0 + "_x"] = __2[__1].x;
+            ModCompatibility.sharedValues[Instance.settingPrefix + __0 + "_y"] = __2[__1].y;
             return false;
         }
 
@@ -468,8 +464,8 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool GetSettingVector2DPrefix(ref Vector2 __result, string __0)
         {
-            if (ModCompatibility.sharedFunctions.TryGetValue(Instance.settingPrefix + __0 + "_x", out object xSetting) && xSetting is float x &&
-                ModCompatibility.sharedFunctions.TryGetValue(Instance.settingPrefix + __0 + "_y", out object ySetting) && ySetting is float y)
+            if (ModCompatibility.sharedValues.TryGetValue(Instance.settingPrefix + __0 + "_x", out object xSetting) && xSetting is float x &&
+                ModCompatibility.sharedValues.TryGetValue(Instance.settingPrefix + __0 + "_y", out object ySetting) && ySetting is float y)
             {
                 __result = new Vector2(x, y);
                 return false;
@@ -483,7 +479,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool GetSettingVector2DIndexPrefix(ref int __result, string __0)
         {
-            if (ModCompatibility.sharedFunctions.TryGetValue(Instance.settingPrefix + __0 + "_i", out object vector2IndexSetting) && vector2IndexSetting is int num)
+            if (ModCompatibility.sharedValues.TryGetValue(Instance.settingPrefix + __0 + "_i", out object vector2IndexSetting) && vector2IndexSetting is int num)
             {
                 __result = num;
                 return false;

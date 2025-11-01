@@ -20,7 +20,7 @@ using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
-using BetterLegacy.Core.Managers.Networking;
+using BetterLegacy.Core.Managers.Settings;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Menus.UI.Interfaces;
 using BetterLegacy.Menus.UI.Elements;
@@ -32,36 +32,24 @@ namespace BetterLegacy.Menus
     /// <summary>
     /// Manages all things related to PA's interfaces.
     /// </summary>
-    public class InterfaceManager : MonoBehaviour
+    public class InterfaceManager : BaseManager<InterfaceManager, ManagerSettings>
     {
         #region Init
-
-        /// <summary>
-        /// The global instance reference.
-        /// </summary>
-        public static InterfaceManager inst;
-
-        /// <summary>
-        /// Initializes <see cref="InterfaceManager"/>.
-        /// </summary>
-        public static void Init() => Creator.NewGameObject(nameof(InterfaceManager), SystemManager.inst.transform).AddComponent<InterfaceManager>();
 
         /// <summary>
         /// The main directory to load interfaces from. Must end with a slash.
         /// </summary>
         public string MainDirectory { get; set; }
 
-        void Awake()
+        public override void OnInit()
         {
-            inst = this;
-
             CurrentAudioSource = gameObject.AddComponent<AudioSource>();
             CurrentAudioSource.loop = true;
             MainDirectory = RTFile.ApplicationDirectory + "beatmaps/interfaces/";
             RTFile.CreateDirectory(MainDirectory);
         }
 
-        void Update()
+        public override void OnTick()
         {
             if (CurrentAudioSource.isPlaying)
                 CurrentAudioSource.GetSpectrumData(samples, 0, FFTWindow.Rectangular);

@@ -11,49 +11,17 @@ using BetterLegacy.Core.Components.Player;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers.Settings;
 using BetterLegacy.Core.Runtime;
 
 namespace BetterLegacy.Core.Managers
 {
     /// <summary>
-    /// Manager class that wraps <see cref="InputDataManager"/> and manages all player related things.
+    /// Manages player runtime, player models, etc.
+    /// <br></br>Wraps <see cref="InputDataManager"/>.
     /// </summary>
-    public class PlayerManager : MonoBehaviour
+    public class PlayerManager : BaseManager<PlayerManager, PlayerManagerSettings>
     {
-        #region Init
-
-        /// <summary>
-        /// The <see cref="PlayerManager"/> global instance reference.
-        /// </summary>
-        public static PlayerManager inst;
-
-        /// <summary>
-        /// Initializes <see cref="PlayerManager"/>.
-        /// </summary>
-        public static void Init() => Creator.NewGameObject(nameof(PlayerManager), SystemManager.inst.transform).AddComponent<PlayerManager>();
-
-        void Awake()
-        {
-            inst = this;
-
-            // destroy players on pre load scene
-            SceneHelper.OnPreLoadScene += scene =>
-            {
-                DestroyPlayers();
-            };
-        }
-
-        void Update()
-        {
-            foreach (var player in Players)
-            {
-                var shake = !CoreConfig.Instance.ControllerRumble.Value ? Vector2.zero : ControllerRumble + player.rumble;
-                player.device?.Vibrate(Mathf.Clamp(shake.x, 0f, 0.5f), Mathf.Clamp(shake.y, 0f, 0.5f));
-            }
-        }
-
-        #endregion
-
         #region Values
 
         /// <summary>
@@ -101,7 +69,22 @@ namespace BetterLegacy.Core.Managers
 
         #endregion
 
-        #region Methods
+        #region Functions
+
+        public override void OnInit()
+        {
+            // destroy players on pre load scene
+            SceneHelper.OnPreLoadScene += scene => DestroyPlayers();
+        }
+
+        public override void OnTick()
+        {
+            foreach (var player in Players)
+            {
+                var shake = !CoreConfig.Instance.ControllerRumble.Value ? Vector2.zero : ControllerRumble + player.rumble;
+                player.device?.Vibrate(Mathf.Clamp(shake.x, 0f, 0.5f), Mathf.Clamp(shake.y, 0f, 0.5f));
+            }
+        }
 
         public static void SetupImages(GameManager __instance)
         {

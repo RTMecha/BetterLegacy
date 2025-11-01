@@ -10,59 +10,53 @@ using LSFunctions;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;
+using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers.Settings;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Core.Managers
 {
     /// <summary>
-    /// Achievement prefab storage.
-    /// </summary>
-    public class AchievementStorage : MonoBehaviour
-    {
-        [SerializeField]
-        public Image back;
-
-        [SerializeField]
-        public Image iconBase;
-
-        [SerializeField]
-        public Image icon;
-
-        [SerializeField]
-        public Text title;
-
-        [SerializeField]
-        public Text description;
-
-        [SerializeField]
-        public Image difficulty;
-    }
-
-    /// <summary>
     /// Manager class for handling BetterLegacy achievements.
     /// </summary>
-    public class AchievementManager : MonoBehaviour
+    public class AchievementManager : BaseManager<AchievementManager, ManagerSettings>
     {
-        #region Init
+        #region Values
 
         /// <summary>
-        /// The <see cref="AchievementManager"/> global instance reference.
+        /// Shared custom achievement unlocked states.
         /// </summary>
-        public static AchievementManager inst;
+        public static Dictionary<string, bool> unlockedCustomAchievements = new Dictionary<string, bool>();
 
         /// <summary>
-        /// Initializes <see cref="AchievementManager"/>.
+        /// What <see cref="globalAchievements"/> are unlocked.
         /// </summary>
-        public static void Init() => Creator.NewGameObject(nameof(AchievementManager), SystemManager.inst.transform).AddComponent<AchievementManager>();
+        public static Dictionary<string, bool> unlockedGlobalAchievements = new Dictionary<string, bool>();
 
-        #region Internal
+        /// <summary>
+        /// List of built-in BetterLegacy achievements.
+        /// </summary>
+        public static List<Achievement> globalAchievements = new List<Achievement>();
 
-        void Awake()
+        /// <summary>
+        /// Achievement UI canvas parent.
+        /// </summary>
+        public UICanvas canvas;
+
+        /// <summary>
+        /// Achievement notification prefab.
+        /// </summary>
+        public GameObject achievementPrefab;
+
+        #endregion
+
+        #region Functions
+
+        public override void OnInit()
         {
-            inst = this;
             LoadAchievements();
             StartCoroutine(GenerateUI());
         }
@@ -184,10 +178,6 @@ namespace BetterLegacy.Core.Managers
 
             yield break;
         }
-
-        #endregion
-
-        #endregion
 
         #region Unlock / Lock
 
@@ -343,34 +333,9 @@ namespace BetterLegacy.Core.Managers
             LevelManager.SaveProgress();
         }
 
-        /// <summary>
-        /// Shared custom achievement unlocked states.
-        /// </summary>
-        public static Dictionary<string, bool> unlockedCustomAchievements = new Dictionary<string, bool>();
-
-        /// <summary>
-        /// What <see cref="globalAchievements"/> are unlocked.
-        /// </summary>
-        public static Dictionary<string, bool> unlockedGlobalAchievements = new Dictionary<string, bool>();
-
-        /// <summary>
-        /// List of built-in BetterLegacy achievements.
-        /// </summary>
-        public static List<Achievement> globalAchievements = new List<Achievement>();
-
         #endregion
-
+        
         #region UI
-
-        /// <summary>
-        /// Achievement UI canvas parent.
-        /// </summary>
-        public UICanvas canvas;
-
-        /// <summary>
-        /// Achievement notification prefab.
-        /// </summary>
-        public GameObject achievementPrefab;
 
         /// <summary>
         /// Displays the achievement popup.
@@ -452,6 +417,8 @@ namespace BetterLegacy.Core.Managers
                 CoreHelper.LogException(ex);
             }
         }
+
+        #endregion
 
         #endregion
     }

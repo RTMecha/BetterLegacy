@@ -1,6 +1,6 @@
 ﻿using HarmonyLib;
 
-using BetterLegacy.Core.Managers.Networking;
+using BetterLegacy.Core.Managers;
 
 namespace BetterLegacy.Patchers
 {
@@ -11,10 +11,10 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool SetAchievementPrefix(string __0)
         {
-            if (!SteamWorkshopManager.inst || !SteamWorkshopManager.inst.Initialized)
+            if (!RTSteamManager.inst || !RTSteamManager.inst.Initialized)
                 return false;
 
-            SteamWorkshopManager.inst.steamUser.SetAchievement(__0);
+            RTSteamManager.inst.steamUser.SetAchievement(__0);
             return false;
         }
 
@@ -22,7 +22,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool GetAchievementPrefix(ref bool __result, string __0)
         {
-            __result = SteamWorkshopManager.inst.steamUser.GetAchievement(__0);
+            __result = RTSteamManager.inst.steamUser.GetAchievement(__0);
             return false;
         }
 
@@ -30,10 +30,10 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool ClearAchievementPrefix(string __0)
         {
-            if (!SteamWorkshopManager.inst || !SteamWorkshopManager.inst.Initialized)
+            if (!RTSteamManager.inst || !RTSteamManager.inst.Initialized)
                 return false;
 
-            SteamWorkshopManager.inst.steamUser.ClearAchievement(__0);
+            RTSteamManager.inst.steamUser.ClearAchievement(__0);
             return false;
         }
     }

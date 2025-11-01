@@ -14,7 +14,6 @@ using BetterLegacy.Arcade.Interfaces;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Managers;
-using BetterLegacy.Core.Managers.Networking;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Menus;
 
@@ -334,11 +333,11 @@ namespace BetterLegacy.Core.Helpers
                     var jnQueue = jn["queue"][i];
 
                     var hasLocal = LevelManager.Levels.TryFindIndex(x => x.id == jnQueue["id"], out int localIndex);
-                    var hasSteam = SteamWorkshopManager.inst.Levels.TryFindIndex(x => x.id == jnQueue["id"], out int steamIndex);
+                    var hasSteam = RTSteamManager.inst.Levels.TryFindIndex(x => x.id == jnQueue["id"], out int steamIndex);
 
                     if ((hasLocal || hasSteam) && !LevelManager.ArcadeQueue.Has(x => x.id == jnQueue["id"]))
                     {
-                        var currentLevel = hasSteam ? SteamWorkshopManager.inst.Levels[steamIndex] : LevelManager.Levels[localIndex];
+                        var currentLevel = hasSteam ? RTSteamManager.inst.Levels[steamIndex] : LevelManager.Levels[localIndex];
 
                         LevelManager.ArcadeQueue.Add(currentLevel);
                     }

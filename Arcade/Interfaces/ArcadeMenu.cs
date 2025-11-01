@@ -21,7 +21,6 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
-using BetterLegacy.Core.Managers.Networking;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Menus;
 using BetterLegacy.Menus.UI.Elements;
@@ -2541,7 +2540,7 @@ namespace BetterLegacy.Arcade.Interfaces
             var queueRandom = new List<int>();
             var queue = new List<Level>();
 
-            var levels = LevelManager.Levels.Union(SteamWorkshopManager.inst.Levels).ToList();
+            var levels = LevelManager.Levels.Union(RTSteamManager.inst.Levels).ToList();
 
             for (int i = 0; i < levels.Count; i++)
             {
@@ -2583,7 +2582,7 @@ namespace BetterLegacy.Arcade.Interfaces
 
         public static int SubscribedSteamLevelPageCount => SubscribedSteamLevels.Count / MAX_LEVELS_PER_PAGE;
         public static string SteamSearch => Searches[4];
-        public static List<Level> SubscribedSteamLevels => SteamWorkshopManager.inst.Levels.FindAll(level => !level.fromCollection &&
+        public static List<Level> SubscribedSteamLevels => RTSteamManager.inst.Levels.FindAll(level => !level.fromCollection &&
             RTString.SearchString(SteamSearch,
                 new SearchMatcher(level.id, SearchMatchType.Exact),
                 new SearchListMatcher(level.metadata.tags),
@@ -2796,7 +2795,7 @@ namespace BetterLegacy.Arcade.Interfaces
         {
             ClearOnlineSteamLevelButtons();
 
-            yield return CoroutineHelper.Until(() => SteamWorkshopManager.inst.SearchAsync(SteamSearch, Pages[(int)CurrentTab] + 1, (Item item, int index) =>
+            yield return CoroutineHelper.Until(() => RTSteamManager.inst.SearchAsync(SteamSearch, Pages[(int)CurrentTab] + 1, (Item item, int index) =>
             {
                 int column = (index % MAX_STEAM_ONLINE_LEVELS_PER_PAGE) % 5;
                 int row = (int)((index % MAX_STEAM_ONLINE_LEVELS_PER_PAGE) / 5) + 2;

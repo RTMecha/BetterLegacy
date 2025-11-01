@@ -10,33 +10,46 @@ using SimpleJSON;
 
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers.Settings;
 
 namespace BetterLegacy.Core.Managers
 {
     /// <summary>
     /// This class manages the QuickElements you see in the PA menus. It can create, save and load new QuickElements.
     /// </summary>
-    public class QuickElementManager : MonoBehaviour
+    public class QuickElementManager : BaseManager<QuickElementManager, ManagerSettings>
     {
-        public static QuickElementManager inst;
+        #region Values
 
-        /// <summary>
-        /// Inits QuickElementManager.
-        /// </summary>
-        public static void Init() => Creator.NewGameObject(nameof(QuickElementManager), SystemManager.inst.transform).AddComponent<QuickElementManager>();
-
-        void Awake()
+        public static Dictionary<string, QuickElement> AllQuickElements
         {
-            inst = this;
+            get
+            {
+                allQuickElements = quickElements.Union(customQuickElements).ToDictionary(x => x.Key, x => x.Value);
 
+                return allQuickElements;
+            }
+            set
+            {
+                allQuickElements = value;
+            }
+        }
+
+        static Dictionary<string, QuickElement> allQuickElements = new Dictionary<string, QuickElement>();
+        public static Dictionary<string, QuickElement> customQuickElements = new Dictionary<string, QuickElement>();
+        public static Dictionary<string, QuickElement> quickElements = new Dictionary<string, QuickElement>();
+
+        #endregion
+
+        #region Functions
+
+        public override void OnInit()
+        {
             var resources = Resources.LoadAll<QuickElement>("terminal/quick-elements");
             if (resources != null)
             {
                 foreach (var quickElement in resources)
-                {
-                    if (!quickElements.ContainsKey(quickElement.name))
-                        quickElements.Add(quickElement.name, quickElement);
-                }
+                    quickElements.TryAdd(quickElement.name, quickElement);
 
                 if (quickElements.TryGetValue("loading_bar_1", out QuickElement loadingBar1))
                     loadingBar1.effects.Add(new QuickElement.Effect { data = new List<string> { "loop" }, name = "loop", });
@@ -96,26 +109,8 @@ namespace BetterLegacy.Core.Managers
                 }
             }
 
-            inst.StartCoroutine(LoadExternalQuickElements());
+            CoroutineHelper.StartCoroutine(LoadExternalQuickElements());
         }
-
-        public static Dictionary<string, QuickElement> AllQuickElements
-        {
-            get
-            {
-                allQuickElements = quickElements.Union(customQuickElements).ToDictionary(x => x.Key, x => x.Value);
-
-                return allQuickElements;
-            }
-            set
-            {
-                allQuickElements = value;
-            }
-        }
-
-        private static Dictionary<string, QuickElement> allQuickElements = new Dictionary<string, QuickElement>();
-        public static Dictionary<string, QuickElement> customQuickElements = new Dictionary<string, QuickElement>();
-        public static Dictionary<string, QuickElement> quickElements = new Dictionary<string, QuickElement>();
 
         public static void CreateNewQuickElement(string name)
         {
@@ -347,5 +342,7 @@ namespace BetterLegacy.Core.Managers
             }
             yield break;
         }
+
+        #endregion
     }
 }

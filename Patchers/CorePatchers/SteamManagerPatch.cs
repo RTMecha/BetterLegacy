@@ -2,7 +2,7 @@
 
 using HarmonyLib;
 
-using BetterLegacy.Core.Managers.Networking;
+using BetterLegacy.Core.Managers;
 
 namespace BetterLegacy.Patchers
 {
@@ -11,6 +11,6 @@ namespace BetterLegacy.Patchers
     {
         [HarmonyPatch(nameof(SteamManager.Awake))]
         [HarmonyPostfix]
-        static void AwakePostfix(SteamManager __instance) => SteamWorkshopManager.Init(__instance);
+        static void AwakePostfix() => RTSteamManager.Init();
     }
 }
