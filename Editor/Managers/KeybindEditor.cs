@@ -1879,7 +1879,7 @@ namespace BetterLegacy.Editor.Managers
         public void SpawnSelectedQuickPrefab(Keybind keybind)
         {
             if (RTPrefabEditor.inst.currentQuickPrefab)
-                RTPrefabEditor.inst.AddPrefabObjectToLevel(RTPrefabEditor.inst.currentQuickPrefab, RTPrefabEditor.inst.quickPrefabTarget?.InterpolateChain());
+                RTPrefabEditor.inst.AddPrefabObjectToLevel(RTPrefabEditor.inst.currentQuickPrefab, RTPrefabEditor.inst.quickPrefabTarget?.InterpolateChain().ToClass());
             else
                 EditorManager.inst.DisplayNotification("No selected quick prefab!", 1f, EditorManager.NotificationType.Error);
         }

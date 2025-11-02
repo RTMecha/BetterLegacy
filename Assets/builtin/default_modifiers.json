@@ -3055,14 +3055,14 @@
       {
         "type": 1,
         "name": "spawnClone",
-        "values": [ "0", "2", "1", "5", "0", "0", "0", "0", "0", "0", "0" ],
+        "values": [ "0", "2", "1", "5", "0", "0", "0", "0", "0", "0", "0", "True", "True" ],
         "const": "True",
         "compat": "obj"
       }, // spawnClone
       {
         "type": 1,
         "name": "spawnCloneMath",
-        "values": [ "0", "2", "1", "5", "0", "0", "0", "0", "0", "0", "0", "currentPosX + (index * posX)", "currentPosY + (index * posY)", "currentPosZ + (index * posZ)", "currentScaX + (index * scaX)", "currentScaY + (index * scaY)", "currentRot + (index * rot)", "currentTimeOffset + objectStartTime + timeOffset" ],
+        "values": [ "0", "2", "1", "5", "0", "0", "0", "0", "0", "0", "0", "True", "True", "currentPosX + (index * posX)", "currentPosY + (index * posY)", "currentPosZ + (index * posZ)", "currentScaX + (index * scaX)", "currentScaY + (index * scaY)", "currentRot + (index * rot)", "currentTimeOffset + objectStartTime + timeOffset" ],
         "const": "True",
         "compat": "obj"
       }, // spawnCloneMath

@@ -2723,6 +2723,15 @@ namespace BetterLegacy.Core.Helpers
             return new GradientColors(color, secondColor);
         }
 
+        public static ObjectTransform.Struct GetClonedTransform(int index, Vector3 pos, Vector2 sca, float rot)
+        {
+            var calcPos = index * pos;
+            var calcSca = Vector2.one + index * sca;
+            var calcRot = index * rot;
+
+            return new ObjectTransform.Struct(calcPos, calcSca, calcRot);
+        }
+
         #endregion
     }
 
@@ -10947,6 +10956,8 @@ namespace BetterLegacy.Core.Helpers
             var timeOffset = modifier.GetFloat(9, 0f, variables);
 
             var disabled = modifier.GetValue(10, variables);
+            var offsetPrefab = modifier.GetBool(11, true, variables);
+            var copyOffsets = modifier.GetBool(12, true, variables);
 
             var basePos = Vector3.zero;
             var baseSca = Vector2.one;
@@ -10960,42 +10971,61 @@ namespace BetterLegacy.Core.Helpers
                     var index = 0;
                     for (int i = startIndex; i < endCount; i += increment)
                     {
-                        var calcPos = (i * pos);
-                        var calcSca = Vector2.one + (i * sca);
-                        var calcRot = (i * rot);
+                        var transform = ModifiersHelper.GetClonedTransform(i, pos, sca, rot);
 
                         var prefabObject = cache.spawned.GetAtOrDefault(index, null);
                         if (!prefabObject)
                         {
-                            basePos = calcPos;
-                            baseSca = calcSca;
-                            baseRot = calcRot;
+                            basePos = transform.position;
+                            baseSca = transform.scale;
+                            baseRot = transform.rotation;
                             index++;
                             continue;
                         }
 
-                        prefabObject.events[0].values[0] = calcPos.x;
-                        prefabObject.events[0].values[1] = calcPos.y;
-                        prefabObject.depth = calcPos.z;
-                        prefabObject.events[1].values[0] = calcSca.x;
-                        prefabObject.events[1].values[1] = calcSca.y;
-                        prefabObject.events[2].values[0] = calcRot;
+                        var copy = cache.copies.GetAtOrDefault(index, null);
 
-                        basePos = calcPos;
-                        baseSca = calcSca;
-                        baseRot = calcRot;
+                        if (offsetPrefab)
+                        {
+                            prefabObject.events[0].values[0] = transform.position.x;
+                            prefabObject.events[0].values[1] = transform.position.y;
+                            prefabObject.depth = transform.position.z;
+                            prefabObject.events[1].values[0] = transform.scale.x;
+                            prefabObject.events[1].values[1] = transform.scale.y;
+                            prefabObject.events[2].values[0] = transform.rotation;
+                        }
+                        else if (copy)
+                        {
+                            copy.fullTransform.position = transform.position;
+                            copy.fullTransform.scale = new Vector3(transform.scale.x, transform.scale.y, 1f);
+                            copy.fullTransform.rotation = new Vector3(0f, 0f, transform.rotation);
+                        }
+
+                        if (copy && copyOffsets)
+                        {
+                            copy.PositionOffset = beatmapObject.PositionOffset;
+                            copy.ScaleOffset = beatmapObject.ScaleOffset;
+                            copy.RotationOffset = beatmapObject.RotationOffset;
+                        }
+
+                        basePos = transform.position;
+                        baseSca = transform.scale;
+                        baseRot = transform.rotation;
                         index++;
                     }
 
-                    RTLevel.Current.postTick.Enqueue(() =>
+                    if (offsetPrefab)
                     {
-                        for (int i = 0; i < cache.spawned.Count; i++)
+                        RTLevel.Current.postTick.Enqueue(() =>
                         {
-                            var prefabObject = cache.spawned[i];
-                            if (prefabObject)
-                                prefabObject.GetParentRuntime()?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
-                        }
-                    });
+                            for (int i = 0; i < cache.spawned.Count; i++)
+                            {
+                                var prefabObject = cache.spawned[i];
+                                if (prefabObject)
+                                    prefabObject.GetParentRuntime()?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
+                            }
+                        });
+                    }
                     return;
                 }
                 else
@@ -11008,6 +11038,7 @@ namespace BetterLegacy.Core.Helpers
             var disabledArray = !string.IsNullOrEmpty(disabled) ? disabled.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries) : null;
 
             var spawned = new List<PrefabObject>();
+            var copies = new List<BeatmapObject>();
 
             var children = beatmapObject.GetChildTree();
             var prefab = new Prefab("clone", 0, Mathf.Min(children.Min(x => x.StartTime) - beatmapObject.StartTime, 0f), children, null);
@@ -11026,38 +11057,121 @@ namespace BetterLegacy.Core.Helpers
 
             for (int i = startIndex; i < endCount; i += increment)
             {
-                var calcPos = (i * pos);
-                var calcSca = Vector2.one + (i * sca);
-                var calcRot = (i * rot);
+                var transform = ModifiersHelper.GetClonedTransform(i, pos, sca, rot);
                 var calcTime = baseTime + timeOffset;
 
                 // enabled (string array based)
                 if (disabledArray != null && disabledArray.Contains(i.ToString()))
                 {
-                    basePos = calcPos;
-                    baseSca = calcSca;
-                    baseRot = calcRot;
+                    basePos = transform.position;
+                    baseSca = transform.scale;
+                    baseRot = transform.rotation;
+                    baseTime = calcTime;
                     spawned.Add(null);
                     continue;
                 }
 
-                var prefabObject = ModifiersHelper.AddPrefabObjectToLevel(prefab, beatmapObject.StartTime + calcTime, calcPos, calcSca, calcRot, 0, 0f, 1f, calcPos.z);
+                var prefabObject = new PrefabObject();
+                prefabObject.prefabID = prefab.id;
+
+                prefabObject.StartTime = beatmapObject.StartTime + calcTime;
+
+                if (offsetPrefab)
+                {
+                    prefabObject.events[0].values[0] = transform.position.x;
+                    prefabObject.events[0].values[1] = transform.position.y;
+                    prefabObject.depth = transform.position.z;
+                    prefabObject.events[1].values[0] = transform.scale.x;
+                    prefabObject.events[1].values[1] = transform.scale.y;
+                    prefabObject.events[2].values[0] = transform.rotation;
+                }
+
+                prefabObject.RepeatCount = 0;
+                prefabObject.RepeatOffsetTime = 0f;
+                prefabObject.Speed = 1f;
+
+                prefabObject.fromModifier = true;
 
                 spawned.Add(prefabObject);
                 GameData.Current.prefabObjects.Add(prefabObject);
                 prefabObject.CachedPrefab = prefab;
 
-                basePos = calcPos;
-                baseSca = calcSca;
-                baseRot = calcRot;
+                basePos = transform.position;
+                baseSca = transform.scale;
+                baseRot = transform.rotation;
                 baseTime = calcTime;
             }
 
             RTLevel.Current.postTick.Enqueue(() =>
             {
                 RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
-                for (int i = 0; i < spawned.Count; i++)
-                    runtimeLevel?.UpdatePrefab(spawned[i]);
+                if (offsetPrefab)
+                {
+                    for (int i = 0; i < spawned.Count; i++)
+                    {
+                        var prefabObject = spawned[i];
+                        runtimeLevel?.UpdatePrefab(prefabObject);
+                        if (prefabObject && prefabObject.runtimeObject && prefabObject.runtimeObject.Spawner && prefabObject.runtimeObject.Spawner.BeatmapObjects.TryFind(x => x.originalID == beatmapObject.id, out BeatmapObject copy))
+                        {
+                            copies.Add(copy);
+
+                            if (copyOffsets)
+                            {
+                                copy.PositionOffset = beatmapObject.PositionOffset;
+                                copy.ScaleOffset = beatmapObject.ScaleOffset;
+                                copy.RotationOffset = beatmapObject.RotationOffset;
+                            }
+                        }
+                        else
+                            copies.Add(null);
+                    }
+                }
+                else
+                {
+                    var basePos = Vector3.zero;
+                    var baseSca = Vector2.one;
+                    var baseRot = 0f;
+
+                    var index = 0;
+                    for (int i = startIndex; i < endCount; i += increment)
+                    {
+                        var transform = ModifiersHelper.GetClonedTransform(i, pos, sca, rot);
+
+                        var prefabObject = spawned[index];
+                        if (!prefabObject)
+                        {
+                            basePos = transform.position;
+                            baseSca = transform.scale;
+                            baseRot = transform.rotation;
+                            copies.Add(null);
+                            index++;
+                            continue;
+                        }
+
+                        runtimeLevel?.UpdatePrefab(prefabObject);
+                        if (prefabObject.runtimeObject && prefabObject.runtimeObject.Spawner && prefabObject.runtimeObject.Spawner.BeatmapObjects.TryFind(x => x.originalID == beatmapObject.id, out BeatmapObject copy))
+                        {
+                            copy.fullTransform.position = transform.position;
+                            copy.fullTransform.scale = new Vector3(transform.scale.x, transform.scale.y, 1f);
+                            copy.fullTransform.rotation = new Vector3(0f, 0f, transform.rotation);
+                            copies.Add(copy);
+
+                            if (copyOffsets)
+                            {
+                                copy.PositionOffset = beatmapObject.PositionOffset;
+                                copy.ScaleOffset = beatmapObject.ScaleOffset;
+                                copy.RotationOffset = beatmapObject.RotationOffset;
+                            }
+                        }
+                        else
+                            copies.Add(null);
+
+                        basePos = transform.position;
+                        baseSca = transform.scale;
+                        baseRot = transform.rotation;
+                        index++;
+                    }
+                }
             });
 
             modifier.Result = new SpawnCloneCache
@@ -11067,6 +11181,7 @@ namespace BetterLegacy.Core.Helpers
                 increment = increment,
                 disabled = disabled,
                 spawned = spawned,
+                copies = copies,
             };
         }
 
@@ -11091,19 +11206,21 @@ namespace BetterLegacy.Core.Helpers
             var timeOffset = modifier.GetFloat(9, 0f, variables);
 
             var disabled = modifier.GetValue(10, variables);
+            var offsetPrefab = modifier.GetBool(11, true, variables);
+            var copyOffsets = modifier.GetBool(12, true, variables);
 
             var basePos = Vector3.zero;
             var baseSca = Vector2.one;
             var baseRot = 0f;
             var baseTime = 0f;
 
-            var posXEvaluation = modifier.GetValue(11, variables);
-            var posYEvaluation = modifier.GetValue(12, variables);
-            var posZEvaluation = modifier.GetValue(13, variables);
-            var scaXEvaluation = modifier.GetValue(14, variables);
-            var scaYEvaluation = modifier.GetValue(15, variables);
-            var rotEvaluation = modifier.GetValue(16, variables);
-            var timeEvaluation = modifier.GetValue(17, variables);
+            var posXEvaluation = modifier.GetValue(13, variables);
+            var posYEvaluation = modifier.GetValue(14, variables);
+            var posZEvaluation = modifier.GetValue(15, variables);
+            var scaXEvaluation = modifier.GetValue(16, variables);
+            var scaYEvaluation = modifier.GetValue(17, variables);
+            var rotEvaluation = modifier.GetValue(18, variables);
+            var timeEvaluation = modifier.GetValue(19, variables);
 
             if (modifier.TryGetResult(out SpawnCloneCache cache))
             {
@@ -11146,12 +11263,30 @@ namespace BetterLegacy.Core.Helpers
                             continue;
                         }
 
-                        prefabObject.events[0].values[0] = calcPos.x;
-                        prefabObject.events[0].values[1] = calcPos.y;
-                        prefabObject.depth = calcPos.z;
-                        prefabObject.events[1].values[0] = calcSca.x;
-                        prefabObject.events[1].values[1] = calcSca.y;
-                        prefabObject.events[2].values[0] = calcRot;
+                        var copy = cache.copies.GetAtOrDefault(index, null);
+
+                        if (offsetPrefab)
+                        {
+                            prefabObject.events[0].values[0] = calcPos.x;
+                            prefabObject.events[0].values[1] = calcPos.y;
+                            prefabObject.depth = calcPos.z;
+                            prefabObject.events[1].values[0] = calcSca.x;
+                            prefabObject.events[1].values[1] = calcSca.y;
+                            prefabObject.events[2].values[0] = calcRot;
+                        }
+                        else if (copy)
+                        {
+                            copy.fullTransform.position = calcPos;
+                            copy.fullTransform.scale = new Vector3(calcSca.x, calcSca.y, 1f);
+                            copy.fullTransform.rotation = new Vector3(0f, 0f, calcRot);
+                        }
+
+                        if (copy && copyOffsets)
+                        {
+                            copy.PositionOffset = beatmapObject.PositionOffset;
+                            copy.ScaleOffset = beatmapObject.ScaleOffset;
+                            copy.RotationOffset = beatmapObject.RotationOffset;
+                        }
 
                         basePos = calcPos;
                         baseSca = calcSca;
@@ -11159,15 +11294,18 @@ namespace BetterLegacy.Core.Helpers
                         index++;
                     }
 
-                    RTLevel.Current.postTick.Enqueue(() =>
+                    if (offsetPrefab)
                     {
-                        for (int i = 0; i < cache.spawned.Count; i++)
+                        RTLevel.Current.postTick.Enqueue(() =>
                         {
-                            var prefabObject = cache.spawned[i];
-                            if (prefabObject)
-                                prefabObject.GetParentRuntime()?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
-                        }
-                    });
+                            for (int i = 0; i < cache.spawned.Count; i++)
+                            {
+                                var prefabObject = cache.spawned[i];
+                                if (prefabObject)
+                                    prefabObject.GetParentRuntime()?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
+                            }
+                        });
+                    }
                     return;
                 }
                 else
@@ -11180,6 +11318,7 @@ namespace BetterLegacy.Core.Helpers
             var disabledArray = !string.IsNullOrEmpty(disabled) ? disabled.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries) : null;
 
             var spawned = new List<PrefabObject>();
+            var copies = new List<BeatmapObject>();
 
             var children = beatmapObject.GetChildTree();
             var prefab = new Prefab("clone", 0, Mathf.Min(children.Min(x => x.StartTime) - beatmapObject.StartTime, 0f), children, null);
@@ -11234,7 +11373,27 @@ namespace BetterLegacy.Core.Helpers
                     continue;
                 }
 
-                var prefabObject = ModifiersHelper.AddPrefabObjectToLevel(prefab, calcTime, calcPos, calcSca, calcRot, 0, 0f, 1f, calcPos.z);
+                var prefabObject = new PrefabObject();
+                prefabObject.prefabID = prefab.id;
+
+                prefabObject.StartTime = beatmapObject.StartTime + calcTime;
+
+                if (offsetPrefab)
+                {
+                    prefabObject.events[0].values[0] = calcPos.x;
+                    prefabObject.events[0].values[1] = calcPos.y;
+                    prefabObject.events[1].values[0] = calcSca.x;
+                    prefabObject.events[1].values[1] = calcSca.y;
+                    prefabObject.events[2].values[0] = calcRot;
+
+                    prefabObject.depth = calcPos.z;
+                }
+
+                prefabObject.RepeatCount = 0;
+                prefabObject.RepeatOffsetTime = 0f;
+                prefabObject.Speed = 1f;
+
+                prefabObject.fromModifier = true;
 
                 spawned.Add(prefabObject);
                 GameData.Current.prefabObjects.Add(prefabObject);
@@ -11249,8 +11408,99 @@ namespace BetterLegacy.Core.Helpers
             RTLevel.Current.postTick.Enqueue(() =>
             {
                 RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
-                for (int i = 0; i < spawned.Count; i++)
-                    runtimeLevel?.UpdatePrefab(spawned[i]);
+                if (offsetPrefab)
+                {
+                    for (int i = 0; i < spawned.Count; i++)
+                    {
+                        var prefabObject = spawned[i];
+                        runtimeLevel?.UpdatePrefab(prefabObject);
+                        if (prefabObject && prefabObject.runtimeObject && prefabObject.runtimeObject.Spawner && prefabObject.runtimeObject.Spawner.BeatmapObjects.TryFind(x => x.originalID == beatmapObject.id, out BeatmapObject copy))
+                        {
+                            copies.Add(copy);
+
+                            if (copyOffsets)
+                            {
+                                copy.PositionOffset = beatmapObject.PositionOffset;
+                                copy.ScaleOffset = beatmapObject.ScaleOffset;
+                                copy.RotationOffset = beatmapObject.RotationOffset;
+                            }
+                        }
+                        else
+                            copies.Add(null);
+                    }
+                }
+                else
+                {
+                    var basePos = Vector3.zero;
+                    var baseSca = Vector2.one;
+                    var baseRot = 0f;
+
+                    var index = 0;
+                    for (int i = startIndex; i < endCount; i += increment)
+                    {
+                        var numberVariables = new Dictionary<string, float>()
+                        {
+                            { "currentPosX", basePos.x },
+                            { "currentPosY", basePos.y },
+                            { "currentPosZ", basePos.z },
+                            { "currentScaX", baseSca.x },
+                            { "currentScaY", baseSca.y },
+                            { "currentRot", baseRot },
+                            { "posX", pos.x },
+                            { "posY", pos.y },
+                            { "posZ", pos.z },
+                            { "scaX", sca.x },
+                            { "scaY", sca.y },
+                            { "rot", rot },
+                            { "index", i },
+                            { "currentTimeOffset", baseTime },
+                            { "timeOffset", timeOffset },
+                        };
+                        beatmapObject.SetObjectVariables(numberVariables);
+                        ModifiersHelper.SetVariables(variables, numberVariables);
+
+                        var calcPos = new Vector3(RTMath.Parse(posXEvaluation, numberVariables), RTMath.Parse(posYEvaluation, numberVariables), RTMath.Parse(posZEvaluation, numberVariables));
+                        var calcSca = new Vector2(RTMath.Parse(scaXEvaluation, numberVariables), RTMath.Parse(scaYEvaluation, numberVariables));
+                        var calcRot = RTMath.Parse(rotEvaluation, numberVariables);
+                        var calcTime = RTMath.Parse(timeEvaluation, numberVariables);
+
+                        var prefabObject = spawned[index];
+                        if (!prefabObject)
+                        {
+                            basePos = calcPos;
+                            baseSca = calcSca;
+                            baseRot = calcRot;
+                            baseTime = calcTime;
+                            copies.Add(null);
+                            index++;
+                            continue;
+                        }
+
+                        runtimeLevel?.UpdatePrefab(prefabObject);
+                        if (prefabObject.runtimeObject && prefabObject.runtimeObject.Spawner && prefabObject.runtimeObject.Spawner.BeatmapObjects.TryFind(x => x.originalID == beatmapObject.id, out BeatmapObject copy))
+                        {
+                            copy.fullTransform.position = calcPos;
+                            copy.fullTransform.scale = new Vector3(calcSca.x, calcSca.y, 1f);
+                            copy.fullTransform.rotation = new Vector3(0f, 0f, calcRot);
+                            copies.Add(copy);
+
+                            if (copyOffsets)
+                            {
+                                copy.PositionOffset = beatmapObject.PositionOffset;
+                                copy.ScaleOffset = beatmapObject.ScaleOffset;
+                                copy.RotationOffset = beatmapObject.RotationOffset;
+                            }
+                        }
+                        else
+                            copies.Add(null);
+
+                        basePos = calcPos;
+                        baseSca = calcSca;
+                        baseRot = calcRot;
+                        baseTime = calcTime;
+                        index++;
+                    }
+                }
             });
 
             modifier.Result = new SpawnCloneCache
@@ -11260,6 +11510,7 @@ namespace BetterLegacy.Core.Helpers
                 increment = increment,
                 disabled = disabled,
                 spawned = spawned,
+                copies = copies,
             };
         }
 
@@ -14175,13 +14426,23 @@ namespace BetterLegacy.Core.Helpers
         }
     }
 
+    /// <summary>
+    /// Cache for spawnClone modifiers.
+    /// </summary>
     public class SpawnCloneCache
     {
         public int startIndex;
         public int endCount;
         public int increment;
         public string disabled;
+        /// <summary>
+        /// Spawned prefabs containing copies of the object.
+        /// </summary>
         public List<PrefabObject> spawned;
+        /// <summary>
+        /// Copies of the object.
+        /// </summary>
+        public List<BeatmapObject> copies;
     }
 
     #endregion

@@ -1450,7 +1450,7 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         /// <param name="prefab">Prefab to import.</param>
         /// <param name="target">Object to target.</param>
-        public void AddPrefabObjectToLevel(Prefab prefab, ObjectTransform? target = null)
+        public void AddPrefabObjectToLevel(Prefab prefab, ObjectTransform target = null)
         {
             var prefabObject = new PrefabObject
             {
@@ -1482,14 +1482,13 @@ namespace BetterLegacy.Editor.Managers
             else if (prefab.defaultInstanceData)
                 prefabObject.PasteInstanceData(prefab.defaultInstanceData);
 
-            if (target.HasValue)
+            if (target)
             {
-                var anim = target.Value;
-                prefabObject.events[0].values[0] = anim.position.x;
-                prefabObject.events[0].values[1] = anim.position.y;
-                prefabObject.events[1].values[0] = anim.scale.x;
-                prefabObject.events[1].values[1] = anim.scale.y;
-                prefabObject.events[2].values[0] = anim.rotation;
+                prefabObject.events[0].values[0] = target.position.x;
+                prefabObject.events[0].values[1] = target.position.y;
+                prefabObject.events[1].values[0] = target.scale.x;
+                prefabObject.events[1].values[1] = target.scale.y;
+                prefabObject.events[2].values[0] = target.rotation;
             }
 
             for (int i = 0; i < prefab.beatmapThemes.Count; i++)

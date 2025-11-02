@@ -4139,6 +4139,8 @@ namespace BetterLegacy.Editor.Data.Elements
                         SingleGenerator(modifier, reference, "Rot", 8, amount: 15f, multiply: 3f);
                         SingleGenerator(modifier, reference, "Time Offset", 9);
                         StringGenerator(modifier, reference, "Disabled Array", 10);
+                        BoolGenerator(modifier, reference, "Use Prefab Offsets", 11);
+                        BoolGenerator(modifier, reference, "Copy Offsets", 12);
 
                         break;
                     }
@@ -4154,14 +4156,16 @@ namespace BetterLegacy.Editor.Data.Elements
                         SingleGenerator(modifier, reference, "Rot", 8, amount: 15f, multiply: 3f);
                         SingleGenerator(modifier, reference, "Time Offset", 9);
                         StringGenerator(modifier, reference, "Disabled Array", 10);
+                        BoolGenerator(modifier, reference, "Use Prefab Offsets", 11);
+                        BoolGenerator(modifier, reference, "Copy Offsets", 12);
 
-                        StringGenerator(modifier, reference, "Pos X Evaluation", 11);
-                        StringGenerator(modifier, reference, "Pos Y Evaluation", 12);
-                        StringGenerator(modifier, reference, "Pos Z Evaluation", 13);
-                        StringGenerator(modifier, reference, "Sca X Evaluation", 14);
-                        StringGenerator(modifier, reference, "Sca Y Evaluation", 15);
-                        StringGenerator(modifier, reference, "Rot Evaluation", 16);
-                        StringGenerator(modifier, reference, "Time Evaluation", 17);
+                        StringGenerator(modifier, reference, "Pos X Evaluation", 13);
+                        StringGenerator(modifier, reference, "Pos Y Evaluation", 14);
+                        StringGenerator(modifier, reference, "Pos Z Evaluation", 15);
+                        StringGenerator(modifier, reference, "Sca X Evaluation", 16);
+                        StringGenerator(modifier, reference, "Sca Y Evaluation", 17);
+                        StringGenerator(modifier, reference, "Rot Evaluation", 18);
+                        StringGenerator(modifier, reference, "Time Evaluation", 19);
 
                         break;
                     }

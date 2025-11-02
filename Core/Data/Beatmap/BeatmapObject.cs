@@ -249,6 +249,11 @@ namespace BetterLegacy.Core.Data.Beatmap
         public Vector2 origin;
 
         /// <summary>
+        /// The objects' full transform offset values.
+        /// </summary>
+        public FullTransform.Struct fullTransform = FullTransform.Struct.Default;
+
+        /// <summary>
         /// The render layer of the object.
         /// </summary>
         public RenderLayerType renderLayerType;
@@ -630,6 +635,8 @@ namespace BetterLegacy.Core.Data.Beatmap
             SortKeyframes(events);
 
             this.CopyModifyableData(orig);
+
+            fullTransform = orig.fullTransform;
 
             editorData.CopyData(orig.editorData);
         }
@@ -1184,6 +1191,18 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (jn["anim_id"] != null)
                 animID = jn["anim_id"];
 
+            if (jn["tf"] != null)
+            {
+                fullTransform.position = Parser.TryParse(jn["tf"]["pos"], Vector3.zero);
+                fullTransform.scale = Parser.TryParse(jn["tf"]["sca"], Vector3.one);
+                fullTransform.rotation = Parser.TryParse(jn["tf"]["rot"], Vector3.zero);
+            }
+
+            //if (jn["tf_offset"] != null)
+            //{
+
+            //}
+
             if (jn["ed"] != null)
                 editorData = ObjectEditorData.Parse(jn["ed"]);
 
@@ -1395,6 +1414,13 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["events"]["rot"][i] = events[2][i].ToJSON(true);
             for (int i = 0; i < events[3].Count; i++)
                 jn["events"]["col"][i] = events[3][i].ToJSON(maxValuesToSave: gradientType != GradientType.Normal ? -1 : 5);
+
+            if (fullTransform.position != Vector3.zero)
+                jn["tf"]["pos"] = fullTransform.position.ToJSON();
+            if (fullTransform.scale != Vector3.one)
+                jn["tf"]["sca"] = fullTransform.scale.ToJSON();
+            if (fullTransform.rotation != Vector3.zero)
+                jn["tf"]["rot"] = fullTransform.rotation.ToJSON();
 
             this.WriteModifiersJSON(jn);
 
@@ -1929,11 +1955,11 @@ namespace BetterLegacy.Core.Data.Beatmap
             return InterpolateChain(time, false, includeOffsets, includeSelf).rotation;
         }
 
-        public ObjectTransform InterpolateChain(bool includeDepth = false, bool includeOffsets = true, bool includeSelf = true) => InterpolateChain(this.GetParentRuntime().CurrentTime, includeDepth, includeOffsets, includeSelf);
+        public ObjectTransform.Struct InterpolateChain(bool includeDepth = false, bool includeOffsets = true, bool includeSelf = true) => InterpolateChain(this.GetParentRuntime().CurrentTime, includeDepth, includeOffsets, includeSelf);
 
-        public ObjectTransform InterpolateChain(float time, bool includeDepth = false, bool includeOffsets = true, bool includeSelf = true)
+        public ObjectTransform.Struct InterpolateChain(float time, bool includeDepth = false, bool includeOffsets = true, bool includeSelf = true)
         {
-            var result = ObjectTransform.Default;
+            var result = ObjectTransform.Struct.Default;
 
             var parents = GetParentChain();
             parents.Reverse();

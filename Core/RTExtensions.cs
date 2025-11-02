@@ -1925,11 +1925,11 @@ namespace BetterLegacy.Core
         public static RTLevelBase GetParentRuntime(this IRTObject reference) => (reference.ParentRuntime ?? RTLevel.Current);
 
         /// <summary>
-        /// Gets a <see cref="ObjectTransform"/> from a transformable object.
+        /// Gets a <see cref="ObjectTransform.Struct"/> from a transformable object.
         /// </summary>
         /// <param name="transformable">Transformable reference.</param>
         /// <returns>Returns a transform cache.</returns>
-        public static ObjectTransform GetObjectTransform(this ITransformable transformable) => new ObjectTransform(transformable.GetFullPosition(), transformable.GetFullScale(), transformable.GetFullRotation(true).z);
+        public static ObjectTransform.Struct GetObjectTransform(this ITransformable transformable) => new ObjectTransform.Struct(transformable.GetFullPosition(), transformable.GetFullScale(), transformable.GetFullRotation(true).z);
 
         /// <summary>
         /// Updates the modifier functions.

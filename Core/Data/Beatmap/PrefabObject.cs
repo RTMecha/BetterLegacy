@@ -345,7 +345,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <summary>
         /// Cached transform.
         /// </summary>
-        public ObjectTransform? cachedTransform;
+        public ObjectTransform cachedTransform;
 
         /// <summary>
         /// If the Prefab Object was spawned from a modifier.
@@ -784,12 +784,12 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         /// <param name="prefabObject">Prefab Object to get the transform offsets from.</param>
         /// <returns>Returns a struct representing the objects' transform values.</returns>
-        public ObjectTransform GetTransformOffset()
+        public ObjectTransform.Struct GetTransformOffset()
         {
-            if (cachedTransform != null && cachedTransform.HasValue)
-                return cachedTransform.Value;
+            if (cachedTransform != null)
+                return cachedTransform.ToStruct();
 
-            var transform = ObjectTransform.Default;
+            var transform = ObjectTransform.Struct.Default;
 
             bool hasPosX = events.Count > 0 && events[0] && events[0].values.Length > 0;
             bool hasPosY = events.Count > 0 && events[0] && events[0].values.Length > 1;
@@ -821,7 +821,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             }
 
             transform.scale = transform.scale.x != 0f && transform.scale.y != 0f ? transform.scale : Vector3.one;
-            cachedTransform = transform;
+            cachedTransform = transform.ToClass();
 
             return transform;
         }

@@ -3836,7 +3836,7 @@ namespace BetterLegacy.Core.Components.Player
 
             public bool CustomActive { get; set; } = true;
 
-            public ObjectTransform anim = ObjectTransform.Default;
+            public ObjectTransform.Struct anim = ObjectTransform.Struct.Default;
 
             public Vector3 positionOffset;
             public Vector3 scaleOffset;
@@ -3850,7 +3850,7 @@ namespace BetterLegacy.Core.Components.Player
 
             public void ResetOffsets()
             {
-                anim = ObjectTransform.Default;
+                anim = ObjectTransform.Struct.Default;
                 positionOffset = Vector3.zero;
                 scaleOffset = Vector3.zero;
                 rotationOffset = Vector3.zero;
