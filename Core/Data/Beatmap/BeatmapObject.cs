@@ -2241,13 +2241,12 @@ namespace BetterLegacy.Core.Data.Beatmap
         {
             var list = new List<BeatmapObject>();
             list.Add(this);
-            var beatmapObjects = GameData.Current.beatmapObjects;
 
-            string id = this.id;
-            if (beatmapObjects.TryFindAll(x => x.Parent == id, out List<BeatmapObject> children))
+            for (int i = 0; i < GameData.Current.beatmapObjects.Count; i++)
             {
-                for (int i = 0; i < children.Count; i++)
-                    list.AddRange(children[i].GetChildTree());
+                var child = GameData.Current.beatmapObjects[i];
+                if (child.Parent == id)
+                    list.AddRange(child.GetChildTree());
             }
 
             return list;
@@ -2257,7 +2256,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// Gets all children parented to this object.
         /// </summary>
         /// <returns>Returns a list of the objects' children.</returns>
-        public List<BeatmapObject> GetChildren() => GameData.Current.beatmapObjects.TryFindAll(x => x.Parent == id, out List<BeatmapObject> children) ? children : new List<BeatmapObject>();
+        public List<BeatmapObject> GetChildren() => GameData.Current.beatmapObjects.FindAll(x => x.Parent == id);
 
         /// <summary>
         /// Tries to set an objects' parent. If the parent the user is trying to assign an object to a child of the object, then don't set parent.
