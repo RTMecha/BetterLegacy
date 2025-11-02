@@ -231,6 +231,9 @@ namespace BetterLegacy.Core.Runtime
         /// <param name="recursive">If the method should run recursively.</param>
         public virtual void RecacheSequences(BeatmapObject beatmapObject, bool reinsert = true, bool updateParents = true, bool recursive = true)
         {
+            if (!beatmapObject)
+                return;
+
             if (!reinsert)
             {
                 // Recursive recaching.
@@ -337,6 +340,9 @@ namespace BetterLegacy.Core.Runtime
         /// <param name="recalculate">If the engine should recalculate.</param>
         public virtual void UpdateObject(BeatmapObject beatmapObject, bool recache = true, bool update = true, bool reinsert = true, bool recursive = true, bool recalculate = true)
         {
+            if (!beatmapObject)
+                return;
+
             if (!reinsert)
             {
                 recache = true;
@@ -361,9 +367,11 @@ namespace BetterLegacy.Core.Runtime
         /// <param name="sort">If the objects should be recalculated depending on the context.</param>
         public virtual void UpdateObject(BeatmapObject beatmapObject, string context, bool sort = true)
         {
-            context = context.ToLower().Replace(" ", "").Replace("_", "");
-            var runtimeObject = beatmapObject.runtimeObject;
+            if (!beatmapObject || string.IsNullOrEmpty(context))
+                return;
 
+            var runtimeObject = beatmapObject.runtimeObject;
+            context = context.ToLower().Remove(" ").Remove("_");
             switch (context)
             {
                 case ObjectContext.RENDERING: {
@@ -664,6 +672,9 @@ namespace BetterLegacy.Core.Runtime
         /// <param name="beatmapObject">Beatmap Object to remove.</param>
         public void RemoveObject(BeatmapObject beatmapObject)
         {
+            if (!beatmapObject)
+                return;
+
             var runtimeObject = beatmapObject.runtimeObject;
 
             if (runtimeObject)
@@ -707,6 +718,9 @@ namespace BetterLegacy.Core.Runtime
         /// <param name="beatmapObject">Beatmap Object to add.</param>
         public void AddObject(BeatmapObject beatmapObject)
         {
+            if (!beatmapObject)
+                return;
+
             var iRuntimeObject = converter.ToIRuntimeObject(beatmapObject);
             if (iRuntimeObject != null)
             {
@@ -733,6 +747,9 @@ namespace BetterLegacy.Core.Runtime
         /// <param name="recursive">If the updating should be recursive.</param>
         public virtual void ReinitObject(BeatmapObject beatmapObject, bool reinsert = true, bool recursive = true)
         {
+            if (!beatmapObject)
+                return;
+
             beatmapObject.reactivePositionOffset = Vector3.zero;
             beatmapObject.reactiveScaleOffset = Vector3.zero;
             beatmapObject.reactiveRotationOffset = 0f;
@@ -761,6 +778,9 @@ namespace BetterLegacy.Core.Runtime
 
         public virtual void UpdateParentChain(BeatmapObject beatmapObject, RTBeatmapObject runtimeObject = null, bool log = false)
         {
+            if (!beatmapObject)
+                return;
+
             System.Diagnostics.Stopwatch sw = null;
             if (log)
             {
@@ -855,6 +875,9 @@ namespace BetterLegacy.Core.Runtime
 
         public virtual void UpdateVisualObject(BeatmapObject beatmapObject, RTBeatmapObject runtimeObject)
         {
+            if (!beatmapObject)
+                return;
+
             if (!runtimeObject)
                 return;
 
@@ -1003,6 +1026,9 @@ namespace BetterLegacy.Core.Runtime
 
         public virtual void ReinitObject(BackgroundLayer backgroundLayer, bool reinsert = true)
         {
+            if (!backgroundLayer)
+                return;
+
             var runtimeObject = backgroundLayer.runtimeObject;
 
             if (runtimeObject)
@@ -1038,6 +1064,9 @@ namespace BetterLegacy.Core.Runtime
         /// <param name="recalculate">If the engine should recalculate.</param>
         public virtual void UpdateBackgroundObject(BackgroundObject backgroundObject, bool reinsert = true, bool recalculate = true)
         {
+            if (!backgroundObject)
+                return;
+
             ReinitObject(backgroundObject, reinsert);
 
             if (recalculate)
@@ -1046,9 +1075,11 @@ namespace BetterLegacy.Core.Runtime
 
         public virtual void UpdateBackgroundObject(BackgroundObject backgroundObject, string context, bool sort = true)
         {
-            context = context.ToLower().Replace(" ", "").Replace("_", "");
-            var runtimeObject = backgroundObject.runtimeObject;
+            if (!backgroundObject || string.IsNullOrEmpty(context))
+                return;
 
+            var runtimeObject = backgroundObject.runtimeObject;
+            context = context.ToLower().Remove(" ").Remove("_");
             switch (context)
             {
                 case BackgroundObjectContext.START_TIME: {
@@ -1248,6 +1279,9 @@ namespace BetterLegacy.Core.Runtime
         /// <param name="reinsert">If the object should be updated or removed.</param>
         public void UpdatePrefab(PrefabObject prefabObject, bool reinsert = true, bool recalculate = true)
         {
+            if (!prefabObject)
+                return;
+
             ReinitPrefab(prefabObject, reinsert);
 
             if (!recalculate)
@@ -1266,13 +1300,15 @@ namespace BetterLegacy.Core.Runtime
         /// <param name="context">The context to update.</param>
         public virtual void UpdatePrefab(PrefabObject prefabObject, string context, bool sort = true)
         {
+            if (!prefabObject || string.IsNullOrEmpty(context))
+                return;
+
             var runtimePrefabObject = prefabObject.runtimeObject;
             if (!runtimePrefabObject)
                 UpdatePrefab(prefabObject);
             runtimePrefabObject = prefabObject.runtimeObject;
-
-            string lower = context.ToLower().Replace(" ", "").Replace("_", "");
-            switch (lower)
+            context = context.ToLower().Remove(" ").Remove("_");
+            switch (context)
             {
                 case PrefabObjectContext.TRANSFORM_OFFSET: {
                         prefabObject.cachedTransform = null;
@@ -1427,6 +1463,15 @@ namespace BetterLegacy.Core.Runtime
         /// <param name="prefabObject">Prefab Object to remove.</param>
         public void RemovePrefab(PrefabObject prefabObject)
         {
+            if (!prefabObject)
+                return;
+
+            GameData.Current.beatmapObjects.RemoveAll(x => x.PrefabInstanceID == prefabObject.id);
+            GameData.Current.backgroundLayers.RemoveAll(x => x.PrefabInstanceID == prefabObject.id);
+            GameData.Current.backgroundObjects.RemoveAll(x => x.PrefabInstanceID == prefabObject.id);
+            GameData.Current.prefabObjects.RemoveAll(x => x.PrefabInstanceID == prefabObject.id);
+            GameData.Current.prefabs.RemoveAll(x => x.PrefabInstanceID == prefabObject.id);
+
             var runtimeObject = prefabObject.runtimeObject;
 
             if (runtimeObject)
@@ -1473,6 +1518,9 @@ namespace BetterLegacy.Core.Runtime
         /// <param name="prefabObject">Prefab Object to add.</param>
         public void AddPrefab(PrefabObject prefabObject)
         {
+            if (!prefabObject)
+                return;
+
             var prefab = prefabObject.GetPrefab();
             if (!prefab)
                 return;
@@ -1499,17 +1547,14 @@ namespace BetterLegacy.Core.Runtime
         /// <param name="reinsert">If the object should be reinserted.</param>
         public virtual void ReinitPrefab(PrefabObject prefabObject, bool reinsert = true)
         {
+            if (!prefabObject)
+                return;
+
             prefabObject.positionOffset = Vector3.zero;
             prefabObject.scaleOffset = Vector3.zero;
             prefabObject.rotationOffset = Vector3.zero;
 
             RemovePrefab(prefabObject);
-
-            GameData.Current.beatmapObjects.RemoveAll(x => x.PrefabInstanceID == prefabObject.id);
-            GameData.Current.backgroundLayers.RemoveAll(x => x.PrefabInstanceID == prefabObject.id);
-            GameData.Current.backgroundObjects.RemoveAll(x => x.PrefabInstanceID == prefabObject.id);
-            GameData.Current.prefabObjects.RemoveAll(x => x.PrefabInstanceID == prefabObject.id);
-            GameData.Current.prefabs.RemoveAll(x => x.PrefabInstanceID == prefabObject.id);
 
             if (reinsert)
                 AddPrefab(prefabObject);

@@ -484,33 +484,52 @@ namespace BetterLegacy.Core.Data.Beatmap
         public void CopyObjects(List<BeatmapObject> beatmapObjects, List<PrefabObject> prefabObjects, List<BackgroundLayer> backgroundLayers = null, List<BackgroundObject> backgroundObjects = null, List<Prefab> prefabs = null)
         {
             this.beatmapObjects.Clear();
-            this.beatmapObjects.AddRange(beatmapObjects.Select(x => x.Copy(false)));
+            if (beatmapObjects != null)
+                this.beatmapObjects.AddRange(beatmapObjects.Select(x => x?.Copy(false)));
+
             this.prefabObjects.Clear();
-            this.prefabObjects.AddRange(prefabObjects.Select(x => x.Copy(false)));
+            if (prefabObjects != null)
+                this.prefabObjects.AddRange(prefabObjects.Select(x => x?.Copy(false)));
 
             this.backgroundLayers.Clear();
             if (backgroundLayers != null)
-                this.backgroundLayers.AddRange(backgroundLayers.Select(x => x.Copy(false)));
+                this.backgroundLayers.AddRange(backgroundLayers.Select(x => x?.Copy(false)));
 
             this.backgroundObjects.Clear();
             if (backgroundObjects != null)
-                this.backgroundObjects.AddRange(backgroundObjects.Select(x => x.Copy(false)));
+                this.backgroundObjects.AddRange(backgroundObjects.Select(x => x?.Copy(false)));
 
             this.prefabs.Clear();
             if (prefabs != null)
-                this.prefabs.AddRange(prefabs.Select(x => x.Copy(false)));
+                this.prefabs.AddRange(prefabs.Select(x => x?.Copy(false)));
 
-            var collection = prefabObjects.Select(x => x.StartTime).Union(beatmapObjects.Select(x => x.StartTime));
-            if (backgroundObjects != null)
-                collection = collection.Union(backgroundObjects.Select(x => x.StartTime));
+            float num = GetMinimumTime(beatmapObjects, prefabObjects, backgroundObjects, prefabs);
+            if (num == 0f)
+                return;
 
-            float num = collection.Min(x => x);
             for (int i = 0; i < this.beatmapObjects.Count; i++)
                 this.beatmapObjects[i].StartTime -= num;
-            for (int i = 0; i < prefabObjects.Count; i++)
+            for (int i = 0; i < this.prefabObjects.Count; i++)
                 this.prefabObjects[i].StartTime -= num;
             for (int i = 0; i < this.backgroundObjects.Count; i++)
                 this.backgroundObjects[i].StartTime -= num;
+        }
+
+        /// <summary>
+        /// Gets the minimum start time of a package of objects.
+        /// </summary>
+        /// <returns>Returns the minimum start time.</returns>
+        public static float GetMinimumTime(List<BeatmapObject> beatmapObjects, List<PrefabObject> prefabObjects, List<BackgroundObject> backgroundObjects = null, List<Prefab> prefabs = null)
+        {
+            IEnumerable<float> collection = null;
+            if (beatmapObjects != null && !beatmapObjects.IsEmpty())
+                collection = beatmapObjects.SelectWhere(x => x, x => x.StartTime);
+            if (prefabObjects != null && !prefabObjects.IsEmpty())
+                collection = collection != null ? collection.Union(prefabObjects.SelectWhere(x => x, x => x.StartTime)) : prefabObjects.SelectWhere(x => x, x => x.StartTime);
+            if (backgroundObjects != null && !backgroundObjects.IsEmpty())
+                collection = collection != null ? collection.Union(backgroundObjects.SelectWhere(x => x, x => x.StartTime)) : backgroundObjects.SelectWhere(x => x, x => x.StartTime);
+
+            return collection?.Min(x => x) ?? 0f;
         }
 
         public Assets GetAssets() => assets;
