@@ -202,5 +202,7 @@ namespace BetterLegacy.Core.Runtime.Objects
                 new Vector3(backgroundObject.rotation.x, backgroundObject.rotation.y,
                 backgroundObject.rot + rot) + backgroundObject.rotationOffset);
         }
+
+        public override string ToString() => backgroundObject?.ToString() ?? string.Empty;
     }
 }

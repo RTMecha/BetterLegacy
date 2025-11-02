@@ -40,5 +40,7 @@ namespace BetterLegacy.Core.Runtime.Objects
         public bool spawned;
 
         public BeatmapObject beatmapObject;
+
+        public override string ToString() => beatmapObject?.ToString() ?? string.Empty;
     }
 }

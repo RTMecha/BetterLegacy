@@ -431,5 +431,7 @@ namespace BetterLegacy.Core.Runtime.Objects
         /// <param name="time">Current time.</param>
         /// <returns>Returns the calculated runtime time.</returns>
         public float GetTime(float time) => (time * PrefabObject.Speed) - ((PrefabObject.StartTime * PrefabObject.Speed) + Prefab.offset);
+
+        public override string ToString() => PrefabObject?.ToString() ?? string.Empty;
     }
 }

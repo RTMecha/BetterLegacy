@@ -93,5 +93,7 @@ namespace BetterLegacy.Core.Runtime.Objects
             else
                 ModifiersHelper.RunModifiersAll(triggers, actions, modifiers, reference, variables);
         }
+
+        public override string ToString() => reference?.ToString() ?? string.Empty;
     }
 }

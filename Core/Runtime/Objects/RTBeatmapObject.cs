@@ -201,6 +201,8 @@ namespace BetterLegacy.Core.Runtime.Objects
                 visualObject.renderer.enabled = active;
         }
 
+        public override string ToString() => beatmapObject?.ToString() ?? string.Empty;
+
         #endregion
     }
 }
