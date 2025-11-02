@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
 using LSFunctions;
@@ -15,6 +14,7 @@ using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Managers.Settings;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Editor.Data;
@@ -26,83 +26,12 @@ namespace BetterLegacy.Editor.Managers
     /// <summary>
     /// Editor class that manages custom animations.
     /// </summary>
-    public class AnimationEditor : MonoBehaviour
+    public class AnimationEditor : BaseManager<AnimationEditor, EditorManagerSettings>
     {
         /*
          TOOD:
         - Global animation library
          */
-
-        #region Init
-
-        /// <summary>
-        /// The <see cref="AnimationEditor"/> global instance reference.
-        /// </summary>
-        public static AnimationEditor inst;
-
-        /// <summary>
-        /// Initializes <see cref="AnimationEditor"/>.
-        /// </summary>
-        public static void Init() => Creator.NewGameObject(nameof(AnimationEditor), EditorManager.inst.transform.parent).AddComponent<AnimationEditor>();
-
-        void Awake()
-        {
-            inst = this;
-
-            try
-            {
-                Dialog = new AnimationEditorDialog();
-                Dialog.Init();
-
-                // clear cached values when the editor closes.
-                Dialog.GameObject.AddComponent<ActiveState>().onStateChanged = enabled =>
-                {
-                    if (enabled)
-                        return;
-
-                    playing = false;
-                    CurrentObject?.ResetOffsets();
-                    CurrentObject = null;
-                    CurrentAnimation = null;
-                };
-
-                Popup = RTEditor.inst.GeneratePopup(EditorPopup.ANIMATIONS_POPUP, "Animations", Vector2.zero, new Vector2(600f, 400f));
-
-                // allow for storing level animations.
-                EditorHelper.AddEditorDropdown("View Animations", string.Empty, EditorHelper.VIEW_DROPDOWN, EditorSprites.PlaySprite, () =>
-                {
-                    if (EditorLevelManager.inst.HasLoadedLevel())
-                        OpenPopup(GameData.Current.animations);
-                });
-            }
-            catch (Exception ex)
-            {
-                CoreHelper.LogException(ex);
-            }
-        }
-
-        void Update()
-        {
-            if (CurrentObject == null || !Dialog.IsCurrent || !CurrentAnimation)
-                return;
-
-            // dynamically play the current animation using a timer.
-            if (playing)
-            {
-                sequence.Update();
-                if (sequence.time > CurrentAnimation.GetLength())
-                {
-                    sequence.Reset();
-                    sequence.Update();
-                    CoreHelper.Log($"Reset");
-                }
-                CurrentTime = sequence.time;
-            }
-
-            CurrentObject.InterpolateAnimation(CurrentAnimation, CurrentTime);
-        }
-
-        #endregion
 
         #region Values
 
@@ -157,7 +86,62 @@ namespace BetterLegacy.Editor.Managers
 
         #endregion
 
-        #region Methods
+        #region Functions
+
+        public override void OnInit()
+        {
+            try
+            {
+                Dialog = new AnimationEditorDialog();
+                Dialog.Init();
+
+                // clear cached values when the editor closes.
+                Dialog.GameObject.AddComponent<ActiveState>().onStateChanged = enabled =>
+                {
+                    if (enabled)
+                        return;
+
+                    playing = false;
+                    CurrentObject?.ResetOffsets();
+                    CurrentObject = null;
+                    CurrentAnimation = null;
+                };
+
+                Popup = RTEditor.inst.GeneratePopup(EditorPopup.ANIMATIONS_POPUP, "Animations", Vector2.zero, new Vector2(600f, 400f));
+
+                // allow for storing level animations.
+                EditorHelper.AddEditorDropdown("View Animations", string.Empty, EditorHelper.VIEW_DROPDOWN, EditorSprites.PlaySprite, () =>
+                {
+                    if (EditorLevelManager.inst.HasLoadedLevel())
+                        OpenPopup(GameData.Current.animations);
+                });
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            }
+        }
+
+        public override void OnTick()
+        {
+            if (CurrentObject == null || !Dialog.IsCurrent || !CurrentAnimation)
+                return;
+
+            // dynamically play the current animation using a timer.
+            if (playing)
+            {
+                sequence.Update();
+                if (sequence.time > CurrentAnimation.GetLength())
+                {
+                    sequence.Reset();
+                    sequence.Update();
+                    CoreHelper.Log($"Reset");
+                }
+                CurrentTime = sequence.time;
+            }
+
+            CurrentObject.InterpolateAnimation(CurrentAnimation, CurrentTime);
+        }
 
         public void ApplyAnimationsToSelected(List<PAAnimation> animations)
         {

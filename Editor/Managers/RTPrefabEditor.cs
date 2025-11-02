@@ -32,17 +32,22 @@ using BetterLegacy.Editor.Data.Dialogs;
 using BetterLegacy.Editor.Data.Elements;
 using BetterLegacy.Editor.Data.Popups;
 using BetterLegacy.Editor.Data.Timeline;
+using BetterLegacy.Editor.Managers.Settings;
 
 namespace BetterLegacy.Editor.Managers
 {
     // todo:
-    // - cleanup this class
+    // - cleanup this class (consider splitting it into separate managers?)
 
-    public class RTPrefabEditor : MonoBehaviour
+    /// <summary>
+    /// Manages editing <see cref="Prefab"/>s, <see cref="PrefabObject"/>s and <see cref="PrefabType"/>s.
+    /// <br></br>Wraps <see cref="PrefabEditor"/>.
+    /// </summary>
+    public class RTPrefabEditor : BaseEditor<RTPrefabEditor, RTPrefabEditorSettings, PrefabEditor>
     {
-        public static RTPrefabEditor inst;
-
         #region Values
+
+        public override PrefabEditor BaseInstance { get => PrefabEditor.inst; set => PrefabEditor.inst = value; }
 
         public PrefabCreatorDialog PrefabCreatorDialog { get; set; }
         public PrefabObjectEditorDialog PrefabObjectEditor { get; set; }
@@ -116,20 +121,20 @@ namespace BetterLegacy.Editor.Managers
 
         #endregion
 
-        public static void Init() => PrefabEditor.inst?.gameObject?.AddComponent<RTPrefabEditor>();
+        #region Functions
 
-        void Awake() => inst = this;
+        public override void OnManagerStart() => CoroutineHelper.WaitUntil(
+            () => PrefabEditor.inst && EditorManager.inst && EditorManager.inst.EditorDialogsDictionary.ContainsKey("Prefab Popup") && EditorPrefabHolder.Instance != null && EditorPrefabHolder.Instance.Function1Button,
+            Setup);
 
-        void Start() => StartCoroutine(SetupUI());
-
-        void Update() => PrefabObjectEditor?.ModifiersDialog?.Tick();
+        public override void OnTick() => PrefabObjectEditor?.ModifiersDialog?.Tick();
 
         // todo:
         // rework this UI generation code
-        IEnumerator SetupUI()
+        void Setup()
         {
-            while (!PrefabEditor.inst || !EditorManager.inst || !EditorManager.inst.EditorDialogsDictionary.ContainsKey("Prefab Popup") || EditorPrefabHolder.Instance == null || !EditorPrefabHolder.Instance.Function1Button)
-                yield return null;
+            //while (!PrefabEditor.inst || !EditorManager.inst || !EditorManager.inst.EditorDialogsDictionary.ContainsKey("Prefab Popup") || EditorPrefabHolder.Instance == null || !EditorPrefabHolder.Instance.Function1Button)
+            //    yield return null;
 
             // A
             {
@@ -3132,6 +3137,8 @@ namespace BetterLegacy.Editor.Managers
                 uploadable: prefab,
                 pull: jn => EditorServerManager.inst.DownloadPrefab(jn["id"], jn["name"]));
         }
+
+        #endregion
 
         #endregion
     }

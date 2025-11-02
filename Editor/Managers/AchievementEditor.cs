@@ -17,6 +17,7 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Managers.Settings;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
@@ -27,45 +28,8 @@ namespace BetterLegacy.Editor.Managers
     /// <summary>
     /// Editor class that manages custom achievements.
     /// </summary>
-    public class AchievementEditor : MonoBehaviour
+    public class AchievementEditor : BaseManager<AchievementEditor, EditorManagerSettings>
     {
-        #region Init
-
-        /// <summary>
-        /// The <see cref="AchievementEditor"/> global instance reference.
-        /// </summary>
-        public static AchievementEditor inst;
-
-        /// <summary>
-        /// Initializes <see cref="AchievementEditor"/>.
-        /// </summary>
-        public static void Init() => Creator.NewGameObject(nameof(AchievementEditor), EditorManager.inst.transform.parent).AddComponent<AchievementEditor>();
-
-        void Awake()
-        {
-            inst = this;
-
-            try
-            {
-                Dialog = new AchievementEditorDialog();
-                Dialog.Init();
-
-                achievementListButtonPrefab = CheckpointEditor.inst.checkpointListButtonPrefab.Duplicate(transform);
-                CoreHelper.Delete(achievementListButtonPrefab.transform.Find("time"));
-                EditorPrefabHolder.Instance.DeleteButton.Duplicate(achievementListButtonPrefab.transform, "delete");
-
-                EditorHelper.AddEditorDropdown("Edit Achievements", string.Empty, EditorHelper.EDIT_DROPDOWN, EditorSprites.ExclaimSprite, OpenDialog);
-
-                Popup = RTEditor.inst.GeneratePopup(EditorPopup.ACHIEVEMENTS_POPUP, "Achievements", Vector2.zero, new Vector2(600f, 400f));
-            }
-            catch (Exception ex)
-            {
-                CoreHelper.LogException(ex);
-            } // init dialog
-        }
-
-        #endregion
-
         #region Values
 
         /// <summary>
@@ -105,7 +69,28 @@ namespace BetterLegacy.Editor.Managers
 
         #endregion
 
-        #region Methods
+        #region Functions
+
+        public override void OnInit()
+        {
+            try
+            {
+                Dialog = new AchievementEditorDialog();
+                Dialog.Init();
+
+                achievementListButtonPrefab = CheckpointEditor.inst.checkpointListButtonPrefab.Duplicate(transform);
+                CoreHelper.Delete(achievementListButtonPrefab.transform.Find("time"));
+                EditorPrefabHolder.Instance.DeleteButton.Duplicate(achievementListButtonPrefab.transform, "delete");
+
+                EditorHelper.AddEditorDropdown("Edit Achievements", string.Empty, EditorHelper.EDIT_DROPDOWN, EditorSprites.ExclaimSprite, OpenDialog);
+
+                Popup = RTEditor.inst.GeneratePopup(EditorPopup.ACHIEVEMENTS_POPUP, "Achievements", Vector2.zero, new Vector2(600f, 400f));
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            } // init dialog
+        }
 
         /// <summary>
         /// Loads the current levels' achievements.

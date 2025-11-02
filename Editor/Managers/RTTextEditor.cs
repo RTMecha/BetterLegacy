@@ -1,9 +1,10 @@
 ﻿using System;
 
-using UnityEngine;
 using UnityEngine.UI;
 
 using BetterLegacy.Core;
+using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Managers.Settings;
 using BetterLegacy.Editor.Data.Popups;
 
 namespace BetterLegacy.Editor.Managers
@@ -11,30 +12,8 @@ namespace BetterLegacy.Editor.Managers
     /// <summary>
     /// Expanded text editing.
     /// </summary>
-    public class RTTextEditor : MonoBehaviour
+    public class RTTextEditor : BaseManager<RTTextEditor, EditorManagerSettings>
     {
-        #region Init
-
-        /// <summary>
-        /// The <see cref="RTTextEditor"/> global instance reference.
-        /// </summary>
-        public static RTTextEditor inst;
-
-        /// <summary>
-        /// Initializes <see cref="RTTextEditor"/>.
-        /// </summary>
-        public static void Init() => Creator.NewGameObject(nameof(RTTextEditor), EditorManager.inst.transform.parent).AddComponent<RTTextEditor>();
-
-        void Awake()
-        {
-            inst = this;
-            Popup = new TextEditorPopup();
-            Popup.Init();
-            RTEditor.inst.editorPopups.Add(Popup);
-        }
-
-        #endregion
-
         #region Values
 
         /// <summary>
@@ -64,6 +43,13 @@ namespace BetterLegacy.Editor.Managers
         #endregion
 
         #region Methods
+
+        public override void OnInit()
+        {
+            Popup = new TextEditorPopup();
+            Popup.Init();
+            RTEditor.inst.editorPopups.Add(Popup);
+        }
 
         /// <summary>
         /// Applies the Text Editor's text to the currently selected Input Field.

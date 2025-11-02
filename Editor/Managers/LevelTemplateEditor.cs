@@ -9,6 +9,8 @@ using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Managers.Settings;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
@@ -18,76 +20,8 @@ namespace BetterLegacy.Editor.Managers
     /// <summary>
     /// Manages Level Templates new levels are created by.
     /// </summary>
-    public class LevelTemplateEditor : MonoBehaviour
+    public class LevelTemplateEditor : BaseManager<LevelTemplateEditor, EditorManagerSettings>
     {
-        #region Init
-
-        /// <summary>
-        /// The <see cref="LevelTemplateEditor"/> global instance reference.
-        /// </summary>
-        public static LevelTemplateEditor inst;
-
-        /// <summary>
-        /// Initializes <see cref="LevelTemplateEditor"/>.
-        /// </summary>
-        public static void Init() => Creator.NewGameObject(nameof(LevelTemplateEditor), EditorManager.inst.transform.parent).AddComponent<LevelTemplateEditor>();
-
-        void Awake()
-        {
-            inst = this;
-
-            try
-            {
-                Dialog = new LevelTemplateEditorDialog();
-                Dialog.Init();
-
-                #region Prefabs
-
-                newLevelTemplatePrefab = EditorManager.inst.folderButtonPrefab.Duplicate(transform, "Template");
-
-                newLevelTemplatePrefab.transform.AsRT().sizeDelta = new Vector2(734f, 200f);
-
-                var newLevelTemplatePrefabPreviewBase = Creator.NewUIObject("Preview Base", newLevelTemplatePrefab.transform);
-                newLevelTemplatePrefabPreviewBase.AddComponent<Image>();
-                newLevelTemplatePrefabPreviewBase.AddComponent<Mask>().showMaskGraphic = false;
-
-                newLevelTemplatePrefabPreviewBase.transform.AsRT().anchoredPosition = new Vector2(-200f, 0f);
-                newLevelTemplatePrefabPreviewBase.transform.AsRT().sizeDelta = new Vector2(312f, 175.5f);
-
-                var newLevelTemplatePrefabPreview = Creator.NewUIObject("Preview", newLevelTemplatePrefabPreviewBase.transform);
-                newLevelTemplatePrefabPreview.AddComponent<Image>();
-                RectValues.FullAnchored.AssignToRectTransform(newLevelTemplatePrefabPreview.transform.AsRT());
-
-                var newLevelTemplatePrefabTitle = newLevelTemplatePrefab.transform.GetChild(0);
-                newLevelTemplatePrefabTitle.name = "Title";
-                newLevelTemplatePrefabTitle.AsRT().anchoredPosition = new Vector2(350f, 0f);
-                newLevelTemplatePrefabTitle.AsRT().sizeDelta = new Vector2(32f, 32f);
-
-                var noLevel = newLevelTemplatePrefabTitle.gameObject.Duplicate(newLevelTemplatePrefab.transform, "No Preview");
-                noLevel.transform.AsRT().anchoredPosition = new Vector2(-200f, 0f);
-                noLevel.transform.AsRT().sizeDelta = new Vector2(32f, 32f);
-                var noLevelText = noLevel.GetComponent<Text>();
-                noLevelText.alignment = TextAnchor.MiddleCenter;
-                noLevelText.fontSize = 20;
-                noLevelText.text = "No Preview";
-                noLevel.SetActive(false);
-
-                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadImageTexture(AssetPack.GetFile($"editor/default_template{FileFormat.PNG.Dot()}"), texture2D => newLevelTemplateBaseSprite = SpriteHelper.CreateSprite(texture2D)));
-
-                var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(newLevelTemplatePrefab.transform, "Delete");
-                RectValues.Default.AnchoredPosition(335f, 75f).SizeDelta(32f, 32f).AssignToRectTransform(delete.transform.AsRT());
-
-                #endregion
-
-            }
-            catch (Exception ex)
-            {
-                CoreHelper.LogException(ex);
-            } // init dialog
-        }
-
-        #endregion
-
         #region Values
 
         /// <summary>
@@ -137,7 +71,59 @@ namespace BetterLegacy.Editor.Managers
 
         #endregion
 
-        #region Methods
+        #region Functions
+
+        public override void OnInit()
+        {
+            try
+            {
+                Dialog = new LevelTemplateEditorDialog();
+                Dialog.Init();
+
+                #region Prefabs
+
+                newLevelTemplatePrefab = EditorManager.inst.folderButtonPrefab.Duplicate(transform, "Template");
+
+                newLevelTemplatePrefab.transform.AsRT().sizeDelta = new Vector2(734f, 200f);
+
+                var newLevelTemplatePrefabPreviewBase = Creator.NewUIObject("Preview Base", newLevelTemplatePrefab.transform);
+                newLevelTemplatePrefabPreviewBase.AddComponent<Image>();
+                newLevelTemplatePrefabPreviewBase.AddComponent<Mask>().showMaskGraphic = false;
+
+                newLevelTemplatePrefabPreviewBase.transform.AsRT().anchoredPosition = new Vector2(-200f, 0f);
+                newLevelTemplatePrefabPreviewBase.transform.AsRT().sizeDelta = new Vector2(312f, 175.5f);
+
+                var newLevelTemplatePrefabPreview = Creator.NewUIObject("Preview", newLevelTemplatePrefabPreviewBase.transform);
+                newLevelTemplatePrefabPreview.AddComponent<Image>();
+                RectValues.FullAnchored.AssignToRectTransform(newLevelTemplatePrefabPreview.transform.AsRT());
+
+                var newLevelTemplatePrefabTitle = newLevelTemplatePrefab.transform.GetChild(0);
+                newLevelTemplatePrefabTitle.name = "Title";
+                newLevelTemplatePrefabTitle.AsRT().anchoredPosition = new Vector2(350f, 0f);
+                newLevelTemplatePrefabTitle.AsRT().sizeDelta = new Vector2(32f, 32f);
+
+                var noLevel = newLevelTemplatePrefabTitle.gameObject.Duplicate(newLevelTemplatePrefab.transform, "No Preview");
+                noLevel.transform.AsRT().anchoredPosition = new Vector2(-200f, 0f);
+                noLevel.transform.AsRT().sizeDelta = new Vector2(32f, 32f);
+                var noLevelText = noLevel.GetComponent<Text>();
+                noLevelText.alignment = TextAnchor.MiddleCenter;
+                noLevelText.fontSize = 20;
+                noLevelText.text = "No Preview";
+                noLevel.SetActive(false);
+
+                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadImageTexture(AssetPack.GetFile($"editor/default_template{FileFormat.PNG.Dot()}"), texture2D => newLevelTemplateBaseSprite = SpriteHelper.CreateSprite(texture2D)));
+
+                var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(newLevelTemplatePrefab.transform, "Delete");
+                RectValues.Default.AnchoredPosition(335f, 75f).SizeDelta(32f, 32f).AssignToRectTransform(delete.transform.AsRT());
+
+                #endregion
+
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            } // init dialog
+        }
 
         /// <summary>
         /// Creates a new level template from an existing level.

@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 
 using LSFunctions;
 
@@ -10,32 +8,57 @@ using UnityEngine.UI;
 
 using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
+using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Managers.Settings;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Editor.Data.Popups;
 
 namespace BetterLegacy.Editor.Managers
 {
 	/// <summary>
-	/// Color picker wrapper.
+	/// Manages color picking.
+    /// <br></br>Wraps <see cref="ColorPicker"/>.
 	/// </summary>
-    public class RTColorPicker : MonoBehaviour
+    public class RTColorPicker : BaseManager<RTColorPicker, EditorManagerSettings>
     {
-		#region Init
+        #region Values
 
-		/// <summary>
-		/// The <see cref="RTColorPicker"/> global instance reference.
-		/// </summary>
-		public static RTColorPicker inst;
+        public ColorPicker baseColorPicker;
 
-		/// <summary>
-		/// Initializes <see cref="RTColorPicker"/>.
-		/// </summary>
-		public static void Init() => Creator.NewGameObject(nameof(RTColorPicker), EditorManager.inst.transform.parent).AddComponent<RTColorPicker>();
+        public Button closeButton;
 
-		void Awake()
+        public Slider hueSlider;
+
+        public InputField rField;
+        public InputField gField;
+        public InputField bField;
+
+        public InputField hField;
+        public InputField sField;
+        public InputField vField;
+
+        public InputField hexField;
+
+        public Image previewImage;
+
+        public Button saveButton;
+
+        public string currentHex;
+
+        public Color currentColor;
+
+        Action<Color, string> colorChanged;
+
+        Action<Color, string> colorSaved;
+
+        Action cancel;
+
+        #endregion
+
+        #region Functions
+
+        public override void OnInit()
         {
-			inst = this;
-
 			var dialog = EditorManager.inst.GetDialog(EditorPopup.COLOR_PICKER).Dialog.Find("content");
 			baseColorPicker = dialog.Find("Color Picker").GetComponent<ColorPicker>();
 			var draggable = dialog.gameObject.AddComponent<DraggableUI>();
@@ -134,8 +157,6 @@ namespace BetterLegacy.Editor.Managers
 			RenderPanel(hueSlider.value);
 			RenderEditor(LSColors.black);
 		}
-
-		#endregion
 
 		public void Show(Color currentColor, Action<Color, string> colorChanged, Action<Color, string> colorSaved, Action cancel = null)
 		{
@@ -328,34 +349,6 @@ namespace BetterLegacy.Editor.Managers
 			RTEditor.inst.HideDialog(EditorPopup.COLOR_PICKER);
 		}
 
-        public ColorPicker baseColorPicker;
-
-		public Button closeButton;
-
-		public Slider hueSlider;
-
-		public InputField rField;
-		public InputField gField;
-		public InputField bField;
-
-        public InputField hField;
-		public InputField sField;
-		public InputField vField;
-
-		public InputField hexField;
-
-		public Image previewImage;
-
-		public Button saveButton;
-
-		public string currentHex;
-
-		public Color currentColor;
-
-		Action<Color, string> colorChanged;
-
-		Action<Color, string> colorSaved;
-
-		Action cancel;
+		#endregion
 	}
 }

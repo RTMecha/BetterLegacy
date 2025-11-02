@@ -18,23 +18,22 @@ using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Managers.Settings;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Planners;
 
 namespace BetterLegacy.Editor.Managers
 {
-    public class ProjectPlanner : MonoBehaviour
+    /// <summary>
+    /// Built-in planner. Includes documents, todo lists, timelines, etc.
+    /// </summary>
+    public class ProjectPlanner : BaseManager<ProjectPlanner, EditorManagerSettings>
     {
         #region Init
 
-        public static ProjectPlanner inst;
-
-        public static void Init() => Creator.NewGameObject(nameof(ProjectPlanner), EditorManager.inst.transform.parent).AddComponent<ProjectPlanner>();
-
-        void Awake()
+        public override void OnInit()
         {
-            inst = this;
             plannerBase = GameObject.Find("Editor Systems/Editor GUI/sizer").transform.GetChild(1);
             plannerBase.gameObject.SetActive(true);
 
@@ -1702,7 +1701,7 @@ namespace BetterLegacy.Editor.Managers
             Load();
         }
 
-        void Update()
+        public override void OnTick()
         {
             foreach (var note in notes)
             {

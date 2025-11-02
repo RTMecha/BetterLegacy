@@ -15,6 +15,8 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Modifiers;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Managers.Settings;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
@@ -24,24 +26,25 @@ namespace BetterLegacy.Editor.Managers
     /// <summary>
     /// Editor class that manages level properties.
     /// </summary>
-    public class LevelPropertiesEditor : MonoBehaviour
+    public class LevelPropertiesEditor : BaseManager<LevelPropertiesEditor, EditorManagerSettings>
     {
-        #region Init
+        /* TODO:
+        - Global modifier variables?
+        - Global math variables & functions
+         */
 
-        /// <summary>
-        /// The <see cref="LevelPropertiesEditor"/> global instance reference.
-        /// </summary>
-        public static LevelPropertiesEditor inst;
+        #region Values
 
-        /// <summary>
-        /// Initializes <see cref="LevelPropertiesEditor"/>.
-        /// </summary>
-        public static void Init() => Creator.NewGameObject(nameof(LevelPropertiesEditor), EditorManager.inst.transform.parent).AddComponent<LevelPropertiesEditor>();
+        public LevelPropertiesEditorDialog Dialog { get; set; }
 
-        void Awake()
+        public List<ModifierBlock> copiedModifierBlocks = new List<ModifierBlock>();
+
+        #endregion
+
+        #region Functions
+
+        public override void OnInit()
         {
-            inst = this;
-
             try
             {
                 Dialog = new LevelPropertiesEditorDialog();
@@ -54,18 +57,6 @@ namespace BetterLegacy.Editor.Managers
                 CoreHelper.LogException(ex);
             } // init dialog
         }
-
-        #endregion
-
-        #region Values
-
-        public LevelPropertiesEditorDialog Dialog { get; set; }
-
-        public List<ModifierBlock> copiedModifierBlocks = new List<ModifierBlock>();
-
-        #endregion
-
-        #region Methods
 
         public void CopyModifierBlock(ModifierBlock modifierBlock)
         {

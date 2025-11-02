@@ -32,136 +32,15 @@ using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
 using BetterLegacy.Editor.Data.Popups;
 using BetterLegacy.Editor.Data.Elements;
+using BetterLegacy.Editor.Managers.Settings;
 
 namespace BetterLegacy.Editor.Managers
 {
     /// <summary>
     /// Manages levels loaded in the editor and general functions to do with a level in the editor.
     /// </summary>
-    public class EditorLevelManager : MonoBehaviour
+    public class EditorLevelManager : BaseManager<EditorLevelManager, RTEditorSettings>
     {
-        #region Init
-
-        /// <summary>
-        /// The <see cref="EditorLevelManager"/> global instance reference.
-        /// </summary>
-        public static EditorLevelManager inst;
-
-        /// <summary>
-        /// Initializes <see cref="EditorLevelManager"/>.
-        /// </summary>
-        public static void Init() => EditorManager.inst.gameObject.AddComponent<EditorLevelManager>();
-
-        void Awake()
-        {
-            inst = this;
-            CoroutineHelper.WaitUntil(
-                () => RTEditor.inst,
-                Setup);
-        }
-
-        void Setup()
-        {
-            LevelCollectionPopup = RTEditor.inst.GeneratePopup(EditorPopup.LEVEL_COLLECTION_POPUP, "Level Collections", Vector2.zero, new Vector2(600f, 400f),
-                _val => RenderLevelCollections(),
-                close: () => onLevelCollectionSelected = null,
-                placeholderText: "Search for collection...");
-
-            LevelCollectionPopup.InitTopElementsParent();
-            LevelCollectionPopup.InitPath(
-                getValue: () => RTEditor.inst.CollectionsPath,
-                setValue: _val => RTEditor.inst.CollectionsPath = _val,
-                onEndEdit: _val => LoadLevelCollections());
-            LevelCollectionPopup.InitReload(() =>
-            {
-                RTEditor.inst.LoadLevelCollectionPanelUI(false);
-                LoadLevelCollections();
-            });
-            LevelCollectionPopup.onRender = () =>
-            {
-                if (AssetPack.TryReadFromFile("editor/ui/popups/level_collection_popup.json", out string uiFile))
-                {
-                    var jn = JSON.Parse(uiFile);
-                    RectValues.TryParse(jn["base"]["rect"], RectValues.Default.SizeDelta(600f, 400f)).AssignToRectTransform(LevelCollectionPopup.GameObject.transform.AsRT());
-                    RectValues.TryParse(jn["top_panel"]["rect"], RectValues.FullAnchored.AnchorMin(0, 1).Pivot(0f, 0f).SizeDelta(32f, 32f)).AssignToRectTransform(LevelCollectionPopup.TopPanel);
-                    RectValues.TryParse(jn["search"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(0f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, 32f))).AssignToRectTransform(LevelCollectionPopup.GameObject.transform.Find("search-box").AsRT());
-                    RectValues.TryParse(jn["scrollbar"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(0f, 0.5f), new Vector2(32f, 0f))).AssignToRectTransform(LevelCollectionPopup.GameObject.transform.Find("Scrollbar").AsRT());
-
-                    var layoutValues = LayoutValues.Parse(jn["layout"]);
-                    if (layoutValues is GridLayoutValues gridLayoutValues)
-                        gridLayoutValues.AssignToLayout(LevelCollectionPopup.Grid ? LevelCollectionPopup.Grid : LevelCollectionPopup.GameObject.transform.Find("mask/content").GetComponent<GridLayoutGroup>());
-
-                    if (jn["title"] != null)
-                    {
-                        LevelCollectionPopup.title = jn["title"]["text"] != null ? jn["title"]["text"] : "Pick a Level to Open";
-
-                        var title = LevelCollectionPopup.Title;
-                        RectValues.TryParse(jn["title"]["rect"], RectValues.FullAnchored.AnchoredPosition(2f, 0f).SizeDelta(-12f, -8f)).AssignToRectTransform(title.rectTransform);
-                        title.alignment = jn["title"]["alignment"] != null ? (TextAnchor)jn["title"]["alignment"].AsInt : TextAnchor.MiddleLeft;
-                        title.fontSize = jn["title"]["font_size"] != null ? jn["title"]["font_size"].AsInt : 20;
-                        title.fontStyle = (FontStyle)jn["title"]["font_style"].AsInt;
-                        title.horizontalOverflow = jn["title"]["horizontal_overflow"] != null ? (HorizontalWrapMode)jn["title"]["horizontal_overflow"].AsInt : HorizontalWrapMode.Wrap;
-                        title.verticalOverflow = jn["title"]["vertical_overflow"] != null ? (VerticalWrapMode)jn["title"]["vertical_overflow"].AsInt : VerticalWrapMode.Overflow;
-                    }
-
-                    if (jn["anim"] != null)
-                        LevelCollectionPopup.ReadAnimationJSON(jn["anim"]);
-
-                    if (jn["drag_mode"] != null && LevelCollectionPopup.Dragger)
-                        LevelCollectionPopup.Dragger.mode = (DraggableUI.DragMode)jn["drag_mode"].AsInt;
-                }
-            };
-
-            TooltipHelper.AssignTooltip(LevelCollectionPopup.PathField.gameObject, "Editor Path", 3f);
-
-            EditorHelper.SetComplexity(LevelCollectionPopup.PathField.gameObject, Complexity.Advanced);
-
-            var levelClickable = LevelCollectionPopup.PathField.gameObject.AddComponent<Clickable>();
-            levelClickable.onDown = pointerEventData =>
-            {
-                if (pointerEventData.button != PointerEventData.InputButton.Right)
-                    return;
-
-                EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction("Set Level Collection folder", () =>
-                    {
-                        RTEditor.inst.BrowserPopup.Open();
-                        RTFileBrowser.inst.UpdateBrowserFolder(_val =>
-                        {
-                            if (!_val.Replace("\\", "/").Contains(RTFile.ApplicationDirectory + "beatmaps/"))
-                            {
-                                EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
-                                return;
-                            }
-
-                            EditorLevelManager.inst.LevelCollectionPopup.PathField.text = _val.Replace("\\", "/").Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
-                            EditorManager.inst.DisplayNotification($"Set Collection path to {RTEditor.inst.CollectionsPath}!", 2f, EditorManager.NotificationType.Success);
-                            RTEditor.inst.BrowserPopup.Close();
-                            LoadLevelCollections();
-                        });
-                    }),
-                    new ButtonFunction("Open List in File Explorer", RTEditor.inst.OpenLevelCollectionListFolder));
-            };
-
-            LoadLevelCollections();
-
-            EditorHelper.AddEditorDropdown("Open Level Collection", string.Empty, EditorHelper.FILE_DROPDOWN, EditorSprites.OpenSprite, () =>
-            {
-                LevelCollectionPopup.Open();
-                RenderLevelCollections();
-            }, 2);
-
-            LevelCollectionDialog = new LevelCollectionEditorDialog();
-            LevelCollectionDialog.Init();
-
-            LevelInfoDialog = new LevelInfoEditorDialog();
-            LevelInfoDialog.Init();
-        }
-
-        void Update() => autosaveTimer.Update();
-
-        #endregion
-
         #region Values
 
         /// <summary>
@@ -269,7 +148,111 @@ namespace BetterLegacy.Editor.Managers
 
         #endregion
 
-        #region Methods
+        #region Functions
+
+        public override void OnInit() => CoroutineHelper.WaitUntil(
+                () => RTEditor.inst,
+                Setup);
+
+        void Setup()
+        {
+            LevelCollectionPopup = RTEditor.inst.GeneratePopup(EditorPopup.LEVEL_COLLECTION_POPUP, "Level Collections", Vector2.zero, new Vector2(600f, 400f),
+                _val => RenderLevelCollections(),
+                close: () => onLevelCollectionSelected = null,
+                placeholderText: "Search for collection...");
+
+            LevelCollectionPopup.InitTopElementsParent();
+            LevelCollectionPopup.InitPath(
+                getValue: () => RTEditor.inst.CollectionsPath,
+                setValue: _val => RTEditor.inst.CollectionsPath = _val,
+                onEndEdit: _val => LoadLevelCollections());
+            LevelCollectionPopup.InitReload(() =>
+            {
+                RTEditor.inst.LoadLevelCollectionPanelUI(false);
+                LoadLevelCollections();
+            });
+            LevelCollectionPopup.onRender = () =>
+            {
+                if (AssetPack.TryReadFromFile("editor/ui/popups/level_collection_popup.json", out string uiFile))
+                {
+                    var jn = JSON.Parse(uiFile);
+                    RectValues.TryParse(jn["base"]["rect"], RectValues.Default.SizeDelta(600f, 400f)).AssignToRectTransform(LevelCollectionPopup.GameObject.transform.AsRT());
+                    RectValues.TryParse(jn["top_panel"]["rect"], RectValues.FullAnchored.AnchorMin(0, 1).Pivot(0f, 0f).SizeDelta(32f, 32f)).AssignToRectTransform(LevelCollectionPopup.TopPanel);
+                    RectValues.TryParse(jn["search"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(0f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, 32f))).AssignToRectTransform(LevelCollectionPopup.GameObject.transform.Find("search-box").AsRT());
+                    RectValues.TryParse(jn["scrollbar"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(0f, 0.5f), new Vector2(32f, 0f))).AssignToRectTransform(LevelCollectionPopup.GameObject.transform.Find("Scrollbar").AsRT());
+
+                    var layoutValues = LayoutValues.Parse(jn["layout"]);
+                    if (layoutValues is GridLayoutValues gridLayoutValues)
+                        gridLayoutValues.AssignToLayout(LevelCollectionPopup.Grid ? LevelCollectionPopup.Grid : LevelCollectionPopup.GameObject.transform.Find("mask/content").GetComponent<GridLayoutGroup>());
+
+                    if (jn["title"] != null)
+                    {
+                        LevelCollectionPopup.title = jn["title"]["text"] != null ? jn["title"]["text"] : "Pick a Level to Open";
+
+                        var title = LevelCollectionPopup.Title;
+                        RectValues.TryParse(jn["title"]["rect"], RectValues.FullAnchored.AnchoredPosition(2f, 0f).SizeDelta(-12f, -8f)).AssignToRectTransform(title.rectTransform);
+                        title.alignment = jn["title"]["alignment"] != null ? (TextAnchor)jn["title"]["alignment"].AsInt : TextAnchor.MiddleLeft;
+                        title.fontSize = jn["title"]["font_size"] != null ? jn["title"]["font_size"].AsInt : 20;
+                        title.fontStyle = (FontStyle)jn["title"]["font_style"].AsInt;
+                        title.horizontalOverflow = jn["title"]["horizontal_overflow"] != null ? (HorizontalWrapMode)jn["title"]["horizontal_overflow"].AsInt : HorizontalWrapMode.Wrap;
+                        title.verticalOverflow = jn["title"]["vertical_overflow"] != null ? (VerticalWrapMode)jn["title"]["vertical_overflow"].AsInt : VerticalWrapMode.Overflow;
+                    }
+
+                    if (jn["anim"] != null)
+                        LevelCollectionPopup.ReadAnimationJSON(jn["anim"]);
+
+                    if (jn["drag_mode"] != null && LevelCollectionPopup.Dragger)
+                        LevelCollectionPopup.Dragger.mode = (DraggableUI.DragMode)jn["drag_mode"].AsInt;
+                }
+            };
+
+            TooltipHelper.AssignTooltip(LevelCollectionPopup.PathField.gameObject, "Editor Path", 3f);
+
+            EditorHelper.SetComplexity(LevelCollectionPopup.PathField.gameObject, Complexity.Advanced);
+
+            var levelClickable = LevelCollectionPopup.PathField.gameObject.AddComponent<Clickable>();
+            levelClickable.onDown = pointerEventData =>
+            {
+                if (pointerEventData.button != PointerEventData.InputButton.Right)
+                    return;
+
+                EditorContextMenu.inst.ShowContextMenu(
+                    new ButtonFunction("Set Level Collection folder", () =>
+                    {
+                        RTEditor.inst.BrowserPopup.Open();
+                        RTFileBrowser.inst.UpdateBrowserFolder(_val =>
+                        {
+                            if (!_val.Replace("\\", "/").Contains(RTFile.ApplicationDirectory + "beatmaps/"))
+                            {
+                                EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
+                                return;
+                            }
+
+                            LevelCollectionPopup.PathField.text = _val.Replace("\\", "/").Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
+                            EditorManager.inst.DisplayNotification($"Set Collection path to {RTEditor.inst.CollectionsPath}!", 2f, EditorManager.NotificationType.Success);
+                            RTEditor.inst.BrowserPopup.Close();
+                            LoadLevelCollections();
+                        });
+                    }),
+                    new ButtonFunction("Open List in File Explorer", RTEditor.inst.OpenLevelCollectionListFolder));
+            };
+
+            LoadLevelCollections();
+
+            EditorHelper.AddEditorDropdown("Open Level Collection", string.Empty, EditorHelper.FILE_DROPDOWN, EditorSprites.OpenSprite, () =>
+            {
+                LevelCollectionPopup.Open();
+                RenderLevelCollections();
+            }, 2);
+
+            LevelCollectionDialog = new LevelCollectionEditorDialog();
+            LevelCollectionDialog.Init();
+
+            LevelInfoDialog = new LevelInfoEditorDialog();
+            LevelInfoDialog.Init();
+        }
+
+        public override void OnTick() => autosaveTimer.Update();
 
         /// <summary>
         /// Pastes the copied / cut level.

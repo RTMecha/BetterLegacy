@@ -30,27 +30,32 @@ using BetterLegacy.Editor.Data.Dialogs;
 using BetterLegacy.Editor.Data.Elements;
 using BetterLegacy.Editor.Data.Popups;
 using BetterLegacy.Editor.Data.Timeline;
+using BetterLegacy.Editor.Managers.Settings;
 
 namespace BetterLegacy.Editor.Managers
 {
-    public class ObjectEditor : MonoBehaviour
+    /// <summary>
+    /// Manages editing <see cref="BeatmapObject"/>s and their <see cref="EventKeyframe"/>s.
+    /// <br></br>Wraps <see cref="ObjEditor"/>.
+    /// </summary>
+    public class ObjectEditor : BaseEditor<ObjectEditor, ObjectEditorSettings, ObjEditor>
     {
         #region Init
 
-        public static ObjectEditor inst;
-
-        public static void Init() => ObjEditor.inst.gameObject.AddComponent<ObjectEditor>();
-
-        void Awake()
+        public override void OnInit()
         {
-            inst = this;
-
             try
             {
                 Dialog = new ObjectEditorDialog();
                 Dialog.Init();
 
-                CreateObjectSearch();
+                ObjectSearchPopup = RTEditor.inst.GeneratePopup(EditorPopup.OBJECT_SEARCH_POPUP, "Object Search", Vector2.zero, new Vector2(600f, 450f), placeholderText: "Search for object...");
+                ObjectSearchPopup.getMaxPageCount = () => GameData.Current.beatmapObjects.FindAll(x => !x.FromPrefab).Count / ObjectsPerPage;
+                ObjectSearchPopup.InitPageField();
+
+                var dropdown = EditorHelper.AddEditorDropdown("Search Objects", string.Empty, EditorHelper.VIEW_DROPDOWN, EditorSprites.SearchSprite, ShowObjectSearch);
+
+                EditorHelper.SetComplexity(dropdown, Complexity.Normal);
             }
             catch (Exception ex)
             {
@@ -71,19 +76,14 @@ namespace BetterLegacy.Editor.Managers
             LoadGlobalCopy();
         }
 
-        void CreateObjectSearch()
-        {
-            ObjectSearchPopup = RTEditor.inst.GeneratePopup(EditorPopup.OBJECT_SEARCH_POPUP, "Object Search", Vector2.zero, new Vector2(600f, 450f), placeholderText: "Search for object...");
-            ObjectSearchPopup.getMaxPageCount = () => GameData.Current.beatmapObjects.FindAll(x => !x.FromPrefab).Count / ObjectsPerPage;
-            ObjectSearchPopup.InitPageField();
-
-            var dropdown = EditorHelper.AddEditorDropdown("Search Objects", string.Empty, EditorHelper.VIEW_DROPDOWN, EditorSprites.SearchSprite, ShowObjectSearch);
-
-            EditorHelper.SetComplexity(dropdown, Complexity.Normal);
-        }
-
+        /// <summary>
+        /// Applies the config settings onto <see cref="ObjEditor"/> values.
+        /// </summary>
         public void ApplyConfig()
         {
+            if (!ObjEditor.inst)
+                return;
+
             ObjEditor.inst.SelectedColor = EditorConfig.Instance.ObjectSelectionColor.Value;
             ObjEditor.inst.ObjectLengthOffset = EditorConfig.Instance.KeyframeEndLengthOffset.Value;
         }
@@ -91,6 +91,8 @@ namespace BetterLegacy.Editor.Managers
         #endregion
 
         #region Values
+
+        public override ObjEditor BaseInstance { get => ObjEditor.inst; set => ObjEditor.inst = value; }
 
         public ObjectEditorDialog Dialog { get; set; }
 
@@ -115,7 +117,7 @@ namespace BetterLegacy.Editor.Managers
 
         #region Dragging
 
-        void Update()
+        public override void OnTick()
         {
             Dialog?.ModifiersDialog?.Tick();
             KeyframeTimeline.CurrentTimeline?.Tick();

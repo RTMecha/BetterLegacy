@@ -13,6 +13,7 @@ using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Managers.Settings;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Data;
@@ -21,21 +22,23 @@ using BetterLegacy.Editor.Data.Popups;
 
 namespace BetterLegacy.Editor.Managers
 {
-    public class EditorDocumentation : MonoBehaviour
+    public class EditorDocumentation : BaseManager<EditorDocumentation, EditorManagerSettings>
     {
-        #region Init
+        #region Values
 
-        public static EditorDocumentation inst;
+        public EditorDialog Dialog { get; set; }
 
-        public static void Init() => Creator.NewGameObject(nameof(EditorDocumentation), EditorManager.inst.transform.parent).AddComponent<EditorDocumentation>();
+        public List<EditorDocument> documents = new List<EditorDocument>();
 
-        void Awake()
-        {
-            inst = this;
-            GenerateUI();
-        }
+        public Text documentationTitle;
+        public string documentationSearch;
+        public Transform documentationContent;
 
-        void GenerateUI() // NEED TO UPDATE!
+        #endregion
+
+        #region Functions
+
+        public override void OnInit()
         {
             RTEditor.inst.DocumentationPopup = RTEditor.inst.GeneratePopup(EditorPopup.DOCUMENTATION_POPUP, "Documentation", Vector2.zero, new Vector2(600f, 450f), _val =>
             {
@@ -1022,22 +1025,6 @@ namespace BetterLegacy.Editor.Managers
                 CoreHelper.LogException(ex);
             } // init dialog
         }
-
-        #endregion
-
-        #region Values
-
-        public EditorDialog Dialog { get; set; }
-
-        public List<EditorDocument> documents = new List<EditorDocument>();
-
-        public Text documentationTitle;
-        public string documentationSearch;
-        public Transform documentationContent;
-
-        #endregion
-
-        #region Methods
 
         /// <summary>
         /// Refreshes the list of documents.

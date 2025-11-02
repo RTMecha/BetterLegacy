@@ -15,6 +15,7 @@ using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Managers.Settings;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Editor.Data;
@@ -25,24 +26,31 @@ namespace BetterLegacy.Editor.Managers
     /// <summary>
     /// Editor class that manages level assets.
     /// </summary>
-    public class AssetEditor : MonoBehaviour
+    public class AssetEditor : BaseManager<AssetEditor, EditorManagerSettings>
     {
-        #region Init
+        #region Values
 
         /// <summary>
-        /// The <see cref="AssetEditor"/> global instance reference.
+        /// Asset list popup.
         /// </summary>
-        public static AssetEditor inst;
+        public ContentPopup Popup { get; set; }
 
         /// <summary>
-        /// Initializes <see cref="AssetEditor"/>.
+        /// Loaded external sound assets.
         /// </summary>
-        public static void Init() => Creator.NewGameObject(nameof(AssetEditor), EditorManager.inst.transform.parent).AddComponent<AssetEditor>();
+        public List<SoundAsset> soundAssets = new List<SoundAsset>();
 
-        void Awake()
+        /// <summary>
+        /// Loaded external sprite assets.
+        /// </summary>
+        public List<SpriteAsset> spriteAssets = new List<SpriteAsset>();
+
+        #endregion
+
+        #region Functions
+
+        public override void OnInit()
         {
-            inst = this;
-
             try
             {
                 Popup = RTEditor.inst.GeneratePopup(EditorPopup.ASSET_POPUP, "Edit Assets", Vector2.zero, new Vector2(600f, 400f),
@@ -63,29 +71,6 @@ namespace BetterLegacy.Editor.Managers
                 CoreHelper.LogException(ex);
             } // init dialog
         }
-
-        #endregion
-
-        #region Values
-
-        /// <summary>
-        /// Asset list popup.
-        /// </summary>
-        public ContentPopup Popup { get; set; }
-
-        /// <summary>
-        /// Loaded external sound assets.
-        /// </summary>
-        public List<SoundAsset> soundAssets = new List<SoundAsset>();
-
-        /// <summary>
-        /// Loaded external sprite assets.
-        /// </summary>
-        public List<SpriteAsset> spriteAssets = new List<SpriteAsset>();
-
-        #endregion
-
-        #region Methods
 
         /// <summary>
         /// Clears the loaded assets.

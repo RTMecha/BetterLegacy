@@ -28,80 +28,15 @@ using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
 using BetterLegacy.Editor.Data.Elements;
 using BetterLegacy.Editor.Data.Popups;
+using BetterLegacy.Editor.Managers.Settings;
 
 namespace BetterLegacy.Editor.Managers
 {
     /// <summary>
     /// Manages BetterLegacy server uploading, downloading, etc.
     /// </summary>
-    public class EditorServerManager : MonoBehaviour
+    public class EditorServerManager : BaseManager<EditorServerManager, RTEditorSettings>
     {
-        #region Init
-
-        /// <summary>
-        /// The <see cref="EditorServerManager"/> global instance reference.
-        /// </summary>
-        public static EditorServerManager inst;
-
-        /// <summary>
-        /// Initializes <see cref="EditorServerManager"/>.
-        /// </summary>
-        public static void Init() => EditorManager.inst.gameObject.AddComponent<EditorServerManager>();
-
-        void Awake()
-        {
-            inst = this;
-            CoroutineHelper.StartCoroutine(Setup());
-        }
-
-        IEnumerator Setup()
-        {
-            while (!RTEditor.inst)
-                yield return null;
-
-            try
-            {
-                Dialog = new ViewUploadedDialog();
-                Dialog.Init();
-
-                UserSearchPopup = RTEditor.inst.GeneratePopup(EditorPopup.USER_SEARCH_POPUP, "Users", Vector2.zero, new Vector2(600f, 400f),
-                    refreshSearch: _val => { },
-                    placeholderText: "Search users...");
-                UserSearchPopup.Grid.cellSize = new Vector2(595f, 80f);
-                UserSearchPopup.InitTopElementsParent();
-                UserSearchPopup.InitPageField();
-                var searchUsers = EditorPrefabHolder.Instance.Function2Button.Duplicate(UserSearchPopup.TopElements, "search");
-                searchUsers.transform.AsRT().sizeDelta = new Vector2(138f, 32f);
-                var searchUsersButton = searchUsers.GetComponent<FunctionButtonStorage>();
-                searchUsersButton.Text = "Search";
-                searchUsersButton.OnClick.ClearAll();
-                SearchUsersButton = searchUsersButton.button;
-
-                EditorThemeManager.AddSelectable(SearchUsersButton, ThemeGroup.Function_2);
-                EditorThemeManager.AddGraphic(searchUsersButton.label, ThemeGroup.Function_2_Text);
-
-                UserSearchPopup.PageField.OnEndEdit.NewListener(_val => SearchUsersButton.onClick.Invoke());
-                UserSearchPopup.SearchField.onEndEdit.NewListener(_val => SearchUsersButton.onClick.Invoke());
-            }
-            catch (Exception ex)
-            {
-                CoreHelper.LogException(ex);
-            }
-
-            try
-            {
-                LoadDefaultTags();
-                TagPopup = RTEditor.inst.GeneratePopup(EditorPopup.DEFAULT_TAGS_POPUP, "Add a default tag",
-                    refreshSearch: _val => { });
-            }
-            catch (Exception ex)
-            {
-                CoreHelper.LogException(ex);
-            } // init tags
-        }
-
-        #endregion
-
         #region Values
 
         /// <summary>
@@ -281,7 +216,54 @@ namespace BetterLegacy.Editor.Managers
 
         #endregion
 
-        #region Methods
+        #region Functions
+
+        public override void OnInit() => CoroutineHelper.WaitUntil(
+                () => RTEditor.inst,
+                Setup);
+
+        void Setup()
+        {
+            try
+            {
+                Dialog = new ViewUploadedDialog();
+                Dialog.Init();
+
+                UserSearchPopup = RTEditor.inst.GeneratePopup(EditorPopup.USER_SEARCH_POPUP, "Users", Vector2.zero, new Vector2(600f, 400f),
+                    refreshSearch: _val => { },
+                    placeholderText: "Search users...");
+                UserSearchPopup.Grid.cellSize = new Vector2(595f, 80f);
+                UserSearchPopup.InitTopElementsParent();
+                UserSearchPopup.InitPageField();
+                var searchUsers = EditorPrefabHolder.Instance.Function2Button.Duplicate(UserSearchPopup.TopElements, "search");
+                searchUsers.transform.AsRT().sizeDelta = new Vector2(138f, 32f);
+                var searchUsersButton = searchUsers.GetComponent<FunctionButtonStorage>();
+                searchUsersButton.Text = "Search";
+                searchUsersButton.OnClick.ClearAll();
+                SearchUsersButton = searchUsersButton.button;
+
+                EditorThemeManager.AddSelectable(SearchUsersButton, ThemeGroup.Function_2);
+                EditorThemeManager.AddGraphic(searchUsersButton.label, ThemeGroup.Function_2_Text);
+
+                UserSearchPopup.PageField.OnEndEdit.NewListener(_val => SearchUsersButton.onClick.Invoke());
+                UserSearchPopup.SearchField.onEndEdit.NewListener(_val => SearchUsersButton.onClick.Invoke());
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            }
+
+            try
+            {
+                LoadDefaultTags();
+                TagPopup = RTEditor.inst.GeneratePopup(EditorPopup.DEFAULT_TAGS_POPUP, "Add a default tag",
+                    refreshSearch: _val => { });
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            } // init tags
+        }
 
         /// <summary>
         /// Uploads an object to the server.

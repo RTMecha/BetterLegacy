@@ -9,6 +9,7 @@ using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Managers.Settings;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
@@ -21,48 +22,8 @@ namespace BetterLegacy.Editor.Managers
     /// <summary>
     /// Manages pinned editor layers.
     /// </summary>
-    public class PinnedLayerEditor : MonoBehaviour
+    public class PinnedLayerEditor : BaseManager<PinnedLayerEditor, EditorManagerSettings>
     {
-        #region Init
-
-        /// <summary>
-        /// The <see cref="PinnedLayerEditor"/> global instance reference.
-        /// </summary>
-        public static PinnedLayerEditor inst;
-
-        /// <summary>
-        /// Initializes <see cref="PinnedLayerEditor"/>.
-        /// </summary>
-        public static void Init() => Creator.NewGameObject(nameof(PinnedLayerEditor), EditorManager.inst.transform.parent).AddComponent<PinnedLayerEditor>();
-
-        void Awake()
-        {
-            inst = this;
-            GenerateUI();
-        }
-
-        void GenerateUI()
-        {
-            Popup = RTEditor.inst.GeneratePopup(
-                name: EditorPopup.PINNED_EDITOR_LAYER_POPUP,
-                title: "Pinned Editor Layers",
-                defaultPosition: Vector2.zero,
-                size: new Vector2(600f, 450f),
-                refreshSearch: _val => RenderPopup(),
-                placeholderText: "Search pinned editor layers...");
-
-            Dialog = new PinnedLayerEditorDialog();
-            Dialog.Init();
-
-            EditorHelper.AddEditorDropdown("View Pinned Layers", string.Empty, EditorHelper.VIEW_DROPDOWN, EditorSprites.SearchSprite, () =>
-            {
-                Popup.Open();
-                RenderPopup();
-            });
-        }
-
-        #endregion
-
         #region Values
 
         /// <summary>
@@ -87,7 +48,27 @@ namespace BetterLegacy.Editor.Managers
 
         #endregion
 
-        #region Methods
+        #region Functions
+
+        public override void OnInit()
+        {
+            Popup = RTEditor.inst.GeneratePopup(
+                name: EditorPopup.PINNED_EDITOR_LAYER_POPUP,
+                title: "Pinned Editor Layers",
+                defaultPosition: Vector2.zero,
+                size: new Vector2(600f, 450f),
+                refreshSearch: _val => RenderPopup(),
+                placeholderText: "Search pinned editor layers...");
+
+            Dialog = new PinnedLayerEditorDialog();
+            Dialog.Init();
+
+            EditorHelper.AddEditorDropdown("View Pinned Layers", string.Empty, EditorHelper.VIEW_DROPDOWN, EditorSprites.SearchSprite, () =>
+            {
+                Popup.Open();
+                RenderPopup();
+            });
+        }
 
         /// <summary>
         /// Pins the currently viewed editor layer.

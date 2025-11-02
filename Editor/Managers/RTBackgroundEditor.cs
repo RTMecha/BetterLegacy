@@ -15,15 +15,21 @@ using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
-using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
+using BetterLegacy.Editor.Managers.Settings;
 
 namespace BetterLegacy.Editor.Managers
 {
-    public class RTBackgroundEditor : MonoBehaviour
+    /// <summary>
+    /// Manages editing <see cref="BackgroundObject"/>s.
+    /// <br></br>Wraps <see cref="BackgroundEditor"/>.
+    /// </summary>
+    public class RTBackgroundEditor : BaseEditor<RTBackgroundEditor, RTBackgroundEditorSettings, BackgroundEditor>
     {
-        public static RTBackgroundEditor inst;
+        #region Values
+
+        public override BackgroundEditor BaseInstance { get => BackgroundEditor.inst; set => BackgroundEditor.inst = value; }
 
         public BackgroundObject CurrentSelectedBG => EditorTimeline.inst.CurrentSelection.GetData<BackgroundObject>();
 
@@ -31,16 +37,16 @@ namespace BetterLegacy.Editor.Managers
 
         public BackgroundObject backgroundObjCopy;
 
-        public static void Init() => EditorManager.inst.transform.parent.Find("BackgroundEditor").gameObject.AddComponent<RTBackgroundEditor>();
-
         public GameObject shapeButtonCopy;
 
         public BackgroundEditorDialog Dialog { get; set; }
 
-        void Awake()
-        {
-            inst = this;
+        #endregion
 
+        #region Functions
+
+        public override void OnInit()
+        {
             try
             {
                 Dialog = new BackgroundEditorDialog();
@@ -52,7 +58,7 @@ namespace BetterLegacy.Editor.Managers
             } // init dialog
         }
 
-        void Update() => Dialog?.ModifiersDialog?.Tick();
+        public override void OnTick() => Dialog?.ModifiersDialog?.Tick();
 
         public void CreateNewBackground() => CreateNewBackground(AudioManager.inst.CurrentAudioSource.time);
 
@@ -1642,6 +1648,8 @@ namespace BetterLegacy.Editor.Managers
                 num++;
             }
         }
+
+        #endregion
 
         #endregion
     }

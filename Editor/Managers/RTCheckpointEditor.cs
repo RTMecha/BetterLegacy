@@ -14,21 +14,39 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Editor.Data.Dialogs;
 using BetterLegacy.Editor.Data.Timeline;
+using BetterLegacy.Editor.Managers.Settings;
 
 namespace BetterLegacy.Editor.Managers
 {
-    public class RTCheckpointEditor : MonoBehaviour
+    public class RTCheckpointEditor : BaseEditor<RTCheckpointEditor, RTCheckpointEditorSettings, CheckpointEditor>
     {
-        #region Init
+        /* TODO:
+        - Custom checkpoint sprite
+        - Actually implement multi-position checkpoints
+         */
 
-        public static RTCheckpointEditor inst;
+        #region Values
 
-        public static void Init() => EditorManager.inst.transform.parent.Find("CheckpointEditor").gameObject.AddComponent<RTCheckpointEditor>();
+        public override CheckpointEditor BaseInstance { get => CheckpointEditor.inst; set => CheckpointEditor.inst = value; }
 
-        void Awake()
+        public CheckpointEditorDialog Dialog { get; set; }
+
+        public TimelineCheckpoint CurrentCheckpoint { get; set; } = new TimelineCheckpoint();
+
+        public List<TimelineCheckpoint> timelineCheckpoints = new List<TimelineCheckpoint>();
+
+        public Transform parent;
+
+        public Checkpoint checkpointCopy;
+
+        public bool dragging;
+
+        #endregion
+
+        #region Methods
+        
+        public override void OnInit()
         {
-            inst = this;
-
             try
             {
                 Dialog = new CheckpointEditorDialog();
@@ -48,7 +66,7 @@ namespace BetterLegacy.Editor.Managers
             }));
         }
 
-        void Update()
+        public override void OnTick()
         {
             if (!GameData.Current || !GameData.Current.data)
                 return;
@@ -67,26 +85,6 @@ namespace BetterLegacy.Editor.Managers
 
             HandleDragging();
         }
-
-        #endregion
-
-        #region Values
-
-        public CheckpointEditorDialog Dialog { get; set; }
-
-        public TimelineCheckpoint CurrentCheckpoint { get; set; } = new TimelineCheckpoint();
-
-        public List<TimelineCheckpoint> timelineCheckpoints = new List<TimelineCheckpoint>();
-
-        public Transform parent;
-
-        public Checkpoint checkpointCopy;
-
-        public bool dragging;
-
-        #endregion
-
-        #region Methods
 
         public void SetCurrentCheckpoint(int index)
         {

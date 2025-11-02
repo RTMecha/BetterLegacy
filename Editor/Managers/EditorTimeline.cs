@@ -24,28 +24,24 @@ using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
 using BetterLegacy.Editor.Data.Timeline;
+using BetterLegacy.Editor.Managers.Settings;
 
 using ObjectType = BetterLegacy.Core.Data.Beatmap.BeatmapObject.ObjectType;
 
 namespace BetterLegacy.Editor.Managers
 {
-    public class EditorTimeline : MonoBehaviour, IEditorLayerUI
+    public class EditorTimeline : BaseManager<EditorTimeline, RTEditorSettings>, IEditorLayerUI
     {
         #region Init
 
-        public static EditorTimeline inst;
-
-        public static void Init() => EditorManager.inst.gameObject.AddComponent<EditorTimeline>();
-
-        void Awake()
+        public override void OnInit()
         {
-            inst = this;
             timelineScrollRects.AddRange(EditorManager.inst.timelineScrollRect.GetComponents<ScrollRect>());
             timelineScrollRects.Add(EditorManager.inst.markerTimeline.transform.parent.GetComponent<ScrollRect>());
             timelineScrollRects.Add(EditorManager.inst.timelineSlider.transform.parent.GetComponent<ScrollRect>());
         }
 
-        void Update()
+        public override void OnTick()
         {
             if (Input.GetMouseButtonUp((int)UnityEngine.EventSystems.PointerEventData.InputButton.Middle))
                 movingTimeline = false;

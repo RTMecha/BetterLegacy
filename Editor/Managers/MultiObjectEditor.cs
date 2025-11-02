@@ -19,6 +19,7 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Managers.Settings;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Data;
@@ -27,29 +28,9 @@ using BetterLegacy.Editor.Data.Timeline;
 
 namespace BetterLegacy.Editor.Managers
 {
-    public class MultiObjectEditor : MonoBehaviour
+    public class MultiObjectEditor : BaseManager<MultiObjectEditor, EditorManagerSettings>
     {
-        #region Init
-
-        public static MultiObjectEditor inst;
-
-        public static void Init() => Creator.NewGameObject(nameof(MultiObjectEditor), EditorManager.inst.transform.parent).AddComponent<MultiObjectEditor>();
-
-        void Awake()
-        {
-            inst = this;
-            GenerateUI();
-
-            try
-            {
-                Dialog = new EditorDialog(EditorDialog.MULTI_OBJECT_EDITOR);
-                Dialog.Init();
-            }
-            catch (Exception ex)
-            {
-                CoreHelper.LogException(ex);
-            } // init dialog
-        }
+        #region Values
 
         /// <summary>
         /// Text to update.
@@ -62,25 +43,6 @@ namespace BetterLegacy.Editor.Managers
         /// String to format from.
         /// </summary>
         public const string DEFAULT_TEXT = "You are currently editing multiple objects.\n\nObject Count: {0}/{3}\nBG Count: {5}/{6}\nPrefab Object Count: {1}/{4}\nTotal: {2}";
-
-        void Update()
-        {
-            if (!Text || !Text.isActiveAndEnabled || !GameData.Current)
-                return;
-
-            Text.text = string.Format(DEFAULT_TEXT,
-                EditorTimeline.inst.SelectedBeatmapObjects.Count,
-                EditorTimeline.inst.SelectedPrefabObjects.Count,
-                EditorTimeline.inst.SelectedObjects.Count,
-                GameData.Current.beatmapObjects.Count,
-                GameData.Current.prefabObjects.Count,
-                EditorTimeline.inst.SelectedBackgroundObjects.Count,
-                GameData.Current.backgroundObjects.Count);
-        }
-
-        #endregion
-
-        #region Values
 
         List<MultiColorButton> multiColorButtons = new List<MultiColorButton>();
         List<MultiColorButton> multiGradientColorButtons = new List<MultiColorButton>();
@@ -99,7 +61,37 @@ namespace BetterLegacy.Editor.Managers
 
         #endregion
 
-        #region Methods
+        #region Functions
+
+        public override void OnInit()
+        {
+            GenerateUI();
+
+            try
+            {
+                Dialog = new EditorDialog(EditorDialog.MULTI_OBJECT_EDITOR);
+                Dialog.Init();
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            } // init dialog
+        }
+
+        public override void OnTick()
+        {
+            if (!Text || !Text.isActiveAndEnabled || !GameData.Current)
+                return;
+
+            Text.text = string.Format(DEFAULT_TEXT,
+                EditorTimeline.inst.SelectedBeatmapObjects.Count,
+                EditorTimeline.inst.SelectedPrefabObjects.Count,
+                EditorTimeline.inst.SelectedObjects.Count,
+                GameData.Current.beatmapObjects.Count,
+                GameData.Current.prefabObjects.Count,
+                EditorTimeline.inst.SelectedBackgroundObjects.Count,
+                GameData.Current.backgroundObjects.Count);
+        }
 
         void GenerateUI()
         {

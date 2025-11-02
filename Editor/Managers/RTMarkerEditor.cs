@@ -14,90 +14,24 @@ using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
-using BetterLegacy.Editor.Data.Planners;
 using BetterLegacy.Editor.Data.Timeline;
+using BetterLegacy.Editor.Managers.Settings;
 
 namespace BetterLegacy.Editor.Managers
 {
     /// <summary>
-    /// BetterLegacy version of <see cref="MarkerEditor"/>.
+    /// Manages editing <see cref="Marker"/>s.
+    /// <br></br>Wraps <see cref="MarkerEditor"/>.
     /// </summary>
-    public class RTMarkerEditor : MonoBehaviour
+    public class RTMarkerEditor : BaseEditor<RTMarkerEditor, RTMarkerEditorSettings, MarkerEditor>
     {
-        #region Init
-
-        /// <summary>
-        /// Initializes <see cref="RTMarkerEditor"/> onto <see cref="MarkerEditor"/>.
-        /// </summary>
-        public static void Init() => MarkerEditor.inst.gameObject.AddComponent<RTMarkerEditor>();
-
-        /// <summary>
-        /// <see cref="RTMarkerEditor"/> global instance reference.
-        /// </summary>
-        public static RTMarkerEditor inst;
-
-        void Awake()
-        {
-            inst = this;
-
-            try
-            {
-                Dialog = new MarkerEditorDialog();
-                Dialog.Init();
-            }
-            catch (Exception ex)
-            {
-                CoreHelper.LogException(ex);
-            } // init dialog
-        }
-
-        void Update()
-        {
-            if (dragging && Input.GetMouseButtonUp((int)EditorConfig.Instance.MarkerDragButton.Value))
-                StopDragging();
-
-            for (int i = 0; i < timelineMarkers.Count; i++)
-            {
-                if (!timelineMarkers[i].dragging)
-                    continue;
-
-                timelineMarkers[i].Marker.time = Mathf.Round(Mathf.Clamp(EditorTimeline.inst.GetTimelineTime(RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsMarkers.Value), 0f, AudioManager.inst.CurrentAudioSource.clip.length) * 1000f) / 1000f;
-                timelineMarkers[i].RenderPosition();
-            }
-
-            if (dragging && CurrentMarker && Dialog.IsCurrent)
-                RenderTime(CurrentMarker.Marker);
-
-            if (EditorManager.inst.loading || !markerLooping || GameData.Current.data.markers.Count <= 0 || !markerLoopBegin || !markerLoopEnd)
-                return;
-
-            if (AudioManager.inst.CurrentAudioSource.time > markerLoopEnd.Marker.time)
-            {
-                switch (EditorConfig.Instance.MarkerLoopBehavior.Value)
-                {
-                    case MarkerLoopBehavior.Loop: {
-                            AudioManager.inst.SetMusicTime(markerLoopBegin.Marker.time);
-                            break;
-                        }
-                    case MarkerLoopBehavior.StopAtStart: {
-                            AudioManager.inst.SetMusicTime(markerLoopBegin.Marker.time);
-                            RTEditor.inst.SetPlaying(false);
-                            break;
-                        }
-                    case MarkerLoopBehavior.StopAtEnd: {
-                            RTEditor.inst.SetPlaying(false);
-                            break;
-                        }
-                }
-            }
-        }
-
-        #endregion
-
         #region Values
+
+        public override MarkerEditor BaseInstance { get => MarkerEditor.inst; set => MarkerEditor.inst = value; }
 
         public MarkerEditorDialog Dialog { get; set; }
 
@@ -204,6 +138,60 @@ namespace BetterLegacy.Editor.Managers
         #endregion
 
         #region Methods
+        
+        public override void OnInit()
+        {
+            try
+            {
+                Dialog = new MarkerEditorDialog();
+                Dialog.Init();
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            } // init dialog
+        }
+
+        public override void OnTick()
+        {
+            if (dragging && Input.GetMouseButtonUp((int)EditorConfig.Instance.MarkerDragButton.Value))
+                StopDragging();
+
+            for (int i = 0; i < timelineMarkers.Count; i++)
+            {
+                if (!timelineMarkers[i].dragging)
+                    continue;
+
+                timelineMarkers[i].Marker.time = Mathf.Round(Mathf.Clamp(EditorTimeline.inst.GetTimelineTime(RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsMarkers.Value), 0f, AudioManager.inst.CurrentAudioSource.clip.length) * 1000f) / 1000f;
+                timelineMarkers[i].RenderPosition();
+            }
+
+            if (dragging && CurrentMarker && Dialog.IsCurrent)
+                RenderTime(CurrentMarker.Marker);
+
+            if (EditorManager.inst.loading || !markerLooping || GameData.Current.data.markers.Count <= 0 || !markerLoopBegin || !markerLoopEnd)
+                return;
+
+            if (AudioManager.inst.CurrentAudioSource.time > markerLoopEnd.Marker.time)
+            {
+                switch (EditorConfig.Instance.MarkerLoopBehavior.Value)
+                {
+                    case MarkerLoopBehavior.Loop: {
+                            AudioManager.inst.SetMusicTime(markerLoopBegin.Marker.time);
+                            break;
+                        }
+                    case MarkerLoopBehavior.StopAtStart: {
+                            AudioManager.inst.SetMusicTime(markerLoopBegin.Marker.time);
+                            RTEditor.inst.SetPlaying(false);
+                            break;
+                        }
+                    case MarkerLoopBehavior.StopAtEnd: {
+                            RTEditor.inst.SetPlaying(false);
+                            break;
+                        }
+                }
+            }
+        }
 
         #region Editor Rendering
 

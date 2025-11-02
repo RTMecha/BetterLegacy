@@ -22,14 +22,24 @@ using BetterLegacy.Core.Runtime;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
 using BetterLegacy.Editor.Data.Timeline;
+using BetterLegacy.Editor.Managers.Settings;
 
 namespace BetterLegacy.Editor.Managers
 {
-    public class RTEventEditor : MonoBehaviour
+    /// <summary>
+    /// Manages editing <see cref="EventKeyframe"/>s on the <see cref="EditorTimeline.LayerType.Events"/> layer.
+    /// <br></br>Wraps <see cref="EventEditor"/>.
+    /// </summary>
+    public class RTEventEditor : BaseEditor<RTEventEditor, RTEventEditorSettings, EventEditor>
     {
-        public static RTEventEditor inst;
+        /* TODO:
+        - Custom event bin order.
+        - Cleanup UI generation code.
+         */
 
-        #region Variables
+        #region Values
+
+        public override EventEditor BaseInstance { get => EventEditor.inst; set => EventEditor.inst = value; }
 
         public EventEditorDialog Dialog { get; set; }
         public EditorDialog MultiDialog { get; set; }
@@ -146,12 +156,10 @@ namespace BetterLegacy.Editor.Managers
 
         #endregion
 
-        public static void Init() => EventEditor.inst?.gameObject?.AddComponent<RTEventEditor>();
+        #region Functions
 
-        void Awake()
+        public override void OnInit()
         {
-            inst = this;
-
             eventEditorDialog = EditorManager.inst.GetDialog("Event Editor").Dialog;
             EventEditor.inst.EventColors = EventLayerColors;
 
@@ -3438,6 +3446,8 @@ namespace BetterLegacy.Editor.Managers
             EventEditor.inst.EventLabels.SetActive(active);
             EventEditor.inst.EventHolders.SetActive(active);
         }
+
+        #endregion
 
         #endregion
     }

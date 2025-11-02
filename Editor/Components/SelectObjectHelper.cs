@@ -579,7 +579,10 @@ namespace BetterLegacy.Editor.Components
             }
         }
 
-        public bool Active => CoreHelper.IsEditing && EditorConfig.Instance.ObjectDraggerHelper.Value && (ObjectEditor.inst.Dialog.IsCurrent || RTPrefabEditor.inst.PrefabObjectEditor.IsCurrent || RTBackgroundEditor.inst.Dialog.IsCurrent);
+        public bool Active => CoreHelper.IsEditing && EditorConfig.Instance.ObjectDraggerHelper.Value &&
+            (ObjectEditor.inst && ObjectEditor.inst.Dialog && ObjectEditor.inst.Dialog.IsCurrent ||
+            RTPrefabEditor.inst && RTPrefabEditor.inst.PrefabObjectEditor && RTPrefabEditor.inst.PrefabObjectEditor.IsCurrent ||
+            RTBackgroundEditor.inst && RTBackgroundEditor.inst.Dialog && RTBackgroundEditor.inst.Dialog.IsCurrent);
 
         bool cachedActive;
 

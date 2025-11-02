@@ -13,21 +13,32 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Editor.Data.Dialogs;
+using BetterLegacy.Editor.Managers.Settings;
 
 namespace BetterLegacy.Editor.Managers
 {
-    public class RTSettingEditor : MonoBehaviour
+    /// <summary>
+    /// Manages editing editor level settings.
+    /// <br></br>Wraps <see cref="SettingEditor"/>.
+    /// </summary>
+    public class RTSettingEditor : BaseEditor<RTSettingEditor, RTSettingEditorSettings, SettingEditor>
     {
-        #region Init
+        #region Values
 
-        public static RTSettingEditor inst;
+        public override SettingEditor BaseInstance { get => SettingEditor.inst; set => SettingEditor.inst = value; }
 
-        public static void Init() => SettingEditor.inst.gameObject.AddComponent<RTSettingEditor>();
+        public SettingEditorDialog Dialog { get; set; }
 
-        void Awake()
+        public float BPMMulti => 60f / (RTEditor.inst.editorInfo?.bpm ?? 140f);
+
+        GameObject colorPrefab;
+
+        #endregion
+
+        #region Methods
+
+        public override void OnInit()
         {
-            inst = this;
-
             try
             {
                 Dialog = new SettingEditorDialog();
@@ -56,21 +67,7 @@ namespace BetterLegacy.Editor.Managers
             UIManager.SetRectTransform(delete.transform.AsRT(), new Vector2(748f, 0f), new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.one, new Vector2(32f, 32f));
         }
 
-        #endregion
-
-        #region Values
-
-        public SettingEditorDialog Dialog { get; set; }
-
-        public float BPMMulti => 60f / (RTEditor.inst.editorInfo?.bpm ?? 140f);
-
-        GameObject colorPrefab;
-
-        #endregion
-
-        #region Methods
-
-        void Update()
+        public override void OnTick()
         {
             if (CoreHelper.InEditor && EditorManager.inst.isEditing && EditorManager.inst.hasLoadedLevel &&
                 GameData.Current && GameData.Current.events != null &&

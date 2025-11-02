@@ -38,30 +38,19 @@ using BetterLegacy.Editor.Data.Dialogs;
 using BetterLegacy.Editor.Data.Elements;
 using BetterLegacy.Editor.Data.Popups;
 using BetterLegacy.Editor.Data.Timeline;
+using BetterLegacy.Editor.Managers.Settings;
 
 namespace BetterLegacy.Editor.Managers
 {
     /// <summary>
     /// Base modded editor manager. RT stands for RhythmTech.
     /// </summary>
-    public class RTEditor : MonoBehaviour
+    public class RTEditor : BaseManager<RTEditor, RTEditorSettings>
     {
         #region Init
 
-        /// <summary>
-        /// The <see cref="RTEditor"/> global instance reference.
-        /// </summary>
-        public static RTEditor inst;
-
-        /// <summary>
-        /// Initializes <see cref="RTEditor"/>.
-        /// </summary>
-        public static void Init() => EditorManager.inst.gameObject.AddComponent<RTEditor>();
-
-        void Awake()
+        public override void OnInit()
         {
-            inst = this;
-
             InitFileWatchers();
 
             CreateGlobalSettings();
@@ -409,7 +398,7 @@ namespace BetterLegacy.Editor.Managers
             CoreHelper.Log($"RTEDITOR INIT -> DONE!");
         }
 
-        void Start()
+        public override void OnManagerStart()
         {
             if (string.IsNullOrEmpty(LegacyPlugin.LevelStartupPath))
                 return;
@@ -421,10 +410,11 @@ namespace BetterLegacy.Editor.Managers
             LegacyPlugin.LevelStartupPath = null;
         }
 
-        void OnDestroy()
+        public override void OnManagerDestroyed()
         {
             CoreHelper.LogError($"RTEditor was destroyed!");
             EditorConfig.AdjustPositionInputsChanged = null;
+            EditorManager.inst = null;
         }
 
         #region Full Init
@@ -1112,7 +1102,7 @@ namespace BetterLegacy.Editor.Managers
 
         #region Tick Update
 
-        void Update()
+        public override void OnTick()
         {
             editorInfo?.timer.Update();
 

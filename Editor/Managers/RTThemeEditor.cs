@@ -24,21 +24,58 @@ using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
 using BetterLegacy.Editor.Data.Elements;
 using BetterLegacy.Editor.Data.Popups;
+using BetterLegacy.Editor.Managers.Settings;
 
 namespace BetterLegacy.Editor.Managers
 {
-    public class RTThemeEditor : MonoBehaviour
+    /// <summary>
+    /// Manages editing <see cref="BeatmapTheme"/>s.
+    /// <br></br>Wraps <see cref="ThemeEditor"/>.
+    /// </summary>
+    public class RTThemeEditor : BaseEditor<RTThemeEditor, RTThemeEditorSettings, ThemeEditor>
     {
-        #region Init
+        #region Values
 
-        public static RTThemeEditor inst;
+        public override ThemeEditor BaseInstance { get => ThemeEditor.inst; set => ThemeEditor.inst = value; }
 
-        public static void Init() => ThemeEditor.inst?.gameObject?.AddComponent<RTThemeEditor>();
+        public BeatmapTheme PreviewTheme { get; set; }
 
-        void Awake()
+        public ContentPopup Popup { get; set; }
+
+        public ThemeKeyframeDialog Dialog { get; set; }
+
+        public bool loadingThemes = false;
+
+        public bool shouldCutTheme;
+        public string copiedThemePath;
+
+        public bool themesLoading = false;
+
+        public GameObject themePopupPanelPrefab;
+
+        public static int themesPerPage = 10;
+
+        public static int ThemePreviewColorCount => 4;
+
+        public List<ThemePanel> ExternalThemePanels { get; set; } = new List<ThemePanel>();
+        public List<ThemePanel> InternalThemePanels { get; set; } = new List<ThemePanel>();
+
+        public List<string> themeIDs = new List<string>();
+
+        public static int eventThemesPerPage = 30;
+        public int ExternalThemesCount => ExternalThemePanels.FindAll(x => RTString.SearchString(Dialog.SearchTerm, x.DisplayName)).Count;
+        public int InternalThemesCount => InternalThemePanels.FindAll(x => RTString.SearchString(Dialog.SearchTerm, x.DisplayName)).Count;
+
+        public bool filterUsed;
+
+        public GameObject themeUpFolderButton;
+
+        #endregion
+
+        #region Methods
+        
+        public override void OnInit()
         {
-            inst = this;
-
             Dialog = RTEventEditor.inst.Dialog.keyframeDialogs[4] as ThemeKeyframeDialog;
 
             try
@@ -378,46 +415,6 @@ namespace BetterLegacy.Editor.Managers
             PreviewTheme = ThemeManager.inst.DefaultThemes[0];
             CoroutineHelper.StartCoroutine(LoadThemes());
         }
-
-        #endregion
-
-        #region Values
-
-        public BeatmapTheme PreviewTheme { get; set; }
-
-        public ContentPopup Popup { get; set; }
-
-        public ThemeKeyframeDialog Dialog { get; set; }
-
-        public bool loadingThemes = false;
-
-        public bool shouldCutTheme;
-        public string copiedThemePath;
-
-        public bool themesLoading = false;
-
-        public GameObject themePopupPanelPrefab;
-
-        public static int themesPerPage = 10;
-
-        public static int ThemePreviewColorCount => 4;
-
-        public List<ThemePanel> ExternalThemePanels { get; set; } = new List<ThemePanel>();
-        public List<ThemePanel> InternalThemePanels { get; set; } = new List<ThemePanel>();
-
-        public List<string> themeIDs = new List<string>();
-
-        public static int eventThemesPerPage = 30;
-        public int ExternalThemesCount => ExternalThemePanels.FindAll(x => RTString.SearchString(Dialog.SearchTerm, x.DisplayName)).Count;
-        public int InternalThemesCount => InternalThemePanels.FindAll(x => RTString.SearchString(Dialog.SearchTerm, x.DisplayName)).Count;
-
-        public bool filterUsed;
-
-        public GameObject themeUpFolderButton;
-
-        #endregion
-
-        #region Methods
 
         public void OnDialog(bool enabled)
         {

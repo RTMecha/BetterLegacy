@@ -20,11 +20,40 @@ using BetterLegacy.Editor.Data;
 namespace BetterLegacy.Editor.Managers
 {
     /// <summary>
-    /// Class used to browse files while still in the editor, allowing users to select files outside of the game directory.
+    /// Used to browse files while still in the editor, allowing users to select files outside of the game directory.
+    /// <br></br>Wraps <see cref="FileBrowserTest"/>.
     /// </summary>
     public class RTFileBrowser : MonoBehaviour
     {
+        #region Values
+
         public static RTFileBrowser inst;
+
+        ContextClickable contentContextMenu;
+
+        Coroutine currentDestroyPreviewCoroutine;
+
+        AudioSource currentPreview;
+
+        public Transform viewport;
+
+        public InputField folderBar;
+
+        public GameObject filePrefab;
+
+        public GameObject backPrefab;
+
+        public GameObject folderPrefab;
+
+        public InputField oggFileInput;
+
+        public string defaultDir = string.Empty;
+
+        public TextMeshProUGUI title;
+
+        #endregion
+
+        #region Functions
 
         void Awake()
         {
@@ -42,8 +71,6 @@ namespace BetterLegacy.Editor.Managers
                 CoreHelper.LogException(ex);
             }
         }
-
-        ContextClickable contentContextMenu;
 
         public void UpdateBrowserFile(string[] fileExtensions, Action<string> onSelectFile = null)
         {
@@ -298,7 +325,7 @@ namespace BetterLegacy.Editor.Managers
             var selectedPath = Directory.GetCurrentDirectory();
             if (EditorConfig.Instance.FileBrowserRemembersLocation.Value && RTFile.DirectoryExists(defaultDir))
                 selectedPath = defaultDir;
-            UpdateBrowserFolder(selectedPath, "", onSelectFolder);
+            UpdateBrowserFolder(selectedPath, string.Empty, onSelectFolder);
         }
         
         public void UpdateBrowserFolder(string selectedPath, string specificName, Action<string> onSelectFolder = null)
@@ -409,24 +436,6 @@ namespace BetterLegacy.Editor.Managers
 
         string UpdatePath(string selectedPath) => !RTFile.DirectoryExists(selectedPath) ? Directory.GetCurrentDirectory() : selectedPath;
 
-        Coroutine currentDestroyPreviewCoroutine;
-
-        AudioSource currentPreview;
-
-        public Transform viewport;
-
-        public InputField folderBar;
-
-        public GameObject filePrefab;
-
-        public GameObject backPrefab;
-
-        public GameObject folderPrefab;
-
-        public InputField oggFileInput;
-
-        public string defaultDir = "";
-
-        public TextMeshProUGUI title;
+        #endregion
     }
 }

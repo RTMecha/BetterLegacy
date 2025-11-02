@@ -10,6 +10,7 @@ using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Modifiers;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Managers.Settings;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Data.Dialogs;
@@ -17,19 +18,52 @@ using BetterLegacy.Editor.Data.Popups;
 
 namespace BetterLegacy.Editor.Managers
 {
-    public class ModifiersEditor : MonoBehaviour
+    /// <summary>
+    /// Manages the different modifier editors.
+    /// </summary>
+    public class ModifiersEditor : BaseManager<ModifiersEditor, EditorManagerSettings>
     {
-        public static ModifiersEditor inst;
+        #region Values
+
+        /// <summary>
+        /// The default modifier list content popup.
+        /// </summary>
+        public ContentPopup DefaultModifiersPopup { get; set; }
 
         public GameObject modifierCardPrefab;
         public GameObject modifierAddPrefab;
 
-        public static void Init() => Creator.NewGameObject(nameof(ModifiersEditor), EditorManager.inst.transform.parent).AddComponent<ModifiersEditor>();
-
-        void Awake()
+        /// <summary>
+        /// Dictionary of copied modifiers for each modifier reference type. Each type is already initialized with an empty list in the dictionary.
+        /// </summary>
+        public Dictionary<ModifierReferenceType, List<Modifier>> copiedModifiers = new Dictionary<ModifierReferenceType, List<Modifier>>()
         {
-            inst = this;
+            { ModifierReferenceType.BeatmapObject, new List<Modifier>() },
+            { ModifierReferenceType.BackgroundObject, new List<Modifier>() },
+            { ModifierReferenceType.PrefabObject, new List<Modifier>() },
+            { ModifierReferenceType.PAPlayer, new List<Modifier>() },
+            { ModifierReferenceType.PlayerModel, new List<Modifier>() },
+            { ModifierReferenceType.PlayerObject, new List<Modifier>() },
+            { ModifierReferenceType.GameData, new List<Modifier>() },
+            { ModifierReferenceType.ModifierBlock, new List<Modifier>() },
+        };
 
+        public GameObject booleanBar;
+
+        public GameObject numberInput;
+
+        public GameObject stringInput;
+
+        public GameObject dropdownBar;
+
+        public GameObject easingBar;
+
+        #endregion
+
+        #region Functions
+
+        public override void OnInit()
+        {
             #region Prefabs
 
             modifierCardPrefab = Creator.NewUIObject("Modifier Prefab", transform);
@@ -121,41 +155,40 @@ namespace BetterLegacy.Editor.Managers
 
             #endregion
 
-            DefaultModifiersPopup = RTEditor.inst.GeneratePopup(EditorPopup.DEFAULT_MODIFIERS_POPUP, "Choose a modifer to add", Vector2.zero, new Vector2(600f, 400f), _val =>
-            {
-                searchTerm = _val;
-            }, placeholderText: "Search for default Modifier...");
+            DefaultModifiersPopup = RTEditor.inst.GeneratePopup(EditorPopup.DEFAULT_MODIFIERS_POPUP, "Choose a modifer to add", Vector2.zero, new Vector2(600f, 400f), _val => { }, placeholderText: "Search for default Modifier...");
         }
 
+        /// <summary>
+        /// Gets the copied list of modifiers associated with a specific reference type.
+        /// </summary>
+        /// <param name="referenceType">The reference type.</param>
+        /// <returns>If a reference type exists in the copied modifiers dictionary, returns the list from the dictionary, otherwise returns null.</returns>
         public List<Modifier> GetCopiedModifiers(ModifierReferenceType referenceType) => copiedModifiers.TryGetValue(referenceType, out List<Modifier> list) ? list : null;
-
-        public Dictionary<ModifierReferenceType, List<Modifier>> copiedModifiers = new Dictionary<ModifierReferenceType, List<Modifier>>()
-        {
-            { ModifierReferenceType.BeatmapObject, new List<Modifier>() },
-            { ModifierReferenceType.BackgroundObject, new List<Modifier>() },
-            { ModifierReferenceType.PrefabObject, new List<Modifier>() },
-            { ModifierReferenceType.PAPlayer, new List<Modifier>() },
-            { ModifierReferenceType.PlayerModel, new List<Modifier>() },
-            { ModifierReferenceType.PlayerObject, new List<Modifier>() },
-            { ModifierReferenceType.GameData, new List<Modifier>() },
-            { ModifierReferenceType.ModifierBlock, new List<Modifier>() },
-        };
-
-        #region Default Modifiers
-
-        public ContentPopup DefaultModifiersPopup { get; set; }
-
+        
+        /// <summary>
+        /// Opens the default modifier list popup.
+        /// </summary>
+        /// <param name="referenceType">The reference type.</param>
+        /// <param name="modifyable">The modifyable reference.</param>
+        /// <param name="addIndex">Index to insert the modifier to. If it is less than 0, then the modifier will be added to the end.</param>
+        /// <param name="dialog">Dialog to render on modifier added.</param>
         public void OpenDefaultModifiersList(ModifierReferenceType referenceType, IModifyable modifyable, int addIndex = -1, ModifiersEditorDialog dialog = null)
         {
             DefaultModifiersPopup.Open();
             RefreshDefaultModifiersList(referenceType, modifyable, addIndex, dialog);
         }
 
+        /// <summary>
+        /// Renders the default modifier list popup.
+        /// </summary>
+        /// <param name="referenceType">The reference type.</param>
+        /// <param name="modifyable">The modifyable reference.</param>
+        /// <param name="addIndex">Index to insert the modifier to. If it is less than 0, then the modifier will be added to the end.</param>
+        /// <param name="dialog">Dialog to render on modifier added.</param>
         public void RefreshDefaultModifiersList(ModifierReferenceType referenceType, IModifyable modifyable, int addIndex = -1, ModifiersEditorDialog dialog = null)
         {
             DefaultModifiersPopup.SearchField.onValueChanged.NewListener(_val =>
             {
-                searchTerm = _val;
                 RefreshDefaultModifiersList(referenceType, modifyable, addIndex, dialog);
             });
 
@@ -167,7 +200,7 @@ namespace BetterLegacy.Editor.Managers
 
             foreach (var defaultModifier in ModifiersManager.inst.modifiers)
             {
-                if (!SearchModifier(searchTerm, defaultModifier) || !defaultModifier.compatibility.CompareType(referenceType) || defaultModifier.compatibility.StoryOnly && !ModifiersHelper.development)
+                if (!SearchModifier(DefaultModifiersPopup.SearchTerm, defaultModifier) || !defaultModifier.compatibility.CompareType(referenceType) || defaultModifier.compatibility.StoryOnly && !ModifiersHelper.development)
                     continue;
 
                 var name = $"{defaultModifier.Name} ({defaultModifier.type})";
@@ -223,15 +256,11 @@ namespace BetterLegacy.Editor.Managers
 
         Sprite GetSprite(Modifier modifier) => modifier.Name.StartsWith("get") ? EditorSprites.DownArrow : modifier.type == Modifier.Type.Trigger ? EditorSprites.QuestionSprite : EditorSprites.ExclaimSprite;
 
-        public string searchTerm;
-
-        public bool SearchModifier(string searchTerm, Modifier modifier) =>
+        bool SearchModifier(string searchTerm, Modifier modifier) =>
             string.IsNullOrEmpty(searchTerm) ||
             RTString.SearchString(searchTerm, modifier.Name) ||
             searchTerm.ToLower() == "action" && modifier.type == Modifier.Type.Action ||
             searchTerm.ToLower() == "trigger" && modifier.type == Modifier.Type.Trigger;
-
-        #endregion
 
         #region UI Part Handlers
 
@@ -280,16 +309,6 @@ namespace BetterLegacy.Editor.Managers
 
             dialog.pasteModifier = pasteModifier;
         }
-
-        public GameObject booleanBar;
-
-        public GameObject numberInput;
-
-        public GameObject stringInput;
-
-        public GameObject dropdownBar;
-
-        public GameObject easingBar;
 
         GameObject Base(string name)
         {
@@ -433,7 +452,7 @@ namespace BetterLegacy.Editor.Managers
 
             return gameObject;
         }
-        
+
         GameObject EasingDropdown()
         {
             var gameObject = Base("Dropdown");
@@ -463,6 +482,8 @@ namespace BetterLegacy.Editor.Managers
 
             return gameObject;
         }
+
+        #endregion
 
         #endregion
     }

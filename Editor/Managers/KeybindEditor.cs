@@ -18,6 +18,7 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Managers.Settings;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Components;
@@ -33,24 +34,12 @@ namespace BetterLegacy.Editor.Managers
     /// <summary>
     /// Editor class that manages custom keybinds.
     /// </summary>
-    public class KeybindEditor : MonoBehaviour
+    public class KeybindEditor : BaseManager<KeybindEditor, EditorManagerSettings>
     {
         #region Init
 
-        /// <summary>
-        /// The <see cref="KeybindEditor"/> global instance reference.
-        /// </summary>
-        public static KeybindEditor inst;
-
-        /// <summary>
-        /// Initializes <see cref="KeybindEditor"/>.
-        /// </summary>
-        public static void Init() => Creator.NewGameObject(nameof(KeybindEditor), EditorManager.inst.transform.parent).AddComponent<KeybindEditor>();
-
-        void Awake()
+        public override void OnInit()
         {
-            inst = this;
-
             try
             {
                 keybindFunctions = new List<KeybindFunction>()
@@ -282,7 +271,7 @@ namespace BetterLegacy.Editor.Managers
             } // init dialog
         }
 
-        void Update()
+        public override void OnTick()
         {
             if (!CurrentProfile)
                 return;
@@ -413,7 +402,7 @@ namespace BetterLegacy.Editor.Managers
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         /// <summary>
         /// Creates the default profile.

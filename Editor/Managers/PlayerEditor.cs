@@ -23,6 +23,7 @@ using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Managers.Settings;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Data;
@@ -32,48 +33,10 @@ using BetterLegacy.Editor.Data.Popups;
 namespace BetterLegacy.Editor.Managers
 {
     /// <summary>
-    /// The Player editor.
+    /// Manages editing <see cref="PlayerModel"/>s, <see cref="PlayerControl"/> and other misc player related things.
     /// </summary>
-    public class PlayerEditor : MonoBehaviour
+    public class PlayerEditor : BaseManager<PlayerEditor, EditorManagerSettings>
     {
-        #region Init
-
-        public static PlayerEditor inst;
-
-        public static void Init() => Creator.NewGameObject(nameof(PlayerEditor), EditorManager.inst.transform.parent).AddComponent<PlayerEditor>();
-
-        void Awake()
-        {
-            inst = this;
-
-            try
-            {
-                PlayersData.Load(null);
-            }
-            catch (Exception ex)
-            {
-                CoreHelper.LogException(ex);
-            }
-
-            try
-            {
-                Dialog = new PlayerEditorDialog();
-                Dialog.Init();
-            }
-            catch (Exception ex)
-            {
-                CoreHelper.LogException(ex);
-            } // init dialog
-
-            ModelsPopup = RTEditor.inst.GeneratePopup(EditorPopup.PLAYER_MODELS_POPUP, "Player Models", Vector2.zero, Vector2.zero, _val =>
-            {
-                modelSearchTerm = _val;
-                StartCoroutine(RefreshModels());
-            });
-        }
-
-        #endregion
-
         #region Values
 
         public string modelSearchTerm;
@@ -105,7 +68,35 @@ namespace BetterLegacy.Editor.Managers
 
         #endregion
 
-        #region Methods
+        #region Functions
+
+        public override void OnInit()
+        {
+            try
+            {
+                PlayersData.Load(null);
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            }
+
+            try
+            {
+                Dialog = new PlayerEditorDialog();
+                Dialog.Init();
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            } // init dialog
+
+            ModelsPopup = RTEditor.inst.GeneratePopup(EditorPopup.PLAYER_MODELS_POPUP, "Player Models", Vector2.zero, Vector2.zero, _val =>
+            {
+                modelSearchTerm = _val;
+                StartCoroutine(RefreshModels());
+            });
+        }
 
         public void ShowTab(Tab tab)
         {

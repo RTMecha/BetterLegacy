@@ -17,44 +17,19 @@ using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Editor.Data.Dialogs;
+using BetterLegacy.Editor.Managers.Settings;
 
 namespace BetterLegacy.Editor.Managers
 {
     /// <summary>
     /// Manages editing level metadata.
+    /// <br></br>Wraps <see cref="MetadataEditor"/>.
     /// </summary>
-    public class RTMetaDataEditor : MonoBehaviour
+    public class RTMetaDataEditor : BaseEditor<RTMetaDataEditor, RTMetaDataEditorSettings, MetadataEditor>
     {
-        #region Init
-
-        /// <summary>
-        /// The <see cref="RTMetaDataEditor"/> global instance reference.
-        /// </summary>
-        public static RTMetaDataEditor inst;
-
-        /// <summary>
-        /// Initializes <see cref="RTMetaDataEditor"/>.
-        /// </summary>
-        public static void Init() => MetadataEditor.inst?.gameObject?.AddComponent<RTMetaDataEditor>();
-
-        void Awake()
-        {
-            inst = this;
-
-            try
-            {
-                Dialog = new MetaDataEditorDialog();
-                Dialog.Init();
-            }
-            catch (Exception ex)
-            {
-                CoreHelper.LogException(ex);
-            } // init dialog
-        }
-
-        #endregion
-
         #region Values
+
+        public override MetadataEditor BaseInstance { get => MetadataEditor.inst; set => MetadataEditor.inst = value; }
 
         /// <summary>
         /// The MetaData editor dialog.
@@ -73,7 +48,20 @@ namespace BetterLegacy.Editor.Managers
 
         #endregion
 
-        #region Methods
+        #region Functions
+
+        public override void OnInit()
+        {
+            try
+            {
+                Dialog = new MetaDataEditorDialog();
+                Dialog.Init();
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            } // init dialog
+        }
 
         #region Dialog
 
@@ -478,8 +466,6 @@ namespace BetterLegacy.Editor.Managers
 
         #endregion
 
-        #region Functions
-
         public void OpenIconSelector()
         {
             string jpgFile = FileBrowser.OpenSingleFile("jpg");
@@ -647,8 +633,6 @@ namespace BetterLegacy.Editor.Managers
                     EditorServerManager.inst.DownloadLevel(jn["id"], RTFile.RemoveEndSlash(EditorLevelManager.inst.CurrentLevel.path), jn["name"], EditorLevelManager.inst.ILoadLevel(EditorLevelManager.inst.CurrentLevel).Start);
                 });
         }
-
-        #endregion
 
         #endregion
     }

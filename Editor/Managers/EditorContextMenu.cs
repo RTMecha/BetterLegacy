@@ -12,6 +12,8 @@ using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Managers.Settings;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Data;
 
@@ -22,19 +24,9 @@ namespace BetterLegacy.Editor.Managers
     /// <summary>
     /// Provides some extra editor functionality via right clicking an element in the editor.
     /// </summary>
-    public class EditorContextMenu : MonoBehaviour
+    public class EditorContextMenu : BaseManager<EditorContextMenu, EditorManagerSettings>
     {
-        #region Init
-
-        public static EditorContextMenu inst;
-
-        public static void Init() => Creator.NewGameObject(nameof(EditorContextMenu), EditorManager.inst.transform.parent).AddComponent<EditorContextMenu>();
-
-        void Awake()
-        {
-            inst = this;
-            CreateContextMenu();
-        }
+        #region Values
 
         /// <summary>
         /// The default width the context menu should have.
@@ -46,11 +38,9 @@ namespace BetterLegacy.Editor.Managers
 
         #endregion
 
-        #region Methods
+        #region Functions
 
-        #region Internal
-
-        void CreateContextMenu()
+        public override void OnInit()
         {
             try
             {
@@ -80,8 +70,6 @@ namespace BetterLegacy.Editor.Managers
                 CoreHelper.LogException(ex);
             }
         }
-
-        #endregion
 
         /// <summary>
         /// Adds the editor context menu to an object.
