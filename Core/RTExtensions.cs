@@ -1236,6 +1236,15 @@ namespace BetterLegacy.Core
             }
         }
 
+        public static IEnumerable<TResult> SelectWhere<TSource, TResult>(this IEnumerable<TSource> collection, Func<TSource, bool> predicate, Func<TSource, TResult> selector)
+        {
+            foreach (var item in collection)
+            {
+                if (predicate(item))
+                    yield return selector(item);
+            }
+        }
+
         #endregion
 
         #region JSON
@@ -2363,7 +2372,7 @@ namespace BetterLegacy.Core
 
             modifyable.Modifiers.Clear();
             for (int i = 0; i < orig.Modifiers.Count; i++)
-                modifyable.Modifiers.Add(orig.Modifiers[i].Copy());
+                modifyable.Modifiers.Add(orig.Modifiers[i].Copy(false));
         }
 
         /// <summary>
