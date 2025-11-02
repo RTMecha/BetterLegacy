@@ -5108,7 +5108,28 @@
                 "lang": 0
               }
             ]
-          } // updatePrefab
+          }, // updatePrefab
+
+          {
+            "name": "Object Modifier - spawnClone (Action)",
+            "tooltips": [
+              {
+                "desc": "spawnClone (Action)",
+                "hint": "Spawns a copy of the object and all of its children.",
+                "lang": 0
+              }
+            ]
+          }, // spawnClone
+          {
+            "name": "Object Modifier - spawnCloneMath (Action)",
+            "tooltips": [
+              {
+                "desc": "spawnCloneMath (Action)",
+                "hint": "Spawns a copy of the object and all of its children.",
+                "lang": 0
+              }
+            ]
+          } // spawnCloneMath
         ],
 
         // Updates
