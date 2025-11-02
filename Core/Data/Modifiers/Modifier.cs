@@ -205,6 +205,11 @@ namespace BetterLegacy.Core.Data.Modifiers
         /// </summary>
         public int runCount = 0;
 
+        /// <summary>
+        /// If the modifier should run.
+        /// </summary>
+        public bool enabled = true;
+
         #endregion
 
         #region Editor
@@ -251,6 +256,7 @@ namespace BetterLegacy.Core.Data.Modifiers
             elseIf = orig.elseIf;
             constant = orig.constant;
             triggerCount = orig.triggerCount;
+            enabled = orig.enabled;
 
             prefabInstanceOnly = orig.prefabInstanceOnly;
             groupAlive = orig.groupAlive;
@@ -280,6 +286,8 @@ namespace BetterLegacy.Core.Data.Modifiers
             prefabInstanceOnly = jn["po"].AsBool;
             groupAlive = jn["ga"].AsBool;
             subPrefab = jn["sub"].AsBool;
+            if (jn["en"] != null)
+                enabled = jn["en"].AsBool;
 
             collapse = jn["collapse"].AsBool;
             customName = jn["cn"] ?? string.Empty;
@@ -332,6 +340,8 @@ namespace BetterLegacy.Core.Data.Modifiers
                 jn["ga"] = groupAlive;
             if (subPrefab)
                 jn["sub"] = subPrefab;
+            if (!enabled)
+                jn["en"] = enabled;
 
             if (collapse)
                 jn["collapse"] = collapse;
