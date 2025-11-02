@@ -687,6 +687,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public List<PAAnimation> animations = new List<PAAnimation>();
 
+        public List<BeatmapVariable> variables = new List<BeatmapVariable>();
+
         public RTLevelBase ParentRuntime { get; set; }
 
         public enum DuplicateBehaviorType
@@ -717,6 +719,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             modifiers = new List<Modifier>(orig.modifiers.Select(x => x.Copy(false)));
             modifierBlocks = new List<ModifierBlock>(orig.modifierBlocks.Select(x => x.Copy(false)));
             mainBackgroundLayer = orig.mainBackgroundLayer;
+            variables = new List<BeatmapVariable>(orig.variables.Select(x => x.Copy(false)));
 
             events.Clear();
             for (int i = 0; i < orig.events.Count; i++)
@@ -1293,6 +1296,11 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (jn["anims"] != null)
                 for (int i = 0; i < jn["anims"].Count; i++)
                     animations.Add(PAAnimation.Parse(jn["anims"][i]));
+
+            variables.Clear();
+            if (jn["vars"] != null)
+                for (int i = 0; i < jn["vars"].Count; i++)
+                    variables.Add(BeatmapVariable.Parse(jn["vars"][i]));
         }
 
         public override JSONNode ToJSONVG()
@@ -1652,6 +1660,16 @@ namespace BetterLegacy.Core.Data.Beatmap
             for (int i = 0; i < animations.Count; i++)
                 jn["anims"][i] = animations[i].ToJSON();
 
+            var index = 0;
+            for (int i = 0; i < variables.Count; i++)
+            {
+                var variable = variables[i];
+                if (string.IsNullOrEmpty(variable.name))
+                    continue;
+                jn["vars"][index] = variable.ToJSON();
+                index++;
+            }
+
             for (int i = 0; i < events.Count; i++)
                 for (int j = 0; j < events[i].Count; j++)
                     if (EventTypes.Length > i)
@@ -1835,6 +1853,21 @@ namespace BetterLegacy.Core.Data.Beatmap
                 }
             }
         }
+
+        /// <summary>
+        /// Gets a variable from the level.
+        /// </summary>
+        /// <param name="name">Name of the variable to get.</param>
+        /// <returns>Returns a found variable.</returns>
+        public BeatmapVariable GetVariable(string name) => variables.Find(x => x.name == name);
+
+        /// <summary>
+        /// Gets the value of a variable or a default value.
+        /// </summary>
+        /// <param name="name">Name of the variable to find.</param>
+        /// <param name="defaultValue">Default value to return if no variable is found.</param>
+        /// <returns>Returns the variable value if a matching variable is found, otherwise returns the default value.</returns>
+        public string GetVariableOrDefault(string name, string defaultValue) => variables.TryFind(x => x.name == name, out BeatmapVariable variable) ? variable.value : defaultValue;
 
         public Assets GetAssets() => assets;
 
