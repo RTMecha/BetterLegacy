@@ -122,7 +122,7 @@ namespace BetterLegacy.Editor.Managers
             SetCurrentBackground(GameData.Current.backgroundObjects.Count > 0 ? GameData.Current.backgroundObjects[0] : null);
 
             RTLevel.Current?.UpdateBackgroundObjects();
-            EditorManager.inst.DisplayNotification($"Pasted all copied Background Objects into level{(overwrite ? " and cleared the original list" : "")}.", 2f, EditorManager.NotificationType.Success);
+            EditorManager.inst.DisplayNotification($"Pasted all copied Background Objects into level{(overwrite ? " and cleared the original list" : string.Empty)}.", 2f, EditorManager.NotificationType.Success);
         }
 
         public void PasteBackground()

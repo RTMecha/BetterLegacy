@@ -43,8 +43,7 @@ namespace BetterLegacy.Editor.Data.Planners
                     level.GameObject = gameObject;
 
                     level.Button = gameObject.GetComponent<Button>();
-                    level.Button.onClick.ClearAll();
-                    level.Button.onClick.AddListener(() =>
+                    level.Button.onClick.NewListener(() =>
                     {
                         string path = $"{RTFile.ApplicationDirectory}beatmaps/{RTFile.ReplaceSlash(level.Path).Remove("/" + Level.LEVEL_LSB)}";
                         if (Level.TryVerify(path, true, out Level actualLevel))
@@ -64,8 +63,7 @@ namespace BetterLegacy.Editor.Data.Planners
                     EditorThemeManager.ApplyLightText(level.DescriptionUI);
 
                     var delete = gameObject.transform.Find("delete").GetComponent<DeleteButtonStorage>();
-                    delete.button.onClick.ClearAll();
-                    delete.button.onClick.AddListener(() =>
+                    delete.button.onClick.NewListener(() =>
                     {
                         Levels.RemoveAt(index);
                         UpdateTimeline();
@@ -76,8 +74,7 @@ namespace BetterLegacy.Editor.Data.Planners
                     EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
 
                     var edit = gameObject.transform.Find("edit").GetComponent<Button>();
-                    edit.onClick.ClearAll();
-                    edit.onClick.AddListener(() =>
+                    edit.onClick.NewListener(() =>
                     {
                         CoreHelper.Log($"Editing {Name}");
                         ProjectPlanner.inst.OpenEventEditor(level);
@@ -92,14 +89,13 @@ namespace BetterLegacy.Editor.Data.Planners
                 Add = ProjectPlanner.inst.timelineAddPrefab.Duplicate(Content, "add");
                 Add.transform.localScale = Vector3.one;
                 var button = Add.GetComponent<Button>();
-                button.onClick.ClearAll();
-                button.onClick.AddListener(() =>
+                button.onClick.NewListener(() =>
                 {
                     var level = new Event
                     {
                         Name = "New Level",
                         Description = "Set my path to a level in your beatmaps folder and then click me!",
-                        Path = ""
+                        Path = string.Empty
                     };
 
                     Levels.Add(level);
@@ -174,15 +170,13 @@ namespace BetterLegacy.Editor.Data.Planners
             EditorThemeManager.ApplyLightText(NameUI);
 
             var edit = gameObject.transform.Find("edit").GetComponent<Button>();
-            edit.onClick.ClearAll();
-            edit.onClick.AddListener(() => ProjectPlanner.inst.OpenTimelineEditor(this));
+            edit.onClick.NewListener(() => ProjectPlanner.inst.OpenTimelineEditor(this));
 
             EditorThemeManager.ApplyGraphic(edit.image, ThemeGroup.Function_2_Normal, true);
             EditorThemeManager.ApplyGraphic(edit.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Function_2_Text);
 
             var delete = gameObject.transform.Find("delete").GetComponent<DeleteButtonStorage>();
-            delete.button.onClick.ClearAll();
-            delete.button.onClick.AddListener(() =>
+            delete.button.onClick.NewListener(() =>
             {
                 ProjectPlanner.inst.timelines.RemoveAll(x => x is TimelinePlanner && x.ID == ID);
                 ProjectPlanner.inst.SaveTimelines();

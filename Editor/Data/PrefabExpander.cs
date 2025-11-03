@@ -337,7 +337,7 @@ namespace BetterLegacy.Editor.Data
                     stri = prefab.name;
 
                 EditorManager.inst.DisplayNotification(
-                    $"Pasted Beatmap Object{(prefab.beatmapObjects.Count == 1 ? "" : "s")} [ {stri} ] {(regen ? "" : $"and kept Prefab Instance ID")} in {elapsed}!",
+                    $"Pasted Beatmap Object{(prefab.beatmapObjects.Count == 1 ? string.Empty : "s")} [ {stri} ] {(regen ? string.Empty : $"and kept Prefab Instance ID")} in {elapsed}!",
                     2f, EditorManager.NotificationType.Success);
             }
 

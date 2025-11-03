@@ -32,7 +32,7 @@ namespace BetterLegacy.Core
             foreach (var obj in matches)
             {
                 var match = (Match)obj;
-                str = str.Replace(match.Groups[0].ToString(), "");
+                str = str.Remove(match.Groups[0].ToString());
             }
             return str;
         }
@@ -218,7 +218,7 @@ namespace BetterLegacy.Core
         /// <returns>Returns a string representing the list.</returns>
         public static string ListToString<T>(List<T> list)
         {
-            string s = "";
+            string s = string.Empty;
             if (list.Count > 0)
                 for (int i = 0; i < list.Count; i++)
                 {
@@ -237,7 +237,7 @@ namespace BetterLegacy.Core
         /// <returns>Returns a string representing the array.</returns>
         public static string ArrayToString<T>(T[] array)
         {
-            string s = "";
+            string s = string.Empty;
             if (array.Length > 0)
                 for (int i = 0; i < array.Length; i++)
                 {
@@ -256,7 +256,7 @@ namespace BetterLegacy.Core
         /// <returns>Returns a string representing the array.</returns>
         public static string ArrayToString(params object[] p)
         {
-            string s = "";
+            string s = string.Empty;
             if (p.Length > 0)
                 for (int i = 0; i < p.Length; i++)
                 {
@@ -457,7 +457,7 @@ namespace BetterLegacy.Core
                     if (int.TryParse(match.Groups[1].ToString(), out int index) && index < PlayerManager.Players.Count)
                         str = str.Replace(match.Groups[0].ToString(), PlayerManager.Players[index].health.ToString());
                     else
-                        str = str.Replace(match.Groups[0].ToString(), "");
+                        str = str.Remove(match.Groups[0].ToString());
                 });
 
             if (str.Contains("playerHealthBar"))
@@ -469,7 +469,7 @@ namespace BetterLegacy.Core
                         str = str.Replace(match.Groups[0].ToString(), ConvertHealthToEquals(player.Health, player.GetControl()?.Health ?? 3));
                     }
                     else
-                        str = str.Replace(match.Groups[0].ToString(), "");
+                        str = str.Remove(match.Groups[0].ToString());
                 });
 
             if (str.Contains("<playerHealthTotal>"))
@@ -805,7 +805,7 @@ namespace BetterLegacy.Core
 
         public static string ConvertBar(string s, float progress, int count = 10)
         {
-            var result = "";
+            var result = string.Empty;
             for (int i = 0; i < (int)(progress / count); i++)
                 result += s;
             while (result.Length < count)
@@ -845,7 +845,7 @@ namespace BetterLegacy.Core
         public static string ByteEncrypt(string input, string seperator = " ")
         {
             int length = input.Length;
-            string result = "";
+            string result = string.Empty;
             for (int i = 0; i < length; i++)
                 result += ((byte)input[i]).ToString() + seperator;
             return result;

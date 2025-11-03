@@ -39,7 +39,7 @@ namespace BetterLegacy.Configs
         /// <summary>
         /// Full path to the config.
         /// </summary>
-        public string FullPath => RTFile.CombinePaths(RTFile.ApplicationDirectory, "profile", RTFile.FormatLegacyFileName(Name).Replace("config", "") + FileFormat.LSC.Dot());
+        public string FullPath => RTFile.CombinePaths(RTFile.ApplicationDirectory, "profile", RTFile.FormatLegacyFileName(Name).Remove("config") + FileFormat.LSC.Dot());
 
         /// <summary>
         /// Name of the tab in the config manager UI.

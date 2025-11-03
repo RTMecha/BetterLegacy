@@ -100,42 +100,42 @@ namespace BetterLegacy.Editor.Managers
                 HyperLinkElement("Reimnop's Catalyst (PA object and animation optimization)\n<b>Source Code</b>", "https://github.com/Reimnop/Catalyst"),
                 HyperLinkElement("Reimnop's ILMath (fast math parser / evaluator)\n<b>Source Code</b>", "https://github.com/Reimnop/ILMath"),
 
-                new EditorDocument.Element("", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element(string.Empty, EditorDocument.Element.Type.Text),
                 HyperLinkElement("Bunny83's SimpleJSON.\n<b>Source code</b>", "https://github.com/Bunny83/SimpleJSON"),
                 HyperLinkElement("Bunny83's File Drag & Drop Unity support.\n<b>Source code</b>", "https://github.com/Bunny83/UnityWindowsFileDrag-Drop"),
 
-                new EditorDocument.Element("", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element(string.Empty, EditorDocument.Element.Type.Text),
                 HyperLinkElement("Keijiro Takahashi's KinoGlitch (AnalogGlitch and DigitalGlitch events)\n<b>Source code</b>", "https://github.com/keijiro/KinoGlitch"),
 
-                new EditorDocument.Element("", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element(string.Empty, EditorDocument.Element.Type.Text),
                 HyperLinkElement("WestHillApps' UniBpmAnalyzer\n<b>Source code</b>", "https://github.com/WestHillApps/UniBpmAnalyzer"),
 
-                new EditorDocument.Element("", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element(string.Empty, EditorDocument.Element.Type.Text),
                 new EditorDocument.Element("Nick Vogt's ColliderCreator (used for creating proper collision for the custom shapes)\n" +
                     $"<b>Website</b>:\n {LinkFormat("https://www.h3xed.com/\n")}" +
                     $"<b>Source code</b>:\n {LinkFormat("https://www.h3xed.com/programming/automatically-create-polygon-collider-2d-from-2d-mesh-in-unity")}", true),
 
-                new EditorDocument.Element("", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element(string.Empty, EditorDocument.Element.Type.Text),
                 HyperLinkElement("seedov's AsyncAwaitUtil.\n<b>Source code</b>", "https://github.com/seedov/AsyncAwaitUtil"),
 
                 // font
-                new EditorDocument.Element("", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element(string.Empty, EditorDocument.Element.Type.Text),
                 HyperLinkElement("Crafty Font for the Pixellet font.\n<b>Website</b>", "https://craftyfont.gumroad.com/"),
 
-                new EditorDocument.Element("", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element(string.Empty, EditorDocument.Element.Type.Text),
                 HyperLinkElement("HAWTPIXEL for the File Deletion font.\n<b>Website</b>", "https://www.hawtpixel.com/"),
 
-                new EditorDocument.Element("", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element(string.Empty, EditorDocument.Element.Type.Text),
                 HyperLinkElement("Sans Sans font.\n<b>Website</b>", "https://www.font.download/font/sans"),
 
-                new EditorDocument.Element("", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element(string.Empty, EditorDocument.Element.Type.Text),
                 HyperLinkElement("Fontworks for the RocknRoll font.\n<b>Website</b>", "https://github.com/fontworks-fonts/RocknRoll"),
 
-                new EditorDocument.Element("", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element(string.Empty, EditorDocument.Element.Type.Text),
                 HyperLinkElement("ManiackersDesign for the Monomaniac One font.\n<b>Website</b>", "https://github.com/ManiackersDesign/monomaniac"),
 
                 // special thanks
-                new EditorDocument.Element("", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element(string.Empty, EditorDocument.Element.Type.Text),
                 new EditorDocument.Element("<b>SPECIAL THANKS</b>", EditorDocument.Element.Type.Text),
                 new EditorDocument.Element("Pidge (developer of the game) - Obviously for making the game itself and inspiring some features in BetterLegacy.", EditorDocument.Element.Type.Text),
                 new EditorDocument.Element("enchart - Massively helped RTMecha get into modding in the first place. Without enchart, none of this would have been possible.", EditorDocument.Element.Type.Text),
@@ -156,7 +156,7 @@ namespace BetterLegacy.Editor.Managers
                                     "- If you want to playtest in Legacy, you can just copy the level to your beatmaps/editor folder where your Project Arrhythmia folder is.\n" +
                                     "- Some features like object gradients, ColorGrading (hue only), Gradient event, Player Force event, and Prefab Transforms (position, scale, rotation) can be used in alpha, but it's still recommended to playtest in vanilla Alpha anyways.", EditorDocument.Element.Type.Text),
                 new EditorDocument.Element("* Non-verified songs are allowed on the Arcade server because the Arcade server is not officially endorsed by Vitamin Games nor the Steam Workshop, much like how some other music-based games have an unofficial server for hosting levels. If a song is super-protected, however, it has a high chance of being taken down regardless of that fact.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element(string.Empty, EditorDocument.Element.Type.Text),
                 new EditorDocument.Element("When uploading to the Arcade server, you can include tags to better define your level. When uploading a level, you have to keep these tag guidelines in mind:\n" +
                                     "- Tags are best with underscores replacing spaces, e.g. <b>\"boss_level\"</b>.\n" +
                                     "- Uppercase and lowercase is acceptable.\n" +
@@ -172,14 +172,14 @@ namespace BetterLegacy.Editor.Managers
                                     "- Add <b>\"reupload\"</b> or <b>\"remake\"</b> to the tags if your level is such.\n" +
                                     "- Unfinished levels can be uploaded, but will need the <b>\"wip\"</b> tag. (do not flood the server with these)\n" +
                                     "- Older levels can be uploaded, but will need the <b>\"old\"</b> tag.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element(string.Empty, EditorDocument.Element.Type.Text),
                 new EditorDocument.Element("<i>Do not</i> reupload other people's levels to the server unless you have their permission. If you do reupload, it has to have been a level from the Steam workshop.\n" +
                                     "Remakes are allowed, as long as you have permission from the original creator(s).", EditorDocument.Element.Type.Text),
                 new EditorDocument.Element($"If you want to comment on a level, join the <link=\"{AlephNetwork.MOD_DISCORD_URL}\">System Error Discord server</link>, go to <b>#arcade-server-uploads</b>, create a thread (if there isn't already one) and make your comment there.\n" +
                 "You can click this element to open the Discord link.", EditorDocument.Element.Type.Text) { containsLinks = true, },
-                new EditorDocument.Element("", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element(string.Empty, EditorDocument.Element.Type.Text),
                 new EditorDocument.Element("When updating a level, make sure you include a message in the changelogs to let users know what changed in your level. Feel free to format it with dot points, or as a regular sentence / paragraph.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element(string.Empty, EditorDocument.Element.Type.Text),
                 new EditorDocument.Element("If you have any issues with these guidelines or have a suggestion, please contact the BetterLegacy developer (RTMecha) and discuss it with him civilly.", EditorDocument.Element.Type.Text),
             });
 
@@ -1010,7 +1010,7 @@ namespace BetterLegacy.Editor.Managers
                 var dir = Directory.GetFiles(RTFile.ApplicationDirectory, FileFormat.PNG.ToPattern(), SearchOption.AllDirectories);
 
                 for (int i = 0; i < UnityEngine.Random.Range(0, Mathf.Clamp(dir.Length, 0, 20)); i++)
-                    elements.Add(new EditorDocument.Element(dir[UnityEngine.Random.Range(0, dir.Length)].Replace("\\", "/").Replace(RTFile.ApplicationDirectory, ""), EditorDocument.Element.Type.Image));
+                    elements.Add(new EditorDocument.Element(dir[UnityEngine.Random.Range(0, dir.Length)].Replace("\\", "/").Remove(RTFile.ApplicationDirectory), EditorDocument.Element.Type.Image));
 
                 GenerateDocument("April Fools!", "fol.", elements);
             }

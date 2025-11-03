@@ -2677,7 +2677,7 @@ namespace BetterLegacy.Editor.Managers
                         }
                     case EditorTimeline.LayerType.Events: {
                             RTEventEditor.inst.PasteEvents();
-                            EditorManager.inst.DisplayNotification($"Pasted Event Keyframe{(RTEventEditor.inst.copiedEventKeyframes.Count > 1 ? "s" : "")}", 1f, EditorManager.NotificationType.Success);
+                            EditorManager.inst.DisplayNotification($"Pasted Event Keyframe{(RTEventEditor.inst.copiedEventKeyframes.Count > 1 ? "s" : string.Empty)}", 1f, EditorManager.NotificationType.Success);
                             break;
                         }
                 }
@@ -2691,7 +2691,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 case EditorDialog.OBJECT_EDITOR: {
                         ObjectEditor.inst.PasteKeyframes();
-                        EditorManager.inst.DisplayNotification($"Pasted Object Keyframe{(KeyframeTimeline.copiedObjectKeyframes.Count > 1 ? "s" : "")}", 1f, EditorManager.NotificationType.Success);
+                        EditorManager.inst.DisplayNotification($"Pasted Object Keyframe{(KeyframeTimeline.copiedObjectKeyframes.Count > 1 ? "s" : string.Empty)}", 1f, EditorManager.NotificationType.Success);
                         break;
                     }
                 case EditorDialog.BACKGROUND_EDITOR: {
@@ -2713,7 +2713,7 @@ namespace BetterLegacy.Editor.Managers
                             return;
 
                         AnimationEditor.inst.Dialog.Timeline.PasteKeyframes(AnimationEditor.inst.CurrentAnimation);
-                        EditorManager.inst.DisplayNotification($"Pasted Object Keyframe{(KeyframeTimeline.copiedObjectKeyframes.Count > 1 ? "s" : "")}", 1f, EditorManager.NotificationType.Success);
+                        EditorManager.inst.DisplayNotification($"Pasted Object Keyframe{(KeyframeTimeline.copiedObjectKeyframes.Count > 1 ? "s" : string.Empty)}", 1f, EditorManager.NotificationType.Success);
                         break;
                     }
             }
@@ -4262,7 +4262,7 @@ namespace BetterLegacy.Editor.Managers
                                 return;
                             }
 
-                            EditorLevelManager.inst.OpenLevelPopup.PathField.text = _val.Replace("\\", "/").Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
+                            EditorLevelManager.inst.OpenLevelPopup.PathField.text = _val.Replace("\\", "/").Remove(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/");
                             EditorManager.inst.DisplayNotification($"Set Editor path to {EditorPath}!", 2f, EditorManager.NotificationType.Success);
                             BrowserPopup.Close();
                             UpdateEditorPath(false);
@@ -4304,7 +4304,7 @@ namespace BetterLegacy.Editor.Managers
                                 return;
                             }
 
-                            PrefabPopups.External.PathField.text = _val.Replace("\\", "/").Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
+                            PrefabPopups.External.PathField.text = _val.Replace("\\", "/").Remove(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/");
                             EditorManager.inst.DisplayNotification($"Set Prefab path to {PrefabPath}!", 2f, EditorManager.NotificationType.Success);
                             BrowserPopup.Close();
                             UpdatePrefabPath(false);
@@ -4882,13 +4882,13 @@ namespace BetterLegacy.Editor.Managers
 
             reloadButton.image.sprite = EditorSprites.ReloadSprite;
 
-            EditorHelper.AddEditorDropdown("Debugger", "", "View", SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/debugger{FileFormat.PNG.Dot()}")), () =>
+            EditorHelper.AddEditorDropdown("Debugger", string.Empty, EditorHelper.VIEW_DROPDOWN, SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/debugger{FileFormat.PNG.Dot()}")), () =>
             {
                 DebuggerPopup.Open();
                 RefreshDebugger();
             });
 
-            EditorHelper.AddEditorDropdown("Show Explorer", "", "View", EditorSprites.SearchSprite, ModCompatibility.ShowExplorer);
+            EditorHelper.AddEditorDropdown("Show Explorer", string.Empty, EditorHelper.VIEW_DROPDOWN, EditorSprites.SearchSprite, ModCompatibility.ShowExplorer);
 
             GenerateDebugButton(
                 "Inspect DataManager",
@@ -5117,7 +5117,7 @@ namespace BetterLegacy.Editor.Managers
 
             EditorThemeManager.AddGraphic(editorDialogObject.GetComponent<Image>(), ThemeGroup.Background_1);
 
-            EditorHelper.AddEditorDropdown("View Screenshots", "", "View", EditorSprites.SearchSprite, () =>
+            EditorHelper.AddEditorDropdown("View Screenshots", string.Empty, EditorHelper.VIEW_DROPDOWN, EditorSprites.SearchSprite, () =>
             {
                 ScreenshotsDialog.Open();
                 RefreshScreenshots();
@@ -6480,7 +6480,7 @@ namespace BetterLegacy.Editor.Managers
 
                             ShowWarningPopup("Warning! Selecting a level will copy all of its contents to your editor, are you sure you want to do this?", () =>
                             {
-                                var path = selectedFile.Replace("/" + Level.LEVEL_LSB, "");
+                                var path = selectedFile.Remove("/" + Level.LEVEL_LSB);
 
                                 var files = Directory.GetFiles(path, "*", SearchOption.AllDirectories);
 
@@ -6519,7 +6519,7 @@ namespace BetterLegacy.Editor.Managers
 
                             try
                             {
-                                var path = selectedFile.Replace("/level.vgd", "");
+                                var path = selectedFile.Remove("/" + Level.LEVEL_VGD);
 
                                 if (Level.Verify(path))
                                 {

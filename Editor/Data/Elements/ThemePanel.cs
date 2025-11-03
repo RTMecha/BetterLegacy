@@ -314,7 +314,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         EditorContextMenu.inst.ShowContextMenu(
                             new ButtonFunction("Open folder", () =>
                             {
-                                RTThemeEditor.inst.Popup.PathField.text = path.Replace(RTEditor.inst.BeatmapsPath + "/", "");
+                                RTThemeEditor.inst.Popup.PathField.text = path.Remove(RTEditor.inst.BeatmapsPath + "/");
                                 RTEditor.inst.UpdateThemePath(false);
                             }),
                             new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.ThemePath), () => { RTEditor.inst.UpdateThemePath(true); RTEditor.inst.HideNameEditor(); })),
@@ -424,7 +424,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         return;
                     }
 
-                    RTThemeEditor.inst.Popup.PathField.text = path.Replace(RTEditor.inst.BeatmapsPath + "/", "");
+                    RTThemeEditor.inst.Popup.PathField.text = path.Remove(RTEditor.inst.BeatmapsPath + "/");
                     RTEditor.inst.UpdateThemePath(false);
                 };
 

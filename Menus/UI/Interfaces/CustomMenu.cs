@@ -826,7 +826,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                 if (from == null || !from.IsString)
                                     break;
 
-                                switch (from.Value.ToLower().Replace(" ", "").Replace("_", ""))
+                                switch (from.Value.ToLower().Remove(" ").Remove("_"))
                                 {
                                     case "json": {
                                             var jnElements = InterfaceManager.inst.ParseVarFunction(jnElement["element_prefabs"], customVariables: customVariables);

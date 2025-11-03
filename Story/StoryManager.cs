@@ -350,7 +350,7 @@ namespace BetterLegacy.Story
                             "new/level" => "new",
                             "node/level" => "Node",
                             "video_test/video_test" => "miku",
-                            _ => ""
+                            _ => string.Empty
                         }
                     },
                     song = new SongMetaData
@@ -362,7 +362,7 @@ namespace BetterLegacy.Story
                             "new/level" => "Staring Down the Barrels",
                             "node/level" => "Node",
                             "video_test/video_test" => "miku",
-                            _ => ""
+                            _ => string.Empty
                         }
                     },
                     artist = new ArtistMetaData
@@ -374,7 +374,7 @@ namespace BetterLegacy.Story
                             "new/level" => "Creo",
                             "node/level" => "meganeko",
                             "video_test/video_test" => "miku",
-                            _ => ""
+                            _ => string.Empty
                         }
                     },
                 },

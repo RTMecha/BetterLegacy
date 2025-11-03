@@ -32,18 +32,18 @@ namespace BetterLegacy.Core.Managers
                 ),
             new Modifier(ModifierCompatibility.GameDataCompatible, Modifier.Type.Action, "playerEnableBoostAll", false,
                 "False", // Lock Enabled
-                "", // Show Bubble
-                "" // Bubble Time
+                string.Empty, // Show Bubble
+                string.Empty // Bubble Time
                 ),
             new Modifier(ModifierCompatibility.GameDataCompatible, Modifier.Type.Action, "playerXLock", false,
                 "False", // Lock Enabled
-                "", // Show Bubble
-                "" // Lock Enabled
+                string.Empty, // Show Bubble
+                string.Empty // Lock Enabled
                 ),
             new Modifier(ModifierCompatibility.GameDataCompatible, Modifier.Type.Action, "playerYLock", false,
                 "False", // Lock Enabled
-                "", // Show Bubble
-                "" // Lock Enabled
+                string.Empty, // Show Bubble
+                string.Empty // Lock Enabled
                 ),
             new Modifier(ModifierCompatibility.GameDataCompatible, Modifier.Type.Action, "setMusicTime", false,
                 "0" // Time
@@ -53,32 +53,32 @@ namespace BetterLegacy.Core.Managers
                 ),
 
             new Modifier(ModifierCompatibility.GameDataCompatible, Modifier.Type.Trigger, "timeInRange", false,
-                "", // IDK
+                string.Empty, // IDK
                 "0", // Activation Time Range Min
                 "0" // Activation Time Range Max
                 ),
             new Modifier(ModifierCompatibility.GameDataCompatible, Modifier.Type.Trigger, "playerHit", false,
-                "", // IDK
+                string.Empty, // IDK
                 "0", // Activation Time Range Min
                 "0" // Activation Time Range Max
                 ),
             new Modifier(ModifierCompatibility.GameDataCompatible, Modifier.Type.Trigger, "playerDeath", false,
-                "", // IDK
+                string.Empty, // IDK
                 "0", // Activation Time Range Min
                 "0" // Activation Time Range Max
                 ),
             new Modifier(ModifierCompatibility.GameDataCompatible, Modifier.Type.Trigger, "onLevelStart", false,
-                "", // IDK
+                string.Empty, // IDK
                 "0", // Activation Time Range Min
                 "0" // Activation Time Range Max
                 ),
             new Modifier(ModifierCompatibility.GameDataCompatible, Modifier.Type.Trigger, "onLevelRestart", false,
-                "", // IDK
+                string.Empty, // IDK
                 "0", // Activation Time Range Min
                 "0" // Activation Time Range Max
                 ),
             new Modifier(ModifierCompatibility.GameDataCompatible, Modifier.Type.Trigger, "onLevelRewind", false,
-                "", // IDK
+                string.Empty, // IDK
                 "0", // Activation Time Range Min
                 "0" // Activation Time Range Max
                 ),
@@ -90,12 +90,12 @@ namespace BetterLegacy.Core.Managers
             new Modifier(ModifierCompatibility.FullPlayerCompatible, Modifier.Type.Action, nameof(ModifierFunctions.setCustomObjectIdle), true, "0", "True"),
             new Modifier(ModifierCompatibility.FullPlayerCompatible, Modifier.Type.Action, nameof(ModifierFunctions.playAnimation), false, "0", "boost"),
             new Modifier(ModifierCompatibility.FullPlayerCompatible, Modifier.Type.Action, nameof(ModifierFunctions.setIdleAnimation), false, "0", "boost"),
-            new Modifier(ModifierCompatibility.PAPlayerCompatible, Modifier.Type.Action, nameof(ModifierFunctions.kill), false, ""),
+            new Modifier(ModifierCompatibility.PAPlayerCompatible, Modifier.Type.Action, nameof(ModifierFunctions.kill), false, string.Empty),
             new Modifier(ModifierCompatibility.PAPlayerCompatible, Modifier.Type.Action, nameof(ModifierFunctions.hit), false, "0"),
-            new Modifier(ModifierCompatibility.PAPlayerCompatible, Modifier.Type.Action, nameof(ModifierFunctions.boost), false, "", ""),
-            new Modifier(ModifierCompatibility.PAPlayerCompatible, Modifier.Type.Action, nameof(ModifierFunctions.shoot), false, ""),
-            new Modifier(ModifierCompatibility.PAPlayerCompatible, Modifier.Type.Action, nameof(ModifierFunctions.pulse), false, ""),
-            new Modifier(ModifierCompatibility.PAPlayerCompatible, Modifier.Type.Action, nameof(ModifierFunctions.jump), false, ""),
+            new Modifier(ModifierCompatibility.PAPlayerCompatible, Modifier.Type.Action, nameof(ModifierFunctions.boost), false, string.Empty, string.Empty),
+            new Modifier(ModifierCompatibility.PAPlayerCompatible, Modifier.Type.Action, nameof(ModifierFunctions.shoot), false, string.Empty),
+            new Modifier(ModifierCompatibility.PAPlayerCompatible, Modifier.Type.Action, nameof(ModifierFunctions.pulse), false, string.Empty),
+            new Modifier(ModifierCompatibility.PAPlayerCompatible, Modifier.Type.Action, nameof(ModifierFunctions.jump), false, string.Empty),
             new Modifier(ModifierCompatibility.FullPlayerCompatible, Modifier.Type.Action, nameof(ModifierFunctions.getHealth), true, "HEALTH_VAR"),
             new Modifier(ModifierCompatibility.FullPlayerCompatible, Modifier.Type.Action, nameof(ModifierFunctions.getLives), true, "LIVES_VAR"),
             new Modifier(ModifierCompatibility.FullPlayerCompatible, Modifier.Type.Action, nameof(ModifierFunctions.getMaxHealth), true, "MAX_HEALTH_VAR"),

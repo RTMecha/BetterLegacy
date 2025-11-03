@@ -159,7 +159,7 @@ namespace BetterLegacy.Core.Data.Player
 
         public ControllerType GetDeviceType(string deviceName)
         {
-            deviceName = deviceName.ToLower().Replace(" ", "");
+            deviceName = deviceName.ToLower().Remove(" ");
             if (deviceName.Contains("xinput") || deviceName.Contains("xbox") || deviceName.Contains("microsoft"))
                 return ControllerType.XBox;
             else if (deviceName.Contains("playstation") || deviceName.Contains("ps") || deviceName.Contains("sony"))

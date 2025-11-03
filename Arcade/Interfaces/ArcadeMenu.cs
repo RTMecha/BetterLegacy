@@ -65,11 +65,11 @@ namespace BetterLegacy.Arcade.Interfaces
 
         public static string[] Searches { get; set; } = new string[]
         {
-            "", // Local
-            "", // Online
-            "", // Browser
-            "", // Queue
-            "", // Steam
+            string.Empty, // Local
+            string.Empty, // Online
+            string.Empty, // Browser
+            string.Empty, // Queue
+            string.Empty, // Steam
         };
 
         MenuInputField pageField;

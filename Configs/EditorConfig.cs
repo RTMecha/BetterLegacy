@@ -522,10 +522,10 @@ namespace BetterLegacy.Configs
             UpdatePrefabListOnFilesChanged = Bind(this, DATA, "Update Prefab List on Files Changed", false, "When you add a prefab to your prefab path, the editor will automatically update the prefab list for you.");
             UpdateThemeListOnFilesChanged = Bind(this, DATA, "Update Theme List on Files Changed", false, "When you add a theme to your theme path, the editor will automatically update the theme list for you.");
             ShowFoldersInLevelList = Bind(this, DATA, "Show Folders In Level List", true, "If folders should appear in the level list UI. This allows you to quickly navigate level folders.");
-            ZIPLevelExportPath = Bind(this, DATA, "ZIP Level Export Path", "", "The custom path to export a zipped level to. If no path is set then it will export to beatmaps/exports.");
-            ConvertLevelLSToVGExportPath = Bind(this, DATA, "Convert Level LS to VG Export Path", "", "The custom path to export a level to. If no path is set then it will export to beatmaps/exports.");
-            ConvertPrefabLSToVGExportPath = Bind(this, DATA, "Convert Prefab LS to VG Export Path", "", "The custom path to export a prefab to. If no path is set then it will export to beatmaps/exports.");
-            ConvertThemeLSToVGExportPath = Bind(this, DATA, "Convert Theme LS to VG Export Path", "", "The custom path to export a prefab to. If no path is set then it will export to beatmaps/exports.");
+            ZIPLevelExportPath = Bind(this, DATA, "ZIP Level Export Path", string.Empty, "The custom path to export a zipped level to. If no path is set then it will export to beatmaps/exports.");
+            ConvertLevelLSToVGExportPath = Bind(this, DATA, "Convert Level LS to VG Export Path", string.Empty, "The custom path to export a level to. If no path is set then it will export to beatmaps/exports.");
+            ConvertPrefabLSToVGExportPath = Bind(this, DATA, "Convert Prefab LS to VG Export Path", string.Empty, "The custom path to export a prefab to. If no path is set then it will export to beatmaps/exports.");
+            ConvertThemeLSToVGExportPath = Bind(this, DATA, "Convert Theme LS to VG Export Path", string.Empty, "The custom path to export a prefab to. If no path is set then it will export to beatmaps/exports.");
             FileBrowserAudioPreviewLength = Bind(this, DATA, "File Browser Audio Preview Length", 3f, "How long the file browser audio preview should be.");
             ThemeSavesIndents = Bind(this, DATA, "Theme Saves Indents", false, "If .lst files should save with multiple lines and indents.");
             FileBrowserRemembersLocation = Bind(this, DATA, "File Browser Remembers Location", true, "If the in-editor File Browser should retain the previous path that was set.");

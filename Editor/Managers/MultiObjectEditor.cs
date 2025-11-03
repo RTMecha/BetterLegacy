@@ -904,7 +904,7 @@ namespace BetterLegacy.Editor.Managers
                         {
                             foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                             {
-                                beatmapObject.Parent = "";
+                                beatmapObject.Parent = string.Empty;
                                 RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARENT_CHAIN);
                             }
 
@@ -2588,22 +2588,22 @@ namespace BetterLegacy.Editor.Managers
 
                 var labels2 = GenerateLabels(parent, 32f, "Primary Opacity");
 
-                var opacityIF = CreateInputField("opacity", "", "Enter value... (Keep empty to not set)", parent, isInteger: false);
+                var opacityIF = CreateInputField("opacity", string.Empty, "Enter value... (Keep empty to not set)", parent, isInteger: false);
                 ((Text)opacityIF.placeholder).fontSize = 13;
 
                 var labels3 = GenerateLabels(parent, 32f, "Primary Hue");
 
-                var hueIF = CreateInputField("hue", "", "Enter value... (Keep empty to not set)", parent, isInteger: false);
+                var hueIF = CreateInputField("hue", string.Empty, "Enter value... (Keep empty to not set)", parent, isInteger: false);
                 ((Text)hueIF.placeholder).fontSize = 13;
 
                 var labels4 = GenerateLabels(parent, 32f, "Primary Saturation");
 
-                var satIF = CreateInputField("sat", "", "Enter value... (Keep empty to not set)", parent, isInteger: false);
+                var satIF = CreateInputField("sat", string.Empty, "Enter value... (Keep empty to not set)", parent, isInteger: false);
                 ((Text)satIF.placeholder).fontSize = 13;
 
                 var labels5 = GenerateLabels(parent, 32f, "Primary Value (Brightness)");
 
-                var valIF = CreateInputField("val", "", "Enter value... (Keep empty to not set)", parent, isInteger: false);
+                var valIF = CreateInputField("val", string.Empty, "Enter value... (Keep empty to not set)", parent, isInteger: false);
                 ((Text)valIF.placeholder).fontSize = 13;
 
                 var labelsSecondaryColor = GenerateLabels(parent, 32f, "Secondary Color");
@@ -3618,7 +3618,7 @@ namespace BetterLegacy.Editor.Managers
                             textIF.GetPlaceholderText().text = "Enter text...";
                             textIF.lineType = InputField.LineType.MultiLineNewline;
 
-                            textIF.text = "";
+                            textIF.text = string.Empty;
                         }
                         textIF.onValueChanged.AddListener(_val =>
                         {
@@ -3674,7 +3674,7 @@ namespace BetterLegacy.Editor.Managers
                                 string jpgFileLocation = editorPath + "/" + Path.GetFileName(jpgFile);
                                 CoreHelper.Log($"jpgFileLocation: {jpgFileLocation}");
 
-                                var levelPath = jpgFile.Replace("\\", "/").Replace(editorPath + "/", "");
+                                var levelPath = jpgFile.Replace("\\", "/").Remove(editorPath + "/");
                                 CoreHelper.Log($"levelPath: {levelPath}");
 
                                 if (!RTFile.FileExists(jpgFileLocation) && !jpgFile.Replace("\\", "/").Contains(editorPath))
@@ -3687,7 +3687,7 @@ namespace BetterLegacy.Editor.Managers
 
                                 CoreHelper.Log($"jpgFileLocation: {jpgFileLocation}");
 
-                                var _val = jpgFileLocation.Replace(jpgFileLocation.Substring(0, jpgFileLocation.LastIndexOf('/') + 1), ""); ;
+                                var _val = jpgFileLocation.Remove(jpgFileLocation.Substring(0, jpgFileLocation.LastIndexOf('/') + 1));
                                 foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
                                 {
                                     if (timelineObject.isBeatmapObject)

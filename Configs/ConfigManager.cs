@@ -253,9 +253,8 @@ namespace BetterLegacy.Configs
             RectValues.LeftAnchored.AnchoredPosition(134f, -50f).SizeDelta(856f, 32f).AssignToRectTransform(searchField.transform.AsRT());
             var searchFieldInput = searchField.GetComponent<InputField>();
             searchFieldInput.textComponent.alignment = TextAnchor.MiddleLeft;
-            searchFieldInput.onValueChanged.ClearAll();
-            searchFieldInput.text = "";
-            searchFieldInput.onValueChanged.AddListener(_val =>
+            searchFieldInput.SetTextWithoutNotify(string.Empty);
+            searchFieldInput.onValueChanged.NewListener(_val =>
             {
                 searchTerm = _val;
                 currentSubTabPage = 0;

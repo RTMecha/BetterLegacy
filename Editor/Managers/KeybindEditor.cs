@@ -124,7 +124,7 @@ namespace BetterLegacy.Editor.Managers
                     new KeybindFunction(nameof(OpenPrefabCreator), OpenPrefabCreator, new Keybind.Setting("External", "True")),
                     new KeybindFunction(nameof(CollapsePrefab), CollapsePrefab),
                     new KeybindFunction(nameof(ExpandPrefab), ExpandPrefab),
-                    new KeybindFunction(nameof(SpawnPrefab), SpawnPrefab, new Keybind.Setting("Search Prefab Using", "0"), new Keybind.Setting("Prefab Reference", "")),
+                    new KeybindFunction(nameof(SpawnPrefab), SpawnPrefab, new Keybind.Setting("Search Prefab Using", "0"), new Keybind.Setting("Prefab Reference", string.Empty)),
                     new KeybindFunction(nameof(SpawnSelectedQuickPrefab), SpawnSelectedQuickPrefab),
 
                     #endregion

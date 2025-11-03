@@ -92,7 +92,7 @@ namespace BetterLegacy.Menus.UI.Elements
         /// <summary>
         /// The elements' text.
         /// </summary>
-        public string text = "";
+        public string text = string.Empty;
 
         /// <summary>
         /// If the text should be interpolated.
@@ -441,7 +441,7 @@ namespace BetterLegacy.Menus.UI.Elements
             foreach (var obj in matches)
             {
                 var match = (Match)obj;
-                textWithoutFormatting = textWithoutFormatting.Replace(match.Groups[0].ToString(), "");
+                textWithoutFormatting = textWithoutFormatting.Remove(match.Groups[0].ToString());
             }
 
             // Regular formatting should be ignored.

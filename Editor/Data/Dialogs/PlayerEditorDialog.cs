@@ -137,7 +137,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             base.InitDialog(PLAYER_EDITOR);
 
-            var playerEditor = EditorHelper.AddEditorDropdown("Player Editor", "", "Edit", EditorSprites.PlayerSprite, () =>
+            var playerEditor = EditorHelper.AddEditorDropdown("Player Editor", string.Empty, "Edit", EditorSprites.PlayerSprite, () =>
             {
                 Open();
                 CoroutineHelper.StartCoroutine(PlayerEditor.inst.RefreshEditor());

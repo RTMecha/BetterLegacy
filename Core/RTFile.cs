@@ -606,7 +606,7 @@ namespace BetterLegacy.Core
                 if (!text.EndsWith("\""))
                     text += "\"";
 
-                string arguments = (exists ? "" : "-R ") + text;
+                string arguments = (exists ? string.Empty : "-R ") + text;
 
                 try
                 {
@@ -614,7 +614,7 @@ namespace BetterLegacy.Core
                 }
                 catch (Win32Exception ex)
                 {
-                    ex.HelpLink = "";
+                    ex.HelpLink = string.Empty;
                 }
             }
 
@@ -629,7 +629,7 @@ namespace BetterLegacy.Core
                 }
                 catch (Win32Exception ex)
                 {
-                    ex.HelpLink = "";
+                    ex.HelpLink = string.Empty;
                 }
             }
 

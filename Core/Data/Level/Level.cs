@@ -483,7 +483,7 @@ namespace BetterLegacy.Core.Data.Level
         /// <returns>Returns true if level data exists, otherwise false.</returns>
         public static bool VerifyLevel(string folder) => RTFile.FileExists(RTFile.CombinePaths(folder, LEVEL_VGD)) || RTFile.FileExists(RTFile.CombinePaths(folder, LEVEL_LSB));
 
-        public override string ToString() => $"{Path.GetFileName(RTFile.RemoveEndSlash(path))} - {id} - {(metadata == null || metadata.song == null ? "" : metadata.song.title)}";
+        public override string ToString() => $"{Path.GetFileName(RTFile.RemoveEndSlash(path))} - {id} - {(!metadata || !metadata.song ? string.Empty : metadata.song.title)}";
 
         #endregion
     }

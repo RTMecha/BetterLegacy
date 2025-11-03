@@ -75,7 +75,7 @@ namespace BetterLegacy.Editor.Data.Planners
             str += "<br><b>Abilities</b>:<br>";
 
             for (int i = 0; i < CharacterAbilities.Count; i++)
-                str += "- " + CharacterAbilities[i] + (i == CharacterAbilities.Count - 1 ? "" : "<br>");
+                str += "- " + CharacterAbilities[i] + (i == CharacterAbilities.Count - 1 ? string.Empty : "<br>");
 
             if (clamp)
                 return LSText.ClampString(str, 252);
@@ -111,7 +111,7 @@ namespace BetterLegacy.Editor.Data.Planners
                 //    stringBuilder.AppendLine($"- {CharacterAbilities[i]}<br>");
                 //}
 
-                var str = "";
+                var str = string.Empty;
 
                 str += "<b>Name</b>: " + Name + "<br><b>Gender</b>: " + Gender + "<br><b>Character Traits</b>:<br>";
 
@@ -126,7 +126,7 @@ namespace BetterLegacy.Editor.Data.Planners
                 str += "<br><b>Abilities</b>:<br>";
 
                 for (int i = 0; i < CharacterAbilities.Count; i++)
-                    str += "- " + CharacterAbilities[i] + (i == CharacterAbilities.Count - 1 ? "" : "<br>");
+                    str += "- " + CharacterAbilities[i] + (i == CharacterAbilities.Count - 1 ? string.Empty : "<br>");
 
                 return str;
             }

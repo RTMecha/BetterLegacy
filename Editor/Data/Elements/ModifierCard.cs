@@ -537,7 +537,7 @@ namespace BetterLegacy.Editor.Data.Elements
                                     if (result.Contains(global ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath))))
                                     {
                                         str.transform.Find("Input").GetComponent<InputField>().text =
-                                            result.Replace(global ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath)), "");
+                                            result.Remove(global ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath)));
                                         RTEditor.inst.BrowserPopup.Close();
                                         return;
                                     }
@@ -564,7 +564,7 @@ namespace BetterLegacy.Editor.Data.Elements
                                         _val = RTFile.ReplaceSlash(_val);
                                         if (_val.Contains(global ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath))))
                                         {
-                                            str.transform.Find("Input").GetComponent<InputField>().text = _val.Replace(global ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath)), "");
+                                            str.transform.Find("Input").GetComponent<InputField>().text = _val.Remove(global ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath)));
                                             RTEditor.inst.BrowserPopup.Close();
                                             return;
                                         }
@@ -678,7 +678,7 @@ namespace BetterLegacy.Editor.Data.Elements
                                     result = RTFile.ReplaceSlash(result);
                                     if (result.Contains(global ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath))))
                                     {
-                                        str.transform.Find("Input").GetComponent<InputField>().text = result.Replace(global ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath)), "");
+                                        str.transform.Find("Input").GetComponent<InputField>().text = result.Remove(global ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath)));
                                         RTEditor.inst.BrowserPopup.Close();
                                         return;
                                     }
@@ -705,7 +705,7 @@ namespace BetterLegacy.Editor.Data.Elements
                                         _val = RTFile.ReplaceSlash(_val);
                                         if (_val.Contains(global ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath))))
                                         {
-                                            str.transform.Find("Input").GetComponent<InputField>().text = _val.Replace(global ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath)), "");
+                                            str.transform.Find("Input").GetComponent<InputField>().text = _val.Remove(global ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath)));
                                             RTEditor.inst.BrowserPopup.Close();
                                             return;
                                         }
@@ -3542,7 +3542,7 @@ namespace BetterLegacy.Editor.Data.Elements
                                     result = RTFile.ReplaceSlash(result);
                                     if (result.Contains(global ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath))))
                                     {
-                                        str.transform.Find("Input").GetComponent<InputField>().text = result.Replace(global ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath)), "");
+                                        str.transform.Find("Input").GetComponent<InputField>().text = result.Remove(global ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath)));
                                         RTEditor.inst.BrowserPopup.Close();
                                         return;
                                     }
@@ -3569,7 +3569,7 @@ namespace BetterLegacy.Editor.Data.Elements
                                         _val = RTFile.ReplaceSlash(_val);
                                         if (_val.Contains(global ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath))))
                                         {
-                                            str.transform.Find("Input").GetComponent<InputField>().text = _val.Replace(global ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath)), "");
+                                            str.transform.Find("Input").GetComponent<InputField>().text = _val.Remove(global ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath)));
                                             RTEditor.inst.BrowserPopup.Close();
                                             return;
                                         }

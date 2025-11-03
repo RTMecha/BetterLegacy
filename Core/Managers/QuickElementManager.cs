@@ -151,12 +151,12 @@ namespace BetterLegacy.Core.Managers
             customQuickElements.Add(name, quickElement);
         }
 
-        public static string ConvertQuickElement(string element, float t) => AllQuickElements.TryGetValue(element, out QuickElement quickElement) ? ConvertQuickElement(quickElement, t) : "";
+        public static string ConvertQuickElement(string element, float t) => AllQuickElements.TryGetValue(element, out QuickElement quickElement) ? ConvertQuickElement(quickElement, t) : string.Empty;
 
         public static string ConvertQuickElement(QuickElement quickElement, float t)
         {
             if (quickElement == null || quickElement.keyframes == null || quickElement.keyframes.IsEmpty())
-                return "";
+                return string.Empty;
 
             var times = new List<float>();
             var texts = new List<string>();

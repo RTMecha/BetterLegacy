@@ -1660,7 +1660,7 @@ namespace BetterLegacy.Editor.Managers
             EditorHelper.AddEditorPopup(EditorPopup.PREFAB_TYPES_POPUP, gameObject);
             gameObject.SetActive(false);
 
-            EditorHelper.AddEditorDropdown("View Prefab Types", "", "View", EditorSprites.SearchSprite, () =>
+            EditorHelper.AddEditorDropdown("View Prefab Types", string.Empty, EditorHelper.VIEW_DROPDOWN, EditorSprites.SearchSprite, () =>
             {
                 OpenPrefabTypePopup(NewPrefabTypeID, id =>
                 {
@@ -2013,7 +2013,7 @@ namespace BetterLegacy.Editor.Managers
 
                     if (RTEditor.inst.PrefabPopups.External.PathField.text == RTEditor.inst.PrefabPath)
                     {
-                        RTEditor.inst.PrefabPopups.External.PathField.text = RTFile.GetDirectory(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath)).Replace(RTEditor.inst.BeatmapsPath + "/", "");
+                        RTEditor.inst.PrefabPopups.External.PathField.text = RTFile.GetDirectory(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath)).Remove(RTEditor.inst.BeatmapsPath + "/");
                         RTEditor.inst.UpdatePrefabPath(false);
                     }
                 };

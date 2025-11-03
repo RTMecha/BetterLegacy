@@ -828,7 +828,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             events = new List<List<EventKeyframe>>();
 
-            string breakContext = "";
+            string breakContext = string.Empty;
             try
             {
                 CoreHelper.Log($"Parsing VG Event Keyframes");

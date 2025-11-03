@@ -251,7 +251,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool SaveMetadataPrefix(ref LSError __result)
         {
-            var result = new LSError(false, "");
+            var result = new LSError(false, string.Empty);
             __result = result;
             return false;
         }
@@ -322,7 +322,7 @@ namespace BetterLegacy.Patchers
                 return false;
             }
 
-            __result = "";
+            __result = string.Empty;
             return false;
         }
 

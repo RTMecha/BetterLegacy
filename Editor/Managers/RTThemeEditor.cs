@@ -123,7 +123,7 @@ namespace BetterLegacy.Editor.Managers
                                     return;
                                 }
 
-                                Popup.PathField.text = _val.Replace("\\", "/").Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
+                                Popup.PathField.text = _val.Replace("\\", "/").Remove(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/");
                                 EditorManager.inst.DisplayNotification($"Set Theme path to {RTEditor.inst.ThemePath}!", 2f, EditorManager.NotificationType.Success);
                                 RTEditor.inst.BrowserPopup.Close();
                                 RTEditor.inst.UpdateThemePath(false);
@@ -142,7 +142,7 @@ namespace BetterLegacy.Editor.Managers
                         }, "Theme Default Path"));
                 };
 
-                EditorHelper.AddEditorDropdown("View Themes", "", "View", EditorSprites.SearchSprite, OpenExternalThemesPopup);
+                EditorHelper.AddEditorDropdown("View Themes", string.Empty, EditorHelper.VIEW_DROPDOWN, EditorSprites.SearchSprite, OpenExternalThemesPopup);
 
                 // Internal Prefab
                 {
@@ -466,7 +466,7 @@ namespace BetterLegacy.Editor.Managers
 
                     if (Popup.PathField.text == RTEditor.inst.ThemePath)
                     {
-                        Popup.PathField.text = RTFile.GetDirectory(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.ThemePath)).Replace(RTEditor.inst.BeatmapsPath + "/", "");
+                        Popup.PathField.text = RTFile.GetDirectory(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.ThemePath)).Remove(RTEditor.inst.BeatmapsPath + "/");
                         RTEditor.inst.UpdateThemePath(false);
                     }
                 };

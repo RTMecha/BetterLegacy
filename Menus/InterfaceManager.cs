@@ -1805,16 +1805,16 @@ namespace BetterLegacy.Menus
                             var stop = parameters.IsArray ? parameters[0].AsBool : parameters["run_done_func"].AsBool;
 
                             var animations = thisElement.animations;
-                            string id = parameters.IsArray && parameters.Count > 1 ? parameters[1] : parameters.IsObject && parameters["id"] != null ? parameters["id"] : "";
+                            string id = parameters.IsArray && parameters.Count > 1 ? parameters[1] : parameters.IsObject && parameters["id"] != null ? parameters["id"] : string.Empty;
                             if (!string.IsNullOrEmpty(id) && inst.CurrentInterface.elements.TryFind(x => x.id == id, out MenuImage menuImage))
                                 animations = menuImage.animations;
 
-                            string animName = parameters.IsArray && parameters.Count > 2 ? parameters[2] : parameters.IsObject && parameters["name"] != null ? parameters["name"] : "";
+                            string animName = parameters.IsArray && parameters.Count > 2 ? parameters[2] : parameters.IsObject && parameters["name"] != null ? parameters["name"] : string.Empty;
 
                             for (int i = 0; i < animations.Count; i++)
                             {
                                 var animation = animations[i];
-                                if (!string.IsNullOrEmpty(animName) && !animation.name.Replace("Interface Element Animation ", "").Contains(animName))
+                                if (!string.IsNullOrEmpty(animName) && !animation.name.Remove("Interface Element Animation ").Contains(animName))
                                     continue;
 
                                 if (stop)

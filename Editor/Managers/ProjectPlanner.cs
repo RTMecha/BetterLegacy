@@ -73,7 +73,7 @@ namespace BetterLegacy.Editor.Managers
             var closeX = close.transform.GetChild(0).gameObject;
             EditorThemeManager.AddGraphic(close.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
 
-            EditorHelper.AddEditorDropdown("Open Project Planner", "", "Edit", EditorSprites.DocumentSprite, () =>
+            EditorHelper.AddEditorDropdown("Open Project Planner", string.Empty, "Edit", EditorSprites.DocumentSprite, () =>
             {
                 Open();
                 EditorManager.inst.HideAllDropdowns();
@@ -216,14 +216,14 @@ namespace BetterLegacy.Editor.Managers
                                     Name = "Beginning",
                                     Description = $"Introduces players / viewers to Hal.)",
                                     ElementType = TimelinePlanner.Event.Type.Cutscene,
-                                    Path = ""
+                                    Path = string.Empty
                                 });
                                 timeline.Levels.Add(new TimelinePlanner.Event
                                 {
                                     Name = "Tokyo Skies",
                                     Description = $"Players learn very basic stuff about Classic Arrhythmia / Project Arrhythmia mechanics.{Environment.NewLine}{Environment.NewLine}(Click on this button to open the level.)",
                                     ElementType = TimelinePlanner.Event.Type.Level,
-                                    Path = ""
+                                    Path = string.Empty
                                 });
 
                                 AddPlanner(timeline);
@@ -2200,7 +2200,7 @@ namespace BetterLegacy.Editor.Managers
                 if (!string.IsNullOrEmpty(jn["notes"][i]["name"]))
                     note.Name = jn["notes"][i]["name"];
                 else
-                    note.Name = "";
+                    note.Name = string.Empty;
 
                 note.Position = new Vector2(jn["notes"][i]["pos"]["x"].AsFloat, jn["notes"][i]["pos"]["y"].AsFloat);
                 note.Scale = new Vector2(jn["notes"][i]["sca"]["x"].AsFloat, jn["notes"][i]["sca"]["y"].AsFloat);

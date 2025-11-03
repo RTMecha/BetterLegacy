@@ -228,7 +228,7 @@ namespace BetterLegacy.Editor.Managers
                                 return;
                             }
 
-                            LevelCollectionPopup.PathField.text = _val.Replace("\\", "/").Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
+                            LevelCollectionPopup.PathField.text = _val.Replace("\\", "/").Remove(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/");
                             EditorManager.inst.DisplayNotification($"Set Collection path to {RTEditor.inst.CollectionsPath}!", 2f, EditorManager.NotificationType.Success);
                             RTEditor.inst.BrowserPopup.Close();
                             LoadLevelCollections();
@@ -386,7 +386,7 @@ namespace BetterLegacy.Editor.Managers
 
                     if (OpenLevelPopup.PathField.text == RTEditor.inst.EditorPath)
                     {
-                        OpenLevelPopup.PathField.text = RTFile.GetDirectory(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.EditorPath)).Replace(RTEditor.inst.BeatmapsPath + "/", "");
+                        OpenLevelPopup.PathField.text = RTFile.GetDirectory(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.EditorPath)).Remove(RTEditor.inst.BeatmapsPath + "/");
                         RTEditor.inst.UpdateEditorPath(false);
                     }
                 };
@@ -558,7 +558,7 @@ namespace BetterLegacy.Editor.Managers
                     if (LevelCollectionPopup.PathField.text == RTEditor.inst.CollectionsPath)
                     {
                         OpenLevelCollection = null;
-                        LevelCollectionPopup.PathField.text = RTFile.GetDirectory(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.CollectionsPath)).Replace(RTEditor.inst.BeatmapsPath + "/", "");
+                        LevelCollectionPopup.PathField.text = RTFile.GetDirectory(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.CollectionsPath)).Remove(RTEditor.inst.BeatmapsPath + "/");
                         LoadLevelCollections();
                     }
                 };
@@ -2183,7 +2183,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 ArrhythmiaType.LS => Level.LEVEL_LSB,
                 ArrhythmiaType.VG => Level.LEVEL_VGD,
-                _ => "",
+                _ => string.Empty,
             };
 
             string save = savePath;
@@ -2402,7 +2402,7 @@ namespace BetterLegacy.Editor.Managers
         {
             var path = RTFile.BasePath;
             var doc = $"doc{RTString.ToStoryNumber(chapter)}";
-            var saveTo = RTFile.CombinePaths(storyLevelsVersionControlPath, doc, $"{doc}_{RTString.ToStoryNumber(level)}{(string.IsNullOrEmpty(type) ? "" : "_" + type + RTString.ToStoryNumber(cutscene))} - {EditorLevelManager.inst.CurrentLevel.FolderName}");
+            var saveTo = RTFile.CombinePaths(storyLevelsVersionControlPath, doc, $"{doc}_{RTString.ToStoryNumber(level)}{(string.IsNullOrEmpty(type) ? string.Empty : "_" + type + RTString.ToStoryNumber(cutscene))} - {EditorLevelManager.inst.CurrentLevel.FolderName}");
 
             RTFile.CreateDirectory(saveTo);
             RTFile.CopyFile(RTFile.CombinePaths(path, Level.LEVEL_LSB), RTFile.CombinePaths(saveTo, Level.LEVEL_LSB));

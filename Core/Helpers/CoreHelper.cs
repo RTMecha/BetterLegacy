@@ -355,13 +355,11 @@ namespace BetterLegacy.Core.Helpers
             for (int i = 0; i < texts.Length; i++)
             {
                 textArray[i] = texts[i].text;
-                texts[i].text = "";
+                texts[i].text = string.Empty;
             }
 
             for (int i = 0; i < texts.Length; i++)
-            {
                 texts[i].text = textArray[i];
-            }
 
             yield break;
         }

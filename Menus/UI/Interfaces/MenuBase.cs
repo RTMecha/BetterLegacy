@@ -332,7 +332,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
             if (string.IsNullOrEmpty(musicName))
             {
-                CoreHelper.LogWarning($"Music name is null or empty.\nMusic Name: {musicName}\nMusic is null: {musicName == null}\nMusic is empty: {musicName == ""}");
+                CoreHelper.LogWarning($"Music name is null or empty.\nMusic Name: {musicName}\nMusic is null: {musicName == null}\nMusic is empty: {musicName == string.Empty}");
                 return;
             }
 

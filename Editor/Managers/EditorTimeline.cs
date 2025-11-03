@@ -963,8 +963,7 @@ namespace BetterLegacy.Editor.Managers
         {
             CoreHelper.Log(
                 $"Clip: {clip}\n" +
-                $"Has Loaded Level: {EditorManager.inst.hasLoadedLevel}\n" +
-                $"");
+                $"Has Loaded Level: {EditorManager.inst.hasLoadedLevel}");
 
             var config = EditorConfig.Instance;
             var path = RTFile.CombinePaths(RTFile.BasePath, $"waveform-{config.WaveformMode.Value.ToString().ToLower()}{FileFormat.PNG.Dot()}");

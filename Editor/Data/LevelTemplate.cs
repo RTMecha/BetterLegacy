@@ -140,7 +140,7 @@ namespace BetterLegacy.Editor.Data
         /// <summary>
         /// Renders the level templates' title and selection status.
         /// </summary>
-        public void RenderTitle() => Title.text = $"{name}{(LevelTemplateEditor.inst.currentLevelTemplate == index ? " [SELECTED]" : "")}";
+        public void RenderTitle() => Title.text = $"{name}{(LevelTemplateEditor.inst.currentLevelTemplate == index ? " [SELECTED]" : string.Empty)}";
 
         /// <summary>
         /// Renders the level templates' preview.

@@ -372,7 +372,7 @@ namespace BetterLegacy.Core
         /// </summary>
         /// <param name="remove">String to remove.</param>
         /// <returns>Returns a string with the specified string removed.</returns>
-        public static string Remove(this string input, string remove) => input.Replace(remove, "");
+        public static string Remove(this string input, string remove) => input.Replace(remove, string.Empty);
 
         /// <summary>
         /// Gets a vector value at an index.

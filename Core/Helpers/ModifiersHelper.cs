@@ -8919,7 +8919,7 @@ namespace BetterLegacy.Core.Helpers
             var tagLocations = new List<Vector2Int>();
             RTString.RegexMatches(text, new Regex(@"<(.*?)>"), match =>
             {
-                textWithoutFormatting = textWithoutFormatting.Replace(match.Groups[0].ToString(), "");
+                textWithoutFormatting = textWithoutFormatting.Remove(match.Groups[0].ToString());
                 tagLocations.Add(new Vector2Int(match.Index, match.Length - 1));
             });
 

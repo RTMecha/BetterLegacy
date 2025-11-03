@@ -285,7 +285,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         EditorContextMenu.inst.ShowContextMenu(
                             new ButtonFunction("Open folder", () =>
                             {
-                                EditorLevelManager.inst.LevelCollectionPopup.PathField.text = path.Replace(RTEditor.inst.BeatmapsPath + "/", "");
+                                EditorLevelManager.inst.LevelCollectionPopup.PathField.text = path.Remove(RTEditor.inst.BeatmapsPath + "/");
                                 RTEditor.inst.UpdateEditorPath(false);
                             }, "Level Panel Open Folder"),
                             new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.CollectionsPath), EndFolderCreation), "Level Panel Create Folder"),

@@ -293,7 +293,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public override string ToString()
         {
-            string strs = "";
+            string strs = string.Empty;
             for (int i = 0; i < values.Length; i++)
             {
                 strs += $"{values[i]}";

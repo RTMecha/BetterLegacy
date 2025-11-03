@@ -419,7 +419,7 @@ namespace BetterLegacy.Editor.Components
                 return;
 
             if (tooltipLanguages.Count == 0)
-                tooltipLanguages.Add(TooltipHelper.NewTooltip(beatmapObject.name + " [ " + beatmapObject.StartTime + " ]", "", new List<string>()));
+                tooltipLanguages.Add(TooltipHelper.NewTooltip(beatmapObject.name + " [ " + beatmapObject.StartTime + " ]", string.Empty, new List<string>()));
 
             string parent = !string.IsNullOrEmpty(beatmapObject.Parent) ?
                  "<br>P: " + beatmapObject.Parent + " (" + beatmapObject.parentType + ")" :

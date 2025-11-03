@@ -252,7 +252,7 @@ namespace BetterLegacy.Patchers
             EditorLevelManager.inst.LoadLevels();
 
             CoreHelper.Log($"EDITOR START -> {nameof(CoreHelper.UpdateDiscordStatus)}");
-            CoreHelper.UpdateDiscordStatus("", "In Editor (Selecting level)", "editor");
+            CoreHelper.UpdateDiscordStatus(string.Empty, "In Editor (Selecting level)", "editor");
 
             CoreHelper.Log($"EDITOR START -> {nameof(EditorManager.SetDialogStatus)} (Timeline)");
             Instance.SetDialogStatus("Timeline", true, true);
@@ -972,7 +972,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool TooltipConverterPrefix(ref string __result, List<string> __0, string __1, string __2)
         {
-            string text = "";
+            string text = string.Empty;
 
             if (__0 != null && __0.Count > 0)
                 text += $"<size=16>[{string.Join(", ", __0.ToArray())}]</size><br>";

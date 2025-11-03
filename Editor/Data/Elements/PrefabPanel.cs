@@ -182,7 +182,7 @@ namespace BetterLegacy.Editor.Data.Elements
                     EditorContextMenu.inst.ShowContextMenu(
                         new ButtonFunction("Open folder", () =>
                         {
-                            RTEditor.inst.PrefabPopups.External.PathField.text = path.Replace(RTEditor.inst.BeatmapsPath + "/", "");
+                            RTEditor.inst.PrefabPopups.External.PathField.text = path.Remove(RTEditor.inst.BeatmapsPath + "/");
                             RTEditor.inst.UpdatePrefabPath(false);
                         }),
                         new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath), () => { RTPrefabEditor.inst.LoadPrefabs(RTPrefabEditor.inst.RenderExternalPrefabs); RTEditor.inst.HideNameEditor(); })),
@@ -284,7 +284,7 @@ namespace BetterLegacy.Editor.Data.Elements
                     return;
                 }
 
-                RTEditor.inst.PrefabPopups.External.PathField.text = path.Replace(RTEditor.inst.BeatmapsPath + "/", "");
+                RTEditor.inst.PrefabPopups.External.PathField.text = path.Remove(RTEditor.inst.BeatmapsPath + "/");
                 RTEditor.inst.UpdatePrefabPath(false);
             };
 

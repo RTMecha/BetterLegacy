@@ -2961,7 +2961,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     foreach (var bm in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                     {
-                        bm.Parent = "";
+                        bm.Parent = string.Empty;
                         RTLevel.Current?.UpdateObject(bm, ObjectContext.PARENT_CHAIN);
                     }
                 });
@@ -3059,13 +3059,13 @@ namespace BetterLegacy.Editor.Managers
 
                 var transform = runtimeObject.visualObject.gameObject.transform;
 
-                string parent = "";
+                string parent = string.Empty;
                 if (!string.IsNullOrEmpty(beatmapObject.Parent))
                     parent = "<br>P: " + beatmapObject.Parent + " (" + beatmapObject.parentType + ")";
                 else
                     parent = "<br>P: No Parent" + " (" + beatmapObject.parentType + ")";
 
-                string text = "";
+                string text = string.Empty;
                 if (beatmapObject.shape != 4 || beatmapObject.shape != 6)
                     text = "<br>S: " + CoreHelper.GetShape(beatmapObject.shape, beatmapObject.shapeOption) +
                         "<br>T: " + beatmapObject.text;
@@ -3076,7 +3076,7 @@ namespace BetterLegacy.Editor.Managers
                     text = "<br>S: Image" +
                         "<br>T: " + beatmapObject.text;
 
-                string ptr = "";
+                string ptr = string.Empty;
                 if (!string.IsNullOrEmpty(beatmapObject.prefabID) && !string.IsNullOrEmpty(beatmapObject.prefabInstanceID))
                     ptr = "<br><#" + RTColors.ColorToHex(beatmapObject.GetPrefab().GetPrefabType().color) + ">PID: " + beatmapObject.prefabID + " | PIID: " + beatmapObject.prefabInstanceID + "</color>";
                 else
