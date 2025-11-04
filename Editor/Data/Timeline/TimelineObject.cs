@@ -399,10 +399,11 @@ namespace BetterLegacy.Editor.Data.Timeline
 
             Prefab prefab = GetPrefab();
 
+            if (data != null)
+                data.TimelineObject = this;
+
             if (isBeatmapObject && TryGetData(out BeatmapObject beatmapObject))
             {
-                beatmapObject.timelineObject = this;
-
                 name = beatmapObject.name;
                 startTime = beatmapObject.StartTime;
                 length = beatmapObject.GetObjectLifeLength(collapse: true);
@@ -416,8 +417,6 @@ namespace BetterLegacy.Editor.Data.Timeline
 
             if (isPrefabObject && TryGetData(out PrefabObject prefabObject))
             {
-                prefabObject.timelineObject = this;
-
                 name = prefab.name;
                 startTime = prefabObject.StartTime + prefab.offset;
                 length = prefabObject.GetObjectLifeLength(collapse: true);
@@ -428,8 +427,6 @@ namespace BetterLegacy.Editor.Data.Timeline
 
             if (isBackgroundObject && TryGetData(out BackgroundObject backgroundObject))
             {
-                backgroundObject.timelineObject = this;
-
                 name = backgroundObject.name;
                 startTime = backgroundObject.StartTime;
                 length = backgroundObject.GetObjectLifeLength(collapse: true);
