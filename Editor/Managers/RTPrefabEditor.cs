@@ -83,10 +83,23 @@ namespace BetterLegacy.Editor.Managers
 
         public static bool ImportPrefabsDirectly { get; set; }
 
+        /// <summary>
+        /// Function to run on Prefab Panel selection.
+        /// </summary>
         public Action<PrefabPanel> onSelectPrefab;
 
+        /// <summary>
+        /// Beatmap Object to target on Prefab Object created.
+        /// </summary>
         public BeatmapObject quickPrefabTarget;
+
+        /// <summary>
+        /// If the internal Prefabs list is currently allowing Quick Prefab selection.
+        /// </summary>
         public bool selectingQuickPrefab;
+        /// <summary>
+        /// The currently selected quick prefab.
+        /// </summary>
         public Prefab currentQuickPrefab;
 
         public bool shouldCutPrefab;
@@ -95,12 +108,24 @@ namespace BetterLegacy.Editor.Managers
         public bool prefabsLoading;
 
         GameObject prefabExternalUpAFolderButton;
-        public GameObject prefabExternalAddButton;
+        GameObject prefabExternalAddButton;
 
+        /// <summary>
+        /// If used Prefabs should only show in the Internal Prefab list.
+        /// </summary>
         public bool filterUsed;
 
+        /// <summary>
+        /// Selected <see cref="BeatmapTheme"/>s for the Prefab Creator.
+        /// </summary>
         public List<BeatmapTheme> selectedBeatmapThemes = new List<BeatmapTheme>();
+        /// <summary>
+        /// Selected <see cref="ModifierBlock"/>s for the Prefab Creator.
+        /// </summary>
         public List<ModifierBlock> selectedModifierBlocks = new List<ModifierBlock>();
+        /// <summary>
+        /// Selected <see cref="SpriteAsset"/>s for the Prefab Creator.
+        /// </summary>
         public List<SpriteAsset> selectedSpriteAssets = new List<SpriteAsset>();
 
         /// <summary>
@@ -108,16 +133,58 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public List<PrefabType> prefabTypes = new List<PrefabType>();
 
+        /// <summary>
+        /// If parent settings should display.
+        /// </summary>
         public bool advancedParent;
 
+        /// <summary>
+        /// The currently copied instance data.
+        /// </summary>
         public PrefabObject copiedInstanceData;
 
+        /// <summary>
+        /// If the Prefab Editor prefab icon is collapsed.
+        /// </summary>
         public bool CollapseIcon { get; set; } = false;
+
+        /// <summary>
+        /// If the Prefab Creator prefab icon is collapsed.
+        /// </summary>
         public bool CollapseCreatorIcon { get; set; } = false;
 
+        /// <summary>
+        /// Currently selected items for the Prefab Creator that aren't a <see cref="TimelineObject"/>.
+        /// </summary>
         public Dictionary<string, bool> selectedForPrefabCreator = new Dictionary<string, bool>();
 
-        public int prefabCreatorSelectionTab;
+        /// <summary>
+        /// The current selection tab for the Prefab Creator.
+        /// </summary>
+        public SelectionType prefabCreatorSelectionTab = EditorConfig.Instance.PrefabCreatorDefaultSelectionTab.Value;
+
+        /// <summary>
+        /// Selection type for Prefab content.
+        /// </summary>
+        public enum SelectionType
+        {
+            /// <summary>
+            /// Selection representing a <see cref="TimelineObject"/> which can be a <see cref="BeatmapObject"/>, a <see cref="BackgroundObject"/> and a <see cref="PrefabObject"/>.
+            /// </summary>
+            TimelineObjects,
+            /// <summary>
+            /// Selection representing a <see cref="BeatmapTheme"/>.
+            /// </summary>
+            BeatmapThemes,
+            /// <summary>
+            /// Selection representing a <see cref="ModifierBlock"/>.
+            /// </summary>
+            ModifierBlocks,
+            /// <summary>
+            /// Selection representing a <see cref="SpriteAsset"/>.
+            /// </summary>
+            Images,
+        }
 
         #endregion
 
@@ -1689,7 +1756,7 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
-        public static bool loadingPrefabTypes = false;
+        public bool loadingPrefabTypes = false;
 
         /// <summary>
         /// Loads all custom prefab types from the prefab types folder.
@@ -2561,6 +2628,9 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void OpenPopup()
         {
+            if (!EditorLevelManager.inst.HasLoadedLevel())
+                return;
+
             RTEditor.inst.PrefabPopups.Open();
             RenderPopup();
         }
@@ -2744,7 +2814,7 @@ namespace BetterLegacy.Editor.Managers
                 int index = i;
                 PrefabCreatorDialog.SelectionTabButtons[i].onClick.NewListener(() =>
                 {
-                    prefabCreatorSelectionTab = index;
+                    prefabCreatorSelectionTab = (SelectionType)index;
                     ReloadSelectionContent();
                 });
             }
@@ -2752,7 +2822,7 @@ namespace BetterLegacy.Editor.Managers
             PrefabCreatorDialog.ClearSelectionContent();
             switch (prefabCreatorSelectionTab)
             {
-                case 0: {
+                case SelectionType.TimelineObjects: {
                         foreach (var timelineObject in EditorTimeline.inst.timelineObjects)
                         {
                             if (!RTString.SearchString(PrefabCreatorDialog.SelectionSearchTerm, timelineObject.Name))
@@ -2770,7 +2840,7 @@ namespace BetterLegacy.Editor.Managers
                         }
                         break;
                     }
-                case 1: {
+                case SelectionType.BeatmapThemes: {
                         foreach (var beatmapTheme in GameData.Current.beatmapThemes)
                         {
                             if (!RTString.SearchString(PrefabCreatorDialog.SelectionSearchTerm, beatmapTheme.name))
@@ -2795,7 +2865,7 @@ namespace BetterLegacy.Editor.Managers
                         }
                         break;
                     }
-                case 2: {
+                case SelectionType.ModifierBlocks: {
                         foreach (var modifierBlock in GameData.Current.modifierBlocks)
                         {
                             if (!RTString.SearchString(PrefabCreatorDialog.SelectionSearchTerm, modifierBlock.Name))
@@ -2820,7 +2890,7 @@ namespace BetterLegacy.Editor.Managers
                         }
                         break;
                     }
-                case 3: {
+                case SelectionType.Images: {
                         foreach (var spriteAsset in GameData.Current.assets.sprites)
                         {
                             if (!RTString.SearchString(PrefabCreatorDialog.SelectionSearchTerm, spriteAsset.name))
@@ -2857,9 +2927,7 @@ namespace BetterLegacy.Editor.Managers
             selectingQuickPrefab = false;
             currentQuickPrefab = prefab;
 
-            bool prefabExists = currentQuickPrefab != null;
-
-            selectQuickPrefabText.text = (!prefabExists ? "-Select Prefab-" : "<color=#669e37>-Prefab-</color>") + "\n" + (!prefabExists ? "n/a" : currentQuickPrefab.name);
+            selectQuickPrefabText.text = (!prefab ? "-Select Prefab-" : "<color=#669e37>-Prefab-</color>") + "\n" + (!prefab ? "n/a" : prefab.name);
         }
 
         /// <summary>
