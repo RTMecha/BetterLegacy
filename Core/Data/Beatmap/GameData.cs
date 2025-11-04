@@ -1400,15 +1400,18 @@ namespace BetterLegacy.Core.Data.Beatmap
             for (int i = 0; i < data.checkpoints.Count; i++)
                 jn["checkpoints"][i] = data.checkpoints[i].ToJSONVG();
 
+            var beatmapObjects = this.beatmapObjects.FindAll(x => !x.FromPrefab);
             for (int i = 0; i < beatmapObjects.Count; i++)
                 jn["objects"][i] = beatmapObjects[i].ToJSONVG();
 
+            var prefabObjects = this.prefabObjects.FindAll(x => !x.fromModifier && !x.FromPrefab);
             if (!prefabObjects.IsEmpty())
                 for (int i = 0; i < prefabObjects.Count; i++)
                     jn["prefab_objects"][i] = prefabObjects[i].ToJSONVG();
             else
                 jn["prefab_objects"] = new JSONArray();
 
+            var prefabs = this.prefabs.FindAll(x => !x.FromPrefab);
             if (!prefabs.IsEmpty())
                 for (int i = 0; i < prefabs.Count; i++)
                     jn["prefabs"][i] = prefabs[i].ToJSONVG();
