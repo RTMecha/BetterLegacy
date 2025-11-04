@@ -636,6 +636,91 @@ namespace BetterLegacy.Editor.Managers
             timelineObjects.Clear();
         }
 
+        public void InitTimelineObjects()
+        {
+            ClearTimelineObjects();
+            timelineObjects = ToTimelineObjects().ToList();
+
+            //CoroutineHelper.StartCoroutine(IInitTimelineObjects());
+        }
+
+        IEnumerator IInitTimelineObjects()
+        {
+            ClearTimelineObjects();
+
+            if (!GameData.Current)
+                yield break;
+
+            var editables = GameData.Current.GetEditablesList();
+            int num = 0;
+            CoroutineHelper.ProcessLoop(editables, editable =>
+            {
+                if (!editable.CanRenderInTimeline)
+                {
+                    num++;
+                    return;
+                }
+
+                TimelineObject timelineObject = null;
+
+                try
+                {
+                    timelineObject = GetTimelineObject(editable);
+                    timelineObject.verified = true;
+                    timelineObject.Init(false);
+                    timelineObject.Render();
+                    onTimelineObjectCreated?.Invoke(timelineObject, num, editables.Count);
+                }
+                catch (Exception e)
+                {
+                    var stringBuilder = new StringBuilder();
+                    stringBuilder.AppendLine($"{RTLevel.className}Failed to convert object '{editable.ID}' to {nameof(TimelineObject)}.");
+                    stringBuilder.AppendLine($"Exception: {e.Message}");
+                    stringBuilder.AppendLine(e.StackTrace);
+
+                    Debug.LogError(stringBuilder.ToString());
+                }
+
+                if (timelineObject)
+                    timelineObjects.Add(timelineObject);
+                num++;
+            }, 2000);
+            //foreach (var editable in editables)
+            //{
+            //    if (!editable.CanRenderInTimeline)
+            //    {
+            //        num++;
+            //        continue;
+            //    }
+
+            //    TimelineObject timelineObject = null;
+
+            //    try
+            //    {
+            //        timelineObject = GetTimelineObject(editable);
+            //        timelineObject.verified = true;
+            //        timelineObject.Init(false);
+            //        timelineObject.Render();
+            //        onTimelineObjectCreated?.Invoke(timelineObject, num, editables.Count);
+            //    }
+            //    catch (Exception e)
+            //    {
+            //        var stringBuilder = new StringBuilder();
+            //        stringBuilder.AppendLine($"{RTLevel.className}Failed to convert object '{editable.ID}' to {nameof(TimelineObject)}.");
+            //        stringBuilder.AppendLine($"Exception: {e.Message}");
+            //        stringBuilder.AppendLine(e.StackTrace);
+
+            //        Debug.LogError(stringBuilder.ToString());
+            //    }
+
+            //    if (timelineObject)
+            //        timelineObjects.Add(timelineObject);
+            //    num++;
+            //}
+
+            yield break;
+        }
+
         public Action<TimelineObject, int, int> onTimelineObjectCreated;
         public IEnumerable<TimelineObject> ToTimelineObjects()
         {
@@ -781,26 +866,30 @@ namespace BetterLegacy.Editor.Managers
             if (!timelineObject)
                 return;
 
-            if (timelineObject.isBeatmapObject)
-            {
-                var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                if (beatmapObject.fromPrefab && beatmapObject.TryGetPrefabObject(out PrefabObject result) && result.fromModifier)
-                    return;
-            }
+            var prefabable = timelineObject.GetData<IPrefabable>();
+            if (prefabable != null && prefabable.FromPrefab && prefabable.TryGetPrefabObject(out PrefabObject result) && result.fromModifier)
+                return;
+
+            //if (timelineObject.isBeatmapObject)
+            //{
+            //    var beatmapObject = timelineObject.GetData<BeatmapObject>();
+            //    if (beatmapObject.fromPrefab && beatmapObject.TryGetPrefabObject(out PrefabObject result) && result.fromModifier)
+            //        return;
+            //}
             
-            if (timelineObject.isBackgroundObject)
-            {
-                var backgroundObject = timelineObject.GetData<BackgroundObject>();
-                if (backgroundObject.fromPrefab && backgroundObject.TryGetPrefabObject(out PrefabObject result) && result.fromModifier)
-                    return;
-            }
+            //if (timelineObject.isBackgroundObject)
+            //{
+            //    var backgroundObject = timelineObject.GetData<BackgroundObject>();
+            //    if (backgroundObject.fromPrefab && backgroundObject.TryGetPrefabObject(out PrefabObject result) && result.fromModifier)
+            //        return;
+            //}
             
-            if (timelineObject.isPrefabObject)
-            {
-                var prefabObject = timelineObject.GetData<PrefabObject>();
-                if (prefabObject.fromPrefab && prefabObject.TryGetPrefabObject(out PrefabObject result) && result.fromModifier)
-                    return;
-            }
+            //if (timelineObject.isPrefabObject)
+            //{
+            //    var prefabObject = timelineObject.GetData<PrefabObject>();
+            //    if (prefabObject.fromPrefab && prefabObject.TryGetPrefabObject(out PrefabObject result) && result.fromModifier)
+            //        return;
+            //}
 
             if (onSelectTimelineObject != null)
             {
@@ -824,7 +913,7 @@ namespace BetterLegacy.Editor.Managers
             var selectedObjects = SelectedObjects;
 
             // assigns the Beatmap Objects' prefab reference to selected objects.
-            if (RTEditor.inst.prefabPickerEnabled && !timelineObject.isPrefabObject && timelineObject.TryGetPrefabable(out IPrefabable prefabable))
+            if (RTEditor.inst.prefabPickerEnabled && !timelineObject.isPrefabObject && prefabable != null)
             {
                 if (string.IsNullOrEmpty(prefabable.PrefabInstanceID))
                 {

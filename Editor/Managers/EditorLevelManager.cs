@@ -887,12 +887,13 @@ namespace BetterLegacy.Editor.Managers
             CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
 
             CoreHelper.Log("Creating timeline objects...");
-            RTEditor.inst.InfoPopup.SetInfo($"Setting first object of [ {name} ]");
-            EditorTimeline.inst.ClearTimelineObjects();
-            EditorTimeline.inst.timelineObjects = EditorTimeline.inst.ToTimelineObjects().ToList();
+            RTEditor.inst.InfoPopup.SetInfo($"Creating timeline objects for [ {name} ]");
+            EditorTimeline.inst.InitTimelineObjects();
             CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
 
             RTCheckpointEditor.inst.SetCurrentCheckpoint(0);
+
+            RTPrefabEditor.inst.currentQuickPrefab = null; // remove selected quick prefab as it probably doesn't exist anymore.
 
             RTEditor.inst.InfoPopup.SetInfo("Done!");
             RTEditor.inst.InfoPopup.Close();
