@@ -183,6 +183,7 @@ namespace BetterLegacy.Configs
         public Setting<bool> HideVisualElementsWhenObjectIsEmpty { get; set; }
         public Setting<Vector2Int> RenderDepthRange { get; set; }
         public Setting<bool> OpenNewLevelCreatorIfNoLevels { get; set; }
+        public Setting<bool> ShowModifiersDefault { get; set; }
 
         public Setting<float> OpenLevelButtonHoverSize { get; set; }
 
@@ -193,6 +194,8 @@ namespace BetterLegacy.Configs
         public Setting<float> KeyframeHoverSize { get; set; }
         public Setting<float> TimelineBarButtonsHoverSize { get; set; }
         public Setting<float> PrefabButtonHoverSize { get; set; }
+
+        public Setting<RTPrefabEditor.SelectionType> PrefabCreatorDefaultSelectionTab { get; set; }
 
         #endregion
 
@@ -564,6 +567,7 @@ namespace BetterLegacy.Configs
             HideVisualElementsWhenObjectIsEmpty = Bind(this, EDITOR_GUI, "Hide Visual Elements When Object Is Empty", true, "If the Beatmap Object is empty, anything related to the visuals of the object doesn't show.");
             RenderDepthRange = Bind(this, EDITOR_GUI, "Render Depth Range", new Vector2Int(219, -98), "The range the Render Depth slider will show. Vanilla Legacy range is 30 and 0.");
             OpenNewLevelCreatorIfNoLevels = Bind(this, EDITOR_GUI, "Open New Level Creator If No Levels", false, "If the New Level Creator popup should open when there are no levels in a level folder.");
+            ShowModifiersDefault = Bind(this, EDITOR_GUI, "Show Modifiers Default", false, "If the modifier lists should be uncollapsed by default.");
 
             ChangesRefreshLevelList = Bind(this, EDITOR_GUI, "Changes Refresh Level List", false, "If the level list reloads whenever a change is made.");
             OpenLevelShowDeleteButton = Bind(this, EDITOR_GUI, "Open Level Show Delete Button", false, "Shows a delete button that can be used to move levels to a recycling folder.");
@@ -573,6 +577,8 @@ namespace BetterLegacy.Configs
             KeyframeHoverSize = Bind(this, EDITOR_GUI, "Keyframe Focus Size", 1f, "How big the button gets when hovered.", 0.7f, 1.4f);
             TimelineBarButtonsHoverSize = Bind(this, EDITOR_GUI, "Timeline Bar Buttons Focus Size", 1.05f, "How big the button gets when hovered.", 0.7f, 1.4f);
             PrefabButtonHoverSize = Bind(this, EDITOR_GUI, "Prefab Panel Focus Size", 1.05f, "How big the button gets when hovered.", 0.7f, 1.4f);
+
+            PrefabCreatorDefaultSelectionTab = Bind(this, EDITOR_GUI, "Prefab Creator Default Selection Tab", RTPrefabEditor.SelectionType.BeatmapThemes, "The default selection tab for the Prefab Creator.");
 
             #endregion
 

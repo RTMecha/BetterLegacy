@@ -7,6 +7,7 @@ using UnityEngine.UI;
 
 using LSFunctions;
 
+using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
@@ -24,6 +25,10 @@ namespace BetterLegacy.Editor.Data.Dialogs
     /// </summary>
     public class ModifiersEditorDialog : Exists
     {
+        public ModifiersEditorDialog() => showModifiers = EditorConfig.Instance.ShowModifiersDefault.Value;
+
+        #region Values
+
         /// <summary>
         /// Label of the modifiers editor.
         /// </summary>
@@ -98,6 +103,10 @@ namespace BetterLegacy.Editor.Data.Dialogs
         /// Function to run when the modifiers list is toggled on.
         /// </summary>
         public Action<bool> showModifiersFunc;
+
+        #endregion
+
+        #region Functions
 
         public void InitLabel(Transform parent)
         {
@@ -375,5 +384,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             modifierCards.Clear();
             showModifiersFunc = null;
         }
+
+        #endregion
     }
 }
