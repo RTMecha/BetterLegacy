@@ -166,6 +166,10 @@ namespace BetterLegacy.Editor.Managers
                 if (currentTemplateSprite)
                     currentTemplateSprite.Save(RTFile.CombinePaths(copyTo, $"preview{FileFormat.PNG.Dot()}"));
 
+                var info = new LevelTemplateInfo();
+                info.name = Path.GetFileName(copyTo);
+                info.WriteToFile(RTFile.CombinePaths(copyTo, info.GetFileName()));
+
                 RenderLevelTemplates();
                 RTEditor.inst.HideWarningPopup();
             }, () =>
@@ -197,6 +201,13 @@ namespace BetterLegacy.Editor.Managers
 
                 if (!RTFile.FileExists(RTFile.CombinePaths(directory, Level.LEVEL_LSB)))
                     continue;
+
+                if (!RTFile.FileExists(RTFile.CombinePaths(directory, "info.lsb")))
+                {
+                    var info = new LevelTemplateInfo();
+                    info.name = Path.GetFileName(directory);
+                    info.WriteToFile(RTFile.CombinePaths(directory, info.GetFileName()));
+                }
 
                 var template = new LevelTemplate();
                 template.Init(i, RTFile.ReplaceSlash(directory));

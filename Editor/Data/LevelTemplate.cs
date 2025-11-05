@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 
 using UnityEngine;
 using UnityEngine.UI;
@@ -10,6 +11,7 @@ using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Managers;
+using SimpleJSON;
 
 namespace BetterLegacy.Editor.Data
 {
@@ -22,7 +24,7 @@ namespace BetterLegacy.Editor.Data
 
         public LevelTemplate(string name) => this.name = name;
 
-        #region Properties
+        #region Values
 
         /// <summary>
         /// The template game object.
@@ -49,10 +51,6 @@ namespace BetterLegacy.Editor.Data
         /// </summary>
         public string Directory { get; set; }
 
-        #endregion
-
-        #region Fields
-
         /// <summary>
         /// Path to level template file.
         /// </summary>
@@ -73,9 +71,14 @@ namespace BetterLegacy.Editor.Data
         /// </summary>
         public int index;
 
+        /// <summary>
+        /// Metadata of the level template.
+        /// </summary>
+        public LevelTemplateInfo info;
+
         #endregion
 
-        #region Methods
+        #region Functions
 
         /// <summary>
         /// Initializes the level template UI.
@@ -89,7 +92,7 @@ namespace BetterLegacy.Editor.Data
 
             var gameObject = GameObject;
             if (gameObject)
-                CoreHelper.Destroy(gameObject);
+                CoreHelper.Delete(gameObject);
 
             gameObject = LevelTemplateEditor.inst.newLevelTemplatePrefab.Duplicate(LevelTemplateEditor.inst.Dialog.Content);
             var previewBase = gameObject.transform.Find("Preview Base");
@@ -102,7 +105,6 @@ namespace BetterLegacy.Editor.Data
             var isDefault = string.IsNullOrEmpty(directory);
             DeleteButton.gameObject.SetActive(!isDefault);
             if (!isDefault)
-            {
                 DeleteButton.button.onClick.NewListener(() =>
                 {
                     RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this template? This is permanent!", () =>
@@ -113,7 +115,6 @@ namespace BetterLegacy.Editor.Data
                         RTEditor.inst.HideWarningPopup();
                     }, RTEditor.inst.HideWarningPopup);
                 });
-            }
 
             var button = gameObject.GetComponent<Button>();
             button.onClick.NewListener(SelectTemplate);
@@ -124,6 +125,16 @@ namespace BetterLegacy.Editor.Data
 
             EditorThemeManager.ApplyGraphic(DeleteButton.baseImage, ThemeGroup.Delete);
             EditorThemeManager.ApplyGraphic(DeleteButton.image, ThemeGroup.Delete_Text);
+
+            try
+            {
+                if (RTFile.TryReadFromFile(RTFile.CombinePaths(Directory, "info.lsb"), out string metadata))
+                    info = LevelTemplateInfo.Parse(JSON.Parse(metadata));
+            }
+            catch (System.Exception ex)
+            {
+                CoreHelper.LogError($"Could not load template due to the exception: {ex}");
+            }
 
             Render();
         }
@@ -173,6 +184,105 @@ namespace BetterLegacy.Editor.Data
             !RTFile.FileExists(RTFile.CombinePaths(Directory, Level.LEVEL_LSB)) ?
                 EditorLevelManager.inst.CreateBaseBeatmap() :
                 GameData.ReadFromFile(RTFile.CombinePaths(Directory, Level.LEVEL_LSB), ArrhythmiaType.LS);
+
+        #endregion
+    }
+
+    public class LevelTemplateInfo : PAObject<LevelTemplateInfo>, IUploadable, IFile
+    {
+        #region Values
+
+        public string name;
+        public string description;
+
+        #region Server
+
+        public string ServerID { get; set; }
+
+        public string UploaderName { get; set; }
+
+        public string UploaderID { get; set; }
+
+        public List<ServerUser> Uploaders { get; set; } = new List<ServerUser>();
+
+        public ServerVisibility Visibility { get; set; }
+
+        public string Changelog { get; set; }
+
+        public List<string> ArcadeTags { get; set; } = new List<string>();
+
+        public string ObjectVersion { get; set; }
+
+        public string DatePublished { get; set; }
+
+        public int VersionNumber { get; set; }
+
+        #endregion
+
+        public FileFormat FileFormat => FileFormat.LSB;
+
+        #endregion
+
+        #region Functions
+
+        /// <summary>
+        /// Gets the name of the file.
+        /// </summary>
+        /// <returns>Returns "info.lsb".</returns>
+        public string GetFileName() => "info" + FileFormat.Dot();
+
+        public void ReadFromFile(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+                return;
+
+            if (!path.EndsWith(FileFormat.Dot()))
+                path = path += FileFormat.Dot();
+
+            var file = RTFile.ReadFromFile(path);
+            if (string.IsNullOrEmpty(file))
+                return;
+
+            ReadJSON(JSON.Parse(file));
+        }
+
+        public void WriteToFile(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+                return;
+
+            var jn = ToJSON();
+            RTFile.WriteToFile(path, jn.ToString());
+        }
+
+        public override void CopyData(LevelTemplateInfo orig, bool newID = true)
+        {
+            name = orig.name;
+            description = orig.description;
+            this.CopyUploadableData(orig);
+        }
+
+        public override void ReadJSON(JSONNode jn)
+        {
+            if (jn["name"] != null)
+                name = jn["name"];
+            if (jn["desc"] != null)
+                description = jn["desc"];
+            this.ReadUploadableJSON(jn);
+        }
+
+        public override JSONNode ToJSON()
+        {
+            var jn = Parser.NewJSONObject();
+
+            if (!string.IsNullOrEmpty(name))
+                jn["name"] = name;
+            if (!string.IsNullOrEmpty(description))
+                jn["desc"] = description;
+            this.WriteUploadableJSON(jn);
+
+            return jn;
+        }
 
         #endregion
     }
