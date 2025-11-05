@@ -15,33 +15,22 @@ using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Managers.Settings;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Menus;
 
 namespace BetterLegacy.Story
 {
+    /* TODO:
+    - Rework story system to be more data driven.
+     */
+
     /// <summary>
     /// Manager class for handling the BetterLegacy (Classic Arrhythmia) story mode.
     /// </summary>
-    public class StoryManager : MonoBehaviour
+    public class StoryManager : BaseManager<StoryManager, ManagerSettings>
     {
-        #region Init
-
-        /// <summary>
-        /// The <see cref="StoryManager"/> global instance reference.
-        /// </summary>
-        public static StoryManager inst;
-
-        /// <summary>
-        /// Initializes <see cref="StoryManager"/>.
-        /// </summary>
-        public static void Init() => new GameObject(nameof(StoryManager), typeof(StoryManager)).transform.SetParent(SystemManager.inst.transform);
-
-        void Awake()
-        {
-            inst = this;
-            StoryMode.Init();
-        }
+        #region Values
 
         /// <summary>
         /// Path to the story assets folder.
@@ -62,8 +51,6 @@ namespace BetterLegacy.Story
         /// Story mode reference for debugging
         /// </summary>
         public static StoryMode StoryModeDebugRef => StoryMode.Instance;
-
-        #endregion
 
         #region Progression
 
@@ -108,11 +95,15 @@ namespace BetterLegacy.Story
 
         #endregion
 
-        #region Play
+        #endregion
+
+        #region Functions
+
+        public override void OnInit() => StoryMode.Init();
 
         #region Resource
 
-        void Update()
+        public override void OnTick()
         {
             if (CoreHelper.IsUsingInputField)
                 return;
@@ -1075,8 +1066,6 @@ namespace BetterLegacy.Story
             LevelManager.OnLevelEnd = null;
             SceneHelper.LoadScene(SceneName.Main_Menu);
         }
-
-        bool loadCredits = false;
 
         void AssignStoryLevelMusic(string songName, Level level)
         {
