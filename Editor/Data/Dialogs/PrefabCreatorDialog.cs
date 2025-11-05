@@ -59,15 +59,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var scrollView = EditorPrefabHolder.Instance.ScrollView.Duplicate(GameObject.transform, "Scroll View", 1);
             scrollView.transform.AsRT().sizeDelta = new Vector2(765, 600f);
             Content = scrollView.transform.Find("Viewport/Content").AsRT();
-            var array = new Transform[prefabEditorData.childCount];
-            int num = 0;
-            foreach (var child in prefabEditorData.GetChildren())
-            {
-                array[num] = child;
-                num++;
-            }
-            for (int i = 0; i < array.Length; i++)
-                array[i].SetParent(Content);
+            prefabEditorData.TransferChildren(Content);
             CoreHelper.Delete(prefabEditorData);
 
             CoreHelper.Delete(Content.Find("offset/<").gameObject);

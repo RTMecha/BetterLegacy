@@ -75,6 +75,19 @@ namespace BetterLegacy.Core
         }
 
         /// <summary>
+        /// Transfers the children of the object to another.
+        /// </summary>
+        /// <param name="newParent">Parent to move the child objects to.</param>
+        public static void TransferChildren(this Transform transform, Transform newParent)
+        {
+            if (!newParent)
+                return;
+
+            for (int i = transform.childCount - 1; i >= 0; i--)
+                transform.GetChild(i).SetParent(newParent);
+        }
+
+        /// <summary>
         /// Destroys all the children of the <see cref="GameObject"/>.
         /// </summary>
         /// <param name="instant">True if it should be instant, otherwise put onto the Unity scheduler.</param>
@@ -2709,8 +2722,9 @@ namespace BetterLegacy.Core
             if (!string.IsNullOrEmpty(uploadable.UploaderID))
                 jn["uploader_id"] = uploadable.UploaderID;
 
-            for (int i = 0; i < uploadable.Uploaders.Count; i++)
-                jn["uploaders"][i] = uploadable.Uploaders[i].ToJSON();
+            if (uploadable.Uploaders != null)
+                for (int i = 0; i < uploadable.Uploaders.Count; i++)
+                    jn["uploaders"][i] = uploadable.Uploaders[i].ToJSON();
 
             if (uploadable.Visibility != ServerVisibility.Public)
                 jn["visibility"] = ((int)uploadable.Visibility).ToString();

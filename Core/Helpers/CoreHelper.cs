@@ -279,11 +279,7 @@ namespace BetterLegacy.Core.Helpers
         public static void DestroyChildren(Transform transform)
         {
             for (int i = transform.childCount - 1; i >= 0; i--)
-            {
-                var child = transform.GetChild(i);
-                child.SetParent(null);
-                Destroy(child.gameObject);
-            }
+                Delete(transform.GetChild(i));
         }
 
         /// <summary>
@@ -293,18 +289,12 @@ namespace BetterLegacy.Core.Helpers
         /// <param name="predicate">If a match is found, delete the child.</param>
         public static void DestroyChildren(Transform transform, Predicate<GameObject> predicate)
         {
-            var listToDestroy = new List<GameObject>();
             for (int i = transform.childCount - 1; i >= 0; i--)
             {
                 var child = transform.GetChild(i);
                 if (predicate(child.gameObject))
-                {
-                    child.SetParent(null);
-                    Destroy(child.gameObject);
-                }
+                    Delete(child);
             }
-            foreach (var child in listToDestroy)
-                Destroy(child);
         }
 
         /// <summary>
@@ -316,11 +306,7 @@ namespace BetterLegacy.Core.Helpers
         public static void DestroyChildren(Transform transform, int startIndex, int endIndex)
         {
             for (int i = endIndex; i >= startIndex; i--)
-            {
-                var child = transform.GetChild(i);
-                child.SetParent(null);
-                Destroy(child.gameObject);
-            }
+                Delete(transform.GetChild(i));
         }
 
         /// <summary>
