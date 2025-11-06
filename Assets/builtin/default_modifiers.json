@@ -3062,7 +3062,7 @@
       {
         "type": 1,
         "name": "spawnCloneMath",
-        "values": [ "0", "2", "1", "(index * 5)", "(index * 0)", "(index * 0)", "(index * 0)", "(index * 0)", "(index * 0)", "currentTimeOffset + objectStartTime + timeOffset", "0", "True", "True", "False" ],
+        "values": [ "0", "2", "1", "(cloneIndex * 5)", "(cloneIndex * 0)", "(cloneIndex * 0)", "(cloneIndex * 0)", "(cloneIndex * 0)", "(cloneIndex * 0)", "currentTimeOffset + objectStartTime + timeOffset", "0", "True", "True", "False" ],
         "const": "True",
         "compat": "obj"
       }, // spawnCloneMath

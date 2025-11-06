@@ -11241,7 +11241,7 @@ namespace BetterLegacy.Core.Helpers
                             { "currentScaY", baseSca.y },
                             { "currentRot", baseRot },
                             { "currentTimeOffset", baseTime },
-                            { "index", i },
+                            { "cloneIndex", i },
                         };
                         beatmapObject.SetObjectVariables(numberVariables);
                         ModifiersHelper.SetVariables(variables, numberVariables);
@@ -11346,7 +11346,7 @@ namespace BetterLegacy.Core.Helpers
                     { "currentScaY", baseSca.y },
                     { "currentRot", baseRot },
                     { "currentTimeOffset", baseTime },
-                    { "index", i },
+                    { "cloneIndex", i },
                 };
                 beatmapObject.SetObjectVariables(numberVariables);
                 ModifiersHelper.SetVariables(variables, numberVariables);
@@ -11440,7 +11440,7 @@ namespace BetterLegacy.Core.Helpers
                             { "currentScaY", baseSca.y },
                             { "currentRot", baseRot },
                             { "currentTimeOffset", baseTime },
-                            { "index", i },
+                            { "cloneIndex", i },
                         };
                         beatmapObject.SetObjectVariables(numberVariables);
                         ModifiersHelper.SetVariables(variables, numberVariables);

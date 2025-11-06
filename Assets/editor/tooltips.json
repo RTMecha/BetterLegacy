@@ -5125,7 +5125,7 @@
             "tooltips": [
               {
                 "desc": "spawnCloneMath (Action)",
-                "hint": "Spawns a copy of the object and all of its children.",
+                "hint": "Spawns a copy of the object and all of its children.<br><b>Variables</b>:<br>- currentPosX<br>- currentPosY<br>- currentPosZ<br>- currentScaX<br>- currentScaY<br>- currentRot<br>- currentTimeOffset<br>- cloneIndex",
                 "lang": 0
               }
             ]
