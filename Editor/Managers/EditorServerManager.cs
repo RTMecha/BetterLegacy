@@ -42,7 +42,7 @@ namespace BetterLegacy.Editor.Managers
         /// <summary>
         /// Server content dialog.
         /// </summary>
-        public ViewUploadedDialog Dialog { get; set; }
+        public ServerContentDialog Dialog { get; set; }
 
         /// <summary>
         /// Default tag list popup.
@@ -139,6 +139,8 @@ namespace BetterLegacy.Editor.Managers
             /// Server Prefabs tab.
             /// </summary>
             Prefabs,
+            // PlayerModels,
+            // LevelTemplates,
         }
 
         /// <summary>
@@ -226,7 +228,7 @@ namespace BetterLegacy.Editor.Managers
         {
             try
             {
-                Dialog = new ViewUploadedDialog();
+                Dialog = new ServerContentDialog();
                 Dialog.Init();
 
                 UserSearchPopup = RTEditor.inst.GeneratePopup(EditorPopup.USER_SEARCH_POPUP, "Users", Vector2.zero, new Vector2(600f, 400f),

@@ -15,9 +15,9 @@ using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Dialogs
 {
-    public class ViewUploadedDialog : EditorDialog, IContentUI, IPageUI
+    public class ServerContentDialog : EditorDialog, IContentUI, IPageUI
     {
-        public ViewUploadedDialog() : base() { }
+        public ServerContentDialog() : base() { }
 
         public RectTransform TabsContent { get; set; }
         public List<Button> TabButtons { get; set; } = new List<Button>();
@@ -58,8 +58,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
             dialogStorage.title.text = "- Online Files -";
 
             CoreHelper.Delete(editorDialogObject.transform.GetChild(2));
-
-            EditorHelper.AddEditorDialog(UPLOADED_LEVELS, editorDialogObject);
 
             var tabs = Creator.NewUIObject("tabs", editorDialogObject.transform);
             TabsContent = tabs.transform.AsRT();
@@ -243,9 +241,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 EditorServerManager.inst.Search();
             });
 
-            EditorHelper.AddEditorDialog(UPLOADED_LEVELS, editorDialogObject);
+            EditorHelper.AddEditorDialog(SERVER_CONTENT, editorDialogObject);
 
-            InitDialog(UPLOADED_LEVELS);
+            InitDialog(SERVER_CONTENT);
         }
 
         ButtonFunction GetSortButton(string name, int sort) => new ButtonFunction((EditorServerManager.inst.CurrentTabSettings.sort == sort ? "> " : string.Empty) + $"Sort: {name}", () =>
