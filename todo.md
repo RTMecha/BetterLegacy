@@ -10,7 +10,9 @@ Next: Multiplayer Snapshots
 - Multiplayer with any level in Arcade (local, Steam, etc)
 - Multiplayer compatible with story mode (supports Asset Packs)
 - Joinable rooms / direct connect
-- Player toolkit system
+- Voice chat with optional proximity (maybe can be controlled via modifiers?)
+- Player toolkit system?
+- Player models support multiplayer
 - Versus mode
 - Player Chat Bubble port (editable via Asset Packs and can select from a default list of bubble styles [Legacy, Modern, etc])
 1.10.0 - Editor Assistance Update  
