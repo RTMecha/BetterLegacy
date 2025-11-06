@@ -1,4 +1,24 @@
-﻿# 1.8.10 [Oct 31, 2025]
+﻿# 1.8.11 [Nov 6, 2025]
+## Features
+### Core
+- Added the spawnClone and spawnCloneMath action modifiers. These spawn a copy of the current object and its children a set number of times with a few offset values.
+
+### Editor
+- Added "Show Modifiers Default" to Config Manager > Editor > Editor GUI. This is the default value for the Show Modifiers toggle.
+- Added "Prefab Creator Default Selection Tab" to Config Manager > Editor > Editor GUI. This is the default tab for the Prefab Creator selection area.
+
+## Changes
+### Editor
+- Tweaked some timeline object code.
+- Added a metadata file for Level Templates. This is for potential uploading & downloading via the arcade server.
+
+## Fixes
+- Fixed event keyframe dropdown values having the easing.json Asset Pack file applied to it.
+- Fixed VG to LS conversion saving objects from prefabs.
+
+------------------------------------------------------------------------------------------
+
+# 1.8.10 [Oct 31, 2025]
 ## Features
 ### Core
 - Added Last Played value to level save data.
