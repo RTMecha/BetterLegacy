@@ -9,6 +9,7 @@ using SimpleJSON;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Modifiers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Editor.Data.Elements;
 
 namespace BetterLegacy.Core.Data.Player
 {
@@ -290,6 +291,8 @@ namespace BetterLegacy.Core.Data.Player
         public List<PlayerObject> tailParts = new List<PlayerObject>();
 
         public List<CustomPlayerObject> customObjects = new List<CustomPlayerObject>();
+
+        public PlayerModelPanel editorPanel;
 
         #region Modifiers
 
