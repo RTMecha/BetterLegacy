@@ -126,8 +126,6 @@ namespace BetterLegacy.Editor.Data.Elements
             RenderLabel();
         }
 
-        public override void RenderLabel() => RenderLabel(DisplayName);
-
         public override void RenderLabel(string text)
         {
             if (Label)

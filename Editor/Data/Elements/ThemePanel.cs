@@ -584,8 +584,6 @@ namespace BetterLegacy.Editor.Data.Elements
                 EditorSprites.OpenSprite;
         }
 
-        public override void RenderLabel() => RenderLabel(DisplayName);
-
         public override void RenderLabel(string name) => Label.text = name;
 
         public override void RenderTooltip()

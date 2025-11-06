@@ -66,6 +66,9 @@ namespace BetterLegacy.Editor.Data.Elements
         {
             get
             {
+                if (isFolder)
+                    return Name;
+
                 if (Info)
                     return $"/{Info.arcadeID} - {Info.name}";
 
@@ -352,17 +355,6 @@ namespace BetterLegacy.Editor.Data.Elements
         {
             if (IconImage)
                 IconImage.sprite = icon;
-        }
-
-        public override void RenderLabel()
-        {
-            if (isFolder)
-            {
-                RenderLabel(Name);
-                return;
-            }
-
-            RenderLabel(DisplayName);
         }
 
         public override void RenderLabel(string text)

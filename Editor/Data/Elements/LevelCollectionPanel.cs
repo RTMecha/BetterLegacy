@@ -43,7 +43,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
         #region Data
 
-        public override string DisplayName => string.Format(labelFormat,
+        public override string DisplayName => isFolder ? Name : string.Format(labelFormat,
             LSText.ClampString(Item.name, labelFolderNameMax),
             LSText.ClampString(Item.creator, labelCreatorNameMax),
             Item.Difficulty.DisplayName,
@@ -228,17 +228,6 @@ namespace BetterLegacy.Editor.Data.Elements
         {
             if (IconImage)
                 IconImage.sprite = icon;
-        }
-
-        public override void RenderLabel()
-        {
-            if (isFolder)
-            {
-                RenderLabel(Name);
-                return;
-            }
-
-            RenderLabel(DisplayName);
         }
 
         public override void RenderLabel(string text)

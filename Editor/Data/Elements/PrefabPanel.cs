@@ -77,6 +77,8 @@ namespace BetterLegacy.Editor.Data.Elements
         /// </summary>
         public Image IconImage { get; set; }
 
+        public override string DisplayName => isFolder ? System.IO.Path.GetFileName(Path) : Item.name;
+
         #endregion
 
         #region Asset Packs
@@ -396,8 +398,6 @@ namespace BetterLegacy.Editor.Data.Elements
                 SpriteHelper.LoadSprite(RTFile.CombinePaths(Path, $"folder_icon{FileFormat.PNG.Dot()}")) :
                 EditorSprites.OpenSprite;
         }
-
-        public override void RenderLabel() => RenderLabel(isFolder ? System.IO.Path.GetFileName(Path) : Item.name);
 
         public override void RenderLabel(string name)
         {

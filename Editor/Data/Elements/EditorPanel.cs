@@ -121,7 +121,7 @@ namespace BetterLegacy.Editor.Data.Elements
         /// <summary>
         /// Renders the editor panel label.
         /// </summary>
-        public abstract void RenderLabel();
+        public virtual void RenderLabel() => RenderLabel(DisplayName);
 
         /// <summary>
         /// Renders the editor panel label.
