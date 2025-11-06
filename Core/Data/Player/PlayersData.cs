@@ -271,6 +271,7 @@ namespace BetterLegacy.Core.Data.Player
             var model = new PlayerModel();
             model.basePart.name = "New Model";
             model.basePart.id = LSText.randomNumString(16);
+            model.creator = CoreConfig.Instance.DisplayName.Value; // set creator name
 
             externalPlayerModels[model.basePart.id] = model;
             playerModels[model.basePart.id] = model;
