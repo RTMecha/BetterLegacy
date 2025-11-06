@@ -10958,11 +10958,15 @@ namespace BetterLegacy.Core.Helpers
             var disabled = modifier.GetValue(10, variables);
             var offsetPrefab = modifier.GetBool(11, true, variables);
             var copyOffsets = modifier.GetBool(12, true, variables);
+            var disableSelf = modifier.GetBool(13, false, variables);
 
             var basePos = Vector3.zero;
             var baseSca = Vector2.one;
             var baseRot = 0f;
             var baseTime = 0f;
+
+            if (disableSelf)
+                beatmapObject.runtimeObject?.SetCustomActive(false);
 
             if (modifier.TryGetResult(out SpawnCloneCache cache))
             {
@@ -11200,27 +11204,26 @@ namespace BetterLegacy.Core.Helpers
             if (endCount <= startIndex)
                 return;
 
-            var pos = new Vector3(modifier.GetFloat(3, 0f, variables), modifier.GetFloat(4, 0f, variables), modifier.GetFloat(5, 0f, variables));
-            var sca = new Vector2(modifier.GetFloat(6, 0f, variables), modifier.GetFloat(7, 0f, variables));
-            var rot = modifier.GetFloat(8, 0, variables);
-            var timeOffset = modifier.GetFloat(9, 0f, variables);
+            var posXEvaluation = modifier.GetValue(3, variables);
+            var posYEvaluation = modifier.GetValue(4, variables);
+            var posZEvaluation = modifier.GetValue(5, variables);
+            var scaXEvaluation = modifier.GetValue(6, variables);
+            var scaYEvaluation = modifier.GetValue(7, variables);
+            var rotEvaluation = modifier.GetValue(8, variables);
+            var timeEvaluation = modifier.GetValue(9, variables);
 
             var disabled = modifier.GetValue(10, variables);
             var offsetPrefab = modifier.GetBool(11, true, variables);
             var copyOffsets = modifier.GetBool(12, true, variables);
+            var disableSelf = modifier.GetBool(13, false, variables);
 
             var basePos = Vector3.zero;
             var baseSca = Vector2.one;
             var baseRot = 0f;
             var baseTime = 0f;
 
-            var posXEvaluation = modifier.GetValue(13, variables);
-            var posYEvaluation = modifier.GetValue(14, variables);
-            var posZEvaluation = modifier.GetValue(15, variables);
-            var scaXEvaluation = modifier.GetValue(16, variables);
-            var scaYEvaluation = modifier.GetValue(17, variables);
-            var rotEvaluation = modifier.GetValue(18, variables);
-            var timeEvaluation = modifier.GetValue(19, variables);
+            if (disableSelf)
+                beatmapObject.runtimeObject?.SetCustomActive(false);
 
             if (modifier.TryGetResult(out SpawnCloneCache cache))
             {
@@ -11237,14 +11240,8 @@ namespace BetterLegacy.Core.Helpers
                             { "currentScaX", baseSca.x },
                             { "currentScaY", baseSca.y },
                             { "currentRot", baseRot },
-                            { "posX", pos.x },
-                            { "posY", pos.y },
-                            { "posZ", pos.z },
-                            { "scaX", sca.x },
-                            { "scaY", sca.y },
-                            { "rot", rot },
+                            { "currentTimeOffset", baseTime },
                             { "index", i },
-                            { "timeOffset", timeOffset },
                         };
                         beatmapObject.SetObjectVariables(numberVariables);
                         ModifiersHelper.SetVariables(variables, numberVariables);
@@ -11252,6 +11249,7 @@ namespace BetterLegacy.Core.Helpers
                         var calcPos = new Vector3(RTMath.Parse(posXEvaluation, numberVariables), RTMath.Parse(posYEvaluation, numberVariables), RTMath.Parse(posZEvaluation, numberVariables));
                         var calcSca = new Vector2(RTMath.Parse(scaXEvaluation, numberVariables), RTMath.Parse(scaYEvaluation, numberVariables));
                         var calcRot = RTMath.Parse(rotEvaluation, numberVariables);
+                        var calcTime = RTMath.Parse(timeEvaluation, numberVariables);
 
                         var prefabObject = cache.spawned.GetAtOrDefault(index, null);
                         if (!prefabObject)
@@ -11259,6 +11257,7 @@ namespace BetterLegacy.Core.Helpers
                             basePos = calcPos;
                             baseSca = calcSca;
                             baseRot = calcRot;
+                            baseTime = calcTime;
                             index++;
                             continue;
                         }
@@ -11291,6 +11290,7 @@ namespace BetterLegacy.Core.Helpers
                         basePos = calcPos;
                         baseSca = calcSca;
                         baseRot = calcRot;
+                        baseTime = calcTime;
                         index++;
                     }
 
@@ -11345,15 +11345,8 @@ namespace BetterLegacy.Core.Helpers
                     { "currentScaX", baseSca.x },
                     { "currentScaY", baseSca.y },
                     { "currentRot", baseRot },
-                    { "posX", pos.x },
-                    { "posY", pos.y },
-                    { "posZ", pos.z },
-                    { "scaX", sca.x },
-                    { "scaY", sca.y },
-                    { "rot", rot },
-                    { "index", i },
                     { "currentTimeOffset", baseTime },
-                    { "timeOffset", timeOffset },
+                    { "index", i },
                 };
                 beatmapObject.SetObjectVariables(numberVariables);
                 ModifiersHelper.SetVariables(variables, numberVariables);
@@ -11446,15 +11439,8 @@ namespace BetterLegacy.Core.Helpers
                             { "currentScaX", baseSca.x },
                             { "currentScaY", baseSca.y },
                             { "currentRot", baseRot },
-                            { "posX", pos.x },
-                            { "posY", pos.y },
-                            { "posZ", pos.z },
-                            { "scaX", sca.x },
-                            { "scaY", sca.y },
-                            { "rot", rot },
-                            { "index", i },
                             { "currentTimeOffset", baseTime },
-                            { "timeOffset", timeOffset },
+                            { "index", i },
                         };
                         beatmapObject.SetObjectVariables(numberVariables);
                         ModifiersHelper.SetVariables(variables, numberVariables);

@@ -4141,6 +4141,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         StringGenerator(modifier, reference, "Disabled Array", 10);
                         BoolGenerator(modifier, reference, "Use Prefab Offsets", 11);
                         BoolGenerator(modifier, reference, "Copy Offsets", 12);
+                        BoolGenerator(modifier, reference, "Disable Self", 13);
 
                         break;
                     }
@@ -4148,24 +4149,17 @@ namespace BetterLegacy.Editor.Data.Elements
                         IntegerGenerator(modifier, reference, "Start Index", 0);
                         IntegerGenerator(modifier, reference, "End Count", 1);
                         IntegerGenerator(modifier, reference, "Increment", 2, 1);
-                        SingleGenerator(modifier, reference, "Pos X", 3);
-                        SingleGenerator(modifier, reference, "Pos Y", 4);
-                        SingleGenerator(modifier, reference, "Pos Z", 5);
-                        SingleGenerator(modifier, reference, "Sca X", 6);
-                        SingleGenerator(modifier, reference, "Sca Y", 7);
-                        SingleGenerator(modifier, reference, "Rot", 8, amount: 15f, multiply: 3f);
-                        SingleGenerator(modifier, reference, "Time Offset", 9);
+                        StringGenerator(modifier, reference, "Pos X Eval", 3);
+                        StringGenerator(modifier, reference, "Pos Y Eval", 4);
+                        StringGenerator(modifier, reference, "Pos Z Eval", 5);
+                        StringGenerator(modifier, reference, "Sca X Eval", 6);
+                        StringGenerator(modifier, reference, "Sca Y Eval", 7);
+                        StringGenerator(modifier, reference, "Rot Eval", 8);
+                        StringGenerator(modifier, reference, "Time Eval", 9);
                         StringGenerator(modifier, reference, "Disabled Array", 10);
                         BoolGenerator(modifier, reference, "Use Prefab Offsets", 11);
                         BoolGenerator(modifier, reference, "Copy Offsets", 12);
-
-                        StringGenerator(modifier, reference, "Pos X Evaluation", 13);
-                        StringGenerator(modifier, reference, "Pos Y Evaluation", 14);
-                        StringGenerator(modifier, reference, "Pos Z Evaluation", 15);
-                        StringGenerator(modifier, reference, "Sca X Evaluation", 16);
-                        StringGenerator(modifier, reference, "Sca Y Evaluation", 17);
-                        StringGenerator(modifier, reference, "Rot Evaluation", 18);
-                        StringGenerator(modifier, reference, "Time Evaluation", 19);
+                        BoolGenerator(modifier, reference, "Disable Self", 13);
 
                         break;
                     }
