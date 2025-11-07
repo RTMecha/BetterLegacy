@@ -1766,7 +1766,7 @@ namespace BetterLegacy.Editor.Managers
         public void RenderBlendMode(BeatmapObject beatmapObject)
         {
             var active = !HideVisualElementsWhenObjectIsEmpty || beatmapObject.objectType != BeatmapObject.ObjectType.Empty;
-            EditorHelper.SetComplexity(Dialog.ColorBlendModeLabel.gameObject, "beatmapobject/colorblend", Complexity.Advanced, false, () => active);
+            EditorHelper.SetComplexity(Dialog.ColorBlendModeLabel.transform.parent.gameObject, "beatmapobject/colorblend", Complexity.Advanced, false, () => active);
             EditorHelper.SetComplexity(Dialog.ColorBlendModeDropdown.gameObject, "beatmapobject/colorblend", Complexity.Advanced, false, () => active);
 
             Dialog.ColorBlendModeDropdown.SetValueWithoutNotify((int)beatmapObject.colorBlendMode);
