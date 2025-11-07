@@ -53,14 +53,30 @@ namespace BetterLegacy.Core
         }
 
         /// <summary>
+        /// Finds a child with a predicate.
+        /// </summary>
+        /// <param name="predicate">Match predicate.</param>
+        /// <returns>Returns a <see cref="Transform"/> child if found, otherwise returns null.</returns>
+        public static Transform Find(this Transform transform, Predicate<Transform> predicate)
+        {
+            for (int i = 0; i < transform.childCount; i++)
+            {
+                var child = transform.GetChild(i);
+                if (predicate(child))
+                    return child;
+            }
+            return null;
+        }
+
+        /// <summary>
         /// Gets the children of a <see cref="Transform"/>.
         /// </summary>
         /// <returns>Returns a <see cref="List{T}"/> of the <see cref="Transform"/>s children.</returns>
-        public static List<Transform> ChildList(this Transform transform)
+        public static List<Transform> GetChildList(this Transform transform)
         {
             var list = new List<Transform>();
-            foreach (var obj in transform)
-                list.Add((Transform)obj);
+            foreach (Transform child in transform)
+                list.Add(child);
             return list;
         }
 

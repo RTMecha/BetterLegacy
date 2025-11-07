@@ -841,7 +841,7 @@ namespace BetterLegacy.Editor.Managers
 
                 dropdownStorage.arrow = prefabHolder.Dropdown.transform.Find("Arrow").GetComponent<Image>();
 
-                prefabHolder.Labels = ObjEditor.inst.ObjectView.transform.ChildList().First(x => x.name == "label").gameObject.Duplicate(prefabHolder.PrefabParent, "label");
+                prefabHolder.Labels = ObjEditor.inst.ObjectView.transform.Find(x => x.name == "label").gameObject.Duplicate(prefabHolder.PrefabParent, "label");
                 if (prefabHolder.Labels.transform.childCount > 1)
                     CoreHelper.Destroy(prefabHolder.Labels.transform.GetChild(1).gameObject, true);
 
