@@ -62,8 +62,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
             prefabEditorData.TransferChildren(Content);
             CoreHelper.Delete(prefabEditorData);
 
-            CoreHelper.Delete(Content.Find("offset/<").gameObject);
-            CoreHelper.Delete(Content.Find("offset/>").gameObject);
+            CoreHelper.Delete(Content.Find("offset/<"));
+            CoreHelper.Delete(Content.Find("offset/>"));
 
             GameObject.transform.Find("spacer").AsRT().sizeDelta = new Vector2(753.49f, 32f);
 
@@ -73,7 +73,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             OffsetField = Content.Find("offset/input").GetComponent<InputField>();
             OffsetField.characterLimit = 0;
 
-            CoreHelper.Delete(Content.Find("type/types").gameObject);
+            CoreHelper.Delete(Content.Find("type/types"));
 
             var prefabType = EditorPrefabHolder.Instance.Function1Button.gameObject.Duplicate(Content.Find("type"), "Show Type Editor");
             TypeButton = prefabType.GetComponent<FunctionButtonStorage>();
