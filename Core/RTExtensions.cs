@@ -83,8 +83,8 @@ namespace BetterLegacy.Core
             if (!newParent)
                 return;
 
-            for (int i = transform.childCount - 1; i >= 0; i--)
-                transform.GetChild(i).SetParent(newParent);
+            while (transform.childCount > 0)
+                transform.GetChild(0).SetParent(newParent);
         }
 
         /// <summary>
