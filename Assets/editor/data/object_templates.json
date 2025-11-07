@@ -74,7 +74,7 @@
           "obj": {
             "st": 0,
             "name": "circle",
-            "ot": 1,
+            "ot": 2,
             "akt": 2,
             "ako": 5,
             "s": 1
@@ -87,7 +87,7 @@
           "obj": {
             "st": 0,
             "name": "triangle",
-            "ot": 1,
+            "ot": 2,
             "akt": 2,
             "ako": 5,
             "s": 2
@@ -100,7 +100,7 @@
           "obj": {
             "st": 0,
             "name": "text",
-            "ot": 1,
+            "ot": 2,
             "akt": 2,
             "ako": 5,
             "s": 4,
@@ -114,7 +114,7 @@
           "obj": {
             "st": 0,
             "name": "hexagon",
-            "ot": 1,
+            "ot": 2,
             "akt": 2,
             "ako": 5,
             "s": 5
