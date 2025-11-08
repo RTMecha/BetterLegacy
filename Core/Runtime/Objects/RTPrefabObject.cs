@@ -70,7 +70,7 @@ namespace BetterLegacy.Core.Runtime.Objects
         /// <summary>
         /// If the Runtime Prefab Object is currently active.
         /// </summary>
-        public bool IsActive => Active && CustomActive && !PrefabObject.editorData.hidden;
+        public bool IsActive => Active && CustomActive && PrefabObject && !PrefabObject.editorData.hidden;
 
         public bool Active { get; set; }
         /// <summary>
@@ -109,6 +109,12 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         public override void Tick()
         {
+            if (!PrefabObject)
+            {
+                Debug.LogError($"{nameof(PrefabObject)} is null!");
+                return;
+            }
+
             if (!IsActive)
                 return;
 

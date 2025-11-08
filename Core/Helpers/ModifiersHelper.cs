@@ -2606,10 +2606,11 @@ namespace BetterLegacy.Core.Helpers
                         break;
                     }
                 case nameof(ModifierFunctions.spawnClone): {
-                        if (modifier.TryGetResult(out SpawnCloneCache cache))
+                        if (modifier.enabled && modifier.TryGetResult(out SpawnCloneCache cache))
                         {
                             RTLevel.Current.postTick.Enqueue(() =>
                             {
+                                CoreHelper.Log("Clearing clones...");
                                 for (int i = 0; i < cache.spawned.Count; i++)
                                 {
                                     var prefabObject = cache.spawned[i];
@@ -2619,15 +2620,18 @@ namespace BetterLegacy.Core.Helpers
                                     prefabObject.GetParentRuntime()?.RemovePrefab(prefabObject);
                                     GameData.Current.prefabObjects.Remove(x => x.id == prefabObject.id);
                                 }
+                                cache.spawned.Clear();
+                                RTLevel.Current.RecalculateObjectStates();
                             });
                         }
                         break;
                     }
                 case nameof(ModifierFunctions.spawnCloneMath): {
-                        if (modifier.TryGetResult(out SpawnCloneCache cache))
+                        if (modifier.enabled && modifier.TryGetResult(out SpawnCloneCache cache))
                         {
                             RTLevel.Current.postTick.Enqueue(() =>
                             {
+                                CoreHelper.Log("Clearing clones...");
                                 for (int i = 0; i < cache.spawned.Count; i++)
                                 {
                                     var prefabObject = cache.spawned[i];
@@ -2637,6 +2641,8 @@ namespace BetterLegacy.Core.Helpers
                                     prefabObject.GetParentRuntime()?.RemovePrefab(prefabObject);
                                     GameData.Current.prefabObjects.Remove(x => x.id == prefabObject.id);
                                 }
+                                cache.spawned.Clear();
+                                RTLevel.Current.RecalculateObjectStates();
                             });
                         }
                         break;
@@ -3839,7 +3845,7 @@ namespace BetterLegacy.Core.Helpers
                 return;
             }
 
-            var path = modifier.GetValue(0, variables);
+            var path = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, variables), variables);
             var global = modifier.GetBool(1, false, variables);
             var pitch = modifier.GetFloat(2, 1f, variables);
             var vol = modifier.GetFloat(3, 1f, variables);
@@ -10947,8 +10953,8 @@ namespace BetterLegacy.Core.Helpers
             var endCount = modifier.GetInt(1, 0, variables);
             var increment = modifier.GetInt(2, 1, variables);
 
-            if (endCount <= startIndex)
-                return;
+            var distance = -(startIndex - endCount);
+            var allowed = increment != 0 && endCount > startIndex && (distance < 0 ? increment < 0 : increment > 0);
 
             var pos = new Vector3(modifier.GetFloat(3, 0f, variables), modifier.GetFloat(4, 0f, variables), modifier.GetFloat(5, 0f, variables));
             var sca = new Vector2(modifier.GetFloat(6, 0f, variables), modifier.GetFloat(7, 0f, variables));
@@ -10970,7 +10976,7 @@ namespace BetterLegacy.Core.Helpers
 
             if (modifier.TryGetResult(out SpawnCloneCache cache))
             {
-                if (cache.startIndex == startIndex && cache.endCount == endCount && cache.increment == increment && cache.disabled == disabled)
+                if (cache.startIndex == startIndex && cache.endCount == endCount && cache.increment == increment && cache.disabled == disabled && allowed)
                 {
                     var index = 0;
                     for (int i = startIndex; i < endCount; i += increment)
@@ -11038,6 +11044,9 @@ namespace BetterLegacy.Core.Helpers
                     modifier.Result = default;
                 }
             }
+
+            if (!allowed)
+                return;
 
             var disabledArray = !string.IsNullOrEmpty(disabled) ? disabled.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries) : null;
 
@@ -11201,8 +11210,8 @@ namespace BetterLegacy.Core.Helpers
             var endCount = modifier.GetInt(1, 0, variables);
             var increment = modifier.GetInt(2, 1, variables);
 
-            if (endCount <= startIndex)
-                return;
+            var distance = -(startIndex - endCount);
+            var allowed = increment != 0 && endCount > startIndex && (distance < 0 ? increment < 0 : increment > 0);
 
             var posXEvaluation = modifier.GetValue(3, variables);
             var posYEvaluation = modifier.GetValue(4, variables);
@@ -11227,7 +11236,7 @@ namespace BetterLegacy.Core.Helpers
 
             if (modifier.TryGetResult(out SpawnCloneCache cache))
             {
-                if (cache.startIndex == startIndex && cache.endCount == endCount && cache.increment == increment && cache.disabled == disabled)
+                if (cache.startIndex == startIndex && cache.endCount == endCount && cache.increment == increment && cache.disabled == disabled && allowed)
                 {
                     var index = 0;
                     for (int i = startIndex; i < endCount; i += increment)
@@ -11314,6 +11323,9 @@ namespace BetterLegacy.Core.Helpers
                     modifier.Result = default;
                 }
             }
+
+            if (!allowed)
+                return;
 
             var disabledArray = !string.IsNullOrEmpty(disabled) ? disabled.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries) : null;
 
