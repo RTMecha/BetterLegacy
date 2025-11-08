@@ -10,6 +10,7 @@ using DG.Tweening;
 using BetterLegacy.Arcade.Managers;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Modifiers;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime.Events;
@@ -38,6 +39,7 @@ namespace BetterLegacy.Core.Runtime
                 sampleMid = samples.Skip(56).Take(100).Average((float a) => a) * 3000f;
                 sampleHigh = samples.Skip(156).Take(100).Average((float a) => a) * 6000f;
             };
+            loop = new ModifierLoop(GameData.Current, new Dictionary<string, string>());
         }
 
         /// <summary>
@@ -71,6 +73,8 @@ namespace BetterLegacy.Core.Runtime
         /// Performs heavy calculations on a separate tick thread.
         /// </summary>
         public TickRunner threadedTickRunner;
+
+        ModifierLoop loop;
 
         /// <summary>
         /// Initializes the runtime level.
@@ -232,7 +236,12 @@ namespace BetterLegacy.Core.Runtime
 
                 // gamedata modifiers update first
                 if (GameData.Current && !GameData.Current.modifiers.IsEmpty())
-                    ModifiersHelper.RunModifiersLoop(GameData.Current.modifiers, GameData.Current, new Dictionary<string, string>());
+                {
+                    if (loop.reference == null)
+                        loop.reference = GameData.Current;
+                    loop.ValidateDictionary();
+                    ModifiersHelper.RunModifiersLoop(GameData.Current.modifiers, loop);
+                }
 
                 OnObjectModifiersTick(); // modifiers update second
                 OnBackgroundModifiersTick(); // bg modifiers update third

@@ -22,6 +22,12 @@ namespace BetterLegacy.Core.Runtime.Objects
             modifiers.ForLoop(modifier => ModifiersHelper.AssignModifierFunctions(modifier, reference.ReferenceType));
 
             runtimePrefabObject = prefabObject.runtimeObject;
+
+            loop = new ModifierLoop
+            {
+                variables = variables,
+                reference = reference,
+            };
         }
 
         public RTPrefabObject runtimePrefabObject;
@@ -29,9 +35,9 @@ namespace BetterLegacy.Core.Runtime.Objects
         public override void Interpolate(float time)
         {
             if (orderMatters)
-                ModifiersHelper.RunModifiersLoop(modifiers, reference, variables);
+                ModifiersHelper.RunModifiersLoop(modifiers, loop);
             else
-                ModifiersHelper.RunModifiersAll(triggers, actions, modifiers, reference, variables);
+                ModifiersHelper.RunModifiersAll(triggers, actions, modifiers, loop);
 
             if (!runtimePrefabObject)
                 return;

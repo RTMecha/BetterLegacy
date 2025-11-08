@@ -139,7 +139,7 @@ namespace BetterLegacy.Core.Helpers
         /// <typeparam name="T">The type of <see cref="Modifier{T}"/>.</typeparam>
         /// <param name="modifiers">The list of modifiers to run.</param>
         /// <param name="active">If the object is active.</param>
-        public static ModifierLoopResult RunModifiersAll(List<Modifier> modifiers, IModifierReference reference, Dictionary<string, string> variables = null) => RunModifiersAll(null, null, modifiers, reference, variables);
+        public static ModifierLoopResult RunModifiersAll(List<Modifier> modifiers, ModifierLoop loop) => RunModifiersAll(null, null, modifiers, loop);
 
         /// <summary>
         /// The original way modifiers run.
@@ -147,7 +147,7 @@ namespace BetterLegacy.Core.Helpers
         /// <typeparam name="T">The type of <see cref="Modifier{T}"/>.</typeparam>
         /// <param name="modifiers">The list of modifiers to run.</param>
         /// <param name="active">If the object is active.</param>
-        public static ModifierLoopResult RunModifiersAll(List<Modifier> triggers, List<Modifier> actions, List<Modifier> modifiers, IModifierReference reference, Dictionary<string, string> variables = null)
+        public static ModifierLoopResult RunModifiersAll(List<Modifier> triggers, List<Modifier> actions, List<Modifier> modifiers, ModifierLoop loop)
         {
             if (triggers == null || actions == null)
             {
@@ -172,7 +172,7 @@ namespace BetterLegacy.Core.Helpers
             if (!triggers.IsEmpty())
             {
                 // If all triggers are active
-                if (CheckTriggers(triggers, reference, variables))
+                if (CheckTriggers(triggers, loop.reference, loop.variables))
                 {
                     bool returned = false;
                     actions.ForLoop(act =>
@@ -186,9 +186,9 @@ namespace BetterLegacy.Core.Helpers
                             act.active = true;
 
                         act.running = true;
-                        if (act.Action == null && TryGetAction(act, reference, out ModifierAction action))
+                        if (act.Action == null && TryGetAction(act, loop.reference, out ModifierAction action))
                             act.Action = action.function;
-                        act.RunAction(act, reference, variables);
+                        act.RunAction(act, loop.reference, loop.variables);
                         if (act.Name == "return")
                             returned = true;
                     });
@@ -203,9 +203,9 @@ namespace BetterLegacy.Core.Helpers
 
                     modifier.active = false;
                     modifier.running = false;
-                    if (modifier.Inactive == null && TryGetInactive(modifier, reference, out ModifierInactive action))
+                    if (modifier.Inactive == null && TryGetInactive(modifier, loop.reference, out ModifierInactive action))
                         modifier.Inactive = action.function;
-                    modifier.RunInactive(modifier, reference, variables);
+                    modifier.RunInactive(modifier, loop.reference, loop.variables);
                 });
                 return new ModifierLoopResult(false, false, Modifier.Type.Action, modifiers.Count);
             }
@@ -221,9 +221,9 @@ namespace BetterLegacy.Core.Helpers
                     act.active = true;
 
                 act.running = true;
-                if (act.Action == null && TryGetAction(act, reference, out ModifierAction action))
+                if (act.Action == null && TryGetAction(act, loop.reference, out ModifierAction action))
                     act.Action = action.function;
-                act.RunAction(act, reference, variables);
+                act.RunAction(act, loop.reference, loop.variables);
             });
             return new ModifierLoopResult(false, true, Modifier.Type.Action, modifiers.Count);
         }
@@ -234,7 +234,7 @@ namespace BetterLegacy.Core.Helpers
         /// <typeparam name="T">The type of <see cref="Modifier{T}"/>.</typeparam>
         /// <param name="modifiers">The list of modifiers to run.</param>
         /// <param name="active">If the object is active.</param>
-        public static ModifierLoopResult RunModifiersLoop(List<Modifier> modifiers, IModifierReference reference, Dictionary<string, string> variables = null, int sequence = 0, int end = 0)
+        public static ModifierLoopResult RunModifiersLoop(List<Modifier> modifiers, ModifierLoop loop, int sequence = 0, int end = 0)
         {
             bool continued = false;
             bool returned = false;
@@ -272,10 +272,10 @@ namespace BetterLegacy.Core.Helpers
 
                     modifier.running = true;
 
-                    var variable = FormatStringVariables(modifier.GetValue(0), variables);
-                    var startIndex = modifier.GetInt(1, 0, variables);
-                    var endCount = modifier.GetInt(2, 0, variables);
-                    var increment = modifier.GetInt(3, 1, variables);
+                    var variable = FormatStringVariables(modifier.GetValue(0), loop.variables);
+                    var startIndex = modifier.GetInt(1, 0, loop.variables);
+                    var endCount = modifier.GetInt(2, 0, loop.variables);
+                    var increment = modifier.GetInt(3, 1, loop.variables);
 
                     var endIndex = modifiers.FindLastIndex(x => x.Name == "return"); // return is treated as a break of the for loop
                     endIndex = endIndex < 0 ? modifiers.Count : endIndex + 1;
@@ -289,8 +289,8 @@ namespace BetterLegacy.Core.Helpers
 
                             for (int i = startIndex; i < endCount; i += increment)
                             {
-                                variables[variable] = i.ToString();
-                                RunModifiersLoop(selectModifiers, reference, variables, i, endCount);
+                                loop.variables[variable] = i.ToString();
+                                RunModifiersLoop(selectModifiers, new ModifierLoop(loop.reference, loop.variables), i, endCount);
                             }
                         }
                     }
@@ -326,9 +326,9 @@ namespace BetterLegacy.Core.Helpers
                             modifier.active = false;
                             modifier.running = false;
                             modifier.runCount = 0;
-                            if (modifier.Inactive == null && TryGetInactive(modifier, reference, out ModifierInactive action))
+                            if (modifier.Inactive == null && TryGetInactive(modifier, loop.reference, out ModifierInactive action))
                                 modifier.Inactive = action.function;
-                            modifier.RunInactive(modifier, reference, variables);
+                            modifier.RunInactive(modifier, loop.reference, loop.variables);
                         });
 
                     // Only occur once
@@ -364,7 +364,7 @@ namespace BetterLegacy.Core.Helpers
                     }
                     else
                     {
-                        var innerResult = modifier.not ? !modifier.RunTrigger(modifier, reference, variables) : modifier.RunTrigger(modifier, reference, variables);
+                        var innerResult = modifier.not ? !modifier.RunTrigger(modifier, loop.reference, loop.variables) : modifier.RunTrigger(modifier, loop.reference, loop.variables);
                         var elseIf = triggerIndex > 0 && modifier.elseIf;
 
                         if (elseIf)
@@ -431,7 +431,7 @@ namespace BetterLegacy.Core.Helpers
                 {
                     modifier.active = false;
                     modifier.running = false;
-                    modifier.RunInactive(modifier, reference, variables);
+                    modifier.RunInactive(modifier, loop.reference, loop.variables);
 
                     previousType = modifier.type;
                     index++;
@@ -456,7 +456,7 @@ namespace BetterLegacy.Core.Helpers
                 modifier.running = true;
 
                 if (isAction && result) // Only run modifier if result is true
-                    modifier.RunAction(modifier, reference, variables);
+                    modifier.RunAction(modifier, loop.reference, loop.variables);
 
                 previousType = modifier.type;
                 index++;
@@ -2756,6 +2756,11 @@ namespace BetterLegacy.Core.Helpers
         public static void getFloat(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = modifier.GetFloat(1, 0f, variables).ToString();
+        }
+        
+        public static void getFloat(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = modifier.GetFloat(1, 0f, modifierLoop.variables).ToString();
         }
 
         public static void getInt(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -11751,18 +11756,18 @@ namespace BetterLegacy.Core.Helpers
 
             var group = modifier.GetValue(0, variables);
 
-            var result = modifier.GetResultOrDefault(() => GroupCache.FromSingle(modifier, prefabable, group));
+            var result = modifier.GetResultOrDefault(() => ParentableGroupCache.GetSingle(modifier, prefabable, group));
 
-            if (result.group != group)
+            if (result.tag != group)
             {
-                result = GroupCache.FromSingle(modifier, prefabable, group);
+                result = ParentableGroupCache.GetSingle(modifier, prefabable, group);
                 modifier.Result = result;
             }
 
             if (group == string.Empty)
                 ModifiersHelper.SetParent(child, string.Empty);
-            else if (result.target && child.CanParent(result.target))
-                ModifiersHelper.SetParent(child, result.target);
+            else if (result.obj && child.CanParent(result.obj))
+                ModifiersHelper.SetParent(child, result.obj);
             else
                 CoreHelper.LogError($"CANNOT PARENT OBJECT!\nID: {child.ID}");
         }
@@ -11778,23 +11783,23 @@ namespace BetterLegacy.Core.Helpers
 
             var group = modifier.GetValue(2, variables);
 
-            var result = modifier.GetResultOrDefault(() => GroupCache.FromGroup(reference, modifier, prefabable, group, modifier.GetValue(0, variables)));
+            var result = modifier.GetResultOrDefault(() => ParentableGroupCache.GetGroup(modifier, prefabable, group, modifier.GetValue(0, variables)));
 
-            if (result.group != group)
+            if (result.tag != group)
             {
-                result = GroupCache.FromGroup(reference, modifier, prefabable, group, modifier.GetValue(0, variables));
+                result = ParentableGroupCache.GetGroup(modifier, prefabable, group, modifier.GetValue(0, variables));
                 modifier.Result = result;
             }
 
             var isEmpty = modifier.GetBool(1, false, variables);
 
             bool failed = false;
-            foreach (var parentable in result.parentables)
+            foreach (var parentable in result.group)
             {
                 if (isEmpty)
                     ModifiersHelper.SetParent(parentable, string.Empty);
-                else if (parentable.CanParent(result.target))
-                    ModifiersHelper.SetParent(parentable, result.target);
+                else if (parentable.CanParent(result.obj))
+                    ModifiersHelper.SetParent(parentable, result.obj);
                 else
                     failed = true;
             }
@@ -12102,9 +12107,9 @@ namespace BetterLegacy.Core.Helpers
             var prefabable = reference.AsPrefabable();
             var prefab = prefabable?.GetPrefab();
             if (prefabable != null && prefab && prefab.modifierBlocks.TryFind(x => x.Name == name, out ModifierBlock prefabModifierBlock))
-                prefabModifierBlock.Run(reference, variables);
+                prefabModifierBlock.Run(new ModifierLoop(reference, variables));
             else if (GameData.Current.modifierBlocks.TryFind(x => x.Name == name, out ModifierBlock modifierBlock))
-                modifierBlock.Run(reference, variables);
+                modifierBlock.Run(new ModifierLoop(reference, variables));
         }
 
         #endregion
@@ -14052,9 +14057,9 @@ namespace BetterLegacy.Core.Helpers
             var prefabable = reference.AsPrefabable();
             var prefab = prefabable?.GetPrefab();
             if (prefabable != null && prefab && prefab.modifierBlocks.TryFind(x => x.Name == name, out ModifierBlock prefabModifierBlock))
-                return prefabModifierBlock.Run(reference, variables).result;
+                return prefabModifierBlock.Run(new ModifierLoop(reference, variables)).result;
             else if (GameData.Current.modifierBlocks.TryFind(x => x.Name == name, out ModifierBlock modifierBlock))
-                return modifierBlock.Run(reference, variables).result;
+                return modifierBlock.Run(new ModifierLoop(reference, variables)).result;
             return false;
         }
 
@@ -14116,28 +14121,41 @@ namespace BetterLegacy.Core.Helpers
 
     #region Caches
 
-    public class GenericGroupCache<T>
+    public class GenericGroupCache<TList, TObject>
     {
         public GenericGroupCache() { }
 
-        public GenericGroupCache(string tag, List<T> group) => UpdateCache(tag, group);
-        public GenericGroupCache(string tag, T obj) => UpdateCache(tag, obj);
+        public GenericGroupCache(string tag, List<TList> group) => UpdateCache(tag, group);
+        public GenericGroupCache(string tag, TObject obj) => UpdateCache(tag, obj);
 
         public string tag;
-        public List<T> group;
-        public T obj;
+        public List<TList> group;
+        public TObject obj;
 
-        public void UpdateCache(string tag, List<T> group)
+        public void UpdateCache(string tag, List<TList> group)
         {
             this.tag = tag;
             this.group = group;
         }
 
-        public void UpdateCache(string tag, T obj)
+        public void UpdateCache(string tag, TObject obj)
         {
             this.tag = tag;
             this.obj = obj;
         }
+
+        public virtual void UpdateCache(Modifier modifier, IPrefabable prefabable, string tag)
+        {
+            this.tag = tag;
+        }
+    }
+
+    public class GenericGroupCache<T> : GenericGroupCache<T, T>
+    {
+        public GenericGroupCache() { }
+
+        public GenericGroupCache(string tag, List<T> group) => UpdateCache(tag, group);
+        public GenericGroupCache(string tag, T obj) => UpdateCache(tag, obj);
     }
 
     /// <summary>
@@ -14269,12 +14287,8 @@ namespace BetterLegacy.Core.Helpers
         /// <param name="state">Currently active group.</param>
         public void RecalculateActiveObjects(bool enabled, int state)
         {
-            int groupIndex = 0;
             foreach (var obj in activeObjects)
-            {
                 ModifiersHelper.SetObjectActive(obj, !enabled);
-                groupIndex++;
-            }
 
             activeObjects.Clear();
             if (state == 0)
@@ -14335,37 +14349,51 @@ namespace BetterLegacy.Core.Helpers
         public float startTime;
     }
 
-    public class GroupCache
+    public class ParentableGroupCache : GenericGroupCache<IParentable, BeatmapObject>
     {
-        public GroupCache() { }
+        public ParentableGroupCache() { }
 
-        public static GroupCache FromSingle(Modifier modifier, IPrefabable prefabable, string group)
+        public string otherGroup;
+        bool multi;
+
+        public static ParentableGroupCache GetSingle(Modifier modifier, IPrefabable prefabable, string group)
         {
-            var cache = new GroupCache();
-            cache.group = group;
-            if (!string.IsNullOrEmpty(group) && GameData.Current.TryFindObjectWithTag(modifier, prefabable, group, out BeatmapObject target))
-                cache.target = target;
+            var cache = new ParentableGroupCache();
+            cache.tag = group;
+            cache.UpdateCache(modifier, prefabable, group);
             return cache;
         }
 
-        public static GroupCache FromGroup(IModifierReference reference, Modifier modifier, IPrefabable prefabable, string group, string otherGroup)
+        public static ParentableGroupCache GetGroup(Modifier modifier, IPrefabable prefabable, string group, string otherGroup)
         {
-            var cache = new GroupCache();
-            cache.group = group;
-            if (!string.IsNullOrEmpty(group) && GameData.Current.TryFindObjectWithTag(modifier, prefabable, group, out BeatmapObject target))
-                cache.target = target;
-            if (!cache.target && reference is BeatmapObject parent)
-                cache.target = parent;
-            cache.parentables = GameData.Current.FindParentablesWithTag(modifier, prefabable, otherGroup);
+            var cache = new ParentableGroupCache();
+            cache.tag = group;
+            cache.otherGroup = otherGroup;
+            cache.multi = true;
+            cache.UpdateCache(modifier, prefabable, group);
             return cache;
         }
 
-        public string group;
-        public BeatmapObject target;
-        public List<IParentable> parentables;
+        public override void UpdateCache(Modifier modifier, IPrefabable prefabable, string tag)
+        {
+            this.tag = tag;
+            if (!multi)
+            {
+                if (!string.IsNullOrEmpty(tag) && GameData.Current.TryFindObjectWithTag(modifier, prefabable, tag, out BeatmapObject target))
+                    obj = target;
+            }
+            else
+            {
+                if (!string.IsNullOrEmpty(tag) && GameData.Current.TryFindObjectWithTag(modifier, prefabable, tag, out BeatmapObject target))
+                    obj = target;
+                if (!obj && prefabable is BeatmapObject parent)
+                    obj = parent;
+                group = GameData.Current.FindParentablesWithTag(modifier, prefabable, otherGroup);
+            }
+        }
     }
 
-    public class GroupBeatmapObjectCache
+    public class GroupBeatmapObjectCache : GenericGroupCache<BeatmapObject>
     {
         public GroupBeatmapObjectCache(string tag) => this.tag = tag;
 
@@ -14376,14 +14404,11 @@ namespace BetterLegacy.Core.Helpers
             return cache;
         }
 
-        public void UpdateCache(Modifier modifier, IPrefabable prefabable, string tag)
+        public override void UpdateCache(Modifier modifier, IPrefabable prefabable, string tag)
         {
             if (GameData.Current.TryFindObjectWithTag(modifier, prefabable, tag, out BeatmapObject target))
                 obj = target;
         }
-
-        public string tag;
-        public BeatmapObject obj;
     }
 
     public class MaskCache

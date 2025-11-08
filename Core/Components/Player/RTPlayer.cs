@@ -172,6 +172,9 @@ namespace BetterLegacy.Core.Components.Player
 
         public float KillTime { get; set; }
 
+        ModifierLoop controlLoop = new ModifierLoop(null, new Dictionary<string, string>());
+        ModifierLoop modelLoop = new ModifierLoop(null, new Dictionary<string, string>());
+
         #endregion
 
         #region Game Mode
@@ -1386,14 +1389,18 @@ namespace BetterLegacy.Core.Components.Player
 
             timeOffset = Time.time;
 
-            Core?.GetControl()?.TickModifierBlock?.Run(Core);
+            if (controlLoop.reference == null)
+                controlLoop.reference = Core;
+            Core?.GetControl()?.TickModifierBlock?.Run(controlLoop);
 
             if (Model)
             {
+                if (modelLoop.reference == null)
+                    modelLoop.reference = Core;
                 if (Model.OrderModifiers)
-                    ModifiersHelper.RunModifiersLoop(Model.modifiers, Core, new Dictionary<string, string>());
+                    ModifiersHelper.RunModifiersLoop(Model.modifiers, modelLoop);
                 else
-                    ModifiersHelper.RunModifiersAll(Model.modifiers, Core, new Dictionary<string, string>());
+                    ModifiersHelper.RunModifiersAll(Model.modifiers, modelLoop);
             }
 
             if (!isColliderTrigger)
@@ -2172,10 +2179,12 @@ namespace BetterLegacy.Core.Components.Player
 
                 var reference = customObject.reference;
 
+                customObject.loop.reference = customObject;
+
                 if (reference.OrderModifiers)
-                    ModifiersHelper.RunModifiersLoop(reference.Modifiers, customObject, new Dictionary<string, string>());
+                    ModifiersHelper.RunModifiersLoop(reference.Modifiers, customObject.loop);
                 else
-                    ModifiersHelper.RunModifiersAll(reference.Modifiers, customObject, new Dictionary<string, string>());
+                    ModifiersHelper.RunModifiersAll(reference.Modifiers, customObject.loop);
 
                 var active = customObject.active &&
                     (reference.visibilitySettings.IsEmpty() ? reference.active :
@@ -2473,7 +2482,7 @@ namespace BetterLegacy.Core.Components.Player
                 boostTail.parent.DOScale(Vector3.zero, 0.05f / CoreHelper.ForwardPitch).SetEase(DataManager.inst.AnimationList[2].Animation);
             }
 
-            Core?.GetControl()?.BoostModifierBlock?.Run(Core);
+            Core?.GetControl()?.BoostModifierBlock?.Run(new ModifierLoop(Core, new Dictionary<string, string>()));
         }
 
         /// <summary>
@@ -2819,7 +2828,7 @@ namespace BetterLegacy.Core.Components.Player
             if (CanTakeDamage && (!stay || !isBoosting) && CollisionCheck(other))
                 Hit();
 
-            Core?.GetControl().CollideModifierBlock?.Run(Core);
+            Core?.GetControl().CollideModifierBlock?.Run(new ModifierLoop(Core, new Dictionary<string, string>()));
         }
 
         bool CollisionCheck(Component other) => other.tag != Tags.HELPER && (other.tag == Tags.PLAYER && AllowPlayersToHitOthers || other.tag != Tags.PLAYER) && other.name != $"bullet (Player {playerIndex + 1})";
@@ -2860,7 +2869,7 @@ namespace BetterLegacy.Core.Components.Player
         {
             if (RTBeatmap.Current)
                 RTBeatmap.Current.playerDied = true;
-            Core?.GetControl()?.DeathModifierBlock?.Run(Core);
+            Core?.GetControl()?.DeathModifierBlock?.Run(new ModifierLoop(Core, new Dictionary<string, string>()));
             isDead = true;
             Core.active = false;
             Core.health = 0;
@@ -3828,6 +3837,8 @@ namespace BetterLegacy.Core.Components.Player
         public class RTCustomPlayerObject : RTPlayerObject, ITransformable, IModifierReference, ICustomActivatable
         {
             public RTCustomPlayerObject() => isCustom = true;
+
+            public ModifierLoop loop = new ModifierLoop(null, new Dictionary<string, string>());
 
             public CustomPlayerObject reference;
             public TextMeshPro text;

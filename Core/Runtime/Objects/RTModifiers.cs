@@ -22,6 +22,12 @@ namespace BetterLegacy.Core.Runtime.Objects
             KillTime = killTime;
 
             modifiers.ForLoop(modifier => ModifiersHelper.AssignModifierFunctions(modifier, reference.ReferenceType));
+
+            loop = new ModifierLoop
+            {
+                variables = variables,
+                reference = reference,
+            };
         }
 
         public IModifierReference reference;
@@ -65,6 +71,8 @@ namespace BetterLegacy.Core.Runtime.Objects
             });
         }
 
+        public ModifierLoop loop;
+
 
         public Dictionary<string, string> variables = new Dictionary<string, string>();
 
@@ -89,9 +97,9 @@ namespace BetterLegacy.Core.Runtime.Objects
         public virtual void Interpolate(float time)
         {
             if (orderMatters)
-                ModifiersHelper.RunModifiersLoop(modifiers, reference, variables);
+                ModifiersHelper.RunModifiersLoop(modifiers, loop);
             else
-                ModifiersHelper.RunModifiersAll(triggers, actions, modifiers, reference, variables);
+                ModifiersHelper.RunModifiersAll(triggers, actions, modifiers, loop);
         }
 
         public override string ToString() => reference?.ToString() ?? string.Empty;
