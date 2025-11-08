@@ -79,7 +79,7 @@ namespace BetterLegacy.Core.Data.Level
         /// <summary>
         /// Difficulty of the level.
         /// </summary>
-        public DifficultyType DifficultyType { get => difficulty; set => difficulty = value; }
+        public DifficultyType Difficulty { get => difficulty; set => difficulty = value; }
 
         /// <summary>
         /// Icon of the level to display if the level does not exist.

@@ -1428,7 +1428,7 @@ namespace BetterLegacy.Editor.Managers
                             metadata.artist.name,
                             metadata.creator.name,
                             metadata.song.description,
-                            LevelPanel.difficultyNames[Mathf.Clamp(metadata.song.difficulty, 0, LevelPanel.difficultyNames.Length - 1)]))));
+                            metadata.song.Difficulty.DisplayName.ToLower()))));
 
                 if (num >= 0 && num < content.childCount)
                     levelPanel.GameObject.transform.SetSiblingIndex(num);
@@ -1998,10 +1998,10 @@ namespace BetterLegacy.Editor.Managers
                 var toggle = gameObject.GetComponent<Toggle>();
                 toggle.image.color = difficulty.Color;
                 toggle.group = null;
-                toggle.SetIsOnWithoutNotify(levelInfo.DifficultyType == difficulty);
+                toggle.SetIsOnWithoutNotify(levelInfo.Difficulty == difficulty);
                 toggle.onValueChanged.NewListener(_val =>
                 {
-                    levelInfo.DifficultyType = difficulty;
+                    levelInfo.Difficulty = difficulty;
                     RenderLevelInfoDifficulty(levelInfo);
                 });
 

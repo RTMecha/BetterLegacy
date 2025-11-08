@@ -1459,7 +1459,7 @@ namespace BetterLegacy.Arcade.Interfaces
                 level.metadata?.creator?.name,
                 level.metadata?.song?.title,
                 level.metadata?.beatmap?.name,
-                level.metadata?.song?.DifficultyType.DisplayName.GetText()
+                level.metadata?.song?.Difficulty.DisplayName.GetText()
                 ));
 
         public static List<LevelCollection> LocalLevelCollections => LevelManager.LevelCollections.FindAll(collection => string.IsNullOrEmpty(LocalSearch)
@@ -1812,7 +1812,7 @@ namespace BetterLegacy.Arcade.Interfaces
                     name = "Difficulty",
                     parent = level.id,
                     rect = new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(1f, 0.5f), new Vector2(8f, 0f)),
-                    overrideColor = level.metadata.song.DifficultyType.Color,
+                    overrideColor = level.metadata.song.Difficulty.Color,
                     useOverrideColor = true,
                     opacity = 1f,
                     roundedSide = SpriteHelper.RoundedSide.Left,
@@ -2075,7 +2075,7 @@ namespace BetterLegacy.Arcade.Interfaces
                         || level.metadata.artist.name.ToLower().Contains(BrowserSearch.ToLower())
                         || level.metadata.creator.name.ToLower().Contains(BrowserSearch.ToLower())
                         || level.metadata.song.title.ToLower().Contains(BrowserSearch.ToLower())
-                        || level.metadata.song.DifficultyType.DisplayName.ToLower().Contains(BrowserSearch.ToLower()))).ToArray();
+                        || level.metadata.song.Difficulty.DisplayName.ToLower().Contains(BrowserSearch.ToLower()))).ToArray();
 
         public void SearchBrowser(string search)
         {
@@ -2219,7 +2219,7 @@ namespace BetterLegacy.Arcade.Interfaces
                         name = "Difficulty",
                         parent = level.id,
                         rect = new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(1f, 0.5f), new Vector2(8f, 0f)),
-                        overrideColor = level.metadata.song.DifficultyType.Color,
+                        overrideColor = level.metadata.song.Difficulty.Color,
                         useOverrideColor = true,
                         opacity = 1f,
                         roundedSide = SpriteHelper.RoundedSide.Left,
@@ -2321,7 +2321,7 @@ namespace BetterLegacy.Arcade.Interfaces
                 level.metadata.creator.name,
                 level.metadata.song.title,
                 level.metadata.beatmap.name,
-                level.metadata.song.DifficultyType.DisplayName.GetText()
+                level.metadata.song.Difficulty.DisplayName.GetText()
                 ));
 
         public void SearchQueuedLevels(string search)
@@ -2436,7 +2436,7 @@ namespace BetterLegacy.Arcade.Interfaces
                     name = "Difficulty",
                     parent = level.id,
                     rect = new RectValues(new Vector2(0f, 0f), new Vector2(0f, 1f), Vector2.zero, new Vector2(0f, 0.5f), new Vector2(8f, 0f)),
-                    overrideColor = level.metadata.song.DifficultyType.Color,
+                    overrideColor = level.metadata.song.Difficulty.Color,
                     useOverrideColor = true,
                     opacity = 1f,
                     roundedSide = SpriteHelper.RoundedSide.Left,
@@ -2590,7 +2590,7 @@ namespace BetterLegacy.Arcade.Interfaces
                 level.metadata.creator.name,
                 level.metadata.song.title,
                 level.metadata.beatmap.name,
-                level.metadata.song.DifficultyType.DisplayName.GetText()
+                level.metadata.song.Difficulty.DisplayName.GetText()
                 ));
 
         public static Dictionary<string, Sprite> OnlineSteamLevelIcons { get; set; } = new Dictionary<string, Sprite>();
@@ -2705,7 +2705,7 @@ namespace BetterLegacy.Arcade.Interfaces
                     name = "Difficulty",
                     parent = level.id,
                     rect = new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(1f, 0.5f), new Vector2(8f, 0f)),
-                    overrideColor = level.metadata.song.DifficultyType.Color,
+                    overrideColor = level.metadata.song.Difficulty.Color,
                     useOverrideColor = true,
                     opacity = 1f,
                     roundedSide = SpriteHelper.RoundedSide.Left,

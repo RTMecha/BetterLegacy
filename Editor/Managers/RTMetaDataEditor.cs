@@ -452,10 +452,10 @@ namespace BetterLegacy.Editor.Managers
                 var toggle = gameObject.GetComponent<Toggle>();
                 toggle.image.color = difficulty.Color;
                 toggle.group = null;
-                toggle.SetIsOnWithoutNotify(metadata.song.DifficultyType == difficulty);
+                toggle.SetIsOnWithoutNotify(metadata.song.Difficulty == difficulty);
                 toggle.onValueChanged.NewListener(_val =>
                 {
-                    metadata.song.DifficultyType = difficulty;
+                    metadata.song.Difficulty = difficulty;
                     RenderDifficulty(metadata);
                 });
 

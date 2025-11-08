@@ -352,7 +352,7 @@ namespace BetterLegacy.Arcade.Interfaces
                 level.metadata.creator.name,
                 level.metadata.song.title,
                 level.metadata.beatmap.name,
-                level.metadata.song.DifficultyType.DisplayName.GetText()
+                level.metadata.song.Difficulty.DisplayName.GetText()
                 ));
 
         public void SearchLocalLevels(string search)
@@ -452,7 +452,7 @@ namespace BetterLegacy.Arcade.Interfaces
                             name = "Difficulty",
                             parent = levelInfo.id,
                             rect = new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(1f, 0.5f), new Vector2(8f, 0f)),
-                            overrideColor = levelInfo.DifficultyType.Color,
+                            overrideColor = levelInfo.Difficulty.Color,
                             useOverrideColor = true,
                             opacity = 1f,
                             roundedSide = SpriteHelper.RoundedSide.Left,
@@ -609,7 +609,7 @@ namespace BetterLegacy.Arcade.Interfaces
                     name = "Difficulty",
                     parent = level.id,
                     rect = new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(1f, 0.5f), new Vector2(8f, 0f)),
-                    overrideColor = level.metadata.song.DifficultyType.Color,
+                    overrideColor = level.metadata.song.Difficulty.Color,
                     useOverrideColor = true,
                     opacity = 1f,
                     roundedSide = SpriteHelper.RoundedSide.Left,
@@ -617,7 +617,7 @@ namespace BetterLegacy.Arcade.Interfaces
                     wait = false,
                 });
 
-                if (rank != Rank.Null && level.metadata.song.DifficultyType != DifficultyType.Animation) // don't display rank for animation levels
+                if (rank != Rank.Null && level.metadata.song.Difficulty != DifficultyType.Animation) // don't display rank for animation levels
                     elements.Add(new MenuText
                     {
                         id = "0",

@@ -280,7 +280,7 @@ namespace BetterLegacy.Arcade.Interfaces
                 },
             });
 
-            var difficulty = CurrentLevel.metadata.song.DifficultyType;
+            var difficulty = CurrentLevel.metadata.song.Difficulty;
             elements.Add(new MenuText
             {
                 id = "4624859539",

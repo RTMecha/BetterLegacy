@@ -554,7 +554,7 @@ namespace BetterLegacy.Core.Data
         public string link;
         public List<string> tags = new List<string>();
 
-        public DifficultyType DifficultyType { get => difficulty; set => difficulty = value; }
+        public DifficultyType Difficulty { get => difficulty; set => difficulty = value; }
 
         public string title = "Song Title Placeholder";
 

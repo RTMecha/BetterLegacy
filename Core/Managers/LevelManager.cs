@@ -826,7 +826,7 @@ namespace BetterLegacy.Core.Managers
             currentLevel.saveData.LevelName = currentLevel.metadata?.beatmap?.name; // update level name
             currentLevel.saveData.LastPlayed = DateTime.Now;
 
-            if (update && currentLevel.metadata && currentLevel.metadata.song.DifficultyType == DifficultyType.Animation) // animation levels shouldn't update rank data
+            if (update && currentLevel.metadata && currentLevel.metadata.song.Difficulty == DifficultyType.Animation) // animation levels shouldn't update rank data
             {
                 currentLevel.saveData.Completed = true;
                 currentLevel.saveData.PlayedTimes++;

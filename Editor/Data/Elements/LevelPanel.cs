@@ -78,7 +78,7 @@ namespace BetterLegacy.Editor.Data.Elements
                     LSText.ClampString(metadata.song.title, labelSongTitleMax),
                     LSText.ClampString(metadata.artist.name, labelArtistNameMax),
                     LSText.ClampString(metadata.creator.name, labelCreatorNameMax),
-                    metadata.song.DifficultyType.DisplayName,
+                    metadata.song.Difficulty.DisplayName,
                     LSText.ClampString(metadata.song.description, labelDescriptionMax),
                     LSText.ClampString(metadata.beatmap.dateEdited, labelDateMax),
                     LSText.ClampString(metadata.beatmap.dateCreated, labelDateMax),
@@ -396,7 +396,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
             var metadata = Item.metadata;
 
-            TooltipHelper.AddHoverTooltip(GameObject, "<#" + LSColors.ColorToHex(metadata.song.DifficultyType.Color) + ">" + metadata.artist.name + " - " + metadata.song.title,
+            TooltipHelper.AddHoverTooltip(GameObject, "<#" + LSColors.ColorToHex(metadata.song.Difficulty.Color) + ">" + metadata.artist.name + " - " + metadata.song.title,
                 $"</color><br>Folder: {Item.FolderName}<br>Date Edited: {metadata.beatmap.dateEdited}<br>Date Created: {metadata.beatmap.dateCreated}<br>Description: {metadata.song.description}");
         }
 
