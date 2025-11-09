@@ -1,13 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
@@ -19,21 +15,16 @@ using BetterLegacy.Menus.UI.Layouts;
 
 namespace BetterLegacy.Arcade.Interfaces
 {
+    /// <summary>
+    /// Interface for achievements.
+    /// </summary>
     public class AchievementListMenu : MenuBase
     {
-        public static AchievementListMenu Current { get; set; }
+        #region Constructors
 
-        public int CurrentPage { get; set; }
-
-        public Level CurrentLevel { get; set; }
-
-        public List<Achievement> Achievements { get; set; }
-
-        public AchievementListMenu(Level level, int page, Action onReturn)
+        public AchievementListMenu(List<Achievement> achievements, Action onReturn)
         {
-            CurrentLevel = level;
-            CurrentPage = page;
-            Achievements = CurrentLevel.GetAchievements();
+            Achievements = achievements;
 
             id = "63562464";
 
@@ -227,17 +218,85 @@ namespace BetterLegacy.Arcade.Interfaces
             InterfaceManager.inst.SetCurrentInterface(this);
         }
 
-        public static void Init(Level level, int page, Action onReturn)
-        {
-            Current?.Clear();
-            Current = new AchievementListMenu(level, page, onReturn);
-        }
+        public AchievementListMenu(Level level, Action onReturn) : this(level.GetAchievements(), onReturn) => CurrentLevel = level;
 
+        public AchievementListMenu(LevelCollection levelCollection, Action onReturn) : this(levelCollection.achievements, onReturn) => CurrentLevelCollection = levelCollection;
+
+        #endregion
+
+        #region Values
+
+        /// <summary>
+        /// The current achievement list interface.
+        /// </summary>
+        public static AchievementListMenu Current { get; set; }
+
+        /// <summary>
+        /// The current page.
+        /// </summary>
+        public int CurrentPage { get; set; }
+
+        /// <summary>
+        /// The current level.
+        /// </summary>
+        public Level CurrentLevel { get; set; }
+
+        /// <summary>
+        /// The current level collection.
+        /// </summary>
+        public LevelCollection CurrentLevelCollection { get; set; }
+
+        /// <summary>
+        /// The achievements list to display.
+        /// </summary>
+        public List<Achievement> Achievements { get; set; }
+
+        /// <summary>
+        /// Max amount of achievements per page.
+        /// </summary>
         public const int MAX_ACHIEVEMENTS_PER_PAGE = 5;
+
+        /// <summary>
+        /// Amount of pages in the interface.
+        /// </summary>
         public int AchievementPageCount => Achievements.Count / MAX_ACHIEVEMENTS_PER_PAGE;
 
+        #endregion
+
+        #region Functions
+
+        /// <summary>
+        /// Initializes the achievement list interface for a level.
+        /// </summary>
+        /// <param name="level">Level reference.</param>
+        /// <param name="onReturn">Function to run when the user wants to return.</param>
+        public static void Init(Level level, Action onReturn)
+        {
+            Current?.Clear();
+            Current = new AchievementListMenu(level, onReturn);
+        }
+
+        /// <summary>
+        /// Initializes the achievement list interface for a level collection.
+        /// </summary>
+        /// <param name="levelCollection">Level collection reference.</param>
+        /// <param name="onReturn">Function to run when the user wants to return.</param>
+        public static void Init(LevelCollection levelCollection, Action onReturn)
+        {
+            Current?.Clear();
+            Current = new AchievementListMenu(levelCollection, onReturn);
+        }
+
+        /// <summary>
+        /// Clears the displayed achievements.
+        /// </summary>
         public void ClearAchievements() => ClearElements(x => x.name == "Achievement Button" || x.name == "Difficulty");
 
+        /// <summary>
+        /// Refreshes the displayed achievements.
+        /// </summary>
+        /// <param name="regenerateUI">If the UI should be regenerated.</param>
+        /// <param name="clear">If the current displayed achievements should clear.</param>
         public void RefreshAchievements(bool regenerateUI, bool clear = true)
         {
             if (clear)
@@ -352,5 +411,7 @@ namespace BetterLegacy.Arcade.Interfaces
             if (regenerateUI)
                 StartGeneration();
         }
+
+        #endregion
     }
 }

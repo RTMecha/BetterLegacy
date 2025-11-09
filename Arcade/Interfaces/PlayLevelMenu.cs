@@ -641,7 +641,8 @@ namespace BetterLegacy.Arcade.Interfaces
                 },
             });
 
-            if (!CurrentLevel.achievements.IsEmpty())
+            var achievements = CurrentLevel.GetAchievements();
+            if (!achievements.IsEmpty())
             {
                 elements.Add(new MenuButton
                 {
@@ -661,7 +662,7 @@ namespace BetterLegacy.Arcade.Interfaces
                     func = () =>
                     {
                         var currentLevel = CurrentLevel;
-                        AchievementListMenu.Init(CurrentLevel, 0, () => Init(currentLevel));
+                        AchievementListMenu.Init(CurrentLevel, () => Init(currentLevel));
                     },
                 });
             }
