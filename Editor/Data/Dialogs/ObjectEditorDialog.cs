@@ -502,11 +502,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             // Object Tags
             {
-                var label = EditorPrefabHolder.Instance.Labels.Duplicate(Content, "tags_label");
                 var index = Content.Find("name").GetSiblingIndex() + 1;
-                label.transform.SetSiblingIndex(index);
-
-                label.transform.GetChild(0).GetComponent<Text>().text = "Tags";
+                new Labels(Labels.InitSettings.Default.Parent(Content).SiblingIndex(index).Name("tags_label"), "Tags");
 
                 // Tags Scroll View/Viewport/Content
                 var tagScrollView = Creator.NewUIObject("Tags Scroll View", Content, index + 1);
@@ -544,13 +541,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             // Render Type
             {
-                var label = EditorPrefabHolder.Instance.Labels.Duplicate(Content, "rendertype_label");
                 var index = Content.Find("depth").GetSiblingIndex() + 1;
-                label.transform.SetSiblingIndex(index);
-
-                var labelText = label.transform.GetChild(0).GetComponent<Text>();
-                labelText.text = "Render Type";
-                EditorThemeManager.AddLightText(labelText);
+                new Labels(Labels.InitSettings.Default.Parent(Content).SiblingIndex(index).Name("rendertype_label"), "Render Type");
 
                 var renderType = EditorPrefabHolder.Instance.Dropdown.Duplicate(Content, "rendertype", index + 1);
                 var renderTypeDD = renderType.GetComponent<Dropdown>();
@@ -893,22 +885,28 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             // Homing Buttons
             {
+                var staticHomingSpritePath = AssetPack.GetFile($"core/sprites/icons/homing_static{FileFormat.PNG.Dot()}");
+                var dynamicHomingSpritePath = AssetPack.GetFile($"core/sprites/icons/homing_dynamic{FileFormat.PNG.Dot()}");
+
                 var position = ObjEditor.inst.KeyframeDialogs[0].transform;
                 var randomPosition = position.transform.Find("random");
                 CoreHelper.Destroy(randomPosition.GetComponent<ToggleGroup>());
                 randomPosition.Find("interval-input/x").gameObject.SetActive(false);
                 var homingStaticPosition = randomPosition.Find("none").gameObject.Duplicate(randomPosition, "homing-static", 4);
 
-                var staticHomingSpritePath = AssetPack.GetFile($"core/sprites/icons/homing_static{FileFormat.PNG.Dot()}");
-                var dynamicHomingSpritePath = AssetPack.GetFile($"core/sprites/icons/homing_dynamic{FileFormat.PNG.Dot()}");
-
                 if (RTFile.FileExists(staticHomingSpritePath))
                     homingStaticPosition.transform.Find("Image").GetComponent<Image>().sprite = SpriteHelper.LoadSprite(staticHomingSpritePath);
+
+                EditorThemeManager.AddToggle(homingStaticPosition.GetComponent<Toggle>(), ThemeGroup.Background_3);
+                EditorThemeManager.AddGraphic(homingStaticPosition.transform.Find("Image").GetComponent<Image>(), ThemeGroup.Toggle_1_Check);
 
                 var homingDynamicPosition = randomPosition.Find("none").gameObject.Duplicate(randomPosition, "homing-dynamic", 5);
 
                 if (RTFile.FileExists(dynamicHomingSpritePath))
                     homingDynamicPosition.transform.Find("Image").GetComponent<Image>().sprite = SpriteHelper.LoadSprite(dynamicHomingSpritePath);
+
+                EditorThemeManager.AddToggle(homingDynamicPosition.GetComponent<Toggle>(), ThemeGroup.Background_3);
+                EditorThemeManager.AddGraphic(homingDynamicPosition.transform.Find("Image").GetComponent<Image>(), ThemeGroup.Toggle_1_Check);
 
                 var scale = ObjEditor.inst.KeyframeDialogs[1].transform;
                 var scaleRotation = scale.Find("random");
@@ -923,10 +921,16 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 if (RTFile.FileExists(staticHomingSpritePath))
                     homingStaticRotation.transform.Find("Image").GetComponent<Image>().sprite = SpriteHelper.LoadSprite(staticHomingSpritePath);
 
+                EditorThemeManager.AddToggle(homingStaticRotation.GetComponent<Toggle>(), ThemeGroup.Background_3);
+                EditorThemeManager.AddGraphic(homingStaticRotation.transform.Find("Image").GetComponent<Image>(), ThemeGroup.Toggle_1_Check);
+
                 var homingDynamicRotation = randomRotation.Find("none").gameObject.Duplicate(randomRotation, "homing-dynamic", 4);
 
                 if (RTFile.FileExists(dynamicHomingSpritePath))
                     homingDynamicRotation.transform.Find("Image").GetComponent<Image>().sprite = SpriteHelper.LoadSprite(dynamicHomingSpritePath);
+
+                EditorThemeManager.AddToggle(homingDynamicRotation.GetComponent<Toggle>(), ThemeGroup.Background_3);
+                EditorThemeManager.AddGraphic(homingDynamicRotation.transform.Find("Image").GetComponent<Image>(), ThemeGroup.Toggle_1_Check);
 
                 var rRotation = rotation.Find("r_rotation");
                 var rRotationX = rRotation.Find("x");
@@ -969,7 +973,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                 var labels = ObjEditor.inst.KeyframeDialogs[0].transform.GetChild(8);
                 var posZLabel = labels.GetChild(1).gameObject.Duplicate(labels, "text");
-                posZLabel.GetComponent<Text>().text = "Position Z";
+                var posZLabelText = posZLabel.GetComponent<Text>();
+                posZLabelText.text = "Position Z";
+                EditorThemeManager.AddLightText(posZLabelText);
 
                 EditorConfig.AdjustPositionInputsChanged = () =>
                 {

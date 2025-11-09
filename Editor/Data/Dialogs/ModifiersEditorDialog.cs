@@ -110,10 +110,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public void InitLabel(Transform parent)
         {
-            var label = EditorPrefabHolder.Instance.Labels.Duplicate(parent, "label");
-
-            Label = label.transform.GetChild(0).GetComponent<Text>();
-            Label.text = "Modifiers";
+            var labels = new Labels(Labels.InitSettings.Default.Parent(parent).Name("label").ApplyThemes(false), "Modifiers");
+            Label = labels.GameObject.transform.GetChild(0).GetComponent<Text>();
             EditorThemeManager.ApplyLightText(Label);
         }
 
