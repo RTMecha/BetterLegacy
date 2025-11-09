@@ -34,21 +34,6 @@ namespace BetterLegacy.Configs
         public Setting<bool> RoundedUI { get; set; }
 
         /// <summary>
-        /// The key to reload the main menu for easy reloading of modified menu file.
-        /// </summary>
-        public Setting<KeyCode> ReloadMainMenu { get; set; }
-
-        /// <summary>
-        /// The key to load the Page Editor.
-        /// </summary>
-        public Setting<KeyCode> LoadPageEditor { get; set; }
-
-        /// <summary>
-        /// The key to select the first menu button. This is for cases where menu selection disappears.
-        /// </summary>
-        public Setting<KeyCode> SelectFirstButton { get; set; }
-
-        /// <summary>
         /// The theme of the new interface.
         /// </summary>
         public Setting<string> InterfaceThemeID { get; set; }
@@ -112,9 +97,6 @@ namespace BetterLegacy.Configs
 
             #region General
 
-            ReloadMainMenu = BindEnum(this, GENERAL, "Reload Main Menu key", KeyCode.F6, "The key to reload the main menu for easy reloading of modified menu file.");
-            LoadPageEditor = BindEnum(this, GENERAL, "Load Page Editor key", KeyCode.F10, "The key to load the Page Editor.");
-            SelectFirstButton = BindEnum(this, GENERAL, "Select First Button", KeyCode.G, "The key to select the first menu button. This is for cases where menu selection disappears.");
             InterfaceThemeID = Bind(this, GENERAL, "Interface Theme ID", "-1", "The theme of the interface.");
             RoundedUI = Bind(this, GENERAL, "Rounded", false, "If most elements in the interface should have a rounded corner.");
             ShowChangelog = Bind(this, GENERAL, "Show Changelog", true, "If the changelog screen should show on game startup.");
