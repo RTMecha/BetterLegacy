@@ -402,7 +402,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         return;
                     }
 
-                    EditorLevelManager.inst.LevelCollectionPopup.PathField.text = path.Replace(RTEditor.inst.BeatmapsPath + "/", string.Empty);
+                    EditorLevelManager.inst.LevelCollectionPopup.PathField.text = path.Remove(RTEditor.inst.BeatmapsPath + "/");
                     EditorLevelManager.inst.LoadLevelCollections();
                 };
                 return;
