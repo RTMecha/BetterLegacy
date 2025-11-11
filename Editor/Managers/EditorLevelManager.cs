@@ -2319,7 +2319,6 @@ namespace BetterLegacy.Editor.Managers
                 });
         }
 
-        // todo: implement
         public void PullLevelCollection(LevelCollection levelCollection)
         {
             if (EditorManager.inst.savingBeatmap)

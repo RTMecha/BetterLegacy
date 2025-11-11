@@ -21,7 +21,8 @@ namespace BetterLegacy.Editor.Managers
     public class RTCheckpointEditor : BaseEditor<RTCheckpointEditor, RTCheckpointEditorSettings, CheckpointEditor>
     {
         /* TODO:
-        - Custom checkpoint sprite
+        - Custom checkpoint point sprite
+        - Custom checkpoint point color (either a hex value or automatically inverts from below)
         - Actually implement multi-position checkpoints
          */
 

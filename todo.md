@@ -110,6 +110,9 @@ Next: Multiplayer Snapshots
   Notes:  
   - A group of selected objects that have a set animation ID can be turned into an animation group.
   - The same group of selected objects can then have that animation applied to them.
+- Work on Project Planner
+  - Project Planner OST can play in background and automatically mutes when the editor is playing.
+  - Project Planner OST settings.
 
 ### Interfaces
 - A bind system for interfaces where an element prefab can be spawned based on a JSON file or file list.

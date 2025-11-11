@@ -805,7 +805,6 @@ namespace BetterLegacy.Core
             if (page != 0)
                 queries.Add(new Query("page", page.ToString()));
 
-            // todo: implement sorting
             if (sort != 0)
                 queries.Add(new Query("sort", sort.ToString()));
             if (ascend)
