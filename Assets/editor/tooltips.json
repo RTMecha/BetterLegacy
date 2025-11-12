@@ -5432,15 +5432,35 @@
             ]
           }, // callModifierBlock
           {
-            "name": "Object Modifier - callModifierBlockTrigger (Action)",
+            "name": "Object Modifier - callModifierBlockTrigger (Trigger)",
             "tooltips": [
               {
-                "desc": "callModifierBlockTrigger (Action)",
+                "desc": "callModifierBlockTrigger (Trigger)",
                 "hint": "Trigger is active if the modifier block it runs returns true.",
                 "lang": 0
               }
             ]
           }, // callModifierBlockTrigger
+          {
+            "name": "Object Modifier - callModifiers (Action)",
+            "tooltips": [
+              {
+                "desc": "callModifiers (Action)",
+                "hint": "Runs another objects modifier list. A timeline-friendly alternative to callModifierBlock.",
+                "lang": 0
+              }
+            ]
+          }, // callModifiers
+          {
+            "name": "Object Modifier - callModifiersTrigger (Trigger)",
+            "tooltips": [
+              {
+                "desc": "callModifiersTrigger (Trigger)",
+                "hint": "Trigger is active if the modifier list it runs returns true. A timeline-friendly alternative to callModifierBlockTrigger.",
+                "lang": 0
+              }
+            ]
+          }, // callModifiersTrigger
           {
             "name": "Object Modifier - getTag (Action)",
             "tooltips": [

@@ -4638,6 +4638,16 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
+                case nameof(ModifierFunctions.callModifiers): {
+                        StringGenerator(modifier, reference, "Object Group", 0);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.callModifiersTrigger): {
+                        StringGenerator(modifier, reference, "Object Group", 0);
+
+                        break;
+                    }
 
                 case "forLoop": {
                         StringGenerator(modifier, reference, "Variable Name", 0);

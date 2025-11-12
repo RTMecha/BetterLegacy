@@ -798,6 +798,7 @@ namespace BetterLegacy.Core.Helpers
             new ModifierTrigger(nameof(ModifierFunctions.onCheckpoint), ModifierFunctions.onCheckpoint),
             new ModifierTrigger(nameof(ModifierFunctions.fromPrefab), ModifierFunctions.fromPrefab),
             new ModifierTrigger(nameof(ModifierFunctions.callModifierBlockTrigger), ModifierFunctions.callModifierBlockTrigger, ModifierCompatibility.LevelControlCompatible),
+            new ModifierTrigger(nameof(ModifierFunctions.callModifiersTrigger), ModifierFunctions.callModifiersTrigger, ModifierCompatibility.LevelControlCompatible),
 
             #endregion
 
@@ -1373,6 +1374,7 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction(nameof(ModifierFunctions.setDiscordStatus),  ModifierFunctions.setDiscordStatus, ModifierCompatibility.LevelControlCompatible),
 
             new ModifierAction(nameof(ModifierFunctions.callModifierBlock),  ModifierFunctions.callModifierBlock, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.callModifiers),  ModifierFunctions.callModifiers, ModifierCompatibility.LevelControlCompatible),
 
             #endregion
 
@@ -12103,6 +12105,8 @@ namespace BetterLegacy.Core.Helpers
         public static void callModifierBlock(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             var name = modifier.GetValue(0, variables);
+            if (string.IsNullOrEmpty(name))
+                return;
 
             var prefabable = reference.AsPrefabable();
             var prefab = prefabable?.GetPrefab();
@@ -12110,6 +12114,36 @@ namespace BetterLegacy.Core.Helpers
                 prefabModifierBlock.Run(new ModifierLoop(reference, variables));
             else if (GameData.Current.modifierBlocks.TryFind(x => x.Name == name, out ModifierBlock modifierBlock))
                 modifierBlock.Run(new ModifierLoop(reference, variables));
+        }
+
+        public static void callModifiers(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            var prefabable = reference.AsPrefabable();
+            if (prefabable == null || !GameData.Current.TryFindModifyableWithTag(modifier, prefabable, modifier.GetValue(0, variables), out IModifyable modifyable))
+                return;
+
+            var cache = modifier.GetResultOrDefault(() => new ModifierBlock(reference.ReferenceType)
+            {
+                Modifiers = modifyable.Modifiers,
+                OrderModifiers = modifyable.OrderModifiers,
+                Tags = modifyable.Tags,
+            });
+            cache.Run(new ModifierLoop(reference, variables));
+        }
+        
+        public static bool callModifiersTrigger(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            var prefabable = reference.AsPrefabable();
+            if (prefabable == null || !GameData.Current.TryFindModifyableWithTag(modifier, prefabable, modifier.GetValue(0, variables), out IModifyable modifyable))
+                return false;
+
+            var cache = modifier.GetResultOrDefault(() => new ModifierBlock(reference.ReferenceType)
+            {
+                Modifiers = modifyable.Modifiers,
+                OrderModifiers = modifyable.OrderModifiers,
+                Tags = modifyable.Tags,
+            });
+            return cache.Run(new ModifierLoop(reference, variables)).result;
         }
 
         #endregion

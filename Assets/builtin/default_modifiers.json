@@ -3306,12 +3306,26 @@
         "compat": "level_control"
       }, // callModifierBlock
       {
-        "type": 1,
+        "type": 0,
         "commands": [ "callModifierBlockTrigger" ],
         "value": "modifierBlock",
         "const": "True",
         "compat": "level_control"
       }, // callModifierBlockTrigger
+      {
+        "type": 1,
+        "name": "callModifiers",
+        "values": [ "Object Group" ],
+        "const": "True",
+        "compat": "level_control"
+      }, // callModifiers
+      {
+        "type": 0,
+        "name": "callModifiersTrigger",
+        "values": [ "Object Group" ],
+        "const": "True",
+        "compat": "level_control"
+      }, // callModifiersTrigger
       {
         "type": 1,
         "commands": [ "getTag", "0" ],
