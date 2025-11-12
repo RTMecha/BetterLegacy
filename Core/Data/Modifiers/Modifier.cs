@@ -25,9 +25,9 @@ namespace BetterLegacy.Core.Data.Modifiers
         public Modifier(ModifierCompatibility compatibility, Type type, string name, bool constant, params string[] values) : this(type, name, constant, values) => this.compatibility = compatibility;
 
         public Modifier(Type type, string name, bool constant,
-            Action<Modifier, IModifierReference, Dictionary<string, string>> action,
-            Func<Modifier, IModifierReference, Dictionary<string, string>, bool> trigger,
-            Action<Modifier, IModifierReference, Dictionary<string, string>> inactive,
+            Action<Modifier, ModifierLoop> action,
+            Func<Modifier, ModifierLoop, bool> trigger,
+            Action<Modifier, ModifierLoop> inactive,
             params string[] values)
         {
             this.name = name;
@@ -42,39 +42,39 @@ namespace BetterLegacy.Core.Data.Modifiers
         }
 
         public Modifier(Type type, string name, bool constant,
-            Action<Modifier, IModifierReference, Dictionary<string, string>> action,
-            Action<Modifier, IModifierReference, Dictionary<string, string>> inactive,
+            Action<Modifier, ModifierLoop> action,
+            Action<Modifier, ModifierLoop> inactive,
             params string[] values) : this(type, name, constant, action, null, inactive, values) { }
 
         public Modifier(Type type, string name, bool constant,
-            Func<Modifier, IModifierReference, Dictionary<string, string>, bool> trigger,
-            Action<Modifier, IModifierReference, Dictionary<string, string>> inactive,
+            Func<Modifier, ModifierLoop, bool> trigger,
+            Action<Modifier, ModifierLoop> inactive,
             params string[] values) : this(type, name, constant, null, trigger, inactive, values) { }
 
         public Modifier(ModifierCompatibility compatibility, Type type, string name, bool constant,
-            Action<Modifier, IModifierReference, Dictionary<string, string>> action,
-            Action<Modifier, IModifierReference, Dictionary<string, string>> inactive,
+            Action<Modifier, ModifierLoop> action,
+            Action<Modifier, ModifierLoop> inactive,
             params string[] values) : this(type, name, constant, action, null, inactive, values) => this.compatibility = compatibility;
 
         public Modifier(ModifierCompatibility compatibility, Type type, string name, bool constant,
-            Func<Modifier, IModifierReference, Dictionary<string, string>, bool> trigger,
-            Action<Modifier, IModifierReference, Dictionary<string, string>> inactive,
+            Func<Modifier, ModifierLoop, bool> trigger,
+            Action<Modifier, ModifierLoop> inactive,
             params string[] values) : this(type, name, constant, null, trigger, inactive, values) => this.compatibility = compatibility;
 
         public Modifier(Type type, string name, bool constant,
-            Action<Modifier, IModifierReference, Dictionary<string, string>> action,
+            Action<Modifier, ModifierLoop> action,
             params string[] values) : this(type, name, constant, action, null, null, values) { }
 
         public Modifier(Type type, string name, bool constant,
-            Func<Modifier, IModifierReference, Dictionary<string, string>, bool> trigger,
+            Func<Modifier, ModifierLoop, bool> trigger,
             params string[] values) : this(type, name, constant, null, trigger, null, values) { }
 
         public Modifier(ModifierCompatibility compatibility, Type type, string name, bool constant,
-            Action<Modifier, IModifierReference, Dictionary<string, string>> action,
+            Action<Modifier, ModifierLoop> action,
             params string[] values) : this(type, name, constant, action, null, null, values) => this.compatibility = compatibility;
 
         public Modifier(ModifierCompatibility compatibility, Type type, string name, bool constant,
-            Func<Modifier, IModifierReference, Dictionary<string, string>, bool> trigger,
+            Func<Modifier, ModifierLoop, bool> trigger,
             params string[] values) : this(type, name, constant, null, trigger, null, values) => this.compatibility = compatibility;
 
         #region Values
@@ -87,17 +87,17 @@ namespace BetterLegacy.Core.Data.Modifiers
         /// <summary>
         /// Action to run per-tick.
         /// </summary>
-        public Action<Modifier, IModifierReference, Dictionary<string, string>> Action { get; set; }
+        public Action<Modifier, ModifierLoop> Action { get; set; }
 
         /// <summary>
         /// Trigger to check if other modifiers should run.
         /// </summary>
-        public Func<Modifier, IModifierReference, Dictionary<string, string>, bool> Trigger { get; set; }
+        public Func<Modifier, ModifierLoop, bool> Trigger { get; set; }
 
         /// <summary>
         /// Inactive state.
         /// </summary>
-        public Action<Modifier, IModifierReference, Dictionary<string, string>> Inactive { get; set; }
+        public Action<Modifier, ModifierLoop> Inactive { get; set; }
 
         public string name;
         /// <summary>
@@ -370,16 +370,16 @@ namespace BetterLegacy.Core.Data.Modifiers
 
         #region Run
 
-        public void RunAction(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public void RunAction(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (!tryCatch)
             {
-                Action?.Invoke(modifier, reference, variables);
+                Action?.Invoke(modifier, modifierLoop);
                 return;
             }
             try
             {
-                Action?.Invoke(modifier, reference, variables);
+                Action?.Invoke(modifier, modifierLoop);
             }
             catch (Exception ex)
             {
@@ -387,13 +387,13 @@ namespace BetterLegacy.Core.Data.Modifiers
             }
         }
         
-        public bool RunTrigger(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public bool RunTrigger(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (!tryCatch)
-                return Trigger?.Invoke(modifier, reference, variables) == true;
+                return Trigger?.Invoke(modifier, modifierLoop) == true;
             try
             {
-                return Trigger?.Invoke(modifier, reference, variables) == true;
+                return Trigger?.Invoke(modifier, modifierLoop) == true;
             }
             catch (Exception ex)
             {
@@ -402,16 +402,50 @@ namespace BetterLegacy.Core.Data.Modifiers
             }
         }
 
-        public void RunInactive(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public void RunInactive(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (!tryCatch)
             {
-                Inactive?.Invoke(modifier, reference, variables);
+                Inactive?.Invoke(modifier, modifierLoop);
                 return;
             }
             try
             {
-                Inactive?.Invoke(modifier, reference, variables);
+                Inactive?.Invoke(modifier, modifierLoop);
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Encountered an exception with the modifier: {Name}.\nException: {ex}");
+            }
+        }
+        
+        public void RunInactive(Modifier modifier, IModifierReference reference)
+        {
+            if (!tryCatch)
+            {
+                Inactive?.Invoke(modifier, new ModifierLoop(reference, null));
+                return;
+            }
+            try
+            {
+                Inactive?.Invoke(modifier, new ModifierLoop(reference, null));
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Encountered an exception with the modifier: {Name}.\nException: {ex}");
+            }
+        }
+        
+        public void RunInactive(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            if (!tryCatch)
+            {
+                Inactive?.Invoke(modifier, new ModifierLoop(reference, variables));
+                return;
+            }
+            try
+            {
+                Inactive?.Invoke(modifier, new ModifierLoop(reference, variables));
             }
             catch (Exception ex)
             {

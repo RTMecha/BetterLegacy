@@ -481,7 +481,7 @@ namespace BetterLegacy.Editor.Managers
                     var modifier = beatmapObject.modifiers[i];
                     try
                     {
-                        modifier.Inactive?.Invoke(modifier, beatmapObject, null); // for cases where we want to clear data.
+                        modifier.RunInactive(modifier, beatmapObject); // for cases where we want to clear data.
                     }
                     catch (Exception ex)
                     {

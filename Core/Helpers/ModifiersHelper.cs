@@ -62,7 +62,7 @@ namespace BetterLegacy.Core.Helpers
         /// <typeparam name="T">The type of <see cref="Modifier"/>.</typeparam>
         /// <param name="triggers">Triggers to check.</param>
         /// <returns>Returns true if all modifiers are active or if some have else if on, otherwise returns false.</returns>
-        public static bool CheckTriggers(List<Modifier> triggers, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool CheckTriggers(List<Modifier> triggers, ModifierLoop loop)
         {
             bool result = true;
             triggers.ForLoop(trigger =>
@@ -74,7 +74,7 @@ namespace BetterLegacy.Core.Helpers
                     return;
                 }
 
-                var innerResult = trigger.not ? !trigger.RunTrigger(trigger, reference, variables) : trigger.RunTrigger(trigger, reference, variables);
+                var innerResult = trigger.not ? !trigger.RunTrigger(trigger, loop) : trigger.RunTrigger(trigger, loop);
 
                 if (trigger.elseIf && !result && innerResult)
                     result = true;
@@ -121,7 +121,7 @@ namespace BetterLegacy.Core.Helpers
         /// <param name="action">Action function to set if <see cref="Modifier.type"/> is <see cref="Modifier.Type.Action"/>.</param>
         /// <param name="trigger">Trigger function to set if <see cref="Modifier.type"/> is <see cref="Modifier.Type.Trigger"/>.</param>
         /// <param name="inactive">Inactive function to set.</param>
-        public static void AssignModifierAction(Modifier modifier, Action<Modifier, IModifierReference, Dictionary<string, string>> action, Func<Modifier, IModifierReference, Dictionary<string, string>, bool> trigger, Action<Modifier, IModifierReference, Dictionary<string, string>> inactive)
+        public static void AssignModifierAction(Modifier modifier, Action<Modifier, ModifierLoop> action, Func<Modifier, ModifierLoop, bool> trigger, Action<Modifier, ModifierLoop> inactive)
         {
             // Only assign methods depending on modifier type.
             if (modifier.type == Modifier.Type.Action)
@@ -172,7 +172,7 @@ namespace BetterLegacy.Core.Helpers
             if (!triggers.IsEmpty())
             {
                 // If all triggers are active
-                if (CheckTriggers(triggers, loop.reference, loop.variables))
+                if (CheckTriggers(triggers, loop))
                 {
                     bool returned = false;
                     actions.ForLoop(act =>
@@ -188,7 +188,7 @@ namespace BetterLegacy.Core.Helpers
                         act.running = true;
                         if (act.Action == null && TryGetAction(act, loop.reference, out ModifierAction action))
                             act.Action = action.function;
-                        act.RunAction(act, loop.reference, loop.variables);
+                        act.RunAction(act, loop);
                         if (act.Name == "return")
                             returned = true;
                     });
@@ -205,7 +205,7 @@ namespace BetterLegacy.Core.Helpers
                     modifier.running = false;
                     if (modifier.Inactive == null && TryGetInactive(modifier, loop.reference, out ModifierInactive action))
                         modifier.Inactive = action.function;
-                    modifier.RunInactive(modifier, loop.reference, loop.variables);
+                    modifier.RunInactive(modifier, loop);
                 });
                 return new ModifierLoopResult(false, false, Modifier.Type.Action, modifiers.Count);
             }
@@ -223,7 +223,7 @@ namespace BetterLegacy.Core.Helpers
                 act.running = true;
                 if (act.Action == null && TryGetAction(act, loop.reference, out ModifierAction action))
                     act.Action = action.function;
-                act.RunAction(act, loop.reference, loop.variables);
+                act.RunAction(act, loop);
             });
             return new ModifierLoopResult(false, true, Modifier.Type.Action, modifiers.Count);
         }
@@ -236,19 +236,18 @@ namespace BetterLegacy.Core.Helpers
         /// <param name="active">If the object is active.</param>
         public static ModifierLoopResult RunModifiersLoop(List<Modifier> modifiers, ModifierLoop loop, int sequence = 0, int end = 0)
         {
-            bool continued = false;
-            bool returned = false;
-            bool result = true; // Action modifiers at the start with no triggers before it should always run, so result is true.
-            bool triggered = false; // If the first "or gate" argument is true, then ignore the rest.
-            int triggerIndex = 0;
-            Modifier.Type previousType = Modifier.Type.Action;
-            int index = 0;
-            while (index < modifiers.Count)
+            if (!loop.state)
+                loop.state = new ModifierLoop.State();
+            else
+                loop.state.Reset();
+            loop.state.sequence = sequence;
+            loop.state.end = end;
+            while (loop.state.index < modifiers.Count)
             {
-                var modifier = modifiers[index];
+                var modifier = modifiers[loop.state.index];
                 if (modifier.compatibility.StoryOnly && !CoreHelper.InStory)
                 {
-                    index++;
+                    loop.state.index++;
                     continue;
                 }
 
@@ -258,124 +257,124 @@ namespace BetterLegacy.Core.Helpers
                 var isTrigger = modifier.type == Modifier.Type.Trigger;
 
                 // Continue to the end of the modifier loop and set all modifiers to not running.
-                if (continued)
+                if (loop.state.continued)
                 {
                     modifier.running = false;
-                    index++;
+                    loop.state.index++;
                     continue;
                 }
 
-                if (name == "forLoop") // this modifier requires a specific function, so it's placed here.
-                {
-                    if (!modifier.running)
-                        modifier.runCount++;
+                //if (name == "forLoop") // this modifier requires a specific function, so it's placed here.
+                //{
+                //    if (!modifier.running)
+                //        modifier.runCount++;
 
-                    modifier.running = true;
+                //    modifier.running = true;
 
-                    var variable = FormatStringVariables(modifier.GetValue(0), loop.variables);
-                    var startIndex = modifier.GetInt(1, 0, loop.variables);
-                    var endCount = modifier.GetInt(2, 0, loop.variables);
-                    var increment = modifier.GetInt(3, 1, loop.variables);
+                //    var variable = FormatStringVariables(modifier.GetValue(0), loop.variables);
+                //    var startIndex = modifier.GetInt(1, 0, loop.variables);
+                //    var endCount = modifier.GetInt(2, 0, loop.variables);
+                //    var increment = modifier.GetInt(3, 1, loop.variables);
 
-                    var endIndex = modifiers.FindLastIndex(x => x.Name == "return"); // return is treated as a break of the for loop
-                    endIndex = endIndex < 0 ? modifiers.Count : endIndex + 1;
+                //    var endIndex = modifiers.FindLastIndex(x => x.Name == "return"); // return is treated as a break of the for loop
+                //    endIndex = endIndex < 0 ? modifiers.Count : endIndex + 1;
 
-                    try
-                    {
-                        // if result is false, then skip the for loop sequence.
-                        if (!(modifier.active || !result || modifier.triggerCount > 0 && modifier.runCount >= modifier.triggerCount))
-                        {
-                            var selectModifiers = modifiers.GetIndexRange(index + 1, endIndex);
+                //    try
+                //    {
+                //        // if result is false, then skip the for loop sequence.
+                //        if (!(modifier.active || !loop.state.result || modifier.triggerCount > 0 && modifier.runCount >= modifier.triggerCount))
+                //        {
+                //            var selectModifiers = modifiers.GetIndexRange(loop.state.index + 1, endIndex);
 
-                            for (int i = startIndex; i < endCount; i += increment)
-                            {
-                                loop.variables[variable] = i.ToString();
-                                RunModifiersLoop(selectModifiers, new ModifierLoop(loop.reference, loop.variables), i, endCount);
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        CoreHelper.LogError($"Had an exception with the forLoop modifier.\n" +
-                            $"Index: {index}\n" +
-                            $"End Index: {endIndex}\nException: {ex}");
-                    }
+                //            for (int i = startIndex; i < endCount; i += increment)
+                //            {
+                //                loop.variables[variable] = i.ToString();
+                //                RunModifiersLoop(selectModifiers, new ModifierLoop(loop.reference, loop.variables), i, endCount);
+                //            }
+                //        }
+                //    }
+                //    catch (Exception ex)
+                //    {
+                //        CoreHelper.LogError($"Had an exception with the forLoop modifier.\n" +
+                //            $"Index: {loop.state.index}\n" +
+                //            $"End Index: {endIndex}\nException: {ex}");
+                //    }
 
-                    // Only occur once
-                    if (!modifier.constant && sequence + 1 >= end)
-                        modifier.active = true;
+                //    // Only occur once
+                //    if (!modifier.constant && loop.state.sequence + 1 >= loop.state.end)
+                //        modifier.active = true;
 
-                    index = endIndex; // exit for loop.
-                    continue;
-                }
+                //    loop.state.index = endIndex; // exit for loop.
+                //    continue;
+                //}
 
-                if (name == "resetLoop")
-                {
-                    var runCount = modifier.runCount;
-                    if (!modifier.running)
-                        runCount++;
+                //if (name == "resetLoop")
+                //{
+                //    var runCount = modifier.runCount;
+                //    if (!modifier.running)
+                //        runCount++;
 
-                    modifier.running = true;
+                //    modifier.running = true;
 
-                    if (!(modifier.active || !result || modifier.triggerCount > 0 && runCount >= modifier.triggerCount))
-                        modifiers.ForLoop(modifier =>
-                        {
-                            if (modifier.compatibility.StoryOnly && !CoreHelper.InStory || !modifier.active && !modifier.running)
-                                return;
+                //    if (!(modifier.active || !loop.state.result || modifier.triggerCount > 0 && runCount >= modifier.triggerCount))
+                //        modifiers.ForLoop(modifier =>
+                //        {
+                //            if (modifier.compatibility.StoryOnly && !CoreHelper.InStory || !modifier.active && !modifier.running)
+                //                return;
 
-                            modifier.active = false;
-                            modifier.running = false;
-                            modifier.runCount = 0;
-                            if (modifier.Inactive == null && TryGetInactive(modifier, loop.reference, out ModifierInactive action))
-                                modifier.Inactive = action.function;
-                            modifier.RunInactive(modifier, loop.reference, loop.variables);
-                        });
+                //            modifier.active = false;
+                //            modifier.running = false;
+                //            modifier.runCount = 0;
+                //            if (modifier.Inactive == null && TryGetInactive(modifier, loop.reference, out ModifierInactive action))
+                //                modifier.Inactive = action.function;
+                //            modifier.RunInactive(modifier, loop);
+                //        });
 
-                    // Only occur once
-                    if (!modifier.constant && sequence + 1 >= end)
-                        modifier.active = true;
+                //    // Only occur once
+                //    if (!modifier.constant && loop.state.sequence + 1 >= loop.state.end)
+                //        modifier.active = true;
 
-                    modifier.runCount = runCount;
+                //    modifier.runCount = runCount;
 
-                    index++;
-                    continue;
-                }
+                //    loop.state.index++;
+                //    continue;
+                //}
 
                 if (isTrigger)
                 {
-                    if (previousType == Modifier.Type.Action) // If previous modifier was an action modifier, result should be considered true as we just started another modifier-block
+                    if (loop.state.previousType == Modifier.Type.Action) // If previous modifier was an action modifier, result should be considered true as we just started another modifier-block
                     {
                         if (name != "else")
-                            result = true;
-                        triggered = false;
-                        triggerIndex = 0;
+                            loop.state.result = true;
+                        loop.state.triggered = false;
+                        loop.state.triggerIndex = 0;
                     }
 
                     if (modifier.active || modifier.triggerCount > 0 && modifier.runCount >= modifier.triggerCount)
                     {
                         modifier.triggered = false;
-                        result = false;
+                        loop.state.result = false;
                     }
                     else if (name == "else") // else triggers inverse the previous trigger result
                     {
-                        var innerResult = result;
-                        result = !innerResult;
+                        var innerResult = loop.state.result;
+                        loop.state.result = !innerResult;
                         modifier.triggered = !innerResult;
                     }
                     else
                     {
-                        var innerResult = modifier.not ? !modifier.RunTrigger(modifier, loop.reference, loop.variables) : modifier.RunTrigger(modifier, loop.reference, loop.variables);
-                        var elseIf = triggerIndex > 0 && modifier.elseIf;
+                        var innerResult = modifier.not ? !modifier.RunTrigger(modifier, loop) : modifier.RunTrigger(modifier, loop);
+                        var elseIf = loop.state.triggerIndex > 0 && modifier.elseIf;
 
                         if (elseIf)
                         {
-                            if (result) // If result is already active, set triggered to true
-                                triggered = true;
+                            if (loop.state.result) // If result is already active, set triggered to true
+                                loop.state.triggered = true;
                             else // Otherwise set the result to modifier trigger result
-                                result = innerResult;
+                                loop.state.result = innerResult;
                         }
-                        else if (!triggered && !innerResult)
-                            result = false;
+                        else if (!loop.state.triggered && !innerResult)
+                            loop.state.result = false;
 
                         // Allow trigger to turn result to true again if "elseIf" is on
                         //if (modifier.elseIf && !result && innerResult)
@@ -385,84 +384,88 @@ namespace BetterLegacy.Core.Helpers
                         //    result = false;
 
                         modifier.triggered = innerResult;
-                        previousType = modifier.type;
+                        loop.state.previousType = modifier.type;
                     }
 
-                    triggerIndex++;
+                    loop.state.triggerIndex++;
                 }
 
                 if (name == "return" || name == "continue") // return stops the loop (any), continue moves it to the next loop (forLoop only)
                 {
                     // Set modifier inactive state
-                    if (!result && !(!modifier.active && !modifier.running))
+                    if (!loop.state.result && !(!modifier.active && !modifier.running))
                     {
                         modifier.active = false;
                         modifier.running = false;
-                        result = false;
+                        loop.state.result = false;
                     }
 
-                    if (modifier.active || !result || modifier.triggerCount > 0 && modifier.runCount >= modifier.triggerCount) // don't return
-                        result = false;
+                    if (modifier.active || !loop.state.result || modifier.triggerCount > 0 && modifier.runCount >= modifier.triggerCount) // don't return
+                        loop.state.result = false;
 
                     if (!modifier.running)
                         modifier.runCount++;
 
                     // Only occur once
-                    if (!modifier.constant && sequence + 1 >= end)
+                    if (!modifier.constant && loop.state.sequence + 1 >= loop.state.end)
                         modifier.active = true;
 
-                    modifier.running = result;
+                    modifier.running = loop.state.result;
 
-                    if (result)
+                    if (loop.state.result)
                     {
-                        continued = true;
-                        returned = name == "return";
+                        loop.state.continued = true;
+                        loop.state.returned = name == "return";
                     }
 
-                    result = true;
+                    loop.state.result = true;
 
-                    previousType = modifier.type;
-                    index++;
+                    loop.state.previousType = modifier.type;
+                    loop.state.index++;
                     continue;
                 }
 
                 // Set modifier inactive state
-                if (!result && !(!modifier.active && !modifier.running))
+                if (!loop.state.result && !(!modifier.active && !modifier.running))
                 {
                     modifier.active = false;
                     modifier.running = false;
-                    modifier.RunInactive(modifier, loop.reference, loop.variables);
+                    modifier.RunInactive(modifier, loop);
 
-                    previousType = modifier.type;
-                    index++;
+                    loop.state.previousType = modifier.type;
+                    loop.state.index++;
                     continue;
                 }
 
                 // Continue if modifier was already active with constant on
-                if (modifier.active || !result || modifier.triggerCount > 0 && modifier.runCount >= modifier.triggerCount)
+                if (modifier.active || !loop.state.result || modifier.triggerCount > 0 && modifier.runCount >= modifier.triggerCount)
                 {
-                    previousType = modifier.type;
-                    index++;
+                    loop.state.previousType = modifier.type;
+                    loop.state.index++;
                     continue;
                 }
 
-                if (!modifier.running)
-                    modifier.runCount++;
+                // run count is handled by the resetLoop function.
+                if (name != nameof(ModifierFunctions.resetLoop))
+                {
+                    if (!modifier.running)
+                        modifier.runCount++;
+
+                    modifier.running = true;
+                }
 
                 // Only occur once
-                if (!modifier.constant && sequence + 1 >= end)
+                if (!modifier.constant && loop.state.sequence + 1 >= loop.state.end)
                     modifier.active = true;
 
-                modifier.running = true;
+                if (isAction && loop.state.result) // Only run modifier if result is true
+                    modifier.RunAction(modifier, loop);
 
-                if (isAction && result) // Only run modifier if result is true
-                    modifier.RunAction(modifier, loop.reference, loop.variables);
-
-                previousType = modifier.type;
-                index++;
+                loop.state.previousType = modifier.type;
+                loop.state.index++;
             }
 
-            return new ModifierLoopResult(returned, result, previousType, index);
+            return new ModifierLoopResult(loop.state.returned, loop.state.result, loop.state.previousType, loop.state.index);
         }
 
         #endregion
@@ -505,7 +508,7 @@ namespace BetterLegacy.Core.Helpers
         public static ModifierTrigger[] triggers = new ModifierTrigger[]
         {
             new ModifierTrigger("break", ModifierFunctions.breakModifier),
-            new ModifierTrigger(nameof(ModifierFunctions.disableModifier), (modifier, reference, variables) => false),
+            new ModifierTrigger(nameof(ModifierFunctions.disableModifier), (modifier, modifierLoop) => false),
 
             #region Player
 
@@ -617,10 +620,10 @@ namespace BetterLegacy.Core.Helpers
             new ModifierTrigger(nameof(ModifierFunctions.musicTimeInRange), ModifierFunctions.musicTimeInRange),
             new ModifierTrigger(nameof(ModifierFunctions.musicPlaying), ModifierFunctions.musicPlaying),
 
-            new ModifierTrigger("timeLesserEquals", (modifier, reference, variables) => AudioManager.inst.CurrentAudioSource.time <= modifier.GetFloat(0, 0f, variables)),
-            new ModifierTrigger("timeGreaterEquals", (modifier, reference, variables) => AudioManager.inst.CurrentAudioSource.time >= modifier.GetFloat(0, 0f, variables)),
-            new ModifierTrigger("timeLesser", (modifier, reference, variables)  => AudioManager.inst.CurrentAudioSource.time<modifier.GetFloat(0, 0f, variables)),
-            new ModifierTrigger("timeGreater", (modifier, reference, variables)  => AudioManager.inst.CurrentAudioSource.time > modifier.GetFloat(0, 0f, variables)),
+            new ModifierTrigger("timeLesserEquals", (modifier, modifierLoop) => AudioManager.inst.CurrentAudioSource.time <= modifier.GetFloat(0, 0f, modifierLoop.variables)),
+            new ModifierTrigger("timeGreaterEquals", (modifier, modifierLoop) => AudioManager.inst.CurrentAudioSource.time >= modifier.GetFloat(0, 0f, modifierLoop.variables)),
+            new ModifierTrigger("timeLesser", (modifier, modifierLoop)  => AudioManager.inst.CurrentAudioSource.time<modifier.GetFloat(0, 0f, modifierLoop.variables)),
+            new ModifierTrigger("timeGreater", (modifier, modifierLoop)  => AudioManager.inst.CurrentAudioSource.time > modifier.GetFloat(0, 0f, modifierLoop.variables)),
 
             #endregion
 
@@ -818,29 +821,29 @@ namespace BetterLegacy.Core.Helpers
 
             #region Dev Only
 
-            new ModifierTrigger("storyLoadIntEqualsDEVONLY", (modifier, reference, variables) =>
+            new ModifierTrigger("storyLoadIntEqualsDEVONLY", (modifier, modifierLoop) =>
             {
-                return Story.StoryManager.inst.CurrentSave && Story.StoryManager.inst.CurrentSave.LoadInt(FormatStringVariables(modifier.GetValue(0, variables), variables), modifier.GetInt(1, 0, variables)) == modifier.GetInt(2, 0, variables);
+                return Story.StoryManager.inst.CurrentSave && Story.StoryManager.inst.CurrentSave.LoadInt(FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables), modifier.GetInt(1, 0, modifierLoop.variables)) == modifier.GetInt(2, 0, modifierLoop.variables);
             }),
-            new ModifierTrigger("storyLoadIntLesserEqualsDEVONLY", (modifier, reference, variables) =>
+            new ModifierTrigger("storyLoadIntLesserEqualsDEVONLY", (modifier, modifierLoop) =>
             {
-                return Story.StoryManager.inst.CurrentSave && Story.StoryManager.inst.CurrentSave.LoadInt(FormatStringVariables(modifier.GetValue(0, variables), variables), modifier.GetInt(1, 0, variables)) <= modifier.GetInt(2, 0, variables);
+                return Story.StoryManager.inst.CurrentSave && Story.StoryManager.inst.CurrentSave.LoadInt(FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables), modifier.GetInt(1, 0, modifierLoop.variables)) <= modifier.GetInt(2, 0, modifierLoop.variables);
             }),
-            new ModifierTrigger("storyLoadIntGreaterEqualsDEVONLY", (modifier, reference, variables) =>
+            new ModifierTrigger("storyLoadIntGreaterEqualsDEVONLY", (modifier, modifierLoop) =>
             {
-                return Story.StoryManager.inst.CurrentSave && Story.StoryManager.inst.CurrentSave.LoadInt(FormatStringVariables(modifier.GetValue(0, variables), variables), modifier.GetInt(1, 0, variables)) >= modifier.GetInt(2, 0, variables);
+                return Story.StoryManager.inst.CurrentSave && Story.StoryManager.inst.CurrentSave.LoadInt(FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables), modifier.GetInt(1, 0, modifierLoop.variables)) >= modifier.GetInt(2, 0, modifierLoop.variables);
             }),
-            new ModifierTrigger("storyLoadIntLesserDEVONLY", (modifier, reference, variables) =>
+            new ModifierTrigger("storyLoadIntLesserDEVONLY", (modifier, modifierLoop) =>
             {
-                return Story.StoryManager.inst.CurrentSave && Story.StoryManager.inst.CurrentSave.LoadInt(FormatStringVariables(modifier.GetValue(0, variables), variables), modifier.GetInt(1, 0, variables)) < modifier.GetInt(2, 0, variables);
+                return Story.StoryManager.inst.CurrentSave && Story.StoryManager.inst.CurrentSave.LoadInt(FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables), modifier.GetInt(1, 0, modifierLoop.variables)) < modifier.GetInt(2, 0, modifierLoop.variables);
             }),
-            new ModifierTrigger("storyLoadIntGreaterDEVONLY", (modifier, reference, variables) =>
+            new ModifierTrigger("storyLoadIntGreaterDEVONLY", (modifier, modifierLoop) =>
             {
-                return Story.StoryManager.inst.CurrentSave && Story.StoryManager.inst.CurrentSave.LoadInt(FormatStringVariables(modifier.GetValue(0, variables), variables), modifier.GetInt(1, 0, variables)) > modifier.GetInt(2, 0, variables);
+                return Story.StoryManager.inst.CurrentSave && Story.StoryManager.inst.CurrentSave.LoadInt(FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables), modifier.GetInt(1, 0, modifierLoop.variables)) > modifier.GetInt(2, 0, modifierLoop.variables);
             }),
-            new ModifierTrigger("storyLoadBoolDEVONLY", (modifier, reference, variables) =>
+            new ModifierTrigger("storyLoadBoolDEVONLY", (modifier, modifierLoop) =>
             {
-                return Story.StoryManager.inst.CurrentSave && Story.StoryManager.inst.CurrentSave.LoadBool(FormatStringVariables(modifier.GetValue(0, variables), variables), modifier.GetBool(1, false, variables));
+                return Story.StoryManager.inst.CurrentSave && Story.StoryManager.inst.CurrentSave.LoadBool(FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables), modifier.GetBool(1, false, modifierLoop.variables));
             }),
 
             #endregion
@@ -848,6 +851,9 @@ namespace BetterLegacy.Core.Helpers
 
         public static ModifierAction[] actions = new ModifierAction[]
         {
+            new ModifierAction(nameof(ModifierFunctions.forLoop), ModifierFunctions.forLoop),
+            new ModifierAction(nameof(ModifierFunctions.resetLoop), ModifierFunctions.resetLoop),
+
             #region Audio
 
             // pitch
@@ -1428,7 +1434,7 @@ namespace BetterLegacy.Core.Helpers
             #region Audio
 
             new ModifierInactive(nameof(ModifierFunctions.playSound),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
                     if (!modifier.constant || !modifier.TryGetResult(out AudioSource cache) || !cache)
                         return;
@@ -1436,7 +1442,7 @@ namespace BetterLegacy.Core.Helpers
                     cache.Pause();
                 }),
             new ModifierInactive(nameof(ModifierFunctions.playOnlineSound),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
                     if (!modifier.constant || !modifier.TryGetResult(out AudioSource cache) || !cache)
                         return;
@@ -1444,7 +1450,7 @@ namespace BetterLegacy.Core.Helpers
                     cache.Pause();
                 }),
             new ModifierInactive(nameof(ModifierFunctions.playDefaultSound),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
                     if (!modifier.constant || !modifier.TryGetResult(out AudioSource cache) || !cache)
                         return;
@@ -1452,7 +1458,7 @@ namespace BetterLegacy.Core.Helpers
                     cache.Pause();
                 }),
             new ModifierInactive(nameof(ModifierFunctions.loadSoundAsset),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
                     if (!modifier.constant || !modifier.TryGetResult(out AudioSource cache) || !cache)
                         return;
@@ -1465,11 +1471,11 @@ namespace BetterLegacy.Core.Helpers
             #region Component
 
             new ModifierInactive(nameof(ModifierFunctions.blur),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
-                    if (reference is BeatmapObject beatmapObject && beatmapObject.objectType != BeatmapObject.ObjectType.Empty &&
+                    if (modifierLoop.reference is BeatmapObject beatmapObject && beatmapObject.objectType != BeatmapObject.ObjectType.Empty &&
                         beatmapObject.runtimeObject is RTBeatmapObject runtimeObject && runtimeObject.visualObject.renderer && runtimeObject.visualObject is SolidObject solidObject &&
-                        modifier.GetBool(2, false, variables))
+                        modifier.GetBool(2, false, modifierLoop.variables))
                     {
                         runtimeObject.visualObject.renderer.material = LegacyResources.objectMaterial;
                         solidObject.material = runtimeObject.visualObject.renderer.material;
@@ -1478,11 +1484,11 @@ namespace BetterLegacy.Core.Helpers
                 }, ModifierCompatibility.BeatmapObjectCompatible
             ),
             new ModifierInactive(nameof(ModifierFunctions.blurOther),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
-                    if (reference is BeatmapObject beatmapObject && beatmapObject.objectType != BeatmapObject.ObjectType.Empty &&
+                    if (modifierLoop.reference is BeatmapObject beatmapObject && beatmapObject.objectType != BeatmapObject.ObjectType.Empty &&
                         beatmapObject.runtimeObject is RTBeatmapObject runtimeObject && runtimeObject.visualObject.renderer && runtimeObject.visualObject is SolidObject solidObject &&
-                        modifier.GetBool(2, false, variables))
+                        modifier.GetBool(2, false, modifierLoop.variables))
                     {
                         runtimeObject.visualObject.renderer.material = LegacyResources.objectMaterial;
                         solidObject.material = runtimeObject.visualObject.renderer.material;
@@ -1491,11 +1497,11 @@ namespace BetterLegacy.Core.Helpers
                 }, ModifierCompatibility.BeatmapObjectCompatible
             ),
             new ModifierInactive(nameof(ModifierFunctions.blurVariable),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
-                    if (reference is BeatmapObject beatmapObject && beatmapObject.objectType != BeatmapObject.ObjectType.Empty &&
+                    if (modifierLoop.reference is BeatmapObject beatmapObject && beatmapObject.objectType != BeatmapObject.ObjectType.Empty &&
                         beatmapObject.runtimeObject is RTBeatmapObject runtimeObject && runtimeObject.visualObject.renderer && runtimeObject.visualObject is SolidObject solidObject &&
-                        modifier.GetBool(1, false, variables))
+                        modifier.GetBool(1, false, modifierLoop.variables))
                     {
                         runtimeObject.visualObject.renderer.material = LegacyResources.objectMaterial;
                         solidObject.material = runtimeObject.visualObject.renderer.material;
@@ -1504,11 +1510,11 @@ namespace BetterLegacy.Core.Helpers
                 }, ModifierCompatibility.BeatmapObjectCompatible
             ),
             new ModifierInactive(nameof(ModifierFunctions.blurVariableOther),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
-                    if (reference is BeatmapObject beatmapObject && beatmapObject.objectType != BeatmapObject.ObjectType.Empty &&
+                    if (modifierLoop.reference is BeatmapObject beatmapObject && beatmapObject.objectType != BeatmapObject.ObjectType.Empty &&
                         beatmapObject.runtimeObject is RTBeatmapObject runtimeObject && runtimeObject.visualObject.renderer && runtimeObject.visualObject is SolidObject solidObject &&
-                        modifier.GetBool(2, false, variables))
+                        modifier.GetBool(2, false, modifierLoop.variables))
                     {
                         runtimeObject.visualObject.renderer.material = LegacyResources.objectMaterial;
                         solidObject.material = runtimeObject.visualObject.renderer.material;
@@ -1517,11 +1523,11 @@ namespace BetterLegacy.Core.Helpers
                 }, ModifierCompatibility.BeatmapObjectCompatible
             ),
             new ModifierInactive(nameof(ModifierFunctions.blurColored),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
-                    if (reference is BeatmapObject beatmapObject && beatmapObject.objectType != BeatmapObject.ObjectType.Empty &&
+                    if (modifierLoop.reference is BeatmapObject beatmapObject && beatmapObject.objectType != BeatmapObject.ObjectType.Empty &&
                         beatmapObject.runtimeObject is RTBeatmapObject runtimeObject && runtimeObject.visualObject.renderer && runtimeObject.visualObject is SolidObject solidObject &&
-                        modifier.GetBool(2, false, variables))
+                        modifier.GetBool(2, false, modifierLoop.variables))
                     {
                         runtimeObject.visualObject.renderer.material = LegacyResources.objectMaterial;
                         solidObject.material = runtimeObject.visualObject.renderer.material;
@@ -1530,11 +1536,11 @@ namespace BetterLegacy.Core.Helpers
                 }, ModifierCompatibility.BeatmapObjectCompatible
             ),
             new ModifierInactive(nameof(ModifierFunctions.blurColoredOther),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
-                    if (reference is BeatmapObject beatmapObject && beatmapObject.objectType != BeatmapObject.ObjectType.Empty &&
+                    if (modifierLoop.reference is BeatmapObject beatmapObject && beatmapObject.objectType != BeatmapObject.ObjectType.Empty &&
                         beatmapObject.runtimeObject is RTBeatmapObject runtimeObject && runtimeObject.visualObject.renderer && runtimeObject.visualObject is SolidObject solidObject &&
-                        modifier.GetBool(2, false, variables))
+                        modifier.GetBool(2, false, modifierLoop.variables))
                     {
                         runtimeObject.visualObject.renderer.material = LegacyResources.objectMaterial;
                         solidObject.material = runtimeObject.visualObject.renderer.material;
@@ -1543,7 +1549,7 @@ namespace BetterLegacy.Core.Helpers
                 }, ModifierCompatibility.BeatmapObjectCompatible
             ),
             new ModifierInactive(nameof(ModifierFunctions.particleSystem),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
                     if (modifier.Result is ParticleSystem particleSystem && particleSystem)
                     {
@@ -1553,7 +1559,7 @@ namespace BetterLegacy.Core.Helpers
                 }, ModifierCompatibility.BeatmapObjectCompatible
             ),
             new ModifierInactive(nameof(ModifierFunctions.particleSystemHex),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
                     if (modifier.Result is ParticleSystem particleSystem && particleSystem)
                     {
@@ -1563,16 +1569,16 @@ namespace BetterLegacy.Core.Helpers
                 }, ModifierCompatibility.BeatmapObjectCompatible
             ),
             new ModifierInactive(nameof(ModifierFunctions.trailRenderer),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
-                    if (reference is BeatmapObject beatmapObject && beatmapObject.trailRenderer)
+                    if (modifierLoop.reference is BeatmapObject beatmapObject && beatmapObject.trailRenderer)
                         beatmapObject.trailRenderer.emitting = false;
                 }, ModifierCompatibility.BeatmapObjectCompatible
             ),
             new ModifierInactive(nameof(ModifierFunctions.trailRendererHex),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
-                    if (reference is BeatmapObject beatmapObject && beatmapObject.trailRenderer)
+                    if (modifierLoop.reference is BeatmapObject beatmapObject && beatmapObject.trailRenderer)
                         beatmapObject.trailRenderer.emitting = false;
                 }, ModifierCompatibility.BeatmapObjectCompatible
             ),
@@ -1582,7 +1588,7 @@ namespace BetterLegacy.Core.Helpers
             #region Variables
             
             new ModifierInactive(nameof(ModifierFunctions.storeLocalVariables),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
                     modifier.Result = null;
                 }
@@ -1593,12 +1599,12 @@ namespace BetterLegacy.Core.Helpers
             #region Enable
 
             new ModifierInactive(nameof(ModifierFunctions.enableObject),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
-                    if (!modifier.GetBool(1, false, variables))
+                    if (!modifier.GetBool(1, false, modifierLoop.variables))
                         return;
 
-                    if (reference is not IPrefabable prefabable)
+                    if (modifierLoop.reference is not IPrefabable prefabable)
                         return;
 
                     if (prefabable.GetRuntimeObject() is ICustomActivatable activatable)
@@ -1606,9 +1612,9 @@ namespace BetterLegacy.Core.Helpers
                 }, ModifierCompatibility.BeatmapObjectCompatible.WithPAPlayer()
             ),
             new ModifierInactive(nameof(ModifierFunctions.enableObjectOther),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
-                    if (!modifier.GetBool(1, false, variables))
+                    if (!modifier.GetBool(1, false, modifierLoop.variables))
                     {
                         modifier.Result = default;
                         return;
@@ -1618,10 +1624,10 @@ namespace BetterLegacy.Core.Helpers
                         foreach (var other in cache.group)
                             SetObjectActive(other, false);
 
-                    //if (reference is not IPrefabable prefabable)
+                    //if (modifierLoop.reference is not IPrefabable prefabable)
                     //    return;
 
-                    //var prefabables = GameData.Current.FindPrefabablesWithTag(modifier, prefabable, modifier.GetValue(0, variables));
+                    //var prefabables = GameData.Current.FindPrefabablesWithTag(modifier, prefabable, modifier.GetValue(0, modifierLoop.variables));
 
                     //if (prefabables.IsEmpty())
                     //    return;
@@ -1636,18 +1642,18 @@ namespace BetterLegacy.Core.Helpers
                 }, ModifierCompatibility.BeatmapObjectCompatible
             ),
             new ModifierInactive(nameof(ModifierFunctions.enableObjectTree),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
                     if (modifier.GetValue(0) == "0")
                         modifier.SetValue(0, "False");
 
-                    if (!modifier.GetBool(1, false, variables))
+                    if (!modifier.GetBool(1, false, modifierLoop.variables))
                     {
                         modifier.Result = null;
                         return;
                     }
 
-                    if (reference is not BeatmapObject beatmapObject)
+                    if (modifierLoop.reference is not BeatmapObject beatmapObject)
                         return;
 
                     if (modifier.Result == null)
@@ -1662,15 +1668,15 @@ namespace BetterLegacy.Core.Helpers
                 }, ModifierCompatibility.BeatmapObjectCompatible
             ),
             new ModifierInactive(nameof(ModifierFunctions.enableObjectTreeOther),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
-                    if (!modifier.GetBool(2, false, variables))
+                    if (!modifier.GetBool(2, false, modifierLoop.variables))
                     {
                         modifier.Result = default;
                         return;
                     }
 
-                    if (reference is not IPrefabable prefabable)
+                    if (modifierLoop.reference is not IPrefabable prefabable)
                         return;
 
                     if (!modifier.TryGetResult(out List<BeatmapObject> list))
@@ -1684,12 +1690,12 @@ namespace BetterLegacy.Core.Helpers
             ),
 
             new ModifierInactive(nameof(ModifierFunctions.disableObject),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
-                    if (!modifier.GetBool(1, false, variables))
+                    if (!modifier.GetBool(1, false, modifierLoop.variables))
                         return;
 
-                    if (reference is not IPrefabable prefabable)
+                    if (modifierLoop.reference is not IPrefabable prefabable)
                         return;
 
                     if (prefabable.GetRuntimeObject() is ICustomActivatable activatable)
@@ -1697,15 +1703,15 @@ namespace BetterLegacy.Core.Helpers
                 }, ModifierCompatibility.BeatmapObjectCompatible
             ),
             new ModifierInactive(nameof(ModifierFunctions.disableObjectOther),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
-                    if (!modifier.GetBool(1, false, variables))
+                    if (!modifier.GetBool(1, false, modifierLoop.variables))
                         return;
 
-                    if (reference is not IPrefabable prefabable)
+                    if (modifierLoop.reference is not IPrefabable prefabable)
                         return;
 
-                    var prefabables = GameData.Current.FindPrefabablesWithTag(modifier, prefabable, modifier.GetValue(0, variables));
+                    var prefabables = GameData.Current.FindPrefabablesWithTag(modifier, prefabable, modifier.GetValue(0, modifierLoop.variables));
 
                     if (prefabables.IsEmpty())
                         return;
@@ -1720,7 +1726,7 @@ namespace BetterLegacy.Core.Helpers
                 }, ModifierCompatibility.BeatmapObjectCompatible
             ),
             new ModifierInactive(nameof(ModifierFunctions.disableObjectTree),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
                     if (modifier.GetValue(0) == "0")
                         modifier.SetValue(0, "False");
@@ -1731,7 +1737,7 @@ namespace BetterLegacy.Core.Helpers
                         return;
                     }
 
-                    if (reference is not BeatmapObject beatmapObject)
+                    if (modifierLoop.reference is not BeatmapObject beatmapObject)
                         return;
 
                     if (modifier.Result == null)
@@ -1746,7 +1752,7 @@ namespace BetterLegacy.Core.Helpers
                 }, ModifierCompatibility.BeatmapObjectCompatible
             ),
             new ModifierInactive(nameof(ModifierFunctions.disableObjectTreeOther),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
                     if (!modifier.GetBool(2, false))
                     {
@@ -1754,12 +1760,12 @@ namespace BetterLegacy.Core.Helpers
                         return;
                     }
 
-                    if (reference is not IPrefabable prefabable)
+                    if (modifierLoop.reference is not IPrefabable prefabable)
                         return;
 
                     if (modifier.Result == null)
                     {
-                        var beatmapObjects = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, variables));
+                        var beatmapObjects = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, modifierLoop.variables));
 
                         var resultList = new List<BeatmapObject>();
                         foreach (var bm in beatmapObjects)
@@ -1785,23 +1791,23 @@ namespace BetterLegacy.Core.Helpers
             #region Reactive
 
             new ModifierInactive(nameof(ModifierFunctions.reactivePosChain),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
-                    if (reference is IReactive reactive)
+                    if (modifierLoop.reference is IReactive reactive)
                         reactive.ReactivePositionOffset = Vector3.zero;
                 }
             ),
             new ModifierInactive(nameof(ModifierFunctions.reactiveScaChain),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
-                    if (reference is IReactive reactive)
+                    if (modifierLoop.reference is IReactive reactive)
                         reactive.ReactiveScaleOffset = Vector3.zero;
                 }
             ),
             new ModifierInactive(nameof(ModifierFunctions.reactiveRotChain),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
-                    if (reference is IReactive reactive)
+                    if (modifierLoop.reference is IReactive reactive)
                         reactive.ReactiveRotationOffset = 0f;
                 }
             ),
@@ -1811,13 +1817,13 @@ namespace BetterLegacy.Core.Helpers
             #region Color
 
             new ModifierInactive(nameof(ModifierFunctions.animateColorKF),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
                     modifier.Result = null;
                 }, ModifierCompatibility.BeatmapObjectCompatible.WithBackgroundObject()
             ),
             new ModifierInactive(nameof(ModifierFunctions.animateColorKFHex),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
                     modifier.Result = null;
                 }, ModifierCompatibility.BeatmapObjectCompatible.WithBackgroundObject()
@@ -1828,20 +1834,20 @@ namespace BetterLegacy.Core.Helpers
             #region Shape
 
             new ModifierInactive(nameof(ModifierFunctions.setText),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
-                    if (modifier.constant && reference is BeatmapObject beatmapObject && beatmapObject.ShapeType == ShapeType.Text && beatmapObject.runtimeObject && beatmapObject.runtimeObject.visualObject &&
+                    if (modifier.constant && modifierLoop.reference is BeatmapObject beatmapObject && beatmapObject.ShapeType == ShapeType.Text && beatmapObject.runtimeObject && beatmapObject.runtimeObject.visualObject &&
                         beatmapObject.runtimeObject.visualObject is TextObject textObject)
                         textObject.text = beatmapObject.text;
                 }, ModifierCompatibility.BeatmapObjectCompatible
             ),
             new ModifierInactive(nameof(ModifierFunctions.setTextOther),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
-                    if (reference is not IPrefabable prefabable)
+                    if (modifierLoop.reference is not IPrefabable prefabable)
                         return;
 
-                    var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, variables));
+                    var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, modifierLoop.variables));
 
                     if (modifier.constant && !list.IsEmpty())
                         foreach (var bm in list)
@@ -1851,7 +1857,7 @@ namespace BetterLegacy.Core.Helpers
                 }, ModifierCompatibility.BeatmapObjectCompatible
             ),
             new ModifierInactive(nameof(ModifierFunctions.textSequence),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
                     modifier.setTimer = false;
                 }, ModifierCompatibility.BeatmapObjectCompatible
@@ -1862,16 +1868,16 @@ namespace BetterLegacy.Core.Helpers
             #region Animation
 
             new ModifierInactive(nameof(ModifierFunctions.animateSignal),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
-                    if (modifier.constant || !modifier.GetBool(!modifier.Name.Contains("Other") ? 9 : 10, true, variables))
+                    if (modifier.constant || !modifier.GetBool(!modifier.Name.Contains("Other") ? 9 : 10, true, modifierLoop.variables))
                         return;
 
-                    if (reference is not IPrefabable prefabable)
+                    if (modifierLoop.reference is not IPrefabable prefabable)
                         return;
 
                     int groupIndex = !modifier.Name.Contains("Other") ? 7 : 8;
-                    var modifyables = GameData.Current.FindModifyables(modifier, prefabable, modifier.GetValue(groupIndex, variables));
+                    var modifyables = GameData.Current.FindModifyables(modifier, prefabable, modifier.GetValue(groupIndex, modifierLoop.variables));
 
                     foreach (var modifyable in modifyables)
                     {
@@ -1881,16 +1887,16 @@ namespace BetterLegacy.Core.Helpers
                 }
             ),
             new ModifierInactive(nameof(ModifierFunctions.animateSignalOther),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
-                    if (modifier.constant || !modifier.GetBool(!modifier.Name.Contains("Other") ? 9 : 10, true, variables))
+                    if (modifier.constant || !modifier.GetBool(!modifier.Name.Contains("Other") ? 9 : 10, true, modifierLoop.variables))
                         return;
 
-                    if (reference is not IPrefabable prefabable)
+                    if (modifierLoop.reference is not IPrefabable prefabable)
                         return;
 
                     int groupIndex = !modifier.Name.Contains("Other") ? 7 : 8;
-                    var modifyables = GameData.Current.FindModifyables(modifier, prefabable, modifier.GetValue(groupIndex, variables));
+                    var modifyables = GameData.Current.FindModifyables(modifier, prefabable, modifier.GetValue(groupIndex, modifierLoop.variables));
 
                     foreach (var modifyable in modifyables)
                     {
@@ -1900,49 +1906,49 @@ namespace BetterLegacy.Core.Helpers
                 }
             ),
             new ModifierInactive(nameof(ModifierFunctions.applyAnimation),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
                     modifier.Result = null;
                 }, ModifierCompatibility.BeatmapObjectCompatible
             ),
             new ModifierInactive(nameof(ModifierFunctions.applyAnimationFrom),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
                     modifier.Result = null;
                 }, ModifierCompatibility.BeatmapObjectCompatible
             ),
             new ModifierInactive(nameof(ModifierFunctions.applyAnimationTo),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
                     modifier.Result = null;
                 }, ModifierCompatibility.BeatmapObjectCompatible
             ),
             new ModifierInactive(nameof(ModifierFunctions.copyAxis),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
                     modifier.Result = null;
                 }
             ),
             new ModifierInactive(nameof(ModifierFunctions.copyAxisMath),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
                     modifier.Result = null;
                 }
             ),
             new ModifierInactive(nameof(ModifierFunctions.copyAxisGroup),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
                     modifier.Result = null;
                 }
             ),
             new ModifierInactive(nameof(ModifierFunctions.gravity),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
                     modifier.Result = null;
                 }
             ),
             new ModifierInactive(nameof(ModifierFunctions.gravityOther),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
                     modifier.Result = null;
                 }
@@ -1953,13 +1959,13 @@ namespace BetterLegacy.Core.Helpers
             #region Prefab
 
             new ModifierInactive(nameof(ModifierFunctions.spawnPrefab),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
                     // value 9 is permanent
 
-                    if (modifier.Result is PrefabObject prefabObject && !modifier.GetBool(9, false, variables))
+                    if (modifier.Result is PrefabObject prefabObject && !modifier.GetBool(9, false, modifierLoop.variables))
                     {
-                        RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
+                        RTLevelBase runtimeLevel = modifierLoop.reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : modifierLoop.reference.GetParentRuntime();
                         runtimeLevel?.UpdatePrefab(prefabObject, false);
 
                         GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
@@ -1969,13 +1975,13 @@ namespace BetterLegacy.Core.Helpers
                 }
             ),
             new ModifierInactive(nameof(ModifierFunctions.spawnPrefabOffset),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
                     // value 9 is permanent
 
-                    if (modifier.Result is PrefabObject prefabObject && !modifier.GetBool(9, false, variables))
+                    if (modifier.Result is PrefabObject prefabObject && !modifier.GetBool(9, false, modifierLoop.variables))
                     {
-                        RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
+                        RTLevelBase runtimeLevel = modifierLoop.reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : modifierLoop.reference.GetParentRuntime();
                         runtimeLevel?.UpdatePrefab(prefabObject, false);
 
                         GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
@@ -1985,13 +1991,13 @@ namespace BetterLegacy.Core.Helpers
                 }
             ),
             new ModifierInactive(nameof(ModifierFunctions.spawnPrefabOffsetOther),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
                     // value 9 is permanent
 
-                    if (modifier.Result is PrefabObject prefabObject && !modifier.GetBool(9, false, variables))
+                    if (modifier.Result is PrefabObject prefabObject && !modifier.GetBool(9, false, modifierLoop.variables))
                     {
-                        RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
+                        RTLevelBase runtimeLevel = modifierLoop.reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : modifierLoop.reference.GetParentRuntime();
                         runtimeLevel?.UpdatePrefab(prefabObject, false);
 
                         GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
@@ -2001,13 +2007,13 @@ namespace BetterLegacy.Core.Helpers
                 }
             ),
             new ModifierInactive(nameof(ModifierFunctions.spawnPrefabCopy),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
                     // value 5 is permanent
 
-                    if (modifier.Result is PrefabObject prefabObject && !modifier.GetBool(5, false, variables))
+                    if (modifier.Result is PrefabObject prefabObject && !modifier.GetBool(5, false, modifierLoop.variables))
                     {
-                        RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
+                        RTLevelBase runtimeLevel = modifierLoop.reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : modifierLoop.reference.GetParentRuntime();
                         runtimeLevel?.UpdatePrefab(prefabObject, false);
 
                         GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
@@ -2022,10 +2028,10 @@ namespace BetterLegacy.Core.Helpers
             #region Player Only
 
             new ModifierInactive(nameof(ModifierFunctions.setCustomObjectActive),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
-                    if (modifier.GetBool(2, true, variables) && reference is PAPlayer player && player.RuntimePlayer.customObjects.TryFind(x => x.id == modifier.GetValue(1, variables), out RTPlayer.RTCustomPlayerObject customObject))
-                        customObject.active = !modifier.GetBool(0, false, variables);
+                    if (modifier.GetBool(2, true, modifierLoop.variables) && modifierLoop.reference is PAPlayer player && player.RuntimePlayer.customObjects.TryFind(x => x.id == modifier.GetValue(1, modifierLoop.variables), out RTPlayer.RTCustomPlayerObject customObject))
+                        customObject.active = !modifier.GetBool(0, false, modifierLoop.variables);
                 }, ModifierCompatibility.PAPlayerCompatible),
 
             #endregion
@@ -2033,12 +2039,12 @@ namespace BetterLegacy.Core.Helpers
             #region Misc
 
             new ModifierInactive(nameof(ModifierFunctions.signalModifier),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
-                    if (reference is not IPrefabable prefabable)
+                    if (modifierLoop.reference is not IPrefabable prefabable)
                         return;
 
-                    var modifyables = GameData.Current.FindModifyables(modifier, prefabable, modifier.GetValue(1, variables));
+                    var modifyables = GameData.Current.FindModifyables(modifier, prefabable, modifier.GetValue(1, modifierLoop.variables));
 
                     foreach (var modifyable in modifyables)
                     {
@@ -2057,12 +2063,12 @@ namespace BetterLegacy.Core.Helpers
             #region Controls
 
             new ModifierInactive(nameof(ModifierFunctions.mouseOverSignalModifier),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
-                    if (reference is not IPrefabable prefabable)
+                    if (modifierLoop.reference is not IPrefabable prefabable)
                         return;
 
-                    var modifyables = GameData.Current.FindModifyables(modifier, prefabable, modifier.GetValue(1, variables));
+                    var modifyables = GameData.Current.FindModifyables(modifier, prefabable, modifier.GetValue(1, modifierLoop.variables));
 
                     foreach (var modifyable in modifyables)
                     {
@@ -2077,19 +2083,19 @@ namespace BetterLegacy.Core.Helpers
             #region Random
             
             new ModifierInactive(nameof(ModifierFunctions.randomEquals),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
                     modifier.Result = null;
                 }
             ),
             new ModifierInactive(nameof(ModifierFunctions.randomLesser),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
                     modifier.Result = null;
                 }
             ),
             new ModifierInactive(nameof(ModifierFunctions.randomGreater),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
                     modifier.Result = null;
                 }
@@ -2100,17 +2106,17 @@ namespace BetterLegacy.Core.Helpers
             #region Misc
             
             new ModifierInactive(nameof(ModifierFunctions.await),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
                     modifier.Result = default;
                 }),
             new ModifierInactive(nameof(ModifierFunctions.awaitCounter),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
                     modifier.Result = default;
                 }),
             new ModifierInactive(nameof(ModifierFunctions.objectSpawned),
-                (modifier, reference, variables) =>
+                (modifier, modifierLoop) =>
                 {
                     modifier.Result = null;
                 }, ModifierCompatibility.BeatmapObjectCompatible
@@ -2739,96 +2745,161 @@ namespace BetterLegacy.Core.Helpers
 
     public static class ModifierFunctions
     {
-        public static bool breakModifier(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables) => true;
-        public static bool disableModifier(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables) => false;
-        
+        public static bool breakModifier(Modifier modifier, ModifierLoop modifierLoop) => true;
+        public static bool disableModifier(Modifier modifier, ModifierLoop modifierLoop) => false;
+
+        public static void forLoop(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (modifierLoop.reference is not IModifyable modifyable)
+                return;
+
+            var modifiers = modifyable.Modifiers;
+
+            var variable = ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables);
+            var startIndex = modifier.GetInt(1, 0, modifierLoop.variables);
+            var endCount = modifier.GetInt(2, 0, modifierLoop.variables);
+            var increment = modifier.GetInt(3, 1, modifierLoop.variables);
+
+            var distance = -(startIndex - endCount);
+            var allowed = increment != 0 && endCount > startIndex && (distance < 0 ? increment < 0 : increment > 0);
+
+            var endIndex = modifiers.FindLastIndex(x => x.Name == "return"); // return is treated as a break of the for loop
+            endIndex = endIndex < 0 ? modifiers.Count : endIndex + 1;
+
+            try
+            {
+                // if result is false, then skip the for loop sequence.
+                if (allowed && !(modifier.active || !modifierLoop.state.result || modifier.triggerCount > 0 && modifier.runCount >= modifier.triggerCount))
+                {
+                    var selectModifiers = modifiers.GetIndexRange(modifierLoop.state.index + 1, endIndex);
+
+                    for (int i = startIndex; i < endCount; i += increment)
+                    {
+                        modifierLoop.variables[variable] = i.ToString();
+                        ModifiersHelper.RunModifiersLoop(selectModifiers, new ModifierLoop(modifierLoop.reference, modifierLoop.variables), i, endCount);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Had an exception with the forLoop modifier.\n" +
+                    $"Index: {modifierLoop.state.index}\n" +
+                    $"End Index: {endIndex}\nException: {ex}");
+            }
+
+            modifierLoop.state.index = endIndex; // exit for loop.
+        }
+
+        public static void resetLoop(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (modifierLoop.reference is not IModifyable modifyable)
+                return;
+
+            var runCount = modifier.runCount;
+            if (!modifier.running)
+                runCount++;
+
+            modifier.running = true;
+
+            if (!(modifier.active || !modifierLoop.state.result || modifier.triggerCount > 0 && runCount >= modifier.triggerCount))
+                modifyable.Modifiers.ForLoop(modifier =>
+                {
+                    if (modifier.compatibility.StoryOnly && !CoreHelper.InStory || !modifier.active && !modifier.running)
+                        return;
+
+                    modifier.active = false;
+                    modifier.running = false;
+                    modifier.runCount = 0;
+                    if (modifier.Inactive == null && ModifiersHelper.TryGetInactive(modifier, modifierLoop.reference, out ModifierInactive action))
+                        modifier.Inactive = action.function;
+                    modifier.RunInactive(modifier, modifierLoop);
+                });
+
+            modifier.runCount = runCount;
+        }
+
         #region Variable
 
-        // local variables
-        public static void getToggle(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        // local ariables
+        public static void getToggle(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var value = modifier.GetBool(1, false, variables);
+            var value = modifier.GetBool(1, false, modifierLoop.variables);
 
-            if (modifier.GetBool(2, false, variables))
+            if (modifier.GetBool(2, false, modifierLoop.variables))
                 value = !value;
 
-            variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = value.ToString();
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = value.ToString();
         }
 
-        public static void getFloat(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
-        {
-            variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = modifier.GetFloat(1, 0f, variables).ToString();
-        }
-        
         public static void getFloat(Modifier modifier, ModifierLoop modifierLoop)
         {
             modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = modifier.GetFloat(1, 0f, modifierLoop.variables).ToString();
         }
-
-        public static void getInt(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        
+        public static void getInt(Modifier modifier, ModifierLoop modifierLoop)
         {
-            variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = modifier.GetInt(1, 0, variables).ToString();
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = modifier.GetInt(1, 0, modifierLoop.variables).ToString();
         }
 
-        public static void getString(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getString(Modifier modifier, ModifierLoop modifierLoop)
         {
-            variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = ModifiersHelper.FormatStringVariables(modifier.GetValue(1, variables), variables);
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables);
         }
 
-        public static void getStringLower(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getStringLower(Modifier modifier, ModifierLoop modifierLoop)
         {
-            variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = ModifiersHelper.FormatStringVariables(modifier.GetValue(1, variables), variables).ToLower();
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables).ToLower();
         }
 
-        public static void getStringUpper(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getStringUpper(Modifier modifier, ModifierLoop modifierLoop)
         {
-            variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = ModifiersHelper.FormatStringVariables(modifier.GetValue(1, variables), variables).ToUpper();
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables).ToUpper();
         }
 
-        public static void getColor(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getColor(Modifier modifier, ModifierLoop modifierLoop)
         {
-            variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = modifier.GetInt(1, 0, variables).ToString();
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = modifier.GetInt(1, 0, modifierLoop.variables).ToString();
         }
 
-        public static void getEnum(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getEnum(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var index = (modifier.GetInt(1, 0, variables) * 2) + 4;
+            var index = (modifier.GetInt(1, 0, modifierLoop.variables) * 2) + 4;
             if (modifier.values.Count > index)
-                variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = ModifiersHelper.FormatStringVariables(modifier.GetValue(index, variables), variables);
+                modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = ModifiersHelper.FormatStringVariables(modifier.GetValue(index, modifierLoop.variables), modifierLoop.variables);
         }
 
-        public static void getTag(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getTag(Modifier modifier, ModifierLoop modifierLoop)
         {
-            variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = reference is IModifyable modifyable && modifyable.Tags.TryGetAt(modifier.GetInt(1, 0, variables), out string tag) ? tag : string.Empty;
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = modifierLoop.reference is IModifyable modifyable && modifyable.Tags.TryGetAt(modifier.GetInt(1, 0, modifierLoop.variables), out string tag) ? tag : string.Empty;
         }
 
-        public static void getPitch(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getPitch(Modifier modifier, ModifierLoop modifierLoop)
         {
-            variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = AudioManager.inst.CurrentAudioSource.pitch.ToString();
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = AudioManager.inst.CurrentAudioSource.pitch.ToString();
         }
 
-        public static void getMusicTime(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getMusicTime(Modifier modifier, ModifierLoop modifierLoop)
         {
-            variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = AudioManager.inst.CurrentAudioSource.time.ToString();
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = AudioManager.inst.CurrentAudioSource.time.ToString();
         }
 
-        public static void getAxis(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getAxis(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var prefabable = reference.AsPrefabable();
+            var prefabable = modifierLoop.reference.AsPrefabable();
             if (prefabable == null)
                 return;
 
-            int fromType = modifier.GetInt(1, 0, variables);
-            int fromAxis = modifier.GetInt(2, 0, variables);
+            int fromType = modifier.GetInt(1, 0, modifierLoop.variables);
+            int fromAxis = modifier.GetInt(2, 0, modifierLoop.variables);
 
-            float delay = modifier.GetFloat(3, 0f, variables);
-            float multiply = modifier.GetFloat(4, 0f, variables);
-            float offset = modifier.GetFloat(5, 0f, variables);
-            float min = modifier.GetFloat(6, -9999f, variables);
-            float max = modifier.GetFloat(7, 9999f, variables);
-            bool useVisual = modifier.GetBool(8, false, variables);
-            float loop = modifier.GetFloat(9, 9999f, variables);
-            var tag = ModifiersHelper.FormatStringVariables(modifier.GetValue(10, variables), variables);
+            float delay = modifier.GetFloat(3, 0f, modifierLoop.variables);
+            float multiply = modifier.GetFloat(4, 0f, modifierLoop.variables);
+            float offset = modifier.GetFloat(5, 0f, modifierLoop.variables);
+            float min = modifier.GetFloat(6, -9999f, modifierLoop.variables);
+            float max = modifier.GetFloat(7, 9999f, modifierLoop.variables);
+            bool useVisual = modifier.GetBool(8, false, modifierLoop.variables);
+            float loop = modifier.GetFloat(9, 9999f, modifierLoop.variables);
+            var tag = ModifiersHelper.FormatStringVariables(modifier.GetValue(10, modifierLoop.variables), modifierLoop.variables);
 
             var cache = modifier.GetResultOrDefault(() => GroupBeatmapObjectCache.Get(modifier, prefabable, tag));
             if (cache.tag != tag)
@@ -2848,25 +2919,25 @@ namespace BetterLegacy.Core.Helpers
             if (fromType < 0 || fromType > 2)
                 return;
 
-            variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = ModifiersHelper.GetAnimation(beatmapObject, fromType, fromAxis, min, max, offset, multiply, delay, loop, useVisual).ToString();
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = ModifiersHelper.GetAnimation(beatmapObject, fromType, fromAxis, min, max, offset, multiply, delay, loop, useVisual).ToString();
         }
 
-        public static void getAxisMath(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getAxisMath(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var prefabable = reference.AsPrefabable();
+            var prefabable = modifierLoop.reference.AsPrefabable();
             if (prefabable == null)
                 return;
 
-            if (reference is not IEvaluatable evaluatable)
+            if (modifierLoop.reference is not IEvaluatable evaluatable)
                 return;
 
-            int fromType = modifier.GetInt(1, 0, variables);
-            int fromAxis = modifier.GetInt(2, 0, variables);
+            int fromType = modifier.GetInt(1, 0, modifierLoop.variables);
+            int fromAxis = modifier.GetInt(2, 0, modifierLoop.variables);
 
-            float delay = modifier.GetFloat(3, 0f, variables);
-            bool useVisual = modifier.GetBool(4, false, variables);
-            var tag = ModifiersHelper.FormatStringVariables(modifier.GetValue(5, variables), variables);
-            var evaluation = ModifiersHelper.FormatStringVariables(modifier.GetValue(6, variables), variables);
+            float delay = modifier.GetFloat(3, 0f, modifierLoop.variables);
+            bool useVisual = modifier.GetBool(4, false, modifierLoop.variables);
+            var tag = ModifiersHelper.FormatStringVariables(modifier.GetValue(5, modifierLoop.variables), modifierLoop.variables);
+            var evaluation = ModifiersHelper.FormatStringVariables(modifier.GetValue(6, modifierLoop.variables), modifierLoop.variables);
 
             var cache = modifier.GetResultOrDefault(() => GroupBeatmapObjectCache.Get(modifier, prefabable, tag));
             if (cache.tag != tag)
@@ -2887,49 +2958,49 @@ namespace BetterLegacy.Core.Helpers
                 return;
 
             var numberVariables = evaluatable.GetObjectVariables();
-            ModifiersHelper.SetVariables(variables, numberVariables);
+            ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
 
             numberVariables["axis"] = ModifiersHelper.GetAnimation(beatmapObject, fromType, fromAxis, delay, useVisual);
             beatmapObject.SetOtherObjectVariables(numberVariables);
 
             float value = RTMath.Parse(evaluation, numberVariables);
 
-            variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = value.ToString();
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = value.ToString();
         }
 
-        public static void getMath(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getMath(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IEvaluatable evaluatable)
+            if (modifierLoop.reference is not IEvaluatable evaluatable)
             {
                 var numberVariables = new Dictionary<string, float>();
-                ModifiersHelper.SetVariables(variables, numberVariables);
+                ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
 
-                variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = RTMath.Parse(ModifiersHelper.FormatStringVariables(modifier.GetValue(1, variables), variables), numberVariables).ToString();
+                modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = RTMath.Parse(ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables), numberVariables).ToString();
                 return;
             }
 
             try
             {
                 var numberVariables = evaluatable.GetObjectVariables();
-                ModifiersHelper.SetVariables(variables, numberVariables);
+                ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
 
-                variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = RTMath.Parse(ModifiersHelper.FormatStringVariables(modifier.GetValue(1, variables), variables), numberVariables, evaluatable.GetObjectFunctions()).ToString();
+                modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = RTMath.Parse(ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables), numberVariables, evaluatable.GetObjectFunctions()).ToString();
             }
             catch { }
         }
 
-        public static void getNearestPlayer(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getNearestPlayer(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not ITransformable transformable)
+            if (modifierLoop.reference is not ITransformable transformable)
                 return;
 
             var pos = transformable.GetFullPosition();
-            variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = PlayerManager.GetClosestPlayerIndex(pos).ToString();
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = PlayerManager.GetClosestPlayerIndex(pos).ToString();
         }
 
-        public static void getCollidingPlayers(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getCollidingPlayers(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
             var runtimeObject = beatmapObject.runtimeObject;
@@ -2941,168 +3012,168 @@ namespace BetterLegacy.Core.Helpers
                 for (int i = 0; i < players.Count; i++)
                 {
                     var player = players[i];
-                    variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables) + "_" + i] = (player.RuntimePlayer && player.RuntimePlayer.CurrentCollider && player.RuntimePlayer.CurrentCollider.IsTouching(collider)).ToString();
+                    modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables) + "_" + i] = (player.RuntimePlayer && player.RuntimePlayer.CurrentCollider && player.RuntimePlayer.CurrentCollider.IsTouching(collider)).ToString();
                 }
             }
         }
 
-        public static void getPlayerHealth(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getPlayerHealth(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (PlayerManager.Players.TryGetAt(modifier.GetInt(1, 0, variables), out PAPlayer player))
-                variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = player.Health.ToString();
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(1, 0, modifierLoop.variables), out PAPlayer player))
+                modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = player.Health.ToString();
         }
 
-        public static void getPlayerLives(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getPlayerLives(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (PlayerManager.Players.TryGetAt(modifier.GetInt(1, 0, variables), out PAPlayer player))
-                variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = player.lives.ToString();
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(1, 0, modifierLoop.variables), out PAPlayer player))
+                modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = player.lives.ToString();
         }
 
-        public static void getPlayerPosX(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getPlayerPosX(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (PlayerManager.Players.TryGetAt(modifier.GetInt(1, 0, variables), out PAPlayer player) && player.RuntimePlayer && player.RuntimePlayer.rb)
-                variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = player.RuntimePlayer.rb.transform.position.x.ToString();
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(1, 0, modifierLoop.variables), out PAPlayer player) && player.RuntimePlayer && player.RuntimePlayer.rb)
+                modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = player.RuntimePlayer.rb.transform.position.x.ToString();
         }
 
-        public static void getPlayerPosY(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getPlayerPosY(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (PlayerManager.Players.TryGetAt(modifier.GetInt(1, 0, variables), out PAPlayer player) && player.RuntimePlayer && player.RuntimePlayer.rb)
-                variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = player.RuntimePlayer.rb.transform.position.y.ToString();
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(1, 0, modifierLoop.variables), out PAPlayer player) && player.RuntimePlayer && player.RuntimePlayer.rb)
+                modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = player.RuntimePlayer.rb.transform.position.y.ToString();
         }
 
-        public static void getPlayerRot(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getPlayerRot(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (PlayerManager.Players.TryGetAt(modifier.GetInt(1, 0, variables), out PAPlayer player) && player.RuntimePlayer && player.RuntimePlayer.rb)
-                variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = player.RuntimePlayer.rb.transform.eulerAngles.z.ToString();
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(1, 0, modifierLoop.variables), out PAPlayer player) && player.RuntimePlayer && player.RuntimePlayer.rb)
+                modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = player.RuntimePlayer.rb.transform.eulerAngles.z.ToString();
         }
 
-        public static void getEventValue(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getEventValue(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (!RTLevel.Current.eventEngine)
                 return;
 
-            float multiply = modifier.GetFloat(4, 0f, variables);
-            float offset = modifier.GetFloat(5, 0f, variables);
-            float min = modifier.GetFloat(6, -9999f, variables);
-            float max = modifier.GetFloat(7, 9999f, variables);
-            float loop = modifier.GetFloat(8, 9999f, variables);
+            float multiply = modifier.GetFloat(4, 0f, modifierLoop.variables);
+            float offset = modifier.GetFloat(5, 0f, modifierLoop.variables);
+            float min = modifier.GetFloat(6, -9999f, modifierLoop.variables);
+            float max = modifier.GetFloat(7, 9999f, modifierLoop.variables);
+            float loop = modifier.GetFloat(8, 9999f, modifierLoop.variables);
 
-            var value = RTLevel.Current.eventEngine.Interpolate(modifier.GetInt(1, 0, variables), modifier.GetInt(2, 0, variables), RTLevel.Current.CurrentTime - modifier.GetFloat(3, 0f, variables));
+            var value = RTLevel.Current.eventEngine.Interpolate(modifier.GetInt(1, 0, modifierLoop.variables), modifier.GetInt(2, 0, modifierLoop.variables), RTLevel.Current.CurrentTime - modifier.GetFloat(3, 0f, modifierLoop.variables));
 
             value = Mathf.Clamp((value - offset) * multiply % loop, min, max);
 
-            variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = value.ToString();
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = value.ToString();
         }
 
-        public static void getSample(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getSample(Modifier modifier, ModifierLoop modifierLoop)
         {
-            variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = RTLevel.Current.GetSample(modifier.GetInt(1, 0, variables), modifier.GetFloat(2, 1f, variables)).ToString();
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = RTLevel.Current.GetSample(modifier.GetInt(1, 0, modifierLoop.variables), modifier.GetFloat(2, 1f, modifierLoop.variables)).ToString();
         }
 
-        public static void getText(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getText(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
-            var useVisual = modifier.GetBool(1, false, variables);
+            var useVisual = modifier.GetBool(1, false, modifierLoop.variables);
             if (useVisual && beatmapObject.runtimeObject && beatmapObject.runtimeObject.visualObject is TextObject textObject)
-                variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = textObject.GetText();
+                modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = textObject.GetText();
             else
-                variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = beatmapObject.text;
+                modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = beatmapObject.text;
         }
 
-        public static void getTextOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getTextOther(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IPrefabable prefabable)
+            if (modifierLoop.reference is not IPrefabable prefabable)
                 return;
 
-            if (!GameData.Current.TryFindObjectWithTag(modifier, prefabable, ModifiersHelper.FormatStringVariables(modifier.GetValue(2, variables), variables), out BeatmapObject beatmapObject))
+            if (!GameData.Current.TryFindObjectWithTag(modifier, prefabable, ModifiersHelper.FormatStringVariables(modifier.GetValue(2, modifierLoop.variables), modifierLoop.variables), out BeatmapObject beatmapObject))
                 return;
 
-            var useVisual = modifier.GetBool(1, false, variables);
+            var useVisual = modifier.GetBool(1, false, modifierLoop.variables);
             if (useVisual && beatmapObject.runtimeObject && beatmapObject.runtimeObject.visualObject is TextObject textObject)
-                variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = textObject.GetText();
+                modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = textObject.GetText();
             else
-                variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = beatmapObject.text;
+                modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = beatmapObject.text;
         }
 
-        public static void getCurrentKey(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getCurrentKey(Modifier modifier, ModifierLoop modifierLoop)
         {
-            variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = CoreHelper.GetKeyCodeDown().ToString();
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = CoreHelper.GetKeyCodeDown().ToString();
         }
 
-        public static void getColorSlotHexCode(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getColorSlotHexCode(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var color = ThemeManager.inst.Current.GetObjColor(modifier.GetInt(1, 0, variables));
-            color = RTColors.FadeColor(color, modifier.GetFloat(2, 1f, variables));
-            color = RTColors.ChangeColorHSV(color, modifier.GetFloat(3, 0f, variables), modifier.GetFloat(4, 0f, variables), modifier.GetFloat(5, 0f, variables));
+            var color = ThemeManager.inst.Current.GetObjColor(modifier.GetInt(1, 0, modifierLoop.variables));
+            color = RTColors.FadeColor(color, modifier.GetFloat(2, 1f, modifierLoop.variables));
+            color = RTColors.ChangeColorHSV(color, modifier.GetFloat(3, 0f, modifierLoop.variables), modifier.GetFloat(4, 0f, modifierLoop.variables), modifier.GetFloat(5, 0f, modifierLoop.variables));
 
-            variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = RTColors.ColorToHexOptional(color);
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = RTColors.ColorToHexOptional(color);
         }
 
-        public static void getFloatFromHexCode(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getFloatFromHexCode(Modifier modifier, ModifierLoop modifierLoop)
         {
-            variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = RTColors.HexToFloat(ModifiersHelper.FormatStringVariables(modifier.GetValue(1, variables), variables)).ToString();
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = RTColors.HexToFloat(ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables)).ToString();
         }
 
-        public static void getHexCodeFromFloat(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getHexCodeFromFloat(Modifier modifier, ModifierLoop modifierLoop)
         {
-            variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = RTColors.FloatToHex(modifier.GetFloat(1, 1f, variables));
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = RTColors.FloatToHex(modifier.GetFloat(1, 1f, modifierLoop.variables));
         }
 
-        public static void getJSONString(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getJSONString(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (!RTFile.TryReadFromFile(ModifiersHelper.GetSaveFile(ModifiersHelper.FormatStringVariables(modifier.GetValue(1, variables), variables)), out string json))
+            if (!RTFile.TryReadFromFile(ModifiersHelper.GetSaveFile(ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables)), out string json))
                 return;
 
             var jn = JSON.Parse(json);
 
-            var fjn = jn[ModifiersHelper.FormatStringVariables(modifier.GetValue(2, variables), variables)][ModifiersHelper.FormatStringVariables(modifier.GetValue(03, variables), variables)]["string"];
+            var fjn = jn[ModifiersHelper.FormatStringVariables(modifier.GetValue(2, modifierLoop.variables), modifierLoop.variables)][ModifiersHelper.FormatStringVariables(modifier.GetValue(03, modifierLoop.variables), modifierLoop.variables)]["string"];
 
-            variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = fjn;
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = fjn;
         }
 
-        public static void getJSONFloat(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getJSONFloat(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (!RTFile.TryReadFromFile(ModifiersHelper.GetSaveFile(ModifiersHelper.FormatStringVariables(modifier.GetValue(1, variables), variables)), out string json))
+            if (!RTFile.TryReadFromFile(ModifiersHelper.GetSaveFile(ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables)), out string json))
                 return;
 
             var jn = JSON.Parse(json);
 
-            var fjn = jn[ModifiersHelper.FormatStringVariables(modifier.GetValue(2, variables), variables)][ModifiersHelper.FormatStringVariables(modifier.GetValue(3, variables), variables)]["float"];
+            var fjn = jn[ModifiersHelper.FormatStringVariables(modifier.GetValue(2, modifierLoop.variables), modifierLoop.variables)][ModifiersHelper.FormatStringVariables(modifier.GetValue(3, modifierLoop.variables), modifierLoop.variables)]["float"];
 
-            variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = fjn;
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = fjn;
         }
 
-        public static void getJSON(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getJSON(Modifier modifier, ModifierLoop modifierLoop)
         {
             try
             {
-                var jn = JSON.Parse(ModifiersHelper.FormatStringVariables(modifier.GetValue(1, variables), variables));
-                var json1 = ModifiersHelper.FormatStringVariables(modifier.GetValue(2, variables), variables);
+                var jn = JSON.Parse(ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables));
+                var json1 = ModifiersHelper.FormatStringVariables(modifier.GetValue(2, modifierLoop.variables), modifierLoop.variables);
                 if (!string.IsNullOrEmpty(json1))
                     jn = jn[json1];
 
-                variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = jn;
+                modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = jn;
             }
             catch { }
         }
 
-        public static void getSubString(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getSubString(Modifier modifier, ModifierLoop modifierLoop)
         {
             try
             {
-                var str = ModifiersHelper.FormatStringVariables(modifier.GetValue(1, variables), variables);
-                var subString = str.Substring(Mathf.Clamp(modifier.GetInt(2, 0, variables), 0, str.Length), Mathf.Clamp(modifier.GetInt(3, 0, variables), 0, str.Length));
-                variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = subString;
+                var str = ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables);
+                var subString = str.Substring(Mathf.Clamp(modifier.GetInt(2, 0, modifierLoop.variables), 0, str.Length), Mathf.Clamp(modifier.GetInt(3, 0, modifierLoop.variables), 0, str.Length));
+                modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = subString;
             }
             catch { }
         }
 
-        public static void getSplitString(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getSplitString(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var str = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, variables), variables);
-            var ch = modifier.GetValue(1, variables);
+            var str = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables);
+            var ch = modifier.GetValue(1, modifierLoop.variables);
 
             if (string.IsNullOrEmpty(str) || string.IsNullOrEmpty(ch))
                 return;
@@ -3113,55 +3184,55 @@ namespace BetterLegacy.Core.Helpers
                 var index = i + 2;
                 if (modifier.values.InRange(index))
                 {
-                    var s = ModifiersHelper.FormatStringVariables(modifier.GetValue(index), variables);
+                    var s = ModifiersHelper.FormatStringVariables(modifier.GetValue(index), modifierLoop.variables);
                     if (!string.IsNullOrEmpty(s))
-                        variables[s] = split[i];
+                        modifierLoop.variables[s] = split[i];
                 }
             }
         }
 
-        public static void getSplitStringAt(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getSplitStringAt(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var str = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, variables), variables);
-            var ch = modifier.GetValue(1, variables);
+            var str = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables);
+            var ch = modifier.GetValue(1, modifierLoop.variables);
 
             if (string.IsNullOrEmpty(str) || string.IsNullOrEmpty(ch))
                 return;
 
             var split = str.Split(ch[0]);
-            var s = ModifiersHelper.FormatStringVariables(modifier.GetValue(2), variables);
+            var s = ModifiersHelper.FormatStringVariables(modifier.GetValue(2), modifierLoop.variables);
             if (!string.IsNullOrEmpty(s))
-                variables[s] = split.GetAt(modifier.GetInt(3, 0, variables));
+                modifierLoop.variables[s] = split.GetAt(modifier.GetInt(3, 0, modifierLoop.variables));
         }
 
-        public static void getSplitStringCount(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getSplitStringCount(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var str = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, variables), variables);
-            var ch = modifier.GetValue(1, variables);
+            var str = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables);
+            var ch = modifier.GetValue(1, modifierLoop.variables);
 
             if (string.IsNullOrEmpty(str) || string.IsNullOrEmpty(ch))
                 return;
 
             var split = str.Split(ch[0]);
-            var s = ModifiersHelper.FormatStringVariables(modifier.GetValue(2), variables);
+            var s = ModifiersHelper.FormatStringVariables(modifier.GetValue(2), modifierLoop.variables);
             if (!string.IsNullOrEmpty(s))
-                variables[s] = split.Length.ToString();
+                modifierLoop.variables[s] = split.Length.ToString();
         }
 
-        public static void getStringLength(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getStringLength(Modifier modifier, ModifierLoop modifierLoop)
         {
-            variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = ModifiersHelper.FormatStringVariables(modifier.GetValue(1, variables), variables).Length.ToString();
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables).Length.ToString();
         }
 
-        public static void getParsedString(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getParsedString(Modifier modifier, ModifierLoop modifierLoop)
         {
-            variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = RTString.ParseText(ModifiersHelper.FormatStringVariables(modifier.GetValue(1, variables), variables));
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = RTString.ParseText(ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables));
         }
 
-        public static void getRegex(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getRegex(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var regex = new Regex(ModifiersHelper.FormatStringVariables(modifier.GetValue(0, variables), variables));
-            var match = regex.Match(ModifiersHelper.FormatStringVariables(modifier.GetValue(1, variables), variables));
+            var regex = new Regex(ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables));
+            var match = regex.Match(ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables));
 
             if (!match.Success)
                 return;
@@ -3170,31 +3241,31 @@ namespace BetterLegacy.Core.Helpers
             {
                 var index = i + 2;
                 if (modifier.values.InRange(index))
-                    variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(index), variables)] = match.Groups[i].ToString();
+                    modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(index), modifierLoop.variables)] = match.Groups[i].ToString();
             }
         }
 
-        public static void getFormatVariable(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getFormatVariable(Modifier modifier, ModifierLoop modifierLoop)
         {
             try
             {
                 object[] args = new object[modifier.values.Count - 2];
                 for (int i = 2; i < modifier.values.Count; i++)
-                    args[i - 2] = ModifiersHelper.FormatStringVariables(modifier.GetValue(i), variables);
+                    args[i - 2] = ModifiersHelper.FormatStringVariables(modifier.GetValue(i), modifierLoop.variables);
 
-                variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = string.Format(modifier.GetValue(1, variables), args);
+                modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = string.Format(modifier.GetValue(1, modifierLoop.variables), args);
             }
             catch { }
         }
 
-        public static void getComparison(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getComparison(Modifier modifier, ModifierLoop modifierLoop)
         {
-            variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = (ModifiersHelper.FormatStringVariables(modifier.GetValue(1, variables), variables) == ModifiersHelper.FormatStringVariables(modifier.GetValue(2, variables), variables)).ToString();
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = (ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables) == ModifiersHelper.FormatStringVariables(modifier.GetValue(2, modifierLoop.variables), modifierLoop.variables)).ToString();
         }
 
-        public static void getComparisonMath(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getComparisonMath(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IEvaluatable evaluatable)
+            if (modifierLoop.reference is not IEvaluatable evaluatable)
                 return;
 
             try
@@ -3202,164 +3273,164 @@ namespace BetterLegacy.Core.Helpers
                 var numberVariables = evaluatable.GetObjectVariables();
                 var functions = evaluatable.GetObjectFunctions();
 
-                variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = (RTMath.Parse(ModifiersHelper.FormatStringVariables(modifier.GetValue(1, variables), variables), numberVariables, functions) == RTMath.Parse(ModifiersHelper.FormatStringVariables(modifier.GetValue(2, variables), variables), numberVariables, functions)).ToString();
+                modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = (RTMath.Parse(ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables), numberVariables, functions) == RTMath.Parse(ModifiersHelper.FormatStringVariables(modifier.GetValue(2, modifierLoop.variables), modifierLoop.variables), numberVariables, functions)).ToString();
             }
             catch { }
         }
 
-        public static void getModifiedColor(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getModifiedColor(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var color = RTColors.HexToColor(ModifiersHelper.FormatStringVariables(modifier.GetValue(1, variables), variables));
+            var color = RTColors.HexToColor(ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables));
 
-            variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = RTColors.ColorToHexOptional(RTColors.FadeColor(RTColors.ChangeColorHSV(color,
-                    modifier.GetFloat(3, 0f, variables),
-                    modifier.GetFloat(4, 0f, variables),
-                    modifier.GetFloat(5, 0f, variables)), modifier.GetFloat(2, 1f, variables)));
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = RTColors.ColorToHexOptional(RTColors.FadeColor(RTColors.ChangeColorHSV(color,
+                    modifier.GetFloat(3, 0f, modifierLoop.variables),
+                    modifier.GetFloat(4, 0f, modifierLoop.variables),
+                    modifier.GetFloat(5, 0f, modifierLoop.variables)), modifier.GetFloat(2, 1f, modifierLoop.variables)));
         }
 
-        public static void getMixedColors(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getMixedColors(Modifier modifier, ModifierLoop modifierLoop)
         {
             var colors = new List<Color>();
             for (int i = 1; i < modifier.values.Count; i++)
-                colors.Add(RTColors.HexToColor(ModifiersHelper.FormatStringVariables(modifier.GetValue(1, variables), variables)));
+                colors.Add(RTColors.HexToColor(ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables)));
 
-            variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = RTColors.MixColors(colors).ToString();
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = RTColors.MixColors(colors).ToString();
         }
 
-        public static void getLerpColor(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getLerpColor(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var a = RTColors.HexToColor(ModifiersHelper.FormatStringVariables(modifier.GetValue(1, variables), variables));
-            var b = RTColors.HexToColor(ModifiersHelper.FormatStringVariables(modifier.GetValue(2, variables), variables));
-            variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = RTColors.ColorToHexOptional(RTMath.Lerp(a, b, modifier.GetFloat(3, 1f, variables)));
+            var a = RTColors.HexToColor(ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables));
+            var b = RTColors.HexToColor(ModifiersHelper.FormatStringVariables(modifier.GetValue(2, modifierLoop.variables), modifierLoop.variables));
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = RTColors.ColorToHexOptional(RTMath.Lerp(a, b, modifier.GetFloat(3, 1f, modifierLoop.variables)));
         }
 
-        public static void getAddColor(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getAddColor(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var a = RTColors.HexToColor(ModifiersHelper.FormatStringVariables(modifier.GetValue(1, variables), variables));
-            var b = RTColors.HexToColor(ModifiersHelper.FormatStringVariables(modifier.GetValue(2, variables), variables));
-            variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = RTColors.ColorToHexOptional(a + b * modifier.GetFloat(3, 1f, variables));
+            var a = RTColors.HexToColor(ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables));
+            var b = RTColors.HexToColor(ModifiersHelper.FormatStringVariables(modifier.GetValue(2, modifierLoop.variables), modifierLoop.variables));
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = RTColors.ColorToHexOptional(a + b * modifier.GetFloat(3, 1f, modifierLoop.variables));
         }
 
-        public static void getVisualColor(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getVisualColor(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference.GetRuntimeObject() is RTBeatmapObject runtimeObject && runtimeObject.visualObject is SolidObject solidObject)
+            if (modifierLoop.reference.GetRuntimeObject() is RTBeatmapObject runtimeObject && runtimeObject.visualObject is SolidObject solidObject)
             {
                 var colors = solidObject.GetColors();
-                var startColorName = ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables);
-                var endColorName = ModifiersHelper.FormatStringVariables(modifier.GetValue(1), variables);
+                var startColorName = ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables);
+                var endColorName = ModifiersHelper.FormatStringVariables(modifier.GetValue(1), modifierLoop.variables);
                 if (!string.IsNullOrEmpty(startColorName))
-                    variables[startColorName] = RTColors.ColorToHexOptional(colors.startColor);
+                    modifierLoop.variables[startColorName] = RTColors.ColorToHexOptional(colors.startColor);
                 if (!string.IsNullOrEmpty(endColorName))
-                    variables[endColorName] = RTColors.ColorToHexOptional(colors.endColor);
+                    modifierLoop.variables[endColorName] = RTColors.ColorToHexOptional(colors.endColor);
             }
-            else if (reference is BeatmapObject beatmapObject)
+            else if (modifierLoop.reference is BeatmapObject beatmapObject)
             {
                 var colors = ModifiersHelper.GetColors(beatmapObject);
-                var startColorName = ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables);
-                var endColorName = ModifiersHelper.FormatStringVariables(modifier.GetValue(1), variables);
+                var startColorName = ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables);
+                var endColorName = ModifiersHelper.FormatStringVariables(modifier.GetValue(1), modifierLoop.variables);
                 if (!string.IsNullOrEmpty(startColorName))
-                    variables[startColorName] = RTColors.ColorToHexOptional(colors.startColor);
+                    modifierLoop.variables[startColorName] = RTColors.ColorToHexOptional(colors.startColor);
                 if (!string.IsNullOrEmpty(endColorName))
-                    variables[endColorName] = RTColors.ColorToHexOptional(colors.endColor);
+                    modifierLoop.variables[endColorName] = RTColors.ColorToHexOptional(colors.endColor);
             }
         }
 
-        public static void getVisualColorRGBA(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getVisualColorRGBA(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference.GetRuntimeObject() is RTBeatmapObject runtimeObject && runtimeObject.visualObject is SolidObject solidObject)
+            if (modifierLoop.reference.GetRuntimeObject() is RTBeatmapObject runtimeObject && runtimeObject.visualObject is SolidObject solidObject)
             {
                 var colors = solidObject.GetColors();
-                var startColorRName = ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables);
-                var startColorGName = ModifiersHelper.FormatStringVariables(modifier.GetValue(1), variables);
-                var startColorBName = ModifiersHelper.FormatStringVariables(modifier.GetValue(2), variables);
-                var startColorAName = ModifiersHelper.FormatStringVariables(modifier.GetValue(3), variables);
-                var endColorRName = ModifiersHelper.FormatStringVariables(modifier.GetValue(4), variables);
-                var endColorGName = ModifiersHelper.FormatStringVariables(modifier.GetValue(5), variables);
-                var endColorBName = ModifiersHelper.FormatStringVariables(modifier.GetValue(6), variables);
-                var endColorAName = ModifiersHelper.FormatStringVariables(modifier.GetValue(7), variables);
+                var startColorRName = ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables);
+                var startColorGName = ModifiersHelper.FormatStringVariables(modifier.GetValue(1), modifierLoop.variables);
+                var startColorBName = ModifiersHelper.FormatStringVariables(modifier.GetValue(2), modifierLoop.variables);
+                var startColorAName = ModifiersHelper.FormatStringVariables(modifier.GetValue(3), modifierLoop.variables);
+                var endColorRName = ModifiersHelper.FormatStringVariables(modifier.GetValue(4), modifierLoop.variables);
+                var endColorGName = ModifiersHelper.FormatStringVariables(modifier.GetValue(5), modifierLoop.variables);
+                var endColorBName = ModifiersHelper.FormatStringVariables(modifier.GetValue(6), modifierLoop.variables);
+                var endColorAName = ModifiersHelper.FormatStringVariables(modifier.GetValue(7), modifierLoop.variables);
                 if (!string.IsNullOrEmpty(startColorRName))
-                    variables[startColorRName] = colors.startColor.r.ToString();
+                    modifierLoop.variables[startColorRName] = colors.startColor.r.ToString();
                 if (!string.IsNullOrEmpty(startColorGName))
-                    variables[startColorGName] = colors.startColor.g.ToString();
+                    modifierLoop.variables[startColorGName] = colors.startColor.g.ToString();
                 if (!string.IsNullOrEmpty(startColorBName))
-                    variables[startColorBName] = colors.startColor.b.ToString();
+                    modifierLoop.variables[startColorBName] = colors.startColor.b.ToString();
                 if (!string.IsNullOrEmpty(startColorAName))
-                    variables[startColorAName] = colors.startColor.a.ToString();
+                    modifierLoop.variables[startColorAName] = colors.startColor.a.ToString();
                 if (!string.IsNullOrEmpty(endColorRName))
-                    variables[endColorRName] = colors.endColor.r.ToString();
+                    modifierLoop.variables[endColorRName] = colors.endColor.r.ToString();
                 if (!string.IsNullOrEmpty(endColorGName))
-                    variables[endColorGName] = colors.endColor.g.ToString();
+                    modifierLoop.variables[endColorGName] = colors.endColor.g.ToString();
                 if (!string.IsNullOrEmpty(endColorBName))
-                    variables[endColorBName] = colors.endColor.b.ToString();
+                    modifierLoop.variables[endColorBName] = colors.endColor.b.ToString();
                 if (!string.IsNullOrEmpty(endColorAName))
-                    variables[endColorAName] = colors.endColor.a.ToString();
+                    modifierLoop.variables[endColorAName] = colors.endColor.a.ToString();
             }
-            else if (reference is BeatmapObject beatmapObject)
+            else if (modifierLoop.reference is BeatmapObject beatmapObject)
             {
                 var colors = ModifiersHelper.GetColors(beatmapObject);
-                var startColorRName = ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables);
-                var startColorGName = ModifiersHelper.FormatStringVariables(modifier.GetValue(1), variables);
-                var startColorBName = ModifiersHelper.FormatStringVariables(modifier.GetValue(2), variables);
-                var startColorAName = ModifiersHelper.FormatStringVariables(modifier.GetValue(3), variables);
-                var endColorRName = ModifiersHelper.FormatStringVariables(modifier.GetValue(4), variables);
-                var endColorGName = ModifiersHelper.FormatStringVariables(modifier.GetValue(5), variables);
-                var endColorBName = ModifiersHelper.FormatStringVariables(modifier.GetValue(6), variables);
-                var endColorAName = ModifiersHelper.FormatStringVariables(modifier.GetValue(7), variables);
+                var startColorRName = ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables);
+                var startColorGName = ModifiersHelper.FormatStringVariables(modifier.GetValue(1), modifierLoop.variables);
+                var startColorBName = ModifiersHelper.FormatStringVariables(modifier.GetValue(2), modifierLoop.variables);
+                var startColorAName = ModifiersHelper.FormatStringVariables(modifier.GetValue(3), modifierLoop.variables);
+                var endColorRName = ModifiersHelper.FormatStringVariables(modifier.GetValue(4), modifierLoop.variables);
+                var endColorGName = ModifiersHelper.FormatStringVariables(modifier.GetValue(5), modifierLoop.variables);
+                var endColorBName = ModifiersHelper.FormatStringVariables(modifier.GetValue(6), modifierLoop.variables);
+                var endColorAName = ModifiersHelper.FormatStringVariables(modifier.GetValue(7), modifierLoop.variables);
                 if (!string.IsNullOrEmpty(startColorRName))
-                    variables[startColorRName] = colors.startColor.r.ToString();
+                    modifierLoop.variables[startColorRName] = colors.startColor.r.ToString();
                 if (!string.IsNullOrEmpty(startColorGName))
-                    variables[startColorGName] = colors.startColor.g.ToString();
+                    modifierLoop.variables[startColorGName] = colors.startColor.g.ToString();
                 if (!string.IsNullOrEmpty(startColorBName))
-                    variables[startColorBName] = colors.startColor.b.ToString();
+                    modifierLoop.variables[startColorBName] = colors.startColor.b.ToString();
                 if (!string.IsNullOrEmpty(startColorAName))
-                    variables[startColorAName] = colors.startColor.a.ToString();
+                    modifierLoop.variables[startColorAName] = colors.startColor.a.ToString();
                 if (!string.IsNullOrEmpty(endColorRName))
-                    variables[endColorRName] = colors.endColor.r.ToString();
+                    modifierLoop.variables[endColorRName] = colors.endColor.r.ToString();
                 if (!string.IsNullOrEmpty(endColorGName))
-                    variables[endColorGName] = colors.endColor.g.ToString();
+                    modifierLoop.variables[endColorGName] = colors.endColor.g.ToString();
                 if (!string.IsNullOrEmpty(endColorBName))
-                    variables[endColorBName] = colors.endColor.b.ToString();
+                    modifierLoop.variables[endColorBName] = colors.endColor.b.ToString();
                 if (!string.IsNullOrEmpty(endColorAName))
-                    variables[endColorAName] = colors.endColor.a.ToString();
+                    modifierLoop.variables[endColorAName] = colors.endColor.a.ToString();
             }
         }
 
-        public static void getVisualOpacity(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getVisualOpacity(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference.GetRuntimeObject() is RTBeatmapObject runtimeObject && runtimeObject.visualObject is SolidObject solidObject)
+            if (modifierLoop.reference.GetRuntimeObject() is RTBeatmapObject runtimeObject && runtimeObject.visualObject is SolidObject solidObject)
             {
                 var colors = solidObject.GetColors();
-                var startOpacityName = ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables);
-                var endOpacityName = ModifiersHelper.FormatStringVariables(modifier.GetValue(1), variables);
+                var startOpacityName = ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables);
+                var endOpacityName = ModifiersHelper.FormatStringVariables(modifier.GetValue(1), modifierLoop.variables);
                 if (!string.IsNullOrEmpty(startOpacityName))
-                    variables[startOpacityName] = colors.startColor.a.ToString();
+                    modifierLoop.variables[startOpacityName] = colors.startColor.a.ToString();
                 if (!string.IsNullOrEmpty(endOpacityName))
-                    variables[endOpacityName] = colors.endColor.a.ToString();
+                    modifierLoop.variables[endOpacityName] = colors.endColor.a.ToString();
             }
-            else if (reference is BeatmapObject beatmapObject)
+            else if (modifierLoop.reference is BeatmapObject beatmapObject)
             {
-                var startOpacityName = ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables);
-                var endOpacityName = ModifiersHelper.FormatStringVariables(modifier.GetValue(1), variables);
+                var startOpacityName = ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables);
+                var endOpacityName = ModifiersHelper.FormatStringVariables(modifier.GetValue(1), modifierLoop.variables);
                 if (!string.IsNullOrEmpty(startOpacityName))
-                    variables[startOpacityName] = (-(beatmapObject.Interpolate(3, 1) - 1f)).ToString();
+                    modifierLoop.variables[startOpacityName] = (-(beatmapObject.Interpolate(3, 1) - 1f)).ToString();
                 if (!string.IsNullOrEmpty(endOpacityName))
-                    variables[endOpacityName] = (-(beatmapObject.Interpolate(3, 6) - 1f)).ToString();
+                    modifierLoop.variables[endOpacityName] = (-(beatmapObject.Interpolate(3, 6) - 1f)).ToString();
             }
         }
 
-        public static void getFloatAnimationKF(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getFloatAnimationKF(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var audioTime = modifier.GetFloat(1, 0f, variables);
-            var type = modifier.GetInt(2, 0, variables);
+            var audioTime = modifier.GetFloat(1, 0f, modifierLoop.variables);
+            var type = modifier.GetInt(2, 0, modifierLoop.variables);
 
             Sequence<float> sequence;
 
             // get cache
-            if (modifier.HasResult() && modifier.GetBool(3, true, variables))
+            if (modifier.HasResult() && modifier.GetBool(3, true, modifierLoop.variables))
                 sequence = modifier.GetResult<Sequence<float>>();
             else
             {
-                var value = modifier.GetFloat(4, 0f, variables);
+                var value = modifier.GetFloat(4, 0f, modifierLoop.variables);
 
                 var currentTime = 0f;
 
@@ -3367,14 +3438,14 @@ namespace BetterLegacy.Core.Helpers
                 keyframes.Add(new FloatKeyframe(currentTime, value, Ease.Linear));
                 for (int i = 5; i < modifier.values.Count; i += 4)
                 {
-                    var time = modifier.GetFloat(i, 0f, variables);
+                    var time = modifier.GetFloat(i, 0f, modifierLoop.variables);
                     if (time < currentTime)
                         continue;
 
-                    var x = modifier.GetFloat(i + 1, 0f, variables);
-                    var relative = modifier.GetBool(i + 2, true, variables);
+                    var x = modifier.GetFloat(i + 1, 0f, modifierLoop.variables);
+                    var relative = modifier.GetBool(i + 2, true, modifierLoop.variables);
 
-                    var easing = ModifiersHelper.FormatStringVariables(modifier.GetValue(i + 3), variables);
+                    var easing = ModifiersHelper.FormatStringVariables(modifier.GetValue(i + 3), modifierLoop.variables);
                     if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
                         easing = Ease.EaseReferences[e].Name;
 
@@ -3393,53 +3464,53 @@ namespace BetterLegacy.Core.Helpers
             }
 
             if (sequence != null)
-                variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = sequence.GetValue(audioTime).ToString();
+                modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = sequence.GetValue(audioTime).ToString();
         }
 
-        public static void getEditorBin(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getEditorBin(Modifier modifier, ModifierLoop modifierLoop)
         {
             ObjectEditorData editorData = null;
-            var prefabable = reference.AsPrefabable();
-            if (prefabable != null && prefabable.FromPrefab && modifier.GetBool(1, false, variables))
+            var prefabable = modifierLoop.reference.AsPrefabable();
+            if (prefabable != null && prefabable.FromPrefab && modifier.GetBool(1, false, modifierLoop.variables))
                 editorData = prefabable.GetPrefabObject()?.EditorData;
-            else if (reference is IEditable editable)
+            else if (modifierLoop.reference is IEditable editable)
                 editorData = editable.EditorData;
 
-            variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = editorData ? editorData.Bin.ToString() : 0.ToString();
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = editorData ? editorData.Bin.ToString() : 0.ToString();
         }
 
-        public static void getEditorLayer(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getEditorLayer(Modifier modifier, ModifierLoop modifierLoop)
         {
             ObjectEditorData editorData = null;
-            var prefabable = reference.AsPrefabable();
-            if (prefabable != null && prefabable.FromPrefab && modifier.GetBool(1, false, variables))
+            var prefabable = modifierLoop.reference.AsPrefabable();
+            if (prefabable != null && prefabable.FromPrefab && modifier.GetBool(1, false, modifierLoop.variables))
                 editorData = prefabable.GetPrefabObject()?.EditorData;
-            else if (reference is IEditable editable)
+            else if (modifierLoop.reference is IEditable editable)
                 editorData = editable.EditorData;
 
-            variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = editorData ? editorData.Layer.ToString() : 0.ToString();
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = editorData ? editorData.Layer.ToString() : 0.ToString();
         }
 
-        public static void getObjectName(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getObjectName(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is BeatmapObject beatmapObject)
-                variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = beatmapObject.name;
-            else if (reference is BackgroundObject backgroundObject)
-                variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = backgroundObject.name;
-            else if (reference is PrefabObject prefabObject && prefabObject.GetPrefab() is Prefab prefab)
-                variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = prefab.name;
-            else if (reference is RTPlayer.RTCustomPlayerObject customPlayerObject && customPlayerObject.reference)
-                variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = customPlayerObject.reference.name;
+            if (modifierLoop.reference is BeatmapObject beatmapObject)
+                modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = beatmapObject.name;
+            else if (modifierLoop.reference is BackgroundObject backgroundObject)
+                modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = backgroundObject.name;
+            else if (modifierLoop.reference is PrefabObject prefabObject && prefabObject.GetPrefab() is Prefab prefab)
+                modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = prefab.name;
+            else if (modifierLoop.reference is RTPlayer.RTCustomPlayerObject customPlayerObject && customPlayerObject.reference)
+                modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = customPlayerObject.reference.name;
         }
 
-        public static void getSignaledVariables(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getSignaledVariables(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (modifier.Result is Dictionary<string, string> otherVariables)
             {
                 foreach (var variable in otherVariables)
-                    variables[variable.Key] = variable.Value;
+                    modifierLoop.variables[variable.Key] = variable.Value;
 
-                if (!modifier.GetBool(0, true, variables)) // don't clear
+                if (!modifier.GetBool(0, true, modifierLoop.variables)) // don't clear
                     return;
 
                 otherVariables.Clear();
@@ -3447,17 +3518,17 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void signalLocalVariables(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void signalLocalVariables(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IPrefabable prefabable)
+            if (modifierLoop.reference is not IPrefabable prefabable)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, ModifiersHelper.FormatStringVariables(modifier.GetValue(0, variables), variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables));
 
             if (list.IsEmpty())
                 return;
 
-            var sendVariables = new Dictionary<string, string>(variables);
+            var sendVariables = new Dictionary<string, string>(modifierLoop.variables);
 
             foreach (var beatmapObject in list)
             {
@@ -3465,7 +3536,7 @@ namespace BetterLegacy.Core.Helpers
                 {
                     if (modifier.TryGetResult(out Dictionary<string, string> otherVariables))
                     {
-                        otherVariables.InsertRange(variables);
+                        otherVariables.InsertRange(modifierLoop.variables);
                         return;
                     }
 
@@ -3474,182 +3545,182 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void clearLocalVariables(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables) => variables.Clear();
+        public static void clearLocalVariables(Modifier modifier, ModifierLoop modifierLoop) => modifierLoop.variables.Clear();
 
-        public static void storeLocalVariables(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void storeLocalVariables(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (modifier.TryGetResult(out Dictionary<string, string> storedVariables))
             {
-                variables.InsertRange(storedVariables);
+                modifierLoop.variables.InsertRange(storedVariables);
                 return;
             }
 
-            var storeVariables = new Dictionary<string, string>(variables);
+            var storeVariables = new Dictionary<string, string>(modifierLoop.variables);
             modifier.Result = storeVariables;
         }
 
         // object variable
-        public static void addVariable(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void addVariable(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (modifier.values.Count == 2)
             {
-                if (reference is not IPrefabable prefabable)
+                if (modifierLoop.reference is not IPrefabable prefabable)
                     return;
 
-                var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, ModifiersHelper.FormatStringVariables(modifier.GetValue(1, variables), variables));
+                var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables));
                 if (list.IsEmpty())
                     return;
 
-                int num = modifier.GetInt(0, 0, variables);
+                int num = modifier.GetInt(0, 0, modifierLoop.variables);
 
                 foreach (var beatmapObject in list)
                     beatmapObject.integerVariable += num;
             }
             else
-                reference.IntVariable += modifier.GetInt(0, 0, variables);
+                modifierLoop.reference.IntVariable += modifier.GetInt(0, 0, modifierLoop.variables);
         }
 
-        public static void addVariableOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void addVariableOther(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IPrefabable prefabable)
+            if (modifierLoop.reference is not IPrefabable prefabable)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, ModifiersHelper.FormatStringVariables(modifier.GetValue(1, variables), variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables));
             if (list.IsEmpty())
                 return;
 
-            int num = modifier.GetInt(0, 0, variables);
+            int num = modifier.GetInt(0, 0, modifierLoop.variables);
 
             foreach (var beatmapObject in list)
                 beatmapObject.integerVariable += num;
         }
 
-        public static void subVariable(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void subVariable(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (modifier.values.Count == 2)
             {
-                if (reference is not IPrefabable prefabable)
+                if (modifierLoop.reference is not IPrefabable prefabable)
                     return;
 
-                var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, ModifiersHelper.FormatStringVariables(modifier.GetValue(1, variables), variables));
+                var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables));
                 if (list.IsEmpty())
                     return;
 
-                int num = modifier.GetInt(0, 0, variables);
+                int num = modifier.GetInt(0, 0, modifierLoop.variables);
 
                 foreach (var beatmapObject in list)
                     beatmapObject.integerVariable -= num;
             }
             else
-                reference.IntVariable -= modifier.GetInt(0, 0, variables);
+                modifierLoop.reference.IntVariable -= modifier.GetInt(0, 0, modifierLoop.variables);
         }
 
-        public static void subVariableOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void subVariableOther(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IPrefabable prefabable)
+            if (modifierLoop.reference is not IPrefabable prefabable)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, ModifiersHelper.FormatStringVariables(modifier.GetValue(1, variables), variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables));
             if (list.IsEmpty())
                 return;
 
-            int num = modifier.GetInt(0, 0, variables);
+            int num = modifier.GetInt(0, 0, modifierLoop.variables);
 
             foreach (var beatmapObject in list)
                 beatmapObject.integerVariable -= num;
         }
 
-        public static void setVariable(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void setVariable(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (modifier.values.Count == 2)
             {
-                if (reference is not IPrefabable prefabable)
+                if (modifierLoop.reference is not IPrefabable prefabable)
                     return;
 
-                var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, ModifiersHelper.FormatStringVariables(modifier.GetValue(1, variables), variables));
+                var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables));
                 if (list.IsEmpty())
                     return;
 
-                int num = modifier.GetInt(0, 0, variables);
+                int num = modifier.GetInt(0, 0, modifierLoop.variables);
 
                 foreach (var beatmapObject in list)
                     beatmapObject.integerVariable = num;
             }
             else
-                reference.IntVariable = modifier.GetInt(0, 0, variables);
+                modifierLoop.reference.IntVariable = modifier.GetInt(0, 0, modifierLoop.variables);
         }
 
-        public static void setVariableOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void setVariableOther(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IPrefabable prefabable)
+            if (modifierLoop.reference is not IPrefabable prefabable)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, ModifiersHelper.FormatStringVariables(modifier.GetValue(1, variables), variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables));
             if (list.IsEmpty())
                 return;
 
-            int num = modifier.GetInt(0, 0, variables);
+            int num = modifier.GetInt(0, 0, modifierLoop.variables);
 
             foreach (var beatmapObject in list)
                 beatmapObject.integerVariable = num;
         }
 
-        public static void setVariableRandom(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void setVariableRandom(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (modifier.values.Count == 3)
             {
-                if (reference is not IPrefabable prefabable)
+                if (modifierLoop.reference is not IPrefabable prefabable)
                     return;
 
-                var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, ModifiersHelper.FormatStringVariables(modifier.GetValue(0, variables), variables));
+                var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables));
                 if (list.IsEmpty())
                     return;
 
-                int min = modifier.GetInt(1, 0, variables);
-                int max = modifier.GetInt(2, 0, variables);
+                int min = modifier.GetInt(1, 0, modifierLoop.variables);
+                int max = modifier.GetInt(2, 0, modifierLoop.variables);
 
                 foreach (var beatmapObject in list)
                     beatmapObject.integerVariable = UnityEngine.Random.Range(min, max < 0 ? max - 1 : max + 1);
             }
             else
             {
-                var min = modifier.GetInt(0, 0, variables);
-                var max = modifier.GetInt(1, 0, variables);
-                reference.IntVariable = UnityEngine.Random.Range(min, max < 0 ? max - 1 : max + 1);
+                var min = modifier.GetInt(0, 0, modifierLoop.variables);
+                var max = modifier.GetInt(1, 0, modifierLoop.variables);
+                modifierLoop.reference.IntVariable = UnityEngine.Random.Range(min, max < 0 ? max - 1 : max + 1);
             }
         }
 
-        public static void setVariableRandomOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void setVariableRandomOther(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IPrefabable prefabable)
+            if (modifierLoop.reference is not IPrefabable prefabable)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, ModifiersHelper.FormatStringVariables(modifier.GetValue(0, variables), variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables));
             if (list.IsEmpty())
                 return;
 
-            int min = modifier.GetInt(1, 0, variables);
-            int max = modifier.GetInt(2, 0, variables);
+            int min = modifier.GetInt(1, 0, modifierLoop.variables);
+            int max = modifier.GetInt(2, 0, modifierLoop.variables);
 
             foreach (var beatmapObject in list)
                 beatmapObject.integerVariable = UnityEngine.Random.Range(min, max < 0 ? max - 1 : max + 1);
         }
 
-        public static void animateVariableOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void animateVariableOther(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IPrefabable prefabable)
+            if (modifierLoop.reference is not IPrefabable prefabable)
                 return;
 
-            var fromType = modifier.GetInt(1, 0, variables);
-            var fromAxis = modifier.GetInt(2, 0, variables);
-            var delay = modifier.GetFloat(3, 0, variables);
-            var multiply = modifier.GetFloat(4, 0, variables);
-            var offset = modifier.GetFloat(5, 0, variables);
-            var min = modifier.GetFloat(6, -9999f, variables);
-            var max = modifier.GetFloat(7, 9999f, variables);
-            var loop = modifier.GetFloat(8, 9999f, variables);
+            var fromType = modifier.GetInt(1, 0, modifierLoop.variables);
+            var fromAxis = modifier.GetInt(2, 0, modifierLoop.variables);
+            var delay = modifier.GetFloat(3, 0, modifierLoop.variables);
+            var multiply = modifier.GetFloat(4, 0, modifierLoop.variables);
+            var offset = modifier.GetFloat(5, 0, modifierLoop.variables);
+            var min = modifier.GetFloat(6, -9999f, modifierLoop.variables);
+            var max = modifier.GetFloat(7, 9999f, modifierLoop.variables);
+            var loop = modifier.GetFloat(8, 9999f, modifierLoop.variables);
 
-            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, ModifiersHelper.FormatStringVariables(modifier.GetValue(0, variables), variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables));
             if (list.IsEmpty())
                 return;
 
@@ -3698,21 +3769,21 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void clampVariable(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void clampVariable(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is IModifyable modifyable)
-                modifyable.IntVariable = Mathf.Clamp(modifyable.IntVariable, modifier.GetInt(1, 0, variables), modifier.GetInt(2, 0, variables));
+            if (modifierLoop.reference is IModifyable modifyable)
+                modifyable.IntVariable = Mathf.Clamp(modifyable.IntVariable, modifier.GetInt(1, 0, modifierLoop.variables), modifier.GetInt(2, 0, modifierLoop.variables));
         }
 
-        public static void clampVariableOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void clampVariableOther(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IPrefabable prefabable)
+            if (modifierLoop.reference is not IPrefabable prefabable)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, ModifiersHelper.FormatStringVariables(modifier.GetValue(0, variables), variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables));
 
-            var min = modifier.GetInt(1, 0, variables);
-            var max = modifier.GetInt(2, 0, variables);
+            var min = modifier.GetInt(1, 0, modifierLoop.variables);
+            var max = modifier.GetInt(2, 0, modifierLoop.variables);
 
             if (!list.IsEmpty())
                 foreach (var bm in list)
@@ -3723,27 +3794,27 @@ namespace BetterLegacy.Core.Helpers
 
         #region Audio
 
-        public static void setPitch(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void setPitch(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (RTLevel.Current.eventEngine)
-                RTLevel.Current.eventEngine.pitchOffset = modifier.GetFloat(0, 0f, variables);
+                RTLevel.Current.eventEngine.pitchOffset = modifier.GetFloat(0, 0f, modifierLoop.variables);
         }
 
-        public static void addPitch(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void addPitch(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (RTLevel.Current.eventEngine)
-                RTLevel.Current.eventEngine.pitchOffset += modifier.GetFloat(0, 0f, variables);
+                RTLevel.Current.eventEngine.pitchOffset += modifier.GetFloat(0, 0f, modifierLoop.variables);
         }
 
-        public static void setPitchMath(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void setPitchMath(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IEvaluatable evaluatable)
+            if (modifierLoop.reference is not IEvaluatable evaluatable)
                 return;
 
             var numberVariables = evaluatable.GetObjectVariables();
-            if (variables != null)
+            if (modifierLoop.variables != null)
             {
-                foreach (var variable in variables)
+                foreach (var variable in modifierLoop.variables)
                 {
                     if (float.TryParse(variable.Value, out float num))
                         numberVariables[variable.Key] = num;
@@ -3751,18 +3822,18 @@ namespace BetterLegacy.Core.Helpers
             }
 
             if (RTLevel.Current.eventEngine)
-                RTLevel.Current.eventEngine.pitchOffset = RTMath.Parse(ModifiersHelper.FormatStringVariables(modifier.GetValue(0, variables), variables), numberVariables);
+                RTLevel.Current.eventEngine.pitchOffset = RTMath.Parse(ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables), numberVariables);
         }
 
-        public static void addPitchMath(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void addPitchMath(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IEvaluatable evaluatable)
+            if (modifierLoop.reference is not IEvaluatable evaluatable)
                 return;
 
             var numberVariables = evaluatable.GetObjectVariables();
-            if (variables != null)
+            if (modifierLoop.variables != null)
             {
-                foreach (var variable in variables)
+                foreach (var variable in modifierLoop.variables)
                 {
                     if (float.TryParse(variable.Value, out float num))
                         numberVariables[variable.Key] = num;
@@ -3770,16 +3841,16 @@ namespace BetterLegacy.Core.Helpers
             }
 
             if (RTLevel.Current.eventEngine)
-                RTLevel.Current.eventEngine.pitchOffset += RTMath.Parse(ModifiersHelper.FormatStringVariables(modifier.GetValue(0, variables), variables), numberVariables);
+                RTLevel.Current.eventEngine.pitchOffset += RTMath.Parse(ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables), numberVariables);
         }
 
-        public static void animatePitch(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void animatePitch(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var time = modifier.GetFloat(0, 0f, variables);
-            var pitch = modifier.GetFloat(1, 0f, variables);
-            var relative = modifier.GetBool(2, true, variables);
+            var time = modifier.GetFloat(0, 0f, modifierLoop.variables);
+            var pitch = modifier.GetFloat(1, 0f, modifierLoop.variables);
+            var relative = modifier.GetBool(2, true, modifierLoop.variables);
 
-            string easing = ModifiersHelper.FormatStringVariables(modifier.GetValue(3, variables), variables);
+            string easing = ModifiersHelper.FormatStringVariables(modifier.GetValue(3, modifierLoop.variables), modifierLoop.variables);
             if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
                 easing = Ease.EaseReferences[e].Name;
 
@@ -3812,41 +3883,41 @@ namespace BetterLegacy.Core.Helpers
             RTLevel.Current.eventEngine.pitchOffset = setPitch;
         }
 
-        public static void setMusicTime(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables) => AudioManager.inst.SetMusicTime(modifier.GetFloat(0, 0f, variables));
+        public static void setMusicTime(Modifier modifier, ModifierLoop modifierLoop) => AudioManager.inst.SetMusicTime(modifier.GetFloat(0, 0f, modifierLoop.variables));
 
-        public static void setMusicTimeMath(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void setMusicTimeMath(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IEvaluatable evaluatable)
+            if (modifierLoop.reference is not IEvaluatable evaluatable)
                 return;
 
             var numberVariables = evaluatable.GetObjectVariables();
-            if (variables != null)
+            if (modifierLoop.variables != null)
             {
-                foreach (var variable in variables)
+                foreach (var variable in modifierLoop.variables)
                 {
                     if (float.TryParse(variable.Value, out float num))
                         numberVariables[variable.Key] = num;
                 }
             }
 
-            AudioManager.inst.SetMusicTime(RTMath.Parse(ModifiersHelper.FormatStringVariables(modifier.GetValue(0, variables), variables), numberVariables));
+            AudioManager.inst.SetMusicTime(RTMath.Parse(ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables), numberVariables));
         }
 
-        public static void setMusicTimeStartTime(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void setMusicTimeStartTime(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is ILifetime lifeTime)
+            if (modifierLoop.reference is ILifetime lifeTime)
                 AudioManager.inst.SetMusicTime(lifeTime.StartTime);
         }
 
-        public static void setMusicTimeAutokill(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void setMusicTimeAutokill(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is ILifetime lifeTime)
+            if (modifierLoop.reference is ILifetime lifeTime)
                 AudioManager.inst.SetMusicTime(lifeTime.StartTime + lifeTime.SpawnDuration);
         }
 
-        public static void setMusicPlaying(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables) => SoundManager.inst.SetPlaying(modifier.GetBool(0, false, variables));
+        public static void setMusicPlaying(Modifier modifier, ModifierLoop modifierLoop) => SoundManager.inst.SetPlaying(modifier.GetBool(0, false, modifierLoop.variables));
 
-        public static void playSound(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playSound(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (modifier.constant && modifier.TryGetResult(out AudioSource cache) && cache)
             {
@@ -3854,14 +3925,14 @@ namespace BetterLegacy.Core.Helpers
                 return;
             }
 
-            var path = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, variables), variables);
-            var global = modifier.GetBool(1, false, variables);
-            var pitch = modifier.GetFloat(2, 1f, variables);
-            var vol = modifier.GetFloat(3, 1f, variables);
-            var loop = modifier.GetBool(4, false, variables);
-            var panStereo = modifier.GetFloat(5, 0f, variables);
+            var path = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables);
+            var global = modifier.GetBool(1, false, modifierLoop.variables);
+            var pitch = modifier.GetFloat(2, 1f, modifierLoop.variables);
+            var vol = modifier.GetFloat(3, 1f, modifierLoop.variables);
+            var loop = modifier.GetBool(4, false, modifierLoop.variables);
+            var panStereo = modifier.GetFloat(5, 0f, modifierLoop.variables);
 
-            var id = reference is PAObjectBase obj ? obj.id : reference is RTPlayer.RTPlayerObject playerObject ? playerObject.id : string.Empty;
+            var id = modifierLoop.reference is PAObjectBase obj ? obj.id : modifierLoop.reference is RTPlayer.RTPlayerObject playerObject ? playerObject.id : string.Empty;
             if (string.IsNullOrEmpty(id))
                 loop = false;
 
@@ -3884,9 +3955,9 @@ namespace BetterLegacy.Core.Helpers
             ModifiersHelper.GetSoundPath(id, path, global, pitch, vol, loop, panStereo, audioSource => modifier.Result = audioSource);
         }
 
-        public static void playSoundOnline(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables) => playOnlineSound(modifier, reference, variables);
+        public static void playSoundOnline(Modifier modifier, ModifierLoop modifierLoop) => playOnlineSound(modifier, modifierLoop);
 
-        public static void playOnlineSound(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playOnlineSound(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (modifier.constant && modifier.TryGetResult(out AudioSource cache) && cache)
             {
@@ -3894,13 +3965,13 @@ namespace BetterLegacy.Core.Helpers
                 return;
             }
 
-            var url = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, variables), variables);
-            var pitch = modifier.GetFloat(1, 1f, variables);
-            var vol = modifier.GetFloat(2, 1f, variables);
-            var loop = modifier.GetBool(3, false, variables);
-            var panStereo = modifier.GetFloat(4, 0f, variables);
+            var url = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables);
+            var pitch = modifier.GetFloat(1, 1f, modifierLoop.variables);
+            var vol = modifier.GetFloat(2, 1f, modifierLoop.variables);
+            var loop = modifier.GetBool(3, false, modifierLoop.variables);
+            var panStereo = modifier.GetFloat(4, 0f, modifierLoop.variables);
 
-            var id = reference is PAObjectBase obj ? obj.id : reference is RTPlayer.RTPlayerObject playerObject ? playerObject.id : string.Empty;
+            var id = modifierLoop.reference is PAObjectBase obj ? obj.id : modifierLoop.reference is RTPlayer.RTPlayerObject playerObject ? playerObject.id : string.Empty;
             if (string.IsNullOrEmpty(id))
                 loop = false;
 
@@ -3908,7 +3979,7 @@ namespace BetterLegacy.Core.Helpers
                 ModifiersHelper.DownloadSoundAndPlay(id, url, pitch, vol, loop, panStereo, audioSource => modifier.Result = audioSource);
         }
 
-        public static void playDefaultSound(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playDefaultSound(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (modifier.constant && modifier.TryGetResult(out AudioSource cache) && cache)
             {
@@ -3916,12 +3987,12 @@ namespace BetterLegacy.Core.Helpers
                 return;
             }
 
-            var pitch = modifier.GetFloat(1, 1f, variables);
-            var vol = modifier.GetFloat(2, 1f, variables);
-            var loop = modifier.GetBool(3, false, variables);
-            var panStereo = modifier.GetFloat(4, 0f, variables);
+            var pitch = modifier.GetFloat(1, 1f, modifierLoop.variables);
+            var vol = modifier.GetFloat(2, 1f, modifierLoop.variables);
+            var loop = modifier.GetBool(3, false, modifierLoop.variables);
+            var panStereo = modifier.GetFloat(4, 0f, modifierLoop.variables);
 
-            if (!LegacyResources.soundClips.TryFind(x => x.id == ModifiersHelper.FormatStringVariables(modifier.GetValue(0, variables), variables), out SoundGroup soundGroup))
+            if (!LegacyResources.soundClips.TryFind(x => x.id == ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables), out SoundGroup soundGroup))
                 return;
 
             var clip = soundGroup.GetClip();
@@ -3940,7 +4011,7 @@ namespace BetterLegacy.Core.Helpers
             if (x < 0f)
                 x = -x;
 
-            var id = reference is PAObjectBase obj ? obj.id : reference is RTPlayer.RTPlayerObject playerObject ? playerObject.id : string.Empty;
+            var id = modifierLoop.reference is PAObjectBase obj ? obj.id : modifierLoop.reference is RTPlayer.RTPlayerObject playerObject ? playerObject.id : string.Empty;
             if (string.IsNullOrEmpty(id))
                 loop = false;
 
@@ -3952,9 +4023,9 @@ namespace BetterLegacy.Core.Helpers
                 ModifiersManager.audioSources.TryAdd(id, audioSource);
         }
 
-        public static void audioSource(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void audioSource(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
             var runtimeObject = beatmapObject.runtimeObject;
@@ -3963,21 +4034,21 @@ namespace BetterLegacy.Core.Helpers
 
             if (modifier.TryGetResult(out AudioModifier audioModifier))
             {
-                audioModifier.pitch = modifier.GetFloat(2, 1f, variables);
-                audioModifier.volume = modifier.GetFloat(3, 1f, variables);
-                audioModifier.loop = modifier.GetBool(4, true, variables);
-                audioModifier.timeOffset = modifier.GetBool(6, true, variables) ? AudioManager.inst.CurrentAudioSource.time + modifier.GetFloat(5, 0f, variables) : modifier.GetFloat(5, 0f, variables);
-                audioModifier.lengthOffset = modifier.GetFloat(7, 0f, variables);
-                audioModifier.playing = modifier.GetBool(8, true, variables);
-                audioModifier.panStereo = modifier.GetFloat(9, 0f, variables);
+                audioModifier.pitch = modifier.GetFloat(2, 1f, modifierLoop.variables);
+                audioModifier.volume = modifier.GetFloat(3, 1f, modifierLoop.variables);
+                audioModifier.loop = modifier.GetBool(4, true, modifierLoop.variables);
+                audioModifier.timeOffset = modifier.GetBool(6, true, modifierLoop.variables) ? AudioManager.inst.CurrentAudioSource.time + modifier.GetFloat(5, 0f, modifierLoop.variables) : modifier.GetFloat(5, 0f, modifierLoop.variables);
+                audioModifier.lengthOffset = modifier.GetFloat(7, 0f, modifierLoop.variables);
+                audioModifier.playing = modifier.GetBool(8, true, modifierLoop.variables);
+                audioModifier.panStereo = modifier.GetFloat(9, 0f, modifierLoop.variables);
                 audioModifier.Tick();
                 return;
             }
 
-            var path = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, variables), variables);
+            var path = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables);
 
             string fullPath =
-                !bool.TryParse(modifier.GetValue(1, variables), out bool global) || !global ?
+                !bool.TryParse(modifier.GetValue(1, modifierLoop.variables), out bool global) || !global ?
                 RTFile.CombinePaths(RTFile.BasePath, path) :
                 RTFile.CombinePaths(RTFile.ApplicationDirectory, ModifiersManager.SOUNDLIBRARY_PATH, path);
 
@@ -4018,18 +4089,18 @@ namespace BetterLegacy.Core.Helpers
                 var audioModifier = runtimeObject.visualObject.gameObject.AddComponent<AudioModifier>();
                 modifier.Result = audioModifier;
                 audioModifier.Init(audioClip, beatmapObject, modifier);
-                audioModifier.pitch = modifier.GetFloat(2, 1f, variables);
-                audioModifier.volume = modifier.GetFloat(3, 1f, variables);
-                audioModifier.loop = modifier.GetBool(4, true, variables);
-                audioModifier.timeOffset = modifier.GetBool(6, true, variables) ? AudioManager.inst.CurrentAudioSource.time + modifier.GetFloat(5, 0f, variables) : modifier.GetFloat(5, 0f, variables);
-                audioModifier.lengthOffset = modifier.GetFloat(7, 0f, variables);
-                audioModifier.playing = modifier.GetBool(8, true, variables);
-                audioModifier.panStereo = modifier.GetFloat(9, 0f, variables);
+                audioModifier.pitch = modifier.GetFloat(2, 1f, modifierLoop.variables);
+                audioModifier.volume = modifier.GetFloat(3, 1f, modifierLoop.variables);
+                audioModifier.loop = modifier.GetBool(4, true, modifierLoop.variables);
+                audioModifier.timeOffset = modifier.GetBool(6, true, modifierLoop.variables) ? AudioManager.inst.CurrentAudioSource.time + modifier.GetFloat(5, 0f, modifierLoop.variables) : modifier.GetFloat(5, 0f, modifierLoop.variables);
+                audioModifier.lengthOffset = modifier.GetFloat(7, 0f, modifierLoop.variables);
+                audioModifier.playing = modifier.GetBool(8, true, modifierLoop.variables);
+                audioModifier.panStereo = modifier.GetFloat(9, 0f, modifierLoop.variables);
                 audioModifier.Tick();
             }));
         }
 
-        public static void loadSoundAsset(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void loadSoundAsset(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (modifier.constant && modifier.TryGetResult(out AudioSource cache) && cache)
             {
@@ -4037,21 +4108,21 @@ namespace BetterLegacy.Core.Helpers
                 return;
             }
 
-            var name = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, variables), variables);
+            var name = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables);
             var soundAsset = GameData.Current.assets.sounds.Find(x => x.name == name);
             if (!soundAsset)
                 return;
 
-            if (modifier.GetBool(1, true, variables))
+            if (modifier.GetBool(1, true, modifierLoop.variables))
             {
                 if (soundAsset.audio)
                     return;
 
-                var play = modifier.GetBool(2, false, variables);
-                var pitch = modifier.GetFloat(3, 1f, variables);
-                var vol = modifier.GetFloat(4, 1f, variables);
-                var loop = modifier.GetBool(5, false, variables);
-                var panStereo = modifier.GetFloat(6, 0f, variables);
+                var play = modifier.GetBool(2, false, modifierLoop.variables);
+                var pitch = modifier.GetFloat(3, 1f, modifierLoop.variables);
+                var vol = modifier.GetFloat(4, 1f, modifierLoop.variables);
+                var loop = modifier.GetBool(5, false, modifierLoop.variables);
+                var panStereo = modifier.GetFloat(6, 0f, modifierLoop.variables);
 
                 CoroutineHelper.StartCoroutine(soundAsset.LoadAudioClip(() =>
                 {
@@ -4067,9 +4138,9 @@ namespace BetterLegacy.Core.Helpers
 
         #region Level
 
-        public static void loadLevel(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void loadLevel(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var path = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, variables), variables);
+            var path = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables);
 
             if (CoreHelper.IsEditing)
             {
@@ -4103,9 +4174,9 @@ namespace BetterLegacy.Core.Helpers
                 SoundManager.inst.PlaySound(DefaultSounds.Block);
         }
 
-        public static void loadLevelID(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void loadLevelID(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var id = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, variables), variables);
+            var id = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables);
             if (string.IsNullOrEmpty(id) || id == "0" || id == "-1")
                 return;
 
@@ -4147,9 +4218,9 @@ namespace BetterLegacy.Core.Helpers
                 SoundManager.inst.PlaySound(DefaultSounds.Block);
         }
 
-        public static void loadLevelInternal(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void loadLevelInternal(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var path = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, variables), variables);
+            var path = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables);
 
             if (!CoreHelper.InEditor)
             {
@@ -4183,7 +4254,7 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void loadLevelPrevious(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void loadLevelPrevious(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (CoreHelper.InEditor)
                 return;
@@ -4191,7 +4262,7 @@ namespace BetterLegacy.Core.Helpers
             LevelManager.Play(LevelManager.PreviousLevel);
         }
 
-        public static void loadLevelHub(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void loadLevelHub(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (CoreHelper.InEditor)
                 return;
@@ -4199,20 +4270,20 @@ namespace BetterLegacy.Core.Helpers
             LevelManager.Play(LevelManager.Hub);
         }
 
-        public static void loadLevelInCollection(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void loadLevelInCollection(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var id = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, variables), variables);
+            var id = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables);
             if (!CoreHelper.InEditor && LevelManager.CurrentLevelCollection && LevelManager.CurrentLevelCollection.levels.TryFind(x => x.id == id, out Level level))
                 LevelManager.Play(level);
         }
 
-        public static void loadLevelCollection(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void loadLevelCollection(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var id = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, variables), variables);
+            var id = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables);
             if (CoreHelper.InEditor || !LevelManager.LevelCollections.TryFind(x => x.id == id, out LevelCollection levelCollection))
                 return;
 
-            var levelID = ModifiersHelper.FormatStringVariables(modifier.GetValue(1, variables), variables);
+            var levelID = ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables);
 
             var entryLevelIndex = levelCollection.EntryLevelIndex;
             if (!string.IsNullOrEmpty(levelID) && LevelManager.Levels.TryFindIndex(x => x && x.id == levelID, out int arcadeLevelIndex))
@@ -4226,9 +4297,9 @@ namespace BetterLegacy.Core.Helpers
             levelCollection.DownloadLevel(levelCollection.levelInformation[entryLevelIndex], LevelManager.Play);
         }
 
-        public static void downloadLevel(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void downloadLevel(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var levelInfo = new LevelInfo(ModifiersHelper.FormatStringVariables(modifier.GetValue(0, variables), variables), ModifiersHelper.FormatStringVariables(modifier.GetValue(0, variables), variables), ModifiersHelper.FormatStringVariables(modifier.GetValue(1, variables), variables), ModifiersHelper.FormatStringVariables(modifier.GetValue(2, variables), variables), ModifiersHelper.FormatStringVariables(modifier.GetValue(3, variables), variables), ModifiersHelper.FormatStringVariables(modifier.GetValue(4, variables), variables));
+            var levelInfo = new LevelInfo(ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables), ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables), ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables), ModifiersHelper.FormatStringVariables(modifier.GetValue(2, modifierLoop.variables), modifierLoop.variables), ModifiersHelper.FormatStringVariables(modifier.GetValue(3, modifierLoop.variables), modifierLoop.variables), ModifiersHelper.FormatStringVariables(modifier.GetValue(4, modifierLoop.variables), modifierLoop.variables));
 
             if (!CoreHelper.InEditor)
             {
@@ -4268,14 +4339,14 @@ namespace BetterLegacy.Core.Helpers
 
             LevelCollection.DownloadLevel(null, levelInfo, level =>
             {
-                if (modifier.GetBool(5, true, variables))
+                if (modifier.GetBool(5, true, modifierLoop.variables))
                     LevelManager.Play(level);
                 else
                     RTBeatmap.Current.Resume(); // in case of softlock
             });
         }
 
-        public static void endLevel(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void endLevel(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (CoreHelper.InEditor)
             {
@@ -4283,64 +4354,64 @@ namespace BetterLegacy.Core.Helpers
                 return;
             }
 
-            var endLevelFunc = modifier.GetInt(0, 0, variables);
+            var endLevelFunc = modifier.GetInt(0, 0, modifierLoop.variables);
 
             if (endLevelFunc > 0)
             {
                 RTBeatmap.Current.endLevelFunc = (EndLevelFunction)(endLevelFunc - 1);
-                RTBeatmap.Current.endLevelData = ModifiersHelper.FormatStringVariables(modifier.GetValue(1, variables), variables);
+                RTBeatmap.Current.endLevelData = ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables);
             }
-            RTBeatmap.Current.endLevelUpdateProgress = modifier.GetBool(2, true, variables);
+            RTBeatmap.Current.endLevelUpdateProgress = modifier.GetBool(2, true, modifierLoop.variables);
 
             LevelManager.EndLevel();
         }
 
-        public static void setAudioTransition(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables) => LevelManager.songFadeTransition = modifier.GetFloat(0, 0.5f, variables);
+        public static void setAudioTransition(Modifier modifier, ModifierLoop modifierLoop) => LevelManager.songFadeTransition = modifier.GetFloat(0, 0.5f, modifierLoop.variables);
 
-        public static void setIntroFade(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables) => RTGameManager.doIntroFade = modifier.GetBool(0, true, variables);
+        public static void setIntroFade(Modifier modifier, ModifierLoop modifierLoop) => RTGameManager.doIntroFade = modifier.GetBool(0, true, modifierLoop.variables);
 
-        public static void setLevelEndFunc(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void setLevelEndFunc(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (CoreHelper.InEditor)
                 return;
 
-            var endLevelFunc = modifier.GetInt(0, 0, variables);
+            var endLevelFunc = modifier.GetInt(0, 0, modifierLoop.variables);
 
             if (endLevelFunc > 0)
             {
                 RTBeatmap.Current.endLevelFunc = (EndLevelFunction)(endLevelFunc - 1);
-                RTBeatmap.Current.endLevelData = modifier.GetValue(1, variables);
+                RTBeatmap.Current.endLevelData = modifier.GetValue(1, modifierLoop.variables);
             }
-            RTBeatmap.Current.endLevelUpdateProgress = modifier.GetBool(2, true, variables);
+            RTBeatmap.Current.endLevelUpdateProgress = modifier.GetBool(2, true, modifierLoop.variables);
         }
 
-        public static void getCurrentLevelID(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getCurrentLevelID(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (LevelManager.CurrentLevel)
-                variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = LevelManager.CurrentLevel.id;
+                modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = LevelManager.CurrentLevel.id;
             if (CoreHelper.InEditor && EditorLevelManager.inst.CurrentLevel)
-                variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = EditorLevelManager.inst.CurrentLevel.id;
+                modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = EditorLevelManager.inst.CurrentLevel.id;
         }
         
-        public static void getCurrentLevelName(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getCurrentLevelName(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (LevelManager.CurrentLevel && LevelManager.CurrentLevel.metadata)
-                variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = LevelManager.CurrentLevel.metadata.beatmap.name;
+                modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = LevelManager.CurrentLevel.metadata.beatmap.name;
             if (CoreHelper.InEditor && EditorLevelManager.inst.CurrentLevel && EditorLevelManager.inst.CurrentLevel.metadata)
-                variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = EditorLevelManager.inst.CurrentLevel.metadata.beatmap.name;
+                modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = EditorLevelManager.inst.CurrentLevel.metadata.beatmap.name;
         }
 
-        public static void getCurrentLevelRank(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getCurrentLevelRank(Modifier modifier, ModifierLoop modifierLoop)
         {
-            variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0, variables), variables)] = LevelManager.GetLevelRank(RTBeatmap.Current.hits).Ordinal.ToString();
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables)] = LevelManager.GetLevelRank(RTBeatmap.Current.hits).Ordinal.ToString();
         }
 
-        public static void getLevelVariable(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getLevelVariable(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var id = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, variables), variables);
-            var levelVariableName = ModifiersHelper.FormatStringVariables(modifier.GetValue(1, variables), variables);
-            var defaultValue = ModifiersHelper.FormatStringVariables(modifier.GetValue(2, variables), variables);
-            var variableName = ModifiersHelper.FormatStringVariables(modifier.GetValue(3), variables);
+            var id = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables);
+            var levelVariableName = ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables);
+            var defaultValue = ModifiersHelper.FormatStringVariables(modifier.GetValue(2, modifierLoop.variables), modifierLoop.variables);
+            var variableName = ModifiersHelper.FormatStringVariables(modifier.GetValue(3), modifierLoop.variables);
             if (string.IsNullOrEmpty(variableName) || string.IsNullOrEmpty(levelVariableName))
                 return;
 
@@ -4348,46 +4419,46 @@ namespace BetterLegacy.Core.Helpers
 
             var val = level && level.saveData && level.saveData.Variables != null && level.saveData.Variables.TryGetValue(levelVariableName, out string value) ? value : defaultValue;
             if (!string.IsNullOrEmpty(val))
-                variables[variableName] = val;
+                modifierLoop.variables[variableName] = val;
         }
 
-        public static void setLevelVariable(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void setLevelVariable(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var id = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, variables), variables);
+            var id = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables);
             var level = LevelManager.Levels.Find(x => x.id == id);
             if (!level || !level.saveData || level.saveData.Variables == null)
                 return;
 
-            var levelVariableName = ModifiersHelper.FormatStringVariables(modifier.GetValue(1, variables), variables);
-            var value = ModifiersHelper.FormatStringVariables(modifier.GetValue(2, variables), variables);
+            var levelVariableName = ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables);
+            var value = ModifiersHelper.FormatStringVariables(modifier.GetValue(2, modifierLoop.variables), modifierLoop.variables);
 
             level.saveData.Variables[levelVariableName] = value;
             LevelManager.SaveProgress();
         }
 
-        public static void removeLevelVariable(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void removeLevelVariable(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var id = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, variables), variables);
+            var id = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables);
             var level = LevelManager.Levels.Find(x => x.id == id);
             if (!level || !level.saveData || level.saveData.Variables == null)
                 return;
 
-            level.saveData.Variables.Remove(ModifiersHelper.FormatStringVariables(modifier.GetValue(1, variables), variables));
+            level.saveData.Variables.Remove(ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables));
             LevelManager.SaveProgress();
         }
 
-        public static void clearLevelVariables(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void clearLevelVariables(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var id = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, variables), variables);
+            var id = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables);
             var level = LevelManager.Levels.Find(x => x.id == id);
             level?.saveData?.Variables?.Clear();
         }
 
-        public static void getCurrentLevelVariable(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getCurrentLevelVariable(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var levelVariableName = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, variables), variables);
-            var defaultValue = ModifiersHelper.FormatStringVariables(modifier.GetValue(1, variables), variables);
-            var variableName = ModifiersHelper.FormatStringVariables(modifier.GetValue(2), variables);
+            var levelVariableName = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables);
+            var defaultValue = ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables);
+            var variableName = ModifiersHelper.FormatStringVariables(modifier.GetValue(2), modifierLoop.variables);
             if (string.IsNullOrEmpty(variableName) || string.IsNullOrEmpty(levelVariableName))
                 return;
 
@@ -4397,10 +4468,10 @@ namespace BetterLegacy.Core.Helpers
 
             var val = level && level.saveData && level.saveData.Variables != null && level.saveData.Variables.TryGetValue(levelVariableName, out string value) ? value : defaultValue;
             if (!string.IsNullOrEmpty(val))
-                variables[variableName] = val;
+                modifierLoop.variables[variableName] = val;
         }
 
-        public static void setCurrentLevelVariable(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void setCurrentLevelVariable(Modifier modifier, ModifierLoop modifierLoop)
         {
             var level = LevelManager.CurrentLevel;
             if (CoreHelper.InEditor && EditorLevelManager.inst)
@@ -4408,14 +4479,14 @@ namespace BetterLegacy.Core.Helpers
             if (!level || !level.saveData || level.saveData.Variables == null)
                 return;
 
-            var levelVariableName = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, variables), variables);
-            var value = ModifiersHelper.FormatStringVariables(modifier.GetValue(1, variables), variables);
+            var levelVariableName = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables);
+            var value = ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables);
 
             level.saveData.Variables[levelVariableName] = value;
             LevelManager.SaveProgress();
         }
 
-        public static void removeCurrentLevelVariable(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void removeCurrentLevelVariable(Modifier modifier, ModifierLoop modifierLoop)
         {
             var level = LevelManager.CurrentLevel;
             if (CoreHelper.InEditor && EditorLevelManager.inst)
@@ -4423,11 +4494,11 @@ namespace BetterLegacy.Core.Helpers
             if (!level || !level.saveData || level.saveData.Variables == null)
                 return;
 
-            level.saveData.Variables.Remove(ModifiersHelper.FormatStringVariables(modifier.GetValue(0, variables), variables));
+            level.saveData.Variables.Remove(ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables));
             LevelManager.SaveProgress();
         }
 
-        public static void clearCurrentLevelVariables(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void clearCurrentLevelVariables(Modifier modifier, ModifierLoop modifierLoop)
         {
             var level = LevelManager.CurrentLevel;
             if (CoreHelper.InEditor && EditorLevelManager.inst)
@@ -4439,9 +4510,9 @@ namespace BetterLegacy.Core.Helpers
 
         #region Component
 
-        public static void blur(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void blur(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
             if (beatmapObject.objectType == BeatmapObject.ObjectType.Empty)
@@ -4452,7 +4523,7 @@ namespace BetterLegacy.Core.Helpers
             if (!runtimeObject || runtimeObject.visualObject is not SolidObject solidObject || !runtimeObject.visualObject.renderer)
                 return;
 
-            var amount = modifier.GetFloat(0, 0f, variables);
+            var amount = modifier.GetFloat(0, 0f, modifierLoop.variables);
             var renderer = runtimeObject.visualObject.renderer;
 
             if (!modifier.HasResult())
@@ -4462,22 +4533,22 @@ namespace BetterLegacy.Core.Helpers
                 solidObject.SetMaterial(LegacyResources.blurMaterial);
             }
 
-            if (modifier.GetBool(1, false, variables))
+            if (modifier.GetBool(1, false, modifierLoop.variables))
                 renderer.material.SetFloat("_blurSizeXY", -(beatmapObject.Interpolate(3, 1) - 1f) * amount);
             else
                 renderer.material.SetFloat("_blurSizeXY", amount);
         }
 
-        public static void blurOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void blurOther(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IPrefabable prefabable)
+            if (modifierLoop.reference is not IPrefabable prefabable)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, ModifiersHelper.FormatStringVariables(modifier.GetValue(1, variables), variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables));
             if (list.IsEmpty())
                 return;
 
-            var amount = modifier.GetFloat(0, 0f, variables);
+            var amount = modifier.GetFloat(0, 0f, modifierLoop.variables);
 
             foreach (var beatmapObject in list)
             {
@@ -4493,9 +4564,9 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void blurVariable(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void blurVariable(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
             if (beatmapObject.objectType == BeatmapObject.ObjectType.Empty)
@@ -4506,7 +4577,7 @@ namespace BetterLegacy.Core.Helpers
             if (!runtimeObject || runtimeObject.visualObject is not SolidObject solidObject || !runtimeObject.visualObject.renderer)
                 return;
 
-            var amount = modifier.GetFloat(0, 0f, variables);
+            var amount = modifier.GetFloat(0, 0f, modifierLoop.variables);
             var renderer = runtimeObject.visualObject.renderer;
 
             if (!modifier.HasResult())
@@ -4520,16 +4591,16 @@ namespace BetterLegacy.Core.Helpers
             renderer.material.SetFloat("_blurSizeXY", beatmapObject.integerVariable * amount);
         }
 
-        public static void blurVariableOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void blurVariableOther(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IPrefabable prefabable)
+            if (modifierLoop.reference is not IPrefabable prefabable)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, ModifiersHelper.FormatStringVariables(modifier.GetValue(1, variables), variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables));
             if (list.IsEmpty())
                 return;
 
-            var amount = modifier.GetFloat(0, 0f, variables);
+            var amount = modifier.GetFloat(0, 0f, modifierLoop.variables);
 
             foreach (var beatmapObject in list)
             {
@@ -4545,9 +4616,9 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void blurColored(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void blurColored(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
             if (beatmapObject.objectType == BeatmapObject.ObjectType.Empty)
@@ -4558,7 +4629,7 @@ namespace BetterLegacy.Core.Helpers
             if (!runtimeObject || runtimeObject.visualObject is not SolidObject solidObject || !solidObject.renderer)
                 return;
 
-            var amount = modifier.GetFloat(0, 0f, variables);
+            var amount = modifier.GetFloat(0, 0f, modifierLoop.variables);
             var renderer = runtimeObject.visualObject.renderer;
 
             if (!modifier.HasResult())
@@ -4569,22 +4640,22 @@ namespace BetterLegacy.Core.Helpers
                 solidObject.SetMaterial(LegacyResources.blurColoredMaterial);
             }
 
-            if (modifier.GetBool(1, false, variables))
+            if (modifier.GetBool(1, false, modifierLoop.variables))
                 renderer.material.SetFloat("_Size", -(beatmapObject.Interpolate(3, 1) - 1f) * amount);
             else
                 renderer.material.SetFloat("_Size", amount);
         }
 
-        public static void blurColoredOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void blurColoredOther(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IPrefabable prefabable)
+            if (modifierLoop.reference is not IPrefabable prefabable)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, ModifiersHelper.FormatStringVariables(modifier.GetValue(1, variables), variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables));
             if (list.IsEmpty())
                 return;
 
-            var amount = modifier.GetFloat(0, 0f, variables);
+            var amount = modifier.GetFloat(0, 0f, modifierLoop.variables);
 
             foreach (var beatmapObject in list)
             {
@@ -4600,9 +4671,9 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void doubleSided(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void doubleSided(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
             var runtimeObject = beatmapObject.runtimeObject;
@@ -4610,9 +4681,9 @@ namespace BetterLegacy.Core.Helpers
                 solidObject.UpdateRendering((int)beatmapObject.gradientType, (int)beatmapObject.renderLayerType, true, beatmapObject.gradientScale, beatmapObject.gradientRotation, (int)beatmapObject.colorBlendMode);
         }
 
-        public static void particleSystem(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void particleSystem(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
             var runtimeObject = beatmapObject.runtimeObject;
@@ -4627,8 +4698,8 @@ namespace BetterLegacy.Core.Helpers
                 var ps = gameObject.GetOrAddComponent<ParticleSystem>();
                 var psr = gameObject.GetComponent<ParticleSystemRenderer>();
 
-                var s = modifier.GetInt(1, 0, variables);
-                var so = modifier.GetInt(2, 0, variables);
+                var s = modifier.GetInt(1, 0, modifierLoop.variables);
+                var so = modifier.GetInt(2, 0, modifierLoop.variables);
 
                 s = Mathf.Clamp(s, 0, ObjectManager.inst.objectPrefabs.Count - 1);
                 so = Mathf.Clamp(so, 0, ObjectManager.inst.objectPrefabs[s].options.Count - 1);
@@ -4666,29 +4737,29 @@ namespace BetterLegacy.Core.Helpers
                 var psMain = ps.main;
                 var psEmission = ps.emission;
 
-                psMain.startSpeed = modifier.GetFloat(9, 5f, variables);
+                psMain.startSpeed = modifier.GetFloat(9, 5f, modifierLoop.variables);
 
                 psMain.loop = modifier.constant;
-                ps.emissionRate = modifier.GetFloat(10, 1f, variables);
-                //psEmission.burstCount = modifier.GetInt(16, 1, variables);
-                psMain.duration = modifier.GetFloat(11, 1f, variables);
+                ps.emissionRate = modifier.GetFloat(10, 1f, modifierLoop.variables);
+                //psEmission.burstCount = modifier.GetInt(16, 1, modifierLoop.variables);
+                psMain.duration = modifier.GetFloat(11, 1f, modifierLoop.variables);
 
                 var rotationOverLifetime = ps.rotationOverLifetime;
-                rotationOverLifetime.zMultiplier = modifier.GetFloat(8, 0f, variables);
+                rotationOverLifetime.zMultiplier = modifier.GetFloat(8, 0f, modifierLoop.variables);
 
                 var forceOverLifetime = ps.forceOverLifetime;
-                forceOverLifetime.xMultiplier = modifier.GetFloat(12, 0f, variables);
-                forceOverLifetime.yMultiplier = modifier.GetFloat(13, 0f, variables);
+                forceOverLifetime.xMultiplier = modifier.GetFloat(12, 0f, modifierLoop.variables);
+                forceOverLifetime.yMultiplier = modifier.GetFloat(13, 0f, modifierLoop.variables);
 
                 var particlesTrail = ps.trails;
-                particlesTrail.enabled = modifier.GetBool(14, true, variables);
+                particlesTrail.enabled = modifier.GetBool(14, true, modifierLoop.variables);
 
                 var colorOverLifetime = ps.colorOverLifetime;
                 colorOverLifetime.enabled = true;
                 var psCol = colorOverLifetime.color;
 
-                float alphaStart = modifier.GetFloat(4, 1f, variables);
-                float alphaEnd = modifier.GetFloat(5, 0f, variables);
+                float alphaStart = modifier.GetFloat(4, 1f, modifierLoop.variables);
+                float alphaEnd = modifier.GetFloat(5, 0f, modifierLoop.variables);
 
                 psCol.gradient.alphaKeys = new GradientAlphaKey[2] { new GradientAlphaKey(alphaStart, 0f), new GradientAlphaKey(alphaEnd, 1f) };
                 psCol.gradient.colorKeys = new GradientColorKey[2] { new GradientColorKey(Color.white, 0f), new GradientColorKey(Color.white, 1f) };
@@ -4701,8 +4772,8 @@ namespace BetterLegacy.Core.Helpers
 
                 var ssss = sizeOverLifetime.size;
 
-                var sizeStart = modifier.GetFloat(6, 0f, variables);
-                var sizeEnd = modifier.GetFloat(7, 0f, variables);
+                var sizeStart = modifier.GetFloat(6, 0f, modifierLoop.variables);
+                var sizeEnd = modifier.GetFloat(7, 0f, modifierLoop.variables);
 
                 var curve = new AnimationCurve(new Keyframe[2] { new Keyframe(0f, sizeStart), new Keyframe(1f, sizeEnd) });
 
@@ -4710,22 +4781,22 @@ namespace BetterLegacy.Core.Helpers
 
                 sizeOverLifetime.size = ssss;
 
-                psMain.startLifetime = modifier.GetFloat(0, 1f, variables);
+                psMain.startLifetime = modifier.GetFloat(0, 1f, modifierLoop.variables);
                 psEmission.enabled = !(gameObject.transform.lossyScale.x < 0.001f && gameObject.transform.lossyScale.x > -0.001f || gameObject.transform.lossyScale.y < 0.001f && gameObject.transform.lossyScale.y > -0.001f) && gameObject.activeSelf && gameObject.activeInHierarchy;
 
-                psMain.startColor = CoreHelper.CurrentBeatmapTheme.GetObjColor(modifier.GetInt(3, 0, variables));
+                psMain.startColor = CoreHelper.CurrentBeatmapTheme.GetObjColor(modifier.GetInt(3, 0, modifierLoop.variables));
 
                 var shape = ps.shape;
-                shape.angle = modifier.GetFloat(15, 90f, variables);
+                shape.angle = modifier.GetFloat(15, 90f, modifierLoop.variables);
 
                 if (!modifier.constant)
-                    RTLevel.Current.postTick.Enqueue(() => ps.Emit(modifier.GetInt(16, 1, variables)));
+                    RTLevel.Current.postTick.Enqueue(() => ps.Emit(modifier.GetInt(16, 1, modifierLoop.variables)));
             }
         }
 
-        public static void particleSystemHex(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void particleSystemHex(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
             var runtimeObject = beatmapObject.runtimeObject;
@@ -4740,8 +4811,8 @@ namespace BetterLegacy.Core.Helpers
                 var ps = gameObject.GetOrAddComponent<ParticleSystem>();
                 var psr = gameObject.GetComponent<ParticleSystemRenderer>();
 
-                var s = modifier.GetInt(1, 0, variables);
-                var so = modifier.GetInt(2, 0, variables);
+                var s = modifier.GetInt(1, 0, modifierLoop.variables);
+                var so = modifier.GetInt(2, 0, modifierLoop.variables);
 
                 s = Mathf.Clamp(s, 0, ObjectManager.inst.objectPrefabs.Count - 1);
                 so = Mathf.Clamp(so, 0, ObjectManager.inst.objectPrefabs[s].options.Count - 1);
@@ -4779,29 +4850,29 @@ namespace BetterLegacy.Core.Helpers
                 var psMain = ps.main;
                 var psEmission = ps.emission;
 
-                psMain.startSpeed = modifier.GetFloat(9, 5f, variables);
+                psMain.startSpeed = modifier.GetFloat(9, 5f, modifierLoop.variables);
 
                 psMain.loop = modifier.constant;
-                ps.emissionRate = modifier.GetFloat(10, 1f, variables);
-                //psEmission.burstCount = modifier.GetInt(16, 1, variables);
-                psMain.duration = modifier.GetFloat(11, 1f, variables);
+                ps.emissionRate = modifier.GetFloat(10, 1f, modifierLoop.variables);
+                //psEmission.burstCount = modifier.GetInt(16, 1, modifierLoop.variables);
+                psMain.duration = modifier.GetFloat(11, 1f, modifierLoop.variables);
 
                 var rotationOverLifetime = ps.rotationOverLifetime;
-                rotationOverLifetime.zMultiplier = modifier.GetFloat(8, 0f, variables);
+                rotationOverLifetime.zMultiplier = modifier.GetFloat(8, 0f, modifierLoop.variables);
 
                 var forceOverLifetime = ps.forceOverLifetime;
-                forceOverLifetime.xMultiplier = modifier.GetFloat(12, 0f, variables);
-                forceOverLifetime.yMultiplier = modifier.GetFloat(13, 0f, variables);
+                forceOverLifetime.xMultiplier = modifier.GetFloat(12, 0f, modifierLoop.variables);
+                forceOverLifetime.yMultiplier = modifier.GetFloat(13, 0f, modifierLoop.variables);
 
                 var particlesTrail = ps.trails;
-                particlesTrail.enabled = modifier.GetBool(14, true, variables);
+                particlesTrail.enabled = modifier.GetBool(14, true, modifierLoop.variables);
 
                 var colorOverLifetime = ps.colorOverLifetime;
                 colorOverLifetime.enabled = true;
                 var psCol = colorOverLifetime.color;
 
-                float alphaStart = modifier.GetFloat(4, 1f, variables);
-                float alphaEnd = modifier.GetFloat(5, 0f, variables);
+                float alphaStart = modifier.GetFloat(4, 1f, modifierLoop.variables);
+                float alphaEnd = modifier.GetFloat(5, 0f, modifierLoop.variables);
 
                 psCol.gradient.alphaKeys = new GradientAlphaKey[2] { new GradientAlphaKey(alphaStart, 0f), new GradientAlphaKey(alphaEnd, 1f) };
                 psCol.gradient.colorKeys = new GradientColorKey[2] { new GradientColorKey(Color.white, 0f), new GradientColorKey(Color.white, 1f) };
@@ -4814,8 +4885,8 @@ namespace BetterLegacy.Core.Helpers
 
                 var ssss = sizeOverLifetime.size;
 
-                var sizeStart = modifier.GetFloat(6, 0f, variables);
-                var sizeEnd = modifier.GetFloat(7, 0f, variables);
+                var sizeStart = modifier.GetFloat(6, 0f, modifierLoop.variables);
+                var sizeEnd = modifier.GetFloat(7, 0f, modifierLoop.variables);
 
                 var curve = new AnimationCurve(new Keyframe[2] { new Keyframe(0f, sizeStart), new Keyframe(1f, sizeEnd) });
 
@@ -4823,22 +4894,22 @@ namespace BetterLegacy.Core.Helpers
 
                 sizeOverLifetime.size = ssss;
 
-                psMain.startLifetime = modifier.GetFloat(0, 1f, variables);
+                psMain.startLifetime = modifier.GetFloat(0, 1f, modifierLoop.variables);
                 psEmission.enabled = !(gameObject.transform.lossyScale.x < 0.001f && gameObject.transform.lossyScale.x > -0.001f || gameObject.transform.lossyScale.y < 0.001f && gameObject.transform.lossyScale.y > -0.001f) && gameObject.activeSelf && gameObject.activeInHierarchy;
 
-                psMain.startColor = RTColors.HexToColor(ModifiersHelper.FormatStringVariables(modifier.GetValue(3, variables), variables));
+                psMain.startColor = RTColors.HexToColor(ModifiersHelper.FormatStringVariables(modifier.GetValue(3, modifierLoop.variables), modifierLoop.variables));
 
                 var shape = ps.shape;
-                shape.angle = modifier.GetFloat(15, 90f, variables);
+                shape.angle = modifier.GetFloat(15, 90f, modifierLoop.variables);
 
                 if (!modifier.constant)
-                    RTLevel.Current.postTick.Enqueue(() => ps.Emit(modifier.GetInt(16, 1, variables)));
+                    RTLevel.Current.postTick.Enqueue(() => ps.Emit(modifier.GetInt(16, 1, modifierLoop.variables)));
             }
         }
 
-        public static void trailRenderer(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void trailRenderer(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
             var runtimeObject = beatmapObject.runtimeObject;
@@ -4858,23 +4929,23 @@ namespace BetterLegacy.Core.Helpers
             {
                 var tr = beatmapObject.trailRenderer;
 
-                tr.time = modifier.GetFloat(0, 1f, variables);
+                tr.time = modifier.GetFloat(0, 1f, modifierLoop.variables);
                 tr.emitting = !(gameObject.transform.lossyScale.x < 0.001f && gameObject.transform.lossyScale.x > -0.001f || gameObject.transform.lossyScale.y < 0.001f && gameObject.transform.lossyScale.y > -0.001f) && gameObject.activeSelf && gameObject.activeInHierarchy;
 
                 var t = gameObject.transform.lossyScale.magnitude * 0.576635f;
-                tr.startWidth = modifier.GetFloat(1, 1f, variables) * t;
-                tr.endWidth = modifier.GetFloat(2, 1f, variables) * t;
+                tr.startWidth = modifier.GetFloat(1, 1f, modifierLoop.variables) * t;
+                tr.endWidth = modifier.GetFloat(2, 1f, modifierLoop.variables) * t;
 
                 var beatmapTheme = CoreHelper.CurrentBeatmapTheme;
 
-                tr.startColor = RTColors.FadeColor(beatmapTheme.GetObjColor(modifier.GetInt(3, 0, variables)), modifier.GetFloat(4, 1f, variables));
-                tr.endColor = RTColors.FadeColor(beatmapTheme.GetObjColor(modifier.GetInt(5, 0, variables)), modifier.GetFloat(6, 1f, variables));
+                tr.startColor = RTColors.FadeColor(beatmapTheme.GetObjColor(modifier.GetInt(3, 0, modifierLoop.variables)), modifier.GetFloat(4, 1f, modifierLoop.variables));
+                tr.endColor = RTColors.FadeColor(beatmapTheme.GetObjColor(modifier.GetInt(5, 0, modifierLoop.variables)), modifier.GetFloat(6, 1f, modifierLoop.variables));
             }
         }
 
-        public static void trailRendererHex(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void trailRendererHex(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
             var runtimeObject = beatmapObject.runtimeObject;
@@ -4894,33 +4965,33 @@ namespace BetterLegacy.Core.Helpers
             {
                 var tr = beatmapObject.trailRenderer;
 
-                tr.time = modifier.GetFloat(0, 1f, variables);
+                tr.time = modifier.GetFloat(0, 1f, modifierLoop.variables);
                 tr.emitting = !(gameObject.transform.lossyScale.x < 0.001f && gameObject.transform.lossyScale.x > -0.001f || gameObject.transform.lossyScale.y < 0.001f && gameObject.transform.lossyScale.y > -0.001f) && gameObject.activeSelf && gameObject.activeInHierarchy;
 
                 var t = gameObject.transform.lossyScale.magnitude * 0.576635f;
-                tr.startWidth = modifier.GetFloat(1, 1f, variables) * t;
-                tr.endWidth = modifier.GetFloat(2, 1f, variables) * t;
+                tr.startWidth = modifier.GetFloat(1, 1f, modifierLoop.variables) * t;
+                tr.endWidth = modifier.GetFloat(2, 1f, modifierLoop.variables) * t;
 
-                tr.startColor = RTColors.HexToColor(ModifiersHelper.FormatStringVariables(modifier.GetValue(3, variables), variables));
-                tr.endColor = RTColors.HexToColor(ModifiersHelper.FormatStringVariables(modifier.GetValue(4, variables), variables));
+                tr.startColor = RTColors.HexToColor(ModifiersHelper.FormatStringVariables(modifier.GetValue(3, modifierLoop.variables), modifierLoop.variables));
+                tr.endColor = RTColors.HexToColor(ModifiersHelper.FormatStringVariables(modifier.GetValue(4, modifierLoop.variables), modifierLoop.variables));
             }
         }
 
-        public static void rigidbody(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void rigidbody(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
             var runtimeObject = beatmapObject.runtimeObject;
             if (!runtimeObject || !runtimeObject.visualObject || !runtimeObject.visualObject.gameObject)
                 return;
 
-            var gravity = modifier.GetFloat(1, 0f, variables);
-            var collisionMode = modifier.GetInt(2, 0, variables);
-            var drag = modifier.GetFloat(3, 0f, variables);
-            var velocityX = modifier.GetFloat(4, 0f, variables);
-            var velocityY = modifier.GetFloat(5, 0f, variables);
-            var bodyType = modifier.GetInt(6, 0, variables);
+            var gravity = modifier.GetFloat(1, 0f, modifierLoop.variables);
+            var collisionMode = modifier.GetInt(2, 0, modifierLoop.variables);
+            var drag = modifier.GetFloat(3, 0f, modifierLoop.variables);
+            var velocityX = modifier.GetFloat(4, 0f, modifierLoop.variables);
+            var velocityY = modifier.GetFloat(5, 0f, modifierLoop.variables);
+            var bodyType = modifier.GetInt(6, 0, modifierLoop.variables);
 
             if (!beatmapObject.rigidbody)
                 beatmapObject.rigidbody = runtimeObject.visualObject.gameObject.GetOrAddComponent<Rigidbody2D>();
@@ -4934,21 +5005,21 @@ namespace BetterLegacy.Core.Helpers
             beatmapObject.rigidbody.velocity += new Vector2(velocityX, velocityY);
         }
 
-        public static void rigidbodyOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void rigidbodyOther(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IPrefabable prefabable)
+            if (modifierLoop.reference is not IPrefabable prefabable)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, ModifiersHelper.FormatStringVariables(modifier.GetValue(0, variables), variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables));
             if (list.IsEmpty())
                 return;
 
-            var gravity = modifier.GetFloat(1, 0f, variables);
-            var collisionMode = modifier.GetInt(2, 0, variables);
-            var drag = modifier.GetFloat(3, 0f, variables);
-            var velocityX = modifier.GetFloat(4, 0f, variables);
-            var velocityY = modifier.GetFloat(5, 0f, variables);
-            var bodyType = modifier.GetInt(6, 0, variables);
+            var gravity = modifier.GetFloat(1, 0f, modifierLoop.variables);
+            var collisionMode = modifier.GetInt(2, 0, modifierLoop.variables);
+            var drag = modifier.GetFloat(3, 0f, modifierLoop.variables);
+            var velocityX = modifier.GetFloat(4, 0f, modifierLoop.variables);
+            var velocityY = modifier.GetFloat(5, 0f, modifierLoop.variables);
+            var bodyType = modifier.GetInt(6, 0, modifierLoop.variables);
 
             foreach (var beatmapObject in list)
             {
@@ -4969,22 +5040,22 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void setRenderType(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void setRenderType(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is BeatmapObject beatmapObject && beatmapObject.runtimeObject && beatmapObject.runtimeObject.visualObject)
-                beatmapObject.runtimeObject.visualObject.SetRenderType(modifier.GetInt(0, 0, variables));
+            if (modifierLoop.reference is BeatmapObject beatmapObject && beatmapObject.runtimeObject && beatmapObject.runtimeObject.visualObject)
+                beatmapObject.runtimeObject.visualObject.SetRenderType(modifier.GetInt(0, 0, modifierLoop.variables));
         }
 
-        public static void setRenderTypeOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void setRenderTypeOther(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IPrefabable prefabable)
+            if (modifierLoop.reference is not IPrefabable prefabable)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, ModifiersHelper.FormatStringVariables(modifier.GetValue(0, variables), variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables));
             if (list.IsEmpty())
                 return;
 
-            var renderType = modifier.GetInt(1, 0, variables);
+            var renderType = modifier.GetInt(1, 0, modifierLoop.variables);
             foreach (var beatmapObject in list)
             {
                 if (beatmapObject.runtimeObject && beatmapObject.runtimeObject.visualObject)
@@ -4992,16 +5063,16 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void setRendering(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void setRendering(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject || !beatmapObject.runtimeObject || beatmapObject.runtimeObject.visualObject is not SolidObject solidObject || !solidObject.gameObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject || !beatmapObject.runtimeObject || beatmapObject.runtimeObject.visualObject is not SolidObject solidObject || !solidObject.gameObject)
                 return;
 
-            var doubleSided = modifier.GetBool(0, false, variables);
-            var gradientType = modifier.GetInt(1, 0, variables);
-            var colorBlendMode = modifier.GetInt(2, 0, variables);
-            var gradientScale = modifier.GetFloat(3, 1f, variables);
-            var gradientRotation = modifier.GetFloat(4, 0f, variables);
+            var doubleSided = modifier.GetBool(0, false, modifierLoop.variables);
+            var gradientType = modifier.GetInt(1, 0, modifierLoop.variables);
+            var colorBlendMode = modifier.GetInt(2, 0, modifierLoop.variables);
+            var gradientScale = modifier.GetFloat(3, 1f, modifierLoop.variables);
+            var gradientRotation = modifier.GetFloat(4, 0f, modifierLoop.variables);
 
             if (modifier.constant)
             {
@@ -5038,19 +5109,19 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void setOutline(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void setOutline(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject || !beatmapObject.runtimeObject || beatmapObject.runtimeObject.visualObject is not SolidObject solidObject || !solidObject.gameObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject || !beatmapObject.runtimeObject || beatmapObject.runtimeObject.visualObject is not SolidObject solidObject || !solidObject.gameObject)
                 return;
 
-            var enabled = modifier.GetBool(0, true, variables);
-            var type = modifier.GetInt(1, 0, variables);
-            var width = modifier.GetFloat(2, 0.5f, variables);
-            var index = modifier.GetInt(3, 0, variables);
-            var opacity = modifier.GetFloat(4, 0f, variables);
-            var hue = modifier.GetFloat(5, 0f, variables);
-            var sat = modifier.GetFloat(6, 0f, variables);
-            var val = modifier.GetFloat(7, 0f, variables);
+            var enabled = modifier.GetBool(0, true, modifierLoop.variables);
+            var type = modifier.GetInt(1, 0, modifierLoop.variables);
+            var width = modifier.GetFloat(2, 0.5f, modifierLoop.variables);
+            var index = modifier.GetInt(3, 0, modifierLoop.variables);
+            var opacity = modifier.GetFloat(4, 0f, modifierLoop.variables);
+            var hue = modifier.GetFloat(5, 0f, modifierLoop.variables);
+            var sat = modifier.GetFloat(6, 0f, modifierLoop.variables);
+            var val = modifier.GetFloat(7, 0f, modifierLoop.variables);
 
             if (enabled)
             {
@@ -5061,24 +5132,24 @@ namespace BetterLegacy.Core.Helpers
                 solidObject.RemoveOutline();
         }
 
-        public static void setOutlineOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void setOutlineOther(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IPrefabable prefabable)
+            if (modifierLoop.reference is not IPrefabable prefabable)
                 return;
 
-            List<BeatmapObject> list = modifier.GetResultOrDefault(() => GameData.Current.FindObjectsWithTag(modifier, prefabable, ModifiersHelper.FormatStringVariables(modifier.GetValue(0, variables), variables)));
+            List<BeatmapObject> list = modifier.GetResultOrDefault(() => GameData.Current.FindObjectsWithTag(modifier, prefabable, ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables)));
 
             if (list.IsEmpty())
                 return;
 
-            var enabled = modifier.GetBool(1, true, variables);
-            var type = modifier.GetInt(2, 0, variables);
-            var width = modifier.GetFloat(3, 0.5f, variables);
-            var index = modifier.GetInt(4, 0, variables);
-            var opacity = modifier.GetFloat(5, 0f, variables);
-            var hue = modifier.GetFloat(6, 0f, variables);
-            var sat = modifier.GetFloat(7, 0f, variables);
-            var val = modifier.GetFloat(8, 0f, variables);
+            var enabled = modifier.GetBool(1, true, modifierLoop.variables);
+            var type = modifier.GetInt(2, 0, modifierLoop.variables);
+            var width = modifier.GetFloat(3, 0.5f, modifierLoop.variables);
+            var index = modifier.GetInt(4, 0, modifierLoop.variables);
+            var opacity = modifier.GetFloat(5, 0f, modifierLoop.variables);
+            var hue = modifier.GetFloat(6, 0f, modifierLoop.variables);
+            var sat = modifier.GetFloat(7, 0f, modifierLoop.variables);
+            var val = modifier.GetFloat(8, 0f, modifierLoop.variables);
 
             foreach (var beatmapObject in list)
             {
@@ -5095,15 +5166,15 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void setOutlineHex(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void setOutlineHex(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject || !beatmapObject.runtimeObject || beatmapObject.runtimeObject.visualObject is not SolidObject solidObject || !solidObject.gameObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject || !beatmapObject.runtimeObject || beatmapObject.runtimeObject.visualObject is not SolidObject solidObject || !solidObject.gameObject)
                 return;
 
-            var enabled = modifier.GetBool(0, true, variables);
-            var type = modifier.GetInt(1, 0, variables);
-            var width = modifier.GetFloat(2, 0.5f, variables);
-            var hex = RTColors.HexToColor(ModifiersHelper.FormatStringVariables(modifier.GetValue(3, variables), variables));
+            var enabled = modifier.GetBool(0, true, modifierLoop.variables);
+            var type = modifier.GetInt(1, 0, modifierLoop.variables);
+            var width = modifier.GetFloat(2, 0.5f, modifierLoop.variables);
+            var hex = RTColors.HexToColor(ModifiersHelper.FormatStringVariables(modifier.GetValue(3, modifierLoop.variables), modifierLoop.variables));
 
             if (enabled)
             {
@@ -5114,20 +5185,20 @@ namespace BetterLegacy.Core.Helpers
                 solidObject.RemoveOutline();
         }
 
-        public static void setOutlineHexOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void setOutlineHexOther(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IPrefabable prefabable)
+            if (modifierLoop.reference is not IPrefabable prefabable)
                 return;
 
-            List<BeatmapObject> list = modifier.GetResultOrDefault(() => GameData.Current.FindObjectsWithTag(modifier, prefabable, ModifiersHelper.FormatStringVariables(modifier.GetValue(0, variables), variables)));
+            List<BeatmapObject> list = modifier.GetResultOrDefault(() => GameData.Current.FindObjectsWithTag(modifier, prefabable, ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables)));
 
             if (list.IsEmpty())
                 return;
 
-            var enabled = modifier.GetBool(1, true, variables);
-            var type = modifier.GetInt(2, 0, variables);
-            var width = modifier.GetFloat(3, 0.5f, variables);
-            var hex = RTColors.HexToColor(ModifiersHelper.FormatStringVariables(modifier.GetValue(4, variables), variables));
+            var enabled = modifier.GetBool(1, true, modifierLoop.variables);
+            var type = modifier.GetInt(2, 0, modifierLoop.variables);
+            var width = modifier.GetFloat(3, 0.5f, modifierLoop.variables);
+            var hex = RTColors.HexToColor(ModifiersHelper.FormatStringVariables(modifier.GetValue(4, modifierLoop.variables), modifierLoop.variables));
 
             foreach (var beatmapObject in list)
             {
@@ -5148,9 +5219,9 @@ namespace BetterLegacy.Core.Helpers
 
         #region Player
 
-        public static void playerHit(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerHit(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (RTBeatmap.Current.Invincible || modifier.constant || reference is not BeatmapObject beatmapObject)
+            if (RTBeatmap.Current.Invincible || modifier.constant || modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
             // queue post tick so the position of the object is accurate.
@@ -5158,36 +5229,36 @@ namespace BetterLegacy.Core.Helpers
             {
                 var pos = beatmapObject.GetFullPosition();
                 var player = PlayerManager.GetClosestPlayer(pos);
-                player?.RuntimePlayer?.Hit(Mathf.Clamp(modifier.GetInt(0, 1, variables), 0, int.MaxValue));
+                player?.RuntimePlayer?.Hit(Mathf.Clamp(modifier.GetInt(0, 1, modifierLoop.variables), 0, int.MaxValue));
             });
         }
 
-        public static void playerHitIndex(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerHitIndex(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (RTBeatmap.Current.Invincible || modifier.constant)
                 return;
 
-            var damage = Mathf.Clamp(modifier.GetInt(1, 1, variables), 0, int.MaxValue);
-            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out PAPlayer player))
+            var damage = Mathf.Clamp(modifier.GetInt(1, 1, modifierLoop.variables), 0, int.MaxValue);
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, modifierLoop.variables), out PAPlayer player))
                 player.RuntimePlayer?.Hit(damage);
         }
 
-        public static void playerHitAll(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerHitAll(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (RTBeatmap.Current.Invincible || modifier.constant)
                 return;
 
-            var damage = Mathf.Clamp(modifier.GetInt(0, 1, variables), 0, int.MaxValue);
+            var damage = Mathf.Clamp(modifier.GetInt(0, 1, modifierLoop.variables), 0, int.MaxValue);
             foreach (var player in PlayerManager.Players)
                 player.RuntimePlayer?.Hit(damage);
         }
 
-        public static void playerHeal(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerHeal(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (RTBeatmap.Current.Invincible || modifier.constant || reference is not BeatmapObject beatmapObject)
+            if (RTBeatmap.Current.Invincible || modifier.constant || modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
-            var heal = Mathf.Clamp(modifier.GetInt(0, 1, variables), 0, int.MaxValue);
+            var heal = Mathf.Clamp(modifier.GetInt(0, 1, modifierLoop.variables), 0, int.MaxValue);
 
             // queue post tick so the position of the object is accurate.
             RTLevel.Current.postTick.Enqueue(() =>
@@ -5198,22 +5269,22 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void playerHealIndex(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerHealIndex(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (RTBeatmap.Current.Invincible || modifier.constant)
                 return;
 
-            var health = Mathf.Clamp(modifier.GetInt(1, 1, variables), 0, int.MaxValue);
-            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out PAPlayer player) && player.RuntimePlayer)
+            var health = Mathf.Clamp(modifier.GetInt(1, 1, modifierLoop.variables), 0, int.MaxValue);
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, modifierLoop.variables), out PAPlayer player) && player.RuntimePlayer)
                 player.RuntimePlayer.Heal(health);
         }
 
-        public static void playerHealAll(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerHealAll(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (RTBeatmap.Current.Invincible || modifier.constant)
                 return;
 
-            var heal = Mathf.Clamp(modifier.GetInt(0, 1, variables), 0, int.MaxValue);
+            var heal = Mathf.Clamp(modifier.GetInt(0, 1, modifierLoop.variables), 0, int.MaxValue);
             bool healed = false;
             foreach (var player in PlayerManager.Players)
             {
@@ -5225,9 +5296,9 @@ namespace BetterLegacy.Core.Helpers
                 SoundManager.inst.PlaySound(DefaultSounds.HealPlayer);
         }
 
-        public static void playerKill(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerKill(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (RTBeatmap.Current.Invincible || modifier.constant || reference is not BeatmapObject beatmapObject)
+            if (RTBeatmap.Current.Invincible || modifier.constant || modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
             // queue post tick so the position of the object is accurate.
@@ -5241,16 +5312,16 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void playerKillIndex(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerKillIndex(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (RTBeatmap.Current.Invincible || modifier.constant)
                 return;
 
-            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out PAPlayer player) && player.RuntimePlayer)
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, modifierLoop.variables), out PAPlayer player) && player.RuntimePlayer)
                 player.RuntimePlayer.Kill();
         }
 
-        public static void playerKillAll(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerKillAll(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (RTBeatmap.Current.Invincible || modifier.constant)
                 return;
@@ -5260,9 +5331,9 @@ namespace BetterLegacy.Core.Helpers
                     player.RuntimePlayer.Kill();
         }
 
-        public static void playerRespawn(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerRespawn(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (modifier.constant || reference is not BeatmapObject beatmapObject)
+            if (modifier.constant || modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
             // queue post tick so the position of the object is accurate.
@@ -5276,24 +5347,24 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void playerRespawnIndex(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerRespawnIndex(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (!modifier.constant)
                 PlayerManager.RespawnPlayer(modifier.GetInt(0, 0));
         }
 
-        public static void playerRespawnAll(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerRespawnAll(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (!modifier.constant)
                 PlayerManager.RespawnPlayers();
         }
 
-        public static void playerLockX(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerLockX(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
-            var locked = modifier.GetBool(0, true, variables);
+            var locked = modifier.GetBool(0, true, modifierLoop.variables);
 
             // queue post tick so the position of the object is accurate.
             RTLevel.Current.postTick.Enqueue(() =>
@@ -5306,17 +5377,17 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void playerLockXIndex(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerLockXIndex(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var locked = modifier.GetBool(1, true, variables);
+            var locked = modifier.GetBool(1, true, modifierLoop.variables);
 
-            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out PAPlayer player) && player.RuntimePlayer)
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, modifierLoop.variables), out PAPlayer player) && player.RuntimePlayer)
                 player.RuntimePlayer.LockXMovement = locked;
         }
 
-        public static void playerLockXAll(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerLockXAll(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var locked = modifier.GetBool(0, true, variables);
+            var locked = modifier.GetBool(0, true, modifierLoop.variables);
             PlayerManager.Players.ForLoop(player =>
             {
                 if (player.RuntimePlayer)
@@ -5324,12 +5395,12 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void playerLockY(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerLockY(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
-            var locked = modifier.GetBool(0, true, variables);
+            var locked = modifier.GetBool(0, true, modifierLoop.variables);
 
             // queue post tick so the position of the object is accurate.
             RTLevel.Current.postTick.Enqueue(() =>
@@ -5342,17 +5413,17 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void playerLockYIndex(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerLockYIndex(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var locked = modifier.GetBool(1, true, variables);
+            var locked = modifier.GetBool(1, true, modifierLoop.variables);
 
-            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out PAPlayer player) && player.RuntimePlayer)
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, modifierLoop.variables), out PAPlayer player) && player.RuntimePlayer)
                 player.RuntimePlayer.LockYMovement = locked;
         }
 
-        public static void playerLockYAll(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerLockYAll(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var locked = modifier.GetBool(0, true, variables);
+            var locked = modifier.GetBool(0, true, modifierLoop.variables);
             PlayerManager.Players.ForLoop(player =>
             {
                 if (player.RuntimePlayer)
@@ -5360,18 +5431,18 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void playerLockBoostAll(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerLockBoostAll(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (modifier.values.Count > 3 && !string.IsNullOrEmpty(modifier.GetValue(1)) && bool.TryParse(modifier.GetValue(0, variables), out bool lockBoost))
+            if (modifier.values.Count > 3 && !string.IsNullOrEmpty(modifier.GetValue(1)) && bool.TryParse(modifier.GetValue(0, modifierLoop.variables), out bool lockBoost))
                 RTPlayer.LockBoost = lockBoost;
         }
 
-        public static void playerEnable(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerEnable(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
-            var enabled = modifier.GetBool(0, true, variables);
+            var enabled = modifier.GetBool(0, true, modifierLoop.variables);
 
             // queue post tick so the position of the object is accurate.
             RTLevel.Current.postTick.Enqueue(() =>
@@ -5384,17 +5455,17 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void playerEnableIndex(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerEnableIndex(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var enabled = modifier.GetBool(1, true, variables);
+            var enabled = modifier.GetBool(1, true, modifierLoop.variables);
 
-            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out PAPlayer player) && player.RuntimePlayer)
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, modifierLoop.variables), out PAPlayer player) && player.RuntimePlayer)
                 player.SetCustomActive(enabled);
         }
 
-        public static void playerEnableAll(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerEnableAll(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var enabled = modifier.GetBool(0, true, variables);
+            var enabled = modifier.GetBool(0, true, modifierLoop.variables);
 
             PlayerManager.Players.ForLoop(player =>
             {
@@ -5403,9 +5474,9 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void playerMove(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerMove(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
             // queue post tick so the position of the object is accurate.
@@ -5426,10 +5497,10 @@ namespace BetterLegacy.Core.Helpers
                     vector = new Vector2(Parser.TryParse(axis[0], 0f), Parser.TryParse(axis[1], 0f));
                 }
                 else
-                    vector = new Vector2(modifier.GetFloat(0, 0f, variables), modifier.GetFloat(1, 0f, variables));
+                    vector = new Vector2(modifier.GetFloat(0, 0f, modifierLoop.variables), modifier.GetFloat(1, 0f, modifierLoop.variables));
 
-                var duration = modifier.GetFloat(3, 0f, variables);
-                bool relative = modifier.GetBool(4, false, variables);
+                var duration = modifier.GetFloat(3, 0f, modifierLoop.variables);
+                bool relative = modifier.GetBool(4, false, modifierLoop.variables);
                 if (!player || !player.RuntimePlayer)
                     return;
 
@@ -5443,7 +5514,7 @@ namespace BetterLegacy.Core.Helpers
                 }
                 else
                 {
-                    string easing = ModifiersHelper.FormatStringVariables(modifier.GetValue(3, variables), variables);
+                    string easing = ModifiersHelper.FormatStringVariables(modifier.GetValue(3, modifierLoop.variables), modifierLoop.variables);
                     if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
                         easing = Ease.EaseReferences[e].Name;
 
@@ -5453,7 +5524,7 @@ namespace BetterLegacy.Core.Helpers
                         new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
                         {
                             new Vector2Keyframe(0f, tf.localPosition, Ease.Linear),
-                            new Vector2Keyframe(modifier.GetFloat(2, 1f, variables), new Vector2(vector.x + (relative ? tf.localPosition.x : 0f), vector.y + (relative ? tf.localPosition.y : 0f)), Ease.GetEaseFunction(easing, Ease.Linear)),
+                            new Vector2Keyframe(modifier.GetFloat(2, 1f, modifierLoop.variables), new Vector2(vector.x + (relative ? tf.localPosition.x : 0f), vector.y + (relative ? tf.localPosition.y : 0f)), Ease.GetEaseFunction(easing, Ease.Linear)),
                         }, vector2 => tf.localPosition = vector2, interpolateOnComplete: true),
                     };
                     animation.SetDefaultOnComplete();
@@ -5462,18 +5533,18 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void playerMoveIndex(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerMoveIndex(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var vector = new Vector2(modifier.GetFloat(1, 0f, variables), modifier.GetFloat(2, 0f, variables));
-            var duration = modifier.GetFloat(3, 0f, variables);
+            var vector = new Vector2(modifier.GetFloat(1, 0f, modifierLoop.variables), modifier.GetFloat(2, 0f, modifierLoop.variables));
+            var duration = modifier.GetFloat(3, 0f, modifierLoop.variables);
 
-            string easing = ModifiersHelper.FormatStringVariables(modifier.GetValue(4, variables), variables);
+            string easing = ModifiersHelper.FormatStringVariables(modifier.GetValue(4, modifierLoop.variables), modifierLoop.variables);
             if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
                 easing = Ease.EaseReferences[e].Name;
 
-            var relative = modifier.GetBool(5, false, variables);
+            var relative = modifier.GetBool(5, false, modifierLoop.variables);
 
-            if (!PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out PAPlayer player) || !player.RuntimePlayer)
+            if (!PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, modifierLoop.variables), out PAPlayer player) || !player.RuntimePlayer)
                 return;
 
             var tf = player.RuntimePlayer.rb.transform;
@@ -5500,9 +5571,9 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void playerMoveAll(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerMoveAll(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var value = modifier.GetValue(0, variables);
+            var value = modifier.GetValue(0, modifierLoop.variables);
 
             Vector2 vector;
             if (value.Contains(','))
@@ -5514,15 +5585,15 @@ namespace BetterLegacy.Core.Helpers
                 vector = new Vector2(Parser.TryParse(axis[0], 0f), Parser.TryParse(axis[1], 0f));
             }
             else
-                vector = new Vector2(modifier.GetFloat(0, 0f, variables), modifier.GetFloat(1, 0f, variables));
+                vector = new Vector2(modifier.GetFloat(0, 0f, modifierLoop.variables), modifier.GetFloat(1, 0f, modifierLoop.variables));
 
-            var duration = modifier.GetFloat(2, 1f, variables);
+            var duration = modifier.GetFloat(2, 1f, modifierLoop.variables);
 
-            string easing = ModifiersHelper.FormatStringVariables(modifier.GetValue(3, variables), variables);
+            string easing = ModifiersHelper.FormatStringVariables(modifier.GetValue(3, modifierLoop.variables), modifierLoop.variables);
             if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
                 easing = Ease.EaseReferences[e].Name;
 
-            bool relative = modifier.GetBool(4, false, variables);
+            bool relative = modifier.GetBool(4, false, modifierLoop.variables);
             foreach (var player in PlayerManager.Players)
             {
                 if (!player.RuntimePlayer)
@@ -5553,18 +5624,18 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void playerMoveX(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerMoveX(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
-            var value = modifier.GetFloat(0, 0f, variables);
-            var duration = modifier.GetFloat(1, 1f, variables);
-            string easing = ModifiersHelper.FormatStringVariables(modifier.GetValue(2, variables), variables);
+            var value = modifier.GetFloat(0, 0f, modifierLoop.variables);
+            var duration = modifier.GetFloat(1, 1f, modifierLoop.variables);
+            string easing = ModifiersHelper.FormatStringVariables(modifier.GetValue(2, modifierLoop.variables), modifierLoop.variables);
             if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
                 easing = Ease.EaseReferences[e].Name;
 
-            bool relative = modifier.GetBool(3, false, variables);
+            bool relative = modifier.GetBool(3, false, modifierLoop.variables);
 
             // queue post tick so the position of the object is accurate.
             RTLevel.Current.postTick.Enqueue(() =>
@@ -5602,18 +5673,18 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void playerMoveXIndex(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerMoveXIndex(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var value = modifier.GetFloat(1, 0f, variables);
-            var duration = modifier.GetFloat(2, 0f, variables);
+            var value = modifier.GetFloat(1, 0f, modifierLoop.variables);
+            var duration = modifier.GetFloat(2, 0f, modifierLoop.variables);
 
-            string easing = ModifiersHelper.FormatStringVariables(modifier.GetValue(3, variables), variables);
+            string easing = ModifiersHelper.FormatStringVariables(modifier.GetValue(3, modifierLoop.variables), modifierLoop.variables);
             if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
                 easing = Ease.EaseReferences[e].Name;
 
-            var relative = modifier.GetBool(4, false, variables);
+            var relative = modifier.GetBool(4, false, modifierLoop.variables);
 
-            if (!PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out PAPlayer player) || !player.RuntimePlayer)
+            if (!PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, modifierLoop.variables), out PAPlayer player) || !player.RuntimePlayer)
                 return;
 
             var tf = player.RuntimePlayer.rb.transform;
@@ -5642,15 +5713,15 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void playerMoveXAll(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerMoveXAll(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var value = modifier.GetFloat(0, 0f, variables);
-            var duration = modifier.GetFloat(1, 1f, variables);
-            string easing = ModifiersHelper.FormatStringVariables(modifier.GetValue(2, variables), variables);
+            var value = modifier.GetFloat(0, 0f, modifierLoop.variables);
+            var duration = modifier.GetFloat(1, 1f, modifierLoop.variables);
+            string easing = ModifiersHelper.FormatStringVariables(modifier.GetValue(2, modifierLoop.variables), modifierLoop.variables);
             if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
                 easing = Ease.EaseReferences[e].Name;
 
-            bool relative = modifier.GetBool(3, false, variables);
+            bool relative = modifier.GetBool(3, false, modifierLoop.variables);
             foreach (var player in PlayerManager.Players)
             {
                 if (!player.RuntimePlayer)
@@ -5683,18 +5754,18 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void playerMoveY(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerMoveY(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
-            var value = modifier.GetFloat(0, 0f, variables);
-            var duration = modifier.GetFloat(1, 1f, variables);
-            string easing = ModifiersHelper.FormatStringVariables(modifier.GetValue(2, variables), variables);
+            var value = modifier.GetFloat(0, 0f, modifierLoop.variables);
+            var duration = modifier.GetFloat(1, 1f, modifierLoop.variables);
+            string easing = ModifiersHelper.FormatStringVariables(modifier.GetValue(2, modifierLoop.variables), modifierLoop.variables);
             if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
                 easing = Ease.EaseReferences[e].Name;
 
-            bool relative = modifier.GetBool(3, false, variables);
+            bool relative = modifier.GetBool(3, false, modifierLoop.variables);
 
             // queue post tick so the position of the object is accurate.
             RTLevel.Current.postTick.Enqueue(() =>
@@ -5732,18 +5803,18 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void playerMoveYIndex(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerMoveYIndex(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var value = modifier.GetFloat(1, 0f, variables);
-            var duration = modifier.GetFloat(2, 0f, variables);
+            var value = modifier.GetFloat(1, 0f, modifierLoop.variables);
+            var duration = modifier.GetFloat(2, 0f, modifierLoop.variables);
 
-            string easing = ModifiersHelper.FormatStringVariables(modifier.GetValue(3, variables), variables);
+            string easing = ModifiersHelper.FormatStringVariables(modifier.GetValue(3, modifierLoop.variables), modifierLoop.variables);
             if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
                 easing = Ease.EaseReferences[e].Name;
 
-            var relative = modifier.GetBool(4, false, variables);
+            var relative = modifier.GetBool(4, false, modifierLoop.variables);
 
-            if (!PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out PAPlayer player) || !player.RuntimePlayer)
+            if (!PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, modifierLoop.variables), out PAPlayer player) || !player.RuntimePlayer)
                 return;
 
             var tf = player.RuntimePlayer.rb.transform;
@@ -5772,15 +5843,15 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void playerMoveYAll(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerMoveYAll(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var value = modifier.GetFloat(0, 0f, variables);
-            var duration = modifier.GetFloat(1, 1f, variables);
-            string easing = ModifiersHelper.FormatStringVariables(modifier.GetValue(2, variables), variables);
+            var value = modifier.GetFloat(0, 0f, modifierLoop.variables);
+            var duration = modifier.GetFloat(1, 1f, modifierLoop.variables);
+            string easing = ModifiersHelper.FormatStringVariables(modifier.GetValue(2, modifierLoop.variables), modifierLoop.variables);
             if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
                 easing = Ease.EaseReferences[e].Name;
 
-            bool relative = modifier.GetBool(3, false, variables);
+            bool relative = modifier.GetBool(3, false, modifierLoop.variables);
             foreach (var player in PlayerManager.Players)
             {
                 if (!player.RuntimePlayer)
@@ -5813,17 +5884,17 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void playerRotate(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerRotate(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
-            var value = modifier.GetFloat(0, 0f, variables);
-            string easing = ModifiersHelper.FormatStringVariables(modifier.GetValue(2, variables), variables);
+            var value = modifier.GetFloat(0, 0f, modifierLoop.variables);
+            string easing = ModifiersHelper.FormatStringVariables(modifier.GetValue(2, modifierLoop.variables), modifierLoop.variables);
             if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
                 easing = Ease.EaseReferences[e].Name;
-            var duration = modifier.GetFloat(1, 1f, variables);
-            bool relative = modifier.GetBool(3, false, variables);
+            var duration = modifier.GetFloat(1, 1f, modifierLoop.variables);
+            bool relative = modifier.GetBool(3, false, modifierLoop.variables);
 
             // queue post tick so the position of the object is accurate.
             RTLevel.Current.postTick.Enqueue(() =>
@@ -5861,18 +5932,18 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void playerRotateIndex(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerRotateIndex(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var value = modifier.GetFloat(1, 0f, variables);
-            var duration = modifier.GetFloat(2, 0f, variables);
+            var value = modifier.GetFloat(1, 0f, modifierLoop.variables);
+            var duration = modifier.GetFloat(2, 0f, modifierLoop.variables);
 
-            string easing = ModifiersHelper.FormatStringVariables(modifier.GetValue(3, variables), variables);
+            string easing = ModifiersHelper.FormatStringVariables(modifier.GetValue(3, modifierLoop.variables), modifierLoop.variables);
             if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
                 easing = Ease.EaseReferences[e].Name;
 
-            var relative = modifier.GetBool(4, false, variables);
+            var relative = modifier.GetBool(4, false, modifierLoop.variables);
 
-            if (!PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out PAPlayer player) || !player.RuntimePlayer)
+            if (!PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, modifierLoop.variables), out PAPlayer player) || !player.RuntimePlayer)
                 return;
 
             var tf = player.RuntimePlayer.rb.transform;
@@ -5901,15 +5972,15 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void playerRotateAll(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerRotateAll(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var value = modifier.GetFloat(0, 0f, variables);
-            string easing = ModifiersHelper.FormatStringVariables(modifier.GetValue(2, variables), variables);
+            var value = modifier.GetFloat(0, 0f, modifierLoop.variables);
+            string easing = ModifiersHelper.FormatStringVariables(modifier.GetValue(2, modifierLoop.variables), modifierLoop.variables);
             if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
                 easing = Ease.EaseReferences[e].Name;
-            var duration = modifier.GetFloat(1, 1f, variables);
+            var duration = modifier.GetFloat(1, 1f, modifierLoop.variables);
 
-            bool relative = modifier.GetBool(3, false, variables);
+            bool relative = modifier.GetBool(3, false, modifierLoop.variables);
             foreach (var player in PlayerManager.Players)
             {
                 if (!player.RuntimePlayer || !player.RuntimePlayer.rb)
@@ -5942,9 +6013,9 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void playerMoveToObject(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerMoveToObject(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
             // queue post tick so the position of the object is accurate.
@@ -5960,12 +6031,12 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void playerMoveIndexToObject(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerMoveIndexToObject(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
-            var index = modifier.GetInt(0, 0, variables);
+            var index = modifier.GetInt(0, 0, modifierLoop.variables);
             // queue post tick so the position of the object is accurate.
             RTLevel.Current.postTick.Enqueue(() =>
             {
@@ -5977,9 +6048,9 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void playerMoveAllToObject(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerMoveAllToObject(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
             // queue post tick so the position of the object is accurate.
@@ -5996,9 +6067,9 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void playerMoveXToObject(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerMoveXToObject(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
             // queue post tick so the position of the object is accurate.
@@ -6015,12 +6086,12 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void playerMoveXIndexToObject(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerMoveXIndexToObject(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
-            var index = modifier.GetInt(0, 0, variables);
+            var index = modifier.GetInt(0, 0, modifierLoop.variables);
             // queue post tick so the position of the object is accurate.
             RTLevel.Current.postTick.Enqueue(() =>
             {
@@ -6033,9 +6104,9 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void playerMoveXAllToObject(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerMoveXAllToObject(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
             // queue post tick so the position of the object is accurate.
@@ -6053,9 +6124,9 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void playerMoveYToObject(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerMoveYToObject(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
             // queue post tick so the position of the object is accurate.
@@ -6072,12 +6143,12 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void playerMoveYIndexToObject(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerMoveYIndexToObject(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
-            var index = modifier.GetInt(0, 0, variables);
+            var index = modifier.GetInt(0, 0, modifierLoop.variables);
             // queue post tick so the position of the object is accurate.
             RTLevel.Current.postTick.Enqueue(() =>
             {
@@ -6090,9 +6161,9 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void playerMoveYAllToObject(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerMoveYAllToObject(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
             // queue post tick so the position of the object is accurate.
@@ -6110,9 +6181,9 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void playerRotateToObject(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerRotateToObject(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
             // queue post tick so the position of the object is accurate.
@@ -6128,12 +6199,12 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void playerRotateIndexToObject(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerRotateIndexToObject(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
-            var index = modifier.GetInt(0, 0, variables);
+            var index = modifier.GetInt(0, 0, modifierLoop.variables);
             // queue post tick so the position of the object is accurate.
             RTLevel.Current.postTick.Enqueue(() =>
             {
@@ -6144,9 +6215,9 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void playerRotateAllToObject(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerRotateAllToObject(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
             // queue post tick so the position of the object is accurate.
@@ -6164,14 +6235,14 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void playerDrag(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerDrag(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
-            var usePosition = modifier.GetBool(0, false, variables);
-            var useScale = modifier.GetBool(1, false, variables);
-            var useRotation = modifier.GetBool(2, false, variables);
+            var usePosition = modifier.GetBool(0, false, modifierLoop.variables);
+            var useScale = modifier.GetBool(1, false, modifierLoop.variables);
+            var useRotation = modifier.GetBool(2, false, modifierLoop.variables);
 
             var prevPos = !usePosition ? Vector3.zero : beatmapObject.GetFullPosition();
             var prevSca = !useScale ? Vector3.zero : beatmapObject.GetFullScale();
@@ -6217,13 +6288,13 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void playerBoost(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerBoost(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (modifier.constant || reference is not BeatmapObject beatmapObject)
+            if (modifier.constant || modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
-            var xStr = modifier.GetValue(0, variables);
-            var yStr = modifier.GetValue(1, variables);
+            var xStr = modifier.GetValue(0, modifierLoop.variables);
+            var yStr = modifier.GetValue(1, modifierLoop.variables);
             var shouldBoostX = false;
             var shouldBoostY = false;
             var x = 0f;
@@ -6258,10 +6329,10 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void playerBoostIndex(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerBoostIndex(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var xStr = modifier.GetValue(0, variables);
-            var yStr = modifier.GetValue(1, variables);
+            var xStr = modifier.GetValue(0, modifierLoop.variables);
+            var yStr = modifier.GetValue(1, modifierLoop.variables);
             var shouldBoostX = false;
             var shouldBoostY = false;
             var x = 0f;
@@ -6279,7 +6350,7 @@ namespace BetterLegacy.Core.Helpers
                 y = Parser.TryParse(yStr, 0f);
             }
 
-            if (!modifier.constant && PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out PAPlayer player) && player.RuntimePlayer)
+            if (!modifier.constant && PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, modifierLoop.variables), out PAPlayer player) && player.RuntimePlayer)
             {
                 if (shouldBoostX)
                     player.RuntimePlayer.lastMoveHorizontal = x;
@@ -6289,10 +6360,10 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void playerBoostAll(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerBoostAll(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var xStr = modifier.GetValue(0, variables);
-            var yStr = modifier.GetValue(1, variables);
+            var xStr = modifier.GetValue(0, modifierLoop.variables);
+            var yStr = modifier.GetValue(1, modifierLoop.variables);
             var shouldBoostX = false;
             var shouldBoostY = false;
             var x = 0f;
@@ -6323,9 +6394,9 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void playerCancelBoost(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerCancelBoost(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (modifier.constant || reference is not BeatmapObject beatmapObject)
+            if (modifier.constant || modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
             // queue post tick so the position of the object is accurate.
@@ -6339,13 +6410,13 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void playerCancelBoostIndex(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerCancelBoostIndex(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out PAPlayer player) && player.RuntimePlayer && player.RuntimePlayer.CanCancelBoosting)
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, modifierLoop.variables), out PAPlayer player) && player.RuntimePlayer && player.RuntimePlayer.CanCancelBoosting)
                 player.RuntimePlayer.StopBoosting();
         }
 
-        public static void playerCancelBoostAll(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerCancelBoostAll(Modifier modifier, ModifierLoop modifierLoop)
         {
             foreach (var player in PlayerManager.Players)
             {
@@ -6354,9 +6425,9 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void playerDisableBoost(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerDisableBoost(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
             // queue post tick so the position of the object is accurate.
@@ -6370,13 +6441,13 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void playerDisableBoostIndex(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerDisableBoostIndex(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out PAPlayer player) && player.RuntimePlayer)
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, modifierLoop.variables), out PAPlayer player) && player.RuntimePlayer)
                 player.RuntimePlayer.CanBoost = false;
         }
 
-        public static void playerDisableBoostAll(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerDisableBoostAll(Modifier modifier, ModifierLoop modifierLoop)
         {
             foreach (var player in PlayerManager.Players)
             {
@@ -6385,12 +6456,12 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void playerEnableBoost(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerEnableBoost(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
-            var enabled = modifier.GetBool(0, true, variables);
+            var enabled = modifier.GetBool(0, true, modifierLoop.variables);
 
             // queue post tick so the position of the object is accurate.
             RTLevel.Current.postTick.Enqueue(() =>
@@ -6403,17 +6474,17 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void playerEnableBoostIndex(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerEnableBoostIndex(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var enabled = modifier.GetBool(1, true, variables);
+            var enabled = modifier.GetBool(1, true, modifierLoop.variables);
 
-            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out PAPlayer player) && player.RuntimePlayer)
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, modifierLoop.variables), out PAPlayer player) && player.RuntimePlayer)
                 player.RuntimePlayer.CanBoost = enabled;
         }
 
-        public static void playerEnableBoostAll(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerEnableBoostAll(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var enabled = modifier.GetBool(0, true, variables);
+            var enabled = modifier.GetBool(0, true, modifierLoop.variables);
 
             foreach (var player in PlayerManager.Players)
             {
@@ -6422,13 +6493,13 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void playerEnableMove(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerEnableMove(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
-            var enabled = modifier.GetBool(0, true, variables);
-            var rotate = modifier.GetBool(1, true, variables);
+            var enabled = modifier.GetBool(0, true, modifierLoop.variables);
+            var rotate = modifier.GetBool(1, true, modifierLoop.variables);
 
             // queue post tick so the position of the object is accurate.
             RTLevel.Current.postTick.Enqueue(() =>
@@ -6444,22 +6515,22 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void playerEnableMoveIndex(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerEnableMoveIndex(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var enabled = modifier.GetBool(1, true, variables);
-            var rotate = modifier.GetBool(2, true, variables);
+            var enabled = modifier.GetBool(1, true, modifierLoop.variables);
+            var rotate = modifier.GetBool(2, true, modifierLoop.variables);
 
-            if (!PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out PAPlayer player) || !player.RuntimePlayer)
+            if (!PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, modifierLoop.variables), out PAPlayer player) || !player.RuntimePlayer)
                 return;
 
             player.RuntimePlayer.CanMove = enabled;
             player.RuntimePlayer.CanRotate = rotate;
         }
 
-        public static void playerEnableMoveAll(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerEnableMoveAll(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var enabled = modifier.GetBool(0, true, variables);
-            var rotate = modifier.GetBool(1, true, variables);
+            var enabled = modifier.GetBool(0, true, modifierLoop.variables);
+            var rotate = modifier.GetBool(1, true, modifierLoop.variables);
 
             foreach (var player in PlayerManager.Players)
             {
@@ -6471,15 +6542,15 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void playerSpeed(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables) => RTPlayer.SpeedMultiplier = modifier.GetFloat(0, 1f, variables);
+        public static void playerSpeed(Modifier modifier, ModifierLoop modifierLoop) => RTPlayer.SpeedMultiplier = modifier.GetFloat(0, 1f, modifierLoop.variables);
 
-        public static void playerVelocity(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerVelocity(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
-            var x = modifier.GetFloat(0, 0f, variables);
-            var y = modifier.GetFloat(1, 0f, variables);
+            var x = modifier.GetFloat(0, 0f, modifierLoop.variables);
+            var y = modifier.GetFloat(1, 0f, modifierLoop.variables);
 
             // queue post tick so the position of the object is accurate.
             RTLevel.Current.postTick.Enqueue(() =>
@@ -6492,20 +6563,20 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void playerVelocityIndex(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerVelocityIndex(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var index = modifier.GetInt(0, 0, variables);
-            var x = modifier.GetFloat(1, 0f, variables);
-            var y = modifier.GetFloat(2, 0f, variables);
+            var index = modifier.GetInt(0, 0, modifierLoop.variables);
+            var x = modifier.GetFloat(1, 0f, modifierLoop.variables);
+            var y = modifier.GetFloat(2, 0f, modifierLoop.variables);
 
             if (PlayerManager.Players.TryGetAt(index, out PAPlayer player) && player.RuntimePlayer && player.RuntimePlayer.rb)
                 player.RuntimePlayer.rb.velocity = new Vector2(x, y);
         }
 
-        public static void playerVelocityAll(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerVelocityAll(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var x = modifier.GetFloat(0, 0f, variables);
-            var y = modifier.GetFloat(1, 0f, variables);
+            var x = modifier.GetFloat(0, 0f, modifierLoop.variables);
+            var y = modifier.GetFloat(1, 0f, modifierLoop.variables);
 
             for (int i = 0; i < PlayerManager.Players.Count; i++)
             {
@@ -6515,12 +6586,12 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void playerVelocityX(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerVelocityX(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
-            var x = modifier.GetFloat(0, 0f, variables);
+            var x = modifier.GetFloat(0, 0f, modifierLoop.variables);
 
             // queue post tick so the position of the object is accurate.
             RTLevel.Current.postTick.Enqueue(() =>
@@ -6537,10 +6608,10 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void playerVelocityXIndex(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerVelocityXIndex(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var index = modifier.GetInt(0, 0, variables);
-            var x = modifier.GetFloat(1, 0f, variables);
+            var index = modifier.GetInt(0, 0, modifierLoop.variables);
+            var x = modifier.GetFloat(1, 0f, modifierLoop.variables);
 
             if (!PlayerManager.Players.TryGetAt(index, out PAPlayer player) || !player.RuntimePlayer || !player.RuntimePlayer.rb)
                 return;
@@ -6550,9 +6621,9 @@ namespace BetterLegacy.Core.Helpers
             player.RuntimePlayer.rb.velocity = velocity;
         }
 
-        public static void playerVelocityXAll(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerVelocityXAll(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var x = modifier.GetFloat(0, 0f, variables);
+            var x = modifier.GetFloat(0, 0f, modifierLoop.variables);
 
             for (int i = 0; i < PlayerManager.Players.Count; i++)
             {
@@ -6566,12 +6637,12 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void playerVelocityY(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerVelocityY(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
-            var y = modifier.GetFloat(0, 0f, variables);
+            var y = modifier.GetFloat(0, 0f, modifierLoop.variables);
 
             // queue post tick so the position of the object is accurate.
             RTLevel.Current.postTick.Enqueue(() =>
@@ -6588,10 +6659,10 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void playerVelocityYIndex(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerVelocityYIndex(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var index = modifier.GetInt(0, 0, variables);
-            var y = modifier.GetFloat(1, 0f, variables);
+            var index = modifier.GetInt(0, 0, modifierLoop.variables);
+            var y = modifier.GetFloat(1, 0f, modifierLoop.variables);
 
             if (!PlayerManager.Players.TryGetAt(index, out PAPlayer player) || !player.RuntimePlayer || !player.RuntimePlayer.rb)
                 return;
@@ -6601,9 +6672,9 @@ namespace BetterLegacy.Core.Helpers
             player.RuntimePlayer.rb.velocity = velocity;
         }
 
-        public static void playerVelocityYAll(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerVelocityYAll(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var y = modifier.GetFloat(0, 0f, variables);
+            var y = modifier.GetFloat(0, 0f, modifierLoop.variables);
 
             for (int i = 0; i < PlayerManager.Players.Count; i++)
             {
@@ -6617,12 +6688,12 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void playerEnableDamage(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerEnableDamage(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
-            var enabled = modifier.GetBool(0, true, variables);
+            var enabled = modifier.GetBool(0, true, modifierLoop.variables);
 
             // queue post tick so the position of the object is accurate.
             RTLevel.Current.postTick.Enqueue(() =>
@@ -6635,17 +6706,17 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void playerEnableDamageIndex(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerEnableDamageIndex(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var enabled = modifier.GetBool(1, true, variables);
+            var enabled = modifier.GetBool(1, true, modifierLoop.variables);
 
-            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out PAPlayer player) && player.RuntimePlayer)
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, modifierLoop.variables), out PAPlayer player) && player.RuntimePlayer)
                 player.RuntimePlayer.canTakeDamageModified = enabled;
         }
 
-        public static void playerEnableDamageAll(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playerEnableDamageAll(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var enabled = modifier.GetBool(0, true, variables);
+            var enabled = modifier.GetBool(0, true, modifierLoop.variables);
 
             foreach (var player in PlayerManager.Players)
             {
@@ -6654,13 +6725,13 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void setPlayerModel(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void setPlayerModel(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (modifier.constant)
                 return;
 
-            var id = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, variables), variables);
-            var index = modifier.GetInt(1, 0, variables);
+            var id = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables);
+            var index = modifier.GetInt(1, 0, modifierLoop.variables);
 
             if (!PlayersData.Current.playerModels.ContainsKey(id))
                 return;
@@ -6677,20 +6748,20 @@ namespace BetterLegacy.Core.Helpers
             player.RuntimePlayer.UpdateModel();
         }
 
-        public static void setGameMode(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables) => RTPlayer.GameMode = (GameMode)modifier.GetInt(0, 0);
+        public static void setGameMode(Modifier modifier, ModifierLoop modifierLoop) => RTPlayer.GameMode = (GameMode)modifier.GetInt(0, 0);
 
-        public static void gameMode(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables) => RTPlayer.GameMode = (GameMode)modifier.GetInt(0, 0);
+        public static void gameMode(Modifier modifier, ModifierLoop modifierLoop) => RTPlayer.GameMode = (GameMode)modifier.GetInt(0, 0);
 
-        public static void blackHole(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void blackHole(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
             float p = Time.deltaTime * 60f * CoreHelper.ForwardPitch;
 
-            float num = modifier.GetFloat(0, 0.01f, variables);
+            float num = modifier.GetFloat(0, 0.01f, modifierLoop.variables);
 
-            if (modifier.GetBool(1, false, variables))
+            if (modifier.GetBool(1, false, modifierLoop.variables))
                 num = -(beatmapObject.Interpolate(3, 1) - 1f) * num;
 
             if (num == 0f)
@@ -6717,20 +6788,20 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void blackHoleIndex(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void blackHoleIndex(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
             float p = Time.deltaTime * 60f * CoreHelper.ForwardPitch;
 
-            float num = modifier.GetFloat(1, 0.01f, variables);
+            float num = modifier.GetFloat(1, 0.01f, modifierLoop.variables);
 
             if (num == 0f)
                 return;
 
             float moveDelay = 1f - Mathf.Pow(1f - Mathf.Clamp(num, 0.001f, 1f), p);
-            var index = modifier.GetInt(0, 0, variables);
+            var index = modifier.GetInt(0, 0, modifierLoop.variables);
             if (!PlayerManager.Players.TryGetAt(index, out PAPlayer player) || !player.RuntimePlayer || !player.RuntimePlayer.rb)
                 return;
 
@@ -6747,16 +6818,16 @@ namespace BetterLegacy.Core.Helpers
             transform.position += (target - vector) * moveDelay;
         }
 
-        public static void blackHoleAll(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void blackHoleAll(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
             float p = Time.deltaTime * 60f * CoreHelper.ForwardPitch;
 
-            float num = modifier.GetFloat(0, 0.01f, variables);
+            float num = modifier.GetFloat(0, 0.01f, modifierLoop.variables);
 
-            if (modifier.GetBool(1, false, variables))
+            if (modifier.GetBool(1, false, modifierLoop.variables))
                 num = -(beatmapObject.Interpolate(3, 1) - 1f) * num;
 
             if (num == 0f)
@@ -6784,14 +6855,14 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void whiteHole(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void whiteHole(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
             float p = Time.deltaTime * 60f * CoreHelper.ForwardPitch;
 
-            float num = modifier.GetFloat(0, 0.01f, variables);
+            float num = modifier.GetFloat(0, 0.01f, modifierLoop.variables);
 
             if (num == 0f)
                 return;
@@ -6817,20 +6888,20 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void whiteHoleIndex(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void whiteHoleIndex(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
             float p = Time.deltaTime * 60f * CoreHelper.ForwardPitch;
 
-            float num = modifier.GetFloat(1, 0.01f, variables);
+            float num = modifier.GetFloat(1, 0.01f, modifierLoop.variables);
 
             if (num == 0f)
                 return;
 
             float moveDelay = 1f - Mathf.Pow(1f - Mathf.Clamp(num, 0.001f, 1f), p);
-            var index = modifier.GetInt(0, 0, variables);
+            var index = modifier.GetInt(0, 0, modifierLoop.variables);
             if (!PlayerManager.Players.TryGetAt(index, out PAPlayer player) || !player.RuntimePlayer || !player.RuntimePlayer.rb)
                 return;
 
@@ -6851,16 +6922,16 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void whiteHoleAll(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void whiteHoleAll(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
             float p = Time.deltaTime * 60f * CoreHelper.ForwardPitch;
 
-            float num = modifier.GetFloat(0, 0.01f, variables);
+            float num = modifier.GetFloat(0, 0.01f, modifierLoop.variables);
 
-            if (modifier.GetBool(1, false, variables))
+            if (modifier.GetBool(1, false, modifierLoop.variables))
                 num = -(beatmapObject.Interpolate(3, 1) - 1f) * num;
 
             if (num == 0f)
@@ -6892,9 +6963,9 @@ namespace BetterLegacy.Core.Helpers
 
         #region Mouse Cursor
 
-        public static void showMouse(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void showMouse(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var value = modifier.GetValue(0, variables);
+            var value = modifier.GetValue(0, modifierLoop.variables);
             if (value == "0")
                 value = "True";
             var enabled = Parser.TryParse(value, true);
@@ -6905,13 +6976,13 @@ namespace BetterLegacy.Core.Helpers
                 CursorManager.inst.HideCursor();
         }
 
-        public static void hideMouse(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void hideMouse(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (CoreHelper.InEditorPreview)
                 CursorManager.inst.HideCursor();
         }
 
-        public static void setMousePosition(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void setMousePosition(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (CoreHelper.IsEditing)
                 return;
@@ -6920,26 +6991,26 @@ namespace BetterLegacy.Core.Helpers
             float windowCenterX = (Display.main.systemWidth) / 2;
             float windowCenterY = (Display.main.systemHeight) / 2;
 
-            var x = modifier.GetFloat(1, 0f, variables);
-            var y = modifier.GetFloat(2, 0f, variables);
+            var x = modifier.GetFloat(1, 0f, modifierLoop.variables);
+            var y = modifier.GetFloat(2, 0f, modifierLoop.variables);
 
             CursorManager.inst.SetCursorPosition(new Vector2((x * screenScale) + windowCenterX, (y * screenScale) + windowCenterY));
         }
 
-        public static void followMousePosition(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void followMousePosition(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (modifier.GetValue(0) == "0")
                 modifier.SetValue(0, "1");
 
-            if (reference is not ITransformable transformable)
+            if (modifierLoop.reference is not ITransformable transformable)
                 return;
 
             Vector2 mousePosition = Input.mousePosition;
             mousePosition = Camera.main.ScreenToWorldPoint(mousePosition);
 
             float p = Time.deltaTime * 60f;
-            float po = 1f - Mathf.Pow(1f - Mathf.Clamp(modifier.GetFloat(0, 1f, variables), 0.001f, 1f), p);
-            float ro = 1f - Mathf.Pow(1f - Mathf.Clamp(modifier.GetFloat(1, 1f, variables), 0.001f, 1f), p);
+            float po = 1f - Mathf.Pow(1f - Mathf.Clamp(modifier.GetFloat(0, 1f, modifierLoop.variables), 0.001f, 1f), p);
+            float ro = 1f - Mathf.Pow(1f - Mathf.Clamp(modifier.GetFloat(1, 1f, modifierLoop.variables), 0.001f, 1f), p);
 
             if (modifier.Result == null)
                 modifier.Result = Vector2.zero;
@@ -6961,35 +7032,35 @@ namespace BetterLegacy.Core.Helpers
 
         #region Enable
 
-        public static void enableObject(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void enableObject(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var value = modifier.GetValue(0, variables);
+            var value = modifier.GetValue(0, modifierLoop.variables);
             if (value == "0")
                 value = "True";
 
-            if (reference is ICustomActivatable activatable)
+            if (modifierLoop.reference is ICustomActivatable activatable)
             {
                 activatable.SetCustomActive(Parser.TryParse(value, true));
                 return;
             }
 
-            if (reference is not IPrefabable prefabable)
+            if (modifierLoop.reference is not IPrefabable prefabable)
                 return;
 
             ModifiersHelper.SetObjectActive(prefabable, Parser.TryParse(value, true));
         }
 
-        public static void enableObjectTree(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void enableObjectTree(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var value = modifier.GetValue(0, variables);
+            var value = modifier.GetValue(0, modifierLoop.variables);
             if (value == "0")
                 value = "False";
 
-            var enabled = modifier.GetBool(2, true, variables);
+            var enabled = modifier.GetBool(2, true, modifierLoop.variables);
 
             var list = modifier.GetResultOrDefault(() =>
             {
-                if (reference is not BeatmapObject beatmapObject)
+                if (modifierLoop.reference is not BeatmapObject beatmapObject)
                     return new List<BeatmapObject>();
 
                 var root = Parser.TryParse(value, true) ? beatmapObject : beatmapObject.GetParentChain().Last();
@@ -7000,17 +7071,17 @@ namespace BetterLegacy.Core.Helpers
                 list[i].runtimeObject?.SetCustomActive(enabled);
         }
 
-        public static void enableObjectOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void enableObjectOther(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var enabled = modifier.GetBool(2, true, variables);
+            var enabled = modifier.GetBool(2, true, modifierLoop.variables);
 
             var cache = modifier.GetResultOrDefault(() =>
             {
-                var prefabable = reference.AsPrefabable();
+                var prefabable = modifierLoop.reference.AsPrefabable();
                 if (prefabable == null)
                     return null;
 
-                return new GenericGroupCache<IPrefabable>(modifier.GetValue(0, variables), GameData.Current.FindPrefabablesWithTag(modifier, prefabable, modifier.GetValue(0, variables)));
+                return new GenericGroupCache<IPrefabable>(modifier.GetValue(0, modifierLoop.variables), GameData.Current.FindPrefabablesWithTag(modifier, prefabable, modifier.GetValue(0, modifierLoop.variables)));
             });
 
             if (cache == null || cache.group.IsEmpty())
@@ -7020,20 +7091,20 @@ namespace BetterLegacy.Core.Helpers
                 ModifiersHelper.SetObjectActive(other, enabled);
         }
 
-        public static void enableObjectTreeOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void enableObjectTreeOther(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var enabled = modifier.GetBool(3, true, variables);
+            var enabled = modifier.GetBool(3, true, modifierLoop.variables);
 
             var list = modifier.GetResultOrDefault(() =>
             {
                 var resultList = new List<BeatmapObject>();
 
-                var prefabable = reference.AsPrefabable();
+                var prefabable = modifierLoop.reference.AsPrefabable();
                 if (prefabable == null)
                     return resultList;
 
-                var beatmapObjects = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, variables));
-                var useSelf = modifier.GetBool(0, true, variables);
+                var beatmapObjects = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, modifierLoop.variables));
+                var useSelf = modifier.GetBool(0, true, modifierLoop.variables);
 
                 foreach (var bm in beatmapObjects)
                 {
@@ -7048,15 +7119,15 @@ namespace BetterLegacy.Core.Helpers
         }
 
         // if this ever needs to be updated, add a "version" int number to modifiers that increment each time a major change was done to the modifier.
-        public static void enableObjectGroup(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void enableObjectGroup(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var enabled = modifier.GetBool(0, true, variables);
-            var state = modifier.GetInt(1, 0, variables);
+            var enabled = modifier.GetBool(0, true, modifierLoop.variables);
+            var state = modifier.GetInt(1, 0, modifierLoop.variables);
 
             var enableObjectGroupCache = modifier.GetResultOrDefault(() =>
             {
                 var cache = new EnableObjectGroupCache();
-                var prefabable = reference.AsPrefabable();
+                var prefabable = modifierLoop.reference.AsPrefabable();
                 if (prefabable == null)
                     return cache;
 
@@ -7080,18 +7151,18 @@ namespace BetterLegacy.Core.Helpers
             enableObjectGroupCache?.SetGroupActive(enabled, state);
         }
 
-        public static void disableObject(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void disableObject(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is BeatmapObject beatmapObject)
+            if (modifierLoop.reference is BeatmapObject beatmapObject)
                 beatmapObject.runtimeObject?.SetCustomActive(false);
         }
 
-        public static void disableObjectTree(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void disableObjectTree(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
-            var value = modifier.GetValue(0, variables);
+            var value = modifier.GetValue(0, modifierLoop.variables);
             if (value == "0")
                 value = "False";
 
@@ -7105,15 +7176,15 @@ namespace BetterLegacy.Core.Helpers
                 list[i].runtimeObject?.SetCustomActive(false);
         }
 
-        public static void disableObjectOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void disableObjectOther(Modifier modifier, ModifierLoop modifierLoop)
         {
             var list = modifier.GetResultOrDefault(() =>
             {
-                var prefabable = reference.AsPrefabable();
+                var prefabable = modifierLoop.reference.AsPrefabable();
                 if (prefabable == null)
                     return new List<BeatmapObject>();
 
-                return GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(0, variables));
+                return GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(0, modifierLoop.variables));
             });
 
             if (!list.IsEmpty())
@@ -7121,18 +7192,18 @@ namespace BetterLegacy.Core.Helpers
                     beatmapObject.runtimeObject?.SetCustomActive(false);
         }
 
-        public static void disableObjectTreeOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void disableObjectTreeOther(Modifier modifier, ModifierLoop modifierLoop)
         {
             var list = modifier.GetResultOrDefault(() =>
             {
                 var resultList = new List<BeatmapObject>();
 
-                var prefabable = reference.AsPrefabable();
+                var prefabable = modifierLoop.reference.AsPrefabable();
                 if (prefabable == null)
                     return resultList;
 
-                var beatmapObjects = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, variables));
-                var useSelf = modifier.GetBool(0, true, variables);
+                var beatmapObjects = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, modifierLoop.variables));
+                var useSelf = modifier.GetBool(0, true, modifierLoop.variables);
 
                 foreach (var bm in beatmapObjects)
                 {
@@ -7146,16 +7217,16 @@ namespace BetterLegacy.Core.Helpers
                 list[i].runtimeObject?.SetCustomActive(false);
         }
 
-        public static void setActive(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void setActive(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is BackgroundObject backgroundObject)
-                backgroundObject.Enabled = modifier.GetBool(0, false, variables);
+            if (modifierLoop.reference is BackgroundObject backgroundObject)
+                backgroundObject.Enabled = modifier.GetBool(0, false, modifierLoop.variables);
         }
 
-        public static void setActiveOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void setActiveOther(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var active = modifier.GetBool(0, false, variables);
-            var tag = modifier.GetValue(1, variables);
+            var active = modifier.GetBool(0, false, modifierLoop.variables);
+            var tag = modifier.GetValue(1, modifierLoop.variables);
             var list = GameData.Current.backgroundObjects.FindAll(x => x.tags.Contains(tag));
             if (!list.IsEmpty())
                 for (int i = 0; i < list.Count; i++)
@@ -7166,30 +7237,30 @@ namespace BetterLegacy.Core.Helpers
 
         #region JSON
 
-        public static void saveFloat(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void saveFloat(Modifier modifier, ModifierLoop modifierLoop)
         {
-            ModifiersHelper.SaveProgress(modifier.GetValue(1, variables), modifier.GetValue(2, variables), modifier.GetValue(3, variables), modifier.GetFloat(0, 0f, variables));
+            ModifiersHelper.SaveProgress(modifier.GetValue(1, modifierLoop.variables), modifier.GetValue(2, modifierLoop.variables), modifier.GetValue(3, modifierLoop.variables), modifier.GetFloat(0, 0f, modifierLoop.variables));
         }
 
-        public static void saveString(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void saveString(Modifier modifier, ModifierLoop modifierLoop)
         {
-            ModifiersHelper.SaveProgress(modifier.GetValue(1, variables), modifier.GetValue(2, variables), modifier.GetValue(3, variables), modifier.GetValue(0, variables));
+            ModifiersHelper.SaveProgress(modifier.GetValue(1, modifierLoop.variables), modifier.GetValue(2, modifierLoop.variables), modifier.GetValue(3, modifierLoop.variables), modifier.GetValue(0, modifierLoop.variables));
         }
 
-        public static void saveText(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void saveText(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is BeatmapObject beatmapObject && beatmapObject.runtimeObject && beatmapObject.runtimeObject.visualObject is TextObject textObject)
-                ModifiersHelper.SaveProgress(modifier.GetValue(1, variables), modifier.GetValue(2, variables), modifier.GetValue(3, variables), textObject.textMeshPro.text);
+            if (modifierLoop.reference is BeatmapObject beatmapObject && beatmapObject.runtimeObject && beatmapObject.runtimeObject.visualObject is TextObject textObject)
+                ModifiersHelper.SaveProgress(modifier.GetValue(1, modifierLoop.variables), modifier.GetValue(2, modifierLoop.variables), modifier.GetValue(3, modifierLoop.variables), textObject.textMeshPro.text);
         }
 
-        public static void saveVariable(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void saveVariable(Modifier modifier, ModifierLoop modifierLoop)
         {
-            ModifiersHelper.SaveProgress(modifier.GetValue(1, variables), modifier.GetValue(2, variables), modifier.GetValue(3, variables), reference.IntVariable);
+            ModifiersHelper.SaveProgress(modifier.GetValue(1, modifierLoop.variables), modifier.GetValue(2, modifierLoop.variables), modifier.GetValue(3, modifierLoop.variables), modifierLoop.reference.IntVariable);
         }
 
-        public static void loadVariable(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void loadVariable(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var path = RTFile.CombinePaths(RTFile.ApplicationDirectory, "profile", modifier.GetValue(1, variables) + FileFormat.SES.Dot());
+            var path = RTFile.CombinePaths(RTFile.ApplicationDirectory, "profile", modifier.GetValue(1, modifierLoop.variables) + FileFormat.SES.Dot());
             if (!RTFile.FileExists(path))
                 return;
 
@@ -7200,17 +7271,17 @@ namespace BetterLegacy.Core.Helpers
 
             var jn = JSON.Parse(json);
 
-            var fjn = jn[modifier.GetValue(2, variables)][modifier.GetValue(3, variables)]["float"];
+            var fjn = jn[modifier.GetValue(2, modifierLoop.variables)][modifier.GetValue(3, modifierLoop.variables)]["float"];
             if (!string.IsNullOrEmpty(fjn) && float.TryParse(fjn, out float eq))
-                reference.IntVariable = (int)eq;
+                modifierLoop.reference.IntVariable = (int)eq;
         }
 
-        public static void loadVariableOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void loadVariableOther(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IPrefabable prefabable)
+            if (modifierLoop.reference is not IPrefabable prefabable)
                 return;
 
-            var path = RTFile.CombinePaths(RTFile.ApplicationDirectory, "profile", modifier.GetValue(1, variables) + FileFormat.SES.Dot());
+            var path = RTFile.CombinePaths(RTFile.ApplicationDirectory, "profile", modifier.GetValue(1, modifierLoop.variables) + FileFormat.SES.Dot());
             if (!RTFile.FileExists(path))
                 return;
 
@@ -7220,8 +7291,8 @@ namespace BetterLegacy.Core.Helpers
                 return;
 
             var jn = JSON.Parse(json);
-            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(0, variables));
-            var fjn = jn[modifier.GetValue(2, variables)][modifier.GetValue(3, variables)]["float"];
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(0, modifierLoop.variables));
+            var fjn = jn[modifier.GetValue(2, modifierLoop.variables)][modifier.GetValue(3, modifierLoop.variables)]["float"];
 
             if (list.Count > 0 && !string.IsNullOrEmpty(fjn) && float.TryParse(fjn, out float eq))
                 foreach (var bm in list)
@@ -7232,16 +7303,16 @@ namespace BetterLegacy.Core.Helpers
 
         #region Reactive
 
-        public static void reactivePos(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void reactivePos(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
-            var val = modifier.GetFloat(0, 0f, variables);
-            var sampleX = modifier.GetInt(1, 0, variables);
-            var sampleY = modifier.GetInt(2, 0, variables);
-            var intensityX = modifier.GetFloat(3, 0f, variables);
-            var intensityY = modifier.GetFloat(4, 0f, variables);
+            var val = modifier.GetFloat(0, 0f, modifierLoop.variables);
+            var sampleX = modifier.GetInt(1, 0, modifierLoop.variables);
+            var sampleY = modifier.GetInt(2, 0, modifierLoop.variables);
+            var intensityX = modifier.GetFloat(3, 0f, modifierLoop.variables);
+            var intensityY = modifier.GetFloat(4, 0f, modifierLoop.variables);
 
             beatmapObject.runtimeObject?.visualObject?.SetOrigin(new Vector3(
                 beatmapObject.origin.x + RTLevel.Current.GetSample(sampleX, intensityX * val),
@@ -7249,58 +7320,58 @@ namespace BetterLegacy.Core.Helpers
                 beatmapObject.Depth * 0.1f));
         }
 
-        public static void reactiveSca(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void reactiveSca(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
-            var val = modifier.GetFloat(0, 0f, variables);
-            var sampleX = modifier.GetInt(1, 0, variables);
-            var sampleY = modifier.GetInt(2, 0, variables);
-            var intensityX = modifier.GetFloat(3, 0f, variables);
-            var intensityY = modifier.GetFloat(4, 0f, variables);
+            var val = modifier.GetFloat(0, 0f, modifierLoop.variables);
+            var sampleX = modifier.GetInt(1, 0, modifierLoop.variables);
+            var sampleY = modifier.GetInt(2, 0, modifierLoop.variables);
+            var intensityX = modifier.GetFloat(3, 0f, modifierLoop.variables);
+            var intensityY = modifier.GetFloat(4, 0f, modifierLoop.variables);
 
             beatmapObject.runtimeObject?.visualObject?.SetScaleOffset(new Vector2(
                 1f + RTLevel.Current.GetSample(sampleX, intensityX * val),
                 1f + RTLevel.Current.GetSample(sampleY, intensityY * val)));
         }
 
-        public static void reactiveRot(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void reactiveRot(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is BeatmapObject beatmapObject)
-                beatmapObject.runtimeObject?.visualObject?.SetRotationOffset(RTLevel.Current.GetSample(modifier.GetInt(1, 0, variables), modifier.GetFloat(0, 0f, variables)));
+            if (modifierLoop.reference is BeatmapObject beatmapObject)
+                beatmapObject.runtimeObject?.visualObject?.SetRotationOffset(RTLevel.Current.GetSample(modifier.GetInt(1, 0, modifierLoop.variables), modifier.GetFloat(0, 0f, modifierLoop.variables)));
         }
 
-        public static void reactiveCol(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void reactiveCol(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
             var runtimeObject = beatmapObject.runtimeObject;
             if (runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.renderer)
-                runtimeObject.visualObject.SetColor(runtimeObject.visualObject.GetPrimaryColor() + ThemeManager.inst.Current.GetObjColor(modifier.GetInt(2, 0, variables)) * RTLevel.Current.GetSample(modifier.GetInt(1, 0, variables), modifier.GetFloat(0, 0f, variables)));
+                runtimeObject.visualObject.SetColor(runtimeObject.visualObject.GetPrimaryColor() + ThemeManager.inst.Current.GetObjColor(modifier.GetInt(2, 0, modifierLoop.variables)) * RTLevel.Current.GetSample(modifier.GetInt(1, 0, modifierLoop.variables), modifier.GetFloat(0, 0f, modifierLoop.variables)));
         }
 
-        public static void reactiveColLerp(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void reactiveColLerp(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
             var runtimeObject = beatmapObject.runtimeObject;
             if (runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.renderer)
-                runtimeObject.visualObject.SetColor(RTMath.Lerp(runtimeObject.visualObject.GetPrimaryColor(), ThemeManager.inst.Current.GetObjColor(modifier.GetInt(2, 0, variables)), RTLevel.Current.GetSample(modifier.GetInt(1, 0, variables), modifier.GetFloat(0, 0f, variables))));
+                runtimeObject.visualObject.SetColor(RTMath.Lerp(runtimeObject.visualObject.GetPrimaryColor(), ThemeManager.inst.Current.GetObjColor(modifier.GetInt(2, 0, modifierLoop.variables)), RTLevel.Current.GetSample(modifier.GetInt(1, 0, modifierLoop.variables), modifier.GetFloat(0, 0f, modifierLoop.variables))));
         }
 
-        public static void reactivePosChain(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void reactivePosChain(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IReactive reactive)
+            if (modifierLoop.reference is not IReactive reactive)
                 return;
 
-            var val = modifier.GetFloat(0, 0f, variables);
-            var sampleX = modifier.GetInt(1, 0, variables);
-            var sampleY = modifier.GetInt(2, 0, variables);
-            var intensityX = modifier.GetFloat(3, 0f, variables);
-            var intensityY = modifier.GetFloat(4, 0f, variables);
+            var val = modifier.GetFloat(0, 0f, modifierLoop.variables);
+            var sampleX = modifier.GetInt(1, 0, modifierLoop.variables);
+            var sampleY = modifier.GetInt(2, 0, modifierLoop.variables);
+            var intensityX = modifier.GetFloat(3, 0f, modifierLoop.variables);
+            var intensityY = modifier.GetFloat(4, 0f, modifierLoop.variables);
 
             float reactivePositionX = RTLevel.Current.GetSample(sampleX, intensityX * val);
             float reactivePositionY = RTLevel.Current.GetSample(sampleY, intensityY * val);
@@ -7308,16 +7379,16 @@ namespace BetterLegacy.Core.Helpers
             reactive.ReactivePositionOffset = new Vector3(reactivePositionX, reactivePositionY);
         }
 
-        public static void reactiveScaChain(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void reactiveScaChain(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IReactive reactive)
+            if (modifierLoop.reference is not IReactive reactive)
                 return;
 
-            var val = modifier.GetFloat(0, 0f, variables);
-            var sampleX = modifier.GetInt(1, 0, variables);
-            var sampleY = modifier.GetInt(2, 0, variables);
-            var intensityX = modifier.GetFloat(3, 0f, variables);
-            var intensityY = modifier.GetFloat(4, 0f, variables);
+            var val = modifier.GetFloat(0, 0f, modifierLoop.variables);
+            var sampleX = modifier.GetInt(1, 0, modifierLoop.variables);
+            var sampleY = modifier.GetInt(2, 0, modifierLoop.variables);
+            var intensityX = modifier.GetFloat(3, 0f, modifierLoop.variables);
+            var intensityY = modifier.GetFloat(4, 0f, modifierLoop.variables);
 
             float reactiveScaleX = RTLevel.Current.GetSample(sampleX, intensityX * val);
             float reactiveScaleY = RTLevel.Current.GetSample(sampleY, intensityY * val);
@@ -7325,55 +7396,55 @@ namespace BetterLegacy.Core.Helpers
             reactive.ReactiveScaleOffset = new Vector3(reactiveScaleX, reactiveScaleY, 1f);
         }
 
-        public static void reactiveRotChain(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void reactiveRotChain(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is IReactive reactive)
-                reactive.ReactiveRotationOffset = RTLevel.Current.GetSample(modifier.GetInt(1, 0, variables), modifier.GetFloat(0, 0f, variables));
+            if (modifierLoop.reference is IReactive reactive)
+                reactive.ReactiveRotationOffset = RTLevel.Current.GetSample(modifier.GetInt(1, 0, modifierLoop.variables), modifier.GetFloat(0, 0f, modifierLoop.variables));
         }
 
         #endregion
 
         #region Events
 
-        public static void eventOffset(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void eventOffset(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (RTLevel.Current.eventEngine && RTLevel.Current.eventEngine.offsets != null)
-                RTLevel.Current.eventEngine.SetOffset(modifier.GetInt(1, 0, variables), modifier.GetInt(2, 0, variables), modifier.GetFloat(0, 1f, variables));
+                RTLevel.Current.eventEngine.SetOffset(modifier.GetInt(1, 0, modifierLoop.variables), modifier.GetInt(2, 0, modifierLoop.variables), modifier.GetFloat(0, 1f, modifierLoop.variables));
         }
 
-        public static void eventOffsetVariable(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void eventOffsetVariable(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (RTLevel.Current.eventEngine && RTLevel.Current.eventEngine.offsets != null && reference is IModifyable modifyable)
-                RTLevel.Current.eventEngine.SetOffset(modifier.GetInt(1, 0, variables), modifier.GetInt(2, 0, variables), modifyable.IntVariable * modifier.GetFloat(0, 1f, variables));
+            if (RTLevel.Current.eventEngine && RTLevel.Current.eventEngine.offsets != null && modifierLoop.reference is IModifyable modifyable)
+                RTLevel.Current.eventEngine.SetOffset(modifier.GetInt(1, 0, modifierLoop.variables), modifier.GetInt(2, 0, modifierLoop.variables), modifyable.IntVariable * modifier.GetFloat(0, 1f, modifierLoop.variables));
         }
 
-        public static void eventOffsetMath(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void eventOffsetMath(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (RTLevel.Current.eventEngine && RTLevel.Current.eventEngine.offsets != null && reference is IEvaluatable evaluatable)
+            if (RTLevel.Current.eventEngine && RTLevel.Current.eventEngine.offsets != null && modifierLoop.reference is IEvaluatable evaluatable)
             {
                 var numberVariables = evaluatable.GetObjectVariables();
-                ModifiersHelper.SetVariables(variables, numberVariables);
-                RTLevel.Current.eventEngine.SetOffset(modifier.GetInt(1, 0, variables), modifier.GetInt(2, 0, variables), RTMath.Parse(modifier.GetValue(0, variables), numberVariables, evaluatable.GetObjectFunctions()));
+                ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
+                RTLevel.Current.eventEngine.SetOffset(modifier.GetInt(1, 0, modifierLoop.variables), modifier.GetInt(2, 0, modifierLoop.variables), RTMath.Parse(modifier.GetValue(0, modifierLoop.variables), numberVariables, evaluatable.GetObjectFunctions()));
             }
         }
 
-        public static void eventOffsetAnimate(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void eventOffsetAnimate(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (modifier.constant || !RTLevel.Current.eventEngine || RTLevel.Current.eventEngine.offsets == null)
                 return;
 
-            string easing = modifier.GetValue(4, variables);
+            string easing = modifier.GetValue(4, modifierLoop.variables);
             if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
                 easing = Ease.EaseReferences[e].Name;
 
             var list = RTLevel.Current.eventEngine.offsets;
 
-            var eventType = modifier.GetInt(1, 0, variables);
-            var indexValue = modifier.GetInt(2, 0, variables);
+            var eventType = modifier.GetInt(1, 0, modifierLoop.variables);
+            var indexValue = modifier.GetInt(2, 0, modifierLoop.variables);
 
             if (eventType < list.Count && indexValue < list[eventType].Count)
             {
-                var value = modifier.GetBool(5, false, variables) ? list[eventType][indexValue] + modifier.GetFloat(0, 0f, variables) : modifier.GetFloat(0, 0f, variables);
+                var value = modifier.GetBool(5, false, modifierLoop.variables) ? list[eventType][indexValue] + modifier.GetFloat(0, 0f, modifierLoop.variables) : modifier.GetFloat(0, 0f, modifierLoop.variables);
 
                 var animation = new RTAnimation("Event Offset Animation");
                 animation.animationHandlers = new List<AnimationHandlerBase>
@@ -7381,7 +7452,7 @@ namespace BetterLegacy.Core.Helpers
                         new AnimationHandler<float>(new List<IKeyframe<float>>
                         {
                             new FloatKeyframe(0f, list[eventType][indexValue], Ease.Linear),
-                            new FloatKeyframe(modifier.GetFloat(3, 1f, variables), value, Ease.GetEaseFunction(easing, Ease.Linear)),
+                            new FloatKeyframe(modifier.GetFloat(3, 1f, modifierLoop.variables), value, Ease.GetEaseFunction(easing, Ease.Linear)),
                         }, x => RTLevel.Current.eventEngine.SetOffset(eventType, indexValue, x), interpolateOnComplete: true)
                     };
                 animation.SetDefaultOnComplete();
@@ -7389,22 +7460,22 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void eventOffsetCopyAxis(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void eventOffsetCopyAxis(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (!RTLevel.Current.eventEngine || RTLevel.Current.eventEngine.offsets == null || reference is not BeatmapObject beatmapObject)
+            if (!RTLevel.Current.eventEngine || RTLevel.Current.eventEngine.offsets == null || modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
-            var fromType = modifier.GetInt(1, 0, variables);
-            var fromAxis = modifier.GetInt(2, 0, variables);
-            var toType = modifier.GetInt(3, 0, variables);
-            var toAxis = modifier.GetInt(4, 0, variables);
-            var delay = modifier.GetFloat(5, 0f, variables);
-            var multiply = modifier.GetFloat(6, 0f, variables);
-            var offset = modifier.GetFloat(7, 0f, variables);
-            var min = modifier.GetFloat(8, 0f, variables);
-            var max = modifier.GetFloat(9, 0f, variables);
-            var loop = modifier.GetFloat(10, 0f, variables);
-            var useVisual = modifier.GetBool(11, false, variables);
+            var fromType = modifier.GetInt(1, 0, modifierLoop.variables);
+            var fromAxis = modifier.GetInt(2, 0, modifierLoop.variables);
+            var toType = modifier.GetInt(3, 0, modifierLoop.variables);
+            var toAxis = modifier.GetInt(4, 0, modifierLoop.variables);
+            var delay = modifier.GetFloat(5, 0f, modifierLoop.variables);
+            var multiply = modifier.GetFloat(6, 0f, modifierLoop.variables);
+            var offset = modifier.GetFloat(7, 0f, modifierLoop.variables);
+            var min = modifier.GetFloat(8, 0f, modifierLoop.variables);
+            var max = modifier.GetFloat(9, 0f, modifierLoop.variables);
+            var loop = modifier.GetFloat(10, 0f, modifierLoop.variables);
+            var useVisual = modifier.GetBool(11, false, modifierLoop.variables);
 
             var time = AudioManager.inst.CurrentAudioSource.time;
 
@@ -7425,7 +7496,7 @@ namespace BetterLegacy.Core.Helpers
                 RTLevel.Current.eventEngine.SetOffset(toType, toAxis, Mathf.Clamp((runtimeObject.visualObject.gameObject.transform.GetVector(fromType).At(fromAxis) - offset) * multiply % loop, min, max));
         }
 
-        public static void vignetteTracksPlayer(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void vignetteTracksPlayer(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (!RTLevel.Current.eventEngine)
                 return;
@@ -7444,7 +7515,7 @@ namespace BetterLegacy.Core.Helpers
             RTLevel.Current.eventEngine.SetOffset(7, 5, cameraToViewportPoint.y);
         }
 
-        public static void lensTracksPlayer(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void lensTracksPlayer(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (!RTLevel.Current.eventEngine)
                 return;
@@ -7467,9 +7538,9 @@ namespace BetterLegacy.Core.Helpers
 
         #region Color
 
-        public static void setTheme(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void setTheme(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var themeID = modifier.GetValue(0, variables);
+            var themeID = modifier.GetValue(0, modifierLoop.variables);
             if (string.IsNullOrEmpty(themeID))
             {
                 if (RTLevel.Current && RTLevel.Current.eventEngine)
@@ -7482,10 +7553,10 @@ namespace BetterLegacy.Core.Helpers
                 RTLevel.Current.eventEngine.CustomTheme = theme;
         }
 
-        public static void lerpTheme(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void lerpTheme(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var firstID = modifier.GetValue(0, variables);
-            var secondID = modifier.GetValue(1, variables);
+            var firstID = modifier.GetValue(0, modifierLoop.variables);
+            var secondID = modifier.GetValue(1, modifierLoop.variables);
             if (string.IsNullOrEmpty(firstID) || string.IsNullOrEmpty(secondID))
             {
                 if (RTLevel.Current && RTLevel.Current.eventEngine)
@@ -7501,19 +7572,19 @@ namespace BetterLegacy.Core.Helpers
 
             var first = ThemeManager.inst.GetTheme(firstID);
             var second = ThemeManager.inst.GetTheme(secondID);
-            RTLevel.Current.eventEngine.CustomTheme.Lerp(first, second, modifier.GetFloat(2, 0f, variables));
+            RTLevel.Current.eventEngine.CustomTheme.Lerp(first, second, modifier.GetFloat(2, 0f, modifierLoop.variables));
         }
 
-        public static void addColor(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void addColor(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject || !beatmapObject.runtimeObject || !beatmapObject.runtimeObject.visualObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject || !beatmapObject.runtimeObject || !beatmapObject.runtimeObject.visualObject)
                 return;
 
-            var multiply = modifier.GetFloat(0, 1f, variables);
-            var index = modifier.GetInt(1, 0, variables);
-            var hue = modifier.GetFloat(2, 0f, variables);
-            var sat = modifier.GetFloat(3, 0f, variables);
-            var val = modifier.GetFloat(4, 0f, variables);
+            var multiply = modifier.GetFloat(0, 1f, modifierLoop.variables);
+            var index = modifier.GetInt(1, 0, modifierLoop.variables);
+            var hue = modifier.GetFloat(2, 0f, modifierLoop.variables);
+            var sat = modifier.GetFloat(3, 0f, modifierLoop.variables);
+            var val = modifier.GetFloat(4, 0f, modifierLoop.variables);
 
             // queue post tick so the color overrides the sequence color
             RTLevel.Current.postTick.Enqueue(() =>
@@ -7522,11 +7593,11 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void addColorOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void addColorOther(Modifier modifier, ModifierLoop modifierLoop)
         {
             var list = modifier.GetResultOrDefault(() =>
             {
-                var prefabable = reference.AsPrefabable();
+                var prefabable = modifierLoop.reference.AsPrefabable();
                 if (prefabable == null)
                     return new List<BeatmapObject>();
 
@@ -7536,11 +7607,11 @@ namespace BetterLegacy.Core.Helpers
             if (list.IsEmpty())
                 return;
 
-            var multiply = modifier.GetFloat(0, 0f, variables);
-            var index = modifier.GetInt(2, 0, variables);
-            var hue = modifier.GetFloat(3, 0f, variables);
-            var sat = modifier.GetFloat(4, 0f, variables);
-            var val = modifier.GetFloat(5, 0f, variables);
+            var multiply = modifier.GetFloat(0, 0f, modifierLoop.variables);
+            var index = modifier.GetInt(2, 0, modifierLoop.variables);
+            var hue = modifier.GetFloat(3, 0f, modifierLoop.variables);
+            var sat = modifier.GetFloat(4, 0f, modifierLoop.variables);
+            var val = modifier.GetFloat(5, 0f, modifierLoop.variables);
 
             // queue post tick so the color overrides the sequence color
             RTLevel.Current.postTick.Enqueue(() =>
@@ -7553,16 +7624,16 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void lerpColor(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void lerpColor(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject || !beatmapObject.runtimeObject || !beatmapObject.runtimeObject.visualObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject || !beatmapObject.runtimeObject || !beatmapObject.runtimeObject.visualObject)
                 return;
 
-            var multiply = modifier.GetFloat(0, 0f, variables);
-            var index = modifier.GetInt(1, 0, variables);
-            var hue = modifier.GetFloat(2, 0f, variables);
-            var sat = modifier.GetFloat(3, 0f, variables);
-            var val = modifier.GetFloat(4, 0f, variables);
+            var multiply = modifier.GetFloat(0, 0f, modifierLoop.variables);
+            var index = modifier.GetInt(1, 0, modifierLoop.variables);
+            var hue = modifier.GetFloat(2, 0f, modifierLoop.variables);
+            var sat = modifier.GetFloat(3, 0f, modifierLoop.variables);
+            var val = modifier.GetFloat(4, 0f, modifierLoop.variables);
 
             // queue post tick so the color overrides the sequence color
             RTLevel.Current.postTick.Enqueue(() =>
@@ -7571,11 +7642,11 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void lerpColorOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void lerpColorOther(Modifier modifier, ModifierLoop modifierLoop)
         {
             var list = modifier.GetResultOrDefault(() =>
             {
-                var prefabable = reference.AsPrefabable();
+                var prefabable = modifierLoop.reference.AsPrefabable();
                 if (prefabable == null)
                     return new List<BeatmapObject>();
 
@@ -7585,11 +7656,11 @@ namespace BetterLegacy.Core.Helpers
             if (list.IsEmpty())
                 return;
 
-            var multiply = modifier.GetFloat(0, 0f, variables);
-            var index = modifier.GetInt(2, 0, variables);
-            var hue = modifier.GetFloat(3, 0f, variables);
-            var sat = modifier.GetFloat(4, 0f, variables);
-            var val = modifier.GetFloat(5, 0f, variables);
+            var multiply = modifier.GetFloat(0, 0f, modifierLoop.variables);
+            var index = modifier.GetInt(2, 0, modifierLoop.variables);
+            var hue = modifier.GetFloat(3, 0f, modifierLoop.variables);
+            var sat = modifier.GetFloat(4, 0f, modifierLoop.variables);
+            var val = modifier.GetFloat(5, 0f, modifierLoop.variables);
 
             // queue post tick so the color overrides the sequence color
             RTLevel.Current.postTick.Enqueue(() =>
@@ -7604,18 +7675,18 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void addColorPlayerDistance(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void addColorPlayerDistance(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
             var runtimeObject = beatmapObject.runtimeObject;
             if (!runtimeObject || !runtimeObject.visualObject.gameObject)
                 return;
 
-            var offset = modifier.GetFloat(0, 0f, variables);
-            var index = modifier.GetInt(1, 0, variables);
-            var multiply = modifier.GetFloat(2, 0, variables);
+            var offset = modifier.GetFloat(0, 0f, modifierLoop.variables);
+            var index = modifier.GetInt(1, 0, modifierLoop.variables);
+            var multiply = modifier.GetFloat(2, 0, modifierLoop.variables);
 
             // queue post tick so the color overrides the sequence color
             RTLevel.Current.postTick.Enqueue(() =>
@@ -7631,22 +7702,22 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void lerpColorPlayerDistance(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void lerpColorPlayerDistance(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
             var runtimeObject = beatmapObject.runtimeObject;
             if (!runtimeObject || !runtimeObject.visualObject.gameObject)
                 return;
 
-            var offset = modifier.GetFloat(0, 0f, variables);
-            var index = modifier.GetInt(1, 0, variables);
-            var multiply = modifier.GetFloat(2, 0f, variables);
-            var opacity = modifier.GetFloat(3, 0f, variables);
-            var hue = modifier.GetFloat(4, 0f, variables);
-            var sat = modifier.GetFloat(5, 0f, variables);
-            var val = modifier.GetFloat(6, 0f, variables);
+            var offset = modifier.GetFloat(0, 0f, modifierLoop.variables);
+            var index = modifier.GetInt(1, 0, modifierLoop.variables);
+            var multiply = modifier.GetFloat(2, 0f, modifierLoop.variables);
+            var opacity = modifier.GetFloat(3, 0f, modifierLoop.variables);
+            var hue = modifier.GetFloat(4, 0f, modifierLoop.variables);
+            var sat = modifier.GetFloat(5, 0f, modifierLoop.variables);
+            var val = modifier.GetFloat(6, 0f, modifierLoop.variables);
 
             // queue post tick so the color overrides the sequence color
             RTLevel.Current.postTick.Enqueue(() =>
@@ -7664,16 +7735,16 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void setOpacity(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void setOpacity(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
             var runtimeObject = beatmapObject.runtimeObject;
             if (!runtimeObject || !runtimeObject.visualObject.gameObject)
                 return;
 
-            var opacity = modifier.GetFloat(0, 1f, variables);
+            var opacity = modifier.GetFloat(0, 1f, modifierLoop.variables);
 
             // queue post tick so the color overrides the sequence color
             RTLevel.Current.postTick.Enqueue(() =>
@@ -7682,14 +7753,14 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void setOpacityOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void setOpacityOther(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IPrefabable prefabable)
+            if (modifierLoop.reference is not IPrefabable prefabable)
                 return;
 
-            var opacity = modifier.GetFloat(0, 1f, variables);
+            var opacity = modifier.GetFloat(0, 1f, modifierLoop.variables);
 
-            var list = modifier.GetResultOrDefault(() => GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, variables)));
+            var list = modifier.GetResultOrDefault(() => GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, modifierLoop.variables)));
 
             if (list.IsEmpty())
                 return;
@@ -7705,15 +7776,15 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void copyColor(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void copyColor(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject || !beatmapObject.runtimeObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject || !beatmapObject.runtimeObject)
                 return;
 
-            var applyColor1 = modifier.GetBool(1, true, variables);
-            var applyColor2 = modifier.GetBool(2, true, variables);
+            var applyColor1 = modifier.GetBool(1, true, modifierLoop.variables);
+            var applyColor2 = modifier.GetBool(2, true, modifierLoop.variables);
 
-            var other = modifier.GetResultOrDefault(() => GameData.Current.FindObjectWithTag(modifier, beatmapObject, modifier.GetValue(0, variables)));
+            var other = modifier.GetResultOrDefault(() => GameData.Current.FindObjectWithTag(modifier, beatmapObject, modifier.GetValue(0, modifierLoop.variables)));
 
             if (!other || !other.runtimeObject)
                 return;
@@ -7722,18 +7793,18 @@ namespace BetterLegacy.Core.Helpers
             RTLevel.Current.postTick.Enqueue(() => ModifiersHelper.CopyColor(beatmapObject.runtimeObject, other.runtimeObject, applyColor1, applyColor2));
         }
 
-        public static void copyColorOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void copyColorOther(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
-            var list = modifier.GetResultOrDefault(() => GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(0, variables)));
+            var list = modifier.GetResultOrDefault(() => GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(0, modifierLoop.variables)));
 
             if (list.IsEmpty())
                 return;
 
-            var applyColor1 = modifier.GetBool(1, true, variables);
-            var applyColor2 = modifier.GetBool(2, true, variables);
+            var applyColor1 = modifier.GetBool(1, true, modifierLoop.variables);
+            var applyColor2 = modifier.GetBool(2, true, modifierLoop.variables);
 
             var runtimeObject = beatmapObject.runtimeObject;
             if (!runtimeObject)
@@ -7753,21 +7824,21 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void applyColorGroup(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void applyColorGroup(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
-            var list = modifier.GetResultOrDefault(() => GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(0, variables)));
+            var list = modifier.GetResultOrDefault(() => GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(0, modifierLoop.variables)));
 
             var cachedSequences = beatmapObject.cachedSequences;
             if (list.IsEmpty() || !cachedSequences)
                 return;
 
-            var type = modifier.GetInt(1, 0, variables);
-            var axis = modifier.GetInt(2, 0, variables);
-            var overrideStartOpacity = modifier.GetBool(3, true, variables);
-            var overrideEndOpacity = modifier.GetBool(4, true, variables);
+            var type = modifier.GetInt(1, 0, modifierLoop.variables);
+            var axis = modifier.GetInt(2, 0, modifierLoop.variables);
+            var overrideStartOpacity = modifier.GetBool(3, true, modifierLoop.variables);
+            var overrideEndOpacity = modifier.GetBool(4, true, modifierLoop.variables);
 
             // queue post tick so the color overrides the sequence color
             RTLevel.Current.postTick.Enqueue(() =>
@@ -7822,17 +7893,17 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void setColorHex(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void setColorHex(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
             var runtimeObject = beatmapObject.runtimeObject;
             if (!runtimeObject)
                 return;
 
-            var color1 = modifier.GetValue(0, variables);
-            var color2 = modifier.GetValue(1, variables);
+            var color1 = modifier.GetValue(0, modifierLoop.variables);
+            var color2 = modifier.GetValue(1, modifierLoop.variables);
 
             // queue post tick so the color overrides the sequence color
             RTLevel.Current.postTick.Enqueue(() =>
@@ -7852,18 +7923,18 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void setColorHexOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void setColorHexOther(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IPrefabable prefabable)
+            if (modifierLoop.reference is not IPrefabable prefabable)
                 return;
 
-            List<BeatmapObject> list = modifier.GetResultOrDefault(() => GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, variables)));
+            List<BeatmapObject> list = modifier.GetResultOrDefault(() => GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, modifierLoop.variables)));
 
             if (list.IsEmpty())
                 return;
 
-            var color1 = modifier.GetValue(0, variables);
-            var color2 = modifier.GetValue(2, variables);
+            var color1 = modifier.GetValue(0, modifierLoop.variables);
+            var color2 = modifier.GetValue(2, modifierLoop.variables);
 
             // queue post tick so the color overrides the sequence color
             RTLevel.Current.postTick.Enqueue(() =>
@@ -7890,17 +7961,17 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void setColorRGBA(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void setColorRGBA(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
             var runtimeObject = beatmapObject.runtimeObject;
             if (!runtimeObject)
                 return;
 
-            var color1 = new Color(modifier.GetFloat(0, 1f, variables), modifier.GetFloat(1, 1f, variables), modifier.GetFloat(2, 1f, variables), modifier.GetFloat(3, 1f, variables));
-            var color2 = new Color(modifier.GetFloat(4, 1f, variables), modifier.GetFloat(5, 1f, variables), modifier.GetFloat(6, 1f, variables), modifier.GetFloat(7, 1f, variables));
+            var color1 = new Color(modifier.GetFloat(0, 1f, modifierLoop.variables), modifier.GetFloat(1, 1f, modifierLoop.variables), modifier.GetFloat(2, 1f, modifierLoop.variables), modifier.GetFloat(3, 1f, modifierLoop.variables));
+            var color2 = new Color(modifier.GetFloat(4, 1f, modifierLoop.variables), modifier.GetFloat(5, 1f, modifierLoop.variables), modifier.GetFloat(6, 1f, modifierLoop.variables), modifier.GetFloat(7, 1f, modifierLoop.variables));
 
             // queue post tick so the color overrides the sequence color
             RTLevel.Current.postTick.Enqueue(() =>
@@ -7912,18 +7983,18 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void setColorRGBAOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void setColorRGBAOther(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IPrefabable prefabable)
+            if (modifierLoop.reference is not IPrefabable prefabable)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(8, variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(8, modifierLoop.variables));
 
             if (list.IsEmpty())
                 return;
 
-            var color1 = new Color(modifier.GetFloat(0, 1f, variables), modifier.GetFloat(1, 1f, variables), modifier.GetFloat(2, 1f, variables), modifier.GetFloat(3, 1f, variables));
-            var color2 = new Color(modifier.GetFloat(4, 1f, variables), modifier.GetFloat(5, 1f, variables), modifier.GetFloat(6, 1f, variables), modifier.GetFloat(7, 1f, variables));
+            var color1 = new Color(modifier.GetFloat(0, 1f, modifierLoop.variables), modifier.GetFloat(1, 1f, modifierLoop.variables), modifier.GetFloat(2, 1f, modifierLoop.variables), modifier.GetFloat(3, 1f, modifierLoop.variables));
+            var color2 = new Color(modifier.GetFloat(4, 1f, modifierLoop.variables), modifier.GetFloat(5, 1f, modifierLoop.variables), modifier.GetFloat(6, 1f, modifierLoop.variables), modifier.GetFloat(7, 1f, modifierLoop.variables));
 
             // queue post tick so the color overrides the sequence color
             RTLevel.Current.postTick.Enqueue(() =>
@@ -7942,16 +8013,16 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void animateColorKF(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void animateColorKF(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not ILifetime lifetime)
+            if (modifierLoop.reference is not ILifetime lifetime)
                 return;
 
             Sequence<Color> sequence1;
             Sequence<Color> sequence2;
 
-            var audioTime = modifier.GetFloat(0, 0f, variables);
-            var colorSource = modifier.GetInt(1, 0, variables);
+            var audioTime = modifier.GetFloat(0, 0f, modifierLoop.variables);
+            var colorSource = modifier.GetInt(1, 0, modifierLoop.variables);
 
             if (modifier.TryGetResult(out KeyValuePair<Sequence<Color>, Sequence<Color>> sequences))
             {
@@ -7961,16 +8032,16 @@ namespace BetterLegacy.Core.Helpers
             else
             {
                 // custom start colors
-                var colorSlot1Start = modifier.GetInt(2, 0, variables);
-                var opacity1Start = modifier.GetFloat(3, 1f, variables);
-                var hue1Start = modifier.GetFloat(4, 0f, variables);
-                var saturation1Start = modifier.GetFloat(5, 0f, variables);
-                var value1Start = modifier.GetFloat(6, 0f, variables);
-                var colorSlot2Start = modifier.GetInt(7, 0, variables);
-                var opacity2Start = modifier.GetFloat(8, 1f, variables);
-                var hue2Start = modifier.GetFloat(9, 0f, variables);
-                var saturation2Start = modifier.GetFloat(10, 0f, variables);
-                var value2Start = modifier.GetFloat(11, 0f, variables);
+                var colorSlot1Start = modifier.GetInt(2, 0, modifierLoop.variables);
+                var opacity1Start = modifier.GetFloat(3, 1f, modifierLoop.variables);
+                var hue1Start = modifier.GetFloat(4, 0f, modifierLoop.variables);
+                var saturation1Start = modifier.GetFloat(5, 0f, modifierLoop.variables);
+                var value1Start = modifier.GetFloat(6, 0f, modifierLoop.variables);
+                var colorSlot2Start = modifier.GetInt(7, 0, modifierLoop.variables);
+                var opacity2Start = modifier.GetFloat(8, 1f, modifierLoop.variables);
+                var hue2Start = modifier.GetFloat(9, 0f, modifierLoop.variables);
+                var saturation2Start = modifier.GetFloat(10, 0f, modifierLoop.variables);
+                var value2Start = modifier.GetFloat(11, 0f, modifierLoop.variables);
 
                 var currentTime = 0f;
 
@@ -7980,23 +8051,23 @@ namespace BetterLegacy.Core.Helpers
                 keyframes2.Add(new CustomThemeKeyframe(currentTime, colorSource, colorSlot2Start, opacity2Start, hue2Start, saturation2Start, value2Start, Ease.Linear, false));
                 for (int i = 12; i < modifier.values.Count; i += 14)
                 {
-                    var time = modifier.GetFloat(i + 1, 0f, variables);
+                    var time = modifier.GetFloat(i + 1, 0f, modifierLoop.variables);
                     if (time < currentTime)
                         continue;
 
-                    var colorSlot1 = modifier.GetInt(i + 2, 0, variables);
-                    var opacity1 = modifier.GetFloat(i + 3, 1f, variables);
-                    var hue1 = modifier.GetFloat(i + 4, 0f, variables);
-                    var saturation1 = modifier.GetFloat(i + 5, 0f, variables);
-                    var value1 = modifier.GetFloat(i + 6, 0f, variables);
-                    var colorSlot2 = modifier.GetInt(i + 7, 0, variables);
-                    var opacity2 = modifier.GetFloat(i + 8, 1f, variables);
-                    var hue2 = modifier.GetFloat(i + 9, 0f, variables);
-                    var saturation2 = modifier.GetFloat(i + 10, 0f, variables);
-                    var value2 = modifier.GetFloat(i + 11, 0f, variables);
-                    var relative = modifier.GetBool(i + 12, true, variables);
+                    var colorSlot1 = modifier.GetInt(i + 2, 0, modifierLoop.variables);
+                    var opacity1 = modifier.GetFloat(i + 3, 1f, modifierLoop.variables);
+                    var hue1 = modifier.GetFloat(i + 4, 0f, modifierLoop.variables);
+                    var saturation1 = modifier.GetFloat(i + 5, 0f, modifierLoop.variables);
+                    var value1 = modifier.GetFloat(i + 6, 0f, modifierLoop.variables);
+                    var colorSlot2 = modifier.GetInt(i + 7, 0, modifierLoop.variables);
+                    var opacity2 = modifier.GetFloat(i + 8, 1f, modifierLoop.variables);
+                    var hue2 = modifier.GetFloat(i + 9, 0f, modifierLoop.variables);
+                    var saturation2 = modifier.GetFloat(i + 10, 0f, modifierLoop.variables);
+                    var value2 = modifier.GetFloat(i + 11, 0f, modifierLoop.variables);
+                    var relative = modifier.GetBool(i + 12, true, modifierLoop.variables);
 
-                    var easing = modifier.GetValue(i + 13, variables);
+                    var easing = modifier.GetValue(i + 13, modifierLoop.variables);
                     if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
                         easing = Ease.EaseReferences[e].Name;
 
@@ -8013,8 +8084,8 @@ namespace BetterLegacy.Core.Helpers
                 modifier.Result = new KeyValuePair<Sequence<Color>, Sequence<Color>>(sequence1, sequence2);
             }
 
-            var beatmapObject = reference as BeatmapObject;
-            var backgroundObject = reference as BackgroundObject;
+            var beatmapObject = modifierLoop.reference as BeatmapObject;
+            var backgroundObject = modifierLoop.reference as BackgroundObject;
 
             var startTime = lifetime.StartTime;
 
@@ -8039,15 +8110,15 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void animateColorKFHex(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void animateColorKFHex(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not ILifetime lifetime)
+            if (modifierLoop.reference is not ILifetime lifetime)
                 return;
 
             Sequence<Color> sequence1;
             Sequence<Color> sequence2;
 
-            var audioTime = modifier.GetFloat(0, 0f, variables);
+            var audioTime = modifier.GetFloat(0, 0f, modifierLoop.variables);
 
             if (modifier.TryGetResult(out KeyValuePair<Sequence<Color>, Sequence<Color>> sequences))
             {
@@ -8057,8 +8128,8 @@ namespace BetterLegacy.Core.Helpers
             else
             {
                 // custom start colors
-                var color1Start = modifier.GetValue(1, variables);
-                var color2Start = modifier.GetValue(2, variables);
+                var color1Start = modifier.GetValue(1, modifierLoop.variables);
+                var color2Start = modifier.GetValue(2, modifierLoop.variables);
 
                 var currentTime = 0f;
 
@@ -8068,15 +8139,15 @@ namespace BetterLegacy.Core.Helpers
                 keyframes2.Add(new ColorKeyframe(currentTime, RTColors.HexToColor(color2Start), Ease.Linear));
                 for (int i = 3; i < modifier.values.Count; i += 6)
                 {
-                    var time = modifier.GetFloat(i + 1, 0f, variables);
+                    var time = modifier.GetFloat(i + 1, 0f, modifierLoop.variables);
                     if (time < currentTime)
                         continue;
 
-                    var color1 = modifier.GetValue(i + 2, variables);
-                    var color2 = modifier.GetValue(i + 3, variables);
-                    var relative = modifier.GetBool(i + 4, true, variables);
+                    var color1 = modifier.GetValue(i + 2, modifierLoop.variables);
+                    var color2 = modifier.GetValue(i + 3, modifierLoop.variables);
+                    var relative = modifier.GetBool(i + 4, true, modifierLoop.variables);
 
-                    var easing = modifier.GetValue(i + 5, variables);
+                    var easing = modifier.GetValue(i + 5, modifierLoop.variables);
                     if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
                         easing = Ease.EaseReferences[e].Name;
 
@@ -8093,8 +8164,8 @@ namespace BetterLegacy.Core.Helpers
                 modifier.Result = new KeyValuePair<Sequence<Color>, Sequence<Color>>(sequence1, sequence2);
             }
 
-            var beatmapObject = reference as BeatmapObject;
-            var backgroundObject = reference as BackgroundObject;
+            var beatmapObject = modifierLoop.reference as BeatmapObject;
+            var backgroundObject = modifierLoop.reference as BackgroundObject;
 
             var startTime = lifetime.StartTime;
 
@@ -8123,18 +8194,18 @@ namespace BetterLegacy.Core.Helpers
 
         #region Shape
 
-        public static void translateShape(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void translateShape(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
             var runtimeObject = beatmapObject.runtimeObject;
             if (!runtimeObject || !runtimeObject.visualObject.gameObject)
                 return;
 
-            var pos = new Vector2(modifier.GetFloat(1, 0f, variables), modifier.GetFloat(2, 0f, variables));
-            var sca = new Vector2(modifier.GetFloat(3, 0f, variables), modifier.GetFloat(4, 0f, variables));
-            var rot = modifier.GetFloat(5, 0f, variables);
+            var pos = new Vector2(modifier.GetFloat(1, 0f, modifierLoop.variables), modifier.GetFloat(2, 0f, modifierLoop.variables));
+            var sca = new Vector2(modifier.GetFloat(3, 0f, modifierLoop.variables), modifier.GetFloat(4, 0f, modifierLoop.variables));
+            var rot = modifier.GetFloat(5, 0f, modifierLoop.variables);
 
             if (!modifier.HasResult())
             {
@@ -8165,31 +8236,31 @@ namespace BetterLegacy.Core.Helpers
                 shapeCache.Translate(pos, sca, rot);
         }
 
-        public static void setShape(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void setShape(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IShapeable shapeable)
+            if (modifierLoop.reference is not IShapeable shapeable)
                 return;
 
-            shapeable.SetCustomShape(modifier.GetInt(0, 0, variables), modifier.GetInt(1, 0, variables));
+            shapeable.SetCustomShape(modifier.GetInt(0, 0, modifierLoop.variables), modifier.GetInt(1, 0, modifierLoop.variables));
             if (shapeable is BeatmapObject beatmapObject)
-                reference.GetParentRuntime()?.UpdateObject(beatmapObject, ObjectContext.SHAPE);
+                modifierLoop.reference.GetParentRuntime()?.UpdateObject(beatmapObject, ObjectContext.SHAPE);
             else if (shapeable is BackgroundObject backgroundObject)
                 backgroundObject.runtimeObject?.UpdateShape(backgroundObject.Shape, backgroundObject.ShapeOption);
         }
 
-        public static void setPolygonShape(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void setPolygonShape(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject || !beatmapObject.runtimeObject || beatmapObject.runtimeObject.visualObject is not PolygonObject polygonObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject || !beatmapObject.runtimeObject || beatmapObject.runtimeObject.visualObject is not PolygonObject polygonObject)
                 return;
 
-            var radius = RTMath.Clamp(modifier.GetFloat(0, 0.5f, variables), 0.1f, 10f);
-            var sides = RTMath.Clamp(modifier.GetInt(1, 3, variables), 3, 32);
-            var roundness = RTMath.Clamp(modifier.GetFloat(2, 0f, variables), 0f, 1f);
-            var thickness = RTMath.Clamp(modifier.GetFloat(3, 1f, variables), 0f, 1f);
-            var slices = RTMath.Clamp(modifier.GetInt(4, 3, variables), 0, sides);
-            var thicknessOffset = new Vector2(modifier.GetFloat(5, 0f, variables), modifier.GetFloat(6, 0f, variables));
-            var thicknessScale = new Vector2(modifier.GetFloat(7, 1f, variables), modifier.GetFloat(8, 1f, variables));
-            var rotation = modifier.GetFloat(9, 0f, variables);
+            var radius = RTMath.Clamp(modifier.GetFloat(0, 0.5f, modifierLoop.variables), 0.1f, 10f);
+            var sides = RTMath.Clamp(modifier.GetInt(1, 3, modifierLoop.variables), 3, 32);
+            var roundness = RTMath.Clamp(modifier.GetFloat(2, 0f, modifierLoop.variables), 0f, 1f);
+            var thickness = RTMath.Clamp(modifier.GetFloat(3, 1f, modifierLoop.variables), 0f, 1f);
+            var slices = RTMath.Clamp(modifier.GetInt(4, 3, modifierLoop.variables), 0, sides);
+            var thicknessOffset = new Vector2(modifier.GetFloat(5, 0f, modifierLoop.variables), modifier.GetFloat(6, 0f, modifierLoop.variables));
+            var thicknessScale = new Vector2(modifier.GetFloat(7, 1f, modifierLoop.variables), modifier.GetFloat(8, 1f, modifierLoop.variables));
+            var rotation = modifier.GetFloat(9, 0f, modifierLoop.variables);
 
             var meshParams = new VGShapes.MeshParams
             {
@@ -8210,19 +8281,19 @@ namespace BetterLegacy.Core.Helpers
             modifier.Result = meshParams;
         }
 
-        public static void setPolygonShapeOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void setPolygonShapeOther(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IPrefabable prefabable)
+            if (modifierLoop.reference is not IPrefabable prefabable)
                 return;
 
-            var radius = RTMath.Clamp(modifier.GetFloat(1, 0.5f, variables), 0.1f, 10f);
-            var sides = RTMath.Clamp(modifier.GetInt(2, 3, variables), 3, 32);
-            var roundness = RTMath.Clamp(modifier.GetFloat(3, 0f, variables), 0f, 1f);
-            var thickness = RTMath.Clamp(modifier.GetFloat(4, 1f, variables), 0f, 1f);
-            var slices = RTMath.Clamp(modifier.GetInt(5, 3, variables), 0, sides);
-            var thicknessOffset = new Vector2(modifier.GetFloat(6, 0f, variables), modifier.GetFloat(7, 0f, variables));
-            var thicknessScale = new Vector2(modifier.GetFloat(8, 1f, variables), modifier.GetFloat(9, 1f, variables));
-            var rotation = modifier.GetFloat(10, 0f, variables);
+            var radius = RTMath.Clamp(modifier.GetFloat(1, 0.5f, modifierLoop.variables), 0.1f, 10f);
+            var sides = RTMath.Clamp(modifier.GetInt(2, 3, modifierLoop.variables), 3, 32);
+            var roundness = RTMath.Clamp(modifier.GetFloat(3, 0f, modifierLoop.variables), 0f, 1f);
+            var thickness = RTMath.Clamp(modifier.GetFloat(4, 1f, modifierLoop.variables), 0f, 1f);
+            var slices = RTMath.Clamp(modifier.GetInt(5, 3, modifierLoop.variables), 0, sides);
+            var thicknessOffset = new Vector2(modifier.GetFloat(6, 0f, modifierLoop.variables), modifier.GetFloat(7, 0f, modifierLoop.variables));
+            var thicknessScale = new Vector2(modifier.GetFloat(8, 1f, modifierLoop.variables), modifier.GetFloat(9, 1f, modifierLoop.variables));
+            var rotation = modifier.GetFloat(10, 0f, modifierLoop.variables);
 
             var meshParams = new VGShapes.MeshParams
             {
@@ -8238,7 +8309,7 @@ namespace BetterLegacy.Core.Helpers
             if (modifier.TryGetResult(out VGShapes.MeshParams cache) && meshParams.Equals(cache))
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(0, variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(0, modifierLoop.variables));
 
             for (int i = 0; i < list.Count; i++)
             {
@@ -8250,28 +8321,28 @@ namespace BetterLegacy.Core.Helpers
             modifier.Result = meshParams;
         }
 
-        public static void actorFrameTexture(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void actorFrameTexture(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject || beatmapObject.ShapeType == ShapeType.Image)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject || beatmapObject.ShapeType == ShapeType.Image)
                 return;
 
             var runtimeObject = beatmapObject.runtimeObject;
             if (!runtimeObject || !runtimeObject.visualObject)
                 return;
 
-            var width = modifier.GetInt(1, 512, variables);
-            var height = modifier.GetInt(2, 512, variables);
-            var offsetX = modifier.GetFloat(3, 0f, variables);
-            var offsetY = modifier.GetFloat(4, 0f, variables);
-            var zoom = modifier.GetFloat(5, 1f, variables);
-            var rotate = modifier.GetFloat(6, 0f, variables);
-            var allCameras = modifier.GetBool(7, false, variables);
-            var clearTexture = modifier.GetBool(8, false, variables);
-            var customColor = modifier.GetValue(9, variables);
-            var calculateZoom = modifier.GetBool(10, true, variables);
-            var textureOffset = new Vector2(modifier.GetFloat(11, 0f, variables), modifier.GetFloat(12, 0f, variables));
-            var textureScale = new Vector2(modifier.GetFloat(13, 1f, variables), modifier.GetFloat(14, 0f, variables));
-            var hidePlayers = modifier.GetBool(15, false, variables);
+            var width = modifier.GetInt(1, 512, modifierLoop.variables);
+            var height = modifier.GetInt(2, 512, modifierLoop.variables);
+            var offsetX = modifier.GetFloat(3, 0f, modifierLoop.variables);
+            var offsetY = modifier.GetFloat(4, 0f, modifierLoop.variables);
+            var zoom = modifier.GetFloat(5, 1f, modifierLoop.variables);
+            var rotate = modifier.GetFloat(6, 0f, modifierLoop.variables);
+            var allCameras = modifier.GetBool(7, false, modifierLoop.variables);
+            var clearTexture = modifier.GetBool(8, false, modifierLoop.variables);
+            var customColor = modifier.GetValue(9, modifierLoop.variables);
+            var calculateZoom = modifier.GetBool(10, true, modifierLoop.variables);
+            var textureOffset = new Vector2(modifier.GetFloat(11, 0f, modifierLoop.variables), modifier.GetFloat(12, 0f, modifierLoop.variables));
+            var textureScale = new Vector2(modifier.GetFloat(13, 1f, modifierLoop.variables), modifier.GetFloat(14, 0f, modifierLoop.variables));
+            var hidePlayers = modifier.GetBool(15, false, modifierLoop.variables);
 
             var renderer = runtimeObject.visualObject.renderer;
             if (!renderer)
@@ -8413,7 +8484,7 @@ namespace BetterLegacy.Core.Helpers
             }
             else
             {
-                var camera = modifier.GetInt(0, 0, variables) switch
+                var camera = modifier.GetInt(0, 0, modifierLoop.variables) switch
                 {
                     1 => RTLevel.Cameras.BG,
                     2 => RTLevel.Cameras.UI,
@@ -8515,16 +8586,16 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void setImage(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void setImage(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject || !beatmapObject.runtimeObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject || !beatmapObject.runtimeObject)
                 return;
 
-            var value = modifier.GetValue(0, variables);
-            value = ModifiersHelper.FormatStringVariables(value, variables);
+            var value = modifier.GetValue(0, modifierLoop.variables);
+            value = ModifiersHelper.FormatStringVariables(value, modifierLoop.variables);
 
-            var textureOffset = new Vector2(modifier.GetFloat(1, 0f, variables), modifier.GetFloat(2, 0f, variables));
-            var textureScale = new Vector2(modifier.GetFloat(3, 1f, variables), modifier.GetFloat(4, 0f, variables));
+            var textureOffset = new Vector2(modifier.GetFloat(1, 0f, modifierLoop.variables), modifier.GetFloat(2, 0f, modifierLoop.variables));
+            var textureScale = new Vector2(modifier.GetFloat(3, 1f, modifierLoop.variables), modifier.GetFloat(4, 0f, modifierLoop.variables));
 
             if (modifier.constant)
             {
@@ -8607,24 +8678,24 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void setImageOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void setImageOther(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (modifier.constant)
                 return;
 
-            if (reference is not IPrefabable prefabable)
+            if (modifierLoop.reference is not IPrefabable prefabable)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, modifierLoop.variables));
 
             if (list.IsEmpty())
                 return;
 
-            var value = modifier.GetValue(0, variables);
-            value = ModifiersHelper.FormatStringVariables(value, variables);
+            var value = modifier.GetValue(0, modifierLoop.variables);
+            value = ModifiersHelper.FormatStringVariables(value, modifierLoop.variables);
 
-            var textureOffset = new Vector2(modifier.GetFloat(2, 0f, variables), modifier.GetFloat(3, 0f, variables));
-            var textureScale = new Vector2(modifier.GetFloat(4, 1f, variables), modifier.GetFloat(5, 0f, variables));
+            var textureOffset = new Vector2(modifier.GetFloat(2, 0f, modifierLoop.variables), modifier.GetFloat(3, 0f, modifierLoop.variables));
+            var textureScale = new Vector2(modifier.GetFloat(4, 1f, modifierLoop.variables), modifier.GetFloat(5, 0f, modifierLoop.variables));
 
             Sprite sprite = null;
             if (prefabable.FromPrefab && prefabable.GetPrefab() is Prefab prefab && prefab.assets.sprites.TryFind(x => x.name == value, out SpriteAsset spriteAsset))
@@ -8737,13 +8808,13 @@ namespace BetterLegacy.Core.Helpers
                 }));
         }
 
-        public static void setText(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void setText(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject || beatmapObject.ShapeType != ShapeType.Text || !beatmapObject.runtimeObject || beatmapObject.runtimeObject.visualObject is not TextObject textObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject || beatmapObject.ShapeType != ShapeType.Text || !beatmapObject.runtimeObject || beatmapObject.runtimeObject.visualObject is not TextObject textObject)
                 return;
 
-            var text = modifier.GetValue(0, variables);
-            text = ModifiersHelper.FormatStringVariables(text, variables);
+            var text = modifier.GetValue(0, modifierLoop.variables);
+            text = ModifiersHelper.FormatStringVariables(text, modifierLoop.variables);
 
             if (modifier.constant || !CoreConfig.Instance.AllowCustomTextFormatting.Value)
                 textObject.SetText(text);
@@ -8751,18 +8822,18 @@ namespace BetterLegacy.Core.Helpers
                 textObject.text = text;
         }
 
-        public static void setTextOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void setTextOther(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IPrefabable prefabable)
+            if (modifierLoop.reference is not IPrefabable prefabable)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, modifierLoop.variables));
 
             if (list.IsEmpty())
                 return;
 
-            var text = modifier.GetValue(0, variables);
-            text = ModifiersHelper.FormatStringVariables(text, variables);
+            var text = modifier.GetValue(0, modifierLoop.variables);
+            text = ModifiersHelper.FormatStringVariables(text, modifierLoop.variables);
 
             foreach (var bm in list)
             {
@@ -8776,13 +8847,13 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void addText(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void addText(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject || beatmapObject.ShapeType != ShapeType.Text || !beatmapObject.runtimeObject || beatmapObject.runtimeObject.visualObject is not TextObject textObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject || beatmapObject.ShapeType != ShapeType.Text || !beatmapObject.runtimeObject || beatmapObject.runtimeObject.visualObject is not TextObject textObject)
                 return;
 
-            var text = modifier.GetValue(0, variables);
-            text = ModifiersHelper.FormatStringVariables(text, variables);
+            var text = modifier.GetValue(0, modifierLoop.variables);
+            text = ModifiersHelper.FormatStringVariables(text, modifierLoop.variables);
 
             if (modifier.constant || !CoreConfig.Instance.AllowCustomTextFormatting.Value)
                 textObject.SetText(textObject.textMeshPro.text + text);
@@ -8790,18 +8861,18 @@ namespace BetterLegacy.Core.Helpers
                 textObject.text += text;
         }
 
-        public static void addTextOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void addTextOther(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IPrefabable prefabable)
+            if (modifierLoop.reference is not IPrefabable prefabable)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, modifierLoop.variables));
 
             if (list.IsEmpty())
                 return;
 
-            var text = modifier.GetValue(0, variables);
-            text = ModifiersHelper.FormatStringVariables(text, variables);
+            var text = modifier.GetValue(0, modifierLoop.variables);
+            text = ModifiersHelper.FormatStringVariables(text, modifierLoop.variables);
 
             foreach (var bm in list)
             {
@@ -8815,13 +8886,13 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void removeText(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void removeText(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject || beatmapObject.ShapeType != ShapeType.Text || !beatmapObject.runtimeObject || beatmapObject.runtimeObject.visualObject is not TextObject textObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject || beatmapObject.ShapeType != ShapeType.Text || !beatmapObject.runtimeObject || beatmapObject.runtimeObject.visualObject is not TextObject textObject)
                 return;
 
             string text = string.IsNullOrEmpty(textObject.textMeshPro.text) ? string.Empty :
-                textObject.textMeshPro.text.Substring(0, textObject.textMeshPro.text.Length - Mathf.Clamp(modifier.GetInt(0, 1, variables), 0, textObject.textMeshPro.text.Length));
+                textObject.textMeshPro.text.Substring(0, textObject.textMeshPro.text.Length - Mathf.Clamp(modifier.GetInt(0, 1, modifierLoop.variables), 0, textObject.textMeshPro.text.Length));
 
             if (modifier.constant || !CoreConfig.Instance.AllowCustomTextFormatting.Value)
                 textObject.SetText(text);
@@ -8829,17 +8900,17 @@ namespace BetterLegacy.Core.Helpers
                 textObject.text = text;
         }
 
-        public static void removeTextOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void removeTextOther(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IPrefabable prefabable)
+            if (modifierLoop.reference is not IPrefabable prefabable)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, modifierLoop.variables));
 
             if (list.IsEmpty())
                 return;
 
-            var remove = modifier.GetInt(0, 1, variables);
+            var remove = modifier.GetInt(0, 1, modifierLoop.variables);
 
             foreach (var bm in list)
             {
@@ -8857,12 +8928,12 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void removeTextAt(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void removeTextAt(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject || beatmapObject.ShapeType != ShapeType.Text || !beatmapObject.runtimeObject || beatmapObject.runtimeObject.visualObject is not TextObject textObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject || beatmapObject.ShapeType != ShapeType.Text || !beatmapObject.runtimeObject || beatmapObject.runtimeObject.visualObject is not TextObject textObject)
                 return;
 
-            var remove = modifier.GetInt(0, 1, variables);
+            var remove = modifier.GetInt(0, 1, modifierLoop.variables);
             string text = string.IsNullOrEmpty(textObject.textMeshPro.text) ? string.Empty : textObject.textMeshPro.text.Length > remove ?
                 textObject.textMeshPro.text.Remove(remove, 1) : string.Empty;
 
@@ -8872,17 +8943,17 @@ namespace BetterLegacy.Core.Helpers
                 textObject.text = text;
         }
 
-        public static void removeTextOtherAt(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void removeTextOtherAt(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IPrefabable prefabable)
+            if (modifierLoop.reference is not IPrefabable prefabable)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, modifierLoop.variables));
 
             if (list.IsEmpty())
                 return;
 
-            var remove = modifier.GetInt(0, 1, variables);
+            var remove = modifier.GetInt(0, 1, modifierLoop.variables);
 
             foreach (var bm in list)
             {
@@ -8899,21 +8970,21 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void formatText(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void formatText(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (!CoreConfig.Instance.AllowCustomTextFormatting.Value && reference is BeatmapObject beatmapObject && beatmapObject.ShapeType == ShapeType.Text &&
+            if (!CoreConfig.Instance.AllowCustomTextFormatting.Value && modifierLoop.reference is BeatmapObject beatmapObject && beatmapObject.ShapeType == ShapeType.Text &&
                 beatmapObject.runtimeObject is RTBeatmapObject runtimeObject && runtimeObject.visualObject is TextObject textObject)
-                textObject.SetText(RTString.FormatText(beatmapObject, textObject.text, variables));
+                textObject.SetText(RTString.FormatText(beatmapObject, textObject.text, modifierLoop.variables));
         }
 
-        public static void textSequence(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void textSequence(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject || beatmapObject.ShapeType != ShapeType.Text || !beatmapObject.runtimeObject || beatmapObject.runtimeObject.visualObject is not TextObject textObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject || beatmapObject.ShapeType != ShapeType.Text || !beatmapObject.runtimeObject || beatmapObject.runtimeObject.visualObject is not TextObject textObject)
                 return;
 
-            var value = modifier.GetValue(9, variables);
+            var value = modifier.GetValue(9, modifierLoop.variables);
             var text = !string.IsNullOrEmpty(value) ? value : beatmapObject.text;
-            text = ModifiersHelper.FormatStringVariables(text, variables);
+            text = ModifiersHelper.FormatStringVariables(text, modifierLoop.variables);
 
             if (!modifier.setTimer)
             {
@@ -8922,12 +8993,12 @@ namespace BetterLegacy.Core.Helpers
             }
 
             var offsetTime = modifier.ResultTimer;
-            if (!modifier.GetBool(11, false, variables))
+            if (!modifier.GetBool(11, false, modifierLoop.variables))
                 offsetTime = beatmapObject.StartTime;
 
-            var time = AudioManager.inst.CurrentAudioSource.time - offsetTime + modifier.GetFloat(10, 0f, variables);
-            var length = modifier.GetFloat(0, 1f, variables);
-            var glitch = modifier.GetBool(1, true, variables);
+            var time = AudioManager.inst.CurrentAudioSource.time - offsetTime + modifier.GetFloat(10, 0f, modifierLoop.variables);
+            var length = modifier.GetFloat(0, 1f, modifierLoop.variables);
+            var glitch = modifier.GetBool(1, true, modifierLoop.variables);
 
             var p = time / length;
 
@@ -8963,38 +9034,38 @@ namespace BetterLegacy.Core.Helpers
             if ((modifier.Result is not int result || result != stringLength2) && textWithoutFormatting[Mathf.Clamp(stringLength2 - 1, 0, textWithoutFormatting.Length - 1)] != ' ')
             {
                 modifier.Result = stringLength2;
-                float pitch = modifier.GetFloat(6, 1f, variables);
-                float volume = modifier.GetFloat(7, 1f, variables);
-                float pitchVary = modifier.GetFloat(8, 0f, variables);
+                float pitch = modifier.GetFloat(6, 1f, modifierLoop.variables);
+                float volume = modifier.GetFloat(7, 1f, modifierLoop.variables);
+                float pitchVary = modifier.GetFloat(8, 0f, modifierLoop.variables);
 
                 if (pitchVary != 0f)
                     pitch += UnityEngine.Random.Range(-pitchVary, pitchVary);
 
                 // Don't play any sounds.
-                if (!modifier.GetBool(2, true, variables))
+                if (!modifier.GetBool(2, true, modifierLoop.variables))
                     return;
 
                 // Don't play custom sound.
-                if (!modifier.GetBool(3, false, variables))
+                if (!modifier.GetBool(3, false, modifierLoop.variables))
                 {
                     SoundManager.inst.PlaySound(DefaultSounds.Click, volume, volume);
                     return;
                 }
 
-                var soundName = modifier.GetValue(4, variables);
+                var soundName = modifier.GetValue(4, modifierLoop.variables);
                 if (GameData.Current.assets.sounds.TryFind(x => x.name == soundName, out SoundAsset soundAsset) && soundAsset.audio)
-                    SoundManager.inst.PlaySound(soundAsset.audio, volume, pitch, panStereo: modifier.GetFloat(12, 0f, variables));
+                    SoundManager.inst.PlaySound(soundAsset.audio, volume, pitch, panStereo: modifier.GetFloat(12, 0f, modifierLoop.variables));
                 else if (SoundManager.inst.TryGetSound(soundName, out AudioClip audioClip))
-                    SoundManager.inst.PlaySound(audioClip, volume, pitch, panStereo: modifier.GetFloat(12, 0f, variables));
+                    SoundManager.inst.PlaySound(audioClip, volume, pitch, panStereo: modifier.GetFloat(12, 0f, modifierLoop.variables));
                 else
-                    ModifiersHelper.GetSoundPath(beatmapObject.id, soundName, modifier.GetBool(5, false, variables), pitch, volume, false, modifier.GetFloat(12, 0f, variables));
+                    ModifiersHelper.GetSoundPath(beatmapObject.id, soundName, modifier.GetBool(5, false, modifierLoop.variables), pitch, volume, false, modifier.GetFloat(12, 0f, modifierLoop.variables));
             }
         }
 
         // modify shape
-        public static void backgroundShape(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void backgroundShape(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
             var runtimeObject = beatmapObject.runtimeObject;
@@ -9009,9 +9080,9 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void sphereShape(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void sphereShape(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
             var runtimeObject = beatmapObject.runtimeObject;
@@ -9027,24 +9098,24 @@ namespace BetterLegacy.Core.Helpers
 
         #region Animation
 
-        public static void animateObject(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void animateObject(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var transformable = reference.AsTransformable();
+            var transformable = modifierLoop.reference.AsTransformable();
             if (transformable == null)
                 return;
 
-            var time = modifier.GetFloat(0, 0f, variables);
-            var type = modifier.GetInt(1, 0, variables);
-            var x = modifier.GetFloat(2, 0f, variables);
-            var y = modifier.GetFloat(3, 0f, variables);
-            var z = modifier.GetFloat(4, 0f, variables);
-            var relative = modifier.GetBool(5, true, variables);
+            var time = modifier.GetFloat(0, 0f, modifierLoop.variables);
+            var type = modifier.GetInt(1, 0, modifierLoop.variables);
+            var x = modifier.GetFloat(2, 0f, modifierLoop.variables);
+            var y = modifier.GetFloat(3, 0f, modifierLoop.variables);
+            var z = modifier.GetFloat(4, 0f, modifierLoop.variables);
+            var relative = modifier.GetBool(5, true, modifierLoop.variables);
 
-            string easing = modifier.GetValue(6, variables);
+            string easing = modifier.GetValue(6, modifierLoop.variables);
             if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
                 easing = Ease.EaseReferences[e].Name;
 
-            var applyDeltaTime = modifier.GetBool(7, true, variables);
+            var applyDeltaTime = modifier.GetBool(7, true, modifierLoop.variables);
 
             Vector3 vector = transformable.GetTransformOffset(type);
 
@@ -9077,25 +9148,25 @@ namespace BetterLegacy.Core.Helpers
             transformable.SetTransform(type, setVector);
         }
 
-        public static void animateObjectOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void animateObjectOther(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IPrefabable prefabable)
+            if (modifierLoop.reference is not IPrefabable prefabable)
                 return;
 
-            var transformables = GameData.Current.FindTransformablesWithTag(modifier, prefabable, modifier.GetValue(7, variables));
+            var transformables = GameData.Current.FindTransformablesWithTag(modifier, prefabable, modifier.GetValue(7, modifierLoop.variables));
 
-            var time = modifier.GetFloat(0, 0f, variables);
-            var type = modifier.GetInt(1, 0, variables);
-            var x = modifier.GetFloat(2, 0f, variables);
-            var y = modifier.GetFloat(3, 0f, variables);
-            var z = modifier.GetFloat(4, 0f, variables);
-            var relative = modifier.GetBool(5, true, variables);
+            var time = modifier.GetFloat(0, 0f, modifierLoop.variables);
+            var type = modifier.GetInt(1, 0, modifierLoop.variables);
+            var x = modifier.GetFloat(2, 0f, modifierLoop.variables);
+            var y = modifier.GetFloat(3, 0f, modifierLoop.variables);
+            var z = modifier.GetFloat(4, 0f, modifierLoop.variables);
+            var relative = modifier.GetBool(5, true, modifierLoop.variables);
 
-            string easing = modifier.GetValue(6, variables);
+            string easing = modifier.GetValue(6, modifierLoop.variables);
             if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
                 easing = Ease.EaseReferences[e].Name;
 
-            var applyDeltaTime = modifier.GetBool(8, true, variables);
+            var applyDeltaTime = modifier.GetBool(8, true, modifierLoop.variables);
 
             foreach (var transformable in transformables)
             {
@@ -9133,13 +9204,13 @@ namespace BetterLegacy.Core.Helpers
 
         // tests modifier keyframing
         // todo: see if i can get homing to work via adding a keyframe depending on audio time
-        public static void animateObjectKF(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void animateObjectKF(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not ITransformable transformable || reference is not ILifetime lifetime)
+            if (modifierLoop.reference is not ITransformable transformable || modifierLoop.reference is not ILifetime lifetime)
                 return;
 
-            var audioTime = modifier.GetFloat(0, 0f, variables);
-            var type = modifier.GetInt(1, 0, variables);
+            var audioTime = modifier.GetFloat(0, 0f, modifierLoop.variables);
+            var type = modifier.GetInt(1, 0, modifierLoop.variables);
 
             Sequence<Vector3> sequence;
 
@@ -9151,9 +9222,9 @@ namespace BetterLegacy.Core.Helpers
                 var vector = transformable.GetTransformOffset(type);
 
                 // a custom start position can be registered if you want.
-                var xStart = modifier.GetValue(2, variables);
-                var yStart = modifier.GetValue(3, variables);
-                var zStart = modifier.GetValue(4, variables);
+                var xStart = modifier.GetValue(2, modifierLoop.variables);
+                var yStart = modifier.GetValue(3, modifierLoop.variables);
+                var zStart = modifier.GetValue(4, modifierLoop.variables);
                 if (float.TryParse(xStart, out float xS))
                     vector.x = xS;
                 if (float.TryParse(yStart, out float yS))
@@ -9167,16 +9238,16 @@ namespace BetterLegacy.Core.Helpers
                 keyframes.Add(new Vector3Keyframe(currentTime, vector, Ease.Linear));
                 for (int i = 5; i < modifier.values.Count; i += 6)
                 {
-                    var time = modifier.GetFloat(i, 0f, variables);
+                    var time = modifier.GetFloat(i, 0f, modifierLoop.variables);
                     if (time < currentTime)
                         continue;
 
-                    var x = modifier.GetFloat(i + 1, 0f, variables);
-                    var y = modifier.GetFloat(i + 2, 0f, variables);
-                    var z = modifier.GetFloat(i + 3, 0f, variables);
-                    var relative = modifier.GetBool(i + 4, true, variables);
+                    var x = modifier.GetFloat(i + 1, 0f, modifierLoop.variables);
+                    var y = modifier.GetFloat(i + 2, 0f, modifierLoop.variables);
+                    var z = modifier.GetFloat(i + 3, 0f, modifierLoop.variables);
+                    var relative = modifier.GetBool(i + 4, true, modifierLoop.variables);
 
-                    var easing = modifier.GetValue(i + 5, variables);
+                    var easing = modifier.GetValue(i + 5, modifierLoop.variables);
                     if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
                         easing = Ease.EaseReferences[e].Name;
 
@@ -9197,21 +9268,21 @@ namespace BetterLegacy.Core.Helpers
                 transformable.SetTransform(type, sequence.GetValue(audioTime - lifetime.StartTime));
         }
 
-        public static void animateSignal(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void animateSignal(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IPrefabable prefabable || reference is not ITransformable transformable)
+            if (modifierLoop.reference is not IPrefabable prefabable || modifierLoop.reference is not ITransformable transformable)
                 return;
 
-            var time = modifier.GetFloat(0, 0f, variables);
-            var type = modifier.GetInt(1, 0, variables);
-            var x = modifier.GetFloat(2, 0f, variables);
-            var y = modifier.GetFloat(3, 0f, variables);
-            var z = modifier.GetFloat(4, 0f, variables);
-            var relative = modifier.GetBool(5, true, variables);
-            var signalGroup = modifier.GetValue(7, variables);
-            var delay = modifier.GetFloat(8, 0f, variables);
+            var time = modifier.GetFloat(0, 0f, modifierLoop.variables);
+            var type = modifier.GetInt(1, 0, modifierLoop.variables);
+            var x = modifier.GetFloat(2, 0f, modifierLoop.variables);
+            var y = modifier.GetFloat(3, 0f, modifierLoop.variables);
+            var z = modifier.GetFloat(4, 0f, modifierLoop.variables);
+            var relative = modifier.GetBool(5, true, modifierLoop.variables);
+            var signalGroup = modifier.GetValue(7, modifierLoop.variables);
+            var delay = modifier.GetFloat(8, 0f, modifierLoop.variables);
 
-            if (!modifier.GetBool(9, true, variables))
+            if (!modifier.GetBool(9, true, modifierLoop.variables))
             {
                 var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, signalGroup);
 
@@ -9223,11 +9294,11 @@ namespace BetterLegacy.Core.Helpers
                 }
             }
 
-            string easing = modifier.GetValue(6, variables);
+            string easing = modifier.GetValue(6, modifierLoop.variables);
             if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
                 easing = Ease.EaseReferences[e].Name;
 
-            var applyDeltaTime = modifier.GetBool(10, true, variables);
+            var applyDeltaTime = modifier.GetBool(10, true, modifierLoop.variables);
 
             Vector3 vector = transformable.GetTransformOffset(type);
 
@@ -9268,23 +9339,23 @@ namespace BetterLegacy.Core.Helpers
             transformable.SetTransform(type, setVector);
         }
 
-        public static void animateSignalOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void animateSignalOther(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IPrefabable prefabable)
+            if (modifierLoop.reference is not IPrefabable prefabable)
                 return;
 
-            var transformables = GameData.Current.FindTransformablesWithTag(modifier, prefabable, modifier.GetValue(7, variables));
+            var transformables = GameData.Current.FindTransformablesWithTag(modifier, prefabable, modifier.GetValue(7, modifierLoop.variables));
 
-            var time = modifier.GetFloat(0, 0f, variables);
-            var type = modifier.GetInt(1, 0, variables);
-            var x = modifier.GetFloat(2, 0f, variables);
-            var y = modifier.GetFloat(3, 0f, variables);
-            var z = modifier.GetFloat(4, 0f, variables);
-            var relative = modifier.GetBool(5, true, variables);
-            var signalGroup = modifier.GetValue(8, variables);
-            var delay = modifier.GetFloat(9, 0f, variables);
+            var time = modifier.GetFloat(0, 0f, modifierLoop.variables);
+            var type = modifier.GetInt(1, 0, modifierLoop.variables);
+            var x = modifier.GetFloat(2, 0f, modifierLoop.variables);
+            var y = modifier.GetFloat(3, 0f, modifierLoop.variables);
+            var z = modifier.GetFloat(4, 0f, modifierLoop.variables);
+            var relative = modifier.GetBool(5, true, modifierLoop.variables);
+            var signalGroup = modifier.GetValue(8, modifierLoop.variables);
+            var delay = modifier.GetFloat(9, 0f, modifierLoop.variables);
 
-            if (!modifier.GetBool(10, true, variables))
+            if (!modifier.GetBool(10, true, modifierLoop.variables))
             {
                 var list2 = GameData.Current.FindObjectsWithTag(modifier, prefabable, signalGroup);
 
@@ -9298,11 +9369,11 @@ namespace BetterLegacy.Core.Helpers
                 }
             }
 
-            string easing = modifier.GetValue(6, variables);
+            string easing = modifier.GetValue(6, modifierLoop.variables);
             if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
                 easing = Ease.EaseReferences[e].Name;
 
-            var applyDeltaTime = modifier.GetBool(11, true, variables);
+            var applyDeltaTime = modifier.GetBool(11, true, modifierLoop.variables);
 
             foreach (var transformable in transformables)
             {
@@ -9346,32 +9417,32 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void animateObjectMath(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void animateObjectMath(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var transformable = reference.AsTransformable();
+            var transformable = modifierLoop.reference.AsTransformable();
             if (transformable == null)
                 return;
 
-            if (reference is not IEvaluatable evaluatable)
+            if (modifierLoop.reference is not IEvaluatable evaluatable)
                 return;
 
             var numberVariables = evaluatable.GetObjectVariables();
-            ModifiersHelper.SetVariables(variables, numberVariables);
+            ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
 
             var functions = evaluatable.GetObjectFunctions();
 
-            float time = (float)RTMath.Parse(modifier.GetValue(0, variables), numberVariables, functions);
-            var type = modifier.GetInt(1, 0, variables);
-            float x = (float)RTMath.Parse(modifier.GetValue(2, variables), numberVariables, functions);
-            float y = (float)RTMath.Parse(modifier.GetValue(3, variables), numberVariables, functions);
-            float z = (float)RTMath.Parse(modifier.GetValue(4, variables), numberVariables, functions);
-            var relative = modifier.GetBool(5, true, variables);
+            float time = (float)RTMath.Parse(modifier.GetValue(0, modifierLoop.variables), numberVariables, functions);
+            var type = modifier.GetInt(1, 0, modifierLoop.variables);
+            float x = (float)RTMath.Parse(modifier.GetValue(2, modifierLoop.variables), numberVariables, functions);
+            float y = (float)RTMath.Parse(modifier.GetValue(3, modifierLoop.variables), numberVariables, functions);
+            float z = (float)RTMath.Parse(modifier.GetValue(4, modifierLoop.variables), numberVariables, functions);
+            var relative = modifier.GetBool(5, true, modifierLoop.variables);
 
-            string easing = modifier.GetValue(6, variables);
+            string easing = modifier.GetValue(6, modifierLoop.variables);
             if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
                 easing = Ease.EaseReferences[e].Name;
 
-            var applyDeltaTime = modifier.GetBool(7, true, variables);
+            var applyDeltaTime = modifier.GetBool(7, true, modifierLoop.variables);
 
             Vector3 vector = transformable.GetTransformOffset(type);
 
@@ -9404,31 +9475,31 @@ namespace BetterLegacy.Core.Helpers
             transformable.SetTransform(type, setVector);
         }
 
-        public static void animateObjectMathOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void animateObjectMathOther(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IPrefabable prefabable || reference is not IEvaluatable evaluatable)
+            if (modifierLoop.reference is not IPrefabable prefabable || modifierLoop.reference is not IEvaluatable evaluatable)
                 return;
 
-            var transformables = modifier.GetResultOrDefault(() => GameData.Current.FindTransformablesWithTag(modifier, prefabable, modifier.GetValue(7, variables)));
+            var transformables = modifier.GetResultOrDefault(() => GameData.Current.FindTransformablesWithTag(modifier, prefabable, modifier.GetValue(7, modifierLoop.variables)));
 
             var numberVariables = evaluatable.GetObjectVariables();
-            ModifiersHelper.SetVariables(variables, numberVariables);
+            ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
 
             var functions = evaluatable.GetObjectFunctions();
 
             // for optimization sake, we evaluate this outside of the foreach loop. normally I'd place this inside and replace "otherVar" with bm.integerVariable.ToString(), however I feel that would result in a worse experience so the tradeoff is not worth it.
-            float time = (float)RTMath.Parse(modifier.GetValue(0, variables), numberVariables, functions);
-            var type = modifier.GetInt(1, 0, variables);
-            float x = (float)RTMath.Parse(modifier.GetValue(2, variables), numberVariables, functions);
-            float y = (float)RTMath.Parse(modifier.GetValue(3, variables), numberVariables, functions);
-            float z = (float)RTMath.Parse(modifier.GetValue(4, variables), numberVariables, functions);
-            var relative = modifier.GetBool(5, true, variables);
+            float time = (float)RTMath.Parse(modifier.GetValue(0, modifierLoop.variables), numberVariables, functions);
+            var type = modifier.GetInt(1, 0, modifierLoop.variables);
+            float x = (float)RTMath.Parse(modifier.GetValue(2, modifierLoop.variables), numberVariables, functions);
+            float y = (float)RTMath.Parse(modifier.GetValue(3, modifierLoop.variables), numberVariables, functions);
+            float z = (float)RTMath.Parse(modifier.GetValue(4, modifierLoop.variables), numberVariables, functions);
+            var relative = modifier.GetBool(5, true, modifierLoop.variables);
 
-            string easing = modifier.GetValue(6, variables);
+            string easing = modifier.GetValue(6, modifierLoop.variables);
             if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
                 easing = Ease.EaseReferences[e].Name;
 
-            var applyDeltaTime = modifier.GetBool(8, true, variables);
+            var applyDeltaTime = modifier.GetBool(8, true, modifierLoop.variables);
 
             foreach (var transformable in transformables)
             {
@@ -9464,26 +9535,26 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void animateSignalMath(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void animateSignalMath(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IEvaluatable evaluatable || reference is not IPrefabable prefabable || reference is not ITransformable transformable)
+            if (modifierLoop.reference is not IEvaluatable evaluatable || modifierLoop.reference is not IPrefabable prefabable || modifierLoop.reference is not ITransformable transformable)
                 return;
 
             var numberVariables = evaluatable.GetObjectVariables();
-            ModifiersHelper.SetVariables(variables, numberVariables);
+            ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
 
             var functions = evaluatable.GetObjectFunctions();
 
-            float time = (float)RTMath.Parse(modifier.GetValue(0, variables), numberVariables, functions);
-            var type = modifier.GetInt(1, 0, variables);
-            float x = (float)RTMath.Parse(modifier.GetValue(2, variables), numberVariables, functions);
-            float y = (float)RTMath.Parse(modifier.GetValue(3, variables), numberVariables, functions);
-            float z = (float)RTMath.Parse(modifier.GetValue(4, variables), numberVariables, functions);
-            var relative = modifier.GetBool(5, true, variables);
-            var signalGroup = modifier.GetValue(7, variables);
-            float signalTime = (float)RTMath.Parse(modifier.GetValue(8, variables), numberVariables, functions);
+            float time = (float)RTMath.Parse(modifier.GetValue(0, modifierLoop.variables), numberVariables, functions);
+            var type = modifier.GetInt(1, 0, modifierLoop.variables);
+            float x = (float)RTMath.Parse(modifier.GetValue(2, modifierLoop.variables), numberVariables, functions);
+            float y = (float)RTMath.Parse(modifier.GetValue(3, modifierLoop.variables), numberVariables, functions);
+            float z = (float)RTMath.Parse(modifier.GetValue(4, modifierLoop.variables), numberVariables, functions);
+            var relative = modifier.GetBool(5, true, modifierLoop.variables);
+            var signalGroup = modifier.GetValue(7, modifierLoop.variables);
+            float signalTime = (float)RTMath.Parse(modifier.GetValue(8, modifierLoop.variables), numberVariables, functions);
 
-            if (!modifier.GetBool(9, true, variables))
+            if (!modifier.GetBool(9, true, modifierLoop.variables))
             {
                 var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, signalGroup);
 
@@ -9495,11 +9566,11 @@ namespace BetterLegacy.Core.Helpers
                 }
             }
 
-            string easing = modifier.GetValue(6, variables);
+            string easing = modifier.GetValue(6, modifierLoop.variables);
             if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
                 easing = Ease.EaseReferences[e].Name;
 
-            var applyDeltaTime = modifier.GetBool(10, true, variables);
+            var applyDeltaTime = modifier.GetBool(10, true, modifierLoop.variables);
 
             Vector3 vector = transformable.GetTransformOffset(type);
 
@@ -9540,28 +9611,28 @@ namespace BetterLegacy.Core.Helpers
             transformable.SetTransform(type, setVector);
         }
 
-        public static void animateSignalMathOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void animateSignalMathOther(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IPrefabable prefabable || reference is not IEvaluatable evaluatable)
+            if (modifierLoop.reference is not IPrefabable prefabable || modifierLoop.reference is not IEvaluatable evaluatable)
                 return;
 
-            var transformables = GameData.Current.FindTransformablesWithTag(modifier, prefabable, modifier.GetValue(7, variables));
+            var transformables = GameData.Current.FindTransformablesWithTag(modifier, prefabable, modifier.GetValue(7, modifierLoop.variables));
 
             var numberVariables = evaluatable.GetObjectVariables();
-            ModifiersHelper.SetVariables(variables, numberVariables);
+            ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
 
             var functions = evaluatable.GetObjectFunctions();
 
-            var time = (float)RTMath.Parse(modifier.GetValue(0, variables), numberVariables, functions);
-            var type = modifier.GetInt(1, 0, variables);
-            var x = (float)RTMath.Parse(modifier.GetValue(2, variables), numberVariables, functions);
-            var y = (float)RTMath.Parse(modifier.GetValue(3, variables), numberVariables, functions);
-            var z = (float)RTMath.Parse(modifier.GetValue(4, variables), numberVariables, functions);
-            var relative = modifier.GetBool(5, true, variables);
-            var signalGroup = modifier.GetValue(8, variables);
-            var signalTime = (float)RTMath.Parse(modifier.GetValue(9, variables), numberVariables);
+            var time = (float)RTMath.Parse(modifier.GetValue(0, modifierLoop.variables), numberVariables, functions);
+            var type = modifier.GetInt(1, 0, modifierLoop.variables);
+            var x = (float)RTMath.Parse(modifier.GetValue(2, modifierLoop.variables), numberVariables, functions);
+            var y = (float)RTMath.Parse(modifier.GetValue(3, modifierLoop.variables), numberVariables, functions);
+            var z = (float)RTMath.Parse(modifier.GetValue(4, modifierLoop.variables), numberVariables, functions);
+            var relative = modifier.GetBool(5, true, modifierLoop.variables);
+            var signalGroup = modifier.GetValue(8, modifierLoop.variables);
+            var signalTime = (float)RTMath.Parse(modifier.GetValue(9, modifierLoop.variables), numberVariables);
 
-            if (!modifier.GetBool(10, true, variables))
+            if (!modifier.GetBool(10, true, modifierLoop.variables))
             {
                 var list2 = GameData.Current.FindObjectsWithTag(modifier, prefabable, signalGroup);
 
@@ -9573,11 +9644,11 @@ namespace BetterLegacy.Core.Helpers
                 }
             }
 
-            string easing = modifier.GetValue(6, variables);
+            string easing = modifier.GetValue(6, modifierLoop.variables);
             if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
                 easing = Ease.EaseReferences[e].Name;
 
-            var applyDeltaTime = modifier.GetBool(11, true, variables);
+            var applyDeltaTime = modifier.GetBool(11, true, modifierLoop.variables);
 
             foreach (var transformable in transformables)
             {
@@ -9621,17 +9692,17 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void applyAnimation(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void applyAnimation(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
             var cache = modifier.GetResultOrDefault(() =>
             {
                 var applyAnimationCache = new ApplyAnimationCache();
-                applyAnimationCache.from = GameData.Current.FindObjectWithTag(modifier, beatmapObject, modifier.GetValue(0, variables));
-                applyAnimationCache.to = GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(10, variables));
-                applyAnimationCache.startTime = reference.GetParentRuntime()?.CurrentTime ?? 0f;
+                applyAnimationCache.from = GameData.Current.FindObjectWithTag(modifier, beatmapObject, modifier.GetValue(0, modifierLoop.variables));
+                applyAnimationCache.to = GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(10, modifierLoop.variables));
+                applyAnimationCache.startTime = modifierLoop.reference.GetParentRuntime()?.CurrentTime ?? 0f;
                 return applyAnimationCache;
             });
 
@@ -9642,15 +9713,15 @@ namespace BetterLegacy.Core.Helpers
             var list = cache.to;
             var time = cache.startTime;
 
-            var animatePos = modifier.GetBool(1, true, variables);
-            var animateSca = modifier.GetBool(2, true, variables);
-            var animateRot = modifier.GetBool(3, true, variables);
-            var delayPos = modifier.GetFloat(4, 0f, variables);
-            var delaySca = modifier.GetFloat(5, 0f, variables);
-            var delayRot = modifier.GetFloat(6, 0f, variables);
-            var useVisual = modifier.GetBool(7, false, variables);
-            var length = modifier.GetFloat(8, 1f, variables);
-            var speed = modifier.GetFloat(9, 1f, variables);
+            var animatePos = modifier.GetBool(1, true, modifierLoop.variables);
+            var animateSca = modifier.GetBool(2, true, modifierLoop.variables);
+            var animateRot = modifier.GetBool(3, true, modifierLoop.variables);
+            var delayPos = modifier.GetFloat(4, 0f, modifierLoop.variables);
+            var delaySca = modifier.GetFloat(5, 0f, modifierLoop.variables);
+            var delayRot = modifier.GetFloat(6, 0f, modifierLoop.variables);
+            var useVisual = modifier.GetBool(7, false, modifierLoop.variables);
+            var length = modifier.GetFloat(8, 1f, modifierLoop.variables);
+            var speed = modifier.GetFloat(9, 1f, modifierLoop.variables);
 
             if (!modifier.constant)
                 AnimationManager.inst.RemoveName("Apply Object Animation " + beatmapObject.id);
@@ -9680,20 +9751,20 @@ namespace BetterLegacy.Core.Helpers
                     continue;
                 }
 
-                ModifiersHelper.ApplyAnimationTo(bm, from, useVisual, time, reference.GetParentRuntime().CurrentTime, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
+                ModifiersHelper.ApplyAnimationTo(bm, from, useVisual, time, modifierLoop.reference.GetParentRuntime().CurrentTime, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
             }
         }
 
-        public static void applyAnimationFrom(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void applyAnimationFrom(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
             var cache = modifier.GetResultOrDefault(() =>
             {
                 var applyAnimationCache = new ApplyAnimationCache();
-                applyAnimationCache.from = GameData.Current.FindObjectWithTag(modifier, beatmapObject, modifier.GetValue(0, variables));
-                applyAnimationCache.startTime = reference.GetParentRuntime()?.CurrentTime ?? 0f;
+                applyAnimationCache.from = GameData.Current.FindObjectWithTag(modifier, beatmapObject, modifier.GetValue(0, modifierLoop.variables));
+                applyAnimationCache.startTime = modifierLoop.reference.GetParentRuntime()?.CurrentTime ?? 0f;
                 return applyAnimationCache;
             });
 
@@ -9703,15 +9774,15 @@ namespace BetterLegacy.Core.Helpers
             var from = cache.from;
             var time = cache.startTime;
 
-            var animatePos = modifier.GetBool(1, true, variables);
-            var animateSca = modifier.GetBool(2, true, variables);
-            var animateRot = modifier.GetBool(3, true, variables);
-            var delayPos = modifier.GetFloat(4, 0f, variables);
-            var delaySca = modifier.GetFloat(5, 0f, variables);
-            var delayRot = modifier.GetFloat(6, 0f, variables);
-            var useVisual = modifier.GetBool(7, false, variables);
-            var length = modifier.GetFloat(8, 1f, variables);
-            var speed = modifier.GetFloat(9, 1f, variables);
+            var animatePos = modifier.GetBool(1, true, modifierLoop.variables);
+            var animateSca = modifier.GetBool(2, true, modifierLoop.variables);
+            var animateRot = modifier.GetBool(3, true, modifierLoop.variables);
+            var delayPos = modifier.GetFloat(4, 0f, modifierLoop.variables);
+            var delaySca = modifier.GetFloat(5, 0f, modifierLoop.variables);
+            var delayRot = modifier.GetFloat(6, 0f, modifierLoop.variables);
+            var useVisual = modifier.GetBool(7, false, modifierLoop.variables);
+            var length = modifier.GetFloat(8, 1f, modifierLoop.variables);
+            var speed = modifier.GetFloat(9, 1f, modifierLoop.variables);
 
             if (!modifier.constant)
             {
@@ -9736,34 +9807,34 @@ namespace BetterLegacy.Core.Helpers
                 return;
             }
 
-            ModifiersHelper.ApplyAnimationTo(beatmapObject, from, useVisual, time, reference.GetParentRuntime().CurrentTime, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
+            ModifiersHelper.ApplyAnimationTo(beatmapObject, from, useVisual, time, modifierLoop.reference.GetParentRuntime().CurrentTime, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
         }
 
-        public static void applyAnimationTo(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void applyAnimationTo(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
             var cache = modifier.GetResultOrDefault(() =>
             {
                 var applyAnimationCache = new ApplyAnimationCache();
-                applyAnimationCache.to = GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(0, variables));
-                applyAnimationCache.startTime = reference.GetParentRuntime()?.CurrentTime ?? 0f;
+                applyAnimationCache.to = GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(0, modifierLoop.variables));
+                applyAnimationCache.startTime = modifierLoop.reference.GetParentRuntime()?.CurrentTime ?? 0f;
                 return applyAnimationCache;
             });
 
             var list = cache.to;
             var time = cache.startTime;
 
-            var animatePos = modifier.GetBool(1, true, variables);
-            var animateSca = modifier.GetBool(2, true, variables);
-            var animateRot = modifier.GetBool(3, true, variables);
-            var delayPos = modifier.GetFloat(4, 0f, variables);
-            var delaySca = modifier.GetFloat(5, 0f, variables);
-            var delayRot = modifier.GetFloat(6, 0f, variables);
-            var useVisual = modifier.GetBool(7, false, variables);
-            var length = modifier.GetFloat(8, 1f, variables);
-            var speed = modifier.GetFloat(9, 1f, variables);
+            var animatePos = modifier.GetBool(1, true, modifierLoop.variables);
+            var animateSca = modifier.GetBool(2, true, modifierLoop.variables);
+            var animateRot = modifier.GetBool(3, true, modifierLoop.variables);
+            var delayPos = modifier.GetFloat(4, 0f, modifierLoop.variables);
+            var delaySca = modifier.GetFloat(5, 0f, modifierLoop.variables);
+            var delayRot = modifier.GetFloat(6, 0f, modifierLoop.variables);
+            var useVisual = modifier.GetBool(7, false, modifierLoop.variables);
+            var length = modifier.GetFloat(8, 1f, modifierLoop.variables);
+            var speed = modifier.GetFloat(9, 1f, modifierLoop.variables);
 
             if (!modifier.constant)
                 AnimationManager.inst.RemoveName("Apply Object Animation " + beatmapObject.id);
@@ -9793,21 +9864,21 @@ namespace BetterLegacy.Core.Helpers
                     continue;
                 }
 
-                ModifiersHelper.ApplyAnimationTo(bm, beatmapObject, useVisual, time, reference.GetParentRuntime().CurrentTime, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
+                ModifiersHelper.ApplyAnimationTo(bm, beatmapObject, useVisual, time, modifierLoop.reference.GetParentRuntime().CurrentTime, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
             }
         }
 
-        public static void applyAnimationMath(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void applyAnimationMath(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
             var cache = modifier.GetResultOrDefault(() =>
             {
                 var applyAnimationCache = new ApplyAnimationCache();
-                applyAnimationCache.from = GameData.Current.FindObjectWithTag(modifier, beatmapObject, modifier.GetValue(0, variables));
-                applyAnimationCache.to = GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(10, variables));
-                applyAnimationCache.startTime = reference.GetParentRuntime()?.CurrentTime ?? 0f;
+                applyAnimationCache.from = GameData.Current.FindObjectWithTag(modifier, beatmapObject, modifier.GetValue(0, modifierLoop.variables));
+                applyAnimationCache.to = GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(10, modifierLoop.variables));
+                applyAnimationCache.startTime = modifierLoop.reference.GetParentRuntime()?.CurrentTime ?? 0f;
                 return applyAnimationCache;
             });
 
@@ -9819,19 +9890,19 @@ namespace BetterLegacy.Core.Helpers
             var time = cache.startTime;
 
             var numberVariables = beatmapObject.GetObjectVariables();
-            ModifiersHelper.SetVariables(variables, numberVariables);
+            ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
             var functions = beatmapObject.GetObjectFunctions();
 
-            var animatePos = modifier.GetBool(1, true, variables);
-            var animateSca = modifier.GetBool(2, true, variables);
-            var animateRot = modifier.GetBool(3, true, variables);
-            var delayPos = RTMath.Parse(modifier.GetValue(4, variables), numberVariables, functions);
-            var delaySca = RTMath.Parse(modifier.GetValue(5, variables), numberVariables, functions);
-            var delayRot = RTMath.Parse(modifier.GetValue(6, variables), numberVariables, functions);
-            var useVisual = modifier.GetBool(7, false, variables);
-            var length = RTMath.Parse(modifier.GetValue(8, variables), numberVariables, functions);
-            var speed = RTMath.Parse(modifier.GetValue(9, variables), numberVariables, functions);
-            var timeOffset = RTMath.Parse(modifier.GetValue(11, variables), numberVariables, functions);
+            var animatePos = modifier.GetBool(1, true, modifierLoop.variables);
+            var animateSca = modifier.GetBool(2, true, modifierLoop.variables);
+            var animateRot = modifier.GetBool(3, true, modifierLoop.variables);
+            var delayPos = RTMath.Parse(modifier.GetValue(4, modifierLoop.variables), numberVariables, functions);
+            var delaySca = RTMath.Parse(modifier.GetValue(5, modifierLoop.variables), numberVariables, functions);
+            var delayRot = RTMath.Parse(modifier.GetValue(6, modifierLoop.variables), numberVariables, functions);
+            var useVisual = modifier.GetBool(7, false, modifierLoop.variables);
+            var length = RTMath.Parse(modifier.GetValue(8, modifierLoop.variables), numberVariables, functions);
+            var speed = RTMath.Parse(modifier.GetValue(9, modifierLoop.variables), numberVariables, functions);
+            var timeOffset = RTMath.Parse(modifier.GetValue(11, modifierLoop.variables), numberVariables, functions);
 
             if (!modifier.constant)
                 AnimationManager.inst.RemoveName("Apply Object Animation " + beatmapObject.id);
@@ -9865,16 +9936,16 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void applyAnimationFromMath(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void applyAnimationFromMath(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
             var cache = modifier.GetResultOrDefault(() =>
             {
                 var applyAnimationCache = new ApplyAnimationCache();
-                applyAnimationCache.from = GameData.Current.FindObjectWithTag(modifier, beatmapObject, modifier.GetValue(0, variables));
-                applyAnimationCache.startTime = reference.GetParentRuntime()?.CurrentTime ?? 0f;
+                applyAnimationCache.from = GameData.Current.FindObjectWithTag(modifier, beatmapObject, modifier.GetValue(0, modifierLoop.variables));
+                applyAnimationCache.startTime = modifierLoop.reference.GetParentRuntime()?.CurrentTime ?? 0f;
                 return applyAnimationCache;
             });
 
@@ -9885,19 +9956,19 @@ namespace BetterLegacy.Core.Helpers
             var time = cache.startTime;
 
             var numberVariables = beatmapObject.GetObjectVariables();
-            ModifiersHelper.SetVariables(variables, numberVariables);
+            ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
             var functions = beatmapObject.GetObjectFunctions();
 
-            var animatePos = modifier.GetBool(1, true, variables);
-            var animateSca = modifier.GetBool(2, true, variables);
-            var animateRot = modifier.GetBool(3, true, variables);
-            var delayPos = RTMath.Parse(modifier.GetValue(4, variables), numberVariables, functions);
-            var delaySca = RTMath.Parse(modifier.GetValue(5, variables), numberVariables, functions);
-            var delayRot = RTMath.Parse(modifier.GetValue(6, variables), numberVariables, functions);
-            var useVisual = modifier.GetBool(7, false, variables);
-            var length = RTMath.Parse(modifier.GetValue(8, variables), numberVariables, functions);
-            var speed = RTMath.Parse(modifier.GetValue(9, variables), numberVariables, functions);
-            var timeOffset = RTMath.Parse(modifier.GetValue(10, variables), numberVariables, functions);
+            var animatePos = modifier.GetBool(1, true, modifierLoop.variables);
+            var animateSca = modifier.GetBool(2, true, modifierLoop.variables);
+            var animateRot = modifier.GetBool(3, true, modifierLoop.variables);
+            var delayPos = RTMath.Parse(modifier.GetValue(4, modifierLoop.variables), numberVariables, functions);
+            var delaySca = RTMath.Parse(modifier.GetValue(5, modifierLoop.variables), numberVariables, functions);
+            var delayRot = RTMath.Parse(modifier.GetValue(6, modifierLoop.variables), numberVariables, functions);
+            var useVisual = modifier.GetBool(7, false, modifierLoop.variables);
+            var length = RTMath.Parse(modifier.GetValue(8, modifierLoop.variables), numberVariables, functions);
+            var speed = RTMath.Parse(modifier.GetValue(9, modifierLoop.variables), numberVariables, functions);
+            var timeOffset = RTMath.Parse(modifier.GetValue(10, modifierLoop.variables), numberVariables, functions);
 
             if (!modifier.constant)
             {
@@ -9925,16 +9996,16 @@ namespace BetterLegacy.Core.Helpers
             ModifiersHelper.ApplyAnimationTo(beatmapObject, from, useVisual, time, timeOffset, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
         }
 
-        public static void applyAnimationToMath(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void applyAnimationToMath(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
             var cache = modifier.GetResultOrDefault(() =>
             {
                 var applyAnimationCache = new ApplyAnimationCache();
-                applyAnimationCache.to = GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(0, variables));
-                applyAnimationCache.startTime = reference.GetParentRuntime()?.CurrentTime ?? 0f;
+                applyAnimationCache.to = GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(0, modifierLoop.variables));
+                applyAnimationCache.startTime = modifierLoop.reference.GetParentRuntime()?.CurrentTime ?? 0f;
                 return applyAnimationCache;
             });
 
@@ -9942,19 +10013,19 @@ namespace BetterLegacy.Core.Helpers
             var time = cache.startTime;
 
             var numberVariables = beatmapObject.GetObjectVariables();
-            ModifiersHelper.SetVariables(variables, numberVariables);
+            ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
             var functions = beatmapObject.GetObjectFunctions();
 
-            var animatePos = modifier.GetBool(1, true, variables);
-            var animateSca = modifier.GetBool(2, true, variables);
-            var animateRot = modifier.GetBool(3, true, variables);
-            var delayPos = RTMath.Parse(modifier.GetValue(4, variables), numberVariables, functions);
-            var delaySca = RTMath.Parse(modifier.GetValue(5, variables), numberVariables, functions);
-            var delayRot = RTMath.Parse(modifier.GetValue(6, variables), numberVariables, functions);
-            var useVisual = modifier.GetBool(7, false, variables);
-            var length = RTMath.Parse(modifier.GetValue(8, variables), numberVariables, functions);
-            var speed = RTMath.Parse(modifier.GetValue(9, variables), numberVariables, functions);
-            var timeOffset = RTMath.Parse(modifier.GetValue(10, variables), numberVariables, functions);
+            var animatePos = modifier.GetBool(1, true, modifierLoop.variables);
+            var animateSca = modifier.GetBool(2, true, modifierLoop.variables);
+            var animateRot = modifier.GetBool(3, true, modifierLoop.variables);
+            var delayPos = RTMath.Parse(modifier.GetValue(4, modifierLoop.variables), numberVariables, functions);
+            var delaySca = RTMath.Parse(modifier.GetValue(5, modifierLoop.variables), numberVariables, functions);
+            var delayRot = RTMath.Parse(modifier.GetValue(6, modifierLoop.variables), numberVariables, functions);
+            var useVisual = modifier.GetBool(7, false, modifierLoop.variables);
+            var length = RTMath.Parse(modifier.GetValue(8, modifierLoop.variables), numberVariables, functions);
+            var speed = RTMath.Parse(modifier.GetValue(9, modifierLoop.variables), numberVariables, functions);
+            var timeOffset = RTMath.Parse(modifier.GetValue(10, modifierLoop.variables), numberVariables, functions);
 
             if (!modifier.constant)
                 AnimationManager.inst.RemoveName("Apply Object Animation " + beatmapObject.id);
@@ -9988,28 +10059,28 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void copyAxis(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void copyAxis(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var transformable = reference.AsTransformable();
+            var transformable = modifierLoop.reference.AsTransformable();
             if (transformable == null)
                 return;
-            var prefabable = reference.AsPrefabable();
+            var prefabable = modifierLoop.reference.AsPrefabable();
             if (prefabable == null)
                 return;
 
-            var tag = modifier.GetValue(0, variables);
+            var tag = modifier.GetValue(0, modifierLoop.variables);
 
-            var fromType = modifier.GetInt(1, 0, variables);
-            var fromAxis = modifier.GetInt(2, 0, variables);
-            var toType = modifier.GetInt(3, 0, variables);
-            var toAxis = modifier.GetInt(4, 0, variables);
-            var delay = modifier.GetFloat(5, 0f, variables);
-            var multiply = modifier.GetFloat(6, 0f, variables);
-            var offset = modifier.GetFloat(7, 0f, variables);
-            var min = modifier.GetFloat(8, -9999f, variables);
-            var max = modifier.GetFloat(9, 9999f, variables);
-            var loop = modifier.GetFloat(10, 9999f, variables);
-            var useVisual = modifier.GetBool(11, false, variables);
+            var fromType = modifier.GetInt(1, 0, modifierLoop.variables);
+            var fromAxis = modifier.GetInt(2, 0, modifierLoop.variables);
+            var toType = modifier.GetInt(3, 0, modifierLoop.variables);
+            var toAxis = modifier.GetInt(4, 0, modifierLoop.variables);
+            var delay = modifier.GetFloat(5, 0f, modifierLoop.variables);
+            var multiply = modifier.GetFloat(6, 0f, modifierLoop.variables);
+            var offset = modifier.GetFloat(7, 0f, modifierLoop.variables);
+            var min = modifier.GetFloat(8, -9999f, modifierLoop.variables);
+            var max = modifier.GetFloat(9, 9999f, modifierLoop.variables);
+            var loop = modifier.GetFloat(10, 9999f, modifierLoop.variables);
+            var useVisual = modifier.GetBool(11, false, modifierLoop.variables);
 
             var cache = modifier.GetResultOrDefault(() => GroupBeatmapObjectCache.Get(modifier, prefabable, tag));
             if (cache.tag != tag)
@@ -10036,7 +10107,7 @@ namespace BetterLegacy.Core.Helpers
                 var t = time - bm.StartTime - delay;
                 if (fromType == 3)
                 {
-                    if (toType == 3 && toAxis == 0 && bm.cachedSequences.ColorSequence != null && reference is BeatmapObject beatmapObject && beatmapObject.runtimeObject && beatmapObject.runtimeObject.visualObject)
+                    if (toType == 3 && toAxis == 0 && bm.cachedSequences.ColorSequence != null && modifierLoop.reference is BeatmapObject beatmapObject && beatmapObject.runtimeObject && beatmapObject.runtimeObject.visualObject)
                         RTLevel.Current.postTick.Enqueue(() =>
                         {
                             var sequence = bm.cachedSequences.ColorSequence.GetValue(t);
@@ -10065,31 +10136,31 @@ namespace BetterLegacy.Core.Helpers
                 }, min, max));
         }
 
-        public static void copyAxisMath(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void copyAxisMath(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var transformable = reference.AsTransformable();
+            var transformable = modifierLoop.reference.AsTransformable();
             if (transformable == null)
                 return;
-            var prefabable = reference.AsPrefabable();
+            var prefabable = modifierLoop.reference.AsPrefabable();
             if (prefabable == null)
                 return;
 
-            if (reference is not IEvaluatable evaluatable)
+            if (modifierLoop.reference is not IEvaluatable evaluatable)
                 return;
 
             try
             {
-                var tag = modifier.GetValue(0, variables);
+                var tag = modifier.GetValue(0, modifierLoop.variables);
 
-                var fromType = modifier.GetInt(1, 0, variables);
-                var fromAxis = modifier.GetInt(2, 0, variables);
-                var toType = modifier.GetInt(3, 0, variables);
-                var toAxis = modifier.GetInt(4, 0, variables);
-                var delay = modifier.GetFloat(5, 0f, variables);
-                var min = modifier.GetFloat(6, -9999f, variables);
-                var max = modifier.GetFloat(7, 9999f, variables);
-                var evaluation = modifier.GetValue(8, variables);
-                var useVisual = modifier.GetBool(9, false, variables);
+                var fromType = modifier.GetInt(1, 0, modifierLoop.variables);
+                var fromAxis = modifier.GetInt(2, 0, modifierLoop.variables);
+                var toType = modifier.GetInt(3, 0, modifierLoop.variables);
+                var toAxis = modifier.GetInt(4, 0, modifierLoop.variables);
+                var delay = modifier.GetFloat(5, 0f, modifierLoop.variables);
+                var min = modifier.GetFloat(6, -9999f, modifierLoop.variables);
+                var max = modifier.GetFloat(7, 9999f, modifierLoop.variables);
+                var evaluation = modifier.GetValue(8, modifierLoop.variables);
+                var useVisual = modifier.GetBool(9, false, modifierLoop.variables);
 
                 var cache = modifier.GetResultOrDefault(() => GroupBeatmapObjectCache.Get(modifier, prefabable, tag));
                 if (cache.tag != tag)
@@ -10116,7 +10187,7 @@ namespace BetterLegacy.Core.Helpers
                     if (fromType == 3)
                     {
                         if (toType == 3 && toAxis == 0 && bm.cachedSequences.ColorSequence != null &&
-                            reference is BeatmapObject beatmapObject && beatmapObject.runtimeObject && beatmapObject.runtimeObject.visualObject &&
+                            modifierLoop.reference is BeatmapObject beatmapObject && beatmapObject.runtimeObject && beatmapObject.runtimeObject.visualObject &&
                             beatmapObject.runtimeObject.visualObject.renderer)
                         {
                             // queue post tick so the color overrides the sequence color
@@ -10127,7 +10198,7 @@ namespace BetterLegacy.Core.Helpers
                                 var renderer = beatmapObject.runtimeObject.visualObject.renderer;
 
                                 var numberVariables = beatmapObject.GetObjectVariables();
-                                ModifiersHelper.SetVariables(variables, numberVariables);
+                                ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
 
                                 numberVariables["colorR"] = sequence.r;
                                 numberVariables["colorG"] = sequence.g;
@@ -10144,7 +10215,7 @@ namespace BetterLegacy.Core.Helpers
                     else
                     {
                         var numberVariables = evaluatable.GetObjectVariables();
-                        ModifiersHelper.SetVariables(variables, numberVariables);
+                        ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
 
                         if (bm.cachedSequences)
                             numberVariables["axis"] = fromType switch
@@ -10166,7 +10237,7 @@ namespace BetterLegacy.Core.Helpers
                     var axis = runtimeObject.visualObject.gameObject.transform.GetVector(fromType).At(fromAxis);
 
                     var numberVariables = evaluatable.GetObjectVariables();
-                    ModifiersHelper.SetVariables(variables, numberVariables);
+                    ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
 
                     numberVariables["axis"] = axis;
                     bm.SetOtherObjectVariables(numberVariables);
@@ -10178,7 +10249,7 @@ namespace BetterLegacy.Core.Helpers
                 else if (useVisual)
                 {
                     var numberVariables = evaluatable.GetObjectVariables();
-                    ModifiersHelper.SetVariables(variables, numberVariables);
+                    ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
 
                     numberVariables["axis"] = fromType switch
                     {
@@ -10200,22 +10271,22 @@ namespace BetterLegacy.Core.Helpers
             } // try catch for cases where the math is broken
         }
 
-        public static void copyAxisGroup(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void copyAxisGroup(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var transformable = reference.AsTransformable();
+            var transformable = modifierLoop.reference.AsTransformable();
             if (transformable == null)
                 return;
-            var prefabable = reference.AsPrefabable();
+            var prefabable = modifierLoop.reference.AsPrefabable();
             if (prefabable == null)
                 return;
 
-            if (reference is not IEvaluatable evaluatable)
+            if (modifierLoop.reference is not IEvaluatable evaluatable)
                 return;
 
-            var evaluation = modifier.GetValue(0, variables);
+            var evaluation = modifier.GetValue(0, modifierLoop.variables);
 
-            var toType = modifier.GetInt(1, 0, variables);
-            var toAxis = modifier.GetInt(2, 0, variables);
+            var toType = modifier.GetInt(1, 0, modifierLoop.variables);
+            var toAxis = modifier.GetInt(2, 0, modifierLoop.variables);
 
             if (toType < 0 || toType > 4)
                 return;
@@ -10225,9 +10296,9 @@ namespace BetterLegacy.Core.Helpers
                 var beatmapObjects = GameData.Current.beatmapObjects;
                 var prefabObjects = GameData.Current.prefabObjects;
 
-                var time = reference.GetParentRuntime().CurrentTime;
+                var time = modifierLoop.reference.GetParentRuntime().CurrentTime;
                 var numberVariables = evaluatable.GetObjectVariables();
-                ModifiersHelper.SetVariables(variables, numberVariables);
+                ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
 
                 var list = modifier.GetResultOrDefault(() =>
                 {
@@ -10247,14 +10318,14 @@ namespace BetterLegacy.Core.Helpers
                 int groupIndex = 0;
                 for (int i = 3; i < modifier.values.Count; i += 8)
                 {
-                    var name = modifier.GetValue(i, variables);
-                    var group = modifier.GetValue(i + 1, variables);
-                    var fromType = modifier.GetInt(i + 2, 0, variables);
-                    var fromAxis = modifier.GetInt(i + 3, 0, variables);
-                    var delay = modifier.GetFloat(i + 4, 0f, variables);
-                    var min = modifier.GetFloat(i + 5, 0f, variables);
-                    var max = modifier.GetFloat(i + 6, 0f, variables);
-                    var useVisual = modifier.GetBool(i + 7, false, variables);
+                    var name = modifier.GetValue(i, modifierLoop.variables);
+                    var group = modifier.GetValue(i + 1, modifierLoop.variables);
+                    var fromType = modifier.GetInt(i + 2, 0, modifierLoop.variables);
+                    var fromAxis = modifier.GetInt(i + 3, 0, modifierLoop.variables);
+                    var delay = modifier.GetFloat(i + 4, 0f, modifierLoop.variables);
+                    var min = modifier.GetFloat(i + 5, 0f, modifierLoop.variables);
+                    var max = modifier.GetFloat(i + 6, 0f, modifierLoop.variables);
+                    var useVisual = modifier.GetBool(i + 7, false, modifierLoop.variables);
 
                     var beatmapObject = list.GetAtOrDefault(groupIndex, null);
 
@@ -10297,23 +10368,23 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void copyPlayerAxis(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void copyPlayerAxis(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var transformable = reference.AsTransformable();
+            var transformable = modifierLoop.reference.AsTransformable();
             if (transformable == null)
                 return;
 
-            var fromType = modifier.GetInt(1, 0, variables);
-            var fromAxis = modifier.GetInt(2, 0, variables);
+            var fromType = modifier.GetInt(1, 0, modifierLoop.variables);
+            var fromAxis = modifier.GetInt(2, 0, modifierLoop.variables);
 
-            var toType = modifier.GetInt(3, 0, variables);
-            var toAxis = modifier.GetInt(4, 0, variables);
+            var toType = modifier.GetInt(3, 0, modifierLoop.variables);
+            var toAxis = modifier.GetInt(4, 0, modifierLoop.variables);
 
-            var delay = modifier.GetFloat(5, 0f, variables);
-            var multiply = modifier.GetFloat(6, 0f, variables);
-            var offset = modifier.GetFloat(7, 0f, variables);
-            var min = modifier.GetFloat(8, -9999f, variables);
-            var max = modifier.GetFloat(9, 9999f, variables);
+            var delay = modifier.GetFloat(5, 0f, modifierLoop.variables);
+            var multiply = modifier.GetFloat(6, 0f, modifierLoop.variables);
+            var offset = modifier.GetFloat(7, 0f, modifierLoop.variables);
+            var min = modifier.GetFloat(8, -9999f, modifierLoop.variables);
+            var max = modifier.GetFloat(9, 9999f, modifierLoop.variables);
 
             var players = PlayerManager.Players;
 
@@ -10321,12 +10392,12 @@ namespace BetterLegacy.Core.Helpers
                 transformable.SetTransform(toType, toAxis, Mathf.Clamp((player.RuntimePlayer.rb.transform.GetLocalVector(fromType).At(fromAxis) - offset) * multiply, min, max));
         }
 
-        public static void legacyTail(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void legacyTail(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject || modifier.values.IsEmpty() || !GameData.Current)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject || modifier.values.IsEmpty() || !GameData.Current)
                 return;
 
-            var totalTime = modifier.GetFloat(0, 200f, variables);
+            var totalTime = modifier.GetFloat(0, 200f, modifierLoop.variables);
 
             var list = modifier.Result is List<LegacyTracker> ? (List<LegacyTracker>)modifier.Result : new List<LegacyTracker>();
 
@@ -10336,13 +10407,13 @@ namespace BetterLegacy.Core.Helpers
 
                 for (int i = 1; i < modifier.values.Count; i += 3)
                 {
-                    var group = GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(i, variables));
+                    var group = GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(i, modifierLoop.variables));
 
                     if (modifier.values.Count <= i + 2 || group.Count < 1)
                         break;
 
-                    var distance = modifier.GetFloat(i + 1, 2f, variables);
-                    var time = modifier.GetFloat(i + 2, 12f, variables);
+                    var distance = modifier.GetFloat(i + 1, 2f, modifierLoop.variables);
+                    var time = modifier.GetFloat(i + 2, 12f, modifierLoop.variables);
 
                     for (int j = 0; j < group.Count; j++)
                     {
@@ -10379,15 +10450,15 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void gravity(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void gravity(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not ITransformable transformable)
+            if (modifierLoop.reference is not ITransformable transformable)
                 return;
 
-            var gravityX = modifier.GetFloat(1, 0f, variables);
-            var gravityY = modifier.GetFloat(2, 0f, variables);
-            var time = modifier.GetFloat(3, 1f, variables);
-            var curve = modifier.GetInt(4, 2, variables);
+            var gravityX = modifier.GetFloat(1, 0f, modifierLoop.variables);
+            var gravityY = modifier.GetFloat(2, 0f, modifierLoop.variables);
+            var time = modifier.GetFloat(3, 1f, modifierLoop.variables);
+            var curve = modifier.GetInt(4, 2, modifierLoop.variables);
 
             if (modifier.Result == null)
             {
@@ -10401,17 +10472,17 @@ namespace BetterLegacy.Core.Helpers
             transformable.PositionOffset = RTMath.Rotate(vector, -transformable.GetFullRotation(false).z);
         }
 
-        public static void gravityOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void gravityOther(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IPrefabable prefabable)
+            if (modifierLoop.reference is not IPrefabable prefabable)
                 return;
 
-            var transformables = GameData.Current.FindTransformablesWithTag(modifier, prefabable, modifier.GetValue(0, variables));
+            var transformables = GameData.Current.FindTransformablesWithTag(modifier, prefabable, modifier.GetValue(0, modifierLoop.variables));
 
-            var gravityX = modifier.GetFloat(1, 0f, variables);
-            var gravityY = modifier.GetFloat(2, 0f, variables);
-            var time = modifier.GetFloat(3, 1f, variables);
-            var curve = modifier.GetInt(4, 2, variables);
+            var gravityX = modifier.GetFloat(1, 0f, modifierLoop.variables);
+            var gravityY = modifier.GetFloat(2, 0f, modifierLoop.variables);
+            var time = modifier.GetFloat(3, 1f, modifierLoop.variables);
+            var curve = modifier.GetInt(4, 2, modifierLoop.variables);
 
             if (modifier.Result == null)
             {
@@ -10430,27 +10501,27 @@ namespace BetterLegacy.Core.Helpers
 
         #region Prefab
 
-        public static void spawnPrefab(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void spawnPrefab(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (modifier.constant || modifier.HasResult())
                 return;
 
-            var prefab = GameData.Current.GetPrefab(modifier.GetInt(12, 0, variables), modifier.GetValue(0, variables));
+            var prefab = GameData.Current.GetPrefab(modifier.GetInt(12, 0, modifierLoop.variables), modifier.GetValue(0, modifierLoop.variables));
 
             if (!prefab)
                 return;
 
-            var posX = modifier.GetFloat(1, 0f, variables);
-            var posY = modifier.GetFloat(2, 0f, variables);
-            var scaX = modifier.GetFloat(3, 0f, variables);
-            var scaY = modifier.GetFloat(4, 0f, variables);
-            var rot = modifier.GetFloat(5, 0f, variables);
-            var repeatCount = modifier.GetInt(6, 0, variables);
-            var repeatOffsetTime = modifier.GetFloat(7, 0f, variables);
-            var speed = modifier.GetFloat(8, 0f, variables);
+            var posX = modifier.GetFloat(1, 0f, modifierLoop.variables);
+            var posY = modifier.GetFloat(2, 0f, modifierLoop.variables);
+            var scaX = modifier.GetFloat(3, 0f, modifierLoop.variables);
+            var scaY = modifier.GetFloat(4, 0f, modifierLoop.variables);
+            var rot = modifier.GetFloat(5, 0f, modifierLoop.variables);
+            var repeatCount = modifier.GetInt(6, 0, modifierLoop.variables);
+            var repeatOffsetTime = modifier.GetFloat(7, 0f, modifierLoop.variables);
+            var speed = modifier.GetFloat(8, 0f, modifierLoop.variables);
 
             var prefabObject = ModifiersHelper.AddPrefabObjectToLevel(prefab,
-                modifier.GetBool(11, true, variables) ? AudioManager.inst.CurrentAudioSource.time + modifier.GetFloat(10, 0f, variables) : modifier.GetFloat(10, 0f, variables),
+                modifier.GetBool(11, true, modifierLoop.variables) ? AudioManager.inst.CurrentAudioSource.time + modifier.GetFloat(10, 0f, modifierLoop.variables) : modifier.GetFloat(10, 0f, modifierLoop.variables),
                 new Vector2(posX, posY),
                 new Vector2(scaX, scaY),
                 rot, repeatCount, repeatOffsetTime, speed);
@@ -10459,11 +10530,11 @@ namespace BetterLegacy.Core.Helpers
             GameData.Current.prefabObjects.Add(prefabObject);
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
+                RTLevelBase runtimeLevel = modifierLoop.reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : modifierLoop.reference.GetParentRuntime();
                 runtimeLevel?.UpdatePrefab(prefabObject);
 
                 var runtimePrefabObject = prefabObject.runtimeObject;
-                if (runtimePrefabObject && modifier.GetBool(13, false, variables))
+                if (runtimePrefabObject && modifier.GetBool(13, false, modifierLoop.variables))
                     runtimePrefabObject.onActiveChanged = enabled =>
                     {
                         if (enabled)
@@ -10471,7 +10542,7 @@ namespace BetterLegacy.Core.Helpers
 
                         RTLevel.Current.postTick.Enqueue(() =>
                         {
-                            RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
+                            RTLevelBase runtimeLevel = modifierLoop.reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : modifierLoop.reference.GetParentRuntime();
                             runtimeLevel?.UpdatePrefab(prefabObject, false);
 
                             GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
@@ -10482,29 +10553,29 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void spawnPrefabOffset(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void spawnPrefabOffset(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (modifier.constant || modifier.HasResult() || reference is not ITransformable transformable)
+            if (modifier.constant || modifier.HasResult() || modifierLoop.reference is not ITransformable transformable)
                 return;
 
-            var prefab = GameData.Current.GetPrefab(modifier.GetInt(12, 0, variables), modifier.GetValue(0, variables));
+            var prefab = GameData.Current.GetPrefab(modifier.GetInt(12, 0, modifierLoop.variables), modifier.GetValue(0, modifierLoop.variables));
 
             if (!prefab)
                 return;
 
             var animationResult = transformable.GetObjectTransform();
 
-            var posX = modifier.GetFloat(1, 0f, variables);
-            var posY = modifier.GetFloat(2, 0f, variables);
-            var scaX = modifier.GetFloat(3, 0f, variables);
-            var scaY = modifier.GetFloat(4, 0f, variables);
-            var rot = modifier.GetFloat(5, 0f, variables);
-            var repeatCount = modifier.GetInt(6, 0, variables);
-            var repeatOffsetTime = modifier.GetFloat(7, 0f, variables);
-            var speed = modifier.GetFloat(8, 0f, variables);
+            var posX = modifier.GetFloat(1, 0f, modifierLoop.variables);
+            var posY = modifier.GetFloat(2, 0f, modifierLoop.variables);
+            var scaX = modifier.GetFloat(3, 0f, modifierLoop.variables);
+            var scaY = modifier.GetFloat(4, 0f, modifierLoop.variables);
+            var rot = modifier.GetFloat(5, 0f, modifierLoop.variables);
+            var repeatCount = modifier.GetInt(6, 0, modifierLoop.variables);
+            var repeatOffsetTime = modifier.GetFloat(7, 0f, modifierLoop.variables);
+            var speed = modifier.GetFloat(8, 0f, modifierLoop.variables);
 
             var prefabObject = ModifiersHelper.AddPrefabObjectToLevel(prefab,
-                modifier.GetBool(11, true) ? AudioManager.inst.CurrentAudioSource.time + modifier.GetFloat(10, 0f, variables) : modifier.GetFloat(10, 0f, variables),
+                modifier.GetBool(11, true) ? AudioManager.inst.CurrentAudioSource.time + modifier.GetFloat(10, 0f, modifierLoop.variables) : modifier.GetFloat(10, 0f, modifierLoop.variables),
                 new Vector2(posX, posY) + (Vector2)animationResult.position,
                 new Vector2(scaX, scaY) * animationResult.scale,
                 rot + animationResult.rotation, repeatCount, repeatOffsetTime, speed);
@@ -10513,11 +10584,11 @@ namespace BetterLegacy.Core.Helpers
             GameData.Current.prefabObjects.Add(prefabObject);
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
+                RTLevelBase runtimeLevel = modifierLoop.reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : modifierLoop.reference.GetParentRuntime();
                 runtimeLevel?.UpdatePrefab(prefabObject);
 
                 var runtimePrefabObject = prefabObject.runtimeObject;
-                if (runtimePrefabObject && modifier.GetBool(13, false, variables))
+                if (runtimePrefabObject && modifier.GetBool(13, false, modifierLoop.variables))
                     runtimePrefabObject.onActiveChanged = enabled =>
                     {
                         if (enabled)
@@ -10525,7 +10596,7 @@ namespace BetterLegacy.Core.Helpers
 
                         RTLevel.Current.postTick.Enqueue(() =>
                         {
-                            RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
+                            RTLevelBase runtimeLevel = modifierLoop.reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : modifierLoop.reference.GetParentRuntime();
                             runtimeLevel?.UpdatePrefab(prefabObject, false);
 
                             GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
@@ -10536,32 +10607,32 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void spawnPrefabOffsetOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void spawnPrefabOffsetOther(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (modifier.constant || modifier.HasResult() || reference is not IPrefabable prefabable)
+            if (modifier.constant || modifier.HasResult() || modifierLoop.reference is not IPrefabable prefabable)
                 return;
 
-            var prefab = GameData.Current.GetPrefab(modifier.GetInt(13, 0, variables), modifier.GetValue(0, variables));
+            var prefab = GameData.Current.GetPrefab(modifier.GetInt(13, 0, modifierLoop.variables), modifier.GetValue(0, modifierLoop.variables));
 
             if (!prefab)
                 return;
 
-            if (!GameData.Current.TryFindTransformableWithTag(modifier, prefabable, modifier.GetValue(10, variables), out ITransformable target))
+            if (!GameData.Current.TryFindTransformableWithTag(modifier, prefabable, modifier.GetValue(10, modifierLoop.variables), out ITransformable target))
                 return;
 
             var animationResult = target.GetObjectTransform();
 
-            var posX = modifier.GetFloat(1, 0f, variables);
-            var posY = modifier.GetFloat(2, 0f, variables);
-            var scaX = modifier.GetFloat(3, 0f, variables);
-            var scaY = modifier.GetFloat(4, 0f, variables);
-            var rot = modifier.GetFloat(5, 0f, variables);
-            var repeatCount = modifier.GetInt(6, 0, variables);
-            var repeatOffsetTime = modifier.GetFloat(7, 0f, variables);
-            var speed = modifier.GetFloat(8, 0f, variables);
+            var posX = modifier.GetFloat(1, 0f, modifierLoop.variables);
+            var posY = modifier.GetFloat(2, 0f, modifierLoop.variables);
+            var scaX = modifier.GetFloat(3, 0f, modifierLoop.variables);
+            var scaY = modifier.GetFloat(4, 0f, modifierLoop.variables);
+            var rot = modifier.GetFloat(5, 0f, modifierLoop.variables);
+            var repeatCount = modifier.GetInt(6, 0, modifierLoop.variables);
+            var repeatOffsetTime = modifier.GetFloat(7, 0f, modifierLoop.variables);
+            var speed = modifier.GetFloat(8, 0f, modifierLoop.variables);
 
             var prefabObject = ModifiersHelper.AddPrefabObjectToLevel(prefab,
-                modifier.GetBool(12, true, variables) ? AudioManager.inst.CurrentAudioSource.time + modifier.GetFloat(11, 0f, variables) : modifier.GetFloat(11, 0f, variables),
+                modifier.GetBool(12, true, modifierLoop.variables) ? AudioManager.inst.CurrentAudioSource.time + modifier.GetFloat(11, 0f, modifierLoop.variables) : modifier.GetFloat(11, 0f, modifierLoop.variables),
                 new Vector2(posX, posY) + (Vector2)animationResult.position,
                 new Vector2(scaX, scaY) * animationResult.scale,
                 rot + animationResult.rotation, repeatCount, repeatOffsetTime, speed);
@@ -10570,11 +10641,11 @@ namespace BetterLegacy.Core.Helpers
             GameData.Current.prefabObjects.Add(prefabObject);
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
+                RTLevelBase runtimeLevel = modifierLoop.reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : modifierLoop.reference.GetParentRuntime();
                 runtimeLevel?.UpdatePrefab(prefabObject);
 
                 var runtimePrefabObject = prefabObject.runtimeObject;
-                if (runtimePrefabObject && modifier.GetBool(14, false, variables))
+                if (runtimePrefabObject && modifier.GetBool(14, false, modifierLoop.variables))
                     runtimePrefabObject.onActiveChanged = enabled =>
                     {
                         if (enabled)
@@ -10582,7 +10653,7 @@ namespace BetterLegacy.Core.Helpers
 
                         RTLevel.Current.postTick.Enqueue(() =>
                         {
-                            RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
+                            RTLevelBase runtimeLevel = modifierLoop.reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : modifierLoop.reference.GetParentRuntime();
                             runtimeLevel?.UpdatePrefab(prefabObject, false);
 
                             GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
@@ -10593,12 +10664,12 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void spawnPrefabCopy(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void spawnPrefabCopy(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (modifier.constant || modifier.HasResult() || reference is not IPrefabable prefabable)
+            if (modifier.constant || modifier.HasResult() || modifierLoop.reference is not IPrefabable prefabable)
                 return;
 
-            var prefab = GameData.Current.GetPrefab(modifier.GetInt(4, 0, variables), modifier.GetValue(0, variables));
+            var prefab = GameData.Current.GetPrefab(modifier.GetInt(4, 0, modifierLoop.variables), modifier.GetValue(0, modifierLoop.variables));
 
             if (!prefab)
                 return;
@@ -10610,7 +10681,7 @@ namespace BetterLegacy.Core.Helpers
             prefabObject.id = LSText.randomString(16);
             prefabObject.prefabID = prefab.id;
 
-            prefabObject.StartTime = modifier.GetBool(3, true, variables) ? AudioManager.inst.CurrentAudioSource.time + modifier.GetFloat(2, 0f, variables) : modifier.GetFloat(2, 0f, variables);
+            prefabObject.StartTime = modifier.GetBool(3, true, modifierLoop.variables) ? AudioManager.inst.CurrentAudioSource.time + modifier.GetFloat(2, 0f, modifierLoop.variables) : modifier.GetFloat(2, 0f, modifierLoop.variables);
 
             prefabObject.PasteInstanceData(orig);
 
@@ -10620,11 +10691,11 @@ namespace BetterLegacy.Core.Helpers
             GameData.Current.prefabObjects.Add(prefabObject);
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
+                RTLevelBase runtimeLevel = modifierLoop.reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : modifierLoop.reference.GetParentRuntime();
                 runtimeLevel?.UpdatePrefab(prefabObject);
 
                 var runtimePrefabObject = prefabObject.runtimeObject;
-                if (runtimePrefabObject && modifier.GetBool(6, false, variables))
+                if (runtimePrefabObject && modifier.GetBool(6, false, modifierLoop.variables))
                     runtimePrefabObject.onActiveChanged = enabled =>
                     {
                         if (enabled)
@@ -10632,7 +10703,7 @@ namespace BetterLegacy.Core.Helpers
 
                         RTLevel.Current.postTick.Enqueue(() =>
                         {
-                            RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
+                            RTLevelBase runtimeLevel = modifierLoop.reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : modifierLoop.reference.GetParentRuntime();
                             runtimeLevel?.UpdatePrefab(prefabObject, false);
 
                             GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
@@ -10643,31 +10714,31 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void spawnMultiPrefab(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void spawnMultiPrefab(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (modifier.constant)
                 return;
 
-            var prefab = GameData.Current.GetPrefab(modifier.GetInt(11, 0, variables), modifier.GetValue(0, variables));
+            var prefab = GameData.Current.GetPrefab(modifier.GetInt(11, 0, modifierLoop.variables), modifier.GetValue(0, modifierLoop.variables));
 
             if (!prefab)
                 return;
 
-            var posX = modifier.GetFloat(1, 0f, variables);
-            var posY = modifier.GetFloat(2, 0f, variables);
-            var scaX = modifier.GetFloat(3, 0f, variables);
-            var scaY = modifier.GetFloat(4, 0f, variables);
-            var rot = modifier.GetFloat(5, 0f, variables);
-            var repeatCount = modifier.GetInt(6, 0, variables);
-            var repeatOffsetTime = modifier.GetFloat(7, 0f, variables);
-            var speed = modifier.GetFloat(8, 0f, variables);
+            var posX = modifier.GetFloat(1, 0f, modifierLoop.variables);
+            var posY = modifier.GetFloat(2, 0f, modifierLoop.variables);
+            var scaX = modifier.GetFloat(3, 0f, modifierLoop.variables);
+            var scaY = modifier.GetFloat(4, 0f, modifierLoop.variables);
+            var rot = modifier.GetFloat(5, 0f, modifierLoop.variables);
+            var repeatCount = modifier.GetInt(6, 0, modifierLoop.variables);
+            var repeatOffsetTime = modifier.GetFloat(7, 0f, modifierLoop.variables);
+            var speed = modifier.GetFloat(8, 0f, modifierLoop.variables);
 
             if (!modifier.HasResult())
                 modifier.Result = new List<PrefabObject>();
 
             var list = modifier.GetResult<List<PrefabObject>>();
             var prefabObject = ModifiersHelper.AddPrefabObjectToLevel(prefab,
-                modifier.GetBool(10, true, variables) ? AudioManager.inst.CurrentAudioSource.time + modifier.GetFloat(9, 0f, variables) : modifier.GetFloat(9, 0f, variables),
+                modifier.GetBool(10, true, modifierLoop.variables) ? AudioManager.inst.CurrentAudioSource.time + modifier.GetFloat(9, 0f, modifierLoop.variables) : modifier.GetFloat(9, 0f, modifierLoop.variables),
                 new Vector2(posX, posY),
                 new Vector2(scaX, scaY),
                 rot, repeatCount, repeatOffsetTime, speed);
@@ -10678,11 +10749,11 @@ namespace BetterLegacy.Core.Helpers
             GameData.Current.prefabObjects.Add(prefabObject);
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
+                RTLevelBase runtimeLevel = modifierLoop.reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : modifierLoop.reference.GetParentRuntime();
                 runtimeLevel?.UpdatePrefab(prefabObject);
 
                 var runtimePrefabObject = prefabObject.runtimeObject;
-                if (runtimePrefabObject && modifier.GetBool(12, false, variables))
+                if (runtimePrefabObject && modifier.GetBool(12, false, modifierLoop.variables))
                     runtimePrefabObject.onActiveChanged = enabled =>
                     {
                         if (enabled)
@@ -10690,7 +10761,7 @@ namespace BetterLegacy.Core.Helpers
 
                         RTLevel.Current.postTick.Enqueue(() =>
                         {
-                            RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
+                            RTLevelBase runtimeLevel = modifierLoop.reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : modifierLoop.reference.GetParentRuntime();
                             runtimeLevel?.UpdatePrefab(prefabObject, false);
 
                             GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
@@ -10699,33 +10770,33 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void spawnMultiPrefabOffset(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void spawnMultiPrefabOffset(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (modifier.constant || reference is not ITransformable transformable)
+            if (modifier.constant || modifierLoop.reference is not ITransformable transformable)
                 return;
 
-            var prefab = GameData.Current.GetPrefab(modifier.GetInt(11, 0, variables), modifier.GetValue(0, variables));
+            var prefab = GameData.Current.GetPrefab(modifier.GetInt(11, 0, modifierLoop.variables), modifier.GetValue(0, modifierLoop.variables));
 
             if (!prefab)
                 return;
 
             var animationResult = transformable.GetObjectTransform();
 
-            var posX = modifier.GetFloat(1, 0f, variables);
-            var posY = modifier.GetFloat(2, 0f, variables);
-            var scaX = modifier.GetFloat(3, 0f, variables);
-            var scaY = modifier.GetFloat(4, 0f, variables);
-            var rot = modifier.GetFloat(5, 0f, variables);
-            var repeatCount = modifier.GetInt(6, 0, variables);
-            var repeatOffsetTime = modifier.GetFloat(7, 0f, variables);
-            var speed = modifier.GetFloat(8, 0f, variables);
+            var posX = modifier.GetFloat(1, 0f, modifierLoop.variables);
+            var posY = modifier.GetFloat(2, 0f, modifierLoop.variables);
+            var scaX = modifier.GetFloat(3, 0f, modifierLoop.variables);
+            var scaY = modifier.GetFloat(4, 0f, modifierLoop.variables);
+            var rot = modifier.GetFloat(5, 0f, modifierLoop.variables);
+            var repeatCount = modifier.GetInt(6, 0, modifierLoop.variables);
+            var repeatOffsetTime = modifier.GetFloat(7, 0f, modifierLoop.variables);
+            var speed = modifier.GetFloat(8, 0f, modifierLoop.variables);
 
             if (!modifier.HasResult())
                 modifier.Result = new List<PrefabObject>();
 
             var list = modifier.GetResult<List<PrefabObject>>();
             var prefabObject = ModifiersHelper.AddPrefabObjectToLevel(prefab,
-                modifier.GetBool(10, true, variables) ? AudioManager.inst.CurrentAudioSource.time + modifier.GetFloat(9, 0f, variables) : modifier.GetFloat(9, 0f, variables),
+                modifier.GetBool(10, true, modifierLoop.variables) ? AudioManager.inst.CurrentAudioSource.time + modifier.GetFloat(9, 0f, modifierLoop.variables) : modifier.GetFloat(9, 0f, modifierLoop.variables),
                 new Vector2(posX, posY) + (Vector2)animationResult.position,
                 new Vector2(scaX, scaY) * animationResult.scale,
                 rot + animationResult.rotation, repeatCount, repeatOffsetTime, speed);
@@ -10736,11 +10807,11 @@ namespace BetterLegacy.Core.Helpers
             GameData.Current.prefabObjects.Add(prefabObject);
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
+                RTLevelBase runtimeLevel = modifierLoop.reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : modifierLoop.reference.GetParentRuntime();
                 runtimeLevel?.UpdatePrefab(prefabObject);
 
                 var runtimePrefabObject = prefabObject.runtimeObject;
-                if (runtimePrefabObject && modifier.GetBool(12, false, variables))
+                if (runtimePrefabObject && modifier.GetBool(12, false, modifierLoop.variables))
                     runtimePrefabObject.onActiveChanged = enabled =>
                     {
                         if (enabled)
@@ -10748,7 +10819,7 @@ namespace BetterLegacy.Core.Helpers
 
                         RTLevel.Current.postTick.Enqueue(() =>
                         {
-                            RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
+                            RTLevelBase runtimeLevel = modifierLoop.reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : modifierLoop.reference.GetParentRuntime();
                             runtimeLevel?.UpdatePrefab(prefabObject, false);
 
                             GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
@@ -10757,36 +10828,36 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void spawnMultiPrefabOffsetOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void spawnMultiPrefabOffsetOther(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (modifier.constant || reference is not IPrefabable prefabable)
+            if (modifier.constant || modifierLoop.reference is not IPrefabable prefabable)
                 return;
 
-            var prefab = GameData.Current.GetPrefab(modifier.GetInt(12, 0, variables), modifier.GetValue(0, variables));
+            var prefab = GameData.Current.GetPrefab(modifier.GetInt(12, 0, modifierLoop.variables), modifier.GetValue(0, modifierLoop.variables));
 
             if (!prefab)
                 return;
 
-            if (!GameData.Current.TryFindTransformableWithTag(modifier, prefabable, modifier.GetValue(9, variables), out ITransformable target))
+            if (!GameData.Current.TryFindTransformableWithTag(modifier, prefabable, modifier.GetValue(9, modifierLoop.variables), out ITransformable target))
                 return;
 
             var animationResult = target.GetObjectTransform();
 
-            var posX = modifier.GetFloat(1, 0f, variables);
-            var posY = modifier.GetFloat(2, 0f, variables);
-            var scaX = modifier.GetFloat(3, 0f, variables);
-            var scaY = modifier.GetFloat(4, 0f, variables);
-            var rot = modifier.GetFloat(5, 0f, variables);
-            var repeatCount = modifier.GetInt(6, 0, variables);
-            var repeatOffsetTime = modifier.GetFloat(7, 0f, variables);
-            var speed = modifier.GetFloat(8, 0f, variables);
+            var posX = modifier.GetFloat(1, 0f, modifierLoop.variables);
+            var posY = modifier.GetFloat(2, 0f, modifierLoop.variables);
+            var scaX = modifier.GetFloat(3, 0f, modifierLoop.variables);
+            var scaY = modifier.GetFloat(4, 0f, modifierLoop.variables);
+            var rot = modifier.GetFloat(5, 0f, modifierLoop.variables);
+            var repeatCount = modifier.GetInt(6, 0, modifierLoop.variables);
+            var repeatOffsetTime = modifier.GetFloat(7, 0f, modifierLoop.variables);
+            var speed = modifier.GetFloat(8, 0f, modifierLoop.variables);
 
             if (!modifier.HasResult())
                 modifier.Result = new List<PrefabObject>();
 
             var list = modifier.GetResult<List<PrefabObject>>();
             var prefabObject = ModifiersHelper.AddPrefabObjectToLevel(prefab,
-                modifier.GetBool(11, true, variables) ? AudioManager.inst.CurrentAudioSource.time + modifier.GetFloat(10, 0f, variables) : modifier.GetFloat(10, 0f, variables),
+                modifier.GetBool(11, true, modifierLoop.variables) ? AudioManager.inst.CurrentAudioSource.time + modifier.GetFloat(10, 0f, modifierLoop.variables) : modifier.GetFloat(10, 0f, modifierLoop.variables),
                 new Vector2(posX, posY) + (Vector2)animationResult.position,
                 new Vector2(scaX, scaY) * animationResult.scale,
                 rot + animationResult.rotation, repeatCount, repeatOffsetTime, speed);
@@ -10797,11 +10868,11 @@ namespace BetterLegacy.Core.Helpers
             GameData.Current.prefabObjects.Add(prefabObject);
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
+                RTLevelBase runtimeLevel = modifierLoop.reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : modifierLoop.reference.GetParentRuntime();
                 runtimeLevel?.UpdatePrefab(prefabObject);
 
                 var runtimePrefabObject = prefabObject.runtimeObject;
-                if (runtimePrefabObject && modifier.GetBool(13, false, variables))
+                if (runtimePrefabObject && modifier.GetBool(13, false, modifierLoop.variables))
                     runtimePrefabObject.onActiveChanged = enabled =>
                     {
                         if (enabled)
@@ -10809,7 +10880,7 @@ namespace BetterLegacy.Core.Helpers
 
                         RTLevel.Current.postTick.Enqueue(() =>
                         {
-                            RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
+                            RTLevelBase runtimeLevel = modifierLoop.reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : modifierLoop.reference.GetParentRuntime();
                             runtimeLevel?.UpdatePrefab(prefabObject, false);
 
                             GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
@@ -10818,12 +10889,12 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void spawnMultiPrefabCopy(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void spawnMultiPrefabCopy(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (modifier.constant || modifier.HasResult() || reference is not IPrefabable prefabable)
+            if (modifier.constant || modifier.HasResult() || modifierLoop.reference is not IPrefabable prefabable)
                 return;
 
-            var prefab = GameData.Current.GetPrefab(modifier.GetInt(4, 0, variables), modifier.GetValue(0, variables));
+            var prefab = GameData.Current.GetPrefab(modifier.GetInt(4, 0, modifierLoop.variables), modifier.GetValue(0, modifierLoop.variables));
 
             if (!prefab)
                 return;
@@ -10839,7 +10910,7 @@ namespace BetterLegacy.Core.Helpers
             prefabObject.id = LSText.randomString(16);
             prefabObject.prefabID = prefab.id;
 
-            prefabObject.StartTime = modifier.GetBool(3, true, variables) ? AudioManager.inst.CurrentAudioSource.time + modifier.GetFloat(2, 0f, variables) : modifier.GetFloat(2, 0f, variables);
+            prefabObject.StartTime = modifier.GetBool(3, true, modifierLoop.variables) ? AudioManager.inst.CurrentAudioSource.time + modifier.GetFloat(2, 0f, modifierLoop.variables) : modifier.GetFloat(2, 0f, modifierLoop.variables);
 
             prefabObject.PasteInstanceData(orig);
 
@@ -10851,11 +10922,11 @@ namespace BetterLegacy.Core.Helpers
             GameData.Current.prefabObjects.Add(prefabObject);
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
+                RTLevelBase runtimeLevel = modifierLoop.reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : modifierLoop.reference.GetParentRuntime();
                 runtimeLevel?.UpdatePrefab(prefabObject);
 
                 var runtimePrefabObject = prefabObject.runtimeObject;
-                if (runtimePrefabObject && modifier.GetBool(5, false, variables))
+                if (runtimePrefabObject && modifier.GetBool(5, false, modifierLoop.variables))
                     runtimePrefabObject.onActiveChanged = enabled =>
                     {
                         if (enabled)
@@ -10863,7 +10934,7 @@ namespace BetterLegacy.Core.Helpers
 
                         RTLevel.Current.postTick.Enqueue(() =>
                         {
-                            RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
+                            RTLevelBase runtimeLevel = modifierLoop.reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : modifierLoop.reference.GetParentRuntime();
                             runtimeLevel?.UpdatePrefab(prefabObject, false);
 
                             GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
@@ -10872,16 +10943,16 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void clearSpawnedPrefabs(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void clearSpawnedPrefabs(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IPrefabable prefabable)
+            if (modifierLoop.reference is not IPrefabable prefabable)
                 return;
 
-            var modifyables = GameData.Current.FindModifyables(modifier, prefabable, modifier.GetValue(0, variables)).ToList();
+            var modifyables = GameData.Current.FindModifyables(modifier, prefabable, modifier.GetValue(0, modifierLoop.variables)).ToList();
 
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
+                RTLevelBase runtimeLevel = modifierLoop.reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : modifierLoop.reference.GetParentRuntime();
 
                 foreach (var modifyable in modifyables)
                 {
@@ -10917,32 +10988,32 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void setPrefabTime(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void setPrefabTime(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is PrefabObject prefabObject && prefabObject.runtimeObject)
+            if (modifierLoop.reference is PrefabObject prefabObject && prefabObject.runtimeObject)
             {
-                prefabObject.runtimeObject.CustomTime = modifier.GetFloat(0, 0f, variables);
-                prefabObject.runtimeObject.UseCustomTime = modifier.GetBool(1, false, variables);
+                prefabObject.runtimeObject.CustomTime = modifier.GetFloat(0, 0f, modifierLoop.variables);
+                prefabObject.runtimeObject.UseCustomTime = modifier.GetBool(1, false, modifierLoop.variables);
             }
         }
 
-        public static void enablePrefab(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void enablePrefab(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var prefabable = reference.AsPrefabable();
+            var prefabable = modifierLoop.reference.AsPrefabable();
             if (prefabable != null && prefabable.FromPrefab)
-                prefabable.GetPrefabObject()?.runtimeObject?.SetCustomActive(modifier.GetBool(0, true, variables));
+                prefabable.GetPrefabObject()?.runtimeObject?.SetCustomActive(modifier.GetBool(0, true, modifierLoop.variables));
         }
 
-        public static void updatePrefab(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void updatePrefab(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (modifier.constant)
                 return;
 
-            var prefabable = reference.AsPrefabable();
+            var prefabable = modifierLoop.reference.AsPrefabable();
             if (prefabable == null || !prefabable.FromPrefab)
                 return;
 
-            var reinsert = modifier.GetBool(0, true, variables);
+            var reinsert = modifier.GetBool(0, true, modifierLoop.variables);
             RTLevel.Current.postTick.Enqueue(() =>
             {
                 var prefabObject = prefabable.GetPrefabObject();
@@ -10951,30 +11022,30 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void spawnClone(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void spawnClone(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (!modifier.enabled) // TODO: implement to the actual modifier loop
                 return;
 
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
-            var startIndex = modifier.GetInt(0, 0, variables);
-            var endCount = modifier.GetInt(1, 0, variables);
-            var increment = modifier.GetInt(2, 1, variables);
+            var startIndex = modifier.GetInt(0, 0, modifierLoop.variables);
+            var endCount = modifier.GetInt(1, 0, modifierLoop.variables);
+            var increment = modifier.GetInt(2, 1, modifierLoop.variables);
 
             var distance = -(startIndex - endCount);
             var allowed = increment != 0 && endCount > startIndex && (distance < 0 ? increment < 0 : increment > 0);
 
-            var pos = new Vector3(modifier.GetFloat(3, 0f, variables), modifier.GetFloat(4, 0f, variables), modifier.GetFloat(5, 0f, variables));
-            var sca = new Vector2(modifier.GetFloat(6, 0f, variables), modifier.GetFloat(7, 0f, variables));
-            var rot = modifier.GetFloat(8, 0, variables);
-            var timeOffset = modifier.GetFloat(9, 0f, variables);
+            var pos = new Vector3(modifier.GetFloat(3, 0f, modifierLoop.variables), modifier.GetFloat(4, 0f, modifierLoop.variables), modifier.GetFloat(5, 0f, modifierLoop.variables));
+            var sca = new Vector2(modifier.GetFloat(6, 0f, modifierLoop.variables), modifier.GetFloat(7, 0f, modifierLoop.variables));
+            var rot = modifier.GetFloat(8, 0, modifierLoop.variables);
+            var timeOffset = modifier.GetFloat(9, 0f, modifierLoop.variables);
 
-            var disabled = modifier.GetValue(10, variables);
-            var offsetPrefab = modifier.GetBool(11, true, variables);
-            var copyOffsets = modifier.GetBool(12, true, variables);
-            var disableSelf = modifier.GetBool(13, false, variables);
+            var disabled = modifier.GetValue(10, modifierLoop.variables);
+            var offsetPrefab = modifier.GetBool(11, true, modifierLoop.variables);
+            var copyOffsets = modifier.GetBool(12, true, modifierLoop.variables);
+            var disableSelf = modifier.GetBool(13, false, modifierLoop.variables);
 
             var basePos = Vector3.zero;
             var baseSca = Vector2.one;
@@ -11127,7 +11198,7 @@ namespace BetterLegacy.Core.Helpers
 
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
+                RTLevelBase runtimeLevel = modifierLoop.reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : modifierLoop.reference.GetParentRuntime();
                 if (offsetPrefab)
                 {
                     for (int i = 0; i < spawned.Count; i++)
@@ -11208,33 +11279,33 @@ namespace BetterLegacy.Core.Helpers
             };
         }
 
-        public static void spawnCloneMath(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void spawnCloneMath(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (!modifier.enabled) // TODO: implement to the actual modifier loop
                 return;
 
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
-            var startIndex = modifier.GetInt(0, 0, variables);
-            var endCount = modifier.GetInt(1, 0, variables);
-            var increment = modifier.GetInt(2, 1, variables);
+            var startIndex = modifier.GetInt(0, 0, modifierLoop.variables);
+            var endCount = modifier.GetInt(1, 0, modifierLoop.variables);
+            var increment = modifier.GetInt(2, 1, modifierLoop.variables);
 
             var distance = -(startIndex - endCount);
             var allowed = increment != 0 && endCount > startIndex && (distance < 0 ? increment < 0 : increment > 0);
 
-            var posXEvaluation = modifier.GetValue(3, variables);
-            var posYEvaluation = modifier.GetValue(4, variables);
-            var posZEvaluation = modifier.GetValue(5, variables);
-            var scaXEvaluation = modifier.GetValue(6, variables);
-            var scaYEvaluation = modifier.GetValue(7, variables);
-            var rotEvaluation = modifier.GetValue(8, variables);
-            var timeEvaluation = modifier.GetValue(9, variables);
+            var posXEvaluation = modifier.GetValue(3, modifierLoop.variables);
+            var posYEvaluation = modifier.GetValue(4, modifierLoop.variables);
+            var posZEvaluation = modifier.GetValue(5, modifierLoop.variables);
+            var scaXEvaluation = modifier.GetValue(6, modifierLoop.variables);
+            var scaYEvaluation = modifier.GetValue(7, modifierLoop.variables);
+            var rotEvaluation = modifier.GetValue(8, modifierLoop.variables);
+            var timeEvaluation = modifier.GetValue(9, modifierLoop.variables);
 
-            var disabled = modifier.GetValue(10, variables);
-            var offsetPrefab = modifier.GetBool(11, true, variables);
-            var copyOffsets = modifier.GetBool(12, true, variables);
-            var disableSelf = modifier.GetBool(13, false, variables);
+            var disabled = modifier.GetValue(10, modifierLoop.variables);
+            var offsetPrefab = modifier.GetBool(11, true, modifierLoop.variables);
+            var copyOffsets = modifier.GetBool(12, true, modifierLoop.variables);
+            var disableSelf = modifier.GetBool(13, false, modifierLoop.variables);
 
             var basePos = Vector3.zero;
             var baseSca = Vector2.one;
@@ -11263,7 +11334,7 @@ namespace BetterLegacy.Core.Helpers
                             { "cloneIndex", i },
                         };
                         beatmapObject.SetObjectVariables(numberVariables);
-                        ModifiersHelper.SetVariables(variables, numberVariables);
+                        ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
 
                         var calcPos = new Vector3(RTMath.Parse(posXEvaluation, numberVariables), RTMath.Parse(posYEvaluation, numberVariables), RTMath.Parse(posZEvaluation, numberVariables));
                         var calcSca = new Vector2(RTMath.Parse(scaXEvaluation, numberVariables), RTMath.Parse(scaYEvaluation, numberVariables));
@@ -11371,7 +11442,7 @@ namespace BetterLegacy.Core.Helpers
                     { "cloneIndex", i },
                 };
                 beatmapObject.SetObjectVariables(numberVariables);
-                ModifiersHelper.SetVariables(variables, numberVariables);
+                ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
 
                 var calcPos = new Vector3(RTMath.Parse(posXEvaluation, numberVariables), RTMath.Parse(posYEvaluation, numberVariables), RTMath.Parse(posZEvaluation, numberVariables));
                 var calcSca = new Vector2(RTMath.Parse(scaXEvaluation, numberVariables), RTMath.Parse(scaYEvaluation, numberVariables));
@@ -11422,7 +11493,7 @@ namespace BetterLegacy.Core.Helpers
 
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
+                RTLevelBase runtimeLevel = modifierLoop.reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : modifierLoop.reference.GetParentRuntime();
                 if (offsetPrefab)
                 {
                     for (int i = 0; i < spawned.Count; i++)
@@ -11465,7 +11536,7 @@ namespace BetterLegacy.Core.Helpers
                             { "cloneIndex", i },
                         };
                         beatmapObject.SetObjectVariables(numberVariables);
-                        ModifiersHelper.SetVariables(variables, numberVariables);
+                        ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
 
                         var calcPos = new Vector3(RTMath.Parse(posXEvaluation, numberVariables), RTMath.Parse(posYEvaluation, numberVariables), RTMath.Parse(posZEvaluation, numberVariables));
                         var calcSca = new Vector2(RTMath.Parse(scaXEvaluation, numberVariables), RTMath.Parse(scaYEvaluation, numberVariables));
@@ -11526,9 +11597,9 @@ namespace BetterLegacy.Core.Helpers
 
         #region Ranking
 
-        public static void unlockAchievement(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void unlockAchievement(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var id = modifier.GetValue(0, variables);
+            var id = modifier.GetValue(0, modifierLoop.variables);
             if (CoreHelper.InEditor)
             {
                 if (!EditorConfig.Instance.ModifiersDisplayAchievements.Value)
@@ -11547,17 +11618,17 @@ namespace BetterLegacy.Core.Helpers
             LevelManager.CurrentLevel.saveData.UnlockAchievement(id);
         }
 
-        public static void lockAchievement(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void lockAchievement(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (!LevelManager.CurrentLevel)
                 return;
 
             if (!LevelManager.CurrentLevel.saveData)
                 LevelManager.AssignSaveData(LevelManager.CurrentLevel);
-            LevelManager.CurrentLevel.saveData.LockAchievement(modifier.GetValue(0, variables));
+            LevelManager.CurrentLevel.saveData.LockAchievement(modifier.GetValue(0, modifierLoop.variables));
         }
 
-        public static void getAchievementUnlocked(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getAchievementUnlocked(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (!LevelManager.CurrentLevel)
                 return;
@@ -11566,13 +11637,13 @@ namespace BetterLegacy.Core.Helpers
                 LevelManager.AssignSaveData(LevelManager.CurrentLevel);
 
             // global or local
-            var unlocked = modifier.GetBool(2, false, variables) ?
-                AchievementManager.unlockedCustomAchievements.TryGetValue(modifier.GetValue(1, variables), out bool global) && global :
-                LevelManager.CurrentLevel && LevelManager.CurrentLevel.saveData && LevelManager.CurrentLevel.saveData.AchievementUnlocked(modifier.GetValue(1, variables));
-            variables[modifier.GetValue(0)] = unlocked.ToString();
+            var unlocked = modifier.GetBool(2, false, modifierLoop.variables) ?
+                AchievementManager.unlockedCustomAchievements.TryGetValue(modifier.GetValue(1, modifierLoop.variables), out bool global) && global :
+                LevelManager.CurrentLevel && LevelManager.CurrentLevel.saveData && LevelManager.CurrentLevel.saveData.AchievementUnlocked(modifier.GetValue(1, modifierLoop.variables));
+            modifierLoop.variables[modifier.GetValue(0)] = unlocked.ToString();
         }
 
-        public static void saveLevelRank(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void saveLevelRank(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (CoreHelper.InEditor || modifier.constant || !LevelManager.CurrentLevel)
                 return;
@@ -11580,17 +11651,17 @@ namespace BetterLegacy.Core.Helpers
             LevelManager.UpdateCurrentLevelProgress();
         }
 
-        public static void clearHits(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void clearHits(Modifier modifier, ModifierLoop modifierLoop)
         {
             RTBeatmap.Current.hits.Clear();
         }
 
-        public static void addHit(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void addHit(Modifier modifier, ModifierLoop modifierLoop)
         {
             var vector = Vector3.zero;
-            if (reference is BeatmapObject beatmapObject)
+            if (modifierLoop.reference is BeatmapObject beatmapObject)
             {
-                if (modifier.GetBool(0, true, variables))
+                if (modifier.GetBool(0, true, modifierLoop.variables))
                     vector = beatmapObject.GetFullPosition();
                 else
                 {
@@ -11600,12 +11671,12 @@ namespace BetterLegacy.Core.Helpers
                 }
             }
 
-            var timeValue = modifier.GetValue(1, variables);
+            var timeValue = modifier.GetValue(1, modifierLoop.variables);
             float time = AudioManager.inst.CurrentAudioSource.time;
-            if (!string.IsNullOrEmpty(timeValue) && reference is IEvaluatable evaluatable)
+            if (!string.IsNullOrEmpty(timeValue) && modifierLoop.reference is IEvaluatable evaluatable)
             {
                 var numberVariables = evaluatable.GetObjectVariables();
-                ModifiersHelper.SetVariables(variables, numberVariables);
+                ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
 
                 time = RTMath.Parse(timeValue, numberVariables, evaluatable.GetObjectFunctions());
             }
@@ -11613,23 +11684,23 @@ namespace BetterLegacy.Core.Helpers
             RTBeatmap.Current.hits.Add(new PlayerDataPoint(vector, time));
         }
 
-        public static void subHit(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void subHit(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (!RTBeatmap.Current.hits.IsEmpty())
                 RTBeatmap.Current.hits.RemoveAt(RTBeatmap.Current.hits.Count - 1);
         }
 
-        public static void clearDeaths(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void clearDeaths(Modifier modifier, ModifierLoop modifierLoop)
         {
             RTBeatmap.Current.deaths.Clear();
         }
 
-        public static void addDeath(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void addDeath(Modifier modifier, ModifierLoop modifierLoop)
         {
             var vector = Vector3.zero;
-            if (reference is BeatmapObject beatmapObject)
+            if (modifierLoop.reference is BeatmapObject beatmapObject)
             {
-                if (modifier.GetBool(0, true, variables))
+                if (modifier.GetBool(0, true, modifierLoop.variables))
                     vector = beatmapObject.GetFullPosition();
                 else
                 {
@@ -11639,12 +11710,12 @@ namespace BetterLegacy.Core.Helpers
                 }
             }
 
-            var timeValue = modifier.GetValue(1, variables);
+            var timeValue = modifier.GetValue(1, modifierLoop.variables);
             float time = AudioManager.inst.CurrentAudioSource.time;
-            if (!string.IsNullOrEmpty(timeValue) && reference is IEvaluatable evaluatable)
+            if (!string.IsNullOrEmpty(timeValue) && modifierLoop.reference is IEvaluatable evaluatable)
             {
                 var numberVariables = evaluatable.GetObjectVariables();
-                ModifiersHelper.SetVariables(variables, numberVariables);
+                ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
 
                 time = RTMath.Parse(timeValue, numberVariables, evaluatable.GetObjectFunctions());
             }
@@ -11652,65 +11723,65 @@ namespace BetterLegacy.Core.Helpers
             RTBeatmap.Current.deaths.Add(new PlayerDataPoint(vector, time));
         }
 
-        public static void subDeath(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void subDeath(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (!RTBeatmap.Current.deaths.IsEmpty())
                 RTBeatmap.Current.deaths.RemoveAt(RTBeatmap.Current.deaths.Count - 1);
         }
 
-        public static void getHitCount(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getHitCount(Modifier modifier, ModifierLoop modifierLoop)
         {
-            variables[modifier.GetValue(0)] = RTBeatmap.Current.hits.Count.ToString();
+            modifierLoop.variables[modifier.GetValue(0)] = RTBeatmap.Current.hits.Count.ToString();
         }
 
-        public static void getDeathCount(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getDeathCount(Modifier modifier, ModifierLoop modifierLoop)
         {
-            variables[modifier.GetValue(0)] = RTBeatmap.Current.deaths.Count.ToString();
+            modifierLoop.variables[modifier.GetValue(0)] = RTBeatmap.Current.deaths.Count.ToString();
         }
 
         #endregion
 
         #region Updates
 
-        public static void updateObjects(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void updateObjects(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (!modifier.constant)
                 CoroutineHelper.StartCoroutine(RTLevel.IReinit());
         }
 
-        public static void reinitLevel(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void reinitLevel(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (!modifier.constant)
                 CoroutineHelper.StartCoroutine(RTLevel.IReinit());
         }
 
-        public static void updateObject(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void updateObject(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (modifier.constant)
                 return;
 
-            var reinsert = modifier.GetBool(0, true, variables);
+            var reinsert = modifier.GetBool(0, true, modifierLoop.variables);
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                if (reference is BeatmapObject beatmapObject)
+                if (modifierLoop.reference is BeatmapObject beatmapObject)
                     beatmapObject.GetParentRuntime()?.UpdateObject(beatmapObject, reinsert: reinsert);
-                if (reference is BackgroundObject backgroundObject)
+                if (modifierLoop.reference is BackgroundObject backgroundObject)
                     backgroundObject.GetParentRuntime()?.UpdateBackgroundObject(backgroundObject, reinsert: reinsert);
-                if (reference is PrefabObject prefabObject)
+                if (modifierLoop.reference is PrefabObject prefabObject)
                     prefabObject.GetParentRuntime()?.UpdatePrefab(prefabObject, reinsert: reinsert);
             });
         }
 
-        public static void updateObjectOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void updateObjectOther(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (modifier.constant || reference is not IPrefabable prefabable)
+            if (modifier.constant || modifierLoop.reference is not IPrefabable prefabable)
                 return;
 
             var prefabables = GameData.Current.FindPrefabablesWithTag(modifier, prefabable, modifier.GetValue(0));
             if (prefabables.IsEmpty())
                 return;
 
-            var reinsert = modifier.GetBool(1, true, variables);
+            var reinsert = modifier.GetBool(1, true, modifierLoop.variables);
             RTLevel.Current.postTick.Enqueue(() =>
             {
                 foreach (var other in prefabables)
@@ -11726,14 +11797,14 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void setStartTime(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void setStartTime(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var startTime = modifier.GetFloat(0, 0f, variables);
-            var killTime = modifier.GetFloat(1, 0f, variables);
+            var startTime = modifier.GetFloat(0, 0f, modifierLoop.variables);
+            var killTime = modifier.GetFloat(1, 0f, modifierLoop.variables);
 
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                var runtimeObject = reference.GetRuntimeObject();
+                var runtimeObject = modifierLoop.reference.GetRuntimeObject();
                 if (runtimeObject == null)
                     return;
 
@@ -11747,16 +11818,16 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
-        public static void setParent(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void setParent(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (modifier.constant || reference is not IParentable child)
+            if (modifier.constant || modifierLoop.reference is not IParentable child)
                 return;
 
-            var prefabable = reference.AsPrefabable();
+            var prefabable = modifierLoop.reference.AsPrefabable();
             if (prefabable == null)
                 return;
 
-            var group = modifier.GetValue(0, variables);
+            var group = modifier.GetValue(0, modifierLoop.variables);
 
             var result = modifier.GetResultOrDefault(() => ParentableGroupCache.GetSingle(modifier, prefabable, group));
 
@@ -11774,26 +11845,26 @@ namespace BetterLegacy.Core.Helpers
                 CoreHelper.LogError($"CANNOT PARENT OBJECT!\nID: {child.ID}");
         }
 
-        public static void setParentOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void setParentOther(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (modifier.constant)
                 return;
 
-            var prefabable = reference.AsPrefabable();
+            var prefabable = modifierLoop.reference.AsPrefabable();
             if (prefabable == null)
                 return;
 
-            var group = modifier.GetValue(2, variables);
+            var group = modifier.GetValue(2, modifierLoop.variables);
 
-            var result = modifier.GetResultOrDefault(() => ParentableGroupCache.GetGroup(modifier, prefabable, group, modifier.GetValue(0, variables)));
+            var result = modifier.GetResultOrDefault(() => ParentableGroupCache.GetGroup(modifier, prefabable, group, modifier.GetValue(0, modifierLoop.variables)));
 
             if (result.tag != group)
             {
-                result = ParentableGroupCache.GetGroup(modifier, prefabable, group, modifier.GetValue(0, variables));
+                result = ParentableGroupCache.GetGroup(modifier, prefabable, group, modifier.GetValue(0, modifierLoop.variables));
                 modifier.Result = result;
             }
 
-            var isEmpty = modifier.GetBool(1, false, variables);
+            var isEmpty = modifier.GetBool(1, false, modifierLoop.variables);
 
             bool failed = false;
             foreach (var parentable in result.group)
@@ -11807,30 +11878,30 @@ namespace BetterLegacy.Core.Helpers
             }
 
             if (failed)
-                CoreHelper.LogError($"CANNOT PARENT OBJECT {reference}");
+                CoreHelper.LogError($"CANNOT PARENT OBJECT {modifierLoop.reference}");
         }
 
-        public static void detachParent(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void detachParent(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (modifier.constant || reference is not IParentable parentable)
+            if (modifier.constant || modifierLoop.reference is not IParentable parentable)
                 return;
 
-            parentable.ParentDetatched = modifier.GetBool(0, true, variables);
+            parentable.ParentDetatched = modifier.GetBool(0, true, modifierLoop.variables);
 
-            if (reference is not PrefabObject prefabObject || !prefabObject.runtimeObject)
+            if (modifierLoop.reference is not PrefabObject prefabObject || !prefabObject.runtimeObject)
                 return;
 
             foreach (var beatmapObject in prefabObject.runtimeObject.Spawner.BeatmapObjects)
                 beatmapObject.detatched = prefabObject.detatched;
         }
 
-        public static void detachParentOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void detachParentOther(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (modifier.constant || reference is not IPrefabable prefabable)
+            if (modifier.constant || modifierLoop.reference is not IPrefabable prefabable)
                 return;
 
-            var parentables = GameData.Current.FindParentables(modifier, prefabable, modifier.GetValue(1, variables));
-            var detach = modifier.GetBool(0, true, variables);
+            var parentables = GameData.Current.FindParentables(modifier, prefabable, modifier.GetValue(1, modifierLoop.variables));
+            var detach = modifier.GetBool(0, true, modifierLoop.variables);
 
             foreach (var other in parentables)
             {
@@ -11844,29 +11915,29 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void setSeed(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void setSeed(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (!modifier.constant)
-                RTLevel.Current?.InitSeed(modifier.GetValue(0, variables));
+                RTLevel.Current?.InitSeed(modifier.GetValue(0, modifierLoop.variables));
         }
 
         #endregion
 
         #region Physics
 
-        public static void setCollision(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void setCollision(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is BeatmapObject beatmapObject && beatmapObject.runtimeObject is RTBeatmapObject runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.collider)
-                runtimeObject.visualObject.colliderEnabled = modifier.GetBool(0, false, variables);
+            if (modifierLoop.reference is BeatmapObject beatmapObject && beatmapObject.runtimeObject is RTBeatmapObject runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.collider)
+                runtimeObject.visualObject.colliderEnabled = modifier.GetBool(0, false, modifierLoop.variables);
         }
 
-        public static void setCollisionOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void setCollisionOther(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IPrefabable prefabable)
+            if (modifierLoop.reference is not IPrefabable prefabable)
                 return;
 
-            var colliderEnabled = modifier.GetBool(0, false, variables);
-            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, variables));
+            var colliderEnabled = modifier.GetBool(0, false, modifierLoop.variables);
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, modifierLoop.variables));
 
             foreach (var beatmapObject in list)
             {
@@ -11879,37 +11950,37 @@ namespace BetterLegacy.Core.Helpers
 
         #region Checkpoints
 
-        public static void createCheckpoint(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void createCheckpoint(Modifier modifier, ModifierLoop modifierLoop)
         {
             // if active checpoints matches the stored checkpoint, do not create a new checkpoint.
             if (modifier.TryGetResult(out Checkpoint prevCheckpoint) && prevCheckpoint.id == RTBeatmap.Current.ActiveCheckpoint.id)
                 return;
 
             var checkpoint = new Checkpoint();
-            checkpoint.time = modifier.GetBool(1, true, variables) ? reference.GetParentRuntime().FixedTime + modifier.GetFloat(0, 0f, variables) : modifier.GetFloat(0, 0f, variables);
-            checkpoint.pos = new Vector2(modifier.GetFloat(2, 0f, variables), modifier.GetFloat(3, 0f, variables));
-            checkpoint.heal = modifier.GetBool(4, false, variables);
-            checkpoint.respawn = modifier.GetBool(5, true, variables);
-            checkpoint.reverse = modifier.GetBool(6, true, variables);
-            checkpoint.setTime = modifier.GetBool(7, true, variables);
-            checkpoint.spawnType = (Checkpoint.SpawnPositionType)modifier.GetInt(8, 0, variables);
+            checkpoint.time = modifier.GetBool(1, true, modifierLoop.variables) ? modifierLoop.reference.GetParentRuntime().FixedTime + modifier.GetFloat(0, 0f, modifierLoop.variables) : modifier.GetFloat(0, 0f, modifierLoop.variables);
+            checkpoint.pos = new Vector2(modifier.GetFloat(2, 0f, modifierLoop.variables), modifier.GetFloat(3, 0f, modifierLoop.variables));
+            checkpoint.heal = modifier.GetBool(4, false, modifierLoop.variables);
+            checkpoint.respawn = modifier.GetBool(5, true, modifierLoop.variables);
+            checkpoint.reverse = modifier.GetBool(6, true, modifierLoop.variables);
+            checkpoint.setTime = modifier.GetBool(7, true, modifierLoop.variables);
+            checkpoint.spawnType = (Checkpoint.SpawnPositionType)modifier.GetInt(8, 0, modifierLoop.variables);
             for (int i = 9; i < modifier.values.Count; i += 2)
-                checkpoint.positions.Add(new Vector2(modifier.GetFloat(i, 0f, variables), modifier.GetFloat(i + 1, 0f, variables)));
+                checkpoint.positions.Add(new Vector2(modifier.GetFloat(i, 0f, modifierLoop.variables), modifier.GetFloat(i + 1, 0f, modifierLoop.variables)));
 
             RTBeatmap.Current.SetCheckpoint(checkpoint);
             modifier.Result = checkpoint;
         }
 
-        public static void resetCheckpoint(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void resetCheckpoint(Modifier modifier, ModifierLoop modifierLoop)
         {
-            RTBeatmap.Current.ResetCheckpoint(modifier.GetBool(0, false, variables));
+            RTBeatmap.Current.ResetCheckpoint(modifier.GetBool(0, false, modifierLoop.variables));
         }
 
         #endregion
 
         #region Interfaces
 
-        public static void loadInterface(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void loadInterface(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (CoreHelper.IsEditing) // don't want interfaces to load in editor
             {
@@ -11917,7 +11988,7 @@ namespace BetterLegacy.Core.Helpers
                 return;
             }
 
-            var value = modifier.GetValue(0, variables);
+            var value = modifier.GetValue(0, modifierLoop.variables);
             var path = RTFile.CombinePaths(RTFile.BasePath, value + FileFormat.LSI.Dot());
 
             if (!RTFile.FileExists(path))
@@ -11927,10 +11998,10 @@ namespace BetterLegacy.Core.Helpers
             }
 
             Dictionary<string, JSONNode> customVariables = null;
-            if (modifier.GetBool(2, false, variables))
+            if (modifier.GetBool(2, false, modifierLoop.variables))
             {
                 customVariables = new Dictionary<string, JSONNode>();
-                foreach (var variable in variables)
+                foreach (var variable in modifierLoop.variables)
                     customVariables[variable.Key] = variable.Value;
             }
 
@@ -11938,19 +12009,19 @@ namespace BetterLegacy.Core.Helpers
 
             InterfaceManager.inst.MainDirectory = RTFile.BasePath;
 
-            if (modifier.GetBool(1, true, variables))
+            if (modifier.GetBool(1, true, modifierLoop.variables))
                 RTBeatmap.Current.Pause();
             ArcadeHelper.endedLevel = false;
         }
 
-        public static void exitInterface(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void exitInterface(Modifier modifier, ModifierLoop modifierLoop)
         {
             InterfaceManager.inst.CloseMenus();
             if (CoreHelper.Paused)
                 RTBeatmap.Current.Resume();
         }
 
-        public static void pauseLevel(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void pauseLevel(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (CoreHelper.InEditor)
             {
@@ -11961,7 +12032,7 @@ namespace BetterLegacy.Core.Helpers
             PauseMenu.Pause();
         }
 
-        public static void quitToMenu(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void quitToMenu(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (CoreHelper.InEditor && !EditorManager.inst.isEditing && EditorConfig.Instance.ModifiersCanLoadLevels.Value)
             {
@@ -11981,7 +12052,7 @@ namespace BetterLegacy.Core.Helpers
                 ArcadeHelper.QuitToMainMenu();
         }
 
-        public static void quitToArcade(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void quitToArcade(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (CoreHelper.InEditor && !EditorManager.inst.isEditing && EditorConfig.Instance.ModifiersCanLoadLevels.Value)
             {
@@ -12007,42 +12078,42 @@ namespace BetterLegacy.Core.Helpers
 
         #region Misc
 
-        public static void setBGActive(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void setBGActive(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var active = modifier.GetBool(0, false, variables);
-            var tag = modifier.GetValue(1, variables);
+            var active = modifier.GetBool(0, false, modifierLoop.variables);
+            var tag = modifier.GetValue(1, modifierLoop.variables);
             var list = GameData.Current.backgroundObjects.FindAll(x => x.tags.Contains(tag));
             if (!list.IsEmpty())
                 for (int i = 0; i < list.Count; i++)
                     list[i].Enabled = active;
         }
 
-        public static void signalModifier(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void signalModifier(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IPrefabable prefabable)
+            if (modifierLoop.reference is not IPrefabable prefabable)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, variables));
-            var delay = modifier.GetFloat(0, 0f, variables);
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, modifierLoop.variables));
+            var delay = modifier.GetFloat(0, 0f, modifierLoop.variables);
 
             foreach (var bm in list)
                 CoroutineHelper.StartCoroutine(ModifiersHelper.ActivateModifier(bm, delay));
         }
 
-        public static void activateModifier(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void activateModifier(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IPrefabable prefabable)
+            if (modifierLoop.reference is not IPrefabable prefabable)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(0, variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(0, modifierLoop.variables));
 
-            var doMultiple = modifier.GetBool(1, true, variables);
-            var index = modifier.GetInt(2, -1, variables);
+            var doMultiple = modifier.GetBool(1, true, modifierLoop.variables);
+            var index = modifier.GetInt(2, -1, modifierLoop.variables);
 
             // 3 is modifier names
             var modifierNames = new List<string>();
             for (int i = 3; i < modifier.values.Count; i++)
-                modifierNames.Add(modifier.GetValue(i, variables));
+                modifierNames.Add(modifier.GetValue(i, modifierLoop.variables));
 
             for (int i = 0; i < list.Count; i++)
             {
@@ -12053,7 +12124,7 @@ namespace BetterLegacy.Core.Helpers
                     for (int j = 0; j < modifiers.Count; j++)
                     {
                         var otherModifier = modifiers[i];
-                        otherModifier.Action?.Invoke(otherModifier, list[i], variables);
+                        otherModifier.Action?.Invoke(otherModifier, new ModifierLoop(list[i], modifierLoop.variables));
                     }
                     continue;
                 }
@@ -12061,33 +12132,33 @@ namespace BetterLegacy.Core.Helpers
                 if (index >= 0 && index < list[i].modifiers.Count)
                 {
                     var otherModifier = list[i].modifiers[index];
-                    otherModifier.Action?.Invoke(otherModifier, list[i], variables);
+                    otherModifier.Action?.Invoke(otherModifier, new ModifierLoop(list[i], modifierLoop.variables));
                 }
             }
         }
 
-        public static void editorNotify(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void editorNotify(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var text = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, variables), variables);
+            var text = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables);
 
             if (CoreHelper.InEditor)
                 EditorManager.inst.DisplayNotification(
                     /*text: */ text,
-                    /*time: */ modifier.GetFloat(1, 0.5f, variables),
-                    /*type: */ (EditorManager.NotificationType)modifier.GetInt(2, 0, variables));
+                    /*time: */ modifier.GetFloat(1, 0.5f, modifierLoop.variables),
+                    /*type: */ (EditorManager.NotificationType)modifier.GetInt(2, 0, modifierLoop.variables));
         }
 
-        public static void setWindowTitle(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables) => ProjectArrhythmia.Window.SetTitle(modifier.GetValue(0, variables));
+        public static void setWindowTitle(Modifier modifier, ModifierLoop modifierLoop) => ProjectArrhythmia.Window.SetTitle(modifier.GetValue(0, modifierLoop.variables));
 
-        public static void setDiscordStatus(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void setDiscordStatus(Modifier modifier, ModifierLoop modifierLoop)
         {
             var discordSubIcons = CoreHelper.discordSubIcons;
             var discordIcons = CoreHelper.discordIcons;
 
-            var state = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, variables), variables);
-            var details = ModifiersHelper.FormatStringVariables(modifier.GetValue(1, variables), variables);
-            var discordSubIcon = modifier.GetInt(2, 0, variables);
-            var discordIcon = modifier.GetInt(3, 0, variables);
+            var state = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables);
+            var details = ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables);
+            var discordSubIcon = modifier.GetInt(2, 0, modifierLoop.variables);
+            var discordIcon = modifier.GetInt(3, 0, modifierLoop.variables);
 
             try
             {
@@ -12102,69 +12173,69 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void callModifierBlock(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void callModifierBlock(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var name = modifier.GetValue(0, variables);
+            var name = modifier.GetValue(0, modifierLoop.variables);
             if (string.IsNullOrEmpty(name))
                 return;
 
-            var prefabable = reference.AsPrefabable();
+            var prefabable = modifierLoop.reference.AsPrefabable();
             var prefab = prefabable?.GetPrefab();
             if (prefabable != null && prefab && prefab.modifierBlocks.TryFind(x => x.Name == name, out ModifierBlock prefabModifierBlock))
-                prefabModifierBlock.Run(new ModifierLoop(reference, variables));
+                prefabModifierBlock.Run(new ModifierLoop(modifierLoop.reference, modifierLoop.variables));
             else if (GameData.Current.modifierBlocks.TryFind(x => x.Name == name, out ModifierBlock modifierBlock))
-                modifierBlock.Run(new ModifierLoop(reference, variables));
+                modifierBlock.Run(new ModifierLoop(modifierLoop.reference, modifierLoop.variables));
         }
 
-        public static void callModifiers(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void callModifiers(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var prefabable = reference.AsPrefabable();
-            if (prefabable == null || !GameData.Current.TryFindModifyableWithTag(modifier, prefabable, modifier.GetValue(0, variables), out IModifyable modifyable))
+            var prefabable = modifierLoop.reference.AsPrefabable();
+            if (prefabable == null || !GameData.Current.TryFindModifyableWithTag(modifier, prefabable, modifier.GetValue(0, modifierLoop.variables), out IModifyable modifyable))
                 return;
 
-            var cache = modifier.GetResultOrDefault(() => new ModifierBlock(reference.ReferenceType)
+            var cache = modifier.GetResultOrDefault(() => new ModifierBlock(modifierLoop.reference.ReferenceType)
             {
                 Modifiers = modifyable.Modifiers,
                 OrderModifiers = modifyable.OrderModifiers,
                 Tags = modifyable.Tags,
             });
-            cache.Run(new ModifierLoop(reference, variables));
+            cache.Run(new ModifierLoop(modifierLoop.reference, modifierLoop.variables));
         }
         
-        public static bool callModifiersTrigger(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool callModifiersTrigger(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var prefabable = reference.AsPrefabable();
-            if (prefabable == null || !GameData.Current.TryFindModifyableWithTag(modifier, prefabable, modifier.GetValue(0, variables), out IModifyable modifyable))
+            var prefabable = modifierLoop.reference.AsPrefabable();
+            if (prefabable == null || !GameData.Current.TryFindModifyableWithTag(modifier, prefabable, modifier.GetValue(0, modifierLoop.variables), out IModifyable modifyable))
                 return false;
 
-            var cache = modifier.GetResultOrDefault(() => new ModifierBlock(reference.ReferenceType)
+            var cache = modifier.GetResultOrDefault(() => new ModifierBlock(modifierLoop.reference.ReferenceType)
             {
                 Modifiers = modifyable.Modifiers,
                 OrderModifiers = modifyable.OrderModifiers,
                 Tags = modifyable.Tags,
             });
-            return cache.Run(new ModifierLoop(reference, variables)).result;
+            return cache.Run(new ModifierLoop(modifierLoop.reference, modifierLoop.variables)).result;
         }
 
         #endregion
 
         #region Player Only
 
-        public static void setCustomObjectActive(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void setCustomObjectActive(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var id = modifier.GetValue(1, variables);
-            var player = reference is RTPlayer.RTCustomPlayerObject customPlayerObject ? customPlayerObject.Player.Core : reference as PAPlayer;
+            var id = modifier.GetValue(1, modifierLoop.variables);
+            var player = modifierLoop.reference is RTPlayer.RTCustomPlayerObject customPlayerObject ? customPlayerObject.Player.Core : modifierLoop.reference as PAPlayer;
 
             if (player && player.RuntimePlayer && player.RuntimePlayer.customObjects.TryFind(x => x.id == id, out RTPlayer.RTCustomPlayerObject customObject))
-                customObject.active = modifier.GetBool(0, false, variables);
+                customObject.active = modifier.GetBool(0, false, modifierLoop.variables);
         }
 
-        public static void setCustomObjectIdle(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void setCustomObjectIdle(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var id = modifier.GetValue(0, variables);
-            var idle = modifier.GetBool(1, true, variables);
-            var customPlayerObject = reference as RTPlayer.RTCustomPlayerObject;
-            var player = customPlayerObject ? customPlayerObject.Player.Core : reference as PAPlayer;
+            var id = modifier.GetValue(0, modifierLoop.variables);
+            var idle = modifier.GetBool(1, true, modifierLoop.variables);
+            var customPlayerObject = modifierLoop.reference as RTPlayer.RTCustomPlayerObject;
+            var player = customPlayerObject ? customPlayerObject.Player.Core : modifierLoop.reference as PAPlayer;
 
             if (!player || !player.RuntimePlayer)
                 return;
@@ -12175,12 +12246,12 @@ namespace BetterLegacy.Core.Helpers
                 customObject.idle = idle;
         }
 
-        public static void setIdleAnimation(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void setIdleAnimation(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var id = modifier.GetValue(0, variables);
-            var referenceID = modifier.GetValue(1, variables);
-            var customPlayerObject = reference as RTPlayer.RTCustomPlayerObject;
-            var player = customPlayerObject ? customPlayerObject.Player.Core : reference as PAPlayer;
+            var id = modifier.GetValue(0, modifierLoop.variables);
+            var referenceID = modifier.GetValue(1, modifierLoop.variables);
+            var customPlayerObject = modifierLoop.reference as RTPlayer.RTCustomPlayerObject;
+            var player = customPlayerObject ? customPlayerObject.Player.Core : modifierLoop.reference as PAPlayer;
 
             if (!player || !player.RuntimePlayer)
                 return;
@@ -12191,12 +12262,12 @@ namespace BetterLegacy.Core.Helpers
                 customObject.currentIdleAnimation = animation.ReferenceID;
         }
 
-        public static void playAnimation(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playAnimation(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var id = modifier.GetValue(0, variables);
-            var referenceID = modifier.GetValue(1, variables);
-            var customPlayerObject = reference as RTPlayer.RTCustomPlayerObject;
-            var player = customPlayerObject ? customPlayerObject.Player.Core : reference as PAPlayer;
+            var id = modifier.GetValue(0, modifierLoop.variables);
+            var referenceID = modifier.GetValue(1, modifierLoop.variables);
+            var customPlayerObject = modifierLoop.reference as RTPlayer.RTCustomPlayerObject;
+            var player = customPlayerObject ? customPlayerObject.Player.Core : modifierLoop.reference as PAPlayer;
 
             if (!player || !player.RuntimePlayer)
                 return;
@@ -12212,215 +12283,215 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void kill(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void kill(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is PAPlayer player)
+            if (modifierLoop.reference is PAPlayer player)
                 player.Health = 0;
         }
 
-        public static void hit(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void hit(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not PAPlayer player)
+            if (modifierLoop.reference is not PAPlayer player)
                 return;
 
-            var damage = modifier.GetInt(0, 0, variables);
+            var damage = modifier.GetInt(0, 0, modifierLoop.variables);
             if (damage <= 1)
                 player.RuntimePlayer?.Hit();
             else
                 player.RuntimePlayer?.Hit(damage);
         }
 
-        public static void boost(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void boost(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is PAPlayer player)
+            if (modifierLoop.reference is PAPlayer player)
                 player.RuntimePlayer?.Boost();
         }
 
-        public static void shoot(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void shoot(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is PAPlayer player)
+            if (modifierLoop.reference is PAPlayer player)
                 player.RuntimePlayer?.Shoot();
         }
 
-        public static void pulse(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void pulse(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is PAPlayer player)
+            if (modifierLoop.reference is PAPlayer player)
                 player.RuntimePlayer?.Pulse();
         }
 
-        public static void jump(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void jump(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is PAPlayer player)
+            if (modifierLoop.reference is PAPlayer player)
                 player.RuntimePlayer?.Jump();
         }
 
-        public static void getHealth(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getHealth(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var player = reference is RTPlayer.RTCustomPlayerObject customPlayerObject ? customPlayerObject.Player.Core : reference as PAPlayer;
+            var player = modifierLoop.reference is RTPlayer.RTCustomPlayerObject customPlayerObject ? customPlayerObject.Player.Core : modifierLoop.reference as PAPlayer;
             if (!player)
                 return;
 
-            variables[modifier.GetValue(0)] = player.Health.ToString();
+            modifierLoop.variables[modifier.GetValue(0)] = player.Health.ToString();
         }
 
-        public static void getLives(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getLives(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var player = reference is RTPlayer.RTCustomPlayerObject customPlayerObject ? customPlayerObject.Player.Core : reference as PAPlayer;
+            var player = modifierLoop.reference is RTPlayer.RTCustomPlayerObject customPlayerObject ? customPlayerObject.Player.Core : modifierLoop.reference as PAPlayer;
             if (!player)
                 return;
 
-            variables[modifier.GetValue(0)] = player.lives.ToString();
+            modifierLoop.variables[modifier.GetValue(0)] = player.lives.ToString();
         }
 
-        public static void getMaxHealth(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getMaxHealth(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var player = reference is RTPlayer.RTCustomPlayerObject customPlayerObject ? customPlayerObject.Player.Core : reference as PAPlayer;
+            var player = modifierLoop.reference is RTPlayer.RTCustomPlayerObject customPlayerObject ? customPlayerObject.Player.Core : modifierLoop.reference as PAPlayer;
             if (!player)
                 return;
 
-            variables[modifier.GetValue(0)] = player.GetMaxHealth().ToString();
+            modifierLoop.variables[modifier.GetValue(0)] = player.GetMaxHealth().ToString();
         }
 
-        public static void getMaxLives(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getMaxLives(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var player = reference is RTPlayer.RTCustomPlayerObject customPlayerObject ? customPlayerObject.Player.Core : reference as PAPlayer;
+            var player = modifierLoop.reference is RTPlayer.RTCustomPlayerObject customPlayerObject ? customPlayerObject.Player.Core : modifierLoop.reference as PAPlayer;
             if (!player)
                 return;
 
-            variables[modifier.GetValue(0)] = player.GetMaxLives().ToString();
+            modifierLoop.variables[modifier.GetValue(0)] = player.GetMaxLives().ToString();
         }
 
-        public static void getIndex(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getIndex(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var player = reference is RTPlayer.RTCustomPlayerObject customPlayerObject ? customPlayerObject.Player.Core : reference as PAPlayer;
+            var player = modifierLoop.reference is RTPlayer.RTCustomPlayerObject customPlayerObject ? customPlayerObject.Player.Core : modifierLoop.reference as PAPlayer;
             if (!player)
                 return;
 
-            variables[modifier.GetValue(0)] = player.index.ToString();
+            modifierLoop.variables[modifier.GetValue(0)] = player.index.ToString();
         }
 
-        public static void getMove(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getMove(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var player = reference is RTPlayer.RTCustomPlayerObject customPlayerObject ? customPlayerObject.Player.Core : reference as PAPlayer;
+            var player = modifierLoop.reference is RTPlayer.RTCustomPlayerObject customPlayerObject ? customPlayerObject.Player.Core : modifierLoop.reference as PAPlayer;
             if (!player)
                 return;
 
             var move = player.RuntimePlayer.Actions.Move.Vector;
-            if (move.magnitude > 1f && modifier.GetBool(2, true, variables))
+            if (move.magnitude > 1f && modifier.GetBool(2, true, modifierLoop.variables))
                 move = move.normalized;
-            variables[modifier.GetValue(0)] = move.x.ToString();
-            variables[modifier.GetValue(1)] = move.y.ToString();
+            modifierLoop.variables[modifier.GetValue(0)] = move.x.ToString();
+            modifierLoop.variables[modifier.GetValue(1)] = move.y.ToString();
         }
 
-        public static void getMoveX(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getMoveX(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var player = reference is RTPlayer.RTCustomPlayerObject customPlayerObject ? customPlayerObject.Player.Core : reference as PAPlayer;
+            var player = modifierLoop.reference is RTPlayer.RTCustomPlayerObject customPlayerObject ? customPlayerObject.Player.Core : modifierLoop.reference as PAPlayer;
             if (!player)
                 return;
 
             var move = player.RuntimePlayer.Actions.Move.Vector;
-            if (move.magnitude > 1f && modifier.GetBool(1, true, variables))
+            if (move.magnitude > 1f && modifier.GetBool(1, true, modifierLoop.variables))
                 move = move.normalized;
-            variables[modifier.GetValue(0)] = move.x.ToString();
+            modifierLoop.variables[modifier.GetValue(0)] = move.x.ToString();
         }
 
-        public static void getMoveY(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getMoveY(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var player = reference is RTPlayer.RTCustomPlayerObject customPlayerObject ? customPlayerObject.Player.Core : reference as PAPlayer;
+            var player = modifierLoop.reference is RTPlayer.RTCustomPlayerObject customPlayerObject ? customPlayerObject.Player.Core : modifierLoop.reference as PAPlayer;
             if (!player)
                 return;
 
             var move = player.RuntimePlayer.Actions.Move.Vector;
-            if (move.magnitude > 1f && modifier.GetBool(1, true, variables))
+            if (move.magnitude > 1f && modifier.GetBool(1, true, modifierLoop.variables))
                 move = move.normalized;
-            variables[modifier.GetValue(0)] = move.y.ToString();
+            modifierLoop.variables[modifier.GetValue(0)] = move.y.ToString();
         }
 
         #endregion
 
         #region DEVONLY
 
-        public static void loadSceneDEVONLY(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void loadSceneDEVONLY(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (CoreHelper.InStory)
-                SceneManager.inst.LoadScene(modifier.GetValue(0, variables), modifier.values.Count > 1 && modifier.GetBool(1, true, variables));
+                SceneManager.inst.LoadScene(modifier.GetValue(0, modifierLoop.variables), modifier.values.Count > 1 && modifier.GetBool(1, true, modifierLoop.variables));
         }
 
-        public static void loadStoryLevelDEVONLY(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void loadStoryLevelDEVONLY(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (CoreHelper.InStory)
-                Story.StoryManager.inst.Play(modifier.GetInt(1, 0, variables), modifier.GetInt(2, 0, variables), modifier.GetInt(4, 0, variables), modifier.GetBool(0, false, variables), modifier.GetBool(3, false, variables));
+                Story.StoryManager.inst.Play(modifier.GetInt(1, 0, modifierLoop.variables), modifier.GetInt(2, 0, modifierLoop.variables), modifier.GetInt(4, 0, modifierLoop.variables), modifier.GetBool(0, false, modifierLoop.variables), modifier.GetBool(3, false, modifierLoop.variables));
         }
 
-        public static void storySaveBoolDEVONLY(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void storySaveBoolDEVONLY(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (CoreHelper.InStory)
-                Story.StoryManager.inst.CurrentSave.SaveBool(modifier.GetValue(0, variables), modifier.GetBool(1, false, variables));
+                Story.StoryManager.inst.CurrentSave.SaveBool(modifier.GetValue(0, modifierLoop.variables), modifier.GetBool(1, false, modifierLoop.variables));
         }
 
-        public static void storySaveIntDEVONLY(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void storySaveIntDEVONLY(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (CoreHelper.InStory)
-                Story.StoryManager.inst.CurrentSave.SaveInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables));
+                Story.StoryManager.inst.CurrentSave.SaveInt(modifier.GetValue(0, modifierLoop.variables), modifier.GetInt(1, 0, modifierLoop.variables));
         }
 
-        public static void storySaveFloatDEVONLY(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void storySaveFloatDEVONLY(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (CoreHelper.InStory)
-                Story.StoryManager.inst.CurrentSave.SaveFloat(modifier.GetValue(0, variables), modifier.GetFloat(1, 0f, variables));
+                Story.StoryManager.inst.CurrentSave.SaveFloat(modifier.GetValue(0, modifierLoop.variables), modifier.GetFloat(1, 0f, modifierLoop.variables));
         }
 
-        public static void storySaveStringDEVONLY(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void storySaveStringDEVONLY(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (CoreHelper.InStory)
-                Story.StoryManager.inst.CurrentSave.SaveString(modifier.GetValue(0, variables), modifier.GetValue(1, variables));
+                Story.StoryManager.inst.CurrentSave.SaveString(modifier.GetValue(0, modifierLoop.variables), modifier.GetValue(1, modifierLoop.variables));
         }
 
-        public static void storySaveIntVariableDEVONLY(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void storySaveIntVariableDEVONLY(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (CoreHelper.InStory && reference is IModifyable modifyable)
-                Story.StoryManager.inst.CurrentSave.SaveInt(modifier.GetValue(0, variables), modifyable.IntVariable);
+            if (CoreHelper.InStory && modifierLoop.reference is IModifyable modifyable)
+                Story.StoryManager.inst.CurrentSave.SaveInt(modifier.GetValue(0, modifierLoop.variables), modifyable.IntVariable);
         }
 
-        public static void getStorySaveBoolDEVONLY(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getStorySaveBoolDEVONLY(Modifier modifier, ModifierLoop modifierLoop)
         {
-            variables[modifier.GetValue(0)] = !CoreHelper.InStory ? modifier.GetBool(2, false, variables).ToString() : Story.StoryManager.inst.CurrentSave.LoadBool(modifier.GetValue(1, variables), modifier.GetBool(2, false, variables)).ToString();
+            modifierLoop.variables[modifier.GetValue(0)] = !CoreHelper.InStory ? modifier.GetBool(2, false, modifierLoop.variables).ToString() : Story.StoryManager.inst.CurrentSave.LoadBool(modifier.GetValue(1, modifierLoop.variables), modifier.GetBool(2, false, modifierLoop.variables)).ToString();
         }
 
-        public static void getStorySaveIntDEVONLY(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getStorySaveIntDEVONLY(Modifier modifier, ModifierLoop modifierLoop)
         {
-            variables[modifier.GetValue(0)] = !CoreHelper.InStory ? modifier.GetInt(2, 0, variables).ToString() : Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(1, variables), modifier.GetInt(2, 0, variables)).ToString();
+            modifierLoop.variables[modifier.GetValue(0)] = !CoreHelper.InStory ? modifier.GetInt(2, 0, modifierLoop.variables).ToString() : Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(1, modifierLoop.variables), modifier.GetInt(2, 0, modifierLoop.variables)).ToString();
         }
 
-        public static void getStorySaveFloatDEVONLY(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getStorySaveFloatDEVONLY(Modifier modifier, ModifierLoop modifierLoop)
         {
-            variables[modifier.GetValue(0)] = !CoreHelper.InStory ? modifier.GetFloat(2, 0f, variables).ToString() : Story.StoryManager.inst.CurrentSave.LoadFloat(modifier.GetValue(1, variables), modifier.GetFloat(2, 0f, variables)).ToString();
+            modifierLoop.variables[modifier.GetValue(0)] = !CoreHelper.InStory ? modifier.GetFloat(2, 0f, modifierLoop.variables).ToString() : Story.StoryManager.inst.CurrentSave.LoadFloat(modifier.GetValue(1, modifierLoop.variables), modifier.GetFloat(2, 0f, modifierLoop.variables)).ToString();
         }
 
-        public static void getStorySaveStringDEVONLY(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getStorySaveStringDEVONLY(Modifier modifier, ModifierLoop modifierLoop)
         {
-            variables[modifier.GetValue(0)] = !CoreHelper.InStory ? modifier.GetValue(2, variables) : Story.StoryManager.inst.CurrentSave.LoadString(modifier.GetValue(1, variables), modifier.GetValue(2, variables)).ToString();
+            modifierLoop.variables[modifier.GetValue(0)] = !CoreHelper.InStory ? modifier.GetValue(2, modifierLoop.variables) : Story.StoryManager.inst.CurrentSave.LoadString(modifier.GetValue(1, modifierLoop.variables), modifier.GetValue(2, modifierLoop.variables)).ToString();
         }
 
-        public static void exampleEnableDEVONLY(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void exampleEnableDEVONLY(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (Companion.Entity.Example.Current && Companion.Entity.Example.Current.model)
-                Companion.Entity.Example.Current.model.SetActive(modifier.GetBool(0, false, variables));
+                Companion.Entity.Example.Current.model.SetActive(modifier.GetBool(0, false, modifierLoop.variables));
         }
 
-        public static void exampleSayDEVONLY(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void exampleSayDEVONLY(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (Companion.Entity.Example.Current && Companion.Entity.Example.Current.chatBubble)
-                Companion.Entity.Example.Current.chatBubble.Say(modifier.GetValue(0, variables));
+                Companion.Entity.Example.Current.chatBubble.Say(modifier.GetValue(0, modifierLoop.variables));
         }
 
         #endregion
 
         #region Player
 
-        public static bool playerCollide(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool playerCollide(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return false;
 
             var runtimeObject = beatmapObject.runtimeObject;
@@ -12442,9 +12513,9 @@ namespace BetterLegacy.Core.Helpers
             return false;
         }
 
-        public static bool playerCollideIndex(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool playerCollideIndex(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return false;
 
             var runtimeObject = beatmapObject.runtimeObject;
@@ -12452,19 +12523,19 @@ namespace BetterLegacy.Core.Helpers
             {
                 var collider = runtimeObject.visualObject.collider;
 
-                if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out PAPlayer player) && player.RuntimePlayer && player.RuntimePlayer.CurrentCollider)
+                if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, modifierLoop.variables), out PAPlayer player) && player.RuntimePlayer && player.RuntimePlayer.CurrentCollider)
                     return player.RuntimePlayer.CurrentCollider.IsTouching(collider);
             }
             return false;
         }
 
-        public static bool playerCollideOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool playerCollideOther(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var prefabable = reference.AsPrefabable();
+            var prefabable = modifierLoop.reference.AsPrefabable();
             if (prefabable == null)
                 return false;
 
-            var tag = modifier.GetValue(0, variables);
+            var tag = modifier.GetValue(0, modifierLoop.variables);
 
             var cache = modifier.GetResultOrDefault(() => new GenericGroupCache<BeatmapObject>(tag, GameData.Current.FindObjectsWithTag(modifier, prefabable, tag)));
             if (cache.tag != tag)
@@ -12493,14 +12564,14 @@ namespace BetterLegacy.Core.Helpers
             return false;
         }
 
-        public static bool playerCollideIndexOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool playerCollideIndexOther(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var prefabable = reference.AsPrefabable();
+            var prefabable = modifierLoop.reference.AsPrefabable();
             if (prefabable == null)
                 return false;
 
-            var tag = modifier.GetValue(0, variables);
-            var index = modifier.GetInt(1, 0, variables);
+            var tag = modifier.GetValue(0, modifierLoop.variables);
+            var index = modifier.GetInt(1, 0, modifierLoop.variables);
 
             var cache = modifier.GetResultOrDefault(() => new GenericGroupCache<BeatmapObject>(tag, GameData.Current.FindObjectsWithTag(modifier, prefabable, tag)));
             if (cache.tag != tag)
@@ -12521,37 +12592,37 @@ namespace BetterLegacy.Core.Helpers
             return false;
         }
 
-        public static bool playerHealthEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool playerHealthEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var health = modifier.GetInt(0, 0, variables);
+            var health = modifier.GetInt(0, 0, modifierLoop.variables);
             return !PlayerManager.Players.IsEmpty() && PlayerManager.Players.Any(x => x.health == health);
         }
 
-        public static bool playerHealthLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool playerHealthLesserEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var health = modifier.GetInt(0, 0, variables);
+            var health = modifier.GetInt(0, 0, modifierLoop.variables);
             return !PlayerManager.Players.IsEmpty() && PlayerManager.Players.Any(x => x.health <= health);
         }
 
-        public static bool playerHealthGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool playerHealthGreaterEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var health = modifier.GetInt(0, 0, variables);
+            var health = modifier.GetInt(0, 0, modifierLoop.variables);
             return !PlayerManager.Players.IsEmpty() && PlayerManager.Players.Any(x => x.health >= health);
         }
 
-        public static bool playerHealthLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool playerHealthLesser(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var health = modifier.GetInt(0, 0, variables);
+            var health = modifier.GetInt(0, 0, modifierLoop.variables);
             return !PlayerManager.Players.IsEmpty() && PlayerManager.Players.Any(x => x.health < health);
         }
 
-        public static bool playerHealthGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool playerHealthGreater(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var health = modifier.GetInt(0, 0, variables);
+            var health = modifier.GetInt(0, 0, modifierLoop.variables);
             return !PlayerManager.Players.IsEmpty() && PlayerManager.Players.Any(x => x.health > health);
         }
 
-        public static bool playerMoving(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool playerMoving(Modifier modifier, ModifierLoop modifierLoop)
         {
             for (int i = 0; i < GameManager.inst.players.transform.childCount; i++)
             {
@@ -12573,9 +12644,9 @@ namespace BetterLegacy.Core.Helpers
             return false;
         }
 
-        public static bool playerBoosting(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool playerBoosting(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return false;
 
             var runtimeObject = beatmapObject.runtimeObject;
@@ -12590,43 +12661,43 @@ namespace BetterLegacy.Core.Helpers
             return false;
         }
 
-        public static bool playerAlive(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool playerAlive(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out PAPlayer player) && player.RuntimePlayer && player.RuntimePlayer.Alive;
+            return PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, modifierLoop.variables), out PAPlayer player) && player.RuntimePlayer && player.RuntimePlayer.Alive;
         }
 
-        public static bool playerDeathsEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool playerDeathsEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return RTBeatmap.Current.deaths.Count == modifier.GetInt(0, 0, variables);
+            return RTBeatmap.Current.deaths.Count == modifier.GetInt(0, 0, modifierLoop.variables);
         }
 
-        public static bool playerDeathsLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool playerDeathsLesserEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return RTBeatmap.Current.deaths.Count <= modifier.GetInt(0, 0, variables);
+            return RTBeatmap.Current.deaths.Count <= modifier.GetInt(0, 0, modifierLoop.variables);
         }
 
-        public static bool playerDeathsGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool playerDeathsGreaterEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return RTBeatmap.Current.deaths.Count >= modifier.GetInt(0, 0, variables);
+            return RTBeatmap.Current.deaths.Count >= modifier.GetInt(0, 0, modifierLoop.variables);
         }
 
-        public static bool playerDeathsLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool playerDeathsLesser(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return RTBeatmap.Current.deaths.Count < modifier.GetInt(0, 0, variables);
+            return RTBeatmap.Current.deaths.Count < modifier.GetInt(0, 0, modifierLoop.variables);
         }
 
-        public static bool playerDeathsGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool playerDeathsGreater(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return RTBeatmap.Current.deaths.Count > modifier.GetInt(0, 0, variables);
+            return RTBeatmap.Current.deaths.Count > modifier.GetInt(0, 0, modifierLoop.variables);
         }
 
-        public static bool playerDistanceGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool playerDistanceGreater(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not ITransformable transformable)
+            if (modifierLoop.reference is not ITransformable transformable)
                 return false;
 
             var pos = transformable.GetFullPosition();
-            float num = modifier.GetFloat(0, 0f, variables);
+            float num = modifier.GetFloat(0, 0f, modifierLoop.variables);
             for (int i = 0; i < GameManager.inst.players.transform.childCount; i++)
             {
                 if (GameManager.inst.players.transform.Find(string.Format("Player {0}", i + 1)))
@@ -12640,13 +12711,13 @@ namespace BetterLegacy.Core.Helpers
             return false;
         }
 
-        public static bool playerDistanceLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool playerDistanceLesser(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not ITransformable transformable)
+            if (modifierLoop.reference is not ITransformable transformable)
                 return false;
 
             var pos = transformable.GetFullPosition();
-            float num = modifier.GetFloat(0, 0f, variables);
+            float num = modifier.GetFloat(0, 0f, modifierLoop.variables);
             for (int i = 0; i < GameManager.inst.players.transform.childCount; i++)
             {
                 if (GameManager.inst.players.transform.Find(string.Format("Player {0}", i + 1)))
@@ -12660,73 +12731,73 @@ namespace BetterLegacy.Core.Helpers
             return false;
         }
 
-        public static bool playerCountEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool playerCountEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return PlayerManager.Players.Count == modifier.GetInt(0, 0, variables);
+            return PlayerManager.Players.Count == modifier.GetInt(0, 0, modifierLoop.variables);
         }
 
-        public static bool playerCountLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool playerCountLesserEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return PlayerManager.Players.Count <= modifier.GetInt(0, 0, variables);
+            return PlayerManager.Players.Count <= modifier.GetInt(0, 0, modifierLoop.variables);
         }
 
-        public static bool playerCountGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool playerCountGreaterEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return PlayerManager.Players.Count >= modifier.GetInt(0, 0, variables);
+            return PlayerManager.Players.Count >= modifier.GetInt(0, 0, modifierLoop.variables);
         }
 
-        public static bool playerCountLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool playerCountLesser(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return PlayerManager.Players.Count < modifier.GetInt(0, 0, variables);
+            return PlayerManager.Players.Count < modifier.GetInt(0, 0, modifierLoop.variables);
         }
 
-        public static bool playerCountGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool playerCountGreater(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return PlayerManager.Players.Count > modifier.GetInt(0, 0, variables);
+            return PlayerManager.Players.Count > modifier.GetInt(0, 0, modifierLoop.variables);
         }
 
-        public static bool onPlayerHit(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool onPlayerHit(Modifier modifier, ModifierLoop modifierLoop)
         {
             return RTBeatmap.Current.playerHit;
         }
 
-        public static bool onPlayerDeath(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool onPlayerDeath(Modifier modifier, ModifierLoop modifierLoop)
         {
             return RTBeatmap.Current.playerDied;
         }
 
-        public static bool playerBoostEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool playerBoostEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return RTBeatmap.Current.boosts.Count == modifier.GetInt(0, 0, variables);
+            return RTBeatmap.Current.boosts.Count == modifier.GetInt(0, 0, modifierLoop.variables);
         }
 
-        public static bool playerBoostLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool playerBoostLesserEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return RTBeatmap.Current.boosts.Count <= modifier.GetInt(0, 0, variables);
+            return RTBeatmap.Current.boosts.Count <= modifier.GetInt(0, 0, modifierLoop.variables);
         }
 
-        public static bool playerBoostGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool playerBoostGreaterEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return RTBeatmap.Current.boosts.Count >= modifier.GetInt(0, 0, variables);
+            return RTBeatmap.Current.boosts.Count >= modifier.GetInt(0, 0, modifierLoop.variables);
         }
 
-        public static bool playerBoostLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool playerBoostLesser(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return RTBeatmap.Current.boosts.Count < modifier.GetInt(0, 0, variables);
+            return RTBeatmap.Current.boosts.Count < modifier.GetInt(0, 0, modifierLoop.variables);
         }
 
-        public static bool playerBoostGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool playerBoostGreater(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return RTBeatmap.Current.boosts.Count > modifier.GetInt(0, 0, variables);
+            return RTBeatmap.Current.boosts.Count > modifier.GetInt(0, 0, modifierLoop.variables);
         }
 
         #endregion
 
         #region Collide
 
-        public static bool bulletCollide(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool bulletCollide(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return false;
 
             var runtimeObject = beatmapObject.runtimeObject;
@@ -12743,9 +12814,9 @@ namespace BetterLegacy.Core.Helpers
             return beatmapObject.detector && beatmapObject.detector.bulletOver;
         }
 
-        public static bool objectCollide(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool objectCollide(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return false;
 
             var runtimeObject = beatmapObject.runtimeObject;
@@ -12760,39 +12831,39 @@ namespace BetterLegacy.Core.Helpers
 
         #region Controls
 
-        public static bool keyPressDown(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool keyPressDown(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return Input.GetKeyDown((KeyCode)modifier.GetInt(0, 0, variables));
+            return Input.GetKeyDown((KeyCode)modifier.GetInt(0, 0, modifierLoop.variables));
         }
 
-        public static bool keyPress(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool keyPress(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return Input.GetKey((KeyCode)modifier.GetInt(0, 0, variables));
+            return Input.GetKey((KeyCode)modifier.GetInt(0, 0, modifierLoop.variables));
         }
 
-        public static bool keyPressUp(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool keyPressUp(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return Input.GetKeyUp((KeyCode)modifier.GetInt(0, 0, variables));
+            return Input.GetKeyUp((KeyCode)modifier.GetInt(0, 0, modifierLoop.variables));
         }
 
-        public static bool mouseButtonDown(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool mouseButtonDown(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return Input.GetMouseButtonDown(modifier.GetInt(0, 0, variables));
+            return Input.GetMouseButtonDown(modifier.GetInt(0, 0, modifierLoop.variables));
         }
 
-        public static bool mouseButton(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool mouseButton(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return Input.GetMouseButton(modifier.GetInt(0, 0, variables));
+            return Input.GetMouseButton(modifier.GetInt(0, 0, modifierLoop.variables));
         }
 
-        public static bool mouseButtonUp(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool mouseButtonUp(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return Input.GetMouseButtonUp(modifier.GetInt(0, 0, variables));
+            return Input.GetMouseButtonUp(modifier.GetInt(0, 0, modifierLoop.variables));
         }
 
-        public static bool mouseOver(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool mouseOver(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is BeatmapObject beatmapObject && beatmapObject.runtimeObject && beatmapObject.runtimeObject.visualObject && beatmapObject.runtimeObject.visualObject.gameObject)
+            if (modifierLoop.reference is BeatmapObject beatmapObject && beatmapObject.runtimeObject && beatmapObject.runtimeObject.visualObject && beatmapObject.runtimeObject.visualObject.gameObject)
             {
                 if (!beatmapObject.detector)
                 {
@@ -12808,13 +12879,13 @@ namespace BetterLegacy.Core.Helpers
             return false;
         }
 
-        public static bool mouseOverSignalModifier(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool mouseOverSignalModifier(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return false;
 
-            var delay = modifier.GetFloat(0, 0f, variables);
-            var list = GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(1, variables));
+            var delay = modifier.GetFloat(0, 0f, modifierLoop.variables);
+            var list = GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(1, modifierLoop.variables));
             if (beatmapObject.runtimeObject && beatmapObject.runtimeObject.visualObject && beatmapObject.runtimeObject.visualObject.gameObject)
             {
                 if (!beatmapObject.detector)
@@ -12841,12 +12912,12 @@ namespace BetterLegacy.Core.Helpers
             return false;
         }
 
-        public static bool controlPressDown(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool controlPressDown(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var type = modifier.GetInt(0, 0, variables);
+            var type = modifier.GetInt(0, 0, modifierLoop.variables);
 
-            var transformable = reference.AsTransformable();
-            var player = reference is PAPlayer p ? p : PlayerManager.GetClosestPlayer(transformable?.GetFullPosition() ?? Vector3.zero);
+            var transformable = modifierLoop.reference.AsTransformable();
+            var player = modifierLoop.reference is PAPlayer p ? p : PlayerManager.GetClosestPlayer(transformable?.GetFullPosition() ?? Vector3.zero);
             var device = player?.device ?? InControl.InputManager.ActiveDevice;
 
             if (device == null)
@@ -12855,12 +12926,12 @@ namespace BetterLegacy.Core.Helpers
             return Enum.TryParse(((PlayerInputControlType)type).ToString(), out InControl.InputControlType inputControlType) && device.GetControl(inputControlType).WasPressed;
         }
 
-        public static bool controlPress(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool controlPress(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var type = modifier.GetInt(0, 0, variables);
+            var type = modifier.GetInt(0, 0, modifierLoop.variables);
 
-            var transformable = reference.AsTransformable();
-            var player = reference is PAPlayer p ? p : PlayerManager.GetClosestPlayer(transformable?.GetFullPosition() ?? Vector3.zero);
+            var transformable = modifierLoop.reference.AsTransformable();
+            var player = modifierLoop.reference is PAPlayer p ? p : PlayerManager.GetClosestPlayer(transformable?.GetFullPosition() ?? Vector3.zero);
             var device = player?.device ?? InControl.InputManager.ActiveDevice;
 
             if (device == null)
@@ -12869,12 +12940,12 @@ namespace BetterLegacy.Core.Helpers
             return Enum.TryParse(((PlayerInputControlType)type).ToString(), out InControl.InputControlType inputControlType) && device.GetControl(inputControlType).IsPressed;
         }
 
-        public static bool controlPressUp(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool controlPressUp(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var type = modifier.GetInt(0, 0, variables);
+            var type = modifier.GetInt(0, 0, modifierLoop.variables);
 
-            var transformable = reference.AsTransformable();
-            var player = reference is PAPlayer p ? p : PlayerManager.GetClosestPlayer(transformable?.GetFullPosition() ?? Vector3.zero);
+            var transformable = modifierLoop.reference.AsTransformable();
+            var player = modifierLoop.reference is PAPlayer p ? p : PlayerManager.GetClosestPlayer(transformable?.GetFullPosition() ?? Vector3.zero);
             var device = player?.device ?? InControl.InputManager.ActiveDevice;
 
             if (device == null)
@@ -12887,217 +12958,217 @@ namespace BetterLegacy.Core.Helpers
 
         #region JSON
 
-        public static bool loadEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool loadEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (RTFile.TryReadFromFile(ModifiersHelper.GetSaveFile(modifier.GetValue(1, variables)), out string json))
+            if (RTFile.TryReadFromFile(ModifiersHelper.GetSaveFile(modifier.GetValue(1, modifierLoop.variables)), out string json))
             {
-                var type = modifier.GetInt(4, 0, variables);
+                var type = modifier.GetInt(4, 0, modifierLoop.variables);
 
                 var jn = JSON.Parse(json);
-                var jsonName1 = modifier.GetValue(2, variables);
-                var jsonName2 = modifier.GetValue(3, variables);
+                var jsonName1 = modifier.GetValue(2, modifierLoop.variables);
+                var jsonName2 = modifier.GetValue(3, modifierLoop.variables);
 
                 return
                     jn[jsonName1][jsonName2]["float"] != null &&
                         (type == 0 ?
-                            float.TryParse(jn[jsonName1][jsonName2]["float"], out float eq) && eq == modifier.GetFloat(0, 0f, variables) :
-                            jn[jsonName1][jsonName2]["string"] == modifier.GetValue(0, variables));
+                            float.TryParse(jn[jsonName1][jsonName2]["float"], out float eq) && eq == modifier.GetFloat(0, 0f, modifierLoop.variables) :
+                            jn[jsonName1][jsonName2]["string"] == modifier.GetValue(0, modifierLoop.variables));
             }
 
             return false;
         }
 
-        public static bool loadLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool loadLesserEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (RTFile.TryReadFromFile(ModifiersHelper.GetSaveFile(modifier.GetValue(1, variables)), out string json))
+            if (RTFile.TryReadFromFile(ModifiersHelper.GetSaveFile(modifier.GetValue(1, modifierLoop.variables)), out string json))
             {
                 var jn = JSON.Parse(json);
 
-                var fjn = jn[modifier.GetValue(2, variables)][modifier.GetValue(3, variables)]["float"];
+                var fjn = jn[modifier.GetValue(2, modifierLoop.variables)][modifier.GetValue(3, modifierLoop.variables)]["float"];
 
-                return !string.IsNullOrEmpty(fjn) && fjn.AsFloat <= modifier.GetFloat(0, 0f, variables);
+                return !string.IsNullOrEmpty(fjn) && fjn.AsFloat <= modifier.GetFloat(0, 0f, modifierLoop.variables);
             }
 
             return false;
         }
 
-        public static bool loadGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool loadGreaterEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (RTFile.TryReadFromFile(ModifiersHelper.GetSaveFile(modifier.GetValue(1, variables)), out string json))
+            if (RTFile.TryReadFromFile(ModifiersHelper.GetSaveFile(modifier.GetValue(1, modifierLoop.variables)), out string json))
             {
                 var jn = JSON.Parse(json);
 
-                var fjn = jn[modifier.GetValue(2, variables)][modifier.GetValue(3, variables)]["float"];
+                var fjn = jn[modifier.GetValue(2, modifierLoop.variables)][modifier.GetValue(3, modifierLoop.variables)]["float"];
 
-                return !string.IsNullOrEmpty(fjn) && fjn.AsFloat >= modifier.GetFloat(0, 0f, variables);
+                return !string.IsNullOrEmpty(fjn) && fjn.AsFloat >= modifier.GetFloat(0, 0f, modifierLoop.variables);
             }
 
             return false;
         }
 
-        public static bool loadLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool loadLesser(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (RTFile.TryReadFromFile(ModifiersHelper.GetSaveFile(modifier.GetValue(1, variables)), out string json))
+            if (RTFile.TryReadFromFile(ModifiersHelper.GetSaveFile(modifier.GetValue(1, modifierLoop.variables)), out string json))
             {
                 var jn = JSON.Parse(json);
 
-                var fjn = jn[modifier.GetValue(2, variables)][modifier.GetValue(3, variables)]["float"];
+                var fjn = jn[modifier.GetValue(2, modifierLoop.variables)][modifier.GetValue(3, modifierLoop.variables)]["float"];
 
-                return !string.IsNullOrEmpty(fjn) && fjn.AsFloat < modifier.GetFloat(0, 0f, variables);
+                return !string.IsNullOrEmpty(fjn) && fjn.AsFloat < modifier.GetFloat(0, 0f, modifierLoop.variables);
             }
 
             return false;
         }
 
-        public static bool loadGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool loadGreater(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (RTFile.TryReadFromFile(ModifiersHelper.GetSaveFile(modifier.GetValue(1, variables)), out string json))
+            if (RTFile.TryReadFromFile(ModifiersHelper.GetSaveFile(modifier.GetValue(1, modifierLoop.variables)), out string json))
             {
                 var jn = JSON.Parse(json);
 
-                var fjn = jn[modifier.GetValue(2, variables)][modifier.GetValue(3, variables)]["float"];
+                var fjn = jn[modifier.GetValue(2, modifierLoop.variables)][modifier.GetValue(3, modifierLoop.variables)]["float"];
 
-                return !string.IsNullOrEmpty(fjn) && fjn.AsFloat > modifier.GetFloat(0, 0f, variables);
+                return !string.IsNullOrEmpty(fjn) && fjn.AsFloat > modifier.GetFloat(0, 0f, modifierLoop.variables);
             }
 
             return false;
         }
 
-        public static bool loadExists(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool loadExists(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return RTFile.TryReadFromFile(ModifiersHelper.GetSaveFile(modifier.GetValue(1, variables)), out string json) && !string.IsNullOrEmpty(JSON.Parse(json)[modifier.GetValue(2, variables)][modifier.GetValue(3, variables)]);
+            return RTFile.TryReadFromFile(ModifiersHelper.GetSaveFile(modifier.GetValue(1, modifierLoop.variables)), out string json) && !string.IsNullOrEmpty(JSON.Parse(json)[modifier.GetValue(2, modifierLoop.variables)][modifier.GetValue(3, modifierLoop.variables)]);
         }
 
         #endregion
 
         #region Variable
 
-        public static bool localVariableEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool localVariableEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return variables.TryGetValue(modifier.GetValue(0), out string result) && result == modifier.GetValue(1, variables);
+            return modifierLoop.variables.TryGetValue(modifier.GetValue(0), out string result) && result == modifier.GetValue(1, modifierLoop.variables);
         }
 
-        public static bool localVariableLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool localVariableLesserEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return variables.TryGetValue(modifier.GetValue(0), out string result) && (float.TryParse(result, out float num) ? num : Parser.TryParse(result, 0)) <= modifier.GetFloat(1, 0f, variables);
+            return modifierLoop.variables.TryGetValue(modifier.GetValue(0), out string result) && (float.TryParse(result, out float num) ? num : Parser.TryParse(result, 0)) <= modifier.GetFloat(1, 0f, modifierLoop.variables);
         }
 
-        public static bool localVariableGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool localVariableGreaterEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return variables.TryGetValue(modifier.GetValue(0), out string result) && (float.TryParse(result, out float num) ? num : Parser.TryParse(result, 0)) >= modifier.GetFloat(1, 0f, variables);
+            return modifierLoop.variables.TryGetValue(modifier.GetValue(0), out string result) && (float.TryParse(result, out float num) ? num : Parser.TryParse(result, 0)) >= modifier.GetFloat(1, 0f, modifierLoop.variables);
         }
 
-        public static bool localVariableLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool localVariableLesser(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return variables.TryGetValue(modifier.GetValue(0), out string result) && (float.TryParse(result, out float num) ? num : Parser.TryParse(result, 0)) < modifier.GetFloat(1, 0f, variables);
+            return modifierLoop.variables.TryGetValue(modifier.GetValue(0), out string result) && (float.TryParse(result, out float num) ? num : Parser.TryParse(result, 0)) < modifier.GetFloat(1, 0f, modifierLoop.variables);
         }
 
-        public static bool localVariableGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool localVariableGreater(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return variables.TryGetValue(modifier.GetValue(0), out string result) && (float.TryParse(result, out float num) ? num : Parser.TryParse(result, 0)) > modifier.GetFloat(1, 0f, variables);
+            return modifierLoop.variables.TryGetValue(modifier.GetValue(0), out string result) && (float.TryParse(result, out float num) ? num : Parser.TryParse(result, 0)) > modifier.GetFloat(1, 0f, modifierLoop.variables);
         }
 
-        public static bool localVariableContains(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool localVariableContains(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return variables.TryGetValue(modifier.GetValue(0), out string result) && result.Contains(modifier.GetValue(1, variables));
+            return modifierLoop.variables.TryGetValue(modifier.GetValue(0), out string result) && result.Contains(modifier.GetValue(1, modifierLoop.variables));
         }
 
-        public static bool localVariableStartsWith(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool localVariableStartsWith(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return variables.TryGetValue(modifier.GetValue(0), out string result) && result.StartsWith(modifier.GetValue(1, variables));
+            return modifierLoop.variables.TryGetValue(modifier.GetValue(0), out string result) && result.StartsWith(modifier.GetValue(1, modifierLoop.variables));
         }
 
-        public static bool localVariableEndsWith(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool localVariableEndsWith(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return variables.TryGetValue(modifier.GetValue(0), out string result) && result.EndsWith(modifier.GetValue(1, variables));
+            return modifierLoop.variables.TryGetValue(modifier.GetValue(0), out string result) && result.EndsWith(modifier.GetValue(1, modifierLoop.variables));
         }
 
-        public static bool localVariableExists(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool localVariableExists(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return variables.ContainsKey(modifier.GetValue(0));
+            return modifierLoop.variables.ContainsKey(modifier.GetValue(0));
         }
 
-        public static bool variableEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool variableEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return reference is IModifyable modifyable && modifyable.IntVariable == modifier.GetInt(0, 0, variables);
+            return modifierLoop.reference is IModifyable modifyable && modifyable.IntVariable == modifier.GetInt(0, 0, modifierLoop.variables);
         }
 
-        public static bool variableLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool variableLesserEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return reference is IModifyable modifyable && modifyable.IntVariable <= modifier.GetInt(0, 0, variables);
+            return modifierLoop.reference is IModifyable modifyable && modifyable.IntVariable <= modifier.GetInt(0, 0, modifierLoop.variables);
         }
 
-        public static bool variableGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool variableGreaterEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return reference is IModifyable modifyable && modifyable.IntVariable >= modifier.GetInt(0, 0, variables);
+            return modifierLoop.reference is IModifyable modifyable && modifyable.IntVariable >= modifier.GetInt(0, 0, modifierLoop.variables);
         }
 
-        public static bool variableLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool variableLesser(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return reference is IModifyable modifyable && modifyable.IntVariable < modifier.GetInt(0, 0, variables);
+            return modifierLoop.reference is IModifyable modifyable && modifyable.IntVariable < modifier.GetInt(0, 0, modifierLoop.variables);
         }
 
-        public static bool variableGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool variableGreater(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return reference is IModifyable modifyable && modifyable.IntVariable > modifier.GetInt(0, 0, variables);
+            return modifierLoop.reference is IModifyable modifyable && modifyable.IntVariable > modifier.GetInt(0, 0, modifierLoop.variables);
         }
 
-        public static bool variableOtherEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool variableOtherEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IPrefabable prefabable)
+            if (modifierLoop.reference is not IPrefabable prefabable)
                 return false;
 
-            var beatmapObjects = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, variables));
+            var beatmapObjects = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, modifierLoop.variables));
 
-            int num = modifier.GetInt(0, 0, variables);
+            int num = modifier.GetInt(0, 0, modifierLoop.variables);
 
             return !beatmapObjects.IsEmpty() && beatmapObjects.Any(x => x.integerVariable == num);
         }
 
-        public static bool variableOtherLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool variableOtherLesserEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IPrefabable prefabable)
+            if (modifierLoop.reference is not IPrefabable prefabable)
                 return false;
 
-            var beatmapObjects = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, variables));
+            var beatmapObjects = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, modifierLoop.variables));
 
-            int num = modifier.GetInt(0, 0, variables);
+            int num = modifier.GetInt(0, 0, modifierLoop.variables);
 
             return !beatmapObjects.IsEmpty() && beatmapObjects.Any(x => x.integerVariable <= num);
         }
 
-        public static bool variableOtherGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool variableOtherGreaterEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IPrefabable prefabable)
+            if (modifierLoop.reference is not IPrefabable prefabable)
                 return false;
 
-            var beatmapObjects = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, variables));
+            var beatmapObjects = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, modifierLoop.variables));
 
-            int num = modifier.GetInt(0, 0, variables);
+            int num = modifier.GetInt(0, 0, modifierLoop.variables);
 
             return !beatmapObjects.IsEmpty() && beatmapObjects.Any(x => x.integerVariable >= num);
         }
 
-        public static bool variableOtherLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool variableOtherLesser(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IPrefabable prefabable)
+            if (modifierLoop.reference is not IPrefabable prefabable)
                 return false;
 
-            var beatmapObjects = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, variables));
+            var beatmapObjects = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, modifierLoop.variables));
 
-            int num = modifier.GetInt(0, 0, variables);
+            int num = modifier.GetInt(0, 0, modifierLoop.variables);
 
             return !beatmapObjects.IsEmpty() && beatmapObjects.Any(x => x.integerVariable < num);
         }
 
-        public static bool variableOtherGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool variableOtherGreater(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IPrefabable prefabable)
+            if (modifierLoop.reference is not IPrefabable prefabable)
                 return false;
 
-            var beatmapObjects = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, variables));
+            var beatmapObjects = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, modifierLoop.variables));
 
-            int num = modifier.GetInt(0, 0, variables);
+            int num = modifier.GetInt(0, 0, modifierLoop.variables);
 
             return !beatmapObjects.IsEmpty() && beatmapObjects.Any(x => x.integerVariable > num);
         }
@@ -13106,48 +13177,48 @@ namespace BetterLegacy.Core.Helpers
 
         #region Audio
 
-        public static bool pitchEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool pitchEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return AudioManager.inst.pitch == modifier.GetFloat(0, 0f, variables);
+            return AudioManager.inst.pitch == modifier.GetFloat(0, 0f, modifierLoop.variables);
         }
 
-        public static bool pitchLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool pitchLesserEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return AudioManager.inst.pitch <= modifier.GetFloat(0, 0f, variables);
+            return AudioManager.inst.pitch <= modifier.GetFloat(0, 0f, modifierLoop.variables);
         }
 
-        public static bool pitchGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool pitchGreaterEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return AudioManager.inst.pitch >= modifier.GetFloat(0, 0f, variables);
+            return AudioManager.inst.pitch >= modifier.GetFloat(0, 0f, modifierLoop.variables);
         }
 
-        public static bool pitchLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool pitchLesser(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return AudioManager.inst.pitch < modifier.GetFloat(0, 0f, variables);
+            return AudioManager.inst.pitch < modifier.GetFloat(0, 0f, modifierLoop.variables);
         }
 
-        public static bool pitchGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool pitchGreater(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return AudioManager.inst.pitch > modifier.GetFloat(0, 0f, variables);
+            return AudioManager.inst.pitch > modifier.GetFloat(0, 0f, modifierLoop.variables);
         }
 
-        public static bool musicTimeGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool musicTimeGreater(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return AudioManager.inst.CurrentAudioSource.time - (modifier.GetBool(1, false, variables) && reference is ILifetime lifetime ? lifetime.StartTime : 0f) > modifier.GetFloat(0, 0f, variables);
+            return AudioManager.inst.CurrentAudioSource.time - (modifier.GetBool(1, false, modifierLoop.variables) && modifierLoop.reference is ILifetime lifetime ? lifetime.StartTime : 0f) > modifier.GetFloat(0, 0f, modifierLoop.variables);
         }
 
-        public static bool musicTimeLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool musicTimeLesser(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return AudioManager.inst.CurrentAudioSource.time - (modifier.GetBool(1, false, variables) && reference is ILifetime lifetime ? lifetime.StartTime : 0f) < modifier.GetFloat(0, 0f, variables);
+            return AudioManager.inst.CurrentAudioSource.time - (modifier.GetBool(1, false, modifierLoop.variables) && modifierLoop.reference is ILifetime lifetime ? lifetime.StartTime : 0f) < modifier.GetFloat(0, 0f, modifierLoop.variables);
         }
 
-        public static bool musicTimeInRange(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool musicTimeInRange(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var time = reference.GetParentRuntime().FixedTime;
-            return modifier.values.Count > 2 && time >= modifier.GetFloat(1, 0f, variables) - 0.01f && time <= modifier.GetFloat(2, 0f, variables) + 0.1f;
+            var time = modifierLoop.reference.GetParentRuntime().FixedTime;
+            return modifier.values.Count > 2 && time >= modifier.GetFloat(1, 0f, modifierLoop.variables) - 0.01f && time <= modifier.GetFloat(2, 0f, modifierLoop.variables) + 0.1f;
         }
 
-        public static bool musicPlaying(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool musicPlaying(Modifier modifier, ModifierLoop modifierLoop)
         {
             return AudioManager.inst.CurrentAudioSource.isPlaying;
         }
@@ -13156,27 +13227,27 @@ namespace BetterLegacy.Core.Helpers
 
         #region Game State
 
-        public static bool inZenMode(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool inZenMode(Modifier modifier, ModifierLoop modifierLoop)
         {
             return RTBeatmap.Current.Invincible;
         }
 
-        public static bool inNormal(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool inNormal(Modifier modifier, ModifierLoop modifierLoop)
         {
             return RTBeatmap.Current.IsNormal;
         }
 
-        public static bool in1Life(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool in1Life(Modifier modifier, ModifierLoop modifierLoop)
         {
             return RTBeatmap.Current.Is1Life;
         }
 
-        public static bool inNoHit(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool inNoHit(Modifier modifier, ModifierLoop modifierLoop)
         {
             return RTBeatmap.Current.IsNoHit;
         }
 
-        public static bool inPractice(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool inPractice(Modifier modifier, ModifierLoop modifierLoop)
         {
             return RTBeatmap.Current.IsPractice;
         }
@@ -13185,40 +13256,40 @@ namespace BetterLegacy.Core.Helpers
 
         #region Random
 
-        public static bool randomEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool randomEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (!modifier.HasResult())
             {
-                if (reference is PAObjectBase obj)
-                    modifier.Result = RandomHelper.FromIDRange(RandomHelper.CurrentSeed, obj.id, modifier.GetInt(1, 0, variables), modifier.GetInt(2, 0, variables)) == modifier.GetInt(0, 0, variables);
+                if (modifierLoop.reference is PAObjectBase obj)
+                    modifier.Result = RandomHelper.FromIDRange(RandomHelper.CurrentSeed, obj.id, modifier.GetInt(1, 0, modifierLoop.variables), modifier.GetInt(2, 0, modifierLoop.variables)) == modifier.GetInt(0, 0, modifierLoop.variables);
                 else
-                    modifier.Result = UnityEngine.Random.Range(modifier.GetInt(1, 0, variables), modifier.GetInt(2, 0, variables)) == modifier.GetInt(0, 0, variables);
+                    modifier.Result = UnityEngine.Random.Range(modifier.GetInt(1, 0, modifierLoop.variables), modifier.GetInt(2, 0, modifierLoop.variables)) == modifier.GetInt(0, 0, modifierLoop.variables);
             }
 
             return modifier.HasResult() && modifier.GetResult<bool>();
         }
 
-        public static bool randomLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool randomLesser(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (!modifier.HasResult())
             {
-                if (reference is PAObjectBase obj)
-                    modifier.Result = RandomHelper.FromIDRange(RandomHelper.CurrentSeed, obj.id, modifier.GetInt(1, 0, variables), modifier.GetInt(2, 0, variables)) < modifier.GetInt(0, 0, variables);
+                if (modifierLoop.reference is PAObjectBase obj)
+                    modifier.Result = RandomHelper.FromIDRange(RandomHelper.CurrentSeed, obj.id, modifier.GetInt(1, 0, modifierLoop.variables), modifier.GetInt(2, 0, modifierLoop.variables)) < modifier.GetInt(0, 0, modifierLoop.variables);
                 else
-                    modifier.Result = UnityEngine.Random.Range(modifier.GetInt(1, 0, variables), modifier.GetInt(2, 0, variables)) < modifier.GetInt(0, 0, variables);
+                    modifier.Result = UnityEngine.Random.Range(modifier.GetInt(1, 0, modifierLoop.variables), modifier.GetInt(2, 0, modifierLoop.variables)) < modifier.GetInt(0, 0, modifierLoop.variables);
             }
 
             return modifier.HasResult() && modifier.GetResult<bool>();
         }
 
-        public static bool randomGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool randomGreater(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (!modifier.HasResult())
             {
-                if (reference is PAObjectBase obj)
-                    modifier.Result = RandomHelper.FromIDRange(RandomHelper.CurrentSeed, obj.id, modifier.GetInt(1, 0, variables), modifier.GetInt(2, 0, variables)) > modifier.GetInt(0, 0, variables);
+                if (modifierLoop.reference is PAObjectBase obj)
+                    modifier.Result = RandomHelper.FromIDRange(RandomHelper.CurrentSeed, obj.id, modifier.GetInt(1, 0, modifierLoop.variables), modifier.GetInt(2, 0, modifierLoop.variables)) > modifier.GetInt(0, 0, modifierLoop.variables);
                 else
-                    modifier.Result = UnityEngine.Random.Range(modifier.GetInt(1, 0, variables), modifier.GetInt(2, 0, variables)) > modifier.GetInt(0, 0, variables);
+                    modifier.Result = UnityEngine.Random.Range(modifier.GetInt(1, 0, modifierLoop.variables), modifier.GetInt(2, 0, modifierLoop.variables)) > modifier.GetInt(0, 0, modifierLoop.variables);
             }
 
             return modifier.HasResult() && modifier.GetResult<bool>();
@@ -13228,89 +13299,89 @@ namespace BetterLegacy.Core.Helpers
 
         #region Math
 
-        public static bool mathEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool mathEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IEvaluatable evaluatable)
+            if (modifierLoop.reference is not IEvaluatable evaluatable)
                 return false;
 
             var numberVariables = evaluatable.GetObjectVariables();
-            ModifiersHelper.SetVariables(variables, numberVariables);
+            ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
             var functions = evaluatable.GetObjectFunctions();
 
-            return RTMath.Parse(modifier.GetValue(0, variables), numberVariables, functions) == RTMath.Parse(modifier.GetValue(1, variables), numberVariables, functions);
+            return RTMath.Parse(modifier.GetValue(0, modifierLoop.variables), numberVariables, functions) == RTMath.Parse(modifier.GetValue(1, modifierLoop.variables), numberVariables, functions);
         }
 
-        public static bool mathLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool mathLesserEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IEvaluatable evaluatable)
+            if (modifierLoop.reference is not IEvaluatable evaluatable)
                 return false;
 
             var numberVariables = evaluatable.GetObjectVariables();
-            ModifiersHelper.SetVariables(variables, numberVariables);
+            ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
             var functions = evaluatable.GetObjectFunctions();
 
-            return RTMath.Parse(modifier.GetValue(0, variables), numberVariables, functions) <= RTMath.Parse(modifier.GetValue(1, variables), numberVariables, functions);
+            return RTMath.Parse(modifier.GetValue(0, modifierLoop.variables), numberVariables, functions) <= RTMath.Parse(modifier.GetValue(1, modifierLoop.variables), numberVariables, functions);
         }
 
-        public static bool mathGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool mathGreaterEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IEvaluatable evaluatable)
+            if (modifierLoop.reference is not IEvaluatable evaluatable)
                 return false;
 
             var numberVariables = evaluatable.GetObjectVariables();
-            ModifiersHelper.SetVariables(variables, numberVariables);
+            ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
             var functions = evaluatable.GetObjectFunctions();
 
-            return RTMath.Parse(modifier.GetValue(0, variables), numberVariables, functions) >= RTMath.Parse(modifier.GetValue(1, variables), numberVariables, functions);
+            return RTMath.Parse(modifier.GetValue(0, modifierLoop.variables), numberVariables, functions) >= RTMath.Parse(modifier.GetValue(1, modifierLoop.variables), numberVariables, functions);
         }
 
-        public static bool mathLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool mathLesser(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IEvaluatable evaluatable)
+            if (modifierLoop.reference is not IEvaluatable evaluatable)
                 return false;
 
             var numberVariables = evaluatable.GetObjectVariables();
-            ModifiersHelper.SetVariables(variables, numberVariables);
+            ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
             var functions = evaluatable.GetObjectFunctions();
 
-            return RTMath.Parse(modifier.GetValue(0, variables), numberVariables, functions) < RTMath.Parse(modifier.GetValue(1, variables), numberVariables, functions);
+            return RTMath.Parse(modifier.GetValue(0, modifierLoop.variables), numberVariables, functions) < RTMath.Parse(modifier.GetValue(1, modifierLoop.variables), numberVariables, functions);
         }
 
-        public static bool mathGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool mathGreater(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IEvaluatable evaluatable)
+            if (modifierLoop.reference is not IEvaluatable evaluatable)
                 return false;
 
             var numberVariables = evaluatable.GetObjectVariables();
-            ModifiersHelper.SetVariables(variables, numberVariables);
+            ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
             var functions = evaluatable.GetObjectFunctions();
 
-            return RTMath.Parse(modifier.GetValue(0, variables), numberVariables, functions) > RTMath.Parse(modifier.GetValue(1, variables), numberVariables, functions);
+            return RTMath.Parse(modifier.GetValue(0, modifierLoop.variables), numberVariables, functions) > RTMath.Parse(modifier.GetValue(1, modifierLoop.variables), numberVariables, functions);
         }
 
         #endregion
 
         #region Animation
 
-        public static bool axisEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool axisEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var prefabable = reference.AsPrefabable();
+            var prefabable = modifierLoop.reference.AsPrefabable();
             if (prefabable == null)
                 return false;
 
-            var tag = modifier.GetValue(0, variables);
+            var tag = modifier.GetValue(0, modifierLoop.variables);
 
-            int fromType = modifier.GetInt(1, 0, variables);
-            int fromAxis = modifier.GetInt(2, 0, variables);
+            int fromType = modifier.GetInt(1, 0, modifierLoop.variables);
+            int fromAxis = modifier.GetInt(2, 0, modifierLoop.variables);
 
-            float delay = modifier.GetFloat(3, 0f, variables);
-            float multiply = modifier.GetFloat(4, 0f, variables);
-            float offset = modifier.GetFloat(5, 0f, variables);
-            float min = modifier.GetFloat(6, -9999f, variables);
-            float max = modifier.GetFloat(7, 9999f, variables);
-            float equals = modifier.GetFloat(8, 0f, variables);
-            bool useVisual = modifier.GetBool(9, false, variables);
-            float loop = modifier.GetFloat(10, 9999f, variables);
+            float delay = modifier.GetFloat(3, 0f, modifierLoop.variables);
+            float multiply = modifier.GetFloat(4, 0f, modifierLoop.variables);
+            float offset = modifier.GetFloat(5, 0f, modifierLoop.variables);
+            float min = modifier.GetFloat(6, -9999f, modifierLoop.variables);
+            float max = modifier.GetFloat(7, 9999f, modifierLoop.variables);
+            float equals = modifier.GetFloat(8, 0f, modifierLoop.variables);
+            bool useVisual = modifier.GetBool(9, false, modifierLoop.variables);
+            float loop = modifier.GetFloat(10, 9999f, modifierLoop.variables);
 
             var cache = modifier.GetResultOrDefault(() => GroupBeatmapObjectCache.Get(modifier, prefabable, tag));
             if (cache.tag != tag)
@@ -13329,25 +13400,25 @@ namespace BetterLegacy.Core.Helpers
             return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(beatmapObject, fromType, fromAxis, min, max, offset, multiply, delay, loop, useVisual) == equals;
         }
 
-        public static bool axisLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool axisLesserEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var prefabable = reference.AsPrefabable();
+            var prefabable = modifierLoop.reference.AsPrefabable();
             if (prefabable == null)
                 return false;
 
-            var tag = modifier.GetValue(0, variables);
+            var tag = modifier.GetValue(0, modifierLoop.variables);
 
-            int fromType = modifier.GetInt(1, 0, variables);
-            int fromAxis = modifier.GetInt(2, 0, variables);
+            int fromType = modifier.GetInt(1, 0, modifierLoop.variables);
+            int fromAxis = modifier.GetInt(2, 0, modifierLoop.variables);
 
-            float delay = modifier.GetFloat(3, 0f, variables);
-            float multiply = modifier.GetFloat(4, 0f, variables);
-            float offset = modifier.GetFloat(5, 0f, variables);
-            float min = modifier.GetFloat(6, -9999f, variables);
-            float max = modifier.GetFloat(7, 9999f, variables);
-            float equals = modifier.GetFloat(8, 0f, variables);
-            bool useVisual = modifier.GetBool(9, false, variables);
-            float loop = modifier.GetFloat(10, 9999f, variables);
+            float delay = modifier.GetFloat(3, 0f, modifierLoop.variables);
+            float multiply = modifier.GetFloat(4, 0f, modifierLoop.variables);
+            float offset = modifier.GetFloat(5, 0f, modifierLoop.variables);
+            float min = modifier.GetFloat(6, -9999f, modifierLoop.variables);
+            float max = modifier.GetFloat(7, 9999f, modifierLoop.variables);
+            float equals = modifier.GetFloat(8, 0f, modifierLoop.variables);
+            bool useVisual = modifier.GetBool(9, false, modifierLoop.variables);
+            float loop = modifier.GetFloat(10, 9999f, modifierLoop.variables);
 
             var cache = modifier.GetResultOrDefault(() => GroupBeatmapObjectCache.Get(modifier, prefabable, tag));
             if (cache.tag != tag)
@@ -13366,25 +13437,25 @@ namespace BetterLegacy.Core.Helpers
             return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(beatmapObject, fromType, fromAxis, min, max, offset, multiply, delay, loop, useVisual) <= equals;
         }
 
-        public static bool axisGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool axisGreaterEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var prefabable = reference.AsPrefabable();
+            var prefabable = modifierLoop.reference.AsPrefabable();
             if (prefabable == null)
                 return false;
 
-            var tag = modifier.GetValue(0, variables);
+            var tag = modifier.GetValue(0, modifierLoop.variables);
 
-            int fromType = modifier.GetInt(1, 0, variables);
-            int fromAxis = modifier.GetInt(2, 0, variables);
+            int fromType = modifier.GetInt(1, 0, modifierLoop.variables);
+            int fromAxis = modifier.GetInt(2, 0, modifierLoop.variables);
 
-            float delay = modifier.GetFloat(3, 0f, variables);
-            float multiply = modifier.GetFloat(4, 0f, variables);
-            float offset = modifier.GetFloat(5, 0f, variables);
-            float min = modifier.GetFloat(6, -9999f, variables);
-            float max = modifier.GetFloat(7, 9999f, variables);
-            float equals = modifier.GetFloat(8, 0f, variables);
-            bool useVisual = modifier.GetBool(9, false, variables);
-            float loop = modifier.GetFloat(10, 9999f, variables);
+            float delay = modifier.GetFloat(3, 0f, modifierLoop.variables);
+            float multiply = modifier.GetFloat(4, 0f, modifierLoop.variables);
+            float offset = modifier.GetFloat(5, 0f, modifierLoop.variables);
+            float min = modifier.GetFloat(6, -9999f, modifierLoop.variables);
+            float max = modifier.GetFloat(7, 9999f, modifierLoop.variables);
+            float equals = modifier.GetFloat(8, 0f, modifierLoop.variables);
+            bool useVisual = modifier.GetBool(9, false, modifierLoop.variables);
+            float loop = modifier.GetFloat(10, 9999f, modifierLoop.variables);
 
             var cache = modifier.GetResultOrDefault(() => GroupBeatmapObjectCache.Get(modifier, prefabable, tag));
             if (cache.tag != tag)
@@ -13403,25 +13474,25 @@ namespace BetterLegacy.Core.Helpers
             return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(beatmapObject, fromType, fromAxis, min, max, offset, multiply, delay, loop, useVisual) >= equals;
         }
 
-        public static bool axisLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool axisLesser(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var prefabable = reference.AsPrefabable();
+            var prefabable = modifierLoop.reference.AsPrefabable();
             if (prefabable == null)
                 return false;
 
-            var tag = modifier.GetValue(0, variables);
+            var tag = modifier.GetValue(0, modifierLoop.variables);
 
-            int fromType = modifier.GetInt(1, 0, variables);
-            int fromAxis = modifier.GetInt(2, 0, variables);
+            int fromType = modifier.GetInt(1, 0, modifierLoop.variables);
+            int fromAxis = modifier.GetInt(2, 0, modifierLoop.variables);
 
-            float delay = modifier.GetFloat(3, 0f, variables);
-            float multiply = modifier.GetFloat(4, 0f, variables);
-            float offset = modifier.GetFloat(5, 0f, variables);
-            float min = modifier.GetFloat(6, -9999f, variables);
-            float max = modifier.GetFloat(7, 9999f, variables);
-            float equals = modifier.GetFloat(8, 0f, variables);
-            bool useVisual = modifier.GetBool(9, false, variables);
-            float loop = modifier.GetFloat(10, 9999f, variables);
+            float delay = modifier.GetFloat(3, 0f, modifierLoop.variables);
+            float multiply = modifier.GetFloat(4, 0f, modifierLoop.variables);
+            float offset = modifier.GetFloat(5, 0f, modifierLoop.variables);
+            float min = modifier.GetFloat(6, -9999f, modifierLoop.variables);
+            float max = modifier.GetFloat(7, 9999f, modifierLoop.variables);
+            float equals = modifier.GetFloat(8, 0f, modifierLoop.variables);
+            bool useVisual = modifier.GetBool(9, false, modifierLoop.variables);
+            float loop = modifier.GetFloat(10, 9999f, modifierLoop.variables);
 
             var cache = modifier.GetResultOrDefault(() => GroupBeatmapObjectCache.Get(modifier, prefabable, tag));
             if (cache.tag != tag)
@@ -13440,25 +13511,25 @@ namespace BetterLegacy.Core.Helpers
             return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(beatmapObject, fromType, fromAxis, min, max, offset, multiply, delay, loop, useVisual) < equals;
         }
 
-        public static bool axisGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool axisGreater(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var prefabable = reference.AsPrefabable();
+            var prefabable = modifierLoop.reference.AsPrefabable();
             if (prefabable == null)
                 return false;
 
-            var tag = modifier.GetValue(0, variables);
+            var tag = modifier.GetValue(0, modifierLoop.variables);
 
-            int fromType = modifier.GetInt(1, 0, variables);
-            int fromAxis = modifier.GetInt(2, 0, variables);
+            int fromType = modifier.GetInt(1, 0, modifierLoop.variables);
+            int fromAxis = modifier.GetInt(2, 0, modifierLoop.variables);
 
-            float delay = modifier.GetFloat(3, 0f, variables);
-            float multiply = modifier.GetFloat(4, 0f, variables);
-            float offset = modifier.GetFloat(5, 0f, variables);
-            float min = modifier.GetFloat(6, -9999f, variables);
-            float max = modifier.GetFloat(7, 9999f, variables);
-            float equals = modifier.GetFloat(8, 0f, variables);
-            bool useVisual = modifier.GetBool(9, false, variables);
-            float loop = modifier.GetFloat(10, 9999f, variables);
+            float delay = modifier.GetFloat(3, 0f, modifierLoop.variables);
+            float multiply = modifier.GetFloat(4, 0f, modifierLoop.variables);
+            float offset = modifier.GetFloat(5, 0f, modifierLoop.variables);
+            float min = modifier.GetFloat(6, -9999f, modifierLoop.variables);
+            float max = modifier.GetFloat(7, 9999f, modifierLoop.variables);
+            float equals = modifier.GetFloat(8, 0f, modifierLoop.variables);
+            bool useVisual = modifier.GetBool(9, false, modifierLoop.variables);
+            float loop = modifier.GetFloat(10, 9999f, modifierLoop.variables);
 
             var cache = modifier.GetResultOrDefault(() => GroupBeatmapObjectCache.Get(modifier, prefabable, tag));
             if (cache.tag != tag)
@@ -13477,162 +13548,162 @@ namespace BetterLegacy.Core.Helpers
             return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(beatmapObject, fromType, fromAxis, min, max, offset, multiply, delay, loop, useVisual) > equals;
         }
 
-        public static bool eventEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool eventEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var str = modifier.GetValue(0, variables);
+            var str = modifier.GetValue(0, modifierLoop.variables);
             var time = Parser.TryParse(str, RTLevel.Current.FixedTime);
 
-            return RTLevel.Current && RTLevel.Current.eventEngine && RTLevel.Current.eventEngine.Interpolate(modifier.GetInt(1, 0, variables), modifier.GetInt(2, 0, variables), time) == modifier.GetFloat(3, 0f, variables);
+            return RTLevel.Current && RTLevel.Current.eventEngine && RTLevel.Current.eventEngine.Interpolate(modifier.GetInt(1, 0, modifierLoop.variables), modifier.GetInt(2, 0, modifierLoop.variables), time) == modifier.GetFloat(3, 0f, modifierLoop.variables);
         }
 
-        public static bool eventLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool eventLesserEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var str = modifier.GetValue(0, variables);
+            var str = modifier.GetValue(0, modifierLoop.variables);
             var time = Parser.TryParse(str, RTLevel.Current.FixedTime);
 
-            return RTLevel.Current && RTLevel.Current.eventEngine && RTLevel.Current.eventEngine.Interpolate(modifier.GetInt(1, 0, variables), modifier.GetInt(2, 0, variables), time) <= modifier.GetFloat(3, 0f, variables);
+            return RTLevel.Current && RTLevel.Current.eventEngine && RTLevel.Current.eventEngine.Interpolate(modifier.GetInt(1, 0, modifierLoop.variables), modifier.GetInt(2, 0, modifierLoop.variables), time) <= modifier.GetFloat(3, 0f, modifierLoop.variables);
         }
 
-        public static bool eventGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool eventGreaterEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var str = modifier.GetValue(0, variables);
+            var str = modifier.GetValue(0, modifierLoop.variables);
             var time = Parser.TryParse(str, RTLevel.Current.FixedTime);
 
-            return RTLevel.Current && RTLevel.Current.eventEngine && RTLevel.Current.eventEngine.Interpolate(modifier.GetInt(1, 0, variables), modifier.GetInt(2, 0, variables), time) >= modifier.GetFloat(3, 0f, variables);
+            return RTLevel.Current && RTLevel.Current.eventEngine && RTLevel.Current.eventEngine.Interpolate(modifier.GetInt(1, 0, modifierLoop.variables), modifier.GetInt(2, 0, modifierLoop.variables), time) >= modifier.GetFloat(3, 0f, modifierLoop.variables);
         }
 
-        public static bool eventLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool eventLesser(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var str = modifier.GetValue(0, variables);
+            var str = modifier.GetValue(0, modifierLoop.variables);
             var time = Parser.TryParse(str, RTLevel.Current.FixedTime);
 
-            return RTLevel.Current && RTLevel.Current.eventEngine && RTLevel.Current.eventEngine.Interpolate(modifier.GetInt(1, 0, variables), modifier.GetInt(2, 0, variables), time) < modifier.GetFloat(3, 0f, variables);
+            return RTLevel.Current && RTLevel.Current.eventEngine && RTLevel.Current.eventEngine.Interpolate(modifier.GetInt(1, 0, modifierLoop.variables), modifier.GetInt(2, 0, modifierLoop.variables), time) < modifier.GetFloat(3, 0f, modifierLoop.variables);
         }
 
-        public static bool eventGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool eventGreater(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var str = modifier.GetValue(0, variables);
+            var str = modifier.GetValue(0, modifierLoop.variables);
             var time = Parser.TryParse(str, RTLevel.Current.FixedTime);
 
-            return RTLevel.Current && RTLevel.Current.eventEngine && RTLevel.Current.eventEngine.Interpolate(modifier.GetInt(1, 0, variables), modifier.GetInt(2, 0, variables), time) > modifier.GetFloat(3, 0f, variables);
+            return RTLevel.Current && RTLevel.Current.eventEngine && RTLevel.Current.eventEngine.Interpolate(modifier.GetInt(1, 0, modifierLoop.variables), modifier.GetInt(2, 0, modifierLoop.variables), time) > modifier.GetFloat(3, 0f, modifierLoop.variables);
         }
 
         #endregion
 
         #region Level
 
-        public static bool levelRankEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool levelRankEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return ModifiersHelper.GetLevelRank(LevelManager.CurrentLevel, out int levelRankIndex) && levelRankIndex == modifier.GetInt(0, 0, variables);
+            return ModifiersHelper.GetLevelRank(LevelManager.CurrentLevel, out int levelRankIndex) && levelRankIndex == modifier.GetInt(0, 0, modifierLoop.variables);
         }
 
-        public static bool levelRankLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool levelRankLesserEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return ModifiersHelper.GetLevelRank(LevelManager.CurrentLevel, out int levelRankIndex) && levelRankIndex <= modifier.GetInt(0, 0, variables);
+            return ModifiersHelper.GetLevelRank(LevelManager.CurrentLevel, out int levelRankIndex) && levelRankIndex <= modifier.GetInt(0, 0, modifierLoop.variables);
         }
 
-        public static bool levelRankGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool levelRankGreaterEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return ModifiersHelper.GetLevelRank(LevelManager.CurrentLevel, out int levelRankIndex) && levelRankIndex >= modifier.GetInt(0, 0, variables);
+            return ModifiersHelper.GetLevelRank(LevelManager.CurrentLevel, out int levelRankIndex) && levelRankIndex >= modifier.GetInt(0, 0, modifierLoop.variables);
         }
 
-        public static bool levelRankLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool levelRankLesser(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return ModifiersHelper.GetLevelRank(LevelManager.CurrentLevel, out int levelRankIndex) && levelRankIndex < modifier.GetInt(0, 0, variables);
+            return ModifiersHelper.GetLevelRank(LevelManager.CurrentLevel, out int levelRankIndex) && levelRankIndex < modifier.GetInt(0, 0, modifierLoop.variables);
         }
 
-        public static bool levelRankGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool levelRankGreater(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return ModifiersHelper.GetLevelRank(LevelManager.CurrentLevel, out int levelRankIndex) && levelRankIndex > modifier.GetInt(0, 0, variables);
+            return ModifiersHelper.GetLevelRank(LevelManager.CurrentLevel, out int levelRankIndex) && levelRankIndex > modifier.GetInt(0, 0, modifierLoop.variables);
         }
 
-        public static bool levelRankOtherEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool levelRankOtherEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var id = modifier.GetValue(1, variables);
-            return LevelManager.Levels.TryFind(x => x.id == id, out Level level) && ModifiersHelper.GetLevelRank(level, out int levelRankIndex) && levelRankIndex == modifier.GetInt(0, 0, variables);
+            var id = modifier.GetValue(1, modifierLoop.variables);
+            return LevelManager.Levels.TryFind(x => x.id == id, out Level level) && ModifiersHelper.GetLevelRank(level, out int levelRankIndex) && levelRankIndex == modifier.GetInt(0, 0, modifierLoop.variables);
         }
 
-        public static bool levelRankOtherLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool levelRankOtherLesserEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var id = modifier.GetValue(1, variables);
-            return LevelManager.Levels.TryFind(x => x.id == id, out Level level) && ModifiersHelper.GetLevelRank(level, out int levelRankIndex) && levelRankIndex <= modifier.GetInt(0, 0, variables);
+            var id = modifier.GetValue(1, modifierLoop.variables);
+            return LevelManager.Levels.TryFind(x => x.id == id, out Level level) && ModifiersHelper.GetLevelRank(level, out int levelRankIndex) && levelRankIndex <= modifier.GetInt(0, 0, modifierLoop.variables);
         }
 
-        public static bool levelRankOtherGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool levelRankOtherGreaterEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var id = modifier.GetValue(1, variables);
-            return LevelManager.Levels.TryFind(x => x.id == id, out Level level) && ModifiersHelper.GetLevelRank(level, out int levelRankIndex) && levelRankIndex >= modifier.GetInt(0, 0, variables);
+            var id = modifier.GetValue(1, modifierLoop.variables);
+            return LevelManager.Levels.TryFind(x => x.id == id, out Level level) && ModifiersHelper.GetLevelRank(level, out int levelRankIndex) && levelRankIndex >= modifier.GetInt(0, 0, modifierLoop.variables);
         }
 
-        public static bool levelRankOtherLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool levelRankOtherLesser(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var id = modifier.GetValue(1, variables);
-            return LevelManager.Levels.TryFind(x => x.id == id, out Level level) && ModifiersHelper.GetLevelRank(level, out int levelRankIndex) && levelRankIndex < modifier.GetInt(0, 0, variables);
+            var id = modifier.GetValue(1, modifierLoop.variables);
+            return LevelManager.Levels.TryFind(x => x.id == id, out Level level) && ModifiersHelper.GetLevelRank(level, out int levelRankIndex) && levelRankIndex < modifier.GetInt(0, 0, modifierLoop.variables);
         }
 
-        public static bool levelRankOtherGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool levelRankOtherGreater(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var id = modifier.GetValue(1, variables);
-            return LevelManager.Levels.TryFind(x => x.id == id, out Level level) && ModifiersHelper.GetLevelRank(level, out int levelRankIndex) && levelRankIndex > modifier.GetInt(0, 0, variables);
+            var id = modifier.GetValue(1, modifierLoop.variables);
+            return LevelManager.Levels.TryFind(x => x.id == id, out Level level) && ModifiersHelper.GetLevelRank(level, out int levelRankIndex) && levelRankIndex > modifier.GetInt(0, 0, modifierLoop.variables);
         }
 
-        public static bool levelRankCurrentEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool levelRankCurrentEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return LevelManager.GetLevelRank(RTBeatmap.Current.hits) == modifier.GetInt(0, 0, variables);
+            return LevelManager.GetLevelRank(RTBeatmap.Current.hits) == modifier.GetInt(0, 0, modifierLoop.variables);
         }
 
-        public static bool levelRankCurrentLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool levelRankCurrentLesserEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return LevelManager.GetLevelRank(RTBeatmap.Current.hits) <= modifier.GetInt(0, 0, variables);
+            return LevelManager.GetLevelRank(RTBeatmap.Current.hits) <= modifier.GetInt(0, 0, modifierLoop.variables);
         }
 
-        public static bool levelRankCurrentGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool levelRankCurrentGreaterEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return LevelManager.GetLevelRank(RTBeatmap.Current.hits) >= modifier.GetInt(0, 0, variables);
+            return LevelManager.GetLevelRank(RTBeatmap.Current.hits) >= modifier.GetInt(0, 0, modifierLoop.variables);
         }
 
-        public static bool levelRankCurrentLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool levelRankCurrentLesser(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return LevelManager.GetLevelRank(RTBeatmap.Current.hits) < modifier.GetInt(0, 0, variables);
+            return LevelManager.GetLevelRank(RTBeatmap.Current.hits) < modifier.GetInt(0, 0, modifierLoop.variables);
         }
 
-        public static bool levelRankCurrentGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool levelRankCurrentGreater(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return LevelManager.GetLevelRank(RTBeatmap.Current.hits) > modifier.GetInt(0, 0, variables);
+            return LevelManager.GetLevelRank(RTBeatmap.Current.hits) > modifier.GetInt(0, 0, modifierLoop.variables);
         }
 
-        public static bool onLevelStart(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables) => RTBeatmap.Current && RTBeatmap.Current.LevelStarted;
+        public static bool onLevelStart(Modifier modifier, ModifierLoop modifierLoop) => RTBeatmap.Current && RTBeatmap.Current.LevelStarted;
 
-        public static bool onLevelRestart(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables) => false;
+        public static bool onLevelRestart(Modifier modifier, ModifierLoop modifierLoop) => false;
 
-        public static bool onLevelRewind(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables) => CoreHelper.Reversing;
+        public static bool onLevelRewind(Modifier modifier, ModifierLoop modifierLoop) => CoreHelper.Reversing;
 
-        public static bool levelUnlocked(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool levelUnlocked(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var id = modifier.GetValue(0, variables);
+            var id = modifier.GetValue(0, modifierLoop.variables);
             return LevelManager.Levels.TryFind(x => x.id == id, out Level level) && !level.Locked;
         }
 
-        public static bool levelCompleted(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool levelCompleted(Modifier modifier, ModifierLoop modifierLoop)
         {
             return CoreHelper.InEditor || LevelManager.CurrentLevel && LevelManager.CurrentLevel.saveData && LevelManager.CurrentLevel.saveData.Completed;
         }
 
-        public static bool levelCompletedOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool levelCompletedOther(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var id = modifier.GetValue(0, variables);
+            var id = modifier.GetValue(0, modifierLoop.variables);
             return CoreHelper.InEditor || LevelManager.Levels.TryFind(x => x.id == id, out Level level) && level.saveData && level.saveData.Completed;
         }
 
-        public static bool levelExists(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool levelExists(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var id = modifier.GetValue(0, variables);
+            var id = modifier.GetValue(0, modifierLoop.variables);
             return LevelManager.Levels.Has(x => x.id == id);
         }
 
-        public static bool levelPathExists(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool levelPathExists(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var basePath = RTFile.CombinePaths(RTFile.ApplicationDirectory, LevelManager.ListSlash, modifier.GetValue(0, variables));
+            var basePath = RTFile.CombinePaths(RTFile.ApplicationDirectory, LevelManager.ListSlash, modifier.GetValue(0, modifierLoop.variables));
 
             return
                 RTFile.FileExists(RTFile.CombinePaths(basePath, Level.LEVEL_LSB)) ||
@@ -13640,300 +13711,300 @@ namespace BetterLegacy.Core.Helpers
                 RTFile.FileExists(basePath + FileFormat.ASSET.Dot());
         }
 
-        public static bool achievementUnlocked(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool achievementUnlocked(Modifier modifier, ModifierLoop modifierLoop)
         {
             // global or local
-            return modifier.GetBool(1, false, variables) ?
-                AchievementManager.unlockedCustomAchievements.TryGetValue(modifier.GetValue(0, variables), out bool global) && global :
-                LevelManager.CurrentLevel && LevelManager.CurrentLevel.saveData && LevelManager.CurrentLevel.saveData.AchievementUnlocked(modifier.GetValue(0, variables));
+            return modifier.GetBool(1, false, modifierLoop.variables) ?
+                AchievementManager.unlockedCustomAchievements.TryGetValue(modifier.GetValue(0, modifierLoop.variables), out bool global) && global :
+                LevelManager.CurrentLevel && LevelManager.CurrentLevel.saveData && LevelManager.CurrentLevel.saveData.AchievementUnlocked(modifier.GetValue(0, modifierLoop.variables));
         }
 
         #endregion
 
         #region Real Time
 
-        public static bool realTimeEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool realTimeEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return DateTime.Now.ToString(modifier.GetValue(0, variables)) == modifier.GetValue(1, variables);
+            return DateTime.Now.ToString(modifier.GetValue(0, modifierLoop.variables)) == modifier.GetValue(1, modifierLoop.variables);
         }
 
-        public static bool realTimeLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool realTimeLesserEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
             var dateTime = DateTime.Now;
 
-            var type = modifier.GetInt(0, 0, variables);
+            var type = modifier.GetInt(0, 0, modifierLoop.variables);
             return type switch
             {
-                0 => dateTime.Millisecond <= modifier.GetInt(1, 0, variables),
-                1 => dateTime.Second <= modifier.GetInt(1, 0, variables),
-                2 => dateTime.Minute <= modifier.GetInt(1, 0, variables),
-                3 => dateTime.Hour % 12 <= modifier.GetInt(1, 0, variables),
-                4 => dateTime.Hour <= modifier.GetInt(1, 0, variables),
-                5 => dateTime.Day <= modifier.GetInt(1, 0, variables),
-                6 => dateTime.Month <= modifier.GetInt(1, 0, variables),
-                7 => dateTime.Year <= modifier.GetInt(1, 0, variables),
-                8 => dateTime.DayOfWeek <= (DayOfWeek)modifier.GetInt(1, 0, variables),
-                9 => dateTime.DayOfYear <= modifier.GetInt(1, 0, variables),
-                10 => dateTime.Ticks <= modifier.GetInt(1, 0, variables),
+                0 => dateTime.Millisecond <= modifier.GetInt(1, 0, modifierLoop.variables),
+                1 => dateTime.Second <= modifier.GetInt(1, 0, modifierLoop.variables),
+                2 => dateTime.Minute <= modifier.GetInt(1, 0, modifierLoop.variables),
+                3 => dateTime.Hour % 12 <= modifier.GetInt(1, 0, modifierLoop.variables),
+                4 => dateTime.Hour <= modifier.GetInt(1, 0, modifierLoop.variables),
+                5 => dateTime.Day <= modifier.GetInt(1, 0, modifierLoop.variables),
+                6 => dateTime.Month <= modifier.GetInt(1, 0, modifierLoop.variables),
+                7 => dateTime.Year <= modifier.GetInt(1, 0, modifierLoop.variables),
+                8 => dateTime.DayOfWeek <= (DayOfWeek)modifier.GetInt(1, 0, modifierLoop.variables),
+                9 => dateTime.DayOfYear <= modifier.GetInt(1, 0, modifierLoop.variables),
+                10 => dateTime.Ticks <= modifier.GetInt(1, 0, modifierLoop.variables),
                 _ => false,
             };
         }
 
-        public static bool realTimeGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool realTimeGreaterEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
             var dateTime = DateTime.Now;
 
-            var type = modifier.GetInt(0, 0, variables);
+            var type = modifier.GetInt(0, 0, modifierLoop.variables);
             return type switch
             {
-                0 => dateTime.Millisecond >= modifier.GetInt(1, 0, variables),
-                1 => dateTime.Second >= modifier.GetInt(1, 0, variables),
-                2 => dateTime.Minute >= modifier.GetInt(1, 0, variables),
-                3 => dateTime.Hour % 12 >= modifier.GetInt(1, 0, variables),
-                4 => dateTime.Hour >= modifier.GetInt(1, 0, variables),
-                5 => dateTime.Day >= modifier.GetInt(1, 0, variables),
-                6 => dateTime.Month >= modifier.GetInt(1, 0, variables),
-                7 => dateTime.Year >= modifier.GetInt(1, 0, variables),
-                8 => dateTime.DayOfWeek >= (DayOfWeek)modifier.GetInt(1, 0, variables),
-                9 => dateTime.DayOfYear >= modifier.GetInt(1, 0, variables),
-                10 => dateTime.Ticks >= modifier.GetInt(1, 0, variables),
+                0 => dateTime.Millisecond >= modifier.GetInt(1, 0, modifierLoop.variables),
+                1 => dateTime.Second >= modifier.GetInt(1, 0, modifierLoop.variables),
+                2 => dateTime.Minute >= modifier.GetInt(1, 0, modifierLoop.variables),
+                3 => dateTime.Hour % 12 >= modifier.GetInt(1, 0, modifierLoop.variables),
+                4 => dateTime.Hour >= modifier.GetInt(1, 0, modifierLoop.variables),
+                5 => dateTime.Day >= modifier.GetInt(1, 0, modifierLoop.variables),
+                6 => dateTime.Month >= modifier.GetInt(1, 0, modifierLoop.variables),
+                7 => dateTime.Year >= modifier.GetInt(1, 0, modifierLoop.variables),
+                8 => dateTime.DayOfWeek >= (DayOfWeek)modifier.GetInt(1, 0, modifierLoop.variables),
+                9 => dateTime.DayOfYear >= modifier.GetInt(1, 0, modifierLoop.variables),
+                10 => dateTime.Ticks >= modifier.GetInt(1, 0, modifierLoop.variables),
                 _ => false,
             };
         }
 
-        public static bool realTimeLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool realTimeLesser(Modifier modifier, ModifierLoop modifierLoop)
         {
             var dateTime = DateTime.Now;
 
-            var type = modifier.GetInt(0, 0, variables);
+            var type = modifier.GetInt(0, 0, modifierLoop.variables);
             return type switch
             {
-                0 => dateTime.Millisecond < modifier.GetInt(1, 0, variables),
-                1 => dateTime.Second < modifier.GetInt(1, 0, variables),
-                2 => dateTime.Minute < modifier.GetInt(1, 0, variables),
-                3 => dateTime.Hour % 12 < modifier.GetInt(1, 0, variables),
-                4 => dateTime.Hour < modifier.GetInt(1, 0, variables),
-                5 => dateTime.Day < modifier.GetInt(1, 0, variables),
-                6 => dateTime.Month < modifier.GetInt(1, 0, variables),
-                7 => dateTime.Year < modifier.GetInt(1, 0, variables),
-                8 => dateTime.DayOfWeek < (DayOfWeek)modifier.GetInt(1, 0, variables),
-                9 => dateTime.DayOfYear < modifier.GetInt(1, 0, variables),
-                10 => dateTime.Ticks < modifier.GetInt(1, 0, variables),
+                0 => dateTime.Millisecond < modifier.GetInt(1, 0, modifierLoop.variables),
+                1 => dateTime.Second < modifier.GetInt(1, 0, modifierLoop.variables),
+                2 => dateTime.Minute < modifier.GetInt(1, 0, modifierLoop.variables),
+                3 => dateTime.Hour % 12 < modifier.GetInt(1, 0, modifierLoop.variables),
+                4 => dateTime.Hour < modifier.GetInt(1, 0, modifierLoop.variables),
+                5 => dateTime.Day < modifier.GetInt(1, 0, modifierLoop.variables),
+                6 => dateTime.Month < modifier.GetInt(1, 0, modifierLoop.variables),
+                7 => dateTime.Year < modifier.GetInt(1, 0, modifierLoop.variables),
+                8 => dateTime.DayOfWeek < (DayOfWeek)modifier.GetInt(1, 0, modifierLoop.variables),
+                9 => dateTime.DayOfYear < modifier.GetInt(1, 0, modifierLoop.variables),
+                10 => dateTime.Ticks < modifier.GetInt(1, 0, modifierLoop.variables),
                 _ => false,
             };
         }
 
-        public static bool realTimeGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool realTimeGreater(Modifier modifier, ModifierLoop modifierLoop)
         {
             var dateTime = DateTime.Now;
 
-            var type = modifier.GetInt(0, 0, variables);
+            var type = modifier.GetInt(0, 0, modifierLoop.variables);
             return type switch
             {
-                0 => dateTime.Millisecond > modifier.GetInt(1, 0, variables),
-                1 => dateTime.Second > modifier.GetInt(1, 0, variables),
-                2 => dateTime.Minute > modifier.GetInt(1, 0, variables),
-                3 => dateTime.Hour % 12 > modifier.GetInt(1, 0, variables),
-                4 => dateTime.Hour > modifier.GetInt(1, 0, variables),
-                5 => dateTime.Day > modifier.GetInt(1, 0, variables),
-                6 => dateTime.Month > modifier.GetInt(1, 0, variables),
-                7 => dateTime.Year > modifier.GetInt(1, 0, variables),
-                8 => dateTime.DayOfWeek > (DayOfWeek)modifier.GetInt(1, 0, variables),
-                9 => dateTime.DayOfYear > modifier.GetInt(1, 0, variables),
-                10 => dateTime.Ticks > modifier.GetInt(1, 0, variables),
+                0 => dateTime.Millisecond > modifier.GetInt(1, 0, modifierLoop.variables),
+                1 => dateTime.Second > modifier.GetInt(1, 0, modifierLoop.variables),
+                2 => dateTime.Minute > modifier.GetInt(1, 0, modifierLoop.variables),
+                3 => dateTime.Hour % 12 > modifier.GetInt(1, 0, modifierLoop.variables),
+                4 => dateTime.Hour > modifier.GetInt(1, 0, modifierLoop.variables),
+                5 => dateTime.Day > modifier.GetInt(1, 0, modifierLoop.variables),
+                6 => dateTime.Month > modifier.GetInt(1, 0, modifierLoop.variables),
+                7 => dateTime.Year > modifier.GetInt(1, 0, modifierLoop.variables),
+                8 => dateTime.DayOfWeek > (DayOfWeek)modifier.GetInt(1, 0, modifierLoop.variables),
+                9 => dateTime.DayOfYear > modifier.GetInt(1, 0, modifierLoop.variables),
+                10 => dateTime.Ticks > modifier.GetInt(1, 0, modifierLoop.variables),
                 _ => false,
             };
         }
 
         // seconds
-        public static bool realTimeSecondEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool realTimeSecondEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return Parser.TryParse(DateTime.Now.ToString("ss"), 0) == modifier.GetInt(0, 0, variables);
+            return Parser.TryParse(DateTime.Now.ToString("ss"), 0) == modifier.GetInt(0, 0, modifierLoop.variables);
         }
-        public static bool realTimeSecondLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool realTimeSecondLesserEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return Parser.TryParse(DateTime.Now.ToString("ss"), 0) <= modifier.GetInt(0, 0, variables);
+            return Parser.TryParse(DateTime.Now.ToString("ss"), 0) <= modifier.GetInt(0, 0, modifierLoop.variables);
         }
-        public static bool realTimeSecondGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool realTimeSecondGreaterEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return Parser.TryParse(DateTime.Now.ToString("ss"), 0) >= modifier.GetInt(0, 0, variables);
+            return Parser.TryParse(DateTime.Now.ToString("ss"), 0) >= modifier.GetInt(0, 0, modifierLoop.variables);
         }
-        public static bool realTimeSecondLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool realTimeSecondLesser(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return Parser.TryParse(DateTime.Now.ToString("ss"), 0) < modifier.GetInt(0, 0, variables);
+            return Parser.TryParse(DateTime.Now.ToString("ss"), 0) < modifier.GetInt(0, 0, modifierLoop.variables);
         }
-        public static bool realTimeSecondGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool realTimeSecondGreater(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return Parser.TryParse(DateTime.Now.ToString("ss"), 0) > modifier.GetInt(0, 0, variables);
+            return Parser.TryParse(DateTime.Now.ToString("ss"), 0) > modifier.GetInt(0, 0, modifierLoop.variables);
         }
 
         // minutes
-        public static bool realTimeMinuteEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool realTimeMinuteEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return Parser.TryParse(DateTime.Now.ToString("mm"), 0) == modifier.GetInt(0, 0, variables);
+            return Parser.TryParse(DateTime.Now.ToString("mm"), 0) == modifier.GetInt(0, 0, modifierLoop.variables);
         }
-        public static bool realTimeMinuteLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool realTimeMinuteLesserEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return Parser.TryParse(DateTime.Now.ToString("mm"), 0) <= modifier.GetInt(0, 0, variables);
+            return Parser.TryParse(DateTime.Now.ToString("mm"), 0) <= modifier.GetInt(0, 0, modifierLoop.variables);
         }
-        public static bool realTimeMinuteGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool realTimeMinuteGreaterEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return Parser.TryParse(DateTime.Now.ToString("mm"), 0) >= modifier.GetInt(0, 0, variables);
+            return Parser.TryParse(DateTime.Now.ToString("mm"), 0) >= modifier.GetInt(0, 0, modifierLoop.variables);
         }
-        public static bool realTimeMinuteLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool realTimeMinuteLesser(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return Parser.TryParse(DateTime.Now.ToString("mm"), 0) < modifier.GetInt(0, 0, variables);
+            return Parser.TryParse(DateTime.Now.ToString("mm"), 0) < modifier.GetInt(0, 0, modifierLoop.variables);
         }
-        public static bool realTimeMinuteGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool realTimeMinuteGreater(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return Parser.TryParse(DateTime.Now.ToString("mm"), 0) > modifier.GetInt(0, 0, variables);
+            return Parser.TryParse(DateTime.Now.ToString("mm"), 0) > modifier.GetInt(0, 0, modifierLoop.variables);
         }
 
         // 24 hours
-        public static bool realTime24HourEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool realTime24HourEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return Parser.TryParse(DateTime.Now.ToString("HH"), 0) == modifier.GetInt(0, 0, variables);
+            return Parser.TryParse(DateTime.Now.ToString("HH"), 0) == modifier.GetInt(0, 0, modifierLoop.variables);
         }
-        public static bool realTime24HourLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool realTime24HourLesserEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return Parser.TryParse(DateTime.Now.ToString("HH"), 0) <= modifier.GetInt(0, 0, variables);
+            return Parser.TryParse(DateTime.Now.ToString("HH"), 0) <= modifier.GetInt(0, 0, modifierLoop.variables);
         }
-        public static bool realTime24HourGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool realTime24HourGreaterEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return Parser.TryParse(DateTime.Now.ToString("HH"), 0) >= modifier.GetInt(0, 0, variables);
+            return Parser.TryParse(DateTime.Now.ToString("HH"), 0) >= modifier.GetInt(0, 0, modifierLoop.variables);
         }
-        public static bool realTime24HourLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool realTime24HourLesser(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return Parser.TryParse(DateTime.Now.ToString("HH"), 0) < modifier.GetInt(0, 0, variables);
+            return Parser.TryParse(DateTime.Now.ToString("HH"), 0) < modifier.GetInt(0, 0, modifierLoop.variables);
         }
-        public static bool realTime24HourGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool realTime24HourGreater(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return Parser.TryParse(DateTime.Now.ToString("HH"), 0) > modifier.GetInt(0, 0, variables);
+            return Parser.TryParse(DateTime.Now.ToString("HH"), 0) > modifier.GetInt(0, 0, modifierLoop.variables);
         }
 
         // 12 hours
-        public static bool realTime12HourEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool realTime12HourEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return Parser.TryParse(DateTime.Now.ToString("hh"), 0) == modifier.GetInt(0, 0, variables);
+            return Parser.TryParse(DateTime.Now.ToString("hh"), 0) == modifier.GetInt(0, 0, modifierLoop.variables);
         }
-        public static bool realTime12HourLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool realTime12HourLesserEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return Parser.TryParse(DateTime.Now.ToString("hh"), 0) <= modifier.GetInt(0, 0, variables);
+            return Parser.TryParse(DateTime.Now.ToString("hh"), 0) <= modifier.GetInt(0, 0, modifierLoop.variables);
         }
-        public static bool realTime12HourGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool realTime12HourGreaterEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return Parser.TryParse(DateTime.Now.ToString("hh"), 0) >= modifier.GetInt(0, 0, variables);
+            return Parser.TryParse(DateTime.Now.ToString("hh"), 0) >= modifier.GetInt(0, 0, modifierLoop.variables);
         }
-        public static bool realTime12HourLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool realTime12HourLesser(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return Parser.TryParse(DateTime.Now.ToString("hh"), 0) < modifier.GetInt(0, 0, variables);
+            return Parser.TryParse(DateTime.Now.ToString("hh"), 0) < modifier.GetInt(0, 0, modifierLoop.variables);
         }
-        public static bool realTime12HourGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool realTime12HourGreater(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return Parser.TryParse(DateTime.Now.ToString("hh"), 0) > modifier.GetInt(0, 0, variables);
+            return Parser.TryParse(DateTime.Now.ToString("hh"), 0) > modifier.GetInt(0, 0, modifierLoop.variables);
         }
 
         // days
-        public static bool realTimeDayEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool realTimeDayEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return Parser.TryParse(DateTime.Now.ToString("dd"), 0) == modifier.GetInt(0, 0, variables);
+            return Parser.TryParse(DateTime.Now.ToString("dd"), 0) == modifier.GetInt(0, 0, modifierLoop.variables);
         }
-        public static bool realTimeDayLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool realTimeDayLesserEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return Parser.TryParse(DateTime.Now.ToString("dd"), 0) <= modifier.GetInt(0, 0, variables);
+            return Parser.TryParse(DateTime.Now.ToString("dd"), 0) <= modifier.GetInt(0, 0, modifierLoop.variables);
         }
-        public static bool realTimeDayGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool realTimeDayGreaterEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return Parser.TryParse(DateTime.Now.ToString("dd"), 0) >= modifier.GetInt(0, 0, variables);
+            return Parser.TryParse(DateTime.Now.ToString("dd"), 0) >= modifier.GetInt(0, 0, modifierLoop.variables);
         }
-        public static bool realTimeDayLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool realTimeDayLesser(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return Parser.TryParse(DateTime.Now.ToString("dd"), 0) < modifier.GetInt(0, 0, variables);
+            return Parser.TryParse(DateTime.Now.ToString("dd"), 0) < modifier.GetInt(0, 0, modifierLoop.variables);
         }
-        public static bool realTimeDayGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool realTimeDayGreater(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return Parser.TryParse(DateTime.Now.ToString("dd"), 0) > modifier.GetInt(0, 0, variables);
+            return Parser.TryParse(DateTime.Now.ToString("dd"), 0) > modifier.GetInt(0, 0, modifierLoop.variables);
         }
 
-        public static bool realTimeDayWeekEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool realTimeDayWeekEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return DateTime.Now.ToString("dddd") == modifier.GetValue(0, variables);
+            return DateTime.Now.ToString("dddd") == modifier.GetValue(0, modifierLoop.variables);
         }
 
         // months
-        public static bool realTimeMonthEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool realTimeMonthEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return Parser.TryParse(DateTime.Now.ToString("MM"), 0) == modifier.GetInt(0, 0, variables);
+            return Parser.TryParse(DateTime.Now.ToString("MM"), 0) == modifier.GetInt(0, 0, modifierLoop.variables);
         }
-        public static bool realTimeMonthLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool realTimeMonthLesserEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return Parser.TryParse(DateTime.Now.ToString("MM"), 0) <= modifier.GetInt(0, 0, variables);
+            return Parser.TryParse(DateTime.Now.ToString("MM"), 0) <= modifier.GetInt(0, 0, modifierLoop.variables);
         }
-        public static bool realTimeMonthGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool realTimeMonthGreaterEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return Parser.TryParse(DateTime.Now.ToString("MM"), 0) >= modifier.GetInt(0, 0, variables);
+            return Parser.TryParse(DateTime.Now.ToString("MM"), 0) >= modifier.GetInt(0, 0, modifierLoop.variables);
         }
-        public static bool realTimeMonthLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool realTimeMonthLesser(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return Parser.TryParse(DateTime.Now.ToString("MM"), 0) < modifier.GetInt(0, 0, variables);
+            return Parser.TryParse(DateTime.Now.ToString("MM"), 0) < modifier.GetInt(0, 0, modifierLoop.variables);
         }
-        public static bool realTimeMonthGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool realTimeMonthGreater(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return Parser.TryParse(DateTime.Now.ToString("MM"), 0) > modifier.GetInt(0, 0, variables);
+            return Parser.TryParse(DateTime.Now.ToString("MM"), 0) > modifier.GetInt(0, 0, modifierLoop.variables);
         }
 
         // years
-        public static bool realTimeYearEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool realTimeYearEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return Parser.TryParse(DateTime.Now.ToString("yyyy"), 0) == modifier.GetInt(0, 0, variables);
+            return Parser.TryParse(DateTime.Now.ToString("yyyy"), 0) == modifier.GetInt(0, 0, modifierLoop.variables);
         }
-        public static bool realTimeYearLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool realTimeYearLesserEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return Parser.TryParse(DateTime.Now.ToString("yyyy"), 0) <= modifier.GetInt(0, 0, variables);
+            return Parser.TryParse(DateTime.Now.ToString("yyyy"), 0) <= modifier.GetInt(0, 0, modifierLoop.variables);
         }
-        public static bool realTimeYearGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool realTimeYearGreaterEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return Parser.TryParse(DateTime.Now.ToString("yyyy"), 0) >= modifier.GetInt(0, 0, variables);
+            return Parser.TryParse(DateTime.Now.ToString("yyyy"), 0) >= modifier.GetInt(0, 0, modifierLoop.variables);
         }
-        public static bool realTimeYearLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool realTimeYearLesser(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return Parser.TryParse(DateTime.Now.ToString("yyyy"), 0) < modifier.GetInt(0, 0, variables);
+            return Parser.TryParse(DateTime.Now.ToString("yyyy"), 0) < modifier.GetInt(0, 0, modifierLoop.variables);
         }
-        public static bool realTimeYearGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool realTimeYearGreater(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return Parser.TryParse(DateTime.Now.ToString("yyyy"), 0) > modifier.GetInt(0, 0, variables);
+            return Parser.TryParse(DateTime.Now.ToString("yyyy"), 0) > modifier.GetInt(0, 0, modifierLoop.variables);
         }
 
         #endregion
 
         #region Config
 
-        public static bool usernameEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool usernameEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return CoreConfig.Instance.DisplayName.Value == modifier.GetValue(0, variables);
+            return CoreConfig.Instance.DisplayName.Value == modifier.GetValue(0, modifierLoop.variables);
         }
 
-        public static bool languageEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool languageEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return CoreConfig.Instance.Language.Value == (Language)modifier.GetInt(0, 0, variables);
+            return CoreConfig.Instance.Language.Value == (Language)modifier.GetInt(0, 0, modifierLoop.variables);
         }
 
-        public static bool configLDM(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool configLDM(Modifier modifier, ModifierLoop modifierLoop)
         {
             return CoreConfig.Instance.LDM.Value;
         }
 
-        public static bool configShowEffects(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool configShowEffects(Modifier modifier, ModifierLoop modifierLoop)
         {
             return EventsConfig.Instance.ShowFX.Value;
         }
 
-        public static bool configShowPlayerGUI(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool configShowPlayerGUI(Modifier modifier, ModifierLoop modifierLoop)
         {
             return EventsConfig.Instance.ShowGUI.Value;
         }
 
-        public static bool configShowIntro(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool configShowIntro(Modifier modifier, ModifierLoop modifierLoop)
         {
             return EventsConfig.Instance.ShowIntro.Value;
         }
@@ -13942,7 +14013,7 @@ namespace BetterLegacy.Core.Helpers
 
         #region Misc
 
-        public static bool await(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool await(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (!modifier.constant)
             {
@@ -13951,8 +14022,8 @@ namespace BetterLegacy.Core.Helpers
                 return false;
             }
 
-            var start = modifier.GetInt(0, 0, variables);
-            var realTime = modifier.GetBool(2, true, variables);
+            var start = modifier.GetInt(0, 0, modifierLoop.variables);
+            var realTime = modifier.GetBool(2, true, modifierLoop.variables);
             float time;
             if (realTime)
             {
@@ -13967,57 +14038,57 @@ namespace BetterLegacy.Core.Helpers
                 time = timer.time;
             }
             else
-                time = modifier.GetResultOrDefault(() => reference.GetParentRuntime().FixedTime + start) + reference.GetParentRuntime().FixedTime;
+                time = modifier.GetResultOrDefault(() => modifierLoop.reference.GetParentRuntime().FixedTime + start) + modifierLoop.reference.GetParentRuntime().FixedTime;
 
-            return time >= modifier.GetFloat(1, 0f, variables);
+            return time >= modifier.GetFloat(1, 0f, modifierLoop.variables);
         }
 
-        public static bool awaitCounter(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool awaitCounter(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var start = modifier.GetInt(0, 0, variables);
-            var end = modifier.GetInt(1, 10, variables);
+            var start = modifier.GetInt(0, 0, modifierLoop.variables);
+            var end = modifier.GetInt(1, 10, modifierLoop.variables);
             var num = modifier.GetResultOrDefault(() => start - 1);
-            num += modifier.GetInt(2, 1, variables);
+            num += modifier.GetInt(2, 1, modifierLoop.variables);
             modifier.Result = num;
             return num >= end;
         }
 
-        public static bool containsTag(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool containsTag(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return reference is IPrefabable prefabable && prefabable.FromPrefab && prefabable.TryGetPrefabObject(out PrefabObject prefabObject) &&
-                prefabObject.Tags.Contains(modifier.GetValue(0, variables)) || reference is IModifyable modifyable && modifyable.Tags.Contains(modifier.GetValue(0, variables));
+            return modifierLoop.reference is IPrefabable prefabable && prefabable.FromPrefab && prefabable.TryGetPrefabObject(out PrefabObject prefabObject) &&
+                prefabObject.Tags.Contains(modifier.GetValue(0, modifierLoop.variables)) || modifierLoop.reference is IModifyable modifyable && modifyable.Tags.Contains(modifier.GetValue(0, modifierLoop.variables));
         }
 
-        public static bool inEditor(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables) => CoreHelper.InEditor;
+        public static bool inEditor(Modifier modifier, ModifierLoop modifierLoop) => CoreHelper.InEditor;
 
-        public static bool isEditing(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables) => CoreHelper.IsEditing;
+        public static bool isEditing(Modifier modifier, ModifierLoop modifierLoop) => CoreHelper.IsEditing;
 
-        public static bool requireSignal(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool requireSignal(Modifier modifier, ModifierLoop modifierLoop)
         {
             return modifier.HasResult();
         }
 
-        public static bool isFocused(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables) => Application.isFocused;
+        public static bool isFocused(Modifier modifier, ModifierLoop modifierLoop) => Application.isFocused;
 
-        public static bool isFullscreen(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables) => Screen.fullScreen;
+        public static bool isFullscreen(Modifier modifier, ModifierLoop modifierLoop) => Screen.fullScreen;
 
-        public static bool objectActive(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool objectActive(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var runtimeObject = reference.GetRuntimeObject();
+            var runtimeObject = modifierLoop.reference.GetRuntimeObject();
             return runtimeObject != null && runtimeObject.Active;
         }
 
-        public static bool objectCustomActive(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool objectCustomActive(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return reference.GetRuntimeObject() is ICustomActivatable customActivatable && customActivatable.CustomActive;
+            return modifierLoop.reference.GetRuntimeObject() is ICustomActivatable customActivatable && customActivatable.CustomActive;
         }
 
-        public static bool objectAlive(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool objectAlive(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IPrefabable prefabable)
+            if (modifierLoop.reference is not IPrefabable prefabable)
                 return false;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(0, variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(0, modifierLoop.variables));
             for (int i = 0; i < list.Count; i++)
             {
                 if (list[i].Alive)
@@ -14026,9 +14097,9 @@ namespace BetterLegacy.Core.Helpers
             return false;
         }
 
-        public static bool objectSpawned(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool objectSpawned(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (reference is not IPrefabable prefabable)
+            if (modifierLoop.reference is not IPrefabable prefabable)
                 return false;
 
             if (!modifier.HasResult())
@@ -14036,7 +14107,7 @@ namespace BetterLegacy.Core.Helpers
 
             var ids = modifier.GetResult<List<string>>();
 
-            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(0, variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(0, modifierLoop.variables));
             for (int i = 0; i < list.Count; i++)
             {
                 if (!ids.Contains(list[i].id) && list[i].Alive)
@@ -14050,15 +14121,15 @@ namespace BetterLegacy.Core.Helpers
             return false;
         }
 
-        public static bool fromPrefab(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables) => reference is IPrefabable prefabable && prefabable.FromPrefab;
+        public static bool fromPrefab(Modifier modifier, ModifierLoop modifierLoop) => modifierLoop.reference is IPrefabable prefabable && prefabable.FromPrefab;
 
-        public static bool onMarker(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool onMarker(Modifier modifier, ModifierLoop modifierLoop)
         {
             var forward = AudioManager.inst.CurrentAudioSource.pitch >= 0f;
 
-            var name = modifier.GetValue(0, variables);
-            var color = modifier.GetInt(1, -1, variables);
-            var layer = modifier.GetInt(2, -1, variables);
+            var name = modifier.GetValue(0, modifierLoop.variables);
+            var color = modifier.GetInt(1, -1, modifierLoop.variables);
+            var layer = modifier.GetInt(2, -1, modifierLoop.variables);
             var index = modifier.GetResultOrDefault(() => GameData.Current.data.GetLastMarkerIndex(x => x.Matches(name, color, layer)));
             var newIndex = GameData.Current.data.GetLastMarkerIndex(x => x.Matches(name, color, layer));
             if (index != newIndex)
@@ -14070,11 +14141,11 @@ namespace BetterLegacy.Core.Helpers
             return false;
         }
 
-        public static bool onCheckpoint(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool onCheckpoint(Modifier modifier, ModifierLoop modifierLoop)
         {
             var forward = AudioManager.inst.CurrentAudioSource.pitch >= 0f;
 
-            var name = modifier.GetValue(0, variables);
+            var name = modifier.GetValue(0, modifierLoop.variables);
             var index = modifier.GetResultOrDefault(() => GameData.Current.data.GetLastCheckpointIndex(x => string.IsNullOrEmpty(name) || x.name == name));
             var newIndex = GameData.Current.data.GetLastCheckpointIndex(x => string.IsNullOrEmpty(name) || x.name == name);
             if (index != newIndex)
@@ -14085,15 +14156,15 @@ namespace BetterLegacy.Core.Helpers
             return false;
         }
 
-        public static bool callModifierBlockTrigger(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool callModifierBlockTrigger(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var name = modifier.GetValue(0, variables);
-            var prefabable = reference.AsPrefabable();
+            var name = modifier.GetValue(0, modifierLoop.variables);
+            var prefabable = modifierLoop.reference.AsPrefabable();
             var prefab = prefabable?.GetPrefab();
             if (prefabable != null && prefab && prefab.modifierBlocks.TryFind(x => x.Name == name, out ModifierBlock prefabModifierBlock))
-                return prefabModifierBlock.Run(new ModifierLoop(reference, variables)).result;
+                return prefabModifierBlock.Run(new ModifierLoop(modifierLoop.reference, modifierLoop.variables)).result;
             else if (GameData.Current.modifierBlocks.TryFind(x => x.Name == name, out ModifierBlock modifierBlock))
-                return modifierBlock.Run(new ModifierLoop(reference, variables)).result;
+                return modifierBlock.Run(new ModifierLoop(modifierLoop.reference, modifierLoop.variables)).result;
             return false;
         }
 
@@ -14101,49 +14172,49 @@ namespace BetterLegacy.Core.Helpers
 
         #region Player Only
 
-        public static bool healthEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool healthEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return reference is PAPlayer player && player.Health == modifier.GetInt(0, 3, variables);
+            return modifierLoop.reference is PAPlayer player && player.Health == modifier.GetInt(0, 3, modifierLoop.variables);
         }
 
-        public static bool healthGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool healthGreaterEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return reference is PAPlayer player && player.Health >= modifier.GetInt(0, 3, variables);
+            return modifierLoop.reference is PAPlayer player && player.Health >= modifier.GetInt(0, 3, modifierLoop.variables);
         }
 
-        public static bool healthLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool healthLesserEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return reference is PAPlayer player && player.Health <= modifier.GetInt(0, 3, variables);
+            return modifierLoop.reference is PAPlayer player && player.Health <= modifier.GetInt(0, 3, modifierLoop.variables);
         }
 
-        public static bool healthGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool healthGreater(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return reference is PAPlayer player && player.Health > modifier.GetInt(0, 3, variables);
+            return modifierLoop.reference is PAPlayer player && player.Health > modifier.GetInt(0, 3, modifierLoop.variables);
         }
 
-        public static bool healthLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool healthLesser(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return reference is PAPlayer player && player.Health < modifier.GetInt(0, 3, variables);
+            return modifierLoop.reference is PAPlayer player && player.Health < modifier.GetInt(0, 3, modifierLoop.variables);
         }
 
-        public static bool isDead(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool isDead(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return reference is PAPlayer player && player.RuntimePlayer && player.RuntimePlayer.isDead;
+            return modifierLoop.reference is PAPlayer player && player.RuntimePlayer && player.RuntimePlayer.isDead;
         }
 
-        public static bool isBoosting(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool isBoosting(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return reference is PAPlayer player && player.RuntimePlayer && player.RuntimePlayer.isBoosting;
+            return modifierLoop.reference is PAPlayer player && player.RuntimePlayer && player.RuntimePlayer.isBoosting;
         }
 
-        public static bool isColliding(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool isColliding(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return reference is PAPlayer player && player.RuntimePlayer && player.RuntimePlayer.triggerColliding;
+            return modifierLoop.reference is PAPlayer player && player.RuntimePlayer && player.RuntimePlayer.triggerColliding;
         }
 
-        public static bool isSolidColliding(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool isSolidColliding(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return reference is PAPlayer player && player.RuntimePlayer && player.RuntimePlayer.colliding;
+            return modifierLoop.reference is PAPlayer player && player.RuntimePlayer && player.RuntimePlayer.colliding;
         }
 
         #endregion
@@ -14533,68 +14604,68 @@ namespace BetterLegacy.Core.Helpers
 
     public class ModifierTrigger
     {
-        public ModifierTrigger(string name, Func<Modifier, IModifierReference, Dictionary<string, string>, bool> function)
+        public ModifierTrigger(string name, Func<Modifier, ModifierLoop, bool> function)
         {
             this.name = name;
             this.function = function;
         }
 
-        public ModifierTrigger(string name, Func<Modifier, IModifierReference, Dictionary<string, string>, bool> function, ModifierCompatibility compatibility) : this(name, function)
+        public ModifierTrigger(string name, Func<Modifier, ModifierLoop, bool> function, ModifierCompatibility compatibility) : this(name, function)
         {
             this.compatibility = compatibility;
         }
 
         public ModifierCompatibility compatibility = ModifierCompatibility.AllCompatible;
         public string name;
-        public Func<Modifier, IModifierReference, Dictionary<string, string>, bool> function;
+        public Func<Modifier, ModifierLoop, bool> function;
 
-        public static implicit operator ModifierTrigger(Func<Modifier, IModifierReference, Dictionary<string, string>, bool> function) => new ModifierTrigger(string.Empty, function);
+        public static implicit operator ModifierTrigger(Func<Modifier, ModifierLoop, bool> function) => new ModifierTrigger(string.Empty, function);
 
-        public static implicit operator ModifierTrigger(KeyValuePair<string, Func<Modifier, IModifierReference, Dictionary<string, string>, bool>> keyValuePair) => new ModifierTrigger(keyValuePair.Key, keyValuePair.Value);
+        public static implicit operator ModifierTrigger(KeyValuePair<string, Func<Modifier, ModifierLoop, bool>> keyValuePair) => new ModifierTrigger(keyValuePair.Key, keyValuePair.Value);
     }
 
     public class ModifierAction
     {
-        public ModifierAction(string name, Action<Modifier, IModifierReference, Dictionary<string, string>> function)
+        public ModifierAction(string name, Action<Modifier, ModifierLoop> function)
         {
             this.name = name;
             this.function = function;
         }
         
-        public ModifierAction(string name, Action<Modifier, IModifierReference, Dictionary<string, string>> function, ModifierCompatibility compatibility) : this(name, function)
+        public ModifierAction(string name, Action<Modifier, ModifierLoop> function, ModifierCompatibility compatibility) : this(name, function)
         {
             this.compatibility = compatibility;
         }
 
         public ModifierCompatibility compatibility = ModifierCompatibility.AllCompatible;
         public string name;
-        public Action<Modifier, IModifierReference, Dictionary<string, string>> function;
+        public Action<Modifier, ModifierLoop> function;
 
-        public static implicit operator ModifierAction(Action<Modifier, IModifierReference, Dictionary<string, string>> function) => new ModifierAction(string.Empty, function);
+        public static implicit operator ModifierAction(Action<Modifier, ModifierLoop> function) => new ModifierAction(string.Empty, function);
 
-        public static implicit operator ModifierAction(KeyValuePair<string, Action<Modifier, IModifierReference, Dictionary<string, string>>> keyValuePair) => new ModifierAction(keyValuePair.Key, keyValuePair.Value);
+        public static implicit operator ModifierAction(KeyValuePair<string, Action<Modifier, ModifierLoop>> keyValuePair) => new ModifierAction(keyValuePair.Key, keyValuePair.Value);
     }
 
     public class ModifierInactive
     {
-        public ModifierInactive(string name, Action<Modifier, IModifierReference, Dictionary<string, string>> function)
+        public ModifierInactive(string name, Action<Modifier, ModifierLoop> function)
         {
             this.name = name;
             this.function = function;
         }
 
-        public ModifierInactive(string name, Action<Modifier, IModifierReference, Dictionary<string, string>> function, ModifierCompatibility compatibility) : this(name, function)
+        public ModifierInactive(string name, Action<Modifier, ModifierLoop> function, ModifierCompatibility compatibility) : this(name, function)
         {
             this.compatibility = compatibility;
         }
 
         public ModifierCompatibility compatibility = ModifierCompatibility.AllCompatible;
         public string name;
-        public Action<Modifier, IModifierReference, Dictionary<string, string>> function;
+        public Action<Modifier, ModifierLoop> function;
 
-        public static implicit operator ModifierInactive(Action<Modifier, IModifierReference, Dictionary<string, string>> function) => new ModifierInactive(string.Empty, function);
+        public static implicit operator ModifierInactive(Action<Modifier, ModifierLoop> function) => new ModifierInactive(string.Empty, function);
 
-        public static implicit operator ModifierInactive(KeyValuePair<string, Action<Modifier, IModifierReference, Dictionary<string, string>>> keyValuePair) => new ModifierInactive(keyValuePair.Key, keyValuePair.Value);
+        public static implicit operator ModifierInactive(KeyValuePair<string, Action<Modifier, ModifierLoop>> keyValuePair) => new ModifierInactive(keyValuePair.Key, keyValuePair.Value);
     }
 }
 

@@ -1369,7 +1369,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 beatmapObject.modifiers.ForLoop(modifier =>
                 {
-                    modifier.Inactive?.Invoke(modifier, beatmapObject, null);
+                    modifier.RunInactive(modifier, beatmapObject);
                     ModifiersHelper.OnRemoveCache(modifier);
                     modifier.Result = default;
                 });
@@ -1378,7 +1378,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 backgroundObject.modifiers.ForLoop(modifier =>
                 {
-                    modifier.Inactive?.Invoke(modifier, backgroundObject, null);
+                    modifier.RunInactive(modifier, backgroundObject);
                     ModifiersHelper.OnRemoveCache(modifier);
                     modifier.Result = default;
                 });
@@ -1387,7 +1387,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 prefabObject.modifiers.ForLoop(modifier =>
                 {
-                    modifier.Inactive?.Invoke(modifier, prefabObject, null);
+                    modifier.RunInactive(modifier, prefabObject);
                     ModifiersHelper.OnRemoveCache(modifier);
                     modifier.Result = default;
                 });
@@ -1396,14 +1396,14 @@ namespace BetterLegacy.Editor.Managers
             {
                 modifierBlock.Modifiers.ForLoop(modifier =>
                 {
-                    modifier.Inactive?.Invoke(modifier, null, null);
+                    modifier.RunInactive(modifier, null, null);
                     ModifiersHelper.OnRemoveCache(modifier);
                     modifier.Result = default;
                 });
             }
             GameData.Current.modifiers.ForLoop(modifier =>
             {
-                modifier.Inactive?.Invoke(modifier, GameData.Current, null);
+                modifier.RunInactive(modifier, GameData.Current);
                 ModifiersHelper.OnRemoveCache(modifier);
                 modifier.Result = default;
             });
@@ -1425,7 +1425,7 @@ namespace BetterLegacy.Editor.Managers
                             RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), recalculate: false);
                             beatmapObject.modifiers.ForEach(modifier =>
                             {
-                                modifier.Inactive?.Invoke(modifier, beatmapObject, null);
+                                modifier.RunInactive(modifier, beatmapObject);
                                 ModifiersHelper.OnRemoveCache(modifier);
                                 modifier.Result = default;
                             });
@@ -1438,7 +1438,7 @@ namespace BetterLegacy.Editor.Managers
                             RTLevel.Current?.UpdatePrefab(prefabObject, recalculate: false);
                             prefabObject.modifiers.ForEach(modifier =>
                             {
-                                modifier.Inactive?.Invoke(modifier, prefabObject, null);
+                                modifier.RunInactive(modifier, prefabObject);
                                 ModifiersHelper.OnRemoveCache(modifier);
                                 modifier.Result = default;
                             });
@@ -1452,7 +1452,7 @@ namespace BetterLegacy.Editor.Managers
                             RTLevel.Current?.UpdateBackgroundObject(backgroundObject, recalculate: false);
                             backgroundObject.modifiers.ForEach(modifier =>
                             {
-                                modifier.Inactive?.Invoke(modifier, backgroundObject, null);
+                                modifier.RunInactive(modifier, backgroundObject);
                                 ModifiersHelper.OnRemoveCache(modifier);
                                 modifier.Result = default;
                             });

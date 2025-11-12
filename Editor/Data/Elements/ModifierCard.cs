@@ -332,7 +332,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                     try
                     {
-                        modifier.Inactive?.Invoke(modifier, reference as IModifierReference, null);
+                        modifier.RunInactive(modifier, reference as IModifierReference);
                     }
                     catch (Exception ex)
                     {
@@ -4649,7 +4649,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         break;
                     }
 
-                case "forLoop": {
+                case nameof(ModifierFunctions.forLoop): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
                         IntegerGenerator(modifier, reference, "Start Index", 1, 0);
                         IntegerGenerator(modifier, reference, "End Count", 2, 10);
@@ -5298,7 +5298,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
             modifier.active = false;
             modifier.runCount = 0;
-            modifier.Inactive?.Invoke(modifier, reference as IModifierReference, null);
+            modifier.RunInactive(modifier, reference as IModifierReference);
             ModifiersHelper.OnRemoveCache(modifier);
             modifier.Result = default;
         }

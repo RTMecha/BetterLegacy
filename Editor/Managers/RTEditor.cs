@@ -4079,7 +4079,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var modifier = beatmapObject.modifiers[j];
                         modifier.active = false;
-                        modifier.Inactive?.Invoke(modifier, beatmapObject, null);
+                        modifier.RunInactive(modifier, beatmapObject);
                     }
                 }
 

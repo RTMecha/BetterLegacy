@@ -90,7 +90,7 @@ namespace BetterLegacy.Core.Runtime.Objects
                 modifier.runCount = 0;
                 modifier.active = false;
                 modifier.running = false;
-                modifier.Inactive?.Invoke(modifier, reference, variables);
+                modifier.RunInactive(modifier, loop);
             });
         }
 
