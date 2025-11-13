@@ -578,7 +578,7 @@ namespace BetterLegacy.Configs
             TimelineBarButtonsHoverSize = Bind(this, EDITOR_GUI, "Timeline Bar Buttons Focus Size", 1.05f, "How big the button gets when hovered.", 0.7f, 1.4f);
             PrefabButtonHoverSize = Bind(this, EDITOR_GUI, "Prefab Panel Focus Size", 1.05f, "How big the button gets when hovered.", 0.7f, 1.4f);
 
-            PrefabCreatorDefaultSelectionTab = Bind(this, EDITOR_GUI, "Prefab Creator Default Selection Tab", RTPrefabEditor.SelectionType.BeatmapThemes, "The default selection tab for the Prefab Creator.");
+            PrefabCreatorDefaultSelectionTab = BindEnum(this, EDITOR_GUI, "Prefab Creator Default Selection Tab", RTPrefabEditor.SelectionType.BeatmapThemes, "The default selection tab for the Prefab Creator.");
 
             #endregion
 
