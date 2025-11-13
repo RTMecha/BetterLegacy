@@ -80,6 +80,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
             elements.AddRange(GenerateTopBar("Pause Menu"));
 
+            int index = 0;
             for (int i = 0; i < buttonElements.Length; i++)
             {
                 var buttonElement = buttonElements[i];
@@ -101,11 +102,11 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     } :
                     new MenuButton
                     {
-                        id = i.ToString(),
+                        id = index.ToString(),
                         name = buttonElement.name,
                         text = buttonElement.text,
                         parentLayout = "buttons",
-                        selectionPosition = new Vector2Int(0, i),
+                        selectionPosition = new Vector2Int(0, index),
                         rect = RectValues.Default.SizeDelta(200f, 64f),
                         opacity = 0.1f,
                         val = -40f,
@@ -118,6 +119,9 @@ namespace BetterLegacy.Menus.UI.Interfaces
                         func = buttonElement.func,
                     };
                 elements.Add(element);
+
+                if (!buttonElement.isSpacer)
+                    index++;
             }
 
             for (int i = 0; i < infoElements.Length; i++)
