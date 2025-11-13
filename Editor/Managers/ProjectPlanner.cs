@@ -508,7 +508,15 @@ namespace BetterLegacy.Editor.Managers
                     spriteImage.sprite = EditorSprites.EditSprite;
 
                     var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(timelineButtonPrefab.transform, "delete");
-                    UIManager.SetRectTransform(delete.transform.AsRT(), new Vector2(-16f, -16f), Vector2.one, Vector2.one, new Vector2(0.5f, 0.5f), new Vector2(24f, 24f));
+                    new RectValues(new Vector2(-16f, -16f), Vector2.one, Vector2.one, new Vector2(0.5f, 0.5f), new Vector2(24f, 24f)).AssignToRectTransform(delete.transform.AsRT());
+                    
+                    var moveBack = EditorPrefabHolder.Instance.SpriteButton.Duplicate(timelineButtonPrefab.transform, "<");
+                    new RectValues(new Vector2(-136f, -16f), Vector2.one, Vector2.one, new Vector2(0.5f, 0.5f), new Vector2(24f, 24f)).AssignToRectTransform(moveBack.transform.AsRT());
+                    moveBack.GetComponent<Image>().sprite = EditorSprites.LeftArrow;
+                    
+                    var moveForward = EditorPrefabHolder.Instance.SpriteButton.Duplicate(timelineButtonPrefab.transform, ">");
+                    new RectValues(new Vector2(-96f, -16f), Vector2.one, Vector2.one, new Vector2(0.5f, 0.5f), new Vector2(24f, 24f)).AssignToRectTransform(moveForward.transform.AsRT());
+                    moveForward.GetComponent<Image>().sprite = EditorSprites.RightArrow;
 
                     timelineAddPrefab = baseCardPrefab.Duplicate(assetsParent, "timeline add prefab");
                     var albumArtAdd = timelineAddPrefab.transform.GetChild(0);
@@ -517,16 +525,17 @@ namespace BetterLegacy.Editor.Managers
 
                     timelineAddPrefab.GetComponent<Image>().sprite = null;
 
-                    DestroyImmediate(albumArtAdd.gameObject);
+                    CoreHelper.Delete(albumArtAdd);
+
                     artistAdd.SetParent(prefab.transform);
-                    artistAdd.AsRT().anchoredPosition = new Vector2(-240f, 110f);
-                    artistAdd.AsRT().sizeDelta = new Vector2(-128f, 40f);
+                    artistAdd.SetSiblingIndex(2);
+                    RectValues.FullAnchored.SizeDelta(-10f, 0f).AssignToRectTransform(artistAdd.AsRT());
                     artistAdd.name = "name";
 
                     var tmpArtistAdd = artistAdd.GetComponent<TextMeshProUGUI>();
                     tmpArtistAdd.alignment = TextAlignmentOptions.TopLeft;
                     tmpArtistAdd.color = Color.white;
-                    tmpArtistAdd.fontSize = 30;
+                    tmpArtistAdd.fontSize = 25;
 
                     titleAdd.AsRT().anchoredPosition = Vector2.zero;
                     titleAdd.AsRT().sizeDelta = new Vector2(0f, 400f);
@@ -1949,6 +1958,16 @@ namespace BetterLegacy.Editor.Managers
             schedules.Clear();
             notes.Clear();
             osts.Clear();
+        }
+
+        public void Save()
+        {
+            SaveDocuments();
+            SaveTODO();
+            SaveTimelines();
+            SaveSchedules();
+            SaveNotes();
+            SaveOST();
         }
 
         public void Load()
