@@ -38,77 +38,7 @@ namespace BetterLegacy.Editor.Data.Planners
                 foreach (var level in Levels)
                 {
                     int index = num;
-                    var gameObject = ProjectPlanner.inst.timelineButtonPrefab.Duplicate(Content, "event");
-                    gameObject.transform.localScale = Vector3.one;
-                    level.GameObject = gameObject;
-
-                    level.Button = gameObject.GetComponent<Button>();
-                    level.Button.onClick.NewListener(() =>
-                    {
-                        string path = $"{RTFile.ApplicationDirectory}beatmaps/{RTFile.ReplaceSlash(level.Path).Remove("/" + Level.LEVEL_LSB)}";
-                        if (Level.TryVerify(path, true, out Level actualLevel))
-                        {
-                            ProjectPlanner.inst.Close();
-                            EditorLevelManager.inst.LoadLevel(actualLevel);
-                        }
-                    });
-
-                    EditorThemeManager.ApplySelectable(level.Button, ThemeGroup.List_Button_1);
-
-                    level.NameUI = gameObject.transform.Find("name").GetComponent<TextMeshProUGUI>();
-                    level.NameUI.text = $"{level.ElementType}: {level.Name}";
-                    EditorThemeManager.ApplyLightText(level.NameUI);
-                    level.DescriptionUI = gameObject.transform.Find("description").GetComponent<TextMeshProUGUI>();
-                    level.DescriptionUI.text = level.Description;
-                    EditorThemeManager.ApplyLightText(level.DescriptionUI);
-
-                    var delete = gameObject.transform.Find("delete").GetComponent<DeleteButtonStorage>();
-                    delete.button.onClick.NewListener(() =>
-                    {
-                        Levels.RemoveAt(index);
-                        UpdateTimeline();
-                        ProjectPlanner.inst.SaveTimelines();
-                    });
-
-                    EditorThemeManager.ApplyGraphic(delete.button.image, ThemeGroup.Delete, true);
-                    EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
-
-                    var edit = gameObject.transform.Find("edit").GetComponent<Button>();
-                    edit.onClick.NewListener(() =>
-                    {
-                        CoreHelper.Log($"Editing {Name}");
-                        ProjectPlanner.inst.OpenEventEditor(level);
-                    });
-
-                    EditorThemeManager.ApplyGraphic(edit.image, ThemeGroup.Function_3, true);
-                    EditorThemeManager.ApplyGraphic(edit.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Function_3_Text);
-                    
-                    var moveBack = gameObject.transform.Find("<").GetComponent<Button>();
-                    moveBack.onClick.NewListener(() =>
-                    {
-                        if (index - 1 < 0)
-                            return;
-
-                        Levels.Move(index, index - 1);
-                        UpdateTimeline();
-                        ProjectPlanner.inst.SaveTimelines();
-                    });
-
-                    EditorThemeManager.ApplySelectable(moveBack, ThemeGroup.Function_2, false);
-                    
-                    var moveForward = gameObject.transform.Find(">").GetComponent<Button>();
-                    moveForward.onClick.NewListener(() =>
-                    {
-                        if (index + 1 >= Levels.Count)
-                            return;
-
-                        Levels.Move(index, index + 1);
-                        UpdateTimeline();
-                        ProjectPlanner.inst.SaveTimelines();
-                    });
-
-                    EditorThemeManager.ApplySelectable(moveForward, ThemeGroup.Function_2, false);
-
+                    level.Init(this, index);
                     num++;
                 }
 
@@ -134,14 +64,11 @@ namespace BetterLegacy.Editor.Data.Planners
             }
             else
             {
+                int num = 0;
                 foreach (var level in Levels)
                 {
                     if (!level.GameObject)
-                    {
-                        var gameObject = ProjectPlanner.inst.timelineButtonPrefab.Duplicate(Content, "event");
-                        gameObject.transform.localScale = Vector3.one;
-                        level.GameObject = gameObject;
-                    }
+                        level.Init(this, num);
 
                     if (!level.NameUI)
                         level.NameUI = level.GameObject.transform.Find("name").GetComponent<TextMeshProUGUI>();
@@ -150,6 +77,7 @@ namespace BetterLegacy.Editor.Data.Planners
 
                     level.NameUI.text = $"{level.ElementType}: {level.Name}";
                     level.DescriptionUI.text = level.Description;
+                    num++;
                 }
             }
         }
@@ -171,6 +99,84 @@ namespace BetterLegacy.Editor.Data.Planners
                 Level,
                 Cutscene,
                 Story
+            }
+
+            public void Init(TimelinePlanner timelinePlanner, int index)
+            {
+                GameObject gameObject = GameObject;
+                if (gameObject)
+                    CoreHelper.Delete(gameObject);
+
+                gameObject = ProjectPlanner.inst.timelineButtonPrefab.Duplicate(timelinePlanner.Content, "event", index);
+                gameObject.transform.localScale = Vector3.one;
+                GameObject = gameObject;
+
+                Button = gameObject.GetComponent<Button>();
+                Button.onClick.NewListener(() =>
+                {
+                    string path = $"{RTFile.ApplicationDirectory}beatmaps/{RTFile.ReplaceSlash(Path).Remove("/" + Level.LEVEL_LSB)}";
+                    if (Level.TryVerify(path, true, out Level actualLevel))
+                    {
+                        ProjectPlanner.inst.Close();
+                        EditorLevelManager.inst.LoadLevel(actualLevel);
+                    }
+                });
+
+                EditorThemeManager.ApplySelectable(Button, ThemeGroup.List_Button_1);
+
+                NameUI = gameObject.transform.Find("name").GetComponent<TextMeshProUGUI>();
+                NameUI.text = $"{ElementType}: {Name}";
+                EditorThemeManager.ApplyLightText(NameUI);
+                DescriptionUI = gameObject.transform.Find("description").GetComponent<TextMeshProUGUI>();
+                DescriptionUI.text = Description;
+                EditorThemeManager.ApplyLightText(DescriptionUI);
+
+                var delete = gameObject.transform.Find("delete").GetComponent<DeleteButtonStorage>();
+                delete.button.onClick.NewListener(() =>
+                {
+                    timelinePlanner.Levels.RemoveAt(index);
+                    timelinePlanner.UpdateTimeline();
+                    ProjectPlanner.inst.SaveTimelines();
+                });
+
+                EditorThemeManager.ApplyGraphic(delete.button.image, ThemeGroup.Delete, true);
+                EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
+
+                var edit = gameObject.transform.Find("edit").GetComponent<Button>();
+                edit.onClick.NewListener(() =>
+                {
+                    CoreHelper.Log($"Editing {Name}");
+                    ProjectPlanner.inst.OpenEventEditor(this);
+                });
+
+                EditorThemeManager.ApplyGraphic(edit.image, ThemeGroup.Function_3, true);
+                EditorThemeManager.ApplyGraphic(edit.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Function_3_Text);
+
+                var moveBack = gameObject.transform.Find("<").GetComponent<Button>();
+                moveBack.onClick.NewListener(() =>
+                {
+                    if (index - 1 < 0)
+                        return;
+
+                    timelinePlanner.Levels.Move(index, index - 1);
+                    timelinePlanner.UpdateTimeline();
+                    ProjectPlanner.inst.SaveTimelines();
+                });
+
+                EditorThemeManager.ApplySelectable(moveBack, ThemeGroup.Function_2, false);
+
+                var moveForward = gameObject.transform.Find(">").GetComponent<Button>();
+                moveForward.onClick.NewListener(() =>
+                {
+                    if (index + 1 >= timelinePlanner.Levels.Count)
+                        return;
+
+                    timelinePlanner.Levels.Move(index, index + 1);
+                    timelinePlanner.UpdateTimeline();
+                    ProjectPlanner.inst.SaveTimelines();
+                });
+
+                EditorThemeManager.ApplySelectable(moveForward, ThemeGroup.Function_2, false);
             }
         }
 

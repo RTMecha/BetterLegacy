@@ -427,18 +427,6 @@ namespace BetterLegacy.Editor.Managers
                     var prefabImage = prefab.AddComponent<Image>();
                     prefabImage.color = new Color(0f, 0f, 0f, 0.2f);
 
-                    var editPrefab = EditorPrefabHolder.Instance.CloseButton.Duplicate(prefab.transform, "edit");
-                    UIManager.SetRectTransform(editPrefab.transform.AsRT(), new Vector2(-38f, -12f), Vector2.one, Vector2.one, new Vector2(0.5f, 0.5f), new Vector2(20f, 20f));
-                    editPrefab.transform.GetChild(0).AsRT().sizeDelta = new Vector2(0f, 0f);
-                    var editPrefabButton = editPrefab.GetComponent<Button>();
-                    editPrefabButton.colors = UIManager.SetColorBlock(editPrefabButton.colors, new Color(0.9f, 0.9f, 0.9f, 1f), Color.white, Color.white, new Color(0.9f, 0.9f, 0.9f, 1f), LSColors.red700);
-                    var spritePrefabImage = editPrefab.transform.GetChild(0).GetComponent<Image>();
-                    spritePrefabImage.color = new Color(0.037f, 0.037f, 0.037f, 1f);
-                    spritePrefabImage.sprite = EditorSprites.EditSprite;
-
-                    var deletePrefab = EditorPrefabHolder.Instance.DeleteButton.Duplicate(prefab.transform, "delete");
-                    UIManager.SetRectTransform(deletePrefab.transform.AsRT(), new Vector2(-12f, -12f), Vector2.one, Vector2.one, new Vector2(0.5f, 0.5f), new Vector2(20f, 20f));
-
                     var prefabScroll = Creator.NewUIObject("Scroll", prefab.transform);
                     UIManager.SetRectTransform(prefabScroll.transform.AsRT(), new Vector2(640f, -125f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0.5f, 0.5f), new Vector2(1260f, 200f));
                     var prefabScrollRect = prefabScroll.AddComponent<ScrollRect>();
@@ -469,6 +457,18 @@ namespace BetterLegacy.Editor.Managers
                     scrollBar.transform.AsRT().sizeDelta = new Vector2(0f, 25f);
 
                     prefabScrollRect.horizontalScrollbar = scrollBar.GetComponent<Scrollbar>();
+
+                    var editPrefab = EditorPrefabHolder.Instance.CloseButton.Duplicate(prefab.transform, "edit");
+                    UIManager.SetRectTransform(editPrefab.transform.AsRT(), new Vector2(-38f, -12f), Vector2.one, Vector2.one, new Vector2(0.5f, 0.5f), new Vector2(20f, 20f));
+                    editPrefab.transform.GetChild(0).AsRT().sizeDelta = new Vector2(0f, 0f);
+                    var editPrefabButton = editPrefab.GetComponent<Button>();
+                    editPrefabButton.colors = UIManager.SetColorBlock(editPrefabButton.colors, new Color(0.9f, 0.9f, 0.9f, 1f), Color.white, Color.white, new Color(0.9f, 0.9f, 0.9f, 1f), LSColors.red700);
+                    var spritePrefabImage = editPrefab.transform.GetChild(0).GetComponent<Image>();
+                    spritePrefabImage.color = new Color(0.037f, 0.037f, 0.037f, 1f);
+                    spritePrefabImage.sprite = EditorSprites.EditSprite;
+
+                    var deletePrefab = EditorPrefabHolder.Instance.DeleteButton.Duplicate(prefab.transform, "delete");
+                    UIManager.SetRectTransform(deletePrefab.transform.AsRT(), new Vector2(-12f, -12f), Vector2.one, Vector2.one, new Vector2(0.5f, 0.5f), new Vector2(20f, 20f));
 
                     timelineButtonPrefab = baseCardPrefab.Duplicate(assetsParent, "timeline button prefab");
                     var albumArt = timelineButtonPrefab.transform.GetChild(0);
@@ -529,7 +529,7 @@ namespace BetterLegacy.Editor.Managers
 
                     artistAdd.SetParent(prefab.transform);
                     artistAdd.SetSiblingIndex(2);
-                    RectValues.FullAnchored.SizeDelta(-10f, 0f).AssignToRectTransform(artistAdd.AsRT());
+                    RectValues.FullAnchored.AnchorMin(0f, 1f).Pivot(0.5f, 1f).SizeDelta(-10f, 32f).AssignToRectTransform(artistAdd.AsRT());
                     artistAdd.name = "name";
 
                     var tmpArtistAdd = artistAdd.GetComponent<TextMeshProUGUI>();
@@ -2005,7 +2005,7 @@ namespace BetterLegacy.Editor.Managers
             if (string.IsNullOrEmpty(Path.GetFileName(path)) || !RTFile.DirectoryExists(path))
                 return;
 
-            var jn = JSON.Parse("{}");
+            var jn = Parser.NewJSONObject();
 
             var list = documents;
 
@@ -2043,7 +2043,7 @@ namespace BetterLegacy.Editor.Managers
             if (string.IsNullOrEmpty(Path.GetFileName(path)) || !RTFile.DirectoryExists(path))
                 return;
 
-            var jn = JSON.Parse("{}");
+            var jn = Parser.NewJSONObject();
 
             var list = todos;
 
@@ -2079,25 +2079,28 @@ namespace BetterLegacy.Editor.Managers
             if (string.IsNullOrEmpty(Path.GetFileName(path)) || !RTFile.DirectoryExists(path))
                 return;
 
-            var jn = JSON.Parse("{}");
+            var jn = Parser.NewJSONObject();
 
             var list = timelines;
 
             for (int i = 0; i < list.Count; i++)
             {
-                jn["timelines"][i]["name"] = list[i].Name;
+                var timeline = list[i];
+                jn["timelines"][i]["name"] = timeline.Name;
 
-                for (int j = 0; j < list[i].Levels.Count; j++)
+                for (int j = 0; j < timeline.Levels.Count; j++)
                 {
-                    var level = list[i].Levels[j];
-                    jn["timelines"][i]["levels"][j]["n"] = level.Name;
-                    jn["timelines"][i]["levels"][j]["p"] = level.Path;
-                    jn["timelines"][i]["levels"][j]["t"] = ((int)level.ElementType).ToString();
-                    jn["timelines"][i]["levels"][j]["d"] = level.Description;
+                    var level = timeline.Levels[j];
+                    var jnLevel = Parser.NewJSONObject();
+                    jnLevel["n"] = level.Name;
+                    jnLevel["p"] = level.Path;
+                    jnLevel["t"] = ((int)level.ElementType).ToString();
+                    jnLevel["d"] = level.Description;
+                    jn["timelines"][i]["levels"][j] = jnLevel;
                 }
             }
 
-            RTFile.WriteToFile(RTFile.CombinePaths(path, $"timeline{FileFormat.LSN.Dot()}"), jn.ToString(3));
+            RTFile.WriteToFile(RTFile.CombinePaths(path, $"timelines{FileFormat.LSN.Dot()}"), jn.ToString(3));
         }
 
         public void LoadTimelines()
@@ -2112,16 +2115,19 @@ namespace BetterLegacy.Editor.Managers
             {
                 var timeline = new TimelinePlanner();
 
-                timeline.Name = jn["timelines"][i]["name"];
+                var jnTimeline = jn["timelines"][i];
 
-                for (int j = 0; j < jn["timelines"][i]["levels"].Count; j++)
+                timeline.Name = jnTimeline["name"];
+
+                for (int j = 0; j < jnTimeline["levels"].Count; j++)
                 {
+                    var jnLevel = jnTimeline["levels"][j];
                     timeline.Levels.Add(new TimelinePlanner.Event
                     {
-                        Name = jn["timelines"][i]["levels"][j]["n"],
-                        Path = jn["timelines"][i]["levels"][j]["p"],
-                        ElementType = (TimelinePlanner.Event.Type)jn["timelines"][i]["levels"][j]["t"].AsInt,
-                        Description = jn["timelines"][i]["levels"][j]["d"],
+                        Name = jnLevel["n"],
+                        Path = jnLevel["p"],
+                        ElementType = (TimelinePlanner.Event.Type)jnLevel["t"].AsInt,
+                        Description = jnLevel["d"],
                     });
                 }
 
@@ -2135,7 +2141,7 @@ namespace BetterLegacy.Editor.Managers
             if (string.IsNullOrEmpty(Path.GetFileName(path)) || !RTFile.DirectoryExists(path))
                 return;
 
-            var jn = JSON.Parse("{}");
+            var jn = Parser.NewJSONObject();
 
             var list = schedules;
 
@@ -2180,7 +2186,7 @@ namespace BetterLegacy.Editor.Managers
             if (string.IsNullOrEmpty(Path.GetFileName(path)) || !RTFile.DirectoryExists(path))
                 return;
 
-            var jn = JSON.Parse("{}");
+            var jn = Parser.NewJSONObject();
 
             var list = notes;
 
@@ -2238,7 +2244,7 @@ namespace BetterLegacy.Editor.Managers
             if (string.IsNullOrEmpty(Path.GetFileName(path)) || !RTFile.DirectoryExists(path))
                 return;
 
-            var jn = JSON.Parse("{}");
+            var jn = Parser.NewJSONObject();
 
             var list = osts;
 
