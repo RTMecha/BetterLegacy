@@ -1,4 +1,27 @@
-﻿# 1.8.11 [Nov 6, 2025]
+﻿# 1.8.12 [Nov 14, 2025]
+## Features
+### Core
+- More modifiers support variable formatting.
+- Added callModifiers and callModifiersTrigger modifiers. These act as timeline-friendly alternatives to the callModifierBlock modifiers.
+- Added "Show Pause Time Slider" to Config Manager > Core > Game. If the pause menu should display a slider that can set the level time. Only displays in zen mode. (only recommended for animation levels)
+
+### Editor
+- Added move index buttons to the timeline planner events.
+
+## Changes
+### Interfaces
+- Removed unused interface settings.
+
+## Fixes
+- Fixed Prefab Creator Dialog being in the wrong order.
+- Fixed some object creation options having the incorrect object type.
+- Fixed a game freeze that can occur with the spawnClone and forLoop modifiers.
+- Fixed the callModifierBlockTrigger counting as an action rather than a trigger.
+- Fixed the timeline planner UI being broken.
+
+------------------------------------------------------------------------------------------
+
+# 1.8.11 [Nov 6, 2025]
 ## Features
 ### Core
 - Added the spawnClone and spawnCloneMath action modifiers. These spawn a copy of the current object and its children a set number of times with a few offset values.
