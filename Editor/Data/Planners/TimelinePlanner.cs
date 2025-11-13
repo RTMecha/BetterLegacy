@@ -82,6 +82,32 @@ namespace BetterLegacy.Editor.Data.Planners
 
                     EditorThemeManager.ApplyGraphic(edit.image, ThemeGroup.Function_3, true);
                     EditorThemeManager.ApplyGraphic(edit.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Function_3_Text);
+                    
+                    var moveBack = gameObject.transform.Find("<").GetComponent<Button>();
+                    moveBack.onClick.NewListener(() =>
+                    {
+                        if (index - 1 < 0)
+                            return;
+
+                        Levels.Move(index, index - 1);
+                        UpdateTimeline();
+                        ProjectPlanner.inst.SaveTimelines();
+                    });
+
+                    EditorThemeManager.ApplySelectable(moveBack, ThemeGroup.Function_2, false);
+                    
+                    var moveForward = gameObject.transform.Find(">").GetComponent<Button>();
+                    moveForward.onClick.NewListener(() =>
+                    {
+                        if (index + 1 >= Levels.Count)
+                            return;
+
+                        Levels.Move(index, index + 1);
+                        UpdateTimeline();
+                        ProjectPlanner.inst.SaveTimelines();
+                    });
+
+                    EditorThemeManager.ApplySelectable(moveForward, ThemeGroup.Function_2, false);
 
                     num++;
                 }
