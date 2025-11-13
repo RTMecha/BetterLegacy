@@ -979,7 +979,7 @@ namespace BetterLegacy.Core.Runtime
 
         public virtual void OnObjectModifiersTick()
         {
-            if (GameData.Current && CoreHelper.Sequencing)
+            if (GameData.Current)
                 objectModifiersEngine?.Update(FixedTime);
         }
 
@@ -1245,7 +1245,7 @@ namespace BetterLegacy.Core.Runtime
 
         public virtual void OnBackgroundModifiersTick()
         {
-            if (CoreConfig.Instance.ShowBackgroundObjects.Value && CoreHelper.Sequencing)
+            if (CoreConfig.Instance.ShowBackgroundObjects.Value)
                 bgModifiersEngine?.Update(FixedTime);
         }
 
@@ -1579,7 +1579,7 @@ namespace BetterLegacy.Core.Runtime
 
         public virtual void OnPrefabModifiersTick()
         {
-            if (CoreHelper.Sequencing)
+            if (GameData.Current)
                 prefabModifiersEngine?.Update(FixedTime);
         }
 

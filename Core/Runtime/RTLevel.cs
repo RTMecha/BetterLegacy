@@ -400,7 +400,7 @@ namespace BetterLegacy.Core.Runtime
             if (GameManager.inst.introMain && AudioManager.inst.CurrentAudioSource.time < 15f)
                 GameManager.inst.introMain.SetActive(EventsConfig.Instance.ShowIntro.Value);
 
-            if (EventManager.inst && (CoreHelper.Playing || CoreHelper.Reversing || LevelManager.LevelEnded))
+            if (EventManager.inst)
             {
                 if (CoreConfig.Instance.ControllerRumble.Value && EventsConfig.Instance.ShakeAffectsController.Value)
                     InputDataManager.inst.SetAllControllerRumble(EventManager.inst.shakeMultiplier);

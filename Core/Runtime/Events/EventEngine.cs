@@ -745,9 +745,6 @@ namespace BetterLegacy.Core.Runtime.Events
             if (!GameManager.inst)
                 return;
 
-            if (!(CoreHelper.Playing || CoreHelper.Reversing || LevelManager.LevelEnded))
-                return;
-
             if (!GameData.Current || GameData.Current.events == null || GameData.Current.events.IsEmpty())
                 return;
 
