@@ -12,12 +12,15 @@ using BetterLegacy.Core;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Core.Components;
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Managers.Settings;
+using BetterLegacy.Core.Runtime;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Managers;
+using BetterLegacy.Menus.UI.Interfaces;
 
 using Axis = BetterLegacy.Editor.Components.SelectObject.Axis;
 
@@ -53,7 +56,48 @@ namespace BetterLegacy.Arcade.Managers
             InitCheckpointAnimation();
 
             if (!CoreHelper.InEditor)
+            {
+                pauseSliderCanvas = UIManager.GenerateUICanvas("Pause Slider Canvas", null);
+                var sliderBase = Creator.NewUIObject("Base", pauseSliderCanvas.GameObject.transform);
+                RectValues.Default.AnchoredPosition(570f, -250f).SizeDelta(500f, 100f).AssignToRectTransform(sliderBase.transform.AsRT());
+                var sliderBaseImage = sliderBase.AddComponent<Image>();
+                sliderBaseImage.color = new Color(0f, 0f, 0f, 0.3f);
+
+                var text = UIManager.GenerateText("Text", sliderBase.transform);
+                RectValues.FullAnchored.AssignToRectTransform(text.rectTransform);
+                text.text = "Set Time";
+
+                var slider = Creator.NewUIObject("Slider", sliderBase.transform);
+                new RectValues(Vector2.zero, new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.one, new Vector2(400f, 32f)).AssignToRectTransform(slider.transform.AsRT());
+                RectValues.Default.SizeDelta(400f, 32f).AssignToRectTransform(slider.transform.AsRT());
+
+                var sliderBack = Creator.NewUIObject("Image", slider.transform);
+                RectValues.FullAnchored.AssignToRectTransform(sliderBack.transform.AsRT());
+                var sliderImage = sliderBack.AddComponent<Image>();
+                sliderImage.color = new Color(1f, 1f, 1f, 0.3f);
+
+                var handleSlideArea = Creator.NewUIObject("Handle Slide Area", slider.transform);
+                RectValues.FullAnchored.SizeDelta(-16f, 0f).AssignToRectTransform(handleSlideArea.transform.AsRT());
+
+                var handle = Creator.NewUIObject("Handle", handleSlideArea.transform);
+                new RectValues(new Vector2(8f, 0f), Vector2.one, new Vector2(1f, 0f), new Vector2(1f, 0.5f), new Vector2(16f, 0f)).AssignToRectTransform(handle.transform.AsRT());
+                var handleImage = handle.AddComponent<Image>();
+                handleImage.color = Color.white;
+
+                pauseSlider = slider.AddComponent<Slider>();
+                pauseSlider.handleRect = handleImage.rectTransform;
+                pauseSlider.minValue = 0f;
+                pauseSlider.maxValue = 1f;
+                pauseSlider.wholeNumbers = false;
+                pauseSlider.onValueChanged.NewListener(_val =>
+                {
+                    AudioManager.inst.SetMusicTime(_val * AudioManager.inst.CurrentAudioSource.clip.length);
+                    RTLevel.Current?.Tick();
+                });
+                pauseSliderCanvas.GameObject.SetActive(false);
+
                 return;
+            }
 
             objectDragger = Creator.NewGameObject("Dragger", GameManager.inst.transform.parent).transform;
 
@@ -83,7 +127,18 @@ namespace BetterLegacy.Arcade.Managers
                 blur.gameObject.SetActive(false);
 
             if (!CoreHelper.InEditor)
+            {
+                var active = ShowPauseSlider;
+                if (active != cachedShowPauseSlider)
+                {
+                    pauseSliderCanvas.GameObject.SetActive(active);
+
+                    if (active && pauseSlider)
+                        pauseSlider.SetValueWithoutNotify(AudioManager.inst.CurrentAudioSource.time / AudioManager.inst.CurrentAudioSource.clip.length);
+                }
+                cachedShowPauseSlider = active;
                 return;
+            }
 
             objectDragger.gameObject.SetActive(SelectObject.Enabled && CoreHelper.InEditor && EditorManager.inst.isEditing &&
                 EditorTimeline.inst.SelectedObjectCount == 1 &&
@@ -148,6 +203,11 @@ namespace BetterLegacy.Arcade.Managers
                 checkpointImages.Add(image);
             }
         }
+
+        public bool ShowPauseSlider => CoreHelper.Paused && RTBeatmap.Current.Invincible && PauseMenu.Current && !PauseMenu.Current.unpausing && !PauseMenu.Current.generating && CoreConfig.Instance.ShowPauseTimeSlider.Value;
+        bool cachedShowPauseSlider;
+        public UICanvas pauseSliderCanvas;
+        public Slider pauseSlider;
 
         #region Checkpoints
 

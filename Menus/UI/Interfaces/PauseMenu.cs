@@ -257,10 +257,13 @@ namespace BetterLegacy.Menus.UI.Interfaces
             if (!CoreHelper.Paused || !Current)
                 return;
 
+            Current.unpausing = true;
             CoroutineHelper.StartCoroutine(CoreConfig.Instance.PlayPauseCountdown.Value ? Current.StartCountdown(onCooldownEnd) : Current.SkipCountdown(onCooldownEnd));
         }
 
         #endregion
+
+        public bool unpausing;
 
         /// <summary>
         /// Array of pause menu elements.
