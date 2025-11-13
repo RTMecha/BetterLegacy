@@ -1930,7 +1930,16 @@ namespace BetterLegacy.Editor.Managers
 
         #region Save / Load
 
-        public void SaveLevel(Keybind keybind) => EditorLevelManager.inst.SaveLevel();
+        public void SaveLevel(Keybind keybind)
+        {
+            if (ProjectPlanner.inst && ProjectPlanner.inst.PlannerActive)
+            {
+                ProjectPlanner.inst.Save();
+                return;
+            }
+
+            EditorLevelManager.inst.SaveLevel();
+        }
 
         public void OpenLevelPopup(Keybind keybind) => EditorManager.inst.OpenBeatmapPopup();
 
