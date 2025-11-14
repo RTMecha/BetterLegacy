@@ -61,6 +61,12 @@ namespace BetterLegacy.Editor.Components
 
         public void OnPointerDown(PointerEventData eventData)
         {
+            if (note && note.Hyperlinks && note.Hyperlinks.IsLinkHighlighted)
+            {
+                note.Hyperlinks.OnPointerClick(eventData);
+                return;
+            }
+
             if (Free)
             {
                 SoundManager.inst.PlaySound(DefaultSounds.Click);

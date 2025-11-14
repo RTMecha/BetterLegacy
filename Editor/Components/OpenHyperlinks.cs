@@ -15,26 +15,57 @@ using BetterLegacy.Core.Helpers;
 namespace BetterLegacy.Editor.Components
 {
     // somewhat based upon the TextMesh Pro example script: TMP_TextSelector_B
-    [RequireComponent(typeof(TextMeshProUGUI))]
+    //[RequireComponent(typeof(TextMeshProUGUI))]
     public class OpenHyperlinks : MonoBehaviour, IPointerClickHandler
     {
+        #region Values
+
+        /// <summary>
+        /// If the linked text should change color on hover.
+        /// </summary>
         public bool doesColorChangeOnHover = true;
+        /// <summary>
+        /// The color to set to the linked text on hover.
+        /// </summary>
         public Color hoverColor = new Color(60f / 255f, 120f / 255f, 1f);
 
-        TextMeshProUGUI textMeshPro;
+        /// <summary>
+        /// If a link in <see cref="Text"/> is highlighted.
+        /// </summary>
+        public bool IsLinkHighlighted => currentLink != -1;
+
+        /// <summary>
+        /// The currently highlighted link index.
+        /// </summary>
+        public int CurrentLinkIndex => currentLink;
+
+        /// <summary>
+        /// Cached TMP text.
+        /// </summary>
+        public TextMeshProUGUI Text { get; set; }
+
+        /// <summary>
+        /// FUnction to run on click.
+        /// </summary>
+        public Action<PointerEventData> onClick;
+
         Canvas canvas;
         Camera camera;
 
-        public bool IsLinkHighlighted => currentLink != -1;
-        public bool highlighted;
-        public int linkIndex = -1;
-
-        public int currentLink = -1;
+        bool highlighted;
+        int linkIndex = -1;
+        int currentLink = -1;
         List<Color32[]> originalVertexColors = new List<Color32[]>();
+
+        List<LinkAction> linkActions = new List<LinkAction>();
+
+        #endregion
+
+        #region Functions
 
         void Awake()
         {
-            textMeshPro = GetComponent<TextMeshProUGUI>();
+            Text = GetComponent<TextMeshProUGUI>();
             canvas = GetComponentInParent<Canvas>();
 
             // Get a reference to the camera if Canvas Render Mode is not ScreenSpace Overlay.
@@ -43,6 +74,10 @@ namespace BetterLegacy.Editor.Components
 
         void LateUpdate()
         {
+            var textMeshPro = Text;
+            if (!textMeshPro)
+                return;
+
             // is the cursor in the correct region (above the text area) and furthermore, in the link region?
             highlighted = TMP_TextUtilities.IsIntersectingRectTransform(textMeshPro.rectTransform, Input.mousePosition, camera);
             linkIndex = highlighted ? TMP_TextUtilities.FindIntersectingLink(textMeshPro, Input.mousePosition, camera) : -1;
@@ -66,6 +101,19 @@ namespace BetterLegacy.Editor.Components
 
         public void OnPointerClick(PointerEventData eventData)
         {
+            try
+            {
+                onClick?.Invoke(eventData);
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            }
+
+            var textMeshPro = Text;
+            if (!textMeshPro)
+                return;
+
             // was a link clicked?
             if (linkIndex == -1)
                 return;
@@ -78,6 +126,7 @@ namespace BetterLegacy.Editor.Components
 
         List<Color32[]> SetLinkToColor(int linkIndex, Func<int, int, Color32> colorForLinkAndVert)
         {
+            var textMeshPro = Text;
             TMP_LinkInfo linkInfo = textMeshPro.textInfo.linkInfo[linkIndex];
 
             var oldVertColors = new List<Color32[]>(); // store the old character colors
@@ -107,6 +156,11 @@ namespace BetterLegacy.Editor.Components
             return oldVertColors;
         }
 
+        /// <summary>
+        /// Registers a hyperlink.
+        /// </summary>
+        /// <param name="link">Link ID.</param>
+        /// <param name="function">Function to run when text with the link tag is clicked.</param>
         public void RegisterLink(string link, Action function)
         {
             if (linkActions.TryFindIndex(x => x.link == link, out int index))
@@ -115,6 +169,10 @@ namespace BetterLegacy.Editor.Components
                 linkActions.Add(new LinkAction(link, function));
         }
 
+        /// <summary>
+        /// Invokes a specific hyperlink action.
+        /// </summary>
+        /// <param name="link">Link ID.</param>
         public void InvokeLinkAction(string link)
         {
             CoreHelper.Log($"Invoke link action: {link}");
@@ -124,8 +182,16 @@ namespace BetterLegacy.Editor.Components
                 Application.OpenURL(link);
         }
 
-        List<LinkAction> linkActions = new List<LinkAction>();
+        /// <summary>
+        /// Clears the hyperlinks.
+        /// </summary>
+        public void ClearLinks() => linkActions.Clear();
 
+        #endregion
+
+        /// <summary>
+        /// Action to run when a linked to click.
+        /// </summary>
         public class LinkAction
         {
             public LinkAction(string link, Action func)
@@ -134,8 +200,14 @@ namespace BetterLegacy.Editor.Components
                 this.func = func;
             }
 
+            /// <summary>
+            /// Link ID.
+            /// </summary>
             public string link;
 
+            /// <summary>
+            /// Function to run when text with the link tag is clicked.
+            /// </summary>
             public Action func;
 
             public override string ToString() => link;

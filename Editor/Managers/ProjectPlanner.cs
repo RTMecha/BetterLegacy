@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 using UnityEngine;
 using UnityEngine.UI;
@@ -16,10 +17,12 @@ using Crosstales.FB;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Managers.Settings;
 using BetterLegacy.Core.Prefabs;
+using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Planners;
 
@@ -721,9 +724,32 @@ namespace BetterLegacy.Editor.Managers
                 documentInputField.textComponent = t;
                 documentInputField.lineType = TMP_InputField.LineType.MultiLineNewline;
                 documentInputField.scrollSensitivity = 20f;
+                documentInputField.interactable = false;
+
+                documentHyperlinks = docText.AddComponent<OpenHyperlinks>();
+                documentHyperlinks.enabled = true;
+                var docTextButton = docText.gameObject.AddComponent<Button>();
+                docTextButton.enabled = true;
 
                 EditorThemeManager.AddLightText(documentTitle);
                 EditorThemeManager.AddInputField(documentInputField);
+
+                var docToggle = EditorPrefabHolder.Instance.ToggleButton.Duplicate(fullView.transform);
+                RectValues.Default.AnchoredPosition(500f, 420f).SizeDelta(300f, 32f).AssignToRectTransform(docToggle.transform.AsRT());
+                var docToggleStorage = docToggle.GetComponent<ToggleButtonStorage>();
+                documentInteractibleToggle = docToggleStorage.toggle;
+                docToggleStorage.Text = "Interactible";
+                docToggleStorage.SetIsOnWithoutNotify(false);
+                docToggleStorage.OnValueChanged.NewListener(_val =>
+                {
+                    documentInputField.interactable = _val;
+                    // documentInputField.readOnly = _val
+                    docTextButton.enabled = !_val;
+                    documentHyperlinks.enabled = !_val;
+                });
+                EditorThemeManager.ClearSelectableColors(docTextButton);
+
+                EditorThemeManager.AddToggle(documentInteractibleToggle, graphic: docToggleStorage.label);
 
                 fullView.SetActive(false);
             }
@@ -749,7 +775,7 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.AddGraphic(editorTitlePanel, ThemeGroup.Null, true);
 
                 var editorTitle = baseCardPrefab.transform.Find("artist").gameObject.Duplicate(panel.transform, "title");
-                UIManager.SetRectTransform(editorTitle.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(569f, 0f));
+                RectValues.FullAnchored.AssignToRectTransform(editorTitle.transform.AsRT());
                 var tmpEditorTitle = editorTitle.GetComponent<TextMeshProUGUI>();
                 tmpEditorTitle.alignment = TextAlignmentOptions.Center;
                 tmpEditorTitle.fontSize = 32;
@@ -1786,7 +1812,9 @@ namespace BetterLegacy.Editor.Managers
 
         public GameObject documentFullView;
         public TMP_InputField documentInputField;
+        public OpenHyperlinks documentHyperlinks;
         public TextMeshProUGUI documentTitle;
+        public Toggle documentInteractibleToggle;
 
         public AudioSource OSTAudioSource { get; set; }
         public int currentOST;
@@ -2287,6 +2315,14 @@ namespace BetterLegacy.Editor.Managers
 
         #region Refresh GUI
 
+        public void OpenTab(int tab)
+        {
+            CurrentTab = tab;
+            Open();
+            RenderTabs();
+            RefreshList();
+        }
+
         public void RenderTabs()
         {
             contentLayout.cellSize = tabCellSizes[CurrentTab];
@@ -2408,6 +2444,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 document.Text = _val;
                 document.TextUI.text = _val;
+                SetupPlannerLinks(document.Text, document.TextUI, null, false);
 
                 HandleDocumentEditorPreview(document);
             });
@@ -2424,10 +2461,16 @@ namespace BetterLegacy.Editor.Managers
             {
                 document.Text = _val;
                 document.TextUI.text = _val;
+                SetupPlannerLinks(document.Text, document.TextUI, null, false);
 
                 HandleDocumentEditor(document);
             });
-            documentInputField.onEndEdit.NewListener(_val => SaveDocuments());
+            documentInputField.onEndEdit.NewListener(_val =>
+            {
+                SaveDocuments();
+                SetupPlannerLinks(document.Text, documentInputField, documentHyperlinks);
+            });
+            SetupPlannerLinks(document.Text, documentInputField, documentHyperlinks);
         }
 
         public void OpenTODOEditor(TODOPlanner todo)
@@ -2440,6 +2483,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 todo.Text = _val;
                 todo.TextUI.text = _val;
+                SetupPlannerLinks(todo.Text, todo.TextUI, todo.Hyperlinks);
             });
             todoEditorText.onEndEdit.NewListener(_val => SaveTODO());
             todoEditorMoveUpButton.onClick.NewListener(() =>
@@ -2685,6 +2729,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 level.Description = _val;
                 level.DescriptionUI.text = _val;
+                SetupPlannerLinks(_val, level.DescriptionUI, level.Hyperlinks);
             });
             eventEditorDescription.onEndEdit.NewListener(_val => SaveTimelines());
 
@@ -2818,6 +2863,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 note.Text = _val;
                 note.TextUI.text = _val;
+                SetupPlannerLinks(note.Text, note.TextUI, note.Hyperlinks);
             });
             noteEditorText.onEndEdit.NewListener(_val => SaveNotes());
 
@@ -3002,6 +3048,374 @@ namespace BetterLegacy.Editor.Managers
 
             if (editorState == EditorManager.EditorState.Main)
                 StopOST();
+        }
+
+        #endregion
+
+        #region Misc
+
+        public void SetupPlannerLinks(string input, TMP_InputField inputField, OpenHyperlinks hyperlinks, bool registerFunctions = true) => SetupPlannerLinks(input, hyperlinks, registerFunctions, _val => inputField.SetTextWithoutNotify(_val));
+        
+        public void SetupPlannerLinks(string input, TextMeshProUGUI text, OpenHyperlinks hyperlinks, bool registerFunctions = true) => SetupPlannerLinks(input, hyperlinks, registerFunctions, _val => text.text = _val);
+
+        public void SetupPlannerLinks(string input, OpenHyperlinks hyperlinks, bool registerFunctions, Action<string> setText)
+        {
+            if (registerFunctions && !hyperlinks)
+            {
+                LogError("Hyperlinks component is null.");
+                return;
+            }
+
+            if (registerFunctions)
+                hyperlinks.ClearLinks();
+
+            if (string.IsNullOrEmpty(input))
+                return;
+
+            if (input.Contains("refdoc") && input.Contains("</refdoc>"))
+            {
+                RTString.RegexMatches(input, new Regex("<refdoc=\"(.*?)\">"), match =>
+                {
+                    var name = match.Groups[1].ToString();
+                    if (registerFunctions && documents.TryFind(x => x.Name == name, out DocumentPlanner document))
+                    {
+                        var link = "refdoc" + LSText.randomNumString(16);
+                        hyperlinks.RegisterLink(link, () =>
+                        {
+                            OpenTab(0);
+                            OpenDocumentEditor(document);
+                        });
+                        input = input.Replace(match.Groups[0].ToString(), $"<link={link}>");
+                    }
+                    else
+                        input = input.Replace(match.Groups[0].ToString(), string.Empty);
+                });
+                RTString.RegexMatches(input, new Regex(@"<refdoc=(.*?)>"), match =>
+                {
+                    var name = match.Groups[1].ToString();
+                    if (registerFunctions && documents.TryFind(x => x.Name == name, out DocumentPlanner document))
+                    {
+                        var link = "refdoc" + LSText.randomNumString(16);
+                        hyperlinks.RegisterLink(link, () =>
+                        {
+                            OpenTab(0);
+                            OpenDocumentEditor(document);
+                        });
+                        input = input.Replace(match.Groups[0].ToString(), $"<link={link}>");
+                    }
+                    else
+                        input = input.Replace(match.Groups[0].ToString(), string.Empty);
+                });
+                input = input.Replace("</refdoc>", "</link>");
+            }
+            if (input.Contains("reflevelfolder") && input.Contains("</reflevelfolder>"))
+            {
+                RTString.RegexMatches(input, new Regex("<reflevelfolder=\"(.*?)\">"), match =>
+                {
+                    var name = match.Groups[1].ToString();
+
+                    if (registerFunctions && RTFile.DirectoryExists(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, name)))
+                    {
+                        var link = "reflevelfolder" + LSText.randomNumString(16);
+                        hyperlinks.RegisterLink(link, () =>
+                        {
+                            Close();
+                            EditorLevelManager.inst.OpenLevelPopup.PathField.text = name;
+                            RTEditor.inst.UpdateEditorPath(false);
+                        });
+                        input = input.Replace(match.Groups[0].ToString(), $"<link={link}>");
+                    }
+                    else
+                        input = input.Replace(match.Groups[0].ToString(), string.Empty);
+                });
+                RTString.RegexMatches(input, new Regex(@"<reflevelfolder=(.*?)>"), match =>
+                {
+                    var name = match.Groups[1].ToString();
+
+                    if (registerFunctions && RTFile.DirectoryExists(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, name)))
+                    {
+                        var link = "reflevelfolder" + LSText.randomNumString(16);
+                        hyperlinks.RegisterLink(link, () =>
+                        {
+                            Close();
+                            EditorLevelManager.inst.OpenLevelPopup.PathField.text = name;
+                            RTEditor.inst.UpdateEditorPath(false);
+                        });
+                        input = input.Replace(match.Groups[0].ToString(), $"<link={link}>");
+                    }
+                    else
+                        input = input.Replace(match.Groups[0].ToString(), string.Empty);
+                });
+                input = input.Replace("</reflevelfolder>", "</link>");
+            }
+            if (input.Contains("reflevel") && input.Contains("</reflevel>"))
+            {
+                RTString.RegexMatches(input, new Regex("<reflevel=\"(.*?)\",([0-9.]+)>"), match =>
+                {
+                    var name = match.Groups[1].ToString();
+                    var time = Parser.TryParse(match.Groups[2].ToString(), 0f);
+                    try
+                    {
+                        string path = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTFile.ReplaceSlash(name).Remove("/" + Level.LEVEL_LSB));
+                        if (registerFunctions && Level.TryVerify(path, true, out Level actualLevel))
+                        {
+                            var link = "reflevel" + LSText.randomNumString(16);
+                            hyperlinks.RegisterLink(link, () =>
+                            {
+                                Close();
+                                if (EditorLevelManager.inst.CurrentLevel && EditorLevelManager.inst.CurrentLevel.path == path)
+                                {
+                                    if (time >= 0f && time < AudioManager.inst.CurrentAudioSource.clip.length)
+                                        AudioManager.inst.SetMusicTime(time);
+                                    return;
+                                }
+
+                                EditorLevelManager.inst.onLoadLevel = level =>
+                                {
+                                    if (time >= 0f && time < AudioManager.inst.CurrentAudioSource.clip.length)
+                                        AudioManager.inst.SetMusicTime(time);
+                                };
+                                EditorLevelManager.inst.LoadLevel(actualLevel);
+                            });
+                            input = input.Replace(match.Groups[0].ToString(), $"<link={link}>");
+                        }
+                        else
+                            input = input.Replace(match.Groups[0].ToString(), string.Empty);
+                    }
+                    catch
+                    {
+
+                    }
+                });
+                RTString.RegexMatches(input, new Regex(@"<reflevel=(.*?),([0-9.]+)>"), match =>
+                {
+                    var name = match.Groups[1].ToString();
+                    var time = Parser.TryParse(match.Groups[2].ToString(), 0f);
+                    try
+                    {
+                        string path = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTFile.ReplaceSlash(name).Remove("/" + Level.LEVEL_LSB));
+                        if (registerFunctions && Level.TryVerify(path, true, out Level actualLevel))
+                        {
+                            var link = "reflevel" + LSText.randomNumString(16);
+                            hyperlinks.RegisterLink(link, () =>
+                            {
+                                Close();
+                                if (EditorLevelManager.inst.CurrentLevel && EditorLevelManager.inst.CurrentLevel.path == path)
+                                {
+                                    if (time >= 0f && time < AudioManager.inst.CurrentAudioSource.clip.length)
+                                        AudioManager.inst.SetMusicTime(time);
+                                    return;
+                                }
+
+                                EditorLevelManager.inst.onLoadLevel = level =>
+                                {
+                                    if (time >= 0f && time < AudioManager.inst.CurrentAudioSource.clip.length)
+                                        AudioManager.inst.SetMusicTime(time);
+                                };
+                                EditorLevelManager.inst.LoadLevel(actualLevel);
+                            });
+                            input = input.Replace(match.Groups[0].ToString(), $"<link={link}>");
+                        }
+                        else
+                            input = input.Replace(match.Groups[0].ToString(), string.Empty);
+                    }
+                    catch
+                    {
+
+                    }
+                });
+                RTString.RegexMatches(input, new Regex("<reflevel=\"(.*?)\">"), match =>
+                {
+                    try
+                    {
+                        var name = match.Groups[1].ToString();
+                        string path = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTFile.ReplaceSlash(name).Remove("/" + Level.LEVEL_LSB));
+                        if (registerFunctions && Level.TryVerify(path, true, out Level actualLevel))
+                        {
+                            var link = "reflevel" + LSText.randomNumString(16);
+                            hyperlinks.RegisterLink(link, () =>
+                            {
+                                if (EditorLevelManager.inst.CurrentLevel && EditorLevelManager.inst.CurrentLevel.path == path)
+                                    return;
+
+                                Close();
+                                EditorLevelManager.inst.LoadLevel(actualLevel);
+                            });
+                            input = input.Replace(match.Groups[0].ToString(), $"<link={link}>");
+                        }
+                        else
+                            input = input.Replace(match.Groups[0].ToString(), string.Empty);
+                    }
+                    catch
+                    {
+
+                    }
+                });
+                RTString.RegexMatches(input, new Regex(@"<reflevel=(.*?)>"), match =>
+                {
+                    try
+                    {
+                        var name = match.Groups[1].ToString();
+                        string path = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTFile.ReplaceSlash(name).Remove("/" + Level.LEVEL_LSB));
+                        if (registerFunctions && Level.TryVerify(path, true, out Level actualLevel))
+                        {
+                            var link = "reflevel" + LSText.randomNumString(16);
+                            hyperlinks.RegisterLink(link, () =>
+                            {
+                                if (EditorLevelManager.inst.CurrentLevel && EditorLevelManager.inst.CurrentLevel.path == path)
+                                    return;
+
+                                Close();
+                                EditorLevelManager.inst.LoadLevel(actualLevel);
+                            });
+                            input = input.Replace(match.Groups[0].ToString(), $"<link={link}>");
+                        }
+                        else
+                            input = input.Replace(match.Groups[0].ToString(), string.Empty);
+                    }
+                    catch
+                    {
+
+                    }
+                });
+                input = input.Replace("</reflevel>", "</link>");
+            }
+            if (input.Contains("tab") && input.Contains("</tab>"))
+            {
+                RTString.RegexMatches(input, new Regex(@"<tab=([0-9])"), match =>
+                {
+                    var tab = match.Groups[1].ToString();
+                    if (registerFunctions && int.TryParse(tab, out int tabIndex))
+                    {
+                        var link = "tab" + LSText.randomNumString(16);
+                        hyperlinks.RegisterLink(link, () => OpenTab(tabIndex));
+                        input = input.Replace(match.Groups[0].ToString(), $"<link={link}>");
+                    }
+                    else
+                        input = input.Replace(match.Groups[0].ToString(), string.Empty);
+                });
+                input = input.Replace("</tab>", "</link>");
+            }
+            if (input.Contains("url") && input.Contains("</url>"))
+            {
+                RTString.RegexMatches(input, new Regex("<url=\"(.*?)\",([0-9.]+),\"(.*?)\">"), match =>
+                {
+                    try
+                    {
+                        var url = AlephNetwork.GetURL(Parser.TryParse(match.Groups[1].ToString(), URLSource.Song), Parser.TryParse(match.Groups[2].ToString(), 0), match.Groups[3].ToString());
+                        if (!string.IsNullOrEmpty(url))
+                        {
+                            var link = "url" + LSText.randomNumString(16);
+                            hyperlinks.RegisterLink(link, () => Application.OpenURL(url));
+                            input = input.Replace(match.Groups[0].ToString(), $"<link={link}>");
+                        }
+                        else
+                            input = input.Replace(match.Groups[0].ToString(), string.Empty);
+                    }
+                    catch
+                    {
+
+                    }
+                });
+                RTString.RegexMatches(input, new Regex("<url=\"(.*?)\",([0-9.]+),(.*?)>"), match =>
+                {
+                    try
+                    {
+                        var url = AlephNetwork.GetURL(Parser.TryParse(match.Groups[1].ToString(), URLSource.Song), Parser.TryParse(match.Groups[2].ToString(), 0), match.Groups[3].ToString());
+                        if (!string.IsNullOrEmpty(url))
+                        {
+                            var link = "url" + LSText.randomNumString(16);
+                            hyperlinks.RegisterLink(link, () => Application.OpenURL(url));
+                            input = input.Replace(match.Groups[0].ToString(), $"<link={link}>");
+                        }
+                        else
+                            input = input.Replace(match.Groups[0].ToString(), string.Empty);
+                    }
+                    catch
+                    {
+
+                    }
+                });
+                RTString.RegexMatches(input, new Regex("<url=(.*?),([0-9.]+),\"(.*?)\">"), match =>
+                {
+                    try
+                    {
+                        var url = AlephNetwork.GetURL(Parser.TryParse(match.Groups[1].ToString(), URLSource.Song), Parser.TryParse(match.Groups[2].ToString(), 0), match.Groups[3].ToString());
+                        if (!string.IsNullOrEmpty(url))
+                        {
+                            var link = "url" + LSText.randomNumString(16);
+                            hyperlinks.RegisterLink(link, () => Application.OpenURL(url));
+                            input = input.Replace(match.Groups[0].ToString(), $"<link={link}>");
+                        }
+                        else
+                            input = input.Replace(match.Groups[0].ToString(), string.Empty);
+                    }
+                    catch
+                    {
+
+                    }
+                });
+                RTString.RegexMatches(input, new Regex(@"<url=(.*?),([0-9.]+),(.*?)>"), match =>
+                {
+                    try
+                    {
+                        var url = AlephNetwork.GetURL(Parser.TryParse(match.Groups[1].ToString(), URLSource.Song), Parser.TryParse(match.Groups[2].ToString(), 0), match.Groups[3].ToString());
+                        if (!string.IsNullOrEmpty(url))
+                        {
+                            var link = "url" + LSText.randomNumString(16);
+                            hyperlinks.RegisterLink(link, () => Application.OpenURL(url));
+                            input = input.Replace(match.Groups[0].ToString(), $"<link={link}>");
+                        }
+                        else
+                            input = input.Replace(match.Groups[0].ToString(), string.Empty);
+                    }
+                    catch
+                    {
+
+                    }
+                });
+                RTString.RegexMatches(input, new Regex("<url=\"(.*?)\">"), match =>
+                {
+                    try
+                    {
+                        var url = match.Groups[1].ToString();
+                        if (!string.IsNullOrEmpty(url))
+                        {
+                            var link = "url" + LSText.randomNumString(16);
+                            hyperlinks.RegisterLink(link, () => Application.OpenURL(url));
+                            input = input.Replace(match.Groups[0].ToString(), $"<link={link}>");
+                        }
+                        else
+                            input = input.Replace(match.Groups[0].ToString(), string.Empty);
+                    }
+                    catch
+                    {
+
+                    }
+                });
+                RTString.RegexMatches(input, new Regex(@"<url=(.*?)>"), match =>
+                {
+                    try
+                    {
+                        var url = match.Groups[1].ToString();
+                        if (!string.IsNullOrEmpty(url))
+                        {
+                            var link = "url" + LSText.randomNumString(16);
+                            hyperlinks.RegisterLink(link, () => Application.OpenURL(url));
+                            input = input.Replace(match.Groups[0].ToString(), $"<link={link}>");
+                        }
+                        else
+                            input = input.Replace(match.Groups[0].ToString(), string.Empty);
+                    }
+                    catch
+                    {
+
+                    }
+                });
+                input = input.Replace("</url>", "</link>");
+            }
+
+            setText?.Invoke(input);
         }
 
         #endregion

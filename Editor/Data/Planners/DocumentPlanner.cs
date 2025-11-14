@@ -30,8 +30,7 @@ namespace BetterLegacy.Editor.Data.Planners
             GameObject = gameObject;
 
             var button = gameObject.GetComponent<Button>();
-            button.onClick.ClearAll();
-            button.onClick.AddListener(() => ProjectPlanner.inst.OpenDocumentEditor(this));
+            button.onClick.NewListener(() => ProjectPlanner.inst.OpenDocumentEditor(this));
 
             EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
 
@@ -44,8 +43,7 @@ namespace BetterLegacy.Editor.Data.Planners
             EditorThemeManager.ApplyLightText(TextUI);
 
             var delete = gameObject.transform.Find("delete").GetComponent<DeleteButtonStorage>();
-            delete.button.onClick.ClearAll();
-            delete.button.onClick.AddListener(() =>
+            delete.button.onClick.NewListener(() =>
             {
                 ProjectPlanner.inst.documents.RemoveAll(x => x is DocumentPlanner && x.ID == ID);
                 ProjectPlanner.inst.SaveDocuments();
@@ -55,6 +53,8 @@ namespace BetterLegacy.Editor.Data.Planners
             EditorThemeManager.ApplyGraphic(delete.button.image, ThemeGroup.Delete, true);
             EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
             EditorThemeManager.ApplyGraphic(gameObject.transform.Find("gradient").GetComponent<Image>(), ThemeGroup.Background_1);
+
+            ProjectPlanner.inst.SetupPlannerLinks(Text, TextUI, null, false);
         }
     }
 }

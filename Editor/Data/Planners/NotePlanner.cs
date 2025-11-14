@@ -33,6 +33,7 @@ namespace BetterLegacy.Editor.Data.Planners
         public Image TopBar { get; set; }
         public TextMeshProUGUI TitleUI { get; set; }
         public TextMeshProUGUI TextUI { get; set; }
+        public OpenHyperlinks Hyperlinks { get; set; }
 
         public Color TopColor => Color >= 0 && Color < MarkerEditor.inst.markerColors.Count ? MarkerEditor.inst.markerColors[Color] : LSColors.red700;
 
@@ -94,8 +95,7 @@ namespace BetterLegacy.Editor.Data.Planners
             }
 
             var edit = gameObject.transform.Find("panel/edit").GetComponent<Button>();
-            edit.onClick.ClearAll();
-            edit.onClick.AddListener(() =>
+            edit.onClick.NewListener(() =>
             {
                 ProjectPlanner.inst.CurrentTab = 5;
                 ProjectPlanner.inst.Open();
@@ -116,12 +116,15 @@ namespace BetterLegacy.Editor.Data.Planners
             TextUI.text = Text;
             EditorThemeManager.ApplyLightText(TextUI);
 
+            Hyperlinks = gameObject.AddComponent<OpenHyperlinks>();
+            Hyperlinks.Text = TextUI;
+            //EditorThemeManager.ClearSelectableColors(Hyperlinks.gameObject.AddComponent<Button>());
+
             EditorThemeManager.ApplyGraphic(TopBar, ThemeGroup.Background_3, true);
             TitleUI.gameObject.AddComponent<ContrastColors>().Init(TitleUI, TopBar);
 
-            ActiveUI.onValueChanged.ClearAll();
-            ActiveUI.isOn = Active;
-            ActiveUI.onValueChanged.AddListener(_val =>
+            ActiveUI.SetIsOnWithoutNotify(Active);
+            ActiveUI.onValueChanged.NewListener(_val =>
             {
                 Active = _val;
                 ProjectPlanner.inst.SaveNotes();
@@ -130,8 +133,7 @@ namespace BetterLegacy.Editor.Data.Planners
             EditorThemeManager.ApplyToggle(ActiveUI);
 
             var delete = gameObject.transform.Find("panel/delete").GetComponent<DeleteButtonStorage>();
-            delete.button.onClick.ClearAll();
-            delete.button.onClick.AddListener(() =>
+            delete.button.onClick.NewListener(() =>
             {
                 ProjectPlanner.inst.notes.RemoveAll(x => x is NotePlanner && x.ID == ID);
                 ProjectPlanner.inst.SaveNotes();
@@ -142,13 +144,14 @@ namespace BetterLegacy.Editor.Data.Planners
             EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
 
             var close = gameObject.transform.Find("panel/close").GetComponent<Button>();
-            close.onClick.ClearAll();
-            close.onClick.AddListener(() => ActiveUI.isOn = false);
+            close.onClick.NewListener(() => ActiveUI.isOn = false);
 
             EditorThemeManager.ApplySelectable(close, ThemeGroup.Close);
             EditorThemeManager.ApplyGraphic(close.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
 
             gameObject.AddComponent<NoteCloseDelete>().Init(delete.gameObject, close.gameObject);
+
+            ProjectPlanner.inst.SetupPlannerLinks(Text, TextUI, Hyperlinks);
         }
     }
 }

@@ -146,6 +146,8 @@ namespace BetterLegacy.Editor.Managers
         public bool CollapseIcon { get; set; } = true;
         public bool CollapseBanner { get; set; } = true;
 
+        public Action<Level> onLoadLevel;
+
         #endregion
 
         #region Functions
@@ -772,7 +774,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 RTEditor.inst.InfoPopup.SetInfo($"{currentFile} is empty or corrupt.");
                 EditorManager.inst.DisplayNotification("Level could not load.", 3f, EditorManager.NotificationType.Error);
-
+                onLoadLevel = null;
                 yield break;
             }
 
@@ -799,7 +801,7 @@ namespace BetterLegacy.Editor.Managers
                 EditorManager.inst.DisplayNotification("Level could not load.", 3f, EditorManager.NotificationType.Error);
 
                 CoreHelper.LogError($"Level loading caught an error: {ex}");
-
+                onLoadLevel = null;
                 yield break;
             }
 
@@ -945,6 +947,9 @@ namespace BetterLegacy.Editor.Managers
 
             CoreHelper.StopAndLogStopwatch(sw, $"Finished loading {name}");
             sw = null;
+
+            onLoadLevel?.Invoke(level);
+            onLoadLevel = null;
 
             LegacyPlugin.AddRecentEditorLevel(level);
 

@@ -6,6 +6,7 @@ using TMPro;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Prefabs;
+using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Planners
@@ -16,6 +17,7 @@ namespace BetterLegacy.Editor.Data.Planners
 
         public string Text { get; set; }
         public TextMeshProUGUI TextUI { get; set; }
+        public OpenHyperlinks Hyperlinks { get; set; }
         public bool Checked { get; set; }
         public Toggle CheckedUI { get; set; }
 
@@ -30,8 +32,7 @@ namespace BetterLegacy.Editor.Data.Planners
             GameObject = gameObject;
 
             var button = gameObject.GetComponent<Button>();
-            button.onClick.ClearAll();
-            button.onClick.AddListener(() => ProjectPlanner.inst.OpenTODOEditor(this));
+            button.onClick.NewListener(() => ProjectPlanner.inst.OpenTODOEditor(this));
 
             EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
 
@@ -39,11 +40,13 @@ namespace BetterLegacy.Editor.Data.Planners
             TextUI.text = Text;
             EditorThemeManager.ApplyLightText(TextUI);
 
+            Hyperlinks = gameObject.AddComponent<OpenHyperlinks>();
+            Hyperlinks.Text = TextUI;
+
             var toggle = gameObject.transform.Find("checked").GetComponent<Toggle>();
             CheckedUI = toggle;
-            toggle.onValueChanged.ClearAll();
-            toggle.isOn = Checked;
-            toggle.onValueChanged.AddListener(_val =>
+            toggle.SetIsOnWithoutNotify(Checked);
+            toggle.onValueChanged.NewListener(_val =>
             {
                 Checked = _val;
                 ProjectPlanner.inst.SaveTODO();
@@ -52,8 +55,7 @@ namespace BetterLegacy.Editor.Data.Planners
             EditorThemeManager.ApplyToggle(toggle);
 
             var delete = gameObject.transform.Find("delete").GetComponent<DeleteButtonStorage>();
-            delete.button.onClick.ClearAll();
-            delete.button.onClick.AddListener(() =>
+            delete.button.onClick.NewListener(() =>
             {
                 ProjectPlanner.inst.todos.RemoveAll(x => x is TODOPlanner && x.ID == ID);
                 ProjectPlanner.inst.SaveTODO();
@@ -62,6 +64,8 @@ namespace BetterLegacy.Editor.Data.Planners
 
             EditorThemeManager.ApplyGraphic(delete.button.image, ThemeGroup.Delete, true);
             EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
+
+            ProjectPlanner.inst.SetupPlannerLinks(Text, TextUI, Hyperlinks);
         }
     }
 }

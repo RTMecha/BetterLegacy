@@ -11,6 +11,7 @@ using BetterLegacy.Core;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Prefabs;
+using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Planners
@@ -88,6 +89,7 @@ namespace BetterLegacy.Editor.Data.Planners
             public Button Button { get; set; }
             public TextMeshProUGUI NameUI { get; set; }
             public TextMeshProUGUI DescriptionUI { get; set; }
+            public OpenHyperlinks Hyperlinks { get; set; }
 
             public string Name { get; set; }
             public string Description { get; set; }
@@ -112,15 +114,7 @@ namespace BetterLegacy.Editor.Data.Planners
                 GameObject = gameObject;
 
                 Button = gameObject.GetComponent<Button>();
-                Button.onClick.NewListener(() =>
-                {
-                    string path = $"{RTFile.ApplicationDirectory}beatmaps/{RTFile.ReplaceSlash(Path).Remove("/" + Level.LEVEL_LSB)}";
-                    if (Level.TryVerify(path, true, out Level actualLevel))
-                    {
-                        ProjectPlanner.inst.Close();
-                        EditorLevelManager.inst.LoadLevel(actualLevel);
-                    }
-                });
+                Button.onClick.ClearAll();
 
                 EditorThemeManager.ApplySelectable(Button, ThemeGroup.List_Button_1);
 
@@ -130,6 +124,21 @@ namespace BetterLegacy.Editor.Data.Planners
                 DescriptionUI = gameObject.transform.Find("description").GetComponent<TextMeshProUGUI>();
                 DescriptionUI.text = Description;
                 EditorThemeManager.ApplyLightText(DescriptionUI);
+
+                Hyperlinks = gameObject.AddComponent<OpenHyperlinks>();
+                Hyperlinks.Text = DescriptionUI;
+                Hyperlinks.onClick = eventData =>
+                {
+                    if (Hyperlinks.IsLinkHighlighted)
+                        return;
+
+                    string path = $"{RTFile.ApplicationDirectory}beatmaps/{RTFile.ReplaceSlash(Path).Remove("/" + Level.LEVEL_LSB)}";
+                    if (Level.TryVerify(path, true, out Level actualLevel))
+                    {
+                        ProjectPlanner.inst.Close();
+                        EditorLevelManager.inst.LoadLevel(actualLevel);
+                    }
+                };
 
                 var delete = gameObject.transform.Find("delete").GetComponent<DeleteButtonStorage>();
                 delete.button.onClick.NewListener(() =>
@@ -177,6 +186,8 @@ namespace BetterLegacy.Editor.Data.Planners
                 });
 
                 EditorThemeManager.ApplySelectable(moveForward, ThemeGroup.Function_2, false);
+
+                ProjectPlanner.inst.SetupPlannerLinks(Description, DescriptionUI, Hyperlinks);
             }
         }
 
