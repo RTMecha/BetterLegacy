@@ -1630,7 +1630,7 @@ namespace BetterLegacy.Editor.Managers
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
                         var labelText = label.transform.GetChild(0).GetComponent<Text>();
-                        labelText.text = "Shuffle";
+                        labelText.text = "Shuffle All OST";
                         EditorThemeManager.AddLightText(labelText);
 
                         if (label.transform.childCount == 2)
@@ -1640,10 +1640,10 @@ namespace BetterLegacy.Editor.Managers
                     var shuffle = EditorPrefabHolder.Instance.Function2Button.Duplicate(g1.transform);
                     var shuffleStorage = shuffle.GetComponent<FunctionButtonStorage>();
                     shuffle.SetActive(true);
-                    shuffle.name = "stop";
+                    shuffle.name = "shuffle";
                     shuffle.transform.AsRT().anchoredPosition = new Vector2(370f, 970f);
                     shuffle.transform.AsRT().sizeDelta = new Vector2(200f, 32f);
-                    shuffleStorage.label.text = "Stop";
+                    shuffleStorage.label.text = "Shuffle";
                     ostEditorShuffle = shuffleStorage.button;
                     EditorThemeManager.ApplySelectable(ostEditorShuffle, ThemeGroup.Function_2);
                     EditorThemeManager.AddGraphic(shuffleStorage.label, ThemeGroup.Function_2_Text);
@@ -1786,7 +1786,7 @@ namespace BetterLegacy.Editor.Managers
                     return;
                 }
 
-                if (EditorConfig.Instance.OSTShuffle.Value)
+                if (EditorConfig.Instance.OSTShuffle.Value || forceShuffleOST)
                 {
                     recentOST.TrimStart(20);
 
@@ -1860,6 +1860,7 @@ namespace BetterLegacy.Editor.Managers
         public string currentOSTID;
         public bool playing = false;
         public List<OSTPlanner> recentOST = new List<OSTPlanner>();
+        public bool forceShuffleOST;
 
         public List<Toggle> tabs = new List<Toggle>();
 
@@ -3269,30 +3270,6 @@ namespace BetterLegacy.Editor.Managers
             ostEditorIndex.text = i.ToString();
         }
 
-        /// <summary>
-        /// Stops the currently playing OST.
-        /// </summary>
-        public void StopOST()
-        {
-            Destroy(OSTAudioSource);
-
-            var list = osts.ToList();
-
-            for (int i = 0; i < list.Count; i++)
-                list[i].playing = false;
-
-            playing = false;
-        }
-
-        /// <summary>
-        /// Shuffles the OST.
-        /// </summary>
-        public void ShuffleOST()
-        {
-            StopOST();
-            osts[UnityEngine.Random.Range(0, osts.Count)].Play();
-        }
-
         #endregion
 
         #region Generate UI
@@ -3891,6 +3868,33 @@ namespace BetterLegacy.Editor.Managers
             }
 
             setText?.Invoke(input);
+        }
+        
+        /// <summary>
+        /// Stops the currently playing OST.
+        /// </summary>
+        public void StopOST()
+        {
+            forceShuffleOST = false;
+
+            Destroy(OSTAudioSource);
+
+            var list = osts.ToList();
+
+            for (int i = 0; i < list.Count; i++)
+                list[i].playing = false;
+
+            playing = false;
+        }
+
+        /// <summary>
+        /// Shuffles the OST.
+        /// </summary>
+        public void ShuffleOST()
+        {
+            StopOST();
+            forceShuffleOST = true;
+            osts[UnityEngine.Random.Range(0, osts.Count)].Play();
         }
 
         #endregion
