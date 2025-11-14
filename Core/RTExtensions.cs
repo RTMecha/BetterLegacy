@@ -107,7 +107,21 @@ namespace BetterLegacy.Core
         /// Destroys all the children of the <see cref="GameObject"/>.
         /// </summary>
         /// <param name="instant">True if it should be instant, otherwise put onto the Unity scheduler.</param>
-        public static void DeleteChildren(this Transform tf, bool instant = false) => LSHelpers.DeleteChildren(tf, instant);
+        public static void DeleteChildren(this Transform transform, bool instant = false) => LSHelpers.DeleteChildren(transform, instant);
+
+        /// <summary>
+        /// Checks if an index is in the range of the transform child count.
+        /// </summary>
+        /// <param name="index">Index to check.</param>
+        /// <returns>Returns true if the index is in the range of the transform, otherwise returns false.</returns>
+        public static bool InRange(this Transform transform, int index) => index >= 0 && index < transform.childCount;
+
+        /// <summary>
+        /// Tries to get a child at an index.
+        /// </summary>
+        /// <param name="index">Index of the child to get.</param>
+        /// <returns>Returns a child if the index is in the range of the parent, otherwise returns null.</returns>
+        public static Transform TryGetChild(this Transform transform, int index) => transform.InRange(index) ? transform.GetChild(index) : null;
 
         /// <summary>
         /// Duplicates a <see cref="GameObject"/>, sets a parent and ensures the same local position and scale. Wraps the <see cref="Object.Instantiate(Object)"/> method.
@@ -1099,6 +1113,28 @@ namespace BetterLegacy.Core
             for (int i = 0; i < count; i++)
                 list.Add(obj);
             return list;
+        }
+
+        /// <summary>
+        /// Trims items from the start of the list.
+        /// </summary>
+        /// <typeparam name="T">The type of the list.</typeparam>
+        /// <param name="count">List should not be greater than this count.</param>
+        public static void TrimStart<T>(this List<T> list, int count)
+        {
+            while (list.Count > count)
+                list.RemoveAt(0);
+        }
+
+        /// <summary>
+        /// Trims items from the end of the list.
+        /// </summary>
+        /// <typeparam name="T">The type of the list.</typeparam>
+        /// <param name="count">List should not be greater than this count.</param>
+        public static void TrimEnd<T>(this List<T> list, int count)
+        {
+            while (list.Count > count)
+                list.RemoveAt(list.Count - 1);
         }
 
         /// <summary>
