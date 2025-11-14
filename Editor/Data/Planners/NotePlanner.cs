@@ -97,7 +97,7 @@ namespace BetterLegacy.Editor.Data.Planners
             var edit = gameObject.transform.Find("panel/edit").GetComponent<Button>();
             edit.onClick.NewListener(() =>
             {
-                ProjectPlanner.inst.CurrentTab = 5;
+                ProjectPlanner.inst.CurrentTab = Type.Note;
                 ProjectPlanner.inst.Open();
                 ProjectPlanner.inst.RenderTabs();
                 ProjectPlanner.inst.RefreshList();
@@ -152,6 +152,8 @@ namespace BetterLegacy.Editor.Data.Planners
             gameObject.AddComponent<NoteCloseDelete>().Init(delete.gameObject, close.gameObject);
 
             ProjectPlanner.inst.SetupPlannerLinks(Text, TextUI, Hyperlinks);
+
+            gameObject.SetActive(false);
         }
     }
 }

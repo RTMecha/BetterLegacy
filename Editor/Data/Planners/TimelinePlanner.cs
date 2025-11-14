@@ -230,6 +230,8 @@ namespace BetterLegacy.Editor.Data.Planners
             EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
 
             UpdateTimeline();
+
+            gameObject.SetActive(false);
         }
     }
 }

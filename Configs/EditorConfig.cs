@@ -431,6 +431,19 @@ namespace BetterLegacy.Configs
 
         #endregion
 
+        #region Project Planner
+
+        public Setting<bool> OpenNewPlanner { get; set; }
+        public Setting<int> OSTVol { get; set; }
+        public Setting<ProjectPlanner.LoopOSTBehaviorType> OSTLoop { get; set; }
+        public Setting<bool> OSTShuffle { get; set; }
+        public Setting<bool> StopOSTOnExitPlanner { get; set; }
+
+        public Setting<ProjectPlanner.InterruptOSTBehaviorType> InterruptOSTBehavior { get; set; }
+        public Setting<int> LowerOSTVol { get; set; }
+
+        #endregion
+
         #endregion
 
         /// <summary>
@@ -852,6 +865,18 @@ namespace BetterLegacy.Configs
             EditorCamUseKeys = Bind(this, FREECAM, "Editor Camera Use Keys", false, "If the editor camera can use your keyboard or not.");
             EditorCamResetValues = Bind(this, FREECAM, "Editor Camera Reset Values", true, "If the offset values should reset when the editor camera is disabled.");
             ShowCameraArea = Bind(this, FREECAM, "Show Camera Area", true, "If the camera area should display when the editor camera is on.");
+
+            #endregion
+
+            #region Project Planner
+
+            OpenNewPlanner = Bind(this, PROJECT_PLANNER, "Open New Planner", true, "If the planner editor should open when a new planner item is created.");
+            OSTVol = Bind(this, PROJECT_PLANNER, "OST Volume", 6, "Music volume.", 0, 9);
+            OSTLoop = BindEnum(this, PROJECT_PLANNER, "OST Loop", ProjectPlanner.LoopOSTBehaviorType.None, "If the currently playing song should loop.");
+            OSTShuffle = Bind(this, PROJECT_PLANNER, "OST Shuffle", false, "If the OST should shuffle.");
+            StopOSTOnExitPlanner = Bind(this, PROJECT_PLANNER, "Stop OST On Exit Planner", false, "If the currently playing song should stop playing when you exit the Project Planner.");
+            InterruptOSTBehavior = BindEnum(this, PROJECT_PLANNER, "Interrupt OST Behavior", ProjectPlanner.InterruptOSTBehaviorType.LowerVolume, "How background music should be handled when you're playing the level.");
+            LowerOSTVol = Bind(this, PROJECT_PLANNER, "Lower OST Volume", 2, "Volume used instead of OST Volume if the Interrupt OST Behavior is LowerVolume.");
 
             #endregion
 
@@ -1409,6 +1434,7 @@ namespace BetterLegacy.Configs
         public const string MODIFIERS = "Modifiers";
         public const string CREATION = "Creation";
         public const string FREECAM = "Freecam";
+        public const string PROJECT_PLANNER = "Project Planner";
 
         #endregion
     }

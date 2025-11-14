@@ -281,7 +281,7 @@ namespace BetterLegacy.Editor.Managers
                 var keybinds = CurrentProfile.keybinds;
                 foreach (var keybind in keybinds)
                 {
-                    if (EditorManager.inst.editorState != EditorManager.EditorState.Main && keybind.Name != nameof(ToggleProjectPlanner) ||
+                    if (EditorManager.inst.editorState != EditorManager.EditorState.Main && keybind.Name != nameof(ToggleProjectPlanner) && keybind.Name != nameof(SaveLevel) ||
                         !EditorManager.inst.hasLoadedLevel && keybind.Name != nameof(ToggleShowHelp) && keybind.Name != nameof(TogglePlayingSong) &&
                         keybind.Name != nameof(OpenLevelPopup) && keybind.Name != nameof(SaveLevel) && keybind.Name != nameof(ToggleProjectPlanner))
                         continue;

@@ -14,6 +14,7 @@ using TMPro;
 using SimpleJSON;
 using Crosstales.FB;
 
+using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
@@ -29,7 +30,7 @@ using BetterLegacy.Editor.Data.Planners;
 namespace BetterLegacy.Editor.Managers
 {
     /// <summary>
-    /// Built-in planner. Includes documents, todo lists, timelines, etc.
+    /// Built-in planner used for improving creation workflow. Includes documents, todo lists, timelines, etc.
     /// </summary>
     public class ProjectPlanner : BaseManager<ProjectPlanner, EditorManagerSettings>
     {
@@ -145,133 +146,76 @@ namespace BetterLegacy.Editor.Managers
                 addNewItemText.text = "Add New Item";
                 addNewItemStorage.button.onClick.NewListener(() =>
                 {
-                    CoreHelper.Log($"Create new {tabNames[CurrentTab]}");
+                    CoreHelper.Log($"Create new {tabNames[(int)CurrentTab]}");
                     var path = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlannersPath);
                     switch (CurrentTab)
                     {
-                        case 0: {
-                                var list = documents;
-
-                                var document = new DocumentPlanner();
-                                document.Name = $"New Story {list.Count + 1}";
-                                document.Text = "<align=center>Plan out your story!";
-
-                                AddPlanner(document);
-                                SaveDocuments();
-
+                        case PlannerBase.Type.Document: {
+                                CreateDocument(
+                                    name: $"New Story {documents.Count + 1}",
+                                    text: "<align=center>Plan out your story!");
                                 break;
-                            } // Document
-                        case 1: {
-                                var list = todos;
-
-                                var todo = new TODOPlanner();
-                                todo.Checked = false;
-                                todo.Text = "Do this.";
-
-                                AddPlanner(todo);
-                                SaveTODO();
-
+                            }
+                        case PlannerBase.Type.TODO: {
+                                CreateTODO(
+                                    check: false,
+                                    text: "Do this.");
                                 break;
-                            } // TODO
-                        case 2: {
+                            }
+                        case PlannerBase.Type.Character: {
                                 if (string.IsNullOrEmpty(Path.GetFileName(path)))
                                     return;
 
                                 var charactersPath = RTFile.CombinePaths(path, "characters");
                                 RTFile.CreateDirectory(charactersPath);
 
-                                var fullPath = RTFile.CombinePaths(charactersPath, "New Character");
-
-                                int num = 1;
-                                while (RTFile.DirectoryExists(fullPath))
-                                {
-                                    fullPath = RTFile.CombinePaths(charactersPath, $"New Character {num}");
-                                    num++;
-                                }
-
-                                RTFile.CreateDirectory(fullPath);
-
-                                var character = new CharacterPlanner();
-
-                                for (int i = 0; i < 3; i++)
-                                {
-                                    character.CharacterTraits.Add("???");
-                                    character.CharacterLore.Add("???");
-                                    character.CharacterAbilities.Add("???");
-                                }
-
-                                character.CharacterSprite = SpriteHelper.LoadSprite(AssetPack.GetFile($"editor/example{FileFormat.PNG.Dot()}"));
-                                character.Name = Path.GetFileName(fullPath);
-                                character.FullPath = fullPath;
-                                character.Gender = "He";
-                                character.Description = "This is the default description";
-
-                                AddPlanner(character);
-                                character.Save();
-
+                                CreateCharacter(RTFile.CombinePaths(charactersPath, "New Character"));
                                 break;
-                            } // Character
-                        case 3: {
-                                var timeline = new TimelinePlanner();
-                                timeline.Name = "Classic Arrhythmia";
-                                timeline.Levels.Add(new TimelinePlanner.Event
-                                {
-                                    Name = "Beginning",
-                                    Description = $"Introduces players / viewers to Hal.)",
-                                    ElementType = TimelinePlanner.Event.Type.Cutscene,
-                                    Path = string.Empty
-                                });
-                                timeline.Levels.Add(new TimelinePlanner.Event
-                                {
-                                    Name = "Tokyo Skies",
-                                    Description = $"Players learn very basic stuff about Classic Arrhythmia / Project Arrhythmia mechanics.{Environment.NewLine}{Environment.NewLine}(Click on this button to open the level.)",
-                                    ElementType = TimelinePlanner.Event.Type.Level,
-                                    Path = string.Empty
-                                });
-
-                                AddPlanner(timeline);
-                                SaveTimelines();
-
+                            }
+                        case PlannerBase.Type.Timeline: {
+                                CreateTimeline(
+                                    name: "Classic Arrhythmia",
+                                    events: new List<TimelinePlanner.Event>
+                                    {
+                                        new TimelinePlanner.Event
+                                        {
+                                            Name = "Beginning",
+                                            Description = $"Introduces players / viewers to Hal.)",
+                                            ElementType = TimelinePlanner.Event.Type.Cutscene,
+                                            Path = string.Empty
+                                        },
+                                        new TimelinePlanner.Event
+                                        {
+                                            Name = "Tokyo Skies",
+                                            Description = $"Players learn very basic stuff about Classic Arrhythmia / Project Arrhythmia mechanics.{Environment.NewLine}{Environment.NewLine}(Click on this button to open the level.)",
+                                            ElementType = TimelinePlanner.Event.Type.Level,
+                                            Path = string.Empty
+                                        },
+                                    });
                                 break;
-                            } // Timeline
-                        case 4: {
-                                var schedule = new SchedulePlanner();
-                                schedule.Date = DateTime.Now.AddDays(1).ToString("g");
-                                schedule.Description = "Tomorrow!";
-
-                                AddPlanner(schedule);
-                                SaveSchedules();
-
+                            }
+                        case PlannerBase.Type.Schedule: {
+                                CreateSchedule(
+                                    dateTime: DateTime.Now.AddDays(1),
+                                    description: "Tomorrow!");
                                 break;
-                            } // Schedule
-                        case 5: {
-                                var note = new NotePlanner();
-                                note.Active = true;
-                                note.Name = "New Note";
-                                note.Color = UnityEngine.Random.Range(0, MarkerEditor.inst.markerColors.Count);
-                                note.Position = new Vector2(Screen.width / 2, Screen.height / 2);
-                                note.Text = "This note appears in the editor and can be dragged to anywhere.";
-
-                                AddPlanner(note);
-                                SaveNotes();
-
+                            }
+                        case PlannerBase.Type.Note: {
+                                CreateNote(
+                                    active: true,
+                                    name: "New Note",
+                                    color: UnityEngine.Random.Range(0, MarkerEditor.inst.markerColors.Count),
+                                    position: new Vector2(Screen.width / 2, Screen.height / 2),
+                                    text: "This note appears in the editor and can be dragged to anywhere.");
                                 break;
-                            } // Note
-                        case 6: {
-                                var ost = new OSTPlanner();
-                                ost.Name = "Kaixo - Fragments";
-                                ost.Path = "Set this path to wherever you have a song located.";
-
-                                AddPlanner(ost);
-
-                                var list = osts.OrderBy(x => x.Index).ToList();
-
-                                ost.Index = list.Count - 1;
-
-                                SaveOST();
-
+                            }
+                        case PlannerBase.Type.OST: {
+                                CreateOST(
+                                    name: "Kaixo - Fragments",
+                                    path: "Set this path to wherever you have a song located.",
+                                    useGlobal: false);
                                 break;
-                            } // OST
+                            }
                         default: {
                                 CoreHelper.LogWarning($"How did you do that...?");
                                 break;
@@ -1686,6 +1630,31 @@ namespace BetterLegacy.Editor.Managers
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
                         var labelText = label.transform.GetChild(0).GetComponent<Text>();
+                        labelText.text = "Shuffle";
+                        EditorThemeManager.AddLightText(labelText);
+
+                        if (label.transform.childCount == 2)
+                            Destroy(label.transform.GetChild(1).gameObject);
+                    }
+
+                    var shuffle = EditorPrefabHolder.Instance.Function2Button.Duplicate(g1.transform);
+                    var shuffleStorage = shuffle.GetComponent<FunctionButtonStorage>();
+                    shuffle.SetActive(true);
+                    shuffle.name = "stop";
+                    shuffle.transform.AsRT().anchoredPosition = new Vector2(370f, 970f);
+                    shuffle.transform.AsRT().sizeDelta = new Vector2(200f, 32f);
+                    shuffleStorage.label.text = "Stop";
+                    ostEditorShuffle = shuffleStorage.button;
+                    EditorThemeManager.ApplySelectable(ostEditorShuffle, ThemeGroup.Function_2);
+                    EditorThemeManager.AddGraphic(shuffleStorage.label, ThemeGroup.Function_2_Text);
+
+                    // Label
+                    {
+                        var label = EditorPrefabHolder.Instance.Labels.Duplicate(g1.transform, "label");
+                        label.transform.AsRT().pivot = new Vector2(0f, 1f);
+                        label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
+                        label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
+                        var labelText = label.transform.GetChild(0).GetComponent<Text>();
                         labelText.text = "Use Global Path";
                         EditorThemeManager.AddLightText(labelText);
 
@@ -1732,6 +1701,10 @@ namespace BetterLegacy.Editor.Managers
                 }
             }
 
+            notificationsParent = EditorManager.inst.notification.Duplicate(plannerBase).transform.AsRT();
+            CoreHelper.Delete(notificationsParent.TryGetChild(0));
+            RectValues.BottomLeftAnchored.AnchoredPosition(8f, 8f).SizeDelta(221f, 632f).AssignToRectTransform(notificationsParent.AsRT());
+
             RenderTabs();
             Load();
         }
@@ -1744,21 +1717,21 @@ namespace BetterLegacy.Editor.Managers
                 if (note.TitleUI)
                     note.TitleUI.color = RTColors.InvertColorHue(RTColors.InvertColorValue(note.TopColor));
 
-                if (!PlannerActive || CurrentTab != 5)
+                if (!PlannerActive || CurrentTab != PlannerBase.Type.Note)
                     note.GameObject?.SetActive(note.Active);
 
-                note.ActiveUI?.gameObject?.SetActive(PlannerActive && CurrentTab == 5);
+                note.ActiveUI?.gameObject?.SetActive(PlannerActive && CurrentTab == PlannerBase.Type.Note);
 
-                var currentParent = !PlannerActive || CurrentTab != 5 ? notesParent : content;
+                var currentParent = !PlannerActive || CurrentTab != PlannerBase.Type.Note ? notesParent : content;
 
                 if (note.GameObject && note.GameObject.transform.parent != (currentParent))
                 {
                     note.GameObject.transform.SetParent(currentParent);
-                    if (PlannerActive && CurrentTab == 5)
+                    if (PlannerActive && CurrentTab == PlannerBase.Type.Note)
                         note.GameObject.transform.localScale = Vector3.one;
                 }
 
-                if (!note.Dragging && note.GameObject && (!PlannerActive || CurrentTab != 5))
+                if (!note.Dragging && note.GameObject && (!PlannerActive || CurrentTab != PlannerBase.Type.Note))
                 {
                     note.GameObject.transform.localPosition = note.Position;
                     note.GameObject.transform.localScale = note.Scale;
@@ -1767,37 +1740,101 @@ namespace BetterLegacy.Editor.Managers
 
                 if (note.GameObject && note.GameObject.transform.Find("panel/edit"))
                 {
-                    note.GameObject.transform.Find("panel/edit").gameObject.SetActive(!PlannerActive || CurrentTab != 5);
+                    note.GameObject.transform.Find("panel/edit").gameObject.SetActive(!PlannerActive || CurrentTab != PlannerBase.Type.Note);
                 }
             }
 
-            if (EditorManager.inst.editorState == EditorManager.EditorState.Main)
+            // handle OST
+
+            if (!PlannerActive && EditorConfig.Instance.StopOSTOnExitPlanner.Value)
                 return;
 
-            if (OSTAudioSource)
-                OSTAudioSource.volume = AudioManager.inst.musicVol;
+            if (!OSTAudioSource)
+                return;
+
+            if (!PlannerActive && SoundManager.inst.Playing)
+            {
+                switch (EditorConfig.Instance.InterruptOSTBehavior.Value)
+                {
+                    case InterruptOSTBehaviorType.LowerVolume: {
+                            if (!OSTAudioSource.isPlaying)
+                                OSTAudioSource.UnPause();
+
+                            OSTAudioSource.volume = SoundManager.inst.MusicVolume * (EditorConfig.Instance.LowerOSTVol.Value / 9f);
+                            break;
+                        }
+                    case InterruptOSTBehaviorType.Pause: {
+                            OSTAudioSource.Pause();
+                            break;
+                        }
+                }
+            }
+            else
+            {
+                if (!OSTAudioSource.isPlaying)
+                    OSTAudioSource.UnPause();
+
+                OSTAudioSource.volume = SoundManager.inst.MusicVolume * (EditorConfig.Instance.OSTVol.Value / 9f);
+            }
 
             var list = osts;
-            if (OSTAudioSource && OSTAudioSource.clip && OSTAudioSource.time > OSTAudioSource.clip.length - 0.1f && playing)
+            if (OSTAudioSource.clip && OSTAudioSource.time > OSTAudioSource.clip.length - 0.1f && playing)
             {
-                int num = 1;
-                // Here we skip any OST where a song file does not exist.
-                while (currentOST + num < list.Count && !list[num].Valid)
-                    num++;
-
-                list[currentOST].playing = false;
-                playing = false;
-
-                if (currentOST + num >= list.Count)
+                if (EditorConfig.Instance.OSTLoop.Value == LoopOSTBehaviorType.LoopSingle)
+                {
+                    OSTAudioSource.time = 0f;
                     return;
+                }
 
-                list[currentOST + num].Play();
+                if (EditorConfig.Instance.OSTShuffle.Value)
+                {
+                    recentOST.TrimStart(20);
+
+                    OSTPlanner ost = null;
+                    int attempts = 0;
+                    int num = 0;
+                    while (attempts < 40)
+                    {
+                        num = UnityEngine.Random.Range(0, osts.Count);
+                        ost = list[num];
+                        if (!recentOST.Has(x => x.Path == ost.Path))
+                            break;
+
+                        attempts++;
+                    }
+                    if (!ost)
+                        return;
+
+                    recentOST.Add(ost);
+                    ost.Play();
+                }
+                else
+                {
+                    int num = 1;
+                    // Here we skip any OST where a song file does not exist.
+                    while (currentOST + num < list.Count && !list[num].Valid)
+                        num++;
+
+                    list[currentOST].playing = false;
+                    playing = false;
+
+                    if (currentOST + num >= list.Count)
+                    {
+                        if (EditorConfig.Instance.OSTLoop.Value != LoopOSTBehaviorType.LoopAll)
+                            return;
+
+                        currentOST = 0;
+                        num = 0;
+                    }
+
+                    list[currentOST + num].Play();
+                }
             }
         }
 
         #endregion
 
-        #region Variables
+        #region Values
 
         public Transform plannerBase;
         public Transform planner;
@@ -1807,6 +1844,8 @@ namespace BetterLegacy.Editor.Managers
         public Transform content;
         public Transform notesParent;
         public GridLayoutGroup contentLayout;
+
+        public RectTransform notificationsParent;
 
         public Transform assetsParent;
 
@@ -1820,10 +1859,11 @@ namespace BetterLegacy.Editor.Managers
         public int currentOST;
         public string currentOSTID;
         public bool playing = false;
+        public List<OSTPlanner> recentOST = new List<OSTPlanner>();
 
         public List<Toggle> tabs = new List<Toggle>();
 
-        public int CurrentTab { get; set; }
+        public PlannerBase.Type CurrentTab { get; set; }
         public string SearchTerm { get; set; }
 
         public string[] tabNames = new string[]
@@ -1884,6 +1924,20 @@ namespace BetterLegacy.Editor.Managers
         public Texture2D horizontalDrag;
         public Texture2D verticalDrag;
 
+        public enum InterruptOSTBehaviorType
+        {
+            Continue,
+            LowerVolume,
+            Pause,
+        }
+
+        public enum LoopOSTBehaviorType
+        {
+            None,
+            LoopSingle,
+            LoopAll,
+        }
+
         #region Editor
 
         public GameObject textEditorPrefab;
@@ -1931,11 +1985,154 @@ namespace BetterLegacy.Editor.Managers
         public Button ostEditorUseGlobal;
         public Text ostEditorUseGlobalText;
         public Button ostEditorStop;
+        public Button ostEditorShuffle;
         public InputField ostEditorIndex;
 
         public List<GameObject> editors = new List<GameObject>();
 
+        List<PlannerBase> activeTabPlannerItems = new List<PlannerBase>();
+
         #endregion
+
+        #endregion
+
+        #region Functions
+
+        #region Create
+
+        public DocumentPlanner CreateDocument(string name, string text, bool save = true)
+        {
+            var document = new DocumentPlanner();
+            document.Name = name;
+            document.Text = text;
+
+            AddPlanner(document);
+            if (save)
+                SaveDocuments();
+            if (EditorConfig.Instance.OpenNewPlanner.Value)
+                OpenDocumentEditor(document);
+            return document;
+        }
+
+        public TODOPlanner CreateTODO(bool check, string text, bool save = true)
+        {
+            var todo = new TODOPlanner();
+            todo.Checked = check;
+            todo.Text = text;
+
+            AddPlanner(todo);
+            if (save)
+                SaveTODO();
+            if (EditorConfig.Instance.OpenNewPlanner.Value)
+                OpenTODOEditor(todo);
+            return todo;
+        }
+
+        public CharacterPlanner CreateCharacter(string fullPath, bool save = true)
+        {
+            if (string.IsNullOrEmpty(fullPath))
+                return null;
+
+            var path = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlannersPath);
+            var charactersPath = RTFile.CombinePaths(path, "characters");
+            RTFile.CreateDirectory(charactersPath);
+
+            int num = 1;
+            while (RTFile.DirectoryExists(fullPath))
+            {
+                fullPath = RTFile.CombinePaths(charactersPath, $"New Character {num}");
+                num++;
+            }
+
+            RTFile.CreateDirectory(fullPath);
+
+            var character = new CharacterPlanner();
+
+            for (int i = 0; i < 3; i++)
+            {
+                character.CharacterTraits.Add("???");
+                character.CharacterLore.Add("???");
+                character.CharacterAbilities.Add("???");
+            }
+
+            character.CharacterSprite = SpriteHelper.LoadSprite(AssetPack.GetFile($"editor/example{FileFormat.PNG.Dot()}"));
+            character.Name = Path.GetFileName(fullPath);
+            character.FullPath = fullPath;
+            character.Gender = "He";
+            character.Description = "This is the default description";
+
+            AddPlanner(character);
+            if (save)
+                character.Save();
+            if (EditorConfig.Instance.OpenNewPlanner.Value)
+                OpenCharacterEditor(character);
+            return character;
+        }
+
+        public TimelinePlanner CreateTimeline(string name, List<TimelinePlanner.Event> events, bool save = true)
+        {
+            var timeline = new TimelinePlanner();
+            timeline.Name = name;
+            timeline.Levels = events;
+
+            AddPlanner(timeline);
+            if (save)
+                SaveTimelines();
+            if (EditorConfig.Instance.OpenNewPlanner.Value)
+                OpenTimelineEditor(timeline);
+            return timeline;
+        }
+
+        public SchedulePlanner CreateSchedule(DateTime dateTime, string description, bool save = true)
+        {
+            var schedule = new SchedulePlanner();
+            schedule.Date = dateTime.ToString("g");
+            schedule.Description = description;
+
+            AddPlanner(schedule);
+            if (save)
+                SaveSchedules();
+            if (EditorConfig.Instance.OpenNewPlanner.Value)
+                OpenScheduleEditor(schedule);
+            return schedule;
+        }
+
+        public NotePlanner CreateNote(bool active, string name, int color, Vector2 position, string text, bool save = true)
+        {
+            var note = new NotePlanner();
+            note.Active = active;
+            note.Name = name;
+            note.Color = color;
+            note.Position = position;
+            note.Text = text;
+
+            AddPlanner(note);
+            if (save)
+                SaveNotes();
+            if (EditorConfig.Instance.OpenNewPlanner.Value)
+                OpenNoteEditor(note);
+            return note;
+        }
+
+        public OSTPlanner CreateOST(string name, string path, bool useGlobal, bool save = true)
+        {
+            var ost = new OSTPlanner();
+            ost.Name = name;
+            ost.Path = path;
+            ost.UseGlobal = useGlobal;
+
+            AddPlanner(ost);
+
+            var list = osts.OrderBy(x => x.Index).ToList();
+
+            ost.Index = list.Count - 1;
+
+            if (save)
+                SaveOST();
+            if (EditorConfig.Instance.OpenNewPlanner.Value)
+                OpenOSTEditor(ost);
+            return ost;
+        }
 
         #endregion
 
@@ -1977,6 +2174,9 @@ namespace BetterLegacy.Editor.Managers
             item.Init();
         }
 
+        /// <summary>
+        /// Clears all the planners.
+        /// </summary>
         public void ClearPlanners()
         {
             documents.Clear();
@@ -1988,16 +2188,24 @@ namespace BetterLegacy.Editor.Managers
             osts.Clear();
         }
 
+        /// <summary>
+        /// Saves all the planners.
+        /// </summary>
         public void Save()
         {
+            EditorManager.inst.DisplayNotification("Saving Planners!", 1f, EditorManager.NotificationType.Warning);
             SaveDocuments();
             SaveTODO();
             SaveTimelines();
             SaveSchedules();
             SaveNotes();
             SaveOST();
+            EditorManager.inst.DisplayNotification("Saved Planners!", 2f, EditorManager.NotificationType.Success);
         }
 
+        /// <summary>
+        /// Loads all the planners.
+        /// </summary>
         public void Load()
         {
             ClearPlanners();
@@ -2315,7 +2523,11 @@ namespace BetterLegacy.Editor.Managers
 
         #region Refresh GUI
 
-        public void OpenTab(int tab)
+        /// <summary>
+        /// Sets the current planner tab.
+        /// </summary>
+        /// <param name="tab">Tab to set.</param>
+        public void OpenTab(PlannerBase.Type tab)
         {
             CurrentTab = tab;
             Open();
@@ -2323,20 +2535,23 @@ namespace BetterLegacy.Editor.Managers
             RefreshList();
         }
 
+        /// <summary>
+        /// Renders the planner tabs.
+        /// </summary>
         public void RenderTabs()
         {
-            contentLayout.cellSize = tabCellSizes[CurrentTab];
-            contentLayout.constraintCount = tabConstraintCounts[CurrentTab];
+            contentLayout.cellSize = tabCellSizes[(int)CurrentTab];
+            contentLayout.constraintCount = tabConstraintCounts[(int)CurrentTab];
             documentFullView.SetActive(false);
             int num = 0;
             foreach (var tab in tabs)
             {
                 int index = num;
 
-                tab.SetIsOnWithoutNotify(index == CurrentTab);
+                tab.SetIsOnWithoutNotify(index == (int)CurrentTab);
                 tab.onValueChanged.NewListener(_val =>
                 {
-                    CurrentTab = index;
+                    CurrentTab = (PlannerBase.Type)index;
                     RenderTabs();
                     RefreshList();
                 });
@@ -2346,62 +2561,104 @@ namespace BetterLegacy.Editor.Managers
             SetEditorsInactive();
         }
 
+        /// <summary>
+        /// Refreshes the planner list.
+        /// </summary>
         public void RefreshList()
         {
-            for (int i = 0; i < documents.Count; i++)
+            for (int i = 0; i < activeTabPlannerItems.Count; i++)
             {
-                var planner = documents[i];
-
+                var planner = activeTabPlannerItems[i];
                 if (planner && planner.GameObject)
-                    planner.GameObject.SetActive(planner.PlannerType == (PlannerBase.Type)CurrentTab && RTString.SearchString(SearchTerm, planner.Name));
+                    planner.GameObject.SetActive(false);
             }
-            
-            for (int i = 0; i < todos.Count; i++)
+            activeTabPlannerItems.Clear();
+            switch (CurrentTab)
             {
-                var planner = todos[i];
-
-                if (planner && planner.GameObject)
-                    planner.GameObject.SetActive(planner.PlannerType == (PlannerBase.Type)CurrentTab && (string.IsNullOrEmpty(SearchTerm) || CheckOn(SearchTerm.ToLower()) && planner.Checked || CheckOff(SearchTerm.ToLower()) && !planner.Checked || RTString.SearchString(SearchTerm, planner.Text)));
-            }
-            
-            for (int i = 0; i < characters.Count; i++)
-            {
-                var planner = characters[i];
-
-                if (planner && planner.GameObject)
-                    planner.GameObject.SetActive(planner.PlannerType == (PlannerBase.Type)CurrentTab && RTString.SearchString(SearchTerm, planner.Name, planner.Description));
-            }
-            
-            for (int i = 0; i < timelines.Count; i++)
-            {
-                var planner = timelines[i];
-
-                if (planner && planner.GameObject)
-                    planner.GameObject.SetActive(planner.PlannerType == (PlannerBase.Type)CurrentTab && planner.Levels.Has(x => RTString.SearchString(SearchTerm, x.Name)));
-            }
-            
-            for (int i = 0; i < schedules.Count; i++)
-            {
-                var planner = schedules[i];
-
-                if (planner && planner.GameObject)
-                    planner.GameObject.SetActive(planner.PlannerType == (PlannerBase.Type)CurrentTab && RTString.SearchString(SearchTerm, planner.Description, planner.Date));
-            }
-            
-            for (int i = 0; i < notes.Count; i++)
-            {
-                var planner = notes[i];
-
-                if (planner && planner.GameObject)
-                    planner.GameObject.SetActive(planner.PlannerType == (PlannerBase.Type)CurrentTab && RTString.SearchString(SearchTerm, planner.Name, planner.Text));
-            }
-            
-            for (int i = 0; i < osts.Count; i++)
-            {
-                var planner = osts[i];
-
-                if (planner && planner.GameObject)
-                    planner.GameObject.SetActive(planner.PlannerType == (PlannerBase.Type)CurrentTab && RTString.SearchString(SearchTerm, planner.Name));
+                case PlannerBase.Type.Document: {
+                        for (int i = 0; i < documents.Count; i++)
+                        {
+                            var planner = documents[i];
+                            if (!planner)
+                                continue;
+                            activeTabPlannerItems.Add(planner);
+                            if (planner.GameObject)
+                                planner.GameObject.SetActive(planner.PlannerType == CurrentTab && RTString.SearchString(SearchTerm, planner.Name));
+                        }
+                        break;
+                    }
+                case PlannerBase.Type.TODO: {
+                        for (int i = 0; i < todos.Count; i++)
+                        {
+                            var planner = todos[i];
+                            if (!planner)
+                                continue;
+                            activeTabPlannerItems.Add(planner);
+                            if (planner.GameObject)
+                                planner.GameObject.SetActive(planner.PlannerType == CurrentTab && (string.IsNullOrEmpty(SearchTerm) || CheckOn(SearchTerm.ToLower()) && planner.Checked || CheckOff(SearchTerm.ToLower()) && !planner.Checked || RTString.SearchString(SearchTerm, planner.Text)));
+                        }
+                        break;
+                    }
+                case PlannerBase.Type.Character: {
+                        for (int i = 0; i < characters.Count; i++)
+                        {
+                            var planner = characters[i];
+                            if (!planner)
+                                continue;
+                            activeTabPlannerItems.Add(planner);
+                            if (planner.GameObject)
+                                planner.GameObject.SetActive(planner.PlannerType == CurrentTab && RTString.SearchString(SearchTerm, planner.Name, planner.Description));
+                        }
+                        break;
+                    }
+                case PlannerBase.Type.Timeline: {
+                        for (int i = 0; i < timelines.Count; i++)
+                        {
+                            var planner = timelines[i];
+                            if (!planner)
+                                continue;
+                            activeTabPlannerItems.Add(planner);
+                            if (planner.GameObject)
+                                planner.GameObject.SetActive(planner.PlannerType == CurrentTab && planner.Levels.Has(x => RTString.SearchString(SearchTerm, x.Name)));
+                        }
+                        break;
+                    }
+                case PlannerBase.Type.Schedule: {
+                        for (int i = 0; i < schedules.Count; i++)
+                        {
+                            var planner = schedules[i];
+                            if (!planner)
+                                continue;
+                            activeTabPlannerItems.Add(planner);
+                            if (planner.GameObject)
+                                planner.GameObject.SetActive(planner.PlannerType == CurrentTab && RTString.SearchString(SearchTerm, planner.Description, planner.Date));
+                        }
+                        break;
+                    }
+                case PlannerBase.Type.Note: {
+                        for (int i = 0; i < notes.Count; i++)
+                        {
+                            var planner = notes[i];
+                            if (!planner)
+                                continue;
+                            activeTabPlannerItems.Add(planner);
+                            if (planner.GameObject)
+                                planner.GameObject.SetActive(planner.PlannerType == CurrentTab && RTString.SearchString(SearchTerm, planner.Name, planner.Text));
+                        }
+                        break;
+                    }
+                case PlannerBase.Type.OST: {
+                        for (int i = 0; i < osts.Count; i++)
+                        {
+                            var planner = osts[i];
+                            if (!planner)
+                                continue;
+                            activeTabPlannerItems.Add(planner);
+                            if (planner.GameObject)
+                                planner.GameObject.SetActive(planner.PlannerType == CurrentTab && RTString.SearchString(SearchTerm, planner.Name));
+                        }
+                        break;
+                    }
             }
         }
 
@@ -2411,6 +2668,9 @@ namespace BetterLegacy.Editor.Managers
         bool CheckOff(string searchTerm)
             => searchTerm == "\"false\"" || searchTerm == "\"off\"" || searchTerm == "\"not done\"" || searchTerm == "\"not finished\"" || searchTerm == "\"unfinished\"" || searchTerm == "\"unchecked\"";
 
+        /// <summary>
+        /// Hides the editors.
+        /// </summary>
         public void SetEditorsInactive()
         {
             for (int i = 0; i < editors.Count; i++)
@@ -2418,7 +2678,10 @@ namespace BetterLegacy.Editor.Managers
             editorTitlePanel.gameObject.SetActive(false);
         }
 
-        public bool DocumentFullViewActive { get; set; }
+        /// <summary>
+        /// Opens the Document editor.
+        /// </summary>
+        /// <param name="document">Document planner to edit.</param>
         public void OpenDocumentEditor(DocumentPlanner document)
         {
             editors[0].SetActive(true); editorTitlePanel.gameObject.SetActive(true);
@@ -2434,9 +2697,13 @@ namespace BetterLegacy.Editor.Managers
             documentEditorName.onEndEdit.NewListener(_val => SaveDocuments());
 
             HandleDocumentEditor(document);
-            HandleDocumentEditorPreview(document);
+            HandleDocumentEditorDisplay(document);
         }
 
+        /// <summary>
+        /// Handles the Document editor.
+        /// </summary>
+        /// <param name="document">Document planner to edit.</param>
         void HandleDocumentEditor(DocumentPlanner document)
         {
             documentEditorText.SetTextWithoutNotify(document.Text);
@@ -2446,14 +2713,17 @@ namespace BetterLegacy.Editor.Managers
                 document.TextUI.text = _val;
                 SetupPlannerLinks(document.Text, document.TextUI, null, false);
 
-                HandleDocumentEditorPreview(document);
+                HandleDocumentEditorDisplay(document);
             });
             documentEditorText.onEndEdit.NewListener(_val => SaveDocuments());
         }
 
-        void HandleDocumentEditorPreview(DocumentPlanner document)
+        /// <summary>
+        /// Handles the full Document display.
+        /// </summary>
+        /// <param name="document">Document planner to edit.</param>
+        void HandleDocumentEditorDisplay(DocumentPlanner document)
         {
-            DocumentFullViewActive = true;
             documentFullView.SetActive(true);
             documentTitle.text = document.Name;
             documentInputField.SetTextWithoutNotify(document.Text);
@@ -2473,6 +2743,10 @@ namespace BetterLegacy.Editor.Managers
             SetupPlannerLinks(document.Text, documentInputField, documentHyperlinks);
         }
 
+        /// <summary>
+        /// Opens the TODO editor.
+        /// </summary>
+        /// <param name="todo">TODO planner to edit.</param>
         public void OpenTODOEditor(TODOPlanner todo)
         {
             editors[1].SetActive(true); editorTitlePanel.gameObject.SetActive(true);
@@ -2516,6 +2790,11 @@ namespace BetterLegacy.Editor.Managers
             });
         }
 
+        // TODO: REWORK AND FIX CHARACTER PLANNER
+        /// <summary>
+        /// Opens the Character editor.
+        /// </summary>
+        /// <param name="character">Character planner to edit.</param>
         public void OpenCharacterEditor(CharacterPlanner character)
         {
             editors[2].SetActive(true); editorTitlePanel.gameObject.SetActive(true);
@@ -2695,6 +2974,10 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
+        /// <summary>
+        /// Opens the Timeline editor.
+        /// </summary>
+        /// <param name="timeline">Timeline planner to edit.</param>
         public void OpenTimelineEditor(TimelinePlanner timeline)
         {
             SetEditorsInactive();
@@ -2710,6 +2993,10 @@ namespace BetterLegacy.Editor.Managers
             timelineEditorName.onEndEdit.NewListener(_val => SaveTimelines());
         }
 
+        /// <summary>
+        /// Opens the Event editor.
+        /// </summary>
+        /// <param name="level">Event planner to edit.</param>
         public void OpenEventEditor(TimelinePlanner.Event level)
         {
             SetEditorsInactive();
@@ -2746,6 +3033,10 @@ namespace BetterLegacy.Editor.Managers
             });
         }
 
+        /// <summary>
+        /// Opens the Schedule editor.
+        /// </summary>
+        /// <param name="schedule">Schedule planner to edit.</param>
         public void OpenScheduleEditor(SchedulePlanner schedule)
         {
             editors[5].SetActive(true); editorTitlePanel.gameObject.SetActive(true);
@@ -2757,6 +3048,7 @@ namespace BetterLegacy.Editor.Managers
                 schedule.Description = _val;
                 schedule.TextUI.text = schedule.Text;
                 schedule.hasBeenChecked = false;
+                SetupPlannerLinks(schedule.Text, schedule.TextUI, schedule.Hyperlinks);
             });
             scheduleEditorDescription.onEndEdit.NewListener(_val => SaveSchedules());
 
@@ -2845,6 +3137,10 @@ namespace BetterLegacy.Editor.Managers
             });
         }
 
+        /// <summary>
+        /// Opens the Note editor.
+        /// </summary>
+        /// <param name="note">Note planner to edit.</param>
         public void OpenNoteEditor(NotePlanner note)
         {
             editors[6].SetActive(true); editorTitlePanel.gameObject.SetActive(true);
@@ -2887,6 +3183,10 @@ namespace BetterLegacy.Editor.Managers
             });
         }
 
+        /// <summary>
+        /// Updates the Note editor colors.
+        /// </summary>
+        /// <param name="note">Note planner to render and edit the colors for.</param>
         public void SetNoteColors(NotePlanner note)
         {
             int num = 0;
@@ -2908,6 +3208,10 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
+        /// <summary>
+        /// Opens the OST editor.
+        /// </summary>
+        /// <param name="ost">OST planner to edit.</param>
         public void OpenOSTEditor(OSTPlanner ost)
         {
             editors[7].SetActive(true); editorTitlePanel.gameObject.SetActive(true);
@@ -2922,10 +3226,12 @@ namespace BetterLegacy.Editor.Managers
             {
                 ost.Name = _val;
                 ost.TextUI.text = _val;
+                SetupPlannerLinks(ost.Name, ost.TextUI, ost.Hyperlinks);
             });
             ostEditorName.onEndEdit.NewListener(_val => SaveOST());
             ostEditorPlay.onClick.NewListener(ost.Play);
             ostEditorStop.onClick.NewListener(StopOST);
+            ostEditorShuffle.onClick.NewListener(ShuffleOST);
             ostEditorUseGlobal.onClick.NewListener(() =>
             {
                 ost.UseGlobal = !ost.UseGlobal;
@@ -2963,6 +3269,9 @@ namespace BetterLegacy.Editor.Managers
             ostEditorIndex.text = i.ToString();
         }
 
+        /// <summary>
+        /// Stops the currently playing OST.
+        /// </summary>
         public void StopOST()
         {
             Destroy(OSTAudioSource);
@@ -2973,6 +3282,15 @@ namespace BetterLegacy.Editor.Managers
                 list[i].playing = false;
 
             playing = false;
+        }
+
+        /// <summary>
+        /// Shuffles the OST.
+        /// </summary>
+        public void ShuffleOST()
+        {
+            StopOST();
+            osts[UnityEngine.Random.Range(0, osts.Count)].Play();
         }
 
         #endregion
@@ -3018,35 +3336,54 @@ namespace BetterLegacy.Editor.Managers
 
         #region Open / Close UI
 
+        /// <summary>
+        /// If the planner is active.
+        /// </summary>
         public bool PlannerActive => EditorManager.inst.editorState == EditorManager.EditorState.Intro;
 
+        /// <summary>
+        /// Opens the planner.
+        /// </summary>
         public void Open()
         {
             EditorManager.inst.editorState = EditorManager.EditorState.Intro;
             UpdateStateUI();
         }
 
+        /// <summary>
+        /// Closes the planner.
+        /// </summary>
         public void Close()
         {
             EditorManager.inst.editorState = EditorManager.EditorState.Main;
             UpdateStateUI();
         }
 
+        /// <summary>
+        /// Toggles the planner state.
+        /// </summary>
         public void ToggleState() => SetState(EditorManager.inst.editorState == EditorManager.EditorState.Main ? EditorManager.EditorState.Intro : EditorManager.EditorState.Main);
 
+        /// <summary>
+        /// Sets the planner state.
+        /// </summary>
+        /// <param name="editorState">Editor state.</param>
         public void SetState(EditorManager.EditorState editorState)
         {
             EditorManager.inst.editorState = editorState;
             UpdateStateUI();
         }
 
+        /// <summary>
+        /// Updates the state of the editor.
+        /// </summary>
         public void UpdateStateUI()
         {
             var editorState = EditorManager.inst.editorState;
             EditorManager.inst.GUIMain.SetActive(editorState == EditorManager.EditorState.Main);
             EditorManager.inst.GUIIntro.SetActive(editorState == EditorManager.EditorState.Intro);
 
-            if (editorState == EditorManager.EditorState.Main)
+            if (editorState == EditorManager.EditorState.Main && EditorConfig.Instance.StopOSTOnExitPlanner.Value)
                 StopOST();
         }
 
@@ -3072,6 +3409,8 @@ namespace BetterLegacy.Editor.Managers
             if (string.IsNullOrEmpty(input))
                 return;
 
+            var removeLink = registerFunctions ? "</link>" : string.Empty;
+
             if (input.Contains("refdoc") && input.Contains("</refdoc>"))
             {
                 RTString.RegexMatches(input, new Regex("<refdoc=\"(.*?)\">"), match =>
@@ -3082,7 +3421,7 @@ namespace BetterLegacy.Editor.Managers
                         var link = "refdoc" + LSText.randomNumString(16);
                         hyperlinks.RegisterLink(link, () =>
                         {
-                            OpenTab(0);
+                            OpenTab(PlannerBase.Type.Document);
                             OpenDocumentEditor(document);
                         });
                         input = input.Replace(match.Groups[0].ToString(), $"<link={link}>");
@@ -3098,7 +3437,7 @@ namespace BetterLegacy.Editor.Managers
                         var link = "refdoc" + LSText.randomNumString(16);
                         hyperlinks.RegisterLink(link, () =>
                         {
-                            OpenTab(0);
+                            OpenTab(PlannerBase.Type.Document);
                             OpenDocumentEditor(document);
                         });
                         input = input.Replace(match.Groups[0].ToString(), $"<link={link}>");
@@ -3106,7 +3445,7 @@ namespace BetterLegacy.Editor.Managers
                     else
                         input = input.Replace(match.Groups[0].ToString(), string.Empty);
                 });
-                input = input.Replace("</refdoc>", "</link>");
+                input = input.Replace("</refdoc>", removeLink);
             }
             if (input.Contains("reflevelfolder") && input.Contains("</reflevelfolder>"))
             {
@@ -3146,7 +3485,7 @@ namespace BetterLegacy.Editor.Managers
                     else
                         input = input.Replace(match.Groups[0].ToString(), string.Empty);
                 });
-                input = input.Replace("</reflevelfolder>", "</link>");
+                input = input.Replace("</reflevelfolder>", removeLink);
             }
             if (input.Contains("reflevel") && input.Contains("</reflevel>"))
             {
@@ -3278,23 +3617,23 @@ namespace BetterLegacy.Editor.Managers
 
                     }
                 });
-                input = input.Replace("</reflevel>", "</link>");
+                input = input.Replace("</reflevel>", removeLink);
             }
             if (input.Contains("tab") && input.Contains("</tab>"))
             {
-                RTString.RegexMatches(input, new Regex(@"<tab=([0-9])"), match =>
+                RTString.RegexMatches(input, new Regex(@"<tab=([0-9])>"), match =>
                 {
                     var tab = match.Groups[1].ToString();
                     if (registerFunctions && int.TryParse(tab, out int tabIndex))
                     {
                         var link = "tab" + LSText.randomNumString(16);
-                        hyperlinks.RegisterLink(link, () => OpenTab(tabIndex));
+                        hyperlinks.RegisterLink(link, () => OpenTab((PlannerBase.Type)tabIndex));
                         input = input.Replace(match.Groups[0].ToString(), $"<link={link}>");
                     }
                     else
                         input = input.Replace(match.Groups[0].ToString(), string.Empty);
                 });
-                input = input.Replace("</tab>", "</link>");
+                input = input.Replace("</tab>", removeLink);
             }
             if (input.Contains("url") && input.Contains("</url>"))
             {
@@ -3303,7 +3642,7 @@ namespace BetterLegacy.Editor.Managers
                     try
                     {
                         var url = AlephNetwork.GetURL(Parser.TryParse(match.Groups[1].ToString(), URLSource.Song), Parser.TryParse(match.Groups[2].ToString(), 0), match.Groups[3].ToString());
-                        if (!string.IsNullOrEmpty(url))
+                        if (registerFunctions && !string.IsNullOrEmpty(url))
                         {
                             var link = "url" + LSText.randomNumString(16);
                             hyperlinks.RegisterLink(link, () => Application.OpenURL(url));
@@ -3322,7 +3661,7 @@ namespace BetterLegacy.Editor.Managers
                     try
                     {
                         var url = AlephNetwork.GetURL(Parser.TryParse(match.Groups[1].ToString(), URLSource.Song), Parser.TryParse(match.Groups[2].ToString(), 0), match.Groups[3].ToString());
-                        if (!string.IsNullOrEmpty(url))
+                        if (registerFunctions && !string.IsNullOrEmpty(url))
                         {
                             var link = "url" + LSText.randomNumString(16);
                             hyperlinks.RegisterLink(link, () => Application.OpenURL(url));
@@ -3341,7 +3680,7 @@ namespace BetterLegacy.Editor.Managers
                     try
                     {
                         var url = AlephNetwork.GetURL(Parser.TryParse(match.Groups[1].ToString(), URLSource.Song), Parser.TryParse(match.Groups[2].ToString(), 0), match.Groups[3].ToString());
-                        if (!string.IsNullOrEmpty(url))
+                        if (registerFunctions && !string.IsNullOrEmpty(url))
                         {
                             var link = "url" + LSText.randomNumString(16);
                             hyperlinks.RegisterLink(link, () => Application.OpenURL(url));
@@ -3360,7 +3699,7 @@ namespace BetterLegacy.Editor.Managers
                     try
                     {
                         var url = AlephNetwork.GetURL(Parser.TryParse(match.Groups[1].ToString(), URLSource.Song), Parser.TryParse(match.Groups[2].ToString(), 0), match.Groups[3].ToString());
-                        if (!string.IsNullOrEmpty(url))
+                        if (registerFunctions && !string.IsNullOrEmpty(url))
                         {
                             var link = "url" + LSText.randomNumString(16);
                             hyperlinks.RegisterLink(link, () => Application.OpenURL(url));
@@ -3379,7 +3718,7 @@ namespace BetterLegacy.Editor.Managers
                     try
                     {
                         var url = match.Groups[1].ToString();
-                        if (!string.IsNullOrEmpty(url))
+                        if (registerFunctions && !string.IsNullOrEmpty(url))
                         {
                             var link = "url" + LSText.randomNumString(16);
                             hyperlinks.RegisterLink(link, () => Application.OpenURL(url));
@@ -3398,7 +3737,7 @@ namespace BetterLegacy.Editor.Managers
                     try
                     {
                         var url = match.Groups[1].ToString();
-                        if (!string.IsNullOrEmpty(url))
+                        if (registerFunctions && !string.IsNullOrEmpty(url))
                         {
                             var link = "url" + LSText.randomNumString(16);
                             hyperlinks.RegisterLink(link, () => Application.OpenURL(url));
@@ -3412,11 +3751,149 @@ namespace BetterLegacy.Editor.Managers
 
                     }
                 });
-                input = input.Replace("</url>", "</link>");
+                input = input.Replace("</url>", removeLink);
+            }
+            if (input.Contains("copytext") && input.Contains("</copytext>"))
+            {
+                RTString.RegexMatches(input, new Regex("<copytext=\"(.*?)\">"), match =>
+                {
+                    var text = match.Groups[1].ToString();
+                    if (registerFunctions && !string.IsNullOrEmpty(text))
+                    {
+                        var link = "copytext" + LSText.randomNumString(16);
+                        hyperlinks.RegisterLink(link, () => LSText.CopyToClipboard(text));
+                        input = input.Replace(match.Groups[0].ToString(), $"<link={link}>");
+                    }
+                    else
+                        input = input.Replace(match.Groups[0].ToString(), string.Empty);
+                });
+                RTString.RegexMatches(input, new Regex(@"<copytext=(.*?)>"), match =>
+                {
+                    var text = match.Groups[1].ToString();
+                    if (registerFunctions && !string.IsNullOrEmpty(text))
+                    {
+                        var link = "copytext" + LSText.randomNumString(16);
+                        hyperlinks.RegisterLink(link, () => LSText.CopyToClipboard(text));
+                        input = input.Replace(match.Groups[0].ToString(), $"<link={link}>");
+                    }
+                    else
+                        input = input.Replace(match.Groups[0].ToString(), string.Empty);
+                });
+                input = input.Replace("</copytext>", removeLink);
+            }
+            if (input.Contains("shownote") && input.Contains("</shownote>"))
+            {
+                RTString.RegexMatches(input, new Regex("<shownote=\"(.*?)\">"), match =>
+                {
+                    var name = match.Groups[1].ToString();
+                    if (registerFunctions && !string.IsNullOrEmpty(name) && notes.TryFind(x => x.Name == name, out NotePlanner note))
+                    {
+                        var link = "shownote" + LSText.randomNumString(16);
+                        hyperlinks.RegisterLink(link, () =>
+                        {
+                            note.Active = true;
+                            SaveNotes();
+                        });
+                        input = input.Replace(match.Groups[0].ToString(), $"<link={link}>");
+                    }
+                    else
+                        input = input.Replace(match.Groups[0].ToString(), string.Empty);
+                });
+                RTString.RegexMatches(input, new Regex(@"<shownote=(.*?)>"), match =>
+                {
+                    var name = match.Groups[1].ToString();
+                    if (registerFunctions && !string.IsNullOrEmpty(name) && notes.TryFind(x => x.Name == name, out NotePlanner note))
+                    {
+                        var link = "shownote" + LSText.randomNumString(16);
+                        hyperlinks.RegisterLink(link, () =>
+                        {
+                            note.Active = true;
+                            SaveNotes();
+                        });
+                        input = input.Replace(match.Groups[0].ToString(), $"<link={link}>");
+                    }
+                    else
+                        input = input.Replace(match.Groups[0].ToString(), string.Empty);
+                });
+                input = input.Replace("</shownote>", removeLink);
+            }
+            if (input.Contains("hidenote") && input.Contains("</hidenote>"))
+            {
+                RTString.RegexMatches(input, new Regex("<hidenote=\"(.*?)\">"), match =>
+                {
+                    var name = match.Groups[1].ToString();
+                    if (registerFunctions && !string.IsNullOrEmpty(name) && notes.TryFind(x => x.Name == name, out NotePlanner note))
+                    {
+                        var link = "hidenote" + LSText.randomNumString(16);
+                        hyperlinks.RegisterLink(link, () =>
+                        {
+                            note.Active = false;
+                            SaveNotes();
+                        });
+                        input = input.Replace(match.Groups[0].ToString(), $"<link={link}>");
+                    }
+                    else
+                        input = input.Replace(match.Groups[0].ToString(), string.Empty);
+                });
+                RTString.RegexMatches(input, new Regex(@"<hidenote=(.*?)>"), match =>
+                {
+                    var name = match.Groups[1].ToString();
+                    if (registerFunctions && !string.IsNullOrEmpty(name) && notes.TryFind(x => x.Name == name, out NotePlanner note))
+                    {
+                        var link = "hidenote" + LSText.randomNumString(16);
+                        hyperlinks.RegisterLink(link, () =>
+                        {
+                            note.Active = false;
+                            SaveNotes();
+                        });
+                        input = input.Replace(match.Groups[0].ToString(), $"<link={link}>");
+                    }
+                    else
+                        input = input.Replace(match.Groups[0].ToString(), string.Empty);
+                });
+                input = input.Replace("</hidenote>", removeLink);
+            }
+            if (input.Contains("togglenote") && input.Contains("</togglenote>"))
+            {
+                RTString.RegexMatches(input, new Regex("<togglenote=\"(.*?)\">"), match =>
+                {
+                    var name = match.Groups[1].ToString();
+                    if (registerFunctions && !string.IsNullOrEmpty(name) && notes.TryFind(x => x.Name == name, out NotePlanner note))
+                    {
+                        var link = "togglenote" + LSText.randomNumString(16);
+                        hyperlinks.RegisterLink(link, () =>
+                        {
+                            note.Active = !note.Active;
+                            SaveNotes();
+                        });
+                        input = input.Replace(match.Groups[0].ToString(), $"<link={link}>");
+                    }
+                    else
+                        input = input.Replace(match.Groups[0].ToString(), string.Empty);
+                });
+                RTString.RegexMatches(input, new Regex(@"<togglenote=(.*?)>"), match =>
+                {
+                    var name = match.Groups[1].ToString();
+                    if (registerFunctions && !string.IsNullOrEmpty(name) && notes.TryFind(x => x.Name == name, out NotePlanner note))
+                    {
+                        var link = "togglenote" + LSText.randomNumString(16);
+                        hyperlinks.RegisterLink(link, () =>
+                        {
+                            note.Active = !note.Active;
+                            SaveNotes();
+                        });
+                        input = input.Replace(match.Groups[0].ToString(), $"<link={link}>");
+                    }
+                    else
+                        input = input.Replace(match.Groups[0].ToString(), string.Empty);
+                });
+                input = input.Replace("</togglenote>", removeLink);
             }
 
             setText?.Invoke(input);
         }
+
+        #endregion
 
         #endregion
     }

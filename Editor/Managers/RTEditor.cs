@@ -93,298 +93,7 @@ namespace BetterLegacy.Editor.Managers
             CoreHelper.Log($"RTEDITOR INIT -> FILE DRAG DROP");
             var fileDragAndDrop = gameObject.AddComponent<FileDragAndDrop>();
 
-            fileDragAndDrop.onFilesDropped = dropInfos =>
-            {
-                CoreHelper.Log($"Dropping files.\nCount: {dropInfos.Count}");
-                if (dropInfos.All(x => RTFile.FileIsFormat(x.filePath, FileFormat.PNG, FileFormat.JPG)) && dropInfos.Count > 1)
-                {
-                    CoreHelper.Log($"Creating image sequence.");
-                    ObjectEditor.inst.CreateImageSequence(dropInfos.Select(x => x.filePath).ToArray(), EditorConfig.Instance.ImageSequenceFPS.Value);
-                    return;
-                }
-
-                for (int i = 0; i < dropInfos.Count; i++)
-                {
-                    var dropInfo = dropInfos[i];
-
-                    CoreHelper.Log($"Dropped file: {dropInfo}");
-
-                    dropInfo.filePath = RTFile.ReplaceSlash(dropInfo.filePath);
-
-                    var attributes = File.GetAttributes(dropInfo.filePath);
-                    if (attributes.HasFlag(FileAttributes.Directory))
-                    {
-                        if (Level.TryVerify(dropInfo.filePath, true, out Level level))
-                            EditorLevelManager.inst.LoadLevel(level);
-                        else if (EditorLevelManager.inst.OpenLevelPopup.IsOpen && dropInfo.filePath.Contains(RTFile.ApplicationDirectory + "beatmaps/"))
-                        {
-                            EditorLevelManager.inst.OpenLevelPopup.PathField.text = dropInfo.filePath.Remove(RTFile.ApplicationDirectory + "beatmaps/");
-                            UpdateEditorPath(false);
-                        }
-                        else
-                        {
-                            var files = Directory.GetFiles(dropInfo.filePath);
-                            if (files.All(x => RTFile.FileIsFormat(x, FileFormat.PNG, FileFormat.JPG)))
-                            {
-                                CoreHelper.Log($"Creating image sequence.");
-                                ObjectEditor.inst.CreateImageSequence(files, EditorConfig.Instance.ImageSequenceFPS.Value);
-                            }
-                        }
-                        break;
-                    }
-
-                    if (dropInfo.filePath.EndsWith(Level.LEVEL_LSB) || dropInfo.filePath.EndsWith(Level.LEVEL_VGD))
-                    {
-                        if (Level.TryVerify(dropInfo.filePath.Remove("/" + Level.LEVEL_LSB).Remove("/" + Level.LEVEL_VGD), true, out Level level))
-                            EditorLevelManager.inst.LoadLevel(level);
-                        break;
-                    }
-
-                    if (EditorLevelManager.inst.NewLevelPopup.IsOpen)
-                    {
-                        if (RTFile.FileIsAudio(dropInfo.filePath) && EditorLevelManager.inst.NewLevelPopup.SongPath)
-                            EditorLevelManager.inst.NewLevelPopup.SongPath.text = dropInfo.filePath;
-                        break;
-                    }
-
-                    if (RTFile.FileIsAudio(dropInfo.filePath))
-                    {
-                        EditorContextMenu.inst.ShowContextMenu(
-                            new ButtonFunction("Replace song", () =>
-                            {
-                                if (!EditorManager.inst.hasLoadedLevel)
-                                {
-                                    EditorManager.inst.DisplayNotification($"Load a level before trying to replace the song!", 2f, EditorManager.NotificationType.Warning);
-                                    return;
-                                }
-
-                                var audioFormat = RTFile.GetFileFormat(dropInfo.filePath);
-                                var level = EditorLevelManager.inst.CurrentLevel;
-                                var waveforms = Enum.GetNames(typeof(WaveformType));
-                                for (int i = 0; i < waveforms.Length; i++)
-                                    RTFile.DeleteFile(RTFile.CombinePaths(RTFile.BasePath, $"waveform-{waveforms[i].ToLower()}{FileFormat.PNG.Dot()}"));
-
-                                RTFile.CopyFile(dropInfo.filePath, RTFile.CombinePaths(RTFile.BasePath, $"level{audioFormat.Dot()}"));
-                                var previousAudio = level.music;
-                                var previousTime = RTLevel.Current.FixedTime;
-                                var previousPlayState = SoundManager.inst.Playing;
-                                level.music = null;
-                                CoroutineHelper.StartCoroutine(level.LoadAudioClipRoutine(() =>
-                                {
-                                    EditorLevelManager.inst.SetCurrentAudio(level.music);
-                                    AudioManager.inst.SetMusicTime(previousTime);
-                                    SoundManager.inst.SetPlaying(previousPlayState);
-
-                                    if (EditorConfig.Instance.WaveformGenerate.Value)
-                                    {
-                                        CoreHelper.Log("Assigning waveform textures...");
-                                        StartCoroutine(EditorTimeline.inst.AssignTimelineTexture(level.music));
-                                    }
-                                    else
-                                    {
-                                        CoreHelper.Log("Skipping waveform textures...");
-                                        EditorTimeline.inst.SetTimelineSprite(null);
-                                    }
-
-                                    EditorTimeline.inst.UpdateTimelineSizes();
-                                    GameManager.inst.UpdateTimeline();
-
-                                    TriggerHelper.AddEventTriggers(timeField.gameObject, TriggerHelper.ScrollDelta(timeField, max: AudioManager.inst.CurrentAudioSource.clip.length));
-                                    CoreHelper.Destroy(previousAudio);
-                                }));
-                            }),
-                            new ButtonFunction("Create audio object", () =>
-                            {
-                                if (!ModifiersManager.inst.modifiers.TryFind(x => x.Name == nameof(ModifierFunctions.playSound), out Modifier modifier))
-                                    return;
-
-                                var editorPath = RTFile.RemoveEndSlash(EditorLevelManager.inst.CurrentLevel.path);
-                                string jpgFileLocation = RTFile.CombinePaths(editorPath, Path.GetFileName(dropInfo.filePath));
-
-                                var levelPath = dropInfo.filePath.Remove(editorPath + "/");
-
-                                if (!RTFile.FileExists(jpgFileLocation) && !dropInfo.filePath.Contains(editorPath))
-                                    RTFile.CopyFile(dropInfo.filePath, jpgFileLocation);
-                                else
-                                    jpgFileLocation = editorPath + "/" + levelPath;
-
-                                ObjectEditor.inst.CreateNewObject(timelineObject =>
-                                {
-                                    var beatmapObject = timelineObject.GetData<BeatmapObject>();
-
-                                    beatmapObject.objectType = BeatmapObject.ObjectType.Empty;
-                                    modifier = modifier.Copy();
-                                    modifier.SetValue(0, jpgFileLocation.Remove(jpgFileLocation.Substring(0, jpgFileLocation.LastIndexOf('/') + 1)));
-                                    beatmapObject.modifiers.Add(modifier);
-                                });
-                            }));
-                    }
-
-                    if (RTFile.FileIsFormat(dropInfo.filePath, FileFormat.LSP))
-                    {
-                        var jn = JSON.Parse(RTFile.ReadFromFile(dropInfo.filePath));
-                        var prefab = Prefab.Parse(jn);
-
-                        prefab = RTPrefabEditor.inst.ImportPrefabIntoLevel(prefab);
-
-                        if (EditorTimeline.inst.isOverMainTimeline)
-                            RTPrefabEditor.inst.AddPrefabObjectToLevel(prefab);
-
-                        break;
-                    }
-
-                    if (RTFile.FileIsFormat(dropInfo.filePath, FileFormat.VGP))
-                    {
-                        var jn = JSON.Parse(RTFile.ReadFromFile(dropInfo.filePath));
-                        var prefab = Prefab.ParseVG(jn);
-
-                        RTPrefabEditor.inst.ImportPrefabIntoLevel(prefab);
-                        break;
-                    }
-
-                    if (RTFile.FileIsFormat(dropInfo.filePath, FileFormat.LST))
-                    {
-                        var jn = JSON.Parse(RTFile.ReadFromFile(dropInfo.filePath));
-                        var theme = BeatmapTheme.Parse(jn);
-                        RTThemeEditor.inst.ImportTheme(theme);
-
-                        break;
-                    }
-                    
-                    if (RTFile.FileIsFormat(dropInfo.filePath, FileFormat.VGT))
-                    {
-                        var jn = JSON.Parse(RTFile.ReadFromFile(dropInfo.filePath));
-                        var theme = BeatmapTheme.ParseVG(jn);
-                        RTThemeEditor.inst.ImportTheme(theme);
-
-                        break;
-                    }
-
-                    if (RTFile.FileIsFormat(dropInfo.filePath, FileFormat.PNG, FileFormat.JPG))
-                    {
-                        var editorPath = RTFile.RemoveEndSlash(EditorLevelManager.inst.CurrentLevel.path);
-                        CoreHelper.Log($"Selected file: {dropInfo.filePath}");
-                        if (string.IsNullOrEmpty(dropInfo.filePath))
-                            break;
-
-                        string jpgFileLocation = RTFile.CombinePaths(editorPath, Path.GetFileName(dropInfo.filePath));
-
-                        var levelPath = dropInfo.filePath.Remove(editorPath + "/");
-
-                        if ((EditorConfig.Instance.OverwriteImportedImages.Value || !RTFile.FileExists(jpgFileLocation)) && !dropInfo.filePath.Contains(editorPath))
-                            RTFile.CopyFile(dropInfo.filePath, jpgFileLocation);
-                        else
-                            jpgFileLocation = editorPath + "/" + levelPath;
-
-                        ObjectEditor.inst.CreateNewObject(timelineObject =>
-                        {
-                            var beatmapObject = timelineObject.GetData<BeatmapObject>();
-
-                            beatmapObject.ShapeType = ShapeType.Image;
-                            beatmapObject.text = jpgFileLocation.Remove(jpgFileLocation.Substring(0, jpgFileLocation.LastIndexOf('/') + 1));
-                        });
-                        break;
-                    }
-
-                    if (RTFile.FileIsFormat(dropInfo.filePath, FileFormat.TXT))
-                    {
-                        if (!RTFile.TryReadFromFile(dropInfo.filePath, out string text))
-                            break;
-
-                        ObjectEditor.inst.CreateNewObject(timelineObject =>
-                        {
-                            var beatmapObject = timelineObject.GetData<BeatmapObject>();
-
-                            beatmapObject.ShapeType = ShapeType.Text;
-                            beatmapObject.text = text;
-                        });
-                        break;
-                    }
-
-                    if (RTFile.FileIsFormat(dropInfo.filePath, FileFormat.MP4, FileFormat.MOV))
-                    {
-                        var copyTo = dropInfo.filePath.Replace(RTFile.AppendEndSlash(RTFile.GetDirectory(dropInfo.filePath)), RTFile.AppendEndSlash(RTFile.BasePath)).Replace(Path.GetFileName(dropInfo.filePath),
-                            RTFile.FileIsFormat(dropInfo.filePath, FileFormat.MP4) ? $"bg{FileFormat.MP4.Dot()}" : $"bg{FileFormat.MOV.Dot()}");
-
-                        if (RTFile.CopyFile(dropInfo.filePath, copyTo) && CoreConfig.Instance.EnableVideoBackground.Value)
-                        {
-                            RTVideoManager.inst.Play(copyTo, 1f);
-                            EditorManager.inst.DisplayNotification($"Copied file {Path.GetFileName(dropInfo.filePath)} and started Video BG!", 2f, EditorManager.NotificationType.Success);
-                        }
-                        else
-                            RTVideoManager.inst.Stop();
-                        break;
-                    }
-
-                    if (RTFile.FileIsFormat(dropInfo.filePath, FileFormat.JSON))
-                    {
-                        if (!RTFile.TryReadFromFile(dropInfo.filePath, out string file))
-                            break;
-
-                        var jn = JSON.Parse(file);
-                        if (jn["file_type"] == null)
-                            break;
-
-                        switch (jn["file_type"].Value)
-                        {
-                            case "modifier": {
-                                    if (!EditorTimeline.inst.CurrentSelection.isBeatmapObject)
-                                        break;
-
-                                    var beatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
-                                    beatmapObject.modifiers.Add(Modifier.Parse(jn["data"]));
-
-                                    if (ObjectEditor.inst.Dialog.IsCurrent)
-                                        ObjectEditor.inst.RenderDialog(beatmapObject);
-
-                                    break;
-                                }
-                            case "modifiers": {
-                                    if (!EditorTimeline.inst.CurrentSelection.isBeatmapObject)
-                                        break;
-
-                                    var beatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
-                                    for (int j = 0; j < jn["data"].Count; j++)
-                                        beatmapObject.modifiers.Add(Modifier.Parse(jn["data"][j]));
-
-                                    if (ObjectEditor.inst.Dialog.IsCurrent)
-                                        ObjectEditor.inst.RenderDialog(beatmapObject);
-
-                                    break;
-                                }
-                            case "beatmap_object": {
-                                    if (!EditorManager.inst.hasLoadedLevel)
-                                    {
-                                        EditorManager.inst.DisplayNotification("Can't add objects to level until a level has been loaded!", 2f, EditorManager.NotificationType.Error);
-                                        break;
-                                    }
-
-                                    var beatmapObject = BeatmapObject.Parse(jn["data"]);
-                                    beatmapObject.StartTime = AudioManager.inst.CurrentAudioSource.time;
-
-                                    if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
-                                        EditorTimeline.inst.SetLayer(beatmapObject.editorData.Layer, EditorTimeline.LayerType.Objects);
-
-                                    GameData.Current.beatmapObjects.Add(beatmapObject);
-
-                                    var timelineObject = EditorTimeline.inst.GetTimelineObject(beatmapObject);
-
-                                    AudioManager.inst.SetMusicTime(ObjectEditor.AllowTimeExactlyAtStart ? AudioManager.inst.CurrentAudioSource.time : AudioManager.inst.CurrentAudioSource.time + 0.001f);
-
-                                    EditorTimeline.inst.SetCurrentObject(timelineObject);
-
-                                    RTLevel.Current?.UpdateObject(beatmapObject);
-                                    EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                                    ObjectEditor.inst.OpenDialog(beatmapObject);
-
-                                    break;
-                                }
-                        }
-
-                        break;
-                    }
-                }
-            };
+            fileDragAndDrop.onFilesDropped = HandleDroppedFiles;
 
             CoreHelper.Log($"RTEDITOR INIT -> EDITOR THREAD");
             try
@@ -396,6 +105,325 @@ namespace BetterLegacy.Editor.Managers
                 CoreHelper.LogException(ex);
             }
             CoreHelper.Log($"RTEDITOR INIT -> DONE!");
+        }
+
+        void HandleDroppedFiles(List<FileDragAndDrop.DropInfo> dropInfos)
+        {
+            CoreHelper.Log($"Dropping files.\nCount: {dropInfos.Count}");
+            if (ProjectPlanner.inst && ProjectPlanner.inst.PlannerActive)
+            {
+                // handle planner functions.
+                for (int i = 0; i < dropInfos.Count; i++)
+                    HandleDroppedFile(dropInfos[i]);
+                return;
+            }
+
+            if (dropInfos.All(x => RTFile.FileIsFormat(x.filePath, FileFormat.PNG, FileFormat.JPG)) && dropInfos.Count > 1)
+            {
+                CoreHelper.Log($"Creating image sequence.");
+                ObjectEditor.inst.CreateImageSequence(dropInfos.Select(x => x.filePath).ToArray(), EditorConfig.Instance.ImageSequenceFPS.Value);
+                return;
+            }
+
+            for (int i = 0; i < dropInfos.Count; i++)
+                HandleDroppedFile(dropInfos[i]);
+        }
+
+        void HandleDroppedFile(FileDragAndDrop.DropInfo dropInfo)
+        {
+            CoreHelper.Log($"Dropped file: {dropInfo}");
+
+            dropInfo.filePath = RTFile.ReplaceSlash(dropInfo.filePath);
+
+            var attributes = File.GetAttributes(dropInfo.filePath);
+
+            if (ProjectPlanner.inst && ProjectPlanner.inst.PlannerActive)
+            {
+                if (RTFile.FileIsAudio(dropInfo.filePath))
+                {
+                    var useGlobal = !dropInfo.filePath.Contains(RTFile.ApplicationDirectory);
+                    ProjectPlanner.inst.CreateOST(
+                        name: Path.GetFileName(dropInfo.filePath),
+                        path: useGlobal ? dropInfo.filePath : dropInfo.filePath.Remove(RTFile.ApplicationDirectory),
+                        useGlobal: useGlobal);
+
+                    if (ProjectPlanner.inst.CurrentTab != Data.Planners.PlannerBase.Type.OST)
+                        ProjectPlanner.inst.OpenTab(Data.Planners.PlannerBase.Type.OST);
+                }
+                return;
+            }
+
+            if (attributes.HasFlag(FileAttributes.Directory))
+            {
+                if (Level.TryVerify(dropInfo.filePath, true, out Level level))
+                    EditorLevelManager.inst.LoadLevel(level);
+                else if (EditorLevelManager.inst.OpenLevelPopup.IsOpen && dropInfo.filePath.Contains(RTFile.ApplicationDirectory + "beatmaps/"))
+                {
+                    EditorLevelManager.inst.OpenLevelPopup.PathField.text = dropInfo.filePath.Remove(RTFile.ApplicationDirectory + "beatmaps/");
+                    UpdateEditorPath(false);
+                }
+                else
+                {
+                    var files = Directory.GetFiles(dropInfo.filePath);
+                    if (files.All(x => RTFile.FileIsFormat(x, FileFormat.PNG, FileFormat.JPG)))
+                    {
+                        CoreHelper.Log($"Creating image sequence.");
+                        ObjectEditor.inst.CreateImageSequence(files, EditorConfig.Instance.ImageSequenceFPS.Value);
+                    }
+                }
+                return;
+            }
+
+            if (dropInfo.filePath.EndsWith(Level.LEVEL_LSB) || dropInfo.filePath.EndsWith(Level.LEVEL_VGD))
+            {
+                if (Level.TryVerify(dropInfo.filePath.Remove("/" + Level.LEVEL_LSB).Remove("/" + Level.LEVEL_VGD), true, out Level level))
+                    EditorLevelManager.inst.LoadLevel(level);
+                return;
+            }
+
+            if (EditorLevelManager.inst.NewLevelPopup.IsOpen)
+            {
+                if (RTFile.FileIsAudio(dropInfo.filePath) && EditorLevelManager.inst.NewLevelPopup.SongPath)
+                    EditorLevelManager.inst.NewLevelPopup.SongPath.text = dropInfo.filePath;
+                return;
+            }
+
+            if (RTFile.FileIsAudio(dropInfo.filePath))
+            {
+                EditorContextMenu.inst.ShowContextMenu(
+                    new ButtonFunction("Replace song", () =>
+                    {
+                        if (!EditorManager.inst.hasLoadedLevel)
+                        {
+                            EditorManager.inst.DisplayNotification($"Load a level before trying to replace the song!", 2f, EditorManager.NotificationType.Warning);
+                            return;
+                        }
+
+                        var audioFormat = RTFile.GetFileFormat(dropInfo.filePath);
+                        var level = EditorLevelManager.inst.CurrentLevel;
+                        var waveforms = Enum.GetNames(typeof(WaveformType));
+                        for (int i = 0; i < waveforms.Length; i++)
+                            RTFile.DeleteFile(RTFile.CombinePaths(RTFile.BasePath, $"waveform-{waveforms[i].ToLower()}{FileFormat.PNG.Dot()}"));
+
+                        RTFile.CopyFile(dropInfo.filePath, RTFile.CombinePaths(RTFile.BasePath, $"level{audioFormat.Dot()}"));
+                        var previousAudio = level.music;
+                        var previousTime = RTLevel.Current.FixedTime;
+                        var previousPlayState = SoundManager.inst.Playing;
+                        level.music = null;
+                        CoroutineHelper.StartCoroutine(level.LoadAudioClipRoutine(() =>
+                        {
+                            EditorLevelManager.inst.SetCurrentAudio(level.music);
+                            AudioManager.inst.SetMusicTime(previousTime);
+                            SoundManager.inst.SetPlaying(previousPlayState);
+
+                            if (EditorConfig.Instance.WaveformGenerate.Value)
+                            {
+                                CoreHelper.Log("Assigning waveform textures...");
+                                StartCoroutine(EditorTimeline.inst.AssignTimelineTexture(level.music));
+                            }
+                            else
+                            {
+                                CoreHelper.Log("Skipping waveform textures...");
+                                EditorTimeline.inst.SetTimelineSprite(null);
+                            }
+
+                            EditorTimeline.inst.UpdateTimelineSizes();
+                            GameManager.inst.UpdateTimeline();
+
+                            TriggerHelper.AddEventTriggers(timeField.gameObject, TriggerHelper.ScrollDelta(timeField, max: AudioManager.inst.CurrentAudioSource.clip.length));
+                            CoreHelper.Destroy(previousAudio);
+                        }));
+                    }),
+                    new ButtonFunction("Create audio object", () =>
+                    {
+                        if (!ModifiersManager.inst.modifiers.TryFind(x => x.Name == nameof(ModifierFunctions.playSound), out Modifier modifier))
+                            return;
+
+                        var editorPath = RTFile.RemoveEndSlash(EditorLevelManager.inst.CurrentLevel.path);
+                        string jpgFileLocation = RTFile.CombinePaths(editorPath, Path.GetFileName(dropInfo.filePath));
+
+                        var levelPath = dropInfo.filePath.Remove(editorPath + "/");
+
+                        if (!RTFile.FileExists(jpgFileLocation) && !dropInfo.filePath.Contains(editorPath))
+                            RTFile.CopyFile(dropInfo.filePath, jpgFileLocation);
+                        else
+                            jpgFileLocation = editorPath + "/" + levelPath;
+
+                        ObjectEditor.inst.CreateNewObject(timelineObject =>
+                        {
+                            var beatmapObject = timelineObject.GetData<BeatmapObject>();
+
+                            beatmapObject.objectType = BeatmapObject.ObjectType.Empty;
+                            modifier = modifier.Copy();
+                            modifier.SetValue(0, jpgFileLocation.Remove(jpgFileLocation.Substring(0, jpgFileLocation.LastIndexOf('/') + 1)));
+                            beatmapObject.modifiers.Add(modifier);
+                        });
+                    }));
+            }
+
+            if (RTFile.FileIsFormat(dropInfo.filePath, FileFormat.LSP))
+            {
+                var jn = JSON.Parse(RTFile.ReadFromFile(dropInfo.filePath));
+                var prefab = Prefab.Parse(jn);
+
+                prefab = RTPrefabEditor.inst.ImportPrefabIntoLevel(prefab);
+
+                if (EditorTimeline.inst.isOverMainTimeline)
+                    RTPrefabEditor.inst.AddPrefabObjectToLevel(prefab);
+
+                return;
+            }
+
+            if (RTFile.FileIsFormat(dropInfo.filePath, FileFormat.VGP))
+            {
+                var jn = JSON.Parse(RTFile.ReadFromFile(dropInfo.filePath));
+                var prefab = Prefab.ParseVG(jn);
+
+                RTPrefabEditor.inst.ImportPrefabIntoLevel(prefab);
+                return;
+            }
+
+            if (RTFile.FileIsFormat(dropInfo.filePath, FileFormat.LST))
+            {
+                var jn = JSON.Parse(RTFile.ReadFromFile(dropInfo.filePath));
+                var theme = BeatmapTheme.Parse(jn);
+                RTThemeEditor.inst.ImportTheme(theme);
+
+                return;
+            }
+                    
+            if (RTFile.FileIsFormat(dropInfo.filePath, FileFormat.VGT))
+            {
+                var jn = JSON.Parse(RTFile.ReadFromFile(dropInfo.filePath));
+                var theme = BeatmapTheme.ParseVG(jn);
+                RTThemeEditor.inst.ImportTheme(theme);
+
+                return;
+            }
+
+            if (RTFile.FileIsFormat(dropInfo.filePath, FileFormat.PNG, FileFormat.JPG))
+            {
+                var editorPath = RTFile.RemoveEndSlash(EditorLevelManager.inst.CurrentLevel.path);
+                CoreHelper.Log($"Selected file: {dropInfo.filePath}");
+                if (string.IsNullOrEmpty(dropInfo.filePath))
+                    return;
+
+                string jpgFileLocation = RTFile.CombinePaths(editorPath, Path.GetFileName(dropInfo.filePath));
+
+                var levelPath = dropInfo.filePath.Remove(editorPath + "/");
+
+                if ((EditorConfig.Instance.OverwriteImportedImages.Value || !RTFile.FileExists(jpgFileLocation)) && !dropInfo.filePath.Contains(editorPath))
+                    RTFile.CopyFile(dropInfo.filePath, jpgFileLocation);
+                else
+                    jpgFileLocation = editorPath + "/" + levelPath;
+
+                ObjectEditor.inst.CreateNewObject(timelineObject =>
+                {
+                    var beatmapObject = timelineObject.GetData<BeatmapObject>();
+
+                    beatmapObject.ShapeType = ShapeType.Image;
+                    beatmapObject.text = jpgFileLocation.Remove(jpgFileLocation.Substring(0, jpgFileLocation.LastIndexOf('/') + 1));
+                });
+                return;
+            }
+
+            if (RTFile.FileIsFormat(dropInfo.filePath, FileFormat.TXT))
+            {
+                if (!RTFile.TryReadFromFile(dropInfo.filePath, out string text))
+                    return;
+
+                ObjectEditor.inst.CreateNewObject(timelineObject =>
+                {
+                    var beatmapObject = timelineObject.GetData<BeatmapObject>();
+
+                    beatmapObject.ShapeType = ShapeType.Text;
+                    beatmapObject.text = text;
+                });
+                return;
+            }
+
+            if (RTFile.FileIsFormat(dropInfo.filePath, FileFormat.MP4, FileFormat.MOV))
+            {
+                var copyTo = dropInfo.filePath.Replace(RTFile.AppendEndSlash(RTFile.GetDirectory(dropInfo.filePath)), RTFile.AppendEndSlash(RTFile.BasePath)).Replace(Path.GetFileName(dropInfo.filePath),
+                    RTFile.FileIsFormat(dropInfo.filePath, FileFormat.MP4) ? $"bg{FileFormat.MP4.Dot()}" : $"bg{FileFormat.MOV.Dot()}");
+
+                if (RTFile.CopyFile(dropInfo.filePath, copyTo) && CoreConfig.Instance.EnableVideoBackground.Value)
+                {
+                    RTVideoManager.inst.Play(copyTo, 1f);
+                    EditorManager.inst.DisplayNotification($"Copied file {Path.GetFileName(dropInfo.filePath)} and started Video BG!", 2f, EditorManager.NotificationType.Success);
+                }
+                else
+                    RTVideoManager.inst.Stop();
+                return;
+            }
+
+            if (RTFile.FileIsFormat(dropInfo.filePath, FileFormat.JSON))
+            {
+                if (!RTFile.TryReadFromFile(dropInfo.filePath, out string file))
+                    return;
+
+                var jn = JSON.Parse(file);
+                if (jn["file_type"] == null)
+                    return;
+
+                switch (jn["file_type"].Value)
+                {
+                    case "modifier": {
+                            if (!EditorTimeline.inst.CurrentSelection.isBeatmapObject)
+                                break;
+
+                            var beatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
+                            beatmapObject.modifiers.Add(Modifier.Parse(jn["data"]));
+
+                            if (ObjectEditor.inst.Dialog.IsCurrent)
+                                ObjectEditor.inst.RenderDialog(beatmapObject);
+
+                            break;
+                        }
+                    case "modifiers": {
+                            if (!EditorTimeline.inst.CurrentSelection.isBeatmapObject)
+                                break;
+
+                            var beatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
+                            for (int j = 0; j < jn["data"].Count; j++)
+                                beatmapObject.modifiers.Add(Modifier.Parse(jn["data"][j]));
+
+                            if (ObjectEditor.inst.Dialog.IsCurrent)
+                                ObjectEditor.inst.RenderDialog(beatmapObject);
+
+                            break;
+                        }
+                    case "beatmap_object": {
+                            if (!EditorManager.inst.hasLoadedLevel)
+                            {
+                                EditorManager.inst.DisplayNotification("Can't add objects to level until a level has been loaded!", 2f, EditorManager.NotificationType.Error);
+                                break;
+                            }
+
+                            var beatmapObject = BeatmapObject.Parse(jn["data"]);
+                            beatmapObject.StartTime = AudioManager.inst.CurrentAudioSource.time;
+
+                            if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
+                                EditorTimeline.inst.SetLayer(beatmapObject.editorData.Layer, EditorTimeline.LayerType.Objects);
+
+                            GameData.Current.beatmapObjects.Add(beatmapObject);
+
+                            var timelineObject = EditorTimeline.inst.GetTimelineObject(beatmapObject);
+
+                            AudioManager.inst.SetMusicTime(ObjectEditor.AllowTimeExactlyAtStart ? AudioManager.inst.CurrentAudioSource.time : AudioManager.inst.CurrentAudioSource.time + 0.001f);
+
+                            EditorTimeline.inst.SetCurrentObject(timelineObject);
+
+                            RTLevel.Current?.UpdateObject(beatmapObject);
+                            EditorTimeline.inst.RenderTimelineObject(timelineObject);
+                            ObjectEditor.inst.OpenDialog(beatmapObject);
+
+                            break;
+                        }
+                }
+
+                return;
+            }
         }
 
         public override void OnManagerStart()
@@ -1732,9 +1760,11 @@ namespace BetterLegacy.Editor.Managers
         {
             try
             {
-                LayoutRebuilder.ForceRebuildLayoutImmediate(EditorManager.inst.notification.transform.Find("info/text").AsRT());
-                LayoutRebuilder.ForceRebuildLayoutImmediate(EditorManager.inst.notification.transform.Find("info").AsRT());
-                LayoutRebuilder.ForceRebuildLayoutImmediate(EditorManager.inst.notification.transform.AsRT());
+                LayoutRebuilder.ForceRebuildLayoutImmediate(notificationsParent.Find("info/text").AsRT());
+                LayoutRebuilder.ForceRebuildLayoutImmediate(notificationsParent.Find("info").AsRT());
+                LayoutRebuilder.ForceRebuildLayoutImmediate(notificationsParent.AsRT());
+                if (ProjectPlanner.inst && ProjectPlanner.inst.notificationsParent)
+                    LayoutRebuilder.ForceRebuildLayoutImmediate(ProjectPlanner.inst.notificationsParent.AsRT());
             }
             catch (Exception ex)
             {
@@ -1747,14 +1777,17 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void UpdateNotificationConfig()
         {
-            var notifyGroup = EditorManager.inst.notification.GetComponent<VerticalLayoutGroup>();
             notificationsParent.sizeDelta = new Vector2(EditorConfig.Instance.NotificationWidth.Value, 632f);
-            EditorManager.inst.notification.transform.localScale = new Vector3(EditorConfig.Instance.NotificationSize.Value, EditorConfig.Instance.NotificationSize.Value, 1f);
+            notificationsParent.localScale = new Vector3(EditorConfig.Instance.NotificationSize.Value, EditorConfig.Instance.NotificationSize.Value, 1f);
+            if (ProjectPlanner.inst && ProjectPlanner.inst.notificationsParent)
+            {
+                ProjectPlanner.inst.notificationsParent.sizeDelta = new Vector2(EditorConfig.Instance.NotificationWidth.Value, 632f);
+                ProjectPlanner.inst.notificationsParent.localScale = new Vector3(EditorConfig.Instance.NotificationSize.Value, EditorConfig.Instance.NotificationSize.Value, 1f);
+            }
 
             var direction = EditorConfig.Instance.NotificationDirection.Value;
-
             notificationsParent.anchoredPosition = new Vector2(8f, direction == VerticalDirection.Up ? 408f : 410f);
-            notifyGroup.childAlignment = direction != VerticalDirection.Up ? TextAnchor.LowerLeft : TextAnchor.UpperLeft;
+            notificationsParent.GetComponent<VerticalLayoutGroup>().childAlignment = direction != VerticalDirection.Up ? TextAnchor.LowerLeft : TextAnchor.UpperLeft;
         }
 
         #region Internal
@@ -1775,7 +1808,7 @@ namespace BetterLegacy.Editor.Managers
                 else
                     ((Text)textComponent).text = text;
 
-                notif.transform.SetParent(EditorManager.inst.notification.transform);
+                notif.transform.SetParent(ProjectPlanner.inst && ProjectPlanner.inst.PlannerActive ? ProjectPlanner.inst.notificationsParent : notificationsParent);
                 if (EditorConfig.Instance.NotificationDirection.Value == VerticalDirection.Down)
                     notif.transform.SetAsFirstSibling();
                 notif.transform.localScale = Vector3.one;
@@ -1804,7 +1837,7 @@ namespace BetterLegacy.Editor.Managers
                 var gameObject = Instantiate(EditorManager.inst.notificationPrefabs[0], Vector3.zero, Quaternion.identity);
                 Destroy(gameObject, time * EditorConfig.Instance.NotificationDisplayTime.Value);
                 gameObject.transform.Find("text").GetComponent<TextMeshProUGUI>().text = text;
-                gameObject.transform.SetParent(EditorManager.inst.notification.transform);
+                gameObject.transform.SetParent(ProjectPlanner.inst && ProjectPlanner.inst.PlannerActive ? ProjectPlanner.inst.notificationsParent : notificationsParent);
                 if (EditorConfig.Instance.NotificationDirection.Value == VerticalDirection.Down)
                     gameObject.transform.SetAsFirstSibling();
                 gameObject.transform.localScale = Vector3.one;

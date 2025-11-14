@@ -8,6 +8,7 @@ using TMPro;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Prefabs;
+using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Planners
@@ -17,6 +18,7 @@ namespace BetterLegacy.Editor.Data.Planners
         public SchedulePlanner() : base(Type.Schedule) { }
 
         public TextMeshProUGUI TextUI { get; set; }
+        public OpenHyperlinks Hyperlinks { get; set; }
         public string Text => $"{Date} - {Description}";
         public string Date { get; set; } = DateTime.Now.AddDays(1).ToString("g");
 
@@ -28,7 +30,14 @@ namespace BetterLegacy.Editor.Data.Planners
         public DateTime DateTime { get; set; } = DateTime.Now.AddDays(1);
         public string Description { get; set; }
 
-        public bool IsActive => DateTime.Day == DateTime.Now.Day && DateTime.Month == DateTime.Now.Month && DateTime.Year == DateTime.Now.Year;
+        public bool IsActive => CompareDates(DateTime.Now);
+
+        public bool IsTomorrow => CompareDates(DateTime.Now.AddDays(1));
+
+        public bool IsNextWeek => CompareDates(DateTime.Now.AddDays(7));
+
+        bool CompareDates(DateTime date) => DateTime.Day == date.Day && DateTime.Month == date.Month && DateTime.Year == date.Year;
+
         public bool hasBeenChecked;
 
         public override void Init()
@@ -42,13 +51,21 @@ namespace BetterLegacy.Editor.Data.Planners
             GameObject = gameObject;
 
             var button = gameObject.GetComponent<Button>();
-            button.onClick.NewListener(() => ProjectPlanner.inst.OpenScheduleEditor(this));
+            button.onClick.ClearAll();
 
             EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
 
             TextUI = gameObject.transform.Find("text").GetComponent<TextMeshProUGUI>();
             TextUI.text = Text;
             EditorThemeManager.ApplyLightText(TextUI);
+
+            Hyperlinks = gameObject.AddComponent<OpenHyperlinks>();
+            Hyperlinks.Text = TextUI;
+            Hyperlinks.onClick = eventData =>
+            {
+                if (!Hyperlinks.IsLinkHighlighted)
+                    ProjectPlanner.inst.OpenScheduleEditor(this);
+            };
 
             var delete = gameObject.transform.Find("delete").GetComponent<DeleteButtonStorage>();
             delete.button.onClick.NewListener(() =>
@@ -60,6 +77,10 @@ namespace BetterLegacy.Editor.Data.Planners
 
             EditorThemeManager.ApplyGraphic(delete.button.image, ThemeGroup.Delete, true);
             EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
+
+            ProjectPlanner.inst.SetupPlannerLinks(Text, TextUI, Hyperlinks);
+
+            gameObject.SetActive(false);
         }
     }
 }

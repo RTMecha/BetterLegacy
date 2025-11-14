@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 
+using BetterLegacy.Editor.Data.Planners;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Components
@@ -26,9 +27,9 @@ namespace BetterLegacy.Editor.Components
         void Update()
         {
             // Delete should only be active when you're looking at the Note tab of the Project Planner.
-            delete?.SetActive(EditorManager.inst.editorState == EditorManager.EditorState.Intro && ProjectPlanner.inst.CurrentTab == 5);
+            delete?.SetActive(EditorManager.inst.editorState == EditorManager.EditorState.Intro && ProjectPlanner.inst.CurrentTab == PlannerBase.Type.Note);
             // Close should appear every BUT the Note tab.
-            close?.SetActive(EditorManager.inst.editorState == EditorManager.EditorState.Main || ProjectPlanner.inst.CurrentTab != 5);
+            close?.SetActive(EditorManager.inst.editorState == EditorManager.EditorState.Main || ProjectPlanner.inst.CurrentTab != PlannerBase.Type.Note);
         }
     }
 }

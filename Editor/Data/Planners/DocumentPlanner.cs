@@ -55,6 +55,8 @@ namespace BetterLegacy.Editor.Data.Planners
             EditorThemeManager.ApplyGraphic(gameObject.transform.Find("gradient").GetComponent<Image>(), ThemeGroup.Background_1);
 
             ProjectPlanner.inst.SetupPlannerLinks(Text, TextUI, null, false);
+
+            gameObject.SetActive(false);
         }
     }
 }

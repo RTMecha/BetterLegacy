@@ -209,6 +209,8 @@ namespace BetterLegacy.Editor.Data.Planners
 
             EditorThemeManager.ApplyGraphic(delete.button.image, ThemeGroup.Delete, true);
             EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
+
+            gameObject.SetActive(false);
         }
     }
 }

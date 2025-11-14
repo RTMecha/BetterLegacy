@@ -440,7 +440,7 @@ namespace BetterLegacy.Companion.Entity
             if (ProjectPlanner.inst && reference && reference.chatBubble && reference.brain && !reference.brain.talking)
                 foreach (var schedule in ProjectPlanner.inst.schedules)
                 {
-                    if (!schedule.hasBeenChecked && schedule.IsActive)
+                    if (!schedule.hasBeenChecked && (schedule.IsActive || schedule.IsTomorrow))
                     {
                         schedule.hasBeenChecked = true;
                         reference.chatBubble.Say($"Reminding you about your schedule \"{schedule.Description}\" at {schedule.DateTime}");

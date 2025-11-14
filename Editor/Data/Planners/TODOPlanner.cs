@@ -32,7 +32,7 @@ namespace BetterLegacy.Editor.Data.Planners
             GameObject = gameObject;
 
             var button = gameObject.GetComponent<Button>();
-            button.onClick.NewListener(() => ProjectPlanner.inst.OpenTODOEditor(this));
+            button.onClick.ClearAll();
 
             EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
 
@@ -42,6 +42,11 @@ namespace BetterLegacy.Editor.Data.Planners
 
             Hyperlinks = gameObject.AddComponent<OpenHyperlinks>();
             Hyperlinks.Text = TextUI;
+            Hyperlinks.onClick = eventData =>
+            {
+                if (!Hyperlinks.IsLinkHighlighted)
+                    ProjectPlanner.inst.OpenTODOEditor(this);
+            };
 
             var toggle = gameObject.transform.Find("checked").GetComponent<Toggle>();
             CheckedUI = toggle;
@@ -66,6 +71,8 @@ namespace BetterLegacy.Editor.Data.Planners
             EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
 
             ProjectPlanner.inst.SetupPlannerLinks(Text, TextUI, Hyperlinks);
+
+            gameObject.SetActive(false);
         }
     }
 }
