@@ -421,7 +421,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         EditorContextMenu.inst.ShowContextMenu(
                             new ButtonFunction("Open folder", () =>
                             {
-                                EditorLevelManager.inst.OpenLevelPopup.PathField.text = path.Replace(RTEditor.inst.BeatmapsPath + "/", string.Empty);
+                                EditorLevelManager.inst.OpenLevelPopup.PathField.text = path.Remove(RTEditor.inst.BeatmapsPath + "/");
                                 RTEditor.inst.UpdateEditorPath(false);
                             }, "Level Panel Open Folder"),
                             new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.EditorPath), EndFolderCreation), "Level Panel Create Folder"),
@@ -448,6 +448,7 @@ namespace BetterLegacy.Editor.Data.Elements
                             new ButtonFunction(true),
                             new ButtonFunction("ZIP Folder", () => EditorLevelManager.inst.ZipLevel(this), "Level Panel ZIP"),
                             new ButtonFunction("Copy Path", () => LSText.CopyToClipboard(path), "Level Panel Copy Folder"),
+                            new ButtonFunction("Copy Relative Path", () => LSText.CopyToClipboard(path.Remove(RTEditor.inst.BeatmapsPath + "/")), "Level Panel Copy Folder"),
                             new ButtonFunction("Open in File Explorer", () => RTFile.OpenInFileBrowser.Open(path), "Level Panel Open Explorer"),
                             new ButtonFunction("Open List in File Explorer", RTEditor.inst.OpenLevelListFolder, "Level List Open Explorer"),
                             new ButtonFunction(true),
@@ -684,6 +685,7 @@ namespace BetterLegacy.Editor.Data.Elements
                             new ButtonFunction(true),
                             new ButtonFunction("ZIP Level", () => EditorLevelManager.inst.ZipLevel(this), "Level Panel ZIP"),
                             new ButtonFunction("Copy Path", () => LSText.CopyToClipboard(Item.path), "Level Panel Copy Folder"),
+                            new ButtonFunction("Copy Relative Path", () => LSText.CopyToClipboard(Item.path.Remove(RTEditor.inst.BeatmapsPath + "/")), "Level Panel Copy Folder"),
                             new ButtonFunction("Open in File Explorer", () => RTFile.OpenInFileBrowser.Open(Item.path), "Level Panel Open Explorer"),
                             new ButtonFunction("Open List in File Explorer", RTEditor.inst.OpenLevelListFolder, "Level List Open Explorer"),
                             new ButtonFunction(true),
