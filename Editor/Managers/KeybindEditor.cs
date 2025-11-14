@@ -176,6 +176,11 @@ namespace BetterLegacy.Editor.Managers
                     #endregion
 
                     new KeybindFunction(nameof(ToggleProjectPlanner), ToggleProjectPlanner),
+                    new KeybindFunction(nameof(StopProjectPlannerOST), StopProjectPlannerOST),
+                    new KeybindFunction(nameof(NextProjectPlannerOST), NextProjectPlannerOST),
+                    new KeybindFunction(nameof(TogglePlayingProjectPlannerOST), TogglePlayingProjectPlannerOST),
+                    new KeybindFunction(nameof(ShuffleProjectPlannerOST), ShuffleProjectPlannerOST),
+                    new KeybindFunction(nameof(StartProjectPlannerOST), StartProjectPlannerOST),
                     new KeybindFunction(nameof(SwitchKeybindProfile), SwitchKeybindProfile, new Keybind.Setting("Profile ID", string.Empty)),
                 };
 
@@ -929,6 +934,7 @@ namespace BetterLegacy.Editor.Managers
                     }
 
                     CurrentProfile.keybinds.RemoveAt(index);
+                    Dialog.Close();
                     RenderPopup();
                     Save();
                     RTEditor.inst.HideWarningPopup();
@@ -1026,8 +1032,7 @@ namespace BetterLegacy.Editor.Managers
                         EditorContextMenu.inst.ShowContextMenu(
                             new ButtonFunction("Open", () =>
                             {
-                                currentProfileID = profile.id;
-                                CurrentProfile = profile;
+                                SetCurrentProfile(profile);
                                 Save();
                                 RenderPopup();
                             }),
@@ -1097,8 +1102,7 @@ namespace BetterLegacy.Editor.Managers
                         return;
                     }
 
-                    currentProfileID = profile.id;
-                    CurrentProfile = profile;
+                    SetCurrentProfile(profile);
                     Save();
                     RenderPopup();
                 };
@@ -2213,14 +2217,29 @@ namespace BetterLegacy.Editor.Managers
 
         public void ToggleProjectPlanner(Keybind keybind) => ProjectPlanner.inst?.ToggleState();
 
+        public void NextProjectPlannerOST(Keybind keybind) => ProjectPlanner.inst?.NextOST();
+
+        public void StopProjectPlannerOST(Keybind keybind) => ProjectPlanner.inst?.StopOST();
+
+        public void TogglePlayingProjectPlannerOST(Keybind keybind)
+        {
+            if (ProjectPlanner.inst && ProjectPlanner.inst.OSTAudioSource)
+                ProjectPlanner.inst.pausedOST = !ProjectPlanner.inst.pausedOST;
+        }
+
+        public void ShuffleProjectPlannerOST(Keybind keybind) => ProjectPlanner.inst?.ShuffleOST();
+
+        public void StartProjectPlannerOST(Keybind keybind) => ProjectPlanner.inst?.StartOST();
+
         public void SwitchKeybindProfile(Keybind keybind)
         {
             if (!keybind.TryGetSetting("Profile ID", out string value) || string.IsNullOrEmpty(value) || !profiles.TryFind(x => x.id == value, out KeybindProfile keybindProfile))
                 return;
 
-            currentProfileID = keybindProfile.id;
-            CurrentProfile = keybindProfile;
+            SetCurrentProfile(keybindProfile);
             RenderPopupIfOpen();
+
+            EditorManager.inst.DisplayNotification($"Set the current keybind profile to {keybindProfile.name}!", 3f, EditorManager.NotificationType.Success);
         }
 
         #endregion
@@ -2257,10 +2276,20 @@ namespace BetterLegacy.Editor.Managers
             }
 
             profiles.Add(profile);
-            CurrentProfile = profile;
-            currentProfileID = profile.id;
+            SetCurrentProfile(profile);
             Save();
             RenderPopup();
+        }
+
+        /// <summary>
+        /// Sets the current keybind profile.
+        /// </summary>
+        /// <param name="profile">Keybind profile to set.</param>
+        public void SetCurrentProfile(KeybindProfile profile)
+        {
+            currentProfileID = profile.id;
+            CurrentProfile = profile;
+            Dialog.Close();
         }
 
         public void SetValues(int type)

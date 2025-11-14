@@ -1757,8 +1757,13 @@ namespace BetterLegacy.Editor.Managers
                 switch (EditorConfig.Instance.InterruptOSTBehavior.Value)
                 {
                     case InterruptOSTBehaviorType.LowerVolume: {
-                            if (!OSTAudioSource.isPlaying)
-                                OSTAudioSource.UnPause();
+                            if (OSTAudioSource.isPlaying != !pausedOST)
+                            {
+                                if (pausedOST)
+                                    OSTAudioSource.Pause();
+                                else
+                                    OSTAudioSource.UnPause();
+                            }
 
                             OSTAudioSource.volume = SoundManager.inst.MusicVolume * (EditorConfig.Instance.LowerOSTVol.Value / 9f);
                             break;
@@ -1771,8 +1776,18 @@ namespace BetterLegacy.Editor.Managers
             }
             else
             {
-                if (!OSTAudioSource.isPlaying)
-                    OSTAudioSource.UnPause();
+                if (OSTAudioSource.isPlaying != !pausedOST)
+                {
+                    if (pausedOST)
+                        OSTAudioSource.Pause();
+                    else
+                        OSTAudioSource.UnPause();
+                }
+
+                //if (!OSTAudioSource.isPlaying && !pausedOST)
+                //    OSTAudioSource.UnPause();
+                //else if (OSTAudioSource.isPlaying)
+                //    OSTAudioSource.Pause();
 
                 OSTAudioSource.volume = SoundManager.inst.MusicVolume * (EditorConfig.Instance.OSTVol.Value / 9f);
             }
@@ -1786,49 +1801,7 @@ namespace BetterLegacy.Editor.Managers
                     return;
                 }
 
-                if (EditorConfig.Instance.OSTShuffle.Value || forceShuffleOST)
-                {
-                    recentOST.TrimStart(20);
-
-                    OSTPlanner ost = null;
-                    int attempts = 0;
-                    int num = 0;
-                    while (attempts < 40)
-                    {
-                        num = UnityEngine.Random.Range(0, osts.Count);
-                        ost = list[num];
-                        if (!recentOST.Has(x => x.Path == ost.Path))
-                            break;
-
-                        attempts++;
-                    }
-                    if (!ost)
-                        return;
-
-                    recentOST.Add(ost);
-                    ost.Play();
-                }
-                else
-                {
-                    int num = 1;
-                    // Here we skip any OST where a song file does not exist.
-                    while (currentOST + num < list.Count && !list[num].Valid)
-                        num++;
-
-                    list[currentOST].playing = false;
-                    playing = false;
-
-                    if (currentOST + num >= list.Count)
-                    {
-                        if (EditorConfig.Instance.OSTLoop.Value != LoopOSTBehaviorType.LoopAll)
-                            return;
-
-                        currentOST = 0;
-                        num = 0;
-                    }
-
-                    list[currentOST + num].Play();
-                }
+                NextOST();
             }
         }
 
@@ -1861,6 +1834,7 @@ namespace BetterLegacy.Editor.Managers
         public bool playing = false;
         public List<OSTPlanner> recentOST = new List<OSTPlanner>();
         public bool forceShuffleOST;
+        public bool pausedOST;
 
         public List<Toggle> tabs = new List<Toggle>();
 
@@ -3871,11 +3845,22 @@ namespace BetterLegacy.Editor.Managers
         }
         
         /// <summary>
+        /// Starts the OST from the beginning.
+        /// </summary>
+        public void StartOST()
+        {
+            StopOST();
+            if (!osts.IsEmpty())
+                osts[0].Play();
+        }
+
+        /// <summary>
         /// Stops the currently playing OST.
         /// </summary>
         public void StopOST()
         {
             forceShuffleOST = false;
+            pausedOST = false;
 
             Destroy(OSTAudioSource);
 
@@ -3894,7 +3879,60 @@ namespace BetterLegacy.Editor.Managers
         {
             StopOST();
             forceShuffleOST = true;
-            osts[UnityEngine.Random.Range(0, osts.Count)].Play();
+            if (!osts.IsEmpty())
+                osts[UnityEngine.Random.Range(0, osts.Count)].Play();
+        }
+
+        /// <summary>
+        /// Starts playing the next OST.
+        /// </summary>
+        public void NextOST()
+        {
+            var list = osts;
+
+            if (EditorConfig.Instance.OSTShuffle.Value || forceShuffleOST)
+            {
+                recentOST.TrimStart(20);
+
+                OSTPlanner ost = null;
+                int attempts = 0;
+                int num = 0;
+                while (attempts < 40)
+                {
+                    num = UnityEngine.Random.Range(0, osts.Count);
+                    ost = list[num];
+                    if (!recentOST.Has(x => x.Path == ost.Path))
+                        break;
+
+                    attempts++;
+                }
+                if (!ost)
+                    return;
+
+                recentOST.Add(ost);
+                ost.Play();
+            }
+            else
+            {
+                int num = 1;
+                // Here we skip any OST where a song file does not exist.
+                while (currentOST + num < list.Count && !list[num].Valid)
+                    num++;
+
+                list[currentOST].playing = false;
+                playing = false;
+
+                if (currentOST + num >= list.Count)
+                {
+                    if (EditorConfig.Instance.OSTLoop.Value != LoopOSTBehaviorType.LoopAll)
+                        return;
+
+                    currentOST = 0;
+                    num = 0;
+                }
+
+                list[currentOST + num].Play();
+            }
         }
 
         #endregion
