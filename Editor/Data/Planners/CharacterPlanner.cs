@@ -180,8 +180,7 @@ namespace BetterLegacy.Editor.Data.Planners
             GameObject = gameObject;
 
             var button = gameObject.GetComponent<Button>();
-            button.onClick.ClearAll();
-            button.onClick.AddListener(() => ProjectPlanner.inst.OpenCharacterEditor(this));
+            button.onClick.NewListener(() => ProjectPlanner.inst.OpenCharacterEditor(this));
 
             EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
 
@@ -199,8 +198,7 @@ namespace BetterLegacy.Editor.Data.Planners
             DescriptionUI.text = Description;
 
             var delete = gameObject.transform.Find("delete").GetComponent<DeleteButtonStorage>();
-            delete.button.onClick.ClearAll();
-            delete.button.onClick.AddListener(() =>
+            delete.button.onClick.NewListener(() =>
             {
                 ProjectPlanner.inst.characters.RemoveAll(x => x is CharacterPlanner && x.ID == ID);
 

@@ -42,8 +42,7 @@ namespace BetterLegacy.Editor.Data.Planners
             GameObject = gameObject;
 
             var button = gameObject.GetComponent<Button>();
-            button.onClick.ClearAll();
-            button.onClick.AddListener(() => ProjectPlanner.inst.OpenScheduleEditor(this));
+            button.onClick.NewListener(() => ProjectPlanner.inst.OpenScheduleEditor(this));
 
             EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
 
@@ -52,8 +51,7 @@ namespace BetterLegacy.Editor.Data.Planners
             EditorThemeManager.ApplyLightText(TextUI);
 
             var delete = gameObject.transform.Find("delete").GetComponent<DeleteButtonStorage>();
-            delete.button.onClick.ClearAll();
-            delete.button.onClick.AddListener(() =>
+            delete.button.onClick.NewListener(() =>
             {
                 ProjectPlanner.inst.schedules.RemoveAll(x => x is SchedulePlanner && x.ID == ID);
                 ProjectPlanner.inst.SaveSchedules();
