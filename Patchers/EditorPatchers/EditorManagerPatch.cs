@@ -471,7 +471,7 @@ namespace BetterLegacy.Patchers
 
                 CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip("https://drive.google.com/uc?export=download&id=1BDrRqX1IDk7bKo2hhYDqDqWLncMy7FkP", AudioType.OGGVORBIS, audioClip =>
                 {
-                    AudioManager.inst.PlayMusic(null, audioClip, true, 0f);
+                    EditorLevelManager.inst.SetCurrentAudio(audioClip);
                     GameManager.inst.gameState = GameManager.State.Playing;
 
                     CoroutineHelper.StartCoroutine(RTLevel.IReinit());

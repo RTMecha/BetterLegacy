@@ -1143,6 +1143,7 @@ namespace BetterLegacy.Editor.Managers
             UpdatePreview();
             UpdateKey();
             UpdateCameraArea();
+            UpdateTimeRange();
 
             if (editorInfo.time > 36000f)
                 AchievementManager.inst.UnlockAchievement("serious_dedication");
@@ -1379,6 +1380,36 @@ namespace BetterLegacy.Editor.Managers
             cameraAreaCanvas.anchoredPosition = (Vector2)RTEventManager.inst.delayTracker.target + EventManager.inst.camPos + (Vector2)RTLevel.Current.eventEngine.GetShake() + new Vector2(RTLevel.Current.eventEngine.camOffsetX, RTLevel.Current.eventEngine.camOffsetY);
             cameraArea.sizeDelta = new Vector2(96f, 54f) * 12f * (EventManager.inst.camZoom / 20f);
             cameraArea.localEulerAngles = new Vector3(0f, 0f, EventManager.inst.camRot);
+        }
+
+        void UpdateTimeRange()
+        {
+            if (!AudioManager.inst || !AudioManager.inst.CurrentAudioSource || !AudioManager.inst.CurrentAudioSource.clip)
+                return;
+
+            if (!GameData.Current || !GameData.Current.data || !GameData.Current.data.level)
+                return;
+
+            if (AudioManager.inst.CurrentAudioSource.time < GameData.Current.data.level.LevelStartOffset && EditorConfig.Instance.SkipLevelStartTime.Value)
+                AudioManager.inst.SetMusicTime(GameData.Current.data.level.LevelStartOffset);
+
+            if (AudioManager.inst.CurrentAudioSource.time > AudioManager.inst.CurrentAudioSource.clip.length - GameData.Current.data.level.LevelEndOffset)
+            {
+                if (EditorConfig.Instance.LoopTimeline.Value)
+                {
+                    AudioManager.inst.SetMusicTime(GameData.Current.data.level.LevelStartOffset);
+                    if (!AudioManager.inst.CurrentAudioSource.isPlaying)
+                        AudioManager.inst.CurrentAudioSource.Play();
+                }
+                else
+                {
+                    AudioManager.inst.SetMusicTime(AudioManager.inst.CurrentAudioSource.clip.length - GameData.Current.data.level.LevelEndOffset);
+                    AudioManager.inst.CurrentAudioSource.Pause();
+                    EditorManager.inst.UpdatePlayButton();
+                }
+                if (!EditorManager.inst.isEditing && EditorConfig.Instance.ExitPreviewOnEnd.Value)
+                    ExitPreview();
+            }
         }
 
         #endregion
@@ -6164,10 +6195,7 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.isEditing = !EditorManager.inst.isEditing;
 
             if (EditorManager.inst.isEditing)
-            {
                 ExitPreview();
-                EditorManager.inst.UpdatePlayButton();
-            }
             else
                 EnterPreview();
 
@@ -6184,6 +6212,8 @@ namespace BetterLegacy.Editor.Managers
         {
             if (!EditorManager.inst.hasLoadedLevel)
                 return;
+
+            EditorManager.inst.isEditing = false;
 
             RTBeatmap.Current?.Reset(EditorConfig.Instance.ApplyGameSettingsInPreviewMode.Value);
 
@@ -6219,12 +6249,15 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.SetPlayersInvinsible(true);
             EditorManager.inst.SetEditRenderArea();
             GameManager.inst.UpdateTimeline();
+            EditorManager.inst.UpdatePlayButton();
 
             if (!EditorConfig.Instance.ResetHealthInEditor.Value || PlayerManager.Players.IsEmpty())
                 return;
 
             if (!EditorManager.inst.hasLoadedLevel)
                 return;
+
+            EditorManager.inst.isEditing = true;
 
             try
             {

@@ -1051,7 +1051,7 @@ namespace BetterLegacy.Editor.Managers
         /// Sets the current audio the editor should use.
         /// </summary>
         /// <param name="audioClip">Audio to set.</param>
-        public void SetCurrentAudio(AudioClip audioClip) => AudioManager.inst.PlayMusic(null, audioClip, true, 0f, true);
+        public void SetCurrentAudio(AudioClip audioClip) => AudioManager.inst.PlayMusic(null, audioClip, true, 0f, false);
 
         /// <summary>
         /// Restarts the autosave loop.

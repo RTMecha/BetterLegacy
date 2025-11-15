@@ -70,6 +70,9 @@ namespace BetterLegacy.Configs
         public Setting<bool> AllowEditorKeybindsWithEditorCam { get; set; }
         public Setting<bool> RotationEventKeyframeResets { get; set; }
         public Setting<bool> RememberLastKeyframeType { get; set; }
+        public Setting<bool> LoopTimeline { get; set; }
+        public Setting<bool> ExitPreviewOnEnd { get; set; }
+        public Setting<bool> SkipLevelStartTime { get; set; }
 
         #endregion
 
@@ -470,6 +473,9 @@ namespace BetterLegacy.Configs
             AllowEditorKeybindsWithEditorCam = Bind(this, GENERAL, "Allow Editor Keybinds With Editor Cam", true, "Allows keybinds to be used if EventsCore editor camera is on.");
             RotationEventKeyframeResets = Bind(this, GENERAL, "Rotation Event Keyframe Resets", true, "When an Event / Check rotation keyframe is created, it resets the value to 0.");
             RememberLastKeyframeType = Bind(this, GENERAL, "Remember Last Keyframe Type", false, "When an object is selected for the first time, it selects the previous objects' keyframe selection type. For example, say you had a color keyframe selected, this newly selected object will select the first color keyframe.");
+            LoopTimeline = Bind(this, GENERAL, "Loop Timeline", true, "If the editor timeline should loop when the level reaches the end time.");
+            SkipLevelStartTime = Bind(this, GENERAL, "Skip Level Start Time", true, "If the level start time should be automatically skipped whenever the level time enters the range.");
+            ExitPreviewOnEnd = Bind(this, GENERAL, "Exit Preview On End", false, "If preview mode should be exited on level end.");
 
             #endregion
 

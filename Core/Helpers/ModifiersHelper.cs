@@ -4350,6 +4350,9 @@ namespace BetterLegacy.Core.Helpers
         {
             if (CoreHelper.InEditor)
             {
+                if (!EditorManager.inst.isEditing && EditorConfig.Instance.ExitPreviewOnEnd.Value)
+                    RTEditor.inst.ExitPreview();
+
                 EditorManager.inst.DisplayNotification("End level func", 1f, EditorManager.NotificationType.Success);
                 return;
             }
