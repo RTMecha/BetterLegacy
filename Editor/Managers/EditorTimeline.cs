@@ -16,6 +16,7 @@ using BetterLegacy.Companion.Data.Parameters;
 using BetterLegacy.Companion.Entity;
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
@@ -30,6 +31,9 @@ using ObjectType = BetterLegacy.Core.Data.Beatmap.BeatmapObject.ObjectType;
 
 namespace BetterLegacy.Editor.Managers
 {
+    /// <summary>
+    /// Manages the main timeline.
+    /// </summary>
     public class EditorTimeline : BaseManager<EditorTimeline, RTEditorSettings>, IEditorLayerUI
     {
         #region Init
@@ -43,6 +47,9 @@ namespace BetterLegacy.Editor.Managers
 
         public override void OnTick()
         {
+            startOffsetDisplay.color = RTColors.FadeColor(startOffsetDisplay.color, offsetOpacity);
+            endOffsetDisplay.color = RTColors.FadeColor(endOffsetDisplay.color, offsetOpacity);
+
             if (Input.GetMouseButtonUp((int)UnityEngine.EventSystems.PointerEventData.InputButton.Middle))
                 movingTimeline = false;
 
@@ -59,22 +66,80 @@ namespace BetterLegacy.Editor.Managers
 
         #region Timeline
 
+        /// <summary>
+        /// If the timeline is being dragged.
+        /// </summary>
         public bool movingTimeline;
 
+        /// <summary>
+        /// The timeline cursor.
+        /// </summary>
         public Slider timelineSlider;
 
+        /// <summary>
+        /// The handle of the timeline cursor.
+        /// </summary>
         public Image timelineSliderHandle;
+
+        /// <summary>
+        /// The ruler of the timeline cursor.
+        /// </summary>
         public Image timelineSliderRuler;
 
+        /// <summary>
+        /// If the mouse cursor is over the timeline.
+        /// </summary>
         public bool isOverMainTimeline;
+
+        /// <summary>
+        /// If the user is changing the level time.
+        /// </summary>
         public bool changingTime;
+
+        /// <summary>
+        /// The new time to set.
+        /// </summary>
         public float newTime;
 
+        /// <summary>
+        /// Entire timeline parent.
+        /// </summary>
         public Transform wholeTimeline;
 
-        public Vector2 cachedTimelinePos;
+        Vector2 cachedTimelinePos;
 
-        public List<ScrollRect> timelineScrollRects = new List<ScrollRect>();
+        List<ScrollRect> timelineScrollRects = new List<ScrollRect>();
+
+        /// <summary>
+        /// UI for displaying <see cref="LevelData.LevelStartOffset"/>.
+        /// </summary>
+        public Image startOffsetDisplay;
+
+        /// <summary>
+        /// UI for displaying <see cref="LevelData.LevelEndOffset"/>.
+        /// </summary>
+        public Image endOffsetDisplay;
+
+        /// <summary>
+        /// Opacity for <see cref="startOffsetDisplay"/> and <see cref="endOffsetDisplay"/>.
+        /// </summary>
+        public float offsetOpacity = 0.3f;
+
+        /// <summary>
+        /// Initializes timeline features.
+        /// </summary>
+        public void SetupTimeline()
+        {
+            var startOffsetDisplay = Creator.NewUIObject("Start", wholeTimeline.Find("Timeline/Panel 1"));
+            RectValues.LeftAnchored.AnchoredPosition(4f, 0f).AnchorMin(0f, 0f).Pivot(0f, 0.5f).SizeDelta(0f, 0f).AssignToRectTransform(startOffsetDisplay.transform.AsRT());
+            this.startOffsetDisplay = startOffsetDisplay.gameObject.AddComponent<Image>();
+            EditorThemeManager.AddGraphic(this.startOffsetDisplay, ThemeGroup.Light_Text, true, roundedSide: SpriteHelper.RoundedSide.Right);
+
+            var endOffsetDisplay = Creator.NewUIObject("End", wholeTimeline.Find("Timeline/Panel 1"));
+            RectValues.LeftAnchored.AnchoredPosition(-4f, 0f).AnchorMax(1f, 1f).AnchorMin(1f, 0f).Pivot(1f, 0.5f).SizeDelta(0f, 0f).AssignToRectTransform(endOffsetDisplay.transform.AsRT());
+            this.endOffsetDisplay = endOffsetDisplay.gameObject.AddComponent<Image>();
+            EditorThemeManager.AddGraphic(this.endOffsetDisplay, ThemeGroup.Light_Text, true, roundedSide: SpriteHelper.RoundedSide.Right);
+        }
 
         /// <summary>
         /// Renders the timeline.
@@ -186,6 +251,9 @@ namespace BetterLegacy.Editor.Managers
             timelineSliderRuler.color = EditorConfig.Instance.TimelineCursorColor.Value;
         }
 
+        /// <summary>
+        /// Updates the time cursor.
+        /// </summary>
         public void UpdateTimeChange()
         {
             if (!changingTime && EditorConfig.Instance.DraggingMainCursorFix.Value)
@@ -200,6 +268,9 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
+        /// <summary>
+        /// Starts dragging the timeline.
+        /// </summary>
         public void StartTimelineDrag()
         {
             cachedTimelinePos = new Vector2(EditorManager.inst.timelineScrollRectBar.value, binSlider.value);
@@ -238,6 +309,11 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.markerTimeline.transform.AsRT().SetSizeDeltaX(size);
             EditorManager.inst.timeline.transform.AsRT().SetSizeDeltaX(size);
             EditorManager.inst.timelineWaveformOverlay.transform.AsRT().SetSizeDeltaX(size);
+
+            var startOffset = GameData.Current?.data?.level?.LevelStartOffset ?? 0f;
+            var endOffset = GameData.Current?.data?.level?.LevelEndOffset ?? 0f;
+            startOffsetDisplay.rectTransform.sizeDelta = new Vector2(startOffset * EditorManager.inst.Zoom, 0f);
+            endOffsetDisplay.rectTransform.sizeDelta = new Vector2(endOffset * EditorManager.inst.Zoom, 0f);
         }
 
         #endregion
