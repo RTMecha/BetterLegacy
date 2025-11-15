@@ -138,9 +138,9 @@ namespace BetterLegacy.Editor.Managers
 
             Dialog.LevelEndOffsetField.middleButton.onClick.NewListener(() => Dialog.LevelEndOffsetField.Text = (AudioManager.inst.CurrentAudioSource.clip.length - AudioManager.inst.CurrentAudioSource.time).ToString());
 
-            TriggerHelper.IncreaseDecreaseButtons(Dialog.LevelEndOffsetField, max: AudioManager.inst.CurrentAudioSource.clip.length);
+            TriggerHelper.IncreaseDecreaseButtons(Dialog.LevelEndOffsetField, min: 0.1f, max: AudioManager.inst.CurrentAudioSource.clip.length);
             TriggerHelper.AddEventTriggers(Dialog.LevelEndOffsetField.gameObject,
-                TriggerHelper.ScrollDelta(Dialog.LevelEndOffsetField.inputField, max: AudioManager.inst.CurrentAudioSource.clip.length));
+                TriggerHelper.ScrollDelta(Dialog.LevelEndOffsetField.inputField, min: 0.1f, max: AudioManager.inst.CurrentAudioSource.clip.length));
 
             Dialog.AutoEndLevelToggle.SetIsOnWithoutNotify(GameData.Current.data.level.autoEndLevel);
             Dialog.AutoEndLevelToggle.onValueChanged.NewListener(_val => GameData.Current.data.level.autoEndLevel = _val);
