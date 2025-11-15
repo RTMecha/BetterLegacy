@@ -3864,10 +3864,8 @@ namespace BetterLegacy.Editor.Managers
 
             Destroy(OSTAudioSource);
 
-            var list = osts.ToList();
-
-            for (int i = 0; i < list.Count; i++)
-                list[i].playing = false;
+            for (int i = 0; i < osts.Count; i++)
+                osts[i].playing = false;
 
             playing = false;
         }

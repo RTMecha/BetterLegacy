@@ -43,50 +43,36 @@ namespace BetterLegacy.Editor.Data.Planners
             if (audioType == AudioType.UNKNOWN)
                 return;
 
+            ProjectPlanner.inst.StopOST(); // stops the currently playing OST
+
             if (audioType == AudioType.MPEG)
             {
-                var audioClip = LSAudio.CreateAudioClipUsingMP3File(filePath);
-
-                ProjectPlanner.inst.StopOST();
-
-                var audioSource = Camera.main.gameObject.AddComponent<AudioSource>();
-
-                ProjectPlanner.inst.OSTAudioSource = audioSource;
-                ProjectPlanner.inst.currentOSTID = ID;
-                ProjectPlanner.inst.currentOST = Index;
-                ProjectPlanner.inst.playing = true;
-
-                audioSource.clip = audioClip;
-                audioSource.playOnAwake = true;
-                audioSource.loop = false;
-                audioSource.volume = SoundManager.inst.MusicVolume * AudioManager.inst.masterVol;
-                audioSource.Play();
-
-                playing = true;
-                Notify();
+                PlayAudio(LSAudio.CreateAudioClipUsingMP3File(filePath));
                 return;
             }
 
-            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip(filePath, audioType, audioClip =>
-            {
-                ProjectPlanner.inst.StopOST();
+            CoroutineHelper.StartCoroutineAsync(AlephNetwork.DownloadAudioClip(filePath, audioType, audioClip => LegacyPlugin.MainTick += () => PlayAudio(audioClip)));
+        }
 
-                var audioSource = Camera.main.gameObject.AddComponent<AudioSource>();
+        void PlayAudio(AudioClip audioClip)
+        {
+            CoreHelper.Log($"Started playing OST {Name}");
 
-                ProjectPlanner.inst.OSTAudioSource = audioSource;
-                ProjectPlanner.inst.currentOSTID = ID;
-                ProjectPlanner.inst.currentOST = Index;
-                ProjectPlanner.inst.playing = true;
+            var audioSource = Camera.main.gameObject.AddComponent<AudioSource>();
 
-                audioSource.clip = audioClip;
-                audioSource.playOnAwake = true;
-                audioSource.loop = false;
-                audioSource.volume = SoundManager.inst.MusicVolume * AudioManager.inst.masterVol;
-                audioSource.Play();
+            ProjectPlanner.inst.OSTAudioSource = audioSource;
+            ProjectPlanner.inst.currentOSTID = ID;
+            ProjectPlanner.inst.currentOST = Index;
+            ProjectPlanner.inst.playing = true;
 
-                playing = true;
-                Notify();
-            }));
+            audioSource.clip = audioClip;
+            audioSource.playOnAwake = true;
+            audioSource.loop = false;
+            audioSource.volume = SoundManager.inst.MusicVolume * AudioManager.inst.masterVol;
+            audioSource.Play();
+
+            playing = true;
+            Notify();
         }
 
         void Notify()
