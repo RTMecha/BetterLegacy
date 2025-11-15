@@ -86,7 +86,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var levelStartOffset = EditorPrefabHolder.Instance.NumberInputField.Duplicate(Content, "level start offset");
             levelStartOffset.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
             LevelStartOffsetField = levelStartOffset.GetComponent<InputFieldStorage>();
-            CoreHelper.Delete(LevelStartOffsetField.middleButton);
             EditorThemeManager.AddInputField(LevelStartOffsetField);
 
             ReverseToggle = GenerateToggle(Content, "Level Can Rewind");
@@ -96,7 +95,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var levelEndOffset = EditorPrefabHolder.Instance.NumberInputField.Duplicate(Content, "level end offset");
             levelEndOffset.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
             LevelEndOffsetField = levelEndOffset.GetComponent<InputFieldStorage>();
-            CoreHelper.Delete(LevelEndOffsetField.middleButton);
             EditorThemeManager.AddInputField(LevelEndOffsetField);
 
             AutoEndLevelToggle = GenerateToggle(Content, "Auto End");

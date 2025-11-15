@@ -110,9 +110,18 @@ namespace BetterLegacy.Editor.Managers
             Dialog.LevelStartOffsetField.inputField.SetTextWithoutNotify(GameData.Current.data.level.LevelStartOffset.ToString());
             Dialog.LevelStartOffsetField.inputField.onValueChanged.NewListener(_val =>
             {
-                if (float.TryParse(_val, out float num))
-                    GameData.Current.data.level.LevelStartOffset = num;
+                if (!float.TryParse(_val, out float num))
+                    return;
+
+                GameData.Current.data.level.LevelStartOffset = num;
+                EditorTimeline.inst.UpdateTimelineSizes();
             });
+
+            Dialog.LevelStartOffsetField.middleButton.onClick.NewListener(() => Dialog.LevelStartOffsetField.Text = AudioManager.inst.CurrentAudioSource.time.ToString());
+
+            TriggerHelper.IncreaseDecreaseButtons(Dialog.LevelStartOffsetField, max: AudioManager.inst.CurrentAudioSource.clip.length);
+            TriggerHelper.AddEventTriggers(Dialog.LevelStartOffsetField.gameObject,
+                TriggerHelper.ScrollDelta(Dialog.LevelStartOffsetField.inputField, max: AudioManager.inst.CurrentAudioSource.clip.length));
 
             Dialog.ReverseToggle.SetIsOnWithoutNotify(GameData.Current.data.level.reverse);
             Dialog.ReverseToggle.onValueChanged.NewListener(_val => GameData.Current.data.level.reverse = _val);
@@ -120,9 +129,18 @@ namespace BetterLegacy.Editor.Managers
             Dialog.LevelEndOffsetField.inputField.SetTextWithoutNotify(GameData.Current.data.level.LevelEndOffset.ToString());
             Dialog.LevelEndOffsetField.inputField.onValueChanged.NewListener(_val =>
             {
-                if (float.TryParse(_val, out float num))
-                    GameData.Current.data.level.LevelEndOffset = num;
+                if (!float.TryParse(_val, out float num))
+                    return;
+
+                GameData.Current.data.level.LevelEndOffset = num;
+                EditorTimeline.inst.UpdateTimelineSizes();
             });
+
+            Dialog.LevelEndOffsetField.middleButton.onClick.NewListener(() => Dialog.LevelEndOffsetField.Text = (AudioManager.inst.CurrentAudioSource.clip.length - AudioManager.inst.CurrentAudioSource.time).ToString());
+
+            TriggerHelper.IncreaseDecreaseButtons(Dialog.LevelEndOffsetField, max: AudioManager.inst.CurrentAudioSource.clip.length);
+            TriggerHelper.AddEventTriggers(Dialog.LevelEndOffsetField.gameObject,
+                TriggerHelper.ScrollDelta(Dialog.LevelEndOffsetField.inputField, max: AudioManager.inst.CurrentAudioSource.clip.length));
 
             Dialog.AutoEndLevelToggle.SetIsOnWithoutNotify(GameData.Current.data.level.autoEndLevel);
             Dialog.AutoEndLevelToggle.onValueChanged.NewListener(_val => GameData.Current.data.level.autoEndLevel = _val);
