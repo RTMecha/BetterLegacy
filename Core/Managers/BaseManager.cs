@@ -11,6 +11,7 @@ namespace BetterLegacy.Core.Managers
     /// The base of BetterLegacy's managers.
     /// </summary>
     /// <typeparam name="T">Type of the manager.</typeparam>
+    /// <typeparam name="TSettings">Initialize settings of the manager.</typeparam>
     public abstract class BaseManager<T, TSettings> : MonoBehaviour where T : BaseManager<T, TSettings> where TSettings : ManagerSettings, new()
     {
         #region Init
