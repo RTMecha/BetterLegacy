@@ -327,6 +327,18 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
+        public static void AddDeleteButton(DeleteButtonStorage delete)
+        {
+            AddGraphic(delete.button.image, ThemeGroup.Delete, true);
+            AddGraphic(delete.image, ThemeGroup.Delete_Text);
+        }
+        
+        public static void ApplyDeleteButton(DeleteButtonStorage delete)
+        {
+            ApplyGraphic(delete.button.image, ThemeGroup.Delete, true);
+            ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
+        }
+
         public static void AddToggle(Toggle toggle, ThemeGroup checkGroup = ThemeGroup.Null, Graphic graphic = null)
         {
             toggle.image.fillCenter = true;
