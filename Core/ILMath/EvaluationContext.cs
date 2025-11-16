@@ -195,6 +195,27 @@ namespace ILMath
             functions[identifier] = function;
         }
 
+        public void RegisterVariables(Dictionary<string, float> variables)
+        {
+            if (variables != null)
+                foreach (var variable in variables)
+                    RegisterVariable(variable.Key, variable.Value);
+        }
+        
+        public void RegisterVariables(Dictionary<string, double> variables)
+        {
+            if (variables != null)
+                foreach (var variable in variables)
+                    RegisterVariable(variable.Key, variable.Value);
+        }
+        
+        public void RegisterFunctions(Dictionary<string, MathFunction> functions)
+        {
+            if (functions != null)
+                foreach (var function in functions)
+                    RegisterFunction(function.Key, function.Value);
+        }
+
         public double GetVariable(string identifier)
         {
             if (variables.TryGetValue(identifier, out var value))
@@ -376,6 +397,14 @@ namespace ILMath
 
             result = 0;
             return false;
+        }
+
+        public EvaluationContext Copy()
+        {
+            var context = new EvaluationContext();
+            context.RegisterVariables(variables);
+            context.RegisterFunctions(functions);
+            return context;
         }
 
         /// <summary>

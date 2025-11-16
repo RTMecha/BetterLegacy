@@ -96,97 +96,121 @@ namespace BetterLegacy.Core
         /// <returns>Returns evaluated expression.</returns>
         public static float Parse(string input, Dictionary<string, float> variables = null, Dictionary<string, MathFunction> functions = null)
         {
+            if (string.IsNullOrEmpty(input))
+                return 0f;
+
             try
             {
                 var context = EvaluationContext.CreateDefault();
-
-                if (variables != null)
-                    foreach (var variable in variables)
-                        context.RegisterVariable(variable.Key, variable.Value);
-
-                // In-game only variables and functions
-                if (CoreHelper.InGame)
-                {
-                    if (RTBeatmap.Current)
-                    {
-                        context.RegisterVariable("deathCount", RTBeatmap.Current.deaths.Count);
-                        context.RegisterVariable("hitCount", RTBeatmap.Current.hits.Count);
-                        context.RegisterVariable("boostCount", RTBeatmap.Current.boosts.Count);
-                    }
-                    if (RTLevel.Current)
-                        context.RegisterVariable("smoothedTime", RTLevel.Current.CurrentTime);
-                    if (EventManager.inst && EventManager.inst.cam)
-                    {
-                        context.RegisterVariable("camPosX", EventManager.inst.cam.transform.position.x);
-                        context.RegisterVariable("camPosY", EventManager.inst.cam.transform.position.y);
-                        context.RegisterVariable("camZoom", EventManager.inst.cam.orthographicSize);
-                        context.RegisterVariable("camRot", EventManager.inst.cam.transform.eulerAngles.z);
-                    }
-                    if (RandomHelper.CurrentSeed != null)
-                        context.RegisterVariable("currentSeed", RandomHelper.CurrentSeed.GetHashCode());
-
-                    if (RTBeatmap.Current && RTBeatmap.Current.ActiveCheckpoint)
-                        context.RegisterVariable("activeCheckpointTime", RTBeatmap.Current.ActiveCheckpoint.time);
-
-                    var players = PlayerManager.Players;
-                    context.RegisterVariable("playerHealthTotal", players.IsEmpty() ? 0 : players.Sum(x => x.Health));
-                    context.RegisterVariable("playerCount", players.Count);
-                    for (int i = 0; i < players.Count; i++)
-                    {
-                        var player = players[i];
-                        var isNull = !player.RuntimePlayer || !player.RuntimePlayer.rb;
-                        float posX = isNull ? 0f : player.RuntimePlayer.rb.position.x;
-                        float posY = isNull ? 0f : player.RuntimePlayer.rb.position.y;
-                        float rot = isNull ? 0f : player.RuntimePlayer.rb.rotation;
-                        context.RegisterVariable($"player{i}PosX", posX);
-                        context.RegisterVariable($"player{i}PosY", posY);
-                        context.RegisterVariable($"player{i}Rot", rot);
-                        context.RegisterVariable($"player{i}Health", player.Health);
-                    }
-
-                    if (RTLevel.Current)
-                    {
-                        context.RegisterFunction("sampleAudio", parameters => RTLevel.Current.GetSample((int)parameters[0], (float)parameters[1]));
-                        if (RTLevel.Current.eventEngine)
-                        {
-                            context.RegisterVariable("shakeX", RTLevel.Current.eventEngine.Shake.x);
-                            context.RegisterVariable("shakeY", RTLevel.Current.eventEngine.Shake.y);
-                            context.RegisterFunction("copyEvent", parameters => RTLevel.Current.eventEngine.Interpolate((int)parameters[0], (int)parameters[1], (float)parameters[2]));
-                            context.RegisterFunction("copyEventOffset", parameters => RTLevel.Current.eventEngine.offsets[(int)parameters[0]][(int)parameters[1]]);
-                        }
-                    }
-                }
-
-                context.RegisterVariable("actionMoveX", InputDataManager.inst.menuActions.Move.X);
-                context.RegisterVariable("actionMoveY", InputDataManager.inst.menuActions.Move.Y);
-                context.RegisterVariable("time", Time.time);
-                context.RegisterVariable("deltaTime", Time.deltaTime);
-                context.RegisterVariable("audioTime", AudioManager.inst.CurrentAudioSource.time);
-                if (AudioManager.inst.CurrentAudioSource.clip)
-                    context.RegisterVariable("musicLength", AudioManager.inst.CurrentAudioSource.clip.length);
-                context.RegisterVariable("volume", AudioManager.inst.musicVol);
-                context.RegisterVariable("pitch", AudioManager.inst.pitch);
-                context.RegisterVariable("forwardPitch", CoreHelper.ForwardPitch);
-                context.RegisterVariable("mousePosX", Input.mousePosition.x);
-                context.RegisterVariable("mousePosY", Input.mousePosition.y);
-                context.RegisterVariable("mouseScrollX", Input.mouseScrollDelta.x);
-                context.RegisterVariable("mouseScrollY", Input.mouseScrollDelta.y);
-                context.RegisterVariable("screenHeight", Screen.height);
-                context.RegisterVariable("screenWidth", Screen.width);
-                context.RegisterVariable("currentEpoch", SteamworksFacepunch.Epoch.Current);
-
-                if (functions != null)
-                    foreach (var function in functions)
-                        context.RegisterFunction(function.Key, function.Value);
-
-                var evaluator = MathEvaluation.CompileExpression("ResultFunction", input);
-
-                return (float)evaluator.Invoke(context);
+                RegisterVariableFunctions(context);
+                context.RegisterVariables(variables);
+                context.RegisterFunctions(functions);
+                return Evaluate(input, context);
             }
-            catch (Exception ex)
+            catch
             {
                 return 0f;
             }
+        }
+
+        public static float Parse(string input, EvaluationContext context, Dictionary<string, float> variables = null, Dictionary<string, MathFunction> functions = null)
+        {
+            if (context == null || string.IsNullOrEmpty(input))
+                return 0f;
+
+            context.RegisterVariables(variables);
+            context.RegisterFunctions(functions);
+            return Evaluate(input, context);
+        }
+
+        public static float Evaluate(string input, EvaluationContext context)
+        {
+            if (context == null || string.IsNullOrEmpty(input))
+                return 0f;
+
+            try
+            {
+                var evaluator = MathEvaluation.CompileExpression("ResultFunction", input);
+                return (float)evaluator.Invoke(context);
+            }
+            catch
+            {
+                return 0f;
+            }
+        }
+
+        public static void RegisterVariableFunctions(EvaluationContext context)
+        {
+            // In-game only variables and functions
+            if (CoreHelper.InGame)
+            {
+                if (RTBeatmap.Current)
+                {
+                    context.RegisterVariable("deathCount", RTBeatmap.Current.deaths.Count);
+                    context.RegisterVariable("hitCount", RTBeatmap.Current.hits.Count);
+                    context.RegisterVariable("boostCount", RTBeatmap.Current.boosts.Count);
+                }
+                if (RTLevel.Current)
+                    context.RegisterVariable("smoothedTime", RTLevel.Current.CurrentTime);
+                if (EventManager.inst && EventManager.inst.cam)
+                {
+                    context.RegisterVariable("camPosX", EventManager.inst.cam.transform.position.x);
+                    context.RegisterVariable("camPosY", EventManager.inst.cam.transform.position.y);
+                    context.RegisterVariable("camZoom", EventManager.inst.cam.orthographicSize);
+                    context.RegisterVariable("camRot", EventManager.inst.cam.transform.eulerAngles.z);
+                }
+                if (RandomHelper.CurrentSeed != null)
+                    context.RegisterVariable("currentSeed", RandomHelper.CurrentSeed.GetHashCode());
+
+                if (RTBeatmap.Current && RTBeatmap.Current.ActiveCheckpoint)
+                    context.RegisterVariable("activeCheckpointTime", RTBeatmap.Current.ActiveCheckpoint.time);
+
+                var players = PlayerManager.Players;
+                context.RegisterVariable("playerHealthTotal", players.IsEmpty() ? 0 : players.Sum(x => x.Health));
+                context.RegisterVariable("playerCount", players.Count);
+                for (int i = 0; i < players.Count; i++)
+                {
+                    var player = players[i];
+                    var isNull = !player.RuntimePlayer || !player.RuntimePlayer.rb;
+                    float posX = isNull ? 0f : player.RuntimePlayer.rb.position.x;
+                    float posY = isNull ? 0f : player.RuntimePlayer.rb.position.y;
+                    float rot = isNull ? 0f : player.RuntimePlayer.rb.rotation;
+                    context.RegisterVariable($"player{i}PosX", posX);
+                    context.RegisterVariable($"player{i}PosY", posY);
+                    context.RegisterVariable($"player{i}Rot", rot);
+                    context.RegisterVariable($"player{i}Health", player.Health);
+                }
+
+                if (RTLevel.Current)
+                {
+                    context.RegisterFunction("sampleAudio", parameters => RTLevel.Current.GetSample((int)parameters[0], (float)parameters[1]));
+                    if (RTLevel.Current.eventEngine)
+                    {
+                        context.RegisterVariable("shakeX", RTLevel.Current.eventEngine.Shake.x);
+                        context.RegisterVariable("shakeY", RTLevel.Current.eventEngine.Shake.y);
+                        context.RegisterFunction("copyEvent", parameters => RTLevel.Current.eventEngine.Interpolate((int)parameters[0], (int)parameters[1], (float)parameters[2]));
+                        context.RegisterFunction("copyEventOffset", parameters => RTLevel.Current.eventEngine.offsets[(int)parameters[0]][(int)parameters[1]]);
+                    }
+                }
+            }
+
+            context.RegisterVariable("actionMoveX", InputDataManager.inst.menuActions.Move.X);
+            context.RegisterVariable("actionMoveY", InputDataManager.inst.menuActions.Move.Y);
+            context.RegisterVariable("time", Time.time);
+            context.RegisterVariable("deltaTime", Time.deltaTime);
+            context.RegisterVariable("audioTime", AudioManager.inst.CurrentAudioSource.time);
+            if (AudioManager.inst.CurrentAudioSource.clip)
+                context.RegisterVariable("musicLength", AudioManager.inst.CurrentAudioSource.clip.length);
+            context.RegisterVariable("volume", AudioManager.inst.musicVol);
+            context.RegisterVariable("pitch", AudioManager.inst.pitch);
+            context.RegisterVariable("forwardPitch", CoreHelper.ForwardPitch);
+            context.RegisterVariable("mousePosX", Input.mousePosition.x);
+            context.RegisterVariable("mousePosY", Input.mousePosition.y);
+            context.RegisterVariable("mouseScrollX", Input.mouseScrollDelta.x);
+            context.RegisterVariable("mouseScrollY", Input.mouseScrollDelta.y);
+            context.RegisterVariable("screenHeight", Screen.height);
+            context.RegisterVariable("screenWidth", Screen.width);
+            context.RegisterVariable("currentEpoch", SteamworksFacepunch.Epoch.Current);
         }
 
         #endregion
@@ -901,5 +925,11 @@ namespace BetterLegacy.Core
         }
 
         #endregion
+    }
+
+    public class MathParseCache
+    {
+        public EvaluationContext context;
+        public Evaluator evaluator;
     }
 }

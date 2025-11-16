@@ -6,6 +6,7 @@ using System.Linq;
 using UnityEngine;
 
 using DG.Tweening;
+using ILMath;
 
 using BetterLegacy.Arcade.Managers;
 using BetterLegacy.Configs;
@@ -73,6 +74,8 @@ namespace BetterLegacy.Core.Runtime
         /// Performs heavy calculations on a separate tick thread.
         /// </summary>
         public TickRunner threadedTickRunner;
+
+        public EvaluationContext evaluationContext;
 
         ModifierLoop loop;
 
@@ -197,6 +200,8 @@ namespace BetterLegacy.Core.Runtime
             // Sets a new seed or uses the current one.
             RandomHelper.UpdateSeed();
 
+            evaluationContext = EvaluationContext.CreateDefault();
+
             var gameData = GameData.Current;
 
             // Removing and reinserting prefabs.
@@ -226,6 +231,15 @@ namespace BetterLegacy.Core.Runtime
 
             if (logTick)
                 Log($"Start pre-tick at: {sw.Elapsed}");
+
+            try
+            {
+                RTMath.RegisterVariableFunctions(evaluationContext);
+            }
+            catch
+            {
+
+            }
 
             PreTick();
 

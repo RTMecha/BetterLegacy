@@ -8,6 +8,7 @@ using UnityEngine;
 
 using LSFunctions;
 
+using ILMath;
 using SimpleJSON;
 
 using BetterLegacy.Arcade.Managers;
@@ -2963,7 +2964,7 @@ namespace BetterLegacy.Core.Helpers
             numberVariables["axis"] = ModifiersHelper.GetAnimation(beatmapObject, fromType, fromAxis, delay, useVisual);
             beatmapObject.SetOtherObjectVariables(numberVariables);
 
-            float value = RTMath.Parse(evaluation, numberVariables);
+            float value = RTMath.Parse(evaluation, RTLevel.Current?.evaluationContext, numberVariables);
 
             modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = value.ToString();
         }
@@ -2975,7 +2976,7 @@ namespace BetterLegacy.Core.Helpers
                 var numberVariables = new Dictionary<string, float>();
                 ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
 
-                modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = RTMath.Parse(ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables), numberVariables).ToString();
+                modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = RTMath.Parse(ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables), RTLevel.Current?.evaluationContext, numberVariables).ToString();
                 return;
             }
 
@@ -2984,7 +2985,7 @@ namespace BetterLegacy.Core.Helpers
                 var numberVariables = evaluatable.GetObjectVariables();
                 ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
 
-                modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = RTMath.Parse(ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables), numberVariables, evaluatable.GetObjectFunctions()).ToString();
+                modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = RTMath.Parse(ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables), RTLevel.Current?.evaluationContext, numberVariables, evaluatable.GetObjectFunctions()).ToString();
             }
             catch { }
         }
@@ -3273,7 +3274,7 @@ namespace BetterLegacy.Core.Helpers
                 var numberVariables = evaluatable.GetObjectVariables();
                 var functions = evaluatable.GetObjectFunctions();
 
-                modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = (RTMath.Parse(ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables), numberVariables, functions) == RTMath.Parse(ModifiersHelper.FormatStringVariables(modifier.GetValue(2, modifierLoop.variables), modifierLoop.variables), numberVariables, functions)).ToString();
+                modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = (RTMath.Parse(ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables), RTLevel.Current?.evaluationContext, numberVariables, functions) == RTMath.Parse(ModifiersHelper.FormatStringVariables(modifier.GetValue(2, modifierLoop.variables), modifierLoop.variables), RTLevel.Current?.evaluationContext, numberVariables, functions)).ToString();
             }
             catch { }
         }
@@ -3822,7 +3823,7 @@ namespace BetterLegacy.Core.Helpers
             }
 
             if (RTLevel.Current.eventEngine)
-                RTLevel.Current.eventEngine.pitchOffset = RTMath.Parse(ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables), numberVariables);
+                RTLevel.Current.eventEngine.pitchOffset = RTMath.Parse(ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables), RTLevel.Current?.evaluationContext, numberVariables);
         }
 
         public static void addPitchMath(Modifier modifier, ModifierLoop modifierLoop)
@@ -3841,7 +3842,7 @@ namespace BetterLegacy.Core.Helpers
             }
 
             if (RTLevel.Current.eventEngine)
-                RTLevel.Current.eventEngine.pitchOffset += RTMath.Parse(ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables), numberVariables);
+                RTLevel.Current.eventEngine.pitchOffset += RTMath.Parse(ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables), RTLevel.Current?.evaluationContext, numberVariables);
         }
 
         public static void animatePitch(Modifier modifier, ModifierLoop modifierLoop)
@@ -3900,7 +3901,7 @@ namespace BetterLegacy.Core.Helpers
                 }
             }
 
-            AudioManager.inst.SetMusicTime(RTMath.Parse(ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables), numberVariables));
+            AudioManager.inst.SetMusicTime(RTMath.Parse(ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables), RTLevel.Current?.evaluationContext, numberVariables));
         }
 
         public static void setMusicTimeStartTime(Modifier modifier, ModifierLoop modifierLoop)
@@ -7427,7 +7428,7 @@ namespace BetterLegacy.Core.Helpers
             {
                 var numberVariables = evaluatable.GetObjectVariables();
                 ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
-                RTLevel.Current.eventEngine.SetOffset(modifier.GetInt(1, 0, modifierLoop.variables), modifier.GetInt(2, 0, modifierLoop.variables), RTMath.Parse(modifier.GetValue(0, modifierLoop.variables), numberVariables, evaluatable.GetObjectFunctions()));
+                RTLevel.Current.eventEngine.SetOffset(modifier.GetInt(1, 0, modifierLoop.variables), modifier.GetInt(2, 0, modifierLoop.variables), RTMath.Parse(modifier.GetValue(0, modifierLoop.variables), RTLevel.Current?.evaluationContext, numberVariables, evaluatable.GetObjectFunctions()));
             }
         }
 
@@ -9433,12 +9434,15 @@ namespace BetterLegacy.Core.Helpers
             ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
 
             var functions = evaluatable.GetObjectFunctions();
+            var evaluationContext = RTLevel.Current.evaluationContext;
+            evaluationContext.RegisterVariables(numberVariables);
+            evaluationContext.RegisterFunctions(functions);
 
-            float time = (float)RTMath.Parse(modifier.GetValue(0, modifierLoop.variables), numberVariables, functions);
+            float time = (float)RTMath.Evaluate(modifier.GetValue(0, modifierLoop.variables), RTLevel.Current?.evaluationContext);
             var type = modifier.GetInt(1, 0, modifierLoop.variables);
-            float x = (float)RTMath.Parse(modifier.GetValue(2, modifierLoop.variables), numberVariables, functions);
-            float y = (float)RTMath.Parse(modifier.GetValue(3, modifierLoop.variables), numberVariables, functions);
-            float z = (float)RTMath.Parse(modifier.GetValue(4, modifierLoop.variables), numberVariables, functions);
+            float x = (float)RTMath.Evaluate(modifier.GetValue(2, modifierLoop.variables), RTLevel.Current?.evaluationContext);
+            float y = (float)RTMath.Evaluate(modifier.GetValue(3, modifierLoop.variables), RTLevel.Current?.evaluationContext);
+            float z = (float)RTMath.Evaluate(modifier.GetValue(4, modifierLoop.variables), RTLevel.Current?.evaluationContext);
             var relative = modifier.GetBool(5, true, modifierLoop.variables);
 
             string easing = modifier.GetValue(6, modifierLoop.variables);
@@ -9489,13 +9493,15 @@ namespace BetterLegacy.Core.Helpers
             ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
 
             var functions = evaluatable.GetObjectFunctions();
+            var evaluationContext = RTLevel.Current.evaluationContext;
+            evaluationContext.RegisterVariables(numberVariables);
+            evaluationContext.RegisterFunctions(functions);
 
-            // for optimization sake, we evaluate this outside of the foreach loop. normally I'd place this inside and replace "otherVar" with bm.integerVariable.ToString(), however I feel that would result in a worse experience so the tradeoff is not worth it.
-            float time = (float)RTMath.Parse(modifier.GetValue(0, modifierLoop.variables), numberVariables, functions);
+            float time = (float)RTMath.Evaluate(modifier.GetValue(0, modifierLoop.variables), RTLevel.Current?.evaluationContext);
             var type = modifier.GetInt(1, 0, modifierLoop.variables);
-            float x = (float)RTMath.Parse(modifier.GetValue(2, modifierLoop.variables), numberVariables, functions);
-            float y = (float)RTMath.Parse(modifier.GetValue(3, modifierLoop.variables), numberVariables, functions);
-            float z = (float)RTMath.Parse(modifier.GetValue(4, modifierLoop.variables), numberVariables, functions);
+            float x = (float)RTMath.Evaluate(modifier.GetValue(2, modifierLoop.variables), RTLevel.Current?.evaluationContext);
+            float y = (float)RTMath.Evaluate(modifier.GetValue(3, modifierLoop.variables), RTLevel.Current?.evaluationContext);
+            float z = (float)RTMath.Evaluate(modifier.GetValue(4, modifierLoop.variables), RTLevel.Current?.evaluationContext);
             var relative = modifier.GetBool(5, true, modifierLoop.variables);
 
             string easing = modifier.GetValue(6, modifierLoop.variables);
@@ -9547,15 +9553,18 @@ namespace BetterLegacy.Core.Helpers
             ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
 
             var functions = evaluatable.GetObjectFunctions();
+            var evaluationContext = RTLevel.Current.evaluationContext;
+            evaluationContext.RegisterVariables(numberVariables);
+            evaluationContext.RegisterFunctions(functions);
 
-            float time = (float)RTMath.Parse(modifier.GetValue(0, modifierLoop.variables), numberVariables, functions);
+            float time = (float)RTMath.Evaluate(modifier.GetValue(0, modifierLoop.variables), RTLevel.Current?.evaluationContext);
             var type = modifier.GetInt(1, 0, modifierLoop.variables);
-            float x = (float)RTMath.Parse(modifier.GetValue(2, modifierLoop.variables), numberVariables, functions);
-            float y = (float)RTMath.Parse(modifier.GetValue(3, modifierLoop.variables), numberVariables, functions);
-            float z = (float)RTMath.Parse(modifier.GetValue(4, modifierLoop.variables), numberVariables, functions);
+            float x = (float)RTMath.Evaluate(modifier.GetValue(2, modifierLoop.variables), RTLevel.Current?.evaluationContext);
+            float y = (float)RTMath.Evaluate(modifier.GetValue(3, modifierLoop.variables), RTLevel.Current?.evaluationContext);
+            float z = (float)RTMath.Evaluate(modifier.GetValue(4, modifierLoop.variables), RTLevel.Current?.evaluationContext);
             var relative = modifier.GetBool(5, true, modifierLoop.variables);
             var signalGroup = modifier.GetValue(7, modifierLoop.variables);
-            float signalTime = (float)RTMath.Parse(modifier.GetValue(8, modifierLoop.variables), numberVariables, functions);
+            float signalTime = (float)RTMath.Parse(modifier.GetValue(8, modifierLoop.variables), RTLevel.Current?.evaluationContext, numberVariables, functions);
 
             if (!modifier.GetBool(9, true, modifierLoop.variables))
             {
@@ -9625,15 +9634,18 @@ namespace BetterLegacy.Core.Helpers
             ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
 
             var functions = evaluatable.GetObjectFunctions();
+            var evaluationContext = RTLevel.Current.evaluationContext;
+            evaluationContext.RegisterVariables(numberVariables);
+            evaluationContext.RegisterFunctions(functions);
 
-            var time = (float)RTMath.Parse(modifier.GetValue(0, modifierLoop.variables), numberVariables, functions);
+            float time = (float)RTMath.Evaluate(modifier.GetValue(0, modifierLoop.variables), RTLevel.Current?.evaluationContext);
             var type = modifier.GetInt(1, 0, modifierLoop.variables);
-            var x = (float)RTMath.Parse(modifier.GetValue(2, modifierLoop.variables), numberVariables, functions);
-            var y = (float)RTMath.Parse(modifier.GetValue(3, modifierLoop.variables), numberVariables, functions);
-            var z = (float)RTMath.Parse(modifier.GetValue(4, modifierLoop.variables), numberVariables, functions);
+            float x = (float)RTMath.Evaluate(modifier.GetValue(2, modifierLoop.variables), RTLevel.Current?.evaluationContext);
+            float y = (float)RTMath.Evaluate(modifier.GetValue(3, modifierLoop.variables), RTLevel.Current?.evaluationContext);
+            float z = (float)RTMath.Evaluate(modifier.GetValue(4, modifierLoop.variables), RTLevel.Current?.evaluationContext);
             var relative = modifier.GetBool(5, true, modifierLoop.variables);
             var signalGroup = modifier.GetValue(8, modifierLoop.variables);
-            var signalTime = (float)RTMath.Parse(modifier.GetValue(9, modifierLoop.variables), numberVariables);
+            var signalTime = (float)RTMath.Parse(modifier.GetValue(9, modifierLoop.variables), RTLevel.Current?.evaluationContext, numberVariables);
 
             if (!modifier.GetBool(10, true, modifierLoop.variables))
             {
@@ -9895,17 +9907,19 @@ namespace BetterLegacy.Core.Helpers
             var numberVariables = beatmapObject.GetObjectVariables();
             ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
             var functions = beatmapObject.GetObjectFunctions();
+            RTLevel.Current.evaluationContext.RegisterVariables(numberVariables);
+            RTLevel.Current.evaluationContext.RegisterFunctions(functions);
 
             var animatePos = modifier.GetBool(1, true, modifierLoop.variables);
             var animateSca = modifier.GetBool(2, true, modifierLoop.variables);
             var animateRot = modifier.GetBool(3, true, modifierLoop.variables);
-            var delayPos = RTMath.Parse(modifier.GetValue(4, modifierLoop.variables), numberVariables, functions);
-            var delaySca = RTMath.Parse(modifier.GetValue(5, modifierLoop.variables), numberVariables, functions);
-            var delayRot = RTMath.Parse(modifier.GetValue(6, modifierLoop.variables), numberVariables, functions);
+            var delayPos = RTMath.Evaluate(modifier.GetValue(4, modifierLoop.variables), RTLevel.Current.evaluationContext);
+            var delaySca = RTMath.Evaluate(modifier.GetValue(5, modifierLoop.variables), RTLevel.Current.evaluationContext);
+            var delayRot = RTMath.Evaluate(modifier.GetValue(6, modifierLoop.variables), RTLevel.Current.evaluationContext);
             var useVisual = modifier.GetBool(7, false, modifierLoop.variables);
-            var length = RTMath.Parse(modifier.GetValue(8, modifierLoop.variables), numberVariables, functions);
-            var speed = RTMath.Parse(modifier.GetValue(9, modifierLoop.variables), numberVariables, functions);
-            var timeOffset = RTMath.Parse(modifier.GetValue(11, modifierLoop.variables), numberVariables, functions);
+            var length = RTMath.Evaluate(modifier.GetValue(8, modifierLoop.variables), RTLevel.Current.evaluationContext);
+            var speed = RTMath.Evaluate(modifier.GetValue(9, modifierLoop.variables), RTLevel.Current.evaluationContext);
+            var timeOffset = RTMath.Evaluate(modifier.GetValue(11, modifierLoop.variables), RTLevel.Current.evaluationContext);
 
             if (!modifier.constant)
                 AnimationManager.inst.RemoveName("Apply Object Animation " + beatmapObject.id);
@@ -9961,17 +9975,19 @@ namespace BetterLegacy.Core.Helpers
             var numberVariables = beatmapObject.GetObjectVariables();
             ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
             var functions = beatmapObject.GetObjectFunctions();
+            RTLevel.Current.evaluationContext.RegisterVariables(numberVariables);
+            RTLevel.Current.evaluationContext.RegisterFunctions(functions);
 
             var animatePos = modifier.GetBool(1, true, modifierLoop.variables);
             var animateSca = modifier.GetBool(2, true, modifierLoop.variables);
             var animateRot = modifier.GetBool(3, true, modifierLoop.variables);
-            var delayPos = RTMath.Parse(modifier.GetValue(4, modifierLoop.variables), numberVariables, functions);
-            var delaySca = RTMath.Parse(modifier.GetValue(5, modifierLoop.variables), numberVariables, functions);
-            var delayRot = RTMath.Parse(modifier.GetValue(6, modifierLoop.variables), numberVariables, functions);
+            var delayPos = RTMath.Parse(modifier.GetValue(4, modifierLoop.variables), RTLevel.Current.evaluationContext);
+            var delaySca = RTMath.Parse(modifier.GetValue(5, modifierLoop.variables), RTLevel.Current.evaluationContext);
+            var delayRot = RTMath.Parse(modifier.GetValue(6, modifierLoop.variables), RTLevel.Current.evaluationContext);
             var useVisual = modifier.GetBool(7, false, modifierLoop.variables);
-            var length = RTMath.Parse(modifier.GetValue(8, modifierLoop.variables), numberVariables, functions);
-            var speed = RTMath.Parse(modifier.GetValue(9, modifierLoop.variables), numberVariables, functions);
-            var timeOffset = RTMath.Parse(modifier.GetValue(10, modifierLoop.variables), numberVariables, functions);
+            var length = RTMath.Parse(modifier.GetValue(8, modifierLoop.variables), RTLevel.Current.evaluationContext);
+            var speed = RTMath.Parse(modifier.GetValue(9, modifierLoop.variables), RTLevel.Current?.evaluationContext);
+            var timeOffset = RTMath.Parse(modifier.GetValue(10, modifierLoop.variables), RTLevel.Current.evaluationContext);
 
             if (!modifier.constant)
             {
@@ -10018,17 +10034,19 @@ namespace BetterLegacy.Core.Helpers
             var numberVariables = beatmapObject.GetObjectVariables();
             ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
             var functions = beatmapObject.GetObjectFunctions();
+            RTLevel.Current.evaluationContext.RegisterVariables(numberVariables);
+            RTLevel.Current.evaluationContext.RegisterFunctions(functions);
 
             var animatePos = modifier.GetBool(1, true, modifierLoop.variables);
             var animateSca = modifier.GetBool(2, true, modifierLoop.variables);
             var animateRot = modifier.GetBool(3, true, modifierLoop.variables);
-            var delayPos = RTMath.Parse(modifier.GetValue(4, modifierLoop.variables), numberVariables, functions);
-            var delaySca = RTMath.Parse(modifier.GetValue(5, modifierLoop.variables), numberVariables, functions);
-            var delayRot = RTMath.Parse(modifier.GetValue(6, modifierLoop.variables), numberVariables, functions);
+            var delayPos = RTMath.Evaluate(modifier.GetValue(4, modifierLoop.variables), RTLevel.Current.evaluationContext);
+            var delaySca = RTMath.Evaluate(modifier.GetValue(5, modifierLoop.variables), RTLevel.Current.evaluationContext);
+            var delayRot = RTMath.Evaluate(modifier.GetValue(6, modifierLoop.variables), RTLevel.Current.evaluationContext);
             var useVisual = modifier.GetBool(7, false, modifierLoop.variables);
-            var length = RTMath.Parse(modifier.GetValue(8, modifierLoop.variables), numberVariables, functions);
-            var speed = RTMath.Parse(modifier.GetValue(9, modifierLoop.variables), numberVariables, functions);
-            var timeOffset = RTMath.Parse(modifier.GetValue(10, modifierLoop.variables), numberVariables, functions);
+            var length = RTMath.Evaluate(modifier.GetValue(8, modifierLoop.variables), RTLevel.Current.evaluationContext);
+            var speed = RTMath.Evaluate(modifier.GetValue(9, modifierLoop.variables), RTLevel.Current.evaluationContext);
+            var timeOffset = RTMath.Evaluate(modifier.GetValue(10, modifierLoop.variables), RTLevel.Current.evaluationContext);
 
             if (!modifier.constant)
                 AnimationManager.inst.RemoveName("Apply Object Animation " + beatmapObject.id);
@@ -10209,7 +10227,7 @@ namespace BetterLegacy.Core.Helpers
                                 numberVariables["colorA"] = sequence.a;
                                 bm.SetOtherObjectVariables(numberVariables);
 
-                                float value = RTMath.Parse(evaluation, numberVariables);
+                                float value = RTMath.Parse(evaluation, RTLevel.Current?.evaluationContext, numberVariables);
 
                                 renderer.material.color = RTMath.Lerp(renderer.material.color, sequence, Mathf.Clamp(value, min, max));
                             });
@@ -10230,7 +10248,7 @@ namespace BetterLegacy.Core.Helpers
                             };
                         bm.SetOtherObjectVariables(numberVariables);
 
-                        float value = RTMath.Parse(evaluation, numberVariables);
+                        float value = RTMath.Parse(evaluation, RTLevel.Current?.evaluationContext, numberVariables);
 
                         transformable.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
                     }
@@ -10245,7 +10263,7 @@ namespace BetterLegacy.Core.Helpers
                     numberVariables["axis"] = axis;
                     bm.SetOtherObjectVariables(numberVariables);
 
-                    float value = RTMath.Parse(evaluation, numberVariables);
+                    float value = RTMath.Parse(evaluation, RTLevel.Current?.evaluationContext, numberVariables);
 
                     transformable.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
                 }
@@ -10263,7 +10281,7 @@ namespace BetterLegacy.Core.Helpers
                     };
                     bm.SetOtherObjectVariables(numberVariables);
 
-                    float value = RTMath.Parse(evaluation, numberVariables);
+                    float value = RTMath.Parse(evaluation, RTLevel.Current?.evaluationContext, numberVariables);
 
                     transformable.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
                 }
@@ -10302,21 +10320,29 @@ namespace BetterLegacy.Core.Helpers
                 var time = modifierLoop.reference.GetParentRuntime().CurrentTime;
                 var numberVariables = evaluatable.GetObjectVariables();
                 ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
+                RTLevel.Current.evaluationContext.RegisterVariables(numberVariables);
 
-                var list = modifier.GetResultOrDefault(() =>
+                var cache = modifier.GetResultOrDefault(() =>
                 {
-                    var result = new List<BeatmapObject>();
+                    var cache = new CopyAxisGroupCache();
+                    cache.input = evaluation;
+                    cache.evaluator = MathEvaluation.CompileExpression("ResultFunction", evaluation);
 
                     for (int i = 3; i < modifier.values.Count; i += 8)
                     {
                         var group = modifier.GetValue(i + 1);
 
                         if (GameData.Current.TryFindObjectWithTag(modifier, prefabable, group, out BeatmapObject beatmapObject))
-                            result.Add(beatmapObject);
+                            cache.objs.Add(beatmapObject);
                     }
 
-                    return result;
+                    return cache;
                 });
+                if (cache.input != evaluation)
+                {
+                    cache.input = evaluation;
+                    cache.evaluator = MathEvaluation.CompileExpression("ResultFunction", evaluation);
+                }
 
                 int groupIndex = 0;
                 for (int i = 3; i < modifier.values.Count; i += 8)
@@ -10330,7 +10356,7 @@ namespace BetterLegacy.Core.Helpers
                     var max = modifier.GetFloat(i + 6, 0f, modifierLoop.variables);
                     var useVisual = modifier.GetBool(i + 7, false, modifierLoop.variables);
 
-                    var beatmapObject = list.GetAtOrDefault(groupIndex, null);
+                    var beatmapObject = cache.objs.GetAtOrDefault(groupIndex, null);
 
                     if (!beatmapObject)
                     {
@@ -10339,31 +10365,31 @@ namespace BetterLegacy.Core.Helpers
                     }
 
                     if (!useVisual && beatmapObject.cachedSequences)
-                        numberVariables[name] = fromType switch
+                        RTLevel.Current.evaluationContext.RegisterVariable(name, fromType switch
                         {
                             0 => Mathf.Clamp(beatmapObject.cachedSequences.PositionSequence.GetValue(time - beatmapObject.StartTime - delay).At(fromAxis), min, max),
                             1 => Mathf.Clamp(beatmapObject.cachedSequences.ScaleSequence.GetValue(time - beatmapObject.StartTime - delay).At(fromAxis), min, max),
                             2 => Mathf.Clamp(beatmapObject.cachedSequences.RotationSequence.GetValue(time - beatmapObject.StartTime - delay), min, max),
                             _ => 0f,
-                        };
-                    else if (useVisual && beatmapObject.runtimeObject is RTBeatmapObject levelObject && levelObject.visualObject && levelObject.visualObject.gameObject)
-                        numberVariables[name] = Mathf.Clamp(levelObject.visualObject.gameObject.transform.GetVector(fromType).At(fromAxis), min, max);
+                        });
+                    else if (useVisual && beatmapObject.runtimeObject is RTBeatmapObject runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject)
+                        RTLevel.Current.evaluationContext.RegisterVariable(name, Mathf.Clamp(runtimeObject.visualObject.gameObject.transform.GetVector(fromType).At(fromAxis), min, max));
                     else if (useVisual)
-                        numberVariables[name] = fromType switch
+                        RTLevel.Current.evaluationContext.RegisterVariable(name, fromType switch
                         {
                             0 => Mathf.Clamp(beatmapObject.InterpolateChainPosition().At(fromAxis), min, max),
                             1 => Mathf.Clamp(beatmapObject.InterpolateChainScale().At(fromAxis), min, max),
                             2 => Mathf.Clamp(beatmapObject.InterpolateChainRotation(), min, max),
                             _ => 0f,
-                        };
+                        });
 
                     if (fromType == 4)
-                        numberVariables[name] = Mathf.Clamp(beatmapObject.integerVariable, min, max);
+                        RTLevel.Current.evaluationContext.RegisterVariable(name, Mathf.Clamp(beatmapObject.integerVariable, min, max));
 
                     groupIndex++;
                 }
 
-                transformable.SetTransform(toType, toAxis, RTMath.Parse(evaluation, numberVariables));
+                transformable.SetTransform(toType, toAxis, (float)cache.evaluator.Invoke(RTLevel.Current.evaluationContext));
             }
             catch (Exception ex)
             {
@@ -11339,10 +11365,10 @@ namespace BetterLegacy.Core.Helpers
                         beatmapObject.SetObjectVariables(numberVariables);
                         ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
 
-                        var calcPos = new Vector3(RTMath.Parse(posXEvaluation, numberVariables), RTMath.Parse(posYEvaluation, numberVariables), RTMath.Parse(posZEvaluation, numberVariables));
-                        var calcSca = new Vector2(RTMath.Parse(scaXEvaluation, numberVariables), RTMath.Parse(scaYEvaluation, numberVariables));
-                        var calcRot = RTMath.Parse(rotEvaluation, numberVariables);
-                        var calcTime = RTMath.Parse(timeEvaluation, numberVariables);
+                        var calcPos = new Vector3(RTMath.Parse(posXEvaluation, RTLevel.Current?.evaluationContext, numberVariables), RTMath.Parse(posYEvaluation, RTLevel.Current?.evaluationContext, numberVariables), RTMath.Parse(posZEvaluation, RTLevel.Current?.evaluationContext, numberVariables));
+                        var calcSca = new Vector2(RTMath.Parse(scaXEvaluation, RTLevel.Current?.evaluationContext, numberVariables), RTMath.Parse(scaYEvaluation, RTLevel.Current?.evaluationContext, numberVariables));
+                        var calcRot = RTMath.Parse(rotEvaluation, RTLevel.Current?.evaluationContext, numberVariables);
+                        var calcTime = RTMath.Parse(timeEvaluation, RTLevel.Current?.evaluationContext, numberVariables);
 
                         var prefabObject = cache.spawned.GetAtOrDefault(index, null);
                         if (!prefabObject)
@@ -11447,10 +11473,10 @@ namespace BetterLegacy.Core.Helpers
                 beatmapObject.SetObjectVariables(numberVariables);
                 ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
 
-                var calcPos = new Vector3(RTMath.Parse(posXEvaluation, numberVariables), RTMath.Parse(posYEvaluation, numberVariables), RTMath.Parse(posZEvaluation, numberVariables));
-                var calcSca = new Vector2(RTMath.Parse(scaXEvaluation, numberVariables), RTMath.Parse(scaYEvaluation, numberVariables));
-                var calcRot = RTMath.Parse(rotEvaluation, numberVariables);
-                var calcTime = RTMath.Parse(timeEvaluation, numberVariables);
+                var calcPos = new Vector3(RTMath.Parse(posXEvaluation, RTLevel.Current?.evaluationContext, numberVariables), RTMath.Parse(posYEvaluation, RTLevel.Current?.evaluationContext, numberVariables), RTMath.Parse(posZEvaluation, RTLevel.Current?.evaluationContext, numberVariables));
+                var calcSca = new Vector2(RTMath.Parse(scaXEvaluation, RTLevel.Current?.evaluationContext, numberVariables), RTMath.Parse(scaYEvaluation, RTLevel.Current?.evaluationContext, numberVariables));
+                var calcRot = RTMath.Parse(rotEvaluation, RTLevel.Current?.evaluationContext, numberVariables);
+                var calcTime = RTMath.Parse(timeEvaluation, RTLevel.Current?.evaluationContext, numberVariables);
 
                 // enabled (string array based)
                 if (disabledArray != null && disabledArray.Contains(i.ToString()))
@@ -11541,10 +11567,10 @@ namespace BetterLegacy.Core.Helpers
                         beatmapObject.SetObjectVariables(numberVariables);
                         ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
 
-                        var calcPos = new Vector3(RTMath.Parse(posXEvaluation, numberVariables), RTMath.Parse(posYEvaluation, numberVariables), RTMath.Parse(posZEvaluation, numberVariables));
-                        var calcSca = new Vector2(RTMath.Parse(scaXEvaluation, numberVariables), RTMath.Parse(scaYEvaluation, numberVariables));
-                        var calcRot = RTMath.Parse(rotEvaluation, numberVariables);
-                        var calcTime = RTMath.Parse(timeEvaluation, numberVariables);
+                        var calcPos = new Vector3(RTMath.Parse(posXEvaluation, RTLevel.Current?.evaluationContext, numberVariables), RTMath.Parse(posYEvaluation, RTLevel.Current?.evaluationContext, numberVariables), RTMath.Parse(posZEvaluation, RTLevel.Current?.evaluationContext, numberVariables));
+                        var calcSca = new Vector2(RTMath.Parse(scaXEvaluation, RTLevel.Current?.evaluationContext, numberVariables), RTMath.Parse(scaYEvaluation, RTLevel.Current?.evaluationContext, numberVariables));
+                        var calcRot = RTMath.Parse(rotEvaluation, RTLevel.Current?.evaluationContext, numberVariables);
+                        var calcTime = RTMath.Parse(timeEvaluation, RTLevel.Current?.evaluationContext, numberVariables);
 
                         var prefabObject = spawned[index];
                         if (!prefabObject)
@@ -11681,7 +11707,7 @@ namespace BetterLegacy.Core.Helpers
                 var numberVariables = evaluatable.GetObjectVariables();
                 ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
 
-                time = RTMath.Parse(timeValue, numberVariables, evaluatable.GetObjectFunctions());
+                time = RTMath.Parse(timeValue, RTLevel.Current?.evaluationContext, numberVariables, evaluatable.GetObjectFunctions());
             }
 
             RTBeatmap.Current.hits.Add(new PlayerDataPoint(vector, time));
@@ -13311,7 +13337,7 @@ namespace BetterLegacy.Core.Helpers
             ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
             var functions = evaluatable.GetObjectFunctions();
 
-            return RTMath.Parse(modifier.GetValue(0, modifierLoop.variables), numberVariables, functions) == RTMath.Parse(modifier.GetValue(1, modifierLoop.variables), numberVariables, functions);
+            return RTMath.Parse(modifier.GetValue(0, modifierLoop.variables), RTLevel.Current?.evaluationContext, numberVariables, functions) == RTMath.Parse(modifier.GetValue(1, modifierLoop.variables), RTLevel.Current?.evaluationContext, numberVariables, functions);
         }
 
         public static bool mathLesserEquals(Modifier modifier, ModifierLoop modifierLoop)
@@ -13323,7 +13349,7 @@ namespace BetterLegacy.Core.Helpers
             ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
             var functions = evaluatable.GetObjectFunctions();
 
-            return RTMath.Parse(modifier.GetValue(0, modifierLoop.variables), numberVariables, functions) <= RTMath.Parse(modifier.GetValue(1, modifierLoop.variables), numberVariables, functions);
+            return RTMath.Parse(modifier.GetValue(0, modifierLoop.variables), RTLevel.Current?.evaluationContext, numberVariables, functions) <= RTMath.Parse(modifier.GetValue(1, modifierLoop.variables), RTLevel.Current?.evaluationContext, numberVariables, functions);
         }
 
         public static bool mathGreaterEquals(Modifier modifier, ModifierLoop modifierLoop)
@@ -13335,7 +13361,7 @@ namespace BetterLegacy.Core.Helpers
             ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
             var functions = evaluatable.GetObjectFunctions();
 
-            return RTMath.Parse(modifier.GetValue(0, modifierLoop.variables), numberVariables, functions) >= RTMath.Parse(modifier.GetValue(1, modifierLoop.variables), numberVariables, functions);
+            return RTMath.Parse(modifier.GetValue(0, modifierLoop.variables), RTLevel.Current?.evaluationContext, numberVariables, functions) >= RTMath.Parse(modifier.GetValue(1, modifierLoop.variables), RTLevel.Current?.evaluationContext, numberVariables, functions);
         }
 
         public static bool mathLesser(Modifier modifier, ModifierLoop modifierLoop)
@@ -13347,7 +13373,7 @@ namespace BetterLegacy.Core.Helpers
             ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
             var functions = evaluatable.GetObjectFunctions();
 
-            return RTMath.Parse(modifier.GetValue(0, modifierLoop.variables), numberVariables, functions) < RTMath.Parse(modifier.GetValue(1, modifierLoop.variables), numberVariables, functions);
+            return RTMath.Parse(modifier.GetValue(0, modifierLoop.variables), RTLevel.Current?.evaluationContext, numberVariables, functions) < RTMath.Parse(modifier.GetValue(1, modifierLoop.variables), RTLevel.Current?.evaluationContext, numberVariables, functions);
         }
 
         public static bool mathGreater(Modifier modifier, ModifierLoop modifierLoop)
@@ -13359,7 +13385,7 @@ namespace BetterLegacy.Core.Helpers
             ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
             var functions = evaluatable.GetObjectFunctions();
 
-            return RTMath.Parse(modifier.GetValue(0, modifierLoop.variables), numberVariables, functions) > RTMath.Parse(modifier.GetValue(1, modifierLoop.variables), numberVariables, functions);
+            return RTMath.Parse(modifier.GetValue(0, modifierLoop.variables), RTLevel.Current?.evaluationContext, numberVariables, functions) > RTMath.Parse(modifier.GetValue(1, modifierLoop.variables), RTLevel.Current?.evaluationContext, numberVariables, functions);
         }
 
         #endregion
@@ -14585,6 +14611,17 @@ namespace BetterLegacy.Core.Helpers
         /// Copies of the object.
         /// </summary>
         public List<BeatmapObject> copies;
+    }
+
+    public class MathCache
+    {
+        public string input;
+        public Evaluator evaluator;
+    }
+
+    public class CopyAxisGroupCache : MathCache
+    {
+        public List<BeatmapObject> objs = new List<BeatmapObject>();
     }
 
     #endregion
