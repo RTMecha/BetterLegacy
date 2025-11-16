@@ -351,6 +351,7 @@ namespace BetterLegacy.Editor.Managers
             if (EditorConfig.Instance.ShowFoldersInLevelList.Value && RTFile.GetDirectory(fullPath) != RTEditor.inst.BeatmapsPath || OpenLevelCollection)
             {
                 var gameObjectFolder = EditorManager.inst.folderButtonPrefab.Duplicate(OpenLevelPopup.Content, "back");
+                LevelPanel.baseRect.AssignToRectTransform(gameObjectFolder.transform.AsRT());
                 var folderButtonStorageFolder = gameObjectFolder.GetComponent<FunctionButtonStorage>();
                 var folderButtonFunctionFolder = gameObjectFolder.AddComponent<FolderButtonFunction>();
 

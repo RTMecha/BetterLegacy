@@ -2056,6 +2056,7 @@ namespace BetterLegacy.Editor.Managers
             if (!prefabExternalUpAFolderButton)
             {
                 prefabExternalUpAFolderButton = EditorManager.inst.folderButtonPrefab.Duplicate(PrefabEditor.inst.externalContent, "back");
+                PrefabPanel.externalBaseRect.AssignToRectTransform(prefabExternalUpAFolderButton.transform.AsRT());
                 var folderButtonStorageFolder = prefabExternalUpAFolderButton.GetComponent<FunctionButtonStorage>();
                 var folderButtonFunctionFolder = prefabExternalUpAFolderButton.AddComponent<FolderButtonFunction>();
 
@@ -2066,7 +2067,7 @@ namespace BetterLegacy.Editor.Managers
 
                 folderButtonStorageFolder.label.text = "< Up a folder";
 
-                folderButtonStorageFolder.button.onClick.ClearAll();
+                folderButtonStorageFolder.OnClick.ClearAll();
                 folderButtonFunctionFolder.onClick = eventData =>
                 {
                     if (eventData.button == PointerEventData.InputButton.Right)
