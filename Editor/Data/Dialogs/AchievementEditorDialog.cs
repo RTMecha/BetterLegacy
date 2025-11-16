@@ -158,7 +158,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             var selectIcon = EditorPrefabHolder.Instance.Function2Button.Duplicate(iconBase.transform, "select");
             SelectIconButton = selectIcon.GetComponent<FunctionButtonStorage>();
-            SelectIconButton.label.text = "Select Icon";
+            SelectIconButton.Text = "Select Icon";
             EditorThemeManager.AddSelectable(SelectIconButton.button, ThemeGroup.Function_2);
             EditorThemeManager.AddGraphic(SelectIconButton.label, ThemeGroup.Function_2_Text);
             RectValues.Default.AnchoredPosition(75f, 0f).SizeDelta(200f, 32f).AssignToRectTransform(selectIcon.transform.AsRT());
@@ -171,14 +171,14 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             var selectLockedIcon = EditorPrefabHolder.Instance.Function2Button.Duplicate(lockedIconBase.transform, "select");
             SelectLockedIconButton = selectLockedIcon.GetComponent<FunctionButtonStorage>();
-            SelectLockedIconButton.label.text = "Select Locked Icon";
+            SelectLockedIconButton.Text = "Select Locked Icon";
             EditorThemeManager.AddSelectable(SelectLockedIconButton.button, ThemeGroup.Function_2);
             EditorThemeManager.AddGraphic(SelectLockedIconButton.label, ThemeGroup.Function_2_Text);
             RectValues.Default.AnchoredPosition(75f, 20f).SizeDelta(200f, 32f).AssignToRectTransform(selectLockedIcon.transform.AsRT());
             
             var removeLockedIcon = EditorPrefabHolder.Instance.Function2Button.Duplicate(lockedIconBase.transform, "remove");
             RemoveLockedIconButton = removeLockedIcon.GetComponent<FunctionButtonStorage>();
-            RemoveLockedIconButton.label.text = "Remove Locked Icon";
+            RemoveLockedIconButton.Text = "Remove Locked Icon";
             EditorThemeManager.AddSelectable(RemoveLockedIconButton.button, ThemeGroup.Function_2);
             EditorThemeManager.AddGraphic(RemoveLockedIconButton.label, ThemeGroup.Function_2_Text);
             RectValues.Default.AnchoredPosition(75f, -20f).SizeDelta(200f, 32f).AssignToRectTransform(removeLockedIcon.transform.AsRT());
@@ -186,7 +186,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             new Labels(Labels.InitSettings.Default.Parent(LeftContent), new Label("Achievement hidden until unlocked") { horizontalWrap = HorizontalWrapMode.Overflow });
             var hidden = EditorPrefabHolder.Instance.ToggleButton.Duplicate(LeftContent, "hidden");
             HiddenToggle = hidden.GetComponent<ToggleButtonStorage>();
-            HiddenToggle.label.text = "Hidden";
+            HiddenToggle.Text = "Hidden";
             EditorThemeManager.AddToggle(HiddenToggle.toggle, graphic: HiddenToggle.label);
 
             new Labels(Labels.InitSettings.Default.Parent(LeftContent), "Hint");
@@ -198,7 +198,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             new Labels(Labels.InitSettings.Default.Parent(LeftContent), new Label("Unlocked state is shared everywhere") { horizontalWrap = HorizontalWrapMode.Overflow });
             var shared = EditorPrefabHolder.Instance.ToggleButton.Duplicate(LeftContent, "shared");
             SharedToggle = shared.GetComponent<ToggleButtonStorage>();
-            SharedToggle.label.text = "Shared";
+            SharedToggle.Text = "Shared";
             EditorThemeManager.AddToggle(SharedToggle.toggle, graphic: SharedToggle.label);
 
             new Labels(Labels.InitSettings.Default.Parent(LeftContent), new Label("Difficulty"));
@@ -211,7 +211,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             new Labels(Labels.InitSettings.Default.Parent(LeftContent), new Label("Show Achievement notification") { horizontalWrap = HorizontalWrapMode.Overflow });
             var preview = EditorPrefabHolder.Instance.Function2Button.Duplicate(LeftContent, "preview");
             PreviewButton = preview.GetComponent<FunctionButtonStorage>();
-            PreviewButton.label.text = "Preview";
+            PreviewButton.Text = "Preview";
             EditorThemeManager.AddSelectable(PreviewButton.button, ThemeGroup.Function_2);
             EditorThemeManager.AddGraphic(PreviewButton.label, ThemeGroup.Function_2_Text);
 

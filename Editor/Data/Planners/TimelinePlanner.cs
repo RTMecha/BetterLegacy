@@ -141,15 +141,14 @@ namespace BetterLegacy.Editor.Data.Planners
                 };
 
                 var delete = gameObject.transform.Find("delete").GetComponent<DeleteButtonStorage>();
-                delete.button.onClick.NewListener(() =>
+                delete.OnClick.NewListener(() =>
                 {
                     timelinePlanner.Levels.RemoveAt(index);
                     timelinePlanner.UpdateTimeline();
                     ProjectPlanner.inst.SaveTimelines();
                 });
 
-                EditorThemeManager.ApplyGraphic(delete.button.image, ThemeGroup.Delete, true);
-                EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
+                EditorThemeManager.ApplyDeleteButton(delete);
 
                 var edit = gameObject.transform.Find("edit").GetComponent<Button>();
                 edit.onClick.NewListener(() =>
@@ -219,15 +218,14 @@ namespace BetterLegacy.Editor.Data.Planners
             EditorThemeManager.ApplyGraphic(edit.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Function_2_Text);
 
             var delete = gameObject.transform.Find("delete").GetComponent<DeleteButtonStorage>();
-            delete.button.onClick.NewListener(() =>
+            delete.OnClick.NewListener(() =>
             {
                 ProjectPlanner.inst.timelines.RemoveAll(x => x is TimelinePlanner && x.ID == ID);
                 ProjectPlanner.inst.SaveTimelines();
                 CoreHelper.Destroy(gameObject);
             });
 
-            EditorThemeManager.ApplyGraphic(delete.button.image, ThemeGroup.Delete, true);
-            EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
+            EditorThemeManager.ApplyDeleteButton(delete);
 
             UpdateTimeline();
 

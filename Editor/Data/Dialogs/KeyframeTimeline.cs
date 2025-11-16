@@ -1469,22 +1469,22 @@ namespace BetterLegacy.Editor.Data.Dialogs
             dialog.JumpToLastButton.interactable = selected.Count() == 1 && firstKF.Index < events.Count - 1;
             dialog.JumpToLastButton.onClick.NewListener(() => SetCurrentKeyframe(animatable, events.Count - 1, true));
 
-            dialog.CopyButton.button.onClick.NewListener(() =>
+            dialog.CopyButton.OnClick.NewListener(() =>
             {
                 CopyData(firstKF.Type, firstKF.eventKeyframe);
                 EditorManager.inst.DisplayNotification("Copied keyframe data!", 2f, EditorManager.NotificationType.Success);
             });
 
-            dialog.PasteButton.button.onClick.NewListener(() => PasteKeyframeData(type, selected, animatable));
+            dialog.PasteButton.OnClick.NewListener(() => PasteKeyframeData(type, selected, animatable));
 
-            dialog.DeleteButton.button.onClick.NewListener(DeleteKeyframes(animatable).Start);
+            dialog.DeleteButton.OnClick.NewListener(DeleteKeyframes(animatable).Start);
 
             dialog.EventTimeField.eventTrigger.triggers.Clear();
             if (count == 1 && firstKF.Index != 0 || count > 1)
                 dialog.EventTimeField.eventTrigger.triggers.Add(TriggerHelper.ScrollDelta(dialog.EventTimeField.inputField));
 
-            dialog.EventTimeField.inputField.SetTextWithoutNotify(count == 1 ? firstKF.Time.ToString() : "1");
-            dialog.EventTimeField.inputField.onValueChanged.NewListener(_val =>
+            dialog.EventTimeField.SetTextWithoutNotify(count == 1 ? firstKF.Time.ToString() : "1");
+            dialog.EventTimeField.OnValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num) && !draggingKeyframes && selected.Count() == 1)
                 {

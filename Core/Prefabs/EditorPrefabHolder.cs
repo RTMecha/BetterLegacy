@@ -115,6 +115,12 @@ namespace BetterLegacy.Core.Prefabs
             set => label.text = value;
         }
 
+        public bool Interactable
+        {
+            get => toggle.interactable;
+            set => toggle.interactable = value;
+        }
+
         public void SetIsOnWithoutNotify(bool value) => toggle.SetIsOnWithoutNotify(value);
 
         public void Assign() => Assign(gameObject);
@@ -137,6 +143,24 @@ namespace BetterLegacy.Core.Prefabs
 
         [SerializeField]
         public Image image;
+
+        public Button.ButtonClickedEvent OnClick
+        {
+            get => button.onClick;
+            set => button.onClick = value;
+        }
+
+        public Sprite Sprite
+        {
+            get => image.sprite;
+            set => image.sprite = value;
+        }
+
+        public bool Interactable
+        {
+            get => button.interactable;
+            set => button.interactable = value;
+        }
 
         public void Assign(GameObject gameObject)
         {
@@ -173,6 +197,18 @@ namespace BetterLegacy.Core.Prefabs
             set => label.text = value;
         }
 
+        public bool Interactable
+        {
+            get => button.interactable;
+            set => button.interactable = value;
+        }
+
+        public Color Color
+        {
+            get => button.image.color;
+            set => button.image.color = value;
+        }
+
         public void Assign() => Assign(transform.GetChild(0));
 
         public void Assign(Transform labelTransform)
@@ -184,7 +220,7 @@ namespace BetterLegacy.Core.Prefabs
 
     public class SpriteFunctionButtonStorage : FunctionButtonStorage
     {
-        public Sprite Icon
+        public Sprite Sprite
         {
             get => image.sprite;
             set => image.sprite = value;

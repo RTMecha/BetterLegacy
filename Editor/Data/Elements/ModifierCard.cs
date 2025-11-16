@@ -94,14 +94,13 @@ namespace BetterLegacy.Editor.Data.Elements
                 EditorThemeManager.ApplyGraphic(collapse.transform.Find("dots").GetChild(i).GetComponent<Image>(), ThemeGroup.Dark_Text);
 
             var delete = gameObject.transform.Find("Label/Delete").GetComponent<DeleteButtonStorage>();
-            delete.button.onClick.NewListener(() => Delete(reference));
+            delete.OnClick.NewListener(() => Delete(reference));
 
             TooltipHelper.AssignTooltip(delete.gameObject, "Delete Modifier");
-            EditorThemeManager.ApplyGraphic(delete.button.image, ThemeGroup.Delete, true);
-            EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
+            EditorThemeManager.ApplyDeleteButton(delete);
 
             var copy = gameObject.transform.Find("Label/Copy").GetComponent<DeleteButtonStorage>();
-            copy.button.onClick.NewListener(() => Copy(reference));
+            copy.OnClick.NewListener(() => Copy(reference));
 
             TooltipHelper.AssignTooltip(copy.gameObject, "Copy Modifier");
             EditorThemeManager.ApplyGraphic(copy.button.image, ThemeGroup.Copy, true);
@@ -5563,10 +5562,10 @@ namespace BetterLegacy.Editor.Data.Elements
 
             var button = EditorPrefabHolder.Instance.DeleteButton.Duplicate(path.transform, "edit");
             var buttonStorage = button.GetComponent<DeleteButtonStorage>();
-            buttonStorage.image.sprite = EditorSprites.EditSprite;
+            buttonStorage.Sprite = EditorSprites.EditSprite;
             EditorThemeManager.ApplySelectable(buttonStorage.button, ThemeGroup.Function_2);
             EditorThemeManager.ApplyGraphic(buttonStorage.image, ThemeGroup.Function_2_Text);
-            buttonStorage.button.onClick.NewListener(() => RTTextEditor.inst.SetInputField(pathInputField));
+            buttonStorage.OnClick.NewListener(() => RTTextEditor.inst.SetInputField(pathInputField));
             RectValues.Default.AnchoredPosition(154f, 0f).SizeDelta(32f, 32f).AssignToRectTransform(buttonStorage.baseImage.rectTransform);
 
             return path;
@@ -5882,7 +5881,7 @@ namespace BetterLegacy.Editor.Data.Elements
             var deleteGroup = gameObject.transform.Find("Label/Delete").gameObject.Duplicate(parent, "delete");
             deleteGroup.GetComponent<LayoutElement>().ignoreLayout = false;
             var deleteGroupButton = deleteGroup.GetComponent<DeleteButtonStorage>();
-            deleteGroupButton.button.onClick.NewListener(() =>
+            deleteGroupButton.OnClick.NewListener(() =>
             {
                 onDelete?.Invoke();
 
@@ -5901,9 +5900,7 @@ namespace BetterLegacy.Editor.Data.Elements
                 });
                 Update(modifier, reference);
             });
-
-            EditorThemeManager.ApplyGraphic(deleteGroupButton.button.image, ThemeGroup.Delete, true);
-            EditorThemeManager.ApplyGraphic(deleteGroupButton.image, ThemeGroup.Delete_Text);
+            EditorThemeManager.ApplyDeleteButton(deleteGroupButton);
             return deleteGroup;
         }
 

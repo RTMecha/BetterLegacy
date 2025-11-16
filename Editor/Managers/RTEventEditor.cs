@@ -1662,10 +1662,8 @@ namespace BetterLegacy.Editor.Managers
 
             UIManager.SetRectTransform(snap.transform.AsRT(), new Vector2(8f, 0f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 0.5f), new Vector2(404f, 32f));
 
-            snapStorage.label.text = "Snap";
-
-            var button = snapStorage.button;
-            button.onClick.NewListener(() =>
+            snapStorage.Text = "Snap";
+            snapStorage.OnClick.NewListener(() =>
             {
                 foreach (var kf in SelectedKeyframes)
                 {
@@ -1710,10 +1708,8 @@ namespace BetterLegacy.Editor.Managers
 
             UIManager.SetRectTransform(alignToFirstObject.transform.AsRT(), new Vector2(8f, 0f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 0.5f), new Vector2(404f, 32f));
 
-            alignToFirstStorage.label.text = "Align";
-
-            var alignToFirst = alignToFirstStorage.button;
-            alignToFirst.onClick.NewListener(() =>
+            alignToFirstStorage.Text = "Align";
+            alignToFirstStorage.OnClick.NewListener(() =>
             {
                 var list = SelectedKeyframes.OrderBy(x => x.Time);
                 var first = list.ElementAt(0);
@@ -1761,10 +1757,8 @@ namespace BetterLegacy.Editor.Managers
 
             UIManager.SetRectTransform(pasteAllObject.transform.AsRT(), new Vector2(8f, 0f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 0.5f), new Vector2(404f, 32f));
 
-            pasteAllStorage.label.text = "Paste";
-
-            var pasteAll = pasteAllStorage.button;
-            pasteAll.onClick.NewListener(() =>
+            pasteAllStorage.Text = "Paste";
+            pasteAllStorage.OnClick.NewListener(() =>
             {
                 foreach (var keyframe in SelectedKeyframes)
                 {
@@ -1800,14 +1794,12 @@ namespace BetterLegacy.Editor.Managers
 
                 var copy = EditorPrefabHolder.Instance.Function1Button.Duplicate(edit, "copy", 5);
                 var copyStorage = copy.GetComponent<FunctionButtonStorage>();
-                var copyText = copyStorage.label;
-                copyText.text = "Copy";
+                copyStorage.Text = "Copy";
                 copy.transform.AsRT().sizeDelta = new Vector2(70f, 32f);
 
                 var paste = EditorPrefabHolder.Instance.Function1Button.Duplicate(edit, "paste", 6);
                 var pasteStorage = paste.GetComponent<FunctionButtonStorage>();
-                var pasteText = pasteStorage.label;
-                pasteText.text = "Paste";
+                pasteStorage.Text = "Paste";
                 paste.transform.AsRT().sizeDelta = new Vector2(70f, 32f);
 
                 EditorThemeManager.AddGraphic(copyStorage.button.image, ThemeGroup.Copy, true);
@@ -2173,13 +2165,13 @@ namespace BetterLegacy.Editor.Managers
                 EventEditor.inst.SetCurrentEvent(EventEditor.inst.currentEventType, events.IndexOf(events.Last()));
             });
 
-            dialog.DeleteButton.button.interactable = isNotFirst;
-            dialog.DeleteButton.button.onClick.NewListener(DeleteKeyframes().Start);
+            dialog.DeleteButton.Interactable = isNotFirst;
+            dialog.DeleteButton.OnClick.NewListener(DeleteKeyframes().Start);
 
             if (dialog.CopyButton && dialog.PasteButton)
             {
-                dialog.CopyButton.button.onClick.NewListener(() => CopyKeyframeData(CurrentSelectedTimelineKeyframe));
-                dialog.PasteButton.button.onClick.NewListener(() => PasteKeyframeData(EventEditor.inst.currentEventType));
+                dialog.CopyButton.OnClick.NewListener(() => CopyKeyframeData(CurrentSelectedTimelineKeyframe));
+                dialog.PasteButton.OnClick.NewListener(() => PasteKeyframeData(EventEditor.inst.currentEventType));
             }
 
             #endregion

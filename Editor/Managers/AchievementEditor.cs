@@ -304,7 +304,7 @@ namespace BetterLegacy.Editor.Managers
 
             var icon = achievement.icon ?? LegacyPlugin.AtanPlaceholder;
             Dialog.IconImage.sprite = icon;
-            Dialog.SelectIconButton.button.onClick.NewListener(() =>
+            Dialog.SelectIconButton.OnClick.NewListener(() =>
             {
                 EditorContextMenu.inst.ShowContextMenu(
                     new ButtonFunction($"Select Icon ({RTEditor.SYSTEM_BROWSER})", () =>
@@ -331,7 +331,7 @@ namespace BetterLegacy.Editor.Managers
                     }));
             });
             Dialog.LockedIconImage.sprite = achievement.lockedIcon ?? icon;
-            Dialog.SelectLockedIconButton.button.onClick.NewListener(() =>
+            Dialog.SelectLockedIconButton.OnClick.NewListener(() =>
             {
                 EditorContextMenu.inst.ShowContextMenu(
                     new ButtonFunction($"Select Icon ({RTEditor.SYSTEM_BROWSER})", () =>
@@ -357,24 +357,24 @@ namespace BetterLegacy.Editor.Managers
                         });
                     }));
             });
-            Dialog.RemoveLockedIconButton.button.onClick.NewListener(() =>
+            Dialog.RemoveLockedIconButton.OnClick.NewListener(() =>
             {
                 achievement.lockedIcon = null;
                 RenderDialog(achievement);
             });
 
-            Dialog.HiddenToggle.toggle.SetIsOnWithoutNotify(achievement.hidden);
-            Dialog.HiddenToggle.toggle.onValueChanged.NewListener(_val => achievement.hidden = _val);
+            Dialog.HiddenToggle.SetIsOnWithoutNotify(achievement.hidden);
+            Dialog.HiddenToggle.OnValueChanged.NewListener(_val => achievement.hidden = _val);
 
             Dialog.HintField.SetTextWithoutNotify(achievement.hint);
             Dialog.HintField.onValueChanged.NewListener(_val => achievement.hint = _val);
 
             RenderDifficulty(achievement);
 
-            Dialog.SharedToggle.toggle.SetIsOnWithoutNotify(achievement.shared);
-            Dialog.SharedToggle.toggle.onValueChanged.NewListener(_val => achievement.shared = _val);
+            Dialog.SharedToggle.SetIsOnWithoutNotify(achievement.shared);
+            Dialog.SharedToggle.OnValueChanged.NewListener(_val => achievement.shared = _val);
 
-            Dialog.PreviewButton.button.onClick.NewListener(DisplayAchievement);
+            Dialog.PreviewButton.OnClick.NewListener(DisplayAchievement);
         }
 
         /// <summary>
@@ -485,14 +485,13 @@ namespace BetterLegacy.Editor.Managers
                 };
 
                 var deleteButton = gameObject.transform.Find("delete").GetComponent<DeleteButtonStorage>();
-                deleteButton.button.onClick.NewListener(() => DeleteAchievement(achievement));
+                deleteButton.OnClick.NewListener(() => DeleteAchievement(achievement));
 
                 EditorThemeManager.ApplyGraphic(button.image, ThemeGroup.List_Button_2_Normal, true);
                 EditorThemeManager.ApplyGraphic(selected, ThemeGroup.List_Button_2_Text);
                 EditorThemeManager.ApplyGraphic(name, ThemeGroup.List_Button_2_Text);
 
-                EditorThemeManager.ApplyGraphic(deleteButton.baseImage, ThemeGroup.Delete, true);
-                EditorThemeManager.ApplyGraphic(deleteButton.image, ThemeGroup.Delete_Text);
+                EditorThemeManager.ApplyDeleteButton(deleteButton);
 
                 num++;
             }

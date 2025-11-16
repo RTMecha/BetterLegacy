@@ -133,7 +133,7 @@ namespace BetterLegacy.Editor.Data.Elements
             hoverUIFolder.animatePos = false;
             hoverUIFolder.animateSca = true;
 
-            folderButtonStorageFolder.button.onClick.ClearAll();
+            folderButtonStorageFolder.OnClick.ClearAll();
 
             GameObject = gameObjectFolder;
             Path = directory;
@@ -252,7 +252,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         convert.onClick.NewListener(() => RTThemeEditor.inst.ConvertTheme(beatmapTheme));
 
                         var delete = viewThemeStorage.deleteButton;
-                        delete.button.onClick.NewListener(() => RTThemeEditor.inst.DeleteTheme(this));
+                        delete.OnClick.NewListener(() => RTThemeEditor.inst.DeleteTheme(this));
 
                         EditorThemeManager.ApplyLightText(viewThemeStorage.baseColorsText);
                         EditorThemeManager.ApplyLightText(viewThemeStorage.playerColorsText);
@@ -264,8 +264,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         EditorThemeManager.ApplyLightText(viewThemeStorage.text);
                         EditorThemeManager.ApplySelectable(convert, ThemeGroup.Function_2);
                         EditorThemeManager.ApplyGraphic(convertStorage.label, ThemeGroup.Function_2_Text);
-                        EditorThemeManager.ApplyGraphic(delete.baseImage, ThemeGroup.Delete, true);
-                        EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
+                        EditorThemeManager.ApplyDeleteButton(delete);
 
                         button.onClick.ClearAll();
 

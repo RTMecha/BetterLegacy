@@ -2539,14 +2539,13 @@ namespace BetterLegacy.Editor.Managers
                 disableXImage.sprite = EditorSprites.CloseSprite;
                 RectValues.Default.AnchoredPosition(-170f, 0f).SizeDelta(32f, 32f).AssignToRectTransform(disableXImage.rectTransform);
                 var disableButtonStorage = disable.GetComponent<FunctionButtonStorage>();
-                disableButtonStorage.button.onClick.ClearAll();
-                disableButtonStorage.button.onClick.AddListener(() =>
+                disableButtonStorage.OnClick.NewListener(() =>
                 {
                     disableX.gameObject.SetActive(true);
                     currentMultiColorSelection = -1;
                     UpdateMultiColorButtons();
                 });
-                disableButtonStorage.label.text = "Don't set color";
+                disableButtonStorage.Text = "Don't set color";
                 EditorThemeManager.AddGraphic(disableXImage, ThemeGroup.Function_2_Text);
                 EditorThemeManager.AddGraphic(disableButtonStorage.label, ThemeGroup.Function_2_Text);
                 EditorThemeManager.AddSelectable(disableButtonStorage.button, ThemeGroup.Function_2);
@@ -2614,14 +2613,13 @@ namespace BetterLegacy.Editor.Managers
                 disableGradientXImage.sprite = EditorSprites.CloseSprite;
                 RectValues.Default.AnchoredPosition(-170f, 0f).SizeDelta(32f, 32f).AssignToRectTransform(disableGradientXImage.rectTransform);
                 var disableGradientButtonStorage = disableGradient.GetComponent<FunctionButtonStorage>();
-                disableGradientButtonStorage.button.onClick.ClearAll();
-                disableGradientButtonStorage.button.onClick.AddListener(() =>
+                disableGradientButtonStorage.OnClick.NewListener(() =>
                 {
                     disableGradientX.gameObject.SetActive(true);
                     currentMultiGradientColorSelection = -1;
                     UpdateMultiColorButtons();
                 });
-                disableGradientButtonStorage.label.text = "Don't set color";
+                disableGradientButtonStorage.Text = "Don't set color";
                 EditorThemeManager.AddGraphic(disableGradientXImage, ThemeGroup.Function_2_Text);
                 EditorThemeManager.AddGraphic(disableGradientButtonStorage.label, ThemeGroup.Function_2_Text);
                 EditorThemeManager.AddSelectable(disableGradientButtonStorage.button, ThemeGroup.Function_2);
@@ -3646,10 +3644,10 @@ namespace BetterLegacy.Editor.Managers
                         {
                             var button = EditorPrefabHolder.Instance.DeleteButton.Duplicate(textIF.transform, "edit");
                             var buttonStorage = button.GetComponent<DeleteButtonStorage>();
-                            buttonStorage.image.sprite = EditorSprites.EditSprite;
+                            buttonStorage.Sprite = EditorSprites.EditSprite;
                             EditorThemeManager.ApplySelectable(buttonStorage.button, ThemeGroup.Function_2);
                             EditorThemeManager.ApplyGraphic(buttonStorage.image, ThemeGroup.Function_2_Text);
-                            buttonStorage.button.onClick.NewListener(() => RTTextEditor.inst.SetInputField(textIF));
+                            buttonStorage.OnClick.NewListener(() => RTTextEditor.inst.SetInputField(textIF));
                             UIManager.SetRectTransform(buttonStorage.baseImage.rectTransform, new Vector2(160f, 24f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(22f, 22f));
                             EditorHelper.SetComplexity(button, Complexity.Advanced);
                         }
@@ -3657,7 +3655,7 @@ namespace BetterLegacy.Editor.Managers
                         {
                             var button = textIF.transform.Find("edit").gameObject;
                             var buttonStorage = button.GetComponent<DeleteButtonStorage>();
-                            buttonStorage.button.onClick.NewListener(() => RTTextEditor.inst.SetInputField(textIF));
+                            buttonStorage.OnClick.NewListener(() => RTTextEditor.inst.SetInputField(textIF));
                         }
 
                         break;
@@ -4038,8 +4036,8 @@ namespace BetterLegacy.Editor.Managers
             setColorButton.transform.AsRT().sizeDelta = new Vector2(66f, 32f);
             setColorButton.GetComponent<LayoutElement>().minWidth = 32f;
 
-            setColorButtonStorage.label.text = buttonLabel;
-            setColorButtonStorage.button.onClick.NewListener(() => setColor?.Invoke(inputField));
+            setColorButtonStorage.Text = buttonLabel;
+            setColorButtonStorage.OnClick.NewListener(() => setColor?.Invoke(inputField));
 
             EditorThemeManager.AddGraphic(setColorButtonStorage.button.image, ThemeGroup.Function_1, true);
             EditorThemeManager.AddGraphic(setColorButtonStorage.label, ThemeGroup.Function_1_Text);
@@ -4515,10 +4513,10 @@ namespace BetterLegacy.Editor.Managers
                 clickable.onClick = buttonFunction.OnClick;
             }
             else
-                buttonStorage.button.onClick.NewListener(() => buttonFunction.Action?.Invoke());
+                buttonStorage.OnClick.NewListener(() => buttonFunction.Action?.Invoke());
 
             buttonStorage.label.fontSize = buttonFunction.FontSize;
-            buttonStorage.label.text = buttonFunction.Name;
+            buttonStorage.Text = buttonFunction.Name;
 
             EditorThemeManager.AddGraphic(buttonStorage.button.image, buttonFunction.ButtonThemeGroup ?? buttonGroup, true);
             EditorThemeManager.AddGraphic(buttonStorage.label, buttonFunction.LabelThemeGroup ?? labelGroup);

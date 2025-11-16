@@ -266,15 +266,14 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.ApplyInputField(input);
 
                 var deleteStorage = gameObject.transform.Find("Delete").GetComponent<DeleteButtonStorage>();
-                deleteStorage.button.onClick.NewListener(() =>
+                deleteStorage.OnClick.NewListener(() =>
                 {
                     MarkerEditor.inst.markerColors.RemoveAt(index);
                     RenderMarkerColors();
                     RTEditor.inst.SaveGlobalSettings();
                 });
 
-                EditorThemeManager.ApplyGraphic(deleteStorage.baseImage, ThemeGroup.Delete);
-                EditorThemeManager.ApplyGraphic(deleteStorage.image, ThemeGroup.Delete_Text);
+                EditorThemeManager.ApplyDeleteButton(deleteStorage);
 
                 num++;
             }
@@ -317,15 +316,14 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.ApplyInputField(input);
 
                 var deleteStorage = gameObject.transform.Find("Delete").GetComponent<DeleteButtonStorage>();
-                deleteStorage.button.onClick.NewListener(() =>
+                deleteStorage.OnClick.NewListener(() =>
                 {
                     EditorManager.inst.layerColors.RemoveAt(index);
                     RenderLayerColors();
                     RTEditor.inst.SaveGlobalSettings();
                 });
 
-                EditorThemeManager.ApplyGraphic(deleteStorage.baseImage, ThemeGroup.Delete);
-                EditorThemeManager.ApplyGraphic(deleteStorage.image, ThemeGroup.Delete_Text);
+                EditorThemeManager.ApplyDeleteButton(deleteStorage);
 
                 num++;
             }

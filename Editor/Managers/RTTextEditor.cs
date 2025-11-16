@@ -77,8 +77,8 @@ namespace BetterLegacy.Editor.Managers
             Popup.EditorField.SetTextWithoutNotify(currentInputField.text);
             Popup.EditorField.onValueChanged.NewListener(SetText);
 
-            Popup.UpdateButton.label.text = "Update";
-            Popup.UpdateButton.button.onClick.NewListener(UpdateText);
+            Popup.UpdateButton.Text = "Update";
+            Popup.UpdateButton.OnClick.NewListener(UpdateText);
 
             Popup.AutoUpdateLabel.gameObject.SetActive(true);
             Popup.AutoUpdateToggle.gameObject.SetActive(true);
@@ -99,8 +99,8 @@ namespace BetterLegacy.Editor.Managers
             Popup.EditorField.SetTextWithoutNotify(val);
             Popup.EditorField.onValueChanged.NewListener(onValueChanged);
 
-            Popup.UpdateButton.label.text = updateLabel;
-            Popup.UpdateButton.button.onClick.NewListener(update);
+            Popup.UpdateButton.Text = updateLabel;
+            Popup.UpdateButton.OnClick.NewListener(update);
 
             Popup.AutoUpdateLabel.gameObject.SetActive(false);
             Popup.AutoUpdateToggle.gameObject.SetActive(false);

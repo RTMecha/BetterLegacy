@@ -1962,11 +1962,11 @@ namespace BetterLegacy.Editor.Managers
 
                 var toggle = EditorPrefabHolder.Instance.Function2Button.Duplicate(bar.transform, "not").GetComponent<FunctionButtonStorage>();
 
-                toggle.label.text = $"Not: {(visibility.not ? "Yes" : "No")}";
-                toggle.button.onClick.NewListener(() =>
+                toggle.Text = $"Not: {(visibility.not ? "Yes" : "No")}";
+                toggle.OnClick.NewListener(() =>
                 {
                     visibility.not = !visibility.not;
-                    toggle.label.text = $"Not: {(visibility.not ? "Yes" : "No")}";
+                    toggle.Text = $"Not: {(visibility.not ? "Yes" : "No")}";
                 });
                 EditorThemeManager.ApplySelectable(toggle.button, ThemeGroup.Function_2);
                 EditorThemeManager.ApplyGraphic(toggle.label, ThemeGroup.Function_2_Text);
@@ -2018,13 +2018,12 @@ namespace BetterLegacy.Editor.Managers
                 delete.GetComponent<LayoutElement>().ignoreLayout = false;
 
                 var deleteButton = delete.GetComponent<DeleteButtonStorage>();
-                deleteButton.button.onClick.NewListener(() =>
+                deleteButton.OnClick.NewListener(() =>
                 {
                     customObject.visibilitySettings.RemoveAt(index);
                     StartCoroutine(RefreshEditor());
                 });
-                EditorThemeManager.ApplyGraphic(deleteButton.baseImage, ThemeGroup.Delete, true);
-                EditorThemeManager.ApplyGraphic(deleteButton.image, ThemeGroup.Delete_Text);
+                EditorThemeManager.ApplyDeleteButton(deleteButton);
 
                 num++;
             }
@@ -2164,7 +2163,7 @@ namespace BetterLegacy.Editor.Managers
                 var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(model.transform, "Delete");
                 UIManager.SetRectTransform(delete.transform.AsRT(), new Vector2(280f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(32f, 32f));
                 var deleteStorage = delete.GetComponent<DeleteButtonStorage>();
-                deleteStorage.button.onClick.NewListener(() =>
+                deleteStorage.OnClick.NewListener(() =>
                 {
                     RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this Player Model?", () =>
                     {
@@ -2180,8 +2179,7 @@ namespace BetterLegacy.Editor.Managers
                     }, RTEditor.inst.HideWarningPopup);
                 });
 
-                EditorThemeManager.ApplyGraphic(deleteStorage.baseImage, ThemeGroup.Delete, true);
-                EditorThemeManager.ApplyGraphic(deleteStorage.image, ThemeGroup.Delete_Text);
+                EditorThemeManager.ApplyDeleteButton(deleteStorage);
 
                 num++;
             }
@@ -2232,12 +2230,11 @@ namespace BetterLegacy.Editor.Managers
                 var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(ModelsPopup.Content, customObject.name);
                 var folderButtonFunction = gameObject.AddComponent<FolderButtonFunction>();
                 var folderButtonStorage = gameObject.GetComponent<FunctionButtonStorage>();
-                folderButtonStorage.label.text = customObject.name;
+                folderButtonStorage.Text = customObject.name;
                 EditorThemeManager.ApplySelectable(folderButtonStorage.button, ThemeGroup.List_Button_1);
                 EditorThemeManager.ApplyLightText(folderButtonStorage.label);
 
-                var button = gameObject.GetComponent<Button>();
-                button.onClick.ClearAll();
+                folderButtonStorage.OnClick.ClearAll();
                 folderButtonFunction.onClick = eventData =>
                 {
                     if (eventData.button == PointerEventData.InputButton.Right)
@@ -2313,7 +2310,7 @@ namespace BetterLegacy.Editor.Managers
                 var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(gameObject.transform, "Delete");
                 UIManager.SetRectTransform(delete.transform.AsRT(), new Vector2(280f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(32f, 32f));
                 var deleteStorage = delete.GetComponent<DeleteButtonStorage>();
-                deleteStorage.button.onClick.NewListener(() =>
+                deleteStorage.OnClick.NewListener(() =>
                 {
                     RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this custom object?", () =>
                     {
@@ -2324,13 +2321,12 @@ namespace BetterLegacy.Editor.Managers
                         RTEditor.inst.HideWarningPopup();
                     }, RTEditor.inst.HideWarningPopup);
                 });
-                EditorThemeManager.ApplyGraphic(deleteStorage.baseImage, ThemeGroup.Delete, true);
-                EditorThemeManager.ApplyGraphic(deleteStorage.image, ThemeGroup.Delete_Text);
+                EditorThemeManager.ApplyDeleteButton(deleteStorage);
 
                 var duplicate = EditorPrefabHolder.Instance.Function1Button.Duplicate(gameObject.transform, "Duplicate");
                 UIManager.SetRectTransform(duplicate.transform.AsRT(), new Vector2(180f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(120f, 32f));
                 var duplicateStorage = duplicate.GetComponent<FunctionButtonStorage>();
-                duplicateStorage.button.onClick.NewListener(() =>
+                duplicateStorage.OnClick.NewListener(() =>
                 {
                     var duplicateObject = customObject.Copy();
                     while (currentModel.customObjects.Has(x => x.id == duplicateObject.id)) // Ensure ID is not in list.
@@ -2346,7 +2342,7 @@ namespace BetterLegacy.Editor.Managers
                     PlayerManager.UpdatePlayerModels();
                 });
 
-                duplicateStorage.label.text = "Duplicate";
+                duplicateStorage.Text = "Duplicate";
 
                 EditorThemeManager.ApplyGraphic(duplicateStorage.button.image, ThemeGroup.Paste, true);
                 EditorThemeManager.ApplyGraphic(duplicateStorage.label, ThemeGroup.Paste_Text);

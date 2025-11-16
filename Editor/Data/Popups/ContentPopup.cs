@@ -268,11 +268,11 @@ namespace BetterLegacy.Editor.Data.Popups
         {
             var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(Content, "anim");
             var storage = gameObject.GetComponent<FunctionButtonStorage>();
-            storage.button.onClick.ClearAll();
+            storage.OnClick.ClearAll();
             var contextClickable = gameObject.GetOrAddComponent<ContextClickable>();
             contextClickable.onClick = onClick;
 
-            storage.label.text = name;
+            storage.Text = name;
 
             EditorThemeManager.ApplySelectable(storage.button, ThemeGroup.List_Button_1);
             EditorThemeManager.ApplyLightText(storage.label);
@@ -290,12 +290,12 @@ namespace BetterLegacy.Editor.Data.Popups
         {
             var gameObject = EditorManager.inst.spriteFolderButtonPrefab.Duplicate(Content, "anim");
             var storage = gameObject.GetComponent<SpriteFunctionButtonStorage>();
-            storage.button.onClick.ClearAll();
+            storage.OnClick.ClearAll();
             var contextClickable = gameObject.GetOrAddComponent<ContextClickable>();
             contextClickable.onClick = onClick;
 
-            storage.image.sprite = sprite;
-            storage.label.text = name;
+            storage.Sprite = sprite;
+            storage.Text = name;
 
             EditorThemeManager.ApplyGraphic(storage.image, ThemeGroup.Light_Text);
             EditorThemeManager.ApplySelectable(storage.button, ThemeGroup.List_Button_1);

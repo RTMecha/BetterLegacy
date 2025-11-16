@@ -479,7 +479,7 @@ namespace BetterLegacy.Editor.Managers
             RenderPrefabObjectType(prefab);
             RenderPrefabObjectDefault(prefabObject, prefab);
 
-            PrefabObjectEditor.SavePrefabButton.button.onClick.NewListener(() =>
+            PrefabObjectEditor.SavePrefabButton.OnClick.NewListener(() =>
             {
                 RTEditor.inst.PrefabPopups.Open();
                 RTEditor.inst.PrefabPopups.GameObject.transform.GetChild(0).gameObject.SetActive(false);
@@ -494,7 +494,7 @@ namespace BetterLegacy.Editor.Managers
             });
 
             if (ModCompatibility.UnityExplorerInstalled && PrefabObjectEditor.InspectPrefab)
-                PrefabObjectEditor.InspectPrefab.button.onClick.NewListener(() => ModCompatibility.Inspect(prefab));
+                PrefabObjectEditor.InspectPrefab.OnClick.NewListener(() => ModCompatibility.Inspect(prefab));
 
             RenderPrefabObjectInfo(prefab);
 
@@ -863,13 +863,13 @@ namespace BetterLegacy.Editor.Managers
         
         public void RenderPrefabObjectInstanceData(PrefabObject prefabObject)
         {
-            PrefabObjectEditor.CopyInstanceDataButton.button.onClick.NewListener(() =>
+            PrefabObjectEditor.CopyInstanceDataButton.OnClick.NewListener(() =>
             {
                 copiedInstanceData = prefabObject.Copy();
                 EditorManager.inst.DisplayNotification($"Copied Prefab instance data.", 2f, EditorManager.NotificationType.Success);
                 RenderPrefabObjectInstanceData(prefabObject);
             });
-            PrefabObjectEditor.PasteInstanceDataButton.button.onClick.NewListener(() =>
+            PrefabObjectEditor.PasteInstanceDataButton.OnClick.NewListener(() =>
             {
                 if (!copiedInstanceData)
                 {
@@ -883,7 +883,7 @@ namespace BetterLegacy.Editor.Managers
                 EditorManager.inst.DisplayNotification($"Pasted Prefab instance data.", 2f, EditorManager.NotificationType.Success);
             });
             PrefabObjectEditor.RemoveInstanceDataButton.gameObject.SetActive(copiedInstanceData);
-            PrefabObjectEditor.RemoveInstanceDataButton.button.onClick.NewListener(() =>
+            PrefabObjectEditor.RemoveInstanceDataButton.OnClick.NewListener(() =>
             {
                 copiedInstanceData = null;
                 EditorManager.inst.DisplayNotification($"Removed copied Prefab instance data.", 2f, EditorManager.NotificationType.Success);
@@ -1174,9 +1174,9 @@ namespace BetterLegacy.Editor.Managers
             if (!RTEditor.ShowModdedUI)
                 return;
 
-            PrefabObjectEditor.InspectPrefabObject.button.onClick.NewListener(() => ModCompatibility.Inspect(prefabObject));
-            PrefabObjectEditor.InspectRuntimeObjectButton.button.onClick.NewListener(() => ModCompatibility.Inspect(prefabObject.runtimeObject));
-            PrefabObjectEditor.InspectTimelineObject.button.onClick.NewListener(() => ModCompatibility.Inspect(EditorTimeline.inst.GetTimelineObject(prefabObject)));
+            PrefabObjectEditor.InspectPrefabObject.OnClick.NewListener(() => ModCompatibility.Inspect(prefabObject));
+            PrefabObjectEditor.InspectRuntimeObjectButton.OnClick.NewListener(() => ModCompatibility.Inspect(prefabObject.runtimeObject));
+            PrefabObjectEditor.InspectTimelineObject.OnClick.NewListener(() => ModCompatibility.Inspect(EditorTimeline.inst.GetTimelineObject(prefabObject)));
         }
         
         public void RenderPrefabObjectOffset(PrefabObject prefabObject, Prefab prefab)
@@ -1240,10 +1240,9 @@ namespace BetterLegacy.Editor.Managers
         public void RenderPrefabObjectType(Prefab prefab)
         {
             var prefabType = prefab.GetPrefabType();
-            PrefabObjectEditor.PrefabTypeSelectorButton.button.image.color = prefabType.color;
-            PrefabObjectEditor.PrefabTypeSelectorButton.label.text = prefabType.name;
-
-            PrefabObjectEditor.PrefabTypeSelectorButton.button.onClick.NewListener(() =>
+            PrefabObjectEditor.PrefabTypeSelectorButton.Color = prefabType.color;
+            PrefabObjectEditor.PrefabTypeSelectorButton.Text = prefabType.name;
+            PrefabObjectEditor.PrefabTypeSelectorButton.OnClick.NewListener(() =>
             {
                 OpenPrefabTypePopup(prefab.typeID, id =>
                 {
@@ -1258,8 +1257,8 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderPrefabObjectDefault(PrefabObject prefabObject, Prefab prefab)
         {
-            PrefabObjectEditor.DefaultInstanceDataButton.label.text = prefab.defaultInstanceData ? "Remove" : "Set as Default";
-            PrefabObjectEditor.DefaultInstanceDataButton.button.onClick.NewListener(() =>
+            PrefabObjectEditor.DefaultInstanceDataButton.Text = prefab.defaultInstanceData ? "Remove" : "Set as Default";
+            PrefabObjectEditor.DefaultInstanceDataButton.OnClick.NewListener(() =>
             {
                 prefab.defaultInstanceData = prefab.defaultInstanceData ? null : prefabObject.Copy();
                 EditorManager.inst.DisplayNotification($"Set the currently selected Prefab Object's data as the default for this Prefab.", 4f, EditorManager.NotificationType.Success);
@@ -1922,10 +1921,10 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.AddInputField(color);
 
                 var deleteStorage = gameObject.transform.Find("Delete").GetComponent<DeleteButtonStorage>();
-                deleteStorage.button.onClick.ClearAll();
-                deleteStorage.button.interactable = !prefabType.isDefault;
+                deleteStorage.OnClick.ClearAll();
+                deleteStorage.Interactable = !prefabType.isDefault;
                 if (!prefabType.isDefault)
-                    deleteStorage.button.onClick.AddListener(() =>
+                    deleteStorage.OnClick.AddListener(() =>
                     {
                         if (RTFile.FileExists(prefabType.filePath))
                             File.Delete(prefabType.filePath);
@@ -1936,15 +1935,14 @@ namespace BetterLegacy.Editor.Managers
                         SavePrefabTypes();
                     });
 
-                EditorThemeManager.ApplyGraphic(deleteStorage.baseImage, ThemeGroup.Delete, true);
-                EditorThemeManager.ApplyGraphic(deleteStorage.image, ThemeGroup.Delete_Text);
+                EditorThemeManager.ApplyDeleteButton(deleteStorage);
 
                 var setImageStorage = gameObject.transform.Find("Set Icon").GetComponent<FunctionButtonStorage>();
-                setImageStorage.button.onClick.ClearAll();
-                setImageStorage.button.interactable = !prefabType.isDefault;
+                setImageStorage.OnClick.ClearAll();
+                setImageStorage.Interactable = !prefabType.isDefault;
 
                 if (!prefabType.isDefault)
-                    setImageStorage.button.onClick.AddListener(() =>
+                    setImageStorage.OnClick.AddListener(() =>
                     {
                         RTEditor.inst.BrowserPopup.Open();
                         RTFileBrowser.inst.UpdateBrowserFile(new string[] { FileFormat.PNG.Dot() }, onSelectFile: _val =>
@@ -1957,7 +1955,7 @@ namespace BetterLegacy.Editor.Managers
                         });
                     });
 
-                setImageStorage.label.text = "Set Icon";
+                setImageStorage.Text = "Set Icon";
 
                 EditorThemeManager.ApplyGraphic(setImageStorage.button.image, ThemeGroup.Function_1, true);
                 EditorThemeManager.ApplyGraphic(setImageStorage.label, ThemeGroup.Function_1_Text);
@@ -2065,7 +2063,7 @@ namespace BetterLegacy.Editor.Managers
                 hoverUIFolder.animatePos = false;
                 hoverUIFolder.animateSca = true;
 
-                folderButtonStorageFolder.label.text = "< Up a folder";
+                folderButtonStorageFolder.Text = "< Up a folder";
 
                 folderButtonStorageFolder.OnClick.ClearAll();
                 folderButtonFunctionFolder.onClick = eventData =>
@@ -2196,9 +2194,9 @@ namespace BetterLegacy.Editor.Managers
             var prefabType = prefab.GetPrefabType();
             var isExternal = prefabPanel.IsExternal;
 
-            PrefabEditorDialog.TypeButton.label.text = prefabType.name + " [ Click to Open Prefab Type Editor ]";
-            PrefabEditorDialog.TypeButton.button.image.color = prefabType.color;
-            PrefabEditorDialog.TypeButton.button.onClick.NewListener(() =>
+            PrefabEditorDialog.TypeButton.Text = prefabType.name + " [ Click to Open Prefab Type Editor ]";
+            PrefabEditorDialog.TypeButton.Color = prefabType.color;
+            PrefabEditorDialog.TypeButton.OnClick.NewListener(() =>
             {
                 OpenPrefabTypePopup(prefab.typeID, id =>
                 {
@@ -2206,8 +2204,8 @@ namespace BetterLegacy.Editor.Managers
                     prefab.typeID = id;
 
                     var prefabType = prefab.GetPrefabType();
-                    PrefabEditorDialog.TypeButton.label.text = prefabType.name + " [ Click to Open Prefab Type Editor ]";
-                    PrefabEditorDialog.TypeButton.button.image.color = prefabType.color;
+                    PrefabEditorDialog.TypeButton.Text = prefabType.name + " [ Click to Open Prefab Type Editor ]";
+                    PrefabEditorDialog.TypeButton.Color = prefabType.color;
 
                     UpdatePrefabFile(prefabPanel);
                     prefabPanel.RenderPrefabType(prefabType);
@@ -2312,10 +2310,10 @@ namespace BetterLegacy.Editor.Managers
             });
 
             PrefabEditorDialog.ImportPrefabButton.gameObject.SetActive(isExternal);
-            PrefabEditorDialog.ImportPrefabButton.button.onClick.NewListener(() => { if (isExternal) ImportPrefabIntoLevel(prefab); });
+            PrefabEditorDialog.ImportPrefabButton.OnClick.NewListener(() => { if (isExternal) ImportPrefabIntoLevel(prefab); });
 
             PrefabEditorDialog.ConvertPrefabButton.gameObject.SetActive(isExternal);
-            PrefabEditorDialog.ConvertPrefabButton.button.onClick.NewListener(() => { if (isExternal) ConvertPrefab(prefab); });
+            PrefabEditorDialog.ConvertPrefabButton.OnClick.NewListener(() => { if (isExternal) ConvertPrefab(prefab); });
 
             EditorServerManager.inst.RenderTagDialog(prefab, PrefabEditorDialog, EditorServerManager.DefaultTagRelation.Prefab);
             EditorServerManager.inst.RenderServerDialog(
@@ -2720,7 +2718,7 @@ namespace BetterLegacy.Editor.Managers
             TriggerHelper.AddEventTriggers(PrefabCreatorDialog.OffsetField.gameObject, TriggerHelper.ScrollDelta(PrefabCreatorDialog.OffsetField));
 
             RenderPrefabCreatorTypeSelector(NewPrefabTypeID);
-            PrefabCreatorDialog.TypeButton.button.onClick.NewListener(() =>
+            PrefabCreatorDialog.TypeButton.OnClick.NewListener(() =>
             {
                 OpenPrefabTypePopup(NewPrefabTypeID, id =>
                 {
@@ -2799,8 +2797,8 @@ namespace BetterLegacy.Editor.Managers
         {
             if (prefabTypes.TryFind(x => x.id == id, out PrefabType prefabType))
             {
-                PrefabCreatorDialog.TypeButton.label.text = prefabType.name + " [ Click to Open Prefab Type Editor ]";
-                PrefabCreatorDialog.TypeButton.button.image.color = prefabType.color;
+                PrefabCreatorDialog.TypeButton.Text = prefabType.name + " [ Click to Open Prefab Type Editor ]";
+                PrefabCreatorDialog.TypeButton.Color = prefabType.color;
             }
         }
         

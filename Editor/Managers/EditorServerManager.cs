@@ -721,7 +721,7 @@ namespace BetterLegacy.Editor.Managers
                 };
 
                 var deleteStorage = gameObject.transform.Find("Delete").GetComponent<DeleteButtonStorage>();
-                deleteStorage.button.onClick.NewListener(() =>
+                deleteStorage.OnClick.NewListener(() =>
                 {
                     var oldUploader = uploadable.Uploaders[index];
                     uploadable.Uploaders.RemoveAt(index);
@@ -748,8 +748,7 @@ namespace BetterLegacy.Editor.Managers
 
                 EditorThemeManager.ApplyInputField(input);
 
-                EditorThemeManager.ApplyGraphic(deleteStorage.baseImage, ThemeGroup.Delete, true);
-                EditorThemeManager.ApplyGraphic(deleteStorage.image, ThemeGroup.Delete_Text);
+                EditorThemeManager.ApplyDeleteButton(deleteStorage);
             }
 
             var add = EditorPrefabHolder.Instance.CreateAddButton(dialog.CollaboratorsContent);
@@ -1142,7 +1141,7 @@ namespace BetterLegacy.Editor.Managers
                 };
 
                 var deleteStorage = gameObject.transform.Find("Delete").GetComponent<DeleteButtonStorage>();
-                deleteStorage.button.onClick.NewListener(() =>
+                deleteStorage.OnClick.NewListener(() =>
                 {
                     var oldTag = uploadable.ArcadeTags[index];
                     uploadable.ArcadeTags.RemoveAt(index);
@@ -1164,8 +1163,7 @@ namespace BetterLegacy.Editor.Managers
 
                 EditorThemeManager.ApplyGraphic(gameObject.GetComponent<Image>(), ThemeGroup.Input_Field, true);
                 EditorThemeManager.ApplyInputField(input);
-                EditorThemeManager.ApplyGraphic(deleteStorage.baseImage, ThemeGroup.Delete, true);
-                EditorThemeManager.ApplyGraphic(deleteStorage.image, ThemeGroup.Delete_Text);
+                EditorThemeManager.ApplyDeleteButton(deleteStorage);
             }
 
             var add = EditorPrefabHolder.Instance.CreateAddButton(dialog.TagsContent);
@@ -1314,7 +1312,7 @@ namespace BetterLegacy.Editor.Managers
                         var folderButtonStorage = gameObject.GetComponent<FunctionButtonStorage>();
                         var folderButtonFunction = gameObject.AddComponent<FolderButtonFunction>();
 
-                        folderButtonStorage.label.text =
+                        folderButtonStorage.Text =
                             $"<b>Name</b>: {name}\n" +
                             $"<b>Song</b>: {artist} - {title}\n" +
                             $"<b>Description</b>:\n{description}";
@@ -1326,7 +1324,7 @@ namespace BetterLegacy.Editor.Managers
                         //folderButtonStorage.text.verticalOverflow = verticalOverflow;
                         //folderButtonStorage.text.fontSize = fontSize;
 
-                        folderButtonStorage.button.onClick.ClearAll();
+                        folderButtonStorage.OnClick.ClearAll();
                         folderButtonFunction.onClick = pointerEventData =>
                         {
                             if (pointerEventData.button == PointerEventData.InputButton.Right)
@@ -1530,7 +1528,7 @@ namespace BetterLegacy.Editor.Managers
                         var folderButtonStorage = gameObject.GetComponent<FunctionButtonStorage>();
                         var folderButtonFunction = gameObject.AddComponent<FolderButtonFunction>();
 
-                        folderButtonStorage.label.text =
+                        folderButtonStorage.Text =
                             $"<b>Name</b>: {name}\n" +
                             $"<b>Description</b>:\n{description}";
                         RectValues.FullAnchored.AnchorMin(0.15f, 0f).SizeDelta(-32f, -8f).AssignToRectTransform(folderButtonStorage.label.rectTransform);
@@ -1541,7 +1539,7 @@ namespace BetterLegacy.Editor.Managers
                         //folderButtonStorage.text.verticalOverflow = verticalOverflow;
                         //folderButtonStorage.text.fontSize = fontSize;
 
-                        folderButtonStorage.button.onClick.ClearAll();
+                        folderButtonStorage.OnClick.ClearAll();
                         folderButtonFunction.onClick = pointerEventData =>
                         {
                             if (pointerEventData.button == PointerEventData.InputButton.Right)
@@ -1759,7 +1757,7 @@ namespace BetterLegacy.Editor.Managers
                         //folderButtonStorage.text.verticalOverflow = verticalOverflow;
                         //folderButtonStorage.text.fontSize = fontSize;
 
-                        folderButtonStorage.button.onClick.ClearAll();
+                        folderButtonStorage.OnClick.ClearAll();
                         folderButtonFunction.onClick = pointerEventData =>
                         {
                             if (pointerEventData.button == PointerEventData.InputButton.Right)
@@ -2046,7 +2044,7 @@ namespace BetterLegacy.Editor.Managers
                         var folderButtonStorage = gameObject.GetComponent<FunctionButtonStorage>();
                         var folderButtonFunction = gameObject.AddComponent<FolderButtonFunction>();
 
-                        folderButtonStorage.label.text =
+                        folderButtonStorage.Text =
                             $"<b>ID</b>: {id}\n" +
                             $"<b>Display Name</b>: {displayName}";
                         RectValues.FullAnchored.SizeDelta(-32f, -8f).AssignToRectTransform(folderButtonStorage.label.rectTransform);
@@ -2057,7 +2055,7 @@ namespace BetterLegacy.Editor.Managers
                         //folderButtonStorage.text.verticalOverflow = verticalOverflow;
                         //folderButtonStorage.text.fontSize = fontSize;
 
-                        folderButtonStorage.button.onClick.ClearAll();
+                        folderButtonStorage.OnClick.ClearAll();
                         folderButtonFunction.onClick = pointerEventData =>
                         {
                             onSelect?.Invoke(new ServerUser

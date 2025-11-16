@@ -371,14 +371,13 @@ namespace BetterLegacy.Editor.Managers
                 var deleteButtonStorage = delete.GetComponent<DeleteButtonStorage>();
                 delete.GetComponent<LayoutElement>().ignoreLayout = false;
 
-                deleteButtonStorage.button.onClick.NewListener(() =>
+                deleteButtonStorage.OnClick.NewListener(() =>
                 {
                     marker.layers.RemoveAt(index);
                     RenderLayers(marker);
                 });
 
-                EditorThemeManager.ApplyGraphic(deleteButtonStorage.baseImage, ThemeGroup.Delete, true);
-                EditorThemeManager.ApplyGraphic(deleteButtonStorage.image, ThemeGroup.Delete_Text);
+                EditorThemeManager.ApplyDeleteButton(deleteButtonStorage);
 
                 var layout = numberField.GetComponent<HorizontalLayoutGroup>();
                 layout.spacing = 4f;
@@ -437,11 +436,8 @@ namespace BetterLegacy.Editor.Managers
                 var delete = EditorPrefabHolder.Instance.Function1Button.Duplicate(parent, "delete markers");
                 var deleteStorage = delete.GetComponent<FunctionButtonStorage>();
 
-                var deleteText = deleteStorage.label;
-                deleteText.text = "Delete Markers";
-
-                var deleteButton = deleteStorage.button;
-                deleteButton.onClick.NewListener(ClearMarkers);
+                deleteStorage.Text = "Delete Markers";
+                deleteStorage.OnClick.NewListener(ClearMarkers);
 
                 var hover = delete.GetComponent<HoverUI>();
                 if (hover)
@@ -454,8 +450,8 @@ namespace BetterLegacy.Editor.Managers
                     tt.tooltipLangauges.Add(TooltipHelper.NewTooltip("Delete all markers.", "Clicking this will delete every marker in the level.", new List<string>()));
                 }
 
-                EditorThemeManager.ApplyGraphic(deleteButton.image, ThemeGroup.Delete);
-                EditorThemeManager.ApplyGraphic(deleteText, ThemeGroup.Delete_Text);
+                EditorThemeManager.ApplyGraphic(deleteStorage.button.image, ThemeGroup.Delete);
+                EditorThemeManager.ApplyGraphic(deleteStorage.label, ThemeGroup.Delete_Text);
             }
 
             int num = 0;

@@ -520,7 +520,7 @@ namespace BetterLegacy.Editor.Managers
             
             var add = EditorPrefabHolder.Instance.CreateAddButton(Dialog.KeysContent, "Add Key");
             add.Text = "Add new Key";
-            add.button.onClick.NewListener(() =>
+            add.OnClick.NewListener(() =>
             {
                 var key = new Keybind.Key(Keybind.Key.Type.Down, KeyCode.None);
                 keybind.keys.Add(key);
@@ -554,7 +554,7 @@ namespace BetterLegacy.Editor.Managers
 
                 EditorThemeManager.ApplyDropdown(type);
 
-                watch.button.onClick.NewListener(() =>
+                watch.OnClick.NewListener(() =>
                 {
                     RTEditor.inst.selectingKey = true;
                     RTEditor.inst.setKey = keyCode =>
@@ -592,7 +592,7 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.ApplyDropdown(code);
 
                 var delete = gameObject.transform.Find("Delete").GetComponent<DeleteButtonStorage>();
-                delete.button.onClick.NewListener(() =>
+                delete.OnClick.NewListener(() =>
                 {
                     keybind.keys.RemoveAt(index);
                     RenderPopupIfOpen();
@@ -600,8 +600,7 @@ namespace BetterLegacy.Editor.Managers
                     Save();
                 });
 
-                EditorThemeManager.ApplyGraphic(delete.button.image, ThemeGroup.Delete, true);
-                EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
+                EditorThemeManager.ApplyDeleteButton(delete);
 
                 num++;
             }
@@ -925,7 +924,7 @@ namespace BetterLegacy.Editor.Managers
 
                 var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(gameObject.transform, "Delete").GetComponent<DeleteButtonStorage>();
                 RectValues.LeftAnchored.AnchoredPosition(580f, 0f).Pivot(1f, 1f).SizeDelta(32f, 32f).AssignToRectTransform(delete.transform.AsRT());
-                delete.button.onClick.NewListener(() => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this keybind? You cannot undo this.", () =>
+                delete.OnClick.NewListener(() => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this keybind? You cannot undo this.", () =>
                 {
                     if (!CurrentProfile)
                     {
@@ -942,8 +941,7 @@ namespace BetterLegacy.Editor.Managers
 
                 EditorThemeManager.ApplySelectable(storage.button, ThemeGroup.List_Button_1);
                 EditorThemeManager.ApplyLightText(storage.label);
-                EditorThemeManager.ApplyGraphic(delete.baseImage, ThemeGroup.Delete, true);
-                EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
+                EditorThemeManager.ApplyDeleteButton(delete);
 
                 num++;
             }
@@ -1109,7 +1107,7 @@ namespace BetterLegacy.Editor.Managers
 
                 var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(gameObject.transform, "Delete").GetComponent<DeleteButtonStorage>();
                 RectValues.LeftAnchored.AnchoredPosition(580f, 0f).Pivot(1f, 1f).SizeDelta(32f, 32f).AssignToRectTransform(delete.transform.AsRT());
-                delete.button.onClick.NewListener(() => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this keybind? You cannot undo this.", () =>
+                delete.OnClick.NewListener(() => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this keybind? You cannot undo this.", () =>
                 {
                     if (profiles.Count == 1)
                     {
@@ -1127,8 +1125,7 @@ namespace BetterLegacy.Editor.Managers
 
                 EditorThemeManager.ApplySelectable(storage.button, ThemeGroup.List_Button_1);
                 EditorThemeManager.ApplyLightText(storage.label);
-                EditorThemeManager.ApplyGraphic(delete.baseImage, ThemeGroup.Delete, true);
-                EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
+                EditorThemeManager.ApplyDeleteButton(delete);
 
                 num++;
             }

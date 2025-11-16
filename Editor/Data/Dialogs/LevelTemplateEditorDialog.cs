@@ -87,8 +87,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var createLevelTemplateButton = EditorPrefabHolder.Instance.Function2Button.Duplicate(gameObject.transform, "create");
             RectValues.Default.AnchoredPosition(200f, 42f).SizeDelta(322f, 32f).AssignToRectTransform(createLevelTemplateButton.transform.AsRT());
             CreateNewTemplateButton = createLevelTemplateButton.GetComponent<FunctionButtonStorage>();
-            CreateNewTemplateButton.label.text = "Create a new template";
-            CreateNewTemplateButton.button.onClick.NewListener(() =>
+            CreateNewTemplateButton.Text = "Create a new template";
+            CreateNewTemplateButton.OnClick.NewListener(() =>
             {
                 LevelTemplateEditor.inst.choosingLevelTemplate = true;
                 EditorLevelManager.inst.OpenLevelPopup.Open();
@@ -118,8 +118,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var choosePreviewButton = EditorPrefabHolder.Instance.Function2Button.Duplicate(gameObject3.transform, "choose");
             RectValues.Default.AnchoredPosition(200f, 42f).SizeDelta(322f, 32f).AssignToRectTransform(choosePreviewButton.transform.AsRT());
             ChoosePreviewButton = choosePreviewButton.GetComponent<FunctionButtonStorage>();
-            ChoosePreviewButton.label.text = "Select a preview";
-            ChoosePreviewButton.button.onClick.NewListener(() =>
+            ChoosePreviewButton.Text = "Select a preview";
+            ChoosePreviewButton.OnClick.NewListener(() =>
             {
                 RTEditor.inst.ShowWarningPopup("Select a file browser.", () =>
                 {

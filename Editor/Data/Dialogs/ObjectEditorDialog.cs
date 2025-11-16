@@ -685,7 +685,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     // Inspect Beatmap Object
                     var inspectBeatmapObject = EditorPrefabHolder.Instance.Function2Button.Duplicate(Content, "inspectbeatmapobject", index + 1);
                     var inspectBeatmapObjectButton = inspectBeatmapObject.GetComponent<FunctionButtonStorage>();
-                    inspectBeatmapObjectButton.label.text = "Inspect Beatmap Object";
+                    inspectBeatmapObjectButton.Text = "Inspect Beatmap Object";
 
                     EditorThemeManager.AddSelectable(inspectBeatmapObjectButton.button, ThemeGroup.Function_2);
                     EditorThemeManager.AddGraphic(inspectBeatmapObjectButton.label, ThemeGroup.Function_2_Text);
@@ -693,7 +693,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     // Inspect Level Object
                     var inspectLevelObject = EditorPrefabHolder.Instance.Function2Button.Duplicate(Content, "inspectlevelobject", index + 2);
                     var inspectLevelObjectButton = inspectLevelObject.GetComponent<FunctionButtonStorage>();
-                    inspectLevelObjectButton.label.text = "Inspect Runtime Object";
+                    inspectLevelObjectButton.Text = "Inspect Runtime Object";
 
                     EditorThemeManager.AddSelectable(inspectLevelObjectButton.button, ThemeGroup.Function_2);
                     EditorThemeManager.AddGraphic(inspectLevelObjectButton.label, ThemeGroup.Function_2_Text);
@@ -701,7 +701,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     // Inspect Timeline Object
                     var inspectTimelineObject = EditorPrefabHolder.Instance.Function2Button.Duplicate(Content, "inspecttimelineobject", index + 3);
                     var inspectTimelineObjectButton = inspectTimelineObject.GetComponent<FunctionButtonStorage>();
-                    inspectTimelineObjectButton.label.text = "Inspect Timeline Object";
+                    inspectTimelineObjectButton.Text = "Inspect Timeline Object";
 
                     EditorThemeManager.AddSelectable(inspectTimelineObjectButton.button, ThemeGroup.Function_2);
                     EditorThemeManager.AddGraphic(inspectTimelineObjectButton.label, ThemeGroup.Function_2_Text);
@@ -1219,7 +1219,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 var curvesApply = EditorPrefabHolder.Instance.Function1Button.Duplicate(curveBase.transform, "apply");
                 curvesApply.transform.AsRT().sizeDelta = new Vector2(132f, 38f);
                 var curvesApplyFunctionButton = curvesApply.GetComponent<FunctionButtonStorage>();
-                curvesApplyFunctionButton.label.text = "Apply Curves";
+                curvesApplyFunctionButton.Text = "Apply Curves";
                 EditorThemeManager.AddGraphic(curvesApplyFunctionButton.button.image, ThemeGroup.Function_1, true);
                 EditorThemeManager.AddGraphic(curvesApplyFunctionButton.label, ThemeGroup.Function_1_Text);
 
@@ -1911,13 +1911,13 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             var assignPrefab = EditorPrefabHolder.Instance.Function2Button.Duplicate(Content, "assign prefab", siblingIndex + 4);
             AssignPrefabButton = assignPrefab.GetOrAddComponent<FunctionButtonStorage>();
-            AssignPrefabButton.label.text = "Assign";
+            AssignPrefabButton.Text = "Assign";
             EditorThemeManager.AddSelectable(AssignPrefabButton.button, ThemeGroup.Function_2);
             EditorThemeManager.AddGraphic(AssignPrefabButton.label, ThemeGroup.Function_2_Text);
 
             var removePrefab = EditorPrefabHolder.Instance.Function2Button.Duplicate(Content, "remove prefab", siblingIndex + 5);
             RemovePrefabButton = removePrefab.GetOrAddComponent<FunctionButtonStorage>();
-            RemovePrefabButton.label.text = "Remove";
+            RemovePrefabButton.Text = "Remove";
             EditorThemeManager.AddSelectable(RemovePrefabButton.button, ThemeGroup.Function_2);
             EditorThemeManager.AddGraphic(RemovePrefabButton.label, ThemeGroup.Function_2_Text);
 
@@ -2380,10 +2380,10 @@ namespace BetterLegacy.Editor.Data.Dialogs
             {
                 var button = EditorPrefabHolder.Instance.DeleteButton.Duplicate(textIF.transform, "edit");
                 var buttonStorage = button.GetComponent<DeleteButtonStorage>();
-                buttonStorage.image.sprite = EditorSprites.EditSprite;
+                buttonStorage.Sprite = EditorSprites.EditSprite;
                 EditorThemeManager.ApplySelectable(buttonStorage.button, ThemeGroup.Function_2);
                 EditorThemeManager.ApplyGraphic(buttonStorage.image, ThemeGroup.Function_2_Text);
-                buttonStorage.button.onClick.NewListener(() => RTTextEditor.inst.SetInputField(textIF));
+                buttonStorage.OnClick.NewListener(() => RTTextEditor.inst.SetInputField(textIF));
                 UIManager.SetRectTransform(buttonStorage.baseImage.rectTransform, new Vector2(160f, 24f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(22f, 22f));
                 EditorHelper.SetComplexity(button, Complexity.Advanced);
             }

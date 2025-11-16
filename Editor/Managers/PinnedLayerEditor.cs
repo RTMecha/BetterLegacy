@@ -238,7 +238,7 @@ namespace BetterLegacy.Editor.Managers
                 var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(gameObject.transform, "Delete");
                 UIManager.SetRectTransform(delete.transform.AsRT(), new Vector2(280f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(32f, 32f));
                 var deleteStorage = delete.GetComponent<DeleteButtonStorage>();
-                deleteStorage.button.onClick.NewListener(() =>
+                deleteStorage.OnClick.NewListener(() =>
                 {
                     RTEditor.inst.editorInfo.pinnedEditorLayers.RemoveAt(index);
                     CurrentPinnedEditorLayer = null;
@@ -250,8 +250,7 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
                 EditorThemeManager.ApplyLightText(text);
                 EditorThemeManager.ApplyGraphic(image, ThemeGroup.Null, true);
-                EditorThemeManager.ApplyGraphic(deleteStorage.baseImage, ThemeGroup.Delete, true);
-                EditorThemeManager.ApplyGraphic(deleteStorage.image, ThemeGroup.Delete_Text);
+                EditorThemeManager.ApplyDeleteButton(deleteStorage);
 
                 TooltipHelper.AddHoverTooltip(gameObject, $"<#{RTColors.ColorToHexOptional(color)}>{pinnedEditorLayer.name}</color>", pinnedEditorLayer.desc, clear: true);
                 num++;

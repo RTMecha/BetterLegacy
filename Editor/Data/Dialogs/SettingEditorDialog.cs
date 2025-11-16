@@ -247,8 +247,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
             analyzeBPM.transform.AsRT().sizeDelta = new Vector2(140f, 32f);
 
             AnalyzeBPMButton = analyzeBPM.GetComponent<FunctionButtonStorage>();
-            AnalyzeBPMButton.label.text = "Analyze BPM";
-            AnalyzeBPMButton.button.onClick.NewListener(() =>
+            AnalyzeBPMButton.Text = "Analyze BPM";
+            AnalyzeBPMButton.OnClick.NewListener(() =>
             {
                 CoroutineHelper.StartCoroutineAsync(UniBpmAnalyzer.IAnalyzeBPM(AudioManager.inst.CurrentAudioSource.clip, bpm =>
                 {

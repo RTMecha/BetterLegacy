@@ -210,8 +210,8 @@ namespace BetterLegacy.Editor.Managers
 
                 TooltipHelper.AssignTooltip(gameObject, $"Object Modifier - {name}");
 
-                spriteFunctionButton.label.text = name;
-                spriteFunctionButton.button.onClick.NewListener(() =>
+                spriteFunctionButton.Text = name;
+                spriteFunctionButton.OnClick.NewListener(() =>
                 {
                     var name = defaultModifier.Name;
 
@@ -288,8 +288,8 @@ namespace BetterLegacy.Editor.Managers
             pasteModifier = EditorPrefabHolder.Instance.Function1Button.Duplicate(content, "paste modifier");
             pasteModifier.transform.AsRT().sizeDelta = new Vector2(350f, 32f);
             var buttonStorage = pasteModifier.GetComponent<FunctionButtonStorage>();
-            buttonStorage.label.text = "Paste";
-            buttonStorage.button.onClick.NewListener(() =>
+            buttonStorage.Text = "Paste";
+            buttonStorage.OnClick.NewListener(() =>
             {
                 modifyable.Modifiers.AddRange(copiedModifiers.Select(x => x.Copy()));
                 modifyable.UpdateFunctions();

@@ -90,8 +90,8 @@ namespace BetterLegacy.Editor.Data.Popups
             AutoUpdateToggle.onValueChanged.NewListener(_val => RTTextEditor.inst.autoUpdate = _val);
 
             var update = EditorPrefabHolder.Instance.Function2Button.Duplicate(updateLayout.transform, "update").GetComponent<FunctionButtonStorage>();
-            update.label.text = "Update";
-            update.button.onClick.NewListener(RTTextEditor.inst.UpdateText);
+            update.Text = "Update";
+            update.OnClick.NewListener(RTTextEditor.inst.UpdateText);
             RectValues.Default.AnchoredPosition(-192f, 0f).SizeDelta(100f, 32f).AssignToRectTransform(update.transform.AsRT());
             UpdateButton = update;
 

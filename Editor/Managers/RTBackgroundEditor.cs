@@ -1164,7 +1164,7 @@ namespace BetterLegacy.Editor.Managers
             bool fromPrefab = !string.IsNullOrEmpty(backgroundObject.prefabID);
             Dialog.CollapsePrefabLabel.SetActive(fromPrefab);
             Dialog.CollapsePrefabButton.gameObject.SetActive(fromPrefab);
-            Dialog.CollapsePrefabButton.button.onClick.ClearAll();
+            Dialog.CollapsePrefabButton.OnClick.ClearAll();
 
             var collapsePrefabContextMenu = Dialog.CollapsePrefabButton.button.gameObject.GetOrAddComponent<ContextClickable>();
             collapsePrefabContextMenu.onClick = null;
@@ -1193,13 +1193,13 @@ namespace BetterLegacy.Editor.Managers
                     );
             };
 
-            Dialog.AssignPrefabButton.button.onClick.NewListener(() =>
+            Dialog.AssignPrefabButton.OnClick.NewListener(() =>
             {
                 RTEditor.inst.selectingMultiple = false;
                 RTEditor.inst.prefabPickerEnabled = true;
             });
 
-            Dialog.RemovePrefabButton.button.onClick.NewListener(() =>
+            Dialog.RemovePrefabButton.OnClick.NewListener(() =>
             {
                 backgroundObject.RemovePrefabReference();
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(backgroundObject));

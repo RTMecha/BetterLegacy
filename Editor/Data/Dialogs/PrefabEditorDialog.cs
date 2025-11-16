@@ -131,7 +131,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var prefabType = EditorPrefabHolder.Instance.Function1Button.Duplicate(Content, "Show Type Editor");
             RectValues.Default.SizeDelta(742f, 34f).AssignToRectTransform(prefabType.transform.AsRT());
             TypeButton = prefabType.GetComponent<FunctionButtonStorage>();
-            TypeButton.button.onClick.ClearAll();
+            TypeButton.OnClick.ClearAll();
 
             prefabType.AddComponent<ContrastColors>().Init(TypeButton.label, TypeButton.button.image);
 
@@ -190,7 +190,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             new RectValues(new Vector2(240f, -62f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(150f, 32f)).AssignToRectTransform(selectIcon.transform.AsRT());
             var selectIconStorage = selectIcon.GetComponent<FunctionButtonStorage>();
             SelectIconButton = selectIconStorage.button;
-            selectIconStorage.label.text = "Browse";
+            selectIconStorage.Text = "Browse";
 
             EditorThemeManager.AddSelectable(SelectIconButton, ThemeGroup.Function_2);
             EditorThemeManager.AddGraphic(selectIconStorage.label, ThemeGroup.Function_2_Text);
@@ -302,7 +302,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             var upload = EditorPrefabHolder.Instance.Function1Button.Duplicate(serverButtons.transform, "upload");
             var uploadStorage = upload.GetComponent<FunctionButtonStorage>();
-            uploadStorage.label.text = "Upload";
+            uploadStorage.Text = "Upload";
             UploadButton = uploadStorage.button;
             UploadButtonText = uploadStorage.label;
             UploadContextMenu = upload.GetOrAddComponent<ContextClickable>();
@@ -311,7 +311,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             var pull = EditorPrefabHolder.Instance.Function1Button.Duplicate(serverButtons.transform, "pull");
             var pullStorage = pull.GetComponent<FunctionButtonStorage>();
-            pullStorage.label.text = "Pull";
+            pullStorage.Text = "Pull";
             PullButton = pullStorage.button;
             PullContextMenu = pull.GetOrAddComponent<ContextClickable>();
             EditorThemeManager.AddGraphic(pullStorage.button.image, ThemeGroup.Function_1, true);
@@ -319,7 +319,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             var delete = EditorPrefabHolder.Instance.Function1Button.Duplicate(serverButtons.transform, "delete");
             var deleteStorage = delete.GetComponent<FunctionButtonStorage>();
-            deleteStorage.label.text = "Delete";
+            deleteStorage.Text = "Delete";
             DeleteButton = deleteStorage.button;
             DeleteContextMenu = delete.GetOrAddComponent<ContextClickable>();
             EditorThemeManager.AddGraphic(deleteStorage.button.image, ThemeGroup.Delete, true);

@@ -194,7 +194,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             new RectValues(new Vector2(240f, -62f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(150f, 32f)).AssignToRectTransform(selectIcon.transform.AsRT());
             var selectIconStorage = selectIcon.GetComponent<FunctionButtonStorage>();
             SelectIconButton = selectIconStorage.button;
-            selectIconStorage.label.text = "Browse";
+            selectIconStorage.Text = "Browse";
 
             EditorThemeManager.AddSelectable(SelectIconButton, ThemeGroup.Function_2);
             EditorThemeManager.AddGraphic(selectIconStorage.label, ThemeGroup.Function_2_Text);
@@ -232,7 +232,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             submit.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
             var submitStorage = submit.GetComponent<FunctionButtonStorage>();
             SubmitButton = submitStorage.button;
-            submitStorage.label.text = "Submit";
+            submitStorage.Text = "Submit";
 
             EditorThemeManager.AddGraphic(submitStorage.button.image, ThemeGroup.Function_1, true);
             EditorThemeManager.AddGraphic(submitStorage.label, ThemeGroup.Function_1_Text);

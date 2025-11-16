@@ -133,15 +133,14 @@ namespace BetterLegacy.Editor.Data.Planners
             EditorThemeManager.ApplyToggle(ActiveUI);
 
             var delete = gameObject.transform.Find("panel/delete").GetComponent<DeleteButtonStorage>();
-            delete.button.onClick.NewListener(() =>
+            delete.OnClick.NewListener(() =>
             {
                 ProjectPlanner.inst.notes.RemoveAll(x => x is NotePlanner && x.ID == ID);
                 ProjectPlanner.inst.SaveNotes();
                 CoreHelper.Destroy(gameObject);
             });
 
-            EditorThemeManager.ApplyGraphic(delete.button.image, ThemeGroup.Delete, true);
-            EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
+            EditorThemeManager.ApplyDeleteButton(delete);
 
             var close = gameObject.transform.Find("panel/close").GetComponent<Button>();
             close.onClick.NewListener(() => ActiveUI.isOn = false);

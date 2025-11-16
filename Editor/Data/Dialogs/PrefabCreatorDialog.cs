@@ -79,7 +79,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             TypeButton = prefabType.GetComponent<FunctionButtonStorage>();
 
             UIManager.SetRectTransform(prefabType.transform.AsRT(), new Vector2(-370f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 0.5f), new Vector2(652f, 34f));
-            TypeButton.button.onClick.ClearAll();
+            TypeButton.OnClick.ClearAll();
 
             prefabType.AddComponent<ContrastColors>().Init(TypeButton.label, TypeButton.button.image);
             Content.Find("type").AsRT().sizeDelta = new Vector2(749f, 48f);
@@ -145,7 +145,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             new RectValues(new Vector2(240f, -62f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(150f, 32f)).AssignToRectTransform(selectIcon.transform.AsRT());
             var selectIconStorage = selectIcon.GetComponent<FunctionButtonStorage>();
             SelectIconButton = selectIconStorage.button;
-            selectIconStorage.label.text = "Browse";
+            selectIconStorage.Text = "Browse";
 
             EditorThemeManager.AddSelectable(SelectIconButton, ThemeGroup.Function_2);
             EditorThemeManager.AddGraphic(selectIconStorage.label, ThemeGroup.Function_2_Text);

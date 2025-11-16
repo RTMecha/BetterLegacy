@@ -602,7 +602,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var copyInstanceData = EditorPrefabHolder.Instance.Function1Button.Duplicate(LeftContent, "copy instance data");
             copyInstanceData.transform.AsRT().sizeDelta = new Vector2(356f, 32f);
             CopyInstanceDataButton = copyInstanceData.GetComponent<FunctionButtonStorage>();
-            CopyInstanceDataButton.label.text = "Copy Data";
+            CopyInstanceDataButton.Text = "Copy Data";
             EditorThemeManager.AddGraphic(CopyInstanceDataButton.button.image, ThemeGroup.Copy, true);
             EditorThemeManager.AddGraphic(CopyInstanceDataButton.label, ThemeGroup.Copy_Text);
             TooltipHelper.AssignTooltip(copyInstanceData, "Copy Prefab Instance Data");
@@ -610,7 +610,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var pasteInstanceData = EditorPrefabHolder.Instance.Function1Button.Duplicate(LeftContent, "paste instance data");
             pasteInstanceData.transform.AsRT().sizeDelta = new Vector2(356f, 32f);
             PasteInstanceDataButton = pasteInstanceData.GetComponent<FunctionButtonStorage>();
-            PasteInstanceDataButton.label.text = "Paste Data";
+            PasteInstanceDataButton.Text = "Paste Data";
             EditorThemeManager.AddGraphic(PasteInstanceDataButton.button.image, ThemeGroup.Paste, true);
             EditorThemeManager.AddGraphic(PasteInstanceDataButton.label, ThemeGroup.Paste_Text);
             TooltipHelper.AssignTooltip(pasteInstanceData, "Paste Prefab Instance Data");
@@ -618,7 +618,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var removeInstanceData = EditorPrefabHolder.Instance.Function1Button.Duplicate(LeftContent, "remove instance data");
             removeInstanceData.transform.AsRT().sizeDelta = new Vector2(356f, 32f);
             RemoveInstanceDataButton = removeInstanceData.GetComponent<FunctionButtonStorage>();
-            RemoveInstanceDataButton.label.text = "Remove Copied Data";
+            RemoveInstanceDataButton.Text = "Remove Copied Data";
             EditorThemeManager.AddGraphic(RemoveInstanceDataButton.button.image, ThemeGroup.Delete, true);
             EditorThemeManager.AddGraphic(RemoveInstanceDataButton.label, ThemeGroup.Delete_Text);
             TooltipHelper.AssignTooltip(removeInstanceData, "Remove Prefab Instance Data");
@@ -742,19 +742,19 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                 var inspectPrefabObject = EditorPrefabHolder.Instance.Function2Button.Duplicate(LeftContent, "inspect prefab object");
                 InspectPrefabObject = inspectPrefabObject.GetComponent<FunctionButtonStorage>();
-                InspectPrefabObject.label.text = "Inspect Prefab Object";
+                InspectPrefabObject.Text = "Inspect Prefab Object";
                 EditorThemeManager.AddSelectable(InspectPrefabObject.button, ThemeGroup.Function_2);
                 EditorThemeManager.AddGraphic(InspectPrefabObject.label, ThemeGroup.Function_2_Text);
 
                 var inspectRuntimeObject = EditorPrefabHolder.Instance.Function2Button.Duplicate(LeftContent, "inspect runtime object");
                 InspectRuntimeObjectButton = inspectRuntimeObject.GetComponent<FunctionButtonStorage>();
-                InspectRuntimeObjectButton.label.text = "Inspect Runtime Object";
+                InspectRuntimeObjectButton.Text = "Inspect Runtime Object";
                 EditorThemeManager.AddSelectable(InspectRuntimeObjectButton.button, ThemeGroup.Function_2);
                 EditorThemeManager.AddGraphic(InspectRuntimeObjectButton.label, ThemeGroup.Function_2_Text);
 
                 var inspectTimelineObject = EditorPrefabHolder.Instance.Function2Button.Duplicate(LeftContent, "inspect timeline object");
                 InspectTimelineObject = inspectTimelineObject.GetComponent<FunctionButtonStorage>();
-                InspectTimelineObject.label.text = "Inspect Timeline Object";
+                InspectTimelineObject.Text = "Inspect Timeline Object";
                 EditorThemeManager.AddSelectable(InspectTimelineObject.button, ThemeGroup.Function_2);
                 EditorThemeManager.AddGraphic(InspectTimelineObject.label, ThemeGroup.Function_2_Text);
             }
@@ -834,7 +834,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             var savePrefab = EditorPrefabHolder.Instance.Function2Button.Duplicate(Right, "save prefab");
             SavePrefabButton = savePrefab.GetComponent<FunctionButtonStorage>();
-            SavePrefabButton.label.text = "Save to a Prefab";
+            SavePrefabButton.Text = "Save to a Prefab";
 
             EditorHelper.SetComplexity(savePrefabLabel.GameObject, Complexity.Normal);
             EditorHelper.SetComplexity(savePrefab, Complexity.Normal);
@@ -849,7 +849,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             var defaultInstanceData = EditorPrefabHolder.Instance.Function2Button.Duplicate(Right, "default instance data");
             DefaultInstanceDataButton = defaultInstanceData.GetComponent<FunctionButtonStorage>();
-            DefaultInstanceDataButton.label.text = "Null";
+            DefaultInstanceDataButton.Text = "Null";
 
             EditorHelper.SetComplexity(defaultInstanceDataLabel.GameObject, Complexity.Advanced);
             EditorHelper.SetComplexity(defaultInstanceData, Complexity.Advanced);
@@ -866,7 +866,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                 var inspectPrefab = EditorPrefabHolder.Instance.Function2Button.Duplicate(Right, "inspect prefab");
                 InspectPrefab = inspectPrefab.GetComponent<FunctionButtonStorage>();
-                InspectPrefab.label.text = "Inspect Prefab";
+                InspectPrefab.Text = "Inspect Prefab";
 
                 EditorHelper.SetComplexity(inspectPrefabLabel.GameObject, Complexity.Advanced);
                 EditorHelper.SetComplexity(inspectPrefab, Complexity.Advanced);

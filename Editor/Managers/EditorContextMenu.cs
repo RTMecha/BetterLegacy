@@ -185,14 +185,13 @@ namespace BetterLegacy.Editor.Managers
                 var gameObject = EditorPrefabHolder.Instance.Function2Button.Duplicate(contextMenuLayout);
                 var buttonStorage = gameObject.GetComponent<FunctionButtonStorage>();
 
-                buttonStorage.button.onClick.ClearAll();
-                buttonStorage.button.onClick.AddListener(() =>
+                buttonStorage.OnClick.NewListener(() =>
                 {
                     contextMenu.SetActive(false);
                     buttonFunction.Action?.Invoke();
                 });
                 buttonStorage.label.alignment = TextAnchor.MiddleLeft;
-                buttonStorage.label.text = buttonFunction.Name;
+                buttonStorage.Text = buttonFunction.Name;
                 buttonStorage.label.rectTransform.sizeDelta = new Vector2(-12f, 0f);
 
                 if (!string.IsNullOrEmpty(buttonFunction.TooltipGroup))

@@ -360,13 +360,13 @@ namespace BetterLegacy.Editor.Managers
                 hoverUIFolder.animatePos = false;
                 hoverUIFolder.animateSca = true;
 
-                folderButtonStorageFolder.label.text = OpenLevelCollection ? "< Return" : "< Up a folder";
+                folderButtonStorageFolder.Text = OpenLevelCollection ? "< Return" : "< Up a folder";
 
                 folderButtonStorageFolder.label.horizontalOverflow = LevelPanel.labelHorizontalWrap;
                 folderButtonStorageFolder.label.verticalOverflow = LevelPanel.labelVerticalWrap;
                 folderButtonStorageFolder.label.fontSize = LevelPanel.labelFontSize;
 
-                folderButtonStorageFolder.button.onClick.ClearAll();
+                folderButtonStorageFolder.OnClick.ClearAll();
                 folderButtonFunctionFolder.onClick = eventData =>
                 {
                     if (eventData.button == PointerEventData.InputButton.Right)
@@ -530,6 +530,7 @@ namespace BetterLegacy.Editor.Managers
             if (EditorConfig.Instance.ShowFoldersInLevelList.Value && RTFile.GetDirectory(fullPath) != RTEditor.inst.BeatmapsPath)
             {
                 var gameObjectFolder = EditorManager.inst.folderButtonPrefab.Duplicate(LevelCollectionPopup.Content, "back");
+                LevelCollectionPanel.baseRect.AssignToRectTransform(gameObjectFolder.transform.AsRT());
                 var folderButtonStorageFolder = gameObjectFolder.GetComponent<FunctionButtonStorage>();
                 var folderButtonFunctionFolder = gameObjectFolder.AddComponent<FolderButtonFunction>();
 
@@ -538,13 +539,13 @@ namespace BetterLegacy.Editor.Managers
                 hoverUIFolder.animatePos = false;
                 hoverUIFolder.animateSca = true;
 
-                folderButtonStorageFolder.label.text = "< Up a folder";
+                folderButtonStorageFolder.Text = "< Up a folder";
 
                 folderButtonStorageFolder.label.horizontalOverflow = LevelPanel.labelHorizontalWrap;
                 folderButtonStorageFolder.label.verticalOverflow = LevelPanel.labelVerticalWrap;
                 folderButtonStorageFolder.label.fontSize = LevelPanel.labelFontSize;
 
-                folderButtonStorageFolder.button.onClick.ClearAll();
+                folderButtonStorageFolder.OnClick.ClearAll();
                 folderButtonFunctionFolder.onClick = eventData =>
                 {
                     if (eventData.button == PointerEventData.InputButton.Right)
@@ -1535,7 +1536,7 @@ namespace BetterLegacy.Editor.Managers
                 var path = RTFile.ReplaceSlash(file);
                 var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(RTEditor.inst.AutosavePopup.Content, $"Folder [{Path.GetFileName(file)}]");
                 var folderButtonStorage = gameObject.GetComponent<FunctionButtonStorage>();
-                folderButtonStorage.button.onClick.ClearAll();
+                folderButtonStorage.OnClick.ClearAll();
 
                 string tmpFile = path;
 
@@ -1591,14 +1592,14 @@ namespace BetterLegacy.Editor.Managers
                 hoverUI.animatePos = false;
                 hoverUI.animateSca = true;
 
-                folderButtonStorage.label.text = Path.GetFileName(file);
+                folderButtonStorage.Text = Path.GetFileName(file);
 
                 var backup = EditorPrefabHolder.Instance.Function1Button.Duplicate(gameObject.transform, "backup");
                 var backupHolder = backup.GetComponent<FunctionButtonStorage>();
                 backup.transform.localScale = Vector3.one;
                 UIManager.SetRectTransform(backup.transform.AsRT(), new Vector2(450f, 0f), new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(1f, 0.5f), new Vector2(80f, 28f));
-                backupHolder.label.text = "Backup";
-                backupHolder.button.onClick.NewListener(() =>
+                backupHolder.Text = "Backup";
+                backupHolder.OnClick.NewListener(() =>
                 {
                     var fi = new FileInfo(tmpFile);
 

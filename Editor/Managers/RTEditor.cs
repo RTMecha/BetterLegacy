@@ -966,7 +966,7 @@ namespace BetterLegacy.Editor.Managers
             prefabHolder.Function1Button = timelineBar.transform.Find("event").gameObject.Duplicate(prefabHolder.PrefabParent, "function 1 button");
             var functionButton1Storage = prefabHolder.Function1Button.AddComponent<FunctionButtonStorage>();
             functionButton1Storage.button = prefabHolder.Function1Button.GetComponent<Button>();
-            functionButton1Storage.button.onClick.ClearAll();
+            functionButton1Storage.OnClick.ClearAll();
             functionButton1Storage.label = prefabHolder.Function1Button.transform.GetChild(0).GetComponent<Text>();
 
             prefabHolder.ToggleButton = EditorManager.inst.GetDialog("Event Editor").Dialog.Find("data/right/grain/colored").gameObject.Duplicate(prefabHolder.PrefabParent, "toggle button");
@@ -5592,7 +5592,7 @@ namespace BetterLegacy.Editor.Managers
                 input.onValueChanged.NewListener(_val => modifyable.Tags[index] = _val);
 
                 var deleteStorage = gameObject.transform.Find("Delete").GetComponent<DeleteButtonStorage>();
-                deleteStorage.button.onClick.NewListener(() =>
+                deleteStorage.OnClick.NewListener(() =>
                 {
                     modifyable.Tags.RemoveAt(index);
                     RenderTags(modifyable, dialog);
@@ -5602,11 +5602,8 @@ namespace BetterLegacy.Editor.Managers
                 TriggerHelper.InversableField(input, InputFieldSwapper.Type.String);
 
                 EditorThemeManager.ApplyGraphic(gameObject.GetComponent<Image>(), ThemeGroup.Input_Field, true);
-
                 EditorThemeManager.ApplyInputField(input);
-
-                EditorThemeManager.ApplyGraphic(deleteStorage.baseImage, ThemeGroup.Delete, true);
-                EditorThemeManager.ApplyGraphic(deleteStorage.image, ThemeGroup.Delete_Text);
+                EditorThemeManager.ApplyDeleteButton(deleteStorage);
 
                 num++;
             }
@@ -5681,13 +5678,13 @@ namespace BetterLegacy.Editor.Managers
 
             if (string.IsNullOrEmpty(parent))
             {
-                dialog.ParentButton.button.interactable = false;
+                dialog.ParentButton.Interactable = false;
                 dialog.ParentMoreButton.interactable = false;
                 dialog.ParentSettingsParent.gameObject.SetActive(false);
-                dialog.ParentButton.label.text = "No Parent Object";
+                dialog.ParentButton.Text = "No Parent Object";
 
                 dialog.ParentInfo.tooltipLangauges[0].hint = string.IsNullOrEmpty(parent) ? "Object not parented." : "No parent found.";
-                dialog.ParentButton.button.onClick.ClearAll();
+                dialog.ParentButton.OnClick.ClearAll();
                 dialog.ParentMoreButton.onClick.ClearAll();
                 dialog.ParentClearButton.onClick.ClearAll();
 
@@ -5708,7 +5705,7 @@ namespace BetterLegacy.Editor.Managers
                 dialog.ParentInfo.tooltipLangauges[0].hint = "Object parented to the camera.";
             }
 
-            dialog.ParentButton.button.interactable = p != null;
+            dialog.ParentButton.Interactable = p != null;
             dialog.ParentMoreButton.interactable = p != null;
 
             dialog.ParentSettingsParent.gameObject.SetActive(p != null && ObjEditor.inst.advancedParent);
@@ -5728,17 +5725,17 @@ namespace BetterLegacy.Editor.Managers
 
             if (p == null)
             {
-                dialog.ParentButton.label.text = "No Parent Object";
+                dialog.ParentButton.Text = "No Parent Object";
                 dialog.ParentInfo.tooltipLangauges[0].hint = string.IsNullOrEmpty(parent) ? "Object not parented." : "No parent found.";
-                dialog.ParentButton.button.onClick.ClearAll();
+                dialog.ParentButton.OnClick.ClearAll();
                 dialog.ParentMoreButton.onClick.ClearAll();
 
                 return;
             }
 
-            dialog.ParentButton.label.text = p;
+            dialog.ParentButton.Text = p;
 
-            dialog.ParentButton.button.onClick.NewListener(() =>
+            dialog.ParentButton.OnClick.NewListener(() =>
             {
                 if (GameData.Current.beatmapObjects.Find(x => x.id == parent) != null &&
                     parent != BeatmapObject.CAMERA_PARENT &&
@@ -5987,12 +5984,12 @@ namespace BetterLegacy.Editor.Managers
         {
             var history = EditorManager.inst.history;
             string undoName = ((history.commands.Count > 1 && history.lastExecuted > 0) ? history.commands[history.lastExecuted].CommandName : null);
-            undoButton.button.interactable = !string.IsNullOrEmpty(undoName);
-            undoButton.label.text = string.IsNullOrEmpty(undoName) ? "Undo" : "Undo " + LSText.ClampString(undoName, 14);
+            undoButton.Interactable = !string.IsNullOrEmpty(undoName);
+            undoButton.Text = string.IsNullOrEmpty(undoName) ? "Undo" : "Undo " + LSText.ClampString(undoName, 14);
 
             string redoName = ((history.commands.Count - 1 > history.lastExecuted) ? history.commands[history.lastExecuted + 1].CommandName : null);
-            redoButton.button.interactable = !string.IsNullOrEmpty(redoName);
-            redoButton.label.text = string.IsNullOrEmpty(redoName) ? "Redo" : "Redo " + LSText.ClampString(redoName, 14);
+            redoButton.Interactable = !string.IsNullOrEmpty(redoName);
+            redoButton.Text = string.IsNullOrEmpty(redoName) ? "Redo" : "Redo " + LSText.ClampString(redoName, 14);
         }
 
         /// <summary>

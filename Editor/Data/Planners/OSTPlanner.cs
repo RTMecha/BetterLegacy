@@ -110,7 +110,7 @@ namespace BetterLegacy.Editor.Data.Planners
             };
 
             var delete = gameObject.transform.Find("delete").GetComponent<DeleteButtonStorage>();
-            delete.button.onClick.NewListener(() =>
+            delete.OnClick.NewListener(() =>
             {
                 ProjectPlanner.inst.osts.RemoveAll(x => x is OSTPlanner && x.ID == ID);
                 ProjectPlanner.inst.SaveOST();
@@ -121,8 +121,7 @@ namespace BetterLegacy.Editor.Data.Planners
                 CoreHelper.Destroy(gameObject);
             });
 
-            EditorThemeManager.ApplyGraphic(delete.button.image, ThemeGroup.Delete, true);
-            EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
+            EditorThemeManager.ApplyDeleteButton(delete);
 
             ProjectPlanner.inst.SetupPlannerLinks(Name, TextUI, Hyperlinks);
 

@@ -143,10 +143,10 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             var button = EditorPrefabHolder.Instance.DeleteButton.Duplicate(DescriptionField.transform, "edit");
             var buttonStorage = button.GetComponent<DeleteButtonStorage>();
-            buttonStorage.image.sprite = EditorSprites.EditSprite;
+            buttonStorage.Sprite = EditorSprites.EditSprite;
             EditorThemeManager.ApplySelectable(buttonStorage.button, ThemeGroup.Function_2);
             EditorThemeManager.ApplyGraphic(buttonStorage.image, ThemeGroup.Function_2_Text);
-            buttonStorage.button.onClick.NewListener(() => RTTextEditor.inst.SetInputField(DescriptionField));
+            buttonStorage.OnClick.NewListener(() => RTTextEditor.inst.SetInputField(DescriptionField));
             RectValues.Default.AnchoredPosition(171f, 112f).SizeDelta(22f, 22f).AssignToRectTransform(buttonStorage.baseImage.rectTransform);
             EditorHelper.SetComplexity(button, "marker/layers", Complexity.Advanced);
 

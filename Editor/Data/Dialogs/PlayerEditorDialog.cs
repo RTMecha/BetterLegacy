@@ -446,8 +446,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 select.transform.AsRT().sizeDelta = new Vector2(92f, 43.2f);
                 var selectStorage = select.GetComponent<FunctionButtonStorage>();
                 selectStorage.label.fontSize = 16;
-                selectStorage.label.text = "Select";
-                selectStorage.button.onClick.NewListener(() =>
+                selectStorage.Text = "Select";
+                selectStorage.OnClick.NewListener(() =>
                 {
                     PlayerEditor.inst.ModelsPopup.Open();
                     CoroutineHelper.StartCoroutine(PlayerEditor.inst.RefreshModels());
@@ -475,8 +475,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 create.transform.AsRT().sizeDelta = new Vector2(92f, 43.2f);
                 var createStorage = create.GetComponent<FunctionButtonStorage>();
                 createStorage.label.fontSize = 16;
-                createStorage.label.text = "Create";
-                createStorage.button.onClick.NewListener(PlayerEditor.inst.CreateNewModel);
+                createStorage.Text = "Create";
+                createStorage.OnClick.NewListener(PlayerEditor.inst.CreateNewModel);
 
                 EditorThemeManager.AddSelectable(createStorage.button, ThemeGroup.Function_2);
                 EditorThemeManager.AddGraphic(createStorage.label, ThemeGroup.Function_2_Text);
@@ -485,8 +485,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 save.transform.AsRT().sizeDelta = new Vector2(92f, 43.2f);
                 var saveStorage = save.GetComponent<FunctionButtonStorage>();
                 saveStorage.label.fontSize = 16;
-                saveStorage.label.text = "Save";
-                saveStorage.button.onClick.NewListener(PlayerEditor.inst.Save);
+                saveStorage.Text = "Save";
+                saveStorage.OnClick.NewListener(PlayerEditor.inst.Save);
 
                 EditorThemeManager.AddSelectable(saveStorage.button, ThemeGroup.Function_2);
                 EditorThemeManager.AddGraphic(saveStorage.label, ThemeGroup.Function_2_Text);
@@ -495,8 +495,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 load.transform.AsRT().sizeDelta = new Vector2(92f, 43.2f);
                 var loadStorage = load.GetComponent<FunctionButtonStorage>();
                 loadStorage.label.fontSize = 16;
-                loadStorage.label.text = "Reload";
-                loadStorage.button.onClick.NewListener(PlayerEditor.inst.Reload);
+                loadStorage.Text = "Reload";
+                loadStorage.OnClick.NewListener(PlayerEditor.inst.Reload);
 
                 EditorThemeManager.AddSelectable(loadStorage.button, ThemeGroup.Function_2);
                 EditorThemeManager.AddGraphic(loadStorage.label, ThemeGroup.Function_2_Text);
@@ -505,8 +505,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 setToGlobal.transform.AsRT().sizeDelta = new Vector2(92f, 43.2f);
                 var setToGlobalStorage = setToGlobal.GetComponent<FunctionButtonStorage>();
                 setToGlobalStorage.label.fontSize = 16;
-                setToGlobalStorage.label.text = "Set to Global";
-                setToGlobalStorage.button.onClick.NewListener(() => PlayerManager.PlayerIndexes[PlayerEditor.inst.playerModelIndex].Value = PlayersData.Current.playerModelsIndex[PlayerEditor.inst.playerModelIndex]);
+                setToGlobalStorage.Text = "Set to Global";
+                setToGlobalStorage.OnClick.NewListener(() => PlayerManager.PlayerIndexes[PlayerEditor.inst.playerModelIndex].Value = PlayersData.Current.playerModelsIndex[PlayerEditor.inst.playerModelIndex]);
 
                 EditorThemeManager.AddSelectable(setToGlobalStorage.button, ThemeGroup.Function_2);
                 EditorThemeManager.AddGraphic(setToGlobalStorage.label, ThemeGroup.Function_2_Text);
@@ -523,8 +523,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
             tab.transform.AsRT().sizeDelta = new Vector2(92f, 43.2f);
             var tabButton = tab.GetComponent<FunctionButtonStorage>();
             tabButton.label.fontSize = 16;
-            tabButton.label.text = name;
-            tabButton.button.onClick.NewListener(() =>
+            tabButton.Text = name;
+            tabButton.OnClick.NewListener(() =>
             {
                 PlayerEditor.inst.CurrentTab = (PlayerEditor.Tab)tabIndex;
                 CoroutineHelper.StartCoroutine(PlayerEditor.inst.RefreshEditor());

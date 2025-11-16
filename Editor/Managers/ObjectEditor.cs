@@ -2465,20 +2465,20 @@ namespace BetterLegacy.Editor.Managers
             if (Dialog.InspectBeatmapObjectButton)
             {
                 Dialog.InspectBeatmapObjectButton.gameObject.SetActive(RTEditor.ShowModdedUI);
-                Dialog.InspectBeatmapObjectButton.button.onClick.NewListener(() => ModCompatibility.Inspect(beatmapObject));
+                Dialog.InspectBeatmapObjectButton.OnClick.NewListener(() => ModCompatibility.Inspect(beatmapObject));
             }
 
             if (Dialog.InspectRuntimeObjectButton)
             {
                 bool active = beatmapObject.runtimeObject && RTEditor.ShowModdedUI;
                 Dialog.InspectRuntimeObjectButton.gameObject.SetActive(active);
-                Dialog.InspectRuntimeObjectButton.button.onClick.NewListener(() => ModCompatibility.Inspect(beatmapObject.runtimeObject));
+                Dialog.InspectRuntimeObjectButton.OnClick.NewListener(() => ModCompatibility.Inspect(beatmapObject.runtimeObject));
             }
 
             if (Dialog.InspectTimelineObjectButton)
             {
                 Dialog.InspectTimelineObjectButton.gameObject.SetActive(RTEditor.ShowModdedUI);
-                Dialog.InspectTimelineObjectButton.button.onClick.NewListener(() => ModCompatibility.Inspect(EditorTimeline.inst.GetTimelineObject(beatmapObject)));
+                Dialog.InspectTimelineObjectButton.OnClick.NewListener(() => ModCompatibility.Inspect(EditorTimeline.inst.GetTimelineObject(beatmapObject)));
             }
         }
 
@@ -2799,7 +2799,7 @@ namespace BetterLegacy.Editor.Managers
             bool fromPrefab = !string.IsNullOrEmpty(beatmapObject.prefabID);
             Dialog.CollapsePrefabLabel.SetActive(fromPrefab);
             Dialog.CollapsePrefabButton.gameObject.SetActive(fromPrefab);
-            Dialog.CollapsePrefabButton.button.onClick.ClearAll();
+            Dialog.CollapsePrefabButton.OnClick.ClearAll();
 
             var prefab = beatmapObject.GetPrefab();
             Dialog.PrefabName.gameObject.SetActive(prefab);
@@ -2833,13 +2833,13 @@ namespace BetterLegacy.Editor.Managers
                     );
             };
 
-            Dialog.AssignPrefabButton.button.onClick.NewListener(() =>
+            Dialog.AssignPrefabButton.OnClick.NewListener(() =>
             {
                 RTEditor.inst.selectingMultiple = false;
                 RTEditor.inst.prefabPickerEnabled = true;
             });
 
-            Dialog.RemovePrefabButton.button.onClick.NewListener(() =>
+            Dialog.RemovePrefabButton.OnClick.NewListener(() =>
             {
                 beatmapObject.RemovePrefabReference();
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));

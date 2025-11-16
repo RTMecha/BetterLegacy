@@ -119,7 +119,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
         {
             var copy = EditorPrefabHolder.Instance.DeleteButton.Duplicate(parent, "copy");
             var copyStorage = copy.GetComponent<DeleteButtonStorage>();
-            copyStorage.image.sprite = EditorSprites.CopySprite;
+            copyStorage.Sprite = EditorSprites.CopySprite;
 
             CopyButton = copyStorage.button;
             EditorThemeManager.ApplyGraphic(copyStorage.baseImage, ThemeGroup.Copy, true);
@@ -132,8 +132,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var deleteStorage = delete.GetComponent<DeleteButtonStorage>();
 
             DeleteButton = deleteStorage.button;
-            EditorThemeManager.ApplyGraphic(deleteStorage.baseImage, ThemeGroup.Delete, true);
-            EditorThemeManager.ApplyGraphic(deleteStorage.image, ThemeGroup.Delete_Text);
+            EditorThemeManager.ApplyDeleteButton(deleteStorage);
         }
 
         public void InitName(Transform parent)

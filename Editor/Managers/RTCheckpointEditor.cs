@@ -268,11 +268,11 @@ namespace BetterLegacy.Editor.Managers
             Dialog.JumpToPrevButton.interactable = !isFirst;
             Dialog.JumpToNextButton.interactable = !isLast;
             Dialog.JumpToLastButton.interactable = !isLast;
-            Dialog.DeleteButton.button.interactable = !isFirst;
+            Dialog.DeleteButton.Interactable = !isFirst;
 
             Dialog.JumpToStartButton.onClick.NewListener(() => SetCurrentCheckpoint(0));
             Dialog.JumpToPrevButton.onClick.NewListener(() => SetCurrentCheckpoint(index - 1));
-            Dialog.DeleteButton.button.onClick.NewListener(() => DeleteCheckpoint(index));
+            Dialog.DeleteButton.OnClick.NewListener(() => DeleteCheckpoint(index));
 
             Dialog.KeyframeIndexer.text = text;
 
@@ -303,8 +303,8 @@ namespace BetterLegacy.Editor.Managers
             if (!isFirst)
                 Dialog.TimeField.eventTrigger.triggers.Add(TriggerHelper.ScrollDelta(Dialog.TimeField.inputField));
 
-            Dialog.PositionFields.x.inputField.SetTextWithoutNotify(checkpoint.pos.x.ToString());
-            Dialog.PositionFields.x.inputField.onValueChanged.NewListener(_val =>
+            Dialog.PositionFields.x.SetTextWithoutNotify(checkpoint.pos.x.ToString());
+            Dialog.PositionFields.x.OnValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
                 {
@@ -313,8 +313,8 @@ namespace BetterLegacy.Editor.Managers
                 }
             });
 
-            Dialog.PositionFields.y.inputField.SetTextWithoutNotify(checkpoint.pos.y.ToString());
-            Dialog.PositionFields.y.inputField.onValueChanged.NewListener(_val =>
+            Dialog.PositionFields.y.SetTextWithoutNotify(checkpoint.pos.y.ToString());
+            Dialog.PositionFields.y.OnValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
                 {
@@ -333,17 +333,17 @@ namespace BetterLegacy.Editor.Managers
                 TriggerHelper.ScrollDelta(Dialog.PositionFields.y.inputField),
                 TriggerHelper.ScrollDeltaVector2(Dialog.PositionFields.x.inputField, Dialog.PositionFields.y.inputField));
 
-            Dialog.RespawnToggle.toggle.SetIsOnWithoutNotify(checkpoint.respawn);
-            Dialog.RespawnToggle.toggle.onValueChanged.NewListener(_val => checkpoint.respawn = _val);
+            Dialog.RespawnToggle.SetIsOnWithoutNotify(checkpoint.respawn);
+            Dialog.RespawnToggle.OnValueChanged.NewListener(_val => checkpoint.respawn = _val);
             
-            Dialog.HealToggle.toggle.SetIsOnWithoutNotify(checkpoint.heal);
-            Dialog.HealToggle.toggle.onValueChanged.NewListener(_val => checkpoint.heal = _val);
+            Dialog.HealToggle.SetIsOnWithoutNotify(checkpoint.heal);
+            Dialog.HealToggle.OnValueChanged.NewListener(_val => checkpoint.heal = _val);
             
-            Dialog.SetTimeToggle.toggle.SetIsOnWithoutNotify(checkpoint.setTime);
-            Dialog.SetTimeToggle.toggle.onValueChanged.NewListener(_val => checkpoint.setTime = _val);
+            Dialog.SetTimeToggle.SetIsOnWithoutNotify(checkpoint.setTime);
+            Dialog.SetTimeToggle.OnValueChanged.NewListener(_val => checkpoint.setTime = _val);
             
-            Dialog.ReverseToggle.toggle.SetIsOnWithoutNotify(checkpoint.reverse);
-            Dialog.ReverseToggle.toggle.onValueChanged.NewListener(_val => checkpoint.reverse = _val);
+            Dialog.ReverseToggle.SetIsOnWithoutNotify(checkpoint.reverse);
+            Dialog.ReverseToggle.OnValueChanged.NewListener(_val => checkpoint.reverse = _val);
 
             Dialog.SpawnPositionDropdown.SetValueWithoutNotify((int)checkpoint.spawnType);
             Dialog.SpawnPositionDropdown.onValueChanged.NewListener(_val => checkpoint.spawnType = (Checkpoint.SpawnPositionType)_val);
@@ -403,7 +403,7 @@ namespace BetterLegacy.Editor.Managers
 
                 var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(gameObject.transform);
                 var deleteStorage = delete.GetComponent<DeleteButtonStorage>();
-                deleteStorage.button.onClick.NewListener(() =>
+                deleteStorage.OnClick.NewListener(() =>
                 {
                     checkpoint.positions.RemoveAt(index);
                     RenderCheckpointPositions(checkpoint);

@@ -125,8 +125,8 @@ namespace BetterLegacy.Editor.Managers
                 string name = new DirectoryInfo(folder).Name;
                 var gameObject = folderPrefab.Duplicate(viewport, name);
                 var folderPrefabStorage = gameObject.GetComponent<FunctionButtonStorage>();
-                folderPrefabStorage.label.text = name;
-                folderPrefabStorage.button.onClick.NewListener(() => UpdateBrowserFile(folder, fileExtensions, onSelectFile));
+                folderPrefabStorage.Text = name;
+                folderPrefabStorage.OnClick.NewListener(() => UpdateBrowserFile(folder, fileExtensions, onSelectFile));
 
                 var contextClickable = gameObject.AddComponent<ContextClickable>();
                 contextClickable.onClick = eventData =>
@@ -159,8 +159,8 @@ namespace BetterLegacy.Editor.Managers
 
                 var gameObject = filePrefab.Duplicate(viewport, name);
                 var folderPrefabStorage = gameObject.GetComponent<FunctionButtonStorage>();
-                folderPrefabStorage.label.text = name;
-                folderPrefabStorage.button.onClick.NewListener(() => onSelectFile?.Invoke(fileInfoFolder.FullName));
+                folderPrefabStorage.Text = name;
+                folderPrefabStorage.OnClick.NewListener(() => onSelectFile?.Invoke(fileInfoFolder.FullName));
 
                 var contextClickable = gameObject.AddComponent<ContextClickable>();
                 contextClickable.onClick = eventData =>
@@ -245,8 +245,8 @@ namespace BetterLegacy.Editor.Managers
                 string name = new DirectoryInfo(folder).Name;
                 var gameObject = folderPrefab.Duplicate(viewport, name);
                 var folderPrefabStorage = gameObject.GetComponent<FunctionButtonStorage>();
-                folderPrefabStorage.label.text = name;
-                folderPrefabStorage.button.onClick.NewListener(() => UpdateBrowserFile(folder, fileExtension, specificName, onSelectFile));
+                folderPrefabStorage.Text = name;
+                folderPrefabStorage.OnClick.NewListener(() => UpdateBrowserFile(folder, fileExtension, specificName, onSelectFile));
 
                 var contextClickable = gameObject.AddComponent<ContextClickable>();
                 contextClickable.onClick = eventData =>
@@ -279,8 +279,8 @@ namespace BetterLegacy.Editor.Managers
 
                 var gameObject = filePrefab.Duplicate(viewport, name);
                 var folderPrefabStorage = gameObject.GetComponent<FunctionButtonStorage>();
-                folderPrefabStorage.label.text = name;
-                folderPrefabStorage.button.onClick.NewListener(() => onSelectFile?.Invoke(fileInfoFolder.FullName));
+                folderPrefabStorage.Text = name;
+                folderPrefabStorage.OnClick.NewListener(() => onSelectFile?.Invoke(fileInfoFolder.FullName));
 
                 var contextClickable = gameObject.AddComponent<ContextClickable>();
                 contextClickable.onClick = eventData =>
@@ -365,8 +365,8 @@ namespace BetterLegacy.Editor.Managers
                 string name = new DirectoryInfo(folder).Name;
                 var gameObject = folderPrefab.Duplicate(viewport, name);
                 var folderPrefabStorage = gameObject.GetComponent<FunctionButtonStorage>();
-                folderPrefabStorage.label.text = name;
-                folderPrefabStorage.button.onClick.NewListener(() => UpdateBrowserFolder(folder, specificName, onSelectFolder));
+                folderPrefabStorage.Text = name;
+                folderPrefabStorage.OnClick.NewListener(() => UpdateBrowserFolder(folder, specificName, onSelectFolder));
 
                 var contextClickable = gameObject.AddComponent<ContextClickable>();
                 contextClickable.onClick = eventData =>

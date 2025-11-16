@@ -84,7 +84,7 @@ namespace BetterLegacy.Editor.Data.Elements
             Label = folderButtonStorage.label;
             Label.enabled = true;
             labelRect.AssignToRectTransform(Label.rectTransform);
-            folderButtonStorage.button.onClick.ClearAll();
+            folderButtonStorage.OnClick.ClearAll();
             Button = folderButtonFunction;
             EditorThemeManager.ApplySelectable(folderButtonStorage.button, ThemeGroup.List_Button_1);
             EditorThemeManager.ApplyLightText(folderButtonStorage.label);

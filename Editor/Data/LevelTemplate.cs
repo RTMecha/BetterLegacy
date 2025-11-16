@@ -105,7 +105,7 @@ namespace BetterLegacy.Editor.Data
             var isDefault = string.IsNullOrEmpty(directory);
             DeleteButton.gameObject.SetActive(!isDefault);
             if (!isDefault)
-                DeleteButton.button.onClick.NewListener(() =>
+                DeleteButton.OnClick.NewListener(() =>
                 {
                     RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this template? This is permanent!", () =>
                     {

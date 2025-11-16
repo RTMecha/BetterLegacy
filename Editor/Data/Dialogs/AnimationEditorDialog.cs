@@ -106,7 +106,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var returnButton = EditorPrefabHolder.Instance.Function2Button.Duplicate(Content, "return");
             var returnButtonStorage = returnButton.GetComponent<FunctionButtonStorage>();
             ReturnButton = returnButtonStorage.button;
-            returnButtonStorage.label.text = "Return";
+            returnButtonStorage.Text = "Return";
             EditorThemeManager.AddSelectable(ReturnButton, ThemeGroup.Function_2);
             EditorThemeManager.AddGraphic(returnButtonStorage.label, ThemeGroup.Function_2_Text);
 

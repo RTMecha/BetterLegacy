@@ -179,7 +179,7 @@ namespace BetterLegacy.Editor.Data.Elements
             Label = folderButtonStorage.label;
             Label.enabled = true;
             labelRect.AssignToRectTransform(Label.rectTransform);
-            folderButtonStorage.button.onClick.ClearAll();
+            folderButtonStorage.OnClick.ClearAll();
 
             var iconBase = Creator.NewUIObject("icon base", gameObject.transform);
             var iconBaseImage = iconBase.AddComponent<Image>();
@@ -224,7 +224,7 @@ namespace BetterLegacy.Editor.Data.Elements
             Label = folderButtonStorage.label;
             Label.enabled = true;
             labelRect.AssignToRectTransform(Label.rectTransform);
-            folderButtonStorage.button.onClick.ClearAll();
+            folderButtonStorage.OnClick.ClearAll();
             Button = folderButtonFunction;
             EditorThemeManager.ApplySelectable(folderButtonStorage.button, ThemeGroup.List_Button_1);
             EditorThemeManager.ApplyLightText(folderButtonStorage.label);
@@ -285,7 +285,7 @@ namespace BetterLegacy.Editor.Data.Elements
             Label = folderButtonStorage.label;
             Label.enabled = true;
             labelRect.AssignToRectTransform(Label.rectTransform);
-            folderButtonStorage.button.onClick.ClearAll();
+            folderButtonStorage.OnClick.ClearAll();
             Button = folderButtonFunction;
             EditorThemeManager.ApplySelectable(folderButtonStorage.button, ThemeGroup.List_Button_1);
             EditorThemeManager.ApplyLightText(folderButtonStorage.label);
@@ -830,7 +830,7 @@ namespace BetterLegacy.Editor.Data.Elements
             if (!active)
                 return;
 
-            DeleteButton.button.onClick.NewListener(() => Delete(true));
+            DeleteButton.OnClick.NewListener(() => Delete(true));
         }
 
         public void Delete(bool recycle = false)

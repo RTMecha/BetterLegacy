@@ -878,7 +878,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                 var collapsePrefab = EditorPrefabHolder.Instance.Function2Button.Duplicate(LeftContent, "applyprefab", 40);
                 CollapsePrefabButton = collapsePrefab.GetComponent<FunctionButtonStorage>();
-                CollapsePrefabButton.label.text = "Apply";
+                CollapsePrefabButton.Text = "Apply";
 
                 EditorThemeManager.AddSelectable(CollapsePrefabButton.button, ThemeGroup.Function_2);
                 EditorThemeManager.AddGraphic(CollapsePrefabButton.label, ThemeGroup.Function_2_Text);
@@ -888,14 +888,14 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                 var assignPrefab = EditorPrefabHolder.Instance.Function2Button.Duplicate(LeftContent, "assignprefab", 45);
                 AssignPrefabButton = assignPrefab.GetComponent<FunctionButtonStorage>();
-                AssignPrefabButton.label.text = "Assign";
+                AssignPrefabButton.Text = "Assign";
 
                 EditorThemeManager.AddSelectable(AssignPrefabButton.button, ThemeGroup.Function_2);
                 EditorThemeManager.AddGraphic(AssignPrefabButton.label, ThemeGroup.Function_2_Text);
 
                 var removePrefab = EditorPrefabHolder.Instance.Function2Button.Duplicate(LeftContent, "removeprefab", 46);
                 RemovePrefabButton = removePrefab.GetComponent<FunctionButtonStorage>();
-                RemovePrefabButton.label.text = "Remove";
+                RemovePrefabButton.Text = "Remove";
 
                 EditorThemeManager.AddSelectable(RemovePrefabButton.button, ThemeGroup.Function_2);
                 EditorThemeManager.AddGraphic(RemovePrefabButton.label, ThemeGroup.Function_2_Text);

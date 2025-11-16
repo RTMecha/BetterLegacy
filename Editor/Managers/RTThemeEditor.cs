@@ -395,9 +395,8 @@ namespace BetterLegacy.Editor.Managers
                     var exportToVG = EditorPrefabHolder.Instance.Function2Button.Duplicate(buttons.transform, "convert");
                     var exportToVGStorage = exportToVG.GetComponent<FunctionButtonStorage>();
                     exportToVG.SetActive(false);
-                    var exportToVGText = exportToVGStorage.label;
-                    exportToVGText.fontSize = 16;
-                    exportToVGText.text = "Convert to VG Format";
+                    exportToVGStorage.label.fontSize = 16;
+                    exportToVGStorage.Text = "Convert to VG Format";
 
                     viewThemeStorage.convertButton = exportToVGStorage.button;
 
@@ -450,9 +449,9 @@ namespace BetterLegacy.Editor.Managers
                 hoverUIFolder.animatePos = false;
                 hoverUIFolder.animateSca = true;
 
-                folderButtonStorageFolder.label.text = "< Up a folder";
+                folderButtonStorageFolder.Text = "< Up a folder";
 
-                folderButtonStorageFolder.button.onClick.ClearAll();
+                folderButtonStorageFolder.OnClick.ClearAll();
                 folderButtonFunctionFolder.onClick = eventData =>
                 {
                     if (eventData.button == PointerEventData.InputButton.Right)

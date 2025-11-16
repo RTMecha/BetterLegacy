@@ -60,15 +60,14 @@ namespace BetterLegacy.Editor.Data.Planners
             EditorThemeManager.ApplyToggle(toggle);
 
             var delete = gameObject.transform.Find("delete").GetComponent<DeleteButtonStorage>();
-            delete.button.onClick.NewListener(() =>
+            delete.OnClick.NewListener(() =>
             {
                 ProjectPlanner.inst.todos.RemoveAll(x => x is TODOPlanner && x.ID == ID);
                 ProjectPlanner.inst.SaveTODO();
                 CoreHelper.Destroy(gameObject);
             });
 
-            EditorThemeManager.ApplyGraphic(delete.button.image, ThemeGroup.Delete, true);
-            EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
+            EditorThemeManager.ApplyDeleteButton(delete);
 
             ProjectPlanner.inst.SetupPlannerLinks(Text, TextUI, Hyperlinks);
 

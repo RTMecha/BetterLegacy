@@ -802,7 +802,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var apply = EditorPrefabHolder.Instance.Function1Button.Duplicate(GameObject.transform, "apply");
             var applyStorage = apply.GetComponent<FunctionButtonStorage>();
             Apply = applyStorage.button;
-            applyStorage.label.text = "Apply";
+            applyStorage.Text = "Apply";
             EditorThemeManager.ApplyGraphic(applyStorage.button.image, ThemeGroup.Function_1, true);
             EditorThemeManager.ApplyGraphic(applyStorage.label, ThemeGroup.Function_1_Text);
 
@@ -1001,7 +1001,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             apply.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
             var applyStorage = apply.GetComponent<FunctionButtonStorage>();
             Apply = applyStorage.button;
-            applyStorage.label.text = "Apply";
+            applyStorage.Text = "Apply";
             EditorThemeManager.ApplyGraphic(applyStorage.button.image, ThemeGroup.Function_1, true);
             EditorThemeManager.ApplyGraphic(applyStorage.label, ThemeGroup.Function_1_Text);
 

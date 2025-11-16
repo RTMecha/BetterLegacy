@@ -163,6 +163,7 @@ namespace BetterLegacy.Editor.Data.Elements
             var fileName = System.IO.Path.GetFileName(directory);
 
             var gameObjectFolder = EditorManager.inst.spriteFolderButtonPrefab.Duplicate(PrefabEditor.inst.externalContent, $"Folder [{fileName}]");
+            externalBaseRect.AssignToRectTransform(gameObjectFolder.transform.AsRT());
             var folderButtonStorageFolder = gameObjectFolder.GetComponent<SpriteFunctionButtonStorage>();
             var folderButtonFunctionFolder = gameObjectFolder.AddComponent<FolderButtonFunction>();
 
@@ -170,7 +171,7 @@ namespace BetterLegacy.Editor.Data.Elements
             hover.animatePos = false;
             hover.animateSca = true;
 
-            folderButtonStorageFolder.button.onClick.ClearAll();
+            folderButtonStorageFolder.OnClick.ClearAll();
             folderButtonFunctionFolder.onClick = eventData =>
             {
                 if (!path.Contains(RTEditor.inst.BeatmapsPath + "/"))

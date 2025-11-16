@@ -178,7 +178,7 @@ namespace BetterLegacy.Editor.Managers
 
                     var gameObject = EditorManager.inst.spriteFolderButtonPrefab.Duplicate(Popup.Content, soundName);
                     var fileButton = gameObject.GetComponent<SpriteFunctionButtonStorage>();
-                    fileButton.button.onClick.ClearAll();
+                    fileButton.OnClick.ClearAll();
                     var contextClickable = gameObject.GetOrAddComponent<ContextClickable>();
                     contextClickable.onClick = pointerEventData =>
                     {
@@ -191,8 +191,8 @@ namespace BetterLegacy.Editor.Managers
                         SoundManager.inst.PlaySound(defaultSound);
                     };
 
-                    fileButton.image.sprite = EditorSprites.SoundSprite;
-                    fileButton.label.text = soundName + " (Default)";
+                    fileButton.Sprite = EditorSprites.SoundSprite;
+                    fileButton.Text = soundName + " (Default)";
 
                     EditorThemeManager.ApplyGraphic(fileButton.image, ThemeGroup.Light_Text);
                     EditorThemeManager.ApplySelectable(fileButton.button, ThemeGroup.List_Button_1);
@@ -216,7 +216,7 @@ namespace BetterLegacy.Editor.Managers
 
                     var gameObject = EditorManager.inst.spriteFolderButtonPrefab.Duplicate(Popup.Content, soundAsset.name);
                     var fileButton = gameObject.GetComponent<SpriteFunctionButtonStorage>();
-                    fileButton.button.onClick.ClearAll();
+                    fileButton.OnClick.ClearAll();
                     var contextClickable = gameObject.GetOrAddComponent<ContextClickable>();
                     contextClickable.onClick = pointerEventData =>
                     {
@@ -279,8 +279,8 @@ namespace BetterLegacy.Editor.Managers
                         }
                     };
 
-                    fileButton.image.sprite = EditorSprites.SoundSprite;
-                    fileButton.label.text = soundAsset.name + " (External)";
+                    fileButton.Sprite = EditorSprites.SoundSprite;
+                    fileButton.Text = soundAsset.name + " (External)";
 
                     EditorThemeManager.ApplyGraphic(fileButton.image, ThemeGroup.Light_Text);
                     EditorThemeManager.ApplySelectable(fileButton.button, ThemeGroup.List_Button_1);
@@ -298,7 +298,7 @@ namespace BetterLegacy.Editor.Managers
 
                     var gameObject = EditorManager.inst.spriteFolderButtonPrefab.Duplicate(Popup.Content, spriteAsset.name);
                     var fileButton = gameObject.GetComponent<SpriteFunctionButtonStorage>();
-                    fileButton.button.onClick.ClearAll();
+                    fileButton.OnClick.ClearAll();
                     var contextClickable = gameObject.GetOrAddComponent<ContextClickable>();
                     contextClickable.onClick = pointerEventData =>
                     {
@@ -322,8 +322,8 @@ namespace BetterLegacy.Editor.Managers
                         onSpriteAssetSelected?.Invoke(spriteAsset.name);
                     };
 
-                    fileButton.image.sprite = spriteAsset.sprite ?? EditorSprites.PALogo;
-                    fileButton.label.text = spriteAsset.name + " (External)";
+                    fileButton.Sprite = spriteAsset.sprite ?? EditorSprites.PALogo;
+                    fileButton.Text = spriteAsset.name + " (External)";
 
                     EditorThemeManager.ApplyGraphic(fileButton.image, ThemeGroup.Light_Text);
                     EditorThemeManager.ApplySelectable(fileButton.button, ThemeGroup.List_Button_1);
@@ -357,7 +357,7 @@ namespace BetterLegacy.Editor.Managers
 
                     var gameObject = EditorManager.inst.spriteFolderButtonPrefab.Duplicate(Popup.Content, soundAsset.name);
                     var fileButton = gameObject.GetComponent<SpriteFunctionButtonStorage>();
-                    fileButton.button.onClick.ClearAll();
+                    fileButton.OnClick.ClearAll();
                     var contextClickable = gameObject.GetOrAddComponent<ContextClickable>();
                     contextClickable.onClick = pointerEventData =>
                     {
@@ -424,8 +424,8 @@ namespace BetterLegacy.Editor.Managers
                         }
                     };
 
-                    fileButton.image.sprite = EditorSprites.SoundSprite;
-                    fileButton.label.text = soundAsset.name + " (Internal)";
+                    fileButton.Sprite = EditorSprites.SoundSprite;
+                    fileButton.Text = soundAsset.name + " (Internal)";
 
                     EditorThemeManager.ApplyGraphic(fileButton.image, ThemeGroup.Light_Text);
                     EditorThemeManager.ApplySelectable(fileButton.button, ThemeGroup.List_Button_1);
@@ -438,7 +438,7 @@ namespace BetterLegacy.Editor.Managers
 
                     var gameObject = EditorManager.inst.spriteFolderButtonPrefab.Duplicate(Popup.Content, spriteAsset.name);
                     var fileButton = gameObject.GetComponent<SpriteFunctionButtonStorage>();
-                    fileButton.button.onClick.ClearAll();
+                    fileButton.OnClick.ClearAll();
                     var contextClickable = gameObject.GetOrAddComponent<ContextClickable>();
                     contextClickable.onClick = pointerEventData =>
                     {
@@ -483,8 +483,8 @@ namespace BetterLegacy.Editor.Managers
                         onSpriteAssetSelected?.Invoke(spriteAsset.name);
                     };
 
-                    fileButton.image.sprite = spriteAsset.sprite ?? EditorSprites.PALogo;
-                    fileButton.label.text = spriteAsset.name + " (Internal)";
+                    fileButton.Sprite = spriteAsset.sprite ?? EditorSprites.PALogo;
+                    fileButton.Text = spriteAsset.name + " (Internal)";
 
                     EditorThemeManager.ApplyGraphic(fileButton.image, ThemeGroup.Light_Text);
                     EditorThemeManager.ApplySelectable(fileButton.button, ThemeGroup.List_Button_1);
