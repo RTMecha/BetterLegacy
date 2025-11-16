@@ -3065,7 +3065,7 @@ namespace BetterLegacy.Editor.Managers
             var contextClickable = add.gameObject.AddComponent<ContextClickable>();
             contextClickable.onClick = action;
 
-            return gameObject;
+            return add.gameObject;
         }
 
         public void RenderExternalPrefabs() => CoroutineHelper.StartCoroutine(IRenderExternalPrefabs());
