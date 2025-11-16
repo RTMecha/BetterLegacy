@@ -2879,6 +2879,8 @@ namespace BetterLegacy.Core.Components.Player
             InitDeathAnimation();
             InputDataManager.inst.SetControllerRumble(playerIndex, 1f);
             Example.Current?.brain?.Notice(ExampleBrain.Notices.PLAYER_DEATH, new PlayerNoticeParameters(Core));
+            if (PlayerConfig.Instance.PlayDeathSound.Value)
+                SoundManager.inst.PlaySound(CoreConfig.Instance.Language.Value == Language.Pirate ? DefaultSounds.pirate_KillPlayer : DefaultSounds.KillPlayer);
             yield return CoroutineHelper.SecondsRealtime(0.2f);
             InputDataManager.inst.StopControllerRumble(playerIndex);
             yield break;
@@ -2945,7 +2947,7 @@ namespace BetterLegacy.Core.Components.Player
 
             Example.Current?.brain?.Notice(ExampleBrain.Notices.PLAYER_HIT, new PlayerNoticeParameters(Core));
 
-            SoundManager.inst.PlaySound(CoreConfig.Instance.Language.Value == Language.Pirate ? DefaultSounds.pirate_KillPlayer : DefaultSounds.HurtPlayer);
+            SoundManager.inst.PlaySound(DefaultSounds.HurtPlayer);
         }
 
         IEnumerator CanShoot()

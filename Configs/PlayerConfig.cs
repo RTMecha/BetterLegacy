@@ -100,6 +100,11 @@ namespace BetterLegacy.Configs
         /// </summary>
         public Setting<bool> PlaySpawnSound { get; set; }
 
+        /// <summary>
+        /// Plays the death sound when a player dies.
+        /// </summary>
+        public Setting<bool> PlayDeathSound { get; set; }
+
         #endregion
 
         #region Controls
@@ -159,7 +164,8 @@ namespace BetterLegacy.Configs
             PlaySoundR = Bind(this, SOUNDS, "Play Boost Recover Sound", true, "Plays a little sound when you can boost again.");
             PlaySoundRBoostTail = Bind(this, SOUNDS, "Boost Recover only with Boost Tail", true, "If the boost recovery sound should only play if the player has the boost tail.");
             PlayerShootSound = Bind(this, SOUNDS, "Play Shoot Sound", true, "Plays a little sound when you shoot.");
-            PlaySpawnSound = Bind(this, SOUNDS, "Play Spawn Sound", false, "Plays the spawn sound when players spawn / respawn.");
+            PlaySpawnSound = Bind(this, SOUNDS, "Play Spawn Sound", true, "Plays the spawn sound when players spawn / respawn.");
+            PlayDeathSound = Bind(this, SOUNDS, "Play Death Sound", true, "lays the death sound when a player dies.");
 
             #endregion
 
