@@ -9,8 +9,12 @@ using LSFunctions;
 
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
+using BetterLegacy.Core.Components;
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Editor.Data.Dialogs;
 using BetterLegacy.Editor.Data.Timeline;
@@ -21,8 +25,6 @@ namespace BetterLegacy.Editor.Managers
     public class RTCheckpointEditor : BaseEditor<RTCheckpointEditor, RTCheckpointEditorSettings, CheckpointEditor>
     {
         /* TODO:
-        - Custom checkpoint point sprite
-        - Custom checkpoint point color (either a hex value or automatically inverts from below)
         - Actually implement multi-position checkpoints
          */
 
@@ -30,22 +32,66 @@ namespace BetterLegacy.Editor.Managers
 
         public override CheckpointEditor BaseInstance { get => CheckpointEditor.inst; set => CheckpointEditor.inst = value; }
 
+        /// <summary>
+        /// Dialog of the editor.
+        /// </summary>
         public CheckpointEditorDialog Dialog { get; set; }
 
+        /// <summary>
+        /// The currently selected checkpoint.
+        /// </summary>
         public TimelineCheckpoint CurrentCheckpoint { get; set; } = new TimelineCheckpoint();
 
+        /// <summary>
+        /// List of initialized timeline checkpoints.
+        /// </summary>
         public List<TimelineCheckpoint> timelineCheckpoints = new List<TimelineCheckpoint>();
 
+        /// <summary>
+        /// Parent for timeline checkpoints.
+        /// </summary>
         public Transform parent;
 
+        /// <summary>
+        /// Copied checkpoint.
+        /// </summary>
         public Checkpoint checkpointCopy;
 
+        /// <summary>
+        /// If a checkpoint is being dragged.
+        /// </summary>
         public bool dragging;
+
+        /// <summary>
+        /// The main Checkpoint Preview.
+        /// </summary>
+        public CheckpointPreview checkpointPreview = new CheckpointPreview();
+
+        public List<CheckpointPreview> checkpointPreviews = new List<CheckpointPreview>();
+
+        /// <summary>
+        /// Type of color <see cref="checkpointPreviewImage"/> should use.
+        /// </summary>
+        public enum CheckpointPreviewColorType
+        {
+            /// <summary>
+            /// Uses <see cref="LSColors.gray500"/>.
+            /// </summary>
+            Default,
+            /// <summary>
+            /// Uses the current <see cref="BeatmapTheme.guiColor"/>.
+            /// </summary>
+            ThemeGUI,
+            /// <summary>
+            /// Uses <see cref="EditorConfig.CheckpointPreviewCustomColor"/>.
+            /// </summary>
+            Custom,
+        }
 
         #endregion
 
-        #region Methods
-        
+        #region Functions
+
         public override void OnInit()
         {
             try
@@ -54,6 +100,8 @@ namespace BetterLegacy.Editor.Managers
                 Dialog.Init();
 
                 parent = EventEditor.inst.EventHolders.transform.GetChild(14);
+
+                checkpointPreview.Init();
             }
             catch (Exception ex)
             {
@@ -72,29 +120,53 @@ namespace BetterLegacy.Editor.Managers
             if (!GameData.Current || !GameData.Current.data)
                 return;
 
-            if (Dialog.IsCurrent && EditorManager.inst.isEditing)
+            var previewActive = Dialog.IsCurrent && EditorManager.inst.isEditing && CurrentCheckpoint && CurrentCheckpoint.Checkpoint && EditorConfig.Instance.CheckpointPreviewEnabled.Value;
+            checkpointPreview.gameObject.SetActive(previewActive);
+            if (previewActive)
             {
-                if (CurrentCheckpoint)
+                var pos = CurrentCheckpoint.Checkpoint.pos;
+                checkpointPreview.gameObject.transform.localPosition = new Vector3(pos.x, pos.y, -1f);
+                checkpointPreview.image.color = EditorConfig.Instance.CheckpointPreviewColorType.Value.GetColor();
+                checkpointPreview.image.rectTransform.sizeDelta = EditorConfig.Instance.CheckpointPreviewSize.Value;
+            }
+
+            for (int i = 0; i < checkpointPreviews.Count; i++)
+            {
+                var checkpointPreview = checkpointPreviews[i];
+                var active = previewActive && CurrentCheckpoint.Checkpoint.positions.InRange(i);
+                checkpointPreview.gameObject.SetActive(active);
+                if (active)
                 {
-                    Vector3 vector = CurrentCheckpoint.Checkpoint.pos;
-                    vector.z = -1f;
-                    LSRenderManager.inst.CreateSprite("checkpoint_view", "checkpoint", vector, new Vector2(6f, 6f), 0f, LSColors.gray500);
+                    var pos = CurrentCheckpoint.Checkpoint.positions[i];
+                    checkpointPreview.gameObject.transform.localPosition = new Vector3(pos.x, pos.y, -1f);
+                    checkpointPreview.image.color = EditorConfig.Instance.CheckpointPreviewColorType.Value.GetColor();
+                    checkpointPreview.image.rectTransform.sizeDelta = EditorConfig.Instance.CheckpointPreviewSize.Value;
                 }
             }
-            else
-                LSRenderManager.inst.DeleteSprite("checkpoint_view");
 
             HandleDragging();
         }
 
+        /// <summary>
+        /// Sets the current checkpoint at an index.
+        /// </summary>
+        /// <param name="index">Index of the checkpoint to set.</param>
         public void SetCurrentCheckpoint(int index)
         {
-            if (GameData.Current.data.checkpoints.TryGetAt(index, out Checkpoint checkpoint))
+            if (GameData.Current && GameData.Current.data && GameData.Current.data.checkpoints.TryGetAt(index, out Checkpoint checkpoint))
                 OpenDialog(checkpoint);
         }
 
+        /// <summary>
+        /// Creates a new checkpoint at the current level time and camera position.
+        /// </summary>
         public void CreateNewCheckpoint() => CreateNewCheckpoint(RTLevel.Current.FixedTime, EventManager.inst.cam.transform.position);
 
+        /// <summary>
+        /// Creates a new checkpoint.
+        /// </summary>
+        /// <param name="time">Time of the checkpoint to set.</param>
+        /// <param name="pos">Position of the checkpoint to set.</param>
         public void CreateNewCheckpoint(float time, Vector2 pos)
         {
             if (!GameData.Current || !GameData.Current.data)
@@ -110,9 +182,16 @@ namespace BetterLegacy.Editor.Managers
             RTBeatmap.Current.ResetCheckpoint(true);
         }
 
+        /// <summary>
+        /// Deletes a checkpoint at an index.
+        /// </summary>
+        /// <param name="index">Index of the checkpoint to delete.</param>
         public void DeleteCheckpoint(int index)
         {
             if (!GameData.Current || !GameData.Current.data)
+                return;
+
+            if (index == 0 || GameData.Current.data.checkpoints.Count <= 1)
                 return;
 
             Debug.Log($"{CheckpointEditor.inst.className}Deleting checkpoint at [{index}] index.");
@@ -129,8 +208,14 @@ namespace BetterLegacy.Editor.Managers
             CreateGhostCheckpoints();
         }
 
+        /// <summary>
+        /// Copies the currently selected checkpoint.
+        /// </summary>
         public void CopyCheckpoint() => checkpointCopy = CurrentCheckpoint.Checkpoint.Copy();
 
+        /// <summary>
+        /// Pastes the copied checkpoint.
+        /// </summary>
         public void PasteCheckpoint()
         {
             if (!checkpointCopy)
@@ -145,6 +230,10 @@ namespace BetterLegacy.Editor.Managers
             RTBeatmap.Current.ResetCheckpoint();
         }
 
+        /// <summary>
+        /// Opens the checkpoint editor.
+        /// </summary>
+        /// <param name="checkpoint">Checkpoint to edit.</param>
         public void OpenDialog(Checkpoint checkpoint)
         {
             if (!checkpoint)
@@ -156,6 +245,10 @@ namespace BetterLegacy.Editor.Managers
             RenderDialog(checkpoint);
         }
 
+        /// <summary>
+        /// Renders the checkpoint editor.
+        /// </summary>
+        /// <param name="checkpoint">Checkpoint to edit.</param>
         public void RenderDialog(Checkpoint checkpoint)
         {
             if (!checkpoint || !GameData.Current || !GameData.Current.data)
@@ -252,9 +345,96 @@ namespace BetterLegacy.Editor.Managers
             Dialog.ReverseToggle.toggle.SetIsOnWithoutNotify(checkpoint.reverse);
             Dialog.ReverseToggle.toggle.onValueChanged.NewListener(_val => checkpoint.reverse = _val);
 
+            Dialog.SpawnPositionDropdown.SetValueWithoutNotify((int)checkpoint.spawnType);
+            Dialog.SpawnPositionDropdown.onValueChanged.NewListener(_val => checkpoint.spawnType = (Checkpoint.SpawnPositionType)_val);
+
+            RenderCheckpointPositions(checkpoint);
+
             RenderCheckpoints();
         }
 
+        /// <summary>
+        /// Renders the multi position list in the checkpoint editor.
+        /// </summary>
+        /// <param name="checkpoint">Checkpoint to edit.</param>
+        public void RenderCheckpointPositions(Checkpoint checkpoint)
+        {
+            for (int i = 0; i < checkpointPreviews.Count; i++)
+                CoreHelper.Delete(checkpointPreviews[i].gameObject);
+            checkpointPreviews.Clear();
+            for (int i = 0; i < checkpoint.positions.Count; i++)
+            {
+                var checkpointPreview = new CheckpointPreview();
+                checkpointPreview.Init();
+                checkpointPreviews.Add(checkpointPreview);
+            }
+
+            Dialog.PositionContent.DeleteChildren();
+            var num = 0;
+            foreach (var pos in checkpoint.positions)
+            {
+                var index = num;
+
+                var gameObject = EditorPrefabHolder.Instance.Vector2InputFields.Duplicate(Dialog.PositionContent);
+                var storage = gameObject.GetComponent<Vector2InputFieldStorage>();
+
+                storage.x.SetTextWithoutNotify(pos.x.ToString());
+                storage.x.OnValueChanged.NewListener(_val =>
+                {
+                    if (float.TryParse(_val, out float num))
+                        checkpoint.positions[index] = new Vector2(num, checkpoint.positions[index].y);
+                });
+                storage.y.SetTextWithoutNotify(pos.y.ToString());
+                storage.y.OnValueChanged.NewListener(_val =>
+                {
+                    if (float.TryParse(_val, out float num))
+                        checkpoint.positions[index] = new Vector2(checkpoint.positions[index].x, num);
+                });
+
+                TriggerHelper.AddEventTriggers(storage.x.inputField.gameObject,
+                    TriggerHelper.ScrollDelta(storage.x.inputField, multi: true),
+                    TriggerHelper.ScrollDeltaVector2(storage.x.inputField, storage.y.inputField));
+                TriggerHelper.AddEventTriggers(storage.y.inputField.gameObject,
+                    TriggerHelper.ScrollDelta(storage.y.inputField, multi: true),
+                    TriggerHelper.ScrollDeltaVector2(storage.x.inputField, storage.y.inputField));
+
+                EditorThemeManager.ApplyInputField(storage.x);
+                EditorThemeManager.ApplyInputField(storage.y);
+
+                var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(gameObject.transform);
+                var deleteStorage = delete.GetComponent<DeleteButtonStorage>();
+                deleteStorage.button.onClick.NewListener(() =>
+                {
+                    checkpoint.positions.RemoveAt(index);
+                    RenderCheckpointPositions(checkpoint);
+                });
+                EditorThemeManager.ApplyDeleteButton(deleteStorage);
+
+                delete.GetComponent<LayoutElement>().ignoreLayout = false;
+                delete.transform.AsRT().sizeDelta = new Vector2(32f, 32f);
+                storage.x.transform.AsRT().sizeDelta = new Vector2(150f, 32f);
+                storage.y.transform.AsRT().sizeDelta = new Vector2(150f, 32f);
+                storage.x.transform.Find("input").AsRT().sizeDelta = new Vector2(110f, 32f);
+                storage.y.transform.Find("input").AsRT().sizeDelta = new Vector2(110f, 32f);
+
+                num++;
+            }
+
+            var add = EditorPrefabHolder.Instance.CreateAddButton(Dialog.PositionContent, "add position");
+            add.Text = "Add Position";
+            add.OnClick.ClearAll();
+
+            var contextClickable = add.gameObject.AddComponent<ContextClickable>();
+            contextClickable.onClick = PointerEventData =>
+            {
+                checkpoint.positions.Add(EventManager.inst.cam.transform.position);
+                RenderCheckpointPositions(checkpoint);
+            };
+        }
+
+        /// <summary>
+        /// Clears the timeline checkpoints.
+        /// </summary>
         public void ClearTimelineCheckpoints()
         {
             if (timelineCheckpoints.IsEmpty())
@@ -267,6 +447,10 @@ namespace BetterLegacy.Editor.Managers
             });
         }
 
+        /// <summary>
+        /// Updates the checkpoint timeline.<br></br>
+        /// If <see cref="EditorTimeline.layerType"/> is <see cref="EditorTimeline.LayerType.Events"/>, create normal timeline checkpoints, otherwise create ghost checkpoints.
+        /// </summary>
         public void UpdateCheckpointTimeline()
         {
             if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
@@ -275,6 +459,9 @@ namespace BetterLegacy.Editor.Managers
                 CreateGhostCheckpoints();
         }
 
+        /// <summary>
+        /// Creates ghost checkpoints that display on the timeline. Ghost checkpoints aren't interactible and are purely just a visual indicator.
+        /// </summary>
         public void CreateGhostCheckpoints()
         {
             ClearTimelineCheckpoints();
@@ -293,6 +480,9 @@ namespace BetterLegacy.Editor.Managers
             RenderCheckpoints();
         }
 
+        /// <summary>
+        /// Creates normal timeline checkpoints that display on the timeline.
+        /// </summary>
         public void CreateCheckpoints()
         {
             ClearTimelineCheckpoints();
@@ -310,12 +500,19 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
+        /// <summary>
+        /// Renders all timeline checkpoints.
+        /// </summary>
         public void RenderCheckpoints()
         {
             for (int i = 0; i < timelineCheckpoints.Count; i++)
                 timelineCheckpoints[i].Render();
         }
 
+        /// <summary>
+        /// Renders a timeline checkpoint at an index.
+        /// </summary>
+        /// <param name="index">Index of the timeline checkpoint to render.</param>
         public void RenderCheckpoint(int index)
         {
             if (!timelineCheckpoints.TryGetAt(index, out TimelineCheckpoint timelineCheckpoint))
@@ -324,6 +521,9 @@ namespace BetterLegacy.Editor.Managers
             timelineCheckpoint.Render();
         }
 
+        /// <summary>
+        /// Renders the checkpoint search list.
+        /// </summary>
         public void RenderCheckpointList()
         {
             if (!GameData.Current || !GameData.Current.data)
@@ -401,5 +601,46 @@ namespace BetterLegacy.Editor.Managers
         }
 
         #endregion
+
+        /// <summary>
+        /// Represents a checkpoint that displays in the preview.
+        /// </summary>
+        public class CheckpointPreview : Exists
+        {
+            /// <summary>
+            /// Game Object of the checkpoint preview.
+            /// </summary>
+            public GameObject gameObject;
+
+            /// <summary>
+            /// Image of the checkpoint preview.
+            /// </summary>
+            public Image image;
+
+            /// <summary>
+            /// Initializes the checkpoint preview.
+            /// </summary>
+            public void Init()
+            {
+                gameObject = Creator.NewUIObject("Checkpoint", LSRenderManager.inst.FrontWorldCanvas);
+                image = gameObject.AddComponent<Image>();
+                image.sprite = SpriteHelper.LoadSprite(AssetPack.GetFile("core/sprites/checkpoint.png"));
+                image.rectTransform.sizeDelta = EditorConfig.Instance.CheckpointPreviewSize.Value;
+            }
+        }
+    }
+
+    public static class CheckpointExtension
+    {
+        /// <summary>
+        /// Gets the color associated with the color type.
+        /// </summary>
+        /// <returns>Returns the color associated with the color type. Check <see cref="RTCheckpointEditor.CheckpointPreviewColorType"/> for each color.</returns>
+        public static Color GetColor(this RTCheckpointEditor.CheckpointPreviewColorType checkpointPreviewColorType) => checkpointPreviewColorType switch
+        {
+            RTCheckpointEditor.CheckpointPreviewColorType.ThemeGUI => ThemeManager.inst.Current.guiColor,
+            RTCheckpointEditor.CheckpointPreviewColorType.Custom => EditorConfig.Instance.CheckpointPreviewCustomColor.Value,
+            _ => LSColors.gray500,
+        };
     }
 }

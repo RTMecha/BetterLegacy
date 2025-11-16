@@ -202,6 +202,13 @@ namespace BetterLegacy.Core.Data.Beatmap
 			return jn;
 		}
 
+        /// <summary>
+        /// Gets the position at an index.
+        /// </summary>
+        /// <param name="index">Index of the position to get.</param>
+        /// <returns>Returns a multi position at an index if the index is in the range of <see cref="positions"/>, otherwise returns <see cref="pos"/>.</returns>
+        public Vector2 GetPosition(int index) => index == -1 ? pos : positions[index % positions.Count];
+
 		#endregion
 
 		#region Operators

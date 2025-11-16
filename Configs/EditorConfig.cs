@@ -350,6 +350,11 @@ namespace BetterLegacy.Configs
 
         public Setting<bool> EnableEditorCameraOnDrag { get; set; }
 
+        public Setting<bool> CheckpointPreviewEnabled { get; set; }
+        public Setting<Vector2> CheckpointPreviewSize { get; set; }
+        public Setting<RTCheckpointEditor.CheckpointPreviewColorType> CheckpointPreviewColorType { get; set; }
+        public Setting<Color> CheckpointPreviewCustomColor { get; set; }
+
         #endregion
 
         #region Modifiers
@@ -809,7 +814,7 @@ namespace BetterLegacy.Configs
             OutlineColor = Bind(this, PREVIEW, "Outline Color", new Color(0.2f, 0.5f, 1f), "Selected object outline color.");
             OutlineWidth = Bind(this, PREVIEW, "Outline Width", 0.05f, "Selected object outline width.");
 
-            ObjectDraggerHelper = Bind(this, PREVIEW, "Object Drag Helper Enabled", true, "If the object dragger helper should be enabled. This displays empty objects, the true origin of an object and allows dragging other types of objects.");
+            ObjectDraggerHelper = Bind(this, PREVIEW, "Object Drag Helper Enabled", true, "If the object dragger helper should display. This displays empty objects, the true origin of an object and allows dragging other types of objects.");
             ObjectDraggerHelperType = BindEnum(this, PREVIEW, "Object Drag Helper Type", TransformType.Position, "Transform type to drag.");
             ObjectDraggerHelperSize = Bind(this, PREVIEW, "Object Drag Helper Size", 16f, "Size of the Object Drag Helper.");
             ObjectDraggerHelperColor = Bind(this, PREVIEW, "Object Drag Helper Color", Color.white, "Size of the Object Drag Helper outline.");
@@ -826,12 +831,17 @@ namespace BetterLegacy.Configs
             SelectTextObjectsInPreview = Bind(this, PREVIEW, "Select Text Objects", false, "If text objects can be selected in the preview area.");
             SelectImageObjectsInPreview = Bind(this, PREVIEW, "Select Image Objects", true, "If image objects can be selected in the preview area.");
 
-            PreviewGridEnabled = Bind(this, PREVIEW, "Grid Enabled", false, "If the preview grid should be enabled.");
+            PreviewGridEnabled = Bind(this, PREVIEW, "Grid Enabled", false, "If the preview grid should display.");
             PreviewGridSize = Bind(this, PREVIEW, "Grid Size", 0.5f, "The overall size of the preview grid.");
             PreviewGridThickness = Bind(this, PREVIEW, "Grid Thickness", 0.1f, "The line thickness of the preview grid.", 0.01f, 2f);
             PreviewGridColor = Bind(this, PREVIEW, "Grid Color", Color.white, "The color of the preview grid.");
 
             EnableEditorCameraOnDrag = Bind(this, PREVIEW, "Enable Editor Camera On Drag", true, "If the editor camera should enable on preview drag.");
+
+            CheckpointPreviewEnabled = Bind(this, PREVIEW, "Checkpoint Preview Enabled", true, "If the checkpoint preview should display.");
+            CheckpointPreviewSize = Bind(this, PREVIEW, "Checkpoint Preview Size", new Vector2(6f, 6f), "The size of the checkpoint preview.");
+            CheckpointPreviewColorType = BindEnum(this, PREVIEW, "Checkpoint Preview Color Type", RTCheckpointEditor.CheckpointPreviewColorType.Default, "The type of color the checkpoint preview should use.");
+            CheckpointPreviewCustomColor = Bind(this, PREVIEW, "Checkpoint Preview Custom Color", LSColors.blue700, "The custom color the checkpoint preview should use if the color type is custom.");
 
             #endregion
 

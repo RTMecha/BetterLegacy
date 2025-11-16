@@ -14,6 +14,8 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers.Settings;
 using BetterLegacy.Core.Runtime;
 
+using UnityRandom = UnityEngine.Random;
+
 namespace BetterLegacy.Core.Managers
 {
     /// <summary>
@@ -671,7 +673,9 @@ namespace BetterLegacy.Core.Managers
         public static Vector2[] GetSpawnPositions(Checkpoint checkpoint)
         {
             var players = Players;
-            int randomIndex = !checkpoint ? -1 : RandomHelper.IntFromRange(RandomHelper.GetHash(checkpoint.id ?? string.Empty, RandomHelper.CurrentSeed), -1, checkpoint.positions.Count - 1);
+            //var hash = RandomHelper.GetHash(checkpoint.id ?? string.Empty, AudioManager.inst.CurrentAudioSource.time.ToString(), RandomHelper.CurrentSeed);
+            //int randomIndex = !checkpoint ? -1 : RandomHelper.IntFromRange(hash, -1, checkpoint.positions.Count - 1);
+            var randomIndex = !checkpoint ? -1 : UnityRandom.Range(-1, checkpoint.positions.Count);
             var positions = new Vector2[players.Count];
 
             for (int i = 0; i < players.Count; i++)
@@ -691,14 +695,15 @@ namespace BetterLegacy.Core.Managers
                 positions[i] = checkpoint.spawnType switch
                 {
                     Checkpoint.SpawnPositionType.Single => checkpoint.pos,
-                    Checkpoint.SpawnPositionType.RandomSingle => randomIndex == -1 ? checkpoint.pos : checkpoint.positions[randomIndex],
-                    Checkpoint.SpawnPositionType.Random => checkpoint.positions[RandomHelper.IntFromRange(RandomHelper.GetHash(checkpoint.id, RandomHelper.CurrentSeed), -1, checkpoint.positions.Count - 1)],
+                    Checkpoint.SpawnPositionType.RandomSingle => checkpoint.GetPosition(randomIndex),
+                    //Checkpoint.SpawnPositionType.Random => checkpoint.GetPosition(RandomHelper.IntFromRange(RandomHelper.GetHash(checkpoint.id ?? string.Empty, (AudioManager.inst.CurrentAudioSource.time * i).ToString(), RandomHelper.CurrentSeed), -1, checkpoint.positions.Count - 1)),
+                    Checkpoint.SpawnPositionType.Random => checkpoint.GetPosition(UnityRandom.Range(-1, checkpoint.positions.Count)),
                     _ => checkpoint.positions[i % checkpoint.positions.Count],
                 };
             }
 
             if (checkpoint && checkpoint.spawnType == Checkpoint.SpawnPositionType.RandomFillAll)
-                positions = positions.ToList().OrderBy(x => RandomHelper.GetHash(x.x, x.y, RandomHelper.CurrentSeed)).ToArray();
+                positions = positions.ToList().OrderBy(x => RandomHelper.GetHash(x.x, x.y, AudioManager.inst.CurrentAudioSource.time.ToString(), RandomHelper.CurrentSeed)).ToArray();
 
             return positions;
         }

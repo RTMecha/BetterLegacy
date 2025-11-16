@@ -18,6 +18,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public RectTransform Left { get; set; }
 
+        public RectTransform LeftContent { get; set; }
+
         #region Edit
 
         public Transform Edit { get; set; }
@@ -42,6 +44,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public ToggleButtonStorage HealToggle { get; set; }
         public ToggleButtonStorage SetTimeToggle { get; set; }
         public ToggleButtonStorage ReverseToggle { get; set; }
+        public Dropdown SpawnPositionDropdown { get; set; }
+
+        public RectTransform PositionContent { get; set; }
 
         #endregion
 
@@ -163,29 +168,61 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 }
             }
 
-            new Labels(Labels.InitSettings.Default.Parent(Left), "Respawn Dead Players");
-            var respawn = EditorPrefabHolder.Instance.ToggleButton.Duplicate(Left);
+            var scrollView = EditorPrefabHolder.Instance.ScrollView.Duplicate(RTCheckpointEditor.inst.transform, "Scroll View");
+            LeftContent = scrollView.transform.Find("Viewport/Content").AsRT();
+
+            scrollView.transform.AsRT().sizeDelta = new Vector2(735f, 624f);
+
+            var leftContentLayoutGroup = LeftContent.GetComponent<VerticalLayoutGroup>();
+            leftContentLayoutGroup.spacing = 8f;
+            leftContentLayoutGroup.padding = new RectOffset(left: 1, right: 0, top: 8, bottom: 8);
+
+            Left.GetComponent<VerticalLayoutGroup>().padding = new RectOffset(left: 8, right: 0, top: 8, bottom: 0);
+
+            Edit.SetParent(RTCheckpointEditor.inst.transform);
+            var editSpacer = Left.GetChild(0);
+            editSpacer.SetParent(RTCheckpointEditor.inst.transform);
+            Left.TransferChildren(LeftContent);
+            scrollView.transform.SetParent(Left);
+            Edit.SetParent(Left);
+            Edit.SetSiblingIndex(0);
+            editSpacer.SetParent(Left);
+            editSpacer.SetSiblingIndex(1);
+
+            new Labels(Labels.InitSettings.Default.Parent(LeftContent), "Respawn Dead Players");
+            var respawn = EditorPrefabHolder.Instance.ToggleButton.Duplicate(LeftContent);
             RespawnToggle = respawn.GetComponent<ToggleButtonStorage>();
             RespawnToggle.label.text = "Respawn";
             EditorThemeManager.AddToggle(RespawnToggle.toggle, graphic: RespawnToggle.label);
 
-            new Labels(Labels.InitSettings.Default.Parent(Left), "Heal Players");
-            var heal = EditorPrefabHolder.Instance.ToggleButton.Duplicate(Left);
+            new Labels(Labels.InitSettings.Default.Parent(LeftContent), "Heal Players");
+            var heal = EditorPrefabHolder.Instance.ToggleButton.Duplicate(LeftContent);
             HealToggle = heal.GetComponent<ToggleButtonStorage>();
             HealToggle.label.text = "Heal";
             EditorThemeManager.AddToggle(HealToggle.toggle, graphic: HealToggle.label);
             
-            new Labels(Labels.InitSettings.Default.Parent(Left), "Set time on reverse");
-            var setTime = EditorPrefabHolder.Instance.ToggleButton.Duplicate(Left);
+            new Labels(Labels.InitSettings.Default.Parent(LeftContent), "Set time on reverse");
+            var setTime = EditorPrefabHolder.Instance.ToggleButton.Duplicate(LeftContent);
             SetTimeToggle = setTime.GetComponent<ToggleButtonStorage>();
             SetTimeToggle.label.text = "Set Time";
             EditorThemeManager.AddToggle(SetTimeToggle.toggle, graphic: SetTimeToggle.label);
             
-            new Labels(Labels.InitSettings.Default.Parent(Left), "Reverse level on death");
-            var reverse = EditorPrefabHolder.Instance.ToggleButton.Duplicate(Left);
+            new Labels(Labels.InitSettings.Default.Parent(LeftContent), "Reverse level on death");
+            var reverse = EditorPrefabHolder.Instance.ToggleButton.Duplicate(LeftContent);
             ReverseToggle = reverse.GetComponent<ToggleButtonStorage>();
             ReverseToggle.label.text = "Reverse";
             EditorThemeManager.AddToggle(ReverseToggle.toggle, graphic: ReverseToggle.label);
+
+            new Labels(Labels.InitSettings.Default.Parent(LeftContent), "Spawn position type");
+            var spawnPositionType = EditorPrefabHolder.Instance.Dropdown.Duplicate(LeftContent);
+            SpawnPositionDropdown = spawnPositionType.GetComponent<Dropdown>();
+            SpawnPositionDropdown.options = CoreHelper.StringToOptionData("Single", "Fill All", "Random Single", "Random Fill All", "Random");
+            EditorThemeManager.AddDropdown(SpawnPositionDropdown);
+
+            new Labels(Labels.InitSettings.Default.Parent(LeftContent), "Multi Positions");
+            var positionScrollView = EditorPrefabHolder.Instance.ScrollView.Duplicate(LeftContent);
+            positionScrollView.transform.AsRT().sizeDelta = new Vector2(359f, 200f);
+            PositionContent = positionScrollView.transform.Find("Viewport/Content").AsRT();
 
             #endregion
         }
