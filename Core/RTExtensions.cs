@@ -94,13 +94,19 @@ namespace BetterLegacy.Core
         /// Transfers the children of the object to another.
         /// </summary>
         /// <param name="newParent">Parent to move the child objects to.</param>
-        public static void TransferChildren(this Transform transform, Transform newParent)
+        public static void TransferChildren(this Transform transform, Transform newParent, bool childrenRetainScale = true)
         {
             if (!newParent)
                 return;
 
             while (transform.childCount > 0)
-                transform.GetChild(0).SetParent(newParent);
+            {
+                var child = transform.GetChild(0);
+                var scale = child.localScale;
+                child.SetParent(newParent);
+                if (childrenRetainScale)
+                    child.localScale = scale;
+            }
         }
 
         /// <summary>

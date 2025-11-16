@@ -182,12 +182,16 @@ namespace BetterLegacy.Editor.Data.Dialogs
             Edit.SetParent(RTCheckpointEditor.inst.transform);
             var editSpacer = Left.GetChild(0);
             editSpacer.SetParent(RTCheckpointEditor.inst.transform);
+            editSpacer.localScale = Vector3.one;
             Left.TransferChildren(LeftContent);
             scrollView.transform.SetParent(Left);
+            scrollView.transform.localScale = Vector3.one;
             Edit.SetParent(Left);
             Edit.SetSiblingIndex(0);
+            Edit.localScale = Vector3.one;
             editSpacer.SetParent(Left);
             editSpacer.SetSiblingIndex(1);
+            editSpacer.localScale = Vector3.one;
 
             new Labels(Labels.InitSettings.Default.Parent(LeftContent), "Respawn Dead Players");
             var respawn = EditorPrefabHolder.Instance.ToggleButton.Duplicate(LeftContent);
