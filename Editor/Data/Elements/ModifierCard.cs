@@ -956,12 +956,14 @@ namespace BetterLegacy.Editor.Data.Elements
                             false, // pentagon
                             false, // misc
                             true, // polygon
-                        }, _val =>
+                        },
+                        _val =>
                         {
                             var shapeType = (ShapeType)_val;
                             if (shapeType == ShapeType.Text || shapeType == ShapeType.Image || shapeType == ShapeType.Polygon)
                                 modifier.SetValue(1, "0");
-
+                            else
+                                modifier.SetValue(1, _val.ToString());
                             modifier.SetValue(2, "0");
                             RenderModifier(reference);
                             Update(modifier, reference);
@@ -1002,12 +1004,14 @@ namespace BetterLegacy.Editor.Data.Elements
                             false, // pentagon
                             false, // misc
                             true, // polygon
-                        }, _val =>
+                        },
+                        _val =>
                         {
                             var shapeType = (ShapeType)_val;
                             if (shapeType == ShapeType.Text || shapeType == ShapeType.Image || shapeType == ShapeType.Polygon)
                                 modifier.SetValue(1, "0");
-
+                            else
+                                modifier.SetValue(1, _val.ToString());
                             modifier.SetValue(2, "0");
                             RenderModifier(reference);
                             Update(modifier, reference);
