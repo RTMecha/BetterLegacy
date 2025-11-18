@@ -249,9 +249,14 @@ namespace BetterLegacy.Core.Data.Beatmap
         public Vector2 origin;
 
         /// <summary>
-        /// The objects' full transform offset values.
+        /// The objects' full transform values.
         /// </summary>
         public FullTransform.Struct fullTransform = FullTransform.Struct.Default;
+
+        /// <summary>
+        /// The objects' full transform offset values.
+        /// </summary>
+        public FullTransform.Struct fullTransformOffset = default;
 
         /// <summary>
         /// The render layer of the object.
@@ -1198,10 +1203,16 @@ namespace BetterLegacy.Core.Data.Beatmap
                 fullTransform.rotation = Parser.TryParse(jn["tf"]["rot"], Vector3.zero);
             }
 
-            //if (jn["tf_offset"] != null)
-            //{
+            if (jn["tf_offset"] != null)
+            {
+                fullTransformOffset.position = Parser.TryParse(jn["tf_offset"]["pos"], Vector3.zero);
+                fullTransformOffset.scale = Parser.TryParse(jn["tf_offset"]["sca"], Vector3.zero);
+                fullTransformOffset.rotation = Parser.TryParse(jn["tf_offset"]["rot"], Vector3.zero);
 
-            //}
+                PositionOffset = fullTransformOffset.position;
+                ScaleOffset = fullTransformOffset.scale;
+                RotationOffset = fullTransformOffset.rotation;
+            }
 
             if (jn["ed"] != null)
                 editorData = ObjectEditorData.Parse(jn["ed"]);
@@ -1421,6 +1432,13 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["tf"]["sca"] = fullTransform.scale.ToJSON();
             if (fullTransform.rotation != Vector3.zero)
                 jn["tf"]["rot"] = fullTransform.rotation.ToJSON();
+            
+            if (fullTransformOffset.position != Vector3.zero)
+                jn["tf_offset"]["pos"] = fullTransformOffset.position.ToJSON();
+            if (fullTransformOffset.scale != Vector3.zero)
+                jn["tf_offset"]["sca"] = fullTransformOffset.scale.ToJSON();
+            if (fullTransformOffset.rotation != Vector3.zero)
+                jn["tf_offset"]["rot"] = fullTransformOffset.rotation.ToJSON();
 
             this.WriteModifiersJSON(jn);
 
@@ -1573,14 +1591,21 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Custom Interpolation
 
+        public void UpdateDefaultTransform()
+        {
+            fullTransformOffset.position = PositionOffset;
+            fullTransformOffset.scale = ScaleOffset;
+            fullTransformOffset.rotation = RotationOffset;
+        }
+
         public void ResetOffsets()
         {
             reactivePositionOffset = Vector3.zero;
             reactiveScaleOffset = Vector3.zero;
             reactiveRotationOffset = 0f;
-            positionOffset = Vector3.zero;
-            scaleOffset = Vector3.zero;
-            rotationOffset = Vector3.zero;
+            PositionOffset = fullTransformOffset.position;
+            ScaleOffset = fullTransformOffset.scale;
+            RotationOffset = fullTransformOffset.rotation;
         }
 
         public Vector3 GetTransformOffset(int type) => type switch

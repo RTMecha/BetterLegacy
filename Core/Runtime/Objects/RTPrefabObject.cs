@@ -139,9 +139,9 @@ namespace BetterLegacy.Core.Runtime.Objects
 
             if (Parent)
             {
-                Parent.localPosition = Position + PrefabObject.PositionOffset;
-                Parent.localScale = Scale + PrefabObject.ScaleOffset;
-                Parent.localEulerAngles = Rotation + PrefabObject.RotationOffset;
+                Parent.localPosition = Position + PrefabObject.PositionOffset + PrefabObject.fullTransform.position;
+                Parent.localScale = RTMath.Scale(Scale + PrefabObject.ScaleOffset, PrefabObject.fullTransform.scale);
+                Parent.localEulerAngles = Rotation + PrefabObject.RotationOffset + PrefabObject.fullTransform.rotation;
             }
 
             PostTick();
@@ -220,9 +220,7 @@ namespace BetterLegacy.Core.Runtime.Objects
                 return;
             }
 
-            prefabObject.positionOffset = Vector3.zero;
-            prefabObject.scaleOffset = Vector3.zero;
-            prefabObject.rotationOffset = Vector3.zero;
+            prefabObject.ResetOffsets();
 
             var prefab = Prefab;
             if (!prefab)

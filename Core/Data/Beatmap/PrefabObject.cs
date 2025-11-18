@@ -49,16 +49,6 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public bool expanded;
 
-        /// <summary>
-        /// Transform offsets.
-        /// </summary>
-        public List<EventKeyframe> events = new List<EventKeyframe>();
-
-        /// <summary>
-        /// Depth offset of the Prefab Object.
-        /// </summary>
-        public float depth;
-
         #region Prefab
 
         /// <summary>
@@ -239,6 +229,30 @@ namespace BetterLegacy.Core.Data.Beatmap
         }
 
         public float SpawnDuration => GetObjectLifeLength(noAutokill: true);
+
+        #endregion
+
+        #region Transforms
+
+        /// <summary>
+        /// Transform offsets.
+        /// </summary>
+        public List<EventKeyframe> events = new List<EventKeyframe>();
+
+        /// <summary>
+        /// Depth offset of the Prefab Object.
+        /// </summary>
+        public float depth;
+
+        /// <summary>
+        /// The objects' full transform values.
+        /// </summary>
+        public FullTransform.Struct fullTransform = FullTransform.Struct.Default;
+
+        /// <summary>
+        /// The objects' full transform offset values.
+        /// </summary>
+        public FullTransform.Struct fullTransformOffset = default;
 
         #endregion
 
@@ -554,6 +568,24 @@ namespace BetterLegacy.Core.Data.Beatmap
             else
                 SetDefaultTransformOffsets();
 
+            if (jn["tf"] != null)
+            {
+                fullTransform.position = Parser.TryParse(jn["tf"]["pos"], Vector3.zero);
+                fullTransform.scale = Parser.TryParse(jn["tf"]["sca"], Vector3.one);
+                fullTransform.rotation = Parser.TryParse(jn["tf"]["rot"], Vector3.zero);
+            }
+
+            if (jn["tf_offset"] != null)
+            {
+                fullTransformOffset.position = Parser.TryParse(jn["tf_offset"]["pos"], Vector3.zero);
+                fullTransformOffset.scale = Parser.TryParse(jn["tf_offset"]["sca"], Vector3.zero);
+                fullTransformOffset.rotation = Parser.TryParse(jn["tf_offset"]["rot"], Vector3.zero);
+
+                PositionOffset = fullTransformOffset.position;
+                ScaleOffset = fullTransformOffset.scale;
+                RotationOffset = fullTransformOffset.rotation;
+            }
+
             this.ReadModifiersJSON(jn);
         }
 
@@ -645,6 +677,20 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["e"]["rot"]["rz"] = events[2].randomValues[2];
             }
 
+            if (fullTransform.position != Vector3.zero)
+                jn["tf"]["pos"] = fullTransform.position.ToJSON();
+            if (fullTransform.scale != Vector3.one)
+                jn["tf"]["sca"] = fullTransform.scale.ToJSON();
+            if (fullTransform.rotation != Vector3.zero)
+                jn["tf"]["rot"] = fullTransform.rotation.ToJSON();
+
+            if (fullTransformOffset.position != Vector3.zero)
+                jn["tf_offset"]["pos"] = fullTransformOffset.position.ToJSON();
+            if (fullTransformOffset.scale != Vector3.zero)
+                jn["tf_offset"]["sca"] = fullTransformOffset.scale.ToJSON();
+            if (fullTransformOffset.rotation != Vector3.zero)
+                jn["tf_offset"]["rot"] = fullTransformOffset.rotation.ToJSON();
+
             this.WriteModifiersJSON(jn);
 
             return jn;
@@ -711,15 +757,22 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             return ((duration + prefab.offset) / Speed) - prefab.offset;
         }
-        
+
+        public void UpdateDefaultTransform()
+        {
+            fullTransformOffset.position = PositionOffset;
+            fullTransformOffset.scale = ScaleOffset;
+            fullTransformOffset.rotation = RotationOffset;
+        }
+
         public void ResetOffsets()
         {
             reactivePositionOffset = Vector3.zero;
             reactiveScaleOffset = Vector3.zero;
             reactiveRotationOffset = 0f;
-            positionOffset = Vector3.zero;
-            scaleOffset = Vector3.zero;
-            rotationOffset = Vector3.zero;
+            PositionOffset = fullTransformOffset.position;
+            ScaleOffset = fullTransformOffset.scale;
+            RotationOffset = fullTransformOffset.rotation;
         }
 
         public Vector3 GetTransformOffset(int type) => type switch

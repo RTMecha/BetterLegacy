@@ -155,9 +155,9 @@ namespace BetterLegacy.Core.Runtime.Objects
             {
                 backgroundObject.reactiveSize = Vector2.zero;
 
-                gameObject.transform.localPosition = new Vector3(backgroundObject.pos.x, backgroundObject.pos.y, 32f + backgroundObject.depth * 10f + backgroundObject.zposition) + backgroundObject.positionOffset;
-                gameObject.transform.localScale = new Vector3(backgroundObject.scale.x, backgroundObject.scale.y, backgroundObject.zscale) + backgroundObject.scaleOffset;
-                gameObject.transform.localRotation = Quaternion.Euler(new Vector3(backgroundObject.rotation.x, backgroundObject.rotation.y, backgroundObject.rot) + backgroundObject.rotationOffset);
+                gameObject.transform.localPosition = new Vector3(backgroundObject.pos.x, backgroundObject.pos.y, 32f + backgroundObject.depth * 10f + backgroundObject.zposition) + backgroundObject.positionOffset + backgroundObject.fullTransform.position;
+                gameObject.transform.localScale = RTMath.Scale(new Vector3(backgroundObject.scale.x, backgroundObject.scale.y, backgroundObject.zscale) + backgroundObject.scaleOffset, backgroundObject.fullTransform.scale);
+                gameObject.transform.localRotation = Quaternion.Euler(new Vector3(backgroundObject.rotation.x, backgroundObject.rotation.y, backgroundObject.rot) + backgroundObject.rotationOffset + backgroundObject.fullTransform.rotation);
                 return;
             }
 
@@ -175,12 +175,12 @@ namespace BetterLegacy.Core.Runtime.Objects
                 gameObject.transform.localPosition =
                     new Vector3(backgroundObject.pos.x,
                     backgroundObject.pos.y,
-                    32f + backgroundObject.depth * 10f + backgroundObject.zposition) + backgroundObject.positionOffset;
+                    32f + backgroundObject.depth * 10f + backgroundObject.zposition) + backgroundObject.positionOffset + backgroundObject.fullTransform.position;
                 gameObject.transform.localScale =
-                    new Vector3(backgroundObject.scale.x, backgroundObject.scale.y, backgroundObject.zscale) +
-                    new Vector3(backgroundObject.reactiveSize.x, backgroundObject.reactiveSize.y, 0f) + backgroundObject.scaleOffset;
+                    RTMath.Scale(new Vector3(backgroundObject.scale.x, backgroundObject.scale.y, backgroundObject.zscale) +
+                    new Vector3(backgroundObject.reactiveSize.x, backgroundObject.reactiveSize.y, 0f) + backgroundObject.scaleOffset, backgroundObject.fullTransform.scale);
                 gameObject.transform.localRotation =
-                    Quaternion.Euler(new Vector3(backgroundObject.rotation.x, backgroundObject.rotation.y, backgroundObject.rot) + backgroundObject.rotationOffset);
+                    Quaternion.Euler(new Vector3(backgroundObject.rotation.x, backgroundObject.rotation.y, backgroundObject.rot) + backgroundObject.rotationOffset + backgroundObject.fullTransform.rotation);
 
                 return;
             }
@@ -194,13 +194,13 @@ namespace BetterLegacy.Core.Runtime.Objects
             gameObject.transform.localPosition =
                 new Vector3(backgroundObject.pos.x + x,
                 backgroundObject.pos.y + y,
-                32f + backgroundObject.depth * 10f + z + backgroundObject.zposition) + backgroundObject.positionOffset;
+                32f + backgroundObject.depth * 10f + z + backgroundObject.zposition) + backgroundObject.positionOffset + backgroundObject.fullTransform.position;
             gameObject.transform.localScale =
-                new Vector3(backgroundObject.scale.x, backgroundObject.scale.y, backgroundObject.zscale) +
-                new Vector3(backgroundObject.reactiveSize.x, backgroundObject.reactiveSize.y, 0f) + backgroundObject.scaleOffset;
+                RTMath.Scale(new Vector3(backgroundObject.scale.x, backgroundObject.scale.y, backgroundObject.zscale) +
+                new Vector3(backgroundObject.reactiveSize.x, backgroundObject.reactiveSize.y, 0f) + backgroundObject.scaleOffset, backgroundObject.fullTransform.scale);
             gameObject.transform.localRotation = Quaternion.Euler(
                 new Vector3(backgroundObject.rotation.x, backgroundObject.rotation.y,
-                backgroundObject.rot + rot) + backgroundObject.rotationOffset);
+                backgroundObject.rot + rot) + backgroundObject.rotationOffset + backgroundObject.fullTransform.rotation);
         }
 
         public override string ToString() => backgroundObject?.ToString() ?? string.Empty;

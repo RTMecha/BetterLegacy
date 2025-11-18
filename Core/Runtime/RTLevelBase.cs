@@ -750,12 +750,7 @@ namespace BetterLegacy.Core.Runtime
             if (!beatmapObject)
                 return;
 
-            beatmapObject.reactivePositionOffset = Vector3.zero;
-            beatmapObject.reactiveScaleOffset = Vector3.zero;
-            beatmapObject.reactiveRotationOffset = 0f;
-            beatmapObject.positionOffset = Vector3.zero;
-            beatmapObject.scaleOffset = Vector3.zero;
-            beatmapObject.rotationOffset = Vector3.zero;
+            beatmapObject.ResetOffsets();
 
             // Recursing updating.
             if (recursive)
@@ -1216,9 +1211,7 @@ namespace BetterLegacy.Core.Runtime
         /// <param name="reinsert">If the object should be reinserted.</param>
         public virtual void ReinitObject(BackgroundObject backgroundObject, bool reinsert = true)
         {
-            backgroundObject.positionOffset = Vector3.zero;
-            backgroundObject.scaleOffset = Vector3.zero;
-            backgroundObject.rotationOffset = Vector3.zero;
+            backgroundObject.ResetOffsets();
 
             RemoveBackgroundObject(backgroundObject);
 
@@ -1550,9 +1543,7 @@ namespace BetterLegacy.Core.Runtime
             if (!prefabObject)
                 return;
 
-            prefabObject.positionOffset = Vector3.zero;
-            prefabObject.scaleOffset = Vector3.zero;
-            prefabObject.rotationOffset = Vector3.zero;
+            prefabObject.ResetOffsets();
 
             RemovePrefab(prefabObject);
 
