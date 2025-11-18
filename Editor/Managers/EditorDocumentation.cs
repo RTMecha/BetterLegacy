@@ -1037,10 +1037,7 @@ namespace BetterLegacy.Editor.Managers
                     var active = RTString.SearchString(documentationSearch, document.Name);
                     document.PopupButton?.SetActive(active);
                     if (active && document.PopupButton && document.PopupButton.TryGetComponent(out Button button))
-                    {
-                        button.onClick.ClearAll();
-                        button.onClick.AddListener(() => OpenDocument(document));
-                    }
+                        button.onClick.NewListener(() => OpenDocument(document));
                 }
         }
 

@@ -183,39 +183,30 @@ namespace BetterLegacy.Core.Helpers
             var btR = tf.Find("<").GetComponent<Button>();
             var btL = tf.Find(">").GetComponent<Button>();
 
-            btR.onClick.ClearAll();
-            btR.onClick.AddListener(() =>
+            btR.onClick.NewListener(() =>
             {
                 if (float.TryParse(inputField.text, out float result))
                     inputField.text = RTMath.ClampZero(result - (Input.GetKey(KeyCode.LeftAlt) ? amount / multiply : Input.GetKey(KeyCode.LeftControl) ? amount * multiply : amount), min, max).ToString();
             });
-
-            btL.onClick.ClearAll();
-            btL.onClick.AddListener(() =>
+            btL.onClick.NewListener(() =>
             {
                 if (float.TryParse(inputField.text, out float result))
                     inputField.text = RTMath.ClampZero(result + (Input.GetKey(KeyCode.LeftAlt) ? amount / multiply : Input.GetKey(KeyCode.LeftControl) ? amount * multiply : amount), min, max).ToString();
             });
 
             if (tf.TryFind("<<", out Transform btLargeRTF) && btLargeRTF.gameObject.TryGetComponent(out Button btLargeR))
-            {
-                btLargeR.onClick.ClearAll();
-                btLargeR.onClick.AddListener(() =>
+                btLargeR.onClick.NewListener(() =>
                 {
                     if (float.TryParse(inputField.text, out float result))
                         inputField.text = RTMath.ClampZero(result - ((Input.GetKey(KeyCode.LeftAlt) ? amount / multiply : Input.GetKey(KeyCode.LeftControl) ? amount * multiply : amount) * 10f), min, max).ToString();
                 });
-            }
 
             if (tf.TryFind(">>", out Transform btLargeLTF) && btLargeLTF.gameObject.TryGetComponent(out Button btLargeL))
-            {
-                btLargeL.onClick.ClearAll();
-                btLargeL.onClick.AddListener(() =>
+                btLargeL.onClick.NewListener(() =>
                 {
                     if (float.TryParse(inputField.text, out float result))
                         inputField.text = RTMath.ClampZero(result + ((Input.GetKey(KeyCode.LeftAlt) ? amount / multiply : Input.GetKey(KeyCode.LeftControl) ? amount * multiply : amount) * 10f), min, max).ToString();
                 });
-            }
         }
 
         public static void IncreaseDecreaseButtonsInt(InputField inputField, int amount = 1, int min = 0, int max = 0, Transform t = null)
@@ -227,15 +218,12 @@ namespace BetterLegacy.Core.Helpers
             var btR = tf.Find("<").GetComponent<Button>();
             var btL = tf.Find(">").GetComponent<Button>();
 
-            btR.onClick.ClearAll();
-            btR.onClick.AddListener(() =>
+            btR.onClick.NewListener(() =>
             {
                 if (float.TryParse(inputField.text, out float result))
                     inputField.text = RTMath.ClampZero(result - (Input.GetKey(KeyCode.LeftControl) ? amount * 10 : amount), min, max).ToString();
             });
-
-            btL.onClick.ClearAll();
-            btL.onClick.AddListener(() =>
+            btL.onClick.NewListener(() =>
             {
                 if (float.TryParse(inputField.text, out float result))
                     inputField.text = RTMath.ClampZero(result + (Input.GetKey(KeyCode.LeftControl) ? amount * 10 : amount), min, max).ToString();
@@ -244,15 +232,12 @@ namespace BetterLegacy.Core.Helpers
 
         public static void IncreaseDecreaseButtons(InputFieldStorage inputFieldStorage, float amount = 0.1f, float multiply = 10f, float min = 0f, float max = 0f)
         {
-            inputFieldStorage.leftButton.onClick.ClearAll();
-            inputFieldStorage.leftButton.onClick.AddListener(() =>
+            inputFieldStorage.leftButton.onClick.NewListener(() =>
             {
                 if (float.TryParse(inputFieldStorage.inputField.text, out float result))
                     inputFieldStorage.inputField.text = RTMath.ClampZero(result - amount, min, max).ToString();
             });
-
-            inputFieldStorage.rightButton.onClick.ClearAll();
-            inputFieldStorage.rightButton.onClick.AddListener(() =>
+            inputFieldStorage.rightButton.onClick.NewListener(() =>
             {
                 if (float.TryParse(inputFieldStorage.inputField.text, out float result))
                     inputFieldStorage.inputField.text = RTMath.ClampZero(result + amount, min, max).ToString();
@@ -261,15 +246,12 @@ namespace BetterLegacy.Core.Helpers
             if (inputFieldStorage.leftGreaterButton == null || inputFieldStorage.rightGreaterButton == null)
                 return;
 
-            inputFieldStorage.leftGreaterButton.onClick.ClearAll();
-            inputFieldStorage.leftGreaterButton.onClick.AddListener(() =>
+            inputFieldStorage.leftGreaterButton.onClick.NewListener(() =>
             {
                 if (float.TryParse(inputFieldStorage.inputField.text, out float result))
                     inputFieldStorage.inputField.text = RTMath.ClampZero(result - (amount * multiply), min, max).ToString();
             });
-
-            inputFieldStorage.rightGreaterButton.onClick.ClearAll();
-            inputFieldStorage.rightGreaterButton.onClick.AddListener(() =>
+            inputFieldStorage.rightGreaterButton.onClick.NewListener(() =>
             {
                 if (float.TryParse(inputFieldStorage.inputField.text, out float result))
                     inputFieldStorage.inputField.text = RTMath.ClampZero(result + (amount * multiply), min, max).ToString();
@@ -278,15 +260,12 @@ namespace BetterLegacy.Core.Helpers
         
         public static void IncreaseDecreaseButtonsInt(InputFieldStorage inputFieldStorage, int amount = 1, int multiply = 10, float min = 0f, float max = 0f)
         {
-            inputFieldStorage.leftButton.onClick.ClearAll();
-            inputFieldStorage.leftButton.onClick.AddListener(() =>
+            inputFieldStorage.leftButton.onClick.NewListener(() =>
             {
                 if (int.TryParse(inputFieldStorage.inputField.text, out int result))
                     inputFieldStorage.inputField.text = RTMath.ClampZero(result - amount, min, max).ToString();
             });
-
-            inputFieldStorage.rightButton.onClick.ClearAll();
-            inputFieldStorage.rightButton.onClick.AddListener(() =>
+            inputFieldStorage.rightButton.onClick.NewListener(() =>
             {
                 if (int.TryParse(inputFieldStorage.inputField.text, out int result))
                     inputFieldStorage.inputField.text = RTMath.ClampZero(result + amount, min, max).ToString();
@@ -295,15 +274,12 @@ namespace BetterLegacy.Core.Helpers
             if (inputFieldStorage.leftGreaterButton == null || inputFieldStorage.rightGreaterButton == null)
                 return;
 
-            inputFieldStorage.leftGreaterButton.onClick.ClearAll();
-            inputFieldStorage.leftGreaterButton.onClick.AddListener(() =>
+            inputFieldStorage.leftGreaterButton.onClick.NewListener(() =>
             {
                 if (int.TryParse(inputFieldStorage.inputField.text, out int result))
                     inputFieldStorage.inputField.text = RTMath.ClampZero(result - (amount * multiply), min, max).ToString();
             });
-
-            inputFieldStorage.rightGreaterButton.onClick.ClearAll();
-            inputFieldStorage.rightGreaterButton.onClick.AddListener(() =>
+            inputFieldStorage.rightGreaterButton.onClick.NewListener(() =>
             {
                 if (int.TryParse(inputFieldStorage.inputField.text, out int result))
                     inputFieldStorage.inputField.text = RTMath.ClampZero(result + (amount * multiply), min, max).ToString();

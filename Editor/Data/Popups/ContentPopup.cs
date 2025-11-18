@@ -254,9 +254,8 @@ namespace BetterLegacy.Editor.Data.Popups
         /// <param name="onSearch">Runs when the user types in the search field.</param>
         public void UpdateSearchFunction(string searchTerm, Action<string> onSearch)
         {
-            SearchField.onValueChanged.ClearAll();
-            SearchTerm = searchTerm;
-            SearchField.onValueChanged.AddListener(_val => onSearch?.Invoke(_val));
+            SearchField.SetTextWithoutNotify(searchTerm);
+            SearchField.onValueChanged.NewListener(_val => onSearch?.Invoke(_val));
         }
 
         /// <summary>

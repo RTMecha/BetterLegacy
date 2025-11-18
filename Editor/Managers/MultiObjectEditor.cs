@@ -2569,8 +2569,7 @@ namespace BetterLegacy.Editor.Managers
                     selected.SetActive(false);
 
                     var button = colorGUI.GetComponent<Button>();
-                    button.onClick.ClearAll();
-                    button.onClick.AddListener(() =>
+                    button.onClick.NewListener(() =>
                     {
                         disableX.gameObject.SetActive(false);
                         currentMultiColorSelection = index;
@@ -2643,8 +2642,7 @@ namespace BetterLegacy.Editor.Managers
                     selected.SetActive(false);
 
                     var button = colorGUI.GetComponent<Button>();
-                    button.onClick.ClearAll();
-                    button.onClick.AddListener(() =>
+                    button.onClick.NewListener(() =>
                     {
                         disableGradientX.gameObject.SetActive(false);
                         currentMultiGradientColorSelection = index;
@@ -3607,7 +3605,6 @@ namespace BetterLegacy.Editor.Managers
             {
                 case ShapeType.Text: {
                         var textIF = shapeSettings.Find("5").GetComponent<InputField>();
-                        textIF.onValueChanged.ClearAll();
                         if (!updatedText)
                         {
                             updatedText = true;
@@ -3616,9 +3613,9 @@ namespace BetterLegacy.Editor.Managers
                             textIF.GetPlaceholderText().text = "Enter text...";
                             textIF.lineType = InputField.LineType.MultiLineNewline;
 
-                            textIF.text = string.Empty;
+                            textIF.SetTextWithoutNotify(string.Empty);
                         }
-                        textIF.onValueChanged.AddListener(_val =>
+                        textIF.onValueChanged.NewListener(_val =>
                         {
                             foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
                             {
@@ -4226,8 +4223,7 @@ namespace BetterLegacy.Editor.Managers
             EditorThemeManager.AddGraphic(pasteAllTypesToAllText, ThemeGroup.Paste_Text);
 
             var pasteAllTypesToAll = pasteAllTypesToAllObject.GetComponent<Button>();
-            pasteAllTypesToAll.onClick.ClearAll();
-            pasteAllTypesToAll.onClick.AddListener(() => { pasteAll?.Invoke(); });
+            pasteAllTypesToAll.onClick.NewListener(() => pasteAll?.Invoke());
 
             var pasteAllTypesToIndexObject = EditorPrefabHolder.Instance.Function1Button.Duplicate(pasteAllTypesBaseRT, name);
             pasteAllTypesToIndexObject.transform.localScale = Vector3.one;
@@ -4241,8 +4237,7 @@ namespace BetterLegacy.Editor.Managers
             EditorThemeManager.AddGraphic(pasteAllTypesToIndexText, ThemeGroup.Paste_Text);
 
             var pasteAllTypesToIndex = pasteAllTypesToIndexObject.GetComponent<Button>();
-            pasteAllTypesToIndex.onClick.ClearAll();
-            pasteAllTypesToIndex.onClick.AddListener(() => { pasteToIndex?.Invoke(index.text); });
+            pasteAllTypesToIndex.onClick.NewListener(() => pasteToIndex?.Invoke(index.text));
 
             EditorHelper.SetComplexity(index.transform.parent.gameObject, Complexity.Advanced);
             EditorHelper.SetComplexity(pasteAllTypesBase, Complexity.Advanced);

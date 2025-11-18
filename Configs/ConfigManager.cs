@@ -509,9 +509,8 @@ namespace BetterLegacy.Configs
                         var booleanToggle = boolean.AddComponent<Toggle>();
                         booleanToggle.image = booleanImage;
                         booleanToggle.graphic = checkmarkImage;
-                        booleanToggle.onValueChanged.ClearAll();
-                        booleanToggle.isOn = boolSetting.Value;
-                        booleanToggle.onValueChanged.AddListener(_val => setting.BoxedValue = _val);
+                        booleanToggle.SetIsOnWithoutNotify(boolSetting.Value);
+                        booleanToggle.onValueChanged.NewListener(_val => setting.BoxedValue = _val);
 
                         EditorThemeManager.ApplyToggle(booleanToggle);
                     }
@@ -524,9 +523,8 @@ namespace BetterLegacy.Configs
 
                         var integerStorage = integer.GetComponent<InputFieldStorage>();
 
-                        integerStorage.inputField.onValueChanged.ClearAll();
-                        integerStorage.inputField.text = intSetting.Value.ToString();
-                        integerStorage.inputField.onValueChanged.AddListener(_val =>
+                        integerStorage.SetTextWithoutNotify(intSetting.Value.ToString());
+                        integerStorage.OnValueChanged.NewListener(_val =>
                         {
                             if (int.TryParse(_val, out int value))
                             {
@@ -555,9 +553,8 @@ namespace BetterLegacy.Configs
 
                         var floatingPointStorage = floatingPoint.GetComponent<InputFieldStorage>();
 
-                        floatingPointStorage.inputField.onValueChanged.ClearAll();
-                        floatingPointStorage.inputField.text = floatSetting.Value.ToString();
-                        floatingPointStorage.inputField.onValueChanged.AddListener(_val =>
+                        floatingPointStorage.SetTextWithoutNotify(floatSetting.Value.ToString());
+                        floatingPointStorage.OnValueChanged.NewListener(_val =>
                         {
                             if (float.TryParse(_val, out float value))
                             {
@@ -589,9 +586,8 @@ namespace BetterLegacy.Configs
 
                             var floatingPointStorage = floatingPoint.GetComponent<InputFieldStorage>();
 
-                            floatingPointStorage.inputField.onValueChanged.ClearAll();
-                            floatingPointStorage.inputField.text = vector2Setting.Value.x.ToString();
-                            floatingPointStorage.inputField.onValueChanged.AddListener(_val =>
+                            floatingPointStorage.SetTextWithoutNotify(vector2Setting.Value.x.ToString());
+                            floatingPointStorage.OnValueChanged.NewListener(_val =>
                             {
                                 if (float.TryParse(_val, out float value))
                                     setting.BoxedValue = new Vector2(value, vector2Setting.Value.y);
@@ -615,9 +611,8 @@ namespace BetterLegacy.Configs
 
                             var floatingPointStorage = floatingPoint.GetComponent<InputFieldStorage>();
 
-                            floatingPointStorage.inputField.onValueChanged.ClearAll();
-                            floatingPointStorage.inputField.text = vector2Setting.Value.y.ToString();
-                            floatingPointStorage.inputField.onValueChanged.AddListener(_val =>
+                            floatingPointStorage.SetTextWithoutNotify(vector2Setting.Value.y.ToString());
+                            floatingPointStorage.OnValueChanged.NewListener(_val =>
                             {
                                 if (float.TryParse(_val, out float value))
                                     setting.BoxedValue = new Vector2(vector2Setting.Value.x, value);
@@ -646,9 +641,8 @@ namespace BetterLegacy.Configs
 
                             var floatingPointStorage = floatingPoint.GetComponent<InputFieldStorage>();
 
-                            floatingPointStorage.inputField.onValueChanged.ClearAll();
-                            floatingPointStorage.inputField.text = vector2Setting.Value.x.ToString();
-                            floatingPointStorage.inputField.onValueChanged.AddListener(_val =>
+                            floatingPointStorage.SetTextWithoutNotify(vector2Setting.Value.x.ToString());
+                            floatingPointStorage.OnValueChanged.NewListener(_val =>
                             {
                                 if (int.TryParse(_val, out int value))
                                     setting.BoxedValue = new Vector2Int(value, vector2Setting.Value.y);
@@ -672,9 +666,8 @@ namespace BetterLegacy.Configs
 
                             var floatingPointStorage = floatingPoint.GetComponent<InputFieldStorage>();
 
-                            floatingPointStorage.inputField.onValueChanged.ClearAll();
-                            floatingPointStorage.inputField.text = vector2Setting.Value.y.ToString();
-                            floatingPointStorage.inputField.onValueChanged.AddListener(_val =>
+                            floatingPointStorage.SetTextWithoutNotify(vector2Setting.Value.y.ToString());
+                            floatingPointStorage.OnValueChanged.NewListener(_val =>
                             {
                                 if (int.TryParse(_val, out int value))
                                     setting.BoxedValue = new Vector2Int(vector2Setting.Value.x, value);
@@ -699,11 +692,10 @@ namespace BetterLegacy.Configs
                         var stringObject = numberFieldStorage.transform.Find("input").gameObject.Duplicate(gameObject.transform, "Input");
                         stringObject.transform.AsRT().sizeDelta = new Vector2(358f, 32f);
                         var stringInputField = stringObject.GetComponent<InputField>();
-                        stringInputField.onValueChanged.ClearAll();
                         stringInputField.textComponent.alignment = TextAnchor.MiddleLeft;
                         ((Text)stringInputField.placeholder).alignment = TextAnchor.MiddleLeft;
-                        stringInputField.text = stringSetting.Value;
-                        stringInputField.onValueChanged.AddListener(_val => { stringSetting.Value = _val; });
+                        stringInputField.SetTextWithoutNotify(stringSetting.Value);
+                        stringInputField.onValueChanged.NewListener(_val => stringSetting.Value = _val);
 
                         EditorThemeManager.ApplyInputField(stringInputField);
                     }
@@ -723,11 +715,10 @@ namespace BetterLegacy.Configs
                         stringObject.transform.AsRT().anchoredPosition = new Vector2(535f, 0f);
                         stringObject.transform.AsRT().sizeDelta = new Vector2(238f, 32f);
                         var stringInputField = stringObject.GetComponent<InputField>();
-                        stringInputField.onValueChanged.ClearAll();
                         stringInputField.textComponent.alignment = TextAnchor.MiddleLeft;
                         ((Text)stringInputField.placeholder).alignment = TextAnchor.MiddleLeft;
-                        stringInputField.text = RTColors.ColorToHexOptional(colorSetting.Value);
-                        stringInputField.onValueChanged.AddListener(_val =>
+                        stringInputField.SetTextWithoutNotify(RTColors.ColorToHexOptional(colorSetting.Value));
+                        stringInputField.onValueChanged.NewListener(_val =>
                         {
                             colorSetting.Value = _val.Length == 8 ? LSColors.HexToColorAlpha(_val) : LSColors.HexToColor(_val);
                             colorImage.color = colorSetting.Value;
@@ -794,8 +785,8 @@ namespace BetterLegacy.Configs
                             dropdown.options.Add(new Dropdown.OptionData(name ?? "Invalid Value"));
                         }
 
-                        dropdown.value = (int)setting.BoxedValue;
-                        dropdown.onValueChanged.AddListener(_val => setting.BoxedValue = _val);
+                        dropdown.SetValueWithoutNotify((int)setting.BoxedValue);
+                        dropdown.onValueChanged.NewListener(_val => setting.BoxedValue = _val);
 
                         EditorThemeManager.ApplyDropdown(dropdown);
                     }
@@ -808,7 +799,6 @@ namespace BetterLegacy.Configs
 
                         RectValues.Default.AnchoredPosition(196f, 0f).SizeDelta(300f, 32f).AssignToRectTransform(dropdown.transform.AsRT());
 
-                        dropdown.onValueChanged.ClearAll();
                         dropdown.options.Clear();
                         hide.DisabledOptions = new List<bool>();
                         hide.remove = true;
@@ -823,8 +813,8 @@ namespace BetterLegacy.Configs
                             dropdown.options.Add(new Dropdown.OptionData(value.DisplayName ?? "Invalid Value"));
                         }
 
-                        dropdown.value = customEnum.Ordinal;
-                        dropdown.onValueChanged.AddListener(_val => setting.BoxedValue = customEnum.GetBoxedValue(_val));
+                        dropdown.SetValueWithoutNotify(customEnum.Ordinal);
+                        dropdown.onValueChanged.NewListener(_val => setting.BoxedValue = customEnum.GetBoxedValue(_val));
 
                         EditorThemeManager.ApplyDropdown(dropdown);
                     }
@@ -859,9 +849,8 @@ namespace BetterLegacy.Configs
                 num++;
             }
 
-            pageFieldStorage.inputField.onValueChanged.ClearAll();
-            pageFieldStorage.inputField.text = currentSubTabPage.ToString();
-            pageFieldStorage.inputField.onValueChanged.AddListener(_val =>
+            pageFieldStorage.SetTextWithoutNotify(currentSubTabPage.ToString());
+            pageFieldStorage.OnValueChanged.NewListener(_val =>
             {
                 if (int.TryParse(_val, out int p))
                 {
@@ -875,14 +864,12 @@ namespace BetterLegacy.Configs
             else
                 TriggerHelper.AddEventTriggers(pageFieldStorage.inputField.gameObject);
 
-            pageFieldStorage.leftGreaterButton.onClick.ClearAll();
-            pageFieldStorage.leftGreaterButton.onClick.AddListener(() =>
+            pageFieldStorage.leftGreaterButton.onClick.NewListener(() =>
             {
                 currentSubTabPage = 0;
                 RefreshSettings();
             });
-            pageFieldStorage.leftButton.onClick.ClearAll();
-            pageFieldStorage.leftButton.onClick.AddListener(() =>
+            pageFieldStorage.leftButton.onClick.NewListener(() =>
             {
                 if (int.TryParse(pageFieldStorage.inputField.text, out int p))
                 {
@@ -890,8 +877,7 @@ namespace BetterLegacy.Configs
                     RefreshSettings();
                 }
             });
-            pageFieldStorage.rightButton.onClick.ClearAll();
-            pageFieldStorage.rightButton.onClick.AddListener(() =>
+            pageFieldStorage.rightButton.onClick.NewListener(() =>
             {
                 if (int.TryParse(pageFieldStorage.inputField.text, out int p))
                 {
@@ -899,8 +885,7 @@ namespace BetterLegacy.Configs
                     RefreshSettings();
                 }
             });
-            pageFieldStorage.rightGreaterButton.onClick.ClearAll();
-            pageFieldStorage.rightGreaterButton.onClick.AddListener(() =>
+            pageFieldStorage.rightGreaterButton.onClick.NewListener(() =>
             {
                 currentSubTabPage = num / MAX_SETTINGS_PER_PAGE;
                 RefreshSettings();

@@ -405,9 +405,8 @@ namespace BetterLegacy.Editor.Managers
                 var toggle = gameObject.GetComponent<Toggle>();
                 toggle.image.color = difficulty.Color;
                 toggle.group = null;
-                toggle.onValueChanged.ClearAll();
-                toggle.isOn = achievement.DifficultyType == difficulty;
-                toggle.onValueChanged.AddListener(_val =>
+                toggle.SetIsOnWithoutNotify(achievement.DifficultyType == difficulty);
+                toggle.onValueChanged.NewListener(_val =>
                 {
                     achievement.DifficultyType = difficulty;
                     RenderDifficulty(achievement);

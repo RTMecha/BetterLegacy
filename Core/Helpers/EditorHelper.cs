@@ -112,7 +112,7 @@ namespace BetterLegacy.Core.Helpers
             EditorManager.inst.RefreshDialogDictionary();
         }
 
-        public static GameObject AddEditorDropdown(string name, string key, string dropdown, Sprite sprite, UnityEngine.Events.UnityAction unityAction, int siblingIndex = -1)
+        public static GameObject AddEditorDropdown(string name, string key, string dropdown, Sprite sprite, Action action, int siblingIndex = -1)
         {
             if (!RTEditor.inst.titleBar.Find($"{dropdown}"))
                 return null;
@@ -125,8 +125,7 @@ namespace BetterLegacy.Core.Helpers
             gameObject.transform.Find("Text 1").GetComponent<Text>().text = key;
 
             var propWinButton = gameObject.GetComponent<Button>();
-            propWinButton.onClick.ClearAll();
-            propWinButton.onClick.AddListener(unityAction);
+            propWinButton.onClick.NewListener(action);
 
             gameObject.SetActive(true);
 

@@ -284,8 +284,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             Right.Find("backgrounds").AsRT().sizeDelta = new Vector2(366f, 440f);
 
             SearchField = Right.Find("search").GetComponent<InputField>();
-            SearchField.onValueChanged.ClearAll();
-            SearchField.onValueChanged.AddListener(_val => RTBackgroundEditor.inst.UpdateBackgroundList());
+            SearchField.onValueChanged.NewListener(_val => RTBackgroundEditor.inst.UpdateBackgroundList());
             Content = Right.Find("backgrounds/viewport/content");
             ContentScrollbar = Right.Find("backgrounds/Scrollbar Vertical").GetComponent<Scrollbar>();
 

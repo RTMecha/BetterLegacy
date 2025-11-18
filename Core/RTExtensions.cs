@@ -1568,34 +1568,6 @@ namespace BetterLegacy.Core
             unityEvent.AddListener(() => action?.Invoke());
         }
 
-        public static void NewValueChangedListener(this InputField i, string value, UnityAction<string> unityAction)
-        {
-            i.onValueChanged.ClearAll();
-            i.text = value;
-            i.onValueChanged.AddListener(unityAction);
-        }
-
-        public static void NewValueChangedListener(this Toggle i, bool value, UnityAction<bool> unityAction)
-        {
-            i.onValueChanged.ClearAll();
-            i.isOn = value;
-            i.onValueChanged.AddListener(unityAction);
-        }
-
-        public static void NewValueChangedListener(this Dropdown d, int value, UnityAction<int> unityAction)
-        {
-            d.onValueChanged.ClearAll();
-            d.value = value;
-            d.onValueChanged.AddListener(unityAction);
-        }
-
-        public static void NewValueChangedListener(this Slider slider, float value, UnityAction<float> unityAction)
-        {
-            slider.onValueChanged.ClearAll();
-            slider.value = value;
-            slider.onValueChanged.AddListener(unityAction);
-        }
-
         #endregion
 
         #region Enums

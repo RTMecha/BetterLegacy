@@ -1030,7 +1030,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
             if (firstKF.eventKeyframe.randomValues.Length > 2)
                 num = firstKF.eventKeyframe.randomValues[2];
 
-            dialog.RandomIntervalField.NewValueChangedListener(num.ToString(), _val =>
+            dialog.RandomIntervalField.SetTextWithoutNotify(num.ToString());
+            dialog.RandomIntervalField.onValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
                 {

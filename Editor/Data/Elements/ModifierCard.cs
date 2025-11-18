@@ -615,8 +615,6 @@ namespace BetterLegacy.Editor.Data.Elements
                         CoreHelper.Destroy(dd.transform.Find("Dropdown").GetComponent<HideDropdownOptions>());
 
                         var d = dd.transform.Find("Dropdown").GetComponent<Dropdown>();
-                        d.onValueChanged.ClearAll();
-                        d.options.Clear();
                         var sounds = Enum.GetNames(typeof(DefaultSounds));
                         d.options = CoreHelper.StringToOptionData(sounds);
 
@@ -631,9 +629,9 @@ namespace BetterLegacy.Editor.Data.Elements
                         }
 
                         if (soundIndex >= 0)
-                            d.value = soundIndex;
+                            d.SetValueWithoutNotify(soundIndex);
 
-                        d.onValueChanged.AddListener(_val =>
+                        d.onValueChanged.NewListener(_val =>
                         {
                             modifier.SetValue(0, sounds[_val]);
                             modifier.active = false;
@@ -5400,10 +5398,9 @@ namespace BetterLegacy.Editor.Data.Elements
             labelText.text = label;
 
             var inputField = single.transform.Find("Input").GetComponent<InputField>();
-            inputField.onValueChanged.ClearAll();
             inputField.textComponent.alignment = TextAnchor.MiddleCenter;
-            inputField.text = text;
-            inputField.onValueChanged.AddListener(_val => action?.Invoke(_val));
+            inputField.SetTextWithoutNotify(text);
+            inputField.onValueChanged.NewListener(_val => action?.Invoke(_val));
 
             EditorThemeManager.ApplyLightText(labelText);
             EditorThemeManager.ApplyInputField(inputField);
@@ -5504,9 +5501,8 @@ namespace BetterLegacy.Editor.Data.Elements
             labelText.text = label;
 
             var globalToggle = global.transform.Find("Toggle").GetComponent<Toggle>();
-            globalToggle.onValueChanged.ClearAll();
-            globalToggle.isOn = value;
-            globalToggle.onValueChanged.AddListener(_val => action?.Invoke(_val));
+            globalToggle.SetIsOnWithoutNotify(value);
+            globalToggle.onValueChanged.NewListener(_val => action?.Invoke(_val));
 
             EditorThemeManager.ApplyLightText(labelText);
             EditorThemeManager.ApplyToggle(globalToggle);
@@ -5555,10 +5551,9 @@ namespace BetterLegacy.Editor.Data.Elements
             labelText.text = label;
 
             var pathInputField = path.transform.Find("Input").GetComponent<InputField>();
-            pathInputField.onValueChanged.ClearAll();
             pathInputField.textComponent.alignment = TextAnchor.MiddleLeft;
-            pathInputField.text = value;
-            pathInputField.onValueChanged.AddListener(_val => onValueChanged?.Invoke(_val));
+            pathInputField.SetTextWithoutNotify(value);
+            pathInputField.onValueChanged.NewListener(_val => onValueChanged?.Invoke(_val));
             pathInputField.onEndEdit.NewListener(_val => onEndEdit?.Invoke(_val));
 
             EditorThemeManager.ApplyLightText(labelText);

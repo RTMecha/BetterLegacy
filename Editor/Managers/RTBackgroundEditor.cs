@@ -301,9 +301,8 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderActive(BackgroundObject backgroundObject)
         {
-            Dialog.ActiveToggle.onValueChanged.ClearAll();
-            Dialog.ActiveToggle.isOn = backgroundObject.active;
-            Dialog.ActiveToggle.onValueChanged.AddListener(_val =>
+            Dialog.ActiveToggle.SetIsOnWithoutNotify(backgroundObject.active);
+            Dialog.ActiveToggle.onValueChanged.NewListener(_val =>
             {
                 backgroundObject.active = _val;
                 RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
@@ -312,9 +311,8 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderName(BackgroundObject backgroundObject)
         {
-            Dialog.NameField.onValueChanged.ClearAll();
-            Dialog.NameField.text = backgroundObject.name;
-            Dialog.NameField.onValueChanged.AddListener(_val =>
+            Dialog.NameField.SetTextWithoutNotify(backgroundObject.name);
+            Dialog.NameField.onValueChanged.NewListener(_val =>
             {
                 backgroundObject.name = _val;
                 backgroundObject.timelineObject?.RenderText(_val);
@@ -329,9 +327,8 @@ namespace BetterLegacy.Editor.Managers
         {
             var startTimeField = Dialog.StartTimeField;
 
-            startTimeField.lockToggle.onValueChanged.ClearAll();
-            startTimeField.lockToggle.isOn = backgroundObject.editorData.locked;
-            startTimeField.lockToggle.onValueChanged.AddListener(_val =>
+            startTimeField.lockToggle.SetIsOnWithoutNotify(backgroundObject.editorData.locked);
+            startTimeField.lockToggle.onValueChanged.NewListener(_val =>
             {
                 backgroundObject.editorData.locked = _val;
 
@@ -339,9 +336,8 @@ namespace BetterLegacy.Editor.Managers
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(backgroundObject));
             });
 
-            startTimeField.inputField.onValueChanged.ClearAll();
-            startTimeField.inputField.text = backgroundObject.StartTime.ToString();
-            startTimeField.inputField.onValueChanged.AddListener(_val =>
+            startTimeField.inputField.SetTextWithoutNotify(backgroundObject.StartTime.ToString());
+            startTimeField.inputField.onValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
                 {
@@ -411,9 +407,8 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderAutokill(BackgroundObject backgroundObject)
         {
-            Dialog.AutokillDropdown.onValueChanged.ClearAll();
-            Dialog.AutokillDropdown.value = (int)backgroundObject.autoKillType;
-            Dialog.AutokillDropdown.onValueChanged.AddListener(_val =>
+            Dialog.AutokillDropdown.SetValueWithoutNotify((int)backgroundObject.autoKillType);
+            Dialog.AutokillDropdown.onValueChanged.NewListener(_val =>
             {
                 backgroundObject.autoKillType = (AutoKillType)_val;
                 // AutoKillType affects both physical object and timeline object.
@@ -422,15 +417,12 @@ namespace BetterLegacy.Editor.Managers
                 RenderAutokill(backgroundObject);
             });
 
-            if (backgroundObject.autoKillType == AutoKillType.FixedTime ||
-                backgroundObject.autoKillType == AutoKillType.SongTime ||
-                backgroundObject.autoKillType == AutoKillType.LastKeyframeOffset)
+            if (backgroundObject.autoKillType == AutoKillType.FixedTime || backgroundObject.autoKillType == AutoKillType.SongTime || backgroundObject.autoKillType == AutoKillType.LastKeyframeOffset)
             {
                 Dialog.AutokillField.gameObject.SetActive(true);
 
-                Dialog.AutokillField.onValueChanged.ClearAll();
-                Dialog.AutokillField.text = backgroundObject.autoKillOffset.ToString();
-                Dialog.AutokillField.onValueChanged.AddListener(_val =>
+                Dialog.AutokillField.SetTextWithoutNotify(backgroundObject.autoKillOffset.ToString());
+                Dialog.AutokillField.onValueChanged.NewListener(_val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
@@ -453,8 +445,7 @@ namespace BetterLegacy.Editor.Managers
                 });
 
                 Dialog.AutokillSetButton.gameObject.SetActive(true);
-                Dialog.AutokillSetButton.onClick.ClearAll();
-                Dialog.AutokillSetButton.onClick.AddListener(() =>
+                Dialog.AutokillSetButton.onClick.NewListener(() =>
                 {
                     float num = 0f;
 
@@ -479,9 +470,8 @@ namespace BetterLegacy.Editor.Managers
                 Dialog.AutokillSetButton.onClick.ClearAll();
             }
 
-            Dialog.CollapseToggle.onValueChanged.ClearAll();
-            Dialog.CollapseToggle.isOn = backgroundObject.editorData.collapse;
-            Dialog.CollapseToggle.onValueChanged.AddListener(_val =>
+            Dialog.CollapseToggle.SetIsOnWithoutNotify(backgroundObject.editorData.collapse);
+            Dialog.CollapseToggle.onValueChanged.NewListener(_val =>
             {
                 backgroundObject.editorData.collapse = _val;
 
@@ -492,9 +482,8 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderDepth(BackgroundObject backgroundObject)
         {
-            Dialog.DepthField.inputField.onValueChanged.ClearAll();
-            Dialog.DepthField.inputField.text = backgroundObject.depth.ToString();
-            Dialog.DepthField.inputField.onValueChanged.AddListener(_val =>
+            Dialog.DepthField.SetTextWithoutNotify(backgroundObject.depth.ToString());
+            Dialog.DepthField.OnValueChanged.NewListener(_val =>
             {
                 if (int.TryParse(_val, out int num))
                 {
@@ -510,9 +499,8 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderIterations(BackgroundObject backgroundObject)
         {
-            Dialog.IterationsField.inputField.onValueChanged.ClearAll();
-            Dialog.IterationsField.inputField.text = backgroundObject.iterations.ToString();
-            Dialog.IterationsField.inputField.onValueChanged.AddListener(_val =>
+            Dialog.IterationsField.SetTextWithoutNotify(backgroundObject.iterations.ToString());
+            Dialog.IterationsField.OnValueChanged.NewListener(_val =>
             {
                 if (int.TryParse(_val, out int num))
                 {
@@ -527,9 +515,8 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderPosition(BackgroundObject backgroundObject)
         {
-            Dialog.PositionFields.x.inputField.onValueChanged.ClearAll();
-            Dialog.PositionFields.x.inputField.text = backgroundObject.pos.x.ToString();
-            Dialog.PositionFields.x.inputField.onValueChanged.AddListener(_val =>
+            Dialog.PositionFields.x.SetTextWithoutNotify(backgroundObject.pos.x.ToString());
+            Dialog.PositionFields.x.OnValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
                 {
@@ -538,9 +525,8 @@ namespace BetterLegacy.Editor.Managers
                 }
             });
 
-            Dialog.PositionFields.y.inputField.onValueChanged.ClearAll();
-            Dialog.PositionFields.y.inputField.text = backgroundObject.pos.y.ToString();
-            Dialog.PositionFields.y.inputField.onValueChanged.AddListener(_val =>
+            Dialog.PositionFields.y.SetTextWithoutNotify(backgroundObject.pos.y.ToString());
+            Dialog.PositionFields.y.OnValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
                 {
@@ -565,9 +551,8 @@ namespace BetterLegacy.Editor.Managers
         
         public void RenderScale(BackgroundObject backgroundObject)
         {
-            Dialog.ScaleFields.x.inputField.onValueChanged.ClearAll();
-            Dialog.ScaleFields.x.inputField.text = backgroundObject.scale.x.ToString();
-            Dialog.ScaleFields.x.inputField.onValueChanged.AddListener(_val =>
+            Dialog.ScaleFields.x.SetTextWithoutNotify(backgroundObject.scale.x.ToString());
+            Dialog.ScaleFields.x.OnValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
                 {
@@ -576,9 +561,8 @@ namespace BetterLegacy.Editor.Managers
                 }
             });
 
-            Dialog.ScaleFields.y.inputField.onValueChanged.ClearAll();
-            Dialog.ScaleFields.y.inputField.text = backgroundObject.scale.y.ToString();
-            Dialog.ScaleFields.y.inputField.onValueChanged.AddListener(_val =>
+            Dialog.ScaleFields.y.SetTextWithoutNotify(backgroundObject.scale.y.ToString());
+            Dialog.ScaleFields.y.OnValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
                 {
@@ -603,9 +587,8 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderZPosition(BackgroundObject backgroundObject)
         {
-            Dialog.ZPositionField.inputField.onValueChanged.ClearAll();
-            Dialog.ZPositionField.inputField.text = backgroundObject.zposition.ToString();
-            Dialog.ZPositionField.inputField.onValueChanged.AddListener(_val =>
+            Dialog.ZPositionField.SetTextWithoutNotify(backgroundObject.zposition.ToString());
+            Dialog.ZPositionField.OnValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
                 {
@@ -621,9 +604,8 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderZScale(BackgroundObject backgroundObject)
         {
-            Dialog.ZScaleField.inputField.onValueChanged.ClearAll();
-            Dialog.ZScaleField.inputField.text = backgroundObject.zscale.ToString();
-            Dialog.ZScaleField.inputField.onValueChanged.AddListener(_val =>
+            Dialog.ZScaleField.SetTextWithoutNotify(backgroundObject.zscale.ToString());
+            Dialog.ZScaleField.OnValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
                 {
@@ -639,9 +621,8 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderRotation(BackgroundObject backgroundObject)
         {
-            Dialog.RotationField.onValueChanged.ClearAll();
-            Dialog.RotationField.text = backgroundObject.rot.ToString();
-            Dialog.RotationField.onValueChanged.AddListener(_val =>
+            Dialog.RotationField.SetTextWithoutNotify(backgroundObject.rot.ToString());
+            Dialog.RotationField.onValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
                 {
@@ -654,8 +635,8 @@ namespace BetterLegacy.Editor.Managers
             Dialog.RotationSlider.onValueChanged.ClearAll();
             Dialog.RotationSlider.maxValue = 360f;
             Dialog.RotationSlider.minValue = -360f;
-            Dialog.RotationSlider.value = backgroundObject.rot;
-            Dialog.RotationSlider.onValueChanged.AddListener(_val =>
+            Dialog.RotationSlider.SetValueWithoutNotify(backgroundObject.rot);
+            Dialog.RotationSlider.onValueChanged.NewListener(_val =>
             {
                 backgroundObject.rot = _val;
                 RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
@@ -668,9 +649,8 @@ namespace BetterLegacy.Editor.Managers
 
         public void Render3DRotation(BackgroundObject backgroundObject)
         {
-            Dialog.DepthRotation.x.inputField.onValueChanged.ClearAll();
-            Dialog.DepthRotation.x.inputField.text = backgroundObject.rotation.x.ToString();
-            Dialog.DepthRotation.x.inputField.onValueChanged.AddListener(_val =>
+            Dialog.DepthRotation.x.SetTextWithoutNotify(backgroundObject.rotation.x.ToString());
+            Dialog.DepthRotation.x.OnValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
                 {
@@ -679,9 +659,8 @@ namespace BetterLegacy.Editor.Managers
                 }
             });
 
-            Dialog.DepthRotation.y.inputField.onValueChanged.ClearAll();
-            Dialog.DepthRotation.y.inputField.text = backgroundObject.rotation.y.ToString();
-            Dialog.DepthRotation.y.inputField.onValueChanged.AddListener(_val =>
+            Dialog.DepthRotation.y.SetTextWithoutNotify(backgroundObject.rotation.y.ToString());
+            Dialog.DepthRotation.y.OnValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
                 {
@@ -837,9 +816,8 @@ namespace BetterLegacy.Editor.Managers
                 if (shape.Find(i.ToString()))
                 {
                     var shoggle = shape.Find(i.ToString()).GetComponent<Toggle>();
-                    shoggle.onValueChanged.ClearAll();
-                    shoggle.isOn = backgroundObject.Shape == buttonTmp;
-                    shoggle.onValueChanged.AddListener(_val =>
+                    shoggle.SetIsOnWithoutNotify(backgroundObject.Shape == buttonTmp);
+                    shoggle.onValueChanged.NewListener(_val =>
                     {
                         if (!_val)
                             return;
@@ -875,9 +853,8 @@ namespace BetterLegacy.Editor.Managers
                 int buttonTmp = i;
                 var shoggle = shapeSettings.GetChild(backgroundObject.Shape).GetChild(i).GetComponent<Toggle>();
 
-                shoggle.onValueChanged.ClearAll();
-                shoggle.isOn = backgroundObject.ShapeOption == i;
-                shoggle.onValueChanged.AddListener(_val =>
+                shoggle.SetIsOnWithoutNotify(backgroundObject.ShapeOption == i);
+                shoggle.onValueChanged.NewListener(_val =>
                 {
                     if (!_val)
                         return;
@@ -892,9 +869,8 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderFade(BackgroundObject backgroundObject)
         {
-            Dialog.FadeToggle.toggle.onValueChanged.ClearAll();
-            Dialog.FadeToggle.toggle.isOn = backgroundObject.drawFade;
-            Dialog.FadeToggle.toggle.onValueChanged.AddListener(_val =>
+            Dialog.FadeToggle.toggle.SetIsOnWithoutNotify(backgroundObject.drawFade);
+            Dialog.FadeToggle.toggle.onValueChanged.NewListener(_val =>
             {
                 backgroundObject.drawFade = _val;
                 RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
@@ -905,10 +881,9 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderBin(BackgroundObject backgroundObject)
         {
-            Dialog.BinSlider.onValueChanged.ClearAll();
             Dialog.BinSlider.maxValue = EditorTimeline.inst.BinCount;
-            Dialog.BinSlider.value = backgroundObject.editorData.Bin;
-            Dialog.BinSlider.onValueChanged.AddListener(_val =>
+            Dialog.BinSlider.SetValueWithoutNotify(backgroundObject.editorData.Bin);
+            Dialog.BinSlider.onValueChanged.NewListener(_val =>
             {
                 backgroundObject.editorData.Bin = Mathf.Clamp((int)_val, 0, EditorTimeline.inst.BinCount);
 
@@ -929,10 +904,8 @@ namespace BetterLegacy.Editor.Managers
                 return;
 
             var currentIndex = GameData.Current.backgroundObjects.FindIndex(x => x.id == backgroundObject.id);
-            Dialog.EditorIndexField.inputField.onEndEdit.ClearAll();
-            Dialog.EditorIndexField.inputField.onValueChanged.ClearAll();
-            Dialog.EditorIndexField.inputField.text = currentIndex.ToString();
-            Dialog.EditorIndexField.inputField.onEndEdit.AddListener(_val =>
+            Dialog.EditorIndexField.inputField.SetTextWithoutNotify(currentIndex.ToString());
+            Dialog.EditorIndexField.inputField.onEndEdit.NewListener(_val =>
             {
                 if (currentIndex < 0)
                 {
@@ -1217,9 +1190,8 @@ namespace BetterLegacy.Editor.Managers
             {
                 var index = i;
                 var toggle = Dialog.ReactiveRanges[i];
-                toggle.onValueChanged.ClearAll();
-                toggle.isOn = i == (int)backgroundObject.reactiveType;
-                toggle.onValueChanged.AddListener(_val =>
+                toggle.SetIsOnWithoutNotify(i == (int)backgroundObject.reactiveType);
+                toggle.onValueChanged.NewListener(_val =>
                 {
                     backgroundObject.reactiveType = (BackgroundObject.ReactiveType)index;
                     RenderDialog(backgroundObject);
@@ -1229,9 +1201,8 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderReactive(BackgroundObject backgroundObject)
         {
-            Dialog.ReactiveIntensityField.onValueChanged.ClearAll();
-            Dialog.ReactiveIntensityField.text = backgroundObject.reactiveScale.ToString();
-            Dialog.ReactiveIntensityField.onValueChanged.AddListener(_val =>
+            Dialog.ReactiveIntensityField.SetTextWithoutNotify(backgroundObject.reactiveScale.ToString());
+            Dialog.ReactiveIntensityField.onValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
                 {
@@ -1240,9 +1211,8 @@ namespace BetterLegacy.Editor.Managers
                 }
             });
 
-            Dialog.ReactiveIntensitySlider.onValueChanged.ClearAll();
-            Dialog.ReactiveIntensitySlider.value = backgroundObject.reactiveScale;
-            Dialog.ReactiveIntensitySlider.onValueChanged.AddListener(_val =>
+            Dialog.ReactiveIntensitySlider.SetValueWithoutNotify(backgroundObject.reactiveScale);
+            Dialog.ReactiveIntensitySlider.onValueChanged.NewListener(_val =>
             {
                 backgroundObject.reactiveScale = _val;
                 RenderReactive(backgroundObject);
@@ -1256,47 +1226,35 @@ namespace BetterLegacy.Editor.Managers
             if (backgroundObject.reactiveType != BackgroundObject.ReactiveType.Custom)
                 return;
 
-            Dialog.ReactivePositionSamplesFields.x.inputField.onValueChanged.ClearAll();
-            Dialog.ReactivePositionSamplesFields.x.inputField.text = backgroundObject.reactivePosSamples.x.ToString();
-            Dialog.ReactivePositionSamplesFields.x.inputField.onValueChanged.AddListener(_val =>
+            Dialog.ReactivePositionSamplesFields.x.SetTextWithoutNotify(backgroundObject.reactivePosSamples.x.ToString());
+            Dialog.ReactivePositionSamplesFields.x.OnValueChanged.NewListener(_val =>
             {
                 if (int.TryParse(_val, out int num))
-                {
                     backgroundObject.reactivePosSamples.x = num;
-                }
             });
 
-            Dialog.ReactivePositionSamplesFields.y.inputField.onValueChanged.ClearAll();
-            Dialog.ReactivePositionSamplesFields.y.inputField.text = backgroundObject.reactivePosSamples.y.ToString();
-            Dialog.ReactivePositionSamplesFields.y.inputField.onValueChanged.AddListener(_val =>
+            Dialog.ReactivePositionSamplesFields.y.SetTextWithoutNotify(backgroundObject.reactivePosSamples.y.ToString());
+            Dialog.ReactivePositionSamplesFields.y.OnValueChanged.NewListener(_val =>
             {
                 if (int.TryParse(_val, out int num))
-                {
                     backgroundObject.reactivePosSamples.y = num;
-                }
             });
 
             TriggerHelper.IncreaseDecreaseButtonsInt(Dialog.ReactivePositionSamplesFields.x, max: 255);
             TriggerHelper.IncreaseDecreaseButtonsInt(Dialog.ReactivePositionSamplesFields.y, max: 255);
 
-            Dialog.ReactivePositionIntensityFields.x.inputField.onValueChanged.ClearAll();
-            Dialog.ReactivePositionIntensityFields.x.inputField.text = backgroundObject.reactivePosIntensity.x.ToString();
-            Dialog.ReactivePositionIntensityFields.x.inputField.onValueChanged.AddListener(_val =>
+            Dialog.ReactivePositionIntensityFields.x.SetTextWithoutNotify(backgroundObject.reactivePosIntensity.x.ToString());
+            Dialog.ReactivePositionIntensityFields.x.OnValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
-                {
                     backgroundObject.reactivePosIntensity.x = num;
-                }
             });
 
-            Dialog.ReactivePositionIntensityFields.y.inputField.onValueChanged.ClearAll();
-            Dialog.ReactivePositionIntensityFields.y.inputField.text = backgroundObject.reactivePosIntensity.y.ToString();
-            Dialog.ReactivePositionIntensityFields.y.inputField.onValueChanged.AddListener(_val =>
+            Dialog.ReactivePositionIntensityFields.y.SetTextWithoutNotify(backgroundObject.reactivePosIntensity.y.ToString());
+            Dialog.ReactivePositionIntensityFields.y.OnValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
-                {
                     backgroundObject.reactivePosIntensity.y = num;
-                }
             });
 
             TriggerHelper.IncreaseDecreaseButtons(Dialog.ReactivePositionIntensityFields.x);
@@ -1308,47 +1266,35 @@ namespace BetterLegacy.Editor.Managers
             if (backgroundObject.reactiveType != BackgroundObject.ReactiveType.Custom)
                 return;
 
-            Dialog.ReactiveScaleSamplesFields.x.inputField.onValueChanged.ClearAll();
-            Dialog.ReactiveScaleSamplesFields.x.inputField.text = backgroundObject.reactiveScaSamples.x.ToString();
-            Dialog.ReactiveScaleSamplesFields.x.inputField.onValueChanged.AddListener(_val =>
+            Dialog.ReactiveScaleSamplesFields.x.SetTextWithoutNotify(backgroundObject.reactiveScaSamples.x.ToString());
+            Dialog.ReactiveScaleSamplesFields.x.OnValueChanged.NewListener(_val =>
             {
                 if (int.TryParse(_val, out int num))
-                {
                     backgroundObject.reactiveScaSamples.x = num;
-                }
             });
 
-            Dialog.ReactiveScaleSamplesFields.y.inputField.onValueChanged.ClearAll();
-            Dialog.ReactiveScaleSamplesFields.y.inputField.text = backgroundObject.reactiveScaSamples.y.ToString();
-            Dialog.ReactiveScaleSamplesFields.y.inputField.onValueChanged.AddListener(_val =>
+            Dialog.ReactiveScaleSamplesFields.y.SetTextWithoutNotify(backgroundObject.reactiveScaSamples.y.ToString());
+            Dialog.ReactiveScaleSamplesFields.y.OnValueChanged.NewListener(_val =>
             {
                 if (int.TryParse(_val, out int num))
-                {
                     backgroundObject.reactiveScaSamples.y = num;
-                }
             });
 
             TriggerHelper.IncreaseDecreaseButtonsInt(Dialog.ReactiveScaleSamplesFields.x, max: 255);
             TriggerHelper.IncreaseDecreaseButtonsInt(Dialog.ReactiveScaleSamplesFields.y, max: 255);
 
-            Dialog.ReactiveScaleIntensityFields.x.inputField.onValueChanged.ClearAll();
-            Dialog.ReactiveScaleIntensityFields.x.inputField.text = backgroundObject.reactiveScaIntensity.x.ToString();
-            Dialog.ReactiveScaleIntensityFields.x.inputField.onValueChanged.AddListener(_val =>
+            Dialog.ReactiveScaleIntensityFields.x.SetTextWithoutNotify(backgroundObject.reactiveScaIntensity.x.ToString());
+            Dialog.ReactiveScaleIntensityFields.x.OnValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
-                {
                     backgroundObject.reactiveScaIntensity.x = num;
-                }
             });
 
-            Dialog.ReactiveScaleIntensityFields.y.inputField.onValueChanged.ClearAll();
-            Dialog.ReactiveScaleIntensityFields.y.inputField.text = backgroundObject.reactiveScaIntensity.y.ToString();
-            Dialog.ReactiveScaleIntensityFields.y.inputField.onValueChanged.AddListener(_val =>
+            Dialog.ReactiveScaleIntensityFields.y.SetTextWithoutNotify(backgroundObject.reactiveScaIntensity.y.ToString());
+            Dialog.ReactiveScaleIntensityFields.y.OnValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
-                {
                     backgroundObject.reactiveScaIntensity.y = num;
-                }
             });
 
             TriggerHelper.IncreaseDecreaseButtons(Dialog.ReactiveScaleIntensityFields.x);
@@ -1360,26 +1306,20 @@ namespace BetterLegacy.Editor.Managers
             if (backgroundObject.reactiveType != BackgroundObject.ReactiveType.Custom)
                 return;
 
-            Dialog.ReactiveRotationSampleField.inputField.onValueChanged.ClearAll();
-            Dialog.ReactiveRotationSampleField.inputField.text = backgroundObject.reactiveRotSample.ToString();
-            Dialog.ReactiveRotationSampleField.inputField.onValueChanged.AddListener(_val =>
+            Dialog.ReactiveRotationSampleField.SetTextWithoutNotify(backgroundObject.reactiveRotSample.ToString());
+            Dialog.ReactiveRotationSampleField.OnValueChanged.NewListener(_val =>
             {
                 if (int.TryParse(_val, out int num))
-                {
                     backgroundObject.reactiveRotSample = num;
-                }
             });
 
             TriggerHelper.IncreaseDecreaseButtonsInt(Dialog.ReactiveRotationSampleField, max: 255);
 
-            Dialog.ReactiveRotationIntensityField.inputField.onValueChanged.ClearAll();
-            Dialog.ReactiveRotationIntensityField.inputField.text = backgroundObject.reactiveRotIntensity.ToString();
-            Dialog.ReactiveRotationIntensityField.inputField.onValueChanged.AddListener(_val =>
+            Dialog.ReactiveRotationIntensityField.SetTextWithoutNotify(backgroundObject.reactiveRotIntensity.ToString());
+            Dialog.ReactiveRotationIntensityField.OnValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
-                {
                     backgroundObject.reactiveRotIntensity = num;
-                }
             });
 
             TriggerHelper.IncreaseDecreaseButtons(Dialog.ReactiveRotationIntensityField);
@@ -1417,26 +1357,20 @@ namespace BetterLegacy.Editor.Managers
             if (backgroundObject.reactiveType != BackgroundObject.ReactiveType.Custom)
                 return;
 
-            Dialog.ReactiveZPositionSampleField.inputField.onValueChanged.ClearAll();
-            Dialog.ReactiveZPositionSampleField.inputField.text = backgroundObject.reactiveZSample.ToString();
-            Dialog.ReactiveZPositionSampleField.inputField.onValueChanged.AddListener(_val =>
+            Dialog.ReactiveZPositionSampleField.SetTextWithoutNotify(backgroundObject.reactiveZSample.ToString());
+            Dialog.ReactiveZPositionSampleField.OnValueChanged.NewListener(_val =>
             {
                 if (int.TryParse(_val, out int num))
-                {
                     backgroundObject.reactiveZSample = num;
-                }
             });
 
             TriggerHelper.IncreaseDecreaseButtonsInt(Dialog.ReactiveZPositionSampleField, max: 255);
 
-            Dialog.ReactiveZPositionIntensityField.inputField.onValueChanged.ClearAll();
-            Dialog.ReactiveZPositionIntensityField.inputField.text = backgroundObject.reactiveZIntensity.ToString();
-            Dialog.ReactiveZPositionIntensityField.inputField.onValueChanged.AddListener(_val =>
+            Dialog.ReactiveZPositionIntensityField.SetTextWithoutNotify(backgroundObject.reactiveZIntensity.ToString());
+            Dialog.ReactiveZPositionIntensityField.OnValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
-                {
                     backgroundObject.reactiveZIntensity = num;
-                }
             });
 
             TriggerHelper.IncreaseDecreaseButtons(Dialog.ReactiveZPositionIntensityField);

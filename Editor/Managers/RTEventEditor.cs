@@ -1957,10 +1957,9 @@ namespace BetterLegacy.Editor.Managers
             });
 
             var valueIndexStorage = dialog.Find("value index/value index").GetComponent<InputFieldStorage>();
-            valueIndexStorage.inputField.onValueChanged.ClearAll();
             if (valueIndexStorage.inputField.text == "100.000")
-                valueIndexStorage.inputField.text = "0";
-            valueIndexStorage.inputField.onValueChanged.AddListener(_val =>
+                valueIndexStorage.inputField.SetTextWithoutNotify("0");
+            valueIndexStorage.inputField.onValueChanged.NewListener(_val =>
             {
                 if (!int.TryParse(_val, out int n))
                     valueIndexStorage.inputField.text = "0";
@@ -1974,8 +1973,7 @@ namespace BetterLegacy.Editor.Managers
             if (valueStorage.inputField.text == "100.000")
                 valueStorage.inputField.text = "1.0";
 
-            valueStorage.leftGreaterButton.onClick.ClearAll();
-            valueStorage.leftGreaterButton.onClick.AddListener(() =>
+            valueStorage.leftGreaterButton.onClick.NewListener(() =>
             {
                 if (float.TryParse(valueStorage.inputField.text, out float num))
                 {
@@ -1990,9 +1988,7 @@ namespace BetterLegacy.Editor.Managers
                 else
                     LogIncorrectFormat(valueStorage.inputField.text);
             });
-
-            valueStorage.leftButton.onClick.ClearAll();
-            valueStorage.leftButton.onClick.AddListener(() =>
+            valueStorage.leftButton.onClick.NewListener(() =>
             {
                 if (float.TryParse(valueStorage.inputField.text, out float num))
                 {
@@ -2007,9 +2003,7 @@ namespace BetterLegacy.Editor.Managers
                 else
                     LogIncorrectFormat(valueStorage.inputField.text);
             });
-
-            valueStorage.middleButton.onClick.ClearAll();
-            valueStorage.middleButton.onClick.AddListener(() =>
+            valueStorage.middleButton.onClick.NewListener(() =>
             {
                 if (float.TryParse(valueStorage.inputField.text, out float num))
                 {
@@ -2024,9 +2018,7 @@ namespace BetterLegacy.Editor.Managers
                 else
                     LogIncorrectFormat(valueStorage.inputField.text);
             });
-
-            valueStorage.rightButton.onClick.ClearAll();
-            valueStorage.rightButton.onClick.AddListener(() =>
+            valueStorage.rightButton.onClick.NewListener(() =>
             {
                 if (float.TryParse(valueStorage.inputField.text, out float num))
                 {
@@ -2041,9 +2033,7 @@ namespace BetterLegacy.Editor.Managers
                 else
                     LogIncorrectFormat(valueStorage.inputField.text);
             });
-
-            valueStorage.rightGreaterButton.onClick.ClearAll();
-            valueStorage.rightGreaterButton.onClick.AddListener(() =>
+            valueStorage.rightGreaterButton.onClick.NewListener(() =>
             {
                 if (float.TryParse(valueStorage.inputField.text, out float num))
                 {
@@ -3092,8 +3082,7 @@ namespace BetterLegacy.Editor.Managers
                 var btR = tf.Find("<").GetComponent<Button>();
                 var btL = tf.Find(">").GetComponent<Button>();
 
-                btR.onClick.ClearAll();
-                btR.onClick.AddListener(() =>
+                btR.onClick.NewListener(() =>
                 {
                     if (float.TryParse(posX.text, out float result))
                     {
@@ -3111,9 +3100,7 @@ namespace BetterLegacy.Editor.Managers
                             posX.text = result.ToString();
                     }
                 });
-
-                btL.onClick.ClearAll();
-                btL.onClick.AddListener(() =>
+                btL.onClick.NewListener(() =>
                 {
                     if (float.TryParse(posX.text, out float result))
                     {
@@ -3142,8 +3129,7 @@ namespace BetterLegacy.Editor.Managers
                 var btR = tf.Find("<").GetComponent<Button>();
                 var btL = tf.Find(">").GetComponent<Button>();
 
-                btR.onClick.ClearAll();
-                btR.onClick.AddListener(() =>
+                btR.onClick.NewListener(() =>
                 {
                     if (float.TryParse(posY.text, out float result))
                     {
@@ -3161,9 +3147,7 @@ namespace BetterLegacy.Editor.Managers
                             posY.text = result.ToString();
                     }
                 });
-
-                btL.onClick.ClearAll();
-                btL.onClick.AddListener(() =>
+                btL.onClick.NewListener(() =>
                 {
                     if (float.TryParse(posY.text, out float result))
                     {

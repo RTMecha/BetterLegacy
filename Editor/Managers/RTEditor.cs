@@ -3723,8 +3723,8 @@ namespace BetterLegacy.Editor.Managers
             EditorTimeline.inst.binSlider.direction = Slider.Direction.TopToBottom;
             EditorTimeline.inst.binSlider.minValue = 0f;
             EditorTimeline.inst.binSlider.maxValue = 1f;
-            EditorTimeline.inst.binSlider.value = 0f;
-            EditorTimeline.inst.binSlider.onValueChanged.AddListener(_val =>
+            EditorTimeline.inst.binSlider.SetValueWithoutNotify(0f);
+            EditorTimeline.inst.binSlider.onValueChanged.NewListener(_val =>
             {
                 EditorTimeline.inst.BinScroll = EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events ? 0f : _val;
                 EditorTimeline.inst.RenderBinPosition();
@@ -4864,8 +4864,7 @@ namespace BetterLegacy.Editor.Managers
             var panel = main.Find("Panel");
 
             var close = panel.Find("x").GetComponent<Button>();
-            close.onClick.ClearAll();
-            close.onClick.AddListener(HideWarningPopup);
+            close.onClick.NewListener(HideWarningPopup);
 
             var title = panel.Find("Text").GetComponent<Text>();
             title.text = "Warning!";
@@ -4910,8 +4909,7 @@ namespace BetterLegacy.Editor.Managers
             });
 
             var button = gameObject.GetComponent<Button>();
-            button.onClick.ClearAll();
-            button.onClick.AddListener(() => action?.Invoke());
+            button.onClick.NewListener(() => action?.Invoke());
 
             EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
             var text = gameObject.transform.GetChild(0).GetComponent<Text>();
@@ -4941,8 +4939,7 @@ namespace BetterLegacy.Editor.Managers
             });
 
             var reloadButton = reload.GetComponent<Button>();
-            reloadButton.onClick.ClearAll();
-            reloadButton.onClick.AddListener(ReloadFunctions);
+            reloadButton.onClick.NewListener(ReloadFunctions);
 
             EditorThemeManager.AddSelectable(reloadButton, ThemeGroup.Function_2, false);
 
@@ -5214,8 +5211,7 @@ namespace BetterLegacy.Editor.Managers
                 folderCreatorTitle.text = "Folder Creator";
 
                 var close = folderCreatorPopupPanel.Find("x").GetComponent<Button>();
-                close.onClick.ClearAll();
-                close.onClick.AddListener(HideNameEditor);
+                close.onClick.NewListener(HideNameEditor);
 
                 folderCreatorNameLabel = folderCreatorPopup.Find("Level Name").GetComponent<Text>();
                 folderCreatorNameLabel.text = "New folder name";
@@ -5469,7 +5465,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="confirm">Confirm button text.</param>
         /// <param name="cancel">Cancel button text.</param>
         /// <param name="onClose">Function to run when the user closes the popup.</param>
-        public void ShowWarningPopup(string warning, UnityAction onConfirm, UnityAction onCancel, string confirm = "Yes", string cancel = "No", Action onClose = null)
+        public void ShowWarningPopup(string warning, Action onConfirm, Action onCancel, string confirm = "Yes", string cancel = "No", Action onClose = null)
         {
             WarningPopup.Open();
             RefreshWarningPopup(warning, onConfirm, onCancel, confirm, cancel, onClose);
@@ -5486,13 +5482,12 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="confirm">Confirm button text.</param>
         /// <param name="cancel">Cancel button text.</param>
         /// <param name="onClose">Function to run when the user closes the popup.</param>
-        public void RefreshWarningPopup(string warning, UnityAction onConfirm, UnityAction onCancel, string confirm = "Yes", string cancel = "No", Action onClose = null)
+        public void RefreshWarningPopup(string warning, Action onConfirm, Action onCancel, string confirm = "Yes", string cancel = "No", Action onClose = null)
         {
             var warningPopup = WarningPopup.GameObject.transform.GetChild(0);
 
             var close = warningPopup.Find("Panel/x").GetComponent<Button>();
-            close.onClick.ClearAll();
-            close.onClick.AddListener(() =>
+            close.onClick.NewListener(() =>
             {
                 if (onClose != null)
                 {
@@ -5514,11 +5509,8 @@ namespace BetterLegacy.Editor.Managers
             submit1.Find("text").GetComponent<Text>().text = confirm;
             submit2.Find("text").GetComponent<Text>().text = cancel;
 
-            submit1Button.onClick.ClearAll();
-            submit2Button.onClick.ClearAll();
-
-            submit1Button.onClick.AddListener(onConfirm);
-            submit2Button.onClick.AddListener(onCancel);
+            submit1Button.onClick.NewListener(onConfirm);
+            submit2Button.onClick.NewListener(onCancel);
         }
 
         #endregion
@@ -5907,8 +5899,7 @@ namespace BetterLegacy.Editor.Managers
                 text.text = $"<font={font.Key}>ABCDEF abcdef 123</font> - {font.Key}";
 
                 var button = gameObject.GetComponent<Button>();
-                button.onClick.ClearAll();
-                button.onClick.AddListener(() =>
+                button.onClick.NewListener(() =>
                 {
                     onFontSelected?.Invoke($"<font={font.Key}>");
                     FontSelectorPopup.Close();
@@ -5962,8 +5953,7 @@ namespace BetterLegacy.Editor.Managers
                 image.enabled = false;
 
                 var button = gameObject.AddComponent<Button>();
-                button.onClick.ClearAll();
-                button.onClick.AddListener(() => { System.Diagnostics.Process.Start(files[index]); });
+                button.onClick.NewListener(() => System.Diagnostics.Process.Start(files[index]));
                 button.colors = UIManager.SetColorBlock(button.colors, Color.white, new Color(0.9f, 0.9f, 0.9f), new Color(0.7f, 0.7f, 0.7f), Color.white, Color.red);
 
                 StartCoroutine(AlephNetwork.DownloadImageTexture($"file://{files[i]}", texture2D =>

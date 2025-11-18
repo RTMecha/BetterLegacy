@@ -505,25 +505,22 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderPrefabObjectStartTime(PrefabObject prefabObject)
         {
-            PrefabObjectEditor.StartTimeField.lockToggle.onValueChanged.ClearAll();
-            PrefabObjectEditor.StartTimeField.lockToggle.isOn = prefabObject.editorData.locked;
-            PrefabObjectEditor.StartTimeField.lockToggle.onValueChanged.AddListener(_val =>
+            PrefabObjectEditor.StartTimeField.lockToggle.SetIsOnWithoutNotify(prefabObject.editorData.locked);
+            PrefabObjectEditor.StartTimeField.lockToggle.onValueChanged.NewListener(_val =>
             {
                 prefabObject.editorData.locked = _val;
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(prefabObject));
             });
 
-            PrefabObjectEditor.CollapseToggle.onValueChanged.ClearAll();
-            PrefabObjectEditor.CollapseToggle.isOn = prefabObject.editorData.collapse;
-            PrefabObjectEditor.CollapseToggle.onValueChanged.AddListener(_val =>
+            PrefabObjectEditor.CollapseToggle.SetIsOnWithoutNotify(prefabObject.editorData.collapse);
+            PrefabObjectEditor.CollapseToggle.onValueChanged.NewListener(_val =>
             {
                 prefabObject.editorData.collapse = _val;
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(prefabObject));
             });
 
-            PrefabObjectEditor.StartTimeField.inputField.onValueChanged.ClearAll();
-            PrefabObjectEditor.StartTimeField.inputField.text = prefabObject.StartTime.ToString();
-            PrefabObjectEditor.StartTimeField.inputField.onValueChanged.AddListener(_val =>
+            PrefabObjectEditor.StartTimeField.SetTextWithoutNotify(prefabObject.StartTime.ToString());
+            PrefabObjectEditor.StartTimeField.OnValueChanged.NewListener(_val =>
             {
                 if (prefabObject.editorData.locked)
                     return;
@@ -572,17 +569,15 @@ namespace BetterLegacy.Editor.Managers
             if (!RTEditor.ShowModdedUI)
                 return;
 
-            PrefabObjectEditor.AutokillDropdown.onValueChanged.ClearAll();
-            PrefabObjectEditor.AutokillDropdown.value = (int)prefabObject.autoKillType;
-            PrefabObjectEditor.AutokillDropdown.onValueChanged.AddListener(_val =>
+            PrefabObjectEditor.AutokillDropdown.SetValueWithoutNotify((int)prefabObject.autoKillType);
+            PrefabObjectEditor.AutokillDropdown.onValueChanged.NewListener(_val =>
             {
                 prefabObject.autoKillType = (PrefabAutoKillType)_val;
                 RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.AUTOKILL);
             });
 
-            PrefabObjectEditor.AutokillField.inputField.onValueChanged.ClearAll();
-            PrefabObjectEditor.AutokillField.inputField.text = prefabObject.autoKillOffset.ToString();
-            PrefabObjectEditor.AutokillField.inputField.onValueChanged.AddListener(_val =>
+            PrefabObjectEditor.AutokillField.SetTextWithoutNotify(prefabObject.autoKillOffset.ToString());
+            PrefabObjectEditor.AutokillField.OnValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
                 {
@@ -810,9 +805,8 @@ namespace BetterLegacy.Editor.Managers
             if (!RTEditor.ShowModdedUI)
                 return;
 
-            PrefabObjectEditor.RepeatCountField.inputField.onValueChanged.ClearAll();
-            PrefabObjectEditor.RepeatCountField.inputField.text = Mathf.Clamp(prefabObject.RepeatCount, 0, 1000).ToString();
-            PrefabObjectEditor.RepeatCountField.inputField.onValueChanged.AddListener(_val =>
+            PrefabObjectEditor.RepeatCountField.SetTextWithoutNotify(Mathf.Clamp(prefabObject.RepeatCount, 0, 1000).ToString());
+            PrefabObjectEditor.RepeatCountField.OnValueChanged.NewListener(_val =>
             {
                 if (int.TryParse(_val, out int num))
                 {
@@ -825,9 +819,8 @@ namespace BetterLegacy.Editor.Managers
             TriggerHelper.IncreaseDecreaseButtonsInt(PrefabObjectEditor.RepeatCountField, max: 1000);
             TriggerHelper.AddEventTriggers(PrefabObjectEditor.RepeatCountField.inputField.gameObject, TriggerHelper.ScrollDeltaInt(PrefabObjectEditor.RepeatCountField.inputField, max: 1000));
 
-            PrefabObjectEditor.RepeatOffsetTimeField.inputField.onValueChanged.ClearAll();
-            PrefabObjectEditor.RepeatOffsetTimeField.inputField.text = Mathf.Clamp(prefabObject.RepeatOffsetTime, 0f, 60f).ToString();
-            PrefabObjectEditor.RepeatOffsetTimeField.inputField.onValueChanged.AddListener(_val =>
+            PrefabObjectEditor.RepeatOffsetTimeField.SetTextWithoutNotify(Mathf.Clamp(prefabObject.RepeatOffsetTime, 0f, 60f).ToString());
+            PrefabObjectEditor.RepeatOffsetTimeField.OnValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
                 {
@@ -849,9 +842,8 @@ namespace BetterLegacy.Editor.Managers
             if (!RTEditor.ShowModdedUI)
                 return;
 
-            PrefabObjectEditor.SpeedField.inputField.onValueChanged.ClearAll();
-            PrefabObjectEditor.SpeedField.inputField.text = prefabObject.Speed.ToString();
-            PrefabObjectEditor.SpeedField.inputField.onValueChanged.AddListener(_val =>
+            PrefabObjectEditor.SpeedField.SetTextWithoutNotify(prefabObject.Speed.ToString());
+            PrefabObjectEditor.SpeedField.OnValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
                     prefabObject.Speed = num;
@@ -897,8 +889,8 @@ namespace BetterLegacy.Editor.Managers
         {
             PrefabObjectEditor.BinSlider.onValueChanged.ClearAll();
             PrefabObjectEditor.BinSlider.maxValue = EditorTimeline.inst.BinCount;
-            PrefabObjectEditor.BinSlider.value = prefabObject.editorData.Bin;
-            PrefabObjectEditor.BinSlider.onValueChanged.AddListener(_val =>
+            PrefabObjectEditor.BinSlider.SetValueWithoutNotify(prefabObject.editorData.Bin);
+            PrefabObjectEditor.BinSlider.onValueChanged.NewListener(_val =>
             {
                 prefabObject.editorData.Bin = Mathf.Clamp((int)_val, 0, EditorTimeline.inst.BinCount);
 
@@ -919,10 +911,9 @@ namespace BetterLegacy.Editor.Managers
                 return;
 
             var currentIndex = GameData.Current.prefabObjects.FindIndex(x => x.id == prefabObject.id);
-            PrefabObjectEditor.EditorIndexField.inputField.onEndEdit.ClearAll();
-            PrefabObjectEditor.EditorIndexField.inputField.onValueChanged.ClearAll();
-            PrefabObjectEditor.EditorIndexField.inputField.text = currentIndex.ToString();
-            PrefabObjectEditor.EditorIndexField.inputField.onEndEdit.AddListener(_val =>
+            PrefabObjectEditor.EditorIndexField.OnValueChanged.ClearAll();
+            PrefabObjectEditor.EditorIndexField.SetTextWithoutNotify(currentIndex.ToString());
+            PrefabObjectEditor.EditorIndexField.OnEndEdit.NewListener(_val =>
             {
                 if (currentIndex < 0)
                 {
@@ -1181,9 +1172,8 @@ namespace BetterLegacy.Editor.Managers
         
         public void RenderPrefabObjectOffset(PrefabObject prefabObject, Prefab prefab)
         {
-            PrefabObjectEditor.OffsetField.inputField.onValueChanged.ClearAll();
-            PrefabObjectEditor.OffsetField.inputField.text = prefab.offset.ToString();
-            PrefabObjectEditor.OffsetField.inputField.onValueChanged.AddListener(_val =>
+            PrefabObjectEditor.OffsetField.SetTextWithoutNotify(prefab.offset.ToString());
+            PrefabObjectEditor.OffsetField.OnValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float offset))
                 {
@@ -1227,9 +1217,8 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderPrefabObjectName(Prefab prefab)
         {
-            PrefabObjectEditor.NameField.onValueChanged.ClearAll();
-            PrefabObjectEditor.NameField.text = prefab.name;
-            PrefabObjectEditor.NameField.onValueChanged.AddListener(_val =>
+            PrefabObjectEditor.NameField.SetTextWithoutNotify(prefab.name);
+            PrefabObjectEditor.NameField.onValueChanged.NewListener(_val =>
             {
                 prefab.name = _val;
                 foreach (var prefabObject in GameData.Current.prefabObjects.FindAll(x => x.prefabID == prefab.id))

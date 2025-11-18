@@ -175,8 +175,7 @@ namespace BetterLegacy.Companion.Entity
                 autocomplete.SetActive(true);
 
                 var autocompleteButton = autocomplete.GetComponent<Button>();
-                autocompleteButton.onClick.ClearAll();
-                autocompleteButton.onClick.AddListener(() =>
+                autocompleteButton.onClick.NewListener(() =>
                 {
                     chatter.text = command.name;
                     command.CheckResponse(command.name);
