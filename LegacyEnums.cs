@@ -1235,6 +1235,13 @@ namespace BetterLegacy
         // Random, // todo
     }
 
+    public enum LowDetailMode
+    {
+        None,
+        OffOnly,
+        OnOnly,
+    }
+
     public class CustomObjectType : Exists
     {
         public static void LoadObjectTypes()
@@ -1248,6 +1255,7 @@ namespace BetterLegacy
                 var jnType = jn["types"][i];
                 objectTypes.Add(new CustomObjectType
                 {
+                    index = i,
                     name = jnType["name"],
                     colliderType = (ColliderType)jnType["collide_type"].AsInt,
                     render = jnType["render"].AsBool,
@@ -1258,6 +1266,8 @@ namespace BetterLegacy
         }
 
         public static List<CustomObjectType> objectTypes = new List<CustomObjectType>();
+
+        public int index;
 
         public string name;
         public ColliderType colliderType;
@@ -1271,6 +1281,24 @@ namespace BetterLegacy
         public float opacity;
 
         public Editor editor;
+
+        public static CustomObjectType GetNormal() => objectTypes.Find(x => x.colliderType == ColliderType.Damage && x.opacity == 1.0f);
+
+        public static CustomObjectType GetHelper() => objectTypes.Find(x => x.opacity == 0.35f);
+
+        public static CustomObjectType GetDecoration() => objectTypes.Find(x => x.colliderType == ColliderType.None && x.opacity == 1.0f);
+
+        public static CustomObjectType GetEmpty() => objectTypes.Find(x => !x.render);
+
+        public static CustomObjectType GetSolid() => objectTypes.Find(x => x.colliderType == ColliderType.Solid);
+
+        public static implicit operator CustomObjectType(Core.Data.Beatmap.BeatmapObject.ObjectType objectType) => (int)objectType;
+
+        public static implicit operator CustomObjectType(int objectType) => objectTypes[objectType];
+
+        public static implicit operator Core.Data.Beatmap.BeatmapObject.ObjectType(CustomObjectType objectType) => (Core.Data.Beatmap.BeatmapObject.ObjectType)(int)objectType;
+
+        public static implicit operator int(CustomObjectType objectType) => objectTypes.FindIndex(x => x == objectType);
 
         public class Editor : Exists
         {
