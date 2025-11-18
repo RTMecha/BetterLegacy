@@ -881,6 +881,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderBin(BackgroundObject backgroundObject)
         {
+            Dialog.BinSlider.onValueChanged.ClearAll();
             Dialog.BinSlider.maxValue = EditorTimeline.inst.BinCount;
             Dialog.BinSlider.SetValueWithoutNotify(backgroundObject.editorData.Bin);
             Dialog.BinSlider.onValueChanged.NewListener(_val =>

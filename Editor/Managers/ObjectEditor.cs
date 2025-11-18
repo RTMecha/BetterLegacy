@@ -2420,6 +2420,7 @@ namespace BetterLegacy.Editor.Managers
             var max = EditorConfig.Instance.EditorComplexity.Value == Complexity.Simple ? 30 : EditorConfig.Instance.RenderDepthRange.Value.x;
             var min = EditorConfig.Instance.EditorComplexity.Value == Complexity.Simple ? 0 : EditorConfig.Instance.RenderDepthRange.Value.y;
 
+            Dialog.DepthSlider.onValueChanged.ClearAll();
             Dialog.DepthSlider.maxValue = max;
             Dialog.DepthSlider.minValue = min;
 
@@ -2494,6 +2495,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="beatmapObject">The BeatmapObject to set.</param>
         public void RenderBin(BeatmapObject beatmapObject)
         {
+            Dialog.BinSlider.onValueChanged.ClearAll();
             Dialog.BinSlider.maxValue = EditorTimeline.inst.BinCount;
             Dialog.BinSlider.SetValueWithoutNotify(beatmapObject.editorData.Bin);
             Dialog.BinSlider.onValueChanged.NewListener(_val =>

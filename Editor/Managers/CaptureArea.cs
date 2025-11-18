@@ -308,6 +308,7 @@ namespace BetterLegacy.Editor.Managers
             zoom.transform.Find("Handle Slide Area").AsRT().sizeDelta = Vector2.zero;
             zoomSlider = zoom.GetComponent<Slider>();
             zoomSlider.wholeNumbers = false;
+            zoomSlider.onValueChanged.ClearAll();
             zoomSlider.minValue = 0.1f;
             zoomSlider.maxValue = 10f;
             zoomSlider.direction = Slider.Direction.BottomToTop;

@@ -365,6 +365,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 RotationField = LeftContent.Find("rotation/x").GetComponent<InputField>();
 
                 RotationSlider = LeftContent.Find("rotation/slider").GetComponent<Slider>();
+                RotationSlider.onValueChanged.ClearAll();
                 RotationSlider.maxValue = 360f;
                 RotationSlider.minValue = -360f;
 

@@ -110,6 +110,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             snap.SetParent(Content);
 
             BPMSlider = snap.Find("bpm/slider").GetComponent<Slider>();
+            BPMSlider.onValueChanged.ClearAll();
             BPMSlider.maxValue = 999f;
             BPMSlider.minValue = 1f;
 
