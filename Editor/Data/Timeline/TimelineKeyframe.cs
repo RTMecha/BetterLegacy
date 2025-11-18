@@ -91,7 +91,7 @@ namespace BetterLegacy.Editor.Data.Timeline
         /// <summary>
         /// If the timeline object is on the currently viewed editor layer.
         /// </summary>
-        public bool IsCurrentLayer => (Type / RTEventEditor.EVENT_LIMIT) == EditorTimeline.inst.Layer && EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events && (RTEditor.ShowModdedUI || Type < 10);
+        public bool IsCurrentLayer => (RTEventEditor.inst.GetEventTypeIndex(Type) / RTEventEditor.EVENT_LIMIT) == EditorTimeline.inst.Layer && EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events && (RTEditor.ShowModdedUI || Type < 10);
 
         bool selected;
         /// <summary>
@@ -185,7 +185,7 @@ namespace BetterLegacy.Editor.Data.Timeline
             }
             else
             {
-                gameObject = EventEditor.inst.TimelinePrefab.Duplicate(EventEditor.inst.EventHolders.transform.GetChild(Type % RTEventEditor.EVENT_LIMIT), $"keyframe - {Type}");
+                gameObject = EventEditor.inst.TimelinePrefab.Duplicate(RTEventEditor.inst.GetTimelineParent(Type), $"keyframe - {Type}");
 
                 TriggerHelper.AddEventTriggers(gameObject,
                     TriggerHelper.CreateTimelineKeyframeTrigger(this),
@@ -227,7 +227,7 @@ namespace BetterLegacy.Editor.Data.Timeline
                 if (events.TryFindIndex(x => x.id == ID, out int index))
                     Index = index;
 
-                if (Type / RTEventEditor.EVENT_LIMIT == EditorTimeline.inst.Layer)
+                if (IsCurrentLayer)
                 {
                     RenderSprite(events);
                     RenderPos();
@@ -288,7 +288,7 @@ namespace BetterLegacy.Editor.Data.Timeline
                 if (!isCurrentLayer)
                     return;
 
-                var color = eventKeyframesRenderBinColor ? theme.GetEventKeyframeColor(Type % RTEventEditor.EVENT_LIMIT) : ObjEditor.inst.NormalColor;
+                var color = eventKeyframesRenderBinColor ? theme.GetEventKeyframeColor(RTEventEditor.inst.GetEventTypeIndex(Type) % RTEventEditor.EVENT_LIMIT) : ObjEditor.inst.NormalColor;
                 color.a = 1f;
                 color = selected ? !eventKeyframesRenderBinColor ? ObjEditor.inst.SelectedColor : EventEditor.inst.Selected : color;
 

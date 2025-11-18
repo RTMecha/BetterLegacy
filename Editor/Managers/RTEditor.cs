@@ -3789,7 +3789,7 @@ namespace BetterLegacy.Editor.Managers
 
             for (int i = 0; i < EventEditor.inst.EventHolders.transform.childCount - 1; i++)
             {
-                int type = i;
+                int index = i;
                 var et = EventEditor.inst.EventHolders.transform.GetChild(i).GetComponent<EventTrigger>();
                 et.triggers.Clear();
                 et.triggers.Add(TriggerHelper.CreateEntry(EventTriggerType.PointerEnter, eventData => EditorTimeline.inst.isOverMainTimeline = true));
@@ -3799,9 +3799,14 @@ namespace BetterLegacy.Editor.Managers
                 et.triggers.Add(TriggerHelper.EndDragTrigger());
                 et.triggers.Add(TriggerHelper.CreateEntry(EventTriggerType.PointerDown, eventData =>
                 {
+                    int type = index + (RTEventEditor.EVENT_LIMIT * EditorTimeline.inst.Layer);
+                    //int type = (RTEventEditor.EVENT_LIMIT * (EditorTimeline.inst.Layer + 1)) - RTEventEditor.EVENT_LIMIT + index; // index + (RTEventEditor.EVENT_LIMIT * EditorTimeline.inst.Layer);
+
                     var pointerEventData = (PointerEventData)eventData;
 
-                    var currentEvent = (RTEventEditor.EVENT_LIMIT * (EditorTimeline.inst.Layer + 1)) - RTEventEditor.EVENT_LIMIT + type;
+                    var currentEvent = RTEventEditor.inst.GetEventType(type);
+
+                    //CoreHelper.Log($"Index: {index}\nType: {type}\nCalc: {currentEvent}\nAdd: {(RTEventEditor.EVENT_LIMIT * EditorTimeline.inst.Layer)}");
 
                     switch (pointerEventData.button)
                     {

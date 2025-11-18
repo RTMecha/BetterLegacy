@@ -33,7 +33,6 @@ namespace BetterLegacy.Editor.Managers
     public class RTEventEditor : BaseEditor<RTEventEditor, RTEventEditorSettings, EventEditor>
     {
         /* TODO:
-        - Custom event bin order.
         - Cleanup UI generation code.
          */
 
@@ -130,6 +129,8 @@ namespace BetterLegacy.Editor.Managers
         public List<Image> EventBins { get; set; } = new List<Image>();
         public List<Text> EventLabels { get; set; } = new List<Text>();
 
+        public List<EventBin> eventBins = new List<EventBin>();
+
         #endregion
 
         #region Color Toggles
@@ -160,6 +161,17 @@ namespace BetterLegacy.Editor.Managers
 
         public override void OnInit()
         {
+            if (AssetPack.TryReadFromFile("editor/data/events.json", out string eventsFile))
+            {
+                var jn = JSON.Parse(eventsFile);
+                for (int i = 0; i < jn["items"].Count; i++)
+                    eventBins.Add(new EventBin
+                    {
+                        name = jn["items"][i]["name"],
+                        index = jn["items"][i]["index"].AsInt,
+                    });
+            }
+
             eventEditorDialog = EditorManager.inst.GetDialog("Event Editor").Dialog;
             EventEditor.inst.EventColors = EventLayerColors;
 
@@ -610,8 +622,8 @@ namespace BetterLegacy.Editor.Managers
             if (!add && !remove)
                 DeselectAllKeyframes();
 
-            list.Where(x => (x.Type / EVENT_LIMIT) == EditorTimeline.inst.Layer && EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events &&
-            RTMath.RectTransformToScreenSpace(EditorManager.inst.SelectionBoxImage.rectTransform).Overlaps(RTMath.RectTransformToScreenSpace(x.Image.rectTransform))).ToList()
+            list.Where(x => x.IsCurrentLayer && RTMath.RectTransformToScreenSpace(EditorManager.inst.SelectionBoxImage.rectTransform)
+            .Overlaps(RTMath.RectTransformToScreenSpace(x.Image.rectTransform))).ToList()
             .ForEach(x =>
             {
                 x.Selected = true;
@@ -742,7 +754,7 @@ namespace BetterLegacy.Editor.Managers
             return kf;
         }
 
-        public GameObject EventGameObject(TimelineKeyframe kf) => EventEditor.inst.TimelinePrefab.Duplicate(EventEditor.inst.EventHolders.transform.GetChild(kf.Type % EVENT_LIMIT), $"keyframe - {kf.Type}");
+        public GameObject EventGameObject(TimelineKeyframe kf) => EventEditor.inst.TimelinePrefab.Duplicate(GetTimelineParent(kf.Type), $"keyframe - {kf.Type}");
 
         public void RenderEventObjects()
         {
@@ -3363,10 +3375,10 @@ namespace BetterLegacy.Editor.Managers
             var theme = EditorThemeManager.CurrentTheme;
             var title = EventEditor.inst.dialogRight.GetChild(i).GetChild(0);
             var image = title.GetChild(0).GetComponent<Image>();
-            image.color = theme.ContainsGroup($"Event Color {i % EVENT_LIMIT + 1} Editor") ? theme.GetColor($"Event Color {i % EVENT_LIMIT + 1} Editor") : Color.white;
+            image.color = theme.ContainsGroup($"Event Color {GetEventTypeIndex(i) % EVENT_LIMIT + 1} Editor") ? theme.GetColor($"Event Color {GetEventTypeIndex(i) % EVENT_LIMIT + 1} Editor") : Color.white;
             image.color = RTColors.FadeColor(image.color, 1f);
             image.rectTransform.sizeDelta = new Vector2(17f, 0f);
-            title.GetChild(1).GetComponent<Text>().text = $"- {EventTypes[i]} Editor - ";
+            title.GetChild(1).GetComponent<Text>().text = $"- {(eventBins.TryFind(x => x.index == i, out EventBin eventBin) ? eventBin.name : EventTypes[i])} Editor - ";
         }
 
         public void RenderLayerBins()
@@ -3375,18 +3387,22 @@ namespace BetterLegacy.Editor.Managers
                 return;
 
             var renderLeft = EditorConfig.Instance.EventLabelsRenderLeft.Value;
-            var eventLabels = EventEditor.inst.EventLabels;
 
             var layer = EditorTimeline.inst.Layer + 1;
             int num = Mathf.Clamp(layer * EVENT_LIMIT, 0, (RTEditor.ShowModdedUI ? layer * EVENT_LIMIT : 10));
 
             for (int i = 0; i < GameData.Current.events.Count; i++)
             {
-                int t = i % EVENT_LIMIT;
+                var text = EventLabels[i % EVENT_LIMIT];
 
-                var text = eventLabels.transform.GetChild(t).GetChild(0).GetComponent<Text>();
-
-                if (i < EventTypes.Length)
+                if (eventBins.TryGetAt(i, out EventBin eventBin))
+                {
+                    if (i >= num - EVENT_LIMIT && i < num)
+                        text.text = eventBin.name;
+                    else if (i < num)
+                        text.text = layer == 69 ? "lol" : layer == 555 ? "Hahaha" : NO_EVENT_LABEL;
+                }
+                else if (i < EventTypes.Length)
                 {
                     if (i >= num - EVENT_LIMIT && i < num)
                         text.text = EventTypes[i];
@@ -3422,6 +3438,17 @@ namespace BetterLegacy.Editor.Managers
             EventEditor.inst.EventLabels.SetActive(active);
             EventEditor.inst.EventHolders.SetActive(active);
         }
+
+        public Transform GetTimelineParent(int type)
+        {
+            //var currentEvent = (eventBins.TryFind(x => x.index == type, out EventBin eventBin) ? eventBin.index : type) % EVENT_LIMIT;
+            //var currentEvent = (eventBins.TryFindIndex(x => x.index == type, out int eventBin) ? eventBin : type) % EVENT_LIMIT;
+            return BaseInstance.EventHolders.transform.TryGetChild(GetEventTypeIndex(type) % EVENT_LIMIT);
+        }
+
+        public int GetEventTypeIndex(int type) => eventBins.TryFindIndex(x => x.index == type, out int eventBin) ? eventBin : type;
+
+        public int GetEventType(int type) => eventBins.TryGetAt(type, out EventBin eventBin) ? eventBin.index : type;
 
         #endregion
 

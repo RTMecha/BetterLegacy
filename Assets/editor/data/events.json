@@ -1,0 +1,164 @@
+﻿{
+  "items": [
+    {
+      "name": "Move",
+      "index": 0
+    },
+    {
+      "name": "Zoom",
+      "index": 1
+    },
+    {
+      "name": "Rotate",
+      "index": 2
+    },
+    {
+      "name": "Shake",
+      "index": 3
+    },
+    {
+      "name": "Theme",
+      "index": 4
+    },
+    {
+      "name": "Chroma",
+      "index": 5
+    },
+    {
+      "name": "Bloom",
+      "index": 6
+    },
+    {
+      "name": "Vignette",
+      "index": 7
+    },
+    {
+      "name": "Lens",
+      "index": 8
+    },
+    {
+      "name": "Grain",
+      "index": 9
+    },
+    {
+      "name": "Color Grading",
+      "index": 10
+    },
+    {
+      "name": "Ripples",
+      "index": 11
+    },
+    {
+      "name": "Radial Blur",
+      "index": 12
+    },
+    {
+      "name": "Color Split",
+      "index": 13
+    },
+    {
+      "name": "Move Offset",
+      "index": 14
+    },
+    {
+      "name": "Gradient",
+      "index": 15
+    },
+    {
+      "name": "Double Vision",
+      "index": 16
+    },
+    {
+      "name": "Scan Lines",
+      "index": 17
+    },
+    {
+      "name": "Blur",
+      "index": 18
+    },
+    {
+      "name": "Pixelize",
+      "index": 19
+    },
+    {
+      "name": "BG",
+      "index": 20
+    },
+    {
+      "name": "Invert",
+      "index": 21
+    },
+    {
+      "name": "Timeline",
+      "index": 22
+    },
+    {
+      "name": "Player",
+      "index": 23
+    },
+    {
+      "name": "Follow Player",
+      "index": 24
+    },
+    {
+      "name": "Audio",
+      "index": 25
+    },
+    {
+      "name": "Video BG Parent",
+      "index": 26
+    },
+    {
+      "name": "Video BG",
+      "index": 27
+    },
+    {
+      "name": "Sharpen",
+      "index": 28
+    },
+    {
+      "name": "Bars",
+      "index": 29
+    },
+    {
+      "name": "Danger",
+      "index": 30
+    },
+    {
+      "name": "3D Rotation",
+      "index": 31
+    },
+    {
+      "name": "Camera Depth",
+      "index": 32
+    },
+    {
+      "name": "Window Base",
+      "index": 33
+    },
+    {
+      "name": "Window Position X",
+      "index": 34
+    },
+    {
+      "name": "Window Position Y",
+      "index": 35
+    },
+    {
+      "name": "Player Force",
+      "index": 36
+    },
+    {
+      "name": "Mosaic",
+      "index": 37
+    },
+    {
+      "name": "Analog Glitch",
+      "index": 38
+    },
+    {
+      "name": "Digital Glitch",
+      "index": 39
+    }
+  ]
+}
