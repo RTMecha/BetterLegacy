@@ -248,6 +248,7 @@ namespace BetterLegacy.Core.Managers
             "arcadeclassic.ttf" => "Arcade Classic",
             "skytree.ttf" => "Skytree",
             "skytree_mono.ttf" => "Skytree Mono",
+            "harlowsi_1.ttf" => "Harlow Solid Italic",
 
             // vg ported
             "majormonodisplay-regular.ttf" => "MajorMonoDisplay",
