@@ -173,9 +173,11 @@ namespace BetterLegacy.Editor.Managers
         {
             float position = 0f;
             if (EditorConfig.Instance.UseMouseAsZoomPoint.Value)
-                position = Mathf.Clamp((float)((double)GetTimelineTime(false) / AudioManager.inst.CurrentAudioSource.clip.length), 0.05f, 0.95f);
+                position = (float)((double)GetTimelineTime(false) / AudioManager.inst.CurrentAudioSource.clip.length);
+                //position = Mathf.Clamp((float)((double)GetTimelineTime(false) / AudioManager.inst.CurrentAudioSource.clip.length), 0.05f, 0.95f);
             else if (AudioManager.inst.CurrentAudioSource.clip)
-                position = Mathf.Clamp((float)((double)AudioManager.inst.CurrentAudioSource.time / AudioManager.inst.CurrentAudioSource.clip.length), 0.05f, 0.95f);
+                position = (float)((double)AudioManager.inst.CurrentAudioSource.time / AudioManager.inst.CurrentAudioSource.clip.length);
+                //position = Mathf.Clamp((float)((double)AudioManager.inst.CurrentAudioSource.time / AudioManager.inst.CurrentAudioSource.clip.length), 0.05f, 0.95f);
 
             SetTimeline(zoom, position);
         }
@@ -198,12 +200,13 @@ namespace BetterLegacy.Editor.Managers
                 if (render)
                     RenderTimeline();
 
-                EditorManager.inst.timelineScrollRectBar.SetValueWithoutNotify(position);
                 EditorManager.inst.timelineScrollRectBar.onValueChanged.NewListener(SetTimelineScroll);
-                SetTimelineScroll(position);
+                CoroutineHelper.PerformAtNextFrame(() => EditorManager.inst.timelineScrollRectBar.value = position); // wtf why does setting the position on the current frame cause it to be inaccurate...
 
                 EditorManager.inst.zoomSlider.SetValueWithoutNotify(EditorManager.inst.zoomFloat);
                 EditorManager.inst.zoomSlider.onValueChanged.NewListener(_val => EditorManager.inst.Zoom = _val);
+
+                //CoreHelper.Log($"Zoom: {zoom}\nPosition: {position}");
             }
             catch (Exception ex)
             {
@@ -284,11 +287,8 @@ namespace BetterLegacy.Editor.Managers
         public void ClampTimeline(bool clamp)
         {
             var movementType = clamp ? ScrollRect.MovementType.Clamped : ScrollRect.MovementType.Unrestricted;
-            var scrollRects = EditorManager.inst.timelineScrollRect.gameObject.GetComponents<ScrollRect>();
-            for (int i = 0; i < scrollRects.Length; i++)
-                scrollRects[i].movementType = movementType;
-            EditorManager.inst.markerTimeline.transform.parent.GetComponent<ScrollRect>().movementType = movementType;
-            EditorManager.inst.timelineSlider.transform.parent.GetComponent<ScrollRect>().movementType = movementType;
+            for (int i = 0; i < timelineScrollRects.Count; i++)
+                timelineScrollRects[i].movementType = movementType;
         }
 
         /// <summary>
