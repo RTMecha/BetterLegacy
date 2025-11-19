@@ -2747,6 +2747,7 @@ namespace BetterLegacy.Editor.Managers
 
                 foreach (var todo in todos)
                     todo.Init();
+                RefreshList();
             });
             todoEditorMoveDownButton.onClick.NewListener(() =>
             {
@@ -2761,6 +2762,7 @@ namespace BetterLegacy.Editor.Managers
 
                 foreach (var todo in todos)
                     todo.Init();
+                RefreshList();
             });
         }
 
