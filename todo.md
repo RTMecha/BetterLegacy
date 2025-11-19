@@ -180,7 +180,7 @@ Next: Multiplayer Snapshots
   - Can display different types of objects at different priorities.  
   - Certain types of objects can be hidden. (Beatmap Object only, Prefab Object only, etc)  
 - Documentation & tooltips.  
-- Possible multi object editor rework???  
+- Rework Multi Object Editor to be based on tabs instead of one scroll view.
 - Update the file browser UI to include more info / functions.  
 - Overhaul the custom UI config settings to be more extensive.  
 - Rework object dragging to have a lot more control and settings. (take some inspiration from Modern + Blender + EditorManagement)  
