@@ -4822,8 +4822,13 @@ namespace BetterLegacy.Editor.Managers
         {
             var warningPopup = SaveAsPopup.GameObject.Duplicate(popups, "Warning Popup");
             warningPopup.transform.AsRT().anchoredPosition = Vector2.zero;
+            warningPopup.transform.AsRT().sizeDelta = new Vector2(420f, 200f);
 
             var main = warningPopup.transform.GetChild(0);
+            main.AsRT().sizeDelta = new Vector2(420f, 200f);
+
+            var mainLayout = main.GetComponent<VerticalLayoutGroup>();
+            mainLayout.padding = new RectOffset(left: 8, right: 8, top: 0, bottom: 8);
 
             var spacer1 = Creator.NewUIObject("spacerL", main);
             spacer1.AddComponent<LayoutElement>();
@@ -4862,9 +4867,7 @@ namespace BetterLegacy.Editor.Managers
             sizeFitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
             sizeFitter.verticalFit = ContentSizeFitter.FitMode.Unconstrained;
 
-            main.transform.AsRT().sizeDelta = new Vector2(400f, 160f);
-
-            main.Find("Level Name").AsRT().sizeDelta = new Vector2(292f, 64f);
+            main.Find("Level Name").AsRT().sizeDelta = new Vector2(292f, 116f);
 
             var panel = main.Find("Panel");
 
