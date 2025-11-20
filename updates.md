@@ -1,4 +1,54 @@
-﻿# 1.8.12 [Nov 14, 2025]
+﻿# 1.8.13 [Nov 21, 2025]
+## Features
+### Core
+- Added Harlow Solid Italic font in preparation for a special Arcade level.
+- Added a couple of checkpoint / marker modifiers.
+- Checkpoints now have a auto triggerable toggle. Turning this off allows checkpoints to not trigger automatically.
+
+### Editor
+- Most Project Planner text displays now support link functions. No, not ACTUAL links.
+  - <reflevel="editor/Level Folder Name">Level</reflevel> allows you to open a level via a path. You can also do <reflevel="editor/Level Folder Name",45>Level</reflevel> to set the level time.
+  - <reflevelfolder="editor/Folder Name">Folder</reflevelfolder> allows you to set the current editor path.
+  - <refdoc="Document Name">Document reference</refdoc> allows you to open an existing document.
+  - <tab=0>Tab reference</tab> allows you to go to a Project Planner tab.
+  - <url="url">Link</url> allows you to open a link.
+  - <copytext="text">Copy this</copytext> copies the text in the quotation marks.
+  - <shownote="Note Name">Show Note</shownote> shows a specified note with the matching name.
+  - <hidenote="Note Name">Hide Note</hidenote> hides a specified note with the matching name.
+  - <togglenote="Note Name">Toggle Note</togglenote> toggles the active state of a specified note with the matching name.
+- Improved on the OST section of the Project Planner.
+  - Songs can now play in the background outside of the Project Planner. This comes with its own settings of how it behaves when playing the main level audio.
+  - Entire list or single song can now loop.
+  - Audio files can be dragged and dropped onto the game window with the Project Planner open. This will add all the files to the OST list automatically.
+- Added the "Project Planner" sub tab to Config Manager > Editor.
+- Notifications now display in the Project Planner.
+- Added keybind functions:
+  - NextProjectPlannerOST (skips to the next song)
+  - StopProjectPlannerOST (stops the OST from playing)
+  - TogglePlayingProjectPlannerOST (toggles the playing state of the OST)
+  - ShuffleProjectPlannerOST (shuffles the OST and starts playing it)
+  - StartProjectPlannerOST (starts playing the OST from the beginning)
+- The start and end level offset values now render on the timeline.
+- Added some settings relating to song looping in the editor in Config Manager > Editor > General.
+- Added "Checkpoint Preview Enabled", "Checkpoint Preview Size", "Checkpoint Preview Color Type" and "Checkpoint Preview Custom Color" to Config Manager > Editor > Preview.
+- Finally implemented checkpoint multi positions to the editor.
+- Event order can now be customized via Asset Packs.
+
+## Changes
+### Core
+- Optimized math evaluation per frame.
+
+### Editor
+- Renamed "Offset" event to "Move Offset" to make it more clear what the event does.
+- The editor now displays an update warning if an item's server version is greater than the current version.
+
+## Fixes
+- Fixed main timeline's position being inaccurate for some reason.
+- Fixed server files not updating immediately when an item has been updated.
+
+------------------------------------------------------------------------------------------
+
+# 1.8.12 [Nov 14, 2025]
 ## Features
 ### Core
 - More modifiers support variable formatting.
