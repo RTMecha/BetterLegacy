@@ -344,6 +344,9 @@ namespace BetterLegacy.Editor.Managers
             
             Dialog.ReverseToggle.SetIsOnWithoutNotify(checkpoint.reverse);
             Dialog.ReverseToggle.OnValueChanged.NewListener(_val => checkpoint.reverse = _val);
+            
+            Dialog.AutoTriggerableToggle.SetIsOnWithoutNotify(checkpoint.autoTriggerable);
+            Dialog.AutoTriggerableToggle.OnValueChanged.NewListener(_val => checkpoint.autoTriggerable = _val);
 
             Dialog.SpawnPositionDropdown.SetValueWithoutNotify((int)checkpoint.spawnType);
             Dialog.SpawnPositionDropdown.onValueChanged.NewListener(_val => checkpoint.spawnType = (Checkpoint.SpawnPositionType)_val);

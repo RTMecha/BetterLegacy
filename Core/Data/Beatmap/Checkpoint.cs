@@ -67,6 +67,11 @@ namespace BetterLegacy.Core.Data.Beatmap
 		public bool reverse = true;
 
         /// <summary>
+        /// If the checkpoint automatically triggers when it is reached.
+        /// </summary>
+        public bool autoTriggerable = true;
+
+        /// <summary>
         /// Timeline Checkpoint reference.
         /// </summary>
         public TimelineCheckpoint timelineCheckpoint;
@@ -132,6 +137,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 			heal = orig.heal;
 			setTime = orig.setTime;
 			reverse = orig.reverse;
+            autoTriggerable = orig.autoTriggerable;
         }
 
         public override void ReadJSONVG(JSONNode jn, Version version = default)
@@ -162,6 +168,8 @@ namespace BetterLegacy.Core.Data.Beatmap
                 setTime = jn["set_time"].AsBool;
             if (jn["reverse"] != null)
                 reverse = jn["reverse"].AsBool;
+            if (jn["auto"] != null)
+                autoTriggerable = jn["auto"].AsBool;
         }
 
         public override JSONNode ToJSONVG()
@@ -198,8 +206,10 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["set_time"] = setTime;
             if (!reverse)
                 jn["reverse"] = reverse;
+            if (!autoTriggerable)
+                jn["auto"] = autoTriggerable;
 
-			return jn;
+            return jn;
 		}
 
         /// <summary>

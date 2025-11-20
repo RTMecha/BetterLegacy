@@ -283,6 +283,8 @@ namespace BetterLegacy.Core.Runtime
         /// </summary>
         public Checkpoint ActiveCheckpoint { get; set; }
 
+        public int ActiveCheckpointIndex { get; set; }
+
         int nextCheckpointIndex;
 
         /// <summary>
@@ -292,28 +294,21 @@ namespace BetterLegacy.Core.Runtime
         {
             var checkpoints = GameData.Current?.data?.checkpoints;
             if (checkpoints != null && checkpoints.InRange(nextCheckpointIndex) && AudioManager.inst.CurrentAudioSource.time > (double)checkpoints[nextCheckpointIndex].time && CoreHelper.InEditorPreview)
-                SetCheckpoint(nextCheckpointIndex);
+                SetCheckpoint(nextCheckpointIndex, false);
         }
-
-        /// <summary>
-        /// Creates a new checkpoint and sets it as the currently active checkpoint. Used for modifiers.
-        /// </summary>
-        /// <param name="time">Time of the checkpoint to rewind to when reversing to it.</param>
-        /// <param name="position">Position to spawn the players at.</param>
-        public void SetCheckpoint(float time, Vector2 position) => SetCheckpoint(new Checkpoint("Modifier Checkpoint", Mathf.Clamp(time, 0f, AudioManager.inst.CurrentAudioSource.clip.length), position));
 
         /// <summary>
         /// Sets the currently active checkpoint based on an index.
         /// </summary>
         /// <param name="index">Index of the checkpoint.</param>
-        public void SetCheckpoint(int index)
+        public void SetCheckpoint(int index, bool forceTrigger = true)
         {
             var checkpoints = GameData.Current?.data?.checkpoints;
             if (checkpoints == null || !checkpoints.InRange(index))
                 return;
 
             CoreHelper.Log($"Set checkpoint: {index}");
-            SetCheckpoint(checkpoints[index], index + 1);
+            SetCheckpoint(checkpoints[index], index, index + 1, forceTrigger);
         }
 
         /// <summary>
@@ -321,11 +316,23 @@ namespace BetterLegacy.Core.Runtime
         /// </summary>
         /// <param name="checkpoint">Checkpoint to set active.</param>
         /// <param name="nextIndex">Index of the next checkpoint to activate. If left at -1, it will not update the next index.</param>
-        public void SetCheckpoint(Checkpoint checkpoint, int nextIndex = -1)
+        public void SetCheckpoint(Checkpoint checkpoint, int index = -1, int nextIndex = -1, bool forceTrigger = true)
         {
-            ActiveCheckpoint = checkpoint;
+            // set next checkpoint index if it is triggerable
             if (nextIndex >= 0)
+            {
+                var checkpoints = GameData.Current?.data?.checkpoints;
+                while (checkpoints != null && checkpoints.TryGetAt(nextIndex, out Checkpoint nextCheckpoint) && !nextCheckpoint.autoTriggerable)
+                    nextIndex++;
+
                 nextCheckpointIndex = nextIndex;
+            }
+
+            if (!forceTrigger && !checkpoint.autoTriggerable)
+                return;
+
+            ActiveCheckpointIndex = index;
+            ActiveCheckpoint = checkpoint;
 
             if (checkpoint.heal)
                 PlayerManager.Players.ForLoop(customPlayer => customPlayer.ResetHealth());
@@ -352,6 +359,7 @@ namespace BetterLegacy.Core.Runtime
                 index = GameData.Current.data.GetLastCheckpointIndex();
 
             ActiveCheckpoint = checkpoints[index];
+            ActiveCheckpointIndex = index;
             nextCheckpointIndex = index + 1;
         }
 

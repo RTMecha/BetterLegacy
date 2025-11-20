@@ -44,6 +44,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public ToggleButtonStorage HealToggle { get; set; }
         public ToggleButtonStorage SetTimeToggle { get; set; }
         public ToggleButtonStorage ReverseToggle { get; set; }
+        public ToggleButtonStorage AutoTriggerableToggle { get; set; }
+
         public Dropdown SpawnPositionDropdown { get; set; }
 
         public RectTransform PositionContent { get; set; }
@@ -216,6 +218,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
             ReverseToggle = reverse.GetComponent<ToggleButtonStorage>();
             ReverseToggle.label.text = "Reverse";
             EditorThemeManager.AddToggle(ReverseToggle.toggle, graphic: ReverseToggle.label);
+            
+            new Labels(Labels.InitSettings.Default.Parent(LeftContent), "Triggers on reached");
+            var autoTriggerable = EditorPrefabHolder.Instance.ToggleButton.Duplicate(LeftContent);
+            AutoTriggerableToggle = autoTriggerable.GetComponent<ToggleButtonStorage>();
+            AutoTriggerableToggle.Text = "Auto Triggerable";
+            EditorThemeManager.AddToggle(AutoTriggerableToggle.toggle, graphic: AutoTriggerableToggle.label);
 
             new Labels(Labels.InitSettings.Default.Parent(LeftContent), "Spawn position type");
             var spawnPositionType = EditorPrefabHolder.Instance.Dropdown.Duplicate(LeftContent);
