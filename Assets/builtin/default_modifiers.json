@@ -3181,18 +3181,79 @@
     [
       {
         "type": 1,
-        "commands": [ "createCheckpoint", "True", "0", "0", "False", "True", "True", "True", "0" ],
-        "value": "0",
+        "name": "getActiveCheckpointIndex",
+        "values": [ "ACTIVE_CHECKPOINT" ],
+        "const": "True"
+      }, // getActiveCheckpointIndex
+      {
+        "type": 1,
+        "name": "getLastCheckpointIndex",
+        "values": [ "LAST_CHECKPOINT" ],
+        "const": "True"
+      }, // getLastCheckpointIndex
+      {
+        "type": 1,
+        "name": "getNextCheckpointIndex",
+        "values": [ "NEXT_CHECKPOINT" ],
+        "const": "True"
+      }, // getNextCheckpointIndex
+      {
+        "type": 1,
+        "name": "getLastMarkerIndex",
+        "values": [ "LAST_MARKER" ],
+        "const": "True"
+      }, // getLastMarkerIndex
+      {
+        "type": 1,
+        "name": "getNextMarkerIndex",
+        "values": [ "NEXT_MARKER" ],
+        "const": "True"
+      }, // getNextMarkerIndex
+      {
+        "type": 1,
+        "name": "getCheckpointCount",
+        "values": [ "CHECKPOINT_COUNT" ],
+        "const": "True"
+      }, // getCheckpointCount
+      {
+        "type": 1,
+        "name": "getMarkerCount",
+        "values": [ "MARKER_COUNT" ],
+        "const": "True"
+      }, // getMarkerCount
+      {
+        "type": 1,
+        "name": "getCheckpointTime",
+        "values": [ "CHECKPOINT_TIME", "0" ],
+        "const": "True"
+      }, // getCheckpointTime
+      {
+        "type": 1,
+        "name": "getMarkerTime",
+        "values": [ "MARKER_TIME", "0" ],
+        "const": "True"
+      }, // getMarkerTime
+      {
+        "type": 1,
+        "name": "createCheckpoint",
+        "values": [ "0", "True", "0", "0", "False", "True", "True", "True", "0" ],
         "const": "False",
         "compat": "level_control"
       }, // createCheckpoint
       {
         "type": 1,
-        "commands": [ "resetCheckpoint" ],
-        "value": "False",
+        "name": "resetCheckpoint",
+        "values": [ "False" ],
         "const": "False",
         "compat": "level_control"
       }, // resetCheckpoint
+      {
+        "type": 1,
+        "name": "setCurrentCheckpoint",
+        "values": [ "0" ],
+        "const": "False",
+        "compat": "level_control"
+      }, // setCurrentCheckpoint
       {
         "type": 0,
         "name": "onCheckpoint",

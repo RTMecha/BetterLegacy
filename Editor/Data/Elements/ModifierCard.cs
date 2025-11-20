@@ -4342,7 +4342,45 @@ namespace BetterLegacy.Editor.Data.Elements
                 #endregion
 
                 #region Checkpoints
-                    
+
+                case nameof(ModifierFunctions.getActiveCheckpointIndex): {
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        break;
+                    }
+                case nameof(ModifierFunctions.getLastCheckpointIndex): {
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        break;
+                    }
+                case nameof(ModifierFunctions.getNextCheckpointIndex): {
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        break;
+                    }
+                case nameof(ModifierFunctions.getLastMarkerIndex): {
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        break;
+                    }
+                case nameof(ModifierFunctions.getNextMarkerIndex): {
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        break;
+                    }
+                case nameof(ModifierFunctions.getCheckpointCount): {
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        break;
+                    }
+                case nameof(ModifierFunctions.getMarkerCount): {
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        break;
+                    }
+                case nameof(ModifierFunctions.getCheckpointTime): {
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        IntegerGenerator(modifier, reference, "Checkpoint Index", 1);
+                        break;
+                    }
+                case nameof(ModifierFunctions.getMarkerTime): {
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        IntegerGenerator(modifier, reference, "Marker Index", 1);
+                        break;
+                    }
                 case nameof(ModifierFunctions.createCheckpoint): {
                         SingleGenerator(modifier, reference, "Time", 0);
                         BoolGenerator(modifier, reference, "Time Relative", 1);
@@ -4384,6 +4422,10 @@ namespace BetterLegacy.Editor.Data.Elements
                     }
                 case nameof(ModifierFunctions.resetCheckpoint): {
                         BoolGenerator(modifier, reference, "Reset to Previous", 0);
+                        break;
+                    }
+                case nameof(ModifierFunctions.setCurrentCheckpoint): {
+                        IntegerGenerator(modifier, reference, "Checkpoint Index", 0);
                         break;
                     }
 

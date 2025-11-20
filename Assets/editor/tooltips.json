@@ -5270,6 +5270,97 @@
         // Checkpoint / Marker
         [
           {
+            "name": "Object Modifier - getActiveCheckpointIndex (Action)",
+            "tooltips": [
+              {
+                "desc": "getActiveCheckpointIndex (Action)",
+                "hint": "Gets the currently active checkpoint index and passes it to other modifiers.",
+                "lang": 0
+              }
+            ]
+          }, // getActiveCheckpointIndex
+          {
+            "name": "Object Modifier - getLastCheckpointIndex (Action)",
+            "tooltips": [
+              {
+                "desc": "getLastCheckpointIndex (Action)",
+                "hint": "Gets the last checkpoint index in audio time and passes it to other modifiers.",
+                "lang": 0
+              }
+            ]
+          }, // getLastCheckpointIndex
+          {
+            "name": "Object Modifier - getNextCheckpointIndex (Action)",
+            "tooltips": [
+              {
+                "desc": "getNextCheckpointIndex (Action)",
+                "hint": "Gets the next checkpoint index in audio time and passes it to other modifiers.",
+                "lang": 0
+              }
+            ]
+          }, // getNextCheckpointIndex
+          {
+            "name": "Object Modifier - getLastMarkerIndex (Action)",
+            "tooltips": [
+              {
+                "desc": "getLastMarkerIndex (Action)",
+                "hint": "Gets the last marker index in audio time and passes it to other modifiers.",
+                "lang": 0
+              }
+            ]
+          }, // getLastMarkerIndex
+          {
+            "name": "Object Modifier - getNextMarkerIndex (Action)",
+            "tooltips": [
+              {
+                "desc": "getNextMarkerIndex (Action)",
+                "hint": "Gets the last marker index in audio time and passes it to other modifiers.",
+                "lang": 0
+              }
+            ]
+          }, // getNextMarkerIndex
+          {
+            "name": "Object Modifier - getCheckpointCount (Action)",
+            "tooltips": [
+              {
+                "desc": "getCheckpointCount (Action)",
+                "hint": "Gets the checkpoint count and passes it to other modifiers.",
+                "lang": 0
+              }
+            ]
+          }, // getCheckpointCount
+          {
+            "name": "Object Modifier - getMarkerCount (Action)",
+            "tooltips": [
+              {
+                "desc": "getMarkerCount (Action)",
+                "hint": "Gets the marker count and passes it to other modifiers.",
+                "lang": 0
+              }
+            ]
+          }, // getMarkerCount
+          {
+            "name": "Object Modifier - getCheckpointTime (Action)",
+            "tooltips": [
+              {
+                "desc": "getCheckpointTime (Action)",
+                "hint": "Gets the time of a checkpoint at an index and passes it to other modifiers.",
+                "lang": 0
+              }
+            ]
+          }, // getCheckpointTime
+          {
+            "name": "Object Modifier - getMarkerTime (Action)",
+            "tooltips": [
+              {
+                "desc": "getMarkerTime (Action)",
+                "hint": "Gets the time of a marker at an index and passes it to other modifiers.",
+                "lang": 0
+              }
+            ]
+          }, // getMarkerTime
+
+          {
             "name": "Object Modifier - createCheckpoint (Action)",
             "tooltips": [
               {
@@ -5289,6 +5380,17 @@
               }
             ]
           }, // resetCheckpoint
+          {
+            "name": "Object Modifier - setCurrentCheckpoint (Action)",
+            "tooltips": [
+              {
+                "desc": "setCurrentCheckpoint (Action)",
+                "hint": "Sets the currently active checkpoint at an index.",
+                "lang": 0
+              }
+            ]
+          }, // setCurrentCheckpoint
+
           {
             "name": "Object Modifier - onCheckpoint (Trigger)",
             "tooltips": [

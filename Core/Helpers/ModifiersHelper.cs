@@ -1351,8 +1351,18 @@ namespace BetterLegacy.Core.Helpers
 
             #region Checkpoints
 
+            new ModifierAction(nameof(ModifierFunctions.getActiveCheckpointIndex),  ModifierFunctions.getActiveCheckpointIndex),
+            new ModifierAction(nameof(ModifierFunctions.getLastCheckpointIndex),  ModifierFunctions.getLastCheckpointIndex),
+            new ModifierAction(nameof(ModifierFunctions.getNextCheckpointIndex),  ModifierFunctions.getNextCheckpointIndex),
+            new ModifierAction(nameof(ModifierFunctions.getLastMarkerIndex),  ModifierFunctions.getLastMarkerIndex),
+            new ModifierAction(nameof(ModifierFunctions.getNextMarkerIndex),  ModifierFunctions.getNextMarkerIndex),
+            new ModifierAction(nameof(ModifierFunctions.getCheckpointCount),  ModifierFunctions.getCheckpointCount),
+            new ModifierAction(nameof(ModifierFunctions.getMarkerCount),  ModifierFunctions.getMarkerCount),
+            new ModifierAction(nameof(ModifierFunctions.getCheckpointTime),  ModifierFunctions.getCheckpointTime),
+            new ModifierAction(nameof(ModifierFunctions.getMarkerTime),  ModifierFunctions.getMarkerTime),
             new ModifierAction(nameof(ModifierFunctions.createCheckpoint),  ModifierFunctions.createCheckpoint, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierFunctions.resetCheckpoint),  ModifierFunctions.resetCheckpoint, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.setCurrentCheckpoint),  ModifierFunctions.setCurrentCheckpoint, ModifierCompatibility.LevelControlCompatible),
 
             #endregion
 
@@ -11979,6 +11989,53 @@ namespace BetterLegacy.Core.Helpers
 
         #region Checkpoints
 
+        public static void getActiveCheckpointIndex(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = RTBeatmap.Current.ActiveCheckpointIndex.ToString();
+        }
+        
+        public static void getLastCheckpointIndex(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = GameData.Current.data.GetLastCheckpointIndex().ToString();
+        }
+
+        public static void getNextCheckpointIndex(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = GameData.Current.data.GetNextCheckpointIndex().ToString();
+        }
+
+        public static void getLastMarkerIndex(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = GameData.Current.data.GetLastMarkerIndex().ToString();
+        }
+
+        public static void getNextMarkerIndex(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = GameData.Current.data.GetNextMarkerIndex().ToString();
+        }
+
+        public static void getCheckpointCount(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = GameData.Current.data.checkpoints.Count.ToString();
+        }
+
+        public static void getMarkerCount(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = GameData.Current.data.markers.Count.ToString();
+        }
+
+        public static void getCheckpointTime(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (GameData.Current.data.checkpoints.TryGetAt(modifier.GetInt(1, 0, modifierLoop.variables), out Checkpoint checkpoint))
+                modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = checkpoint.time.ToString();
+        }
+        
+        public static void getMarkerTime(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (GameData.Current.data.markers.TryGetAt(modifier.GetInt(1, 0, modifierLoop.variables), out Marker checkpoint))
+                modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = checkpoint.time.ToString();
+        }
+
         public static void createCheckpoint(Modifier modifier, ModifierLoop modifierLoop)
         {
             // if active checpoints matches the stored checkpoint, do not create a new checkpoint.
@@ -12003,6 +12060,44 @@ namespace BetterLegacy.Core.Helpers
         public static void resetCheckpoint(Modifier modifier, ModifierLoop modifierLoop)
         {
             RTBeatmap.Current.ResetCheckpoint(modifier.GetBool(0, false, modifierLoop.variables));
+        }
+
+        public static void setCurrentCheckpoint(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            RTBeatmap.Current.SetCheckpoint(modifier.GetInt(0, 0, modifierLoop.variables));
+        }
+
+        public static bool onMarker(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            var forward = AudioManager.inst.CurrentAudioSource.pitch >= 0f;
+
+            var name = modifier.GetValue(0, modifierLoop.variables);
+            var color = modifier.GetInt(1, -1, modifierLoop.variables);
+            var layer = modifier.GetInt(2, -1, modifierLoop.variables);
+            var index = modifier.GetResultOrDefault(() => GameData.Current.data.GetLastMarkerIndex(x => x.Matches(name, color, layer)));
+            var newIndex = GameData.Current.data.GetLastMarkerIndex(x => x.Matches(name, color, layer));
+            if (index != newIndex)
+            {
+                modifier.Result = newIndex;
+                // if current pitch is forwards, check if new index is ahead, otherwise if pitch is backwards then check if new index is behind
+                return newIndex > index;
+            }
+            return false;
+        }
+
+        public static bool onCheckpoint(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            var forward = AudioManager.inst.CurrentAudioSource.pitch >= 0f;
+
+            var name = modifier.GetValue(0, modifierLoop.variables);
+            var index = modifier.GetResultOrDefault(() => GameData.Current.data.GetLastCheckpointIndex(x => string.IsNullOrEmpty(name) || x.name == name));
+            var newIndex = GameData.Current.data.GetLastCheckpointIndex(x => string.IsNullOrEmpty(name) || x.name == name);
+            if (index != newIndex)
+            {
+                modifier.Result = newIndex;
+                return newIndex > index;
+            }
+            return false;
         }
 
         #endregion
@@ -14151,39 +14246,6 @@ namespace BetterLegacy.Core.Helpers
         }
 
         public static bool fromPrefab(Modifier modifier, ModifierLoop modifierLoop) => modifierLoop.reference is IPrefabable prefabable && prefabable.FromPrefab;
-
-        public static bool onMarker(Modifier modifier, ModifierLoop modifierLoop)
-        {
-            var forward = AudioManager.inst.CurrentAudioSource.pitch >= 0f;
-
-            var name = modifier.GetValue(0, modifierLoop.variables);
-            var color = modifier.GetInt(1, -1, modifierLoop.variables);
-            var layer = modifier.GetInt(2, -1, modifierLoop.variables);
-            var index = modifier.GetResultOrDefault(() => GameData.Current.data.GetLastMarkerIndex(x => x.Matches(name, color, layer)));
-            var newIndex = GameData.Current.data.GetLastMarkerIndex(x => x.Matches(name, color, layer));
-            if (index != newIndex)
-            {
-                modifier.Result = newIndex;
-                // if current pitch is forwards, check if new index is ahead, otherwise if pitch is backwards then check if new index is behind
-                return newIndex > index;
-            }
-            return false;
-        }
-
-        public static bool onCheckpoint(Modifier modifier, ModifierLoop modifierLoop)
-        {
-            var forward = AudioManager.inst.CurrentAudioSource.pitch >= 0f;
-
-            var name = modifier.GetValue(0, modifierLoop.variables);
-            var index = modifier.GetResultOrDefault(() => GameData.Current.data.GetLastCheckpointIndex(x => string.IsNullOrEmpty(name) || x.name == name));
-            var newIndex = GameData.Current.data.GetLastCheckpointIndex(x => string.IsNullOrEmpty(name) || x.name == name);
-            if (index != newIndex)
-            {
-                modifier.Result = newIndex;
-                return newIndex > index;
-            }
-            return false;
-        }
 
         public static bool callModifierBlockTrigger(Modifier modifier, ModifierLoop modifierLoop)
         {
