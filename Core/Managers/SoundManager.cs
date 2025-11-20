@@ -105,6 +105,9 @@ namespace BetterLegacy.Core.Managers
             if (!loop)
                 CoroutineHelper.PerformActionAfterSeconds(length, () =>
                 {
+                    if (!audioSource)
+                        return;
+
                     CoreHelper.Destroy(audioSource);
                     onSoundComplete?.Invoke();
                 });

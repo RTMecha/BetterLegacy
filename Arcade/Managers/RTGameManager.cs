@@ -212,6 +212,7 @@ namespace BetterLegacy.Arcade.Managers
         #region Checkpoints
 
         RTAnimation checkpointAnimation;
+        AudioSource cachedCheckpointSound;
 
         /// <summary>
         /// Plays the checkpoint sound and animation.
@@ -219,7 +220,11 @@ namespace BetterLegacy.Arcade.Managers
         public IEnumerator IPlayCheckpointAnimation()
         {
             if (CoreConfig.Instance.PlayCheckpointSound.Value)
-                SoundManager.inst.PlaySound(DefaultSounds.checkpoint);
+            {
+                if (cachedCheckpointSound)
+                    CoreHelper.Destroy(cachedCheckpointSound);
+                cachedCheckpointSound = SoundManager.inst.PlaySound(DefaultSounds.checkpoint, onSoundComplete: () => cachedCheckpointSound = null);
+            }
             if (CoreConfig.Instance.PlayCheckpointAnimation.Value)
             {
                 GameManager.inst.playingCheckpointAnimation = true;
