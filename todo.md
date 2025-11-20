@@ -191,7 +191,6 @@ Next: Multiplayer Snapshots
 
 ### Fixes
 - Fix 1 life restart bug
-- Fix checkpoint sound duplication
 
 
 ## Ideas
