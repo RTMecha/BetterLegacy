@@ -313,6 +313,53 @@ namespace BetterLegacy.Editor.Managers
 
             var path = RTFile.CombinePaths(exportPath, $"{fileName}-server-upload{FileFormat.ZIP.Dot()}");
 
+            if (string.IsNullOrEmpty(uploadable.ServerID))
+            {
+                DoUpload(path, exportPath, url, fileName, uploadable, transfer, saveFile, onUpload);
+                return;
+            }
+
+            var headers = new Dictionary<string, string>();
+            if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null)
+                headers["Authorization"] = $"Bearer {LegacyPlugin.authData["access_token"].Value}";
+
+            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadJSONFile(Path.Combine(url, uploadable.ServerID),
+                callback: json =>
+                {
+                    try
+                    {
+                        CoreHelper.Log(json);
+                        var jn = JSON.Parse(json);
+                        if (jn["versionNumber"] != null && jn["versionNumber"].AsInt > uploadable.VersionNumber)
+                        {
+                            var msg = "This item's upload version is greater than the current version number. Are you sure you want to update this?";
+                            if (jn["datePublished"] != null)
+                                msg += $"\nItem was last updated on {jn["datePublished"].Value}";
+                            RTEditor.inst.ShowWarningPopup(msg,
+                                onConfirm: () =>
+                                {
+                                    DoUpload(path, exportPath, url, fileName, uploadable, transfer, saveFile, onUpload);
+                                    RTEditor.inst.HideWarningPopup();
+                                },
+                                onCancel: RTEditor.inst.HideWarningPopup);
+                            return;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        CoreHelper.LogException(ex);
+                    }
+                    DoUpload(path, exportPath, url, fileName, uploadable, transfer, saveFile, onUpload);
+                },
+                onError: (string onError, long responseCode, string errorMsg) =>
+                {
+                    DoUpload(path, exportPath, url, fileName, uploadable, transfer, saveFile, onUpload);
+                },
+                headers: headers));
+        }
+
+        void DoUpload(string path, string exportPath, string url, string fileName, IUploadable uploadable, Action<string> transfer, Action saveFile, Action onUpload)
+        {
             try
             {
                 uploadable.DatePublished = DateTime.Now.ToString(LegacyPlugin.DATE_TIME_FORMAT);
@@ -1367,7 +1414,7 @@ namespace BetterLegacy.Editor.Managers
                             iconImage.sprite = sprite;
                         else
                         {
-                            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.LevelCoverURL}{id}{FileFormat.JPG.Dot()}r?" + UnityEngine.Random.Range(0, int.MaxValue), bytes =>
+                            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.LevelCoverURL}{id}{FileFormat.JPG.Dot()}?r" + UnityEngine.Random.Range(0, int.MaxValue), bytes =>
                             {
                                 var sprite = SpriteHelper.LoadSprite(bytes);
                                 OnlineIcons[id] = sprite;
