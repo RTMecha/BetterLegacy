@@ -2022,7 +2022,7 @@ namespace BetterLegacy.Arcade.Interfaces
                                 button.icon = sprite;
                             else
                             {
-                                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{coverURL}{id}{FileFormat.JPG.Dot()}", bytes =>
+                                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{coverURL}{id}{FileFormat.JPG.Dot()}?r" + UnityEngine.Random.Range(0, int.MaxValue), bytes =>
                                 {
                                     var sprite = SpriteHelper.LoadSprite(bytes);
                                     OnlineLevelIcons[id] = sprite;

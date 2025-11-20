@@ -673,7 +673,7 @@ namespace BetterLegacy.Core
 
             ProgressMenu.Init($"Downloading Arcade server level: {id} - {name}<br>Please wait...");
 
-            CoroutineHelper.StartCoroutine(DownloadBytes($"{LevelDownloadURL}{id}{FileFormat.ZIP.Dot()}", ProgressMenu.Current.UpdateProgress, bytes =>
+            CoroutineHelper.StartCoroutine(DownloadBytes($"{LevelDownloadURL}{id}{FileFormat.ZIP.Dot()}?r" + UnityEngine.Random.Range(0, int.MaxValue), ProgressMenu.Current.UpdateProgress, bytes =>
             {
                 if (LevelManager.Levels.TryFindIndex(x => x.metadata.serverID == id, out int existingLevelIndex)) // prevent multiple of the same level ID
                 {
@@ -708,7 +708,7 @@ namespace BetterLegacy.Core
 
             ProgressMenu.Init($"Downloading Arcade server level collection: {id} - {name}<br>Please wait...");
 
-            CoroutineHelper.StartCoroutine(DownloadBytes($"{LevelCollectionDownloadURL}{id}{FileFormat.ZIP.Dot()}", ProgressMenu.Current.UpdateProgress, bytes =>
+            CoroutineHelper.StartCoroutine(DownloadBytes($"{LevelCollectionDownloadURL}{id}{FileFormat.ZIP.Dot()}?r" + UnityEngine.Random.Range(0, int.MaxValue), ProgressMenu.Current.UpdateProgress, bytes =>
             {
                 if (LevelManager.LevelCollections.TryFindIndex(x => x.serverID == id, out int existingLevelIndex)) // prevent multiple of the same level ID
                 {

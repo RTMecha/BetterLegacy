@@ -13,6 +13,7 @@ using HarmonyLib;
 using TMPro;
 using SimpleJSON;
 
+using BetterLegacy.Arcade.Interfaces;
 using BetterLegacy.Arcade.Managers;
 using BetterLegacy.Companion.Entity;
 using BetterLegacy.Configs;
@@ -67,6 +68,8 @@ namespace BetterLegacy.Patchers
 
             LevelManager.Clear();
             LevelManager.ClearData();
+            ArcadeMenu.OnlineLevelIcons.Clear();
+            ArcadeMenu.OnlineSteamLevelIcons.Clear();
 
             InputDataManager.inst.BindMenuKeys();
             InputDataManager.inst.BindEditorKeys();

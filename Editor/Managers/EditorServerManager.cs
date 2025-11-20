@@ -1367,7 +1367,7 @@ namespace BetterLegacy.Editor.Managers
                             iconImage.sprite = sprite;
                         else
                         {
-                            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.LevelCoverURL}{id}{FileFormat.JPG.Dot()}", bytes =>
+                            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.LevelCoverURL}{id}{FileFormat.JPG.Dot()}r?" + UnityEngine.Random.Range(0, int.MaxValue), bytes =>
                             {
                                 var sprite = SpriteHelper.LoadSprite(bytes);
                                 OnlineIcons[id] = sprite;
@@ -1455,7 +1455,7 @@ namespace BetterLegacy.Editor.Managers
                 RTEditor.inst.ProgressPopup.Open();
             RTEditor.inst.ProgressPopup.Text = "Downloading level, please wait...";
 
-            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.LevelDownloadURL}{id}.zip", RTEditor.inst.ProgressPopup.UpdateProgress, bytes =>
+            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.LevelDownloadURL}{id}.zip?r" + UnityEngine.Random.Range(0, int.MaxValue), RTEditor.inst.ProgressPopup.UpdateProgress, bytes =>
             {
                 RTFile.DeleteDirectory(directory);
                 Directory.CreateDirectory(directory);
@@ -1582,7 +1582,7 @@ namespace BetterLegacy.Editor.Managers
                             iconImage.sprite = sprite;
                         else
                         {
-                            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.LevelCollectionCoverURL}{id}{FileFormat.JPG.Dot()}", bytes =>
+                            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.LevelCollectionCoverURL}{id}{FileFormat.JPG.Dot()}r?" + UnityEngine.Random.Range(0, int.MaxValue), bytes =>
                             {
                                 var sprite = SpriteHelper.LoadSprite(bytes);
                                 OnlineIcons[id] = sprite;
@@ -1670,7 +1670,7 @@ namespace BetterLegacy.Editor.Managers
                 RTEditor.inst.ProgressPopup.Open();
             RTEditor.inst.ProgressPopup.Text = "Downloading level collection, please wait...";
 
-            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.LevelCollectionDownloadURL}{id}.zip", RTEditor.inst.ProgressPopup.UpdateProgress, bytes =>
+            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.LevelCollectionDownloadURL}{id}.zip?r" + UnityEngine.Random.Range(0, int.MaxValue), RTEditor.inst.ProgressPopup.UpdateProgress, bytes =>
             {
                 RTFile.DeleteDirectory(directory);
                 Directory.CreateDirectory(directory);
@@ -1808,7 +1808,7 @@ namespace BetterLegacy.Editor.Managers
                             iconImage.sprite = sprite;
                         else
                         {
-                            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.PrefabCoverURL}{id}{FileFormat.JPG.Dot()}", bytes =>
+                            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.PrefabCoverURL}{id}{FileFormat.JPG.Dot()}?r" + UnityEngine.Random.Range(0, int.MaxValue), bytes =>
                             {
                                 var sprite = SpriteHelper.LoadSprite(bytes);
                                 OnlineIcons[id] = sprite;
@@ -1896,7 +1896,7 @@ namespace BetterLegacy.Editor.Managers
                 RTEditor.inst.ProgressPopup.Open();
             RTEditor.inst.ProgressPopup.Text = "Downloading prefab, please wait...";
 
-            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.PrefabDownloadURL}{id}.lsp", RTEditor.inst.ProgressPopup.UpdateProgress, bytes =>
+            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.PrefabDownloadURL}{id}.lsp?r" + UnityEngine.Random.Range(0, int.MaxValue), RTEditor.inst.ProgressPopup.UpdateProgress, bytes =>
             {
                 DownloadPrefabType(id, name, bytes, source);
                 onDownload?.Invoke();
@@ -1917,7 +1917,7 @@ namespace BetterLegacy.Editor.Managers
         public void DownloadPrefabType(string id, string name, byte[] bytes, ObjectSource source = ObjectSource.External)
         {
             // if the user does not have the Prefab's Prefab Type locally, download it off the server.
-            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.PrefabDownloadURL}{id}_type.lspt", RTEditor.inst.ProgressPopup.UpdateProgress, typeBytes =>
+            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.PrefabDownloadURL}{id}_type.lspt?r" + UnityEngine.Random.Range(0, int.MaxValue), RTEditor.inst.ProgressPopup.UpdateProgress, typeBytes =>
             {
                 var tempFilePath = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, $"{id}.lspt");
                 File.WriteAllBytes(tempFilePath, typeBytes);
