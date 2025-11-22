@@ -1157,6 +1157,11 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 else
                     toggle.image.color = CoreHelper.CurrentBeatmapTheme.GetObjColor(tmpIndex);
 
+                EditorContextMenu.inst.AddContextMenu(toggle.gameObject,
+                    new ButtonFunction("Use", () => toggle.isOn = true),
+                    new ButtonFunction($"Show Modified Colors [{(EditorConfig.Instance.ShowModifiedColors.Value ? "On" : "Off")}]", () => EditorConfig.Instance.ShowModifiedColors.Value = !EditorConfig.Instance.ShowModifiedColors.Value),
+                    new ButtonFunction("Copy Hex Color", () => LSText.CopyToClipboard(RTColors.ColorToHexOptional(toggle.image.color))));
+
                 if (!toggle.GetComponent<HoverUI>())
                 {
                     var hoverUI = toggle.gameObject.AddComponent<HoverUI>();
@@ -1689,41 +1694,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     }
                 case 3: {
                         ColorKeyframeHandler(0, startColorsReference, selected, firstKF, animatable);
-
-                        bool showModifiedColors = EditorConfig.Instance.ShowModifiedColors.Value;
-                        var eventTime = firstKF.eventKeyframe.time;
-                        int index = 0;
-                        foreach (var toggle in startColorsReference)
-                        {
-                            int tmpIndex = index;
-
-                            toggle.gameObject.SetActive(RTEditor.ShowModdedUI || tmpIndex < 9);
-
-                            toggle.SetIsOnWithoutNotify(index == firstKF.eventKeyframe.values[0]);
-                            toggle.onValueChanged.NewListener(_val => SetKeyframeColor(animatable, 0, tmpIndex, startColorsReference, selected));
-
-                            if (showModifiedColors)
-                            {
-                                var color = CoreHelper.CurrentBeatmapTheme.GetObjColor(tmpIndex);
-
-                                float hueNum = animatable.Interpolate(3, 2, eventTime);
-                                float satNum = animatable.Interpolate(3, 3, eventTime);
-                                float valNum = animatable.Interpolate(3, 4, eventTime);
-
-                                toggle.image.color = RTColors.ChangeColorHSV(color, hueNum, satNum, valNum);
-                            }
-                            else
-                                toggle.image.color = CoreHelper.CurrentBeatmapTheme.GetObjColor(tmpIndex);
-
-                            if (!toggle.GetComponent<HoverUI>())
-                            {
-                                var hoverUI = toggle.gameObject.AddComponent<HoverUI>();
-                                hoverUI.animatePos = false;
-                                hoverUI.animateSca = true;
-                                hoverUI.size = 1.1f;
-                            }
-                            index++;
-                        }
 
                         var opacityObj = kfdialog.Find("opacity").gameObject;
                         var collision = kfdialog.Find("opacity/collision").GetComponent<Toggle>();
