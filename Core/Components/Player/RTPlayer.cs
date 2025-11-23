@@ -647,7 +647,7 @@ namespace BetterLegacy.Core.Components.Player
                 if (CoreHelper.InEditor && !PlayerManager.NoPlayers)
                 {
                     foreach (var player in PlayerManager.Players)
-                        player.Health = RTBeatmap.Current && RTBeatmap.Current.challengeMode.DefaultHealth > 0 ? RTBeatmap.Current.challengeMode.DefaultHealth : player.GetControl()?.Health ?? 3;
+                        player.ResetHealth();
                 }
             }
             catch (Exception ex)
@@ -3148,14 +3148,14 @@ namespace BetterLegacy.Core.Components.Player
             circleCollider2D.isTrigger = RTBeatmap.Current.Invincible && ZenEditorIncludesSolid;
             polygonCollider2D.isTrigger = RTBeatmap.Current.Invincible && ZenEditorIncludesSolid;
 
-            var colAcc = Core && Core.GetControl().collisionAccurate;
+            var colAcc = Core && (Core.GetControl()?.collisionAccurate ?? false);
             circleCollider2D.enabled = !colAcc;
             polygonCollider2D.enabled = colAcc;
             if (colAcc)
                 polygonCollider2D.CreateCollider(head.meshFilter);
 
-            if (Core && CoreHelper.InEditor)
-                Core.Health = RTBeatmap.Current.challengeMode.DefaultHealth > 0 ? RTBeatmap.Current.challengeMode.DefaultHealth : Core.GetControl()?.Health ?? 3;
+            if (CoreHelper.InEditor)
+                Core?.ResetHealth();
 
             var healthSprite = RTFile.FileExists(RTFile.CombinePaths(RTFile.BasePath, $"health{FileFormat.PNG.Dot()}")) && !AssetsGlobal ? SpriteHelper.LoadSprite(RTFile.CombinePaths(RTFile.BasePath, $"health{FileFormat.PNG.Dot()}")) :
                         RTFile.FileExists(RTFile.GetAsset($"health{FileFormat.PNG.Dot()}")) ? SpriteHelper.LoadSprite(RTFile.GetAsset($"health{FileFormat.PNG.Dot()}")) :

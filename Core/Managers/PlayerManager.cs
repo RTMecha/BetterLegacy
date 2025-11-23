@@ -422,7 +422,7 @@ namespace BetterLegacy.Core.Managers
         /// <param name="pos">Position to spawn at.</param>
         public static void SpawnPlayer(PAPlayer player, Vector3 pos)
         {
-            player.Health = !CoreHelper.IsEditing && RTBeatmap.Current.challengeMode.DefaultHealth > 0 ? RTBeatmap.Current.challengeMode.DefaultHealth : player.GetControl()?.Health ?? 3;
+            player.ResetHealth();
 
             var gameObject = GameManager.inst.PlayerPrefabs[0].Duplicate(GameManager.inst.players.transform, "Player " + (player.index + 1));
             gameObject.layer = 8;
