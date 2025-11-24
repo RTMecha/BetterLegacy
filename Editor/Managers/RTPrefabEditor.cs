@@ -2183,23 +2183,18 @@ namespace BetterLegacy.Editor.Managers
             var prefabType = prefab.GetPrefabType();
             var isExternal = prefabPanel.IsExternal;
 
-            PrefabEditorDialog.TypeButton.Text = prefabType.name + " [ Click to Open Prefab Type Editor ]";
-            PrefabEditorDialog.TypeButton.Color = prefabType.color;
-            PrefabEditorDialog.TypeButton.OnClick.NewListener(() =>
+            RenderPrefabEditorTypeSelector(prefabType);
+            PrefabEditorDialog.TypeButton.OnClick.NewListener(() => OpenPrefabTypePopup(prefab.typeID, id =>
             {
-                OpenPrefabTypePopup(prefab.typeID, id =>
-                {
-                    prefab.type = PrefabType.LSIDToIndex.TryGetValue(id, out int prefabTypeIndexLS) ? prefabTypeIndexLS : PrefabType.VGIDToIndex.TryGetValue(id, out int prefabTypeIndexVG) ? prefabTypeIndexVG : 0;
-                    prefab.typeID = id;
+                prefab.type = PrefabType.LSIDToIndex.TryGetValue(id, out int prefabTypeIndexLS) ? prefabTypeIndexLS : PrefabType.VGIDToIndex.TryGetValue(id, out int prefabTypeIndexVG) ? prefabTypeIndexVG : 0;
+                prefab.typeID = id;
 
-                    var prefabType = prefab.GetPrefabType();
-                    PrefabEditorDialog.TypeButton.Text = prefabType.name + " [ Click to Open Prefab Type Editor ]";
-                    PrefabEditorDialog.TypeButton.Color = prefabType.color;
+                var prefabType = prefab.GetPrefabType();
+                RenderPrefabEditorTypeSelector(prefabType);
 
-                    UpdatePrefabFile(prefabPanel);
-                    prefabPanel.RenderPrefabType(prefabType);
-                });
-            });
+                UpdatePrefabFile(prefabPanel);
+                prefabPanel.RenderPrefabType(prefabType);
+            }));
 
             PrefabEditorDialog.CreatorField.SetTextWithoutNotify(prefab.creator);
             PrefabEditorDialog.CreatorField.onValueChanged.NewListener(_val => prefab.creator = _val);
@@ -2312,6 +2307,12 @@ namespace BetterLegacy.Editor.Managers
                 pull: () => PullServerPrefab(prefabPanel),
                 delete: () => DeleteServerPrefab(prefabPanel),
                 verify: null);
+        }
+
+        public void RenderPrefabEditorTypeSelector(PrefabType prefabType)
+        {
+            PrefabEditorDialog.TypeButton.Text = prefabType.name + " [ Click to Open Prefab Type Editor ]";
+            PrefabEditorDialog.TypeButton.Color = prefabType.color;
         }
 
         public void OpenIconSelector()
@@ -2707,15 +2708,12 @@ namespace BetterLegacy.Editor.Managers
             TriggerHelper.AddEventTriggers(PrefabCreatorDialog.OffsetField.gameObject, TriggerHelper.ScrollDelta(PrefabCreatorDialog.OffsetField));
 
             RenderPrefabCreatorTypeSelector(NewPrefabTypeID);
-            PrefabCreatorDialog.TypeButton.OnClick.NewListener(() =>
+            PrefabCreatorDialog.TypeButton.OnClick.NewListener(() => OpenPrefabTypePopup(NewPrefabTypeID, id =>
             {
-                OpenPrefabTypePopup(NewPrefabTypeID, id =>
-                {
-                    PrefabEditor.inst.NewPrefabType = PrefabType.LSIDToIndex.TryGetValue(id, out int prefabTypeIndexLS) ? prefabTypeIndexLS : PrefabType.VGIDToIndex.TryGetValue(id, out int prefabTypeIndexVG) ? prefabTypeIndexVG : 0;
-                    NewPrefabTypeID = id;
-                    RenderPrefabCreatorTypeSelector(id);
-                });
-            });
+                PrefabEditor.inst.NewPrefabType = PrefabType.LSIDToIndex.TryGetValue(id, out int prefabTypeIndexLS) ? prefabTypeIndexLS : PrefabType.VGIDToIndex.TryGetValue(id, out int prefabTypeIndexVG) ? prefabTypeIndexVG : 0;
+                NewPrefabTypeID = id;
+                RenderPrefabCreatorTypeSelector(id);
+            }));
             PrefabCreatorDialog.DescriptionField.onValueChanged.NewListener(_val => NewPrefabDescription = _val);
 
             PrefabCreatorDialog.IconImage.sprite = NewPrefabIcon;
@@ -3108,7 +3106,9 @@ namespace BetterLegacy.Editor.Managers
             if (!GameData.Current.prefabs.TryFind(x => x.name == prefab.name, out Prefab internalPrefab))
                 return false;
 
+            var origID = internalPrefab.id;
             internalPrefab.CopyData(prefab, false);
+            internalPrefab.id = origID;
             StartCoroutine(RefreshInternalPrefabs());
 
             GameData.Current.prefabObjects.FindAll(x => x.prefabID == prefab.id && string.IsNullOrEmpty(x.PrefabInstanceID)).ForEach(x =>
