@@ -41,8 +41,9 @@ namespace BetterLegacy.Editor.Components
             RTEditor.inst.maxTooltipTime = time * EditorConfig.Instance.MouseTooltipDisplayTime.Value * (hint.Length / 70f);
             RTEditor.inst.showTootip = true;
 
+            cachedTooltip = EditorManager.inst.TooltipConverter(keys, desc, hint);
             if (RTEditor.inst.mouseTooltipText)
-                RTEditor.inst.mouseTooltipText.text = EditorManager.inst.TooltipConverter(keys, desc, hint);
+                RTEditor.inst.mouseTooltipText.text = cachedTooltip;
 
             if (RTEditor.inst.mouseTooltipText)
                 LayoutRebuilder.ForceRebuildLayoutImmediate(RTEditor.inst.mouseTooltipText.rectTransform);
@@ -63,6 +64,18 @@ namespace BetterLegacy.Editor.Components
                 RTEditor.inst.mouseTooltip.SetActive(false);
         }
 
+        void OnDisable()
+        {
+            if (string.IsNullOrEmpty(cachedTooltip) || !RTEditor.inst.mouseTooltipText || RTEditor.inst.mouseTooltipText.text != cachedTooltip)
+                return;
+
+            RTEditor.inst.showTootip = false;
+            RTEditor.inst.tooltipActive = false;
+
+            if (RTEditor.inst.mouseTooltip)
+                RTEditor.inst.mouseTooltip.SetActive(false);
+        }
+
         /// <summary>
         /// Amount of time to display the mouse tooltip for.
         /// </summary>
@@ -71,6 +84,8 @@ namespace BetterLegacy.Editor.Components
         public List<string> keys;
         public Lang desc;
         public Lang hint;
+
+        string cachedTooltip;
 
         [NonSerialized]
         public List<HoverTooltip.Tooltip> tooltips = new List<HoverTooltip.Tooltip>();
