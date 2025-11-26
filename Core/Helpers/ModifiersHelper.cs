@@ -1631,7 +1631,7 @@ namespace BetterLegacy.Core.Helpers
                         return;
                     }
 
-                    if (modifier.TryGetResult(out GenericGroupCache<IPrefabable> cache) && cache.group == null || cache.group.IsEmpty())
+                    if (modifier.TryGetResult(out GenericGroupCache<IPrefabable> cache) && cache.group != null && !cache.group.IsEmpty())
                         foreach (var other in cache.group)
                             SetObjectActive(other, false);
 
