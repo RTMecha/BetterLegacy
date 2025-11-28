@@ -153,7 +153,7 @@ namespace BetterLegacy.Patchers
 
                 if (Instance.timeline && AudioManager.inst.CurrentAudioSource.clip)
                 {
-                    float num = AudioManager.inst.CurrentAudioSource.time * 400f / AudioManager.inst.CurrentAudioSource.clip.length;
+                    float num = RTBeatmap.Current.GetTimelineOffset(AudioManager.inst.CurrentAudioSource.time);
                     if (Instance.timeline.transform.Find("Base/position"))
                         Instance.timeline.transform.Find("Base/position").AsRT().anchoredPosition = new Vector2(num, 0f);
                     else

@@ -110,6 +110,13 @@ namespace BetterLegacy.Core.Runtime
             levelTimer.offset -= pausedTimer.time;
         }
 
+        /// <summary>
+        /// Gets the position of an element on the game timeline.
+        /// </summary>
+        /// <param name="t">Time to calculate.</param>
+        /// <returns>Returns the position of an element on the game timeline based on the time, the song length and the level start and end offsets.</returns>
+        public float GetTimelineOffset(float t) => (t - GameData.Current.data.level.LevelStartOffset) * 400f / (AudioManager.inst.CurrentAudioSource.clip.length - (GameData.Current.data.level.LevelEndOffset + GameData.Current.data.level.LevelStartOffset));
+
         #region End Level
 
         /// <summary>

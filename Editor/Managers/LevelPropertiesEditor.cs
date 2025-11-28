@@ -115,6 +115,7 @@ namespace BetterLegacy.Editor.Managers
 
                 GameData.Current.data.level.LevelStartOffset = num;
                 EditorTimeline.inst.UpdateTimelineSizes();
+                GameManager.inst.UpdateTimeline();
             });
 
             Dialog.LevelStartOffsetField.middleButton.onClick.NewListener(() => Dialog.LevelStartOffsetField.Text = AudioManager.inst.CurrentAudioSource.time.ToString());
@@ -134,6 +135,7 @@ namespace BetterLegacy.Editor.Managers
 
                 GameData.Current.data.level.LevelEndOffset = num;
                 EditorTimeline.inst.UpdateTimelineSizes();
+                GameManager.inst.UpdateTimeline();
             });
 
             Dialog.LevelEndOffsetField.middleButton.onClick.NewListener(() => Dialog.LevelEndOffsetField.Text = (AudioManager.inst.CurrentAudioSource.clip.length - AudioManager.inst.CurrentAudioSource.time).ToString());

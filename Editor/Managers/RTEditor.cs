@@ -1329,7 +1329,7 @@ namespace BetterLegacy.Editor.Managers
 
             if (CoreHelper.Playing && timelinePreview && AudioManager.inst.CurrentAudioSource.clip != null && GameManager.inst.timeline && GameManager.inst.timeline.activeSelf)
             {
-                float num = AudioManager.inst.CurrentAudioSource.time * 400f / AudioManager.inst.CurrentAudioSource.clip.length;
+                float num = RTBeatmap.Current.GetTimelineOffset(AudioManager.inst.CurrentAudioSource.time);
                 if (timelinePosition)
                     timelinePosition.anchoredPosition = new Vector2(num, 0f);
 
@@ -5559,7 +5559,7 @@ namespace BetterLegacy.Editor.Managers
                     continue;
 
                 var gameObject = GameManager.inst.checkpointPrefab.Duplicate(timelinePreview.Find("elements"), $"Checkpoint [{checkpoint.name}] - [{checkpoint.time}]");
-                float num = checkpoint.time * 400f / AudioManager.inst.CurrentAudioSource.clip.length;
+                float num = RTBeatmap.Current.GetTimelineOffset(checkpoint.time);
                 gameObject.transform.AsRT().anchoredPosition = new Vector2(num, 0f);
 
                 var image = gameObject.GetComponent<Image>();

@@ -195,7 +195,7 @@ namespace BetterLegacy.Arcade.Managers
                     continue;
 
                 var gameObject = GameManager.inst.checkpointPrefab.Duplicate(parent, $"Checkpoint [{checkpoint.name}] - [{checkpoint.time}]");
-                float num = checkpoint.time * 400f / AudioManager.inst.CurrentAudioSource.clip.length;
+                float num = RTBeatmap.Current.GetTimelineOffset(checkpoint.time);
                 gameObject.transform.AsRT().anchoredPosition = new Vector2(num, 0f);
 
                 var image = gameObject.GetComponent<Image>();
