@@ -57,7 +57,9 @@ namespace BetterLegacy.Editor.Managers
                 return;
 
             var vector = Input.mousePosition * CoreHelper.ScreenScaleInverse;
-            float multiply = 12f / EditorManager.inst.Zoom;
+            //float multiply = 12f / EditorManager.inst.Zoom;
+            //float multiply = AudioManager.inst.CurrentAudioSource.clip.length / 10f / EditorManager.inst.Zoom;
+            float multiply = (EditorManager.inst.zoomFloat * 1000f) / AudioManager.inst.CurrentAudioSource.clip.length / (EditorManager.inst.zoomFloat * 10f);
             SetTimelinePosition(cachedTimelinePos.x + -(((vector.x - EditorManager.inst.DragStartPos.x) / Screen.width) * multiply));
             SetBinScroll(Mathf.Clamp(cachedTimelinePos.y + ((vector.y - EditorManager.inst.DragStartPos.y) / Screen.height), 0f, 1f));
         }
