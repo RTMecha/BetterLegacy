@@ -1,4 +1,22 @@
-﻿# 1.8.13 [Nov 21, 2025]
+﻿# 1.8.14 [Nov 30, 2025]
+## Features
+### Editor
+- Added color slot context menus to the color keyframe editor.
+
+## Changes
+### Core
+- The game timeline now accounts for level start and end offsets.
+
+### Editor
+- Tweaked timeline dragging so it works better with shorter levels. (it still won't allow for dragging outside the range of the timeline if the timeline is zoomed out enough to see the entire timeline)
+
+## Fixes
+- Fixed the mouse tooltip not disappearing after an element disappears.
+- Fixed the enableObjectOther modifier breaking when inactive.
+
+------------------------------------------------------------------------------------------
+
+# 1.8.13 [Nov 21, 2025]
 ## Features
 ### Core
 - Added Harlow Solid Italic font in preparation for a special Arcade level.
