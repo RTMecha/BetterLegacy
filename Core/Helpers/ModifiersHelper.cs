@@ -2620,10 +2620,8 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case nameof(ModifierFunctions.spawnClone): {
                         if (modifier.enabled && modifier.TryGetResult(out SpawnCloneCache cache))
-                        {
                             RTLevel.Current.postTick.Enqueue(() =>
                             {
-                                CoreHelper.Log("Clearing clones...");
                                 for (int i = 0; i < cache.spawned.Count; i++)
                                 {
                                     var prefabObject = cache.spawned[i];
@@ -2636,15 +2634,12 @@ namespace BetterLegacy.Core.Helpers
                                 cache.spawned.Clear();
                                 RTLevel.Current.RecalculateObjectStates();
                             });
-                        }
                         break;
                     }
                 case nameof(ModifierFunctions.spawnCloneMath): {
                         if (modifier.enabled && modifier.TryGetResult(out SpawnCloneCache cache))
-                        {
                             RTLevel.Current.postTick.Enqueue(() =>
                             {
-                                CoreHelper.Log("Clearing clones...");
                                 for (int i = 0; i < cache.spawned.Count; i++)
                                 {
                                     var prefabObject = cache.spawned[i];
@@ -2657,7 +2652,6 @@ namespace BetterLegacy.Core.Helpers
                                 cache.spawned.Clear();
                                 RTLevel.Current.RecalculateObjectStates();
                             });
-                        }
                         break;
                     }
             }
@@ -10403,7 +10397,7 @@ namespace BetterLegacy.Core.Helpers
             }
             catch (Exception ex)
             {
-                CoreHelper.LogException(ex);
+                CoreHelper.LogError($"{modifierLoop.reference} had an error. Exception: {ex}");
             }
         }
 
