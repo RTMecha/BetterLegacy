@@ -202,9 +202,8 @@ namespace BetterLegacy.Core
             if (string.IsNullOrEmpty(searchTerm))
                 return true;
 
-            var term = searchTerm.ToLower();
             for (int i = 0; i < items.Length; i++)
-                if (items[i].Match(term))
+                if (items[i].Match(searchTerm))
                     return true;
 
             return false;
@@ -951,11 +950,14 @@ namespace BetterLegacy.Core
         public override bool Match(string searchTerm) => MatchType switch
         {
             SearchMatchType.Exact => value == searchTerm,
-            SearchMatchType.Contains => value.ToLower().Contains(searchTerm),
+            SearchMatchType.Contains => string.IsNullOrEmpty(searchTerm) || value.ToLower().Contains(searchTerm.ToLower()),
             _ => true,
         };
     }
 
+    /// <summary>
+    /// Helper class for searching string arrays.
+    /// </summary>
     public class SearchArrayMatcher : SearchMatcherBase
     {
         public SearchArrayMatcher(string[] value, SearchMatchType matchType = SearchMatchType.Contains)
@@ -972,11 +974,14 @@ namespace BetterLegacy.Core
         public override bool Match(string searchTerm) => MatchType switch
         {
             SearchMatchType.Exact => value.Contains(searchTerm),
-            SearchMatchType.Contains => value.Any(x => x.ToLower().Contains(searchTerm)),
+            SearchMatchType.Contains => searchTerm == null || value.Any(x => x.ToLower().Contains(searchTerm.ToLower())),
             _ => true,
         };
     }
 
+    /// <summary>
+    /// Helper class for searching string lists.
+    /// </summary>
     public class SearchListMatcher : SearchMatcherBase
     {
         public SearchListMatcher(List<string> value, SearchMatchType matchType = SearchMatchType.Contains)
@@ -993,7 +998,7 @@ namespace BetterLegacy.Core
         public override bool Match(string searchTerm) => MatchType switch
         {
             SearchMatchType.Exact => value.Contains(searchTerm),
-            SearchMatchType.Contains => value.Any(x => x.ToLower().Contains(searchTerm)),
+            SearchMatchType.Contains => searchTerm == null || value.Any(x => x.ToLower().Contains(searchTerm.ToLower())),
             _ => true,
         };
     }
