@@ -1,15 +1,7 @@
-# 1.8.14 [Nov 30, 2025]
-## Features
-### Editor
-- Added color slot context menus to the color keyframe editor.
-
+# 1.8.15 [Dec 3, 2025]
 ## Changes
-### Core
-- The game timeline now accounts for level start and end offsets.
-
-### Editor
-- Tweaked timeline dragging so it works better with shorter levels. (it still won't allow for dragging outside the range of the timeline if the timeline is zoomed out enough to see the entire timeline)
+- The achievement lists in the profile menu and the achievements list menu now display a shine when unlocked.
 
 ## Fixes
-- Fixed the mouse tooltip not disappearing after an element disappears.
-- Fixed the enableObjectOther modifier breaking when inactive.
+- Fixed a major issue with the level ending prematurely.
+- Some misc fixes with 1 life and 1 hit modes.
