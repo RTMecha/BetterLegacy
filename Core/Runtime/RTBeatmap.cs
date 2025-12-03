@@ -382,6 +382,8 @@ namespace BetterLegacy.Core.Runtime
 
             GameManager.inst.isReversing = true;
 
+            CoreHelper.Log("Started reversing the level.");
+
             var checkpoint = ActiveCheckpoint ?? GameData.Current.data.GetLastCheckpoint();
 
             if (GameData.Current.data.level.reverse && checkpoint.reverse)
@@ -420,17 +422,17 @@ namespace BetterLegacy.Core.Runtime
 
             if (checkpoint.setTime)
                 AudioManager.inst.SetMusicTime(time);
-
-            GameManager.inst.gameState = GameManager.State.Playing;
-
-            if (!AudioManager.inst.CurrentAudioSource.isPlaying)
-                AudioManager.inst.CurrentAudioSource.Play();
             AudioManager.inst.SetPitch(1f); // resets the pitch offset
 
             GameManager.inst.UpdateEventSequenceTime();
-            GameManager.inst.isReversing = false;
 
             yield return CoroutineHelper.Seconds(0.1f);
+
+            if (!AudioManager.inst.CurrentAudioSource.isPlaying)
+                AudioManager.inst.CurrentAudioSource.Play();
+
+            GameManager.inst.gameState = GameManager.State.Playing;
+            GameManager.inst.isReversing = false;
 
             PlayerManager.SpawnPlayers(checkpoint);
 

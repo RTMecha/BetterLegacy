@@ -184,6 +184,8 @@ namespace BetterLegacy.Core.Helpers
             AudioManager.inst.SetPitch(1f);
             RTBeatmap.Current.ResetCheckpoint();
             endedLevel = false;
+            if (!AudioManager.inst.CurrentAudioSource.isPlaying)
+                AudioManager.inst.CurrentAudioSource.Play();
         }
 
         /// <summary>

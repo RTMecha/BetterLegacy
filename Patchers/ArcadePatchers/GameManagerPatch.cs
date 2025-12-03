@@ -114,12 +114,22 @@ namespace BetterLegacy.Patchers
                 RTBeatmap.Current.UpdateCheckpoints();
             }
 
-            if (CoreHelper.Reversing && !__instance.isReversing)
-                RTBeatmap.Current.ReverseToCheckpoint();
-            else if (CoreHelper.Playing)
-                CheckLevelEnd();
-            else if (CoreHelper.Finished)
-                CheckReplay();
+            switch (__instance.gameState)
+            {
+                case GameManager.State.Reversing: {
+                        if (!__instance.isReversing)
+                            RTBeatmap.Current.ReverseToCheckpoint();
+                        break;
+                    }
+                case GameManager.State.Playing: {
+                        CheckLevelEnd();
+                        break;
+                    }
+                case GameManager.State.Finish: {
+                        CheckReplay();
+                        break;
+                    }
+            }
 
             if (CoreHelper.Playing || CoreHelper.Reversing)
                 __instance.UpdateEventSequenceTime();
@@ -132,7 +142,17 @@ namespace BetterLegacy.Patchers
         static void CheckLevelEnd()
         {
             if (AudioManager.inst.CurrentAudioSource.clip && !CoreHelper.InEditor && ArcadeHelper.SongEnded && !LevelManager.LevelEnded)
+            {
+                CoreHelper.Log($"Level has ended!\n" +
+                    $"Game State: {Instance.gameState}\n" +
+                    $"Song Ended: {ArcadeHelper.SongEnded}\n" +
+                    $"Song Pitch: {AudioManager.inst.CurrentAudioSource.pitch}\n" +
+                    $"Song Time: {AudioManager.inst.CurrentAudioSource.time}\n" +
+                    $"Song Length: {GameManager.inst.songLength}\n" +
+                    $"End Offset: {GameData.Current?.data?.level?.LevelEndOffset ?? 0.1f}\n" +
+                    $"End Point: {GameManager.inst.songLength - GameData.Current?.data?.level?.LevelEndOffset ?? 0.1f}");
                 LevelManager.EndLevel();
+            }
         }
 
         static void CheckReplay()
