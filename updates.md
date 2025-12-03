@@ -1,4 +1,14 @@
-﻿# 1.8.14 [Nov 30, 2025]
+﻿# 1.8.15 [Dec 3, 2025]
+## Changes
+- The achievement lists in the profile menu and the achievements list menu now display a shine when unlocked.
+
+## Fixes
+- Fixed a major issue with the level ending prematurely.
+- Some misc fixes with 1 life and 1 hit modes.
+
+------------------------------------------------------------------------------------------
+
+# 1.8.14 [Nov 30, 2025]
 ## Features
 ### Editor
 - Added color slot context menus to the color keyframe editor.
