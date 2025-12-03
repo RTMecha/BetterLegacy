@@ -443,6 +443,7 @@ namespace BetterLegacy.Core.Managers
             player.RuntimePlayer = runtimePlayer;
 
             runtimePlayer.Init();
+            runtimePlayer.UpdateTail(player.Health, pos);
 
             if (GameManager.inst.players.activeSelf)
             {
