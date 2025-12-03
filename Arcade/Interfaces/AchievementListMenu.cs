@@ -4,6 +4,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
+using LSFunctions;
+
+using BetterLegacy.Configs;
+using BetterLegacy.Core;
+using BetterLegacy.Core.Animation;
+using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
@@ -290,7 +296,7 @@ namespace BetterLegacy.Arcade.Interfaces
         /// <summary>
         /// Clears the displayed achievements.
         /// </summary>
-        public void ClearAchievements() => ClearElements(x => x.name == "Achievement Button" || x.name == "Difficulty");
+        public void ClearAchievements() => ClearElements(x => x.name == "Achievement Button" || x.name == "Difficulty" || x.name.Contains("Shine"));
 
         /// <summary>
         /// Refreshes the displayed achievements.
@@ -319,8 +325,9 @@ namespace BetterLegacy.Arcade.Interfaces
                 }
 
                 MenuButton menuButton;
+                MenuImage shine = null;
+
                 if (achievement.hidden && !achievement.unlocked)
-                {
                     menuButton = new MenuButton
                     {
                         id = PAObjectBase.GetStringID(),
@@ -348,7 +355,6 @@ namespace BetterLegacy.Arcade.Interfaces
                         mask = true,
                         playBlipSound = false,
                     };
-                }
                 else
                 {
                     var icon = achievement.icon ?? LegacyPlugin.AtanPlaceholder;
@@ -387,6 +393,40 @@ namespace BetterLegacy.Arcade.Interfaces
                         playSound = !regenerateUI,
                         mask = true,
                         playBlipSound = false,
+
+                        allowOriginalHoverMethods = true,
+                        enterFunc = () =>
+                        {
+                            if (!achievement.unlocked)
+                                return;
+
+                            var animation = new RTAnimation($"{achievement.id} Shine")
+                            {
+                                animationHandlers = new List<AnimationHandlerBase>
+                                {
+                                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                                    {
+                                        new FloatKeyframe(0f, -740f, Ease.Linear),
+                                        new FloatKeyframe(1f, 740f, Ease.CircInOut),
+                                    }, x => { if (shine != null && shine.gameObject) shine.gameObject.transform.AsRT().anchoredPosition = new Vector2(x, 0f); }),
+                                },
+                                loop = true,
+                            };
+
+                            AnimationManager.inst.Play(animation);
+                        },
+                        exitFunc = () =>
+                        {
+                            if (AnimationManager.inst.TryFindAnimations(x => x.name == $"{achievement.id} Shine", out List<RTAnimation> animations))
+                                for (int i = 0; i < animations.Count; i++)
+                                    AnimationManager.inst.Remove(animations[i].id);
+
+                            if (!achievement.unlocked)
+                                return;
+
+                            if (shine != null && shine.gameObject)
+                                shine.gameObject.transform.AsRT().anchoredPosition = new Vector2(-740f, 0f);
+                        },
                     };
                 }
                 elements.Add(menuButton);
@@ -404,6 +444,48 @@ namespace BetterLegacy.Arcade.Interfaces
                     length = 0f,
                     wait = false,
                 });
+
+                if (achievement.unlocked)
+                {
+                    shine = new MenuImage
+                    {
+                        id = LSText.randomNumString(16),
+                        name = "Shine Base",
+                        parent = menuButton.id,
+                        rect = RectValues.Default.AnchoredPosition(-740f, 0f).Rotation(15f),
+                        opacity = 0f,
+                        length = 0f,
+                        wait = false,
+                    };
+                    var shine1 = new MenuImage
+                    {
+                        id = "0",
+                        name = "Shine 1",
+                        parent = shine.id,
+                        rect = RectValues.Default.AnchoredPosition(-12f, 0f).SizeDelta(8f, 400f),
+                        overrideColor = ArcadeConfig.Instance.ShineColor.Value,
+                        useOverrideColor = true,
+                        opacity = 1f,
+                        length = 0f,
+                        wait = false,
+                    };
+                    var shine2 = new MenuImage
+                    {
+                        id = "0",
+                        name = "Shine 2",
+                        parent = shine.id,
+                        rect = RectValues.Default.AnchoredPosition(12f, 0f).SizeDelta(20f, 400f),
+                        overrideColor = ArcadeConfig.Instance.ShineColor.Value,
+                        useOverrideColor = true,
+                        opacity = 1f,
+                        length = 0f,
+                        wait = false,
+                    };
+
+                    elements.Add(shine);
+                    elements.Add(shine1);
+                    elements.Add(shine2);
+                }
 
                 num++;
             }
