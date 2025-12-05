@@ -407,7 +407,7 @@ namespace BetterLegacy.Core.Runtime
                         if (beatmapObject.objectType != BeatmapObject.ObjectType.Empty)
                         {
                             if (runtimeObject.visualObject)
-                                runtimeObject.visualObject.opacity = beatmapObject.objectType == BeatmapObject.ObjectType.Helper ? 0.35f : 1.0f;
+                                runtimeObject.visualObject.opacity = beatmapObject.objectType == BeatmapObject.ObjectType.Helper ? BeatmapObject.HELPER_OPACITY : 1.0f;
 
                             if (runtimeObject.visualObject is SolidObject solidObject)
                             {
@@ -559,7 +559,7 @@ namespace BetterLegacy.Core.Runtime
 
                         runtimeObject.Depth = beatmapObject.Depth;
                         if (runtimeObject.visualObject)
-                            runtimeObject.visualObject.SetOrigin(new Vector3(beatmapObject.origin.x, beatmapObject.origin.y, beatmapObject.Depth * 0.1f));
+                            runtimeObject.visualObject.SetOrigin(new Vector3(beatmapObject.origin.x, beatmapObject.origin.y, beatmapObject.Depth * BeatmapObject.DEPTH_VISUAL_MULTIPLY));
 
                         break;
                     } // Origin & Depth
@@ -900,7 +900,7 @@ namespace BetterLegacy.Core.Runtime
 
             var visualObject = baseObject.transform.GetChild(0).gameObject;
             if (beatmapObject.ShapeType != ShapeType.Text || !beatmapObject.autoTextAlign)
-                visualObject.transform.localPosition = new Vector3(beatmapObject.origin.x, beatmapObject.origin.y, beatmapObject.Depth * 0.1f);
+                visualObject.transform.localPosition = new Vector3(beatmapObject.origin.x, beatmapObject.origin.y, beatmapObject.Depth * BeatmapObject.DEPTH_VISUAL_MULTIPLY);
             visualObject.name = "Visual [ " + beatmapObject.name + " ]";
 
             runtimeObject.parentObjects[0] = converter.ToParentObject(beatmapObject, baseObject);
@@ -911,7 +911,7 @@ namespace BetterLegacy.Core.Runtime
             visualObject.SetActive(true);
 
             // Init visual object wrapper
-            float opacity = beatmapObject.objectType == BeatmapObject.ObjectType.Helper ? 0.35f : 1.0f;
+            float opacity = beatmapObject.objectType == BeatmapObject.ObjectType.Helper ? BeatmapObject.HELPER_OPACITY : 1.0f;
             bool hasCollider = beatmapObject.objectType == BeatmapObject.ObjectType.Helper ||
                                beatmapObject.objectType == BeatmapObject.ObjectType.Decoration;
 

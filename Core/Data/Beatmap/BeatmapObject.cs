@@ -599,6 +599,21 @@ namespace BetterLegacy.Core.Data.Beatmap
         public const float TRIANGLE_BOTTOM_OFFSET = 0.2875f;
         public const float TRIANGLE_HORIZONTAL_OFFSET = 0.497964993f;
 
+        /// <summary>
+        /// Helper opacity.
+        /// </summary>
+        public const float HELPER_OPACITY = 0.35f;
+
+        /// <summary>
+        /// <see cref="Depth"/> is multiplied by this value for the visual object.
+        /// </summary>
+        public const float DEPTH_VISUAL_MULTIPLY = 0.1f;
+
+        /// <summary>
+        /// <see cref="Depth"/> is multiplied by this value for each parent object in the parent chain.
+        /// </summary>
+        public const float DEPTH_MULTIPLY = 0.0005f;
+
         #endregion
 
         #region Methods

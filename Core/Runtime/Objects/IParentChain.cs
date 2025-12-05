@@ -203,7 +203,7 @@ namespace BetterLegacy.Core.Runtime.Objects
                         parentObject.positionSequence.GetValue(desync ? syncOffset + prefabOffset - timeOffset - (positionOffset + positionAddedOffset) : localTime - timeOffset - (positionOffset + positionAddedOffset)) +
                         parentObject.beatmapObject.reactivePositionOffset + parentObject.beatmapObject.PositionOffset + parentObject.beatmapObject.fullTransform.position;
 
-                    float z = parentChain.Depth * 0.0005f + (value.z / 10f);
+                    float z = parentChain.Depth * BeatmapObject.DEPTH_MULTIPLY + (value.z / 10f);
 
                     parentObject.transform.localPosition = new Vector3(value.x * positionParallax, value.y * positionParallax, z);
                 }

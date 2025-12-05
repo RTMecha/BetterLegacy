@@ -121,7 +121,7 @@ namespace BetterLegacy.Core.Runtime.Objects
 
             var visualObject = baseObject.transform.GetChild(0).gameObject;
             if (beatmapObject.ShapeType != ShapeType.Text || !beatmapObject.autoTextAlign)
-                visualObject.transform.localPosition = new Vector3(beatmapObject.origin.x, beatmapObject.origin.y, beatmapObject.Depth * 0.1f);
+                visualObject.transform.localPosition = new Vector3(beatmapObject.origin.x, beatmapObject.origin.y, beatmapObject.Depth * BeatmapObject.DEPTH_VISUAL_MULTIPLY);
             visualObject.name = "Visual [ " + beatmapObject.name + " ]";
 
             parentObjects.Insert(0, ToParentObject(beatmapObject, baseObject));
@@ -140,7 +140,7 @@ namespace BetterLegacy.Core.Runtime.Objects
             visualObject.SetActive(true);
 
             // Init visual object wrapper
-            float opacity = beatmapObject.objectType == ObjectType.Helper ? 0.35f : 1.0f;
+            float opacity = beatmapObject.objectType == ObjectType.Helper ? BeatmapObject.HELPER_OPACITY : 1.0f;
             bool deco = beatmapObject.objectType == ObjectType.Helper ||
                                beatmapObject.objectType == ObjectType.Decoration;
 
