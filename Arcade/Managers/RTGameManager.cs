@@ -145,6 +145,8 @@ namespace BetterLegacy.Arcade.Managers
                 (EditorTimeline.inst.CurrentSelection.isBeatmapObject && EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>().objectType != BeatmapObject.ObjectType.Empty || EditorTimeline.inst.CurrentSelection.isPrefabObject));
         }
 
+        public override void OnManagerDestroyed() => GameManager.inst = null;
+
         SelectObjectScaler CreateScaler(Axis axis, Color color)
         {
             var scaler = ObjectManager.inst.objectPrefabs[3].options[0].transform.GetChild(0).gameObject.Duplicate(objectDragger, "Scaler");
