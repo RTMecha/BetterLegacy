@@ -240,6 +240,23 @@ namespace BetterLegacy.Editor.Managers
                 reloadStorage.button.transition = Selectable.Transition.ColorTint;
                 EditorThemeManager.AddSelectable(reloadStorage.button, ThemeGroup.Function_2);
                 EditorThemeManager.AddGraphic(reloadText, ThemeGroup.Function_2_Text);
+
+                var path = EditorPrefabHolder.Instance.StringInputField.Duplicate(contentBase, "path", 3);
+                new RectValues(new Vector2(1750f, 970f), Vector2.zero, Vector2.zero, RectValues.CenterPivot, new Vector2(300f, 32f)).AssignToRectTransform(path.transform.AsRT());
+                var pathField = path.GetComponent<InputField>();
+
+                pathField.SetTextWithoutNotify(RTEditor.inst.PlannersPath);
+                pathField.onValueChanged.ClearAll();
+                pathField.onEndEdit.NewListener(_val =>
+                {
+                    RTEditor.inst.PlannersPath = _val;
+                    Load();
+                });
+                pathField.textComponent.alignment = TextAnchor.MiddleLeft;
+                pathField.GetPlaceholderText().alignment = TextAnchor.MiddleLeft;
+                pathField.GetPlaceholderText().text = "Set a folder...";
+
+                EditorThemeManager.AddInputField(pathField);
             }
 
             gradientSprite = SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/linear_gradient{FileFormat.PNG.Dot()}"));
