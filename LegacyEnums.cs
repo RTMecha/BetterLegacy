@@ -1284,7 +1284,7 @@ namespace BetterLegacy
 
         public static CustomObjectType GetNormal() => objectTypes.Find(x => x.colliderType == ColliderType.Damage && x.opacity == 1.0f);
 
-        public static CustomObjectType GetHelper() => objectTypes.Find(x => x.opacity == 0.35f);
+        public static CustomObjectType GetHelper() => objectTypes.Find(x => x.opacity == Core.Data.Beatmap.BeatmapObject.HELPER_OPACITY);
 
         public static CustomObjectType GetDecoration() => objectTypes.Find(x => x.colliderType == ColliderType.None && x.opacity == 1.0f);
 
