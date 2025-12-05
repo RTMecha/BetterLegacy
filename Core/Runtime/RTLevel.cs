@@ -419,10 +419,6 @@ namespace BetterLegacy.Core.Runtime
                 if (CoreConfig.Instance.ControllerRumble.Value && EventsConfig.Instance.ShakeAffectsController.Value)
                     InputDataManager.inst.SetAllControllerRumble(EventManager.inst.shakeMultiplier);
 
-                if (EventManager.inst.eventSequence == null)
-                    EventManager.inst.eventSequence = DOTween.Sequence();
-                if (EventManager.inst.themeSequence == null)
-                    EventManager.inst.themeSequence = DOTween.Sequence();
                 if (EventManager.inst.shakeSequence == null && EventsConfig.Instance.ShakeEventMode.Value == ShakeType.Original)
                 {
                     EventManager.inst.shakeSequence = DOTween.Sequence();
@@ -487,9 +483,9 @@ namespace BetterLegacy.Core.Runtime
                 CoreHelper.Log("Updating all events");
 
             eventEngine?.SetupShake();
-            EventManager.inst.eventSequence.Kill();
-            EventManager.inst.shakeSequence.Kill();
-            EventManager.inst.themeSequence.Kill();
+            EventManager.inst.eventSequence?.Kill();
+            EventManager.inst.shakeSequence?.Kill();
+            EventManager.inst.themeSequence?.Kill();
             EventManager.inst.eventSequence = null;
             EventManager.inst.shakeSequence = null;
             EventManager.inst.themeSequence = null;
