@@ -19,6 +19,7 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Core.Runtime;
+using BetterLegacy.Core.Runtime.Events;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
 using BetterLegacy.Editor.Data.Timeline;
@@ -2180,21 +2181,25 @@ namespace BetterLegacy.Editor.Managers
 
             switch (EventEditor.inst.currentEventType)
             {
-                case 0: {
+                case EventEngine.MOVE: {
                         if (dialog is Vector2KeyframeDialog vector2Dialog)
                             SetVector2InputField(vector2Dialog.Vector2Field, 0, 1);
 
                         break;
-                    } // Move
-                case 1: {
-                        SetFloatInputField(dialogTmp, "zoom/x", 0, min: -9999f, max: 9999f);
+                    }
+                case EventEngine.ZOOM: {
+                        SetFloatInputField(dialogTmp, "zoom/x", 0, min: -9999f, max: 9999f, onValueChanged: _val =>
+                        {
+                            if (_val < 0f)
+                                AchievementManager.inst.UnlockAchievement("editor_zoom_break");
+                        });
                         break;
-                    } // Zoom
-                case 2: {
+                    }
+                case EventEngine.ROTATE: {
                         SetFloatInputField(dialogTmp, "rotation/x", 0, 15f, 3f);
                         break;
-                    } // Rotate
-                case 3: {
+                    }
+                case EventEngine.SHAKE: {
                         // Shake Intensity
                         SetFloatInputField(dialogTmp, "shake/x", 0, min: 0f, max: 10f, allowNegative: false);
 
@@ -2212,8 +2217,8 @@ namespace BetterLegacy.Editor.Managers
                         SetFloatInputField(dialogTmp, "interpolation/x", 3, max: 999f, allowNegative: false);
                         SetFloatInputField(dialogTmp, "speed/x", 4, min: 0.001f, max: 9999f, allowNegative: false);
                         break;
-                    } // Shake
-                case 4: {
+                    }
+                case EventEngine.THEME: {
                         var themeSearchContextMenu = RTThemeEditor.inst.Dialog.SearchField.gameObject.GetOrAddComponent<ContextClickable>();
                         themeSearchContextMenu.onClick = pointerEventData =>
                         {
@@ -2242,13 +2247,13 @@ namespace BetterLegacy.Editor.Managers
                         RTThemeEditor.inst.RenderThemePreview();
 
                         break;
-                    } // Theme
-                case 5: {
+                    }
+                case EventEngine.CHROMA: {
                         SetFloatInputField(dialogTmp, "chroma/x", 0, min: 0f, max: float.PositiveInfinity, allowNegative: false);
 
                         break;
-                    } // Chromatic
-                case 6: {
+                    }
+                case EventEngine.BLOOM: {
                         //Bloom Intensity
                         SetFloatInputField(dialogTmp, "bloom/x", 0, max: 1280f, allowNegative: false);
 
@@ -2271,15 +2276,27 @@ namespace BetterLegacy.Editor.Managers
                         SetFloatInputField(dialogTmp, "anamorphic ratio/x", 3, min: -1f, max: 1f);
 
                         // Bloom Color
-                        SetListColor((int)currentKeyframe.values[4], 4, bloomColorButtons, Color.white, Color.black);
+                        SetListColor((int)currentKeyframe.values[4], 4, bloomColorButtons, Color.white, Color.black, -1, 5, 6, 7);
 
                         // Bloom Color Shift
-                        SetFloatInputField(dialogTmp, "colorshift/x", 5);
-                        SetFloatInputField(dialogTmp, "colorshift/y", 6);
-                        SetFloatInputField(dialogTmp, "colorshift/z", 7);
+                        SetFloatInputField(dialogTmp, "colorshift/x", 5, onValueChanged: _val =>
+                        {
+                            if (EditorConfig.Instance.ShowModifiedColors.Value)
+                                SetListColor((int)currentKeyframe.values[4], 4, bloomColorButtons, Color.white, Color.black, -1, 5, 6, 7);
+                        });
+                        SetFloatInputField(dialogTmp, "colorshift/y", 6, onValueChanged: _val =>
+                        {
+                            if (EditorConfig.Instance.ShowModifiedColors.Value)
+                                SetListColor((int)currentKeyframe.values[4], 4, bloomColorButtons, Color.white, Color.black, -1, 5, 6, 7);
+                        });
+                        SetFloatInputField(dialogTmp, "colorshift/z", 7, onValueChanged: _val =>
+                        {
+                            if (EditorConfig.Instance.ShowModifiedColors.Value)
+                                SetListColor((int)currentKeyframe.values[4], 4, bloomColorButtons, Color.white, Color.black, -1, 5, 6, 7);
+                        });
                         break;
-                    } // Bloom
-                case 7: {
+                    }
+                case EventEngine.VIGNETTE: {
                         // Vignette Intensity
                         SetFloatInputField(dialogTmp, "intensity", 0, allowNegative: false);
 
@@ -2303,15 +2320,27 @@ namespace BetterLegacy.Editor.Managers
                         if (!RTEditor.ShowModdedUI)
                             break;
 
-                        SetListColor((int)currentKeyframe.values[6], 6, vignetteColorButtons, Color.black, Color.black);
+                        SetListColor((int)currentKeyframe.values[6], 6, vignetteColorButtons, Color.black, Color.black, -1, 7, 8, 9);
                         // Vignette Color Shift
-                        SetFloatInputField(dialogTmp, "colorshift/x", 7);
-                        SetFloatInputField(dialogTmp, "colorshift/y", 8);
-                        SetFloatInputField(dialogTmp, "colorshift/z", 9);
+                        SetFloatInputField(dialogTmp, "colorshift/x", 7, onValueChanged: _val =>
+                        {
+                            if (EditorConfig.Instance.ShowModifiedColors.Value)
+                                SetListColor((int)currentKeyframe.values[6], 6, vignetteColorButtons, Color.black, Color.black, -1, 7, 8, 9);
+                        });
+                        SetFloatInputField(dialogTmp, "colorshift/y", 8, onValueChanged: _val =>
+                        {
+                            if (EditorConfig.Instance.ShowModifiedColors.Value)
+                                SetListColor((int)currentKeyframe.values[6], 6, vignetteColorButtons, Color.black, Color.black, -1, 7, 8, 9);
+                        });
+                        SetFloatInputField(dialogTmp, "colorshift/z", 9, onValueChanged: _val =>
+                        {
+                            if (EditorConfig.Instance.ShowModifiedColors.Value)
+                                SetListColor((int)currentKeyframe.values[6], 6, vignetteColorButtons, Color.black, Color.black, -1, 7, 8, 9);
+                        });
 
                         break;
-                    } // Vignette
-                case 8: {
+                    }
+                case EventEngine.LENS: {
                         // Lens Intensity
                         SetFloatInputField(dialogTmp, "lens/x", 0, 1f, 10f, -100f, 100f);
 
@@ -2331,8 +2360,8 @@ namespace BetterLegacy.Editor.Managers
                         // Lens Scale
                         SetFloatInputField(dialogTmp, "scale/x", 5, 0.1f, 10f, 0.001f, float.PositiveInfinity, allowNegative: false);
                         break;
-                    } // Lens
-                case 9: {
+                    }
+                case EventEngine.GRAIN: {
                         // Grain Intensity
                         SetFloatInputField(dialogTmp, "intensity", 0, 0.1f, 10f, 0f, float.PositiveInfinity, allowNegative: false);
 
@@ -2343,8 +2372,8 @@ namespace BetterLegacy.Editor.Managers
                         SetFloatInputField(dialogTmp, "size", 2, 0.1f, 10f, 0f, float.PositiveInfinity, allowNegative: false);
 
                         break;
-                    } // Grain
-                case 10: {
+                    }
+                case EventEngine.COLORGRADING: {
                         // ColorGrading Hueshift
                         SetFloatInputField(dialogTmp, "hueshift/x", 0, 0.1f, 10f);
 
@@ -2366,8 +2395,8 @@ namespace BetterLegacy.Editor.Managers
                         // ColorGrading Tint
                         SetFloatInputField(dialogTmp, "tint/x", 8, 1f, 10f);
                         break;
-                    } // ColorGrading
-                case 11: {
+                    }
+                case EventEngine.RIPPLES: {
                         // Ripples Strength
                         SetFloatInputField(dialogTmp, "strength/x", 0);
 
@@ -2392,8 +2421,8 @@ namespace BetterLegacy.Editor.Managers
                         }
 
                         break;
-                    } // Ripples
-                case 12: {
+                    }
+                case EventEngine.RADIALBLUR: {
                         // RadialBlur Intensity
                         SetFloatInputField(dialogTmp, "intensity/x", 0);
 
@@ -2401,8 +2430,8 @@ namespace BetterLegacy.Editor.Managers
                         SetIntInputField(dialogTmp, "iterations/x", 1, 1, 1, 20);
 
                         break;
-                    } // RadialBlur
-                case 13: {
+                    }
+                case EventEngine.COLORSPLIT: {
                         // ColorSplit Offset
                         SetFloatInputField(dialogTmp, "offset/x", 0);
 
@@ -2419,49 +2448,73 @@ namespace BetterLegacy.Editor.Managers
                         }
 
                         break;
-                    } // ColorSplit
-                case 14: {
+                    }
+                case EventEngine.OFFSET: {
                         SetVector2InputField(dialogTmp, "position", 0, 1);
 
                         break;
-                    } // Cam Offset
-                case 15: {
+                    }
+                case EventEngine.GRADIENT: {
                         // Gradient Intensity / Rotation (Had to put them together due to mode going over the timeline lol)
                         SetVector2InputField(dialogTmp, "introt", 0, 1);
 
                         // Gradient Color Top
-                        SetListColor((int)currentKeyframe.values[2], 2, gradientColor1Buttons, new Color(0f, 0.8f, 0.56f, 0.5f), Color.black);
+                        SetListColor((int)currentKeyframe.values[2], 2, gradientColor1Buttons, new Color(0f, 0.8f, 0.56f, 0.5f), Color.black, 5, 6, 7, 8);
 
                         // Gradient Color Bottom
-                        SetListColor((int)currentKeyframe.values[3], 3, gradientColor2Buttons, new Color(0.81f, 0.37f, 1f, 0.5f), Color.black);
+                        SetListColor((int)currentKeyframe.values[3], 3, gradientColor2Buttons, new Color(0.81f, 0.37f, 1f, 0.5f), Color.black, 9, 10, 11, 12);
 
                         // Gradient Mode (No separate method required atm)
                         {
                             var drp = dialogTmp.Find("mode").GetComponent<Dropdown>();
-                            drp.onValueChanged.ClearAll();
-                            drp.value = (int)currentKeyframe.values[4];
-                            drp.onValueChanged.AddListener(_val =>
+                            drp.SetValueWithoutNotify((int)currentKeyframe.values[4]);
+                            drp.onValueChanged.NewListener(_val =>
                             {
-                                currentKeyframe.values[4] = _val;
+                                foreach (var keyframe in SelectedKeyframes.Where(x => x.Type == EventEditor.inst.currentEventType))
+                                    keyframe.eventKeyframe.values[4] = _val;
                                 RTLevel.Current?.UpdateEvents(15);
                             });
                         }
 
                         // Gradient Top Color Shift
                         SetFloatInputField(dialogTmp, "colorshift1/x", 5, max: 1f);
-                        SetFloatInputField(dialogTmp, "colorshift1/y", 6);
-                        SetFloatInputField(dialogTmp, "colorshift1/z", 7);
-                        SetFloatInputField(dialogTmp, "colorshift1/w", 8);
+                        SetFloatInputField(dialogTmp, "colorshift1/y", 6, onValueChanged: _val =>
+                        {
+                            if (EditorConfig.Instance.ShowModifiedColors.Value)
+                                SetListColor((int)currentKeyframe.values[2], 2, gradientColor1Buttons, new Color(0f, 0.8f, 0.56f, 0.5f), Color.black, 5, 6, 7, 8);
+                        });
+                        SetFloatInputField(dialogTmp, "colorshift1/z", 7, onValueChanged: _val =>
+                        {
+                            if (EditorConfig.Instance.ShowModifiedColors.Value)
+                                SetListColor((int)currentKeyframe.values[2], 2, gradientColor1Buttons, new Color(0f, 0.8f, 0.56f, 0.5f), Color.black, 5, 6, 7, 8);
+                        });
+                        SetFloatInputField(dialogTmp, "colorshift1/w", 8, onValueChanged: _val =>
+                        {
+                            if (EditorConfig.Instance.ShowModifiedColors.Value)
+                                SetListColor((int)currentKeyframe.values[2], 2, gradientColor1Buttons, new Color(0f, 0.8f, 0.56f, 0.5f), Color.black, 5, 6, 7, 8);
+                        });
 
                         // Gradient Bottom Color Shift
                         SetFloatInputField(dialogTmp, "colorshift2/x", 9, max: 1f);
-                        SetFloatInputField(dialogTmp, "colorshift2/y", 10);
-                        SetFloatInputField(dialogTmp, "colorshift2/z", 11);
-                        SetFloatInputField(dialogTmp, "colorshift2/w", 12);
+                        SetFloatInputField(dialogTmp, "colorshift2/y", 10, onValueChanged: _val =>
+                        {
+                            if (EditorConfig.Instance.ShowModifiedColors.Value)
+                                SetListColor((int)currentKeyframe.values[3], 3, gradientColor2Buttons, new Color(0.81f, 0.37f, 1f, 0.5f), Color.black, 9, 10, 11, 12);
+                        });
+                        SetFloatInputField(dialogTmp, "colorshift2/z", 11, onValueChanged: _val =>
+                        {
+                            if (EditorConfig.Instance.ShowModifiedColors.Value)
+                                SetListColor((int)currentKeyframe.values[3], 3, gradientColor2Buttons, new Color(0.81f, 0.37f, 1f, 0.5f), Color.black, 9, 10, 11, 12);
+                        });
+                        SetFloatInputField(dialogTmp, "colorshift2/w", 12, onValueChanged: _val =>
+                        {
+                            if (EditorConfig.Instance.ShowModifiedColors.Value)
+                                SetListColor((int)currentKeyframe.values[3], 3, gradientColor2Buttons, new Color(0.81f, 0.37f, 1f, 0.5f), Color.black, 9, 10, 11, 12);
+                        });
 
                         break;
-                    } // Gradient
-                case 16: {
+                    }
+                case EventEngine.DOUBLEVISION: {
                         // DoubleVision Intensity
                         SetFloatInputField(dialogTmp, "intensity/x", 0);
 
@@ -2478,8 +2531,8 @@ namespace BetterLegacy.Editor.Managers
                         }
 
                         break;
-                    } // DoubleVision
-                case 17: {
+                    }
+                case EventEngine.SCANLINES: {
                         // ScanLines Intensity
                         SetFloatInputField(dialogTmp, "intensity/x", 0);
 
@@ -2489,8 +2542,8 @@ namespace BetterLegacy.Editor.Managers
                         // ScanLines Speed
                         SetFloatInputField(dialogTmp, "speed/x", 2);
                         break;
-                    } // ScanLines
-                case 18: {
+                    }
+                case EventEngine.BLUR: {
                         //Blur Amount
                         SetFloatInputField(dialogTmp, "intensity/x", 0);
 
@@ -2498,32 +2551,44 @@ namespace BetterLegacy.Editor.Managers
                         SetIntInputField(dialogTmp, "iterations/x", 1, 1, 1, 12);
 
                         break;
-                    } // Blur
-                case 19: {
+                    }
+                case EventEngine.PIXEL: {
                         //Pixelize
                         SetFloatInputField(dialogTmp, "amount/x", 0, 0.1f, 10f, 0f, 0.99f);
 
                         break;
-                    } // Pixelize
-                case 20: {
-                        SetListColor((int)currentKeyframe.values[0], 0, bgColorButtons, ThemeManager.inst.Current.backgroundColor, Color.black);
+                    }
+                case EventEngine.BG: {
+                        SetListColor((int)currentKeyframe.values[0], 0, bgColorButtons, ThemeManager.inst.Current.backgroundColor, Color.black, -1, 2, 3, 4);
 
                         SetToggle(dialogTmp, "active", 1, 0, 1);
 
                         // BG Color Shift
-                        SetFloatInputField(dialogTmp, "colorshift/x", 2);
-                        SetFloatInputField(dialogTmp, "colorshift/y", 3);
-                        SetFloatInputField(dialogTmp, "colorshift/z", 4);
+                        SetFloatInputField(dialogTmp, "colorshift/x", 2, onValueChanged: _val =>
+                        {
+                            if (EditorConfig.Instance.ShowModifiedColors.Value)
+                                SetListColor((int)currentKeyframe.values[0], 0, bgColorButtons, ThemeManager.inst.Current.backgroundColor, Color.black, -1, 2, 3, 4);
+                        });
+                        SetFloatInputField(dialogTmp, "colorshift/y", 3, onValueChanged: _val =>
+                        {
+                            if (EditorConfig.Instance.ShowModifiedColors.Value)
+                                SetListColor((int)currentKeyframe.values[0], 0, bgColorButtons, ThemeManager.inst.Current.backgroundColor, Color.black, -1, 2, 3, 4);
+                        });
+                        SetFloatInputField(dialogTmp, "colorshift/z", 4, onValueChanged: _val =>
+                        {
+                            if (EditorConfig.Instance.ShowModifiedColors.Value)
+                                SetListColor((int)currentKeyframe.values[0], 0, bgColorButtons, ThemeManager.inst.Current.backgroundColor, Color.black, -1, 2, 3, 4);
+                        });
 
                         break;
-                    } // BG
-                case 21: {
+                    }
+                case EventEngine.INVERT: {
                         //Invert Amount
                         SetFloatInputField(dialogTmp, "amount/x", 0, 0.1f, 10f, 0f, 1f);
 
                         break;
-                    } // Invert
-                case 22: {
+                    }
+                case EventEngine.TIMELINE: {
                         // Timeline Active
                         SetToggle(dialogTmp, "active", 0, 0, 1);
 
@@ -2537,17 +2602,29 @@ namespace BetterLegacy.Editor.Managers
                         SetFloatInputField(dialogTmp, "rotation/x", 5, 15f, 3f);
 
                         // Timeline Color
-                        SetListColor((int)currentKeyframe.values[6], 6, timelineColorButtons, ThemeManager.inst.Current.guiColor, Color.black);
+                        SetListColor((int)currentKeyframe.values[6], 6, timelineColorButtons, ThemeManager.inst.Current.guiColor, Color.black, 7, 8, 9, 10);
 
                         // Timeline Color Shift
                         SetFloatInputField(dialogTmp, "colorshift/x", 7, max: 1f);
-                        SetFloatInputField(dialogTmp, "colorshift/y", 8);
-                        SetFloatInputField(dialogTmp, "colorshift/z", 9);
-                        SetFloatInputField(dialogTmp, "colorshift/w", 10);
+                        SetFloatInputField(dialogTmp, "colorshift/y", 8, onValueChanged: _val =>
+                        {
+                            if (EditorConfig.Instance.ShowModifiedColors.Value)
+                                SetListColor((int)currentKeyframe.values[6], 6, timelineColorButtons, ThemeManager.inst.Current.guiColor, Color.black, 7, 8, 9, 10);
+                        });
+                        SetFloatInputField(dialogTmp, "colorshift/z", 9, onValueChanged: _val =>
+                        {
+                            if (EditorConfig.Instance.ShowModifiedColors.Value)
+                                SetListColor((int)currentKeyframe.values[6], 6, timelineColorButtons, ThemeManager.inst.Current.guiColor, Color.black, 7, 8, 9, 10);
+                        });
+                        SetFloatInputField(dialogTmp, "colorshift/w", 10, onValueChanged: _val =>
+                        {
+                            if (EditorConfig.Instance.ShowModifiedColors.Value)
+                                SetListColor((int)currentKeyframe.values[6], 6, timelineColorButtons, ThemeManager.inst.Current.guiColor, Color.black, 7, 8, 9, 10);
+                        });
 
                         break;
-                    } // Timeline
-                case 23: {
+                    }
+                case EventEngine.PLAYER: {
                         // Player Active
                         SetToggle(dialogTmp, "active", 0, 0, 1);
 
@@ -2563,8 +2640,8 @@ namespace BetterLegacy.Editor.Managers
                         SetToggle(dialogTmp, "oob", 5, 1, 0);
 
                         break;
-                    } // Player
-                case 24: {
+                    }
+                case EventEngine.FOLLOW_PLAYER: {
                         // Follow Player Active
                         SetToggle(dialogTmp, "active", 0, 1, 0);
 
@@ -2596,8 +2673,8 @@ namespace BetterLegacy.Editor.Managers
                         SetFloatInputField(dialogTmp, "anchor/x", 9, 0.1f, 10f);
 
                         break;
-                    } // Follow Player
-                case 25: {
+                    }
+                case EventEngine.AUDIO: {
                         // Audio Pitch
                         SetFloatInputField(dialogTmp, "music/x", 0, 0.1f, 10f, 0.001f, 10f, allowNegative: false);
 
@@ -2608,8 +2685,8 @@ namespace BetterLegacy.Editor.Managers
                         SetFloatInputField(dialogTmp, "panstereo/x", 2);
 
                         break;
-                    } // Audio
-                case 26: {
+                    }
+                case EventEngine.VIDEO_BG_PARENT: {
                         // Position
                         SetFloatInputField(dialogTmp, "position/x", 0);
                         SetFloatInputField(dialogTmp, "position/y", 1);
@@ -2626,8 +2703,8 @@ namespace BetterLegacy.Editor.Managers
                         SetFloatInputField(dialogTmp, "rotation/z", 8, 5f, 3f);
 
                         break;
-                    } // Video BG Parent
-                case 27: {
+                    }
+                case EventEngine.VIDEO_BG: {
                         // Position
                         SetFloatInputField(dialogTmp, "position/x", 0);
                         SetFloatInputField(dialogTmp, "position/y", 1);
@@ -2657,12 +2734,12 @@ namespace BetterLegacy.Editor.Managers
 
 
                         break;
-                    } // Video BG
-                case 28: {
+                    }
+                case EventEngine.SHARPNESS: {
                         SetFloatInputField(dialogTmp, "intensity/x", 0);
                         break;
-                    } // Sharpen
-                case 29: {
+                    }
+                case EventEngine.BARS: {
                         SetFloatInputField(dialogTmp, "intensity/x", 0);
 
                         // Direction
@@ -2678,38 +2755,50 @@ namespace BetterLegacy.Editor.Managers
                         }
 
                         break;
-                    } // Bars
-                case 30: {
+                    }
+                case EventEngine.DANGER: {
                         SetFloatInputField(dialogTmp, "intensity/x", 0);
 
                         SetFloatInputField(dialogTmp, "size/x", 1);
 
                         // Danger Color
-                        SetListColor((int)currentKeyframe.values[2], 2, dangerColorButtons, new Color(0.66f, 0f, 0f), Color.black);
+                        SetListColor((int)currentKeyframe.values[2], 2, dangerColorButtons, new Color(0.66f, 0f, 0f), Color.black, 3, 4, 5, 6);
 
                         // Danger Color Shift
                         SetFloatInputField(dialogTmp, "colorshift/x", 3, max: 1f);
-                        SetFloatInputField(dialogTmp, "colorshift/y", 4);
-                        SetFloatInputField(dialogTmp, "colorshift/z", 5);
-                        SetFloatInputField(dialogTmp, "colorshift/w", 6);
+                        SetFloatInputField(dialogTmp, "colorshift/y", 4, onValueChanged: _val =>
+                        {
+                            if (EditorConfig.Instance.ShowModifiedColors.Value)
+                                SetListColor((int)currentKeyframe.values[2], 2, dangerColorButtons, new Color(0.66f, 0f, 0f), Color.black, 3, 4, 5, 6);
+                        });
+                        SetFloatInputField(dialogTmp, "colorshift/z", 5, onValueChanged: _val =>
+                        {
+                            if (EditorConfig.Instance.ShowModifiedColors.Value)
+                                SetListColor((int)currentKeyframe.values[2], 2, dangerColorButtons, new Color(0.66f, 0f, 0f), Color.black, 3, 4, 5, 6);
+                        });
+                        SetFloatInputField(dialogTmp, "colorshift/w", 6, onValueChanged: _val =>
+                        {
+                            if (EditorConfig.Instance.ShowModifiedColors.Value)
+                                SetListColor((int)currentKeyframe.values[2], 2, dangerColorButtons, new Color(0.66f, 0f, 0f), Color.black, 3, 4, 5, 6);
+                        });
 
                         break;
-                    } // Danger
-                case 31: {
+                    }
+                case EventEngine.ROTATION: {
                         SetFloatInputField(dialogTmp, "rotation/x", 0, 5f, 3f);
                         SetFloatInputField(dialogTmp, "rotation/y", 1, 5f, 3f);
 
                         break;
-                    } // 3D Rotation
-                case 32: {
+                    }
+                case EventEngine.CAMERA_DEPTH: {
                         SetFloatInputField(dialogTmp, "depth/x", 0);
                         SetFloatInputField(dialogTmp, "zoom/x", 1);
                         SetToggle(dialogTmp, "global", 2, 0, 1);
                         SetToggle(dialogTmp, "align", 3, 1, 0);
 
                         break;
-                    } // Camera Depth
-                case 33: {
+                    }
+                case EventEngine.WINDOW_BASE: {
                         // Force Resolution
                         SetToggle(dialogTmp, "force", 0, 1, 0);
 
@@ -2718,27 +2807,27 @@ namespace BetterLegacy.Editor.Managers
                         SetToggle(dialogTmp, "allow", 3, 1, 0);
 
                         break;
-                    } // Window Base
-                case 34: {
+                    }
+                case EventEngine.WINDOW_POSITION_X: {
                         SetFloatInputField(dialogTmp, "x/x", 0);
 
                         break;
-                    } // Window Position X
-                case 35: {
+                    }
+                case EventEngine.WINDOW_POSITION_Y: {
                         SetFloatInputField(dialogTmp, "y/x", 0);
 
                         break;
-                    } // Window Position Y
-                case 36: {
+                    }
+                case EventEngine.PLAYER_FORCE: {
                         SetVector2InputField(dialogTmp, "position", 0, 1);
                         break;
-                    } // Player Force
-                case 37: {
+                    }
+                case EventEngine.MOSAIC: {
                         SetFloatInputField(dialogTmp, "amount/x", 0);
 
                         break;
-                    } // Mosaic
-                case 38: {
+                    }
+                case EventEngine.ANALOG_GLITCH: {
                         SetToggle(dialogTmp, "enabled", 0, 1, 0);
                         SetFloatInputField(dialogTmp, "colordrift/x", 1);
                         SetFloatInputField(dialogTmp, "horizontalshake/x", 2);
@@ -2746,12 +2835,12 @@ namespace BetterLegacy.Editor.Managers
                         SetFloatInputField(dialogTmp, "verticaljump/x", 4);
 
                         break;
-                    } // Analog Glitch
-                case 39: {
+                    }
+                case EventEngine.DIGITAL_GLITCH: {
                         SetFloatInputField(dialogTmp, "intensity/x", 0);
 
                         break;
-                    } // Digital Glitch
+                    }
             }
         }
 
@@ -2793,80 +2882,115 @@ namespace BetterLegacy.Editor.Managers
 
         public List<EventKeyframe> copiedKeyframeDatas = new List<EventKeyframe>();
 
-        public void SetListColor(int value, int index, List<Toggle> toggles, Color defaultColor, Color secondaryDefaultColor)
+        public void SetListColor(int value, int index, List<Toggle> toggles, Color defaultColor, Color secondaryDefaultColor, int opacityIndex = -1, int hueIndex = -1, int satIndex = -1, int valIndex = -1)
         {
             int num = 0;
             foreach (var toggle in toggles)
             {
-                toggle.onValueChanged.ClearAll();
-
-                toggle.isOn = num == value;
-
-                toggle.image.color = num < 18 ? CoreHelper.CurrentBeatmapTheme.effectColors[num] : num == 19 ? secondaryDefaultColor : defaultColor;
-
                 int tmpIndex = num;
-                toggle.onValueChanged.AddListener(_val =>
+                var color = num < 18 ? CoreHelper.CurrentBeatmapTheme.effectColors[num] : num == 19 ? secondaryDefaultColor : defaultColor;
+
+                if (EditorConfig.Instance.ShowModifiedColors.Value && hueIndex >= 0 && satIndex >= 0 && valIndex >= 0)
+                {
+                    float hueNum = RTLevel.Current.eventEngine.Interpolate(EventEditor.inst.currentEventType, hueIndex, RTLevel.Current.FixedTime);
+                    float satNum = RTLevel.Current.eventEngine.Interpolate(EventEditor.inst.currentEventType, satIndex, RTLevel.Current.FixedTime);
+                    float valNum = RTLevel.Current.eventEngine.Interpolate(EventEditor.inst.currentEventType, valIndex, RTLevel.Current.FixedTime);
+
+                    toggle.image.color = RTColors.ChangeColorHSV(color, hueNum, satNum, valNum);
+                }
+                else
+                    toggle.image.color = color;
+
+                toggle.SetIsOnWithoutNotify(num == value);
+                toggle.onValueChanged.NewListener(_val =>
                 {
                     foreach (var kf in SelectedKeyframes.Where(x => x.Type == EventEditor.inst.currentEventType))
                         kf.eventKeyframe.values[index] = tmpIndex;
 
                     RTLevel.Current?.UpdateEvents(EventEditor.inst.currentEventType);
 
-                    SetListColor(tmpIndex, index, toggles, defaultColor, secondaryDefaultColor);
+                    SetListColor(tmpIndex, index, toggles, defaultColor, secondaryDefaultColor, opacityIndex, hueIndex, satIndex, valIndex);
                 });
+
+                var list = new List<ButtonFunction>
+                {
+                    new ButtonFunction("Reset Value", () =>
+                    {
+                        int value = (int)GameData.DefaultKeyframes[EventEditor.inst.currentEventType].values[index];
+                        foreach (var kf in SelectedKeyframes.Where(x => x.Type == EventEditor.inst.currentEventType))
+                            kf.eventKeyframe.values[index] = value;
+
+                        RTLevel.Current?.UpdateEvents(EventEditor.inst.currentEventType);
+
+                        SetListColor(value, index, toggles, defaultColor, secondaryDefaultColor, opacityIndex, hueIndex, satIndex, valIndex);
+                    }),
+                    new ButtonFunction($"Show Modified Colors [{(EditorConfig.Instance.ShowModifiedColors.Value ? "On" : "Off")}]", () => EditorConfig.Instance.ShowModifiedColors.Value = !EditorConfig.Instance.ShowModifiedColors.Value),
+                    new ButtonFunction("Copy Hex Color", () => LSText.CopyToClipboard(RTColors.ColorToHexOptional(color))),
+                };
+
+                if (hueIndex >= 0 && satIndex >= 0 && valIndex >= 0)
+                {
+                    list.Add(new ButtonFunction("Copy Modified Hex Color", () =>
+                    {
+                        float hueNum = RTLevel.Current.eventEngine.Interpolate(EventEditor.inst.currentEventType, hueIndex, RTLevel.Current.FixedTime);
+                        float satNum = RTLevel.Current.eventEngine.Interpolate(EventEditor.inst.currentEventType, satIndex, RTLevel.Current.FixedTime);
+                        float valNum = RTLevel.Current.eventEngine.Interpolate(EventEditor.inst.currentEventType, valIndex, RTLevel.Current.FixedTime);
+
+                        LSText.CopyToClipboard(RTColors.ColorToHexOptional(RTColors.ChangeColorHSV(color, hueNum, satNum, valNum)));
+                    }));
+                }
+
+                EditorContextMenu.inst.AddContextMenu(toggle.gameObject, list);
+
                 num++;
             }
         }
 
         public void SetToggle(Transform dialogTmp, string name, int index, int onValue, int offValue)
         {
-            var __instance = EventEditor.inst;
-            var currentKeyframe = GameData.Current.events[__instance.currentEventType][__instance.currentEvent];
+            var currentKeyframe = GameData.Current.events[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent];
 
-            var vignetteRounded = dialogTmp.Find(name).GetComponent<Toggle>();
-            vignetteRounded.onValueChanged.ClearAll();
-            vignetteRounded.isOn = currentKeyframe.values[index] == onValue;
-            vignetteRounded.onValueChanged.AddListener(_val =>
+            var toggle = dialogTmp.Find(name).GetComponent<Toggle>();
+            toggle.SetIsOnWithoutNotify(currentKeyframe.values[index] == onValue);
+            toggle.onValueChanged.NewListener(_val =>
             {
-                foreach (var kf in SelectedKeyframes.Where(x => x.Type == __instance.currentEventType))
+                foreach (var kf in SelectedKeyframes.Where(x => x.Type == EventEditor.inst.currentEventType))
                     kf.eventKeyframe.values[index] = _val ? onValue : offValue;
 
                 RTLevel.Current?.UpdateEvents(EventEditor.inst.currentEventType);
             });
+
+            EditorContextMenu.inst.AddContextMenu(toggle.gameObject,
+                new ButtonFunction("Reset Value", () => toggle.isOn = GameData.DefaultKeyframes[EventEditor.inst.currentEventType].values[index] == onValue));
         }
 
-        public void SetFloatInputField(Transform dialogTmp, string name, int index, float increase = 0.1f, float multiply = 10f, float min = 0f, float max = 0f, bool allowNegative = true)
+        public void SetFloatInputField(Transform dialogTmp, string name, int index, float increase = 0.1f, float multiply = 10f, float min = 0f, float max = 0f, bool allowNegative = true, Action<float> onValueChanged = null)
         {
-            var __instance = EventEditor.inst;
+            var currentKeyframe = GameData.Current.events[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent];
 
-            var currentKeyframe = GameData.Current.events[__instance.currentEventType][__instance.currentEvent];
-
-            if (!dialogTmp.Find(name))
+            if (!dialogTmp.TryFind(name, out Transform tf))
                 return;
 
-            var zoom = dialogTmp.Find($"{name}").GetComponent<InputField>();
-            zoom.onEndEdit.ClearAll();
-            zoom.onValueChanged.ClearAll();
-            zoom.text = currentKeyframe.values[index].ToString();
-            zoom.onValueChanged.AddListener(_val =>
+            var inputField = tf.GetComponent<InputField>();
+            inputField.SetTextWithoutNotify(currentKeyframe.values[index].ToString());
+            inputField.onValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
                 {
                     if (min != 0f || max != 0f)
                         num = Mathf.Clamp(num, min, max);
 
-                    foreach (var kf in SelectedKeyframes.Where(x => x.Type == __instance.currentEventType))
+                    foreach (var kf in SelectedKeyframes.Where(x => x.Type == EventEditor.inst.currentEventType))
                         kf.eventKeyframe.values[index] = num;
 
                     RTLevel.Current?.UpdateEvents(EventEditor.inst.currentEventType);
 
-                    if (name == "zoom/x" && num < 0f)
-                        AchievementManager.inst.UnlockAchievement("editor_zoom_break");
+                    onValueChanged?.Invoke(num);
                 }
                 else
                     LogIncorrectFormat(_val);
             });
-            zoom.onEndEdit.AddListener(_val =>
+            inputField.onEndEdit.NewListener(_val =>
             {
                 var variables = new Dictionary<string, float>
                 {
@@ -2875,13 +2999,11 @@ namespace BetterLegacy.Editor.Managers
                 };
 
                 if (!float.TryParse(_val, out float n) && RTMath.TryParse(_val, currentKeyframe.values[index], variables, out float calc))
-                    zoom.text = calc.ToString();
+                    inputField.text = calc.ToString();
             });
 
             if (dialogTmp.Find($"{name}/<") && dialogTmp.Find($"{name}/>"))
             {
-                var tf = dialogTmp.Find($"{name}");
-
                 float num = 1f;
 
                 var btR = tf.Find("<").GetComponent<Button>();
@@ -2889,69 +3011,68 @@ namespace BetterLegacy.Editor.Managers
 
                 btR.onClick.NewListener(() =>
                 {
-                    if (float.TryParse(zoom.text, out float result))
+                    if (float.TryParse(inputField.text, out float result))
                     {
                         result -= Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
 
                         if (min != 0f || max != 0f)
                             result = Mathf.Clamp(result, min, max);
 
-                        var list = SelectedKeyframes.Where(x => x.Type == __instance.currentEventType);
+                        var list = SelectedKeyframes.Where(x => x.Type == EventEditor.inst.currentEventType);
 
                         if (list.Count() > 1)
                             foreach (var kf in list)
                                 kf.eventKeyframe.values[index] -= Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
                         else
-                            zoom.text = result.ToString();
+                            inputField.text = result.ToString();
                     }
                 });
-
                 btL.onClick.NewListener(() =>
                 {
-                    if (float.TryParse(zoom.text, out float result))
+                    if (float.TryParse(inputField.text, out float result))
                     {
                         result += Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
 
                         if (min != 0f || max != 0f)
                             result = Mathf.Clamp(result, min, max);
 
-                        var list = SelectedKeyframes.Where(x => x.Type == __instance.currentEventType);
+                        var list = SelectedKeyframes.Where(x => x.Type == EventEditor.inst.currentEventType);
 
                         if (list.Count() > 1)
                             foreach (var kf in list)
                                 kf.eventKeyframe.values[index] += Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
                         else
-                            zoom.text = result.ToString();
+                            inputField.text = result.ToString();
                     }
                 });
             }
 
-            TriggerHelper.AddEventTriggers(zoom.gameObject, TriggerHelper.ScrollDelta(zoom, increase, multiply, min, max));
+            TriggerHelper.AddEventTriggers(inputField.gameObject, TriggerHelper.ScrollDelta(inputField, increase, multiply, min, max));
 
             if (allowNegative)
-                TriggerHelper.InversableField(zoom);
+                TriggerHelper.InversableField(inputField);
+
+            EditorContextMenu.inst.AddContextMenu(inputField.gameObject,
+                new ButtonFunction("Reset Value", () => inputField.text = GameData.DefaultKeyframes[EventEditor.inst.currentEventType].values[index].ToString()));
         }
 
         public void SetIntInputField(Transform dialogTmp, string name, int index, int increase = 1, int min = 0, int max = 0, bool allowNegative = true)
         {
-            var __instance = EventEditor.inst;
+            var currentKeyframe = GameData.Current.events[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent];
 
-            var currentKeyframe = GameData.Current.events[__instance.currentEventType][__instance.currentEvent];
-
-            if (!dialogTmp.Find(name))
+            if (!dialogTmp.TryFind(name, out Transform tf))
                 return;
 
-            var zoom = dialogTmp.Find($"{name}").GetComponent<InputField>();
-            zoom.onValueChanged.ClearAll();
-            zoom.text = currentKeyframe.values[index].ToString();
-            zoom.onValueChanged.AddListener(_val =>
+            var inputField = tf.GetComponent<InputField>();
+            inputField.SetTextWithoutNotify(currentKeyframe.values[index].ToString());
+            inputField.onValueChanged.NewListener(_val =>
             {
                 if (int.TryParse(_val, out int num))
                 {
                     if (min != 0 && max != 0)
                         num = Mathf.Clamp(num, min, max);
 
-                    foreach (var kf in SelectedKeyframes.Where(x => x.Type == __instance.currentEventType))
+                    foreach (var kf in SelectedKeyframes.Where(x => x.Type == EventEditor.inst.currentEventType))
                         kf.eventKeyframe.values[index] = num;
 
                     RTLevel.Current?.UpdateEvents(EventEditor.inst.currentEventType);
@@ -2962,8 +3083,6 @@ namespace BetterLegacy.Editor.Managers
 
             if (dialogTmp.Find($"{name}/<") && dialogTmp.Find($"{name}/>"))
             {
-                var tf = dialogTmp.Find($"{name}");
-
                 float num = 1f;
 
                 var btR = tf.Find("<").GetComponent<Button>();
@@ -2971,63 +3090,63 @@ namespace BetterLegacy.Editor.Managers
 
                 btR.onClick.NewListener(() =>
                 {
-                    if (float.TryParse(zoom.text, out float result))
+                    if (float.TryParse(inputField.text, out float result))
                     {
                         result -= Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
 
                         if (min != 0f || max != 0f)
                             result = Mathf.Clamp(result, min, max);
 
-                        var list = SelectedKeyframes.Where(x => x.Type == __instance.currentEventType);
+                        var list = SelectedKeyframes.Where(x => x.Type == EventEditor.inst.currentEventType);
 
                         if (list.Count() > 1)
                             foreach (var kf in list)
                                 kf.eventKeyframe.values[index] -= Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
                         else
-                            zoom.text = result.ToString();
+                            inputField.text = result.ToString();
                     }
                 });
-
                 btL.onClick.NewListener(() =>
                 {
-                    if (float.TryParse(zoom.text, out float result))
+                    if (float.TryParse(inputField.text, out float result))
                     {
                         result += Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
 
                         if (min != 0f || max != 0f)
                             result = Mathf.Clamp(result, min, max);
 
-                        var list = SelectedKeyframes.Where(x => x.Type == __instance.currentEventType);
+                        var list = SelectedKeyframes.Where(x => x.Type == EventEditor.inst.currentEventType);
 
                         if (list.Count() > 1)
                             foreach (var kf in list)
                                 kf.eventKeyframe.values[index] += Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
                         else
-                            zoom.text = result.ToString();
+                            inputField.text = result.ToString();
                     }
                 });
             }
 
-            TriggerHelper.AddEventTriggers(zoom.gameObject, TriggerHelper.ScrollDeltaInt(zoom, increase, min, max));
+            TriggerHelper.AddEventTriggers(inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputField, increase, min, max));
 
             if (allowNegative)
-                TriggerHelper.InversableField(zoom);
+                TriggerHelper.InversableField(inputField);
+
+            EditorContextMenu.inst.AddContextMenu(inputField.gameObject,
+                new ButtonFunction("Reset Value", () => inputField.text = GameData.DefaultKeyframes[EventEditor.inst.currentEventType].values[index].ToString()));
         }
 
         public void SetVector2InputField(Transform dialogTmp, string name, int xindex, int yindex, float min = 0f, float max = 0f, bool allowNegative = true)
         {
-            if (!dialogTmp.Find(name) || !dialogTmp.Find($"{name}/x") || !dialogTmp.Find($"{name}/y"))
+            if (!dialogTmp.TryFind(name, out Transform tf) || !tf.TryFind("x", out Transform xTF) || !tf.TryFind("y", out Transform yTF))
                 return;
 
             var currentKeyframe = GameData.Current.events[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent];
 
-            var posX = dialogTmp.Find($"{name}/x").GetComponent<InputField>();
-            var posY = dialogTmp.Find($"{name}/y").GetComponent<InputField>();
+            var posX = xTF.GetComponent<InputField>();
+            var posY = yTF.GetComponent<InputField>();
 
-            posX.onEndEdit.ClearAll();
-            posX.onValueChanged.ClearAll();
-            posX.text = currentKeyframe.values[xindex].ToString();
-            posX.onValueChanged.AddListener(_val =>
+            posX.SetTextWithoutNotify(currentKeyframe.values[xindex].ToString());
+            posX.onValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
                 {
@@ -3042,7 +3161,7 @@ namespace BetterLegacy.Editor.Managers
                 else
                     LogIncorrectFormat(_val);
             });
-            posX.onEndEdit.AddListener(_val =>
+            posX.onEndEdit.NewListener(_val =>
             {
                 var variables = new Dictionary<string, float>
                 {
@@ -3055,9 +3174,8 @@ namespace BetterLegacy.Editor.Managers
                     posX.text = calc.ToString();
             });
 
-            posY.onValueChanged.ClearAll();
-            posY.text = currentKeyframe.values[yindex].ToString();
-            posY.onValueChanged.AddListener(_val =>
+            posY.SetTextWithoutNotify(currentKeyframe.values[yindex].ToString());
+            posY.onValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
                 {
@@ -3072,7 +3190,7 @@ namespace BetterLegacy.Editor.Managers
                 else
                     LogIncorrectFormat(_val);
             });
-            posY.onEndEdit.AddListener(_val =>
+            posY.onEndEdit.NewListener(_val =>
             {
                 var variables = new Dictionary<string, float>
                 {
@@ -3085,16 +3203,11 @@ namespace BetterLegacy.Editor.Managers
                     posY.text = calc.ToString();
             });
 
-            if (dialogTmp.Find($"{name}/x/<") && dialogTmp.Find($"{name}/x/>"))
+            if (xTF.TryFind("<", out Transform leftXTF) && xTF.TryFind(">", out Transform rightXTF))
             {
-                var tf = dialogTmp.Find($"{name}/x");
-
                 float num = 1f;
 
-                var btR = tf.Find("<").GetComponent<Button>();
-                var btL = tf.Find(">").GetComponent<Button>();
-
-                btR.onClick.NewListener(() =>
+                leftXTF.GetComponent<Button>().onClick.NewListener(() =>
                 {
                     if (float.TryParse(posX.text, out float result))
                     {
@@ -3112,7 +3225,7 @@ namespace BetterLegacy.Editor.Managers
                             posX.text = result.ToString();
                     }
                 });
-                btL.onClick.NewListener(() =>
+                rightXTF.GetComponent<Button>().onClick.NewListener(() =>
                 {
                     if (float.TryParse(posX.text, out float result))
                     {
@@ -3132,16 +3245,11 @@ namespace BetterLegacy.Editor.Managers
                 });
             }
 
-            if (dialogTmp.Find($"{name}/y/<") && dialogTmp.Find($"{name}/y/>"))
+            if (yTF.TryFind("<", out Transform leftYTF) && yTF.TryFind(">", out Transform rightYTF))
             {
-                var tf = dialogTmp.Find($"{name}/y");
-
                 float num = 1f;
 
-                var btR = tf.Find("<").GetComponent<Button>();
-                var btL = tf.Find(">").GetComponent<Button>();
-
-                btR.onClick.NewListener(() =>
+                leftYTF.GetComponent<Button>().onClick.NewListener(() =>
                 {
                     if (float.TryParse(posY.text, out float result))
                     {
@@ -3159,7 +3267,7 @@ namespace BetterLegacy.Editor.Managers
                             posY.text = result.ToString();
                     }
                 });
-                btL.onClick.NewListener(() =>
+                rightYTF.GetComponent<Button>().onClick.NewListener(() =>
                 {
                     if (float.TryParse(posY.text, out float result))
                     {
@@ -3180,14 +3288,23 @@ namespace BetterLegacy.Editor.Managers
             }
 
             var clampList = new List<float> { min, max };
-            TriggerHelper.AddEventTriggers(posX.gameObject, TriggerHelper.ScrollDelta(posX, 0.1f, 10f, min, max, true), TriggerHelper.ScrollDeltaVector2(posX, posY, 0.1f, 10f, clampList));
-            TriggerHelper.AddEventTriggers(posY.gameObject, TriggerHelper.ScrollDelta(posY, 0.1f, 10f, min, max, true), TriggerHelper.ScrollDeltaVector2(posX, posY, 0.1f, 10f, clampList));
+            TriggerHelper.AddEventTriggers(posX.gameObject,
+                TriggerHelper.ScrollDelta(posX, 0.1f, 10f, min, max, true),
+                TriggerHelper.ScrollDeltaVector2(posX, posY, 0.1f, 10f, clampList));
+            TriggerHelper.AddEventTriggers(posY.gameObject,
+                TriggerHelper.ScrollDelta(posY, 0.1f, 10f, min, max, true),
+                TriggerHelper.ScrollDeltaVector2(posX, posY, 0.1f, 10f, clampList));
 
             if (allowNegative)
             {
                 TriggerHelper.InversableField(posX);
                 TriggerHelper.InversableField(posY);
             }
+
+            EditorContextMenu.inst.AddContextMenu(posX.gameObject,
+                new ButtonFunction("Reset Value", () => posX.text = GameData.DefaultKeyframes[EventEditor.inst.currentEventType].values[xindex].ToString()));
+            EditorContextMenu.inst.AddContextMenu(posY.gameObject,
+                new ButtonFunction("Reset Value", () => posY.text = GameData.DefaultKeyframes[EventEditor.inst.currentEventType].values[yindex].ToString()));
         }
 
         public void SetVector2InputField(Vector2InputFieldStorage vector2Field, int xindex, int yindex, float min = 0f, float max = 0f, bool allowNegative = true)
@@ -3197,10 +3314,8 @@ namespace BetterLegacy.Editor.Managers
             var posX = vector2Field.x.inputField;
             var posY = vector2Field.y.inputField;
 
-            posX.onEndEdit.ClearAll();
-            posX.onValueChanged.ClearAll();
-            posX.text = currentKeyframe.values[xindex].ToString();
-            posX.onValueChanged.AddListener(_val =>
+            vector2Field.x.SetTextWithoutNotify(currentKeyframe.values[xindex].ToString());
+            vector2Field.x.OnValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
                 {
@@ -3215,7 +3330,7 @@ namespace BetterLegacy.Editor.Managers
                 else
                     LogIncorrectFormat(_val);
             });
-            posX.onEndEdit.AddListener(_val =>
+            vector2Field.x.OnEndEdit.NewListener(_val =>
             {
                 var variables = new Dictionary<string, float>
                 {
@@ -3228,9 +3343,8 @@ namespace BetterLegacy.Editor.Managers
                     posX.text = calc.ToString();
             });
 
-            posY.onValueChanged.ClearAll();
-            posY.text = currentKeyframe.values[yindex].ToString();
-            posY.onValueChanged.AddListener(_val =>
+            vector2Field.y.SetTextWithoutNotify(currentKeyframe.values[yindex].ToString());
+            vector2Field.y.OnValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
                 {
@@ -3245,7 +3359,7 @@ namespace BetterLegacy.Editor.Managers
                 else
                     LogIncorrectFormat(_val);
             });
-            posY.onEndEdit.AddListener(_val =>
+            vector2Field.y.OnEndEdit.NewListener(_val =>
             {
                 var variables = new Dictionary<string, float>
                 {
@@ -3341,14 +3455,23 @@ namespace BetterLegacy.Editor.Managers
             }
 
             var clampList = new List<float> { min, max };
-            TriggerHelper.AddEventTriggers(posX.gameObject, TriggerHelper.ScrollDelta(posX, 0.1f, 10f, min, max, true), TriggerHelper.ScrollDeltaVector2(posX, posY, 0.1f, 10f, clampList));
-            TriggerHelper.AddEventTriggers(posY.gameObject, TriggerHelper.ScrollDelta(posY, 0.1f, 10f, min, max, true), TriggerHelper.ScrollDeltaVector2(posX, posY, 0.1f, 10f, clampList));
+            TriggerHelper.AddEventTriggers(posX.gameObject,
+                TriggerHelper.ScrollDelta(posX, 0.1f, 10f, min, max, true),
+                TriggerHelper.ScrollDeltaVector2(posX, posY, 0.1f, 10f, clampList));
+            TriggerHelper.AddEventTriggers(posY.gameObject,
+                TriggerHelper.ScrollDelta(posY, 0.1f, 10f, min, max, true),
+                TriggerHelper.ScrollDeltaVector2(posX, posY, 0.1f, 10f, clampList));
 
             if (allowNegative)
             {
                 TriggerHelper.InversableField(posX);
                 TriggerHelper.InversableField(posY);
             }
+
+            EditorContextMenu.inst.AddContextMenu(posX.gameObject,
+                new ButtonFunction("Reset Value", () => posX.text = GameData.DefaultKeyframes[EventEditor.inst.currentEventType].values[xindex].ToString()));
+            EditorContextMenu.inst.AddContextMenu(posY.gameObject,
+                new ButtonFunction("Reset Value", () => posY.text = GameData.DefaultKeyframes[EventEditor.inst.currentEventType].values[yindex].ToString()));
         }
 
         public void SetKeyframeValue(int index, string input)

@@ -1160,7 +1160,17 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 EditorContextMenu.inst.AddContextMenu(toggle.gameObject,
                     new ButtonFunction("Use", () => toggle.isOn = true),
                     new ButtonFunction($"Show Modified Colors [{(EditorConfig.Instance.ShowModifiedColors.Value ? "On" : "Off")}]", () => EditorConfig.Instance.ShowModifiedColors.Value = !EditorConfig.Instance.ShowModifiedColors.Value),
-                    new ButtonFunction("Copy Hex Color", () => LSText.CopyToClipboard(RTColors.ColorToHexOptional(toggle.image.color))));
+                    new ButtonFunction("Copy Hex Color", () => LSText.CopyToClipboard(RTColors.ColorToHexOptional(CoreHelper.CurrentBeatmapTheme.GetObjColor(tmpIndex)))),
+                    new ButtonFunction("Copy Modified Hex Color", () =>
+                    {
+                        var color = CoreHelper.CurrentBeatmapTheme.GetObjColor(tmpIndex);
+
+                        float hueNum = animatable.Interpolate(3, valueIndex + 2, eventTime);
+                        float satNum = animatable.Interpolate(3, valueIndex + 3, eventTime);
+                        float valNum = animatable.Interpolate(3, valueIndex + 4, eventTime);
+
+                        LSText.CopyToClipboard(RTColors.ColorToHexOptional(RTColors.ChangeColorHSV(color, hueNum, satNum, valNum)));
+                    }));
 
                 if (!toggle.GetComponent<HoverUI>())
                 {
@@ -1194,6 +1204,554 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 toggle.SetIsOnWithoutNotify(num == value);
                 toggle.onValueChanged.NewListener(_val => SetKeyframeColor(animatable, index, tmpIndex, colorButtons, selected));
                 num++;
+            }
+        }
+
+        void FullColorKeyframeHandler(IEnumerable<TimelineKeyframe> selected, TimelineKeyframe firstKF, IAnimatable animatable, BeatmapObject beatmapObject, Transform kfdialog)
+        {
+            ColorKeyframeHandler(0, startColorsReference, selected, firstKF, animatable);
+
+            var opacityObj = kfdialog.Find("opacity").gameObject;
+            var collision = kfdialog.Find("opacity/collision").GetComponent<Toggle>();
+            var hsvObj = kfdialog.Find("huesatval").gameObject;
+            EditorHelper.SetComplexity(kfdialog.Find("opacity_label").gameObject, "color_keyframe/opacity", Complexity.Normal);
+            EditorHelper.SetComplexity(opacityObj, "color_keyframe/opacity", Complexity.Normal);
+            EditorHelper.SetComplexity(collision.gameObject, "color_keyframe/opacity_collision", Complexity.Normal, visible: () => beatmapObject);
+
+            EditorHelper.SetComplexity(kfdialog.Find("huesatval_label").gameObject, "color_keyframe/hsv", Complexity.Advanced);
+            EditorHelper.SetComplexity(hsvObj, "color_keyframe/hsv", Complexity.Advanced);
+
+            var showGradient = EditorHelper.CheckComplexity(EditorHelper.GetComplexity("beatmapobject/gradient", Complexity.Normal)) && beatmapObject && beatmapObject.gradientType != GradientType.Normal;
+
+            kfdialog.Find("color_label").GetChild(0).GetComponent<Text>().text = showGradient ? "Start Color" : "Color";
+            kfdialog.Find("opacity_label").GetChild(0).GetComponent<Text>().text = showGradient ? "Start Opacity" : "Opacity";
+            kfdialog.Find("huesatval_label").GetChild(0).GetComponent<Text>().text = showGradient ? "Start Hue" : "Hue";
+            kfdialog.Find("huesatval_label").GetChild(1).GetComponent<Text>().text = showGradient ? "Start Sat" : "Saturation";
+            kfdialog.Find("huesatval_label").GetChild(2).GetComponent<Text>().text = showGradient ? "Start Val" : "Value";
+
+            var gradientColorToggles = kfdialog.Find("gradient_color").gameObject;
+            var gradientOpacityObj = kfdialog.Find("gradient_opacity").gameObject;
+            var gradientHSVObj = kfdialog.Find("gradient_huesatval").gameObject;
+            gradientColorToggles.SetActive(showGradient);
+            kfdialog.Find("gradient_color").gameObject.SetActive(showGradient);
+            EditorHelper.SetComplexity(kfdialog.Find("gradient_color_label").gameObject, "color_keyframe/gradient", Complexity.Normal, visible: () => showGradient);
+            EditorHelper.SetComplexity(kfdialog.Find("gradient_opacity_label").gameObject, "color_keyframe/gradient_opacity", Complexity.Advanced, visible: () => showGradient);
+            EditorHelper.SetComplexity(gradientOpacityObj, "color_keyframe/gradient_opacity", Complexity.Advanced, visible: () => showGradient);
+            EditorHelper.SetComplexity(kfdialog.Find("gradient_huesatval_label").gameObject, "color_keyframe/gradient_hsv", Complexity.Advanced, visible: () => showGradient);
+            EditorHelper.SetComplexity(gradientHSVObj, "color_keyframe/gradient_hsv", Complexity.Advanced, visible: () => showGradient);
+
+            kfdialog.Find("color").AsRT().sizeDelta = new Vector2(366f, RTEditor.ShowModdedUI ? 78f : 32f);
+            kfdialog.Find("gradient_color").AsRT().sizeDelta = new Vector2(366f, RTEditor.ShowModdedUI ? 78f : 32f);
+
+            if (opacityObj.activeSelf)
+            {
+                var opacity = kfdialog.Find("opacity/x").GetComponent<InputField>();
+
+                opacity.SetTextWithoutNotify((-firstKF.eventKeyframe.values[1] + 1).ToString());
+                opacity.onValueChanged.NewListener(_val =>
+                {
+                    if (float.TryParse(_val, out float num))
+                    {
+                        var value = Mathf.Clamp(-num + 1, 0f, 1f);
+                        foreach (var keyframe in selected.Select(x => x.eventKeyframe))
+                        {
+                            keyframe.values[1] = value;
+                            if (!RTEditor.ShowModdedUI)
+                                keyframe.values[6] = 10f;
+                        }
+
+                        // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                        if (beatmapObject)
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                    }
+                });
+                opacity.onEndEdit.NewListener(_val =>
+                {
+                    if (RTMath.TryParse(_val, (-firstKF.eventKeyframe.values[1] + 1), out float num))
+                    {
+                        var value = Mathf.Clamp(-num + 1, 0f, 1f);
+                        foreach (var keyframe in selected.Select(x => x.eventKeyframe))
+                        {
+                            keyframe.values[1] = value;
+                            if (!RTEditor.ShowModdedUI)
+                                keyframe.values[6] = 10f;
+                        }
+
+                        // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                        if (beatmapObject)
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                    }
+                });
+
+                TriggerHelper.AddEventTriggers(kfdialog.Find("opacity").gameObject, TriggerHelper.ScrollDelta(opacity, 0.1f, 10f, 0f, 1f));
+
+                TriggerHelper.IncreaseDecreaseButtons(opacity);
+
+                EditorContextMenu.inst.AddContextMenu(opacity.gameObject,
+                    new ButtonFunction("Reset Value", () =>
+                    {
+                        foreach (var keyframe in selected.Select(x => x.eventKeyframe))
+                        {
+                            keyframe.values[1] = 0f;
+                            if (!RTEditor.ShowModdedUI)
+                                keyframe.values[6] = 10f;
+                        }
+
+                        // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                        if (beatmapObject)
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+
+                        FullColorKeyframeHandler(selected, firstKF, animatable, beatmapObject, kfdialog);
+                    }),
+                    new ButtonFunction("Set to Helper Opacity", () =>
+                    {
+                        foreach (var keyframe in selected.Select(x => x.eventKeyframe))
+                        {
+                            keyframe.values[1] = -(BeatmapObject.HELPER_OPACITY - 1f);
+                            if (!RTEditor.ShowModdedUI)
+                                keyframe.values[6] = 10f;
+                        }
+
+                        // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                        if (beatmapObject)
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+
+                        FullColorKeyframeHandler(selected, firstKF, animatable, beatmapObject, kfdialog);
+                    }));
+            }
+
+            if (gradientColorToggles.activeSelf)
+                ColorKeyframeHandler(5, endColorsReference, selected, firstKF, animatable);
+
+            if (beatmapObject && collision.gameObject.activeSelf)
+            {
+                collision.SetIsOnWithoutNotify(beatmapObject.opacityCollision);
+                collision.onValueChanged.NewListener(_val =>
+                {
+                    beatmapObject.opacityCollision = _val;
+                    // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                    if (beatmapObject)
+                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.OBJECT_TYPE);
+                });
+            }
+
+            if (gradientOpacityObj.activeSelf)
+            {
+                var gradientOpacity = kfdialog.Find("gradient_opacity/x").GetComponent<InputField>();
+
+                gradientOpacity.SetTextWithoutNotify((-firstKF.eventKeyframe.values[6] + 1).ToString());
+                gradientOpacity.onValueChanged.NewListener(_val =>
+                {
+                    if (float.TryParse(_val, out float n))
+                    {
+                        foreach (var keyframe in selected.Select(x => x.eventKeyframe))
+                            keyframe.values[6] = Mathf.Clamp(-n + 1, 0f, 1f);
+
+                        // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                        if (beatmapObject)
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                    }
+                });
+                gradientOpacity.onEndEdit.NewListener(_val =>
+                {
+                    if (RTMath.TryParse(_val, (-firstKF.eventKeyframe.values[6] + 1), out float n))
+                    {
+                        foreach (var keyframe in selected.Select(x => x.eventKeyframe))
+                            keyframe.values[6] = Mathf.Clamp(-n + 1, 0f, 1f);
+
+                        // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                        if (beatmapObject)
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                    }
+                });
+
+                TriggerHelper.AddEventTriggers(kfdialog.Find("gradient_opacity").gameObject, TriggerHelper.ScrollDelta(gradientOpacity, 0.1f, 10f, 0f, 1f));
+
+                TriggerHelper.IncreaseDecreaseButtons(gradientOpacity);
+
+                EditorContextMenu.inst.AddContextMenu(gradientOpacity.gameObject,
+                    new ButtonFunction("Reset Value", () =>
+                    {
+                        foreach (var keyframe in selected.Select(x => x.eventKeyframe))
+                            keyframe.values[6] = 0f;
+
+                        // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                        if (beatmapObject)
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+
+                        FullColorKeyframeHandler(selected, firstKF, animatable, beatmapObject, kfdialog);
+                    }),
+                    new ButtonFunction("Set to Helper Opacity", () =>
+                    {
+                        foreach (var keyframe in selected.Select(x => x.eventKeyframe))
+                            keyframe.values[6] = -(BeatmapObject.HELPER_OPACITY - 1f);
+
+                        // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                        if (beatmapObject)
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+
+                        FullColorKeyframeHandler(selected, firstKF, animatable, beatmapObject, kfdialog);
+                    }));
+            }
+
+            // Start
+            if (hsvObj.activeSelf)
+            {
+                var hue = kfdialog.Find("huesatval/x").GetComponent<InputField>();
+
+                hue.SetTextWithoutNotify(firstKF.eventKeyframe.values[2].ToString());
+                hue.onValueChanged.NewListener(_val =>
+                {
+                    if (float.TryParse(_val, out float n))
+                    {
+                        foreach (var keyframe in selected.Select(x => x.eventKeyframe))
+                            keyframe.values[2] = n;
+
+                        // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                        if (beatmapObject)
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                    }
+                    ColorKeyframeHandler(0, startColorsReference, selected, firstKF, animatable);
+                });
+                hue.onEndEdit.NewListener(_val =>
+                {
+                    if (RTMath.TryParse(_val, firstKF.eventKeyframe.values[2], out float n))
+                    {
+                        foreach (var keyframe in selected.Select(x => x.eventKeyframe))
+                            keyframe.values[2] = n;
+
+                        // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                        if (beatmapObject)
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                    }
+                    ColorKeyframeHandler(0, startColorsReference, selected, firstKF, animatable);
+                });
+
+                CoreHelper.Destroy(kfdialog.transform.Find("huesatval").GetComponent<EventTrigger>());
+
+                TriggerHelper.AddEventTriggers(hue.gameObject, TriggerHelper.ScrollDelta(hue));
+                TriggerHelper.IncreaseDecreaseButtons(hue);
+
+                EditorContextMenu.inst.AddContextMenu(hue.gameObject,
+                    new ButtonFunction("Reset Value", () =>
+                    {
+                        foreach (var keyframe in selected.Select(x => x.eventKeyframe))
+                            keyframe.values[2] = 0f;
+
+                        // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                        if (beatmapObject)
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                        FullColorKeyframeHandler(selected, firstKF, animatable, beatmapObject, kfdialog);
+                    }),
+                    new ButtonFunction("Match End Hue", () =>
+                    {
+                        if (!beatmapObject || beatmapObject.gradientType == GradientType.Normal)
+                        {
+                            EditorManager.inst.DisplayNotification("Object is not a gradient!", 2f, EditorManager.NotificationType.Warning);
+                            return;
+                        }
+
+                        foreach (var keyframe in selected.Select(x => x.eventKeyframe))
+                            keyframe.values[2] = keyframe.values[7];
+
+                        // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                        if (beatmapObject)
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                        FullColorKeyframeHandler(selected, firstKF, animatable, beatmapObject, kfdialog);
+                    }));
+
+                var sat = kfdialog.Find("huesatval/y").GetComponent<InputField>();
+
+                sat.SetTextWithoutNotify(firstKF.eventKeyframe.values[3].ToString());
+                sat.onValueChanged.NewListener(_val =>
+                {
+                    if (float.TryParse(_val, out float n))
+                    {
+                        foreach (var keyframe in selected.Select(x => x.eventKeyframe))
+                            keyframe.values[3] = n;
+
+                        // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                        if (beatmapObject)
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                    }
+                    ColorKeyframeHandler(0, startColorsReference, selected, firstKF, animatable);
+                });
+                sat.onEndEdit.NewListener(_val =>
+                {
+                    if (RTMath.TryParse(_val, firstKF.eventKeyframe.values[3], out float n))
+                    {
+                        foreach (var keyframe in selected.Select(x => x.eventKeyframe))
+                            keyframe.values[3] = n;
+
+                        // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                        if (beatmapObject)
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                    }
+                    ColorKeyframeHandler(0, startColorsReference, selected, firstKF, animatable);
+                });
+
+                TriggerHelper.AddEventTriggers(sat.gameObject, TriggerHelper.ScrollDelta(sat));
+                TriggerHelper.IncreaseDecreaseButtons(sat);
+
+                EditorContextMenu.inst.AddContextMenu(sat.gameObject,
+                    new ButtonFunction("Reset Value", () =>
+                    {
+                        foreach (var keyframe in selected.Select(x => x.eventKeyframe))
+                            keyframe.values[3] = 0f;
+
+                        // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                        if (beatmapObject)
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                        FullColorKeyframeHandler(selected, firstKF, animatable, beatmapObject, kfdialog);
+                    }),
+                    new ButtonFunction("Match End Sat", () =>
+                    {
+                        if (!beatmapObject || beatmapObject.gradientType == GradientType.Normal)
+                        {
+                            EditorManager.inst.DisplayNotification("Object is not a gradient!", 2f, EditorManager.NotificationType.Warning);
+                            return;
+                        }
+
+                        foreach (var keyframe in selected.Select(x => x.eventKeyframe))
+                            keyframe.values[3] = keyframe.values[8];
+
+                        // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                        if (beatmapObject)
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                        FullColorKeyframeHandler(selected, firstKF, animatable, beatmapObject, kfdialog);
+                    }));
+
+                var val = kfdialog.Find("huesatval/z").GetComponent<InputField>();
+
+                val.SetTextWithoutNotify(firstKF.eventKeyframe.values[4].ToString());
+                val.onValueChanged.NewListener(_val =>
+                {
+                    if (float.TryParse(_val, out float n))
+                    {
+                        foreach (var keyframe in selected.Select(x => x.eventKeyframe))
+                            keyframe.values[4] = n;
+
+                        // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                        if (beatmapObject)
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                    }
+                    ColorKeyframeHandler(0, startColorsReference, selected, firstKF, animatable);
+                });
+                val.onEndEdit.NewListener(_val =>
+                {
+                    if (RTMath.TryParse(_val, firstKF.eventKeyframe.values[4], out float n))
+                    {
+                        foreach (var keyframe in selected.Select(x => x.eventKeyframe))
+                            keyframe.values[4] = n;
+
+                        // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                        if (beatmapObject)
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                    }
+                    ColorKeyframeHandler(0, startColorsReference, selected, firstKF, animatable);
+                });
+
+                TriggerHelper.AddEventTriggers(val.gameObject, TriggerHelper.ScrollDelta(val));
+                TriggerHelper.IncreaseDecreaseButtons(val);
+
+                EditorContextMenu.inst.AddContextMenu(val.gameObject,
+                    new ButtonFunction("Reset Value", () =>
+                    {
+                        foreach (var keyframe in selected.Select(x => x.eventKeyframe))
+                            keyframe.values[4] = 0f;
+
+                        // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                        if (beatmapObject)
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                        FullColorKeyframeHandler(selected, firstKF, animatable, beatmapObject, kfdialog);
+                    }),
+                    new ButtonFunction("Match End Val", () =>
+                    {
+                        if (!beatmapObject || beatmapObject.gradientType == GradientType.Normal)
+                        {
+                            EditorManager.inst.DisplayNotification("Object is not a gradient!", 2f, EditorManager.NotificationType.Warning);
+                            return;
+                        }
+
+                        foreach (var keyframe in selected.Select(x => x.eventKeyframe))
+                            keyframe.values[4] = keyframe.values[9];
+
+                        // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                        if (beatmapObject)
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                        FullColorKeyframeHandler(selected, firstKF, animatable, beatmapObject, kfdialog);
+                    }));
+            }
+
+            // End
+            if (gradientHSVObj.activeSelf && endColorsReference != null)
+            {
+                var hue = kfdialog.Find("gradient_huesatval/x").GetComponent<InputField>();
+
+                hue.SetTextWithoutNotify(firstKF.eventKeyframe.values[7].ToString());
+                hue.onValueChanged.NewListener(_val =>
+                {
+                    if (float.TryParse(_val, out float n))
+                    {
+                        foreach (var keyframe in selected.Select(x => x.eventKeyframe))
+                            keyframe.values[7] = n;
+
+                        // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                        if (beatmapObject)
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                    }
+                    ColorKeyframeHandler(5, endColorsReference, selected, firstKF, animatable);
+                });
+                hue.onEndEdit.NewListener(_val =>
+                {
+                    if (RTMath.TryParse(_val, firstKF.eventKeyframe.values[7], out float n))
+                    {
+                        foreach (var keyframe in selected.Select(x => x.eventKeyframe))
+                            keyframe.values[7] = n;
+
+                        // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                        if (beatmapObject)
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                    }
+                    ColorKeyframeHandler(5, endColorsReference, selected, firstKF, animatable);
+                });
+
+                CoreHelper.Destroy(kfdialog.transform.Find("gradient_huesatval").GetComponent<EventTrigger>());
+
+                TriggerHelper.AddEventTriggers(hue.gameObject, TriggerHelper.ScrollDelta(hue));
+                TriggerHelper.IncreaseDecreaseButtons(hue);
+
+                EditorContextMenu.inst.AddContextMenu(hue.gameObject,
+                    new ButtonFunction("Reset Value", () =>
+                    {
+                        foreach (var keyframe in selected.Select(x => x.eventKeyframe))
+                            keyframe.values[7] = 0f;
+
+                        // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                        if (beatmapObject)
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                        FullColorKeyframeHandler(selected, firstKF, animatable, beatmapObject, kfdialog);
+                    }),
+                    new ButtonFunction("Match Start Hue", () =>
+                    {
+                        foreach (var keyframe in selected.Select(x => x.eventKeyframe))
+                            keyframe.values[7] = keyframe.values[2];
+
+                        // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                        if (beatmapObject)
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                        FullColorKeyframeHandler(selected, firstKF, animatable, beatmapObject, kfdialog);
+                    }));
+
+                var sat = kfdialog.Find("gradient_huesatval/y").GetComponent<InputField>();
+
+                sat.SetTextWithoutNotify(firstKF.eventKeyframe.values[8].ToString());
+                sat.onValueChanged.NewListener(_val =>
+                {
+                    if (float.TryParse(_val, out float n))
+                    {
+                        foreach (var keyframe in selected.Select(x => x.eventKeyframe))
+                            keyframe.values[8] = n;
+
+                        // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                        if (beatmapObject)
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                    }
+                    ColorKeyframeHandler(5, endColorsReference, selected, firstKF, animatable);
+                });
+                sat.onEndEdit.NewListener(_val =>
+                {
+                    if (RTMath.TryParse(_val, firstKF.eventKeyframe.values[8], out float n))
+                    {
+                        foreach (var keyframe in selected.Select(x => x.eventKeyframe))
+                            keyframe.values[8] = n;
+
+                        // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                        if (beatmapObject)
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                    }
+                    ColorKeyframeHandler(5, endColorsReference, selected, firstKF, animatable);
+                });
+
+                TriggerHelper.AddEventTriggers(sat.gameObject, TriggerHelper.ScrollDelta(sat));
+                TriggerHelper.IncreaseDecreaseButtons(sat);
+
+                EditorContextMenu.inst.AddContextMenu(sat.gameObject,
+                    new ButtonFunction("Reset Value", () =>
+                    {
+                        foreach (var keyframe in selected.Select(x => x.eventKeyframe))
+                            keyframe.values[8] = 0f;
+
+                        // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                        if (beatmapObject)
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                        FullColorKeyframeHandler(selected, firstKF, animatable, beatmapObject, kfdialog);
+                    }),
+                    new ButtonFunction("Match Start Sat", () =>
+                    {
+                        foreach (var keyframe in selected.Select(x => x.eventKeyframe))
+                            keyframe.values[8] = keyframe.values[3];
+
+                        // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                        if (beatmapObject)
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                        FullColorKeyframeHandler(selected, firstKF, animatable, beatmapObject, kfdialog);
+                    }));
+
+                var val = kfdialog.Find("gradient_huesatval/z").GetComponent<InputField>();
+
+                val.SetTextWithoutNotify(firstKF.eventKeyframe.values[9].ToString());
+                val.onValueChanged.NewListener(_val =>
+                {
+                    if (float.TryParse(_val, out float n))
+                    {
+                        foreach (var keyframe in selected.Select(x => x.eventKeyframe))
+                            keyframe.values[9] = n;
+
+                        // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                        if (beatmapObject)
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                    }
+                    ColorKeyframeHandler(5, endColorsReference, selected, firstKF, animatable);
+                });
+                val.onEndEdit.NewListener(_val =>
+                {
+                    if (RTMath.TryParse(_val, firstKF.eventKeyframe.values[9], out float n))
+                    {
+                        foreach (var keyframe in selected.Select(x => x.eventKeyframe))
+                            keyframe.values[9] = n;
+
+                        // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                        if (beatmapObject)
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                    }
+                    ColorKeyframeHandler(5, endColorsReference, selected, firstKF, animatable);
+                });
+
+                TriggerHelper.AddEventTriggers(val.gameObject, TriggerHelper.ScrollDelta(val));
+                TriggerHelper.IncreaseDecreaseButtons(val);
+
+                EditorContextMenu.inst.AddContextMenu(val.gameObject,
+                    new ButtonFunction("Reset Value", () =>
+                    {
+                        foreach (var keyframe in selected.Select(x => x.eventKeyframe))
+                            keyframe.values[9] = 0f;
+
+                        // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                        if (beatmapObject)
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                        FullColorKeyframeHandler(selected, firstKF, animatable, beatmapObject, kfdialog);
+                    }),
+                    new ButtonFunction("Match Start Sat", () =>
+                    {
+                        foreach (var keyframe in selected.Select(x => x.eventKeyframe))
+                            keyframe.values[9] = keyframe.values[4];
+
+                        // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                        if (beatmapObject)
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                        FullColorKeyframeHandler(selected, firstKF, animatable, beatmapObject, kfdialog);
+                    }));
             }
         }
 
@@ -1693,346 +2251,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         break;
                     }
                 case 3: {
-                        ColorKeyframeHandler(0, startColorsReference, selected, firstKF, animatable);
-
-                        var opacityObj = kfdialog.Find("opacity").gameObject;
-                        var collision = kfdialog.Find("opacity/collision").GetComponent<Toggle>();
-                        var hsvObj = kfdialog.Find("huesatval").gameObject;
-                        EditorHelper.SetComplexity(kfdialog.Find("opacity_label").gameObject, "color_keyframe/opacity", Complexity.Normal);
-                        EditorHelper.SetComplexity(opacityObj, "color_keyframe/opacity", Complexity.Normal);
-                        EditorHelper.SetComplexity(collision.gameObject, "color_keyframe/opacity_collision", Complexity.Normal, visible: () => beatmapObject);
-
-                        EditorHelper.SetComplexity(kfdialog.Find("huesatval_label").gameObject, "color_keyframe/hsv", Complexity.Advanced);
-                        EditorHelper.SetComplexity(hsvObj, "color_keyframe/hsv", Complexity.Advanced);
-
-                        var showGradient = EditorHelper.CheckComplexity(EditorHelper.GetComplexity("beatmapobject/gradient", Complexity.Normal)) && beatmapObject && beatmapObject.gradientType != GradientType.Normal;
-
-                        kfdialog.Find("color_label").GetChild(0).GetComponent<Text>().text = showGradient ? "Start Color" : "Color";
-                        kfdialog.Find("opacity_label").GetChild(0).GetComponent<Text>().text = showGradient ? "Start Opacity" : "Opacity";
-                        kfdialog.Find("huesatval_label").GetChild(0).GetComponent<Text>().text = showGradient ? "Start Hue" : "Hue";
-                        kfdialog.Find("huesatval_label").GetChild(1).GetComponent<Text>().text = showGradient ? "Start Sat" : "Saturation";
-                        kfdialog.Find("huesatval_label").GetChild(2).GetComponent<Text>().text = showGradient ? "Start Val" : "Value";
-
-                        var gradientColorToggles = kfdialog.Find("gradient_color").gameObject;
-                        var gradientOpacityObj = kfdialog.Find("gradient_opacity").gameObject;
-                        var gradientHSVObj = kfdialog.Find("gradient_huesatval").gameObject;
-                        gradientColorToggles.SetActive(showGradient);
-                        kfdialog.Find("gradient_color").gameObject.SetActive(showGradient);
-                        EditorHelper.SetComplexity(kfdialog.Find("gradient_color_label").gameObject, "color_keyframe/gradient", Complexity.Normal, visible: () => showGradient);
-                        EditorHelper.SetComplexity(kfdialog.Find("gradient_opacity_label").gameObject, "color_keyframe/gradient_opacity", Complexity.Advanced, visible: () => showGradient);
-                        EditorHelper.SetComplexity(gradientOpacityObj, "color_keyframe/gradient_opacity", Complexity.Advanced, visible: () => showGradient);
-                        EditorHelper.SetComplexity(kfdialog.Find("gradient_huesatval_label").gameObject, "color_keyframe/gradient_hsv", Complexity.Advanced, visible: () => showGradient);
-                        EditorHelper.SetComplexity(gradientHSVObj, "color_keyframe/gradient_hsv", Complexity.Advanced, visible: () => showGradient);
-
-                        kfdialog.Find("color").AsRT().sizeDelta = new Vector2(366f, RTEditor.ShowModdedUI ? 78f : 32f);
-                        kfdialog.Find("gradient_color").AsRT().sizeDelta = new Vector2(366f, RTEditor.ShowModdedUI ? 78f : 32f);
-
-                        if (opacityObj.activeSelf)
-                        {
-                            var opacity = kfdialog.Find("opacity/x").GetComponent<InputField>();
-
-                            opacity.SetTextWithoutNotify((-firstKF.eventKeyframe.values[1] + 1).ToString());
-                            opacity.onValueChanged.NewListener(_val =>
-                            {
-                                if (float.TryParse(_val, out float num))
-                                {
-                                    var value = Mathf.Clamp(-num + 1, 0f, 1f);
-                                    foreach (var keyframe in selected.Select(x => x.eventKeyframe))
-                                    {
-                                        keyframe.values[1] = value;
-                                        if (!RTEditor.ShowModdedUI)
-                                            keyframe.values[6] = 10f;
-                                    }
-
-                                    // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
-                                    if (beatmapObject)
-                                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
-                                }
-                            });
-                            opacity.onEndEdit.NewListener(_val =>
-                            {
-                                if (RTMath.TryParse(_val, (-firstKF.eventKeyframe.values[1] + 1), out float num))
-                                {
-                                    var value = Mathf.Clamp(-num + 1, 0f, 1f);
-                                    foreach (var keyframe in selected.Select(x => x.eventKeyframe))
-                                    {
-                                        keyframe.values[1] = value;
-                                        if (!RTEditor.ShowModdedUI)
-                                            keyframe.values[6] = 10f;
-                                    }
-
-                                    // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
-                                    if (beatmapObject)
-                                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
-                                }
-                            });
-
-                            TriggerHelper.AddEventTriggers(kfdialog.Find("opacity").gameObject, TriggerHelper.ScrollDelta(opacity, 0.1f, 10f, 0f, 1f));
-
-                            TriggerHelper.IncreaseDecreaseButtons(opacity);
-                        }
-
-                        if (gradientColorToggles.activeSelf)
-                            ColorKeyframeHandler(5, endColorsReference, selected, firstKF, animatable);
-
-                        if (beatmapObject && collision.gameObject.activeSelf)
-                        {
-                            collision.SetIsOnWithoutNotify(beatmapObject.opacityCollision);
-                            collision.onValueChanged.NewListener(_val =>
-                            {
-                                beatmapObject.opacityCollision = _val;
-                                // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
-                                if (beatmapObject)
-                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.OBJECT_TYPE);
-                            });
-                        }
-
-                        if (gradientOpacityObj.activeSelf)
-                        {
-                            var gradientOpacity = kfdialog.Find("gradient_opacity/x").GetComponent<InputField>();
-
-                            gradientOpacity.SetTextWithoutNotify((-firstKF.eventKeyframe.values[6] + 1).ToString());
-                            gradientOpacity.onValueChanged.NewListener(_val =>
-                            {
-                                if (float.TryParse(_val, out float n))
-                                {
-                                    foreach (var keyframe in selected.Select(x => x.eventKeyframe))
-                                        keyframe.values[6] = Mathf.Clamp(-n + 1, 0f, 1f);
-
-                                    // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
-                                    if (beatmapObject)
-                                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
-                                }
-                            });
-                            gradientOpacity.onEndEdit.NewListener(_val =>
-                            {
-                                if (RTMath.TryParse(_val, (-firstKF.eventKeyframe.values[6] + 1), out float n))
-                                {
-                                    foreach (var keyframe in selected.Select(x => x.eventKeyframe))
-                                        keyframe.values[6] = Mathf.Clamp(-n + 1, 0f, 1f);
-
-                                    // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
-                                    if (beatmapObject)
-                                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
-                                }
-                            });
-
-                            TriggerHelper.AddEventTriggers(kfdialog.Find("gradient_opacity").gameObject, TriggerHelper.ScrollDelta(gradientOpacity, 0.1f, 10f, 0f, 1f));
-
-                            TriggerHelper.IncreaseDecreaseButtons(gradientOpacity);
-
-                        }
-
-                        // Start
-                        if (hsvObj.activeSelf)
-                        {
-                            var hue = kfdialog.Find("huesatval/x").GetComponent<InputField>();
-
-                            hue.SetTextWithoutNotify(firstKF.eventKeyframe.values[2].ToString());
-                            hue.onValueChanged.NewListener(_val =>
-                            {
-                                if (float.TryParse(_val, out float n))
-                                {
-                                    foreach (var keyframe in selected.Select(x => x.eventKeyframe))
-                                        keyframe.values[2] = n;
-
-                                    // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
-                                    if (beatmapObject)
-                                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
-                                }
-                                ColorKeyframeHandler(0, startColorsReference, selected, firstKF, animatable);
-                            });
-                            hue.onEndEdit.NewListener(_val =>
-                            {
-                                if (RTMath.TryParse(_val, firstKF.eventKeyframe.values[2], out float n))
-                                {
-                                    foreach (var keyframe in selected.Select(x => x.eventKeyframe))
-                                        keyframe.values[2] = n;
-
-                                    // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
-                                    if (beatmapObject)
-                                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
-                                }
-                                ColorKeyframeHandler(0, startColorsReference, selected, firstKF, animatable);
-                            });
-
-                            CoreHelper.Destroy(kfdialog.transform.Find("huesatval").GetComponent<EventTrigger>());
-
-                            TriggerHelper.AddEventTriggers(hue.gameObject, TriggerHelper.ScrollDelta(hue));
-                            TriggerHelper.IncreaseDecreaseButtons(hue);
-
-                            var sat = kfdialog.Find("huesatval/y").GetComponent<InputField>();
-
-                            sat.SetTextWithoutNotify(firstKF.eventKeyframe.values[3].ToString());
-                            sat.onValueChanged.NewListener(_val =>
-                            {
-                                if (float.TryParse(_val, out float n))
-                                {
-                                    foreach (var keyframe in selected.Select(x => x.eventKeyframe))
-                                        keyframe.values[3] = n;
-
-                                    // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
-                                    if (beatmapObject)
-                                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
-                                }
-                                ColorKeyframeHandler(0, startColorsReference, selected, firstKF, animatable);
-                            });
-                            sat.onEndEdit.NewListener(_val =>
-                            {
-                                if (RTMath.TryParse(_val, firstKF.eventKeyframe.values[3], out float n))
-                                {
-                                    foreach (var keyframe in selected.Select(x => x.eventKeyframe))
-                                        keyframe.values[3] = n;
-
-                                    // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
-                                    if (beatmapObject)
-                                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
-                                }
-                                ColorKeyframeHandler(0, startColorsReference, selected, firstKF, animatable);
-                            });
-
-                            TriggerHelper.AddEventTriggers(sat.gameObject, TriggerHelper.ScrollDelta(sat));
-                            TriggerHelper.IncreaseDecreaseButtons(sat);
-
-                            var val = kfdialog.Find("huesatval/z").GetComponent<InputField>();
-
-                            val.SetTextWithoutNotify(firstKF.eventKeyframe.values[4].ToString());
-                            val.onValueChanged.NewListener(_val =>
-                            {
-                                if (float.TryParse(_val, out float n))
-                                {
-                                    foreach (var keyframe in selected.Select(x => x.eventKeyframe))
-                                        keyframe.values[4] = n;
-
-                                    // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
-                                    if (beatmapObject)
-                                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
-                                }
-                                ColorKeyframeHandler(0, startColorsReference, selected, firstKF, animatable);
-                            });
-                            val.onEndEdit.NewListener(_val =>
-                            {
-                                if (RTMath.TryParse(_val, firstKF.eventKeyframe.values[4], out float n))
-                                {
-                                    foreach (var keyframe in selected.Select(x => x.eventKeyframe))
-                                        keyframe.values[4] = n;
-
-                                    // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
-                                    if (beatmapObject)
-                                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
-                                }
-                                ColorKeyframeHandler(0, startColorsReference, selected, firstKF, animatable);
-                            });
-
-                            TriggerHelper.AddEventTriggers(val.gameObject, TriggerHelper.ScrollDelta(val));
-                            TriggerHelper.IncreaseDecreaseButtons(val);
-                        }
-
-                        // End
-                        if (gradientHSVObj.activeSelf && endColorsReference != null)
-                        {
-                            var hue = kfdialog.Find("gradient_huesatval/x").GetComponent<InputField>();
-
-                            hue.SetTextWithoutNotify(firstKF.eventKeyframe.values[7].ToString());
-                            hue.onValueChanged.NewListener(_val =>
-                            {
-                                if (float.TryParse(_val, out float n))
-                                {
-                                    foreach (var keyframe in selected.Select(x => x.eventKeyframe))
-                                        keyframe.values[7] = n;
-
-                                    // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
-                                    if (beatmapObject)
-                                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
-                                }
-                                ColorKeyframeHandler(5, endColorsReference, selected, firstKF, animatable);
-                            });
-                            hue.onEndEdit.NewListener(_val =>
-                            {
-                                if (RTMath.TryParse(_val, firstKF.eventKeyframe.values[7], out float n))
-                                {
-                                    foreach (var keyframe in selected.Select(x => x.eventKeyframe))
-                                        keyframe.values[7] = n;
-
-                                    // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
-                                    if (beatmapObject)
-                                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
-                                }
-                                ColorKeyframeHandler(5, endColorsReference, selected, firstKF, animatable);
-                            });
-
-                            CoreHelper.Destroy(kfdialog.transform.Find("gradient_huesatval").GetComponent<EventTrigger>());
-
-                            TriggerHelper.AddEventTriggers(hue.gameObject, TriggerHelper.ScrollDelta(hue));
-                            TriggerHelper.IncreaseDecreaseButtons(hue);
-
-                            var sat = kfdialog.Find("gradient_huesatval/y").GetComponent<InputField>();
-
-                            sat.SetTextWithoutNotify(firstKF.eventKeyframe.values[8].ToString());
-                            sat.onValueChanged.NewListener(_val =>
-                            {
-                                if (float.TryParse(_val, out float n))
-                                {
-                                    foreach (var keyframe in selected.Select(x => x.eventKeyframe))
-                                        keyframe.values[8] = n;
-
-                                    // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
-                                    if (beatmapObject)
-                                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
-                                }
-                                ColorKeyframeHandler(5, endColorsReference, selected, firstKF, animatable);
-                            });
-                            sat.onEndEdit.NewListener(_val =>
-                            {
-                                if (RTMath.TryParse(_val, firstKF.eventKeyframe.values[8], out float n))
-                                {
-                                    foreach (var keyframe in selected.Select(x => x.eventKeyframe))
-                                        keyframe.values[8] = n;
-
-                                    // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
-                                    if (beatmapObject)
-                                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
-                                }
-                                ColorKeyframeHandler(5, endColorsReference, selected, firstKF, animatable);
-                            });
-
-                            TriggerHelper.AddEventTriggers(sat.gameObject, TriggerHelper.ScrollDelta(sat));
-                            TriggerHelper.IncreaseDecreaseButtons(sat);
-
-                            var val = kfdialog.Find("gradient_huesatval/z").GetComponent<InputField>();
-
-                            val.SetTextWithoutNotify(firstKF.eventKeyframe.values[9].ToString());
-                            val.onValueChanged.NewListener(_val =>
-                            {
-                                if (float.TryParse(_val, out float n))
-                                {
-                                    foreach (var keyframe in selected.Select(x => x.eventKeyframe))
-                                        keyframe.values[9] = n;
-
-                                    // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
-                                    if (beatmapObject)
-                                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
-                                }
-                                ColorKeyframeHandler(5, endColorsReference, selected, firstKF, animatable);
-                            });
-                            val.onEndEdit.NewListener(_val =>
-                            {
-                                if (RTMath.TryParse(_val, firstKF.eventKeyframe.values[9], out float n))
-                                {
-                                    foreach (var keyframe in selected.Select(x => x.eventKeyframe))
-                                        keyframe.values[9] = n;
-
-                                    // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
-                                    if (beatmapObject)
-                                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
-                                }
-                                ColorKeyframeHandler(5, endColorsReference, selected, firstKF, animatable);
-                            });
-
-                            TriggerHelper.AddEventTriggers(val.gameObject, TriggerHelper.ScrollDelta(val));
-                            TriggerHelper.IncreaseDecreaseButtons(val);
-                        }
-
+                        FullColorKeyframeHandler(selected, firstKF, animatable, beatmapObject, kfdialog);
                         break;
                     }
             }
