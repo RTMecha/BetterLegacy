@@ -5,6 +5,8 @@ using UnityEngine.UI;
 
 using HarmonyLib;
 
+using DG.Tweening;
+
 using BetterLegacy.Arcade.Managers;
 using BetterLegacy.Companion.Entity;
 using BetterLegacy.Core;
@@ -13,7 +15,6 @@ using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
-using BetterLegacy.Menus.UI.Interfaces;
 
 namespace BetterLegacy.Patchers
 {
@@ -87,78 +88,10 @@ namespace BetterLegacy.Patchers
 
         [HarmonyPatch(nameof(GameManager.Update))]
         [HarmonyPrefix]
-        static bool UpdatePrefix(GameManager __instance)
+        static bool UpdatePrefix()
         {
-            if (!LevelManager.LevelEnded)
-                RTBeatmap.Current.levelTimer.Update();
-
-            if (CoreHelper.Paused)
-                RTBeatmap.Current.pausedTimer.Update();
-
-            if (!CoreHelper.IsUsingInputField && InputDataManager.inst.menuActions.Cancel.WasPressed && CoreHelper.Paused && !LevelManager.LevelEnded && PauseMenu.Current && !PauseMenu.Current.generating)
-                PauseMenu.UnPause();
-
-            if (CoreHelper.Playing)
-            {
-                if (!CoreHelper.IsUsingInputField && !CoreHelper.InEditor)
-                {
-                    bool shouldPause = false;
-                    foreach (var player in PlayerManager.Players)
-                        if (player.RuntimePlayer && player.RuntimePlayer.Actions.Pause.WasPressed)
-                            shouldPause = true;
-
-                    if (shouldPause)
-                        PauseMenu.Pause();
-                }
-
-                RTBeatmap.Current.UpdateCheckpoints();
-            }
-
-            switch (__instance.gameState)
-            {
-                case GameManager.State.Reversing: {
-                        if (!__instance.isReversing)
-                            RTBeatmap.Current.ReverseToCheckpoint();
-                        break;
-                    }
-                case GameManager.State.Playing: {
-                        CheckLevelEnd();
-                        break;
-                    }
-                case GameManager.State.Finish: {
-                        CheckReplay();
-                        break;
-                    }
-            }
-
-            if (CoreHelper.Playing || CoreHelper.Reversing)
-                __instance.UpdateEventSequenceTime();
-
-            __instance.prevAudioTime = AudioManager.inst.CurrentAudioSource.time;
-
+            RTBeatmap.Current?.Tick();
             return false;
-        }
-
-        static void CheckLevelEnd()
-        {
-            if (AudioManager.inst.CurrentAudioSource.clip && !CoreHelper.InEditor && ArcadeHelper.SongEnded && !LevelManager.LevelEnded)
-            {
-                CoreHelper.Log($"Level has ended!\n" +
-                    $"Game State: {Instance.gameState}\n" +
-                    $"Song Ended: {ArcadeHelper.SongEnded}\n" +
-                    $"Song Pitch: {AudioManager.inst.CurrentAudioSource.pitch}\n" +
-                    $"Song Time: {AudioManager.inst.CurrentAudioSource.time}\n" +
-                    $"Song Length: {GameManager.inst.songLength}\n" +
-                    $"End Offset: {GameData.Current?.data?.level?.LevelEndOffset ?? 0.1f}\n" +
-                    $"End Point: {GameManager.inst.songLength - GameData.Current?.data?.level?.LevelEndOffset ?? 0.1f}");
-                LevelManager.EndLevel();
-            }
-        }
-
-        static void CheckReplay()
-        {
-            if (AudioManager.inst.CurrentAudioSource.clip && !CoreHelper.InEditor && ArcadeHelper.SongEnded && ArcadeHelper.ReplayLevel && LevelManager.LevelEnded)
-                AudioManager.inst.SetMusicTime(GameData.Current.data.level.LevelStartOffset);
         }
 
         [HarmonyPatch(nameof(GameManager.FixedUpdate))]
@@ -198,8 +131,13 @@ namespace BetterLegacy.Patchers
 
         [HarmonyPatch(nameof(GameManager.UpdateTheme))]
         [HarmonyPrefix]
-        static bool UpdateThemePrefix()
+        static bool UpdateThemePrefix() => false;
+
+        [HarmonyPatch(nameof(GameManager.UpdateEventSequenceTime))]
+        [HarmonyPrefix]
+        static bool UpdateEventSequenceTimePrefix()
         {
+            EventManager.inst.shakeSequence.Goto(AudioManager.inst.CurrentAudioSource.time, false);
             return false;
         }
 

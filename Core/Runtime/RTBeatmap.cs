@@ -42,6 +42,74 @@ namespace BetterLegacy.Core.Runtime
         public GameSpeed gameSpeed = GameSpeed.X1_0;
 
         /// <summary>
+        /// Ticks the runtime beatmap.
+        /// </summary>
+        public void Tick()
+        {
+            if (!GameManager.inst)
+                return;
+
+            if (!LevelManager.LevelEnded)
+                levelTimer.Update();
+
+            if (CoreHelper.Paused)
+                pausedTimer.Update();
+
+            if (!CoreHelper.IsUsingInputField && InputDataManager.inst.menuActions.Cancel.WasPressed && CoreHelper.Paused && !LevelManager.LevelEnded && PauseMenu.Current && !PauseMenu.Current.generating)
+                PauseMenu.UnPause();
+
+            if (CoreHelper.Playing)
+            {
+                if (!CoreHelper.IsUsingInputField && !CoreHelper.InEditor)
+                {
+                    bool shouldPause = false;
+                    foreach (var player in PlayerManager.Players)
+                        if (player.RuntimePlayer && player.RuntimePlayer.Actions.Pause.WasPressed)
+                            shouldPause = true;
+
+                    if (shouldPause)
+                        PauseMenu.Pause();
+                }
+
+                UpdateCheckpoints();
+            }
+
+            switch (GameManager.inst.gameState)
+            {
+                case GameManager.State.Reversing: {
+                        if (!GameManager.inst.isReversing)
+                            ReverseToCheckpoint();
+                        break;
+                    }
+                case GameManager.State.Playing: {
+                        if (AudioManager.inst.CurrentAudioSource.clip && !CoreHelper.InEditor && ArcadeHelper.SongEnded && !LevelManager.LevelEnded)
+                        {
+                            CoreHelper.Log($"Level has ended!\n" +
+                                $"Game State: {GameManager.inst.gameState}\n" +
+                                $"Song Ended: {ArcadeHelper.SongEnded}\n" +
+                                $"Song Pitch: {AudioManager.inst.CurrentAudioSource.pitch}\n" +
+                                $"Song Time: {AudioManager.inst.CurrentAudioSource.time}\n" +
+                                $"Song Length: {GameManager.inst.songLength}\n" +
+                                $"End Offset: {GameData.Current?.data?.level?.LevelEndOffset ?? 0.1f}\n" +
+                                $"End Point: {GameManager.inst.songLength - GameData.Current?.data?.level?.LevelEndOffset ?? 0.1f}");
+                            LevelManager.EndLevel();
+                        }
+                        break;
+                    }
+                case GameManager.State.Finish: {
+                        if (AudioManager.inst.CurrentAudioSource.clip && !CoreHelper.InEditor && ArcadeHelper.SongEnded && ArcadeHelper.ReplayLevel && LevelManager.LevelEnded)
+                            AudioManager.inst.SetMusicTime(GameData.Current.data.level.LevelStartOffset);
+                        break;
+                    }
+            }
+
+            if (CoreHelper.Playing || CoreHelper.Reversing)
+                GameManager.inst.UpdateEventSequenceTime();
+
+            GameManager.inst.prevAudioTime = AudioManager.inst.CurrentAudioSource.time;
+        }
+
+        /// <summary>
         /// Resets the current beatmap cache.
         /// </summary>
         public void Reset(bool apply = true)
