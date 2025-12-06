@@ -33,6 +33,7 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public const float DEFAULT_CONTEXT_MENU_WIDTH = 300f;
 
+        Transform parent;
         GameObject contextMenu;
         RectTransform contextMenuLayout;
 
@@ -44,7 +45,7 @@ namespace BetterLegacy.Editor.Managers
         {
             try
             {
-                var parent = EditorManager.inst.dialogs.parent;
+                parent = EditorManager.inst.dialogs.parent;
 
                 contextMenu = Creator.NewUIObject("Context Menu", parent, parent.childCount - 2);
                 RectValues.Default.AnchorMax(0f, 0f).AnchorMin(0f, 0f).Pivot(0f, 1f).SizeDelta(126f, 300f).AssignToRectTransform(contextMenu.transform.AsRT());
@@ -118,7 +119,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="gameObject">Unity game object to add a context menu to.</param>
         /// <param name="leftClick">Function to run when the user left clicks.</param>
         /// <param name="buttonFunctions">The context menus' functions.</param>
-        public void AddContextMenu(GameObject gameObject, Action leftClick, List<ButtonFunction> buttonFunctions)
+        public static void AddContextMenu(GameObject gameObject, Action leftClick, List<ButtonFunction> buttonFunctions)
         {
             if (!gameObject)
                 return;
@@ -132,7 +133,7 @@ namespace BetterLegacy.Editor.Managers
                             break;
                         }
                     case PointerEventData.InputButton.Right: {
-                            ShowContextMenu(buttonFunctions);
+                            inst?.ShowContextMenu(buttonFunctions);
                             break;
                         }
                 }
@@ -166,6 +167,7 @@ namespace BetterLegacy.Editor.Managers
         public void ShowContextMenu(float width, params ButtonFunction[] buttonFunctions)
         {
             float height = 0f;
+            contextMenu.transform.SetParent(ProjectPlanner.inst && ProjectPlanner.inst.PlannerActive ? ProjectPlanner.inst.contextMenuParent : parent);
             contextMenu.SetActive(true);
             LSHelpers.DeleteChildren(contextMenuLayout);
             for (int i = 0; i < buttonFunctions.Length; i++)
@@ -246,6 +248,82 @@ namespace BetterLegacy.Editor.Managers
             }),
             new ButtonFunction("Move to End", () =>
             {
+                if (index == list.Count - 1)
+                {
+                    EditorManager.inst.DisplayNotification("Could not move item to the end since it's already at the end.", 3f, EditorManager.NotificationType.Error);
+                    return;
+                }
+
+                list.Move(index, list.Count - 1);
+                onMove?.Invoke();
+            }),
+        };
+        
+        public static List<ButtonFunction> GetMoveIndexFunctions<T>(List<T> list, Func<int> getIndex, Action onMove = null) => new List<ButtonFunction>
+        {
+            new ButtonFunction("Move Up", () =>
+            {
+                var index = getIndex();
+                if (index == -1)
+                {
+                    EditorManager.inst.DisplayNotification("Item does not exist in the list.", 3f, EditorManager.NotificationType.Error);
+                    return;
+                }
+
+                if (index <= 0)
+                {
+                    EditorManager.inst.DisplayNotification("Could not move item up since it's already at the start.", 3f, EditorManager.NotificationType.Error);
+                    return;
+                }
+
+                list.Move(index, index - 1);
+                onMove?.Invoke();
+            }),
+            new ButtonFunction("Move Down", () =>
+            {
+                var index = getIndex();
+                if (index == -1)
+                {
+                    EditorManager.inst.DisplayNotification("Item does not exist in the list.", 3f, EditorManager.NotificationType.Error);
+                    return;
+                }
+
+                if (index >= list.Count - 1)
+                {
+                    EditorManager.inst.DisplayNotification("Could not move item down since it's already at the end.", 3f, EditorManager.NotificationType.Error);
+                    return;
+                }
+
+                list.Move(index, index + 1);
+                onMove?.Invoke();
+            }),
+            new ButtonFunction("Move to Start", () =>
+            {
+                var index = getIndex();
+                if (index == -1)
+                {
+                    EditorManager.inst.DisplayNotification("Item does not exist in the list.", 3f, EditorManager.NotificationType.Error);
+                    return;
+                }
+
+                if (index == 0)
+                {
+                    EditorManager.inst.DisplayNotification("Could not move item to the start since it's already at the start.", 3f, EditorManager.NotificationType.Error);
+                    return;
+                }
+
+                list.Move(index, 0);
+                onMove?.Invoke();
+            }),
+            new ButtonFunction("Move to End", () =>
+            {
+                var index = getIndex();
+                if (index == -1)
+                {
+                    EditorManager.inst.DisplayNotification("Item does not exist in the list.", 3f, EditorManager.NotificationType.Error);
+                    return;
+                }
+
                 if (index == list.Count - 1)
                 {
                     EditorManager.inst.DisplayNotification("Could not move item to the end since it's already at the end.", 3f, EditorManager.NotificationType.Error);

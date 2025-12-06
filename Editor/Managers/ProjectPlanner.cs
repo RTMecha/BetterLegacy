@@ -180,14 +180,14 @@ namespace BetterLegacy.Editor.Managers
                                         {
                                             Name = "Beginning",
                                             Description = $"Introduces players / viewers to Hal.)",
-                                            ElementType = TimelinePlanner.Event.Type.Cutscene,
+                                            EventType = TimelinePlanner.Event.Type.Cutscene,
                                             Path = string.Empty
                                         },
                                         new TimelinePlanner.Event
                                         {
                                             Name = "Tokyo Skies",
                                             Description = $"Players learn very basic stuff about Classic Arrhythmia / Project Arrhythmia mechanics.{Environment.NewLine}{Environment.NewLine}(Click on this button to open the level.)",
-                                            ElementType = TimelinePlanner.Event.Type.Level,
+                                            EventType = TimelinePlanner.Event.Type.Level,
                                             Path = string.Empty
                                         },
                                     });
@@ -1721,6 +1721,12 @@ namespace BetterLegacy.Editor.Managers
             CoreHelper.Delete(notificationsParent.TryGetChild(0));
             RectValues.BottomLeftAnchored.AnchoredPosition(8f, 8f).SizeDelta(221f, 632f).AssignToRectTransform(notificationsParent.AsRT());
 
+            contextMenuParent = Creator.NewUIObject("Context Menu Parent", plannerBase).transform;
+            RectValues.FullAnchored.AssignToRectTransform(contextMenuParent.AsRT());
+
+            popupsParent = Creator.NewUIObject("Popups", plannerBase).transform;
+            RectValues.Default.AnchoredPosition(-382.5f, 184.05f).SizeDelta(1155f, 648.1f).AssignToRectTransform(popupsParent.AsRT());
+
             RenderTabs();
             Load();
         }
@@ -1836,6 +1842,9 @@ namespace BetterLegacy.Editor.Managers
 
         public RectTransform notificationsParent;
 
+        public Transform contextMenuParent;
+        public Transform popupsParent;
+
         public Transform assetsParent;
 
         public GameObject documentFullView;
@@ -1907,6 +1916,8 @@ namespace BetterLegacy.Editor.Managers
         public List<SchedulePlanner> schedules = new List<SchedulePlanner>();
         public List<NotePlanner> notes = new List<NotePlanner>();
         public List<OSTPlanner> osts = new List<OSTPlanner>();
+
+        public List<PlannerBase> copiedPlanners = new List<PlannerBase>();
 
         public GameObject timelineButtonPrefab;
 
@@ -2064,7 +2075,7 @@ namespace BetterLegacy.Editor.Managers
         {
             var timeline = new TimelinePlanner();
             timeline.Name = name;
-            timeline.Levels = events;
+            timeline.Events = events;
 
             AddPlanner(timeline);
             if (save)
@@ -2315,13 +2326,13 @@ namespace BetterLegacy.Editor.Managers
                 var timeline = list[i];
                 jn["timelines"][i]["name"] = timeline.Name;
 
-                for (int j = 0; j < timeline.Levels.Count; j++)
+                for (int j = 0; j < timeline.Events.Count; j++)
                 {
-                    var level = timeline.Levels[j];
+                    var level = timeline.Events[j];
                     var jnLevel = Parser.NewJSONObject();
                     jnLevel["n"] = level.Name;
                     jnLevel["p"] = level.Path;
-                    jnLevel["t"] = ((int)level.ElementType).ToString();
+                    jnLevel["t"] = ((int)level.EventType).ToString();
                     jnLevel["d"] = level.Description;
                     jn["timelines"][i]["levels"][j] = jnLevel;
                 }
@@ -2349,11 +2360,11 @@ namespace BetterLegacy.Editor.Managers
                 for (int j = 0; j < jnTimeline["levels"].Count; j++)
                 {
                     var jnLevel = jnTimeline["levels"][j];
-                    timeline.Levels.Add(new TimelinePlanner.Event
+                    timeline.Events.Add(new TimelinePlanner.Event
                     {
                         Name = jnLevel["n"],
                         Path = jnLevel["p"],
-                        ElementType = (TimelinePlanner.Event.Type)jnLevel["t"].AsInt,
+                        EventType = (TimelinePlanner.Event.Type)jnLevel["t"].AsInt,
                         Description = jnLevel["d"],
                     });
                 }
@@ -2610,7 +2621,7 @@ namespace BetterLegacy.Editor.Managers
                                 continue;
                             activeTabPlannerItems.Add(planner);
                             if (planner.GameObject)
-                                planner.GameObject.SetActive(planner.PlannerType == CurrentTab && planner.Levels.Has(x => RTString.SearchString(SearchTerm, x.Name)));
+                                planner.GameObject.SetActive(planner.PlannerType == CurrentTab && planner.Events.Has(x => RTString.SearchString(SearchTerm, x.Name)));
                         }
                         break;
                     }
@@ -3000,7 +3011,7 @@ namespace BetterLegacy.Editor.Managers
             eventEditorName.onValueChanged.NewListener(_val =>
             {
                 level.Name = _val;
-                level.NameUI.text = $"{level.ElementType}: {level.Name}";
+                level.NameUI.text = $"{level.EventType}: {level.Name}";
             });
             eventEditorName.onEndEdit.NewListener(_val => SaveTimelines());
 
@@ -3017,11 +3028,11 @@ namespace BetterLegacy.Editor.Managers
             eventEditorPath.onValueChanged.NewListener(_val => level.Path = _val);
             eventEditorPath.onEndEdit.NewListener(_val => SaveTimelines());
 
-            eventEditorType.SetValueWithoutNotify((int)level.ElementType);
+            eventEditorType.SetValueWithoutNotify((int)level.EventType);
             eventEditorType.onValueChanged.NewListener(_val =>
             {
-                level.ElementType = (TimelinePlanner.Event.Type)_val;
-                level.NameUI.text = $"{level.ElementType}: {level.Name}";
+                level.EventType = (TimelinePlanner.Event.Type)_val;
+                level.NameUI.text = $"{level.EventType}: {level.Name}";
                 SaveTimelines();
             });
         }
@@ -3862,6 +3873,105 @@ namespace BetterLegacy.Editor.Managers
             setText?.Invoke(input);
         }
         
+        /// <summary>
+        /// Pastes the planners copied from <see cref="copiedPlanners"/>.
+        /// </summary>
+        public void PastePlanners()
+        {
+            for (int i = 0; i < copiedPlanners.Count; i++)
+            {
+                var plannerItem = copiedPlanners[i];
+                if (HasPlanner(plannerItem))
+                    continue;
+
+                switch (plannerItem.PlannerType)
+                {
+                    case PlannerBase.Type.Document: {
+                            if (plannerItem is not DocumentPlanner document)
+                                break;
+
+                            var copy = document.CreateCopy();
+                            documents.Add(copy);
+                            copy.Init();
+                            break;
+                        }
+                    case PlannerBase.Type.TODO: {
+                            if (plannerItem is not TODOPlanner todo)
+                                break;
+
+                            var copy = todo.CreateCopy();
+                            todos.Add(copy);
+                            copy.Init();
+                            break;
+                        }
+                    case PlannerBase.Type.Character: {
+                            if (plannerItem is not CharacterPlanner character)
+                                break;
+
+                            var copy = character.CreateCopy();
+                            characters.Add(copy);
+                            copy.Init();
+                            break;
+                        }
+                    case PlannerBase.Type.Timeline: {
+                            if (plannerItem is not TimelinePlanner timeline)
+                                break;
+
+                            var copy = timeline.CreateCopy();
+                            timelines.Add(copy);
+                            copy.Init();
+                            break;
+                        }
+                    case PlannerBase.Type.Schedule: {
+                            if (plannerItem is not SchedulePlanner schedule)
+                                break;
+
+                            var copy = schedule.CreateCopy();
+                            schedules.Add(copy);
+                            copy.Init();
+                            break;
+                        }
+                    case PlannerBase.Type.Note: {
+                            if (plannerItem is not NotePlanner note)
+                                break;
+
+                            var copy = note.CreateCopy();
+                            notes.Add(copy);
+                            copy.Init();
+                            break;
+                        }
+                    case PlannerBase.Type.OST: {
+                            if (plannerItem is not OSTPlanner ost)
+                                break;
+
+                            var copy = ost.CreateCopy();
+                            osts.Add(copy);
+                            copy.Init();
+                            break;
+                        }
+                }
+            }
+            Save();
+            RefreshList();
+        }
+
+        /// <summary>
+        /// Checks if a planner already exists.
+        /// </summary>
+        /// <param name="planner">Planner to check.</param>
+        /// <returns>Returns true if the planner already exists in the planner lists, otherwise returns false.</returns>
+        public bool HasPlanner(PlannerBase planner) => planner.PlannerType switch
+        {
+            PlannerBase.Type.Document => documents.Has(x => x.SamePlanner(planner)),
+            PlannerBase.Type.TODO => todos.Has(x => x.SamePlanner(planner)),
+            PlannerBase.Type.Character => characters.Has(x => x.SamePlanner(planner)),
+            PlannerBase.Type.Timeline => timelines.Has(x => x.SamePlanner(planner)),
+            PlannerBase.Type.Schedule => schedules.Has(x => x.SamePlanner(planner)),
+            PlannerBase.Type.Note => notes.Has(x => x.SamePlanner(planner)),
+            PlannerBase.Type.OST => osts.Has(x => x.SamePlanner(planner)),
+            _ => false,
+        };
+
         /// <summary>
         /// Starts the OST from the beginning.
         /// </summary>

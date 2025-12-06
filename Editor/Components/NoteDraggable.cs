@@ -1,8 +1,11 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+
+using UnityEngine;
 using UnityEngine.EventSystems;
 
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Planners;
 using BetterLegacy.Editor.Managers;
 
@@ -88,7 +91,41 @@ namespace BetterLegacy.Editor.Components
             }
 
             if (!Free && part == DragPart.Base)
+            {
+                if (eventData.button == PointerEventData.InputButton.Right)
+                {
+                    var buttonFunctions = new List<ButtonFunction>
+                    {
+                        new ButtonFunction("Edit", () => ProjectPlanner.inst.OpenNoteEditor(note)),
+                        new ButtonFunction("Delete", () =>
+                        {
+                            ProjectPlanner.inst.notes.RemoveAll(x => x is NotePlanner && x.ID == note.ID);
+                            ProjectPlanner.inst.SaveNotes();
+                            CoreHelper.Destroy(note.GameObject);
+                        }),
+                        new ButtonFunction(true),
+                        new ButtonFunction("Copy", () =>
+                        {
+                            ProjectPlanner.inst.copiedPlanners.Clear();
+                            ProjectPlanner.inst.copiedPlanners.Add(note);
+                            EditorManager.inst.DisplayNotification("Copied note!", 2f, EditorManager.NotificationType.Success);
+                        }),
+                        new ButtonFunction("Paste", ProjectPlanner.inst.PastePlanners),
+                        new ButtonFunction(true),
+                    };
+
+                    buttonFunctions.AddRange(EditorContextMenu.GetMoveIndexFunctions(ProjectPlanner.inst.notes, () => ProjectPlanner.inst.notes.IndexOf(note), () =>
+                    {
+                        for (int i = 0; i < ProjectPlanner.inst.notes.Count; i++)
+                            ProjectPlanner.inst.notes[i].Init();
+                    }));
+
+                    EditorContextMenu.inst.ShowContextMenu(buttonFunctions);
+                    return;
+                }
+
                 ProjectPlanner.inst?.OpenNoteEditor(note);
+            }
         }
 
         void Update()

@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+
+using UnityEngine;
 using UnityEngine.UI;
 
 using TMPro;
@@ -30,9 +32,37 @@ namespace BetterLegacy.Editor.Data.Planners
             GameObject = gameObject;
 
             var button = gameObject.GetComponent<Button>();
-            button.onClick.NewListener(() => ProjectPlanner.inst.OpenDocumentEditor(this));
+            button.onClick.ClearAll();
 
             EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
+
+            var buttonFunctions = new List<ButtonFunction>
+            {
+                new ButtonFunction("Edit", () => ProjectPlanner.inst.OpenDocumentEditor(this)),
+                new ButtonFunction("Delete", () =>
+                {
+                    ProjectPlanner.inst.documents.RemoveAll(x => x is DocumentPlanner && x.ID == ID);
+                    ProjectPlanner.inst.SaveDocuments();
+                    CoreHelper.Destroy(gameObject);
+                }),
+                new ButtonFunction(true),
+                new ButtonFunction("Copy", () =>
+                {
+                    ProjectPlanner.inst.copiedPlanners.Clear();
+                    ProjectPlanner.inst.copiedPlanners.Add(this);
+                    EditorManager.inst.DisplayNotification("Copied document!", 2f, EditorManager.NotificationType.Success);
+                }),
+                new ButtonFunction("Paste", ProjectPlanner.inst.PastePlanners),
+                new ButtonFunction(true),
+            };
+
+            buttonFunctions.AddRange(EditorContextMenu.GetMoveIndexFunctions(ProjectPlanner.inst.documents, () => ProjectPlanner.inst.documents.IndexOf(this), () =>
+            {
+                for (int i = 0; i < ProjectPlanner.inst.documents.Count; i++)
+                    ProjectPlanner.inst.documents[i].Init();
+            }));
+
+            EditorContextMenu.AddContextMenu(gameObject, leftClick: () => ProjectPlanner.inst.OpenDocumentEditor(this), buttonFunctions);
 
             NameUI = gameObject.transform.Find("name").GetComponent<TextMeshProUGUI>();
             NameUI.text = Name;
@@ -43,12 +73,13 @@ namespace BetterLegacy.Editor.Data.Planners
             EditorThemeManager.ApplyLightText(TextUI);
 
             var delete = gameObject.transform.Find("delete").GetComponent<DeleteButtonStorage>();
-            delete.OnClick.NewListener(() =>
+            delete.OnClick.NewListener(() => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this document?", () =>
             {
                 ProjectPlanner.inst.documents.RemoveAll(x => x is DocumentPlanner && x.ID == ID);
                 ProjectPlanner.inst.SaveDocuments();
                 CoreHelper.Destroy(gameObject);
-            });
+                RTEditor.inst.HideWarningPopup();
+            }, RTEditor.inst.HideWarningPopup));
 
             EditorThemeManager.ApplyDeleteButton(delete);
             EditorThemeManager.ApplyGraphic(gameObject.transform.Find("gradient").GetComponent<Image>(), ThemeGroup.Background_1);
@@ -57,5 +88,13 @@ namespace BetterLegacy.Editor.Data.Planners
 
             gameObject.SetActive(false);
         }
+
+        public DocumentPlanner CreateCopy() => new DocumentPlanner
+        {
+            Name = Name,
+            Text = Text,
+        };
+
+        public override bool SamePlanner(PlannerBase other) => other is DocumentPlanner document && document.Name == Name;
     }
 }

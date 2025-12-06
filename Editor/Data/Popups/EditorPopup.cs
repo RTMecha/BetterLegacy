@@ -146,15 +146,38 @@ namespace BetterLegacy.Editor.Data.Popups
         /// </summary>
         public Action onRender;
 
+        Transform cachedParent;
+        bool inPlanner;
+
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Updates the parent depending on the current state of the editor.
+        /// </summary>
+        public virtual void UpdateParent()
+        {
+            if (!GameObject)
+                return;
+
+            if (!cachedParent)
+                cachedParent = GameObject.transform.parent;
+
+            var a = ProjectPlanner.inst && ProjectPlanner.inst.PlannerActive;
+            if (a != inPlanner)
+            {
+                inPlanner = a;
+                GameObject.transform.SetParent(a ? ProjectPlanner.inst.popupsParent : cachedParent);
+            }
+        }
 
         /// <summary>
         /// Opens the editor popup.
         /// </summary>
         public virtual void Open()
         {
+            UpdateParent();
             // display the popup in front of others
             if (GameObject)
                 GameObject.transform.SetAsLastSibling();

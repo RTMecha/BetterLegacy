@@ -180,9 +180,37 @@ namespace BetterLegacy.Editor.Data.Planners
             GameObject = gameObject;
 
             var button = gameObject.GetComponent<Button>();
-            button.onClick.NewListener(() => ProjectPlanner.inst.OpenCharacterEditor(this));
+            button.onClick.ClearAll();
 
             EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
+
+            var buttonFunctions = new List<ButtonFunction>
+            {
+                new ButtonFunction("Edit", () => ProjectPlanner.inst.OpenCharacterEditor(this)),
+                new ButtonFunction("Delete", () =>
+                {
+                    ProjectPlanner.inst.characters.RemoveAll(x => x is CharacterPlanner && x.ID == ID);
+                    RTFile.DeleteDirectory(FullPath);
+                    CoreHelper.Destroy(gameObject);
+                }),
+                new ButtonFunction(true),
+                new ButtonFunction("Copy", () =>
+                {
+                    ProjectPlanner.inst.copiedPlanners.Clear();
+                    ProjectPlanner.inst.copiedPlanners.Add(this);
+                    EditorManager.inst.DisplayNotification("Copied character!", 2f, EditorManager.NotificationType.Success);
+                }),
+                new ButtonFunction("Paste", ProjectPlanner.inst.PastePlanners),
+                new ButtonFunction(true),
+            };
+
+            buttonFunctions.AddRange(EditorContextMenu.GetMoveIndexFunctions(ProjectPlanner.inst.characters, () => ProjectPlanner.inst.characters.IndexOf(this), () =>
+            {
+                for (int i = 0; i < ProjectPlanner.inst.characters.Count; i++)
+                    ProjectPlanner.inst.characters[i].Init();
+            }));
+
+            EditorContextMenu.AddContextMenu(gameObject, leftClick: () => ProjectPlanner.inst.OpenCharacterEditor(this), buttonFunctions);
 
             ProfileUI = gameObject.transform.Find("profile").GetComponent<Image>();
 
@@ -198,18 +226,30 @@ namespace BetterLegacy.Editor.Data.Planners
             DescriptionUI.text = Description;
 
             var delete = gameObject.transform.Find("delete").GetComponent<DeleteButtonStorage>();
-            delete.OnClick.NewListener(() =>
+            delete.OnClick.NewListener(() => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this character?", () =>
             {
                 ProjectPlanner.inst.characters.RemoveAll(x => x is CharacterPlanner && x.ID == ID);
-
                 RTFile.DeleteDirectory(FullPath);
-
                 CoreHelper.Destroy(gameObject);
-            });
+                RTEditor.inst.HideWarningPopup();
+            }, RTEditor.inst.HideWarningPopup));
 
             EditorThemeManager.ApplyDeleteButton(delete);
 
             gameObject.SetActive(false);
         }
+
+        public CharacterPlanner CreateCopy() => new CharacterPlanner
+        {
+            Name = Name,
+            Gender = Gender,
+            CharacterTraits = new List<string>(CharacterTraits),
+            CharacterLore = new List<string>(CharacterLore),
+            CharacterAbilities = new List<string>(CharacterAbilities),
+            Description = Description,
+            CharacterSprite = CharacterSprite,
+        };
+
+        public override bool SamePlanner(PlannerBase other) => other is CharacterPlanner character && character.Name == Name;
     }
 }

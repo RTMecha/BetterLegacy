@@ -133,12 +133,13 @@ namespace BetterLegacy.Editor.Data.Planners
             EditorThemeManager.ApplyToggle(ActiveUI);
 
             var delete = gameObject.transform.Find("panel/delete").GetComponent<DeleteButtonStorage>();
-            delete.OnClick.NewListener(() =>
+            delete.OnClick.NewListener(() => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this note?", () =>
             {
                 ProjectPlanner.inst.notes.RemoveAll(x => x is NotePlanner && x.ID == ID);
                 ProjectPlanner.inst.SaveNotes();
                 CoreHelper.Destroy(gameObject);
-            });
+                RTEditor.inst.HideWarningPopup();
+            }, RTEditor.inst.HideWarningPopup));
 
             EditorThemeManager.ApplyDeleteButton(delete);
 
@@ -154,5 +155,18 @@ namespace BetterLegacy.Editor.Data.Planners
 
             gameObject.SetActive(false);
         }
+
+        public NotePlanner CreateCopy() => new NotePlanner
+        {
+            Active = Active,
+            Name = Name,
+            Position = Position,
+            Scale = Scale,
+            Size = Size,
+            Color = Color,
+            Text = Text,
+        };
+
+        public override bool SamePlanner(PlannerBase other) => other is NotePlanner note && note.Name == Name;
     }
 }

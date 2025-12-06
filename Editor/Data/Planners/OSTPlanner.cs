@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+
+using UnityEngine;
 using UnityEngine.UI;
 
 using LSFunctions;
@@ -105,12 +107,50 @@ namespace BetterLegacy.Editor.Data.Planners
             Hyperlinks.Text = TextUI;
             Hyperlinks.onClick = eventData =>
             {
-                if (!Hyperlinks.IsLinkHighlighted)
-                    ProjectPlanner.inst.OpenOSTEditor(this);
+                if (Hyperlinks.IsLinkHighlighted)
+                    return;
+
+                if (eventData.button == UnityEngine.EventSystems.PointerEventData.InputButton.Right)
+                {
+                    var buttonFunctions = new List<ButtonFunction>
+                    {
+                        new ButtonFunction("Edit", () => ProjectPlanner.inst.OpenOSTEditor(this)),
+                        new ButtonFunction("Delete", () =>
+                        {
+                            ProjectPlanner.inst.osts.RemoveAll(x => x is OSTPlanner && x.ID == ID);
+                            ProjectPlanner.inst.SaveOST();
+
+                            if (ProjectPlanner.inst.currentOSTID == ID)
+                                ProjectPlanner.inst.StopOST();
+
+                            CoreHelper.Destroy(gameObject);
+                        }),
+                        new ButtonFunction(true),
+                        new ButtonFunction("Copy", () =>
+                        {
+                            ProjectPlanner.inst.copiedPlanners.Clear();
+                            ProjectPlanner.inst.copiedPlanners.Add(this);
+                            EditorManager.inst.DisplayNotification("Copied OST!", 2f, EditorManager.NotificationType.Success);
+                        }),
+                        new ButtonFunction("Paste", ProjectPlanner.inst.PastePlanners),
+                        new ButtonFunction(true),
+                    };
+
+                    buttonFunctions.AddRange(EditorContextMenu.GetMoveIndexFunctions(ProjectPlanner.inst.osts, () => ProjectPlanner.inst.osts.IndexOf(this), () =>
+                    {
+                        for (int i = 0; i < ProjectPlanner.inst.osts.Count; i++)
+                            ProjectPlanner.inst.osts[i].Init();
+                    }));
+
+                    EditorContextMenu.inst.ShowContextMenu(buttonFunctions);
+                    return;
+                }
+
+                ProjectPlanner.inst.OpenOSTEditor(this);
             };
 
             var delete = gameObject.transform.Find("delete").GetComponent<DeleteButtonStorage>();
-            delete.OnClick.NewListener(() =>
+            delete.OnClick.NewListener(() => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this OST?", () =>
             {
                 ProjectPlanner.inst.osts.RemoveAll(x => x is OSTPlanner && x.ID == ID);
                 ProjectPlanner.inst.SaveOST();
@@ -119,7 +159,8 @@ namespace BetterLegacy.Editor.Data.Planners
                     ProjectPlanner.inst.StopOST();
 
                 CoreHelper.Destroy(gameObject);
-            });
+                RTEditor.inst.HideWarningPopup();
+            }, RTEditor.inst.HideWarningPopup));
 
             EditorThemeManager.ApplyDeleteButton(delete);
 
@@ -127,5 +168,15 @@ namespace BetterLegacy.Editor.Data.Planners
 
             gameObject.SetActive(false);
         }
+
+        public OSTPlanner CreateCopy() => new OSTPlanner
+        {
+            Path = Path,
+            UseGlobal = UseGlobal,
+            Name = Name,
+            Index = Index,
+        };
+
+        public override bool SamePlanner(PlannerBase other) => other is OSTPlanner ost && ost.Name == Name;
     }
 }

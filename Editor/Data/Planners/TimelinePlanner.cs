@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 using UnityEngine;
 using UnityEngine.UI;
@@ -24,7 +25,7 @@ namespace BetterLegacy.Editor.Data.Planners
 
         public TextMeshProUGUI NameUI { get; set; }
 
-        public List<Event> Levels { get; set; } = new List<Event>();
+        public List<Event> Events { get; set; } = new List<Event>();
 
         public Transform Content { get; set; }
 
@@ -36,7 +37,7 @@ namespace BetterLegacy.Editor.Data.Planners
             {
                 LSHelpers.DeleteChildren(Content);
                 int num = 0;
-                foreach (var level in Levels)
+                foreach (var level in Events)
                 {
                     int index = num;
                     level.Init(this, index);
@@ -55,7 +56,7 @@ namespace BetterLegacy.Editor.Data.Planners
                         Path = string.Empty
                     };
 
-                    Levels.Add(level);
+                    Events.Add(level);
                     UpdateTimeline();
                     ProjectPlanner.inst.SaveTimelines();
                 });
@@ -66,7 +67,7 @@ namespace BetterLegacy.Editor.Data.Planners
             else
             {
                 int num = 0;
-                foreach (var level in Levels)
+                foreach (var level in Events)
                 {
                     if (!level.GameObject)
                         level.Init(this, num);
@@ -76,13 +77,16 @@ namespace BetterLegacy.Editor.Data.Planners
                     if (!level.DescriptionUI)
                         level.DescriptionUI = level.GameObject.transform.Find("description").GetComponent<TextMeshProUGUI>();
 
-                    level.NameUI.text = $"{level.ElementType}: {level.Name}";
+                    level.NameUI.text = $"{level.EventType}: {level.Name}";
                     level.DescriptionUI.text = level.Description;
                     num++;
                 }
             }
         }
 
+        /// <summary>
+        /// Represents an event in the timeline. <see cref="EventType"/> indicates what the event is. 
+        /// </summary>
         public class Event
         {
             public GameObject GameObject { get; set; }
@@ -91,15 +95,40 @@ namespace BetterLegacy.Editor.Data.Planners
             public TextMeshProUGUI DescriptionUI { get; set; }
             public OpenHyperlinks Hyperlinks { get; set; }
 
+            /// <summary>
+            /// Name of the event.
+            /// </summary>
             public string Name { get; set; }
+            /// <summary>
+            /// Description of the event.
+            /// </summary>
             public string Description { get; set; }
+            /// <summary>
+            /// Relative path to the level to open when the event is clicked.
+            /// </summary>
             public string Path { get; set; }
-            public Type ElementType { get; set; }
 
+            /// <summary>
+            /// The type of this event.
+            /// </summary>
+            public Type EventType { get; set; }
+
+            /// <summary>
+            /// The type an event represents.
+            /// </summary>
             public enum Type
             {
+                /// <summary>
+                /// Represents a gameplay oriented level.
+                /// </summary>
                 Level,
+                /// <summary>
+                /// Represents an animation oriented level.
+                /// </summary>
                 Cutscene,
+                /// <summary>
+                /// Represents an event with no associated level.
+                /// </summary>
                 Story
             }
 
@@ -119,7 +148,7 @@ namespace BetterLegacy.Editor.Data.Planners
                 EditorThemeManager.ApplySelectable(Button, ThemeGroup.List_Button_1);
 
                 NameUI = gameObject.transform.Find("name").GetComponent<TextMeshProUGUI>();
-                NameUI.text = $"{ElementType}: {Name}";
+                NameUI.text = $"{EventType}: {Name}";
                 EditorThemeManager.ApplyLightText(NameUI);
                 DescriptionUI = gameObject.transform.Find("description").GetComponent<TextMeshProUGUI>();
                 DescriptionUI.text = Description;
@@ -132,18 +161,26 @@ namespace BetterLegacy.Editor.Data.Planners
                     if (Hyperlinks.IsLinkHighlighted)
                         return;
 
-                    string path = $"{RTFile.ApplicationDirectory}beatmaps/{RTFile.ReplaceSlash(Path).Remove("/" + Level.LEVEL_LSB)}";
-                    if (Level.TryVerify(path, true, out Level actualLevel))
+                    if (eventData.button == UnityEngine.EventSystems.PointerEventData.InputButton.Right)
                     {
-                        ProjectPlanner.inst.Close();
-                        EditorLevelManager.inst.LoadLevel(actualLevel);
+                        EditorContextMenu.inst.ShowContextMenu(
+                            new ButtonFunction("Open Level", Open),
+                            new ButtonFunction("Delete", () =>
+                            {
+                                timelinePlanner.Events.RemoveAt(index);
+                                timelinePlanner.UpdateTimeline();
+                                ProjectPlanner.inst.SaveTimelines();
+                            }));
+                        return;
                     }
+
+                    Open();
                 };
 
                 var delete = gameObject.transform.Find("delete").GetComponent<DeleteButtonStorage>();
                 delete.OnClick.NewListener(() =>
                 {
-                    timelinePlanner.Levels.RemoveAt(index);
+                    timelinePlanner.Events.RemoveAt(index);
                     timelinePlanner.UpdateTimeline();
                     ProjectPlanner.inst.SaveTimelines();
                 });
@@ -166,7 +203,7 @@ namespace BetterLegacy.Editor.Data.Planners
                     if (index - 1 < 0)
                         return;
 
-                    timelinePlanner.Levels.Move(index, index - 1);
+                    timelinePlanner.Events.Move(index, index - 1);
                     timelinePlanner.UpdateTimeline();
                     ProjectPlanner.inst.SaveTimelines();
                 });
@@ -176,10 +213,10 @@ namespace BetterLegacy.Editor.Data.Planners
                 var moveForward = gameObject.transform.Find(">").GetComponent<Button>();
                 moveForward.onClick.NewListener(() =>
                 {
-                    if (index + 1 >= timelinePlanner.Levels.Count)
+                    if (index + 1 >= timelinePlanner.Events.Count)
                         return;
 
-                    timelinePlanner.Levels.Move(index, index + 1);
+                    timelinePlanner.Events.Move(index, index + 1);
                     timelinePlanner.UpdateTimeline();
                     ProjectPlanner.inst.SaveTimelines();
                 });
@@ -188,6 +225,27 @@ namespace BetterLegacy.Editor.Data.Planners
 
                 ProjectPlanner.inst.SetupPlannerLinks(Description, DescriptionUI, Hyperlinks);
             }
+
+            /// <summary>
+            /// Opens the associated level.
+            /// </summary>
+            public void Open()
+            {
+                string path = $"{RTFile.ApplicationDirectory}beatmaps/{RTFile.ReplaceSlash(Path).Remove("/" + Level.LEVEL_LSB)}";
+                if (!Level.TryVerify(path, true, out Level actualLevel))
+                    return;
+
+                ProjectPlanner.inst.Close();
+                EditorLevelManager.inst.LoadLevel(actualLevel);
+            }
+
+            public Event CreateCopy() => new Event
+            {
+                Name = Name,
+                Description = Description,
+                Path = Path,
+                EventType = EventType,
+            };
         }
 
         public override void Init()
@@ -218,18 +276,55 @@ namespace BetterLegacy.Editor.Data.Planners
             EditorThemeManager.ApplyGraphic(edit.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Function_2_Text);
 
             var delete = gameObject.transform.Find("delete").GetComponent<DeleteButtonStorage>();
-            delete.OnClick.NewListener(() =>
+            delete.OnClick.NewListener(() => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this timeline?", () =>
             {
                 ProjectPlanner.inst.timelines.RemoveAll(x => x is TimelinePlanner && x.ID == ID);
                 ProjectPlanner.inst.SaveTimelines();
                 CoreHelper.Destroy(gameObject);
-            });
+                RTEditor.inst.HideWarningPopup();
+            }, RTEditor.inst.HideWarningPopup));
 
             EditorThemeManager.ApplyDeleteButton(delete);
+
+            var buttonFunctions = new List<ButtonFunction>
+            {
+                new ButtonFunction("Edit", () => ProjectPlanner.inst.OpenTimelineEditor(this)),
+                new ButtonFunction("Delete", () =>
+                {
+                    ProjectPlanner.inst.timelines.RemoveAll(x => x is TimelinePlanner && x.ID == ID);
+                    ProjectPlanner.inst.SaveTimelines();
+                    CoreHelper.Destroy(gameObject);
+                }),
+                new ButtonFunction(true),
+                new ButtonFunction("Copy", () =>
+                {
+                    ProjectPlanner.inst.copiedPlanners.Clear();
+                    ProjectPlanner.inst.copiedPlanners.Add(this);
+                    EditorManager.inst.DisplayNotification("Copied timeline!", 2f, EditorManager.NotificationType.Success);
+                }),
+                new ButtonFunction("Paste", ProjectPlanner.inst.PastePlanners),
+                new ButtonFunction(true),
+            };
+
+            buttonFunctions.AddRange(EditorContextMenu.GetMoveIndexFunctions(ProjectPlanner.inst.timelines, () => ProjectPlanner.inst.timelines.IndexOf(this), () =>
+            {
+                for (int i = 0; i < ProjectPlanner.inst.timelines.Count; i++)
+                    ProjectPlanner.inst.timelines[i].Init();
+            }));
+
+            EditorContextMenu.AddContextMenu(gameObject, leftClick: () => ProjectPlanner.inst.OpenTimelineEditor(this), buttonFunctions);
 
             UpdateTimeline();
 
             gameObject.SetActive(false);
         }
+
+        public TimelinePlanner CreateCopy() => new TimelinePlanner
+        {
+            Name = Name,
+            Events = new List<Event>(Events.Select(x => x.CreateCopy())),
+        };
+
+        public override bool SamePlanner(PlannerBase other) => other is TimelinePlanner timeline && timeline.Name == Name;
     }
 }

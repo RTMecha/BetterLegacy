@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+
+using UnityEngine;
 using UnityEngine.UI;
 
 using TMPro;
@@ -44,8 +46,42 @@ namespace BetterLegacy.Editor.Data.Planners
             Hyperlinks.Text = TextUI;
             Hyperlinks.onClick = eventData =>
             {
-                if (!Hyperlinks.IsLinkHighlighted)
-                    ProjectPlanner.inst.OpenTODOEditor(this);
+                if (Hyperlinks.IsLinkHighlighted)
+                    return;
+
+                if (eventData.button == UnityEngine.EventSystems.PointerEventData.InputButton.Right)
+                {
+                    var buttonFunctions = new List<ButtonFunction>
+                    {
+                        new ButtonFunction("Edit", () => ProjectPlanner.inst.OpenTODOEditor(this)),
+                        new ButtonFunction("Delete", () =>
+                        {
+                            ProjectPlanner.inst.schedules.RemoveAll(x => x is SchedulePlanner && x.ID == ID);
+                            ProjectPlanner.inst.SaveSchedules();
+                            CoreHelper.Destroy(gameObject);
+                        }),
+                        new ButtonFunction(true),
+                        new ButtonFunction("Copy", () =>
+                        {
+                            ProjectPlanner.inst.copiedPlanners.Clear();
+                            ProjectPlanner.inst.copiedPlanners.Add(this);
+                            EditorManager.inst.DisplayNotification("Copied TODO!", 2f, EditorManager.NotificationType.Success);
+                        }),
+                        new ButtonFunction("Paste", ProjectPlanner.inst.PastePlanners),
+                        new ButtonFunction(true),
+                    };
+
+                    buttonFunctions.AddRange(EditorContextMenu.GetMoveIndexFunctions(ProjectPlanner.inst.todos, () => ProjectPlanner.inst.todos.IndexOf(this), () =>
+                    {
+                        for (int i = 0; i < ProjectPlanner.inst.todos.Count; i++)
+                            ProjectPlanner.inst.todos[i].Init();
+                    }));
+
+                    EditorContextMenu.inst.ShowContextMenu(buttonFunctions);
+                    return;
+                }
+
+                ProjectPlanner.inst.OpenTODOEditor(this);
             };
 
             var toggle = gameObject.transform.Find("checked").GetComponent<Toggle>();
@@ -60,12 +96,13 @@ namespace BetterLegacy.Editor.Data.Planners
             EditorThemeManager.ApplyToggle(toggle);
 
             var delete = gameObject.transform.Find("delete").GetComponent<DeleteButtonStorage>();
-            delete.OnClick.NewListener(() =>
+            delete.OnClick.NewListener(() => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this todo?", () =>
             {
                 ProjectPlanner.inst.todos.RemoveAll(x => x is TODOPlanner && x.ID == ID);
                 ProjectPlanner.inst.SaveTODO();
                 CoreHelper.Destroy(gameObject);
-            });
+                RTEditor.inst.HideWarningPopup();
+            }, RTEditor.inst.HideWarningPopup));
 
             EditorThemeManager.ApplyDeleteButton(delete);
 
@@ -73,5 +110,13 @@ namespace BetterLegacy.Editor.Data.Planners
 
             gameObject.SetActive(false);
         }
+
+        public TODOPlanner CreateCopy() => new TODOPlanner
+        {
+            Text = Text,
+            Checked = Checked,
+        };
+
+        public override bool SamePlanner(PlannerBase other) => other is TODOPlanner todo && todo.Text == Text;
     }
 }

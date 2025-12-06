@@ -34,5 +34,7 @@ namespace BetterLegacy.Editor.Data.Planners
         /// Initializes the planner item.
         /// </summary>
         public abstract void Init();
+
+        public abstract bool SamePlanner(PlannerBase other);
     }
 }
