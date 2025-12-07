@@ -70,6 +70,63 @@ namespace BetterLegacy.Editor.Components
                 return;
             }
 
+            if (part == DragPart.Base && eventData.button == PointerEventData.InputButton.Right)
+            {
+                var buttonFunctions = new List<ButtonFunction>
+                {
+                    new ButtonFunction("Edit", () => ProjectPlanner.inst.OpenNoteEditor(note)),
+                    new ButtonFunction("Delete", () =>
+                    {
+                        ProjectPlanner.inst.notes.RemoveAll(x => x is NotePlanner && x.ID == note.ID);
+                        ProjectPlanner.inst.SaveNotes();
+                        CoreHelper.Destroy(note.GameObject);
+                    }),
+                    new ButtonFunction(true),
+                    new ButtonFunction("Copy", () =>
+                    {
+                        ProjectPlanner.inst.copiedPlanners.Clear();
+                        ProjectPlanner.inst.copiedPlanners.Add(note);
+                        EditorManager.inst.DisplayNotification("Copied note!", 2f, EditorManager.NotificationType.Success);
+                    }),
+                    new ButtonFunction("Copy Selected", ProjectPlanner.inst.CopySelectedPlanners),
+                    new ButtonFunction("Copy Current Tab", ProjectPlanner.inst.CopyCurrentTabPlanners),
+                    new ButtonFunction("Paste", ProjectPlanner.inst.PastePlanners),
+                    new ButtonFunction(true),
+                };
+
+                buttonFunctions.AddRange(EditorContextMenu.GetMoveIndexFunctions(ProjectPlanner.inst.notes, () => ProjectPlanner.inst.notes.IndexOf(note), () =>
+                {
+                    for (int i = 0; i < ProjectPlanner.inst.notes.Count; i++)
+                        ProjectPlanner.inst.notes[i].Init();
+                    ProjectPlanner.inst.RefreshList();
+                }));
+
+                buttonFunctions.Add(new ButtonFunction(true));
+                buttonFunctions.Add(new ButtonFunction("Reset All", () =>
+                {
+                    note.ResetTransform();
+                    ProjectPlanner.inst.SaveNotes();
+                }));
+                buttonFunctions.Add(new ButtonFunction("Reset Position", () =>
+                {
+                    note.ResetPosition();
+                    ProjectPlanner.inst.SaveNotes();
+                }));
+                buttonFunctions.Add(new ButtonFunction("Reset Scale", () =>
+                {
+                    note.ResetScale();
+                    ProjectPlanner.inst.SaveNotes();
+                }));
+                buttonFunctions.Add(new ButtonFunction("Reset Size", () =>
+                {
+                    note.ResetSize();
+                    ProjectPlanner.inst.SaveNotes();
+                }));
+
+                EditorContextMenu.inst.ShowContextMenu(buttonFunctions);
+                return;
+            }
+
             if (Free)
             {
                 SoundManager.inst.PlaySound(DefaultSounds.Click);
@@ -92,35 +149,9 @@ namespace BetterLegacy.Editor.Components
 
             if (!Free && part == DragPart.Base)
             {
-                if (eventData.button == PointerEventData.InputButton.Right)
+                if (InputDataManager.inst.editorActions.MultiSelect.IsPressed)
                 {
-                    var buttonFunctions = new List<ButtonFunction>
-                    {
-                        new ButtonFunction("Edit", () => ProjectPlanner.inst.OpenNoteEditor(note)),
-                        new ButtonFunction("Delete", () =>
-                        {
-                            ProjectPlanner.inst.notes.RemoveAll(x => x is NotePlanner && x.ID == note.ID);
-                            ProjectPlanner.inst.SaveNotes();
-                            CoreHelper.Destroy(note.GameObject);
-                        }),
-                        new ButtonFunction(true),
-                        new ButtonFunction("Copy", () =>
-                        {
-                            ProjectPlanner.inst.copiedPlanners.Clear();
-                            ProjectPlanner.inst.copiedPlanners.Add(note);
-                            EditorManager.inst.DisplayNotification("Copied note!", 2f, EditorManager.NotificationType.Success);
-                        }),
-                        new ButtonFunction("Paste", ProjectPlanner.inst.PastePlanners),
-                        new ButtonFunction(true),
-                    };
-
-                    buttonFunctions.AddRange(EditorContextMenu.GetMoveIndexFunctions(ProjectPlanner.inst.notes, () => ProjectPlanner.inst.notes.IndexOf(note), () =>
-                    {
-                        for (int i = 0; i < ProjectPlanner.inst.notes.Count; i++)
-                            ProjectPlanner.inst.notes[i].Init();
-                    }));
-
-                    EditorContextMenu.inst.ShowContextMenu(buttonFunctions);
+                    note.Selected = !note.Selected;
                     return;
                 }
 
@@ -137,8 +168,7 @@ namespace BetterLegacy.Editor.Components
 
             switch (part)
             {
-                case DragPart.Base:
-                    {
+                case DragPart.Base: {
                         if (Input.GetKey(KeyCode.LeftShift))
                         {
                             transform.position = new Vector3((int)vector.x, (int)vector.y);
@@ -151,8 +181,7 @@ namespace BetterLegacy.Editor.Components
                         }
                         break;
                     }
-                case DragPart.Left:
-                    {
+                case DragPart.Left: {
                         if (Input.GetKey(KeyCode.LeftControl))
                         {
                             var sca = note.Scale;
@@ -168,8 +197,7 @@ namespace BetterLegacy.Editor.Components
 
                         break;
                     }
-                case DragPart.Right:
-                    {
+                case DragPart.Right: {
                         if (Input.GetKey(KeyCode.LeftControl))
                         {
                             var sca = note.Scale;
@@ -185,8 +213,7 @@ namespace BetterLegacy.Editor.Components
 
                         break;
                     }
-                case DragPart.Up:
-                    {
+                case DragPart.Up: {
                         if (Input.GetKey(KeyCode.LeftControl))
                         {
                             var sca = note.Scale;
@@ -202,8 +229,7 @@ namespace BetterLegacy.Editor.Components
 
                         break;
                     }
-                case DragPart.Down:
-                    {
+                case DragPart.Down: {
                         if (Input.GetKey(KeyCode.LeftControl))
                         {
                             var sca = note.Scale;
