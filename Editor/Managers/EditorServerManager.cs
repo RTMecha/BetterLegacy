@@ -1097,9 +1097,9 @@ namespace BetterLegacy.Editor.Managers
                 var storage = gameObject.GetComponent<FunctionButtonStorage>();
 
                 storage.Text = tag;
-                storage.OnClick.NewListener(() => onTagSelected?.Invoke(tag));
+                storage.OnClick.ClearAll();
 
-                EditorContextMenu.inst.AddContextMenu(gameObject, () => { },
+                EditorContextMenu.AddContextMenu(gameObject, () => onTagSelected?.Invoke(tag),
                     new ButtonFunction("Select Tag", () => onTagSelected?.Invoke(tag)),
                     new ButtonFunction("Remove Tag", () =>
                     {
