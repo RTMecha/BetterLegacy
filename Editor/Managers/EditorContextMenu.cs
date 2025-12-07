@@ -45,9 +45,9 @@ namespace BetterLegacy.Editor.Managers
         {
             try
             {
-                parent = EditorManager.inst.dialogs.parent;
+                parent = EditorManager.inst.dialogs.parent.parent;
 
-                contextMenu = Creator.NewUIObject("Context Menu", parent, parent.childCount - 2);
+                contextMenu = Creator.NewUIObject("Context Menu", parent, parent.childCount - 1);
                 RectValues.Default.AnchorMax(0f, 0f).AnchorMin(0f, 0f).Pivot(0f, 1f).SizeDelta(126f, 300f).AssignToRectTransform(contextMenu.transform.AsRT());
                 var contextMenuImage = contextMenu.AddComponent<Image>();
 
@@ -77,7 +77,7 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         /// <param name="gameObject">Unity game object to add a context menu to.</param>
         /// <param name="buttonFunctions">The context menus' functions.</param>
-        public void AddContextMenu(GameObject gameObject, params ButtonFunction[] buttonFunctions) => AddContextMenu(gameObject, null, buttonFunctions);
+        public static void AddContextMenu(GameObject gameObject, params ButtonFunction[] buttonFunctions) => AddContextMenu(gameObject, null, buttonFunctions);
 
         /// <summary>
         /// Adds the editor context menu to an object.
@@ -85,7 +85,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="gameObject">Unity game object to add a context menu to.</param>
         /// <param name="leftClick">Function to run when the user left clicks.</param>
         /// <param name="buttonFunctions">The context menus' functions.</param>
-        public void AddContextMenu(GameObject gameObject, Action leftClick, params ButtonFunction[] buttonFunctions)
+        public static void AddContextMenu(GameObject gameObject, Action leftClick, params ButtonFunction[] buttonFunctions)
         {
             if (!gameObject)
                 return;
@@ -99,7 +99,7 @@ namespace BetterLegacy.Editor.Managers
                             break;
                         }
                     case PointerEventData.InputButton.Right: {
-                            ShowContextMenu(buttonFunctions);
+                            inst.ShowContextMenu(buttonFunctions);
                             break;
                         }
                 }
@@ -111,7 +111,7 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         /// <param name="gameObject">Unity game object to add a context menu to.</param>
         /// <param name="buttonFunctions">The context menus' functions.</param>
-        public void AddContextMenu(GameObject gameObject, List<ButtonFunction> buttonFunctions) => AddContextMenu(gameObject, null, buttonFunctions);
+        public static void AddContextMenu(GameObject gameObject, List<ButtonFunction> buttonFunctions) => AddContextMenu(gameObject, null, buttonFunctions);
 
         /// <summary>
         /// Adds the editor context menu to an object.
@@ -167,7 +167,6 @@ namespace BetterLegacy.Editor.Managers
         public void ShowContextMenu(float width, params ButtonFunction[] buttonFunctions)
         {
             float height = 0f;
-            contextMenu.transform.SetParent(ProjectPlanner.inst && ProjectPlanner.inst.PlannerActive ? ProjectPlanner.inst.contextMenuParent : parent);
             contextMenu.SetActive(true);
             LSHelpers.DeleteChildren(contextMenuLayout);
             for (int i = 0; i < buttonFunctions.Length; i++)
@@ -202,6 +201,30 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.ApplySelectable(buttonStorage.button, ThemeGroup.Function_2);
                 EditorThemeManager.ApplyGraphic(buttonStorage.label, ThemeGroup.Function_2_Text);
                 height += 37f;
+            }
+
+            var pos = Input.mousePosition * CoreHelper.ScreenScaleInverse;
+            pos.x = Mathf.Clamp(pos.x, float.NegativeInfinity, (Screen.width * CoreHelper.ScreenScaleInverse) - width);
+            pos.y = Mathf.Clamp(pos.y, height, float.PositiveInfinity);
+            contextMenu.transform.AsRT().anchoredPosition = pos;
+            contextMenu.transform.AsRT().sizeDelta = new Vector2(width, height);
+        }
+
+        /// <summary>
+        /// Shows the editor context menu.
+        /// </summary>
+        /// <param name="width">Width of the context menu.</param>
+        /// <param name="editorElements">The context menus' functions.</param>
+        public void ShowContextMenu(float width, params EditorElement[] editorElements)
+        {
+            float height = 0f;
+            contextMenu.SetActive(true);
+            LSHelpers.DeleteChildren(contextMenuLayout);
+            for (int i = 0; i < editorElements.Length; i++)
+            {
+                var element = editorElements[i];
+                element.Init(new EditorElement.InitSettings().Parent(contextMenuLayout));
+                height += element.ContextMenuHeight;
             }
 
             var pos = Input.mousePosition * CoreHelper.ScreenScaleInverse;

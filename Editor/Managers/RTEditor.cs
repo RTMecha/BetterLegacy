@@ -1098,7 +1098,7 @@ namespace BetterLegacy.Editor.Managers
                 }));
 
             DestroyImmediate(EditorManager.inst.mouseTooltip);
-            mouseTooltip = EditorManager.inst.notificationPrefabs[0].Duplicate(EditorManager.inst.notification.transform.parent, "tooltip");
+            mouseTooltip = EditorManager.inst.notificationPrefabs[0].Duplicate(EditorManager.inst.dialogs.parent.parent, "tooltip");
             EditorManager.inst.mouseTooltip = mouseTooltip;
             mouseTooltipRT = mouseTooltip.transform.AsRT();
             UIManager.SetRectTransform(mouseTooltipRT, Vector2.zero, Vector2.zero, Vector2.zero, Vector2.zero, new Vector2(250f, 32f));
