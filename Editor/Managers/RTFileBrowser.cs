@@ -59,6 +59,8 @@ namespace BetterLegacy.Editor.Managers
         {
             inst = this;
             title = transform.Find("Panel/Text").GetComponent<TextMeshProUGUI>();
+            title.fontSize = 18;
+            title.rectTransform.sizeDelta = new Vector2(0f, 50f);
             defaultDir = Directory.GetCurrentDirectory();
 
             try
