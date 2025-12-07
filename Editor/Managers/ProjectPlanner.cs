@@ -138,10 +138,9 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.AddInputField(searchField, ThemeGroup.Search_Field_1, 1, SpriteHelper.RoundedSide.Bottom);
 
                 var addNewItem = EditorPrefabHolder.Instance.Function2Button.Duplicate(contentBase, "new", 1);
-                addNewItem.SetActive(true);
-                var addNewItemStorage = addNewItem.GetComponent<FunctionButtonStorage>();
                 addNewItem.transform.AsRT().anchoredPosition = new Vector2(120f, 970f);
                 addNewItem.transform.AsRT().sizeDelta = new Vector2(200f, 32f);
+                var addNewItemStorage = addNewItem.GetComponent<FunctionButtonStorage>();
                 addNewItemStorage.Text = "Add New Item";
                 addNewItemStorage.OnClick.NewListener(() =>
                 {
@@ -162,13 +161,8 @@ namespace BetterLegacy.Editor.Managers
                                 break;
                             }
                         case PlannerBase.Type.Character: {
-                                if (string.IsNullOrEmpty(Path.GetFileName(path)))
-                                    return;
-
-                                var charactersPath = RTFile.CombinePaths(path, "characters");
-                                RTFile.CreateDirectory(charactersPath);
-
-                                CreateCharacter(RTFile.CombinePaths(charactersPath, "New Character"));
+                                CreateCharacter(
+                                    name: "New Character");
                                 break;
                             }
                         case PlannerBase.Type.Timeline: {
@@ -224,24 +218,29 @@ namespace BetterLegacy.Editor.Managers
                     RefreshList();
                 });
 
-                addNewItemStorage.button.transition = Selectable.Transition.ColorTint;
                 EditorThemeManager.AddSelectable(addNewItemStorage.button, ThemeGroup.Function_2);
                 EditorThemeManager.AddGraphic(addNewItemStorage.label, ThemeGroup.Function_2_Text);
 
                 var reload = EditorPrefabHolder.Instance.Function2Button.Duplicate(contentBase, "reload", 2);
-                reload.SetActive(true);
-                var reloadStorage = reload.GetComponent<FunctionButtonStorage>();
                 reload.transform.AsRT().anchoredPosition = new Vector2(370f, 970f);
                 reload.transform.AsRT().sizeDelta = new Vector2(200f, 32f);
-                var reloadText = reloadStorage.label;
-                reloadText.text = "Reload";
+                var reloadStorage = reload.GetComponent<FunctionButtonStorage>();
+                reloadStorage.Text = "Reload";
                 reloadStorage.OnClick.NewListener(Load);
 
-                reloadStorage.button.transition = Selectable.Transition.ColorTint;
                 EditorThemeManager.AddSelectable(reloadStorage.button, ThemeGroup.Function_2);
-                EditorThemeManager.AddGraphic(reloadText, ThemeGroup.Function_2_Text);
+                EditorThemeManager.AddGraphic(reloadStorage.label, ThemeGroup.Function_2_Text);
 
-                var path = EditorPrefabHolder.Instance.StringInputField.Duplicate(contentBase, "path", 3);
+                var paste = EditorPrefabHolder.Instance.Function1Button.Duplicate(contentBase, "paste", 3);
+                RectValues.Default.AnchoredPosition(-340f, 462f).SizeDelta(200f, 32f).AssignToRectTransform(paste.transform.AsRT());
+                var pasteStorage = paste.GetComponent<FunctionButtonStorage>();
+                pasteStorage.Text = "Paste";
+                pasteStorage.OnClick.NewListener(PastePlanners);
+
+                EditorThemeManager.AddGraphic(pasteStorage.button.image, ThemeGroup.Paste);
+                EditorThemeManager.AddGraphic(pasteStorage.label, ThemeGroup.Paste_Text);
+
+                var path = EditorPrefabHolder.Instance.StringInputField.Duplicate(contentBase, "path", 4);
                 new RectValues(new Vector2(1750f, 970f), Vector2.zero, Vector2.zero, RectValues.CenterPivot, new Vector2(300f, 32f)).AssignToRectTransform(path.transform.AsRT());
                 var pathField = path.GetComponent<InputField>();
 
@@ -257,6 +256,30 @@ namespace BetterLegacy.Editor.Managers
                 pathField.GetPlaceholderText().text = "Set a folder...";
 
                 EditorThemeManager.AddInputField(pathField);
+
+                EditorContextMenu.AddContextMenu(path, leftClick: null, new List<ButtonFunction>
+                {
+                    new ButtonFunction("Set Folder", () =>
+                    {
+                        RTEditor.inst.BrowserPopup.Open();
+                        RTFileBrowser.inst.UpdateBrowserFolder(_val =>
+                        {
+                            if (!RTFile.ReplaceSlash(_val).Contains(RTFile.ApplicationDirectory + "beatmaps/"))
+                            {
+                                EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
+                                return;
+                            }
+
+                            var str = RTFile.ReplaceSlash(_val).Remove(RTFile.ApplicationDirectory + "beatmaps/");
+                            pathField.SetTextWithoutNotify(str);
+                            RTEditor.inst.PlannersPath = str;
+                            Load();
+                            EditorManager.inst.DisplayNotification($"Set Planner path to {RTEditor.inst.PlannersPath}!", 2f, EditorManager.NotificationType.Success);
+                            RTEditor.inst.BrowserPopup.Close();
+                        });
+                    }),
+                    new ButtonFunction("Open in File Explorer", () => RTFile.OpenInFileBrowser.Open(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlannersPath)))
+                });
             }
 
             gradientSprite = SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/linear_gradient{FileFormat.PNG.Dot()}"));
@@ -289,8 +312,7 @@ namespace BetterLegacy.Editor.Managers
                     albumArtImage.sprite = gradientSprite;
                     albumArtImage.color = new Color(0.1294f, 0.1294f, 0.1294f, 1f);
 
-                    albumArt.AsRT().anchoredPosition = Vector2.zero;
-                    albumArt.AsRT().sizeDelta = new Vector2(232f, 400f);
+                    RectValues.FullAnchored.AssignToRectTransform(albumArt.transform.AsRT());
 
                     artist.AsRT().anchoredPosition = new Vector2(0f, -60f);
                     artist.AsRT().sizeDelta = new Vector2(-32f, 260f);
@@ -300,7 +322,7 @@ namespace BetterLegacy.Editor.Managers
                     tmp.text = "This is your story.";
 
                     var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(prefab.transform, "delete");
-                    UIManager.SetRectTransform(delete.transform.AsRT(), new Vector2(96f, 180f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(26f, 26f));
+                    RectValues.Default.AnchoredPosition(96f, 180f).SizeDelta(26f, 26f).AssignToRectTransform(delete.transform.AsRT());
 
                     prefabs.Add(prefab);
                 }
@@ -335,7 +357,7 @@ namespace BetterLegacy.Editor.Managers
                     tmp.text = "Do this.";
 
                     var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(prefab.transform, "delete");
-                    UIManager.SetRectTransform(delete.transform.AsRT(), new Vector2(605f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(38f, 38f));
+                    RectValues.Default.AnchoredPosition(605f, 0f).SizeDelta(38f, 38f).AssignToRectTransform(delete.transform.AsRT());
 
                     prefabs.Add(prefab);
                 }
@@ -353,26 +375,25 @@ namespace BetterLegacy.Editor.Managers
                     title.name = "details";
                     artist.name = "description";
 
-                    albumArt.AsRT().anchoredPosition = new Vector2(80f, 66f);
-                    albumArt.AsRT().sizeDelta = new Vector2(115f, 115f);
+                    albumArt.AsRT().anchoredPosition = new Vector2(-160f, 40f);
+                    albumArt.AsRT().sizeDelta = new Vector2(256f, 256f);
 
-                    title.AsRT().anchoredPosition = new Vector2(0f, 2f);
-                    title.AsRT().sizeDelta = new Vector2(-32f, 240f);
+                    title.AsRT().anchoredPosition = new Vector2(0f, -150f);
+                    title.AsRT().sizeDelta = new Vector2(-32f, 60f);
 
-                    artist.AsRT().anchoredPosition = new Vector2(60f, -64f);
-                    artist.AsRT().sizeDelta = new Vector2(-130f, 130f);
+                    RectValues.Default.AnchoredPosition(130f, 0f).SizeDelta(300f, 200f).AssignToRectTransform(artist.AsRT());
 
                     var tmpTitle = title.GetComponent<TextMeshProUGUI>();
                     tmpTitle.lineSpacing = -20;
-                    tmpTitle.fontSize = 13;
+                    tmpTitle.fontSize = 20;
                     tmpTitle.fontStyle = FontStyles.Normal;
                     tmpTitle.alignment = TextAlignmentOptions.TopLeft;
                     tmpTitle.enableWordWrapping = true;
                     tmpTitle.text = CharacterPlanner.DefaultCharacterDescription;
 
                     var tmpArtist = artist.GetComponent<TextMeshProUGUI>();
-                    tmpArtist.alignment = TextAlignmentOptions.TopRight;
-                    tmpArtist.fontSize = 12;
+                    tmpArtist.alignment = TextAlignmentOptions.Top;
+                    tmpArtist.fontSize = 18;
                     tmpArtist.enableWordWrapping = true;
                     tmpArtist.text = "Description";
 
@@ -536,7 +557,7 @@ namespace BetterLegacy.Editor.Managers
                     tmp.text = DateTime.Now.ToString("g");
 
                     var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(prefab.transform, "delete");
-                    UIManager.SetRectTransform(delete.transform.AsRT(), new Vector2(605f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(38f, 38f));
+                    RectValues.Default.AnchoredPosition(605f, 0f).SizeDelta(38f, 38f).AssignToRectTransform(delete.transform.AsRT());
 
                     prefabs.Add(prefab);
                 }
@@ -1721,9 +1742,6 @@ namespace BetterLegacy.Editor.Managers
             CoreHelper.Delete(notificationsParent.TryGetChild(0));
             RectValues.BottomLeftAnchored.AnchoredPosition(8f, 8f).SizeDelta(221f, 632f).AssignToRectTransform(notificationsParent.AsRT());
 
-            contextMenuParent = Creator.NewUIObject("Context Menu Parent", plannerBase).transform;
-            RectValues.FullAnchored.AssignToRectTransform(contextMenuParent.AsRT());
-
             popupsParent = Creator.NewUIObject("Popups", plannerBase).transform;
             RectValues.Default.AnchoredPosition(-382.5f, 184.05f).SizeDelta(1155f, 648.1f).AssignToRectTransform(popupsParent.AsRT());
 
@@ -1881,10 +1899,10 @@ namespace BetterLegacy.Editor.Managers
         {
             new Vector2(232f, 400f),
             new Vector2(1280f, 64f),
-            new Vector2(296f, 270f),
+            new Vector2(630f, 400f),
             new Vector2(1280f, 250f),
             new Vector2(1280f, 64f),
-            new Vector2(339f, 150f),
+            new Vector2(410f, 200f),
             new Vector2(1280f, 64f),
         };
 
@@ -1892,7 +1910,7 @@ namespace BetterLegacy.Editor.Managers
         {
             5,
             1,
-            4,
+            2,
             1,
             1,
             3,
@@ -2030,24 +2048,8 @@ namespace BetterLegacy.Editor.Managers
             return todo;
         }
 
-        public CharacterPlanner CreateCharacter(string fullPath, bool save = true)
+        public CharacterPlanner CreateCharacter(string name, bool save = true)
         {
-            if (string.IsNullOrEmpty(fullPath))
-                return null;
-
-            var path = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlannersPath);
-            var charactersPath = RTFile.CombinePaths(path, "characters");
-            RTFile.CreateDirectory(charactersPath);
-
-            int num = 1;
-            while (RTFile.DirectoryExists(fullPath))
-            {
-                fullPath = RTFile.CombinePaths(charactersPath, $"New Character {num}");
-                num++;
-            }
-
-            RTFile.CreateDirectory(fullPath);
-
             var character = new CharacterPlanner();
 
             for (int i = 0; i < 3; i++)
@@ -2058,14 +2060,13 @@ namespace BetterLegacy.Editor.Managers
             }
 
             character.CharacterSprite = SpriteHelper.LoadSprite(AssetPack.GetFile($"editor/example{FileFormat.PNG.Dot()}"));
-            character.Name = Path.GetFileName(fullPath);
-            character.FullPath = fullPath;
+            character.Name = name;
             character.Gender = "He";
             character.Description = "This is the default description";
 
             AddPlanner(character);
             if (save)
-                character.Save();
+                SaveCharacters();
             if (EditorConfig.Instance.OpenNewPlanner.Value)
                 OpenCharacterEditor(character);
             return character;
@@ -2198,6 +2199,7 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.DisplayNotification("Saving Planners!", 1f, EditorManager.NotificationType.Warning);
             SaveDocuments();
             SaveTODO();
+            SaveCharacters();
             SaveTimelines();
             SaveSchedules();
             SaveNotes();
@@ -2221,18 +2223,11 @@ namespace BetterLegacy.Editor.Managers
 
             LoadDocuments();
             LoadTODO();
+            LoadCharacters();
             LoadTimelines();
             LoadSchedules();
             LoadNotes();
             LoadOST();
-
-            var characters = RTFile.CombinePaths(path, "characters");
-            RTFile.CreateDirectory(characters);
-
-            var directories = Directory.GetDirectories(characters, "*", SearchOption.TopDirectoryOnly);
-            if (directories.Length > 0)
-                foreach (var folder in directories)
-                    AddPlanner(new CharacterPlanner(folder));
 
             RefreshList();
         }
@@ -2248,11 +2243,7 @@ namespace BetterLegacy.Editor.Managers
             var list = documents;
 
             for (int i = 0; i < list.Count; i++)
-            {
-                var document = list[i];
-                jn["documents"][i]["name"] = document.Name;
-                jn["documents"][i]["text"] = document.Text;
-            }
+                jn["documents"][i] = list[i].ToJSON();
 
             RTFile.WriteToFile(RTFile.CombinePaths(path, $"documents{FileFormat.LSN.Dot()}"), jn.ToString(3));
         }
@@ -2266,13 +2257,7 @@ namespace BetterLegacy.Editor.Managers
             var jn = JSON.Parse(RTFile.ReadFromFile(path));
 
             for (int i = 0; i < jn["documents"].Count; i++)
-            {
-                var document = new DocumentPlanner();
-
-                document.Name = jn["documents"][i]["name"];
-                document.Text = jn["documents"][i]["text"];
-                AddPlanner(document);
-            }
+                AddPlanner(DocumentPlanner.Parse(jn["documents"][i]));
         }
 
         public void SaveTODO()
@@ -2286,10 +2271,7 @@ namespace BetterLegacy.Editor.Managers
             var list = todos;
 
             for (int i = 0; i < list.Count; i++)
-            {
-                jn["todo"][i]["ch"] = list[i].Checked.ToString();
-                jn["todo"][i]["text"] = list[i].Text;
-            }
+                jn["todo"][i] = list[i].ToJSON();
 
             RTFile.WriteToFile(RTFile.CombinePaths(path, $"todo{FileFormat.LSN.Dot()}"), jn.ToString(3));
         }
@@ -2303,12 +2285,35 @@ namespace BetterLegacy.Editor.Managers
             var jn = JSON.Parse(RTFile.ReadFromFile(path));
 
             for (int i = 0; i < jn["todo"].Count; i++)
-            {
-                var todo = new TODOPlanner();
-                todo.Checked = jn["todo"][i]["ch"].AsBool;
-                todo.Text = jn["todo"][i]["text"];
-                AddPlanner(todo);
-            }
+                AddPlanner(TODOPlanner.Parse(jn["todo"][i]));
+        }
+
+        public void SaveCharacters()
+        {
+            var path = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlannersPath);
+            if (string.IsNullOrEmpty(Path.GetFileName(path)) || !RTFile.DirectoryExists(path))
+                return;
+
+            var jn = Parser.NewJSONObject();
+
+            var list = characters;
+
+            for (int i = 0; i < list.Count; i++)
+                jn["characters"][i] = list[i].ToJSON();
+
+            RTFile.WriteToFile(RTFile.CombinePaths(path, $"characters{FileFormat.LSN.Dot()}"), jn.ToString(3));
+        }
+
+        public void LoadCharacters()
+        {
+            var path = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlannersPath, $"characters{FileFormat.LSN.Dot()}");
+            if (!RTFile.FileExists(path))
+                return;
+
+            var jn = JSON.Parse(RTFile.ReadFromFile(path));
+
+            for (int i = 0; i < jn["characters"].Count; i++)
+                AddPlanner(CharacterPlanner.Parse(jn["characters"][i]));
         }
 
         public void SaveTimelines()
@@ -2322,21 +2327,7 @@ namespace BetterLegacy.Editor.Managers
             var list = timelines;
 
             for (int i = 0; i < list.Count; i++)
-            {
-                var timeline = list[i];
-                jn["timelines"][i]["name"] = timeline.Name;
-
-                for (int j = 0; j < timeline.Events.Count; j++)
-                {
-                    var level = timeline.Events[j];
-                    var jnLevel = Parser.NewJSONObject();
-                    jnLevel["n"] = level.Name;
-                    jnLevel["p"] = level.Path;
-                    jnLevel["t"] = ((int)level.EventType).ToString();
-                    jnLevel["d"] = level.Description;
-                    jn["timelines"][i]["levels"][j] = jnLevel;
-                }
-            }
+                jn["timelines"][i] = list[i].ToJSON();
 
             RTFile.WriteToFile(RTFile.CombinePaths(path, $"timelines{FileFormat.LSN.Dot()}"), jn.ToString(3));
         }
@@ -2350,27 +2341,7 @@ namespace BetterLegacy.Editor.Managers
             var jn = JSON.Parse(RTFile.ReadFromFile(path));
 
             for (int i = 0; i < jn["timelines"].Count; i++)
-            {
-                var timeline = new TimelinePlanner();
-
-                var jnTimeline = jn["timelines"][i];
-
-                timeline.Name = jnTimeline["name"];
-
-                for (int j = 0; j < jnTimeline["levels"].Count; j++)
-                {
-                    var jnLevel = jnTimeline["levels"][j];
-                    timeline.Events.Add(new TimelinePlanner.Event
-                    {
-                        Name = jnLevel["n"],
-                        Path = jnLevel["p"],
-                        EventType = (TimelinePlanner.Event.Type)jnLevel["t"].AsInt,
-                        Description = jnLevel["d"],
-                    });
-                }
-
-                AddPlanner(timeline);
-            }
+                AddPlanner(TimelinePlanner.Parse(jn["timelines"][i]));
         }
 
         public void SaveSchedules()
@@ -2384,13 +2355,7 @@ namespace BetterLegacy.Editor.Managers
             var list = schedules;
 
             for (int i = 0; i < list.Count; i++)
-            {
-                var schedule = list[i];
-                jn["schedules"][i]["date"] = schedule.Date;
-                jn["schedules"][i]["desc"] = schedule.Description;
-                if (schedule.hasBeenChecked)
-                    jn["schedules"][i]["checked"] = schedule.hasBeenChecked;
-            }
+                jn["schedules"][i] = list[i].ToJSON();
 
             RTFile.WriteToFile(RTFile.CombinePaths(path, $"schedules{FileFormat.LSN.Dot()}"), jn.ToString(3));
         }
@@ -2404,18 +2369,7 @@ namespace BetterLegacy.Editor.Managers
             var jn = JSON.Parse(RTFile.ReadFromFile(path));
 
             for (int i = 0; i < jn["schedules"].Count; i++)
-            {
-                var schedule = new SchedulePlanner();
-                schedule.Date = jn["schedules"][i]["date"];
-                schedule.Description = jn["schedules"][i]["desc"];
-                if (jn["schedules"][i]["checked"] != null)
-                    schedule.hasBeenChecked = jn["schedules"][i]["checked"].AsBool;
-
-                if (DateTime.TryParse(schedule.Date, out DateTime dateTime))
-                    schedule.DateTime = dateTime;
-
-                AddPlanner(schedule);
-            }
+                AddPlanner(SchedulePlanner.Parse(jn["schedules"][i]));
         }
 
         public void SaveNotes()
@@ -2429,20 +2383,7 @@ namespace BetterLegacy.Editor.Managers
             var list = notes;
 
             for (int i = 0; i < list.Count; i++)
-            {
-                var note = list[i];
-
-                jn["notes"][i]["active"] = note.Active.ToString();
-                jn["notes"][i]["name"] = note.Name;
-                jn["notes"][i]["pos"]["x"] = note.Position.x.ToString();
-                jn["notes"][i]["pos"]["y"] = note.Position.y.ToString();
-                jn["notes"][i]["sca"]["x"] = note.Scale.x.ToString();
-                jn["notes"][i]["sca"]["y"] = note.Scale.y.ToString();
-                jn["notes"][i]["size"]["x"] = note.Size.x.ToString();
-                jn["notes"][i]["size"]["y"] = note.Size.y.ToString();
-                jn["notes"][i]["col"] = note.Color.ToString();
-                jn["notes"][i]["text"] = note.Text;
-            }
+                jn["notes"][i] = list[i].ToJSON();
 
             RTFile.WriteToFile(RTFile.CombinePaths(path, $"notes{FileFormat.LSN.Dot()}"), jn.ToString(3));
         }
@@ -2456,24 +2397,7 @@ namespace BetterLegacy.Editor.Managers
             var jn = JSON.Parse(RTFile.ReadFromFile(path));
 
             for (int i = 0; i < jn["notes"].Count; i++)
-            {
-                var note = new NotePlanner();
-
-                note.Active = jn["notes"][i]["active"].AsBool;
-                if (!string.IsNullOrEmpty(jn["notes"][i]["name"]))
-                    note.Name = jn["notes"][i]["name"];
-                else
-                    note.Name = string.Empty;
-
-                note.Position = new Vector2(jn["notes"][i]["pos"]["x"].AsFloat, jn["notes"][i]["pos"]["y"].AsFloat);
-                note.Scale = new Vector2(jn["notes"][i]["sca"]["x"].AsFloat, jn["notes"][i]["sca"]["y"].AsFloat);
-                if (jn["notes"][i]["size"] != null)
-                    note.Size = new Vector2(jn["notes"][i]["size"]["x"].AsFloat, jn["notes"][i]["size"]["y"].AsFloat);
-                note.Text = jn["notes"][i]["text"];
-                note.Color = jn["notes"][i]["col"].AsInt;
-
-                AddPlanner(note);
-            }
+                AddPlanner(NotePlanner.Parse(jn["notes"][i]));
         }
 
         public void SaveOST()
@@ -2487,15 +2411,7 @@ namespace BetterLegacy.Editor.Managers
             var list = osts;
 
             for (int i = 0; i < list.Count; i++)
-            {
-                var ost = list[i];
-                ost.Index = i;
-
-                jn["ost"][i]["name"] = ost.Name;
-                jn["ost"][i]["path"] = ost.Path.ToString();
-                jn["ost"][i]["use_global"] = ost.UseGlobal.ToString();
-                jn["ost"][i]["index"] = ost.Index.ToString();
-            }
+                jn["ost"][i] = list[i].ToJSON();
 
             RTFile.WriteToFile(RTFile.CombinePaths(path, $"ost{FileFormat.LSN.Dot()}"), jn.ToString(3));
         }
@@ -2509,16 +2425,7 @@ namespace BetterLegacy.Editor.Managers
             var jn = JSON.Parse(RTFile.ReadFromFile(path));
 
             for (int i = 0; i < jn["ost"].Count; i++)
-            {
-                var ost = new OSTPlanner();
-
-                ost.Name = jn["ost"][i]["name"];
-                ost.Path = jn["ost"][i]["path"];
-                ost.UseGlobal = jn["ost"][i]["use_global"].AsBool;
-                ost.Index = jn["ost"][i]["index"].AsInt;
-
-                AddPlanner(ost);
-            }
+                AddPlanner(OSTPlanner.Parse(jn["ost"][i]));
         }
 
         #endregion
@@ -2689,23 +2596,41 @@ namespace BetterLegacy.Editor.Managers
             editors[0].SetActive(true); editorTitlePanel.gameObject.SetActive(true);
             editorTitlePanel.color = EditorThemeManager.CurrentTheme.ColorGroups[ThemeGroup.Tab_Color_1];
 
-            documentEditorName.SetTextWithoutNotify(document.Name);
-            documentEditorName.onValueChanged.NewListener(_val =>
-            {
-                document.Name = _val;
-                document.NameUI.text = _val;
-                documentTitle.text = document.Name;
-            });
-            documentEditorName.onEndEdit.NewListener(_val => SaveDocuments());
+            RenderDocumentEditorName(document);
 
             HandleDocumentEditor(document);
             HandleDocumentEditorDisplay(document);
         }
 
         /// <summary>
-        /// Handles the Document editor.
+        /// Renders the Document editor name.
         /// </summary>
         /// <param name="document">Document planner to edit.</param>
+        public void RenderDocumentEditorName(DocumentPlanner document)
+        {
+            var origName = document.Name;
+            documentEditorName.SetTextWithoutNotify(document.Name);
+            documentEditorName.onValueChanged.NewListener(_val =>
+            {
+                document.Name = _val;
+                document.NameUI.text = _val;
+                documentTitle.text = _val;
+            });
+            documentEditorName.onEndEdit.NewListener(_val =>
+            {
+                if (!documents.Has(x => x.Name == _val))
+                {
+                    SaveDocuments();
+                    return;
+                }
+
+                document.Name = origName;
+                document.NameUI.text = origName;
+                documentTitle.text = origName;
+                RenderDocumentEditorName(document);
+            });
+        }
+
         void HandleDocumentEditor(DocumentPlanner document)
         {
             documentEditorText.SetTextWithoutNotify(document.Text);
@@ -2720,10 +2645,6 @@ namespace BetterLegacy.Editor.Managers
             documentEditorText.onEndEdit.NewListener(_val => SaveDocuments());
         }
 
-        /// <summary>
-        /// Handles the full Document display.
-        /// </summary>
-        /// <param name="document">Document planner to edit.</param>
         void HandleDocumentEditorDisplay(DocumentPlanner document)
         {
             documentFullView.SetActive(true);
@@ -2754,6 +2675,16 @@ namespace BetterLegacy.Editor.Managers
             editors[1].SetActive(true); editorTitlePanel.gameObject.SetActive(true);
             editorTitlePanel.color = EditorThemeManager.CurrentTheme.ColorGroups[ThemeGroup.Tab_Color_2];
 
+            RenderTODOEditor(todo);
+        }
+
+        /// <summary>
+        /// Renders the TODO editor.
+        /// </summary>
+        /// <param name="todo">TODO planner to edit.</param>
+        public void RenderTODOEditor(TODOPlanner todo)
+        {
+            var origText = todo.Text;
             todoEditorText.SetTextWithoutNotify(todo.Text);
             todoEditorText.onValueChanged.NewListener(_val =>
             {
@@ -2761,7 +2692,19 @@ namespace BetterLegacy.Editor.Managers
                 todo.TextUI.text = _val;
                 SetupPlannerLinks(todo.Text, todo.TextUI, todo.Hyperlinks);
             });
-            todoEditorText.onEndEdit.NewListener(_val => SaveTODO());
+            todoEditorText.onEndEdit.NewListener(_val =>
+            {
+                if (!todos.Has(x => x.Text == _val))
+                {
+                    SaveTODO();
+                    return;
+                }
+
+                todo.Text = origText;
+                todo.TextUI.text = origText;
+                SetupPlannerLinks(todo.Text, todo.TextUI, todo.Hyperlinks);
+                RenderTODOEditor(todo);
+            });
             todoEditorMoveUpButton.onClick.NewListener(() =>
             {
                 if (!todos.TryFindIndex(x => x.ID == todo.ID, out int index))
@@ -2804,21 +2747,30 @@ namespace BetterLegacy.Editor.Managers
             editors[2].SetActive(true); editorTitlePanel.gameObject.SetActive(true);
             editorTitlePanel.color = EditorThemeManager.CurrentTheme.ColorGroups[ThemeGroup.Tab_Color_3];
 
+            RenderCharacterEditor(character);
+        }
+
+        /// <summary>
+        /// Renders the Character editor.
+        /// </summary>
+        /// <param name="character">Character planner to edit.</param>
+        public void RenderCharacterEditor(CharacterPlanner character)
+        {
             characterEditorName.SetTextWithoutNotify(character.Name);
             characterEditorName.onValueChanged.NewListener(_val =>
             {
                 character.Name = _val;
-                character.DetailsUI.text = character.FormatDetails;
+                character.DetailsUI.text = character.Format(true);
             });
-            characterEditorName.onEndEdit.NewListener(_val => character.Save());
+            characterEditorName.onEndEdit.NewListener(_val => SaveCharacters());
 
             characterEditorGender.SetTextWithoutNotify(character.Gender);
             characterEditorGender.onValueChanged.NewListener(_val =>
             {
                 character.Gender = _val;
-                character.DetailsUI.text = character.FormatDetails;
+                character.DetailsUI.text = character.Format(true);
             });
-            characterEditorGender.onEndEdit.NewListener(_val => character.Save());
+            characterEditorGender.onEndEdit.NewListener(_val => SaveCharacters());
 
             characterEditorDescription.SetTextWithoutNotify(character.Description);
             characterEditorDescription.onValueChanged.NewListener(_val =>
@@ -2826,7 +2778,7 @@ namespace BetterLegacy.Editor.Managers
                 character.Description = _val;
                 character.DescriptionUI.text = character.Description;
             });
-            characterEditorDescription.onEndEdit.NewListener(_val => character.Save());
+            characterEditorDescription.onEndEdit.NewListener(_val => SaveCharacters());
 
             characterEditorProfileSelector.onClick.NewListener(() =>
             {
@@ -2837,18 +2789,8 @@ namespace BetterLegacy.Editor.Managers
                 {
                     character.CharacterSprite = SpriteHelper.LoadSprite(jpgFile);
                     character.ProfileUI.sprite = character.CharacterSprite;
-                    character.Save();
+                    SaveCharacters();
                 }
-
-                //EditorManager.inst.ShowDialog("Browser Popup");
-                //RTFileBrowser.inst.UpdateBrowser(Directory.GetCurrentDirectory(), new string[] { ".png" }, onSelectFile: _val =>
-                //{
-                //    character.CharacterSprite = SpriteManager.LoadSprite(_val);
-
-                //    character.Save();
-
-                //    EditorManager.inst.HideDialog("Browser Popup");
-                //});
             });
 
             // Character Traits
@@ -2866,16 +2808,16 @@ namespace BetterLegacy.Editor.Managers
                     input.onValueChanged.NewListener(_val =>
                     {
                         character.CharacterTraits[index] = _val;
-                        character.DetailsUI.text = character.FormatDetails;
+                        character.DetailsUI.text = character.Format(true);
                     });
-                    input.onEndEdit.NewListener(_val => character.Save());
+                    input.onEndEdit.NewListener(_val => SaveCharacters());
 
                     var delete = gameObject.transform.Find("Delete").GetComponent<Button>();
                     delete.onClick.NewListener(() =>
                     {
                         character.CharacterTraits.RemoveAt(index);
-                        character.DetailsUI.text = character.FormatDetails;
-                        character.Save();
+                        character.DetailsUI.text = character.Format(true);
+                        SaveCharacters();
                         OpenCharacterEditor(character);
                     });
 
@@ -2887,8 +2829,8 @@ namespace BetterLegacy.Editor.Managers
                 add.OnClick.NewListener(() =>
                 {
                     character.CharacterTraits.Add("New Detail");
-                    character.DetailsUI.text = character.FormatDetails;
-                    character.Save();
+                    character.DetailsUI.text = character.Format(true);
+                    SaveCharacters();
                     OpenCharacterEditor(character);
                 });
             }
@@ -2908,16 +2850,16 @@ namespace BetterLegacy.Editor.Managers
                     input.onValueChanged.NewListener(_val =>
                     {
                         character.CharacterLore[index] = _val;
-                        character.DetailsUI.text = character.FormatDetails;
+                        character.DetailsUI.text = character.Format(true);
                     });
-                    input.onEndEdit.NewListener(_val => character.Save());
+                    input.onEndEdit.NewListener(_val => SaveCharacters());
 
                     var delete = gameObject.transform.Find("Delete").GetComponent<Button>();
                     delete.onClick.NewListener(() =>
                     {
                         character.CharacterLore.RemoveAt(index);
-                        character.DetailsUI.text = character.FormatDetails;
-                        character.Save();
+                        character.DetailsUI.text = character.Format(true);
+                        SaveCharacters();
                         OpenCharacterEditor(character);
                     });
 
@@ -2929,8 +2871,8 @@ namespace BetterLegacy.Editor.Managers
                 add.OnClick.NewListener(() =>
                 {
                     character.CharacterLore.Add("New Detail");
-                    character.DetailsUI.text = character.FormatDetails;
-                    character.Save();
+                    character.DetailsUI.text = character.Format(true);
+                    SaveCharacters();
                     OpenCharacterEditor(character);
                 });
             }
@@ -2950,16 +2892,16 @@ namespace BetterLegacy.Editor.Managers
                     input.onValueChanged.NewListener(_val =>
                     {
                         character.CharacterAbilities[index] = _val;
-                        character.DetailsUI.text = character.FormatDetails;
+                        character.DetailsUI.text = character.Format(true);
                     });
-                    input.onEndEdit.NewListener(_val => character.Save());
+                    input.onEndEdit.NewListener(_val => SaveCharacters());
 
                     var delete = gameObject.transform.Find("Delete").GetComponent<Button>();
                     delete.onClick.NewListener(() =>
                     {
                         character.CharacterAbilities.RemoveAt(index);
-                        character.DetailsUI.text = character.FormatDetails;
-                        character.Save();
+                        character.DetailsUI.text = character.Format(true);
+                        SaveCharacters();
                         OpenCharacterEditor(character);
                     });
 
@@ -2971,11 +2913,16 @@ namespace BetterLegacy.Editor.Managers
                 add.OnClick.NewListener(() =>
                 {
                     character.CharacterAbilities.Add("New Detail");
-                    character.DetailsUI.text = character.FormatDetails;
-                    character.Save();
+                    character.DetailsUI.text = character.Format(true);
+                    SaveCharacters();
                     OpenCharacterEditor(character);
                 });
             }
+        }
+
+        public void RenderCharacterEditorTraits(CharacterPlanner character)
+        {
+
         }
 
         /// <summary>
@@ -2988,51 +2935,81 @@ namespace BetterLegacy.Editor.Managers
             editors[3].SetActive(true); editorTitlePanel.gameObject.SetActive(true);
             editorTitlePanel.color = EditorThemeManager.CurrentTheme.ColorGroups[ThemeGroup.Tab_Color_4];
 
+            RenderTimelineEditor(timeline);
+        }
+
+        /// <summary>
+        /// Renders the Timeline editor.
+        /// </summary>
+        /// <param name="timeline">Timeline planner to edit.</param>
+        public void RenderTimelineEditor(TimelinePlanner timeline)
+        {
+            var origName = timeline.Name;
             timelineEditorName.SetTextWithoutNotify(timeline.Name);
             timelineEditorName.onValueChanged.NewListener(_val =>
             {
                 timeline.Name = _val;
                 timeline.NameUI.text = _val;
             });
-            timelineEditorName.onEndEdit.NewListener(_val => SaveTimelines());
+            timelineEditorName.onEndEdit.NewListener(_val =>
+            {
+                if (!timelines.Has(x => x.Name == _val))
+                {
+                    SaveTimelines();
+                    return;
+                }
+
+                timeline.Name = origName;
+                timeline.NameUI.text = origName;
+                RenderTimelineEditor(timeline);
+            });
         }
 
         /// <summary>
         /// Opens the Event editor.
         /// </summary>
-        /// <param name="level">Event planner to edit.</param>
-        public void OpenEventEditor(TimelinePlanner.Event level)
+        /// <param name="_event">Event planner to edit.</param>
+        public void OpenEventEditor(TimelinePlanner.Event _event)
         {
             SetEditorsInactive();
             editors[4].SetActive(true); editorTitlePanel.gameObject.SetActive(true);
             editorTitlePanel.color = EditorThemeManager.CurrentTheme.ColorGroups[ThemeGroup.Tab_Color_4];
 
-            eventEditorName.SetTextWithoutNotify(level.Name);
+            RenderEventEditor(_event);
+        }
+
+        /// <summary>
+        /// Renders the Event editor.
+        /// </summary>
+        /// <param name="_event">Event planner to edit.</param>
+        public void RenderEventEditor(TimelinePlanner.Event _event)
+        {
+            eventEditorName.SetTextWithoutNotify(_event.Name);
             eventEditorName.onValueChanged.NewListener(_val =>
             {
-                level.Name = _val;
-                level.NameUI.text = $"{level.EventType}: {level.Name}";
+                _event.Name = _val;
+                _event.NameUI.text = $"{_event.EventType}: {_event.Name}";
             });
             eventEditorName.onEndEdit.NewListener(_val => SaveTimelines());
 
-            eventEditorDescription.SetTextWithoutNotify(level.Description);
+            eventEditorDescription.SetTextWithoutNotify(_event.Description);
             eventEditorDescription.onValueChanged.NewListener(_val =>
             {
-                level.Description = _val;
-                level.DescriptionUI.text = _val;
-                SetupPlannerLinks(_val, level.DescriptionUI, level.Hyperlinks);
+                _event.Description = _val;
+                _event.DescriptionUI.text = _val;
+                SetupPlannerLinks(_val, _event.DescriptionUI, _event.Hyperlinks);
             });
             eventEditorDescription.onEndEdit.NewListener(_val => SaveTimelines());
 
-            eventEditorPath.SetTextWithoutNotify(level.Path ?? string.Empty);
-            eventEditorPath.onValueChanged.NewListener(_val => level.Path = _val);
+            eventEditorPath.SetTextWithoutNotify(_event.Path ?? string.Empty);
+            eventEditorPath.onValueChanged.NewListener(_val => _event.Path = _val);
             eventEditorPath.onEndEdit.NewListener(_val => SaveTimelines());
 
-            eventEditorType.SetValueWithoutNotify((int)level.EventType);
+            eventEditorType.SetValueWithoutNotify((int)_event.EventType);
             eventEditorType.onValueChanged.NewListener(_val =>
             {
-                level.EventType = (TimelinePlanner.Event.Type)_val;
-                level.NameUI.text = $"{level.EventType}: {level.Name}";
+                _event.EventType = (TimelinePlanner.Event.Type)_val;
+                _event.NameUI.text = $"{_event.EventType}: {_event.Name}";
                 SaveTimelines();
             });
         }
@@ -3046,6 +3023,15 @@ namespace BetterLegacy.Editor.Managers
             editors[5].SetActive(true); editorTitlePanel.gameObject.SetActive(true);
             editorTitlePanel.color = EditorThemeManager.CurrentTheme.ColorGroups[ThemeGroup.Tab_Color_5];
 
+            RenderScheduleEditor(schedule);
+        }
+
+        /// <summary>
+        /// Renders the Schedule editor.
+        /// </summary>
+        /// <param name="schedule">Schedule planner to edit.</param>
+        public void RenderScheduleEditor(SchedulePlanner schedule)
+        {
             scheduleEditorDescription.SetTextWithoutNotify(schedule.Description);
             scheduleEditorDescription.onValueChanged.NewListener(_val =>
             {
@@ -3059,18 +3045,18 @@ namespace BetterLegacy.Editor.Managers
             scheduleEditorYear.SetTextWithoutNotify(schedule.DateTime.Year.ToString());
             scheduleEditorYear.onValueChanged.NewListener(_val =>
             {
-                if (int.TryParse(_val, out int year))
-                {
-                    var dateTime = schedule.DateTime;
+                if (!int.TryParse(_val, out int year))
+                    return;
 
-                    schedule.DateTime = DateTime.Parse(schedule.FormatDate(dateTime.Day, dateTime.Month, year, dateTime.Hour >= 12 ? dateTime.Hour - 12 : dateTime.Hour, dateTime.Minute, dateTime.Hour >= 12 && dateTime.Hour < 24 ? "PM" : "AM"));
+                var dateTime = schedule.DateTime;
 
-                    schedule.Date = schedule.DateTime.ToString("g");
-                    schedule.TextUI.text = schedule.Text;
-                    schedule.hasBeenChecked = false;
+                schedule.DateTime = DateTime.Parse(schedule.FormatDate(dateTime.Day, dateTime.Month, year, dateTime.Hour >= 12 ? dateTime.Hour - 12 : dateTime.Hour, dateTime.Minute, dateTime.Hour >= 12 && dateTime.Hour < 24 ? "PM" : "AM"));
 
-                    SaveSchedules();
-                }
+                schedule.Date = schedule.DateTime.ToString("g");
+                schedule.TextUI.text = schedule.Text;
+                schedule.hasBeenChecked = false;
+
+                SaveSchedules();
             });
 
             scheduleEditorMonth.SetValueWithoutNotify(schedule.DateTime.Month - 1);
@@ -3090,54 +3076,54 @@ namespace BetterLegacy.Editor.Managers
             scheduleEditorDay.SetTextWithoutNotify(schedule.DateTime.Day.ToString());
             scheduleEditorDay.onValueChanged.NewListener(_val =>
             {
-                if (int.TryParse(_val, out int day))
-                {
-                    var dateTime = schedule.DateTime;
+                if (!int.TryParse(_val, out int day))
+                    return;
 
-                    schedule.DateTime = DateTime.Parse(schedule.FormatDate(day, dateTime.Month, dateTime.Year, dateTime.Hour >= 12 ? dateTime.Hour - 12 : dateTime.Hour, dateTime.Minute, dateTime.Hour >= 12 && dateTime.Hour < 24 ? "PM" : "AM"));
+                var dateTime = schedule.DateTime;
 
-                    schedule.Date = schedule.DateTime.ToString("g");
-                    schedule.TextUI.text = schedule.Text;
-                    schedule.hasBeenChecked = false;
+                schedule.DateTime = DateTime.Parse(schedule.FormatDate(day, dateTime.Month, dateTime.Year, dateTime.Hour >= 12 ? dateTime.Hour - 12 : dateTime.Hour, dateTime.Minute, dateTime.Hour >= 12 && dateTime.Hour < 24 ? "PM" : "AM"));
 
-                    SaveSchedules();
-                }
+                schedule.Date = schedule.DateTime.ToString("g");
+                schedule.TextUI.text = schedule.Text;
+                schedule.hasBeenChecked = false;
+
+                SaveSchedules();
             });
 
             scheduleEditorHour.SetTextWithoutNotify(schedule.DateTime.Hour.ToString());
             scheduleEditorHour.onValueChanged.NewListener(_val =>
             {
-                if (int.TryParse(_val, out int hour))
-                {
-                    var dateTime = schedule.DateTime;
+                if (!int.TryParse(_val, out int hour))
+                    return;
 
-                    hour = Mathf.Clamp(hour, 0, 23);
+                var dateTime = schedule.DateTime;
 
-                    schedule.DateTime = DateTime.Parse(schedule.FormatDate(dateTime.Day, dateTime.Month, dateTime.Year, hour >= 12 ? hour - 12 : hour, dateTime.Minute, hour >= 12 && hour < 24 ? "PM" : "AM"));
+                hour = Mathf.Clamp(hour, 0, 23);
 
-                    schedule.Date = schedule.DateTime.ToString("g");
-                    schedule.TextUI.text = schedule.Text;
-                    schedule.hasBeenChecked = false;
+                schedule.DateTime = DateTime.Parse(schedule.FormatDate(dateTime.Day, dateTime.Month, dateTime.Year, hour >= 12 ? hour - 12 : hour, dateTime.Minute, hour >= 12 && hour < 24 ? "PM" : "AM"));
 
-                    SaveSchedules();
-                }
+                schedule.Date = schedule.DateTime.ToString("g");
+                schedule.TextUI.text = schedule.Text;
+                schedule.hasBeenChecked = false;
+
+                SaveSchedules();
             });
 
             scheduleEditorMinute.SetTextWithoutNotify(schedule.DateTime.Minute.ToString());
             scheduleEditorMinute.onValueChanged.NewListener(_val =>
             {
-                if (int.TryParse(_val, out int minute))
-                {
-                    var dateTime = schedule.DateTime;
+                if (!int.TryParse(_val, out int minute))
+                    return;
 
-                    schedule.DateTime = DateTime.Parse(schedule.FormatDate(dateTime.Day, dateTime.Month, dateTime.Year, dateTime.Hour >= 12 ? dateTime.Hour - 12 : dateTime.Hour, minute, dateTime.Hour >= 12 && dateTime.Hour < 24 ? "PM" : "AM"));
+                var dateTime = schedule.DateTime;
 
-                    schedule.Date = schedule.DateTime.ToString("g");
-                    schedule.TextUI.text = schedule.Text;
-                    schedule.hasBeenChecked = false;
+                schedule.DateTime = DateTime.Parse(schedule.FormatDate(dateTime.Day, dateTime.Month, dateTime.Year, dateTime.Hour >= 12 ? dateTime.Hour - 12 : dateTime.Hour, minute, dateTime.Hour >= 12 && dateTime.Hour < 24 ? "PM" : "AM"));
 
-                    SaveSchedules();
-                }
+                schedule.Date = schedule.DateTime.ToString("g");
+                schedule.TextUI.text = schedule.Text;
+                schedule.hasBeenChecked = false;
+
+                SaveSchedules();
             });
         }
 
@@ -3150,13 +3136,34 @@ namespace BetterLegacy.Editor.Managers
             editors[6].SetActive(true); editorTitlePanel.gameObject.SetActive(true);
             editorTitlePanel.color = EditorThemeManager.CurrentTheme.ColorGroups[ThemeGroup.Tab_Color_6];
 
+            RenderNoteEditor(note);
+        }
+
+        /// <summary>
+        /// Renders the Note editor.
+        /// </summary>
+        /// <param name="note">Note planner to edit.</param>
+        public void RenderNoteEditor(NotePlanner note)
+        {
+            var origName = note.Name;
             noteEditorName.SetTextWithoutNotify(note.Name);
             noteEditorName.onValueChanged.NewListener(_val =>
             {
                 note.Name = _val;
                 note.TitleUI.text = $"Note - {note.Name}";
             });
-            noteEditorName.onEndEdit.NewListener(_val => SaveNotes());
+            noteEditorName.onEndEdit.NewListener(_val =>
+            {
+                if (!notes.Has(x => x.Name == _val))
+                {
+                    SaveNotes();
+                    return;
+                }
+
+                note.Name = _val;
+                note.TitleUI.text = $"Note - {note.Name}";
+                RenderNoteEditor(note);
+            });
 
             noteEditorText.SetTextWithoutNotify(note.Text);
             noteEditorText.onValueChanged.NewListener(_val =>
@@ -3167,6 +3174,21 @@ namespace BetterLegacy.Editor.Managers
             });
             noteEditorText.onEndEdit.NewListener(_val => SaveNotes());
 
+            RenderNoteEditorColors(note);
+
+            noteEditorReset.onClick.NewListener(() =>
+            {
+                note.ResetTransform();
+                SaveNotes();
+            });
+        }
+
+        /// <summary>
+        /// Renders the Note editor colors.
+        /// </summary>
+        /// <param name="note">Note planner to edit.</param>
+        public void RenderNoteEditorColors(NotePlanner note)
+        {
             noteEditorColors.Clear();
             LSHelpers.DeleteChildren(noteEditorColorsParent);
             for (int i = 0; i < MarkerEditor.inst.markerColors.Count; i++)
@@ -3177,14 +3199,6 @@ namespace BetterLegacy.Editor.Managers
             }
 
             SetNoteColors(note);
-
-            noteEditorReset.onClick.NewListener(() =>
-            {
-                note.Position = Vector2.zero;
-                note.Scale = Vector2.one;
-                note.Size = new Vector2(300f, 150f);
-                SaveNotes();
-            });
         }
 
         /// <summary>
@@ -3221,10 +3235,20 @@ namespace BetterLegacy.Editor.Managers
             editors[7].SetActive(true); editorTitlePanel.gameObject.SetActive(true);
             editorTitlePanel.color = EditorThemeManager.CurrentTheme.ColorGroups[ThemeGroup.Tab_Color_7];
 
+            RenderOSTEditor(ost);
+        }
+
+        /// <summary>
+        /// Renders the OST editor.
+        /// </summary>
+        /// <param name="ost">OST planner to edit.</param>
+        public void RenderOSTEditor(OSTPlanner ost)
+        {
             ostEditorPath.SetTextWithoutNotify(ost.Path);
             ostEditorPath.onValueChanged.NewListener(_val => { ost.Path = _val; });
             ostEditorPath.onEndEdit.NewListener(_val => SaveOST());
 
+            var origName = ost.Name;
             ostEditorName.SetTextWithoutNotify(ost.Name);
             ostEditorName.onValueChanged.NewListener(_val =>
             {
@@ -3232,7 +3256,19 @@ namespace BetterLegacy.Editor.Managers
                 ost.TextUI.text = _val;
                 SetupPlannerLinks(ost.Name, ost.TextUI, ost.Hyperlinks);
             });
-            ostEditorName.onEndEdit.NewListener(_val => SaveOST());
+            ostEditorName.onEndEdit.NewListener(_val =>
+            {
+                if (!osts.Has(x => x.Name == _val))
+                {
+                    SaveOST();
+                    return;
+                }
+
+                ost.Name = origName;
+                ost.TextUI.text = origName;
+                SetupPlannerLinks(ost.Name, ost.TextUI, ost.Hyperlinks);
+                RenderOSTEditor(ost);
+            });
             ostEditorPlay.onClick.NewListener(ost.Play);
             ostEditorStop.onClick.NewListener(StopOST);
             ostEditorShuffle.onClick.NewListener(ShuffleOST);
@@ -3248,29 +3284,15 @@ namespace BetterLegacy.Editor.Managers
             ostEditorIndex.SetTextWithoutNotify(ost.Index.ToString());
             ostEditorIndex.onValueChanged.NewListener(_val =>
             {
-                if (int.TryParse(_val, out int num))
-                {
-                    ost.Index = num;
+                if (!int.TryParse(_val, out int num))
+                    return;
 
-                    var list = osts.OrderBy(x => x.Index).ToList();
-
-                    for (int i = 0; i < list.Count; i++)
-                    {
-                        if (list[i].ID == ost.ID && ostEditorIndex.text != i.ToString())
-                            StartCoroutine(SetIndex(i));
-
-                        list[i].Index = i;
-                        list[i].GameObject.transform.SetSiblingIndex(i);
-                    }
-                }
+                ost.Index = num;
+                UpdateOSTIndexes();
+                RenderOSTEditor(ost);
+                SaveOST();
             });
             TriggerHelper.AddEventTriggers(ostEditorIndex.gameObject, TriggerHelper.ScrollDeltaInt(ostEditorIndex));
-        }
-
-        IEnumerator SetIndex(int i)
-        {
-            yield return null;
-            ostEditorIndex.text = i.ToString();
         }
 
         #endregion
@@ -3874,10 +3896,65 @@ namespace BetterLegacy.Editor.Managers
         }
         
         /// <summary>
+        /// Copies the selected planners.
+        /// </summary>
+        public void CopySelectedPlanners()
+        {
+            copiedPlanners.AddRange(documents.Where(x => x.Selected));
+            copiedPlanners.AddRange(todos.Where(x => x.Selected));
+            copiedPlanners.AddRange(characters.Where(x => x.Selected));
+            copiedPlanners.AddRange(timelines.Where(x => x.Selected));
+            copiedPlanners.AddRange(schedules.Where(x => x.Selected));
+            copiedPlanners.AddRange(notes.Where(x => x.Selected));
+            copiedPlanners.AddRange(osts.Where(x => x.Selected));
+            EditorManager.inst.DisplayNotification("Copied all selected planners.", 2f, EditorManager.NotificationType.Success);
+        }
+
+        /// <summary>
+        /// Copies the current tabs' planners.
+        /// </summary>
+        public void CopyCurrentTabPlanners()
+        {
+            switch (CurrentTab)
+            {
+                case PlannerBase.Type.Document: {
+                        copiedPlanners.AddRange(documents);
+                        break;
+                    }
+                case PlannerBase.Type.TODO: {
+                        copiedPlanners.AddRange(todos);
+                        break;
+                    }
+                case PlannerBase.Type.Character: {
+                        copiedPlanners.AddRange(characters);
+                        break;
+                    }
+                case PlannerBase.Type.Timeline: {
+                        copiedPlanners.AddRange(timelines);
+                        break;
+                    }
+                case PlannerBase.Type.Schedule: {
+                        copiedPlanners.AddRange(schedules);
+                        break;
+                    }
+                case PlannerBase.Type.Note: {
+                        copiedPlanners.AddRange(notes);
+                        break;
+                    }
+                case PlannerBase.Type.OST: {
+                        copiedPlanners.AddRange(osts);
+                        break;
+                    }
+            }
+            EditorManager.inst.DisplayNotification("Copied all planners in the current tab.", 2f, EditorManager.NotificationType.Success);
+        }
+
+        /// <summary>
         /// Pastes the planners copied from <see cref="copiedPlanners"/>.
         /// </summary>
         public void PastePlanners()
         {
+            int pastedCount = 0;
             for (int i = 0; i < copiedPlanners.Count; i++)
             {
                 var plannerItem = copiedPlanners[i];
@@ -3893,6 +3970,7 @@ namespace BetterLegacy.Editor.Managers
                             var copy = document.CreateCopy();
                             documents.Add(copy);
                             copy.Init();
+                            pastedCount++;
                             break;
                         }
                     case PlannerBase.Type.TODO: {
@@ -3902,6 +3980,7 @@ namespace BetterLegacy.Editor.Managers
                             var copy = todo.CreateCopy();
                             todos.Add(copy);
                             copy.Init();
+                            pastedCount++;
                             break;
                         }
                     case PlannerBase.Type.Character: {
@@ -3911,6 +3990,7 @@ namespace BetterLegacy.Editor.Managers
                             var copy = character.CreateCopy();
                             characters.Add(copy);
                             copy.Init();
+                            pastedCount++;
                             break;
                         }
                     case PlannerBase.Type.Timeline: {
@@ -3920,6 +4000,7 @@ namespace BetterLegacy.Editor.Managers
                             var copy = timeline.CreateCopy();
                             timelines.Add(copy);
                             copy.Init();
+                            pastedCount++;
                             break;
                         }
                     case PlannerBase.Type.Schedule: {
@@ -3929,6 +4010,7 @@ namespace BetterLegacy.Editor.Managers
                             var copy = schedule.CreateCopy();
                             schedules.Add(copy);
                             copy.Init();
+                            pastedCount++;
                             break;
                         }
                     case PlannerBase.Type.Note: {
@@ -3938,6 +4020,7 @@ namespace BetterLegacy.Editor.Managers
                             var copy = note.CreateCopy();
                             notes.Add(copy);
                             copy.Init();
+                            pastedCount++;
                             break;
                         }
                     case PlannerBase.Type.OST: {
@@ -3947,12 +4030,17 @@ namespace BetterLegacy.Editor.Managers
                             var copy = ost.CreateCopy();
                             osts.Add(copy);
                             copy.Init();
+                            pastedCount++;
                             break;
                         }
                 }
             }
+
             Save();
             RefreshList();
+
+            if (pastedCount > 0)
+                EditorManager.inst.DisplayNotification("Pasted the copied planners.", 2f, EditorManager.NotificationType.Success);
         }
 
         /// <summary>
@@ -4058,6 +4146,20 @@ namespace BetterLegacy.Editor.Managers
                 }
 
                 list[currentOST + num].Play();
+            }
+        }
+
+        /// <summary>
+        /// Updates the indexes of the OST planners.
+        /// </summary>
+        public void UpdateOSTIndexes()
+        {
+            var list = osts.OrderBy(x => x.Index).ToList();
+            for (int i = 0; i < list.Count; i++)
+            {
+                var ost = list[i];
+                ost.Index = i;
+                ost.GameObject.transform.SetSiblingIndex(i);
             }
         }
 

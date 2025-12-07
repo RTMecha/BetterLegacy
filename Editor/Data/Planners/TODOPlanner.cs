@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 using TMPro;
+using SimpleJSON;
 
 using BetterLegacy.Core;
 using BetterLegacy.Core.Helpers;
@@ -13,15 +14,17 @@ using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Planners
 {
-    public class TODOPlanner : PlannerBase
+    public class TODOPlanner : PlannerBase<TODOPlanner>
     {
-        public TODOPlanner() : base(Type.TODO) { }
+        public TODOPlanner() : base() { }
 
         public string Text { get; set; }
         public TextMeshProUGUI TextUI { get; set; }
         public OpenHyperlinks Hyperlinks { get; set; }
         public bool Checked { get; set; }
         public Toggle CheckedUI { get; set; }
+
+        public override Type PlannerType => Type.TODO;
 
         public override void Init()
         {
@@ -67,6 +70,8 @@ namespace BetterLegacy.Editor.Data.Planners
                             ProjectPlanner.inst.copiedPlanners.Add(this);
                             EditorManager.inst.DisplayNotification("Copied TODO!", 2f, EditorManager.NotificationType.Success);
                         }),
+                        new ButtonFunction("Copy Selected", ProjectPlanner.inst.CopySelectedPlanners),
+                        new ButtonFunction("Copy Current Tab", ProjectPlanner.inst.CopyCurrentTabPlanners),
                         new ButtonFunction("Paste", ProjectPlanner.inst.PastePlanners),
                         new ButtonFunction(true),
                     };
@@ -75,9 +80,16 @@ namespace BetterLegacy.Editor.Data.Planners
                     {
                         for (int i = 0; i < ProjectPlanner.inst.todos.Count; i++)
                             ProjectPlanner.inst.todos[i].Init();
+                        ProjectPlanner.inst.RefreshList();
                     }));
 
                     EditorContextMenu.inst.ShowContextMenu(buttonFunctions);
+                    return;
+                }
+
+                if (InputDataManager.inst.editorActions.MultiSelect.IsPressed)
+                {
+                    Selected = !Selected;
                     return;
                 }
 
@@ -108,10 +120,28 @@ namespace BetterLegacy.Editor.Data.Planners
 
             ProjectPlanner.inst.SetupPlannerLinks(Text, TextUI, Hyperlinks);
 
+            InitSelectedUI();
+
             gameObject.SetActive(false);
         }
 
-        public TODOPlanner CreateCopy() => new TODOPlanner
+        public override void ReadJSON(JSONNode jn)
+        {
+            Checked = jn["ch"].AsBool;
+            Text = jn["text"];
+        }
+
+        public override JSONNode ToJSON()
+        {
+            var jn = Parser.NewJSONObject();
+
+            jn["ch"] = Checked;
+            jn["text"] = Text;
+
+            return jn;
+        }
+
+        public override TODOPlanner CreateCopy() => new TODOPlanner
         {
             Text = Text,
             Checked = Checked,

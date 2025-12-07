@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 using TMPro;
+using SimpleJSON;
 
 using BetterLegacy.Core;
 using BetterLegacy.Core.Helpers;
@@ -14,9 +15,9 @@ using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Planners
 {
-    public class SchedulePlanner : PlannerBase
+    public class SchedulePlanner : PlannerBase<SchedulePlanner>
     {
-        public SchedulePlanner() : base(Type.Schedule) { }
+        public SchedulePlanner() : base() { }
 
         public TextMeshProUGUI TextUI { get; set; }
         public OpenHyperlinks Hyperlinks { get; set; }
@@ -40,6 +41,8 @@ namespace BetterLegacy.Editor.Data.Planners
         bool CompareDates(DateTime date) => DateTime.Day == date.Day && DateTime.Month == date.Month && DateTime.Year == date.Year;
 
         public bool hasBeenChecked;
+
+        public override Type PlannerType => Type.Schedule;
 
         public override void Init()
         {
@@ -85,6 +88,8 @@ namespace BetterLegacy.Editor.Data.Planners
                             ProjectPlanner.inst.copiedPlanners.Add(this);
                             EditorManager.inst.DisplayNotification("Copied schedule!", 2f, EditorManager.NotificationType.Success);
                         }),
+                        new ButtonFunction("Copy Selected", ProjectPlanner.inst.CopySelectedPlanners),
+                        new ButtonFunction("Copy Current Tab", ProjectPlanner.inst.CopyCurrentTabPlanners),
                         new ButtonFunction("Paste", ProjectPlanner.inst.PastePlanners),
                         new ButtonFunction(true),
                     };
@@ -93,9 +98,16 @@ namespace BetterLegacy.Editor.Data.Planners
                     {
                         for (int i = 0; i < ProjectPlanner.inst.schedules.Count; i++)
                             ProjectPlanner.inst.schedules[i].Init();
+                        ProjectPlanner.inst.RefreshList();
                     }));
 
                     EditorContextMenu.inst.ShowContextMenu(buttonFunctions);
+                    return;
+                }
+
+                if (InputDataManager.inst.editorActions.MultiSelect.IsPressed)
+                {
+                    Selected = !Selected;
                     return;
                 }
 
@@ -115,10 +127,35 @@ namespace BetterLegacy.Editor.Data.Planners
 
             ProjectPlanner.inst.SetupPlannerLinks(Text, TextUI, Hyperlinks);
 
+            InitSelectedUI();
+
             gameObject.SetActive(false);
         }
 
-        public SchedulePlanner CreateCopy() => new SchedulePlanner
+        public override void ReadJSON(JSONNode jn)
+        {
+            Date = jn["date"];
+            Description = jn["desc"];
+            if (jn["checked"] != null)
+                hasBeenChecked = jn["checked"].AsBool;
+
+            if (DateTime.TryParse(Date, out DateTime dateTime))
+                DateTime = dateTime;
+        }
+
+        public override JSONNode ToJSON()
+        {
+            var jn = Parser.NewJSONObject();
+
+            jn["date"] = Date;
+            jn["desc"] = Description;
+            if (hasBeenChecked)
+                jn["checked"] = hasBeenChecked;
+
+            return jn;
+        }
+
+        public override SchedulePlanner CreateCopy() => new SchedulePlanner
         {
             Date = Date,
             DateTime = DateTime,

@@ -4,6 +4,7 @@ using UnityEngine.UI;
 using LSFunctions;
 
 using TMPro;
+using SimpleJSON;
 
 using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
@@ -15,9 +16,9 @@ using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Planners
 {
-    public class NotePlanner : PlannerBase
+    public class NotePlanner : PlannerBase<NotePlanner>
     {
-        public NotePlanner() : base(Type.Note) { }
+        public NotePlanner() : base() { }
 
         public bool Dragging { get; set; }
 
@@ -38,6 +39,8 @@ namespace BetterLegacy.Editor.Data.Planners
         public Color TopColor => Color >= 0 && Color < MarkerEditor.inst.markerColors.Count ? MarkerEditor.inst.markerColors[Color] : LSColors.red700;
 
         public static bool DisplayEdges { get; set; }
+
+        public override Type PlannerType => Type.Note;
 
         public override void Init()
         {
@@ -153,10 +156,43 @@ namespace BetterLegacy.Editor.Data.Planners
 
             ProjectPlanner.inst.SetupPlannerLinks(Text, TextUI, Hyperlinks);
 
+            InitSelectedUI();
+
             gameObject.SetActive(false);
         }
 
-        public NotePlanner CreateCopy() => new NotePlanner
+        public override void ReadJSON(JSONNode jn)
+        {
+            Active = jn["active"].AsBool;
+            Name = !string.IsNullOrEmpty(jn["name"]) ? jn["name"] : string.Empty;
+
+            Position = new Vector2(jn["pos"]["x"].AsFloat, jn["pos"]["y"].AsFloat);
+            Scale = new Vector2(jn["sca"]["x"].AsFloat, jn["sca"]["y"].AsFloat);
+            if (jn["size"] != null)
+                Size = new Vector2(jn["size"]["x"].AsFloat, jn["size"]["y"].AsFloat);
+            Text = jn["text"];
+            Color = jn["col"].AsInt;
+        }
+
+        public override JSONNode ToJSON()
+        {
+            var jn = Parser.NewJSONObject();
+
+            jn["active"] = Active;
+            jn["name"] = Name;
+            jn["pos"]["x"] = Position.x;
+            jn["pos"]["y"] = Position.y;
+            jn["sca"]["x"] = Scale.x;
+            jn["sca"]["y"] = Scale.y;
+            jn["size"]["x"] = Size.x;
+            jn["size"]["y"] = Size.y;
+            jn["col"] = Color;
+            jn["text"] = Text;
+
+            return jn;
+        }
+
+        public override NotePlanner CreateCopy() => new NotePlanner
         {
             Active = Active,
             Name = Name,
@@ -168,5 +204,18 @@ namespace BetterLegacy.Editor.Data.Planners
         };
 
         public override bool SamePlanner(PlannerBase other) => other is NotePlanner note && note.Name == Name;
+
+        public void ResetTransform()
+        {
+            ResetPosition();
+            ResetScale();
+            ResetSize();
+        }
+
+        public void ResetPosition() => Position = Vector2.zero;
+
+        public void ResetScale() => Scale = Vector2.one;
+
+        public void ResetSize() => new Vector2(300f, 150f);
     }
 }

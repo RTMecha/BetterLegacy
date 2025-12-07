@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using LSFunctions;
 
 using TMPro;
+using SimpleJSON;
 
 using BetterLegacy.Core;
 using BetterLegacy.Core.Helpers;
@@ -16,9 +17,9 @@ using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Planners
 {
-    public class OSTPlanner : PlannerBase
+    public class OSTPlanner : PlannerBase<OSTPlanner>
     {
-        public OSTPlanner() : base(Type.OST) { }
+        public OSTPlanner() : base() { }
 
         public string Path { get; set; }
         public bool UseGlobal { get; set; }
@@ -32,6 +33,8 @@ namespace BetterLegacy.Editor.Data.Planners
         public bool playing;
 
         public bool Valid => RTFile.FileExists(UseGlobal ? Path : $"{RTFile.ApplicationDirectory}{Path}") && (Path.Contains(".ogg") || Path.Contains(".wav") || Path.Contains(".mp3"));
+
+        public override Type PlannerType => Type.OST;
 
         public void Play()
         {
@@ -132,6 +135,8 @@ namespace BetterLegacy.Editor.Data.Planners
                             ProjectPlanner.inst.copiedPlanners.Add(this);
                             EditorManager.inst.DisplayNotification("Copied OST!", 2f, EditorManager.NotificationType.Success);
                         }),
+                        new ButtonFunction("Copy Selected", ProjectPlanner.inst.CopySelectedPlanners),
+                        new ButtonFunction("Copy Current Tab", ProjectPlanner.inst.CopyCurrentTabPlanners),
                         new ButtonFunction("Paste", ProjectPlanner.inst.PastePlanners),
                         new ButtonFunction(true),
                     };
@@ -140,9 +145,16 @@ namespace BetterLegacy.Editor.Data.Planners
                     {
                         for (int i = 0; i < ProjectPlanner.inst.osts.Count; i++)
                             ProjectPlanner.inst.osts[i].Init();
+                        ProjectPlanner.inst.RefreshList();
                     }));
 
                     EditorContextMenu.inst.ShowContextMenu(buttonFunctions);
+                    return;
+                }
+
+                if (InputDataManager.inst.editorActions.MultiSelect.IsPressed)
+                {
+                    Selected = !Selected;
                     return;
                 }
 
@@ -166,10 +178,33 @@ namespace BetterLegacy.Editor.Data.Planners
 
             ProjectPlanner.inst.SetupPlannerLinks(Name, TextUI, Hyperlinks);
 
+            InitSelectedUI();
+
             gameObject.SetActive(false);
         }
 
-        public OSTPlanner CreateCopy() => new OSTPlanner
+        public override void ReadJSON(JSONNode jn)
+        {
+            Name = jn["name"];
+            Path = !string.IsNullOrEmpty(jn["path"]) ? jn["path"] : string.Empty;
+            UseGlobal = jn["use_global"].AsBool;
+            Index = jn["index"].AsInt;
+        }
+
+        public override JSONNode ToJSON()
+        {
+            var jn = Parser.NewJSONObject();
+
+            jn["name"] = Name;
+            if (!string.IsNullOrEmpty(Path))
+                jn["path"] = Path;
+            jn["use_global"] = UseGlobal;
+            jn["index"] = Index;
+
+            return jn;
+        }
+
+        public override OSTPlanner CreateCopy() => new OSTPlanner
         {
             Path = Path,
             UseGlobal = UseGlobal,

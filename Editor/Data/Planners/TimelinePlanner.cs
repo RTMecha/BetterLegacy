@@ -7,6 +7,7 @@ using UnityEngine.UI;
 using LSFunctions;
 
 using TMPro;
+using SimpleJSON;
 
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data.Level;
@@ -17,9 +18,9 @@ using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Planners
 {
-    public class TimelinePlanner : PlannerBase
+    public class TimelinePlanner : PlannerBase<TimelinePlanner>
     {
-        public TimelinePlanner() : base(Type.Timeline) { }
+        public TimelinePlanner() : base() { }
 
         public string Name { get; set; }
 
@@ -30,6 +31,8 @@ namespace BetterLegacy.Editor.Data.Planners
         public Transform Content { get; set; }
 
         public GameObject Add { get; set; }
+
+        public override Type PlannerType => Type.Timeline;
 
         public void UpdateTimeline(bool destroy = true)
         {
@@ -239,6 +242,28 @@ namespace BetterLegacy.Editor.Data.Planners
                 EditorLevelManager.inst.LoadLevel(actualLevel);
             }
 
+            public static Event Parse(JSONNode jn) => new Event
+            {
+                Name = jn["n"],
+                Path = !string.IsNullOrEmpty(jn["p"]) ? jn["p"] : string.Empty,
+                EventType = (Type)jn["t"].AsInt,
+                Description = !string.IsNullOrEmpty(jn["d"]) ? jn["d"] : string.Empty,
+            };
+
+            public JSONNode ToJSON()
+            {
+                var jn = Parser.NewJSONObject();
+
+                jn["n"] = Name;
+                if (!string.IsNullOrEmpty(Path))
+                    jn["p"] = Path;
+                jn["t"] = ((int)EventType).ToString();
+                if (!string.IsNullOrEmpty(Description))
+                    jn["d"] = Description;
+
+                return jn;
+            }
+
             public Event CreateCopy() => new Event
             {
                 Name = Name,
@@ -302,6 +327,8 @@ namespace BetterLegacy.Editor.Data.Planners
                     ProjectPlanner.inst.copiedPlanners.Add(this);
                     EditorManager.inst.DisplayNotification("Copied timeline!", 2f, EditorManager.NotificationType.Success);
                 }),
+                new ButtonFunction("Copy Selected", ProjectPlanner.inst.CopySelectedPlanners),
+                new ButtonFunction("Copy Current Tab", ProjectPlanner.inst.CopyCurrentTabPlanners),
                 new ButtonFunction("Paste", ProjectPlanner.inst.PastePlanners),
                 new ButtonFunction(true),
             };
@@ -310,16 +337,53 @@ namespace BetterLegacy.Editor.Data.Planners
             {
                 for (int i = 0; i < ProjectPlanner.inst.timelines.Count; i++)
                     ProjectPlanner.inst.timelines[i].Init();
+                ProjectPlanner.inst.RefreshList();
             }));
 
-            EditorContextMenu.AddContextMenu(gameObject, leftClick: () => ProjectPlanner.inst.OpenTimelineEditor(this), buttonFunctions);
+            EditorContextMenu.AddContextMenu(gameObject, leftClick: () =>
+            {
+                if (InputDataManager.inst.editorActions.MultiSelect.IsPressed)
+                {
+                    Selected = !Selected;
+                    return;
+                }
+
+                ProjectPlanner.inst.OpenTimelineEditor(this);
+            }, buttonFunctions);
 
             UpdateTimeline();
+
+            InitSelectedUI();
 
             gameObject.SetActive(false);
         }
 
-        public TimelinePlanner CreateCopy() => new TimelinePlanner
+        public override void ReadJSON(JSONNode jn)
+        {
+            Name = jn["name"];
+
+            if (jn["levels"] != null)
+                for (int j = 0; j < jn["levels"].Count; j++)
+                    Events.Add(Event.Parse(jn["levels"][j]));
+
+            if (jn["events"] != null)
+                for (int j = 0; j < jn["events"].Count; j++)
+                    Events.Add(Event.Parse(jn["events"][j]));
+        }
+
+        public override JSONNode ToJSON()
+        {
+            var jn = Parser.NewJSONObject();
+
+            jn["name"] = Name;
+
+            for (int i = 0; i < Events.Count; i++)
+                jn["events"][i] = Events[i].ToJSON();
+
+            return jn;
+        }
+
+        public override TimelinePlanner CreateCopy() => new TimelinePlanner
         {
             Name = Name,
             Events = new List<Event>(Events.Select(x => x.CreateCopy())),

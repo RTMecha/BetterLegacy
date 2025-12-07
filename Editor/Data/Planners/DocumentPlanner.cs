@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 using TMPro;
+using SimpleJSON;
 
 using BetterLegacy.Core;
 using BetterLegacy.Core.Helpers;
@@ -12,14 +13,16 @@ using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Planners
 {
-    public class DocumentPlanner : PlannerBase
+    public class DocumentPlanner : PlannerBase<DocumentPlanner>
     {
-        public DocumentPlanner() : base(Type.Document) { }
+        public DocumentPlanner() : base() { }
 
         public string Name { get; set; }
         public TextMeshProUGUI NameUI { get; set; }
         public string Text { get; set; }
         public TextMeshProUGUI TextUI { get; set; }
+
+        public override Type PlannerType => Type.Document;
 
         public override void Init()
         {
@@ -52,6 +55,8 @@ namespace BetterLegacy.Editor.Data.Planners
                     ProjectPlanner.inst.copiedPlanners.Add(this);
                     EditorManager.inst.DisplayNotification("Copied document!", 2f, EditorManager.NotificationType.Success);
                 }),
+                new ButtonFunction("Copy Selected", ProjectPlanner.inst.CopySelectedPlanners),
+                new ButtonFunction("Copy Current Tab", ProjectPlanner.inst.CopyCurrentTabPlanners),
                 new ButtonFunction("Paste", ProjectPlanner.inst.PastePlanners),
                 new ButtonFunction(true),
             };
@@ -60,9 +65,19 @@ namespace BetterLegacy.Editor.Data.Planners
             {
                 for (int i = 0; i < ProjectPlanner.inst.documents.Count; i++)
                     ProjectPlanner.inst.documents[i].Init();
+                ProjectPlanner.inst.RefreshList();
             }));
 
-            EditorContextMenu.AddContextMenu(gameObject, leftClick: () => ProjectPlanner.inst.OpenDocumentEditor(this), buttonFunctions);
+            EditorContextMenu.AddContextMenu(gameObject, leftClick: () =>
+            {
+                if (InputDataManager.inst.editorActions.MultiSelect.IsPressed)
+                {
+                    Selected = !Selected;
+                    return;
+                }
+
+                ProjectPlanner.inst.OpenDocumentEditor(this);
+            }, buttonFunctions);
 
             NameUI = gameObject.transform.Find("name").GetComponent<TextMeshProUGUI>();
             NameUI.text = Name;
@@ -86,10 +101,30 @@ namespace BetterLegacy.Editor.Data.Planners
 
             ProjectPlanner.inst.SetupPlannerLinks(Text, TextUI, null, false);
 
+            InitSelectedUI();
+
             gameObject.SetActive(false);
         }
 
-        public DocumentPlanner CreateCopy() => new DocumentPlanner
+        public override void ReadJSON(JSONNode jn)
+        {
+            Name = jn["name"];
+            if (jn["text"] != null)
+                Text = jn["text"];
+        }
+
+        public override JSONNode ToJSON()
+        {
+            var jn = Parser.NewJSONObject();
+
+            jn["name"] = Name;
+            if (!string.IsNullOrEmpty(Text))
+                jn["text"] = Text;
+
+            return jn;
+        }
+
+        public override DocumentPlanner CreateCopy() => new DocumentPlanner
         {
             Name = Name,
             Text = Text,
