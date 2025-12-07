@@ -262,7 +262,7 @@ namespace BetterLegacy.Editor.Managers
 
             Dialog.TimeField.middleButton.onClick.NewListener(() => Dialog.TimeField.inputField.text = AudioManager.inst.CurrentAudioSource.time.ToString());
 
-            EditorContextMenu.inst.AddContextMenu(Dialog.TimeField.inputField.gameObject,
+            EditorContextMenu.AddContextMenu(Dialog.TimeField.inputField.gameObject,
                 new ButtonFunction("Snap to BPM", () => Dialog.TimeField.inputField.text = RTEditor.SnapToBPM(marker.time).ToString()));
         }
 

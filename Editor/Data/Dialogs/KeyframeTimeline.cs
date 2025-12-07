@@ -1157,7 +1157,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 else
                     toggle.image.color = CoreHelper.CurrentBeatmapTheme.GetObjColor(tmpIndex);
 
-                EditorContextMenu.inst.AddContextMenu(toggle.gameObject,
+                EditorContextMenu.AddContextMenu(toggle.gameObject,
                     new ButtonFunction("Use", () => toggle.isOn = true),
                     new ButtonFunction($"Show Modified Colors [{(EditorConfig.Instance.ShowModifiedColors.Value ? "On" : "Off")}]", () => EditorConfig.Instance.ShowModifiedColors.Value = !EditorConfig.Instance.ShowModifiedColors.Value),
                     new ButtonFunction("Copy Hex Color", () => LSText.CopyToClipboard(RTColors.ColorToHexOptional(CoreHelper.CurrentBeatmapTheme.GetObjColor(tmpIndex)))),
@@ -1287,7 +1287,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                 TriggerHelper.IncreaseDecreaseButtons(opacity);
 
-                EditorContextMenu.inst.AddContextMenu(opacity.gameObject,
+                EditorContextMenu.AddContextMenu(opacity.gameObject,
                     new ButtonFunction("Reset Value", () =>
                     {
                         foreach (var keyframe in selected.Select(x => x.eventKeyframe))
@@ -1369,7 +1369,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                 TriggerHelper.IncreaseDecreaseButtons(gradientOpacity);
 
-                EditorContextMenu.inst.AddContextMenu(gradientOpacity.gameObject,
+                EditorContextMenu.AddContextMenu(gradientOpacity.gameObject,
                     new ButtonFunction("Reset Value", () =>
                     {
                         foreach (var keyframe in selected.Select(x => x.eventKeyframe))
@@ -1432,7 +1432,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 TriggerHelper.AddEventTriggers(hue.gameObject, TriggerHelper.ScrollDelta(hue));
                 TriggerHelper.IncreaseDecreaseButtons(hue);
 
-                EditorContextMenu.inst.AddContextMenu(hue.gameObject,
+                EditorContextMenu.AddContextMenu(hue.gameObject,
                     new ButtonFunction("Reset Value", () =>
                     {
                         foreach (var keyframe in selected.Select(x => x.eventKeyframe))
@@ -1493,7 +1493,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 TriggerHelper.AddEventTriggers(sat.gameObject, TriggerHelper.ScrollDelta(sat));
                 TriggerHelper.IncreaseDecreaseButtons(sat);
 
-                EditorContextMenu.inst.AddContextMenu(sat.gameObject,
+                EditorContextMenu.AddContextMenu(sat.gameObject,
                     new ButtonFunction("Reset Value", () =>
                     {
                         foreach (var keyframe in selected.Select(x => x.eventKeyframe))
@@ -1554,7 +1554,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 TriggerHelper.AddEventTriggers(val.gameObject, TriggerHelper.ScrollDelta(val));
                 TriggerHelper.IncreaseDecreaseButtons(val);
 
-                EditorContextMenu.inst.AddContextMenu(val.gameObject,
+                EditorContextMenu.AddContextMenu(val.gameObject,
                     new ButtonFunction("Reset Value", () =>
                     {
                         foreach (var keyframe in selected.Select(x => x.eventKeyframe))
@@ -1621,7 +1621,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 TriggerHelper.AddEventTriggers(hue.gameObject, TriggerHelper.ScrollDelta(hue));
                 TriggerHelper.IncreaseDecreaseButtons(hue);
 
-                EditorContextMenu.inst.AddContextMenu(hue.gameObject,
+                EditorContextMenu.AddContextMenu(hue.gameObject,
                     new ButtonFunction("Reset Value", () =>
                     {
                         foreach (var keyframe in selected.Select(x => x.eventKeyframe))
@@ -1676,7 +1676,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 TriggerHelper.AddEventTriggers(sat.gameObject, TriggerHelper.ScrollDelta(sat));
                 TriggerHelper.IncreaseDecreaseButtons(sat);
 
-                EditorContextMenu.inst.AddContextMenu(sat.gameObject,
+                EditorContextMenu.AddContextMenu(sat.gameObject,
                     new ButtonFunction("Reset Value", () =>
                     {
                         foreach (var keyframe in selected.Select(x => x.eventKeyframe))
@@ -1731,7 +1731,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 TriggerHelper.AddEventTriggers(val.gameObject, TriggerHelper.ScrollDelta(val));
                 TriggerHelper.IncreaseDecreaseButtons(val);
 
-                EditorContextMenu.inst.AddContextMenu(val.gameObject,
+                EditorContextMenu.AddContextMenu(val.gameObject,
                     new ButtonFunction("Reset Value", () =>
                     {
                         foreach (var keyframe in selected.Select(x => x.eventKeyframe))

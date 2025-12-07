@@ -2940,7 +2940,7 @@ namespace BetterLegacy.Editor.Managers
                     }));
                 }
 
-                EditorContextMenu.inst.AddContextMenu(toggle.gameObject, list);
+                EditorContextMenu.AddContextMenu(toggle.gameObject, list);
 
                 num++;
             }
@@ -2960,7 +2960,7 @@ namespace BetterLegacy.Editor.Managers
                 RTLevel.Current?.UpdateEvents(EventEditor.inst.currentEventType);
             });
 
-            EditorContextMenu.inst.AddContextMenu(toggle.gameObject,
+            EditorContextMenu.AddContextMenu(toggle.gameObject,
                 new ButtonFunction("Reset Value", () => toggle.isOn = GameData.DefaultKeyframes[EventEditor.inst.currentEventType].values[index] == onValue));
         }
 
@@ -3052,7 +3052,7 @@ namespace BetterLegacy.Editor.Managers
             if (allowNegative)
                 TriggerHelper.InversableField(inputField);
 
-            EditorContextMenu.inst.AddContextMenu(inputField.gameObject,
+            EditorContextMenu.AddContextMenu(inputField.gameObject,
                 new ButtonFunction("Reset Value", () => inputField.text = GameData.DefaultKeyframes[EventEditor.inst.currentEventType].values[index].ToString()));
         }
 
@@ -3131,7 +3131,7 @@ namespace BetterLegacy.Editor.Managers
             if (allowNegative)
                 TriggerHelper.InversableField(inputField);
 
-            EditorContextMenu.inst.AddContextMenu(inputField.gameObject,
+            EditorContextMenu.AddContextMenu(inputField.gameObject,
                 new ButtonFunction("Reset Value", () => inputField.text = GameData.DefaultKeyframes[EventEditor.inst.currentEventType].values[index].ToString()));
         }
 
@@ -3301,9 +3301,9 @@ namespace BetterLegacy.Editor.Managers
                 TriggerHelper.InversableField(posY);
             }
 
-            EditorContextMenu.inst.AddContextMenu(posX.gameObject,
+            EditorContextMenu.AddContextMenu(posX.gameObject,
                 new ButtonFunction("Reset Value", () => posX.text = GameData.DefaultKeyframes[EventEditor.inst.currentEventType].values[xindex].ToString()));
-            EditorContextMenu.inst.AddContextMenu(posY.gameObject,
+            EditorContextMenu.AddContextMenu(posY.gameObject,
                 new ButtonFunction("Reset Value", () => posY.text = GameData.DefaultKeyframes[EventEditor.inst.currentEventType].values[yindex].ToString()));
         }
 
@@ -3468,9 +3468,9 @@ namespace BetterLegacy.Editor.Managers
                 TriggerHelper.InversableField(posY);
             }
 
-            EditorContextMenu.inst.AddContextMenu(posX.gameObject,
+            EditorContextMenu.AddContextMenu(posX.gameObject,
                 new ButtonFunction("Reset Value", () => posX.text = GameData.DefaultKeyframes[EventEditor.inst.currentEventType].values[xindex].ToString()));
-            EditorContextMenu.inst.AddContextMenu(posY.gameObject,
+            EditorContextMenu.AddContextMenu(posY.gameObject,
                 new ButtonFunction("Reset Value", () => posY.text = GameData.DefaultKeyframes[EventEditor.inst.currentEventType].values[yindex].ToString()));
         }
 

@@ -1718,7 +1718,7 @@ namespace BetterLegacy.Editor.Managers
             LevelCollectionDialog.VersionField.SetTextWithoutNotify(levelCollection.ObjectVersion);
             LevelCollectionDialog.VersionField.onValueChanged.NewListener(_val => levelCollection.ObjectVersion = _val);
             LevelCollectionDialog.VersionField.onEndEdit.NewListener(_val => RenderLevelCollectionEditor(levelCollection));
-            EditorContextMenu.inst.AddContextMenu(LevelCollectionDialog.VersionField.gameObject, EditorContextMenu.GetObjectVersionFunctions(levelCollection, () => RenderLevelCollectionEditor(levelCollection)));
+            EditorContextMenu.AddContextMenu(LevelCollectionDialog.VersionField.gameObject, EditorContextMenu.GetObjectVersionFunctions(levelCollection, () => RenderLevelCollectionEditor(levelCollection)));
 
             LevelCollectionDialog.AllowZenProgressionToggle.SetIsOnWithoutNotify(levelCollection.allowZenProgression);
             LevelCollectionDialog.AllowZenProgressionToggle.onValueChanged.NewListener(_val => levelCollection.allowZenProgression = _val);

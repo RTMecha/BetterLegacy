@@ -2244,14 +2244,14 @@ namespace BetterLegacy.Editor.Managers
                 UpdatePrefabFile(prefabPanel);
                 RenderPrefabEditorDialog(prefabPanel);
             });
-            EditorContextMenu.inst.AddContextMenu(PrefabEditorDialog.VersionField.gameObject, EditorContextMenu.GetObjectVersionFunctions(prefab, () =>
+            EditorContextMenu.AddContextMenu(PrefabEditorDialog.VersionField.gameObject, EditorContextMenu.GetObjectVersionFunctions(prefab, () =>
             {
                 UpdatePrefabFile(prefabPanel);
                 RenderPrefabEditorDialog(prefabPanel);
             }));
 
             PrefabEditorDialog.IconImage.sprite = prefab.icon;
-            EditorContextMenu.inst.AddContextMenu(PrefabEditorDialog.IconImage.gameObject,
+            EditorContextMenu.AddContextMenu(PrefabEditorDialog.IconImage.gameObject,
                 new ButtonFunction("Select File", () => OpenIconSelector(prefabPanel)),
                 new ButtonFunction("Extract Icon", () =>
                 {
@@ -2717,7 +2717,7 @@ namespace BetterLegacy.Editor.Managers
             PrefabCreatorDialog.DescriptionField.onValueChanged.NewListener(_val => NewPrefabDescription = _val);
 
             PrefabCreatorDialog.IconImage.sprite = NewPrefabIcon;
-            EditorContextMenu.inst.AddContextMenu(PrefabCreatorDialog.IconImage.gameObject,
+            EditorContextMenu.AddContextMenu(PrefabCreatorDialog.IconImage.gameObject,
                 new ButtonFunction("Select File", () => OpenIconSelector()),
                 new ButtonFunction("Extract Icon", () =>
                 {

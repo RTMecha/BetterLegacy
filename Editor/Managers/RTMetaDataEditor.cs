@@ -374,7 +374,7 @@ namespace BetterLegacy.Editor.Managers
             Dialog.VersionField.SetTextWithoutNotify(metadata.ObjectVersion);
             Dialog.VersionField.onValueChanged.NewListener(_val => metadata.ObjectVersion = _val);
             Dialog.VersionField.onEndEdit.NewListener(_val => RenderLevel(metadata));
-            EditorContextMenu.inst.AddContextMenu(Dialog.VersionField.gameObject, EditorContextMenu.GetObjectVersionFunctions(metadata, () => RenderLevel(metadata)));
+            EditorContextMenu.AddContextMenu(Dialog.VersionField.gameObject, EditorContextMenu.GetObjectVersionFunctions(metadata, () => RenderLevel(metadata)));
         }
 
         /// <summary>
