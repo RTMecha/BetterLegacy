@@ -26,7 +26,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
     /// <summary>
     /// Represents the object editor dialog for editing a <see cref="Core.Data.Beatmap.BeatmapObject"/>.
     /// </summary>
-    public class ObjectEditorDialog : EditorDialog, ITagDialog, IParentDialog, IAnimationDialog, IEditorLayerUI
+    public class ObjectEditorDialog : EditorDialog, ITagDialog, IParentDialog, IAnimationDialog, IEditorLayerUI, IPrefabableDialog
     {
         public ObjectEditorDialog() : base(OBJECT_EDITOR) { }
 

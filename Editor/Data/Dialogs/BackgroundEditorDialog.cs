@@ -19,7 +19,7 @@ using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Dialogs
 {
-    public class BackgroundEditorDialog : EditorDialog, IContentUI, ITagDialog, IEditorLayerUI
+    public class BackgroundEditorDialog : EditorDialog, IContentUI, ITagDialog, IEditorLayerUI, IPrefabableDialog
     {
         public BackgroundEditorDialog() : base(BACKGROUND_EDITOR) { }
 
@@ -99,6 +99,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         #region Prefab
 
+        public GameObject PrefabName { get; set; }
+        public Text PrefabNameText { get; set; }
         public GameObject CollapsePrefabLabel { get; set; }
         public FunctionButtonStorage CollapsePrefabButton { get; set; }
         public GameObject AssignPrefabLabel { get; set; }
@@ -873,27 +875,33 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             // Prefab Reference
             {
-                CollapsePrefabLabel = RTEditor.GenerateLabels("collapselabel", LeftContent, 43, false,
+                var prefabName = EditorPrefabHolder.Instance.Labels.Duplicate(LeftContent, "prefab name", 43);
+                PrefabName = prefabName;
+                PrefabNameText = prefabName.transform.GetChild(0).GetComponent<Text>();
+                PrefabNameText.horizontalOverflow = HorizontalWrapMode.Overflow;
+                EditorThemeManager.AddLightText(PrefabNameText);
+
+                CollapsePrefabLabel = RTEditor.GenerateLabels("collapselabel", LeftContent, 44, false,
                     new Label("Prefab Collapse / Apply to All") { horizontalWrap = HorizontalWrapMode.Overflow });
 
-                var collapsePrefab = EditorPrefabHolder.Instance.Function2Button.Duplicate(LeftContent, "applyprefab", 40);
+                var collapsePrefab = EditorPrefabHolder.Instance.Function2Button.Duplicate(LeftContent, "applyprefab", 45);
                 CollapsePrefabButton = collapsePrefab.GetComponent<FunctionButtonStorage>();
                 CollapsePrefabButton.Text = "Apply";
 
                 EditorThemeManager.AddSelectable(CollapsePrefabButton.button, ThemeGroup.Function_2);
                 EditorThemeManager.AddGraphic(CollapsePrefabButton.label, ThemeGroup.Function_2_Text);
 
-                AssignPrefabLabel = RTEditor.GenerateLabels("assignlabel", LeftContent, 44, false,
+                AssignPrefabLabel = RTEditor.GenerateLabels("assignlabel", LeftContent, 46, false,
                     new Label("Assign Object to Prefab") { horizontalWrap = HorizontalWrapMode.Overflow });
 
-                var assignPrefab = EditorPrefabHolder.Instance.Function2Button.Duplicate(LeftContent, "assignprefab", 45);
+                var assignPrefab = EditorPrefabHolder.Instance.Function2Button.Duplicate(LeftContent, "assignprefab", 47);
                 AssignPrefabButton = assignPrefab.GetComponent<FunctionButtonStorage>();
                 AssignPrefabButton.Text = "Assign";
 
                 EditorThemeManager.AddSelectable(AssignPrefabButton.button, ThemeGroup.Function_2);
                 EditorThemeManager.AddGraphic(AssignPrefabButton.label, ThemeGroup.Function_2_Text);
 
-                var removePrefab = EditorPrefabHolder.Instance.Function2Button.Duplicate(LeftContent, "removeprefab", 46);
+                var removePrefab = EditorPrefabHolder.Instance.Function2Button.Duplicate(LeftContent, "removeprefab", 48);
                 RemovePrefabButton = removePrefab.GetComponent<FunctionButtonStorage>();
                 RemovePrefabButton.Text = "Remove";
 
