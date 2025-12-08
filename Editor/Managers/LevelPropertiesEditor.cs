@@ -172,48 +172,38 @@ namespace BetterLegacy.Editor.Managers
                 modifierBlockDialog.Init(Dialog.ModifierBlocksContent, true, false, false, true);
                 modifierBlockDialog.InitCopy(modifierBlockDialog.Label.transform.parent);
                 new RectValues(new Vector2(700f, -14f), new Vector2(0f, 1f), new Vector2(0f, 1f), RectValues.CenterPivot, new Vector2(26f, 26f)).AssignToRectTransform(modifierBlockDialog.CopyButton.transform.AsRT());
-                var copyContextClickable = modifierBlockDialog.CopyButton.gameObject.GetOrAddComponent<ContextClickable>();
                 modifierBlockDialog.CopyButton.onClick.ClearAll();
-                copyContextClickable.onClick = pointerEventData =>
-                {
-                    if (pointerEventData.button == PointerEventData.InputButton.Right)
+                EditorContextMenu.AddContextMenu(modifierBlockDialog.CopyButton.gameObject, leftClick: () => CopyModifierBlock(modifierBlock),
+                    new ButtonElement("Copy", () => CopyModifierBlock(modifierBlock)),
+                    new ButtonElement("Copy All", () => CopyModifierBlocks(GameData.Current.modifierBlocks)),
+                    new SpacerElement(),
+                    new ButtonElement("Copy to JSON", () =>
                     {
-                        EditorContextMenu.inst.ShowContextMenu(
-                            new ButtonFunction("Copy", () => CopyModifierBlock(modifierBlock)),
-                            new ButtonFunction("Copy All", () => CopyModifierBlocks(GameData.Current.modifierBlocks)),
-                            new ButtonFunction(true),
-                            new ButtonFunction("Copy to JSON", () =>
+                        var jn = Parser.ModifierBlocksToJSON(new List<ModifierBlock> { modifierBlock });
+                        LSText.CopyToClipboard(jn.ToString(3));
+                    }),
+                    new ButtonElement("Copy All to JSON", () =>
+                    {
+                        var jn = Parser.ModifierBlocksToJSON(GameData.Current.modifierBlocks);
+                        LSText.CopyToClipboard(jn.ToString(3));
+                    }),
+                    new SpacerElement(),
+                    new ButtonElement("Add to Prefab", () =>
+                    {
+                        RTPrefabEditor.inst.OpenPopup();
+                        RTPrefabEditor.inst.onSelectPrefab = prefabPanel =>
+                        {
+                            if (!prefabPanel.Item.modifierBlocks.Has(x => x.Name == modifierBlock.Name))
                             {
-                                var jn = Parser.ModifierBlocksToJSON(new List<ModifierBlock> { modifierBlock });
-                                LSText.CopyToClipboard(jn.ToString(3));
-                            }),
-                            new ButtonFunction("Copy All to JSON", () =>
-                            {
-                                var jn = Parser.ModifierBlocksToJSON(GameData.Current.modifierBlocks);
-                                LSText.CopyToClipboard(jn.ToString(3));
-                            }),
-                            new ButtonFunction(true),
-                            new ButtonFunction("Add to Prefab", () =>
-                            {
-                                RTPrefabEditor.inst.OpenPopup();
-                                RTPrefabEditor.inst.onSelectPrefab = prefabPanel =>
-                                {
-                                    if (!prefabPanel.Item.modifierBlocks.Has(x => x.Name == modifierBlock.Name))
-                                    {
-                                        prefabPanel.Item.modifierBlocks.Add(modifierBlock.Copy(false));
-                                        if (prefabPanel.IsExternal)
-                                            RTPrefabEditor.inst.UpdatePrefabFile(prefabPanel);
-                                        EditorManager.inst.DisplayNotification($"Added modifier block {modifierBlock.Name} to the prefab.", 2f, EditorManager.NotificationType.Success);
-                                    }
-                                    else
-                                        EditorManager.inst.DisplayNotification($"Prefab already has a theme with the same ID!", 2f, EditorManager.NotificationType.Warning);
-                                };
-                            }));
-                        return;
-                    }
-
-                    CopyModifierBlock(modifierBlock);
-                };
+                                prefabPanel.Item.modifierBlocks.Add(modifierBlock.Copy(false));
+                                if (prefabPanel.IsExternal)
+                                    RTPrefabEditor.inst.UpdatePrefabFile(prefabPanel);
+                                EditorManager.inst.DisplayNotification($"Added modifier block {modifierBlock.Name} to the prefab.", 2f, EditorManager.NotificationType.Success);
+                            }
+                            else
+                                EditorManager.inst.DisplayNotification($"Prefab already has a theme with the same ID!", 2f, EditorManager.NotificationType.Warning);
+                        };
+                    }));
                 modifierBlockDialog.InitDelete(modifierBlockDialog.Label.transform.parent);
                 new RectValues(new Vector2(730f, -14f), new Vector2(0f, 1f), new Vector2(0f, 1f), RectValues.CenterPivot, new Vector2(26f, 26f)).AssignToRectTransform(modifierBlockDialog.DeleteButton.transform.AsRT());
                 modifierBlockDialog.DeleteButton.onClick.NewListener(() =>
@@ -235,117 +225,107 @@ namespace BetterLegacy.Editor.Managers
             var pasteStorage = paste.GetComponent<FunctionButtonStorage>();
             pasteStorage.Text = "Paste Modifier Blocks";
             pasteStorage.OnClick.ClearAll();
-            var pasteContextClickable = paste.GetOrAddComponent<ContextClickable>();
-            pasteContextClickable.onClick = pointerEventData =>
-            {
-                if (pointerEventData.button == PointerEventData.InputButton.Right)
+            EditorContextMenu.AddContextMenu(paste, leftClick: () => PasteModifierBlocks(GameData.Current.modifierBlocks, copiedModifierBlocks),
+                new ButtonElement("Paste (Additive)", () =>
                 {
-                    EditorContextMenu.inst.ShowContextMenu(
-                        new ButtonFunction("Paste (Additive)", () =>
-                        {
-                            PasteModifierBlocks(GameData.Current.modifierBlocks, copiedModifierBlocks);
-                        }),
-                        new ButtonFunction("Paste (Overwrite)", () =>
-                        {
-                            if (copiedModifierBlocks.IsEmpty())
-                            {
-                                EditorManager.inst.DisplayNotification($"Nothing to paste!", 2f, EditorManager.NotificationType.Error);
-                                return;
-                            }
+                    PasteModifierBlocks(GameData.Current.modifierBlocks, copiedModifierBlocks);
+                }),
+                new ButtonElement("Paste (Overwrite)", () =>
+                {
+                    if (copiedModifierBlocks.IsEmpty())
+                    {
+                        EditorManager.inst.DisplayNotification($"Nothing to paste!", 2f, EditorManager.NotificationType.Error);
+                        return;
+                    }
 
-                            for (int i = 0; i < copiedModifierBlocks.Count; i++)
-                            {
-                                var copy = copiedModifierBlocks[i];
-                                var original = GameData.Current.modifierBlocks.Find(x => x.Name == copy.Name);
-                                if (original)
-                                    original.CopyData(copy);
-                                else
-                                    GameData.Current.modifierBlocks.Add(copy);
-                            }
+                    for (int i = 0; i < copiedModifierBlocks.Count; i++)
+                    {
+                        var copy = copiedModifierBlocks[i];
+                        var original = GameData.Current.modifierBlocks.Find(x => x.Name == copy.Name);
+                        if (original)
+                            original.CopyData(copy);
+                        else
+                            GameData.Current.modifierBlocks.Add(copy);
+                    }
 
-                            EditorManager.inst.DisplayNotification($"Pasted modifier blocks!", 2f, EditorManager.NotificationType.Success);
-                            RenderDialog();
-                        }),
-                        new ButtonFunction("Paste (Clear)", () =>
-                        {
-                            if (copiedModifierBlocks.IsEmpty())
-                            {
-                                EditorManager.inst.DisplayNotification($"Nothing to paste!", 2f, EditorManager.NotificationType.Error);
-                                return;
-                            }
+                    EditorManager.inst.DisplayNotification($"Pasted modifier blocks!", 2f, EditorManager.NotificationType.Success);
+                    RenderDialog();
+                }),
+                new ButtonElement("Paste (Clear)", () =>
+                {
+                    if (copiedModifierBlocks.IsEmpty())
+                    {
+                        EditorManager.inst.DisplayNotification($"Nothing to paste!", 2f, EditorManager.NotificationType.Error);
+                        return;
+                    }
 
-                            GameData.Current.modifierBlocks.Clear();
-                            PasteModifierBlocks(GameData.Current.modifierBlocks, copiedModifierBlocks);
-                        }),
-                        new ButtonFunction(true),
-                        new ButtonFunction("Paste from JSON (Additive)", () =>
-                        {
-                            var text = RTString.GetClipboardText();
-                            if (string.IsNullOrEmpty(text))
-                            {
-                                EditorManager.inst.DisplayNotification($"Nothing to paste!", 2f, EditorManager.NotificationType.Error);
-                                return;
-                            }
+                    GameData.Current.modifierBlocks.Clear();
+                    PasteModifierBlocks(GameData.Current.modifierBlocks, copiedModifierBlocks);
+                }),
+                new SpacerElement(),
+                new ButtonElement("Paste from JSON (Additive)", () =>
+                {
+                    var text = RTString.GetClipboardText();
+                    if (string.IsNullOrEmpty(text))
+                    {
+                        EditorManager.inst.DisplayNotification($"Nothing to paste!", 2f, EditorManager.NotificationType.Error);
+                        return;
+                    }
 
-                            var jn = JSON.Parse(text);
-                            var modifierBlocks = Parser.ParseModifierBlocks(jn, ModifierReferenceType.ModifierBlock);
-                            PasteModifierBlocks(GameData.Current.modifierBlocks, modifierBlocks);
-                        }),
-                        new ButtonFunction("Paste from JSON (Overwrite)", () =>
-                        {
-                            var text = RTString.GetClipboardText();
-                            if (string.IsNullOrEmpty(text))
-                            {
-                                EditorManager.inst.DisplayNotification($"Nothing to paste!", 2f, EditorManager.NotificationType.Error);
-                                return;
-                            }
+                    var jn = JSON.Parse(text);
+                    var modifierBlocks = Parser.ParseModifierBlocks(jn, ModifierReferenceType.ModifierBlock);
+                    PasteModifierBlocks(GameData.Current.modifierBlocks, modifierBlocks);
+                }),
+                new ButtonElement("Paste from JSON (Overwrite)", () =>
+                {
+                    var text = RTString.GetClipboardText();
+                    if (string.IsNullOrEmpty(text))
+                    {
+                        EditorManager.inst.DisplayNotification($"Nothing to paste!", 2f, EditorManager.NotificationType.Error);
+                        return;
+                    }
 
-                            var jn = JSON.Parse(text);
-                            var modifierBlocks = Parser.ParseModifierBlocks(jn, ModifierReferenceType.ModifierBlock);
-                            if (modifierBlocks.IsEmpty())
-                            {
-                                EditorManager.inst.DisplayNotification($"Nothing to paste!", 2f, EditorManager.NotificationType.Error);
-                                return;
-                            }
+                    var jn = JSON.Parse(text);
+                    var modifierBlocks = Parser.ParseModifierBlocks(jn, ModifierReferenceType.ModifierBlock);
+                    if (modifierBlocks.IsEmpty())
+                    {
+                        EditorManager.inst.DisplayNotification($"Nothing to paste!", 2f, EditorManager.NotificationType.Error);
+                        return;
+                    }
 
-                            for (int i = 0; i < modifierBlocks.Count; i++)
-                            {
-                                var copy = modifierBlocks[i];
-                                var original = GameData.Current.modifierBlocks.Find(x => x.Name == copy.Name);
-                                if (original)
-                                    original.CopyData(copy);
-                                else
-                                    GameData.Current.modifierBlocks.Add(copy);
-                            }
+                    for (int i = 0; i < modifierBlocks.Count; i++)
+                    {
+                        var copy = modifierBlocks[i];
+                        var original = GameData.Current.modifierBlocks.Find(x => x.Name == copy.Name);
+                        if (original)
+                            original.CopyData(copy);
+                        else
+                            GameData.Current.modifierBlocks.Add(copy);
+                    }
 
-                            EditorManager.inst.DisplayNotification($"Pasted modifier blocks!", 2f, EditorManager.NotificationType.Success);
-                            RenderDialog();
-                        }),
-                        new ButtonFunction("Paste from JSON (Clear)", () =>
-                        {
-                            var text = RTString.GetClipboardText();
-                            if (string.IsNullOrEmpty(text))
-                            {
-                                EditorManager.inst.DisplayNotification($"Nothing to paste!", 2f, EditorManager.NotificationType.Error);
-                                return;
-                            }
+                    EditorManager.inst.DisplayNotification($"Pasted modifier blocks!", 2f, EditorManager.NotificationType.Success);
+                    RenderDialog();
+                }),
+                new ButtonElement("Paste from JSON (Clear)", () =>
+                {
+                    var text = RTString.GetClipboardText();
+                    if (string.IsNullOrEmpty(text))
+                    {
+                        EditorManager.inst.DisplayNotification($"Nothing to paste!", 2f, EditorManager.NotificationType.Error);
+                        return;
+                    }
 
-                            var jn = JSON.Parse(text);
-                            var modifierBlocks = Parser.ParseModifierBlocks(jn, ModifierReferenceType.ModifierBlock);
-                            if (modifierBlocks.IsEmpty())
-                            {
-                                EditorManager.inst.DisplayNotification($"Nothing to paste!", 2f, EditorManager.NotificationType.Error);
-                                return;
-                            }
+                    var jn = JSON.Parse(text);
+                    var modifierBlocks = Parser.ParseModifierBlocks(jn, ModifierReferenceType.ModifierBlock);
+                    if (modifierBlocks.IsEmpty())
+                    {
+                        EditorManager.inst.DisplayNotification($"Nothing to paste!", 2f, EditorManager.NotificationType.Error);
+                        return;
+                    }
 
-                            GameData.Current.modifierBlocks.Clear();
-                            PasteModifierBlocks(GameData.Current.modifierBlocks, modifierBlocks);
-                        }));
-                    return;
-                }
-
-                PasteModifierBlocks(GameData.Current.modifierBlocks, copiedModifierBlocks);
-            };
+                    GameData.Current.modifierBlocks.Clear();
+                    PasteModifierBlocks(GameData.Current.modifierBlocks, modifierBlocks);
+                }));
 
             EditorThemeManager.ApplyGraphic(pasteStorage.button.image, ThemeGroup.Paste, true);
             EditorThemeManager.ApplyGraphic(pasteStorage.label, ThemeGroup.Paste_Text);

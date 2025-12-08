@@ -91,64 +91,60 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 if (EditorConfig.Instance.AutoSearch.Value)
                     EditorServerManager.inst.Search();
             });
-            var contextClickable = search.AddComponent<ContextClickable>();
-            contextClickable.onClick = pointerEventData =>
-            {
-                if (pointerEventData.button != UnityEngine.EventSystems.PointerEventData.InputButton.Right)
-                    return;
-
-                var buttonFunctions = new List<ButtonFunction>();
-
-                switch (EditorServerManager.inst.tab)
+            EditorContextMenu.AddContextMenu(search,
+                getEditorElements: () =>
                 {
-                    case EditorServerManager.Tab.Levels: {
-                            var sort = EditorServerManager.inst.CurrentTabSettings.sort;
-                            buttonFunctions.AddRange(new List<ButtonFunction>
-                            {
-                                GetSortButton("Default", 0),
-                                GetSortButton("Name", 1),
-                                GetSortButton("Song Title", 2),
-                                GetSortButton("Difficulty", 3),
-                                GetSortButton("Creator", 4),
-                                GetSortButton("Song Artist", 5),
-                                GetSortButton("Date Published", 6),
-                            });
-                            break;
-                        }
-                    case EditorServerManager.Tab.LevelCollections: {
-                            buttonFunctions.AddRange(new List<ButtonFunction>
-                            {
-                                GetSortButton("Default", 0),
-                                GetSortButton("Name", 1),
-                                GetSortButton("Difficulty", 2),
-                                GetSortButton("Creator", 3),
-                                GetSortButton("Date Published", 4),
-                            });
-                            break;
-                        }
-                    case EditorServerManager.Tab.Prefabs: {
-                            buttonFunctions.AddRange(new List<ButtonFunction>
-                            {
-                                GetSortButton("Default", 0),
-                                GetSortButton("Name", 1),
-                                GetSortButton("Creator", 2),
-                                GetSortButton("Type", 3),
-                                GetSortButton("Date Published", 4),
-                            });
-                            break;
-                        }
-                }
+                    var editorElements = new List<EditorElement>();
 
-                buttonFunctions.Add(new ButtonFunction($"Ascend [{(EditorServerManager.inst.CurrentTabSettings.ascend ? "On" : "Off")}]", () =>
-                {
-                    EditorServerManager.inst.CurrentTabSettings.ascend = !EditorServerManager.inst.CurrentTabSettings.ascend;
-                    RTEditor.inst.SaveGlobalSettings();
+                    switch (EditorServerManager.inst.tab)
+                    {
+                        case EditorServerManager.Tab.Levels: {
+                                editorElements.AddRange(new List<EditorElement>
+                                {
+                                    GetSortButton("Default", 0),
+                                    GetSortButton("Name", 1),
+                                    GetSortButton("Song Title", 2),
+                                    GetSortButton("Difficulty", 3),
+                                    GetSortButton("Creator", 4),
+                                    GetSortButton("Song Artist", 5),
+                                    GetSortButton("Date Published", 6),
+                                });
+                                break;
+                            }
+                        case EditorServerManager.Tab.LevelCollections: {
+                                editorElements.AddRange(new List<EditorElement>
+                                {
+                                    GetSortButton("Default", 0),
+                                    GetSortButton("Name", 1),
+                                    GetSortButton("Difficulty", 2),
+                                    GetSortButton("Creator", 3),
+                                    GetSortButton("Date Published", 4),
+                                });
+                                break;
+                            }
+                        case EditorServerManager.Tab.Prefabs: {
+                                editorElements.AddRange(new List<EditorElement>
+                                {
+                                    GetSortButton("Default", 0),
+                                    GetSortButton("Name", 1),
+                                    GetSortButton("Creator", 2),
+                                    GetSortButton("Type", 3),
+                                    GetSortButton("Date Published", 4),
+                                });
+                                break;
+                            }
+                    }
 
-                    if (EditorConfig.Instance.AutoSearch.Value)
-                        EditorServerManager.inst.Search();
-                }));
-                EditorContextMenu.inst.ShowContextMenu(buttonFunctions);
-            };
+                    editorElements.Add(ButtonElement.ToggleButton("Ascend", () => EditorServerManager.inst.CurrentTabSettings.ascend, () =>
+                    {
+                        EditorServerManager.inst.CurrentTabSettings.ascend = !EditorServerManager.inst.CurrentTabSettings.ascend;
+                        RTEditor.inst.SaveGlobalSettings();
+
+                        if (EditorConfig.Instance.AutoSearch.Value)
+                            EditorServerManager.inst.Search();
+                    }));
+                    return editorElements;
+                });
 
             var page = EditorPrefabHolder.Instance.NumberInputField.Duplicate(bar, "page");
             RectValues.Default.AnchoredPosition(-40f, 0f).SizeDelta(200f, 32f).AssignToRectTransform(page.transform.AsRT());
@@ -246,7 +242,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             InitDialog(SERVER_CONTENT);
         }
 
-        ButtonFunction GetSortButton(string name, int sort) => new ButtonFunction((EditorServerManager.inst.CurrentTabSettings.sort == sort ? "> " : string.Empty) + $"Sort: {name}", () =>
+        ButtonElement GetSortButton(string name, int sort) => ButtonElement.SelectionButton(() => EditorServerManager.inst.CurrentTabSettings.sort == sort, $"Sort: {name}", () =>
         {
             EditorServerManager.inst.CurrentTabSettings.sort = sort;
             RTEditor.inst.SaveGlobalSettings();

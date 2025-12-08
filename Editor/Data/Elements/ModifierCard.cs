@@ -113,187 +113,140 @@ namespace BetterLegacy.Editor.Data.Elements
             EditorThemeManager.ApplyGraphic(notifier.notifier, ThemeGroup.Warning_Confirm, true);
 
             gameObject.AddComponent<Button>();
-            var modifierContextMenu = gameObject.AddComponent<ContextClickable>();
-            modifierContextMenu.onClick = eventData =>
+            var buttonFunctions = new List<EditorElement>()
             {
-                if (eventData.button != PointerEventData.InputButton.Right)
-                    return;
-
-                var buttonFunctions = new List<ButtonFunction>()
+                new ButtonElement("Add", () => ModifiersEditor.inst.OpenDefaultModifiersList(modifyable.ReferenceType, modifyable, dialog: dialog)),
+                new ButtonElement("Add Above", () => ModifiersEditor.inst.OpenDefaultModifiersList(modifyable.ReferenceType, modifyable, index, dialog)),
+                new ButtonElement("Add Below", () => ModifiersEditor.inst.OpenDefaultModifiersList(modifyable.ReferenceType, modifyable, index + 1, dialog)),
+                new ButtonElement("Delete", () => Delete(reference)),
+                new SpacerElement(),
+                new ButtonElement("Copy", () => Copy(reference)),
+                new ButtonElement("Copy All", () =>
                 {
-                    new ButtonFunction("Add", () => ModifiersEditor.inst.OpenDefaultModifiersList(modifyable.ReferenceType, modifyable, dialog: dialog)),
-                    new ButtonFunction("Add Above", () => ModifiersEditor.inst.OpenDefaultModifiersList(modifyable.ReferenceType, modifyable, index, dialog)),
-                    new ButtonFunction("Add Below", () => ModifiersEditor.inst.OpenDefaultModifiersList(modifyable.ReferenceType, modifyable, index + 1, dialog)),
-                    new ButtonFunction("Delete", () => Delete(reference)),
-                    new ButtonFunction(true),
-                    new ButtonFunction("Copy", () => Copy(reference)),
-                    new ButtonFunction("Copy All", () =>
-                    {
-                        var copiedModifiers = ModifiersEditor.inst.GetCopiedModifiers(modifyable.ReferenceType);
-                        if (copiedModifiers == null)
-                            return;
-                        copiedModifiers.Clear();
-                        copiedModifiers.AddRange(modifyable.Modifiers.Select(x => x.Copy()));
+                    var copiedModifiers = ModifiersEditor.inst.GetCopiedModifiers(modifyable.ReferenceType);
+                    if (copiedModifiers == null)
+                        return;
+                    copiedModifiers.Clear();
+                    copiedModifiers.AddRange(modifyable.Modifiers.Select(x => x.Copy()));
 
-                        ModifiersEditor.inst.PasteGenerator(modifyable, dialog);
-                        EditorManager.inst.DisplayNotification("Copied Modifiers!", 1.5f, EditorManager.NotificationType.Success);
-                    }),
-                    new ButtonFunction("Paste", () =>
-                    {
-                        var copiedModifiers = ModifiersEditor.inst.GetCopiedModifiers(modifyable.ReferenceType);
-                        if (copiedModifiers == null || copiedModifiers.IsEmpty())
-                        {
-                            EditorManager.inst.DisplayNotification($"No copied modifiers yet.", 3f, EditorManager.NotificationType.Error);
-                            return;
-                        }
-
-                        modifyable.Modifiers.AddRange(copiedModifiers.Select(x => x.Copy()));
-
-                        CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
-
-                        if (modifyable is BeatmapObject beatmapObject)
-                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.MODIFIERS);
-                        if (modifyable is BackgroundObject backgroundObject)
-                            RTLevel.Current?.UpdateBackgroundObject(backgroundObject, ObjectContext.MODIFIERS);
-
-                        EditorManager.inst.DisplayNotification("Pasted Modifier!", 1.5f, EditorManager.NotificationType.Success);
-                    }),
-                    new ButtonFunction("Paste Above", () =>
-                    {
-                        var copiedModifiers = ModifiersEditor.inst.GetCopiedModifiers(modifyable.ReferenceType);
-                        if (copiedModifiers == null || copiedModifiers.IsEmpty())
-                        {
-                            EditorManager.inst.DisplayNotification($"No copied modifiers yet.", 3f, EditorManager.NotificationType.Error);
-                            return;
-                        }
-
-                        modifyable.Modifiers.InsertRange(index, copiedModifiers.Select(x => x.Copy()));
-
-                        CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
-
-                        if (modifyable is BeatmapObject beatmapObject)
-                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.MODIFIERS);
-                        if (modifyable is BackgroundObject backgroundObject)
-                            RTLevel.Current?.UpdateBackgroundObject(backgroundObject, ObjectContext.MODIFIERS);
-
-                        EditorManager.inst.DisplayNotification("Pasted Modifier!", 1.5f, EditorManager.NotificationType.Success);
-                    }),
-                    new ButtonFunction("Paste Below", () =>
-                    {
-                        var copiedModifiers = ModifiersEditor.inst.GetCopiedModifiers(modifyable.ReferenceType);
-                        if (copiedModifiers == null || copiedModifiers.IsEmpty())
-                        {
-                            EditorManager.inst.DisplayNotification($"No copied modifiers yet.", 3f, EditorManager.NotificationType.Error);
-                            return;
-                        }
-
-                        modifyable.Modifiers.InsertRange(index + 1, copiedModifiers.Select(x => x.Copy()));
-
-                        CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
-
-                        if (modifyable is BeatmapObject beatmapObject)
-                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.MODIFIERS);
-                        if (modifyable is BackgroundObject backgroundObject)
-                            RTLevel.Current?.UpdateBackgroundObject(backgroundObject, ObjectContext.MODIFIERS);
-
-                        EditorManager.inst.DisplayNotification("Pasted Modifier!", 1.5f, EditorManager.NotificationType.Success);
-                    }),
-                    new ButtonFunction(true),
-                };
-
-                if (!modifyable.OrderModifiers)
-                    buttonFunctions.Add(new ButtonFunction("Sort Modifiers", () =>
-                    {
-                        modifyable.Modifiers = modifyable.Modifiers.OrderBy(x => x.type == Modifier.Type.Action).ToList();
-
-                        CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
-                    }));
-
-                buttonFunctions.AddRange(new List<ButtonFunction>()
+                    ModifiersEditor.inst.PasteGenerator(modifyable, dialog);
+                    EditorManager.inst.DisplayNotification("Copied Modifiers!", 1.5f, EditorManager.NotificationType.Success);
+                }),
+                new ButtonElement("Paste", () =>
                 {
-                    new ButtonFunction("Move Up", () =>
+                    var copiedModifiers = ModifiersEditor.inst.GetCopiedModifiers(modifyable.ReferenceType);
+                    if (copiedModifiers == null || copiedModifiers.IsEmpty())
                     {
-                        if (index <= 0)
-                        {
-                            EditorManager.inst.DisplayNotification("Could not move modifier up since it's already at the start.", 3f, EditorManager.NotificationType.Error);
-                            return;
-                        }
+                        EditorManager.inst.DisplayNotification($"No copied modifiers yet.", 3f, EditorManager.NotificationType.Error);
+                        return;
+                    }
 
-                        modifyable.Modifiers.Move(index, index - 1);
+                    modifyable.Modifiers.AddRange(copiedModifiers.Select(x => x.Copy()));
 
-                        CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
-                    }),
-                    new ButtonFunction("Move Down", () =>
-                    {
-                        if (index >= modifyable.Modifiers.Count - 1)
-                        {
-                            EditorManager.inst.DisplayNotification("Could not move modifier up since it's already at the end.", 3f, EditorManager.NotificationType.Error);
-                            return;
-                        }
+                    CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
 
-                        modifyable.Modifiers.Move(index, index + 1);
+                    if (modifyable is BeatmapObject beatmapObject)
+                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.MODIFIERS);
+                    if (modifyable is BackgroundObject backgroundObject)
+                        RTLevel.Current?.UpdateBackgroundObject(backgroundObject, ObjectContext.MODIFIERS);
 
-                        CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
-                    }),
-                    new ButtonFunction("Move to Start", () =>
-                    {
-                        modifyable.Modifiers.Move(index, 0);
-
-                        CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
-                    }),
-                    new ButtonFunction("Move to End", () =>
-                    {
-                        modifyable.Modifiers.Move(index, modifyable.Modifiers.Count - 1);
-
-                        CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
-                    }),
-                    new ButtonFunction(true),
-                    new ButtonFunction("Update Modifier", () => Update(modifier, reference)),
-                    new ButtonFunction(true),
-                    new ButtonFunction(modifier.collapse ? "Uncollapse" : "Collapse", () => Collapse(!modifier.collapse, reference)),
-                    new ButtonFunction("Collapse All", () =>
-                    {
-                        foreach (var mod in modifyable.Modifiers)
-                            mod.collapse = true;
-
-                        CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
-                    }),
-                    new ButtonFunction("Uncollapse All", () =>
-                    {
-                        foreach (var mod in modifyable.Modifiers)
-                            mod.collapse = false;
-
-                        CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
-                    }),
-                    new ButtonFunction(true),
-                    new ButtonFunction("Set Custom Name", () =>
-                    {
-                        RTEditor.inst.ShowNameEditor("Set Custom Name", "Custom name", string.IsNullOrEmpty(modifier.customName) ? "modifierName" : modifier.customName, "Set", () =>
-                        {
-                            modifier.customName = RTEditor.inst.folderCreatorName.text;
-                            RenderModifier(reference);
-                            RTEditor.inst.HideNameEditor();
-                        });
-                    }),
-                    new ButtonFunction("Set Description", () =>
-                    {
-                        RTEditor.inst.ShowNameEditor("Set Description", "Description", string.IsNullOrEmpty(modifier.description) ? "This modifier does..." : modifier.description, "Set", () =>
-                        {
-                            modifier.description = RTEditor.inst.folderCreatorName.text;
-                            RenderModifier(reference);
-                            RTEditor.inst.HideNameEditor();
-                        });
-                    }),
-                });
-
-                if (ModCompatibility.UnityExplorerInstalled)
+                    EditorManager.inst.DisplayNotification("Pasted Modifier!", 1.5f, EditorManager.NotificationType.Success);
+                }),
+                new ButtonElement("Paste Above", () =>
                 {
-                    buttonFunctions.Add(new ButtonFunction(true));
-                    buttonFunctions.Add(new ButtonFunction("Inspect", () => ModCompatibility.Inspect(modifier)));
-                }
+                    var copiedModifiers = ModifiersEditor.inst.GetCopiedModifiers(modifyable.ReferenceType);
+                    if (copiedModifiers == null || copiedModifiers.IsEmpty())
+                    {
+                        EditorManager.inst.DisplayNotification($"No copied modifiers yet.", 3f, EditorManager.NotificationType.Error);
+                        return;
+                    }
 
-                EditorContextMenu.inst.ShowContextMenu(buttonFunctions);
+                    modifyable.Modifiers.InsertRange(index, copiedModifiers.Select(x => x.Copy()));
+
+                    CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
+
+                    if (modifyable is BeatmapObject beatmapObject)
+                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.MODIFIERS);
+                    if (modifyable is BackgroundObject backgroundObject)
+                        RTLevel.Current?.UpdateBackgroundObject(backgroundObject, ObjectContext.MODIFIERS);
+
+                    EditorManager.inst.DisplayNotification("Pasted Modifier!", 1.5f, EditorManager.NotificationType.Success);
+                }),
+                new ButtonElement("Paste Below", () =>
+                {
+                    var copiedModifiers = ModifiersEditor.inst.GetCopiedModifiers(modifyable.ReferenceType);
+                    if (copiedModifiers == null || copiedModifiers.IsEmpty())
+                    {
+                        EditorManager.inst.DisplayNotification($"No copied modifiers yet.", 3f, EditorManager.NotificationType.Error);
+                        return;
+                    }
+
+                    modifyable.Modifiers.InsertRange(index + 1, copiedModifiers.Select(x => x.Copy()));
+
+                    CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
+
+                    if (modifyable is BeatmapObject beatmapObject)
+                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.MODIFIERS);
+                    if (modifyable is BackgroundObject backgroundObject)
+                        RTLevel.Current?.UpdateBackgroundObject(backgroundObject, ObjectContext.MODIFIERS);
+
+                    EditorManager.inst.DisplayNotification("Pasted Modifier!", 1.5f, EditorManager.NotificationType.Success);
+                }),
+                new SpacerElement(),
             };
+
+            if (!modifyable.OrderModifiers)
+                buttonFunctions.Add(new ButtonElement("Sort Modifiers", () =>
+                {
+                    modifyable.Modifiers = modifyable.Modifiers.OrderBy(x => x.type == Modifier.Type.Action).ToList();
+
+                    CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
+                }));
+
+            buttonFunctions.AddRange(EditorContextMenu.GetMoveIndexFunctions(modifyable.Modifiers, index, () => CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable))));
+
+            buttonFunctions.AddRange(new List<EditorElement>()
+            {
+                new SpacerElement(),
+                new ButtonElement("Update Modifier", () => Update(modifier, reference)),
+                new SpacerElement(),
+                new ButtonElement(modifier.collapse ? "Uncollapse" : "Collapse", () => Collapse(!modifier.collapse, reference)),
+                new ButtonElement("Collapse All", () =>
+                {
+                    foreach (var mod in modifyable.Modifiers)
+                        mod.collapse = true;
+
+                    CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
+                }),
+                new ButtonElement("Uncollapse All", () =>
+                {
+                    foreach (var mod in modifyable.Modifiers)
+                        mod.collapse = false;
+
+                    CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
+                }),
+                new SpacerElement(),
+                new ButtonElement("Set Custom Name", () => RTEditor.inst.ShowNameEditor("Set Custom Name", "Custom name", string.IsNullOrEmpty(modifier.customName) ? "modifierName" : modifier.customName, "Set", () =>
+                {
+                    modifier.customName = RTEditor.inst.folderCreatorName.text;
+                    RenderModifier(reference);
+                    RTEditor.inst.HideNameEditor();
+                })),
+                new ButtonElement("Set Description", () => RTEditor.inst.ShowNameEditor("Set Description", "Description", string.IsNullOrEmpty(modifier.description) ? "This modifier does..." : modifier.description, "Set", () =>
+                {
+                    modifier.description = RTEditor.inst.folderCreatorName.text;
+                    RenderModifier(reference);
+                    RTEditor.inst.HideNameEditor();
+                })),
+            });
+
+            if (ModCompatibility.UnityExplorerInstalled)
+            {
+                buttonFunctions.Add(new SpacerElement());
+                buttonFunctions.Add(new ButtonElement("Inspect", () => ModCompatibility.Inspect(modifier)));
+            }
+
+            EditorContextMenu.AddContextMenu(gameObject, buttonFunctions);
 
             if (modifier.collapse)
                 return;
@@ -417,14 +370,10 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         EditorThemeManager.ApplyInputField(inputField);
 
-                        var contextClickable = input.AddComponent<ContextClickable>();
-                        contextClickable.onClick = pointerEventData =>
-                        {
-                            if (pointerEventData.button != PointerEventData.InputButton.Right)
-                                return;
-
-                            EditorContextMenu.inst.ShowContextMenu(
-                                new ButtonFunction(modifier.GetBool(1, false) ? "Unlock comment" : "Lock comment", () =>
+                        EditorContextMenu.AddContextMenu(input,
+                            getEditorElements: () => new List<EditorElement>
+                            {
+                                new ButtonElement(modifier.GetBool(1, false) ? "Unlock comment" : "Lock comment", () =>
                                 {
                                     modifier.SetValue(1, (!modifier.GetBool(1, false)).ToString());
 
@@ -432,8 +381,8 @@ namespace BetterLegacy.Editor.Data.Elements
 
                                     if (inputField)
                                         inputField.interactable = !modifier.GetBool(1, false);
-                                }));
-                        };
+                                })
+                            });
 
                         break;
                     }
@@ -508,79 +457,8 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 case nameof(ModifierFunctions.playSound): {
                         var str = StringGenerator(modifier, reference, "Path", 0);
-                        var search = str.transform.Find("Input").gameObject.AddComponent<ContextClickable>();
-                        search.onClick = pointerEventData =>
-                        {
-                            if (pointerEventData.button != PointerEventData.InputButton.Right)
-                                return;
-
-                            EditorContextMenu.inst.ShowContextMenu(
-                                new ButtonFunction($"Use {RTEditor.SYSTEM_BROWSER}", () =>
-                                {
-                                    var global = modifier.GetBool(1, false);
-                                    var directory = global && RTFile.DirectoryExists(RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH) ?
-                                                    RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH : RTFile.RemoveEndSlash(RTFile.BasePath);
-
-                                    if (global && !RTFile.DirectoryExists(RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH))
-                                    {
-                                        EditorManager.inst.DisplayNotification("soundlibrary folder does not exist! If you want to have audio take from a global folder, make sure you create a soundlibrary folder inside your beatmaps folder and put your sounds in there.", 12f, EditorManager.NotificationType.Error);
-                                        return;
-                                    }
-
-                                    var result = Crosstales.FB.FileBrowser.OpenSingleFile("Select a sound to use!", directory, FileFormat.OGG.ToName(), FileFormat.WAV.ToName(), FileFormat.MP3.ToName());
-                                    if (string.IsNullOrEmpty(result))
-                                        return;
-
-
-                                    result = RTFile.ReplaceSlash(result);
-                                    if (result.Contains(global ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath))))
-                                    {
-                                        str.transform.Find("Input").GetComponent<InputField>().text =
-                                            result.Remove(global ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath)));
-                                        RTEditor.inst.BrowserPopup.Close();
-                                        return;
-                                    }
-
-                                    EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
-                                }),
-                                new ButtonFunction($"Use {RTEditor.EDITOR_BROWSER}", () =>
-                                {
-                                    RTEditor.inst.BrowserPopup.Open();
-
-                                    var global = modifier.GetBool(1, false);
-                                    var directory = global && RTFile.DirectoryExists(RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH) ?
-                                                    RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH : RTFile.RemoveEndSlash(RTFile.BasePath);
-
-                                    if (global && !RTFile.DirectoryExists(RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH))
-                                    {
-                                        EditorManager.inst.DisplayNotification("soundlibrary folder does not exist! If you want to have audio take from a global folder, make sure you create a soundlibrary folder inside your beatmaps folder and put your sounds in there.", 12f, EditorManager.NotificationType.Error);
-                                        return;
-                                    }
-
-                                    RTFileBrowser.inst.UpdateBrowserFile(directory, RTFile.AudioDotFormats, onSelectFile: _val =>
-                                    {
-                                        var global = modifier.GetBool(1, false);
-                                        _val = RTFile.ReplaceSlash(_val);
-                                        if (_val.Contains(global ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath))))
-                                        {
-                                            str.transform.Find("Input").GetComponent<InputField>().text = _val.Remove(global ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath)));
-                                            RTEditor.inst.BrowserPopup.Close();
-                                            return;
-                                        }
-
-                                        EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
-                                    });
-                                }),
-                                new ButtonFunction(true),
-                                new ButtonFunction("Select Sound Asset", () =>
-                                {
-                                    AssetEditor.inst.OpenPopup(sound =>
-                                    {
-                                        str.transform.Find("Input").GetComponent<InputField>().text = sound;
-                                    }, null, true, false);
-                                })
-                                );
-                        };
+                        EditorContextMenu.AddContextMenu(str.transform.Find("Input").gameObject,
+                            EditorContextMenu.GetModifierSoundPathFunctions(() => modifier.GetBool(1, false), _val => modifier.SetValue(0, _val)));
                         BoolGenerator(modifier, reference, "Global", 1, false);
                         SingleGenerator(modifier, reference, "Pitch", 2, 1f);
                         SingleGenerator(modifier, reference, "Volume", 3, 1f);
@@ -649,77 +527,8 @@ namespace BetterLegacy.Editor.Data.Elements
                     }
                 case nameof(ModifierFunctions.audioSource): {
                         var str = StringGenerator(modifier, reference, "Path", 0);
-                        var search = str.transform.Find("Input").gameObject.AddComponent<Clickable>();
-                        search.onClick = pointerEventData =>
-                        {
-                            if (pointerEventData.button != PointerEventData.InputButton.Right)
-                                return;
-                            EditorContextMenu.inst.ShowContextMenu(
-                                new ButtonFunction($"Use {RTEditor.SYSTEM_BROWSER}", () =>
-                                {
-                                    var isGlobal = modifier.GetBool(1, false);
-                                    var directory = isGlobal && RTFile.DirectoryExists(RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH) ?
-                                                    RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH : RTFile.RemoveEndSlash(RTFile.BasePath);
-
-                                    if (isGlobal && !RTFile.DirectoryExists(RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH))
-                                    {
-                                        EditorManager.inst.DisplayNotification("soundlibrary folder does not exist! If you want to have audio take from a global folder, make sure you create a soundlibrary folder inside your beatmaps folder and put your sounds in there.", 12f, EditorManager.NotificationType.Error);
-                                        return;
-                                    }
-
-                                    var result = Crosstales.FB.FileBrowser.OpenSingleFile("Select a sound to use!", directory, FileFormat.OGG.ToName(), FileFormat.WAV.ToName(), FileFormat.MP3.ToName());
-                                    if (string.IsNullOrEmpty(result))
-                                        return;
-
-                                    var global = modifier.GetBool(1, false);
-                                    result = RTFile.ReplaceSlash(result);
-                                    if (result.Contains(global ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath))))
-                                    {
-                                        str.transform.Find("Input").GetComponent<InputField>().text = result.Remove(global ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath)));
-                                        RTEditor.inst.BrowserPopup.Close();
-                                        return;
-                                    }
-
-                                    EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
-                                }),
-                                new ButtonFunction($"Use {RTEditor.EDITOR_BROWSER}", () =>
-                                {
-                                    RTEditor.inst.BrowserPopup.Open();
-
-                                    var isGlobal = modifier.GetBool(1, false);
-                                    var directory = isGlobal && RTFile.DirectoryExists(RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH) ?
-                                                    RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH : RTFile.RemoveEndSlash(RTFile.BasePath);
-
-                                    if (isGlobal && !RTFile.DirectoryExists(RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH))
-                                    {
-                                        EditorManager.inst.DisplayNotification("soundlibrary folder does not exist! If you want to have audio take from a global folder, make sure you create a soundlibrary folder inside your beatmaps folder and put your sounds in there.", 12f, EditorManager.NotificationType.Error);
-                                        return;
-                                    }
-
-                                    RTFileBrowser.inst.UpdateBrowserFile(directory, RTFile.AudioDotFormats, onSelectFile: _val =>
-                                    {
-                                        var global = modifier.GetBool(1, false);
-                                        _val = RTFile.ReplaceSlash(_val);
-                                        if (_val.Contains(global ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath))))
-                                        {
-                                            str.transform.Find("Input").GetComponent<InputField>().text = _val.Remove(global ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath)));
-                                            RTEditor.inst.BrowserPopup.Close();
-                                            return;
-                                        }
-
-                                        EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
-                                    });
-                                }),
-                                new ButtonFunction(true),
-                                new ButtonFunction("Select Sound Asset", () =>
-                                {
-                                    AssetEditor.inst.OpenPopup(sound =>
-                                    {
-                                        str.transform.Find("Input").GetComponent<InputField>().text = sound;
-                                    }, null, true, false);
-                                })
-                                );
-                        };
+                        EditorContextMenu.AddContextMenu(str.transform.Find("Input").gameObject,
+                            EditorContextMenu.GetModifierSoundPathFunctions(() => modifier.GetBool(1, false), _val => modifier.SetValue(0, _val)));
                         BoolGenerator(modifier, reference, "Global", 1, false);
                         SingleGenerator(modifier, reference, "Pitch", 2, 1f);
                         SingleGenerator(modifier, reference, "Volume", 3, 1f);
@@ -1142,62 +951,8 @@ namespace BetterLegacy.Editor.Data.Elements
                         SingleGenerator(modifier, reference, "Width", 2, 0.1f);
 
                         var hexCode = StringGenerator(modifier, reference, "Hex Code", 3);
-                        var hexCodeContextMenu = hexCode.AddComponent<ContextClickable>();
-                        hexCodeContextMenu.onClick = pointerEventData =>
-                        {
-                            if (pointerEventData.button != PointerEventData.InputButton.Right)
-                                return;
-
-                            var inputField = hexCode.transform.Find("Input").GetComponent<InputField>();
-                            EditorContextMenu.inst.ShowContextMenu(
-                                new ButtonFunction("Edit Color", () =>
-                                {
-                                    RTColorPicker.inst.Show(RTColors.HexToColor(modifier.GetValue(index)),
-                                        (col, hex) =>
-                                        {
-                                            inputField.SetTextWithoutNotify(hex);
-                                        },
-                                        (col, hex) =>
-                                        {
-                                            CoreHelper.Log($"Set timeline object color: {hex}");
-                                            // set the input field's text empty so it notices there was a change
-                                            inputField.SetTextWithoutNotify(string.Empty);
-                                            inputField.text = hex;
-                                        }, () =>
-                                        {
-                                            inputField.SetTextWithoutNotify(modifier.GetValue(index));
-                                        });
-                                }),
-                                new ButtonFunction("Clear", () =>
-                                {
-                                    inputField.text = string.Empty;
-                                }),
-                                new ButtonFunction(true),
-                                new ButtonFunction("VG Red", () =>
-                                {
-                                    inputField.text = ObjectEditorData.RED;
-                                }),
-                                new ButtonFunction("VG Red Green", () =>
-                                {
-                                    inputField.text = ObjectEditorData.RED_GREEN;
-                                }),
-                                new ButtonFunction("VG Green", () =>
-                                {
-                                    inputField.text = ObjectEditorData.GREEN;
-                                }),
-                                new ButtonFunction("VG Green Blue", () =>
-                                {
-                                    inputField.text = ObjectEditorData.GREEN_BLUE;
-                                }),
-                                new ButtonFunction("VG Blue", () =>
-                                {
-                                    inputField.text = ObjectEditorData.BLUE;
-                                }),
-                                new ButtonFunction("VG Blue Red", () =>
-                                {
-                                    inputField.text = ObjectEditorData.RED_BLUE;
-                                }));
-                        };
+                        EditorContextMenu.AddContextMenu(hexCode,
+                            EditorContextMenu.GetEditorColorFunctions(hexCode.transform.Find("Input").GetComponent<InputField>(), () => modifier.GetValue(3)));
 
                         break;
                     }
@@ -1210,62 +965,8 @@ namespace BetterLegacy.Editor.Data.Elements
                         SingleGenerator(modifier, reference, "Width", 3, 0.1f);
 
                         var hexCode = StringGenerator(modifier, reference, "Hex Code", 4);
-                        var hexCodeContextMenu = hexCode.AddComponent<ContextClickable>();
-                        hexCodeContextMenu.onClick = pointerEventData =>
-                        {
-                            if (pointerEventData.button != PointerEventData.InputButton.Right)
-                                return;
-
-                            var inputField = hexCode.transform.Find("Input").GetComponent<InputField>();
-                            EditorContextMenu.inst.ShowContextMenu(
-                                new ButtonFunction("Edit Color", () =>
-                                {
-                                    RTColorPicker.inst.Show(RTColors.HexToColor(modifier.GetValue(index)),
-                                        (col, hex) =>
-                                        {
-                                            inputField.SetTextWithoutNotify(hex);
-                                        },
-                                        (col, hex) =>
-                                        {
-                                            CoreHelper.Log($"Set timeline object color: {hex}");
-                                            // set the input field's text empty so it notices there was a change
-                                            inputField.SetTextWithoutNotify(string.Empty);
-                                            inputField.text = hex;
-                                        }, () =>
-                                        {
-                                            inputField.SetTextWithoutNotify(modifier.GetValue(index));
-                                        });
-                                }),
-                                new ButtonFunction("Clear", () =>
-                                {
-                                    inputField.text = string.Empty;
-                                }),
-                                new ButtonFunction(true),
-                                new ButtonFunction("VG Red", () =>
-                                {
-                                    inputField.text = ObjectEditorData.RED;
-                                }),
-                                new ButtonFunction("VG Red Green", () =>
-                                {
-                                    inputField.text = ObjectEditorData.RED_GREEN;
-                                }),
-                                new ButtonFunction("VG Green", () =>
-                                {
-                                    inputField.text = ObjectEditorData.GREEN;
-                                }),
-                                new ButtonFunction("VG Green Blue", () =>
-                                {
-                                    inputField.text = ObjectEditorData.GREEN_BLUE;
-                                }),
-                                new ButtonFunction("VG Blue", () =>
-                                {
-                                    inputField.text = ObjectEditorData.BLUE;
-                                }),
-                                new ButtonFunction("VG Blue Red", () =>
-                                {
-                                    inputField.text = ObjectEditorData.RED_BLUE;
-                                }));
-                        };
+                        EditorContextMenu.AddContextMenu(hexCode,
+                            EditorContextMenu.GetEditorColorFunctions(hexCode.transform.Find("Input").GetComponent<InputField>(), () => modifier.GetValue(4)));
 
                         break;
                     }
@@ -1752,22 +1453,12 @@ namespace BetterLegacy.Editor.Data.Elements
                 case nameof(ModifierFunctions.setPlayerModel): {
                         IntegerGenerator(modifier, reference, "Player Index", 1, 0, max: 3);
                         var modelID = StringGenerator(modifier, reference, "Model ID", 0);
-                        var contextClickable = modelID.transform.Find("Input").gameObject.GetOrAddComponent<ContextClickable>();
-                        contextClickable.onClick = eventData =>
-                        {
-                            if (eventData.button != PointerEventData.InputButton.Right)
-                                return;
-
-                            EditorContextMenu.inst.ShowContextMenu(
-                                new ButtonFunction("Select model", () =>
-                                {
-                                    PlayerEditor.inst.ModelsPopup.Open();
-                                    CoroutineHelper.StartCoroutine(PlayerEditor.inst.RefreshModels(model =>
-                                    {
-                                        contextClickable.GetComponent<InputField>().text = model.basePart.id;
-                                    }));
-                                }));
-                        };
+                        EditorContextMenu.AddContextMenu(modelID.transform.Find("Input").gameObject,
+                            new ButtonElement("Select model", () =>
+                            {
+                                PlayerEditor.inst.ModelsPopup.Open();
+                                CoroutineHelper.StartCoroutine(PlayerEditor.inst.RefreshModels(model => SetValue(0, model.basePart.id, reference)));
+                            }));
 
                         break;
                     }
@@ -2874,120 +2565,12 @@ namespace BetterLegacy.Editor.Data.Elements
                     }
                 case nameof(ModifierFunctions.setColorHex): {
                         var primaryHexCode = StringGenerator(modifier, reference, "Primary Hex Code", 0);
-                        var primaryHexCodeContextMenu = primaryHexCode.AddComponent<ContextClickable>();
-                        primaryHexCodeContextMenu.onClick = pointerEventData =>
-                        {
-                            if (pointerEventData.button != PointerEventData.InputButton.Right)
-                                return;
-
-                            var inputField = primaryHexCode.transform.Find("Input").GetComponent<InputField>();
-                            EditorContextMenu.inst.ShowContextMenu(
-                                new ButtonFunction("Edit Color", () =>
-                                {
-                                    RTColorPicker.inst.Show(RTColors.HexToColor(modifier.GetValue(index)),
-                                        (col, hex) =>
-                                        {
-                                            inputField.SetTextWithoutNotify(hex);
-                                        },
-                                        (col, hex) =>
-                                        {
-                                            CoreHelper.Log($"Set timeline object color: {hex}");
-                                            // set the input field's text empty so it notices there was a change
-                                            inputField.SetTextWithoutNotify(string.Empty);
-                                            inputField.text = hex;
-                                        }, () =>
-                                        {
-                                            inputField.SetTextWithoutNotify(modifier.GetValue(index));
-                                        });
-                                }),
-                                new ButtonFunction("Clear", () =>
-                                {
-                                    inputField.text = string.Empty;
-                                }),
-                                new ButtonFunction(true),
-                                new ButtonFunction("VG Red", () =>
-                                {
-                                    inputField.text = ObjectEditorData.RED;
-                                }),
-                                new ButtonFunction("VG Red Green", () =>
-                                {
-                                    inputField.text = ObjectEditorData.RED_GREEN;
-                                }),
-                                new ButtonFunction("VG Green", () =>
-                                {
-                                    inputField.text = ObjectEditorData.GREEN;
-                                }),
-                                new ButtonFunction("VG Green Blue", () =>
-                                {
-                                    inputField.text = ObjectEditorData.GREEN_BLUE;
-                                }),
-                                new ButtonFunction("VG Blue", () =>
-                                {
-                                    inputField.text = ObjectEditorData.BLUE;
-                                }),
-                                new ButtonFunction("VG Blue Red", () =>
-                                {
-                                    inputField.text = ObjectEditorData.RED_BLUE;
-                                }));
-                        };
+                        EditorContextMenu.AddContextMenu(primaryHexCode,
+                            EditorContextMenu.GetEditorColorFunctions(primaryHexCode.transform.Find("Input").GetComponent<InputField>(), () => modifier.GetValue(0)));
 
                         var secondaryHexCode = StringGenerator(modifier, reference, "Secondary Hex Code", 1);
-                        var secondaryHexCodeContextMenu = secondaryHexCode.AddComponent<ContextClickable>();
-                        secondaryHexCodeContextMenu.onClick = pointerEventData =>
-                        {
-                            if (pointerEventData.button != PointerEventData.InputButton.Right)
-                                return;
-
-                            var inputField = secondaryHexCode.transform.Find("Input").GetComponent<InputField>();
-                            EditorContextMenu.inst.ShowContextMenu(
-                                new ButtonFunction("Edit Color", () =>
-                                {
-                                    RTColorPicker.inst.Show(RTColors.HexToColor(modifier.GetValue(index)),
-                                        (col, hex) =>
-                                        {
-                                            inputField.SetTextWithoutNotify(hex);
-                                        },
-                                        (col, hex) =>
-                                        {
-                                            CoreHelper.Log($"Set timeline object color: {hex}");
-                                            // set the input field's text empty so it notices there was a change
-                                            inputField.SetTextWithoutNotify(string.Empty);
-                                            inputField.text = hex;
-                                        }, () =>
-                                        {
-                                            inputField.SetTextWithoutNotify(modifier.GetValue(index));
-                                        });
-                                }),
-                                new ButtonFunction("Clear", () =>
-                                {
-                                    inputField.text = string.Empty;
-                                }),
-                                new ButtonFunction(true),
-                                new ButtonFunction("VG Red", () =>
-                                {
-                                    inputField.text = ObjectEditorData.RED;
-                                }),
-                                new ButtonFunction("VG Red Green", () =>
-                                {
-                                    inputField.text = ObjectEditorData.RED_GREEN;
-                                }),
-                                new ButtonFunction("VG Green", () =>
-                                {
-                                    inputField.text = ObjectEditorData.GREEN;
-                                }),
-                                new ButtonFunction("VG Green Blue", () =>
-                                {
-                                    inputField.text = ObjectEditorData.GREEN_BLUE;
-                                }),
-                                new ButtonFunction("VG Blue", () =>
-                                {
-                                    inputField.text = ObjectEditorData.BLUE;
-                                }),
-                                new ButtonFunction("VG Blue Red", () =>
-                                {
-                                    inputField.text = ObjectEditorData.RED_BLUE;
-                                }));
-                        };
+                        EditorContextMenu.AddContextMenu(secondaryHexCode,
+                            EditorContextMenu.GetEditorColorFunctions(secondaryHexCode.transform.Find("Input").GetComponent<InputField>(), () => modifier.GetValue(1)));
                         break;
                     }
                 case nameof(ModifierFunctions.setColorHexOther): {
@@ -2996,120 +2579,12 @@ namespace BetterLegacy.Editor.Data.Elements
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
                         var primaryHexCode = StringGenerator(modifier, reference, "Primary Hex Code", 0);
-                        var primaryHexCodeContextMenu = primaryHexCode.AddComponent<ContextClickable>();
-                        primaryHexCodeContextMenu.onClick = pointerEventData =>
-                        {
-                            if (pointerEventData.button != PointerEventData.InputButton.Right)
-                                return;
-
-                            var inputField = primaryHexCode.transform.Find("Input").GetComponent<InputField>();
-                            EditorContextMenu.inst.ShowContextMenu(
-                                new ButtonFunction("Edit Color", () =>
-                                {
-                                    RTColorPicker.inst.Show(RTColors.HexToColor(modifier.GetValue(index)),
-                                        (col, hex) =>
-                                        {
-                                            inputField.SetTextWithoutNotify(hex);
-                                        },
-                                        (col, hex) =>
-                                        {
-                                            CoreHelper.Log($"Set timeline object color: {hex}");
-                                            // set the input field's text empty so it notices there was a change
-                                            inputField.SetTextWithoutNotify(string.Empty);
-                                            inputField.text = hex;
-                                        }, () =>
-                                        {
-                                            inputField.SetTextWithoutNotify(modifier.GetValue(index));
-                                        });
-                                }),
-                                new ButtonFunction("Clear", () =>
-                                {
-                                    inputField.text = string.Empty;
-                                }),
-                                new ButtonFunction(true),
-                                new ButtonFunction("VG Red", () =>
-                                {
-                                    inputField.text = ObjectEditorData.RED;
-                                }),
-                                new ButtonFunction("VG Red Green", () =>
-                                {
-                                    inputField.text = ObjectEditorData.RED_GREEN;
-                                }),
-                                new ButtonFunction("VG Green", () =>
-                                {
-                                    inputField.text = ObjectEditorData.GREEN;
-                                }),
-                                new ButtonFunction("VG Green Blue", () =>
-                                {
-                                    inputField.text = ObjectEditorData.GREEN_BLUE;
-                                }),
-                                new ButtonFunction("VG Blue", () =>
-                                {
-                                    inputField.text = ObjectEditorData.BLUE;
-                                }),
-                                new ButtonFunction("VG Blue Red", () =>
-                                {
-                                    inputField.text = ObjectEditorData.RED_BLUE;
-                                }));
-                        };
+                        EditorContextMenu.AddContextMenu(primaryHexCode,
+                            EditorContextMenu.GetEditorColorFunctions(primaryHexCode.transform.Find("Input").GetComponent<InputField>(), () => modifier.GetValue(0)));
 
                         var secondaryHexCode = StringGenerator(modifier, reference, "Secondary Hex Code", 2);
-                        var secondaryHexCodeContextMenu = secondaryHexCode.AddComponent<ContextClickable>();
-                        secondaryHexCodeContextMenu.onClick = pointerEventData =>
-                        {
-                            if (pointerEventData.button != PointerEventData.InputButton.Right)
-                                return;
-
-                            var inputField = secondaryHexCode.transform.Find("Input").GetComponent<InputField>();
-                            EditorContextMenu.inst.ShowContextMenu(
-                                new ButtonFunction("Edit Color", () =>
-                                {
-                                    RTColorPicker.inst.Show(RTColors.HexToColor(modifier.GetValue(index)),
-                                        (col, hex) =>
-                                        {
-                                            inputField.SetTextWithoutNotify(hex);
-                                        },
-                                        (col, hex) =>
-                                        {
-                                            CoreHelper.Log($"Set timeline object color: {hex}");
-                                            // set the input field's text empty so it notices there was a change
-                                            inputField.SetTextWithoutNotify(string.Empty);
-                                            inputField.text = hex;
-                                        }, () =>
-                                        {
-                                            inputField.SetTextWithoutNotify(modifier.GetValue(index));
-                                        });
-                                }),
-                                new ButtonFunction("Clear", () =>
-                                {
-                                    inputField.text = string.Empty;
-                                }),
-                                new ButtonFunction(true),
-                                new ButtonFunction("VG Red", () =>
-                                {
-                                    inputField.text = ObjectEditorData.RED;
-                                }),
-                                new ButtonFunction("VG Red Green", () =>
-                                {
-                                    inputField.text = ObjectEditorData.RED_GREEN;
-                                }),
-                                new ButtonFunction("VG Green", () =>
-                                {
-                                    inputField.text = ObjectEditorData.GREEN;
-                                }),
-                                new ButtonFunction("VG Green Blue", () =>
-                                {
-                                    inputField.text = ObjectEditorData.GREEN_BLUE;
-                                }),
-                                new ButtonFunction("VG Blue", () =>
-                                {
-                                    inputField.text = ObjectEditorData.BLUE;
-                                }),
-                                new ButtonFunction("VG Blue Red", () =>
-                                {
-                                    inputField.text = ObjectEditorData.RED_BLUE;
-                                }));
-                        };
+                        EditorContextMenu.AddContextMenu(secondaryHexCode,
+                            EditorContextMenu.GetEditorColorFunctions(secondaryHexCode.transform.Find("Input").GetComponent<InputField>(), () => modifier.GetValue(2)));
 
                         break;
                     }
@@ -3394,62 +2869,8 @@ namespace BetterLegacy.Editor.Data.Elements
                         BoolGenerator(modifier, reference, "Clear Texture", 8);
 
                         var primaryHexCode = StringGenerator(modifier, reference, "BG Custom Color", 9);
-                        var primaryHexCodeContextMenu = primaryHexCode.AddComponent<ContextClickable>();
-                        primaryHexCodeContextMenu.onClick = pointerEventData =>
-                        {
-                            if (pointerEventData.button != PointerEventData.InputButton.Right)
-                                return;
-
-                            var inputField = primaryHexCode.transform.Find("Input").GetComponent<InputField>();
-                            EditorContextMenu.inst.ShowContextMenu(
-                                new ButtonFunction("Edit Color", () =>
-                                {
-                                    RTColorPicker.inst.Show(RTColors.HexToColor(modifier.GetValue(index)),
-                                        (col, hex) =>
-                                        {
-                                            inputField.SetTextWithoutNotify(hex);
-                                        },
-                                        (col, hex) =>
-                                        {
-                                            CoreHelper.Log($"Set timeline object color: {hex}");
-                                            // set the input field's text empty so it notices there was a change
-                                            inputField.SetTextWithoutNotify(string.Empty);
-                                            inputField.text = hex;
-                                        }, () =>
-                                        {
-                                            inputField.SetTextWithoutNotify(modifier.GetValue(index));
-                                        });
-                                }),
-                                new ButtonFunction("Clear", () =>
-                                {
-                                    inputField.text = string.Empty;
-                                }),
-                                new ButtonFunction(true),
-                                new ButtonFunction("VG Red", () =>
-                                {
-                                    inputField.text = ObjectEditorData.RED;
-                                }),
-                                new ButtonFunction("VG Red Green", () =>
-                                {
-                                    inputField.text = ObjectEditorData.RED_GREEN;
-                                }),
-                                new ButtonFunction("VG Green", () =>
-                                {
-                                    inputField.text = ObjectEditorData.GREEN;
-                                }),
-                                new ButtonFunction("VG Green Blue", () =>
-                                {
-                                    inputField.text = ObjectEditorData.GREEN_BLUE;
-                                }),
-                                new ButtonFunction("VG Blue", () =>
-                                {
-                                    inputField.text = ObjectEditorData.BLUE;
-                                }),
-                                new ButtonFunction("VG Blue Red", () =>
-                                {
-                                    inputField.text = ObjectEditorData.RED_BLUE;
-                                }));
-                        };
+                        EditorContextMenu.AddContextMenu(primaryHexCode,
+                            EditorContextMenu.GetEditorColorFunctions(primaryHexCode.transform.Find("Input").GetComponent<InputField>(), () => modifier.GetValue(9)));
 
                         BoolGenerator(modifier, reference, "Hide Players", 15);
 
@@ -3517,77 +2938,8 @@ namespace BetterLegacy.Editor.Data.Elements
                         BoolGenerator(modifier, reference, "Play Sound", 2, true);
                         BoolGenerator(modifier, reference, "Custom Sound", 3, false);
                         var str = StringGenerator(modifier, reference, "Sound Path", 4);
-                        var search = str.transform.Find("Input").gameObject.AddComponent<Clickable>();
-                        search.onClick = pointerEventData =>
-                        {
-                            if (pointerEventData.button != PointerEventData.InputButton.Right)
-                                return;
-                            EditorContextMenu.inst.ShowContextMenu(
-                                new ButtonFunction($"Use {RTEditor.SYSTEM_BROWSER}", () =>
-                                {
-                                    var isGlobal = modifier.GetBool(5, false);
-                                    var directory = isGlobal && RTFile.DirectoryExists(RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH) ?
-                                                    RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH : RTFile.RemoveEndSlash(RTFile.BasePath);
-
-                                    if (isGlobal && !RTFile.DirectoryExists(RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH))
-                                    {
-                                        EditorManager.inst.DisplayNotification("soundlibrary folder does not exist! If you want to have audio take from a global folder, make sure you create a soundlibrary folder inside your beatmaps folder and put your sounds in there.", 12f, EditorManager.NotificationType.Error);
-                                        return;
-                                    }
-
-                                    var result = Crosstales.FB.FileBrowser.OpenSingleFile("Select a sound to use!", directory, FileFormat.OGG.ToName(), FileFormat.WAV.ToName(), FileFormat.MP3.ToName());
-                                    if (string.IsNullOrEmpty(result))
-                                        return;
-
-                                    var global = modifier.GetBool(5, false);
-                                    result = RTFile.ReplaceSlash(result);
-                                    if (result.Contains(global ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath))))
-                                    {
-                                        str.transform.Find("Input").GetComponent<InputField>().text = result.Remove(global ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath)));
-                                        RTEditor.inst.BrowserPopup.Close();
-                                        return;
-                                    }
-
-                                    EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
-                                }),
-                                new ButtonFunction($"Use {RTEditor.EDITOR_BROWSER}", () =>
-                                {
-                                    RTEditor.inst.BrowserPopup.Open();
-
-                                    var isGlobal = modifier.GetBool(5, false);
-                                    var directory = isGlobal && RTFile.DirectoryExists(RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH) ?
-                                                    RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH : RTFile.RemoveEndSlash(RTFile.BasePath);
-
-                                    if (isGlobal && !RTFile.DirectoryExists(RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH))
-                                    {
-                                        EditorManager.inst.DisplayNotification("soundlibrary folder does not exist! If you want to have audio take from a global folder, make sure you create a soundlibrary folder inside your beatmaps folder and put your sounds in there.", 12f, EditorManager.NotificationType.Error);
-                                        return;
-                                    }
-
-                                    RTFileBrowser.inst.UpdateBrowserFile(directory, RTFile.AudioDotFormats, onSelectFile: _val =>
-                                    {
-                                        var global = modifier.GetBool(5, false);
-                                        _val = RTFile.ReplaceSlash(_val);
-                                        if (_val.Contains(global ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath))))
-                                        {
-                                            str.transform.Find("Input").GetComponent<InputField>().text = _val.Remove(global ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath)));
-                                            RTEditor.inst.BrowserPopup.Close();
-                                            return;
-                                        }
-
-                                        EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
-                                    });
-                                }),
-                                new ButtonFunction(true),
-                                new ButtonFunction("Select Sound Asset", () =>
-                                {
-                                    AssetEditor.inst.OpenPopup(sound =>
-                                    {
-                                        str.transform.Find("Input").GetComponent<InputField>().text = sound;
-                                    }, null, true, false);
-                                })
-                                );
-                        };
+                        EditorContextMenu.AddContextMenu(str.transform.Find("Input").gameObject,
+                            EditorContextMenu.GetModifierSoundPathFunctions(() => modifier.GetBool(5, false), _val => modifier.SetValue(4, _val)));
                         BoolGenerator(modifier, reference, "Global", 5, false);
 
                         SingleGenerator(modifier, reference, "Pitch", 6, 1f);
@@ -4170,56 +3522,32 @@ namespace BetterLegacy.Editor.Data.Elements
                 #region Ranking
                     
                 case nameof(ModifierFunctions.unlockAchievement): {
-                        StringGenerator(modifier, reference, "ID", 0).transform.Find("Input").gameObject.AddComponent<Clickable>().onClick = pointerEventData =>
-                        {
-                            if (pointerEventData.button != PointerEventData.InputButton.Right)
-                                return;
-
-                            EditorContextMenu.inst.ShowContextMenu(
-                                new ButtonFunction("Select Achievement", () => AchievementEditor.inst.OpenPopup(achievement => SetValue(0, achievement.id, reference)))
-                                );
-                        };
+                        var id = StringGenerator(modifier, reference, "ID", 0);
+                        EditorContextMenu.AddContextMenu(id.transform.Find("Input").gameObject,
+                            new ButtonElement("Select Achievement", () => AchievementEditor.inst.OpenPopup(achievement => SetValue(0, achievement.id, reference))));
 
                         break;
                     }
                 case nameof(ModifierFunctions.lockAchievement): {
-                        StringGenerator(modifier, reference, "ID", 0).transform.Find("Input").gameObject.AddComponent<Clickable>().onClick = pointerEventData =>
-                        {
-                            if (pointerEventData.button != PointerEventData.InputButton.Right)
-                                return;
-
-                            EditorContextMenu.inst.ShowContextMenu(
-                                new ButtonFunction("Select Achievement", () => AchievementEditor.inst.OpenPopup(achievement => SetValue(0, achievement.id, reference)))
-                                );
-                        };
+                        var id = StringGenerator(modifier, reference, "ID", 0);
+                        EditorContextMenu.AddContextMenu(id.transform.Find("Input").gameObject,
+                            new ButtonElement("Select Achievement", () => AchievementEditor.inst.OpenPopup(achievement => SetValue(0, achievement.id, reference))));
 
                         break;
                     }
                 case nameof(ModifierFunctions.getAchievementUnlocked): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
-                        StringGenerator(modifier, reference, "ID", 1).transform.Find("Input").gameObject.AddComponent<Clickable>().onClick = pointerEventData =>
-                        {
-                            if (pointerEventData.button != PointerEventData.InputButton.Right)
-                                return;
-
-                            EditorContextMenu.inst.ShowContextMenu(
-                                new ButtonFunction("Select Achievement", () => AchievementEditor.inst.OpenPopup(achievement => SetValue(1, achievement.id, reference)))
-                                );
-                        };
+                        var id = StringGenerator(modifier, reference, "ID", 1);
+                        EditorContextMenu.AddContextMenu(id.transform.Find("Input").gameObject,
+                            new ButtonElement("Select Achievement", () => AchievementEditor.inst.OpenPopup(achievement => SetValue(1, achievement.id, reference))));
                         BoolGenerator(modifier, reference, "Global", 2);
 
                         break;
                     }
                 case nameof(ModifierFunctions.achievementUnlocked): {
-                        StringGenerator(modifier, reference, "ID", 0).transform.Find("Input").gameObject.AddComponent<Clickable>().onClick = pointerEventData =>
-                        {
-                            if (pointerEventData.button != PointerEventData.InputButton.Right)
-                                return;
-
-                            EditorContextMenu.inst.ShowContextMenu(
-                                new ButtonFunction("Select Achievement", () => AchievementEditor.inst.OpenPopup(achievement => SetValue(0, achievement.id, reference)))
-                                );
-                        };
+                        var id = StringGenerator(modifier, reference, "ID", 0);
+                        EditorContextMenu.AddContextMenu(id.transform.Find("Input").gameObject,
+                            new ButtonElement("Select Achievement", () => AchievementEditor.inst.OpenPopup(achievement => SetValue(0, achievement.id, reference))));
                         BoolGenerator(modifier, reference, "Global", 1);
 
                         break;
@@ -4486,21 +3814,11 @@ namespace BetterLegacy.Editor.Data.Elements
                                 transformable = player.RuntimePlayer.customObjects.Find(x => x.id == id);
                         }
 
-                        var referenceIDContextMenu = referenceID.GetOrAddComponent<ContextClickable>();
-                        referenceIDContextMenu.onClick = pointerEventData =>
-                        {
-                            if (pointerEventData.button != PointerEventData.InputButton.Right)
-                                return;
-
-                            EditorContextMenu.inst.ShowContextMenu(
-                                new ButtonFunction("Select Animation", () =>
-                                {
-                                    AnimationEditor.inst.OpenPopup(customPlayerObject.animations, PlayerEditor.inst.PlayAnimation, animation =>
-                                    {
-                                        referenceID.transform.Find("Input").GetComponent<InputField>().text = animation.ReferenceID;
-                                    }, transformable);
-                                }));
-                        };
+                        EditorContextMenu.AddContextMenu(referenceID,
+                            new ButtonElement("Select Animation", () => AnimationEditor.inst.OpenPopup(customPlayerObject.animations, PlayerEditor.inst.PlayAnimation, animation =>
+                            {
+                                referenceID.transform.Find("Input").GetComponent<InputField>().text = animation.ReferenceID;
+                            }, transformable)));
 
                         break;
                     }
@@ -4520,21 +3838,11 @@ namespace BetterLegacy.Editor.Data.Elements
                                 transformable = player.RuntimePlayer.customObjects.Find(x => x.id == id);
                         }
 
-                        var referenceIDContextMenu = referenceID.GetOrAddComponent<ContextClickable>();
-                        referenceIDContextMenu.onClick = pointerEventData =>
-                        {
-                            if (pointerEventData.button != PointerEventData.InputButton.Right)
-                                return;
-
-                            EditorContextMenu.inst.ShowContextMenu(
-                                new ButtonFunction("Select Animation", () =>
-                                {
-                                    AnimationEditor.inst.OpenPopup(customPlayerObject.animations, PlayerEditor.inst.PlayAnimation, animation =>
-                                    {
-                                        referenceID.transform.Find("Input").GetComponent<InputField>().text = animation.ReferenceID;
-                                    }, transformable);
-                                }));
-                        };
+                        EditorContextMenu.AddContextMenu(referenceID,
+                            new ButtonElement("Select Animation", () => AnimationEditor.inst.OpenPopup(customPlayerObject.animations, PlayerEditor.inst.PlayAnimation, animation =>
+                            {
+                                referenceID.transform.Find("Input").GetComponent<InputField>().text = animation.ReferenceID;
+                            }, transformable)));
 
                         break;
                     }
@@ -5472,25 +4780,19 @@ namespace BetterLegacy.Editor.Data.Elements
             TriggerHelper.IncreaseDecreaseButtons(inputField, amount, multiply, min, max, single.transform);
             TriggerHelper.AddEventTriggers(inputField.gameObject, TriggerHelper.ScrollDelta(inputField, amount, multiply, min, max));
 
-            var contextClickable = inputField.gameObject.AddComponent<ContextClickable>();
-            contextClickable.onClick = eventData =>
-            {
-                if (eventData.button != PointerEventData.InputButton.Right)
-                    return;
-
-                EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction("Edit Raw Value", () =>
+            EditorContextMenu.AddContextMenu(inputField.gameObject,
+                new ButtonElement("Edit Raw Value", () =>
+                {
+                    RTEditor.inst.folderCreatorName.SetTextWithoutNotify(modifier.GetValue(type));
+                    RTEditor.inst.ShowNameEditor("Field Editor", "Edit Field", "Submit", () =>
                     {
-                        RTEditor.inst.ShowNameEditor("Field Editor", "Edit Field", "Submit", () =>
-                        {
-                            modifier.SetValue(type, RTEditor.inst.folderCreatorName.text);
-                            if (reference is IModifyable modifyable)
-                                CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
-                            RTEditor.inst.HideNameEditor();
-                            Update(modifier, reference);
-                        });
-                    }));
-            };
+                        modifier.SetValue(type, RTEditor.inst.folderCreatorName.text);
+                        if (reference is IModifyable modifyable)
+                            CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
+                        RTEditor.inst.HideNameEditor();
+                        Update(modifier, reference);
+                    });
+                }));
 
             return single;
         }
@@ -5510,25 +4812,19 @@ namespace BetterLegacy.Editor.Data.Elements
             TriggerHelper.IncreaseDecreaseButtonsInt(inputField, amount, min, max, t: single.transform);
             TriggerHelper.AddEventTriggers(inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputField, amount, min, max));
 
-            var contextClickable = inputField.gameObject.AddComponent<ContextClickable>();
-            contextClickable.onClick = eventData =>
-            {
-                if (eventData.button != PointerEventData.InputButton.Right)
-                    return;
-
-                EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction("Edit Raw Value", () =>
+            EditorContextMenu.AddContextMenu(inputField.gameObject,
+                new ButtonElement("Edit Raw Value", () =>
+                {
+                    RTEditor.inst.folderCreatorName.SetTextWithoutNotify(modifier.GetValue(type));
+                    RTEditor.inst.ShowNameEditor("Field Editor", "Edit Field", "Submit", () =>
                     {
-                        RTEditor.inst.ShowNameEditor("Field Editor", "Edit Field", "Submit", () =>
-                        {
-                            modifier.SetValue(type, RTEditor.inst.folderCreatorName.text);
-                            if (reference is IModifyable modifyable)
-                                CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
-                            RTEditor.inst.HideNameEditor();
-                            Update(modifier, reference);
-                        });
-                    }));
-            };
+                        modifier.SetValue(type, RTEditor.inst.folderCreatorName.text);
+                        if (reference is IModifyable modifyable)
+                            CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
+                        RTEditor.inst.HideNameEditor();
+                        Update(modifier, reference);
+                    });
+                }));
 
             return single;
         }
@@ -5555,34 +4851,27 @@ namespace BetterLegacy.Editor.Data.Elements
 
         public GameObject BoolGenerator<T>(Modifier modifier, T reference, string label, int type, bool defaultValue = false)
         {
-            var global = BoolGenerator(label, modifier.GetBool(type, defaultValue), _val =>
+            var gameObject = BoolGenerator(label, modifier.GetBool(type, defaultValue), _val =>
             {
                 modifier.SetValue(type, _val.ToString());
 
                 Update(modifier, reference);
-            }, out Toggle globalToggle);
-            var contextClickable = globalToggle.gameObject.AddComponent<ContextClickable>();
-            contextClickable.onClick = eventData =>
-            {
-                if (eventData.button != PointerEventData.InputButton.Right)
-                    return;
-
-                EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction("Edit Raw Value", () =>
+            }, out Toggle toggle);
+            EditorContextMenu.AddContextMenu(toggle.gameObject,
+                new ButtonElement("Edit Raw Value", () =>
+                {
+                    RTEditor.inst.folderCreatorName.SetTextWithoutNotify(modifier.GetValue(type));
+                    RTEditor.inst.ShowNameEditor("Field Editor", "Edit Field", "Submit", () =>
                     {
-                        RTEditor.inst.folderCreatorName.text = modifier.GetValue(type);
-                        RTEditor.inst.ShowNameEditor("Field Editor", "Edit Field", "Submit", () =>
-                        {
-                            modifier.SetValue(type, RTEditor.inst.folderCreatorName.text);
-                            if (reference is IModifyable modifyable)
-                                CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
-                            RTEditor.inst.HideNameEditor();
-                            Update(modifier, reference);
-                        });
-                    }));
-            };
+                        modifier.SetValue(type, RTEditor.inst.folderCreatorName.text);
+                        if (reference is IModifyable modifyable)
+                            CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
+                        RTEditor.inst.HideNameEditor();
+                        Update(modifier, reference);
+                    });
+                }));
 
-            return global;
+            return gameObject;
         }
 
         public GameObject StringGenerator(Transform layout, string label, string value, Action<string> onValueChanged, Action<string> onEndEdit = null)
@@ -5695,26 +4984,19 @@ namespace BetterLegacy.Editor.Data.Elements
                 EditorThemeManager.ApplyGraphic(toggle.image, ThemeGroup.Null, true);
                 EditorThemeManager.ApplyGraphic(toggle.graphic, ThemeGroup.List_Button_1_Normal);
 
-                var contextClickable = toggle.gameObject.GetOrAddComponent<ContextClickable>();
-                contextClickable.onClick = eventData =>
-                {
-                    if (eventData.button != PointerEventData.InputButton.Right)
-                        return;
-
-                    EditorContextMenu.inst.ShowContextMenu(
-                        new ButtonFunction("Edit Raw Value", () =>
+                EditorContextMenu.AddContextMenu(toggle.gameObject,
+                    new ButtonElement("Edit Raw Value", () =>
+                    {
+                        RTEditor.inst.folderCreatorName.SetTextWithoutNotify(modifier.GetValue(type));
+                        RTEditor.inst.ShowNameEditor("Field Editor", "Edit Field", "Submit", () =>
                         {
-                            RTEditor.inst.folderCreatorName.text = modifier.GetValue(type);
-                            RTEditor.inst.ShowNameEditor("Field Editor", "Edit Field", "Submit", () =>
-                            {
-                                modifier.SetValue(type, RTEditor.inst.folderCreatorName.text);
-                                if (reference is IModifyable modifyable)
-                                    CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
-                                RTEditor.inst.HideNameEditor();
-                                Update(modifier, reference);
-                            });
-                        }));
-                };
+                            modifier.SetValue(type, RTEditor.inst.folderCreatorName.text);
+                            if (reference is IModifyable modifyable)
+                                CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
+                            RTEditor.inst.HideNameEditor();
+                            Update(modifier, reference);
+                        });
+                    }));
             }
 
             CoreHelper.Delete(colorPrefab);
@@ -5765,26 +5047,19 @@ namespace BetterLegacy.Editor.Data.Elements
             EditorThemeManager.ApplyLightText(labelText);
             EditorThemeManager.ApplyDropdown(dropdown);
 
-            var contextClickable = dropdown.gameObject.AddComponent<ContextClickable>();
-            contextClickable.onClick = eventData =>
-            {
-                if (eventData.button != PointerEventData.InputButton.Right)
-                    return;
-
-                EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction("Edit Raw Value", () =>
+            EditorContextMenu.AddContextMenu(dropdown.gameObject,
+                new ButtonElement("Edit Raw Value", () =>
+                {
+                    RTEditor.inst.folderCreatorName.SetTextWithoutNotify(modifier.GetValue(type));
+                    RTEditor.inst.ShowNameEditor("Field Editor", "Edit Field", "Submit", () =>
                     {
-                        RTEditor.inst.folderCreatorName.text = modifier.GetValue(type);
-                        RTEditor.inst.ShowNameEditor("Field Editor", "Edit Field", "Submit", () =>
-                        {
-                            modifier.SetValue(type, RTEditor.inst.folderCreatorName.text);
-                            if (reference is IModifyable modifyable)
-                                CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
-                            RTEditor.inst.HideNameEditor();
-                            Update(modifier, reference);
-                        });
-                    }));
-            };
+                        modifier.SetValue(type, RTEditor.inst.folderCreatorName.text);
+                        if (reference is IModifyable modifyable)
+                            CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
+                        RTEditor.inst.HideNameEditor();
+                        Update(modifier, reference);
+                    });
+                }));
 
             return dd;
         }
@@ -5832,26 +5107,19 @@ namespace BetterLegacy.Editor.Data.Elements
             EditorThemeManager.ApplyLightText(labelText);
             EditorThemeManager.ApplyDropdown(dropdown);
 
-            var contextClickable = dropdown.gameObject.AddComponent<ContextClickable>();
-            contextClickable.onClick = eventData =>
-            {
-                if (eventData.button != PointerEventData.InputButton.Right)
-                    return;
-
-                EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction("Edit Raw Value", () =>
+            EditorContextMenu.AddContextMenu(dropdown.gameObject,
+                new ButtonElement("Edit Raw Value", () =>
+                {
+                    RTEditor.inst.folderCreatorName.SetTextWithoutNotify(modifier.GetValue(type));
+                    RTEditor.inst.ShowNameEditor("Field Editor", "Edit Field", "Submit", () =>
                     {
-                        RTEditor.inst.folderCreatorName.text = modifier.GetValue(type);
-                        RTEditor.inst.ShowNameEditor("Field Editor", "Edit Field", "Submit", () =>
-                        {
-                            modifier.SetValue(type, RTEditor.inst.folderCreatorName.text);
-                            if (reference is IModifyable modifyable)
-                                CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
-                            RTEditor.inst.HideNameEditor();
-                            Update(modifier, reference);
-                        });
-                    }));
-            };
+                        modifier.SetValue(type, RTEditor.inst.folderCreatorName.text);
+                        if (reference is IModifyable modifyable)
+                            CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
+                        RTEditor.inst.HideNameEditor();
+                        Update(modifier, reference);
+                    });
+                }));
 
             return dd;
         }
@@ -5893,26 +5161,19 @@ namespace BetterLegacy.Editor.Data.Elements
             EditorThemeManager.ApplyLightText(labelText);
             EditorThemeManager.ApplyDropdown(dropdown);
 
-            var contextClickable = dropdown.gameObject.AddComponent<ContextClickable>();
-            contextClickable.onClick = eventData =>
-            {
-                if (eventData.button != PointerEventData.InputButton.Right)
-                    return;
-
-                EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction("Edit Raw Value", () =>
+            EditorContextMenu.AddContextMenu(dropdown.gameObject,
+                new ButtonElement("Edit Raw Value", () =>
+                {
+                    RTEditor.inst.folderCreatorName.SetTextWithoutNotify(getValue?.Invoke());
+                    RTEditor.inst.ShowNameEditor("Field Editor", "Edit Field", "Submit", () =>
                     {
-                        RTEditor.inst.folderCreatorName.text = getValue?.Invoke();
-                        RTEditor.inst.ShowNameEditor("Field Editor", "Edit Field", "Submit", () =>
-                        {
-                            setValue?.Invoke(RTEditor.inst.folderCreatorName.text);
-                            if (reference is IModifyable modifyable)
-                                CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
-                            RTEditor.inst.HideNameEditor();
-                            Update(modifier, reference);
-                        });
-                    }));
-            };
+                        setValue?.Invoke(RTEditor.inst.folderCreatorName.text);
+                        if (reference is IModifyable modifyable)
+                            CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
+                        RTEditor.inst.HideNameEditor();
+                        Update(modifier, reference);
+                    });
+                }));
 
             return dd;
         }

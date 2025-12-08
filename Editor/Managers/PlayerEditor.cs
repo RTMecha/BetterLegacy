@@ -2103,25 +2103,25 @@ namespace BetterLegacy.Editor.Managers
                         return;
 
                     EditorContextMenu.inst.ShowContextMenu(
-                        new ButtonFunction("Open & Use", () =>
+                        new ButtonElement("Open & Use", () =>
                         {
                             PlayersData.Current.SetPlayerModel(playerModelIndex, playerModel.Key);
                             PlayerManager.RespawnPlayers();
                             StartCoroutine(RefreshEditor());
                         }),
-                        new ButtonFunction("Set to Global", () => PlayerManager.PlayerIndexes[playerModelIndex].Value = playerModel.Key),
-                        new ButtonFunction("Create New", CreateNewModel),
-                        new ButtonFunction("Save", Save),
-                        new ButtonFunction("Reload", Reload),
-                        new ButtonFunction(true),
-                        new ButtonFunction("Duplicate", () =>
+                        new ButtonElement("Set to Global", () => PlayerManager.PlayerIndexes[playerModelIndex].Value = playerModel.Key),
+                        new ButtonElement("Create New", CreateNewModel),
+                        new ButtonElement("Save", Save),
+                        new ButtonElement("Reload", Reload),
+                        new SpacerElement(),
+                        new ButtonElement("Duplicate", () =>
                         {
                             var dup = PlayersData.Current.DuplicatePlayerModel(playerModel.Key);
                             PlayersData.externalPlayerModels[dup.basePart.id] = dup;
                             if (dup)
                                 PlayersData.Current.SetPlayerModel(playerModelIndex, dup.basePart.id);
                         }),
-                        new ButtonFunction("Delete", () =>
+                        new ButtonElement("Delete", () =>
                         {
                             if (index < 5)
                             {
@@ -2240,12 +2240,12 @@ namespace BetterLegacy.Editor.Managers
                     if (eventData.button == PointerEventData.InputButton.Right)
                     {
                         EditorContextMenu.inst.ShowContextMenu(
-                            new ButtonFunction("Open", () =>
+                            new ButtonElement("Open", () =>
                             {
                                 CustomObjectID = customObject.id;
                                 StartCoroutine(RefreshEditor());
                             }),
-                            new ButtonFunction("Delete", () =>
+                            new ButtonElement("Delete", () =>
                             {
                                 RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this custom object?", () =>
                                 {
@@ -2256,7 +2256,7 @@ namespace BetterLegacy.Editor.Managers
                                     RTEditor.inst.HideWarningPopup();
                                 }, RTEditor.inst.HideWarningPopup);
                             }),
-                            new ButtonFunction("Duplicate", () =>
+                            new ButtonElement("Duplicate", () =>
                             {
                                 var duplicateObject = customObject.Copy();
                                 while (currentModel.customObjects.Has(x => x.id == duplicateObject.id)) // Ensure ID is not in list.
@@ -2271,12 +2271,12 @@ namespace BetterLegacy.Editor.Managers
                                 StartCoroutine(RefreshEditor());
                                 PlayerManager.UpdatePlayerModels();
                             }),
-                            new ButtonFunction("Copy", () =>
+                            new ButtonElement("Copy", () =>
                             {
                                 copiedCustomObject = customObject.Copy(false);
                                 EditorManager.inst.DisplayNotification("Copied custom player object!", 2f, EditorManager.NotificationType.Success);
                             }),
-                            new ButtonFunction("Paste", () =>
+                            new ButtonElement("Paste", () =>
                             {
                                 if (!copiedCustomObject)
                                 {
@@ -2557,44 +2557,40 @@ namespace BetterLegacy.Editor.Managers
                             TriggerHelper.AddEventTriggers(radius.inputField.gameObject, TriggerHelper.ScrollDelta(radius.inputField, min: 0.1f, max: 10f));
                         }
 
-                        var contextMenu = radius.inputField.gameObject.GetOrAddComponent<ContextClickable>();
-                        contextMenu.onClick = eventData =>
-                        {
-                            if (eventData.button != PointerEventData.InputButton.Right)
-                                return;
-
-                            var buttonFunctions = new List<ButtonFunction>()
+                        EditorContextMenu.AddContextMenu(radius.inputField.gameObject,
+                            getEditorElements: () =>
                             {
-                                new ButtonFunction($"Auto Assign Radius [{(EditorConfig.Instance.AutoPolygonRadius.Value ? "On" : "Off")}]", () =>
+                                var editorElements = new List<EditorElement>()
                                 {
-                                    EditorConfig.Instance.AutoPolygonRadius.Value = !EditorConfig.Instance.AutoPolygonRadius.Value;
-                                    RenderShape(ui, shapeable);
-                                })
-                            };
-                            if (!EditorConfig.Instance.AutoPolygonRadius.Value)
-                            {
-                                buttonFunctions.Add(new ButtonFunction("Set to Triangle Radius", () =>
+                                    ButtonElement.ToggleButton("Auto Assign Radius", () => EditorConfig.Instance.AutoPolygonRadius.Value, () =>
+                                    {
+                                        EditorConfig.Instance.AutoPolygonRadius.Value = !EditorConfig.Instance.AutoPolygonRadius.Value;
+                                        RenderShape(ui, shapeable);
+                                    })
+                                };
+                                if (!EditorConfig.Instance.AutoPolygonRadius.Value)
                                 {
-                                    shapeable.Polygon.Radius = PolygonShape.TRIANGLE_RADIUS;
+                                    editorElements.Add(new ButtonElement("Set to Triangle Radius", () =>
+                                    {
+                                        shapeable.Polygon.Radius = PolygonShape.TRIANGLE_RADIUS;
 
-                                    PlayerManager.UpdatePlayerModels();
-                                }));
-                                buttonFunctions.Add(new ButtonFunction("Set to Square Radius", () =>
-                                {
-                                    shapeable.Polygon.Radius = PolygonShape.SQUARE_RADIUS;
+                                        PlayerManager.UpdatePlayerModels();
+                                    }));
+                                    editorElements.Add(new ButtonElement("Set to Square Radius", () =>
+                                    {
+                                        shapeable.Polygon.Radius = PolygonShape.SQUARE_RADIUS;
 
-                                    PlayerManager.UpdatePlayerModels();
-                                }));
-                                buttonFunctions.Add(new ButtonFunction("Set to Normal Radius", () =>
-                                {
-                                    shapeable.Polygon.Radius = PolygonShape.NORMAL_RADIUS;
+                                        PlayerManager.UpdatePlayerModels();
+                                    }));
+                                    editorElements.Add(new ButtonElement("Set to Normal Radius", () =>
+                                    {
+                                        shapeable.Polygon.Radius = PolygonShape.NORMAL_RADIUS;
 
-                                    PlayerManager.UpdatePlayerModels();
-                                }));
-                            }
-
-                            EditorContextMenu.inst.ShowContextMenu(buttonFunctions);
-                        };
+                                        PlayerManager.UpdatePlayerModels();
+                                    }));
+                                }
+                                return editorElements;
+                            });
 
                         var sides = shapeSettings.Find("10/sides").gameObject.GetComponent<InputFieldStorage>();
                         sides.inputField.SetTextWithoutNotify(shapeable.Polygon.Sides.ToString());

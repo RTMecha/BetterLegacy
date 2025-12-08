@@ -893,10 +893,10 @@ namespace BetterLegacy.Editor.Managers
                 {
                     if (pointerEventData.button == PointerEventData.InputButton.Right)
                     {
-                        var buttonFunctions = new List<ButtonFunction>()
+                        var buttonFunctions = new List<EditorElement>()
                         {
-                            new ButtonFunction("Edit", () => OpenDialog(keybind)),
-                            new ButtonFunction("Delete", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this keybind? You cannot undo this.", () =>
+                            new ButtonElement("Edit", () => OpenDialog(keybind)),
+                            new ButtonElement("Delete", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this keybind? You cannot undo this.", () =>
                             {
                                 if (!CurrentProfile)
                                 {
@@ -909,7 +909,7 @@ namespace BetterLegacy.Editor.Managers
                                 Save();
                                 RTEditor.inst.HideWarningPopup();
                             }, RTEditor.inst.HideWarningPopup)),
-                            new ButtonFunction(true),
+                            new SpacerElement(),
                         };
                         buttonFunctions.AddRange(EditorContextMenu.GetMoveIndexFunctions(CurrentProfile.keybinds, index, () =>
                         {
@@ -957,40 +957,8 @@ namespace BetterLegacy.Editor.Managers
             var add = EditorPrefabHolder.Instance.CreateAddButton(Popup.Content);
             add.Text = "Add new Profile";
             add.OnClick.ClearAll();
-            var addContextClickable = add.gameObject.GetOrAddComponent<ContextClickable>();
-            addContextClickable.onClick = pointerEventData =>
-            {
-                if (pointerEventData.button == PointerEventData.InputButton.Right)
-                {
-                    EditorContextMenu.inst.ShowContextMenu(
-                        new ButtonFunction("Create Default", () => RTEditor.inst.ShowNameEditor("Keybind Profile Creator", "Profile Name", "Create", () =>
-                        {
-                            var name = RTEditor.inst.folderCreatorName.text;
-                            if (string.IsNullOrEmpty(name))
-                            {
-                                EditorManager.inst.DisplayNotification($"Please set a name!", 2f, EditorManager.NotificationType.Error);
-                                return;
-                            }
-
-                            CreateProfile(name, () => KeybindProfile.DefaultProfile);
-                            RTEditor.inst.HideNameEditor();
-                        })),
-                        new ButtonFunction("Create Empty", () => RTEditor.inst.ShowNameEditor("Keybind Profile Creator", "Profile Name", "Create", () =>
-                        {
-                            var name = RTEditor.inst.folderCreatorName.text;
-                            if (string.IsNullOrEmpty(name))
-                            {
-                                EditorManager.inst.DisplayNotification($"Please set a name!", 2f, EditorManager.NotificationType.Error);
-                                return;
-                            }
-
-                            CreateProfile(name, () => new KeybindProfile("Default"));
-                            RTEditor.inst.HideNameEditor();
-                        })));
-                    return;
-                }
-
-                RTEditor.inst.ShowNameEditor("Keybind Profile Creator", "Profile Name", "Create", () =>
+            EditorContextMenu.AddContextMenu(add.gameObject,
+                leftClick: () => RTEditor.inst.ShowNameEditor("Keybind Profile Creator", "Profile Name", "Create", () =>
                 {
                     var name = RTEditor.inst.folderCreatorName.text;
                     if (string.IsNullOrEmpty(name))
@@ -1001,8 +969,31 @@ namespace BetterLegacy.Editor.Managers
 
                     CreateProfile(name, () => KeybindProfile.DefaultProfile);
                     RTEditor.inst.HideNameEditor();
-                });
-            };
+                }),
+                new ButtonElement("Create Default", () => RTEditor.inst.ShowNameEditor("Keybind Profile Creator", "Profile Name", "Create", () =>
+                {
+                    var name = RTEditor.inst.folderCreatorName.text;
+                    if (string.IsNullOrEmpty(name))
+                    {
+                        EditorManager.inst.DisplayNotification($"Please set a name!", 2f, EditorManager.NotificationType.Error);
+                        return;
+                    }
+
+                    CreateProfile(name, () => KeybindProfile.DefaultProfile);
+                    RTEditor.inst.HideNameEditor();
+                })),
+                new ButtonElement("Create Empty", () => RTEditor.inst.ShowNameEditor("Keybind Profile Creator", "Profile Name", "Create", () =>
+                {
+                    var name = RTEditor.inst.folderCreatorName.text;
+                    if (string.IsNullOrEmpty(name))
+                    {
+                        EditorManager.inst.DisplayNotification($"Please set a name!", 2f, EditorManager.NotificationType.Error);
+                        return;
+                    }
+
+                    CreateProfile(name, () => new KeybindProfile("Default"));
+                    RTEditor.inst.HideNameEditor();
+                })));
 
             int num = 0;
             foreach (var profile in profiles)
@@ -1028,13 +1019,13 @@ namespace BetterLegacy.Editor.Managers
                     if (pointerEventData.button == PointerEventData.InputButton.Right)
                     {
                         EditorContextMenu.inst.ShowContextMenu(
-                            new ButtonFunction("Open", () =>
+                            new ButtonElement("Open", () =>
                             {
                                 SetCurrentProfile(profile);
                                 Save();
                                 RenderPopup();
                             }),
-                            new ButtonFunction("Rename", () => RTEditor.inst.ShowNameEditor("Rename Keybind Profile", "Profile Name", "Rename", () =>
+                            new ButtonElement("Rename", () => RTEditor.inst.ShowNameEditor("Rename Keybind Profile", "Profile Name", "Rename", () =>
                             {
                                 var name = RTEditor.inst.folderCreatorName.text;
                                 if (string.IsNullOrEmpty(name))
@@ -1063,7 +1054,7 @@ namespace BetterLegacy.Editor.Managers
 
                                 Save();
                             })),
-                            new ButtonFunction("Delete", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this profile? You cannot undo this.", () =>
+                            new ButtonElement("Delete", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this profile? You cannot undo this.", () =>
                             {
                                 if (profiles.Count == 1)
                                 {
@@ -1078,21 +1069,21 @@ namespace BetterLegacy.Editor.Managers
 
                                 RTEditor.inst.HideWarningPopup();
                             }, RTEditor.inst.HideWarningPopup)),
-                            new ButtonFunction(true),
-                            new ButtonFunction("Reset Keybinds", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to reset the keybinds in this profile? You cannot undo this.", () =>
+                            new SpacerElement(),
+                            new ButtonElement("Reset Keybinds", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to reset the keybinds in this profile? You cannot undo this.", () =>
                             {
                                 profile.keybinds = KeybindProfile.GetDefaultKeybinds();
                                 Save();
                                 RTEditor.inst.HideWarningPopup();
                             }, RTEditor.inst.HideWarningPopup)),
-                            new ButtonFunction("Clear Keybinds", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to clear all keybinds from this profile? You cannot undo this.", () =>
+                            new ButtonElement("Clear Keybinds", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to clear all keybinds from this profile? You cannot undo this.", () =>
                             {
                                 profile.keybinds.Clear();
                                 Save();
                                 RTEditor.inst.HideWarningPopup();
                             }, RTEditor.inst.HideWarningPopup)),
-                            new ButtonFunction(true),
-                            new ButtonFunction("Copy ID", () =>
+                            new SpacerElement(),
+                            new ButtonElement("Copy ID", () =>
                             {
                                 LSText.CopyToClipboard(profile.id);
                                 EditorManager.inst.DisplayNotification($"Copied keybind profile ID to clipboard!", 2f, EditorManager.NotificationType.Success);

@@ -310,116 +310,14 @@ namespace BetterLegacy.Editor.Data.Elements
 
                     if (eventData.button == PointerEventData.InputButton.Right)
                     {
-                        EditorContextMenu.inst.ShowContextMenu(
-                            new ButtonFunction("Open folder", () =>
+                        EditorContextMenu.inst.ShowContextMenu(EditorContextMenu.GetFolderPanelFunctions(this, RenderIcon,
+                            onOpenFolder: () =>
                             {
                                 RTThemeEditor.inst.Popup.PathField.text = path.Remove(RTEditor.inst.BeatmapsPath + "/");
                                 RTEditor.inst.UpdateThemePath(false);
-                            }),
-                            new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.ThemePath), () => { RTEditor.inst.UpdateThemePath(true); RTEditor.inst.HideNameEditor(); })),
-                            new ButtonFunction(true),
-                            new ButtonFunction("Paste", RTThemeEditor.inst.PasteTheme),
-                            new ButtonFunction("Delete", () =>
-                            {
-                                RTEditor.inst.ShowWarningPopup("Are you <b>100%</b> sure you want to delete this folder? This <b>CANNOT</b> be undone! Always make sure you have backups.", () =>
-                                {
-                                    RTFile.DeleteDirectory(path);
-                                    RTEditor.inst.UpdateThemePath(true);
-                                    EditorManager.inst.DisplayNotification("Deleted folder!", 2f, EditorManager.NotificationType.Success);
-                                    RTEditor.inst.HideWarningPopup();
-                                }, RTEditor.inst.HideWarningPopup);
-                            }),
-                            new ButtonFunction(true),
-                            new ButtonFunction($"Select Icon ({RTEditor.SYSTEM_BROWSER})", () =>
-                            {
-                                string imageFile = FileBrowser.OpenSingleFile("Select an image!", RTEditor.inst.BasePath, new string[] { "png" });
-                                if (string.IsNullOrEmpty(imageFile))
-                                    return;
-
-                                RTFile.CopyFile(imageFile, RTFile.CombinePaths(path, $"folder_icon{FileFormat.PNG.Dot()}"));
-                                RenderIcon();
-                            }),
-                            new ButtonFunction($"Select Icon ({RTEditor.EDITOR_BROWSER})", () =>
-                            {
-                                RTEditor.inst.BrowserPopup.Open();
-                                RTFileBrowser.inst.UpdateBrowserFile(new string[] { FileFormat.PNG.Dot() }, imageFile =>
-                                {
-                                    if (string.IsNullOrEmpty(imageFile))
-                                        return;
-
-                                    RTEditor.inst.BrowserPopup.Close();
-
-                                    RTFile.CopyFile(imageFile, RTFile.CombinePaths(path, $"folder_icon{FileFormat.PNG.Dot()}"));
-                                    RenderIcon();
-                                });
-                            }),
-                            new ButtonFunction("Clear Icon", () =>
-                            {
-                                RTEditor.inst.ShowWarningPopup("Are you sure you want to clear the folder icon? This will delete the icon file.", () =>
-                                {
-                                    RTEditor.inst.HideWarningPopup();
-                                    RTFile.DeleteFile(RTFile.CombinePaths(path, $"folder_icon{FileFormat.PNG.Dot()}"));
-                                    RenderIcon();
-                                    EditorManager.inst.DisplayNotification("Deleted icon!", 1.5f, EditorManager.NotificationType.Success);
-                                }, RTEditor.inst.HideWarningPopup);
-                            }),
-                            new ButtonFunction(true),
-                            new ButtonFunction("Create Info File", () =>
-                            {
-                                var filePath = RTFile.CombinePaths(path, $"folder_info{FileFormat.JSON.Dot()}");
-                                if (RTFile.FileExists(filePath))
-                                {
-                                    EditorManager.inst.DisplayNotification($"Info file already exists!", 2f, EditorManager.NotificationType.Warning);
-                                    return;
-                                }
-
-                                RTTextEditor.inst.SetEditor("This is the default description.", val => { }, "Create", () =>
-                                {
-                                    var jn = JSON.Parse("{}");
-                                    jn["desc"] = RTTextEditor.inst.Text;
-                                    infoJN = jn;
-                                    RTFile.WriteToFile(filePath, jn.ToString());
-                                    RenderTooltip();
-                                    RTTextEditor.inst.Popup.Close();
-
-                                    EditorManager.inst.DisplayNotification("Created info file!", 1.5f, EditorManager.NotificationType.Success);
-                                });
-                            }),
-                            new ButtonFunction("Edit Info File", () =>
-                            {
-                                var filePath = RTFile.CombinePaths(path, $"folder_info{FileFormat.JSON.Dot()}");
-
-                                if (!RTFile.FileExists(filePath))
-                                    return;
-
-                                RTTextEditor.inst.SetEditor("This is the default description.", val => { }, "Done", () =>
-                                {
-                                    var jn = JSON.Parse("{}");
-                                    jn["desc"] = RTTextEditor.inst.Text;
-                                    infoJN = jn;
-                                    RTFile.WriteToFile(filePath, jn.ToString());
-                                    RenderTooltip();
-                                    RTTextEditor.inst.Popup.Close();
-                                });
-                            }),
-                            new ButtonFunction("Update Info", () =>
-                            {
-                                infoJN = null;
-                                RenderTooltip();
-                                RenderIcon();
-                            }),
-                            new ButtonFunction("Clear Info File", () =>
-                            {
-                                RTEditor.inst.ShowWarningPopup("Are you sure you want to delete the info file?", () =>
-                                {
-                                    RTFile.DeleteFile(RTFile.CombinePaths(path, $"folder_info{FileFormat.JSON.Dot()}"));
-                                    infoJN = null;
-                                    RenderTooltip();
-                                    RTEditor.inst.HideWarningPopup();
-                                    EditorManager.inst.DisplayNotification("Deleted info file!", 1.5f, EditorManager.NotificationType.Success);
-                                }, RTEditor.inst.HideWarningPopup);
-                            }));
-
+                            },
+                            onFolderUpdate: () => RTEditor.inst.UpdateThemePath(true),
+                            paste: RTThemeEditor.inst.PasteTheme));
                         return;
                     }
 
@@ -447,26 +345,26 @@ namespace BetterLegacy.Editor.Data.Elements
                 {
                     case ObjectSource.Internal: {
                         EditorContextMenu.inst.ShowContextMenu(
-                            new ButtonFunction("Use", Use),
-                            new ButtonFunction("Edit", () => RTThemeEditor.inst.RenderThemeEditor(Item)),
-                            new ButtonFunction("Export", () => RTThemeEditor.inst.ExportTheme(Item), "Internal Theme Export"),
-                            new ButtonFunction("Convert to VG", () => RTThemeEditor.inst.ConvertTheme(Item)),
-                            new ButtonFunction(true),
-                            new ButtonFunction("Create theme", RTThemeEditor.inst.RenderThemeEditor),
-                            new ButtonFunction(true),
-                            new ButtonFunction("Delete", () =>
+                            new ButtonElement("Use", Use),
+                            new ButtonElement("Edit", () => RTThemeEditor.inst.RenderThemeEditor(Item)),
+                            new ButtonElement("Export", () => RTThemeEditor.inst.ExportTheme(Item), "Internal Theme Export"),
+                            new ButtonElement("Convert to VG", () => RTThemeEditor.inst.ConvertTheme(Item)),
+                            new SpacerElement(),
+                            new ButtonElement("Create theme", RTThemeEditor.inst.RenderThemeEditor),
+                            new SpacerElement(),
+                            new ButtonElement("Delete", () =>
                             {
                                 if (!isDefault)
                                     RTThemeEditor.inst.DeleteTheme(this);
                                 else
                                     EditorManager.inst.DisplayNotification("Cannot delete a default theme!", 2f, EditorManager.NotificationType.Warning);
                             }),
-                            new ButtonFunction("Clear Themes", RTThemeEditor.inst.ClearInternalThemes),
-                            new ButtonFunction("Remove Unused Themes", RTThemeEditor.inst.RemoveUnusedThemes, "Internal Remove Unused Themes"),
-                            new ButtonFunction(true),
-                            new ButtonFunction("Shuffle ID", () => RTThemeEditor.inst.ShuffleThemeID(Item)),
-                            new ButtonFunction(true),
-                            new ButtonFunction("Add to Prefab", () =>
+                            new ButtonElement("Clear Themes", RTThemeEditor.inst.ClearInternalThemes),
+                            new ButtonElement("Remove Unused Themes", RTThemeEditor.inst.RemoveUnusedThemes, "Internal Remove Unused Themes"),
+                            new SpacerElement(),
+                            new ButtonElement("Shuffle ID", () => RTThemeEditor.inst.ShuffleThemeID(Item)),
+                            new SpacerElement(),
+                            new ButtonElement("Add to Prefab", () =>
                             {
                                 RTPrefabEditor.inst.OpenPopup();
                                 RTPrefabEditor.inst.onSelectPrefab = prefabPanel =>
@@ -506,19 +404,19 @@ namespace BetterLegacy.Editor.Data.Elements
                         }
                     case ObjectSource.External: {
                         EditorContextMenu.inst.ShowContextMenu(
-                            new ButtonFunction("Import", Use, "External Theme Import"),
-                            new ButtonFunction("Update", () =>
+                            new ButtonElement("Import", Use, "External Theme Import"),
+                            new ButtonElement("Update", () =>
                             {
                                 if (!GameData.Current.UpdateTheme(Item))
                                     EditorManager.inst.DisplayNotification($"No theme was found to update!", 2f, EditorManager.NotificationType.Warning);
                                 else
                                     RTThemeEditor.inst.LoadInternalThemes();
                             }, "External Theme Update"),
-                            new ButtonFunction("Convert to VG", () => RTThemeEditor.inst.ConvertTheme(Item)),
-                            new ButtonFunction(true),
-                            new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.ThemePath), () => { RTEditor.inst.UpdateThemePath(true); RTEditor.inst.HideNameEditor(); })),
-                            new ButtonFunction(true),
-                            new ButtonFunction("Cut", () =>
+                            new ButtonElement("Convert to VG", () => RTThemeEditor.inst.ConvertTheme(Item)),
+                            new SpacerElement(),
+                            new ButtonElement("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.ThemePath), () => { RTEditor.inst.UpdateThemePath(true); RTEditor.inst.HideNameEditor(); })),
+                            new SpacerElement(),
+                            new ButtonElement("Cut", () =>
                             {
                                 if (isDefault)
                                 {
@@ -531,7 +429,7 @@ namespace BetterLegacy.Editor.Data.Elements
                                 EditorManager.inst.DisplayNotification($"Cut {Item.name}!", 1.5f, EditorManager.NotificationType.Success);
                                 CoreHelper.Log($"Cut theme: {RTThemeEditor.inst.copiedThemePath}");
                             }),
-                            new ButtonFunction("Copy", () =>
+                            new ButtonElement("Copy", () =>
                             {
                                 if (isDefault)
                                 {
@@ -544,16 +442,16 @@ namespace BetterLegacy.Editor.Data.Elements
                                 EditorManager.inst.DisplayNotification($"Copied {Item.name}!", 1.5f, EditorManager.NotificationType.Success);
                                 CoreHelper.Log($"Copied theme: {RTThemeEditor.inst.copiedThemePath}");
                             }),
-                            new ButtonFunction("Paste", RTThemeEditor.inst.PasteTheme),
-                            new ButtonFunction("Delete", () =>
+                            new ButtonElement("Paste", RTThemeEditor.inst.PasteTheme),
+                            new ButtonElement("Delete", () =>
                             {
                                 if (!isDefault)
                                     RTThemeEditor.inst.DeleteTheme(this);
                                 else
                                     EditorManager.inst.DisplayNotification("Cannot delete a default theme!", 2f, EditorManager.NotificationType.Warning);
                             }),
-                            new ButtonFunction(true),
-                            new ButtonFunction("Shuffle ID", () => RTThemeEditor.inst.ShuffleThemeID(Item))
+                            new SpacerElement(),
+                            new ButtonElement("Shuffle ID", () => RTThemeEditor.inst.ShuffleThemeID(Item))
                             );
                             break;
                         }

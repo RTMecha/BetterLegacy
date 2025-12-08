@@ -159,18 +159,11 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 var button = themeAddButton.GetComponent<Button>();
                 button.onClick.AddListener(() => RTThemeEditor.inst.RenderThemeEditor());
 
-                var contextClickable = themeAddButton.AddComponent<ContextClickable>();
-                contextClickable.onClick = eventData =>
-                {
-                    if (eventData.button != PointerEventData.InputButton.Right)
-                        return;
-
-                    EditorContextMenu.inst.ShowContextMenu(
-                        new ButtonFunction("Create theme", RTThemeEditor.inst.RenderThemeEditor),
-                        new ButtonFunction(true),
-                        new ButtonFunction("Clear Themes", RTThemeEditor.inst.ClearInternalThemes),
-                        new ButtonFunction("Remove Unused Themes", RTThemeEditor.inst.RemoveUnusedThemes, "Internal Remove Unused Themes"));
-                };
+                EditorContextMenu.AddContextMenu(themeAddButton,
+                    new ButtonElement("Create theme", () => RTThemeEditor.inst.RenderThemeEditor()),
+                    new SpacerElement(),
+                    new ButtonElement("Clear Themes", () => RTThemeEditor.inst.ClearInternalThemes()),
+                    new ButtonElement("Remove Unused Themes", () => RTThemeEditor.inst.RemoveUnusedThemes(), "Internal Remove Unused Themes"));
 
                 EditorThemeManager.AddGraphic(button.image, ThemeGroup.List_Button_2_Normal, true);
                 EditorThemeManager.AddGraphic(themeAddButton.transform.Find("edit").GetComponent<Image>(), ThemeGroup.List_Button_2_Text);

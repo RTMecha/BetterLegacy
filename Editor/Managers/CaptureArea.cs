@@ -76,23 +76,23 @@ namespace BetterLegacy.Editor.Managers
 
                 if (pointerEventData.button == PointerEventData.InputButton.Right)
                 {
-                    var buttonFunctions = new List<ButtonFunction>
+                    var buttonFunctions = new List<EditorElement>
                     {
-                        new ButtonFunction("Create Capture", CreateCapture),
-                        new ButtonFunction("Clear", ClearCapture),
-                        new ButtonFunction(true),
-                        new ButtonFunction("Reset All", Settings.Reset),
-                        new ButtonFunction("Reset Resolution", () => Settings.Resolution = new Vector2Int(512, 512)),
-                        new ButtonFunction("Reset Position", () => Settings.pos = Vector2.zero),
-                        new ButtonFunction("Reset Zoom", () => Settings.Zoom = 1f),
-                        new ButtonFunction("Reset Rotation", () => Settings.rot = 0f),
-                        new ButtonFunction(true),
-                        new ButtonFunction($"Hide Players [{(Settings.hidePlayers ? "On" : "Off")}]", () => Settings.hidePlayers = !Settings.hidePlayers),
-                        new ButtonFunction($"Capture All Layers [{(Settings.captureAllLayers ? "On" : "Off")}]", () => Settings.captureAllLayers = !Settings.captureAllLayers),
-                        new ButtonFunction($"Show Editor [{(Settings.showEditor ? "On" : "Off")}]", () => Settings.showEditor = !Settings.showEditor),
-                        new ButtonFunction(true),
-                        new ButtonFunction($"Use Custom BG Color [{(Settings.useCustomBGColor ? "On" : "Off")}]", () => Settings.useCustomBGColor = !Settings.useCustomBGColor),
-                        new ButtonFunction($"Set Custom BG Color", () =>
+                        new ButtonElement("Create Capture", CreateCapture),
+                        new ButtonElement("Clear", ClearCapture),
+                        new SpacerElement(),
+                        new ButtonElement("Reset All", Settings.Reset),
+                        new ButtonElement("Reset Resolution", () => Settings.Resolution = new Vector2Int(512, 512)),
+                        new ButtonElement("Reset Position", () => Settings.pos = Vector2.zero),
+                        new ButtonElement("Reset Zoom", () => Settings.Zoom = 1f),
+                        new ButtonElement("Reset Rotation", () => Settings.rot = 0f),
+                        new SpacerElement(),
+                        new ButtonElement($"Hide Players [{(Settings.hidePlayers ? "On" : "Off")}]", () => Settings.hidePlayers = !Settings.hidePlayers),
+                        new ButtonElement($"Capture All Layers [{(Settings.captureAllLayers ? "On" : "Off")}]", () => Settings.captureAllLayers = !Settings.captureAllLayers),
+                        new ButtonElement($"Show Editor [{(Settings.showEditor ? "On" : "Off")}]", () => Settings.showEditor = !Settings.showEditor),
+                        new SpacerElement(),
+                        new ButtonElement($"Use Custom BG Color [{(Settings.useCustomBGColor ? "On" : "Off")}]", () => Settings.useCustomBGColor = !Settings.useCustomBGColor),
+                        new ButtonElement($"Set Custom BG Color", () =>
                         {
                             RTColorPicker.inst.Show(
                                 currentColor: Settings.customBGColor,
@@ -102,9 +102,9 @@ namespace BetterLegacy.Editor.Managers
                                     Settings.customBGColor = col;
                                 });
                         }),
-                        new ButtonFunction(true),
-                        new ButtonFunction("Copy", () => copiedSettings = Settings.Copy()),
-                        new ButtonFunction("Paste", () =>
+                        new SpacerElement(),
+                        new ButtonElement("Copy", () => copiedSettings = Settings.Copy()),
+                        new ButtonElement("Paste", () =>
                         {
                             if (!copiedSettings)
                             {
@@ -120,38 +120,38 @@ namespace BetterLegacy.Editor.Managers
                     switch (View)
                     {
                         case ViewType.Prefab: {
-                                buttonFunctions.AddRange(new List<ButtonFunction>
+                                buttonFunctions.AddRange(new List<EditorElement>
                                 {
-                                    new ButtonFunction(true),
-                                    new ButtonFunction("Set 256 x 256", () => Settings.Resolution = new Vector2Int(256, 256)),
-                                    new ButtonFunction("Set 128 x 128", () => Settings.Resolution = new Vector2Int(128, 128)),
-                                    new ButtonFunction("Set 64 x 64", () => Settings.Resolution = new Vector2Int(64, 64)),
+                                    new SpacerElement(),
+                                    new ButtonElement("Set 256 x 256", () => Settings.Resolution = new Vector2Int(256, 256)),
+                                    new ButtonElement("Set 128 x 128", () => Settings.Resolution = new Vector2Int(128, 128)),
+                                    new ButtonElement("Set 64 x 64", () => Settings.Resolution = new Vector2Int(64, 64)),
                                 });
                                 break;
                             }
                         case ViewType.Screenshot: {
-                                buttonFunctions.Add(new ButtonFunction(true));
+                                buttonFunctions.Add(new SpacerElement());
                                 var resolutions = CustomEnumHelper.GetValues<ResolutionType>();
                                 foreach (var resolution in resolutions)
-                                    buttonFunctions.Add(new ButtonFunction($"Set {resolution.Width} x {resolution.Height}", () => Settings.Resolution = new Vector2Int(resolution.Width, resolution.Height)));
+                                    buttonFunctions.Add(new ButtonElement($"Set {resolution.Width} x {resolution.Height}", () => Settings.Resolution = new Vector2Int(resolution.Width, resolution.Height)));
                                 break;
                             }
                     }
 
-                    buttonFunctions.AddRange(new List<ButtonFunction>
+                    buttonFunctions.AddRange(new List<EditorElement>
                     {
-                        new ButtonFunction(true),
-                        new ButtonFunction($"{(Settings.lockDragMode == CaptureSettings.LockDragMode.None ? "> " : string.Empty)}No Lock", () =>
+                        new SpacerElement(),
+                        new ButtonElement($"{(Settings.lockDragMode == CaptureSettings.LockDragMode.None ? "> " : string.Empty)}No Lock", () =>
                         {
                             Settings.lockDragMode = CaptureSettings.LockDragMode.None;
                             EditorManager.inst.DisplayNotification($"Set lock drag to {Settings.lockDragMode}!", 2f, EditorManager.NotificationType.Success);
                         }),
-                        new ButtonFunction($"{(Settings.lockDragMode == CaptureSettings.LockDragMode.PositionX ? "> " : string.Empty)}Position X Lock", () =>
+                        new ButtonElement($"{(Settings.lockDragMode == CaptureSettings.LockDragMode.PositionX ? "> " : string.Empty)}Position X Lock", () =>
                         {
                             Settings.lockDragMode = CaptureSettings.LockDragMode.PositionX;
                             EditorManager.inst.DisplayNotification($"Set lock drag to {Settings.lockDragMode}!", 2f, EditorManager.NotificationType.Success);
                         }),
-                        new ButtonFunction($"{(Settings.lockDragMode == CaptureSettings.LockDragMode.PositionY ? "> " : string.Empty)}Position Y Lock", () =>
+                        new ButtonElement($"{(Settings.lockDragMode == CaptureSettings.LockDragMode.PositionY ? "> " : string.Empty)}Position Y Lock", () =>
                         {
                             Settings.lockDragMode = CaptureSettings.LockDragMode.PositionY;
                             EditorManager.inst.DisplayNotification($"Set lock drag to {Settings.lockDragMode}!", 2f, EditorManager.NotificationType.Success);

@@ -105,42 +105,35 @@ namespace BetterLegacy.Editor.Managers
                 Popup.PathField.SetTextWithoutNotify(RTEditor.inst.ThemePath);
                 Popup.PathField.onValueChanged.NewListener(_val => RTEditor.inst.ThemePath = _val);
                 Popup.PathField.onEndEdit.NewListener(_val => RTEditor.inst.UpdateThemePath(false));
-                var themeClickable = Popup.PathField.gameObject.AddComponent<Clickable>();
-                themeClickable.onDown = pointerEventData =>
-                {
-                    if (pointerEventData.button != PointerEventData.InputButton.Right)
-                        return;
-
-                    EditorContextMenu.inst.ShowContextMenu(
-                        new ButtonFunction("Set Theme folder", () =>
+                EditorContextMenu.AddContextMenu(Popup.PathField.gameObject,
+                    new ButtonElement("Set Theme folder", () =>
+                    {
+                        RTEditor.inst.BrowserPopup.Open();
+                        RTFileBrowser.inst.UpdateBrowserFolder(_val =>
                         {
-                            RTEditor.inst.BrowserPopup.Open();
-                            RTFileBrowser.inst.UpdateBrowserFolder(_val =>
+                            if (!_val.Replace("\\", "/").Contains(RTFile.ApplicationDirectory + "beatmaps/"))
                             {
-                                if (!_val.Replace("\\", "/").Contains(RTFile.ApplicationDirectory + "beatmaps/"))
-                                {
-                                    EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
-                                    return;
-                                }
+                                EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
+                                return;
+                            }
 
-                                Popup.PathField.text = _val.Replace("\\", "/").Remove(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/");
-                                EditorManager.inst.DisplayNotification($"Set Theme path to {RTEditor.inst.ThemePath}!", 2f, EditorManager.NotificationType.Success);
-                                RTEditor.inst.BrowserPopup.Close();
-                                RTEditor.inst.UpdateThemePath(false);
-                            });
-                        }),
-                        new ButtonFunction("Open List in File Explorer", RTEditor.inst.OpenThemeListFolder),
-                        new ButtonFunction("Set as Default for Level", () =>
-                        {
-                            RTEditor.inst.editorInfo.themePath = RTEditor.inst.ThemePath;
-                            EditorManager.inst.DisplayNotification($"Set current theme folder [ {RTEditor.inst.ThemePath} ] as the default for the level!", 5f, EditorManager.NotificationType.Success);
-                        }, "Theme Default Path"),
-                        new ButtonFunction("Remove Default", () =>
-                        {
-                            RTEditor.inst.editorInfo.themePath = null;
-                            EditorManager.inst.DisplayNotification($"Removed default theme folder.", 5f, EditorManager.NotificationType.Success);
-                        }, "Theme Default Path"));
-                };
+                            Popup.PathField.text = _val.Replace("\\", "/").Remove(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/");
+                            EditorManager.inst.DisplayNotification($"Set Theme path to {RTEditor.inst.ThemePath}!", 2f, EditorManager.NotificationType.Success);
+                            RTEditor.inst.BrowserPopup.Close();
+                            RTEditor.inst.UpdateThemePath(false);
+                        });
+                    }),
+                    new ButtonElement("Open List in File Explorer", () => RTEditor.inst.OpenThemeListFolder()),
+                    new ButtonElement("Set as Default for Level", () =>
+                    {
+                        RTEditor.inst.editorInfo.themePath = RTEditor.inst.ThemePath;
+                        EditorManager.inst.DisplayNotification($"Set current theme folder [ {RTEditor.inst.ThemePath} ] as the default for the level!", 5f, EditorManager.NotificationType.Success);
+                    }, "Theme Default Path"),
+                    new ButtonElement("Remove Default", () =>
+                    {
+                        RTEditor.inst.editorInfo.themePath = null;
+                        EditorManager.inst.DisplayNotification($"Removed default theme folder.", 5f, EditorManager.NotificationType.Success);
+                    }, "Theme Default Path"));
 
                 EditorHelper.AddEditorDropdown("View Themes", string.Empty, EditorHelper.VIEW_DROPDOWN, EditorSprites.SearchSprite, OpenExternalThemesPopup);
 
@@ -457,8 +450,8 @@ namespace BetterLegacy.Editor.Managers
                     if (eventData.button == PointerEventData.InputButton.Right)
                     {
                         EditorContextMenu.inst.ShowContextMenu(
-                            new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.ThemePath), () => { RTEditor.inst.UpdateThemePath(true); RTEditor.inst.HideNameEditor(); })),
-                            new ButtonFunction("Paste", PasteTheme));
+                            new ButtonElement("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.ThemePath), () => { RTEditor.inst.UpdateThemePath(true); RTEditor.inst.HideNameEditor(); })),
+                            new ButtonElement("Paste", PasteTheme));
 
                         return;
                     }

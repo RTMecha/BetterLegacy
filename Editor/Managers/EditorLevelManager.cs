@@ -212,14 +212,10 @@ namespace BetterLegacy.Editor.Managers
 
             EditorHelper.SetComplexity(LevelCollectionPopup.PathField.gameObject, Complexity.Advanced);
 
-            var levelClickable = LevelCollectionPopup.PathField.gameObject.AddComponent<Clickable>();
-            levelClickable.onDown = pointerEventData =>
-            {
-                if (pointerEventData.button != PointerEventData.InputButton.Right)
-                    return;
-
-                EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction("Set Level Collection folder", () =>
+            EditorContextMenu.AddContextMenu(LevelCollectionPopup.PathField.gameObject,
+                getEditorElements: () => new List<EditorElement>
+                {
+                    new ButtonElement("Set Level Collection folder", () =>
                     {
                         RTEditor.inst.BrowserPopup.Open();
                         RTFileBrowser.inst.UpdateBrowserFolder(_val =>
@@ -236,8 +232,8 @@ namespace BetterLegacy.Editor.Managers
                             LoadLevelCollections();
                         });
                     }),
-                    new ButtonFunction("Open List in File Explorer", RTEditor.inst.OpenLevelCollectionListFolder));
-            };
+                    new ButtonElement("Open List in File Explorer", RTEditor.inst.OpenLevelCollectionListFolder)
+                });
 
             LoadLevelCollections();
 
@@ -367,32 +363,26 @@ namespace BetterLegacy.Editor.Managers
                 folderButtonStorageFolder.label.fontSize = LevelPanel.labelFontSize;
 
                 folderButtonStorageFolder.OnClick.ClearAll();
-                folderButtonFunctionFolder.onClick = eventData =>
-                {
-                    if (eventData.button == PointerEventData.InputButton.Right)
+                EditorContextMenu.AddContextMenu(gameObjectFolder,
+                    leftClick: () =>
                     {
-                        EditorContextMenu.inst.ShowContextMenu(
-                            new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.EditorPath), () => { LoadLevels(); RTEditor.inst.HideNameEditor(); })),
-                            new ButtonFunction("Create level", EditorManager.inst.OpenNewLevelPopup),
-                            new ButtonFunction("Paste", PasteLevel),
-                            new ButtonFunction("Open List in File Explorer", RTEditor.inst.OpenLevelListFolder));
+                        if (OpenLevelCollection)
+                        {
+                            OpenLevelCollection = null;
+                            LoadLevels();
+                            return;
+                        }
 
-                        return;
-                    }
-
-                    if (OpenLevelCollection)
-                    {
-                        OpenLevelCollection = null;
-                        LoadLevels();
-                        return;
-                    }
-
-                    if (OpenLevelPopup.PathField.text == RTEditor.inst.EditorPath)
-                    {
-                        OpenLevelPopup.PathField.text = RTFile.GetDirectory(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.EditorPath)).Remove(RTEditor.inst.BeatmapsPath + "/");
-                        RTEditor.inst.UpdateEditorPath(false);
-                    }
-                };
+                        if (OpenLevelPopup.PathField.text == RTEditor.inst.EditorPath)
+                        {
+                            OpenLevelPopup.PathField.text = RTFile.GetDirectory(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.EditorPath)).Remove(RTEditor.inst.BeatmapsPath + "/");
+                            RTEditor.inst.UpdateEditorPath(false);
+                        }
+                    },
+                    new ButtonElement("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.EditorPath), () => { LoadLevels(); RTEditor.inst.HideNameEditor(); })),
+                    new ButtonElement("Create level", EditorManager.inst.OpenNewLevelPopup),
+                    new ButtonElement("Paste", PasteLevel),
+                    new ButtonElement("Open List in File Explorer", RTEditor.inst.OpenLevelListFolder));
 
                 EditorThemeManager.ApplySelectable(folderButtonStorageFolder.button, ThemeGroup.List_Button_1);
                 EditorThemeManager.ApplyLightText(folderButtonStorageFolder.label);
@@ -532,7 +522,6 @@ namespace BetterLegacy.Editor.Managers
                 var gameObjectFolder = EditorManager.inst.folderButtonPrefab.Duplicate(LevelCollectionPopup.Content, "back");
                 LevelCollectionPanel.baseRect.AssignToRectTransform(gameObjectFolder.transform.AsRT());
                 var folderButtonStorageFolder = gameObjectFolder.GetComponent<FunctionButtonStorage>();
-                var folderButtonFunctionFolder = gameObjectFolder.AddComponent<FolderButtonFunction>();
 
                 var hoverUIFolder = gameObjectFolder.AddComponent<HoverUI>();
                 hoverUIFolder.size = EditorConfig.Instance.OpenLevelButtonHoverSize.Value;
@@ -546,26 +535,20 @@ namespace BetterLegacy.Editor.Managers
                 folderButtonStorageFolder.label.fontSize = LevelPanel.labelFontSize;
 
                 folderButtonStorageFolder.OnClick.ClearAll();
-                folderButtonFunctionFolder.onClick = eventData =>
-                {
-                    if (eventData.button == PointerEventData.InputButton.Right)
+                EditorContextMenu.AddContextMenu(gameObjectFolder,
+                    leftClick: () =>
                     {
-                        EditorContextMenu.inst.ShowContextMenu(
-                            new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.CollectionsPath), () => { LoadLevelCollections(); RTEditor.inst.HideNameEditor(); })),
-                            //new ButtonFunction("Create level", EditorManager.inst.OpenNewLevelPopup),
-                            //new ButtonFunction("Paste", PasteLevel),
-                            new ButtonFunction("Open List in File Explorer", RTEditor.inst.OpenLevelCollectionListFolder));
+                        if (LevelCollectionPopup.PathField.text != RTEditor.inst.CollectionsPath)
+                            return;
 
-                        return;
-                    }
-
-                    if (LevelCollectionPopup.PathField.text == RTEditor.inst.CollectionsPath)
-                    {
                         OpenLevelCollection = null;
                         LevelCollectionPopup.PathField.text = RTFile.GetDirectory(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.CollectionsPath)).Remove(RTEditor.inst.BeatmapsPath + "/");
                         LoadLevelCollections();
-                    }
-                };
+                    },
+                    new ButtonElement("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.CollectionsPath), () => { LoadLevelCollections(); RTEditor.inst.HideNameEditor(); })),
+                    //new ButtonFunction("Create level", EditorManager.inst.OpenNewLevelPopup),
+                    //new ButtonFunction("Paste", PasteLevel),
+                    new ButtonElement("Open List in File Explorer", RTEditor.inst.OpenLevelCollectionListFolder));
 
                 EditorThemeManager.ApplySelectable(folderButtonStorageFolder.button, ThemeGroup.List_Button_1);
                 EditorThemeManager.ApplyLightText(folderButtonStorageFolder.label);
@@ -1540,52 +1523,54 @@ namespace BetterLegacy.Editor.Managers
 
                 string tmpFile = path;
 
-                var contextMenu = gameObject.AddComponent<FolderButtonFunction>();
-                contextMenu.onClick = eventData =>
-                {
-                    switch (eventData.button)
+                //var contextMenu = gameObject.AddComponent<FolderButtonFunction>();
+                //contextMenu.onClick = eventData =>
+                //{
+                //    switch (eventData.button)
+                //    {
+                //        // just realized I could collapse the switch case blocks like this
+                //        case PointerEventData.InputButton.Left: {
+                //                break;
+                //            }
+                //        case PointerEventData.InputButton.Right: {
+                //                EditorContextMenu.inst.ShowContextMenu(
+                //                    );
+                //                break;
+                //            }
+                //    }
+                //};
+
+                EditorContextMenu.AddContextMenu(gameObject,
+                    leftClick: () =>
                     {
-                        // just realized I could collapse the switch case blocks like this
-                        case PointerEventData.InputButton.Left: {
-                                levelPanel.Item.currentFile = tmpFile.Remove(RTFile.AppendEndSlash(levelPanel.Path));
+                        levelPanel.Item.currentFile = tmpFile.Remove(RTFile.AppendEndSlash(levelPanel.Path));
 
-                                LoadLevel(levelPanel);
-                                OpenLevelPopup.Close();
-                                break;
-                            }
-                        case PointerEventData.InputButton.Right: {
-                                EditorContextMenu.inst.ShowContextMenu(
-                                    new ButtonFunction("Open", () =>
-                                    {
-                                        levelPanel.Item.currentFile = tmpFile.Remove(RTFile.AppendEndSlash(levelPanel.Path));
+                        LoadLevel(levelPanel);
+                        OpenLevelPopup.Close();
+                    },
+                    new ButtonElement("Open", () =>
+                    {
+                        levelPanel.Item.currentFile = tmpFile.Remove(RTFile.AppendEndSlash(levelPanel.Path));
 
-                                        LoadLevel(levelPanel);
-                                        OpenLevelPopup.Close();
-                                    }),
-                                    new ButtonFunction("Toggle Backup State", () =>
-                                    {
-                                        var fi = new FileInfo(tmpFile);
+                        LoadLevel(levelPanel);
+                        OpenLevelPopup.Close();
+                    }),
+                    new ButtonElement("Toggle Backup State", () =>
+                    {
+                        var fi = new FileInfo(tmpFile);
 
-                                        tmpFile = tmpFile.Contains("autosave_") ? tmpFile.Replace("autosave_", "backup_") : tmpFile.Replace("backup_", "autosave_");
+                        tmpFile = tmpFile.Contains("autosave_") ? tmpFile.Replace("autosave_", "backup_") : tmpFile.Replace("backup_", "autosave_");
 
-                                        if (fi.Exists)
-                                            fi.MoveTo(tmpFile);
+                        if (fi.Exists)
+                            fi.MoveTo(tmpFile);
 
-                                        RefreshAutosaveList(levelPanel);
-                                    }, "Autosave Toggle Backup State"),
-                                    new ButtonFunction("Delete", () =>
-                                    {
-                                        RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this autosave? This is permanent!", () =>
-                                        {
-                                            RTFile.DeleteFile(tmpFile);
-                                            RefreshAutosaveList(levelPanel);
-                                        }, RTEditor.inst.HideWarningPopup);
-                                    })
-                                    );
-                                break;
-                            }
-                    }
-                };
+                        RefreshAutosaveList(levelPanel);
+                    }, "Autosave Toggle Backup State"),
+                    new ButtonElement("Delete", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this autosave? This is permanent!", () =>
+                    {
+                        RTFile.DeleteFile(tmpFile);
+                        RefreshAutosaveList(levelPanel);
+                    }, RTEditor.inst.HideWarningPopup)));
 
                 var hoverUI = gameObject.AddComponent<HoverUI>();
                 hoverUI.size = EditorConfig.Instance.OpenLevelButtonHoverSize.Value;

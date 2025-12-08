@@ -150,11 +150,11 @@ namespace BetterLegacy.Core.Helpers
                         return;
 
                     EditorContextMenu.inst.ShowContextMenu(
-                        new ButtonFunction("Flip Left/Right", () => name.text = RTString.FlipLeftRight(name.text)),
-                        new ButtonFunction("Flip Up/Down", () => name.text = RTString.FlipUpDown(name.text)),
-                        new ButtonFunction("Flip Upper/Lower", () => name.text = RTString.FlipUpperLower(name.text)),
-                        new ButtonFunction(true),
-                        new ButtonFunction("Flip Number", () =>
+                        new ButtonElement("Flip Left/Right", () => name.text = RTString.FlipLeftRight(name.text)),
+                        new ButtonElement("Flip Up/Down", () => name.text = RTString.FlipUpDown(name.text)),
+                        new ButtonElement("Flip Upper/Lower", () => name.text = RTString.FlipUpperLower(name.text)),
+                        new SpacerElement(),
+                        new ButtonElement("Flip Number", () =>
                         {
                             RTString.RegexMatches(name.text, new Regex(@"([-0-9]+)"), match =>
                             {
@@ -163,7 +163,7 @@ namespace BetterLegacy.Core.Helpers
                                 name.text = name.text.Replace(match.Groups[1].ToString(), num.ToString());
                             });
                         }),
-                        new ButtonFunction("Increase Number", () =>
+                        new ButtonElement("Increase Number", () =>
                         {
                             RTString.RegexMatches(name.text, new Regex(@"([-0-9]+)"), match =>
                             {
@@ -172,7 +172,7 @@ namespace BetterLegacy.Core.Helpers
                                 name.text = name.text.Replace(match.Groups[1].ToString(), num.ToString());
                             });
                         }),
-                        new ButtonFunction("Decrease Number", () =>
+                        new ButtonElement("Decrease Number", () =>
                         {
                             RTString.RegexMatches(name.text, new Regex(@"([-0-9]+)"), match =>
                             {
@@ -181,9 +181,9 @@ namespace BetterLegacy.Core.Helpers
                                 name.text = name.text.Replace(match.Groups[1].ToString(), num.ToString());
                             });
                         }),
-                        new ButtonFunction(true),
-                        new ButtonFunction("To Lower", () => name.text = name.text.ToLower()),
-                        new ButtonFunction("To Upper", () => name.text = name.text.ToUpper())
+                        new SpacerElement(),
+                        new ButtonElement("To Lower", () => name.text = name.text.ToLower()),
+                        new ButtonElement("To Upper", () => name.text = name.text.ToUpper())
                         );
                 };
             }

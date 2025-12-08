@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 using UnityEngine;
@@ -8,14 +9,20 @@ using UnityEngine.UI;
 
 using LSFunctions;
 
+using SimpleJSON;
+using Crosstales.FB;
+
+using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Managers.Settings;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Data;
+using BetterLegacy.Editor.Data.Elements;
 
 using Version = BetterLegacy.Core.Data.Version;
 
@@ -76,16 +83,16 @@ namespace BetterLegacy.Editor.Managers
         /// Adds the editor context menu to an object.
         /// </summary>
         /// <param name="gameObject">Unity game object to add a context menu to.</param>
-        /// <param name="buttonFunctions">The context menus' functions.</param>
-        public static void AddContextMenu(GameObject gameObject, params ButtonFunction[] buttonFunctions) => AddContextMenu(gameObject, null, buttonFunctions);
+        /// <param name="editorElements">The context menus' functions.</param>
+        public static void AddContextMenu(GameObject gameObject, params EditorElement[] editorElements) => AddContextMenu(gameObject, null, editorElements);
 
         /// <summary>
         /// Adds the editor context menu to an object.
         /// </summary>
         /// <param name="gameObject">Unity game object to add a context menu to.</param>
         /// <param name="leftClick">Function to run when the user left clicks.</param>
-        /// <param name="buttonFunctions">The context menus' functions.</param>
-        public static void AddContextMenu(GameObject gameObject, Action leftClick, params ButtonFunction[] buttonFunctions)
+        /// <param name="editorElements">The context menus' functions.</param>
+        public static void AddContextMenu(GameObject gameObject, Action leftClick, params EditorElement[] editorElements)
         {
             if (!gameObject)
                 return;
@@ -99,7 +106,7 @@ namespace BetterLegacy.Editor.Managers
                             break;
                         }
                     case PointerEventData.InputButton.Right: {
-                            inst.ShowContextMenu(buttonFunctions);
+                            inst.ShowContextMenu(editorElements);
                             break;
                         }
                 }
@@ -110,16 +117,16 @@ namespace BetterLegacy.Editor.Managers
         /// Adds the editor context menu to an object.
         /// </summary>
         /// <param name="gameObject">Unity game object to add a context menu to.</param>
-        /// <param name="buttonFunctions">The context menus' functions.</param>
-        public static void AddContextMenu(GameObject gameObject, List<ButtonFunction> buttonFunctions) => AddContextMenu(gameObject, null, buttonFunctions);
+        /// <param name="editorElements">The context menus' functions.</param>
+        public static void AddContextMenu(GameObject gameObject, List<EditorElement> editorElements) => AddContextMenu(gameObject, null, editorElements);
 
         /// <summary>
         /// Adds the editor context menu to an object.
         /// </summary>
         /// <param name="gameObject">Unity game object to add a context menu to.</param>
         /// <param name="leftClick">Function to run when the user left clicks.</param>
-        /// <param name="buttonFunctions">The context menus' functions.</param>
-        public static void AddContextMenu(GameObject gameObject, Action leftClick, List<ButtonFunction> buttonFunctions)
+        /// <param name="editorElements">The context menus' functions.</param>
+        public static void AddContextMenu(GameObject gameObject, Action leftClick, List<EditorElement> editorElements)
         {
             if (!gameObject)
                 return;
@@ -133,7 +140,41 @@ namespace BetterLegacy.Editor.Managers
                             break;
                         }
                     case PointerEventData.InputButton.Right: {
-                            inst?.ShowContextMenu(buttonFunctions);
+                            inst?.ShowContextMenu(editorElements);
+                            break;
+                        }
+                }
+            };
+        }
+
+        /// <summary>
+        /// Adds the editor context menu to an object.
+        /// </summary>
+        /// <param name="gameObject">Unity game object to add a context menu to.</param>
+        /// <param name="getEditorElements">The context menus' functions.</param>
+        public static void AddContextMenu(GameObject gameObject, Func<List<EditorElement>> getEditorElements) => AddContextMenu(gameObject, null, getEditorElements);
+
+        /// <summary>
+        /// Adds the editor context menu to an object.
+        /// </summary>
+        /// <param name="gameObject">Unity game object to add a context menu to.</param>
+        /// <param name="leftClick">Function to run when the user left clicks.</param>
+        /// <param name="getEditorElements">The context menus' functions.</param>
+        public static void AddContextMenu(GameObject gameObject, Action leftClick, Func<List<EditorElement>> getEditorElements)
+        {
+            if (!gameObject)
+                return;
+
+            gameObject.GetOrAddComponent<ContextClickable>().onClick = pointerEventData =>
+            {
+                switch (pointerEventData.button)
+                {
+                    case PointerEventData.InputButton.Left: {
+                            leftClick?.Invoke();
+                            break;
+                        }
+                    case PointerEventData.InputButton.Right: {
+                            inst?.ShowContextMenu(getEditorElements?.Invoke() ?? new List<EditorElement>());
                             break;
                         }
                 }
@@ -144,71 +185,20 @@ namespace BetterLegacy.Editor.Managers
         /// Shows the editor context menu.
         /// </summary>
         /// <param name="buttonFunctions">The context menus' functions.</param>
-        public void ShowContextMenu(List<ButtonFunction> buttonFunctions) => ShowContextMenu(DEFAULT_CONTEXT_MENU_WIDTH, buttonFunctions);
+        public void ShowContextMenu(List<EditorElement> editorElements) => ShowContextMenu(DEFAULT_CONTEXT_MENU_WIDTH, editorElements.ToArray());
 
         /// <summary>
         /// Shows the editor context menu.
         /// </summary>
         /// <param name="buttonFunctions">The context menus' functions.</param>
-        public void ShowContextMenu(params ButtonFunction[] buttonFunctions) => ShowContextMenu(DEFAULT_CONTEXT_MENU_WIDTH, buttonFunctions);
-
-        /// <summary>
-        /// Shows the editor context menu.
-        /// </summary>
-        /// <param name="width">Width of the context menu.</param>
-        /// <param name="buttonFunctions">The context menus' functions.</param>
-        public void ShowContextMenu(float width, List<ButtonFunction> buttonFunctions) => ShowContextMenu(width, buttonFunctions.ToArray());
+        public void ShowContextMenu(params EditorElement[] editorElements) => ShowContextMenu(DEFAULT_CONTEXT_MENU_WIDTH, editorElements);
 
         /// <summary>
         /// Shows the editor context menu.
         /// </summary>
         /// <param name="width">Width of the context menu.</param>
-        /// <param name="buttonFunctions">The context menus' functions.</param>
-        public void ShowContextMenu(float width, params ButtonFunction[] buttonFunctions)
-        {
-            float height = 0f;
-            contextMenu.SetActive(true);
-            LSHelpers.DeleteChildren(contextMenuLayout);
-            for (int i = 0; i < buttonFunctions.Length; i++)
-            {
-                var buttonFunction = buttonFunctions[i];
-
-                if (buttonFunction.IsSpacer)
-                {
-                    var g = Creator.NewUIObject("sp", contextMenuLayout);
-                    var image = g.AddComponent<Image>();
-                    image.rectTransform.sizeDelta = new Vector2(0f, buttonFunction.SpacerSize);
-                    EditorThemeManager.ApplyGraphic(image, ThemeGroup.Background_3);
-                    height += 6f;
-                    continue;
-                }
-
-                var gameObject = EditorPrefabHolder.Instance.Function2Button.Duplicate(contextMenuLayout);
-                var buttonStorage = gameObject.GetComponent<FunctionButtonStorage>();
-
-                buttonStorage.OnClick.NewListener(() =>
-                {
-                    contextMenu.SetActive(false);
-                    buttonFunction.Action?.Invoke();
-                });
-                buttonStorage.label.alignment = TextAnchor.MiddleLeft;
-                buttonStorage.Text = buttonFunction.Name;
-                buttonStorage.label.rectTransform.sizeDelta = new Vector2(-12f, 0f);
-
-                if (!string.IsNullOrEmpty(buttonFunction.TooltipGroup))
-                    TooltipHelper.AssignTooltip(gameObject, buttonFunction.TooltipGroup);
-
-                EditorThemeManager.ApplySelectable(buttonStorage.button, ThemeGroup.Function_2);
-                EditorThemeManager.ApplyGraphic(buttonStorage.label, ThemeGroup.Function_2_Text);
-                height += 37f;
-            }
-
-            var pos = Input.mousePosition * CoreHelper.ScreenScaleInverse;
-            pos.x = Mathf.Clamp(pos.x, float.NegativeInfinity, (Screen.width * CoreHelper.ScreenScaleInverse) - width);
-            pos.y = Mathf.Clamp(pos.y, height, float.PositiveInfinity);
-            contextMenu.transform.AsRT().anchoredPosition = pos;
-            contextMenu.transform.AsRT().sizeDelta = new Vector2(width, height);
-        }
+        /// <param name="editorElements">The context menus' functions.</param>
+        public void ShowContextMenu(float width, List<EditorElement> editorElements) => ShowContextMenu(width, editorElements.ToArray());
 
         /// <summary>
         /// Shows the editor context menu.
@@ -223,7 +213,10 @@ namespace BetterLegacy.Editor.Managers
             for (int i = 0; i < editorElements.Length; i++)
             {
                 var element = editorElements[i];
-                element.Init(new EditorElement.InitSettings().Parent(contextMenuLayout));
+                if (!element.ShouldGenerate)
+                    continue;
+
+                element.Init(new EditorElement.InitSettings().Parent(contextMenuLayout).OnClick(pointerEventData => contextMenu.SetActive(false)));
                 height += element.ContextMenuHeight;
             }
 
@@ -234,9 +227,9 @@ namespace BetterLegacy.Editor.Managers
             contextMenu.transform.AsRT().sizeDelta = new Vector2(width, height);
         }
 
-        public static List<ButtonFunction> GetMoveIndexFunctions<T>(List<T> list, int index, Action onMove = null) => new List<ButtonFunction>
+        public static List<EditorElement> GetMoveIndexFunctions<T>(List<T> list, int index, Action onMove = null) => new List<EditorElement>
         {
-            new ButtonFunction("Move Up", () =>
+            new ButtonElement("Move Up", () =>
             {
                 if (index <= 0)
                 {
@@ -247,7 +240,7 @@ namespace BetterLegacy.Editor.Managers
                 list.Move(index, index - 1);
                 onMove?.Invoke();
             }),
-            new ButtonFunction("Move Down", () =>
+            new ButtonElement("Move Down", () =>
             {
                 if (index >= list.Count - 1)
                 {
@@ -258,7 +251,7 @@ namespace BetterLegacy.Editor.Managers
                 list.Move(index, index + 1);
                 onMove?.Invoke();
             }),
-            new ButtonFunction("Move to Start", () =>
+            new ButtonElement("Move to Start", () =>
             {
                 if (index == 0)
                 {
@@ -269,7 +262,7 @@ namespace BetterLegacy.Editor.Managers
                 list.Move(index, 0);
                 onMove?.Invoke();
             }),
-            new ButtonFunction("Move to End", () =>
+            new ButtonElement("Move to End", () =>
             {
                 if (index == list.Count - 1)
                 {
@@ -282,9 +275,9 @@ namespace BetterLegacy.Editor.Managers
             }),
         };
         
-        public static List<ButtonFunction> GetMoveIndexFunctions<T>(List<T> list, Func<int> getIndex, Action onMove = null) => new List<ButtonFunction>
+        public static List<EditorElement> GetMoveIndexFunctions<T>(List<T> list, Func<int> getIndex, Action onMove = null) => new List<EditorElement>
         {
-            new ButtonFunction("Move Up", () =>
+            new ButtonElement("Move Up", () =>
             {
                 var index = getIndex();
                 if (index == -1)
@@ -302,7 +295,7 @@ namespace BetterLegacy.Editor.Managers
                 list.Move(index, index - 1);
                 onMove?.Invoke();
             }),
-            new ButtonFunction("Move Down", () =>
+            new ButtonElement("Move Down", () =>
             {
                 var index = getIndex();
                 if (index == -1)
@@ -320,7 +313,7 @@ namespace BetterLegacy.Editor.Managers
                 list.Move(index, index + 1);
                 onMove?.Invoke();
             }),
-            new ButtonFunction("Move to Start", () =>
+            new ButtonElement("Move to Start", () =>
             {
                 var index = getIndex();
                 if (index == -1)
@@ -338,7 +331,7 @@ namespace BetterLegacy.Editor.Managers
                 list.Move(index, 0);
                 onMove?.Invoke();
             }),
-            new ButtonFunction("Move to End", () =>
+            new ButtonElement("Move to End", () =>
             {
                 var index = getIndex();
                 if (index == -1)
@@ -358,21 +351,98 @@ namespace BetterLegacy.Editor.Managers
             }),
         };
 
-        public static List<ButtonFunction> GetObjectVersionFunctions(IUploadable uploadable, Action update)
+        public static List<EditorElement> GetIndexerFunctions<T>(int currentIndex, List<T> list) where T : PAObjectBase, IEditable => new List<EditorElement>
         {
-            var buttonFunctions = new List<ButtonFunction>
+            new ButtonElement("Select Previous", () =>
             {
-                new ButtonFunction("Format 1.0.0", () =>
+                if (currentIndex <= 0)
+                {
+                    EditorManager.inst.DisplayNotification($"There are no previous objects to select.", 2f, EditorManager.NotificationType.Error);
+                    return;
+                }
+
+                var prevObject = list[currentIndex - 1];
+
+                if (!prevObject)
+                    return;
+
+                var timelineObject = EditorTimeline.inst.GetTimelineObject(prevObject);
+
+                if (timelineObject)
+                    EditorTimeline.inst.SetCurrentObject(timelineObject, EditorConfig.Instance.BringToSelection.Value);
+            }),
+            new ButtonElement("Select Previous", () =>
+            {
+                if (currentIndex >= list.Count - 1)
+                {
+                    EditorManager.inst.DisplayNotification($"There are no previous objects to select.", 2f, EditorManager.NotificationType.Error);
+                    return;
+                }
+
+                var nextObject = list[currentIndex + 1];
+
+                if (!nextObject)
+                    return;
+
+                var timelineObject = EditorTimeline.inst.GetTimelineObject(nextObject);
+
+                if (timelineObject)
+                    EditorTimeline.inst.SetCurrentObject(timelineObject, EditorConfig.Instance.BringToSelection.Value);
+            }),
+            new SpacerElement(),
+            new ButtonElement("Select First", () =>
+            {
+                if (list.IsEmpty())
+                {
+                    EditorManager.inst.DisplayNotification($"There are no objects!", 3f, EditorManager.NotificationType.Warning);
+                    return;
+                }
+
+                var prevObject = list.First();
+
+                if (!prevObject)
+                    return;
+
+                var timelineObject = EditorTimeline.inst.GetTimelineObject(prevObject);
+
+                if (timelineObject)
+                    EditorTimeline.inst.SetCurrentObject(timelineObject, EditorConfig.Instance.BringToSelection.Value);
+            }),
+            new ButtonElement("Select Last", () =>
+            {
+                if (list.IsEmpty())
+                {
+                    EditorManager.inst.DisplayNotification($"There are no objects!", 3f, EditorManager.NotificationType.Warning);
+                    return;
+                }
+
+                var nextObject = list.Last();
+
+                if (!nextObject)
+                    return;
+
+                var timelineObject = EditorTimeline.inst.GetTimelineObject(nextObject);
+
+                if (timelineObject)
+                    EditorTimeline.inst.SetCurrentObject(timelineObject, EditorConfig.Instance.BringToSelection.Value);
+            })
+        };
+
+        public static List<EditorElement> GetObjectVersionFunctions(IUploadable uploadable, Action update)
+        {
+            var buttonFunctions = new List<EditorElement>
+            {
+                new ButtonElement("Format 1.0.0", () =>
                 {
                     uploadable.ObjectVersion = "1.0.0";
                     update?.Invoke();
                 }),
-                new ButtonFunction("Format 1.0", () =>
+                new ButtonElement("Format 1.0", () =>
                 {
                     uploadable.ObjectVersion = "1.0";
                     update?.Invoke();
                 }),
-                new ButtonFunction("Format 1", () =>
+                new ButtonElement("Format 1", () =>
                 {
                     uploadable.ObjectVersion = "1";
                     update?.Invoke();
@@ -383,26 +453,26 @@ namespace BetterLegacy.Editor.Managers
             if (string.IsNullOrEmpty(origVersion))
                 return buttonFunctions;
 
-            buttonFunctions.Add(new ButtonFunction(true));
+            buttonFunctions.Add(new SpacerElement());
 
             if (Version.TryParse(origVersion, out Version version))
             {
-                buttonFunctions.AddRange(new List<ButtonFunction>
+                buttonFunctions.AddRange(new List<EditorElement>
                 {
-                    new ButtonFunction("Increase Patch Number", () =>
+                    new ButtonElement("Increase Patch Number", () =>
                     {
                         version.Patch++;
                         uploadable.ObjectVersion = version.ToString();
                         update?.Invoke();
                     }),
-                    new ButtonFunction("Increase Minor Number", () =>
+                    new ButtonElement("Increase Minor Number", () =>
                     {
                         version.Patch = 0;
                         version.Minor++;
                         uploadable.ObjectVersion = version.ToString();
                         update?.Invoke();
                     }),
-                    new ButtonFunction("Increase Major Number", () =>
+                    new ButtonElement("Increase Major Number", () =>
                     {
                         version.Patch = 0;
                         version.Minor = 0;
@@ -417,15 +487,15 @@ namespace BetterLegacy.Editor.Managers
                 var major = int.Parse(match.Groups[1].ToString());
                 var minor = int.Parse(match.Groups[2].ToString());
 
-                buttonFunctions.AddRange(new List<ButtonFunction>
+                buttonFunctions.AddRange(new List<EditorElement>
                 {
-                    new ButtonFunction("Increase Minor Number", () =>
+                    new ButtonElement("Increase Minor Number", () =>
                     {
                         minor++;
                         uploadable.ObjectVersion = $"{major}.{minor}";
                         update?.Invoke();
                     }),
-                    new ButtonFunction("Increase Minor Number", () =>
+                    new ButtonElement("Increase Minor Number", () =>
                     {
                         major++;
                         uploadable.ObjectVersion = $"{major}.{minor}";
@@ -435,9 +505,9 @@ namespace BetterLegacy.Editor.Managers
             }
             else if (int.TryParse(origVersion, out int num))
             {
-                buttonFunctions.AddRange(new List<ButtonFunction>
+                buttonFunctions.AddRange(new List<EditorElement>
                 {
-                    new ButtonFunction("Increase Number", () =>
+                    new ButtonElement("Increase Number", () =>
                     {
                         num++;
                         uploadable.ObjectVersion = num.ToString();
@@ -448,6 +518,192 @@ namespace BetterLegacy.Editor.Managers
 
             return buttonFunctions;
         }
+
+        public static List<EditorElement> GetEditorColorFunctions(InputField inputField, Func<string> getValue) => new List<EditorElement>
+        {
+            new ButtonElement("Edit Color", () => RTColorPicker.inst.Show(RTColors.HexToColor(getValue?.Invoke() ?? string.Empty),
+                (col, hex) => inputField.SetTextWithoutNotify(hex),
+                (col, hex) =>
+                {
+                    CoreHelper.Log($"Set timeline object color: {hex}");
+                    // set the input field's text empty so it notices there was a change
+                    inputField.SetTextWithoutNotify(string.Empty);
+                    inputField.text = hex;
+                },
+                () => inputField.SetTextWithoutNotify(getValue?.Invoke() ?? string.Empty))),
+            new ButtonElement("Clear", () => inputField.text = string.Empty),
+            new SpacerElement(),
+            new ButtonElement("VG Red", () => inputField.text = ObjectEditorData.RED),
+            new ButtonElement("VG Red Green", () => inputField.text = ObjectEditorData.RED_GREEN),
+            new ButtonElement("VG Green", () => inputField.text = ObjectEditorData.GREEN),
+            new ButtonElement("VG Green Blue", () => inputField.text = ObjectEditorData.GREEN_BLUE),
+            new ButtonElement("VG Blue", () => inputField.text = ObjectEditorData.BLUE),
+            new ButtonElement("VG Blue Red", () => inputField.text = ObjectEditorData.RED_BLUE)
+        };
+
+        public static List<EditorElement> GetModifierSoundPathFunctions(Func<bool> getGlobal, Action<string> setPath) => new List<EditorElement>
+        {
+            new ButtonElement($"Use {RTEditor.SYSTEM_BROWSER}", () =>
+            {
+                var isGlobal = getGlobal?.Invoke() ?? false;
+                var directory = isGlobal && RTFile.DirectoryExists(RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH) ?
+                                RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH : RTFile.RemoveEndSlash(RTFile.BasePath);
+
+                if (isGlobal && !RTFile.DirectoryExists(RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH))
+                {
+                    EditorManager.inst.DisplayNotification("soundlibrary folder does not exist! If you want to have audio take from a global folder, make sure you create a soundlibrary folder inside your beatmaps folder and put your sounds in there.", 12f, EditorManager.NotificationType.Error);
+                    return;
+                }
+
+                var result = Crosstales.FB.FileBrowser.OpenSingleFile("Select a sound to use!", directory, FileFormat.OGG.ToName(), FileFormat.WAV.ToName(), FileFormat.MP3.ToName());
+                if (string.IsNullOrEmpty(result))
+                    return;
+
+                result = RTFile.ReplaceSlash(result);
+                if (result.Contains(isGlobal ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath))))
+                {
+                    setPath?.Invoke(result.Remove(isGlobal ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath))));
+                    RTEditor.inst.BrowserPopup.Close();
+                    return;
+                }
+
+                EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
+            }),
+            new ButtonElement($"Use {RTEditor.EDITOR_BROWSER}", () =>
+            {
+                RTEditor.inst.BrowserPopup.Open();
+
+                var isGlobal = getGlobal?.Invoke() ?? false;
+                var directory = isGlobal && RTFile.DirectoryExists(RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH) ?
+                                RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH : RTFile.RemoveEndSlash(RTFile.BasePath);
+
+                if (isGlobal && !RTFile.DirectoryExists(RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH))
+                {
+                    EditorManager.inst.DisplayNotification("soundlibrary folder does not exist! If you want to have audio take from a global folder, make sure you create a soundlibrary folder inside your beatmaps folder and put your sounds in there.", 12f, EditorManager.NotificationType.Error);
+                    return;
+                }
+
+                RTFileBrowser.inst.UpdateBrowserFile(directory, RTFile.AudioDotFormats, onSelectFile: _val =>
+                {
+                    _val = RTFile.ReplaceSlash(_val);
+                    if (_val.Contains(isGlobal ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath))))
+                    {
+                        setPath?.Invoke(_val.Remove(isGlobal ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath))));
+                        RTEditor.inst.BrowserPopup.Close();
+                        return;
+                    }
+
+                    EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
+                });
+            }),
+            new SpacerElement(),
+            new ButtonElement("Select Sound Asset", () => AssetEditor.inst.OpenPopup(setPath, null, true, false))
+        };
+
+        public static List<EditorElement> GetFolderPanelFunctions<T>(EditorPanel<T> editorPanel, Action onSetIcon, Action onOpenFolder, Action onFolderUpdate, Action paste) => new List<EditorElement>
+        {
+            new ButtonElement("Open folder", onOpenFolder),
+            new ButtonElement("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.GetDirectory(editorPanel.Path), () => { onFolderUpdate?.Invoke(); RTEditor.inst.HideNameEditor(); })),
+            new SpacerElement(),
+            new ButtonElement("Paste", paste),
+            new ButtonElement("Delete", () => RTEditor.inst.ShowWarningPopup("Are you <b>100%</b> sure you want to delete this folder? This <b>CANNOT</b> be undone! Always make sure you have backups.", () =>
+            {
+                RTFile.DeleteDirectory(editorPanel.Path);
+                onFolderUpdate?.Invoke();
+                EditorManager.inst.DisplayNotification("Deleted folder!", 2f, EditorManager.NotificationType.Success);
+                RTEditor.inst.HideWarningPopup();
+            }, RTEditor.inst.HideWarningPopup)),
+            new SpacerElement(),
+            new ButtonElement($"Select Icon ({RTEditor.SYSTEM_BROWSER})", () =>
+            {
+                string imageFile = FileBrowser.OpenSingleFile("Select an image!", RTEditor.inst.BasePath, new string[] { "png" });
+                if (string.IsNullOrEmpty(imageFile))
+                    return;
+
+                RTFile.CopyFile(imageFile, RTFile.CombinePaths(editorPanel.Path, $"folder_icon{FileFormat.PNG.Dot()}"));
+                onSetIcon?.Invoke();
+            }),
+            new ButtonElement($"Select Icon ({RTEditor.EDITOR_BROWSER})", () =>
+            {
+                RTEditor.inst.BrowserPopup.Open();
+                RTFileBrowser.inst.UpdateBrowserFile(new string[] { FileFormat.PNG.Dot() }, imageFile =>
+                {
+                    if (string.IsNullOrEmpty(imageFile))
+                        return;
+
+                    RTEditor.inst.BrowserPopup.Close();
+
+                    RTFile.CopyFile(imageFile, RTFile.CombinePaths(editorPanel.Path, $"folder_icon{FileFormat.PNG.Dot()}"));
+                    onSetIcon?.Invoke();
+                });
+            }),
+            new ButtonElement("Clear Icon", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to clear the folder icon? This will delete the icon file.", () =>
+            {
+                RTEditor.inst.HideWarningPopup();
+                RTFile.DeleteFile(RTFile.CombinePaths(editorPanel.Path, $"folder_icon{FileFormat.PNG.Dot()}"));
+                onSetIcon?.Invoke();
+                EditorManager.inst.DisplayNotification("Deleted icon!", 1.5f, EditorManager.NotificationType.Success);
+            }, RTEditor.inst.HideWarningPopup)),
+            new SpacerElement(),
+            new ButtonElement("Create Info File", () =>
+            {
+                var filePath = RTFile.CombinePaths(editorPanel.Path, $"folder_info{FileFormat.JSON.Dot()}");
+                if (RTFile.FileExists(filePath))
+                {
+                    EditorManager.inst.DisplayNotification($"Info file already exists!", 2f, EditorManager.NotificationType.Warning);
+                    return;
+                }
+
+                RTTextEditor.inst.SetEditor("This is the default description.", val => { }, "Create", () =>
+                {
+                    var jn = Parser.NewJSONObject();
+                    jn["desc"] = RTTextEditor.inst.Text;
+                    editorPanel.infoJN = jn;
+                    RTFile.WriteToFile(filePath, jn.ToString());
+                    editorPanel.RenderTooltip();
+                    RTTextEditor.inst.Popup.Close();
+
+                    EditorManager.inst.DisplayNotification("Created info file!", 1.5f, EditorManager.NotificationType.Success);
+                });
+            }),
+            new ButtonElement("Edit Info File", () =>
+            {
+                var filePath = RTFile.CombinePaths(editorPanel.Path, $"folder_info{FileFormat.JSON.Dot()}");
+
+                if (!RTFile.FileExists(filePath))
+                    return;
+
+                RTTextEditor.inst.SetEditor("This is the default description.", val => { }, "Done", () =>
+                {
+                    var jn =  Parser.NewJSONObject();
+                    jn["desc"] = RTTextEditor.inst.Text;
+                    editorPanel.infoJN = jn;
+                    RTFile.WriteToFile(filePath, jn.ToString());
+                    editorPanel.RenderTooltip();
+                    RTTextEditor.inst.Popup.Close();
+                });
+            }),
+            new ButtonElement("Update Info", () =>
+            {
+                editorPanel.infoJN = null;
+                editorPanel.RenderTooltip();
+                onSetIcon?.Invoke();
+            }),
+            new ButtonElement("Clear Info File", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete the info file?", () =>
+            {
+                RTFile.DeleteFile(RTFile.CombinePaths(editorPanel.Path, $"folder_info{FileFormat.JSON.Dot()}"));
+                editorPanel.infoJN = null;
+                editorPanel.RenderTooltip();
+                RTEditor.inst.HideWarningPopup();
+                EditorManager.inst.DisplayNotification("Deleted info file!", 1.5f, EditorManager.NotificationType.Success);
+            }, RTEditor.inst.HideWarningPopup))
+        };
+
+        public static List<EditorElement> GetObjectTimeFunctions(Func<float> getObjectTime, Action<float> setTime) => new List<EditorElement>
+        {
+            new ButtonElement("Set to Timeline Cursor", () => setTime?.Invoke(AudioManager.inst.CurrentAudioSource.time)),
+            new ButtonElement("Snap to BPM", () => setTime?.Invoke(RTEditor.SnapToBPM(getObjectTime?.Invoke() ?? AudioManager.inst.CurrentAudioSource.time)))
+        };
 
         #endregion
     }

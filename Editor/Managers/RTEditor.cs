@@ -191,11 +191,11 @@ namespace BetterLegacy.Editor.Managers
             if (RTFile.FileIsAudio(dropInfo.filePath))
             {
                 EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction("Replace song", () =>
+                    new ButtonElement("Replace song", () =>
                     {
                         if (!EditorManager.inst.hasLoadedLevel)
                         {
-                            EditorManager.inst.DisplayNotification($"Load a level before trying to replace the song!", 2f, EditorManager.NotificationType.Warning);
+                            EditorManager.inst.DisplayNotification("Load a level before trying to replace the song!", 2f, EditorManager.NotificationType.Warning);
                             return;
                         }
 
@@ -234,7 +234,7 @@ namespace BetterLegacy.Editor.Managers
                             CoreHelper.Destroy(previousAudio);
                         }));
                     }),
-                    new ButtonFunction("Create audio object", () =>
+                    new ButtonElement("Create audio object", () =>
                     {
                         if (!ModifiersManager.inst.modifiers.TryFind(x => x.Name == nameof(ModifierFunctions.playSound), out Modifier modifier))
                             return;
@@ -3501,10 +3501,8 @@ namespace BetterLegacy.Editor.Managers
             var createBG = backgroundButton.transform.Find("BG Options Popup/create").GetComponent<Button>();
             createBG.onClick.NewListener(() => RTBackgroundEditor.inst.CreateNewBackground());
 
-            var objectContextMenu = objectButton.AddComponent<ContextClickable>();
-            objectContextMenu.onClick = eventData =>
-            {
-                if (eventData.button != PointerEventData.InputButton.Right)
+            EditorContextMenu.AddContextMenu(objectButton,
+                leftClick: () =>
                 {
                     switch (EditorConfig.Instance.ObjectCreationClickBehavior.Value)
                     {
@@ -3521,66 +3519,53 @@ namespace BetterLegacy.Editor.Managers
                                 break;
                             }
                     }
-                    return;
-                }
-
-                EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction("Create Object", () => ObjectEditor.inst.CreateNewNormalObject()),
-                    new ButtonFunction("Options", ObjectOptionsPopup.Open),
-                    new ButtonFunction("More Options", ObjectEditor.inst.ShowObjectTemplates),
-                    new ButtonFunction(true),
-                    new ButtonFunction($"{(EditorConfig.Instance.ObjectCreationClickBehavior.Value == ObjectCreationClickBehaviorType.OpenOptionsPopup ? "> " : string.Empty)}Behavior: Open Options Popup", () =>
+                },
+                getEditorElements: () => new List<EditorElement>
+                {
+                    new ButtonElement("Create Object", () => ObjectEditor.inst.CreateNewNormalObject()),
+                    new ButtonElement("Options", ObjectOptionsPopup.Open),
+                    new ButtonElement("More Options", ObjectEditor.inst.ShowObjectTemplates),
+                    new SpacerElement(),
+                    ButtonElement.SelectionButton(() => EditorConfig.Instance.ObjectCreationClickBehavior.Value == ObjectCreationClickBehaviorType.OpenOptionsPopup, "Behavior: Open Options Popup", () =>
                     {
                         EditorConfig.Instance.ObjectCreationClickBehavior.Value = ObjectCreationClickBehaviorType.OpenOptionsPopup;
                         EditorManager.inst.DisplayNotification($"Set the Object Creation button's click behavior to {EditorConfig.Instance.ObjectCreationClickBehavior.Value}!", 3f, EditorManager.NotificationType.Success);
                     }),
-                    new ButtonFunction($"{(EditorConfig.Instance.ObjectCreationClickBehavior.Value == ObjectCreationClickBehaviorType.OpenMoreOptionsPopup ? "> " : string.Empty)}Behavior: Open More Options Popup", () =>
+                    ButtonElement.SelectionButton(() => EditorConfig.Instance.ObjectCreationClickBehavior.Value == ObjectCreationClickBehaviorType.OpenMoreOptionsPopup, "Behavior: Open More Options Popup", () =>
                     {
                         EditorConfig.Instance.ObjectCreationClickBehavior.Value = ObjectCreationClickBehaviorType.OpenMoreOptionsPopup;
                         EditorManager.inst.DisplayNotification($"Set the Object Creation button's click behavior to {EditorConfig.Instance.ObjectCreationClickBehavior.Value}!", 3f, EditorManager.NotificationType.Success);
                     }),
-                    new ButtonFunction($"{(EditorConfig.Instance.ObjectCreationClickBehavior.Value == ObjectCreationClickBehaviorType.CreateObject ? "> " : string.Empty)}Behavior: Create Object", () =>
+                    ButtonElement.SelectionButton(() => EditorConfig.Instance.ObjectCreationClickBehavior.Value == ObjectCreationClickBehaviorType.CreateObject, "Behavior: Create Object", () =>
                     {
                         EditorConfig.Instance.ObjectCreationClickBehavior.Value = ObjectCreationClickBehaviorType.CreateObject;
                         EditorManager.inst.DisplayNotification($"Set the Object Creation button's click behavior to {EditorConfig.Instance.ObjectCreationClickBehavior.Value}!", 3f, EditorManager.NotificationType.Success);
                     }),
-                    new ButtonFunction(true),
-                    new ButtonFunction("Search Objects", ObjectEditor.inst.ShowObjectSearch),
-                    new ButtonFunction(true),
-                    new ButtonFunction("Reload Templates", ObjectEditor.inst.LoadObjectTemplates)
-                    );
-            };
+                    new SpacerElement(),
+                    new ButtonElement("Search Objects", ObjectEditor.inst.ShowObjectSearch),
+                    new SpacerElement(),
+                    new ButtonElement("Reload Templates", ObjectEditor.inst.LoadObjectTemplates)
+                });
 
-            var prefabContextMenu = prefabButton.AddComponent<ContextClickable>();
-            prefabContextMenu.onClick = eventData =>
-            {
-                if (eventData.button != PointerEventData.InputButton.Right)
-                    return;
+            EditorContextMenu.AddContextMenu(prefabButton,
+                new ButtonElement("Show Prefabs", () => PrefabEditor.inst.OpenPopup()),
+                new SpacerElement(),
+                new ButtonElement("Create Internal Prefab", () =>
+                {
+                    PrefabEditor.inst.OpenDialog();
+                    RTPrefabEditor.inst.createInternal = true;
+                }),
+                new ButtonElement("Create External Prefab", () =>
+                {
+                    PrefabEditor.inst.OpenDialog();
+                    RTPrefabEditor.inst.createInternal = false;
+                })
+                );
 
-                EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction("Show Prefabs", PrefabEditor.inst.OpenPopup),
-                    new ButtonFunction(true),
-                    new ButtonFunction("Create Internal Prefab", () =>
-                    {
-                        PrefabEditor.inst.OpenDialog();
-                        RTPrefabEditor.inst.createInternal = true;
-                    }),
-                    new ButtonFunction("Create External Prefab", () =>
-                    {
-                        PrefabEditor.inst.OpenDialog();
-                        RTPrefabEditor.inst.createInternal = false;
-                    })
-                    );
-            };
-
-            var markerContextMenu = markerButton.AddComponent<ContextClickable>();
-            markerContextMenu.onClick = eventData =>
-            {
-                if (eventData.button != PointerEventData.InputButton.Right)
-                    return;
-
-                EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction("Open Marker Editor", () =>
+            EditorContextMenu.AddContextMenu(markerButton,
+                getEditorElements: () => new List<EditorElement>
+                {
+                    new ButtonElement("Open Marker Editor", () =>
                     {
                         if (!RTMarkerEditor.inst.CurrentMarker)
                         {
@@ -3590,39 +3575,27 @@ namespace BetterLegacy.Editor.Managers
 
                         RTMarkerEditor.inst.OpenDialog(RTMarkerEditor.inst.CurrentMarker);
                     }),
-                    new ButtonFunction(true),
-                    new ButtonFunction("Create Marker", MarkerEditor.inst.CreateNewMarker),
-                    new ButtonFunction("Create Marker at Object", () =>
+                    new SpacerElement(),
+                    new ButtonElement("Create Marker", MarkerEditor.inst.CreateNewMarker),
+                    new ButtonElement("Create Marker at Object", () =>
                     {
                         if (EditorTimeline.inst.CurrentSelection && EditorTimeline.inst.CurrentSelection.TimelineReference != TimelineObject.TimelineReferenceType.Null)
                             RTMarkerEditor.inst.CreateNewMarker(EditorTimeline.inst.CurrentSelection.Time);
                     }),
-                    new ButtonFunction(true),
-                    new ButtonFunction("Show Markers", () =>
+                    new SpacerElement(),
+                    ButtonElement.ToggleButton("Show Markers", () => EditorConfig.Instance.ShowMarkers.Value, () =>
                     {
-                        EditorConfig.Instance.ShowMarkers.Value = true;
-                        EditorManager.inst.DisplayNotification("Markers will now display.", 1.5f, EditorManager.NotificationType.Success);
+                        EditorConfig.Instance.ShowMarkers.Value = !EditorConfig.Instance.ShowMarkers.Value;
+                        EditorManager.inst.DisplayNotification(EditorConfig.Instance.ShowMarkers.Value ? "Markers will now display." : "Markers will now be hidden.", 1.5f, EditorManager.NotificationType.Success);
                     }),
-                    new ButtonFunction("Hide Markers", () =>
-                    {
-                        EditorConfig.Instance.ShowMarkers.Value = false;
-                        EditorManager.inst.DisplayNotification("Markers will now be hidden.", 1.5f, EditorManager.NotificationType.Success);
-                    }),
-                    new ButtonFunction(true),
-                    new ButtonFunction("Clear Markers", RTMarkerEditor.inst.ClearMarkers),
-                    new ButtonFunction("Copy All Markers", RTMarkerEditor.inst.CopyAllMarkers),
-                    new ButtonFunction("Paste Markers", RTMarkerEditor.inst.PasteMarkers)
-                    );
-            };
+                    new SpacerElement(),
+                    new ButtonElement("Clear Markers", RTMarkerEditor.inst.ClearMarkers),
+                    new ButtonElement("Copy All Markers", RTMarkerEditor.inst.CopyAllMarkers),
+                    new ButtonElement("Paste Markers", RTMarkerEditor.inst.PasteMarkers)
+                });
 
-            var checkpointContextMenu = checkpointButton.AddComponent<ContextClickable>();
-            checkpointContextMenu.onClick = eventData =>
-            {
-                if (eventData.button != PointerEventData.InputButton.Right)
-                    return;
-
-                EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction("Open Checkpoint Editor", () =>
+            EditorContextMenu.AddContextMenu(checkpointButton,
+                    new ButtonElement("Open Checkpoint Editor", () =>
                     {
                         if (!RTCheckpointEditor.inst.CurrentCheckpoint)
                         {
@@ -3632,83 +3605,62 @@ namespace BetterLegacy.Editor.Managers
 
                         RTCheckpointEditor.inst.OpenDialog(RTCheckpointEditor.inst.CurrentCheckpoint.Checkpoint);
                     }),
-                    new ButtonFunction(true),
-                    new ButtonFunction("Create Checkpoint", RTCheckpointEditor.inst.CreateNewCheckpoint),
-                    new ButtonFunction("Create Checkpoint at Object", () =>
+                    new SpacerElement(),
+                    new ButtonElement("Create Checkpoint", () => RTCheckpointEditor.inst.CreateNewCheckpoint()),
+                    new ButtonElement("Create Checkpoint at Object", () =>
                     {
                         if (EditorTimeline.inst.CurrentSelection && EditorTimeline.inst.CurrentSelection.TimelineReference != TimelineObject.TimelineReferenceType.Null)
                             RTCheckpointEditor.inst.CreateNewCheckpoint(EditorTimeline.inst.CurrentSelection.Time, Vector2.zero);
-                    })
-                    );
-            };
-
-            var playTestContextMenu = playTest.AddComponent<ContextClickable>();
-            playTestContextMenu.onClick = eventData =>
-            {
-                if (eventData.button != PointerEventData.InputButton.Right)
-                    return;
-
-                var buttonFunctions = new List<ButtonFunction>() { new ButtonFunction("Playtest", TogglePreview), };
-
-                var values = ChallengeMode.Zen.GetValues();
-                for (int i = 0; i < values.Length; i++)
-                {
-                    var value = values[i];
-                    buttonFunctions.Add(new ButtonFunction($"Playtest {value.DisplayName}", () =>
-                    {
-                        CoreConfig.Instance.ChallengeModeSetting.Value = value;
-                        TogglePreview();
                     }));
-                }
 
-                EditorContextMenu.inst.ShowContextMenu(buttonFunctions);
-            };
+            EditorContextMenu.AddContextMenu(playTest,
+                getEditorElements: () =>
+                {
+                    var editorElements = new List<EditorElement>() { new ButtonElement("Playtest", TogglePreview), };
 
-            var eventLayerContextMenu = eventLayerToggle.gameObject.AddComponent<ContextClickable>();
-            eventLayerContextMenu.onClick = eventData =>
-            {
-                if (eventData.button != PointerEventData.InputButton.Right)
-                    return;
+                    var values = ChallengeMode.Zen.GetValues();
+                    for (int i = 0; i < values.Length; i++)
+                    {
+                        var value = values[i];
+                        editorElements.Add(ButtonElement.SelectionButton(() => CoreConfig.Instance.ChallengeModeSetting.Value == value, $"Playtest {value.DisplayName}", () =>
+                        {
+                            CoreConfig.Instance.ChallengeModeSetting.Value = value;
+                            TogglePreview();
+                        }));
+                    }
 
-                EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction("Toggle Layer Type", () => EditorTimeline.inst.SetLayer(EditorTimeline.inst.Layer, EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events ? EditorTimeline.LayerType.Objects : EditorTimeline.LayerType.Events)),
-                    new ButtonFunction("View Objects", () => EditorTimeline.inst.SetLayer(EditorTimeline.inst.Layer, EditorTimeline.LayerType.Objects)),
-                    new ButtonFunction("View Events", () => EditorTimeline.inst.SetLayer(EditorTimeline.inst.Layer, EditorTimeline.LayerType.Events))
-                    );
-            };
+                    return editorElements;
+                });
 
-            var layerContextMenu = layersObj.AddComponent<ContextClickable>();
-            layerContextMenu.onClick = eventData =>
-            {
-                if (eventData.button != PointerEventData.InputButton.Right)
-                    return;
+            EditorContextMenu.AddContextMenu(eventLayerToggle.gameObject,
+                new ButtonElement("Toggle Layer Type", () => EditorTimeline.inst.SetLayer(EditorTimeline.inst.Layer, EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events ? EditorTimeline.LayerType.Objects : EditorTimeline.LayerType.Events)),
+                new ButtonElement("View Objects", () => EditorTimeline.inst.SetLayer(EditorTimeline.inst.Layer, EditorTimeline.LayerType.Objects)),
+                new ButtonElement("View Events", () => EditorTimeline.inst.SetLayer(EditorTimeline.inst.Layer, EditorTimeline.LayerType.Events)));
 
-                EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction("List Layers with Objects", CoreHelper.ListObjectLayers),
-                    new ButtonFunction("Next Free Layer", () =>
+            EditorContextMenu.AddContextMenu(layersObj,
+                getEditorElements: () => new List<EditorElement>
+                {
+                    new ButtonElement("List Layers with Objects", CoreHelper.ListObjectLayers),
+                    new ButtonElement("Next Free Layer", () =>
                     {
                         var layer = 0;
                         while (GameData.Current.beatmapObjects.Has(x => x.editorData && x.editorData.Layer == layer))
                             layer++;
                         EditorTimeline.inst.SetLayer(layer, EditorTimeline.LayerType.Objects);
                     }),
-                    new ButtonFunction("Toggle Object Preview Visibility", () =>
-                    {
-                        EditorConfig.Instance.OnlyObjectsOnCurrentLayerVisible.Value = !EditorConfig.Instance.OnlyObjectsOnCurrentLayerVisible.Value;
-                    }),
-                    new ButtonFunction("Pin Editor Layer", () =>
+                    ButtonElement.ToggleButton("Toggle Object Preview Visibility", () => EditorConfig.Instance.OnlyObjectsOnCurrentLayerVisible.Value, () => EditorConfig.Instance.OnlyObjectsOnCurrentLayerVisible.Value = !EditorConfig.Instance.OnlyObjectsOnCurrentLayerVisible.Value),
+                    new ButtonElement("Pin Editor Layer", () =>
                     {
                         PinnedLayerEditor.inst.PinCurrentEditorLayer();
                         PinnedLayerEditor.inst.Popup.Open();
                         PinnedLayerEditor.inst.RenderPopup();
                     }),
-                    new ButtonFunction("View Pinned Editor Layers", () =>
+                    new ButtonElement("View Pinned Editor Layers", () =>
                     {
                         PinnedLayerEditor.inst.Popup.Open();
                         PinnedLayerEditor.inst.RenderPopup();
                     })
-                    );
-            };
+                });
         }
 
         void SetupTimelineTriggers()
@@ -3753,37 +3705,37 @@ namespace BetterLegacy.Editor.Managers
                         return;
 
                     EditorContextMenu.inst.ShowContextMenu(
-                        new ButtonFunction("Create New", () => ObjectEditor.inst.CreateNewNormalObject()),
-                        new ButtonFunction("Update Everything", () => RTLevel.Reinit()),
-                        new ButtonFunction(true),
-                        new ButtonFunction("Cut", () =>
+                        new ButtonElement("Create New", () => ObjectEditor.inst.CreateNewNormalObject()),
+                        new ButtonElement("Update Everything", () => RTLevel.Reinit()),
+                        new SpacerElement(),
+                        new ButtonElement("Cut", () =>
                         {
                             ObjectEditor.inst.CopyObjects();
                             EditorTimeline.inst.DeleteObjects();
                         }),
-                        new ButtonFunction("Copy", ObjectEditor.inst.CopyObjects),
-                        new ButtonFunction("Paste", () => ObjectEditor.inst.PasteObject()),
-                        new ButtonFunction("Duplicate", () =>
+                        new ButtonElement("Copy", ObjectEditor.inst.CopyObjects),
+                        new ButtonElement("Paste", () => ObjectEditor.inst.PasteObject()),
+                        new ButtonElement("Duplicate", () =>
                         {
                             var offsetTime = EditorTimeline.inst.SelectedObjects.Min(x => x.Time);
 
                             ObjectEditor.inst.CopyObjects();
                             ObjectEditor.inst.PasteObject(offsetTime);
                         }),
-                        new ButtonFunction("Paste (Keep Prefab)", () => ObjectEditor.inst.PasteObject(0f, false)),
-                        new ButtonFunction("Duplicate (Keep Prefab)", () =>
+                        new ButtonElement("Paste (Keep Prefab)", () => ObjectEditor.inst.PasteObject(0f, false)),
+                        new ButtonElement("Duplicate (Keep Prefab)", () =>
                         {
                             var offsetTime = EditorTimeline.inst.SelectedObjects.Min(x => x.Time);
 
                             ObjectEditor.inst.CopyObjects();
                             ObjectEditor.inst.PasteObject(offsetTime, false);
                         }),
-                        new ButtonFunction("Delete", EditorTimeline.inst.DeleteObjects),
-                        new ButtonFunction(true),
-                        new ButtonFunction("Add Bin", EditorTimeline.inst.AddBin),
-                        new ButtonFunction("Remove Bin", EditorTimeline.inst.RemoveBin),
-                        new ButtonFunction("Set Max Bin Count", () => EditorTimeline.inst.SetBinCount(EditorTimeline.MAX_BINS)),
-                        new ButtonFunction("Set Default Bin Count", () => EditorTimeline.inst.SetBinCount(EditorTimeline.DEFAULT_BIN_COUNT))
+                        new ButtonElement("Delete", EditorTimeline.inst.DeleteObjects),
+                        new SpacerElement(),
+                        new ButtonElement("Add Bin", EditorTimeline.inst.AddBin),
+                        new ButtonElement("Remove Bin", EditorTimeline.inst.RemoveBin),
+                        new ButtonElement("Set Max Bin Count", () => EditorTimeline.inst.SetBinCount(EditorTimeline.MAX_BINS)),
+                        new ButtonElement("Set Default Bin Count", () => EditorTimeline.inst.SetBinCount(EditorTimeline.DEFAULT_BIN_COUNT))
                         );
                 }));
 
@@ -4296,51 +4248,34 @@ namespace BetterLegacy.Editor.Managers
 
             EditorHelper.SetComplexity(EditorLevelManager.inst.OpenLevelPopup.AscendToggle.gameObject, Complexity.Normal);
 
-            var contextClickable = EditorLevelManager.inst.OpenLevelPopup.GameObject.AddComponent<ContextClickable>();
-            contextClickable.onClick = eventData =>
-            {
-                if (eventData.button != PointerEventData.InputButton.Right)
-                    return;
-
-                EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction("Create folder", () =>
-                    {
-                        ShowFolderCreator(RTFile.CombinePaths(BeatmapsPath, EditorPath), () => { EditorLevelManager.inst.LoadLevels(); HideNameEditor(); });
-                    }),
-                    new ButtonFunction("Create level", EditorManager.inst.OpenNewLevelPopup),
-                    new ButtonFunction("Paste", EditorLevelManager.inst.PasteLevel),
-                    new ButtonFunction("Open List in File Explorer", OpenLevelListFolder));
-            };
+            EditorContextMenu.AddContextMenu(EditorLevelManager.inst.OpenLevelPopup.GameObject,
+                new ButtonElement("Create folder", () => ShowFolderCreator(RTFile.CombinePaths(BeatmapsPath, EditorPath), () => { EditorLevelManager.inst.LoadLevels(); HideNameEditor(); })),
+                new ButtonElement("Create level", EditorManager.inst.OpenNewLevelPopup),
+                new ButtonElement("Paste", EditorLevelManager.inst.PasteLevel),
+                new ButtonElement("Open in File Explorer", OpenLevelListFolder));
 
             TooltipHelper.AssignTooltip(EditorLevelManager.inst.OpenLevelPopup.PathField.gameObject, "Editor Path", 3f);
             EditorHelper.SetComplexity(EditorLevelManager.inst.OpenLevelPopup.PathField.gameObject, Complexity.Advanced);
 
-            var levelClickable = EditorLevelManager.inst.OpenLevelPopup.PathField.gameObject.AddComponent<Clickable>();
-            levelClickable.onDown = pointerEventData =>
-            {
-                if (pointerEventData.button != PointerEventData.InputButton.Right)
-                    return;
-
-                EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction("Set Level folder", () =>
+            EditorContextMenu.AddContextMenu(EditorLevelManager.inst.OpenLevelPopup.PathField.gameObject,
+                new ButtonElement("Set folder", () =>
+                {
+                    BrowserPopup.Open();
+                    RTFileBrowser.inst.UpdateBrowserFolder(_val =>
                     {
-                        BrowserPopup.Open();
-                        RTFileBrowser.inst.UpdateBrowserFolder(_val =>
+                        if (!_val.Replace("\\", "/").Contains(RTFile.ApplicationDirectory + "beatmaps/"))
                         {
-                            if (!_val.Replace("\\", "/").Contains(RTFile.ApplicationDirectory + "beatmaps/"))
-                            {
-                                EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
-                                return;
-                            }
+                            EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
+                            return;
+                        }
 
-                            EditorLevelManager.inst.OpenLevelPopup.PathField.text = _val.Replace("\\", "/").Remove(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/");
-                            EditorManager.inst.DisplayNotification($"Set Editor path to {EditorPath}!", 2f, EditorManager.NotificationType.Success);
-                            BrowserPopup.Close();
-                            UpdateEditorPath(false);
-                        });
-                    }),
-                    new ButtonFunction("Open List in File Explorer", OpenLevelListFolder));
-            };
+                        EditorLevelManager.inst.OpenLevelPopup.PathField.text = _val.Replace("\\", "/").Remove(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/");
+                        EditorManager.inst.DisplayNotification($"Set Editor path to {EditorPath}!", 2f, EditorManager.NotificationType.Success);
+                        BrowserPopup.Close();
+                        UpdateEditorPath(false);
+                    });
+                }),
+                new ButtonElement("Open in File Explorer", OpenLevelListFolder));
 
             PrefabPopups.External.InitTopElementsParent();
             PrefabPopups.External.InitReload(() =>
@@ -4357,42 +4292,35 @@ namespace BetterLegacy.Editor.Managers
 
             TooltipHelper.AssignTooltip(PrefabPopups.External.PathField.gameObject, "Prefab Path", 3f);
 
-            var prefabPathClickable = PrefabPopups.External.PathField.gameObject.AddComponent<Clickable>();
-            prefabPathClickable.onDown = pointerEventData =>
-            {
-                if (pointerEventData.button != PointerEventData.InputButton.Right)
-                    return;
-
-                EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction("Set Prefab folder", () =>
+            EditorContextMenu.AddContextMenu(PrefabPopups.External.PathField.gameObject,
+                new ButtonElement("Set folder", () =>
+                {
+                    BrowserPopup.Open();
+                    RTFileBrowser.inst.UpdateBrowserFolder(_val =>
                     {
-                        BrowserPopup.Open();
-                        RTFileBrowser.inst.UpdateBrowserFolder(_val =>
+                        if (!_val.Replace("\\", "/").Contains(RTFile.ApplicationDirectory + "beatmaps/"))
                         {
-                            if (!_val.Replace("\\", "/").Contains(RTFile.ApplicationDirectory + "beatmaps/"))
-                            {
-                                EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
-                                return;
-                            }
+                            EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
+                            return;
+                        }
 
-                            PrefabPopups.External.PathField.text = _val.Replace("\\", "/").Remove(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/");
-                            EditorManager.inst.DisplayNotification($"Set Prefab path to {PrefabPath}!", 2f, EditorManager.NotificationType.Success);
-                            BrowserPopup.Close();
-                            UpdatePrefabPath(false);
-                        });
-                    }),
-                    new ButtonFunction("Open List in File Explorer", OpenPrefabListFolder),
-                    new ButtonFunction("Set as Default for Level", () =>
-                    {
-                        editorInfo.prefabPath = prefabPath;
-                        EditorManager.inst.DisplayNotification($"Set current prefab folder [ {prefabPath} ] as the default for the level!", 5f, EditorManager.NotificationType.Success);
-                    }, "Prefab Default Path"),
-                    new ButtonFunction("Remove Default", () =>
-                    {
-                        editorInfo.prefabPath = null;
-                        EditorManager.inst.DisplayNotification($"Removed default prefab folder.", 5f, EditorManager.NotificationType.Success);
-                    }, "Prefab Default Path"));
-            };
+                        PrefabPopups.External.PathField.text = _val.Replace("\\", "/").Remove(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/");
+                        EditorManager.inst.DisplayNotification($"Set Prefab path to {PrefabPath}!", 2f, EditorManager.NotificationType.Success);
+                        BrowserPopup.Close();
+                        UpdatePrefabPath(false);
+                    });
+                }),
+                new ButtonElement("Open in File Explorer", OpenPrefabListFolder),
+                new ButtonElement("Set as Default for Level", () =>
+                {
+                    editorInfo.prefabPath = prefabPath;
+                    EditorManager.inst.DisplayNotification($"Set current prefab folder [ {prefabPath} ] as the default for the level!", 5f, EditorManager.NotificationType.Success);
+                }, "Prefab Default Path"),
+                new ButtonElement("Remove Default", () =>
+                {
+                    editorInfo.prefabPath = null;
+                    EditorManager.inst.DisplayNotification($"Removed default prefab folder.", 5f, EditorManager.NotificationType.Success);
+                }, "Prefab Default Path"));
 
             EditorHelper.SetComplexity(PrefabPopups.External.PathField.gameObject, Complexity.Advanced);
         }
@@ -5624,22 +5552,14 @@ namespace BetterLegacy.Editor.Managers
             dialog.ParentButton.transform.AsRT().sizeDelta = new Vector2(!string.IsNullOrEmpty(parent) ? 201f : 241f, 32f);
 
             dialog.ParentSearchButton.onClick.NewListener(() => ObjectEditor.inst.ShowParentSearch(EditorTimeline.inst.GetTimelineObject(parentable as IEditable)));
-            var parentSearchContextMenu = dialog.ParentSearchButton.gameObject.GetOrAddComponent<ContextClickable>();
-            parentSearchContextMenu.onClick = eventData =>
-            {
-                if (eventData.button != PointerEventData.InputButton.Right)
-                    return;
-
-                EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction("Open Parent Popup", () => ObjectEditor.inst.ShowParentSearch(EditorTimeline.inst.GetTimelineObject(parentable as IEditable))),
-                    new ButtonFunction("Parent to Camera", () =>
-                    {
-                        parentable.Parent = BeatmapObject.CAMERA_PARENT;
-                        parentable.UpdateParentChain();
-                        RenderParent(parentable, dialog);
-                    })
-                    );
-            };
+            EditorContextMenu.AddContextMenu(dialog.ParentSearchButton.gameObject,
+                new ButtonElement("Open Parent Popup", () => ObjectEditor.inst.ShowParentSearch(EditorTimeline.inst.GetTimelineObject(parentable as IEditable))),
+                new ButtonElement("Parent to Camera", () =>
+                {
+                    parentable.Parent = BeatmapObject.CAMERA_PARENT;
+                    parentable.UpdateParentChain();
+                    RenderParent(parentable, dialog);
+                }));
 
             dialog.ParentPickerButton.onClick.NewListener(() => parentPickerEnabled = true);
 
@@ -5651,13 +5571,13 @@ namespace BetterLegacy.Editor.Managers
                 if (eventData.button != PointerEventData.InputButton.Right || parentable is not BeatmapObject beatmapObject)
                     return;
 
-                var list = new List<ButtonFunction>();
+                var list = new List<EditorElement>();
 
                 if (!string.IsNullOrEmpty(parentable.Parent))
                 {
                     var parentChain = beatmapObject.GetParentChain();
                     if (parentChain.Count > 0)
-                        list.Add(new ButtonFunction("View Parent Chain", () =>
+                        list.Add(new ButtonElement("View Parent Chain", () =>
                         {
                             ObjectEditor.inst.ShowObjectSearch(x => EditorTimeline.inst.SetCurrentObject(EditorTimeline.inst.GetTimelineObject(x), Input.GetKey(KeyCode.LeftControl)), beatmapObjects: parentChain);
                         }));
@@ -5667,7 +5587,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     var childTree = beatmapObject.GetChildTree();
                     if (childTree.Count > 0)
-                        list.Add(new ButtonFunction("View Child Tree", () =>
+                        list.Add(new ButtonElement("View Child Tree", () =>
                         {
                             ObjectEditor.inst.ShowObjectSearch(x => EditorTimeline.inst.SetCurrentObject(EditorTimeline.inst.GetTimelineObject(x), Input.GetKey(KeyCode.LeftControl)), beatmapObjects: childTree);
                         }));
@@ -5830,16 +5750,14 @@ namespace BetterLegacy.Editor.Managers
                     EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(editable));
                     RenderEditorLayer(editable, editorLayerUI);
                 });
-            var editorLayerContextMenu = editorLayerUI.EditorLayerField.gameObject.GetOrAddComponent<ContextClickable>();
-            editorLayerContextMenu.onClick = eventData =>
-            {
-                if (eventData.button != PointerEventData.InputButton.Right)
-                    return;
-
-                EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction("Go to Editor Layer", () => EditorTimeline.inst.SetLayer(editable.EditorData.Layer, EditorTimeline.LayerType.Objects))
-                    );
-            };
+            EditorContextMenu.AddContextMenu(editorLayerUI.EditorLayerField.gameObject,
+                    new ButtonElement("Go to Editor Layer", () => EditorTimeline.inst.SetLayer(editable.EditorData.Layer, EditorTimeline.LayerType.Objects)),
+                    new ButtonElement("Set to Current Editor Layer", () =>
+                    {
+                        editable.EditorData.Layer = EditorTimeline.inst.Layer;
+                        EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(editable));
+                        RenderEditorLayer(editable, editorLayerUI);
+                    }));
         }
 
         public void RenderEditorLayer(IEditorLayerUI editorLayerUI, Func<int> getLayer, Action<int> setLayer)
@@ -5879,6 +5797,65 @@ namespace BetterLegacy.Editor.Managers
                         if (pointerEventData.scrollDelta.y < 0f)
                             setLayer?.Invoke(RTMath.Clamp(layer - 1, 0, int.MaxValue));
                     }));
+            }
+        }
+
+        public void RenderPrefabable(IPrefabable prefabable, IPrefabableDialog dialog)
+        {
+            var editable = prefabable as IEditable;
+            bool fromPrefab = !string.IsNullOrEmpty(prefabable.PrefabID);
+            dialog.CollapsePrefabLabel.SetActive(fromPrefab);
+            dialog.CollapsePrefabButton.gameObject.SetActive(fromPrefab);
+            dialog.CollapsePrefabButton.OnClick.ClearAll();
+
+            if (fromPrefab && dialog.PrefabNameText)
+            {
+                var prefab = prefabable.GetPrefab();
+                dialog.PrefabName.SetActive(prefab);
+                if (prefab)
+                    dialog.PrefabNameText.text = $"[ <b>{prefab.name}</b> ]";
+            }
+            else if (dialog.PrefabNameText)
+                dialog.PrefabName.SetActive(false);
+
+            EditorContextMenu.AddContextMenu(dialog.CollapsePrefabButton.button.gameObject,
+                leftClick: () =>
+                {
+                    if (EditorConfig.Instance.ShowCollapsePrefabWarning.Value)
+                    {
+                        ShowWarningPopup("Are you sure you want to collapse this Prefab group and save the changes to the Internal Prefab?", () =>
+                        {
+                            RTPrefabEditor.inst.Collapse(prefabable, editable.EditorData);
+                            HideWarningPopup();
+                        }, HideWarningPopup);
+
+                        return;
+                    }
+
+                    RTPrefabEditor.inst.Collapse(prefabable, editable.EditorData);
+                },
+                getEditorElements: () => new List<EditorElement>
+                {
+                    new ButtonElement("Apply", () => RTPrefabEditor.inst.Collapse(prefabable, editable.EditorData)),
+                    new ButtonElement("Create New", () => RTPrefabEditor.inst.Collapse(prefabable, editable.EditorData, true)),
+                    new ButtonElement(EditorConfig.Instance.ShowCollapsePrefabWarning.Value ? "Hide Warning" : "Show Warning", () => EditorConfig.Instance.ShowCollapsePrefabWarning.Value = !EditorConfig.Instance.ShowCollapsePrefabWarning.Value)
+                });
+
+            if (dialog.AssignPrefabButton)
+                dialog.AssignPrefabButton.OnClick.NewListener(() =>
+                {
+                    selectingMultiple = false;
+                    prefabPickerEnabled = true;
+                });
+            if (dialog.RemovePrefabButton)
+            {
+                dialog.RemovePrefabButton.gameObject.SetActive(fromPrefab);
+                dialog.RemovePrefabButton.OnClick.NewListener(() =>
+                {
+                    prefabable.RemovePrefabReference();
+                    EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(editable));
+                    RenderPrefabable(prefabable, dialog);
+                });
             }
         }
 

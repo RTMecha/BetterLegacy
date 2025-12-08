@@ -455,143 +455,118 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             Field.eventTrigger.triggers.Clear();
 
-            var contextMenu = Field.inputField.gameObject.GetOrAddComponent<ContextClickable>();
-            contextMenu.onClick = eventData =>
-            {
-                if (eventData.button != PointerEventData.InputButton.Right)
-                    return;
+            EditorContextMenu.AddContextMenu(Field.inputField.gameObject,
+                new ButtonElement("Reset Value", () =>
+                {
+                    Field.Text = getResetValue?.Invoke().ToString() ?? type switch
+                    {
+                        0 => "0",
+                        1 => "1",
+                        2 => "0",
+                        _ => string.Empty,
+                    };
+                }),
+                new ButtonElement(Display.interactible ? "Lock Value" : "Unlock Value", () =>
+                {
+                    Display.interactible = !Display.interactible;
+                    UpdateDisplay(animatable);
+                    EditorManager.inst.DisplayNotification($"{(Display.interactible ? "Unlocked" : "Locked")} editor.", 2f, EditorManager.NotificationType.Success);
+                }),
+                new SpacerElement(),
+                new ButtonElement("Set Label", () => RTEditor.inst.ShowNameEditor("Set label", "Label", Display.label, "Set", () =>
+                {
+                    Display.label = RTEditor.inst.folderCreatorName.text;
+                    UpdateDisplay(animatable);
+                    RTEditor.inst.HideNameEditor();
+                })),
+                new ButtonElement("Set Max", () => RTEditor.inst.ShowNameEditor("Set maximum value", "Max", Display.max.ToString(), "Set", () =>
+                {
+                    if (!float.TryParse(RTEditor.inst.folderCreatorName.text, out float max))
+                        return;
 
-                EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction("Reset Value", () =>
-                    {
-                        Field.Text = getResetValue?.Invoke().ToString() ?? type switch
-                        {
-                            0 => "0",
-                            1 => "1",
-                            2 => "0",
-                            _ => string.Empty,
-                        };
-                    }),
-                    new ButtonFunction(Display.interactible ? "Lock Value" : "Unlock Value", () =>
-                    {
-                        Display.interactible = !Display.interactible;
-                        UpdateDisplay(animatable);
-                        EditorManager.inst.DisplayNotification($"{(Display.interactible ? "Unlocked" : "Locked")} editor.", 2f, EditorManager.NotificationType.Success);
-                    }),
-                    new ButtonFunction(true),
-                    new ButtonFunction("Set Label", () =>
-                    {
-                        RTEditor.inst.ShowNameEditor("Set label", "Label", Display.label, "Set", () =>
-                        {
-                            Display.label = RTEditor.inst.folderCreatorName.text;
-                            UpdateDisplay(animatable);
-                            RTEditor.inst.HideNameEditor();
-                        });
-                    }),
-                    new ButtonFunction("Set Max", () =>
-                    {
-                        RTEditor.inst.ShowNameEditor("Set maximum value", "Max", Display.max.ToString(), "Set", () =>
-                        {
-                            if (!float.TryParse(RTEditor.inst.folderCreatorName.text, out float max))
-                                return;
+                    Display.max = max;
+                    UpdateDisplay(animatable);
+                    RTEditor.inst.HideNameEditor();
+                })),
+                new ButtonElement("Set Min", () => RTEditor.inst.ShowNameEditor("Set minimum value", "Min", Display.min.ToString(), "Set", () =>
+                {
+                    if (!float.TryParse(RTEditor.inst.folderCreatorName.text, out float min))
+                        return;
 
-                            Display.max = max;
-                            UpdateDisplay(animatable);
-                            RTEditor.inst.HideNameEditor();
-                        });
-                    }),
-                    new ButtonFunction("Set Min", () =>
-                    {
-                        RTEditor.inst.ShowNameEditor("Set minimum value", "Min", Display.min.ToString(), "Set", () =>
-                        {
-                            if (!float.TryParse(RTEditor.inst.folderCreatorName.text, out float min))
-                                return;
+                    Display.min = min;
+                    UpdateDisplay(animatable);
+                    RTEditor.inst.HideNameEditor();
+                })),
+                new ButtonElement("Set Reset", () => RTEditor.inst.ShowNameEditor("Set reset value", "Reset", Display.resetValue.ToString(), "Set", () =>
+                {
+                    if (!float.TryParse(RTEditor.inst.folderCreatorName.text, out float resetValue))
+                        return;
 
-                            Display.min = min;
-                            UpdateDisplay(animatable);
-                            RTEditor.inst.HideNameEditor();
-                        });
-                    }),
-                    new ButtonFunction("Set Reset", () =>
-                    {
-                        RTEditor.inst.ShowNameEditor("Set reset value", "Reset", Display.resetValue.ToString(), "Set", () =>
-                        {
-                            if (!float.TryParse(RTEditor.inst.folderCreatorName.text, out float resetValue))
-                                return;
+                    Display.resetValue = resetValue;
+                    UpdateDisplay(animatable);
+                    RTEditor.inst.HideNameEditor();
+                })),
+                new ButtonElement("Set Current Reset", () =>
+                {
+                    if (!float.TryParse(Field.Text, out float resetValue))
+                        return;
 
-                            Display.resetValue = resetValue;
-                            UpdateDisplay(animatable);
-                            RTEditor.inst.HideNameEditor();
-                        });
-                    }),
-                    new ButtonFunction("Set Current Reset", () =>
-                    {
-                        if (!float.TryParse(Field.Text, out float resetValue))
-                            return;
+                    Display.resetValue = resetValue;
+                    UpdateDisplay(animatable);
+                }),
+                new ButtonElement("Set Scroll Amount", () => RTEditor.inst.ShowNameEditor("Set scroll amount", "Amount", Display.scrollAmount.ToString(), "Set", () =>
+                {
+                    if (!float.TryParse(RTEditor.inst.folderCreatorName.text, out float max))
+                        return;
 
-                        Display.resetValue = resetValue;
-                        UpdateDisplay(animatable);
-                    }),
-                    new ButtonFunction("Set Scroll Amount", () =>
-                    {
-                        RTEditor.inst.ShowNameEditor("Set scroll amount", "Amount", Display.scrollAmount.ToString(), "Set", () =>
-                        {
-                            if (!float.TryParse(RTEditor.inst.folderCreatorName.text, out float max))
-                                return;
+                    Display.scrollAmount = max;
+                    UpdateDisplay(animatable);
+                    RTEditor.inst.HideNameEditor();
+                })),
+                new ButtonElement("Set Scroll Multiply", () => RTEditor.inst.ShowNameEditor("Set scroll multiply", "Multiply", Display.scrollMultiply.ToString(), "Set", () =>
+                {
+                    if (!float.TryParse(RTEditor.inst.folderCreatorName.text, out float max))
+                        return;
 
-                            Display.scrollAmount = max;
-                            UpdateDisplay(animatable);
-                            RTEditor.inst.HideNameEditor();
-                        });
-                    }),
-                    new ButtonFunction("Set Scroll Multiply", () =>
+                    Display.scrollMultiply = max;
+                    UpdateDisplay(animatable);
+                    RTEditor.inst.HideNameEditor();
+                })),
+                new ButtonElement($"Override Scroll [{(Display.overrideScroll ? "On" : "Off")}]", () =>
+                {
+                    Display.overrideScroll = !Display.overrideScroll;
+                    UpdateDisplay(animatable);
+                    EditorManager.inst.DisplayNotification(Display.overrideScroll ? "Custom scroll is now used." : "Regular scroll is now used.", 2f, EditorManager.NotificationType.Success);
+                }),
+                new SpacerElement(),
+                new ButtonElement("Change to Dropdown", () =>
+                {
+                    Display.type = CustomUIDisplay.UIType.Dropdown;
+                    UpdateDisplay(animatable);
+                }),
+                new ButtonElement("Change to Toggle", () =>
+                {
+                    Display.type = CustomUIDisplay.UIType.Toggle;
+                    UpdateDisplay(animatable);
+                }),
+                new SpacerElement(),
+                new ButtonElement("Copy UI", () =>
+                {
+                    ObjectEditor.inst.copiedUIDisplay = Display.Copy();
+                    EditorManager.inst.DisplayNotification($"Copied UI settings.", 2f, EditorManager.NotificationType.Success);
+                }),
+                new ButtonElement("Paste UI", () =>
+                {
+                    if (!ObjectEditor.inst.copiedUIDisplay)
                     {
-                        RTEditor.inst.ShowNameEditor("Set scroll multiply", "Multiply", Display.scrollMultiply.ToString(), "Set", () =>
-                        {
-                            if (!float.TryParse(RTEditor.inst.folderCreatorName.text, out float max))
-                                return;
+                        EditorManager.inst.DisplayNotification($"No copied UI yet!", 2f, EditorManager.NotificationType.Warning);
+                        return;
+                    }
 
-                            Display.scrollMultiply = max;
-                            UpdateDisplay(animatable);
-                            RTEditor.inst.HideNameEditor();
-                        });
-                    }),
-                    new ButtonFunction($"Override Scroll [{(Display.overrideScroll ? "On" : "Off")}]", () =>
-                    {
-                        Display.overrideScroll = !Display.overrideScroll;
-                        UpdateDisplay(animatable);
-                        EditorManager.inst.DisplayNotification(Display.overrideScroll ? "Custom scroll is now used." : "Regular scroll is now used.", 2f, EditorManager.NotificationType.Success);
-                    }),
-                    new ButtonFunction(true),
-                    new ButtonFunction("Change to Dropdown", () =>
-                    {
-                        Display.type = CustomUIDisplay.UIType.Dropdown;
-                        UpdateDisplay(animatable);
-                    }),
-                    new ButtonFunction("Change to Toggle", () =>
-                    {
-                        Display.type = CustomUIDisplay.UIType.Toggle;
-                        UpdateDisplay(animatable);
-                    }),
-                    new ButtonFunction(true),
-                    new ButtonFunction("Copy UI", () =>
-                    {
-                        ObjectEditor.inst.copiedUIDisplay = Display.Copy();
-                        EditorManager.inst.DisplayNotification($"Copied UI settings.", 2f, EditorManager.NotificationType.Success);
-                    }),
-                    new ButtonFunction("Paste UI", () =>
-                    {
-                        if (!ObjectEditor.inst.copiedUIDisplay)
-                        {
-                            EditorManager.inst.DisplayNotification($"No copied UI yet!", 2f, EditorManager.NotificationType.Warning);
-                            return;
-                        }
-
-                        Display.ApplyFrom(ObjectEditor.inst.copiedUIDisplay);
-                        UpdateDisplay(animatable);
-                        EditorManager.inst.DisplayNotification($"Paste UI settings.", 2f, EditorManager.NotificationType.Success);
-                    }));
-            };
+                    Display.ApplyFrom(ObjectEditor.inst.copiedUIDisplay);
+                    UpdateDisplay(animatable);
+                    EditorManager.inst.DisplayNotification($"Paste UI settings.", 2f, EditorManager.NotificationType.Success);
+                }));
 
             var amount = Display.overrideScroll ? Display.scrollAmount : type switch
             {
@@ -820,93 +795,77 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             Dropdown.interactable = Display.interactible;
 
-            var contextMenu = Dropdown.gameObject.GetOrAddComponent<ContextClickable>();
-            contextMenu.onClick = eventData =>
-            {
-                if (eventData.button != PointerEventData.InputButton.Right)
-                    return;
+            EditorContextMenu.AddContextMenu(Dropdown.gameObject,
+                new ButtonElement("Reset Value", () => Dropdown.value = 0),
+                new ButtonElement(Display.interactible ? "Lock Value" : "Unlock Value", () =>
+                {
+                    Display.interactible = !Display.interactible;
+                    UpdateDisplay(animatable);
+                    EditorManager.inst.DisplayNotification($"{(Display.interactible ? "Unlocked" : "Locked")} editor.", 2f, EditorManager.NotificationType.Success);
+                }),
+                new SpacerElement(),
+                new ButtonElement("Set Label", () => RTEditor.inst.ShowNameEditor("Set label", "Label", Display.label, "Set", () =>
+                {
+                    Display.label = RTEditor.inst.folderCreatorName.text;
+                    UpdateDisplay(animatable);
+                    RTEditor.inst.HideNameEditor();
+                })),
+                new ButtonElement("Add Entry", () => RTEditor.inst.ShowNameEditor("Add Dropdown Option", "Entry Name", "Value", "Next", () =>
+                {
+                    var name = RTEditor.inst.folderCreatorName.text;
 
-                EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction("Reset Value", () =>
+                    RTEditor.inst.ShowNameEditor("Add Dropdown Option", "Entry Value", "0", "Add", () =>
                     {
-                        Dropdown.value = 0;
-                    }),
-                    new ButtonFunction(Display.interactible ? "Lock Value" : "Unlock Value", () =>
-                    {
-                        Display.interactible = !Display.interactible;
-                        UpdateDisplay(animatable);
-                        EditorManager.inst.DisplayNotification($"{(Display.interactible ? "Unlocked" : "Locked")} editor.", 2f, EditorManager.NotificationType.Success);
-                    }),
-                    new ButtonFunction(true),
-                    new ButtonFunction("Set Label", () =>
-                    {
-                        RTEditor.inst.ShowNameEditor("Set label", "Label", Display.label, "Set", () =>
-                        {
-                            Display.label = RTEditor.inst.folderCreatorName.text;
-                            UpdateDisplay(animatable);
-                            RTEditor.inst.HideNameEditor();
-                        });
-                    }),
-                    new ButtonFunction("Add Entry", () =>
-                    {
-                        RTEditor.inst.ShowNameEditor("Add Dropdown Option", "Entry Name", "Value", "Next", () =>
-                        {
-                            var name = RTEditor.inst.folderCreatorName.text;
-
-                            RTEditor.inst.ShowNameEditor("Add Dropdown Option", "Entry Value", "0", "Add", () =>
-                            {
-                                if (!float.TryParse(RTEditor.inst.folderCreatorName.text, out float value))
-                                    return;
-
-                                Display.options.Add(new CustomUIDisplay.Option(name, value));
-                                UpdateDisplay(animatable);
-                                RTEditor.inst.HideNameEditor();
-                            });
-                        });
-                    }),
-                    new ButtonFunction("Remove Entry", () =>
-                    {
-                        if (Display.options.IsEmpty())
+                        if (!float.TryParse(RTEditor.inst.folderCreatorName.text, out float value))
                             return;
 
-                        Display.options.RemoveAt(Display.options.Count - 1);
+                        Display.options.Add(new CustomUIDisplay.Option(name, value));
                         UpdateDisplay(animatable);
-                    }),
-                    new ButtonFunction("Clear Entries", () =>
-                    {
-                        Display.options.Clear();
-                        UpdateDisplay(animatable);
-                    }),
-                    new ButtonFunction(true),
-                    new ButtonFunction("Change to Input Field", () =>
-                    {
-                        Display.type = CustomUIDisplay.UIType.InputField;
-                        UpdateDisplay(animatable);
-                    }),
-                    new ButtonFunction("Change to Toggle", () =>
-                    {
-                        Display.type = CustomUIDisplay.UIType.Toggle;
-                        UpdateDisplay(animatable);
-                    }),
-                    new ButtonFunction(true),
-                    new ButtonFunction("Copy UI", () =>
-                    {
-                        ObjectEditor.inst.copiedUIDisplay = Display.Copy();
-                        EditorManager.inst.DisplayNotification($"Copied UI settings.", 2f, EditorManager.NotificationType.Success);
-                    }),
-                    new ButtonFunction("Paste UI", () =>
-                    {
-                        if (!ObjectEditor.inst.copiedUIDisplay)
-                        {
-                            EditorManager.inst.DisplayNotification($"No copied UI yet!", 2f, EditorManager.NotificationType.Warning);
-                            return;
-                        }
+                        RTEditor.inst.HideNameEditor();
+                    });
+                })),
+                new ButtonElement("Remove Entry", () =>
+                {
+                    if (Display.options.IsEmpty())
+                        return;
 
-                        Display.ApplyFrom(ObjectEditor.inst.copiedUIDisplay);
-                        UpdateDisplay(animatable);
-                        EditorManager.inst.DisplayNotification($"Paste UI settings.", 2f, EditorManager.NotificationType.Success);
-                    }));
-            };
+                    Display.options.RemoveAt(Display.options.Count - 1);
+                    UpdateDisplay(animatable);
+                }),
+                new ButtonElement("Clear Entries", () =>
+                {
+                    Display.options.Clear();
+                    UpdateDisplay(animatable);
+                }),
+                new SpacerElement(),
+                new ButtonElement("Change to Input Field", () =>
+                {
+                    Display.type = CustomUIDisplay.UIType.InputField;
+                    UpdateDisplay(animatable);
+                }),
+                new ButtonElement("Change to Toggle", () =>
+                {
+                    Display.type = CustomUIDisplay.UIType.Toggle;
+                    UpdateDisplay(animatable);
+                }),
+                new SpacerElement(),
+                new ButtonElement("Copy UI", () =>
+                {
+                    ObjectEditor.inst.copiedUIDisplay = Display.Copy();
+                    EditorManager.inst.DisplayNotification($"Copied UI settings.", 2f, EditorManager.NotificationType.Success);
+                }),
+                new ButtonElement("Paste UI", () =>
+                {
+                    if (!ObjectEditor.inst.copiedUIDisplay)
+                    {
+                        EditorManager.inst.DisplayNotification($"No copied UI yet!", 2f, EditorManager.NotificationType.Warning);
+                        return;
+                    }
+
+                    Display.ApplyFrom(ObjectEditor.inst.copiedUIDisplay);
+                    UpdateDisplay(animatable);
+                    EditorManager.inst.DisplayNotification($"Paste UI settings.", 2f, EditorManager.NotificationType.Success);
+                }));
 
             if (getOptions != null)
                 Dropdown.options = getOptions.Invoke();
@@ -1021,96 +980,89 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             Toggle.interactable = Display.interactible;
 
-            var contextMenu = Toggle.gameObject.GetOrAddComponent<ContextClickable>();
-            contextMenu.onClick = eventData =>
-            {
-                if (eventData.button != PointerEventData.InputButton.Right)
-                    return;
-
-                EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction("Reset Value", () =>
+            EditorContextMenu.AddContextMenu(Toggle.gameObject,
+                new ButtonElement("Reset Value", () =>
+                {
+                    Toggle.isOn = false;
+                }),
+                new ButtonElement(Display.interactible ? "Lock Value" : "Unlock Value", () =>
+                {
+                    Display.interactible = !Display.interactible;
+                    UpdateDisplay(animatable);
+                    EditorManager.inst.DisplayNotification($"{(Display.interactible ? "Unlocked" : "Locked")} editor.", 2f, EditorManager.NotificationType.Success);
+                }),
+                new SpacerElement(),
+                new ButtonElement("Set Label", () =>
+                {
+                    RTEditor.inst.ShowNameEditor("Set label", "Label", Display.label, "Set", () =>
                     {
-                        Toggle.isOn = false;
-                    }),
-                    new ButtonFunction(Display.interactible ? "Lock Value" : "Unlock Value", () =>
-                    {
-                        Display.interactible = !Display.interactible;
+                        Display.label = RTEditor.inst.folderCreatorName.text;
                         UpdateDisplay(animatable);
-                        EditorManager.inst.DisplayNotification($"{(Display.interactible ? "Unlocked" : "Locked")} editor.", 2f, EditorManager.NotificationType.Success);
-                    }),
-                    new ButtonFunction(true),
-                    new ButtonFunction("Set Label", () =>
+                        RTEditor.inst.HideNameEditor();
+                    });
+                }),
+                new ButtonElement("Set On Value", () =>
+                {
+                    RTEditor.inst.ShowNameEditor("Set on value", "On", Display.onValue.ToString(), "Set", () =>
                     {
-                        RTEditor.inst.ShowNameEditor("Set label", "Label", Display.label, "Set", () =>
-                        {
-                            Display.label = RTEditor.inst.folderCreatorName.text;
-                            UpdateDisplay(animatable);
-                            RTEditor.inst.HideNameEditor();
-                        });
-                    }),
-                    new ButtonFunction("Set On Value", () =>
-                    {
-                        RTEditor.inst.ShowNameEditor("Set on value", "On", Display.onValue.ToString(), "Set", () =>
-                        {
-                            if (!float.TryParse(RTEditor.inst.folderCreatorName.text, out float max))
-                                return;
-
-                            Display.onValue = max;
-                            UpdateDisplay(animatable);
-                            RTEditor.inst.HideNameEditor();
-                        });
-                    }),
-                    new ButtonFunction("Set Off Value", () =>
-                    {
-                        RTEditor.inst.ShowNameEditor("Set off value", "Off", Display.offValue.ToString(), "Set", () =>
-                        {
-                            if (!float.TryParse(RTEditor.inst.folderCreatorName.text, out float max))
-                                return;
-
-                            Display.offValue = max;
-                            UpdateDisplay(animatable);
-                            RTEditor.inst.HideNameEditor();
-                        });
-                    }),
-                    new ButtonFunction("Set Toggle Label", () =>
-                    {
-                        RTEditor.inst.ShowNameEditor("Set label", "Label", !string.IsNullOrEmpty(Display.toggleLabel) ? Display.toggleLabel : "On", "Set", () =>
-                        {
-                            Display.toggleLabel = RTEditor.inst.folderCreatorName.text;
-                            UpdateDisplay(animatable);
-                            RTEditor.inst.HideNameEditor();
-                        });
-                    }),
-                    new ButtonFunction(true),
-                    new ButtonFunction("Change to Input Field", () =>
-                    {
-                        Display.type = CustomUIDisplay.UIType.InputField;
-                        UpdateDisplay(animatable);
-                    }),
-                    new ButtonFunction("Change to Dropdown", () =>
-                    {
-                        Display.type = CustomUIDisplay.UIType.Dropdown;
-                        UpdateDisplay(animatable);
-                    }),
-                    new ButtonFunction(true),
-                    new ButtonFunction("Copy UI", () =>
-                    {
-                        ObjectEditor.inst.copiedUIDisplay = Display.Copy();
-                        EditorManager.inst.DisplayNotification($"Copied UI settings.", 2f, EditorManager.NotificationType.Success);
-                    }),
-                    new ButtonFunction("Paste UI", () =>
-                    {
-                        if (!ObjectEditor.inst.copiedUIDisplay)
-                        {
-                            EditorManager.inst.DisplayNotification($"No copied UI yet!", 2f, EditorManager.NotificationType.Warning);
+                        if (!float.TryParse(RTEditor.inst.folderCreatorName.text, out float max))
                             return;
-                        }
 
-                        Display.ApplyFrom(ObjectEditor.inst.copiedUIDisplay);
+                        Display.onValue = max;
                         UpdateDisplay(animatable);
-                        EditorManager.inst.DisplayNotification($"Paste UI settings.", 2f, EditorManager.NotificationType.Success);
-                    }));
-            };
+                        RTEditor.inst.HideNameEditor();
+                    });
+                }),
+                new ButtonElement("Set Off Value", () =>
+                {
+                    RTEditor.inst.ShowNameEditor("Set off value", "Off", Display.offValue.ToString(), "Set", () =>
+                    {
+                        if (!float.TryParse(RTEditor.inst.folderCreatorName.text, out float max))
+                            return;
+
+                        Display.offValue = max;
+                        UpdateDisplay(animatable);
+                        RTEditor.inst.HideNameEditor();
+                    });
+                }),
+                new ButtonElement("Set Toggle Label", () =>
+                {
+                    RTEditor.inst.ShowNameEditor("Set label", "Label", !string.IsNullOrEmpty(Display.toggleLabel) ? Display.toggleLabel : "On", "Set", () =>
+                    {
+                        Display.toggleLabel = RTEditor.inst.folderCreatorName.text;
+                        UpdateDisplay(animatable);
+                        RTEditor.inst.HideNameEditor();
+                    });
+                }),
+                new SpacerElement(),
+                new ButtonElement("Change to Input Field", () =>
+                {
+                    Display.type = CustomUIDisplay.UIType.InputField;
+                    UpdateDisplay(animatable);
+                }),
+                new ButtonElement("Change to Dropdown", () =>
+                {
+                    Display.type = CustomUIDisplay.UIType.Dropdown;
+                    UpdateDisplay(animatable);
+                }),
+                new SpacerElement(),
+                new ButtonElement("Copy UI", () =>
+                {
+                    ObjectEditor.inst.copiedUIDisplay = Display.Copy();
+                    EditorManager.inst.DisplayNotification($"Copied UI settings.", 2f, EditorManager.NotificationType.Success);
+                }),
+                new ButtonElement("Paste UI", () =>
+                {
+                    if (!ObjectEditor.inst.copiedUIDisplay)
+                    {
+                        EditorManager.inst.DisplayNotification($"No copied UI yet!", 2f, EditorManager.NotificationType.Warning);
+                        return;
+                    }
+
+                    Display.ApplyFrom(ObjectEditor.inst.copiedUIDisplay);
+                    UpdateDisplay(animatable);
+                    EditorManager.inst.DisplayNotification($"Paste UI settings.", 2f, EditorManager.NotificationType.Success);
+                }));
 
             Toggle.SetIsOnWithoutNotify(isSingle ? firstKF.eventKeyframe.values[valueIndex] == onValue : Parser.TryParse(getMultiValue?.Invoke(), false));
             Toggle.onValueChanged.NewListener(_val =>

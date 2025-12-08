@@ -612,10 +612,10 @@ namespace BetterLegacy.Editor.Data.Timeline
         public void ShowContextMenu()
         {
             EditorContextMenu.inst.ShowContextMenu(
-                new ButtonFunction("Select", () => EditorTimeline.inst.SetCurrentObject(this)),
-                new ButtonFunction("Add to Selection", () => EditorTimeline.inst.AddSelectedObject(this)),
-                new ButtonFunction("Create New", () => ObjectEditor.inst.CreateNewNormalObject()),
-                new ButtonFunction("Update Object", () =>
+                new ButtonElement("Select", () => EditorTimeline.inst.SetCurrentObject(this)),
+                new ButtonElement("Add to Selection", () => EditorTimeline.inst.AddSelectedObject(this)),
+                new ButtonElement("Create New", () => ObjectEditor.inst.CreateNewNormalObject()),
+                new ButtonElement("Update Object", () =>
                 {
                     if (isBeatmapObject)
                         RTLevel.Current?.UpdateObject(GetData<BeatmapObject>());
@@ -624,32 +624,32 @@ namespace BetterLegacy.Editor.Data.Timeline
                     if (isBackgroundObject)
                         RTLevel.Current?.UpdateBackgroundObject(GetData<BackgroundObject>());
                 }),
-                new ButtonFunction(true),
-                new ButtonFunction("Cut", () =>
+                new SpacerElement(),
+                new ButtonElement("Cut", () =>
                 {
                     ObjectEditor.inst.CopyObjects();
                     EditorTimeline.inst.DeleteObjects();
                 }),
-                new ButtonFunction("Copy", ObjectEditor.inst.CopyObjects),
-                new ButtonFunction("Paste", ObjectEditor.inst.PasteObject),
-                new ButtonFunction("Duplicate", () =>
+                new ButtonElement("Copy", ObjectEditor.inst.CopyObjects),
+                new ButtonElement("Paste", ObjectEditor.inst.PasteObject),
+                new ButtonElement("Duplicate", () =>
                 {
                     var offsetTime = EditorTimeline.inst.SelectedObjects.Min(x => x.Time);
 
                     ObjectEditor.inst.CopyObjects();
                     ObjectEditor.inst.PasteObject(offsetTime);
                 }),
-                new ButtonFunction("Paste (Keep Prefab)", () => ObjectEditor.inst.PasteObject(0f, false)),
-                new ButtonFunction("Duplicate (Keep Prefab)", () =>
+                new ButtonElement("Paste (Keep Prefab)", () => ObjectEditor.inst.PasteObject(0f, false)),
+                new ButtonElement("Duplicate (Keep Prefab)", () =>
                 {
                     var offsetTime = EditorTimeline.inst.SelectedObjects.Min(x => x.Time);
 
                     ObjectEditor.inst.CopyObjects();
                     ObjectEditor.inst.PasteObject(offsetTime, false);
                 }),
-                new ButtonFunction("Delete", EditorTimeline.inst.DeleteObjects),
-                new ButtonFunction(true),
-                new ButtonFunction("Hide", () =>
+                new ButtonElement("Delete", EditorTimeline.inst.DeleteObjects),
+                new SpacerElement(),
+                new ButtonElement("Hide", () =>
                 {
                     foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
                     {
@@ -674,7 +674,7 @@ namespace BetterLegacy.Editor.Data.Timeline
                         }
                     }
                 }),
-                new ButtonFunction("Unhide", () =>
+                new ButtonElement("Unhide", () =>
                 {
                     foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
                     {
@@ -699,7 +699,7 @@ namespace BetterLegacy.Editor.Data.Timeline
                         }
                     }
                 }),
-                new ButtonFunction("Preview Selectable", () =>
+                new ButtonElement("Preview Selectable", () =>
                 {
                     foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
                     {
@@ -722,7 +722,7 @@ namespace BetterLegacy.Editor.Data.Timeline
                         }
                     }
                 }),
-                new ButtonFunction("Preview Unselectable", () =>
+                new ButtonElement("Preview Unselectable", () =>
                 {
                     foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
                     {
@@ -745,8 +745,8 @@ namespace BetterLegacy.Editor.Data.Timeline
                         }
                     }
                 }),
-                new ButtonFunction(true),
-                new ButtonFunction("Move Backwards", () =>
+                new SpacerElement(),
+                new ButtonElement("Move Backwards", () =>
                 {
                     switch (TimelineReference)
                     {
@@ -794,7 +794,7 @@ namespace BetterLegacy.Editor.Data.Timeline
                             }
                     }
                 }),
-                new ButtonFunction("Move Forwards", () =>
+                new ButtonElement("Move Forwards", () =>
                 {
                     switch (TimelineReference)
                     {
@@ -842,7 +842,7 @@ namespace BetterLegacy.Editor.Data.Timeline
                             }
                     }
                 }),
-                new ButtonFunction("Move to Back", () =>
+                new ButtonElement("Move to Back", () =>
                 {
                     switch (TimelineReference)
                     {
@@ -890,7 +890,7 @@ namespace BetterLegacy.Editor.Data.Timeline
                             }
                     }
                 }),
-                new ButtonFunction("Move to Front", () =>
+                new ButtonElement("Move to Front", () =>
                 {
                     switch (TimelineReference)
                     {
@@ -941,57 +941,7 @@ namespace BetterLegacy.Editor.Data.Timeline
                 );
         }
 
-        public void ShowColorContextMenu(InputField inputField, string currentHexColor)
-        {
-            EditorContextMenu.inst.ShowContextMenu(
-                new ButtonFunction("Edit Color", () =>
-                {
-                    RTColorPicker.inst.Show(RTColors.HexToColor(currentHexColor),
-                        (col, hex) =>
-                        {
-                            inputField.SetTextWithoutNotify(hex);
-                        },
-                        (col, hex) =>
-                        {
-                            CoreHelper.Log($"Set timeline object color: {hex}");
-                            // set the input field's text empty so it notices there was a change
-                            inputField.SetTextWithoutNotify(string.Empty);
-                            inputField.text = hex;
-                        }, () =>
-                        {
-                            inputField.SetTextWithoutNotify(currentHexColor);
-                        });
-                }),
-                new ButtonFunction("Clear", () =>
-                {
-                    inputField.text = string.Empty;
-                }),
-                new ButtonFunction(true),
-                new ButtonFunction("VG Red", () =>
-                {
-                    inputField.text = ObjectEditorData.RED;
-                }),
-                new ButtonFunction("VG Red Green", () =>
-                {
-                    inputField.text = ObjectEditorData.RED_GREEN;
-                }),
-                new ButtonFunction("VG Green", () =>
-                {
-                    inputField.text = ObjectEditorData.GREEN;
-                }),
-                new ButtonFunction("VG Green Blue", () =>
-                {
-                    inputField.text = ObjectEditorData.GREEN_BLUE;
-                }),
-                new ButtonFunction("VG Blue", () =>
-                {
-                    inputField.text = ObjectEditorData.BLUE;
-                }),
-                new ButtonFunction("VG Blue Red", () =>
-                {
-                    inputField.text = ObjectEditorData.RED_BLUE;
-                }));
-        }
+        public void ShowColorContextMenu(InputField inputField, string currentHexColor) => EditorContextMenu.inst.ShowContextMenu(EditorContextMenu.GetEditorColorFunctions(inputField, () => currentHexColor));
 
         public Color GetColor()
         {

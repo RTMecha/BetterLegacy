@@ -1158,19 +1158,22 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     toggle.image.color = CoreHelper.CurrentBeatmapTheme.GetObjColor(tmpIndex);
 
                 EditorContextMenu.AddContextMenu(toggle.gameObject,
-                    new ButtonFunction("Use", () => toggle.isOn = true),
-                    new ButtonFunction($"Show Modified Colors [{(EditorConfig.Instance.ShowModifiedColors.Value ? "On" : "Off")}]", () => EditorConfig.Instance.ShowModifiedColors.Value = !EditorConfig.Instance.ShowModifiedColors.Value),
-                    new ButtonFunction("Copy Hex Color", () => LSText.CopyToClipboard(RTColors.ColorToHexOptional(CoreHelper.CurrentBeatmapTheme.GetObjColor(tmpIndex)))),
-                    new ButtonFunction("Copy Modified Hex Color", () =>
+                    getEditorElements: () => new List<EditorElement>
                     {
-                        var color = CoreHelper.CurrentBeatmapTheme.GetObjColor(tmpIndex);
+                        new ButtonElement("Use", () => toggle.isOn = true),
+                        ButtonElement.ToggleButton("Show Modified Colors", () => EditorConfig.Instance.ShowModifiedColors.Value, () => EditorConfig.Instance.ShowModifiedColors.Value = !EditorConfig.Instance.ShowModifiedColors.Value),
+                        new ButtonElement("Copy Hex Color", () => LSText.CopyToClipboard(RTColors.ColorToHexOptional(CoreHelper.CurrentBeatmapTheme.GetObjColor(tmpIndex)))),
+                        new ButtonElement("Copy Modified Hex Color", () =>
+                        {
+                            var color = CoreHelper.CurrentBeatmapTheme.GetObjColor(tmpIndex);
 
-                        float hueNum = animatable.Interpolate(3, valueIndex + 2, eventTime);
-                        float satNum = animatable.Interpolate(3, valueIndex + 3, eventTime);
-                        float valNum = animatable.Interpolate(3, valueIndex + 4, eventTime);
+                            float hueNum = animatable.Interpolate(3, valueIndex + 2, eventTime);
+                            float satNum = animatable.Interpolate(3, valueIndex + 3, eventTime);
+                            float valNum = animatable.Interpolate(3, valueIndex + 4, eventTime);
 
-                        LSText.CopyToClipboard(RTColors.ColorToHexOptional(RTColors.ChangeColorHSV(color, hueNum, satNum, valNum)));
-                    }));
+                            LSText.CopyToClipboard(RTColors.ColorToHexOptional(RTColors.ChangeColorHSV(color, hueNum, satNum, valNum)));
+                        })
+                    });
 
                 if (!toggle.GetComponent<HoverUI>())
                 {
@@ -1288,7 +1291,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 TriggerHelper.IncreaseDecreaseButtons(opacity);
 
                 EditorContextMenu.AddContextMenu(opacity.gameObject,
-                    new ButtonFunction("Reset Value", () =>
+                    new ButtonElement("Reset Value", () =>
                     {
                         foreach (var keyframe in selected.Select(x => x.eventKeyframe))
                         {
@@ -1303,7 +1306,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                         FullColorKeyframeHandler(selected, firstKF, animatable, beatmapObject, kfdialog);
                     }),
-                    new ButtonFunction("Set to Helper Opacity", () =>
+                    new ButtonElement("Set to Helper Opacity", () =>
                     {
                         foreach (var keyframe in selected.Select(x => x.eventKeyframe))
                         {
@@ -1370,7 +1373,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 TriggerHelper.IncreaseDecreaseButtons(gradientOpacity);
 
                 EditorContextMenu.AddContextMenu(gradientOpacity.gameObject,
-                    new ButtonFunction("Reset Value", () =>
+                    new ButtonElement("Reset Value", () =>
                     {
                         foreach (var keyframe in selected.Select(x => x.eventKeyframe))
                             keyframe.values[6] = 0f;
@@ -1381,7 +1384,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                         FullColorKeyframeHandler(selected, firstKF, animatable, beatmapObject, kfdialog);
                     }),
-                    new ButtonFunction("Set to Helper Opacity", () =>
+                    new ButtonElement("Set to Helper Opacity", () =>
                     {
                         foreach (var keyframe in selected.Select(x => x.eventKeyframe))
                             keyframe.values[6] = -(BeatmapObject.HELPER_OPACITY - 1f);
@@ -1433,7 +1436,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 TriggerHelper.IncreaseDecreaseButtons(hue);
 
                 EditorContextMenu.AddContextMenu(hue.gameObject,
-                    new ButtonFunction("Reset Value", () =>
+                    new ButtonElement("Reset Value", () =>
                     {
                         foreach (var keyframe in selected.Select(x => x.eventKeyframe))
                             keyframe.values[2] = 0f;
@@ -1443,7 +1446,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                             RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                         FullColorKeyframeHandler(selected, firstKF, animatable, beatmapObject, kfdialog);
                     }),
-                    new ButtonFunction("Match End Hue", () =>
+                    new ButtonElement("Match End Hue", () =>
                     {
                         if (!beatmapObject || beatmapObject.gradientType == GradientType.Normal)
                         {
@@ -1494,7 +1497,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 TriggerHelper.IncreaseDecreaseButtons(sat);
 
                 EditorContextMenu.AddContextMenu(sat.gameObject,
-                    new ButtonFunction("Reset Value", () =>
+                    new ButtonElement("Reset Value", () =>
                     {
                         foreach (var keyframe in selected.Select(x => x.eventKeyframe))
                             keyframe.values[3] = 0f;
@@ -1504,7 +1507,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                             RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                         FullColorKeyframeHandler(selected, firstKF, animatable, beatmapObject, kfdialog);
                     }),
-                    new ButtonFunction("Match End Sat", () =>
+                    new ButtonElement("Match End Sat", () =>
                     {
                         if (!beatmapObject || beatmapObject.gradientType == GradientType.Normal)
                         {
@@ -1555,7 +1558,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 TriggerHelper.IncreaseDecreaseButtons(val);
 
                 EditorContextMenu.AddContextMenu(val.gameObject,
-                    new ButtonFunction("Reset Value", () =>
+                    new ButtonElement("Reset Value", () =>
                     {
                         foreach (var keyframe in selected.Select(x => x.eventKeyframe))
                             keyframe.values[4] = 0f;
@@ -1565,7 +1568,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                             RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                         FullColorKeyframeHandler(selected, firstKF, animatable, beatmapObject, kfdialog);
                     }),
-                    new ButtonFunction("Match End Val", () =>
+                    new ButtonElement("Match End Val", () =>
                     {
                         if (!beatmapObject || beatmapObject.gradientType == GradientType.Normal)
                         {
@@ -1622,7 +1625,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 TriggerHelper.IncreaseDecreaseButtons(hue);
 
                 EditorContextMenu.AddContextMenu(hue.gameObject,
-                    new ButtonFunction("Reset Value", () =>
+                    new ButtonElement("Reset Value", () =>
                     {
                         foreach (var keyframe in selected.Select(x => x.eventKeyframe))
                             keyframe.values[7] = 0f;
@@ -1632,7 +1635,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                             RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                         FullColorKeyframeHandler(selected, firstKF, animatable, beatmapObject, kfdialog);
                     }),
-                    new ButtonFunction("Match Start Hue", () =>
+                    new ButtonElement("Match Start Hue", () =>
                     {
                         foreach (var keyframe in selected.Select(x => x.eventKeyframe))
                             keyframe.values[7] = keyframe.values[2];
@@ -1677,7 +1680,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 TriggerHelper.IncreaseDecreaseButtons(sat);
 
                 EditorContextMenu.AddContextMenu(sat.gameObject,
-                    new ButtonFunction("Reset Value", () =>
+                    new ButtonElement("Reset Value", () =>
                     {
                         foreach (var keyframe in selected.Select(x => x.eventKeyframe))
                             keyframe.values[8] = 0f;
@@ -1687,7 +1690,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                             RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                         FullColorKeyframeHandler(selected, firstKF, animatable, beatmapObject, kfdialog);
                     }),
-                    new ButtonFunction("Match Start Sat", () =>
+                    new ButtonElement("Match Start Sat", () =>
                     {
                         foreach (var keyframe in selected.Select(x => x.eventKeyframe))
                             keyframe.values[8] = keyframe.values[3];
@@ -1732,7 +1735,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 TriggerHelper.IncreaseDecreaseButtons(val);
 
                 EditorContextMenu.AddContextMenu(val.gameObject,
-                    new ButtonFunction("Reset Value", () =>
+                    new ButtonElement("Reset Value", () =>
                     {
                         foreach (var keyframe in selected.Select(x => x.eventKeyframe))
                             keyframe.values[9] = 0f;
@@ -1742,7 +1745,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                             RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                         FullColorKeyframeHandler(selected, firstKF, animatable, beatmapObject, kfdialog);
                     }),
-                    new ButtonFunction("Match Start Sat", () =>
+                    new ButtonElement("Match Start Sat", () =>
                     {
                         foreach (var keyframe in selected.Select(x => x.eventKeyframe))
                             keyframe.values[9] = keyframe.values[4];

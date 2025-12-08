@@ -419,23 +419,23 @@ namespace BetterLegacy.Editor.Data.Elements
                     if (eventData.button == PointerEventData.InputButton.Right)
                     {
                         EditorContextMenu.inst.ShowContextMenu(
-                            new ButtonFunction("Open folder", () =>
+                            new ButtonElement("Open folder", () =>
                             {
                                 EditorLevelManager.inst.OpenLevelPopup.PathField.text = path.Remove(RTEditor.inst.BeatmapsPath + "/");
                                 RTEditor.inst.UpdateEditorPath(false);
                             }, "Level Panel Open Folder"),
-                            new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.EditorPath), EndFolderCreation), "Level Panel Create Folder"),
-                            new ButtonFunction("Create level", EditorManager.inst.OpenNewLevelPopup),
-                            new ButtonFunction(true),
-                            new ButtonFunction("Rename", () => RTEditor.inst.ShowNameEditor("Folder Renamer", "Folder name", "Rename", () =>
+                            new ButtonElement("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.GetDirectory(path), EndFolderCreation), "Level Panel Create Folder"),
+                            new ButtonElement("Create level", EditorManager.inst.OpenNewLevelPopup),
+                            new SpacerElement(),
+                            new ButtonElement("Rename", () => RTEditor.inst.ShowNameEditor("Folder Renamer", "Folder name", "Rename", () =>
                             {
                                 RTFile.MoveDirectory(path, path.Replace(Name, RTFile.ValidateDirectory(RTEditor.inst.folderCreatorName.text)).Replace("\\", "/"));
 
                                 EditorLevelManager.inst.LoadLevels();
                                 RTEditor.inst.HideNameEditor();
                             }), "Level Panel Rename Folder"),
-                            new ButtonFunction("Paste", EditorLevelManager.inst.PasteLevel, "Level Panel Paste"),
-                            new ButtonFunction("Delete", () =>
+                            new ButtonElement("Paste", EditorLevelManager.inst.PasteLevel, "Level Panel Paste"),
+                            new ButtonElement("Delete", () =>
                             {
                                 RTEditor.inst.ShowWarningPopup("Are you <b>100%</b> sure you want to delete this folder? This <b>CANNOT</b> be undone! Always make sure you have backups.", () =>
                                 {
@@ -445,14 +445,14 @@ namespace BetterLegacy.Editor.Data.Elements
                                     RTEditor.inst.HideWarningPopup();
                                 }, RTEditor.inst.HideWarningPopup);
                             }, "Level Panel Delete"),
-                            new ButtonFunction(true),
-                            new ButtonFunction("ZIP Folder", () => EditorLevelManager.inst.ZipLevel(this), "Level Panel ZIP"),
-                            new ButtonFunction("Copy Path", () => LSText.CopyToClipboard(path), "Level Panel Copy Folder"),
-                            new ButtonFunction("Copy Relative Path", () => LSText.CopyToClipboard(path.Remove(RTEditor.inst.BeatmapsPath + "/")), "Level Panel Copy Folder"),
-                            new ButtonFunction("Open in File Explorer", () => RTFile.OpenInFileBrowser.Open(path), "Level Panel Open Explorer"),
-                            new ButtonFunction("Open List in File Explorer", RTEditor.inst.OpenLevelListFolder, "Level List Open Explorer"),
-                            new ButtonFunction(true),
-                            new ButtonFunction($"Select Icon ({RTEditor.SYSTEM_BROWSER})", () =>
+                            new SpacerElement(),
+                            new ButtonElement("ZIP Folder", () => EditorLevelManager.inst.ZipLevel(this), "Level Panel ZIP"),
+                            new ButtonElement("Copy Path", () => LSText.CopyToClipboard(path), "Level Panel Copy Folder"),
+                            new ButtonElement("Copy Relative Path", () => LSText.CopyToClipboard(path.Remove(RTEditor.inst.BeatmapsPath + "/")), "Level Panel Copy Folder"),
+                            new ButtonElement("Open in File Explorer", () => RTFile.OpenInFileBrowser.Open(path), "Level Panel Open Explorer"),
+                            new ButtonElement("Open List in File Explorer", RTEditor.inst.OpenLevelListFolder, "Level List Open Explorer"),
+                            new SpacerElement(),
+                            new ButtonElement($"Select Icon ({RTEditor.SYSTEM_BROWSER})", () =>
                             {
                                 string imageFile = FileBrowser.OpenSingleFile("Select an image!", RTEditor.inst.BasePath, new string[] { "png" });
                                 if (string.IsNullOrEmpty(imageFile))
@@ -461,7 +461,7 @@ namespace BetterLegacy.Editor.Data.Elements
                                 RTFile.CopyFile(imageFile, RTFile.CombinePaths(path, $"folder_icon{FileFormat.PNG.Dot()}"));
                                 RenderIcon();
                             }),
-                            new ButtonFunction($"Select Icon ({RTEditor.EDITOR_BROWSER})", () =>
+                            new ButtonElement($"Select Icon ({RTEditor.EDITOR_BROWSER})", () =>
                             {
                                 RTEditor.inst.BrowserPopup.Open();
                                 RTFileBrowser.inst.UpdateBrowserFile(new string[] { FileFormat.PNG.Dot() }, imageFile =>
@@ -475,7 +475,7 @@ namespace BetterLegacy.Editor.Data.Elements
                                     RenderIcon();
                                 });
                             }),
-                            new ButtonFunction("Clear Icon", () =>
+                            new ButtonElement("Clear Icon", () =>
                             {
                                 RTEditor.inst.ShowWarningPopup("Are you sure you want to clear the folder icon? This will delete the icon file.", () =>
                                 {
@@ -485,8 +485,8 @@ namespace BetterLegacy.Editor.Data.Elements
                                     EditorManager.inst.DisplayNotification("Deleted icon!", 1.5f, EditorManager.NotificationType.Success);
                                 }, RTEditor.inst.HideWarningPopup);
                             }),
-                            new ButtonFunction(true),
-                            new ButtonFunction("Create Info File", () =>
+                            new SpacerElement(),
+                            new ButtonElement("Create Info File", () =>
                             {
                                 var filePath = RTFile.CombinePaths(path, $"folder_info{FileFormat.JSON.Dot()}");
                                 if (RTFile.FileExists(filePath))
@@ -507,7 +507,7 @@ namespace BetterLegacy.Editor.Data.Elements
                                     EditorManager.inst.DisplayNotification("Created info file!", 1.5f, EditorManager.NotificationType.Success);
                                 });
                             }),
-                            new ButtonFunction("Edit Info File", () =>
+                            new ButtonElement("Edit Info File", () =>
                             {
                                 var filePath = RTFile.CombinePaths(path, $"folder_info{FileFormat.JSON.Dot()}");
 
@@ -524,13 +524,13 @@ namespace BetterLegacy.Editor.Data.Elements
                                     RTTextEditor.inst.Popup.Close();
                                 });
                             }),
-                            new ButtonFunction("Update Info", () =>
+                            new ButtonElement("Update Info", () =>
                             {
                                 infoJN = null;
                                 RenderTooltip();
                                 RenderIcon();
                             }),
-                            new ButtonFunction("Clear Info File", () =>
+                            new ButtonElement("Clear Info File", () =>
                             {
                                 RTEditor.inst.ShowWarningPopup("Are you sure you want to delete the info file?", () =>
                                 {
@@ -541,8 +541,8 @@ namespace BetterLegacy.Editor.Data.Elements
                                     EditorManager.inst.DisplayNotification("Deleted info file!", 1.5f, EditorManager.NotificationType.Success);
                                 }, RTEditor.inst.HideWarningPopup);
                             }),
-                            new ButtonFunction(true),
-                            new ButtonFunction("Create Collection", () =>
+                            new SpacerElement(),
+                            new ButtonElement("Create Collection", () =>
                             {
                                 EditorManager.inst.DisplayNotification($"todo", 2f, EditorManager.NotificationType.Error);
                             }));
@@ -572,55 +572,55 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 if (eventData.button == PointerEventData.InputButton.Right)
                 {
-                    var list = new List<ButtonFunction>();
+                    var list = new List<EditorElement>();
 
                     if (!selectedLevels.IsEmpty())
                     {
-                        list = new List<ButtonFunction>()
+                        list = new List<EditorElement>()
                         {
-                            new ButtonFunction("Combine", () =>
+                            new ButtonElement("Combine", () =>
                             {
                                 RTEditor.inst.ShowNameEditor("Combiner", "Combined Level name", "Combine", () =>
                                 {
                                     EditorLevelManager.inst.Combine(RTEditor.inst.folderCreatorName.text, EditorLevelManager.inst.SelectedLevels, EditorLevelManager.inst.LoadLevels);
                                 });
                             }),
-                            new ButtonFunction(true),
-                            new ButtonFunction("Create Collection", () =>
+                            new SpacerElement(),
+                            new ButtonElement("Create Collection", () =>
                             {
                                 EditorManager.inst.DisplayNotification($"Not implemented yet.", 2f, EditorManager.NotificationType.Warning);
                             }),
-                            new ButtonFunction("Add to Collection", () =>
+                            new ButtonElement("Add to Collection", () =>
                             {
                                 EditorManager.inst.DisplayNotification($"Not implemented yet.", 2f, EditorManager.NotificationType.Warning);
                             }),
                         };
 
                         if (currentLevelCollection)
-                            list.Add(new ButtonFunction(true));
+                            list.Add(new SpacerElement());
                     }
                     else if (Item)
                     {
-                        list = new List<ButtonFunction>()
+                        list = new List<EditorElement>()
                         {
-                            new ButtonFunction("Open", () =>
+                            new ButtonElement("Open", () =>
                             {
                                 EditorLevelManager.inst.LoadLevel(this);
                                 EditorLevelManager.inst.OpenLevelPopup.Close();
                             }, "Level Panel Open"),
-                            new ButtonFunction("Show Autosaves", () =>
+                            new ButtonElement("Show Autosaves", () =>
                             {
                                 RTEditor.inst.AutosavePopup.Open();
                                 EditorLevelManager.inst.RefreshAutosaveList(this);
                             }, "Level Panel Show Autosaves"),
-                            new ButtonFunction("Convert to VG", () => EditorLevelManager.inst.ConvertLevel(this), "Convert Level VG"),
-                            new ButtonFunction(true),
-                            new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.EditorPath), EndFolderCreation), "Level Panel Create Folder"),
-                            new ButtonFunction("Create template", () => LevelTemplateEditor.inst.CreateTemplate(Item.path), "Level Panel Create Template"),
-                            new ButtonFunction("Create level", EditorManager.inst.OpenNewLevelPopup, "Level Panel Create Level"),
-                            new ButtonFunction("Create backup", () => EditorLevelManager.inst.SaveBackup(this), "Level Panel Create Backup"),
-                            new ButtonFunction(true),
-                            new ButtonFunction("Rename", () => RTEditor.inst.ShowNameEditor("Level Renamer", "Level name", "Rename", () =>
+                            new ButtonElement("Convert to VG", () => EditorLevelManager.inst.ConvertLevel(this), "Convert Level VG"),
+                            new SpacerElement(),
+                            new ButtonElement("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.EditorPath), EndFolderCreation), "Level Panel Create Folder"),
+                            new ButtonElement("Create template", () => LevelTemplateEditor.inst.CreateTemplate(Item.path), "Level Panel Create Template"),
+                            new ButtonElement("Create level", EditorManager.inst.OpenNewLevelPopup, "Level Panel Create Level"),
+                            new ButtonElement("Create backup", () => EditorLevelManager.inst.SaveBackup(this), "Level Panel Create Backup"),
+                            new SpacerElement(),
+                            new ButtonElement("Rename", () => RTEditor.inst.ShowNameEditor("Level Renamer", "Level name", "Rename", () =>
                             {
                                 var currentPath = Item.path;
 
@@ -641,24 +641,24 @@ namespace BetterLegacy.Editor.Data.Elements
                                 EditorLevelManager.inst.LoadLevels();
                                 RTEditor.inst.HideNameEditor();
                             }), "Level Panel Rename Level"),
-                            new ButtonFunction("Cut", () =>
+                            new ButtonElement("Cut", () =>
                             {
                                 EditorLevelManager.inst.shouldCutLevel = true;
                                 EditorLevelManager.inst.copiedLevelPath = Item.path;
                                 EditorManager.inst.DisplayNotification($"Cut {Item.FolderName}!", 1.5f, EditorManager.NotificationType.Success);
                                 CoreHelper.Log($"Cut level: {EditorLevelManager.inst.copiedLevelPath}");
                             }, "Level Panel Cut"),
-                            new ButtonFunction("Copy", () =>
+                            new ButtonElement("Copy", () =>
                             {
                                 EditorLevelManager.inst.shouldCutLevel = false;
                                 EditorLevelManager.inst.copiedLevelPath = Item.path;
                                 EditorManager.inst.DisplayNotification($"Copied {Item.FolderName}!", 1.5f, EditorManager.NotificationType.Success);
                                 CoreHelper.Log($"Copied level: {EditorLevelManager.inst.copiedLevelPath}");
                             }, "Level Panel Copy"),
-                            new ButtonFunction("Paste", EditorLevelManager.inst.PasteLevel, "Level Panel Paste"),
-                            new ButtonFunction("Delete", () => Delete()),
-                            new ButtonFunction(true),
-                            new ButtonFunction("Copy Arcade ID", () =>
+                            new ButtonElement("Paste", EditorLevelManager.inst.PasteLevel, "Level Panel Paste"),
+                            new ButtonElement("Delete", () => Delete()),
+                            new SpacerElement(),
+                            new ButtonElement("Copy Arcade ID", () =>
                             {
                                 var metadata = Item.metadata;
                                 if (string.IsNullOrEmpty(metadata.arcadeID) || metadata.arcadeID == "0")
@@ -670,7 +670,7 @@ namespace BetterLegacy.Editor.Data.Elements
                                 LSText.CopyToClipboard(metadata.arcadeID);
                                 EditorManager.inst.DisplayNotification($"Copied Arcade ID ({metadata.arcadeID}) to your clipboard.", 2f, EditorManager.NotificationType.Success);
                             }, "Copy Arcade ID"),
-                            new ButtonFunction("Copy Server ID", () =>
+                            new ButtonElement("Copy Server ID", () =>
                             {
                                 var metadata = Item.metadata;
                                 if (string.IsNullOrEmpty(metadata.serverID) || metadata.serverID == "0")
@@ -682,14 +682,14 @@ namespace BetterLegacy.Editor.Data.Elements
                                 LSText.CopyToClipboard(metadata.serverID);
                                 EditorManager.inst.DisplayNotification($"Copied Server ID ({metadata.serverID}) to your clipboard.", 2f, EditorManager.NotificationType.Success);
                             }, "Copy Server ID"),
-                            new ButtonFunction(true),
-                            new ButtonFunction("ZIP Level", () => EditorLevelManager.inst.ZipLevel(this), "Level Panel ZIP"),
-                            new ButtonFunction("Copy Path", () => LSText.CopyToClipboard(Item.path), "Level Panel Copy Folder"),
-                            new ButtonFunction("Copy Relative Path", () => LSText.CopyToClipboard(Item.path.Remove(RTEditor.inst.BeatmapsPath + "/")), "Level Panel Copy Folder"),
-                            new ButtonFunction("Open in File Explorer", () => RTFile.OpenInFileBrowser.Open(Item.path), "Level Panel Open Explorer"),
-                            new ButtonFunction("Open List in File Explorer", RTEditor.inst.OpenLevelListFolder, "Level List Open Explorer"),
-                            new ButtonFunction(true),
-                            new ButtonFunction("Add File to Collection", () =>
+                            new SpacerElement(),
+                            new ButtonElement("ZIP Level", () => EditorLevelManager.inst.ZipLevel(this), "Level Panel ZIP"),
+                            new ButtonElement("Copy Path", () => LSText.CopyToClipboard(Item.path), "Level Panel Copy Folder"),
+                            new ButtonElement("Copy Relative Path", () => LSText.CopyToClipboard(Item.path.Remove(RTEditor.inst.BeatmapsPath + "/")), "Level Panel Copy Folder"),
+                            new ButtonElement("Open in File Explorer", () => RTFile.OpenInFileBrowser.Open(Item.path), "Level Panel Open Explorer"),
+                            new ButtonElement("Open List in File Explorer", RTEditor.inst.OpenLevelListFolder, "Level List Open Explorer"),
+                            new SpacerElement(),
+                            new ButtonElement("Add File to Collection", () =>
                             {
                                 EditorLevelManager.inst.LevelCollectionPopup.Open();
                                 EditorLevelManager.inst.RenderLevelCollections();
@@ -704,7 +704,7 @@ namespace BetterLegacy.Editor.Data.Elements
                                     EditorManager.inst.DisplayNotification($"Added the level to the level collection [ {levelCollectionPanel.Item.name} ]", 3f, EditorManager.NotificationType.Success);
                                 };
                             }),
-                            new ButtonFunction("Add Ref to Collection", () =>
+                            new ButtonElement("Add Ref to Collection", () =>
                             {
                                 EditorLevelManager.inst.LevelCollectionPopup.Open();
                                 EditorLevelManager.inst.RenderLevelCollections();
@@ -722,15 +722,15 @@ namespace BetterLegacy.Editor.Data.Elements
                         };
 
                         if (currentLevelCollection)
-                            list.Add(new ButtonFunction(true));
+                            list.Add(new SpacerElement());
                     }
 
                     if (currentLevelCollection)
                     {
                         if (info)
                         {
-                            list.Add(new ButtonFunction("Edit Info", () => EditorLevelManager.inst.OpenLevelInfoEditor(info)));
-                            list.Add(new ButtonFunction("Remove from Collection", () =>
+                            list.Add(new ButtonElement("Edit Info", () => EditorLevelManager.inst.OpenLevelInfoEditor(info)));
+                            list.Add(new ButtonElement("Remove from Collection", () =>
                             {
                                 RTEditor.inst.ShowWarningPopup("Are you sure you want to remove the level from the current collection?", () =>
                                 {
@@ -746,7 +746,7 @@ namespace BetterLegacy.Editor.Data.Elements
                             }));
                         }
 
-                        list.Add(new ButtonFunction("Move Earlier", () =>
+                        list.Add(new ButtonElement("Move Earlier", () =>
                         {
                             var info = GetLevelInfo();
                             if (!info)
@@ -762,7 +762,7 @@ namespace BetterLegacy.Editor.Data.Elements
                             currentLevelCollection.Save();
                             EditorLevelManager.inst.LoadLevels();
                         }));
-                        list.Add(new ButtonFunction("Move Later", () =>
+                        list.Add(new ButtonElement("Move Later", () =>
                         {
                             var info = GetLevelInfo();
                             if (!info)

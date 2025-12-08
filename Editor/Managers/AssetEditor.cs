@@ -222,34 +222,34 @@ namespace BetterLegacy.Editor.Managers
                     {
                         if (pointerEventData.button == PointerEventData.InputButton.Right)
                         {
-                            var buttonFunctions = new List<ButtonFunction>()
+                            var buttonFunctions = new List<EditorElement>()
                             {
-                                new ButtonFunction("Play", () =>
+                                new ButtonElement("Play", () =>
                                 {
                                     if (!soundAsset.audio)
                                         CoroutineHelper.StartCoroutine(soundAsset.LoadAudioClip(() => SoundManager.inst.PlaySound(soundAsset.audio)));
                                     else
                                         SoundManager.inst.PlaySound(soundAsset.audio);
                                 }),
-                                new ButtonFunction("Load", () =>
+                                new ButtonElement("Load", () =>
                                 {
                                     CoroutineHelper.StartCoroutine(soundAsset.LoadAudioClip(() => EditorManager.inst.DisplayNotification($"Loaded audio clip!", 2f, EditorManager.NotificationType.Success)));
                                 }),
-                                new ButtonFunction("Unload", soundAsset.UnloadAudioClip),
+                                new ButtonElement("Unload", soundAsset.UnloadAudioClip),
                             };
 
                             if (!GameData.Current.assets.sounds.Has(x => x.name == soundAsset.name))
                             {
-                                buttonFunctions.Add(new ButtonFunction(true));
-                                buttonFunctions.Add(new ButtonFunction("Import", () =>
+                                buttonFunctions.Add(new SpacerElement());
+                                buttonFunctions.Add(new ButtonElement("Import", () =>
                                 {
                                     GameData.Current.assets.AddAndLoadSound(soundAsset.name);
                                     RenderPopup();
                                 }));
                             }
 
-                            buttonFunctions.Add(new ButtonFunction(true));
-                            buttonFunctions.Add(new ButtonFunction("Reload Assets", () => LoadAssets(RenderPopup)));
+                            buttonFunctions.Add(new SpacerElement());
+                            buttonFunctions.Add(new ButtonElement("Reload Assets", () => LoadAssets(RenderPopup)));
 
                             EditorContextMenu.inst.ShowContextMenu(buttonFunctions);
                             return;
@@ -304,18 +304,14 @@ namespace BetterLegacy.Editor.Managers
                     {
                         if (pointerEventData.button == PointerEventData.InputButton.Right)
                         {
-                            var buttonFunctions = new List<ButtonFunction>()
-                            {
-                                new ButtonFunction("Import", () =>
+                            EditorContextMenu.inst.ShowContextMenu(
+                                new ButtonElement("Import", () =>
                                 {
                                     GameData.Current.assets.AddSprite(spriteAsset.name, spriteAsset.sprite);
                                     RenderPopup();
                                 }),
-                                new ButtonFunction(true),
-                                new ButtonFunction("Reload Assets", () => LoadAssets(RenderPopup)),
-                            };
-
-                            EditorContextMenu.inst.ShowContextMenu(buttonFunctions);
+                                new SpacerElement(),
+                                new ButtonElement("Reload Assets", () => LoadAssets(RenderPopup)));
                             return;
                         }
 
@@ -363,41 +359,38 @@ namespace BetterLegacy.Editor.Managers
                     {
                         if (pointerEventData.button == PointerEventData.InputButton.Right)
                         {
-                            var buttonFunctions = new List<ButtonFunction>()
-                        {
-                            new ButtonFunction("Play", () =>
-                            {
-                                if (!soundAsset.audio)
-                                    CoroutineHelper.StartCoroutine(soundAsset.LoadAudioClip(() => SoundManager.inst.PlaySound(soundAsset.audio)));
-                                else
-                                    SoundManager.inst.PlaySound(soundAsset.audio);
-                            }),
-                            new ButtonFunction("Load", () =>
-                            {
-                                CoroutineHelper.StartCoroutine(soundAsset.LoadAudioClip(() => EditorManager.inst.DisplayNotification($"Loaded audio clip!", 2f, EditorManager.NotificationType.Success)));
-                            }),
-                            new ButtonFunction("Unload", soundAsset.UnloadAudioClip),
-                            new ButtonFunction("Remove", () =>
-                            {
-                                RTEditor.inst.ShowWarningPopup("Are you sure you want to remove this sound from the asset list?", () =>
+                            EditorContextMenu.inst.ShowContextMenu(
+                                new ButtonElement("Play", () =>
                                 {
-                                    if (soundAsset.audio)
-                                        CoreHelper.Destroy(soundAsset.audio);
-                                    GameData.Current.assets.RemoveSound(soundAsset.name);
-                                    RenderPopup();
-                                    RTEditor.inst.HideWarningPopup();
-                                }, RTEditor.inst.HideWarningPopup);
-                            }),
-                            new ButtonFunction(true),
-                            new ButtonFunction($"Autoload Sound [{(soundAsset.autoLoad ? "On": "Off")}]", () =>
-                            {
-                                soundAsset.autoLoad = !soundAsset.autoLoad;
-                            }),
-                            new ButtonFunction(true),
-                            new ButtonFunction("Reload Assets", () => LoadAssets(RenderPopup)),
-                        };
-
-                            EditorContextMenu.inst.ShowContextMenu(buttonFunctions);
+                                    if (!soundAsset.audio)
+                                        CoroutineHelper.StartCoroutine(soundAsset.LoadAudioClip(() => SoundManager.inst.PlaySound(soundAsset.audio)));
+                                    else
+                                        SoundManager.inst.PlaySound(soundAsset.audio);
+                                }),
+                                new ButtonElement("Load", () =>
+                                {
+                                    CoroutineHelper.StartCoroutine(soundAsset.LoadAudioClip(() => EditorManager.inst.DisplayNotification($"Loaded audio clip!", 2f, EditorManager.NotificationType.Success)));
+                                }),
+                                new ButtonElement("Unload", soundAsset.UnloadAudioClip),
+                                new ButtonElement("Remove", () =>
+                                {
+                                    RTEditor.inst.ShowWarningPopup("Are you sure you want to remove this sound from the asset list?", () =>
+                                    {
+                                        if (soundAsset.audio)
+                                            CoreHelper.Destroy(soundAsset.audio);
+                                        GameData.Current.assets.RemoveSound(soundAsset.name);
+                                        RenderPopup();
+                                        RTEditor.inst.HideWarningPopup();
+                                    }, RTEditor.inst.HideWarningPopup);
+                                }),
+                                new SpacerElement(),
+                                new ButtonElement($"Autoload Sound [{(soundAsset.autoLoad ? "On" : "Off")}]", () =>
+                                {
+                                    soundAsset.autoLoad = !soundAsset.autoLoad;
+                                }),
+                                new SpacerElement(),
+                                new ButtonElement("Reload Assets", () => LoadAssets(RenderPopup)));
+                            return;
                         }
 
                         if (onSoundAssetSelected != null)
@@ -444,9 +437,9 @@ namespace BetterLegacy.Editor.Managers
                     {
                         if (pointerEventData.button == PointerEventData.InputButton.Right)
                         {
-                            var buttonFunctions = new List<ButtonFunction>()
+                            var buttonFunctions = new List<EditorElement>()
                             {
-                                new ButtonFunction("Remove", () =>
+                                new ButtonElement("Remove", () =>
                                 {
                                     RTEditor.inst.ShowWarningPopup("Are you sure you want to remove this sprite from the asset list? This will also remove the sprite from all image objects that have a reference to this sprite.", () =>
                                     {
@@ -456,20 +449,20 @@ namespace BetterLegacy.Editor.Managers
                                         RTEditor.inst.HideWarningPopup();
                                     }, RTEditor.inst.HideWarningPopup);
                                 }),
-                                new ButtonFunction(true),
-                                new ButtonFunction("Reload Assets", () => LoadAssets(RenderPopup)),
-                                new ButtonFunction(true),
-                                new ButtonFunction((spriteAsset.wrapMode == TextureWrapMode.Repeat ? "> " : string.Empty) + "Repeat Wrap Mode", () =>
+                                new SpacerElement(),
+                                new ButtonElement("Reload Assets", () => LoadAssets(RenderPopup)),
+                                new SpacerElement(),
+                                new ButtonElement((spriteAsset.wrapMode == TextureWrapMode.Repeat ? "> " : string.Empty) + "Repeat Wrap Mode", () =>
                                 {
                                     spriteAsset.SetWrapMode(TextureWrapMode.Repeat);
                                     EditorManager.inst.DisplayNotification("The texture will now repeat!", 2f, EditorManager.NotificationType.Success);
                                 }),
-                                new ButtonFunction((spriteAsset.wrapMode == TextureWrapMode.Clamp ? "> " : string.Empty) + "Clamp Wrap Mode", () =>
+                                new ButtonElement((spriteAsset.wrapMode == TextureWrapMode.Clamp ? "> " : string.Empty) + "Clamp Wrap Mode", () =>
                                 {
                                     spriteAsset.SetWrapMode(TextureWrapMode.Clamp);
                                     EditorManager.inst.DisplayNotification("The texture will now clamp!", 2f, EditorManager.NotificationType.Success);
                                 }),
-                                new ButtonFunction((spriteAsset.wrapMode == TextureWrapMode.Mirror ? "> " : string.Empty) + "Mirror Wrap Mode", () =>
+                                new ButtonElement((spriteAsset.wrapMode == TextureWrapMode.Mirror ? "> " : string.Empty) + "Mirror Wrap Mode", () =>
                                 {
                                     spriteAsset.SetWrapMode(TextureWrapMode.Mirror);
                                     EditorManager.inst.DisplayNotification("The texture will now repeat and mirror!", 2f, EditorManager.NotificationType.Success);

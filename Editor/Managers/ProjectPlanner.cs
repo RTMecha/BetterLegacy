@@ -257,9 +257,8 @@ namespace BetterLegacy.Editor.Managers
 
                 EditorThemeManager.AddInputField(pathField);
 
-                EditorContextMenu.AddContextMenu(path, leftClick: null, new List<ButtonFunction>
-                {
-                    new ButtonFunction("Set Folder", () =>
+                EditorContextMenu.AddContextMenu(path, leftClick: null,
+                    new ButtonElement("Set Folder", () =>
                     {
                         RTEditor.inst.BrowserPopup.Open();
                         RTFileBrowser.inst.UpdateBrowserFolder(_val =>
@@ -278,8 +277,7 @@ namespace BetterLegacy.Editor.Managers
                             RTEditor.inst.BrowserPopup.Close();
                         });
                     }),
-                    new ButtonFunction("Open in File Explorer", () => RTFile.OpenInFileBrowser.Open(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlannersPath)))
-                });
+                    new ButtonElement("Open in File Explorer", () => RTFile.OpenInFileBrowser.Open(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlannersPath))));
             }
 
             gradientSprite = SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/linear_gradient{FileFormat.PNG.Dot()}"));

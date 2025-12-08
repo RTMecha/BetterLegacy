@@ -3972,54 +3972,7 @@ namespace BetterLegacy.Editor.Managers
                     return;
 
                 var currentHexColor = inputField.text;
-                EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction("Edit Color", () =>
-                    {
-                        RTColorPicker.inst.Show(RTColors.HexToColor(inputField.text),
-                            (col, hex) =>
-                            {
-                                inputField.SetTextWithoutNotify(hex);
-                            },
-                            (col, hex) =>
-                            {
-                                CoreHelper.Log($"Set timeline object color: {hex}");
-                                    // set the input field's text empty so it notices there was a change
-                                    inputField.SetTextWithoutNotify(string.Empty);
-                                inputField.text = hex;
-                            }, () =>
-                            {
-                                inputField.SetTextWithoutNotify(currentHexColor);
-                            });
-                    }),
-                    new ButtonFunction("Clear", () =>
-                    {
-                        inputField.text = string.Empty;
-                    }),
-                    new ButtonFunction(true),
-                    new ButtonFunction("VG Red", () =>
-                    {
-                        inputField.text = ObjectEditorData.RED;
-                    }),
-                    new ButtonFunction("VG Red Green", () =>
-                    {
-                        inputField.text = ObjectEditorData.RED_GREEN;
-                    }),
-                    new ButtonFunction("VG Green", () =>
-                    {
-                        inputField.text = ObjectEditorData.GREEN;
-                    }),
-                    new ButtonFunction("VG Green Blue", () =>
-                    {
-                        inputField.text = ObjectEditorData.GREEN_BLUE;
-                    }),
-                    new ButtonFunction("VG Blue", () =>
-                    {
-                        inputField.text = ObjectEditorData.BLUE;
-                    }),
-                    new ButtonFunction("VG Blue Red", () =>
-                    {
-                        inputField.text = ObjectEditorData.RED_BLUE;
-                    }));
+                EditorContextMenu.inst.ShowContextMenu(EditorContextMenu.GetEditorColorFunctions(inputField, () => currentHexColor));
             };
 
             EditorHelper.AddInputFieldContextMenu(inputField);
@@ -4248,24 +4201,18 @@ namespace BetterLegacy.Editor.Managers
             if (eventData.button == PointerEventData.InputButton.Right)
             {
                 EditorContextMenu.inst.ShowContextMenu(400f,
-                    new ButtonFunction($"Sync {nameContext} via Search", () =>
+                    new ButtonElement($"Sync {nameContext} via Search", () => ObjectEditor.inst.ShowObjectSearch(beatmapObject =>
                     {
-                        ObjectEditor.inst.ShowObjectSearch(beatmapObject =>
-                        {
-                            SyncObjectData(timelineObject => update?.Invoke(timelineObject, beatmapObject), renderTimelineObject, updateObject, updateContext);
-                            ObjectEditor.inst.ObjectSearchPopup.Close();
-                        });
-                    }),
-                    new ButtonFunction($"Sync {nameContext} via Picker", () =>
+                        SyncObjectData(timelineObject => update?.Invoke(timelineObject, beatmapObject), renderTimelineObject, updateObject, updateContext);
+                        ObjectEditor.inst.ObjectSearchPopup.Close();
+                    })),
+                    new ButtonElement($"Sync {nameContext} via Picker", () => EditorTimeline.inst.onSelectTimelineObject = to =>
                     {
-                        EditorTimeline.inst.onSelectTimelineObject = to =>
-                        {
-                            if (!to.isBeatmapObject)
-                                return;
+                        if (!to.isBeatmapObject)
+                            return;
 
-                            var beatmapObject = to.GetData<BeatmapObject>();
-                            SyncObjectData(timelineObject => update?.Invoke(timelineObject, beatmapObject), renderTimelineObject, updateObject, updateContext);
-                        };
+                        var beatmapObject = to.GetData<BeatmapObject>();
+                        SyncObjectData(timelineObject => update?.Invoke(timelineObject, beatmapObject), renderTimelineObject, updateObject, updateContext);
                     }));
 
                 return;
@@ -4564,5 +4511,46 @@ namespace BetterLegacy.Editor.Managers
         }
 
         #endregion
+
+        public class ButtonFunction
+        {
+            public ButtonFunction(bool isSpacer, float spacerSize = 4f)
+            {
+                IsSpacer = isSpacer;
+                SpacerSize = spacerSize;
+            }
+
+            public ButtonFunction(string name, Action action, string tooltipGroup = null, ThemeGroup? buttonThemeGroup = null, ThemeGroup? labelThemeGroup = null)
+            {
+                Name = name;
+                Action = action;
+                TooltipGroup = tooltipGroup;
+
+                ButtonThemeGroup = buttonThemeGroup;
+                LabelThemeGroup = labelThemeGroup;
+            }
+
+            public ButtonFunction(string name, Action<PointerEventData> onClick, string tooltipGroup = null, ThemeGroup? buttonThemeGroup = null, ThemeGroup? labelThemeGroup = null)
+            {
+                Name = name;
+                OnClick = onClick;
+                TooltipGroup = tooltipGroup;
+
+                ButtonThemeGroup = buttonThemeGroup;
+                LabelThemeGroup = labelThemeGroup;
+            }
+
+            public bool IsSpacer { get; set; }
+            public float SpacerSize { get; set; } = 4f;
+            public string Name { get; set; }
+            public int FontSize { get; set; } = 20;
+            public Action Action { get; set; }
+            public Action<PointerEventData> OnClick { get; set; }
+
+            public ThemeGroup? ButtonThemeGroup { get; set; }
+            public ThemeGroup? LabelThemeGroup { get; set; }
+
+            public string TooltipGroup { get; set; }
+        }
     }
 }

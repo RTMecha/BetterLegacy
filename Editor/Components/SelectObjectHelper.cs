@@ -50,9 +50,9 @@ namespace BetterLegacy.Editor.Components
             {
                 case PointerEventData.InputButton.Right: {
                         EditorContextMenu.inst.ShowContextMenu(
-                            new ButtonFunction("Go to Timeline Object", () => EditorTimeline.inst.SetCurrentObject(EditorTimeline.inst.CurrentSelection, true)),
-                            new ButtonFunction(true),
-                            new ButtonFunction(EditorTimeline.inst.CurrentSelection.Hidden ? "Unhide" : "Hide", () =>
+                            new ButtonElement("Go to Timeline Object", () => EditorTimeline.inst.SetCurrentObject(EditorTimeline.inst.CurrentSelection, true)),
+                            new SpacerElement(),
+                            new ButtonElement(EditorTimeline.inst.CurrentSelection.Hidden ? "Unhide" : "Hide", () =>
                             {
                                 var timelineObject = EditorTimeline.inst.CurrentSelection;
                                 timelineObject.Hidden = !timelineObject.Hidden;
@@ -75,7 +75,7 @@ namespace BetterLegacy.Editor.Components
                                         }
                                 }
                             }),
-                            new ButtonFunction(EditorTimeline.inst.CurrentSelection.SelectableInPreview ? "Prevent Preview Selection" : "Allow Preview Selection", () =>
+                            new ButtonElement(EditorTimeline.inst.CurrentSelection.SelectableInPreview ? "Prevent Preview Selection" : "Allow Preview Selection", () =>
                             {
                                 var timelineObject = EditorTimeline.inst.CurrentSelection;
                                 timelineObject.SelectableInPreview = !timelineObject.SelectableInPreview;
@@ -97,23 +97,23 @@ namespace BetterLegacy.Editor.Components
                                         }
                                 }
                             }),
-                            new ButtonFunction(true),
-                            new ButtonFunction("Drag Position", () =>
+                            new SpacerElement(),
+                            ButtonElement.SelectionButton(() => EditorConfig.Instance.ObjectDraggerHelperType.Value == TransformType.Position, "Drag Position", () =>
                             {
                                 EditorConfig.Instance.ObjectDraggerHelperType.Value = TransformType.Position;
                                 EditorManager.inst.DisplayNotification($"Changed {EditorConfig.Instance.ObjectDraggerHelperType.Key} to {TransformType.Position}!", 2f, EditorManager.NotificationType.Success);
                             }),
-                            new ButtonFunction("Drag Scale", () =>
+                            ButtonElement.SelectionButton(() => EditorConfig.Instance.ObjectDraggerHelperType.Value == TransformType.Scale, "Drag Scale", () =>
                             {
                                 EditorConfig.Instance.ObjectDraggerHelperType.Value = TransformType.Scale;
                                 EditorManager.inst.DisplayNotification($"Changed {EditorConfig.Instance.ObjectDraggerHelperType.Key} to {TransformType.Scale}!", 2f, EditorManager.NotificationType.Success);
                             }),
-                            new ButtonFunction("Drag Rotation", () =>
+                            ButtonElement.SelectionButton(() => EditorConfig.Instance.ObjectDraggerHelperType.Value == TransformType.Rotation, "Drag Rotation", () =>
                             {
                                 EditorConfig.Instance.ObjectDraggerHelperType.Value = TransformType.Rotation;
                                 EditorManager.inst.DisplayNotification($"Changed {EditorConfig.Instance.ObjectDraggerHelperType.Key} to {TransformType.Rotation}!", 2f, EditorManager.NotificationType.Success);
                             }),
-                            new ButtonFunction("Drag Color", () =>
+                            ButtonElement.SelectionButton(() => EditorConfig.Instance.ObjectDraggerHelperType.Value == TransformType.Color, "Drag Color", () =>
                             {
                                 EditorConfig.Instance.ObjectDraggerHelperType.Value = TransformType.Color;
                                 EditorManager.inst.DisplayNotification($"Changed {EditorConfig.Instance.ObjectDraggerHelperType.Key} to {TransformType.Color}!", 2f, EditorManager.NotificationType.Success);

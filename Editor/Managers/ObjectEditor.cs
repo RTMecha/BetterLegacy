@@ -1164,34 +1164,24 @@ namespace BetterLegacy.Editor.Managers
 
             Dialog.IDText.text = $"ID: {beatmapObject.id}";
 
-            var clickable = Dialog.IDBase.gameObject.GetOrAddComponent<Clickable>();
-
-            clickable.onClick = pointerEventData =>
-            {
-                if (pointerEventData.button == PointerEventData.InputButton.Right)
+            EditorContextMenu.AddContextMenu(Dialog.IDBase.gameObject,
+                leftClick: () =>
                 {
-                    EditorContextMenu.inst.ShowContextMenu(
-                        new ButtonFunction("Copy ID", () =>
-                        {
-                            EditorManager.inst.DisplayNotification($"Copied ID from {beatmapObject.name}!", 2f, EditorManager.NotificationType.Success);
-                            LSText.CopyToClipboard(beatmapObject.id);
-                        }),
-                        new ButtonFunction("Shuffle ID", () =>
-                        {
-                            RTEditor.inst.ShowWarningPopup("Are you sure you want to shuffle the ID of this object?", () =>
-                            {
-                                EditorHelper.ShuffleID(beatmapObject);
-                                RenderID(beatmapObject);
-                                RenderParent(beatmapObject);
-                                RTEditor.inst.HideWarningPopup();
-                            }, RTEditor.inst.HideWarningPopup);
-                        }));
-                    return;
-                }
-
-                EditorManager.inst.DisplayNotification($"Copied ID from {beatmapObject.name}!", 2f, EditorManager.NotificationType.Success);
-                LSText.CopyToClipboard(beatmapObject.id);
-            };
+                    EditorManager.inst.DisplayNotification(string.IsNullOrEmpty(beatmapObject.name) ? "Copied ID!" : $"Copied ID from {beatmapObject.name}!", 1.5f, EditorManager.NotificationType.Success);
+                    LSText.CopyToClipboard(beatmapObject.id);
+                },
+                new ButtonElement("Copy ID", () =>
+                {
+                    EditorManager.inst.DisplayNotification(string.IsNullOrEmpty(beatmapObject.name) ? "Copied ID!" : $"Copied ID from {beatmapObject.name}!", 1.5f, EditorManager.NotificationType.Success);
+                    LSText.CopyToClipboard(beatmapObject.id);
+                }),
+                new ButtonElement("Shuffle ID", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to shuffle the ID of this object?", () =>
+                {
+                    EditorHelper.ShuffleID(beatmapObject);
+                    RenderID(beatmapObject);
+                    RenderParent(beatmapObject);
+                    RTEditor.inst.HideWarningPopup();
+                }, RTEditor.inst.HideWarningPopup)));
         }
 
         /// <summary>
@@ -1691,7 +1681,7 @@ namespace BetterLegacy.Editor.Managers
         void OriginContextMenu(BeatmapObject beatmapObject)
         {
             EditorContextMenu.inst.ShowContextMenu(
-                new ButtonFunction("Center", () =>
+                new ButtonElement("Center", () =>
                 {
                     beatmapObject.origin = Vector2.zero;
                     // Since origin has no affect on the timeline object, we will only need to update the physical object.
@@ -1699,7 +1689,7 @@ namespace BetterLegacy.Editor.Managers
                         RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
                     RenderOrigin(beatmapObject);
                 }),
-                new ButtonFunction("Top", () =>
+                new ButtonElement("Top", () =>
                 {
                     beatmapObject.origin.y = -0.5f;
                     // Since origin has no affect on the timeline object, we will only need to update the physical object.
@@ -1707,49 +1697,50 @@ namespace BetterLegacy.Editor.Managers
                         RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
                     RenderOrigin(beatmapObject);
                 }),
-                new ButtonFunction("Bottom", () =>
+                new ButtonElement("Bottom", () =>
                 {
                     beatmapObject.origin.y = 0.5f;
                     if (UpdateObjects)
                         RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
                     RenderOrigin(beatmapObject);
                 }),
-                new ButtonFunction("Left", () =>
+                new ButtonElement("Left", () =>
                 {
                     beatmapObject.origin.x = -0.5f;
                     if (UpdateObjects)
                         RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
                     RenderOrigin(beatmapObject);
                 }),
-                new ButtonFunction("Right", () =>
+                new ButtonElement("Right", () =>
                 {
                     beatmapObject.origin.x = 0.5f;
                     if (UpdateObjects)
                         RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
                     RenderOrigin(beatmapObject);
                 }),
-                new ButtonFunction("Top (Triangle)", () =>
+                new SpacerElement(),
+                new ButtonElement("Top (Triangle)", () =>
                 {
                     beatmapObject.origin.y = BeatmapObject.TRIANGLE_TOP_OFFSET;
                     if (UpdateObjects)
                         RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
                     RenderOrigin(beatmapObject);
                 }),
-                new ButtonFunction("Bottom (Triangle)", () =>
+                new ButtonElement("Bottom (Triangle)", () =>
                 {
                     beatmapObject.origin.y = BeatmapObject.TRIANGLE_BOTTOM_OFFSET;
                     if (UpdateObjects)
                         RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
                     RenderOrigin(beatmapObject);
                 }),
-                new ButtonFunction("Left (Triangle)", () =>
+                new ButtonElement("Left (Triangle)", () =>
                 {
                     beatmapObject.origin.x = -BeatmapObject.TRIANGLE_HORIZONTAL_OFFSET;
                     if (UpdateObjects)
                         RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
                     RenderOrigin(beatmapObject);
                 }),
-                new ButtonFunction("Right (Triangle)", () =>
+                new ButtonElement("Right (Triangle)", () =>
                 {
                     beatmapObject.origin.x = BeatmapObject.TRIANGLE_HORIZONTAL_OFFSET;
                     if (UpdateObjects)
@@ -1992,12 +1983,12 @@ namespace BetterLegacy.Editor.Managers
                                 return;
 
                             EditorContextMenu.inst.ShowContextMenu(
-                                new ButtonFunction($"Open Text Editor", () => RTTextEditor.inst.SetInputField(textIF)),
-                                new ButtonFunction(true),
-                                new ButtonFunction($"Insert a Font", () => RTEditor.inst.ShowFontSelector(font => textIF.text = font + textIF.text)),
-                                new ButtonFunction($"Add a Font", () => RTEditor.inst.ShowFontSelector(font => textIF.text += font)),
-                                new ButtonFunction(true),
-                                new ButtonFunction($"Clear Formatting", () =>
+                                new ButtonElement($"Open Text Editor", () => RTTextEditor.inst.SetInputField(textIF)),
+                                new SpacerElement(),
+                                new ButtonElement($"Insert a Font", () => RTEditor.inst.ShowFontSelector(font => textIF.text = font + textIF.text)),
+                                new ButtonElement($"Add a Font", () => RTEditor.inst.ShowFontSelector(font => textIF.text += font)),
+                                new SpacerElement(),
+                                new ButtonElement($"Clear Formatting", () =>
                                 {
                                     RTEditor.inst.ShowWarningPopup("Are you sure you want to clear the fomratting of this text? This cannot be undone!", () =>
                                     {
@@ -2005,7 +1996,7 @@ namespace BetterLegacy.Editor.Managers
                                         RTEditor.inst.HideWarningPopup();
                                     }, RTEditor.inst.HideWarningPopup);
                                 }),
-                                new ButtonFunction($"Force Modded Formatting", () =>
+                                new ButtonElement($"Force Modded Formatting", () =>
                                 {
                                     var formatText = "formatText";
                                     if (beatmapObject.modifiers.Has(x => x.Name == formatText))
@@ -2017,15 +2008,15 @@ namespace BetterLegacy.Editor.Managers
                                         CoroutineHelper.StartCoroutine(Dialog.ModifiersDialog.RenderModifiers(beatmapObject));
                                     }
                                 }),
-                                new ButtonFunction(true),
-                                new ButtonFunction($"Auto Align: [{beatmapObject.autoTextAlign}]", () =>
+                                new SpacerElement(),
+                                new ButtonElement($"Auto Align: [{beatmapObject.autoTextAlign}]", () =>
                                 {
                                     beatmapObject.autoTextAlign = !beatmapObject.autoTextAlign;
                                     RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.SHAPE);
                                 }),
-                                new ButtonFunction("Align Left", () => textIF.text = "<align=left>" + textIF.text),
-                                new ButtonFunction("Align Center", () => textIF.text = "<align=center>" + textIF.text),
-                                new ButtonFunction("Align Right", () => textIF.text = "<align=right>" + textIF.text)
+                                new ButtonElement("Align Left", () => textIF.text = "<align=left>" + textIF.text),
+                                new ButtonElement("Align Center", () => textIF.text = "<align=center>" + textIF.text),
+                                new ButtonElement("Align Right", () => textIF.text = "<align=right>" + textIF.text)
                                 );
                         };
 
@@ -2042,8 +2033,8 @@ namespace BetterLegacy.Editor.Managers
                             if (eventData.button == PointerEventData.InputButton.Right)
                             {
                                 EditorContextMenu.inst.ShowContextMenu(
-                                    new ButtonFunction($"Use {RTEditor.SYSTEM_BROWSER}", () => OpenImageSelector(beatmapObject)),
-                                    new ButtonFunction($"Use {RTEditor.EDITOR_BROWSER}", () =>
+                                    new ButtonElement($"Use {RTEditor.SYSTEM_BROWSER}", () => OpenImageSelector(beatmapObject)),
+                                    new ButtonElement($"Use {RTEditor.EDITOR_BROWSER}", () =>
                                     {
                                         var editorPath = RTFile.RemoveEndSlash(EditorLevelManager.inst.CurrentLevel.path);
                                         RTEditor.inst.BrowserPopup.Open();
@@ -2053,8 +2044,8 @@ namespace BetterLegacy.Editor.Managers
                                             RTEditor.inst.BrowserPopup.Close();
                                         });
                                     }),
-                                    new ButtonFunction($"Store & Use {RTEditor.SYSTEM_BROWSER}", () => OpenImageSelector(beatmapObject, copyFile: false, storeImage: true)),
-                                    new ButtonFunction($"Store & Use {RTEditor.EDITOR_BROWSER}", () =>
+                                    new ButtonElement($"Store & Use {RTEditor.SYSTEM_BROWSER}", () => OpenImageSelector(beatmapObject, copyFile: false, storeImage: true)),
+                                    new ButtonElement($"Store & Use {RTEditor.EDITOR_BROWSER}", () =>
                                     {
                                         var editorPath = RTFile.RemoveEndSlash(EditorLevelManager.inst.CurrentLevel.path);
                                         RTEditor.inst.BrowserPopup.Open();
@@ -2064,8 +2055,8 @@ namespace BetterLegacy.Editor.Managers
                                             RTEditor.inst.BrowserPopup.Close();
                                         });
                                     }),
-                                    new ButtonFunction(true),
-                                    new ButtonFunction("Remove Image", () =>
+                                    new SpacerElement(),
+                                    new ButtonElement("Remove Image", () =>
                                     {
                                         beatmapObject.text = string.Empty;
 
@@ -2075,7 +2066,7 @@ namespace BetterLegacy.Editor.Managers
 
                                         RenderShape(beatmapObject);
                                     }),
-                                    new ButtonFunction("Delete Image", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete the image and remove it from the image object?", () =>
+                                    new ButtonElement("Delete Image", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete the image and remove it from the image object?", () =>
                                     {
                                         RTFile.DeleteFile(RTFile.CombinePaths(EditorLevelManager.inst.CurrentLevel.path, beatmapObject.text));
 
@@ -2144,42 +2135,37 @@ namespace BetterLegacy.Editor.Managers
                             TriggerHelper.AddEventTriggers(radius.inputField.gameObject, TriggerHelper.ScrollDelta(radius.inputField, min: 0.1f, max: 10f));
                         }
 
-                        var contextMenu = radius.inputField.gameObject.GetOrAddComponent<ContextClickable>();
-                        contextMenu.onClick = eventData =>
-                        {
-                            if (eventData.button != PointerEventData.InputButton.Right)
-                                return;
-
-                            var buttonFunctions = new List<ButtonFunction>()
+                        EditorContextMenu.AddContextMenu(radius.inputField.gameObject,
+                            getEditorElements: () =>
                             {
-                                new ButtonFunction($"Auto Assign Radius [{(EditorConfig.Instance.AutoPolygonRadius.Value ? "On" : "Off")}]", () =>
+                                var editorElements = new List<EditorElement>()
                                 {
-                                    EditorConfig.Instance.AutoPolygonRadius.Value = !EditorConfig.Instance.AutoPolygonRadius.Value;
-                                    RenderShape(beatmapObject);
-                                })
-                            };
-
-                            if (!EditorConfig.Instance.AutoPolygonRadius.Value)
-                            {
-                                buttonFunctions.Add(new ButtonFunction("Set to Triangle Radius", () =>
+                                    ButtonElement.ToggleButton("Auto Assign Radius", () => EditorConfig.Instance.AutoPolygonRadius.Value, () =>
+                                    {
+                                        EditorConfig.Instance.AutoPolygonRadius.Value = !EditorConfig.Instance.AutoPolygonRadius.Value;
+                                        RenderShape(beatmapObject);
+                                    })
+                                };
+                                if (!EditorConfig.Instance.AutoPolygonRadius.Value)
                                 {
-                                    beatmapObject.polygonShape.Radius = PolygonShape.TRIANGLE_RADIUS;
-                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.POLYGONS);
-                                }));
-                                buttonFunctions.Add(new ButtonFunction("Set to Square Radius", () =>
-                                {
-                                    beatmapObject.polygonShape.Radius = PolygonShape.SQUARE_RADIUS;
-                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.POLYGONS);
-                                }));
-                                buttonFunctions.Add(new ButtonFunction("Set to Normal Radius", () =>
-                                {
-                                    beatmapObject.polygonShape.Radius = PolygonShape.NORMAL_RADIUS;
-                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.POLYGONS);
-                                }));
-                            }
-
-                            EditorContextMenu.inst.ShowContextMenu(buttonFunctions);
-                        };
+                                    editorElements.Add(new ButtonElement("Set to Triangle Radius", () =>
+                                    {
+                                        beatmapObject.polygonShape.Radius = PolygonShape.TRIANGLE_RADIUS;
+                                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.POLYGONS);
+                                    }));
+                                    editorElements.Add(new ButtonElement("Set to Square Radius", () =>
+                                    {
+                                        beatmapObject.polygonShape.Radius = PolygonShape.SQUARE_RADIUS;
+                                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.POLYGONS);
+                                    }));
+                                    editorElements.Add(new ButtonElement("Set to Normal Radius", () =>
+                                    {
+                                        beatmapObject.polygonShape.Radius = PolygonShape.NORMAL_RADIUS;
+                                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.POLYGONS);
+                                    }));
+                                }
+                                return editorElements;
+                            });
 
                         var sides = shapeSettings.Find("10/sides").gameObject.GetComponent<InputFieldStorage>();
                         sides.inputField.SetTextWithoutNotify(beatmapObject.polygonShape.Sides.ToString());
@@ -2627,87 +2613,8 @@ namespace BetterLegacy.Editor.Managers
                 RenderIndex(beatmapObject);
             }));
 
-            var contextMenu = Dialog.EditorIndexField.inputField.gameObject.GetOrAddComponent<ContextClickable>();
-            contextMenu.onClick = pointerEventData =>
-            {
-                if (pointerEventData.button != PointerEventData.InputButton.Right)
-                    return;
-
-                EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction("Select Previous", () =>
-                    {
-                        if (currentIndex <= 0)
-                        {
-                            EditorManager.inst.DisplayNotification($"There are no previous objects to select.", 2f, EditorManager.NotificationType.Error);
-                            return;
-                        }
-
-                        var prevObject = GameData.Current.beatmapObjects[currentIndex - 1];
-
-                        if (!prevObject)
-                            return;
-
-                        var timelineObject = EditorTimeline.inst.GetTimelineObject(prevObject);
-
-                        if (timelineObject)
-                            EditorTimeline.inst.SetCurrentObject(timelineObject, EditorConfig.Instance.BringToSelection.Value);
-                    }),
-                    new ButtonFunction("Select Previous", () =>
-                    {
-                        if (currentIndex >= GameData.Current.beatmapObjects.Count - 1)
-                        {
-                            EditorManager.inst.DisplayNotification($"There are no previous objects to select.", 2f, EditorManager.NotificationType.Error);
-                            return;
-                        }
-
-                        var nextObject = GameData.Current.beatmapObjects[currentIndex + 1];
-
-                        if (!nextObject)
-                            return;
-
-                        var timelineObject = EditorTimeline.inst.GetTimelineObject(nextObject);
-
-                        if (timelineObject)
-                            EditorTimeline.inst.SetCurrentObject(timelineObject, EditorConfig.Instance.BringToSelection.Value);
-                    }),
-                    new ButtonFunction(true),
-                    new ButtonFunction("Select First", () =>
-                    {
-                        if (GameData.Current.beatmapObjects.IsEmpty())
-                        {
-                            EditorManager.inst.DisplayNotification($"There are no Beatmap Objects!", 3f, EditorManager.NotificationType.Warning);
-                            return;
-                        }
-
-                        var prevObject = GameData.Current.beatmapObjects.First();
-
-                        if (!prevObject)
-                            return;
-
-                        var timelineObject = EditorTimeline.inst.GetTimelineObject(prevObject);
-
-                        if (timelineObject)
-                            EditorTimeline.inst.SetCurrentObject(timelineObject, EditorConfig.Instance.BringToSelection.Value);
-                    }),
-                    new ButtonFunction("Select Last", () =>
-                    {
-                        if (GameData.Current.beatmapObjects.IsEmpty())
-                        {
-                            EditorManager.inst.DisplayNotification($"There are no Beatmap Objects!", 3f, EditorManager.NotificationType.Warning);
-                            return;
-                        }
-
-                        var nextObject = GameData.Current.beatmapObjects.Last();
-
-                        if (!nextObject)
-                            return;
-
-                        var timelineObject = EditorTimeline.inst.GetTimelineObject(nextObject);
-
-                        if (timelineObject)
-                            EditorTimeline.inst.SetCurrentObject(timelineObject, EditorConfig.Instance.BringToSelection.Value);
-                    }));
-            };
+            EditorContextMenu.AddContextMenu(Dialog.EditorIndexField.inputField.gameObject,
+                EditorContextMenu.GetIndexerFunctions(currentIndex, GameData.Current.beatmapObjects));
         }
 
         /// <summary>
@@ -2796,58 +2703,7 @@ namespace BetterLegacy.Editor.Managers
         /// Renders the Prefab references.
         /// </summary>
         /// <param name="beatmapObject">The BeatmapObject to set.</param>
-        public void RenderPrefabReference(BeatmapObject beatmapObject)
-        {
-            bool fromPrefab = !string.IsNullOrEmpty(beatmapObject.prefabID);
-            Dialog.CollapsePrefabLabel.SetActive(fromPrefab);
-            Dialog.CollapsePrefabButton.gameObject.SetActive(fromPrefab);
-            Dialog.CollapsePrefabButton.OnClick.ClearAll();
-
-            var prefab = beatmapObject.GetPrefab();
-            Dialog.PrefabName.gameObject.SetActive(prefab);
-            if (prefab)
-                Dialog.PrefabNameText.text = $"[ <b>{prefab.name}</b> ]";
-
-            var collapsePrefabContextMenu = Dialog.CollapsePrefabButton.button.gameObject.GetOrAddComponent<ContextClickable>();
-            collapsePrefabContextMenu.onClick = pointerEventData =>
-            {
-                if (pointerEventData.button != PointerEventData.InputButton.Right)
-                {
-                    if (EditorConfig.Instance.ShowCollapsePrefabWarning.Value)
-                    {
-                        RTEditor.inst.ShowWarningPopup("Are you sure you want to collapse this Prefab group and save the changes to the Internal Prefab?", () =>
-                        {
-                            RTPrefabEditor.inst.Collapse(beatmapObject, beatmapObject.editorData);
-                            RTEditor.inst.HideWarningPopup();
-                        }, RTEditor.inst.HideWarningPopup);
-
-                        return;
-                    }
-
-                    RTPrefabEditor.inst.Collapse(beatmapObject, beatmapObject.editorData);
-                    return;
-                }
-
-                EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction("Apply", () => RTPrefabEditor.inst.Collapse(beatmapObject, beatmapObject.editorData)),
-                    new ButtonFunction("Create New", () => RTPrefabEditor.inst.Collapse(beatmapObject, beatmapObject.editorData, true)),
-                    new ButtonFunction(EditorConfig.Instance.ShowCollapsePrefabWarning.Value ? "Hide Warning" : "Show Warning", () => EditorConfig.Instance.ShowCollapsePrefabWarning.Value = !EditorConfig.Instance.ShowCollapsePrefabWarning.Value)
-                    );
-            };
-
-            Dialog.AssignPrefabButton.OnClick.NewListener(() =>
-            {
-                RTEditor.inst.selectingMultiple = false;
-                RTEditor.inst.prefabPickerEnabled = true;
-            });
-
-            Dialog.RemovePrefabButton.OnClick.NewListener(() =>
-            {
-                beatmapObject.RemovePrefabReference();
-                EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
-                OpenDialog(beatmapObject);
-            });
-        }
+        public void RenderPrefabReference(BeatmapObject beatmapObject) => RTEditor.inst.RenderPrefabable(beatmapObject, Dialog);
 
         public void OpenImageSelector(BeatmapObject beatmapObject, bool copyFile = true, bool storeImage = false)
         {

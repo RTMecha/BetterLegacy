@@ -182,108 +182,14 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 if (eventData.button == PointerEventData.InputButton.Right)
                 {
-                    EditorContextMenu.inst.ShowContextMenu(
-                        new ButtonFunction("Open folder", () =>
+                    EditorContextMenu.inst.ShowContextMenu(EditorContextMenu.GetFolderPanelFunctions(this, RenderIcon,
+                        onOpenFolder: () =>
                         {
                             RTEditor.inst.PrefabPopups.External.PathField.text = path.Remove(RTEditor.inst.BeatmapsPath + "/");
                             RTEditor.inst.UpdatePrefabPath(false);
-                        }),
-                        new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath), () => { RTPrefabEditor.inst.LoadPrefabs(RTPrefabEditor.inst.RenderExternalPrefabs); RTEditor.inst.HideNameEditor(); })),
-                        new ButtonFunction(true),
-                        new ButtonFunction("Paste Prefab", RTPrefabEditor.inst.PastePrefab),
-                        new ButtonFunction("Delete", () => RTEditor.inst.ShowWarningPopup("Are you <b>100%</b> sure you want to delete this folder? This <b>CANNOT</b> be undone! Always make sure you have backups.", () =>
-                        {
-                            RTFile.DeleteDirectory(path);
-                            RTPrefabEditor.inst.LoadPrefabs(RTPrefabEditor.inst.RenderExternalPrefabs);
-                            EditorManager.inst.DisplayNotification("Deleted folder!", 2f, EditorManager.NotificationType.Success);
-                            RTEditor.inst.HideWarningPopup();
-                        }, RTEditor.inst.HideWarningPopup)),
-                        new ButtonFunction(true),
-                        new ButtonFunction($"Select Icon ({RTEditor.SYSTEM_BROWSER})", () =>
-                        {
-                            string imageFile = FileBrowser.OpenSingleFile("Select an image!", RTEditor.inst.BasePath, new string[] { "png" });
-                            if (string.IsNullOrEmpty(imageFile))
-                                return;
-
-                            RTFile.CopyFile(imageFile, RTFile.CombinePaths(path, $"folder_icon{FileFormat.PNG.Dot()}"));
-                            RenderIcon();
-                        }),
-                        new ButtonFunction($"Select Icon ({RTEditor.EDITOR_BROWSER})", () =>
-                        {
-                            RTEditor.inst.BrowserPopup.Open();
-                            RTFileBrowser.inst.UpdateBrowserFile(new string[] { FileFormat.PNG.Dot() }, imageFile =>
-                            {
-                                if (string.IsNullOrEmpty(imageFile))
-                                    return;
-
-                                RTEditor.inst.BrowserPopup.Close();
-
-                                RTFile.CopyFile(imageFile, RTFile.CombinePaths(path, $"folder_icon{FileFormat.PNG.Dot()}"));
-                                RenderIcon();
-                            });
-                        }),
-                        new ButtonFunction("Clear Icon", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to clear the folder icon? This will delete the icon file.", () =>
-                        {
-                            RTEditor.inst.HideWarningPopup();
-                            RTFile.DeleteFile(RTFile.CombinePaths(path, $"folder_icon{FileFormat.PNG.Dot()}"));
-                            RenderIcon();
-                            EditorManager.inst.DisplayNotification("Deleted icon!", 1.5f, EditorManager.NotificationType.Success);
-                        }, RTEditor.inst.HideWarningPopup)),
-                        new ButtonFunction(true),
-                        new ButtonFunction("Create Info File", () =>
-                        {
-                            var filePath = RTFile.CombinePaths(path, $"folder_info{FileFormat.JSON.Dot()}");
-                            if (RTFile.FileExists(filePath))
-                            {
-                                EditorManager.inst.DisplayNotification($"Info file already exists!", 2f, EditorManager.NotificationType.Warning);
-                                return;
-                            }
-
-                            RTTextEditor.inst.SetEditor("This is the default description.", val => { }, "Create", () =>
-                            {
-                                var jn = JSON.Parse("{}");
-                                jn["desc"] = RTTextEditor.inst.Text;
-                                infoJN = jn;
-                                RTFile.WriteToFile(filePath, jn.ToString());
-                                RenderTooltip();
-                                RTTextEditor.inst.Popup.Close();
-
-                                EditorManager.inst.DisplayNotification("Created info file!", 1.5f, EditorManager.NotificationType.Success);
-                            });
-                        }),
-                        new ButtonFunction("Edit Info File", () =>
-                        {
-                            var filePath = RTFile.CombinePaths(path, $"folder_info{FileFormat.JSON.Dot()}");
-
-                            if (!RTFile.FileExists(filePath))
-                                return;
-
-                            RTTextEditor.inst.SetEditor("This is the default description.", val => { }, "Done", () =>
-                            {
-                                var jn = JSON.Parse("{}");
-                                jn["desc"] = RTTextEditor.inst.Text;
-                                infoJN = jn;
-                                RTFile.WriteToFile(filePath, jn.ToString());
-                                RenderTooltip();
-                                RTTextEditor.inst.Popup.Close();
-                            });
-                        }),
-                        new ButtonFunction("Update Info", () =>
-                        {
-                            infoJN = null;
-                            RenderTooltip();
-                            RenderIcon();
-                        }),
-                        new ButtonFunction("Clear Info File", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete the info file?", () =>
-                        {
-                            RTFile.DeleteFile(RTFile.CombinePaths(path, $"folder_info{FileFormat.JSON.Dot()}"));
-                            infoJN = null;
-                            RenderTooltip();
-                            RTEditor.inst.HideWarningPopup();
-                            EditorManager.inst.DisplayNotification("Deleted info file!", 1.5f, EditorManager.NotificationType.Success);
-                        }, RTEditor.inst.HideWarningPopup))
-                        );
-
+                        },
+                        onFolderUpdate: () => RTPrefabEditor.inst.LoadPrefabs(RTPrefabEditor.inst.RenderExternalPrefabs),
+                        paste: RTPrefabEditor.inst.PastePrefab));
                     return;
                 }
 
@@ -526,32 +432,32 @@ namespace BetterLegacy.Editor.Data.Elements
 
                             if (eventData.button == PointerEventData.InputButton.Right)
                             {
-                                var buttonFunctions = new List<ButtonFunction>
+                                var buttonFunctions = new List<EditorElement>
                                 {
-                                    new ButtonFunction("Add to Level", () =>
+                                    new ButtonElement("Add to Level", () =>
                                     {
                                         RTPrefabEditor.inst.AddPrefabObjectToLevel(prefab);
                                         RTEditor.inst.PrefabPopups.Close();
                                     }),
-                                    new ButtonFunction("Create Prefab", () =>
+                                    new ButtonElement("Create Prefab", () =>
                                     {
                                         PrefabEditor.inst.OpenDialog();
                                         RTPrefabEditor.inst.createInternal = true;
                                     }),
-                                    new ButtonFunction("Assign to Quick Prefab", () =>
+                                    new ButtonElement("Assign to Quick Prefab", () =>
                                     {
                                         RTPrefabEditor.inst.UpdateCurrentPrefab(prefab);
                                         CoroutineHelper.StartCoroutine(RTPrefabEditor.inst.RefreshInternalPrefabs());
                                     }),
-                                    new ButtonFunction(true),
-                                    new ButtonFunction("Edit", () => RTPrefabEditor.inst.OpenPrefabEditorDialog(this)),
-                                    new ButtonFunction("Delete", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this prefab? (This is permanent!)", () =>
+                                    new SpacerElement(),
+                                    new ButtonElement("Edit", () => RTPrefabEditor.inst.OpenPrefabEditorDialog(this)),
+                                    new ButtonElement("Delete", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this prefab? (This is permanent!)", () =>
                                     {
                                         RTPrefabEditor.inst.DeleteInternalPrefab(Item);
                                         RTEditor.inst.HideWarningPopup();
                                     }, RTEditor.inst.HideWarningPopup)),
-                                    new ButtonFunction("Export", () => RTPrefabEditor.inst.SavePrefab(Item.Copy(false)), "Internal Prefab Export"),
-                                    new ButtonFunction(true),
+                                    new ButtonElement("Export", () => RTPrefabEditor.inst.SavePrefab(Item.Copy(false)), "Internal Prefab Export"),
+                                    new SpacerElement(),
                                 };
                                 buttonFunctions.AddRange(EditorContextMenu.GetMoveIndexFunctions(GameData.Current.prefabs, index, () =>
                                 {
@@ -618,40 +524,40 @@ namespace BetterLegacy.Editor.Data.Elements
                             if (eventData.button == PointerEventData.InputButton.Right)
                             {
                                 EditorContextMenu.inst.ShowContextMenu(
-                                    new ButtonFunction("Import", () => RTPrefabEditor.inst.ImportPrefabIntoLevel(Item)),
-                                    new ButtonFunction("Update", () =>
+                                    new ButtonElement("Import", () => RTPrefabEditor.inst.ImportPrefabIntoLevel(Item)),
+                                    new ButtonElement("Update", () =>
                                     {
                                         if (RTPrefabEditor.inst.UpdateLevelPrefab(Item))
                                             EditorManager.inst.DisplayNotification($"Updated internal Prefab [ {Item.name} ]!", 2f, EditorManager.NotificationType.Success);
                                         else
                                             EditorManager.inst.DisplayNotification($"No internal Prefab was found to update!", 2f, EditorManager.NotificationType.Warning);
                                     }),
-                                    new ButtonFunction("Convert to VG", () => RTPrefabEditor.inst.ConvertPrefab(Item)),
-                                    new ButtonFunction("Open", () =>  RTPrefabEditor.inst.OpenPrefabEditorDialog(this)),
-                                    new ButtonFunction(true),
-                                    new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath), () => { RTPrefabEditor.inst.LoadPrefabs(RTPrefabEditor.inst.RenderExternalPrefabs); RTEditor.inst.HideNameEditor(); })),
-                                    new ButtonFunction("Create Prefab", () =>
+                                    new ButtonElement("Convert to VG", () => RTPrefabEditor.inst.ConvertPrefab(Item)),
+                                    new ButtonElement("Open", () =>  RTPrefabEditor.inst.OpenPrefabEditorDialog(this)),
+                                    new SpacerElement(),
+                                    new ButtonElement("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath), () => { RTPrefabEditor.inst.LoadPrefabs(RTPrefabEditor.inst.RenderExternalPrefabs); RTEditor.inst.HideNameEditor(); })),
+                                    new ButtonElement("Create Prefab", () =>
                                     {
                                         PrefabEditor.inst.OpenDialog();
                                         RTPrefabEditor.inst.createInternal = false;
                                     }),
-                                    new ButtonFunction(true),
-                                    new ButtonFunction("Cut", () =>
+                                    new SpacerElement(),
+                                    new ButtonElement("Cut", () =>
                                     {
                                         RTPrefabEditor.inst.shouldCutPrefab = true;
                                         RTPrefabEditor.inst.copiedPrefabPath = Path;
                                         EditorManager.inst.DisplayNotification($"Cut {prefab.name}!", 1.5f, EditorManager.NotificationType.Success);
                                         CoreHelper.Log($"Cut prefab: {RTPrefabEditor.inst.copiedPrefabPath}");
                                     }),
-                                    new ButtonFunction("Copy", () =>
+                                    new ButtonElement("Copy", () =>
                                     {
                                         RTPrefabEditor.inst.shouldCutPrefab = false;
                                         RTPrefabEditor.inst.copiedPrefabPath = Path;
                                         EditorManager.inst.DisplayNotification($"Copied {prefab.name}!", 1.5f, EditorManager.NotificationType.Success);
                                         CoreHelper.Log($"Copied prefab: {RTPrefabEditor.inst.copiedPrefabPath}");
                                     }),
-                                    new ButtonFunction("Paste", RTPrefabEditor.inst.PastePrefab),
-                                    new ButtonFunction("Delete", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this prefab? (This is permanent!)", () =>
+                                    new ButtonElement("Paste", RTPrefabEditor.inst.PastePrefab),
+                                    new ButtonElement("Delete", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this prefab? (This is permanent!)", () =>
                                     {
                                         RTPrefabEditor.inst.DeleteExternalPrefab(this);
                                         RTEditor.inst.HideWarningPopup();

@@ -124,108 +124,60 @@ namespace BetterLegacy.Editor.Managers
                     EditorTimeline.inst.SetLayer(pinnedEditorLayer.layer, pinnedEditorLayer.layerType);
                 });
 
-                var contextMenu = gameObject.AddComponent<ContextClickable>();
-                contextMenu.onClick = eventData =>
+                var buttonFunctions = new List<EditorElement>
                 {
-                    if (eventData.button != PointerEventData.InputButton.Right)
-                        return;
-
-                    EditorContextMenu.inst.ShowContextMenu(
-                        new ButtonFunction("Go to Layer", () => EditorTimeline.inst.SetLayer(pinnedEditorLayer.layer, pinnedEditorLayer.layerType)),
-                        new ButtonFunction("Set to Current Layer", () =>
-                        {
-                            pinnedEditorLayer.layer = EditorTimeline.inst.Layer;
-                            pinnedEditorLayer.layerType = EditorTimeline.inst.layerType;
-                            EditorTimeline.inst.RenderLayerInput(pinnedEditorLayer.layer, pinnedEditorLayer.layerType);
-                            RenderDialog();
-                            RenderPopup();
-                        }),
-                        new ButtonFunction("Edit", () =>
-                        {
-                            CurrentPinnedEditorLayer = pinnedEditorLayer;
-                            if (!Dialog.IsCurrent)
-                                Dialog.Open();
-                            RenderDialog();
-                        }),
-                        new ButtonFunction("Delete", () =>
-                        {
-                            RTEditor.inst.editorInfo.pinnedEditorLayers.RemoveAt(index);
-                            CurrentPinnedEditorLayer = null;
-                            if (Dialog.IsCurrent)
-                                Dialog.Close();
-                            RenderPopup();
-                        }),
-                        new ButtonFunction("Clear All", () =>
-                        {
-                            RTEditor.inst.editorInfo.pinnedEditorLayers.Clear();
-                            CurrentPinnedEditorLayer = null;
-                            if (Dialog.IsCurrent)
-                                Dialog.Close();
-                            RenderPopup();
-                        }),
-                        new ButtonFunction(true),
-                        new ButtonFunction("Copy", () =>
-                        {
-                            copiedPinnedEditorLayers.Clear();
-                            copiedPinnedEditorLayers.Add(pinnedEditorLayer);
-                        }),
-                        new ButtonFunction("Copy All", () =>
-                        {
-                            copiedPinnedEditorLayers.Clear();
-                            copiedPinnedEditorLayers.AddRange(RTEditor.inst.editorInfo.pinnedEditorLayers);
-                        }),
-                        new ButtonFunction("Paste", () =>
-                        {
-                            RTEditor.inst.editorInfo.pinnedEditorLayers.AddRange(copiedPinnedEditorLayers);
-                            RenderPopup();
-                        }),
-                        new ButtonFunction(true),
-                        new ButtonFunction("Move Up", () =>
-                        {
-                            if (index <= 0)
-                            {
-                                EditorManager.inst.DisplayNotification("Could not move the pinned editor layer up since it's already at the start.", 3f, EditorManager.NotificationType.Error);
-                                return;
-                            }
-
-                            RTEditor.inst.editorInfo.pinnedEditorLayers.Move(index, index - 1);
-                            RenderPopup();
-                        }),
-                        new ButtonFunction("Move Down", () =>
-                        {
-                            if (index >= RTEditor.inst.editorInfo.pinnedEditorLayers.Count - 1)
-                            {
-                                EditorManager.inst.DisplayNotification("Could not move the pinned editor layer down since it's already at the end.", 3f, EditorManager.NotificationType.Error);
-                                return;
-                            }
-
-                            RTEditor.inst.editorInfo.pinnedEditorLayers.Move(index, index + 1);
-                            RenderPopup();
-                        }),
-                        new ButtonFunction("Move to Start", () =>
-                        {
-                            if (index <= 0)
-                            {
-                                EditorManager.inst.DisplayNotification("Could not move the pinned editor layer up since it's already at the start.", 3f, EditorManager.NotificationType.Error);
-                                return;
-                            }
-
-                            RTEditor.inst.editorInfo.pinnedEditorLayers.Move(index, 0);
-                            RenderPopup();
-                        }),
-                        new ButtonFunction("Move to End", () =>
-                        {
-                            if (index >= RTEditor.inst.editorInfo.pinnedEditorLayers.Count - 1)
-                            {
-                                EditorManager.inst.DisplayNotification("Could not move the pinned editor layer down since it's already at the end.", 3f, EditorManager.NotificationType.Error);
-                                return;
-                            }
-
-                            RTEditor.inst.editorInfo.pinnedEditorLayers.Move(index, RTEditor.inst.editorInfo.pinnedEditorLayers.Count - 1);
-                            RenderPopup();
-                        })
-                        );
+                    new ButtonElement("Go to Layer", () => EditorTimeline.inst.SetLayer(pinnedEditorLayer.layer, pinnedEditorLayer.layerType)),
+                    new ButtonElement("Set to Current Layer", () =>
+                    {
+                        pinnedEditorLayer.layer = EditorTimeline.inst.Layer;
+                        pinnedEditorLayer.layerType = EditorTimeline.inst.layerType;
+                        EditorTimeline.inst.RenderLayerInput(pinnedEditorLayer.layer, pinnedEditorLayer.layerType);
+                        RenderDialog();
+                        RenderPopup();
+                    }),
+                    new ButtonElement("Edit", () =>
+                    {
+                        CurrentPinnedEditorLayer = pinnedEditorLayer;
+                        if (!Dialog.IsCurrent)
+                            Dialog.Open();
+                        RenderDialog();
+                    }),
+                    new ButtonElement("Delete", () =>
+                    {
+                        RTEditor.inst.editorInfo.pinnedEditorLayers.RemoveAt(index);
+                        CurrentPinnedEditorLayer = null;
+                        if (Dialog.IsCurrent)
+                            Dialog.Close();
+                        RenderPopup();
+                    }),
+                    new ButtonElement("Clear All", () =>
+                    {
+                        RTEditor.inst.editorInfo.pinnedEditorLayers.Clear();
+                        CurrentPinnedEditorLayer = null;
+                        if (Dialog.IsCurrent)
+                            Dialog.Close();
+                        RenderPopup();
+                    }),
+                    new SpacerElement(),
+                    new ButtonElement("Copy", () =>
+                    {
+                        copiedPinnedEditorLayers.Clear();
+                        copiedPinnedEditorLayers.Add(pinnedEditorLayer);
+                    }),
+                    new ButtonElement("Copy All", () =>
+                    {
+                        copiedPinnedEditorLayers.Clear();
+                        copiedPinnedEditorLayers.AddRange(RTEditor.inst.editorInfo.pinnedEditorLayers);
+                    }),
+                    new ButtonElement("Paste", () =>
+                    {
+                        RTEditor.inst.editorInfo.pinnedEditorLayers.AddRange(copiedPinnedEditorLayers);
+                        RenderPopup();
+                    }),
+                    new SpacerElement(),
                 };
+                buttonFunctions.AddRange(EditorContextMenu.GetMoveIndexFunctions(RTEditor.inst.editorInfo.pinnedEditorLayers, index, RenderPopup));
+                EditorContextMenu.AddContextMenu(gameObject, buttonFunctions);
 
                 var text = gameObject.transform.GetChild(0).GetComponent<Text>();
                 text.text = $"[{EditorTimeline.GetLayerString(pinnedEditorLayer.layer)}, {pinnedEditorLayer.layerType}] - {pinnedEditorLayer.name}";
@@ -350,53 +302,7 @@ namespace BetterLegacy.Editor.Managers
                     return;
 
                 var currentHexColor = Dialog.ColorField.text;
-                EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction("Edit Color", () =>
-                    {
-                        RTColorPicker.inst.Show(RTColors.HexToColor(currentHexColor),
-                            (col, hex) =>
-                            {
-                                Dialog.ColorField.SetTextWithoutNotify(hex);
-                            },
-                            (col, hex) =>
-                            {
-                                // set the input field's text empty so it notices there was a change
-                                Dialog.ColorField.SetTextWithoutNotify(string.Empty);
-                                Dialog.ColorField.text = hex;
-                            }, () =>
-                            {
-                                Dialog.ColorField.SetTextWithoutNotify(currentHexColor);
-                            });
-                    }),
-                    new ButtonFunction("Clear", () =>
-                    {
-                        Dialog.ColorField.text = string.Empty;
-                    }),
-                    new ButtonFunction(true),
-                    new ButtonFunction("VG Red", () =>
-                    {
-                        Dialog.ColorField.text = ObjectEditorData.RED;
-                    }),
-                    new ButtonFunction("VG Red Green", () =>
-                    {
-                        Dialog.ColorField.text = ObjectEditorData.RED_GREEN;
-                    }),
-                    new ButtonFunction("VG Green", () =>
-                    {
-                        Dialog.ColorField.text = ObjectEditorData.GREEN;
-                    }),
-                    new ButtonFunction("VG Green Blue", () =>
-                    {
-                        Dialog.ColorField.text = ObjectEditorData.GREEN_BLUE;
-                    }),
-                    new ButtonFunction("VG Blue", () =>
-                    {
-                        Dialog.ColorField.text = ObjectEditorData.BLUE;
-                    }),
-                    new ButtonFunction("VG Blue Red", () =>
-                    {
-                        Dialog.ColorField.text = ObjectEditorData.RED_BLUE;
-                    }));
+                EditorContextMenu.inst.ShowContextMenu(EditorContextMenu.GetEditorColorFunctions(Dialog.ColorField, () => currentHexColor));
             };
         }
 

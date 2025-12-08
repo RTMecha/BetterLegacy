@@ -72,26 +72,26 @@ namespace BetterLegacy.Editor.Components
 
             if (part == DragPart.Base && eventData.button == PointerEventData.InputButton.Right)
             {
-                var buttonFunctions = new List<ButtonFunction>
+                var buttonFunctions = new List<EditorElement>
                 {
-                    new ButtonFunction("Edit", () => ProjectPlanner.inst.OpenNoteEditor(note)),
-                    new ButtonFunction("Delete", () =>
+                    new ButtonElement("Edit", () => ProjectPlanner.inst.OpenNoteEditor(note)),
+                    new ButtonElement("Delete", () =>
                     {
                         ProjectPlanner.inst.notes.RemoveAll(x => x is NotePlanner && x.ID == note.ID);
                         ProjectPlanner.inst.SaveNotes();
                         CoreHelper.Destroy(note.GameObject);
                     }),
-                    new ButtonFunction(true),
-                    new ButtonFunction("Copy", () =>
+                    new SpacerElement(),
+                    new ButtonElement("Copy", () =>
                     {
                         ProjectPlanner.inst.copiedPlanners.Clear();
                         ProjectPlanner.inst.copiedPlanners.Add(note);
                         EditorManager.inst.DisplayNotification("Copied note!", 2f, EditorManager.NotificationType.Success);
                     }),
-                    new ButtonFunction("Copy Selected", ProjectPlanner.inst.CopySelectedPlanners),
-                    new ButtonFunction("Copy Current Tab", ProjectPlanner.inst.CopyCurrentTabPlanners),
-                    new ButtonFunction("Paste", ProjectPlanner.inst.PastePlanners),
-                    new ButtonFunction(true),
+                    new ButtonElement("Copy Selected", ProjectPlanner.inst.CopySelectedPlanners),
+                    new ButtonElement("Copy Current Tab", ProjectPlanner.inst.CopyCurrentTabPlanners),
+                    new ButtonElement("Paste", ProjectPlanner.inst.PastePlanners),
+                    new SpacerElement(),
                 };
 
                 buttonFunctions.AddRange(EditorContextMenu.GetMoveIndexFunctions(ProjectPlanner.inst.notes, () => ProjectPlanner.inst.notes.IndexOf(note), () =>
@@ -101,23 +101,23 @@ namespace BetterLegacy.Editor.Components
                     ProjectPlanner.inst.RefreshList();
                 }));
 
-                buttonFunctions.Add(new ButtonFunction(true));
-                buttonFunctions.Add(new ButtonFunction("Reset All", () =>
+                buttonFunctions.Add(new SpacerElement());
+                buttonFunctions.Add(new ButtonElement("Reset All", () =>
                 {
                     note.ResetTransform();
                     ProjectPlanner.inst.SaveNotes();
                 }));
-                buttonFunctions.Add(new ButtonFunction("Reset Position", () =>
+                buttonFunctions.Add(new ButtonElement("Reset Position", () =>
                 {
                     note.ResetPosition();
                     ProjectPlanner.inst.SaveNotes();
                 }));
-                buttonFunctions.Add(new ButtonFunction("Reset Scale", () =>
+                buttonFunctions.Add(new ButtonElement("Reset Scale", () =>
                 {
                     note.ResetScale();
                     ProjectPlanner.inst.SaveNotes();
                 }));
-                buttonFunctions.Add(new ButtonFunction("Reset Size", () =>
+                buttonFunctions.Add(new ButtonElement("Reset Size", () =>
                 {
                     note.ResetSize();
                     ProjectPlanner.inst.SaveNotes();

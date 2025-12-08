@@ -1007,75 +1007,8 @@ namespace BetterLegacy.Editor.Managers
                 RenderIndex(backgroundObject);
             }));
 
-            var contextMenu = Dialog.EditorIndexField.inputField.gameObject.GetOrAddComponent<ContextClickable>();
-            contextMenu.onClick = pointerEventData =>
-            {
-                if (pointerEventData.button != PointerEventData.InputButton.Right)
-                    return;
-
-                EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction("Select Previous", () =>
-                    {
-                        if (currentIndex <= 0)
-                        {
-                            EditorManager.inst.DisplayNotification($"There are no previous objects to select.", 2f, EditorManager.NotificationType.Error);
-                            return;
-                        }
-
-                        var prevObject = GameData.Current.backgroundObjects[currentIndex - 1];
-
-                        if (!prevObject)
-                            return;
-
-                        var timelineObject = EditorTimeline.inst.GetTimelineObject(prevObject);
-
-                        if (timelineObject)
-                            EditorTimeline.inst.SetCurrentObject(timelineObject, EditorConfig.Instance.BringToSelection.Value);
-                    }),
-                    new ButtonFunction("Select Previous", () =>
-                    {
-                        if (currentIndex >= GameData.Current.backgroundObjects.Count - 1)
-                        {
-                            EditorManager.inst.DisplayNotification($"There are no previous objects to select.", 2f, EditorManager.NotificationType.Error);
-                            return;
-                        }
-
-                        var nextObject = GameData.Current.backgroundObjects[currentIndex + 1];
-
-                        if (!nextObject)
-                            return;
-
-                        var timelineObject = EditorTimeline.inst.GetTimelineObject(nextObject);
-
-                        if (timelineObject)
-                            EditorTimeline.inst.SetCurrentObject(timelineObject, EditorConfig.Instance.BringToSelection.Value);
-                    }),
-                    new ButtonFunction(true),
-                    new ButtonFunction("Select First", () =>
-                    {
-                        var prevObject = GameData.Current.backgroundObjects.First();
-
-                        if (!prevObject)
-                            return;
-
-                        var timelineObject = EditorTimeline.inst.GetTimelineObject(prevObject);
-
-                        if (timelineObject)
-                            EditorTimeline.inst.SetCurrentObject(timelineObject, EditorConfig.Instance.BringToSelection.Value);
-                    }),
-                    new ButtonFunction("Select Last", () =>
-                    {
-                        var nextObject = GameData.Current.backgroundObjects.Last();
-
-                        if (!nextObject)
-                            return;
-
-                        var timelineObject = EditorTimeline.inst.GetTimelineObject(nextObject);
-
-                        if (timelineObject)
-                            EditorTimeline.inst.SetCurrentObject(timelineObject, EditorConfig.Instance.BringToSelection.Value);
-                    }));
-            };
+            EditorContextMenu.AddContextMenu(Dialog.EditorIndexField.inputField.gameObject,
+                EditorContextMenu.GetIndexerFunctions(currentIndex, GameData.Current.backgroundObjects));
         }
 
         public void RenderEditorColors(BackgroundObject backgroundObject)
@@ -1133,53 +1066,7 @@ namespace BetterLegacy.Editor.Managers
             };
         }
 
-        public void RenderPrefabReference(BackgroundObject backgroundObject)
-        {
-            bool fromPrefab = !string.IsNullOrEmpty(backgroundObject.prefabID);
-            Dialog.CollapsePrefabLabel.SetActive(fromPrefab);
-            Dialog.CollapsePrefabButton.gameObject.SetActive(fromPrefab);
-            Dialog.CollapsePrefabButton.OnClick.ClearAll();
-
-            var collapsePrefabContextMenu = Dialog.CollapsePrefabButton.button.gameObject.GetOrAddComponent<ContextClickable>();
-            collapsePrefabContextMenu.onClick = null;
-            collapsePrefabContextMenu.onClick = pointerEventData =>
-            {
-                if (pointerEventData.button != PointerEventData.InputButton.Right)
-                {
-                    if (EditorConfig.Instance.ShowCollapsePrefabWarning.Value)
-                    {
-                        RTEditor.inst.ShowWarningPopup("Are you sure you want to collapse this Prefab group and save the changes to the Internal Prefab?", () =>
-                        {
-                            RTPrefabEditor.inst.Collapse(backgroundObject, backgroundObject.editorData);
-                            RTEditor.inst.HideWarningPopup();
-                        }, RTEditor.inst.HideWarningPopup);
-
-                        return;
-                    }
-
-                    RTPrefabEditor.inst.Collapse(backgroundObject, backgroundObject.editorData);
-                    return;
-                }
-
-                EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction("Apply", () => RTPrefabEditor.inst.Collapse(backgroundObject, backgroundObject.editorData)),
-                    new ButtonFunction("Create New", () => RTPrefabEditor.inst.Collapse(backgroundObject, backgroundObject.editorData, true))
-                    );
-            };
-
-            Dialog.AssignPrefabButton.OnClick.NewListener(() =>
-            {
-                RTEditor.inst.selectingMultiple = false;
-                RTEditor.inst.prefabPickerEnabled = true;
-            });
-
-            Dialog.RemovePrefabButton.OnClick.NewListener(() =>
-            {
-                backgroundObject.RemovePrefabReference();
-                EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(backgroundObject));
-                OpenDialog(backgroundObject);
-            });
-        }
+        public void RenderPrefabReference(BackgroundObject backgroundObject) => RTEditor.inst.RenderPrefabable(backgroundObject, Dialog);
 
         #endregion
 
@@ -1558,22 +1445,11 @@ namespace BetterLegacy.Editor.Managers
 
                 image.color = ThemeManager.inst.Current.GetBGColor(backgroundObject.color);
 
-                var contextClickable = gameObject.AddComponent<ContextClickable>();
-                contextClickable.onClick = eventData =>
-                {
-                    if (eventData.button != PointerEventData.InputButton.Right)
-                    {
-                        SetCurrentBackground(backgroundObject);
-                        return;
-                    }
-
-                    EditorContextMenu.inst.ShowContextMenu(
-                        new ButtonFunction("Select", () => SetCurrentBackground(backgroundObject)),
-                        new ButtonFunction("Delete", () => DeleteBackground(backgroundObject)),
-                        new ButtonFunction(true),
-                        new ButtonFunction("Inspect", () => ModCompatibility.Inspect(backgroundObject))
-                        );
-                };
+                EditorContextMenu.AddContextMenu(gameObject, leftClick: () => SetCurrentBackground(backgroundObject),
+                    new ButtonElement("Select", () => SetCurrentBackground(backgroundObject)),
+                    new ButtonElement("Delete", () => DeleteBackground(backgroundObject)),
+                    new SpacerElement(),
+                    new ButtonElement("Inspect", () => ModCompatibility.Inspect(backgroundObject)));
 
                 EditorThemeManager.ApplyGraphic(gameObject.GetComponent<Image>(), ThemeGroup.List_Button_2_Normal, true);
                 EditorThemeManager.ApplyGraphic(image, ThemeGroup.Null, true);

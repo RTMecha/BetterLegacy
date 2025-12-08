@@ -263,7 +263,7 @@ namespace BetterLegacy.Editor.Managers
             Dialog.TimeField.middleButton.onClick.NewListener(() => Dialog.TimeField.inputField.text = AudioManager.inst.CurrentAudioSource.time.ToString());
 
             EditorContextMenu.AddContextMenu(Dialog.TimeField.inputField.gameObject,
-                new ButtonFunction("Snap to BPM", () => Dialog.TimeField.inputField.text = RTEditor.SnapToBPM(marker.time).ToString()));
+                new ButtonElement("Snap to BPM", () => Dialog.TimeField.inputField.text = RTEditor.SnapToBPM(marker.time).ToString()));
         }
 
         /// <summary>
@@ -294,23 +294,15 @@ namespace BetterLegacy.Editor.Managers
                     UpdateColorSelection();
                 });
 
-                var contextClickable = gameObject.AddComponent<ContextClickable>();
-                contextClickable.onClick = eventData =>
-                {
-                    if (eventData.button != PointerEventData.InputButton.Right)
-                        return;
-
-                    EditorContextMenu.inst.ShowContextMenu(
-                        new ButtonFunction("Use", () =>
-                        {
-                            Debug.Log($"{EditorManager.inst.className}Set Marker {colorIndex}'s color to {colorIndex}");
-                            SetColor(colorIndex);
-                            UpdateColorSelection();
-                        }),
-                        new ButtonFunction("Set as Default", () => EditorConfig.Instance.MarkerDefaultColor.Value = colorIndex),
-                        new ButtonFunction("Edit Colors", RTSettingEditor.inst.OpenDialog)
-                        );
-                };
+                EditorContextMenu.AddContextMenu(gameObject,
+                    new ButtonElement("Use", () =>
+                    {
+                        Debug.Log($"{EditorManager.inst.className}Set Marker {colorIndex}'s color to {colorIndex}");
+                        SetColor(colorIndex);
+                        UpdateColorSelection();
+                    }),
+                    new ButtonElement("Set as Default", () => EditorConfig.Instance.MarkerDefaultColor.Value = colorIndex),
+                    new ButtonElement("Edit Colors", RTSettingEditor.inst.OpenDialog));
 
                 EditorThemeManager.ApplyGraphic(button.image, ThemeGroup.Null, true);
                 EditorThemeManager.ApplyGraphic(gameObject.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Background_1);
@@ -580,121 +572,118 @@ namespace BetterLegacy.Editor.Managers
         /// Shows the marker context menu for a timeline marker.
         /// </summary>
         /// <param name="timelineMarker">Timeline marker to use.</param>
-        public void ShowMarkerContextMenu(TimelineMarker timelineMarker)
-        {
-            EditorContextMenu.inst.ShowContextMenu(
-                new ButtonFunction("Open", () => SetCurrentMarker(timelineMarker)),
-                new ButtonFunction("Open & Bring To", () => SetCurrentMarker(timelineMarker, true)),
-                new ButtonFunction(true),
-                new ButtonFunction("Copy", () =>
+        public void ShowMarkerContextMenu(TimelineMarker timelineMarker) => EditorContextMenu.inst.ShowContextMenu(
+            new ButtonElement("Open", () => SetCurrentMarker(timelineMarker)),
+            new ButtonElement("Open & Bring To", () => SetCurrentMarker(timelineMarker, true)),
+            new SpacerElement(),
+            new ButtonElement("Copy", () =>
+            {
+                if (!timelineMarker.Marker)
+                    return;
+
+                markerCopy = timelineMarker.Marker.Copy();
+                EditorManager.inst.DisplayNotification("Copied Marker", 1.5f, EditorManager.NotificationType.Success);
+            }),
+            new ButtonElement("Copy All", CopyAllMarkers),
+            new ButtonElement("Paste", () =>
+            {
+                if (!markerCopy)
                 {
-                    if (!timelineMarker.Marker)
-                        return;
+                    EditorManager.inst.DisplayNotification("No copied Marker yet!", 1.5f, EditorManager.NotificationType.Error);
+                    return;
+                }
 
-                    markerCopy = timelineMarker.Marker.Copy();
-                    EditorManager.inst.DisplayNotification("Copied Marker", 1.5f, EditorManager.NotificationType.Success);
-                }),
-                new ButtonFunction("Copy All", CopyAllMarkers),
-                new ButtonFunction("Paste", () =>
+                var marker = markerCopy.Copy();
+                marker.time = RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsPasted.Value && EditorConfig.Instance.BPMSnapsMarkers.Value ? RTEditor.SnapToBPM(EditorManager.inst.CurrentAudioPos) : EditorManager.inst.CurrentAudioPos;
+                GameData.Current.data.markers.Add(marker);
+                CreateMarker(GameData.Current.data.markers.Count - 1);
+                OrderMarkers();
+                EditorManager.inst.DisplayNotification("Pasted Marker", 1.5f, EditorManager.NotificationType.Success);
+            }),
+            new ButtonElement("Paste All", PasteMarkers),
+            new ButtonElement("Delete", () => DeleteMarker(timelineMarker.Index)),
+            new SpacerElement(),
+            new ButtonElement("Start Marker Looping", () =>
+            {
+                if (!markerLoopBegin && !markerLoopEnd)
                 {
-                    if (!markerCopy)
-                    {
-                        EditorManager.inst.DisplayNotification("No copied Marker yet!", 1.5f, EditorManager.NotificationType.Error);
-                        return;
-                    }
-
-                    var marker = markerCopy.Copy();
-                    marker.time = RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsPasted.Value && EditorConfig.Instance.BPMSnapsMarkers.Value ? RTEditor.SnapToBPM(EditorManager.inst.CurrentAudioPos) : EditorManager.inst.CurrentAudioPos;
-                    GameData.Current.data.markers.Add(marker);
-                    CreateMarker(GameData.Current.data.markers.Count - 1);
-                    OrderMarkers();
-                    EditorManager.inst.DisplayNotification("Pasted Marker", 1.5f, EditorManager.NotificationType.Success);
-                }),
-                new ButtonFunction("Paste All", PasteMarkers),
-                new ButtonFunction("Delete", () => DeleteMarker(timelineMarker.Index)),
-                new ButtonFunction(true),
-                new ButtonFunction("Start Marker Looping", () =>
-                {
-                    if (!markerLoopBegin && !markerLoopEnd)
-                    {
-                        markerLooping = false;
-                        EditorManager.inst.DisplayNotification("Cannot start Marker looping without a start and end Marker set.", 3f, EditorManager.NotificationType.Warning);
-                        return;
-                    }
-                    
-                    if (!markerLoopBegin)
-                    {
-                        markerLooping = false;
-                        EditorManager.inst.DisplayNotification("Cannot start Marker looping without a start Marker set.", 3f, EditorManager.NotificationType.Warning);
-                        return;
-                    }
-                    
-                    if (!markerLoopEnd)
-                    {
-                        markerLooping = false;
-                        EditorManager.inst.DisplayNotification("Cannot start Marker looping without an end Marker set.", 3f, EditorManager.NotificationType.Warning);
-                        return;
-                    }
-
-                    markerLooping = true;
-                    EditorManager.inst.DisplayNotification("Started Marker looping!", 1.5f, EditorManager.NotificationType.Success);
-                }),
-                new ButtonFunction("Stop Marker Looping", () => markerLooping = false),
-                new ButtonFunction("Set Begin Loop", () =>
-                {
-                    if (markerLoopEnd && markerLoopEnd.Marker && timelineMarker.Marker && markerLoopEnd.Marker.id == timelineMarker.Marker.id)
-                    {
-                        EditorManager.inst.DisplayNotification("Cannot set this Marker as the start of the Marker loop as it is also the end.", 3f, EditorManager.NotificationType.Warning);
-                        return;
-                    }
-
-                    markerLoopBegin?.RenderFlags(false, false);
-                    markerLoopBegin = timelineMarker;
-                    markerLoopBegin.RenderFlags(true, false);
-
-                    if (markerLoopBegin && markerLoopEnd)
-                    {
-                        markerLooping = true;
-                        EditorManager.inst.DisplayNotification("Marker set to start of Marker loop and began the loop.", 2f, EditorManager.NotificationType.Success);
-                    }
-                    else
-                        EditorManager.inst.DisplayNotification("Marker has been set to the start of the Marker loop.", 3f, EditorManager.NotificationType.Success);
-                }),
-                new ButtonFunction("Set End Loop", () =>
-                {
-                    if (markerLoopBegin && markerLoopBegin.Marker && timelineMarker.Marker && markerLoopBegin.Marker.id == timelineMarker.Marker.id)
-                    {
-                        EditorManager.inst.DisplayNotification("Cannot set this Marker as the end of the Marker loop as it is also the start.", 3f, EditorManager.NotificationType.Warning);
-                        return;
-                    }
-
-                    markerLoopEnd?.RenderFlags(false, false);
-                    markerLoopEnd = timelineMarker;
-                    markerLoopEnd.RenderFlags(false, true);
-
-                    if (markerLoopBegin && markerLoopEnd)
-                    {
-                        markerLooping = true;
-                        EditorManager.inst.DisplayNotification("Marker set to end of Marker loop and began the loop.", 2f, EditorManager.NotificationType.Success);
-                    }
-                    else
-                        EditorManager.inst.DisplayNotification("Marker has been set to the end of the Marker loop.", 3f, EditorManager.NotificationType.Success);
-                }),
-                new ButtonFunction("Clear Marker Loop", () =>
-                {
-                    markerLoopBegin?.RenderFlags(false, false);
-                    markerLoopBegin = null;
-                    markerLoopEnd?.RenderFlags(false, false);
-                    markerLoopEnd = null;
                     markerLooping = false;
-                    EditorManager.inst.DisplayNotification("Stopped and cleared Marker loop.", 3f, EditorManager.NotificationType.Success);
-                }),
-                new ButtonFunction(true),
-                new ButtonFunction("Run Functions", () => RunMarkerFunctions(timelineMarker.Marker)),
-                new ButtonFunction(true),
-                new ButtonFunction("Convert to Planner Note", timelineMarker.ToPlannerNote)
-                );
-        }
+                    EditorManager.inst.DisplayNotification("Cannot start Marker looping without a start and end Marker set.", 3f, EditorManager.NotificationType.Warning);
+                    return;
+                }
+                    
+                if (!markerLoopBegin)
+                {
+                    markerLooping = false;
+                    EditorManager.inst.DisplayNotification("Cannot start Marker looping without a start Marker set.", 3f, EditorManager.NotificationType.Warning);
+                    return;
+                }
+                    
+                if (!markerLoopEnd)
+                {
+                    markerLooping = false;
+                    EditorManager.inst.DisplayNotification("Cannot start Marker looping without an end Marker set.", 3f, EditorManager.NotificationType.Warning);
+                    return;
+                }
+
+                markerLooping = true;
+                EditorManager.inst.DisplayNotification("Started Marker looping!", 1.5f, EditorManager.NotificationType.Success);
+            }),
+            new ButtonElement("Stop Marker Looping", () => markerLooping = false),
+            new ButtonElement("Set Begin Loop", () =>
+            {
+                if (markerLoopEnd && markerLoopEnd.Marker && timelineMarker.Marker && markerLoopEnd.Marker.id == timelineMarker.Marker.id)
+                {
+                    EditorManager.inst.DisplayNotification("Cannot set this Marker as the start of the Marker loop as it is also the end.", 3f, EditorManager.NotificationType.Warning);
+                    return;
+                }
+
+                markerLoopBegin?.RenderFlags(false, false);
+                markerLoopBegin = timelineMarker;
+                markerLoopBegin.RenderFlags(true, false);
+
+                if (markerLoopBegin && markerLoopEnd)
+                {
+                    markerLooping = true;
+                    EditorManager.inst.DisplayNotification("Marker set to start of Marker loop and began the loop.", 2f, EditorManager.NotificationType.Success);
+                }
+                else
+                    EditorManager.inst.DisplayNotification("Marker has been set to the start of the Marker loop.", 3f, EditorManager.NotificationType.Success);
+            }),
+            new ButtonElement("Set End Loop", () =>
+            {
+                if (markerLoopBegin && markerLoopBegin.Marker && timelineMarker.Marker && markerLoopBegin.Marker.id == timelineMarker.Marker.id)
+                {
+                    EditorManager.inst.DisplayNotification("Cannot set this Marker as the end of the Marker loop as it is also the start.", 3f, EditorManager.NotificationType.Warning);
+                    return;
+                }
+
+                markerLoopEnd?.RenderFlags(false, false);
+                markerLoopEnd = timelineMarker;
+                markerLoopEnd.RenderFlags(false, true);
+
+                if (markerLoopBegin && markerLoopEnd)
+                {
+                    markerLooping = true;
+                    EditorManager.inst.DisplayNotification("Marker set to end of Marker loop and began the loop.", 2f, EditorManager.NotificationType.Success);
+                }
+                else
+                    EditorManager.inst.DisplayNotification("Marker has been set to the end of the Marker loop.", 3f, EditorManager.NotificationType.Success);
+            }),
+            new ButtonElement("Clear Marker Loop", () =>
+            {
+                markerLoopBegin?.RenderFlags(false, false);
+                markerLoopBegin = null;
+                markerLoopEnd?.RenderFlags(false, false);
+                markerLoopEnd = null;
+                markerLooping = false;
+                EditorManager.inst.DisplayNotification("Stopped and cleared Marker loop.", 3f, EditorManager.NotificationType.Success);
+            }),
+            new SpacerElement(),
+            new ButtonElement("Run Functions", () => RunMarkerFunctions(timelineMarker.Marker)),
+            new SpacerElement(),
+            new ButtonElement("Convert to Planner Note", timelineMarker.ToPlannerNote)
+            );
 
         /// <summary>
         /// Creates a timeline marker for the marker at a specific index.

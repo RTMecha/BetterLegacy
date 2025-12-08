@@ -215,41 +215,25 @@ namespace BetterLegacy.Editor.Managers
                 PrefabEditor.inst.externalPrefabDialog = prefabPopup.Find("external prefabs");
                 PrefabEditor.inst.internalPrefabDialog = prefabPopup.Find("internal prefabs");
 
-                var externalContextClickable = PrefabEditor.inst.externalPrefabDialog.gameObject.AddComponent<ContextClickable>();
-                externalContextClickable.onClick = eventData =>
-                {
-                    if (eventData.button != PointerEventData.InputButton.Right)
-                        return;
-
-                    EditorContextMenu.inst.ShowContextMenu(
-                        new ButtonFunction("Create folder", () =>
+                EditorContextMenu.AddContextMenu(PrefabEditor.inst.externalPrefabDialog.gameObject,
+                        new ButtonElement("Create folder", () =>
                         {
                             RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath), () => { LoadPrefabs(RenderExternalPrefabs); ; RTEditor.inst.HideNameEditor(); });
                         }),
-                        new ButtonFunction("Create Prefab", () =>
+                        new ButtonElement("Create Prefab", () =>
                         {
                             PrefabEditor.inst.OpenDialog();
                             createInternal = false;
                         }),
-                        new ButtonFunction(true),
-                        new ButtonFunction("Paste", PastePrefab)
-                        );
-                };
+                        new SpacerElement(),
+                        new ButtonElement("Paste", PastePrefab));
                 
-                var internalContextClickable = PrefabEditor.inst.internalPrefabDialog.gameObject.AddComponent<ContextClickable>();
-                internalContextClickable.onClick = eventData =>
-                {
-                    if (eventData.button != PointerEventData.InputButton.Right)
-                        return;
-
-                    EditorContextMenu.inst.ShowContextMenu(
-                        new ButtonFunction("Create Prefab", () =>
-                        {
-                            PrefabEditor.inst.OpenDialog();
-                            createInternal = true;
-                        })
-                        );
-                };
+                EditorContextMenu.AddContextMenu(PrefabEditor.inst.internalPrefabDialog.gameObject,
+                    new ButtonElement("Create Prefab", () =>
+                    {
+                        PrefabEditor.inst.OpenDialog();
+                        createInternal = true;
+                    }));
 
                 PrefabEditor.inst.externalSearch = PrefabEditor.inst.externalPrefabDialog.Find("search-box/search").GetComponent<InputField>();
                 PrefabEditor.inst.internalSearch = PrefabEditor.inst.internalPrefabDialog.Find("search-box/search").GetComponent<InputField>();
@@ -288,42 +272,28 @@ namespace BetterLegacy.Editor.Managers
             selectQuickPrefabButton = PrefabEditor.inst.internalPrefabDialog.Find("select_prefab/select_toggle").GetComponent<Button>();
             selectQuickPrefabText = PrefabEditor.inst.internalPrefabDialog.Find("select_prefab/selected_prefab").GetComponent<Text>();
 
-            var selectToggle = selectQuickPrefabButton.gameObject.AddComponent<ContextClickable>();
-            selectToggle.onClick = eventData =>
-            {
-                if (eventData.button != PointerEventData.InputButton.Right)
-                    return;
-
-                EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction("Assign", () =>
-                    {
-                        selectQuickPrefabText.text = "<color=#669e37>Selecting</color>";
-                        StartCoroutine(RefreshInternalPrefabs(true));
-                    }),
-                    new ButtonFunction("Remove", () =>
-                    {
-                        currentQuickPrefab = null;
-                        RenderPopup();
-                    }),
-                    new ButtonFunction("Select Target", () =>
-                    {
-                        EditorTimeline.inst.onSelectTimelineObject = timelineObject =>
-                        {
-                            if (!timelineObject.isBeatmapObject)
-                            {
-                                quickPrefabTarget = null;
-                                return;
-                            }
-
-                            quickPrefabTarget = timelineObject.GetData<BeatmapObject>();
-                        };
-                    }),
-                    new ButtonFunction("Remove Target", () =>
+            EditorContextMenu.AddContextMenu(selectQuickPrefabButton.gameObject,
+                new ButtonElement("Assign", () =>
+                {
+                    selectQuickPrefabText.text = "<color=#669e37>Selecting</color>";
+                    StartCoroutine(RefreshInternalPrefabs(true));
+                }),
+                new ButtonElement("Remove", () =>
+                {
+                    currentQuickPrefab = null;
+                    RenderPopup();
+                }),
+                new ButtonElement("Select Target", () => EditorTimeline.inst.onSelectTimelineObject = timelineObject =>
+                {
+                    if (!timelineObject.isBeatmapObject)
                     {
                         quickPrefabTarget = null;
-                    })
-                    );
-            };
+                        return;
+                    }
+
+                    quickPrefabTarget = timelineObject.GetData<BeatmapObject>();
+                }),
+                new ButtonElement("Remove Target", () => quickPrefabTarget = null));
 
             try
             {
@@ -539,17 +509,9 @@ namespace BetterLegacy.Editor.Managers
             TriggerHelper.IncreaseDecreaseButtons(PrefabObjectEditor.StartTimeField);
             TriggerHelper.AddEventTriggers(PrefabObjectEditor.StartTimeField.inputField.gameObject, TriggerHelper.ScrollDelta(PrefabObjectEditor.StartTimeField.inputField));
 
-            var startTimeContextMenu = PrefabObjectEditor.StartTimeField.inputField.gameObject.GetOrAddComponent<ContextClickable>();
-            startTimeContextMenu.onClick = null;
-            startTimeContextMenu.onClick = pointerEventData =>
-            {
-                if (pointerEventData.button != PointerEventData.InputButton.Right)
-                    return;
-
-                EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction("Go to Start Time", () => AudioManager.inst.SetMusicTime(prefabObject.StartTime)),
-                    new ButtonFunction("Go to Spawn Time", () => AudioManager.inst.SetMusicTime(prefabObject.StartTime + prefabObject.GetPrefab().offset)));
-            };
+            EditorContextMenu.AddContextMenu(PrefabObjectEditor.StartTimeField.inputField.gameObject,
+                new ButtonElement("Go to Start Time", () => AudioManager.inst.SetMusicTime(prefabObject.StartTime)),
+                new ButtonElement("Go to Spawn Time", () => AudioManager.inst.SetMusicTime(prefabObject.StartTime + prefabObject.GetPrefab().offset)));
 
             PrefabObjectEditor.StartTimeField.middleButton.onClick.NewListener(() =>
             {
@@ -1014,87 +976,8 @@ namespace BetterLegacy.Editor.Managers
                 RenderPrefabObjectIndex(prefabObject);
             }));
 
-            var contextMenu = PrefabObjectEditor.EditorIndexField.inputField.gameObject.GetOrAddComponent<ContextClickable>();
-            contextMenu.onClick = pointerEventData =>
-            {
-                if (pointerEventData.button != PointerEventData.InputButton.Right)
-                    return;
-
-                EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction("Select Previous", () =>
-                    {
-                        if (currentIndex <= 0)
-                        {
-                            EditorManager.inst.DisplayNotification($"There are no previous objects to select.", 2f, EditorManager.NotificationType.Error);
-                            return;
-                        }
-
-                        var prevObject = GameData.Current.prefabObjects[currentIndex - 1];
-
-                        if (!prevObject)
-                            return;
-
-                        var timelineObject = EditorTimeline.inst.GetTimelineObject(prevObject);
-
-                        if (timelineObject)
-                            EditorTimeline.inst.SetCurrentObject(timelineObject, EditorConfig.Instance.BringToSelection.Value);
-                    }),
-                    new ButtonFunction("Select Previous", () =>
-                    {
-                        if (currentIndex >= GameData.Current.prefabObjects.Count - 1)
-                        {
-                            EditorManager.inst.DisplayNotification($"There are no previous objects to select.", 2f, EditorManager.NotificationType.Error);
-                            return;
-                        }
-
-                        var nextObject = GameData.Current.prefabObjects[currentIndex + 1];
-
-                        if (!nextObject)
-                            return;
-
-                        var timelineObject = EditorTimeline.inst.GetTimelineObject(nextObject);
-
-                        if (timelineObject)
-                            EditorTimeline.inst.SetCurrentObject(timelineObject, EditorConfig.Instance.BringToSelection.Value);
-                    }),
-                    new ButtonFunction(true),
-                    new ButtonFunction("Select First", () =>
-                    {
-                        if (GameData.Current.prefabObjects.IsEmpty())
-                        {
-                            EditorManager.inst.DisplayNotification($"There are no Prefab Objects!", 3f, EditorManager.NotificationType.Warning);
-                            return;
-                        }
-
-                        var prevObject = GameData.Current.prefabObjects.First();
-
-                        if (!prevObject)
-                            return;
-
-                        var timelineObject = EditorTimeline.inst.GetTimelineObject(prevObject);
-
-                        if (timelineObject)
-                            EditorTimeline.inst.SetCurrentObject(timelineObject, EditorConfig.Instance.BringToSelection.Value);
-                    }),
-                    new ButtonFunction("Select Last", () =>
-                    {
-                        if (GameData.Current.prefabObjects.IsEmpty())
-                        {
-                            EditorManager.inst.DisplayNotification($"There are no Prefab Objects!", 3f, EditorManager.NotificationType.Warning);
-                            return;
-                        }
-
-                        var nextObject = GameData.Current.prefabObjects.Last();
-
-                        if (!nextObject)
-                            return;
-
-                        var timelineObject = EditorTimeline.inst.GetTimelineObject(nextObject);
-
-                        if (timelineObject)
-                            EditorTimeline.inst.SetCurrentObject(timelineObject, EditorConfig.Instance.BringToSelection.Value);
-                    }));
-            };
+            EditorContextMenu.AddContextMenu(PrefabObjectEditor.EditorIndexField.inputField.gameObject,
+                EditorContextMenu.GetIndexerFunctions(currentIndex, GameData.Current.prefabObjects));
         }
 
         public void RenderEditorColors(PrefabObject prefabObject)
@@ -1184,35 +1067,27 @@ namespace BetterLegacy.Editor.Managers
             TriggerHelper.IncreaseDecreaseButtons(PrefabObjectEditor.OffsetField.inputField, t: PrefabObjectEditor.OffsetField.transform);
             TriggerHelper.AddEventTriggers(PrefabObjectEditor.OffsetField.inputField.gameObject, TriggerHelper.ScrollDelta(PrefabObjectEditor.OffsetField.inputField));
 
-            var offsetContextMenu = PrefabObjectEditor.OffsetField.inputField.gameObject.GetOrAddComponent<ContextClickable>();
-            offsetContextMenu.onClick = null;
-            offsetContextMenu.onClick = pointerEventData =>
-            {
-                if (pointerEventData.button != PointerEventData.InputButton.Right)
-                    return;
+            EditorContextMenu.AddContextMenu(PrefabObjectEditor.OffsetField.inputField.gameObject,
+                new ButtonElement("Set to Timeline Cursor", () =>
+                {
+                    var distance = AudioManager.inst.CurrentAudioSource.time - prefabObject.StartTime;
 
-                EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction("Set to Timeline Cursor", () =>
+                    prefab.offset -= distance;
+
+                    var prefabObjects = GameData.Current.prefabObjects.FindAll(x => x.prefabID == prefabObject.prefabID);
+                    var isObjectLayer = EditorTimeline.inst.layerType == EditorTimeline.LayerType.Objects;
+                    for (int i = 0; i < prefabObjects.Count; i++)
                     {
-                        var distance = AudioManager.inst.CurrentAudioSource.time - prefabObject.StartTime;
+                        var prefabObj = prefabObjects[i];
+                        prefabObj.StartTime += distance;
 
-                        prefab.offset -= distance;
+                        if (isObjectLayer && prefabObj.editorData.Layer == EditorTimeline.inst.Layer)
+                            EditorTimeline.inst.GetTimelineObject(prefabObj).RenderPosLength();
 
-                        var prefabObjects = GameData.Current.prefabObjects.FindAll(x => x.prefabID == prefabObject.prefabID);
-                        var isObjectLayer = EditorTimeline.inst.layerType == EditorTimeline.LayerType.Objects;
-                        for (int i = 0; i < prefabObjects.Count; i++)
-                        {
-                            var prefabObj = prefabObjects[i];
-                            prefabObj.StartTime += distance;
-
-                            if (isObjectLayer && prefabObj.editorData.Layer == EditorTimeline.inst.Layer)
-                                EditorTimeline.inst.GetTimelineObject(prefabObj).RenderPosLength();
-
-                            RTLevel.Current?.UpdatePrefab(prefabObj, PrefabObjectContext.TIME, false);
-                        }
-                        RTLevel.Current?.RecalculateObjectStates();
-                    }));
-            };
+                        RTLevel.Current?.UpdatePrefab(prefabObj, PrefabObjectContext.TIME, false);
+                    }
+                    RTLevel.Current?.RecalculateObjectStates();
+                }));
         }
 
         public void RenderPrefabObjectName(Prefab prefab)
@@ -2000,13 +1875,13 @@ namespace BetterLegacy.Editor.Managers
                     if (eventData.button == PointerEventData.InputButton.Right)
                     {
                         EditorContextMenu.inst.ShowContextMenu(
-                            new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath), () => { RTPrefabEditor.inst.LoadPrefabs(RTPrefabEditor.inst.RenderExternalPrefabs); RTEditor.inst.HideNameEditor(); })),
-                            new ButtonFunction("Create prefab", () =>
+                            new ButtonElement("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath), () => { RTPrefabEditor.inst.LoadPrefabs(RTPrefabEditor.inst.RenderExternalPrefabs); RTEditor.inst.HideNameEditor(); })),
+                            new ButtonElement("Create prefab", () =>
                             {
                                 PrefabEditor.inst.OpenDialog();
                                 createInternal = false;
                             }),
-                            new ButtonFunction("Paste Prefab", PastePrefab)
+                            new ButtonElement("Paste Prefab", PastePrefab)
                             );
 
                         return;
@@ -2060,8 +1935,8 @@ namespace BetterLegacy.Editor.Managers
                     if (eventData.button == PointerEventData.InputButton.Right)
                     {
                         EditorContextMenu.inst.ShowContextMenu(
-                            new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath), () => { LoadPrefabs(RenderExternalPrefabs); RTEditor.inst.HideNameEditor(); })),
-                            new ButtonFunction("Paste Prefab", PastePrefab));
+                            new ButtonElement("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath), () => { LoadPrefabs(RenderExternalPrefabs); RTEditor.inst.HideNameEditor(); })),
+                            new ButtonElement("Paste Prefab", PastePrefab));
 
                         return;
                     }
@@ -2252,8 +2127,8 @@ namespace BetterLegacy.Editor.Managers
 
             PrefabEditorDialog.IconImage.sprite = prefab.icon;
             EditorContextMenu.AddContextMenu(PrefabEditorDialog.IconImage.gameObject,
-                new ButtonFunction("Select File", () => OpenIconSelector(prefabPanel)),
-                new ButtonFunction("Extract Icon", () =>
+                new ButtonElement("Select File", () => OpenIconSelector(prefabPanel)),
+                new ButtonElement("Extract Icon", () =>
                 {
                     if (!prefab.icon)
                     {
@@ -2268,14 +2143,14 @@ namespace BetterLegacy.Editor.Managers
 
                     File.WriteAllBytes(jpgFile, prefab.icon.texture.EncodeToJPG());
                 }),
-                new ButtonFunction("Capture Icon", () =>
+                new ButtonElement("Capture Icon", () =>
                 {
                     prefab.icon = CaptureArea.inst?.Capture();
                     prefabPanel.RenderPrefabType();
                     UpdatePrefabFile(prefabPanel);
                     RenderPrefabEditorDialog(prefabPanel);
                 }),
-                new ButtonFunction("Clear Icon", () =>
+                new ButtonElement("Clear Icon", () =>
                 {
                     prefab.icon = null;
                     prefab.iconData = null;
@@ -2682,28 +2557,44 @@ namespace BetterLegacy.Editor.Managers
             RenderPrefabCreatorOffsetSlider();
             RenderPrefabCreatorOffsetField();
 
-            var offsetInputContextMenu = PrefabCreatorDialog.OffsetField.gameObject.GetOrAddComponent<ContextClickable>();
-            offsetInputContextMenu.onClick = pointerEventData =>
-            {
-                if (pointerEventData.button != PointerEventData.InputButton.Right)
-                    return;
-
-                EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction("Set to Timeline Cursor", () =>
+            EditorContextMenu.AddContextMenu(PrefabCreatorDialog.OffsetField.gameObject,
+                    new ButtonElement("Set to Timeline Cursor", () =>
                     {
                         PrefabEditor.inst.NewPrefabOffset -= (AudioManager.inst.CurrentAudioSource.time - EditorTimeline.inst.SelectedObjects.Min(x => x.Time) + PrefabEditor.inst.NewPrefabOffset);
                         RenderPrefabCreator();
                     }),
-                    new ButtonFunction("Snap to BPM", () =>
+                    new ButtonElement("Snap to BPM", () =>
                     {
                         var firstTime = EditorTimeline.inst.SelectedObjects.Min(x => x.Time);
                         PrefabEditor.inst.NewPrefabOffset = firstTime - RTEditor.SnapToBPM(firstTime - PrefabEditor.inst.NewPrefabOffset);
                         RenderPrefabCreator();
-                    })
-                    );
-            };
-            var offsetSliderContextMenu = PrefabCreatorDialog.OffsetField.gameObject.GetOrAddComponent<ContextClickable>();
-            offsetSliderContextMenu.onClick = offsetInputContextMenu.onClick;
+                    }));
+            EditorContextMenu.AddContextMenu(PrefabCreatorDialog.OffsetSlider.gameObject,
+                    new ButtonElement("Set to Timeline Cursor", () =>
+                    {
+                        PrefabEditor.inst.NewPrefabOffset -= (AudioManager.inst.CurrentAudioSource.time - EditorTimeline.inst.SelectedObjects.Min(x => x.Time) + PrefabEditor.inst.NewPrefabOffset);
+                        RenderPrefabCreator();
+                    }),
+                    new ButtonElement("Snap to BPM", () =>
+                    {
+                        var firstTime = EditorTimeline.inst.SelectedObjects.Min(x => x.Time);
+                        PrefabEditor.inst.NewPrefabOffset = firstTime - RTEditor.SnapToBPM(firstTime - PrefabEditor.inst.NewPrefabOffset);
+                        RenderPrefabCreator();
+                    }));
+            //EditorContextMenu.AddContextMenu(PrefabCreatorDialog.OffsetField.gameObject, EditorContextMenu.GetObjectTimeFunctions(
+            //    getObjectTime: () => EditorTimeline.inst.SelectedObjects.Min(x => x.Time),
+            //    setTime: _val =>
+            //    {
+            //        PrefabEditor.inst.NewPrefabOffset = _val;
+            //        RenderPrefabCreator();
+            //    }));
+            //EditorContextMenu.AddContextMenu(PrefabCreatorDialog.OffsetSlider.gameObject, EditorContextMenu.GetObjectTimeFunctions(
+            //    getObjectTime: () => EditorTimeline.inst.SelectedObjects.Min(x => x.Time),
+            //    setTime: _val =>
+            //    {
+            //        PrefabEditor.inst.NewPrefabOffset = _val;
+            //        RenderPrefabCreator();
+            //    }));
 
             TriggerHelper.AddEventTriggers(PrefabCreatorDialog.OffsetField.gameObject, TriggerHelper.ScrollDelta(PrefabCreatorDialog.OffsetField));
 
@@ -2718,8 +2609,8 @@ namespace BetterLegacy.Editor.Managers
 
             PrefabCreatorDialog.IconImage.sprite = NewPrefabIcon;
             EditorContextMenu.AddContextMenu(PrefabCreatorDialog.IconImage.gameObject,
-                new ButtonFunction("Select File", () => OpenIconSelector()),
-                new ButtonFunction("Extract Icon", () =>
+                new ButtonElement("Select File", () => OpenIconSelector()),
+                new ButtonElement("Extract Icon", () =>
                 {
                     if (!NewPrefabIcon)
                     {
@@ -2734,12 +2625,12 @@ namespace BetterLegacy.Editor.Managers
 
                     File.WriteAllBytes(jpgFile, NewPrefabIcon.texture.EncodeToJPG());
                 }),
-                new ButtonFunction("Capture Icon", () =>
+                new ButtonElement("Capture Icon", () =>
                 {
                     NewPrefabIcon = CaptureArea.inst?.Capture();
                     RenderPrefabCreator();
                 }),
-                new ButtonFunction("Clear Icon", () =>
+                new ButtonElement("Clear Icon", () =>
                 {
                     NewPrefabIcon = null;
                     RenderPrefabCreator();
@@ -2980,21 +2871,12 @@ namespace BetterLegacy.Editor.Managers
 
             selectingQuickPrefab = updateCurrentPrefab;
 
-            var searchFieldContextMenu = RTEditor.inst.PrefabPopups.Internal.SearchField.gameObject.GetOrAddComponent<ContextClickable>();
-            searchFieldContextMenu.onClick = null;
-            searchFieldContextMenu.onClick = pointerEventData =>
-            {
-                if (pointerEventData.button != PointerEventData.InputButton.Right)
-                    return;
-
-                EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction($"Filter: Used [{(filterUsed ? "On": "Off")}]", () =>
-                    {
-                        filterUsed = !filterUsed;
-                        StartCoroutine(RefreshInternalPrefabs());
-                    })
-                    );
-            };
+            EditorContextMenu.AddContextMenu(RTEditor.inst.PrefabPopups.Internal.SearchField.gameObject,
+                ButtonElement.ToggleButton("Filter: Used", () => filterUsed, () =>
+                {
+                    filterUsed = !filterUsed;
+                    StartCoroutine(RefreshInternalPrefabs());
+                }));
 
             RTEditor.inst.PrefabPopups.Internal.ClearContent();
             CreatePrefabButton(RTEditor.inst.PrefabPopups.Internal.Content, "New Internal Prefab", eventData =>
@@ -3002,7 +2884,7 @@ namespace BetterLegacy.Editor.Managers
                 if (eventData.button == PointerEventData.InputButton.Right)
                 {
                     EditorContextMenu.inst.ShowContextMenu(
-                        new ButtonFunction("Create prefab", () =>
+                        new ButtonElement("Create prefab", () =>
                         {
                             PrefabEditor.inst.OpenDialog();
                             createInternal = true;

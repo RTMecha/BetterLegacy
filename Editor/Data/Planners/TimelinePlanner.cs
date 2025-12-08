@@ -167,8 +167,8 @@ namespace BetterLegacy.Editor.Data.Planners
                     if (eventData.button == UnityEngine.EventSystems.PointerEventData.InputButton.Right)
                     {
                         EditorContextMenu.inst.ShowContextMenu(
-                            new ButtonFunction("Open Level", Open),
-                            new ButtonFunction("Delete", () =>
+                            new ButtonElement("Open Level", Open),
+                            new ButtonElement("Delete", () =>
                             {
                                 timelinePlanner.Events.RemoveAt(index);
                                 timelinePlanner.UpdateTimeline();
@@ -311,26 +311,26 @@ namespace BetterLegacy.Editor.Data.Planners
 
             EditorThemeManager.ApplyDeleteButton(delete);
 
-            var buttonFunctions = new List<ButtonFunction>
+            var buttonFunctions = new List<EditorElement>
             {
-                new ButtonFunction("Edit", () => ProjectPlanner.inst.OpenTimelineEditor(this)),
-                new ButtonFunction("Delete", () =>
+                new ButtonElement("Edit", () => ProjectPlanner.inst.OpenTimelineEditor(this)),
+                new ButtonElement("Delete", () =>
                 {
                     ProjectPlanner.inst.timelines.RemoveAll(x => x is TimelinePlanner && x.ID == ID);
                     ProjectPlanner.inst.SaveTimelines();
                     CoreHelper.Destroy(gameObject);
                 }),
-                new ButtonFunction(true),
-                new ButtonFunction("Copy", () =>
+                new SpacerElement(),
+                new ButtonElement("Copy", () =>
                 {
                     ProjectPlanner.inst.copiedPlanners.Clear();
                     ProjectPlanner.inst.copiedPlanners.Add(this);
                     EditorManager.inst.DisplayNotification("Copied timeline!", 2f, EditorManager.NotificationType.Success);
                 }),
-                new ButtonFunction("Copy Selected", ProjectPlanner.inst.CopySelectedPlanners),
-                new ButtonFunction("Copy Current Tab", ProjectPlanner.inst.CopyCurrentTabPlanners),
-                new ButtonFunction("Paste", ProjectPlanner.inst.PastePlanners),
-                new ButtonFunction(true),
+                new ButtonElement("Copy Selected", ProjectPlanner.inst.CopySelectedPlanners),
+                new ButtonElement("Copy Current Tab", ProjectPlanner.inst.CopyCurrentTabPlanners),
+                new ButtonElement("Paste", ProjectPlanner.inst.PastePlanners),
+                new SpacerElement(),
             };
 
             buttonFunctions.AddRange(EditorContextMenu.GetMoveIndexFunctions(ProjectPlanner.inst.timelines, () => ProjectPlanner.inst.timelines.IndexOf(this), () =>

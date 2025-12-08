@@ -734,38 +734,54 @@ namespace BetterLegacy.Editor.Managers
                         RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
                     }));
                 });
-                var inputContextClickable = input.gameObject.GetOrAddComponent<ContextClickable>();
-                inputContextClickable.onClick = pointerEventData =>
-                {
-                    if (pointerEventData.button != PointerEventData.InputButton.Right)
-                        return;
+                EditorContextMenu.AddContextMenu(input.gameObject,
+                    new ButtonElement("Search User", () => OpenUserSearchPopup(user =>
+                    {
+                        if (user == null || string.IsNullOrEmpty(user.ID) || uploadable.Uploaders.Has(x => x && x.ID == user.ID))
+                            return;
 
-                    EditorContextMenu.inst.ShowContextMenu(
-                        new ButtonFunction("Search User", () => OpenUserSearchPopup(user =>
-                        {
-                            if (user == null || string.IsNullOrEmpty(user.ID) || uploadable.Uploaders.Has(x => x && x.ID == user.ID))
-                                return;
+                        uploadable.Uploaders.Add(user);
+                        RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
 
-                            uploadable.Uploaders.Add(user);
-                            RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
+                        EditorManager.inst.history.Add(new History.Command("Add Collaborator",
+                            () =>
+                            {
+                                if (uploadable.Uploaders == null)
+                                    uploadable.Uploaders = new List<ServerUser>();
+                                uploadable.Uploaders.Add(user);
+                                RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
+                            },
+                            () =>
+                            {
+                                if (uploadable.Uploaders == null)
+                                    return;
+                                uploadable.Uploaders.RemoveAt(uploadable.Uploaders.Count - 1);
+                                RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
+                            }));
+                    })),
+                    new ButtonElement("Add Empty", () =>
+                    {
+                        if (uploadable.Uploaders == null)
+                            uploadable.Uploaders = new List<ServerUser>();
+                        uploadable.Uploaders.Add(string.Empty);
+                        RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
 
-                            EditorManager.inst.history.Add(new History.Command("Add Collaborator",
-                                () =>
-                                {
-                                    if (uploadable.Uploaders == null)
-                                        uploadable.Uploaders = new List<ServerUser>();
-                                    uploadable.Uploaders.Add(user);
-                                    RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
-                                },
-                                () =>
-                                {
-                                    if (uploadable.Uploaders == null)
-                                        return;
-                                    uploadable.Uploaders.RemoveAt(uploadable.Uploaders.Count - 1);
-                                    RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
-                                }));
-                        })));
-                };
+                        EditorManager.inst.history.Add(new History.Command("Add Collaborator",
+                            () =>
+                            {
+                                if (uploadable.Uploaders == null)
+                                    uploadable.Uploaders = new List<ServerUser>();
+                                uploadable.Uploaders.Add(string.Empty);
+                                RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
+                            },
+                            () =>
+                            {
+                                if (uploadable.Uploaders == null)
+                                    return;
+                                uploadable.Uploaders.RemoveAt(uploadable.Uploaders.Count - 1);
+                                RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
+                            }));
+                    }));
 
                 var deleteStorage = gameObject.transform.Find("Delete").GetComponent<DeleteButtonStorage>();
                 deleteStorage.OnClick.NewListener(() =>
@@ -802,60 +818,78 @@ namespace BetterLegacy.Editor.Managers
             add.Text = "Add Collaborator";
             add.OnClick.ClearAll();
 
-            var contextClickable = add.gameObject.GetOrAddComponent<ContextClickable>();
-            contextClickable.onClick = pointerEventData =>
-            {
-                if (pointerEventData.button == PointerEventData.InputButton.Right)
+            EditorContextMenu.AddContextMenu(add.gameObject,
+                leftClick: () => OpenUserSearchPopup(user =>
                 {
-                    EditorContextMenu.inst.ShowContextMenu(
-                        new ButtonFunction("Search User", () => OpenUserSearchPopup(user =>
-                        {
-                            if (user == null || string.IsNullOrEmpty(user.ID) || uploadable.Uploaders.Has(x => x && x.ID == user.ID))
-                                return;
+                    if (user == null || string.IsNullOrEmpty(user.ID) || uploadable.Uploaders.Has(x => x && x.ID == user.ID))
+                        return;
 
+                    uploadable.Uploaders.Add(user);
+                    RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
+
+                    EditorManager.inst.history.Add(new History.Command("Add Collaborator",
+                        () =>
+                        {
+                            if (uploadable.Uploaders == null)
+                                uploadable.Uploaders = new List<ServerUser>();
                             uploadable.Uploaders.Add(user);
                             RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
+                        },
+                        () =>
+                        {
+                            if (uploadable.Uploaders == null)
+                                return;
+                            uploadable.Uploaders.RemoveAt(uploadable.Uploaders.Count - 1);
+                            RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
+                        }));
+                }),
+                new ButtonElement("Search User", () => OpenUserSearchPopup(user =>
+                {
+                    if (user == null || string.IsNullOrEmpty(user.ID) || uploadable.Uploaders.Has(x => x && x.ID == user.ID))
+                        return;
 
-                            EditorManager.inst.history.Add(new History.Command("Add Collaborator",
-                                () =>
-                                {
-                                    if (uploadable.Uploaders == null)
-                                        uploadable.Uploaders = new List<ServerUser>();
-                                    uploadable.Uploaders.Add(user);
-                                    RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
-                                },
-                                () =>
-                                {
-                                    if (uploadable.Uploaders == null)
-                                        return;
-                                    uploadable.Uploaders.RemoveAt(uploadable.Uploaders.Count - 1);
-                                    RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
-                                }));
-                        })));
-                    return;
-                }
+                    uploadable.Uploaders.Add(user);
+                    RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
 
-                if (uploadable.Uploaders == null)
-                    uploadable.Uploaders = new List<ServerUser>();
-                uploadable.Uploaders.Add(string.Empty);
-                RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
+                    EditorManager.inst.history.Add(new History.Command("Add Collaborator",
+                        () =>
+                        {
+                            if (uploadable.Uploaders == null)
+                                uploadable.Uploaders = new List<ServerUser>();
+                            uploadable.Uploaders.Add(user);
+                            RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
+                        },
+                        () =>
+                        {
+                            if (uploadable.Uploaders == null)
+                                return;
+                            uploadable.Uploaders.RemoveAt(uploadable.Uploaders.Count - 1);
+                            RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
+                        }));
+                })),
+                new ButtonElement("Add Empty", () =>
+                {
+                    if (uploadable.Uploaders == null)
+                        uploadable.Uploaders = new List<ServerUser>();
+                    uploadable.Uploaders.Add(string.Empty);
+                    RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
 
-                EditorManager.inst.history.Add(new History.Command("Add Collaborator",
-                    () =>
-                    {
-                        if (uploadable.Uploaders == null)
-                            uploadable.Uploaders = new List<ServerUser>();
-                        uploadable.Uploaders.Add(string.Empty);
-                        RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
-                    },
-                    () =>
-                    {
-                        if (uploadable.Uploaders == null)
-                            return;
-                        uploadable.Uploaders.RemoveAt(uploadable.Uploaders.Count - 1);
-                        RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
-                    }));
-            };
+                    EditorManager.inst.history.Add(new History.Command("Add Collaborator",
+                        () =>
+                        {
+                            if (uploadable.Uploaders == null)
+                                uploadable.Uploaders = new List<ServerUser>();
+                            uploadable.Uploaders.Add(string.Empty);
+                            RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
+                        },
+                        () =>
+                        {
+                            if (uploadable.Uploaders == null)
+                                return;
+                            uploadable.Uploaders.RemoveAt(uploadable.Uploaders.Count - 1);
+                            RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
+                        }));
+                }));
 
             bool hasID = !string.IsNullOrEmpty(uploadable.ServerID); // Only check for server id.
 
@@ -898,13 +932,13 @@ namespace BetterLegacy.Editor.Managers
                 if (eventData.button != PointerEventData.InputButton.Right)
                     return;
 
-                var buttonFunctions = new List<ButtonFunction>
+                var buttonFunctions = new List<EditorElement>
                 {
-                    new ButtonFunction(hasID ? "Update" : "Upload", () => upload?.Invoke()),
+                    new ButtonElement(hasID ? "Update" : "Upload", () => upload?.Invoke()),
                 };
 
                 if (pull != null)
-                    buttonFunctions.Add(new ButtonFunction("Pull Changes from Server", () => RTEditor.inst.ShowWarningPopup("Do you want to pull the level from the Arcade server?", () =>
+                    buttonFunctions.Add(new ButtonElement("Pull Changes from Server", () => RTEditor.inst.ShowWarningPopup("Do you want to pull the level from the Arcade server?", () =>
                     {
                         RTEditor.inst.HideWarningPopup();
                         EditorManager.inst.DisplayNotification("Pulling level...", 1.5f, EditorManager.NotificationType.Info);
@@ -912,17 +946,17 @@ namespace BetterLegacy.Editor.Managers
                     }, RTEditor.inst.HideWarningPopup)));
                 
                 if (verify != null)
-                    buttonFunctions.Add(new ButtonFunction("Verify item is on Server", () => RTEditor.inst.ShowWarningPopup("Do you want to verify that the item is on the Arcade server?", () =>
+                    buttonFunctions.Add(new ButtonElement("Verify item is on Server", () => RTEditor.inst.ShowWarningPopup("Do you want to verify that the item is on the Arcade server?", () =>
                     {
                         RTEditor.inst.HideWarningPopup();
                         EditorManager.inst.DisplayNotification("Verifying...", 1.5f, EditorManager.NotificationType.Info);
                         verify.Invoke();
                     }, RTEditor.inst.HideWarningPopup)));
 
-                buttonFunctions.AddRange(new List<ButtonFunction>
+                buttonFunctions.AddRange(new List<EditorElement>
                 {
-                    new ButtonFunction(true),
-                    new ButtonFunction("Guidelines", () => EditorDocumentation.inst.OpenDocument("Uploading a Level"))
+                    new SpacerElement(),
+                    new ButtonElement("Guidelines", () => EditorDocumentation.inst.OpenDocument("Uploading a Level"))
                 });
 
                 EditorContextMenu.inst.ShowContextMenu(buttonFunctions);
@@ -1100,8 +1134,8 @@ namespace BetterLegacy.Editor.Managers
                 storage.OnClick.ClearAll();
 
                 EditorContextMenu.AddContextMenu(gameObject, () => onTagSelected?.Invoke(tag),
-                    new ButtonFunction("Select Tag", () => onTagSelected?.Invoke(tag)),
-                    new ButtonFunction("Remove Tag", () =>
+                    new ButtonElement("Select Tag", () => onTagSelected?.Invoke(tag)),
+                    new ButtonElement("Remove Tag", () =>
                     {
                         var customDefaultTags = GetCustomDefaultTags(relation);
                         if (customDefaultTags == null)
@@ -1176,16 +1210,9 @@ namespace BetterLegacy.Editor.Managers
                         }));
                 });
                 input.onEndEdit.NewListener(_val => onUpdateTags?.Invoke());
-                var inputContextClickable = input.gameObject.GetOrAddComponent<ContextClickable>();
-                inputContextClickable.onClick = pointerEventData =>
-                {
-                    if (pointerEventData.button != PointerEventData.InputButton.Right)
-                        return;
-
-                    EditorContextMenu.inst.ShowContextMenu(
-                        new ButtonFunction("Add to Default Tags", () => AddCustomDefaultTag(uploadable.ArcadeTags[index], relation)),
-                        new ButtonFunction("Copy to Clipboard", () => LSText.CopyToClipboard(uploadable.ArcadeTags[index])));
-                };
+                EditorContextMenu.AddContextMenu(input.gameObject,
+                    new ButtonElement("Add to Default Tags", () => AddCustomDefaultTag(uploadable.ArcadeTags[index], relation)),
+                    new ButtonElement("Copy to Clipboard", () => LSText.CopyToClipboard(uploadable.ArcadeTags[index])));
 
                 var deleteStorage = gameObject.transform.Find("Delete").GetComponent<DeleteButtonStorage>();
                 deleteStorage.OnClick.NewListener(() =>
@@ -1216,70 +1243,64 @@ namespace BetterLegacy.Editor.Managers
             var add = EditorPrefabHolder.Instance.CreateAddButton(dialog.TagsContent);
             add.Text = "Add Tag";
             add.OnClick.ClearAll();
-            var contextClickable = add.gameObject.GetOrAddComponent<ContextClickable>();
-            contextClickable.onClick = pointerEventData =>
-            {
-                if (pointerEventData.button == PointerEventData.InputButton.Right)
+            EditorContextMenu.AddContextMenu(add.gameObject,
+                leftClick: () =>
                 {
-                    EditorContextMenu.inst.ShowContextMenu(
-                        new ButtonFunction("Add a Default Tag", () => OpenTagPopup(tag =>
-                        {
-                            var index = uploadable.ArcadeTags.Count;
-                            uploadable.ArcadeTags.Add(tag);
-                            onUpdateTags?.Invoke();
-                            RenderTagDialog(uploadable, dialog, relation, onUpdateTags);
+                    var index = uploadable.ArcadeTags.Count;
+                    uploadable.ArcadeTags.Add(DEFAULT_NEW_TAG);
+                    onUpdateTags?.Invoke();
+                    RenderTagDialog(uploadable, dialog, relation, onUpdateTags);
 
-                            EditorManager.inst.history.Add(new History.Command("Add tag",
-                                () =>
-                                {
-                                    uploadable.ArcadeTags.Add(tag);
-                                    OpenTagDialog(uploadable, dialog, relation, onUpdateTags);
-                                },
-                                () =>
-                                {
-                                    uploadable.ArcadeTags.RemoveAt(index);
-                                    OpenTagDialog(uploadable, dialog, relation, onUpdateTags);
-                                }));
-                        }, relation)),
-                        new ButtonFunction("Clear Tags", () =>
+                    EditorManager.inst.history.Add(new History.Command("Add tag",
+                        () =>
                         {
-                            var tags = new List<string>(uploadable.ArcadeTags);
-                            uploadable.ArcadeTags.Clear();
-                            onUpdateTags?.Invoke();
-                            RenderTagDialog(uploadable, dialog, relation, onUpdateTags);
-
-                            EditorManager.inst.history.Add(new History.Command("Clear tags",
-                                () =>
-                                {
-                                    uploadable.ArcadeTags.Clear();
-                                    OpenTagDialog(uploadable, dialog, relation, onUpdateTags);
-                                },
-                                () =>
-                                {
-                                    uploadable.ArcadeTags.AddRange(tags);
-                                    OpenTagDialog(uploadable, dialog, relation, onUpdateTags);
-                                }));
+                            uploadable.ArcadeTags.Add(DEFAULT_NEW_TAG);
+                            OpenTagDialog(uploadable, dialog, relation, onUpdateTags);
+                        },
+                        () =>
+                        {
+                            uploadable.ArcadeTags.RemoveAt(index);
+                            OpenTagDialog(uploadable, dialog, relation, onUpdateTags);
                         }));
-                    return;
-                }
+                },
+                new ButtonElement("Add a Default Tag", () => OpenTagPopup(tag =>
+                {
+                    var index = uploadable.ArcadeTags.Count;
+                    uploadable.ArcadeTags.Add(tag);
+                    onUpdateTags?.Invoke();
+                    RenderTagDialog(uploadable, dialog, relation, onUpdateTags);
 
-                var index = uploadable.ArcadeTags.Count;
-                uploadable.ArcadeTags.Add(DEFAULT_NEW_TAG);
-                onUpdateTags?.Invoke();
-                RenderTagDialog(uploadable, dialog, relation, onUpdateTags);
+                    EditorManager.inst.history.Add(new History.Command("Add tag",
+                        () =>
+                        {
+                            uploadable.ArcadeTags.Add(tag);
+                            OpenTagDialog(uploadable, dialog, relation, onUpdateTags);
+                        },
+                        () =>
+                        {
+                            uploadable.ArcadeTags.RemoveAt(index);
+                            OpenTagDialog(uploadable, dialog, relation, onUpdateTags);
+                        }));
+                }, relation)),
+                new ButtonElement("Clear Tags", () =>
+                {
+                    var tags = new List<string>(uploadable.ArcadeTags);
+                    uploadable.ArcadeTags.Clear();
+                    onUpdateTags?.Invoke();
+                    RenderTagDialog(uploadable, dialog, relation, onUpdateTags);
 
-                EditorManager.inst.history.Add(new History.Command("Add tag",
-                    () =>
-                    {
-                        uploadable.ArcadeTags.Add(DEFAULT_NEW_TAG);
-                        OpenTagDialog(uploadable, dialog, relation, onUpdateTags);
-                    },
-                    () =>
-                    {
-                        uploadable.ArcadeTags.RemoveAt(index);
-                        OpenTagDialog(uploadable, dialog, relation, onUpdateTags);
-                    }));
-            };
+                    EditorManager.inst.history.Add(new History.Command("Clear tags",
+                        () =>
+                        {
+                            uploadable.ArcadeTags.Clear();
+                            OpenTagDialog(uploadable, dialog, relation, onUpdateTags);
+                        },
+                        () =>
+                        {
+                            uploadable.ArcadeTags.AddRange(tags);
+                            OpenTagDialog(uploadable, dialog, relation, onUpdateTags);
+                        }));
+                }));
         }
 
         #endregion
@@ -1377,9 +1398,9 @@ namespace BetterLegacy.Editor.Managers
                             if (pointerEventData.button == PointerEventData.InputButton.Right)
                             {
                                 EditorContextMenu.inst.ShowContextMenu(
-                                    new ButtonFunction("Download", () => DownloadLevel(item)),
-                                    new ButtonFunction(true),
-                                    new ButtonFunction("Copy Server ID", () =>
+                                    new ButtonElement("Download", () => DownloadLevel(item)),
+                                    new SpacerElement(),
+                                    new ButtonElement("Copy Server ID", () =>
                                     {
                                         LSText.CopyToClipboard(id);
                                         EditorManager.inst.DisplayNotification($"Copied ID: {id} to your clipboard!", 1.5f, EditorManager.NotificationType.Success);
@@ -1592,9 +1613,9 @@ namespace BetterLegacy.Editor.Managers
                             if (pointerEventData.button == PointerEventData.InputButton.Right)
                             {
                                 EditorContextMenu.inst.ShowContextMenu(
-                                    new ButtonFunction("Download", () => DownloadLevelCollection(item)),
-                                    new ButtonFunction(true),
-                                    new ButtonFunction("Copy Server ID", () =>
+                                    new ButtonElement("Download", () => DownloadLevelCollection(item)),
+                                    new SpacerElement(),
+                                    new ButtonElement("Copy Server ID", () =>
                                     {
                                         LSText.CopyToClipboard(id);
                                         EditorManager.inst.DisplayNotification($"Copied ID: {id} to your clipboard!", 1.5f, EditorManager.NotificationType.Success);
@@ -1810,10 +1831,10 @@ namespace BetterLegacy.Editor.Managers
                             if (pointerEventData.button == PointerEventData.InputButton.Right)
                             {
                                 EditorContextMenu.inst.ShowContextMenu(
-                                    new ButtonFunction("Download to External", () => DownloadPrefab(item, ObjectSource.External)),
-                                    new ButtonFunction("Download to Internal", () => DownloadPrefab(item, ObjectSource.Internal)),
-                                    new ButtonFunction(true),
-                                    new ButtonFunction("Copy Server ID", () =>
+                                    new ButtonElement("Download to External", () => DownloadPrefab(item, ObjectSource.External)),
+                                    new ButtonElement("Download to Internal", () => DownloadPrefab(item, ObjectSource.Internal)),
+                                    new SpacerElement(),
+                                    new ButtonElement("Copy Server ID", () =>
                                     {
                                         LSText.CopyToClipboard(id);
                                         EditorManager.inst.DisplayNotification($"Copied ID: {id} to your clipboard!", 1.5f, EditorManager.NotificationType.Success);

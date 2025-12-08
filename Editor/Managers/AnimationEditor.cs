@@ -225,23 +225,15 @@ namespace BetterLegacy.Editor.Managers
 
             Dialog.ReferenceField.SetTextWithoutNotify(animation.ReferenceID);
             Dialog.ReferenceField.onValueChanged.NewListener(_val => animation.ReferenceID = _val);
-            var referenceContextMenu = Dialog.ReferenceField.gameObject.GetOrAddComponent<ContextClickable>();
-            referenceContextMenu.onClick = pointerEventData =>
-            {
-                if (pointerEventData.button != PointerEventData.InputButton.Right)
-                    return;
-
-                EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction(PlayerModel.IDLE_ANIM, () => Dialog.ReferenceField.text = PlayerModel.IDLE_ANIM),
-                    new ButtonFunction(PlayerModel.SPAWN_ANIM, () => Dialog.ReferenceField.text = PlayerModel.SPAWN_ANIM),
-                    new ButtonFunction(PlayerModel.BOOST_ANIM, () => Dialog.ReferenceField.text = PlayerModel.BOOST_ANIM),
-                    new ButtonFunction(PlayerModel.HEAL_ANIM, () => Dialog.ReferenceField.text = PlayerModel.HEAL_ANIM),
-                    new ButtonFunction(PlayerModel.HIT_ANIM, () => Dialog.ReferenceField.text = PlayerModel.HIT_ANIM),
-                    new ButtonFunction(PlayerModel.DEATH_ANIM, () => Dialog.ReferenceField.text = PlayerModel.DEATH_ANIM),
-                    new ButtonFunction(PlayerModel.SHOOT_ANIM, () => Dialog.ReferenceField.text = PlayerModel.SHOOT_ANIM),
-                    new ButtonFunction(PlayerModel.JUMP_ANIM, () => Dialog.ReferenceField.text = PlayerModel.JUMP_ANIM)
-                    );
-            };
+            EditorContextMenu.AddContextMenu(Dialog.ReferenceField.gameObject,
+                new ButtonElement(PlayerModel.IDLE_ANIM, () => Dialog.ReferenceField.text = PlayerModel.IDLE_ANIM),
+                new ButtonElement(PlayerModel.SPAWN_ANIM, () => Dialog.ReferenceField.text = PlayerModel.SPAWN_ANIM),
+                new ButtonElement(PlayerModel.BOOST_ANIM, () => Dialog.ReferenceField.text = PlayerModel.BOOST_ANIM),
+                new ButtonElement(PlayerModel.HEAL_ANIM, () => Dialog.ReferenceField.text = PlayerModel.HEAL_ANIM),
+                new ButtonElement(PlayerModel.HIT_ANIM, () => Dialog.ReferenceField.text = PlayerModel.HIT_ANIM),
+                new ButtonElement(PlayerModel.DEATH_ANIM, () => Dialog.ReferenceField.text = PlayerModel.DEATH_ANIM),
+                new ButtonElement(PlayerModel.SHOOT_ANIM, () => Dialog.ReferenceField.text = PlayerModel.SHOOT_ANIM),
+                new ButtonElement(PlayerModel.JUMP_ANIM, () => Dialog.ReferenceField.text = PlayerModel.JUMP_ANIM));
 
             Dialog.NameField.SetTextWithoutNotify(animation.name);
             Dialog.NameField.onValueChanged.NewListener(_val => animation.name = _val);
@@ -329,12 +321,12 @@ namespace BetterLegacy.Editor.Managers
                 if (pointerEventData.button == PointerEventData.InputButton.Right)
                 {
                     EditorContextMenu.inst.ShowContextMenu(
-                        new ButtonFunction("Create New", () =>
+                        new ButtonElement("Create New", () =>
                         {
                             animations.Add(new PAAnimation("New Animation", "This is the default description!"));
                             RenderPopup(animations, onPlay, onSelect, currentObject, onReturn);
                         }),
-                        new ButtonFunction("Create From Object", () => EditorTimeline.inst.onSelectTimelineObject = timelineObject =>
+                        new ButtonElement("Create From Object", () => EditorTimeline.inst.onSelectTimelineObject = timelineObject =>
                         {
                             if (!timelineObject.isBeatmapObject)
                             {
@@ -348,13 +340,13 @@ namespace BetterLegacy.Editor.Managers
                             animations.Add(animation);
                             RenderPopup(animations, onPlay, onSelect, currentObject, onReturn);
                         }),
-                        new ButtonFunction(true),
-                        new ButtonFunction("Copy All", () =>
+                        new SpacerElement(),
+                        new ButtonElement("Copy All", () =>
                         {
                             copiedAnimations = new List<PAAnimation>(animations.Select(x => x.Copy()));
                             EditorManager.inst.DisplayNotification($"Copied all animations.", 2f, EditorManager.NotificationType.Success);
                         }),
-                        new ButtonFunction("Paste", () =>
+                        new ButtonElement("Paste", () =>
                         {
                             if (copiedAnimations.IsEmpty())
                             {
@@ -385,10 +377,10 @@ namespace BetterLegacy.Editor.Managers
                 {
                     if (pointerEventData.button == PointerEventData.InputButton.Right)
                     {
-                        var buttonFunctions = new List<ButtonFunction>()
+                        var buttonFunctions = new List<EditorElement>()
                         {
-                            new ButtonFunction("Edit", () => OpenDialog(animation, onReturn)),
-                            new ButtonFunction("Play", () =>
+                            new ButtonElement("Edit", () => OpenDialog(animation, onReturn)),
+                            new ButtonElement("Play", () =>
                             {
                                 if (onPlay == null)
                                 {
@@ -399,14 +391,14 @@ namespace BetterLegacy.Editor.Managers
                                 onPlay.Invoke(animation);
                                 EditorManager.inst.DisplayNotification($"Played animation!", 2f, EditorManager.NotificationType.Success);
                             }),
-                            new ButtonFunction("Delete", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this animation?", () =>
+                            new ButtonElement("Delete", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this animation?", () =>
                             {
                                 animations.RemoveAt(index);
                                 RenderPopup(animations, onPlay, onSelect, currentObject, onReturn);
                                 RTEditor.inst.HideWarningPopup();
                             }, RTEditor.inst.HideWarningPopup)),
-                            new ButtonFunction(true),
-                            new ButtonFunction("Apply To Object", () => EditorTimeline.inst.onSelectTimelineObject = timelineObject =>
+                            new SpacerElement(),
+                            new ButtonElement("Apply To Object", () => EditorTimeline.inst.onSelectTimelineObject = timelineObject =>
                             {
                                 if (!timelineObject.isBeatmapObject)
                                 {
@@ -420,7 +412,7 @@ namespace BetterLegacy.Editor.Managers
                                     ObjectEditor.inst.Dialog.Timeline.RenderKeyframes(beatmapObject);
                                 RTLevel.Current.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                             }),
-                            new ButtonFunction("Copy From Object", () => EditorTimeline.inst.onSelectTimelineObject = timelineObject =>
+                            new ButtonElement("Copy From Object", () => EditorTimeline.inst.onSelectTimelineObject = timelineObject =>
                             {
                                 if (!timelineObject.isBeatmapObject)
                                 {
@@ -434,19 +426,19 @@ namespace BetterLegacy.Editor.Managers
                                 if (Dialog.IsCurrent && Dialog.Timeline.CurrentObject == animation)
                                     RenderDialog(animation, onReturn);
                             }),
-                            new ButtonFunction(true),
-                            new ButtonFunction("Copy", () =>
+                            new SpacerElement(),
+                            new ButtonElement("Copy", () =>
                             {
                                 copiedAnimations.Clear();
                                 copiedAnimations.Add(animation.Copy());
                                 EditorManager.inst.DisplayNotification($"Copied animation.", 2f, EditorManager.NotificationType.Success);
                             }),
-                            new ButtonFunction("Copy All", () =>
+                            new ButtonElement("Copy All", () =>
                             {
                                 copiedAnimations = new List<PAAnimation>(animations.Select(x => x.Copy()));
                                 EditorManager.inst.DisplayNotification($"Copied all animations.", 2f, EditorManager.NotificationType.Success);
                             }),
-                            new ButtonFunction("Paste", () =>
+                            new ButtonElement("Paste", () =>
                             {
                                 if (copiedAnimations.IsEmpty())
                                 {
@@ -458,9 +450,9 @@ namespace BetterLegacy.Editor.Managers
                                 RenderPopup(animations, onPlay, onSelect, currentObject, onReturn);
                                 EditorManager.inst.DisplayNotification($"Pasted animations.", 2f, EditorManager.NotificationType.Success);
                             }),
-                            new ButtonFunction(true),
-                            new ButtonFunction("Copy Keyframes", () => KeyframeTimeline.CopyAllKeyframes(animation)),
-                            new ButtonFunction(true),
+                            new SpacerElement(),
+                            new ButtonElement("Copy Keyframes", () => KeyframeTimeline.CopyAllKeyframes(animation)),
+                            new SpacerElement(),
                         };
                         buttonFunctions.AddRange(EditorContextMenu.GetMoveIndexFunctions(animations, index, () => RenderPopup(animations, onPlay, onSelect, currentObject, onReturn)));
 

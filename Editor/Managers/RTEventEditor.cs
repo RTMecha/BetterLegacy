@@ -291,13 +291,13 @@ namespace BetterLegacy.Editor.Managers
                                     return;
 
                                 EditorContextMenu.inst.ShowContextMenu(
-                                    new ButtonFunction("Create folder", () =>
+                                    new ButtonElement("Create folder", () =>
                                     {
                                         RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.ThemePath), () => { RTEditor.inst.UpdateThemePath(true); RTEditor.inst.HideNameEditor(); });
                                     }),
-                                    new ButtonFunction("Create theme", RTThemeEditor.inst.RenderThemeEditor),
-                                    new ButtonFunction(true),
-                                    new ButtonFunction("Paste", RTThemeEditor.inst.PasteTheme));
+                                    new ButtonElement("Create theme", RTThemeEditor.inst.RenderThemeEditor),
+                                    new SpacerElement(),
+                                    new ButtonElement("Paste", RTThemeEditor.inst.PasteTheme));
                             };
                             themes.gameObject.AddComponent<Button>();
 
@@ -2219,28 +2219,20 @@ namespace BetterLegacy.Editor.Managers
                         break;
                     }
                 case EventEngine.THEME: {
-                        var themeSearchContextMenu = RTThemeEditor.inst.Dialog.SearchField.gameObject.GetOrAddComponent<ContextClickable>();
-                        themeSearchContextMenu.onClick = pointerEventData =>
-                        {
-                            if (pointerEventData.button != PointerEventData.InputButton.Right)
-                                return;
-
-                            EditorContextMenu.inst.ShowContextMenu(
-                                new ButtonFunction($"Filter: Used [{(RTThemeEditor.inst.filterUsed ? "On": "Off")}]", () =>
-                                {
-                                    RTThemeEditor.inst.filterUsed = !RTThemeEditor.inst.filterUsed;
-                                    RTThemeEditor.inst.RenderThemeList();
-                                }),
-                                new ButtonFunction($"Show Default [{(EditorConfig.Instance.ShowDefaultThemes.Value ? "On": "Off")}]", () =>
-                                {
-                                    EditorConfig.Instance.ShowDefaultThemes.Value = !EditorConfig.Instance.ShowDefaultThemes.Value;
-                                    RTThemeEditor.inst.RenderThemeList();
-                                }),
-                                new ButtonFunction(true),
-                                new ButtonFunction("Clear Themes", RTThemeEditor.inst.ClearInternalThemes),
-                                new ButtonFunction("Remove Unused Themes", RTThemeEditor.inst.RemoveUnusedThemes, "Internal Remove Unused Themes")
-                                );
-                        };
+                        EditorContextMenu.AddContextMenu(RTThemeEditor.inst.Dialog.SearchField.gameObject,
+                            new ButtonElement($"Filter: Used [{(RTThemeEditor.inst.filterUsed ? "On" : "Off")}]", () =>
+                            {
+                                RTThemeEditor.inst.filterUsed = !RTThemeEditor.inst.filterUsed;
+                                RTThemeEditor.inst.RenderThemeList();
+                            }),
+                            new ButtonElement($"Show Default [{(EditorConfig.Instance.ShowDefaultThemes.Value ? "On" : "Off")}]", () =>
+                            {
+                                EditorConfig.Instance.ShowDefaultThemes.Value = !EditorConfig.Instance.ShowDefaultThemes.Value;
+                                RTThemeEditor.inst.RenderThemeList();
+                            }),
+                            new SpacerElement(),
+                            new ButtonElement("Clear Themes", RTThemeEditor.inst.ClearInternalThemes),
+                            new ButtonElement("Remove Unused Themes", RTThemeEditor.inst.RemoveUnusedThemes, "Internal Remove Unused Themes"));
 
                         RTThemeEditor.inst.Dialog.SearchField.onValueChanged.NewListener(_val => RTThemeEditor.inst.RenderThemeList());
                         RTThemeEditor.inst.RenderThemeList();
@@ -2912,9 +2904,9 @@ namespace BetterLegacy.Editor.Managers
                     SetListColor(tmpIndex, index, toggles, defaultColor, secondaryDefaultColor, opacityIndex, hueIndex, satIndex, valIndex);
                 });
 
-                var list = new List<ButtonFunction>
+                var list = new List<EditorElement>
                 {
-                    new ButtonFunction("Reset Value", () =>
+                    new ButtonElement("Reset Value", () =>
                     {
                         int value = (int)GameData.DefaultKeyframes[EventEditor.inst.currentEventType].values[index];
                         foreach (var kf in SelectedKeyframes.Where(x => x.Type == EventEditor.inst.currentEventType))
@@ -2924,13 +2916,13 @@ namespace BetterLegacy.Editor.Managers
 
                         SetListColor(value, index, toggles, defaultColor, secondaryDefaultColor, opacityIndex, hueIndex, satIndex, valIndex);
                     }),
-                    new ButtonFunction($"Show Modified Colors [{(EditorConfig.Instance.ShowModifiedColors.Value ? "On" : "Off")}]", () => EditorConfig.Instance.ShowModifiedColors.Value = !EditorConfig.Instance.ShowModifiedColors.Value),
-                    new ButtonFunction("Copy Hex Color", () => LSText.CopyToClipboard(RTColors.ColorToHexOptional(color))),
+                    ButtonElement.ToggleButton("Show Modified Colors", () => EditorConfig.Instance.ShowModifiedColors.Value, () => EditorConfig.Instance.ShowModifiedColors.Value = !EditorConfig.Instance.ShowModifiedColors.Value),
+                    new ButtonElement("Copy Hex Color", () => LSText.CopyToClipboard(RTColors.ColorToHexOptional(color))),
                 };
 
                 if (hueIndex >= 0 && satIndex >= 0 && valIndex >= 0)
                 {
-                    list.Add(new ButtonFunction("Copy Modified Hex Color", () =>
+                    list.Add(new ButtonElement("Copy Modified Hex Color", () =>
                     {
                         float hueNum = RTLevel.Current.eventEngine.Interpolate(EventEditor.inst.currentEventType, hueIndex, RTLevel.Current.FixedTime);
                         float satNum = RTLevel.Current.eventEngine.Interpolate(EventEditor.inst.currentEventType, satIndex, RTLevel.Current.FixedTime);
@@ -2961,7 +2953,7 @@ namespace BetterLegacy.Editor.Managers
             });
 
             EditorContextMenu.AddContextMenu(toggle.gameObject,
-                new ButtonFunction("Reset Value", () => toggle.isOn = GameData.DefaultKeyframes[EventEditor.inst.currentEventType].values[index] == onValue));
+                new ButtonElement("Reset Value", () => toggle.isOn = GameData.DefaultKeyframes[EventEditor.inst.currentEventType].values[index] == onValue));
         }
 
         public void SetFloatInputField(Transform dialogTmp, string name, int index, float increase = 0.1f, float multiply = 10f, float min = 0f, float max = 0f, bool allowNegative = true, Action<float> onValueChanged = null)
@@ -3053,7 +3045,7 @@ namespace BetterLegacy.Editor.Managers
                 TriggerHelper.InversableField(inputField);
 
             EditorContextMenu.AddContextMenu(inputField.gameObject,
-                new ButtonFunction("Reset Value", () => inputField.text = GameData.DefaultKeyframes[EventEditor.inst.currentEventType].values[index].ToString()));
+                new ButtonElement("Reset Value", () => inputField.text = GameData.DefaultKeyframes[EventEditor.inst.currentEventType].values[index].ToString()));
         }
 
         public void SetIntInputField(Transform dialogTmp, string name, int index, int increase = 1, int min = 0, int max = 0, bool allowNegative = true)
@@ -3132,7 +3124,7 @@ namespace BetterLegacy.Editor.Managers
                 TriggerHelper.InversableField(inputField);
 
             EditorContextMenu.AddContextMenu(inputField.gameObject,
-                new ButtonFunction("Reset Value", () => inputField.text = GameData.DefaultKeyframes[EventEditor.inst.currentEventType].values[index].ToString()));
+                new ButtonElement("Reset Value", () => inputField.text = GameData.DefaultKeyframes[EventEditor.inst.currentEventType].values[index].ToString()));
         }
 
         public void SetVector2InputField(Transform dialogTmp, string name, int xindex, int yindex, float min = 0f, float max = 0f, bool allowNegative = true)
@@ -3302,9 +3294,9 @@ namespace BetterLegacy.Editor.Managers
             }
 
             EditorContextMenu.AddContextMenu(posX.gameObject,
-                new ButtonFunction("Reset Value", () => posX.text = GameData.DefaultKeyframes[EventEditor.inst.currentEventType].values[xindex].ToString()));
+                new ButtonElement("Reset Value", () => posX.text = GameData.DefaultKeyframes[EventEditor.inst.currentEventType].values[xindex].ToString()));
             EditorContextMenu.AddContextMenu(posY.gameObject,
-                new ButtonFunction("Reset Value", () => posY.text = GameData.DefaultKeyframes[EventEditor.inst.currentEventType].values[yindex].ToString()));
+                new ButtonElement("Reset Value", () => posY.text = GameData.DefaultKeyframes[EventEditor.inst.currentEventType].values[yindex].ToString()));
         }
 
         public void SetVector2InputField(Vector2InputFieldStorage vector2Field, int xindex, int yindex, float min = 0f, float max = 0f, bool allowNegative = true)
@@ -3469,9 +3461,9 @@ namespace BetterLegacy.Editor.Managers
             }
 
             EditorContextMenu.AddContextMenu(posX.gameObject,
-                new ButtonFunction("Reset Value", () => posX.text = GameData.DefaultKeyframes[EventEditor.inst.currentEventType].values[xindex].ToString()));
+                new ButtonElement("Reset Value", () => posX.text = GameData.DefaultKeyframes[EventEditor.inst.currentEventType].values[xindex].ToString()));
             EditorContextMenu.AddContextMenu(posY.gameObject,
-                new ButtonFunction("Reset Value", () => posY.text = GameData.DefaultKeyframes[EventEditor.inst.currentEventType].values[yindex].ToString()));
+                new ButtonElement("Reset Value", () => posY.text = GameData.DefaultKeyframes[EventEditor.inst.currentEventType].values[yindex].ToString()));
         }
 
         public void SetKeyframeValue(int index, string input)

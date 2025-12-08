@@ -72,26 +72,26 @@ namespace BetterLegacy.Editor.Data.Planners
 
                 if (eventData.button == UnityEngine.EventSystems.PointerEventData.InputButton.Right)
                 {
-                    var buttonFunctions = new List<ButtonFunction>
+                    var buttonFunctions = new List<EditorElement>
                     {
-                        new ButtonFunction("Edit", () => ProjectPlanner.inst.OpenScheduleEditor(this)),
-                        new ButtonFunction("Delete", () =>
+                        new ButtonElement("Edit", () => ProjectPlanner.inst.OpenScheduleEditor(this)),
+                        new ButtonElement("Delete", () =>
                         {
                             ProjectPlanner.inst.schedules.RemoveAll(x => x is SchedulePlanner && x.ID == ID);
                             ProjectPlanner.inst.SaveSchedules();
                             CoreHelper.Destroy(gameObject);
                         }),
-                        new ButtonFunction(true),
-                        new ButtonFunction("Copy", () =>
+                        new SpacerElement(),
+                        new ButtonElement("Copy", () =>
                         {
                             ProjectPlanner.inst.copiedPlanners.Clear();
                             ProjectPlanner.inst.copiedPlanners.Add(this);
                             EditorManager.inst.DisplayNotification("Copied schedule!", 2f, EditorManager.NotificationType.Success);
                         }),
-                        new ButtonFunction("Copy Selected", ProjectPlanner.inst.CopySelectedPlanners),
-                        new ButtonFunction("Copy Current Tab", ProjectPlanner.inst.CopyCurrentTabPlanners),
-                        new ButtonFunction("Paste", ProjectPlanner.inst.PastePlanners),
-                        new ButtonFunction(true),
+                        new ButtonElement("Copy Selected", ProjectPlanner.inst.CopySelectedPlanners),
+                        new ButtonElement("Copy Current Tab", ProjectPlanner.inst.CopyCurrentTabPlanners),
+                        new ButtonElement("Paste", ProjectPlanner.inst.PastePlanners),
+                        new SpacerElement(),
                     };
 
                     buttonFunctions.AddRange(EditorContextMenu.GetMoveIndexFunctions(ProjectPlanner.inst.schedules, () => ProjectPlanner.inst.schedules.IndexOf(this), () =>

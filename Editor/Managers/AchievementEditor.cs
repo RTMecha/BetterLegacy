@@ -263,34 +263,23 @@ namespace BetterLegacy.Editor.Managers
 
             Dialog.IDText.text = achievement.id;
 
-
-            var clickable = Dialog.IDBase.gameObject.GetOrAddComponent<Clickable>();
-
-            clickable.onClick = pointerEventData =>
-            {
-                if (pointerEventData.button == PointerEventData.InputButton.Right)
+            EditorContextMenu.AddContextMenu(Dialog.IDBase.gameObject,
+                leftClick: () =>
                 {
-                    EditorContextMenu.inst.ShowContextMenu(
-                        new ButtonFunction("Copy ID", () =>
-                        {
-                            EditorManager.inst.DisplayNotification($"Copied ID from {achievement.name}!", 2f, EditorManager.NotificationType.Success);
-                            LSText.CopyToClipboard(achievement.id);
-                        }),
-                        new ButtonFunction("Shuffle ID", () =>
-                        {
-                            RTEditor.inst.ShowWarningPopup("Are you sure you want to shuffle the ID of this achievement?", () =>
-                            {
-                                achievement.id = PAObjectBase.GetNumberID();
-                                RenderDialog(achievement);
-                                RTEditor.inst.HideWarningPopup();
-                            }, RTEditor.inst.HideWarningPopup);
-                        }));
-                    return;
-                }
-
-                EditorManager.inst.DisplayNotification($"Copied ID from {achievement.name}!", 2f, EditorManager.NotificationType.Success);
-                LSText.CopyToClipboard(achievement.id);
-            };
+                    EditorManager.inst.DisplayNotification($"Copied ID from {achievement.name}!", 2f, EditorManager.NotificationType.Success);
+                    LSText.CopyToClipboard(achievement.id);
+                },
+                new ButtonElement("Copy ID", () =>
+                {
+                    EditorManager.inst.DisplayNotification($"Copied ID from {achievement.name}!", 2f, EditorManager.NotificationType.Success);
+                    LSText.CopyToClipboard(achievement.id);
+                }),
+                new ButtonElement("Shuffle ID", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to shuffle the ID of this achievement?", () =>
+                {
+                    achievement.id = PAObjectBase.GetNumberID();
+                    RenderDialog(achievement);
+                    RTEditor.inst.HideWarningPopup();
+                }, RTEditor.inst.HideWarningPopup)));
 
             Dialog.NameField.SetTextWithoutNotify(achievement.name);
             Dialog.NameField.onValueChanged.NewListener(_val =>
@@ -307,7 +296,7 @@ namespace BetterLegacy.Editor.Managers
             Dialog.SelectIconButton.OnClick.NewListener(() =>
             {
                 EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction($"Select Icon ({RTEditor.SYSTEM_BROWSER})", () =>
+                    new ButtonElement($"Select Icon ({RTEditor.SYSTEM_BROWSER})", () =>
                     {
                         string imageFile = FileBrowser.OpenSingleFile("Select an image!", RTEditor.inst.BasePath, new string[] { "png" });
                         if (string.IsNullOrEmpty(imageFile))
@@ -316,7 +305,7 @@ namespace BetterLegacy.Editor.Managers
                         achievement.icon = SpriteHelper.LoadSprite(imageFile);
                         RenderDialog(achievement);
                     }),
-                    new ButtonFunction($"Select Icon ({RTEditor.EDITOR_BROWSER})", () =>
+                    new ButtonElement($"Select Icon ({RTEditor.EDITOR_BROWSER})", () =>
                     {
                         RTEditor.inst.BrowserPopup.Open();
                         RTFileBrowser.inst.UpdateBrowserFile(new string[] { FileFormat.PNG.Dot(), FileFormat.JPG.Dot() }, imageFile =>
@@ -334,7 +323,7 @@ namespace BetterLegacy.Editor.Managers
             Dialog.SelectLockedIconButton.OnClick.NewListener(() =>
             {
                 EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction($"Select Icon ({RTEditor.SYSTEM_BROWSER})", () =>
+                    new ButtonElement($"Select Icon ({RTEditor.SYSTEM_BROWSER})", () =>
                     {
                         string imageFile = FileBrowser.OpenSingleFile("Select an image!", RTEditor.inst.BasePath, new string[] { "png" });
                         if (string.IsNullOrEmpty(imageFile))
@@ -343,7 +332,7 @@ namespace BetterLegacy.Editor.Managers
                         achievement.lockedIcon = SpriteHelper.LoadSprite(imageFile);
                         RenderDialog(achievement);
                     }),
-                    new ButtonFunction($"Select Icon ({RTEditor.EDITOR_BROWSER})", () =>
+                    new ButtonElement($"Select Icon ({RTEditor.EDITOR_BROWSER})", () =>
                     {
                         RTEditor.inst.BrowserPopup.Open();
                         RTFileBrowser.inst.UpdateBrowserFile(new string[] { FileFormat.PNG.Dot(), FileFormat.JPG.Dot() }, imageFile =>
@@ -459,29 +448,19 @@ namespace BetterLegacy.Editor.Managers
 
                 var button = gameObject.GetComponent<Button>();
                 button.onClick.ClearAll();
-                var contextClickable = gameObject.GetOrAddComponent<ContextClickable>();
-                contextClickable.onClick = pointerEventData =>
-                {
-                    if (pointerEventData.button != PointerEventData.InputButton.Right)
+                EditorContextMenu.AddContextMenu(gameObject, leftClick: () => SetCurrentAchievement(index),
+                    new ButtonElement("Edit", () => SetCurrentAchievement(index)),
+                    new ButtonElement("Delete", () => DeleteAchievement(achievement)),
+                    new SpacerElement(),
+                    new ButtonElement("Copy", () => CopyAchievement(achievement)),
+                    new ButtonElement("Copy All", () =>
                     {
-                        SetCurrentAchievement(index);
-                        return;
-                    }
-
-                    EditorContextMenu.inst.ShowContextMenu(
-                        new ButtonFunction("Edit", () => SetCurrentAchievement(index)),
-                        new ButtonFunction("Delete", () => DeleteAchievement(achievement)),
-                        new ButtonFunction(true),
-                        new ButtonFunction("Copy", () => CopyAchievement(achievement)),
-                        new ButtonFunction("Copy All", () =>
-                        {
-                            copiedAchievements.Clear();
-                            copiedAchievements.AddRange(achievements.Select(x => x.Copy(false)));
-                            copiedLevelID = EditorLevelManager.inst.CurrentLevel.id;
-                            EditorManager.inst.DisplayNotification("Copied achievements.", 1f, EditorManager.NotificationType.Success);
-                        }),
-                        new ButtonFunction("Paste", PasteAchievements));
-                };
+                        copiedAchievements.Clear();
+                        copiedAchievements.AddRange(achievements.Select(x => x.Copy(false)));
+                        copiedLevelID = EditorLevelManager.inst.CurrentLevel.id;
+                        EditorManager.inst.DisplayNotification("Copied achievements.", 1f, EditorManager.NotificationType.Success);
+                    }),
+                    new ButtonElement("Paste", PasteAchievements));
 
                 var deleteButton = gameObject.transform.Find("delete").GetComponent<DeleteButtonStorage>();
                 deleteButton.OnClick.NewListener(() => DeleteAchievement(achievement));
@@ -526,7 +505,7 @@ namespace BetterLegacy.Editor.Managers
                     if (pointerEventData.button == PointerEventData.InputButton.Right)
                     {
                         EditorContextMenu.inst.ShowContextMenu(
-                            new ButtonFunction("Edit", () => OpenDialog(achievement)));
+                            new ButtonElement("Edit", () => OpenDialog(achievement)));
                         return;
                     }
 
