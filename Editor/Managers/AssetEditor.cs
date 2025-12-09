@@ -384,10 +384,7 @@ namespace BetterLegacy.Editor.Managers
                                     }, RTEditor.inst.HideWarningPopup);
                                 }),
                                 new SpacerElement(),
-                                new ButtonElement($"Autoload Sound [{(soundAsset.autoLoad ? "On" : "Off")}]", () =>
-                                {
-                                    soundAsset.autoLoad = !soundAsset.autoLoad;
-                                }),
+                                ButtonElement.ToggleButton("Autoload Sound", () => soundAsset.autoLoad, () => soundAsset.autoLoad = !soundAsset.autoLoad),
                                 new SpacerElement(),
                                 new ButtonElement("Reload Assets", () => LoadAssets(RenderPopup)));
                             return;
