@@ -216,7 +216,7 @@ namespace BetterLegacy.Editor.Managers
                 if (!element.ShouldGenerate)
                     continue;
 
-                element.Init(new EditorElement.InitSettings().Parent(contextMenuLayout).OnClick(pointerEventData => contextMenu.SetActive(false)));
+                element.Init(EditorElement.InitSettings.Default.Parent(contextMenuLayout).OnClick(pointerEventData => contextMenu.SetActive(false)));
                 height += element.ContextMenuHeight;
             }
 
