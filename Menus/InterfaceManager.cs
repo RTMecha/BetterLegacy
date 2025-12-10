@@ -3094,6 +3094,10 @@ namespace BetterLegacy.Menus
                         }
 
                     #endregion
+
+                    case "CurrentInterfacePath": {
+                            return inst.CurrentInterface.filePath;
+                        }
                 }
 
                 return base.VarFunction(jn, name, parameters, thisElement, customVariables);

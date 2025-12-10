@@ -2289,7 +2289,26 @@ namespace BetterLegacy.Core
                         return RTMath.Parse(ParseVarFunction(parameters.Get(0, "evaluate"), thisElement, customVariables), vars).ToString();
                     }
 
-                    #endregion
+                #endregion
+
+                #region CombinePaths
+
+                case "CombinePaths": {
+                        if (parameters == null)
+                            break;
+
+                        if (parameters.IsArray && parameters.Count > 2)
+                        {
+                            var paths = new string[parameters.Count];
+                            for (int i = 0; i < paths.Length; i++)
+                                paths[i] = parameters[i];
+                            return RTFile.CombinePaths(paths);
+                        }
+
+                        return RTFile.CombinePaths(parameters.Get(0, "path1"), parameters.Get(1, "path2"));
+                    }
+
+                #endregion
             }
 
             if (!string.IsNullOrEmpty(name) && customJSONFunctions.TryGetValue(name, out JSONNode customJSONFunction))
