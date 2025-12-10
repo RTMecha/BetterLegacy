@@ -309,9 +309,21 @@ namespace BetterLegacy.Core.Managers
             var storyLevel = level as StoryLevel;
 
             CoreHelper.InStory = level.isStory;
-            GameData.Current = level.LoadGameData();
-            if (GameData.Current && GameData.Current.data && GameData.Current.data.level)
-                RTBeatmap.Current.respawnImmediately = GameData.Current.data.level.respawnImmediately;
+
+            MetaData.Current = level.metadata;
+            if (level.isInterface)
+            {
+                RTFile.BasePath = RTFile.AppendEndSlash(level.path);
+                Menus.InterfaceManager.inst.ParseInterface(level.path);
+                GameManager.inst.gameState = GameManager.State.Playing;
+                yield break;
+            }
+            else
+            {
+                GameData.Current = level.LoadGameData();
+                if (GameData.Current && GameData.Current.data && GameData.Current.data.level)
+                    RTBeatmap.Current.respawnImmediately = GameData.Current.data.level.respawnImmediately;
+            }
 
             if (level.IsVG)
                 AchievementManager.inst.UnlockAchievement("time_traveler");
@@ -319,9 +331,7 @@ namespace BetterLegacy.Core.Managers
             ThemeManager.inst.UpdateAllThemes();
 
             Log($"Setting paths...");
-
-            MetaData.Current = level.metadata;
-            GameManager.inst.currentLevelName = level.metadata.song.title;
+            GameManager.inst.currentLevelName = level.metadata.beatmap.name;
             RTFile.BasePath = RTFile.AppendEndSlash(level.path);
 
             #endregion

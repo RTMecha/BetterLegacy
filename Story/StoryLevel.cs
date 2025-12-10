@@ -94,6 +94,7 @@ namespace BetterLegacy.Story
             var icon = assets.LoadAsset<Sprite>($"cover{FileFormat.JPG.Dot()}");
             var song = assets.LoadAsset<AudioClip>($"song{FileFormat.OGG.Dot()}");
             var levelJSON = assets.LoadAsset<TextAsset>($"level{FileFormat.JSON.Dot()}");
+            var interfaceJSON = assets.LoadAsset<TextAsset>($"interface{FileFormat.JSON.Dot()}");
             var metadataJSON = assets.LoadAsset<TextAsset>($"metadata{FileFormat.JSON.Dot()}");
             var players = assets.LoadAsset<TextAsset>($"players{FileFormat.JSON.Dot()}");
 
@@ -104,7 +105,8 @@ namespace BetterLegacy.Story
                 name = metadata?.beatmap?.name,
                 icon = icon,
                 music = song,
-                json = levelJSON.text,
+                json = levelJSON ? levelJSON.text : interfaceJSON ? interfaceJSON.text : null,
+                isInterface = !levelJSON && interfaceJSON,
                 metadata = metadata,
                 jsonPlayers = players.text,
                 videoClip = assets.Contains($"bg{FileFormat.MP4.Dot()}") ? assets.LoadAsset<VideoClip>($"bg{FileFormat.MP4.Dot()}") : null,
