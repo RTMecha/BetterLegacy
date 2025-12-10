@@ -71,6 +71,23 @@ namespace BetterLegacy.Core
         /// <returns>Returns a string array representing the lines of the input string.</returns>
         public static string[] GetLines(string input) => input.Split(new string[] { "\n", "\r\n", "\r" }, StringSplitOptions.RemoveEmptyEntries);
 
+        public static string ClampString(string input, int maxLength, bool addSpace = true, string trail = "...")
+        {
+            if (string.IsNullOrEmpty(input))
+                return input;
+
+            if (input.Length > maxLength)
+                return input.Substring(0, maxLength - 3) + trail;
+            if (addSpace && input.Length < maxLength)
+            {
+                string text = string.Empty;
+                for (int i = 0; i < maxLength - input.Length; i++)
+                    text += " ";
+                return input + text;
+            }
+            return input;
+        }
+
         /// <summary>
         /// Interpolates through a string, typewriter style.
         /// </summary>

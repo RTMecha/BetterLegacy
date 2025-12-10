@@ -135,29 +135,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool ClampStringPrefix(ref string __result, string __0, int __1)
         {
-            var input = __0;
-            var maxLength = __1;
-
-            if (string.IsNullOrEmpty(input))
-            {
-                __result = input;
-                return false;
-            }
-
-            if (input.Length > maxLength)
-            {
-                __result = input.Substring(0, maxLength - 3) + "...";
-                return false;
-            }
-            if (input.Length < maxLength)
-            {
-                string text = string.Empty;
-                for (int i = 0; i < maxLength - input.Length; i++)
-                    text += " ";
-                __result = input + text;
-                return false;
-            }
-            __result = input;
+            __result = RTString.ClampString(__0, __1);
             return false;
         }
     }
