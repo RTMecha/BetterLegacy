@@ -25,6 +25,7 @@ namespace BetterLegacy.Core.Data.Level
         public Level(string path, bool loadIcon = true)
         {
             this.path = path;
+            isInterface = RTFile.FileIsFormat(path, FileFormat.LSI);
 
             if (CoreConfig.Instance.PrioritizeVG.Value && RTFile.FileExists(GetFile(METADATA_VGM)))
                 metadata = MetaData.ParseVG(JSON.Parse(RTFile.ReadFromFile(GetFile(METADATA_VGM))));
@@ -45,6 +46,7 @@ namespace BetterLegacy.Core.Data.Level
         public Level(string path, MetaData metadata, bool loadIcon = true)
         {
             this.path = path;
+            isInterface = RTFile.FileIsFormat(path, FileFormat.LSI);
 
             this.metadata = metadata;
 
