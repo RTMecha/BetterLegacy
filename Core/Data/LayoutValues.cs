@@ -17,6 +17,15 @@ namespace BetterLegacy.Core.Data
         /// </summary>
         public RectOffset padding;
 
+        public Type type;
+
+        public enum Type
+        {
+            Grid,
+            Vertical,
+            Horizontal,
+        }
+
         public static LayoutValues Parse(JSONNode jn)
         {
             if (jn["type"] != null)
@@ -44,6 +53,8 @@ namespace BetterLegacy.Core.Data
 
         public virtual void ReadJSON(JSONNode jn)
         {
+            if (jn["type"] != null)
+                type = Parser.TryParse(jn["type"], Type.Grid);
             if (jn["child_alignment"] != null)
                 childAlignment = (TextAnchor)jn["child_alignment"].AsInt;
             if (jn["padding"] != null)
@@ -72,6 +83,7 @@ namespace BetterLegacy.Core.Data
     {
         public static GridLayoutValues Default => new GridLayoutValues
         {
+            type = Type.Grid,
             cellSize = new Vector2(100f, 100f),
             spacing = Vector2.zero,
             constraintCount = 2,
@@ -80,6 +92,54 @@ namespace BetterLegacy.Core.Data
             startAxis = GridLayoutGroup.Axis.Horizontal,
             childAlignment = TextAnchor.UpperLeft,
         };
+
+        public GridLayoutValues ChildAlignment(TextAnchor value)
+        {
+            childAlignment = value;
+            return this;
+        }
+
+        public GridLayoutValues Padding(RectOffset value)
+        {
+            padding = value;
+            return this;
+        }
+        
+        public GridLayoutValues CellSize(Vector2 value)
+        {
+            cellSize = value;
+            return this;
+        }
+        
+        public GridLayoutValues Spacing(Vector2 value)
+        {
+            spacing = value;
+            return this;
+        }
+        
+        public GridLayoutValues ConstraintCount(int value)
+        {
+            constraintCount = value;
+            return this;
+        }
+        
+        public GridLayoutValues Constraint(GridLayoutGroup.Constraint value)
+        {
+            constraint = value;
+            return this;
+        }
+        
+        public GridLayoutValues StartCorner(GridLayoutGroup.Corner value)
+        {
+            startCorner = value;
+            return this;
+        }
+        
+        public GridLayoutValues StartAxis(GridLayoutGroup.Axis value)
+        {
+            startAxis = value;
+            return this;
+        }
 
         /// <summary>
         /// Size of each cell.
@@ -156,6 +216,32 @@ namespace BetterLegacy.Core.Data
 
     public class HorizontalOrVerticalLayoutValues : LayoutValues
     {
+        public static HorizontalOrVerticalLayoutValues Horizontal => new HorizontalOrVerticalLayoutValues
+        {
+            type = Type.Horizontal,
+            childControlHeight = true,
+            childControlWidth = true,
+            childForceExpandHeight = true,
+            childForceExpandWidth = true,
+            childScaleHeight = true,
+            childScaleWidth = true,
+            spacing = 0f,
+            childAlignment = TextAnchor.UpperLeft,
+        };
+        
+        public static HorizontalOrVerticalLayoutValues Vertical => new HorizontalOrVerticalLayoutValues
+        {
+            type = Type.Vertical,
+            childControlHeight = true,
+            childControlWidth = true,
+            childForceExpandHeight = true,
+            childForceExpandWidth = true,
+            childScaleHeight = true,
+            childScaleWidth = true,
+            spacing = 0f,
+            childAlignment = TextAnchor.UpperLeft,
+        };
+        
         public static HorizontalOrVerticalLayoutValues Default => new HorizontalOrVerticalLayoutValues
         {
             childControlHeight = true,
@@ -167,6 +253,60 @@ namespace BetterLegacy.Core.Data
             spacing = 0f,
             childAlignment = TextAnchor.UpperLeft,
         };
+
+        public HorizontalOrVerticalLayoutValues ChildAlignment(TextAnchor value)
+        {
+            childAlignment = value;
+            return this;
+        }
+        
+        public HorizontalOrVerticalLayoutValues Padding(RectOffset value)
+        {
+            padding = value;
+            return this;
+        }
+
+        public HorizontalOrVerticalLayoutValues ChildControlHeight(bool value)
+        {
+            childControlHeight = value;
+            return this;
+        }
+        
+        public HorizontalOrVerticalLayoutValues ChildControlWidth(bool value)
+        {
+            childControlWidth = value;
+            return this;
+        }
+        
+        public HorizontalOrVerticalLayoutValues ChildForceExpandHeight(bool value)
+        {
+            childForceExpandHeight = value;
+            return this;
+        }
+        
+        public HorizontalOrVerticalLayoutValues ChildForceExpandWidth(bool value)
+        {
+            childForceExpandWidth = value;
+            return this;
+        }
+        
+        public HorizontalOrVerticalLayoutValues ChildScaleHeight(bool value)
+        {
+            childScaleHeight = value;
+            return this;
+        }
+        
+        public HorizontalOrVerticalLayoutValues ChildScaleWidth(bool value)
+        {
+            childScaleWidth = value;
+            return this;
+        }
+        
+        public HorizontalOrVerticalLayoutValues Spacing(float value)
+        {
+            spacing = value;
+            return this;
+        }
 
         /// <summary>
         /// If the layouts' children control the height of the layout.

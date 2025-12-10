@@ -107,6 +107,22 @@ namespace BetterLegacy.Editor.Data
         public abstract void Init(InitSettings initSettings);
 
         /// <summary>
+        /// Initializes all sub elements.
+        /// </summary>
+        public virtual void InitSubElements() => InitSubElements(InitSettings.Default);
+
+        /// <summary>
+        /// Initializes all sub elements.
+        /// </summary>
+        /// <param name="initSettings">Initialize settings.</param>
+        public virtual void InitSubElements(InitSettings initSettings)
+        {
+            initSettings = initSettings.Parent(GameObject.transform);
+            for (int i = 0; i < subElements.Count; i++)
+                subElements[i].Init(initSettings);
+        }
+
+        /// <summary>
         /// Initializes the tooltip group.
         /// </summary>
         /// <param name="gameObject">Game object to set the tooltip to.</param>
@@ -261,6 +277,84 @@ namespace BetterLegacy.Editor.Data
     }
 
     #endregion
+
+    /// <summary>
+    /// Represents a layout group element in the editor.
+    /// </summary>
+    public class LayoutGroupElement : EditorElement
+    {
+        public LayoutGroupElement(LayoutValues layoutValues, params EditorElement[] editorElements)
+        {
+            this.layoutValues = layoutValues;
+            subElements = editorElements.ToList();
+        }
+
+        #region Values
+
+        public Vector2 size = new Vector2(0f, 32f);
+
+        public LayoutValues layoutValues;
+        public LayoutGroup layoutGroup;
+        GridLayoutGroup grid;
+        VerticalLayoutGroup vertical;
+        HorizontalLayoutGroup horizontal;
+
+        public override float ContextMenuHeight => 37f;
+
+        #endregion
+
+        #region Functions
+
+        public override void Init(InitSettings initSettings)
+        {
+            if (this.initSettings.HasValue)
+                initSettings = this.initSettings.Value;
+
+            if (!initSettings.parent)
+                return;
+
+            CoreHelper.Delete(GameObject);
+            GameObject = initSettings.prefab ?
+                initSettings.prefab.Duplicate(initSettings.parent, !string.IsNullOrEmpty(initSettings.name) ? initSettings.name : "spacer element", GetSiblingIndex(initSettings)) :
+                Creator.NewUIObject(!string.IsNullOrEmpty(initSettings.name) ? initSettings.name : "spacer element", initSettings.parent, GetSiblingIndex(initSettings));
+
+            switch (layoutValues.type)
+            {
+                case LayoutValues.Type.Grid: {
+                        grid = GameObject.AddComponent<GridLayoutGroup>();
+                        layoutGroup = grid;
+                        break;
+                    }
+                case LayoutValues.Type.Vertical: {
+                        vertical = GameObject.AddComponent<VerticalLayoutGroup>();
+                        layoutGroup = vertical;
+                        break;
+                    }
+                case LayoutValues.Type.Horizontal: {
+                        horizontal = GameObject.AddComponent<HorizontalLayoutGroup>();
+                        layoutGroup = horizontal;
+                        break;
+                    }
+            }
+
+            Apply(GameObject, initSettings);
+            InitSubElements(InitSettings.Default.OnClick(initSettings.onClick));
+        }
+
+        public override void Apply(GameObject gameObject, InitSettings initSettings)
+        {
+            GameObject.transform.AsRT().sizeDelta = size;
+
+            if (grid && layoutValues is GridLayoutValues gridLayoutValues)
+                gridLayoutValues.AssignToLayout(grid);
+            if (layoutValues is HorizontalOrVerticalLayoutValues verticalLayoutValues)
+                verticalLayoutValues.AssignToLayout(vertical);
+            if (layoutValues is HorizontalOrVerticalLayoutValues horizontalLayoutValues)
+                horizontalLayoutValues.AssignToLayout(horizontal);
+        }
+
+        #endregion
+    }
 
     /// <summary>
     /// Represents a spacer element in the editor.
