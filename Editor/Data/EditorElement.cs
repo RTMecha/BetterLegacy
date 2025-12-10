@@ -356,6 +356,57 @@ namespace BetterLegacy.Editor.Data
         #endregion
     }
 
+    public class ScrollViewElement : EditorElement<ScrollRect>
+    {
+        public ScrollViewElement(Direction direction)
+        {
+            horizontal = direction == Direction.Horizontal;
+            vertical = direction == Direction.Vertical;
+        }
+
+        public RectTransform Content { get; set; }
+
+        public bool horizontal;
+
+        public bool vertical;
+
+        public override GameObject GetPrefab(InitSettings initSettings) => initSettings.prefab ? initSettings.prefab : EditorPrefabHolder.Instance.ScrollView;
+
+        public override void Init(InitSettings initSettings)
+        {
+            if (this.initSettings.HasValue)
+                initSettings = this.initSettings.Value;
+
+            if (!initSettings.parent)
+                return;
+
+            CoreHelper.Delete(GameObject);
+            GameObject = GetPrefab(initSettings).Duplicate(initSettings.parent, !string.IsNullOrEmpty(initSettings.name) ? initSettings.name : "Scroll View", GetSiblingIndex(initSettings));
+            Apply(GameObject, initSettings);
+        }
+
+        public override void Apply(ScrollRect component, InitSettings initSettings)
+        {
+            component.horizontal = horizontal;
+            component.vertical = vertical;
+            Content = component.transform.Find("Viewport/Content").AsRT();
+
+            if (initSettings.rectValues.HasValue)
+                initSettings.rectValues.Value.AssignToRectTransform(component.transform.AsRT());
+
+            if (!initSettings.applyThemes)
+                return;
+
+            EditorThemeManager.ApplyScrollbar(component.verticalScrollbar);
+        }
+
+        public enum Direction
+        {
+            Horizontal,
+            Vertical,
+        }
+    }
+
     /// <summary>
     /// Represents a spacer element in the editor.
     /// </summary>
@@ -392,7 +443,10 @@ namespace BetterLegacy.Editor.Data
 
         public override void Apply(Image component, InitSettings initSettings)
         {
-            component.rectTransform.sizeDelta = size;
+            if (initSettings.rectValues.HasValue)
+                initSettings.rectValues.Value.AssignToRectTransform(GameObject.transform.AsRT());
+            else
+                component.rectTransform.sizeDelta = size;
             if (initSettings.applyThemes)
                 EditorThemeManager.ApplyGraphic(component, themeGroup);
         }
@@ -1047,6 +1101,7 @@ namespace BetterLegacy.Editor.Data
 
             CoreHelper.Delete(GameObject);
             GameObject = GetPrefab(initSettings).Duplicate(initSettings.parent, !string.IsNullOrEmpty(initSettings.name) ? initSettings.name : "label", GetSiblingIndex(initSettings));
+            Apply(GameObject, initSettings);
         }
 
         public override void Apply(GameObject gameObject, InitSettings initSettings) => Apply(gameObject.GetComponent<Text>(), initSettings);
