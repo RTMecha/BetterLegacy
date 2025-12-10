@@ -64,7 +64,7 @@ namespace BetterLegacy.Core.Runtime
                 {
                     bool shouldPause = false;
                     foreach (var player in PlayerManager.Players)
-                        if (player.RuntimePlayer && player.RuntimePlayer.Actions.Pause.WasPressed)
+                        if (player.Input && player.Input.Pause.WasPressed)
                             shouldPause = true;
 
                     if (shouldPause)

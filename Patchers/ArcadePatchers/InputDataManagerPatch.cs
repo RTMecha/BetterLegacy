@@ -25,6 +25,40 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
+        [HarmonyPatch(nameof(InputDataManager.Awake))]
+        [HarmonyPrefix]
+        static void AwakePrefix() => PlayerInput.SetupListeners();
+
+        [HarmonyPatch(nameof(InputDataManager.OnEnable))]
+        [HarmonyPrefix]
+        static bool OnEnablePrefix()
+        {
+            InputManager.OnDeviceAttached += Instance.ControllerConnected;
+            InputManager.OnDeviceDetached += Instance.ControllerDisconnected;
+            Instance.keyboardListener = MyGameActions.CreateWithKeyboardBindings(-1);
+            Instance.joystickListener = MyGameActions.CreateWithJoystickBindings();
+            PlayerInput.keyboardListener = PlayerInput.Keyboard;
+            PlayerInput.controllerListener = PlayerInput.Controller;
+            return false;
+        }
+        
+        [HarmonyPatch(nameof(InputDataManager.OnDisable))]
+        [HarmonyPrefix]
+        static bool OnDisable()
+        {
+            InputManager.OnDeviceAttached -= Instance.ControllerConnected;
+            InputManager.OnDeviceDetached -= Instance.ControllerDisconnected;
+            Instance.keyboardListener?.Destroy();
+            Instance.keyboardListener = default;
+            Instance.joystickListener?.Destroy();
+            Instance.joystickListener = default;
+            PlayerInput.keyboardListener?.Destroy();
+            PlayerInput.keyboardListener = default;
+            PlayerInput.controllerListener?.Destroy();
+            PlayerInput.controllerListener = default;
+            return false;
+        }
+
         [HarmonyPatch(nameof(InputDataManager.SetAllControllerRumble), new[] { typeof(float), typeof(float), typeof(bool) })]
         [HarmonyPrefix]
         static bool SetAllControllerRumble(float __0, float __1, bool __2 = true)
@@ -55,14 +89,14 @@ namespace BetterLegacy.Patchers
             if (!Instance.playersCanJoin || PlayerManager.Players.Count >= 8)
                 return false;
 
-            if (Instance.joystickListener.Join.WasPressed)
+            if (PlayerInput.controllerListener && PlayerInput.controllerListener.Join.WasPressed)
             {
                 var activeDevice = InputManager.ActiveDevice;
                 if (PlayerManager.DeviceNotConnected(activeDevice))
                     PlayerManager.Players.Add(new PAPlayer(true, PlayerManager.Players.Count, activeDevice));
             }
 
-            if (Instance.keyboardListener.Join.WasPressed && PlayerManager.KeyboardNotConnected())
+            if (PlayerInput.keyboardListener && PlayerInput.keyboardListener.Join.WasPressed && PlayerManager.KeyboardNotConnected())
                 PlayerManager.Players.Add(new PAPlayer(true, PlayerManager.Players.Count, null));
 
             return false;

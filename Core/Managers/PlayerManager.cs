@@ -62,8 +62,6 @@ namespace BetterLegacy.Core.Managers
         public static Transform healthParent;
         public static Sprite healthSprite;
 
-        public static bool allowController;
-
         /// <summary>
         /// Path to the global player models folder.
         /// </summary>
@@ -338,11 +336,8 @@ namespace BetterLegacy.Core.Managers
         public static void RemovePlayer(PAPlayer player)
         {
             if (player.RuntimePlayer)
-            {
-                player.RuntimePlayer.Actions = null;
-                player.RuntimePlayer.FaceController = null;
                 CoreHelper.Delete(player.RuntimePlayer);
-            }
+            player.Input = null;
             player.RuntimePlayer = null;
             Players.Remove(player);
         }
@@ -453,24 +448,7 @@ namespace BetterLegacy.Core.Managers
             else
                 runtimePlayer.playerNeedsUpdating = true;
 
-            if (player.device == null)
-            {
-                var setBoth = (CoreHelper.InEditor || allowController) && IsSingleplayer;
-                runtimePlayer.Actions = setBoth ? CoreHelper.CreateWithBothBindings() : InputDataManager.inst.keyboardListener;
-                runtimePlayer.isKeyboard = true;
-                runtimePlayer.FaceController = setBoth ? FaceController.CreateWithBothBindings() : FaceController.CreateWithKeyboardBindings();
-            }
-            else
-            {
-                var myGameActions = MyGameActions.CreateWithJoystickBindings();
-                myGameActions.Device = player.device;
-                runtimePlayer.Actions = myGameActions;
-                runtimePlayer.isKeyboard = false;
-
-                var faceController = FaceController.CreateWithJoystickBindings();
-                faceController.Device = player.device;
-                runtimePlayer.FaceController = faceController;
-            }
+            player.SetupInput();
 
             runtimePlayer.SetPath(pos);
 

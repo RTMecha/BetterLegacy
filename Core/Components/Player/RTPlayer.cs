@@ -58,16 +58,6 @@ namespace BetterLegacy.Core.Components.Player
         public static bool ShowNameTags { get; set; }
 
         /// <summary>
-        /// Base player actions.
-        /// </summary>
-        public MyGameActions Actions { get; set; }
-
-        /// <summary>
-        /// Secondary player actions.
-        /// </summary>
-        public FaceController FaceController { get; set; }
-
-        /// <summary>
         /// Custom player data reference.
         /// </summary>
         public PAPlayer Core { get; set; }
@@ -277,7 +267,7 @@ namespace BetterLegacy.Core.Components.Player
                 var control = Core?.GetControl() ?? new PlayerControl();
                 var sprintSpeed = control.sprintSpeed;
                 var sneakSpeed = control.sneakSpeed;
-                return Model.basePart.sprintSneakActive ? FaceController.Sprint.IsPressed ? sprintSpeed : FaceController.Sneak.IsPressed ? sneakSpeed : 1f : 1f;
+                return Model.basePart.sprintSneakActive ? Core.Input.Sprint.IsPressed ? sprintSpeed : Core.Input.Sneak.IsPressed ? sneakSpeed : 1f : 1f;
             }
         }
 
@@ -539,7 +529,6 @@ namespace BetterLegacy.Core.Components.Player
         public bool isBoostCancelled;
         public bool isDead = true;
 
-        public bool isKeyboard;
         public bool animatingBoost;
 
         public bool isSpawning;
@@ -1469,10 +1458,10 @@ namespace BetterLegacy.Core.Components.Player
                     rb.position = Camera.main.ViewportToWorldPoint(cameraToViewportPoint);
             }
 
-            if (!Model || !Model.faceControlActive || FaceController == null)
+            if (!Model || !Model.faceControlActive || !Core.Input)
                 return;
 
-            var vector = new Vector2(FaceController.Move.Vector.x, FaceController.Move.Vector.y);
+            var vector = new Vector2(Core.Input.Look.Vector.x, Core.Input.Look.Vector.y);
             var fp = Model.facePosition;
             if (vector.magnitude > 1f)
                 vector = vector.normalized;
@@ -1657,13 +1646,13 @@ namespace BetterLegacy.Core.Components.Player
                 return;
             }
 
-            if (CanMove && Actions != null)
+            if (CanMove && Core.Input)
             {
-                var boostWasPressed = Actions.Boost.WasPressed;
+                var boostWasPressed = Core.Input.Boost.WasPressed;
 
                 if (boostWasPressed && !CanBoost && !LockBoost && PlayerConfig.Instance.QueueBoost.Value)
                     queuedBoost = true;
-                if (Actions.Boost.WasReleased)
+                if (Core.Input.Boost.WasReleased)
                     queuedBoost = false;
 
                 if ((boostWasPressed || queuedBoost) && (JumpMode || CanBoost) && !LockBoost && (!JumpMode || (jumpCount == 0 || !colliding) && (currentJumpCount == Mathf.Clamp(jumpCount, -1, MaxJumpCount) || jumpBoostCount == -1 || currentJumpBoostCount < Mathf.Clamp(jumpBoostCount, -1, MaxJumpBoostCount))))
@@ -1684,10 +1673,10 @@ namespace BetterLegacy.Core.Components.Player
                 }
             }
 
-            if (CanCancelBoosting && (Actions != null && Actions.Boost.WasReleased || startBoostTime + maxBoostTime <= Time.time))
+            if (CanCancelBoosting && (Core.Input && Core.Input.Boost.WasReleased || startBoostTime + maxBoostTime <= Time.time))
                 StopBoosting();
 
-            if (Alive && FaceController != null && Model.bulletPart.active && (Model.bulletPart.constant ? FaceController.Shoot.IsPressed : FaceController.Shoot.WasPressed) && canShoot)
+            if (Alive && Core.Input && Model.bulletPart.active && (Model.bulletPart.constant ? Core.Input.Shoot.IsPressed : Core.Input.Shoot.WasPressed) && canShoot)
                 Shoot();
 
             var player = rb.gameObject;
@@ -1696,12 +1685,12 @@ namespace BetterLegacy.Core.Components.Player
             {
                 rb.gravityScale = jumpGravity * JumpGravity;
 
-                if (Actions == null)
+                if (!Core.Input)
                     return;
 
                 var pitch = MultiplyByPitch ? CoreHelper.ForwardPitch : 1f;
-                float x = Actions.Move.Vector.x;
-                float y = Actions.Move.Vector.y;
+                float x = Core.Input.Move.Vector.x;
+                float y = Core.Input.Move.Vector.y;
 
                 if (isBoosting)
                 {
@@ -1711,7 +1700,7 @@ namespace BetterLegacy.Core.Components.Player
                     return;
                 }
 
-                if (Actions.Boost.WasPressed)
+                if (Core.Input.Boost.WasPressed)
                     Jump();
 
                 if (x != 0f)
@@ -1726,13 +1715,13 @@ namespace BetterLegacy.Core.Components.Player
 
             rb.gravityScale = 0f;
 
-            if (Alive && Actions != null && Core.active && CanMove && !CoreHelper.Paused &&
+            if (Alive && Core.Input && Core.active && CanMove && !CoreHelper.Paused &&
                 (CoreConfig.Instance.AllowControlsInputField.Value || !CoreHelper.IsUsingInputField) &&
                 movementMode == MovementMode.KeyboardController && (!CoreHelper.InEditor || !RTEditor.inst.Freecam))
             {
                 colliding = false;
-                var x = !LockXMovement ? Actions.Move.Vector.x : 0f;
-                var y = !LockYMovement ? Actions.Move.Vector.y : 0f;
+                var x = !LockXMovement ? Core.Input.Move.Vector.x : 0f;
+                var y = !LockYMovement ? Core.Input.Move.Vector.y : 0f;
                 var pitch = MultiplyByPitch ? CoreHelper.ForwardPitch : 1f;
 
                 if (x != 0f)

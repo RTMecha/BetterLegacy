@@ -41,6 +41,7 @@ namespace BetterLegacy.Core.Data.Player
             deviceModel = GetDeviceModel(deviceName);
             InputManager.OnDeviceAttached += ControllerConnected;
             InputManager.OnDeviceDetached += ControllerDisconnected;
+            SetupInput();
             Debug.Log($"{InputDataManager.className}Created new Custom Player [{this.index}]");
         }
 
@@ -187,6 +188,8 @@ namespace BetterLegacy.Core.Data.Player
         /// </summary>
         public PlayerModel PlayerModel { get; set; } = PlayerModel.DefaultPlayer;
 
+        public PlayerInput Input { get; set; }
+
         // might not go with this?
         public PlayerInventory inventory = new PlayerInventory();
 
@@ -300,8 +303,7 @@ namespace BetterLegacy.Core.Data.Player
 
             controllerConnected = false;
             this.device = null;
-            if (RuntimePlayer)
-                RuntimePlayer.Actions = null;
+            Input = null;
 
             InputDataManager.inst.SetAllControllerRumble(0f);
             ControllerDisconnectedMenu.Init(index);
@@ -321,10 +323,9 @@ namespace BetterLegacy.Core.Data.Player
             controllerConnected = true;
             this.device = device;
 
-            var myGameActions = MyGameActions.CreateWithJoystickBindings();
-            myGameActions.Device = device;
-            if (RuntimePlayer)
-                RuntimePlayer.Actions = myGameActions;
+            var input = PlayerInput.Controller;
+            input.Device = device;
+            Input = input;
 
             ControllerDisconnectedMenu.Current?.Reconnected();
             Debug.LogFormat("{0}Connected Controller exists in players. Controller [{1}] [{2}] -> Player [{3}]", InputDataManager.className, device.Name, device.SortOrder, index);
@@ -340,6 +341,24 @@ namespace BetterLegacy.Core.Data.Player
         /// </summary>
         /// <returns>Returns the challenge mode default health if the user is not editing and the challenge mode default health is greater than 0, otherwise returns the players' local health.</returns>
         public int GetDefaultHealth() => !CoreHelper.IsEditing && RTBeatmap.Current.challengeMode.DefaultHealth > 0 ? RTBeatmap.Current.challengeMode.DefaultHealth : GetControl()?.Health ?? 3;
+
+        /// <summary>
+        /// Initializes the player input.
+        /// </summary>
+        public void SetupInput()
+        {
+            if (device == null)
+            {
+                Input = (CoreHelper.InEditor || PlayerConfig.Instance.AllowControllerIfSinglePlayer.Value) && PlayerManager.IsSingleplayer ?
+                    PlayerInput.ControllerAndKeyboard :
+                    PlayerInput.Keyboard;
+                return;
+            }
+
+            var input = PlayerInput.Controller;
+            input.Device = device;
+            Input = input;
+        }
 
         public IRTObject GetRuntimeObject() => RuntimePlayer;
 

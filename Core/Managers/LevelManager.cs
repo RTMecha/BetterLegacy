@@ -423,8 +423,6 @@ namespace BetterLegacy.Core.Managers
             PlayerManager.ValidatePlayers();
             PlayerManager.AssignPlayerModels();
 
-            PlayerManager.allowController = PlayerConfig.Instance.AllowControllerIfSinglePlayer.Value && PlayerManager.IsSingleplayer;
-
             RTPlayer.GameMode = GameMode.Regular;
 
             RTGameManager.inst.PlayIntro();

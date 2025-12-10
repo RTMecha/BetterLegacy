@@ -173,7 +173,7 @@ namespace BetterLegacy.Configs
 
             AllowControllerIfSinglePlayer = Bind(this, CONTROLS, "Allow Controller If Single Player", true, "If controller should be usable on singleplayer.");
             PlayerShootControl = BindEnum(this, CONTROLS, "Shoot Control", InputControlType.Action3, "Controller button to press to shoot. Requires restart if changed.");
-            PlayerShootKey = BindEnum(this, CONTROLS, "Shoot Key", Key.Z, "Keyboard key to press to shoot. Requires restart if changed.");
+            PlayerShootKey = BindEnum(this, CONTROLS, "Shoot Key", Key.C, "Keyboard key to press to shoot. Requires restart if changed.");
 
             #endregion
 
@@ -202,8 +202,8 @@ namespace BetterLegacy.Configs
             RTPlayer.PlayBoostRecoverSound = PlaySoundR.Value;
             RTPlayer.ZenEditorIncludesSolid = ZenEditorIncludesSolid.Value;
 
-            FaceController.ShootControl = PlayerShootControl.Value;
-            FaceController.ShootKey = PlayerShootKey.Value;
+            PlayerInput.ShootControl = PlayerShootControl.Value;
+            PlayerInput.ShootKey = PlayerShootKey.Value;
 
             RTPlayer.PlayShootSound = PlayerShootSound.Value;
             RTPlayer.AllowPlayersToTakeBulletDamage = AllowPlayersToTakeBulletDamage.Value;
