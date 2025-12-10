@@ -160,6 +160,11 @@ namespace BetterLegacy.Core.Data.Level
         /// </summary>
         public bool loadedAchievements;
 
+        /// <summary>
+        /// If the level is an interface.
+        /// </summary>
+        public bool isInterface;
+
         #endregion
 
         /// <summary>
