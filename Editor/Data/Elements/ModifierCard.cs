@@ -3912,6 +3912,25 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
+                case nameof(ModifierFunctions.getLook): {
+                        StringGenerator(modifier, reference, "X Variable Name", 0);
+                        StringGenerator(modifier, reference, "Y Variable Name", 1);
+                        BoolGenerator(modifier, reference, "Normalize", 2);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.getLookX): {
+                        StringGenerator(modifier, reference, "X Variable Name", 0);
+                        BoolGenerator(modifier, reference, "Normalize", 1);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.getLookY): {
+                        StringGenerator(modifier, reference, "Y Variable Name", 0);
+                        BoolGenerator(modifier, reference, "Normalize", 1);
+
+                        break;
+                    }
 
                 #endregion
 

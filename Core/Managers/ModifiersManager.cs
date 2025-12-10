@@ -104,6 +104,9 @@ namespace BetterLegacy.Core.Managers
             new Modifier(ModifierCompatibility.FullPlayerCompatible, Modifier.Type.Action, nameof(ModifierFunctions.getMove), true, "MOVE_X_VAR", "MOVE_Y_VAR", "True"),
             new Modifier(ModifierCompatibility.FullPlayerCompatible, Modifier.Type.Action, nameof(ModifierFunctions.getMoveX), true, "MOVE_X_VAR", "True"),
             new Modifier(ModifierCompatibility.FullPlayerCompatible, Modifier.Type.Action, nameof(ModifierFunctions.getMoveY), true, "MOVE_Y_VAR", "True"),
+            new Modifier(ModifierCompatibility.FullPlayerCompatible, Modifier.Type.Action, nameof(ModifierFunctions.getLook), true, "LOOK_X_VAR", "LOOK_Y_VAR", "True"),
+            new Modifier(ModifierCompatibility.FullPlayerCompatible, Modifier.Type.Action, nameof(ModifierFunctions.getLookX), true, "LOOK_X_VAR", "True"),
+            new Modifier(ModifierCompatibility.FullPlayerCompatible, Modifier.Type.Action, nameof(ModifierFunctions.getLookY), true, "LOOK_Y_VAR", "True"),
 
             new Modifier(ModifierCompatibility.FullPlayerCompatible, Modifier.Type.Trigger, nameof(ModifierFunctions.healthEquals), true, "0"),
             new Modifier(ModifierCompatibility.FullPlayerCompatible, Modifier.Type.Trigger, nameof(ModifierFunctions.healthGreaterEquals), true, "0"),

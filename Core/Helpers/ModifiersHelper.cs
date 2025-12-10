@@ -1415,6 +1415,9 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction(nameof(ModifierFunctions.getMove),  ModifierFunctions.getMove, ModifierCompatibility.FullPlayerCompatible),
             new ModifierAction(nameof(ModifierFunctions.getMoveX),  ModifierFunctions.getMoveX, ModifierCompatibility.FullPlayerCompatible),
             new ModifierAction(nameof(ModifierFunctions.getMoveY),  ModifierFunctions.getMoveY, ModifierCompatibility.FullPlayerCompatible),
+            new ModifierAction(nameof(ModifierFunctions.getLook),  ModifierFunctions.getLook, ModifierCompatibility.FullPlayerCompatible),
+            new ModifierAction(nameof(ModifierFunctions.getLookX),  ModifierFunctions.getLookX, ModifierCompatibility.FullPlayerCompatible),
+            new ModifierAction(nameof(ModifierFunctions.getLookY),  ModifierFunctions.getLookY, ModifierCompatibility.FullPlayerCompatible),
 
             #endregion
 
@@ -12494,7 +12497,7 @@ namespace BetterLegacy.Core.Helpers
             if (!player)
                 return;
 
-            var move = player.RuntimePlayer.Actions.Move.Vector;
+            var move = player.Input.Move.Vector;
             if (move.magnitude > 1f && modifier.GetBool(2, true, modifierLoop.variables))
                 move = move.normalized;
             modifierLoop.variables[modifier.GetValue(0)] = move.x.ToString();
@@ -12507,7 +12510,7 @@ namespace BetterLegacy.Core.Helpers
             if (!player)
                 return;
 
-            var move = player.RuntimePlayer.Actions.Move.Vector;
+            var move = player.Input.Move.Vector;
             if (move.magnitude > 1f && modifier.GetBool(1, true, modifierLoop.variables))
                 move = move.normalized;
             modifierLoop.variables[modifier.GetValue(0)] = move.x.ToString();
@@ -12519,7 +12522,44 @@ namespace BetterLegacy.Core.Helpers
             if (!player)
                 return;
 
-            var move = player.RuntimePlayer.Actions.Move.Vector;
+            var move = player.Input.Move.Vector;
+            if (move.magnitude > 1f && modifier.GetBool(1, true, modifierLoop.variables))
+                move = move.normalized;
+            modifierLoop.variables[modifier.GetValue(0)] = move.y.ToString();
+        }
+
+        public static void getLook(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            var player = modifierLoop.reference is RTPlayer.RTCustomPlayerObject customPlayerObject ? customPlayerObject.Player.Core : modifierLoop.reference as PAPlayer;
+            if (!player)
+                return;
+
+            var move = player.Input.Look.Vector;
+            if (move.magnitude > 1f && modifier.GetBool(2, true, modifierLoop.variables))
+                move = move.normalized;
+            modifierLoop.variables[modifier.GetValue(0)] = move.x.ToString();
+            modifierLoop.variables[modifier.GetValue(1)] = move.y.ToString();
+        }
+
+        public static void getLookX(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            var player = modifierLoop.reference is RTPlayer.RTCustomPlayerObject customPlayerObject ? customPlayerObject.Player.Core : modifierLoop.reference as PAPlayer;
+            if (!player)
+                return;
+
+            var move = player.Input.Look.Vector;
+            if (move.magnitude > 1f && modifier.GetBool(1, true, modifierLoop.variables))
+                move = move.normalized;
+            modifierLoop.variables[modifier.GetValue(0)] = move.x.ToString();
+        }
+
+        public static void getLookY(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            var player = modifierLoop.reference is RTPlayer.RTCustomPlayerObject customPlayerObject ? customPlayerObject.Player.Core : modifierLoop.reference as PAPlayer;
+            if (!player)
+                return;
+
+            var move = player.Input.Look.Vector;
             if (move.magnitude > 1f && modifier.GetBool(1, true, modifierLoop.variables))
                 move = move.normalized;
             modifierLoop.variables[modifier.GetValue(0)] = move.y.ToString();
