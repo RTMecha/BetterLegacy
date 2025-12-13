@@ -1604,6 +1604,8 @@ namespace BetterLegacy.Core.Data.Beatmap
         public IPrefabable AsPrefabable() => this;
         public ITransformable AsTransformable() => this;
 
+        public ModifierLoop GetModifierLoop() => runtimeModifiers?.loop;
+
         #region Custom Interpolation
 
         public void UpdateDefaultTransform()

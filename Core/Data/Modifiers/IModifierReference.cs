@@ -41,5 +41,11 @@ namespace BetterLegacy.Core.Data.Modifiers
         /// </summary>
         /// <returns>Returns the object as a transformable.</returns>
         public ITransformable AsTransformable();
+
+        /// <summary>
+        /// Gets the modifier loop.
+        /// </summary>
+        /// <returns>Returns the modifier loop from the object.</returns>
+        public ModifierLoop GetModifierLoop();
     }
 }

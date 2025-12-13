@@ -365,6 +365,8 @@ namespace BetterLegacy.Core.Data.Player
         public IPrefabable AsPrefabable() => null;
         public ITransformable AsTransformable() => RuntimePlayer;
 
+        public ModifierLoop GetModifierLoop() => RuntimePlayer?.controlLoop;
+
         #endregion
     }
 }

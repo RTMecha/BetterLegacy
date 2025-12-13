@@ -899,6 +899,8 @@ namespace BetterLegacy.Core.Data.Beatmap
         public IPrefabable AsPrefabable() => this;
         public ITransformable AsTransformable() => this;
 
+        public ModifierLoop GetModifierLoop() => runtimeModifiers?.loop;
+
         public void InterpolateAnimation(PAAnimation animation, float t) => this.InterpolateAnimationOffset(animation, t);
 
         public void SetDefaultTransformOffsets()

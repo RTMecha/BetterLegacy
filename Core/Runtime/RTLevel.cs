@@ -77,7 +77,7 @@ namespace BetterLegacy.Core.Runtime
 
         public EvaluationContext evaluationContext;
 
-        ModifierLoop loop;
+        public ModifierLoop loop;
 
         /// <summary>
         /// Initializes the runtime level.

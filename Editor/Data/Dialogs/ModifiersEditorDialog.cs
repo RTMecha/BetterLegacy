@@ -104,6 +104,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
         /// </summary>
         public Action<bool> showModifiersFunc;
 
+        public Func<IModifierReference> getReference;
+
         #endregion
 
         #region Functions
@@ -356,8 +358,18 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 if (!RTEditor.ShowModdedUI)
                     return;
 
-                if (EditorTimeline.inst.CurrentSelection.TryGetData(out IModifierReference reference))
+                if (getReference == null)
+                    return;
+
+                var reference = getReference.Invoke();
+                if (reference == null)
+                    return;
+
+                if (IntVariableUI)
                     IntVariableUI.text = $"Integer Variable: [ {reference.IntVariable} ]";
+
+                for (int i = 0; i < modifierCards.Count; i++)
+                    modifierCards[i].Tick(reference);
             }
             catch
             {

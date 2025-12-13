@@ -1879,6 +1879,8 @@ namespace BetterLegacy.Core.Data.Beatmap
         public IPrefabable AsPrefabable() => null;
         public ITransformable AsTransformable() => null;
 
+        public ModifierLoop GetModifierLoop() => RTLevel.Current?.loop;
+
         #region Helpers
 
         public void Clear()

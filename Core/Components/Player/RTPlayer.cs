@@ -162,8 +162,8 @@ namespace BetterLegacy.Core.Components.Player
 
         public float KillTime { get; set; }
 
-        ModifierLoop controlLoop = new ModifierLoop(null, new Dictionary<string, string>());
-        ModifierLoop modelLoop = new ModifierLoop(null, new Dictionary<string, string>());
+        public ModifierLoop controlLoop = new ModifierLoop(null, new Dictionary<string, string>());
+        public ModifierLoop modelLoop = new ModifierLoop(null, new Dictionary<string, string>());
 
         #endregion
 
@@ -3919,6 +3919,8 @@ namespace BetterLegacy.Core.Components.Player
             public IPrefabable AsPrefabable() => null;
 
             public ITransformable AsTransformable() => this;
+
+            public ModifierLoop GetModifierLoop() => loop;
 
             public void InterpolateAnimation(PAAnimation animation, float t)
             {

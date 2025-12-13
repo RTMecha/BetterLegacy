@@ -1,20 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 
 using UnityEngine;
 using UnityEngine.UI;
 
-using LSFunctions;
-
-using BetterLegacy.Configs;
 using BetterLegacy.Core;
-using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
-using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Dialogs
@@ -109,6 +102,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             new Labels(Labels.InitSettings.Default.Parent(Content), new Label("Level Modifiers") { fontStyle = FontStyle.Bold, });
             LevelModifiers = new ModifiersEditorDialog();
+            LevelModifiers.getReference = () => GameData.Current;
             LevelModifiers.Init(Content.transform, false, false, false);
 
             new Labels(Labels.InitSettings.Default.Parent(Content), new Label("Modifier Blocks") { fontStyle = FontStyle.Bold, });

@@ -1942,6 +1942,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             try
             {
                 ModifiersDialog = new ModifiersEditorDialog();
+                ModifiersDialog.getReference = () => EditorTimeline.inst.CurrentSelection.GetData<Core.Data.Modifiers.IModifierReference>();
                 ModifiersDialog.Init(Content);
             }
             catch (Exception ex)
