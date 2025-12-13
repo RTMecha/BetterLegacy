@@ -1152,12 +1152,13 @@ namespace BetterLegacy.Editor.Managers
                 storage.Text = name;
                 storage.OnClick.NewListener(() =>
                 {
-                    if (CurrentKeybind)
-                    {
-                        CurrentKeybind.Name = name;
-                        RenderDialog(CurrentKeybind);
-                    }
                     FunctionPopup.Close();
+                    if (!CurrentKeybind)
+                        return;
+
+                    CurrentKeybind.Name = name;
+                    RenderDialog(CurrentKeybind);
+                    Save();
                 });
 
                 EditorThemeManager.ApplySelectable(storage.button, ThemeGroup.List_Button_1);
