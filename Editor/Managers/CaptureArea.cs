@@ -87,21 +87,15 @@ namespace BetterLegacy.Editor.Managers
                         new ButtonElement("Reset Zoom", () => Settings.Zoom = 1f),
                         new ButtonElement("Reset Rotation", () => Settings.rot = 0f),
                         new SpacerElement(),
-                        new ButtonElement($"Hide Players [{(Settings.hidePlayers ? "On" : "Off")}]", () => Settings.hidePlayers = !Settings.hidePlayers),
-                        new ButtonElement($"Capture All Layers [{(Settings.captureAllLayers ? "On" : "Off")}]", () => Settings.captureAllLayers = !Settings.captureAllLayers),
-                        new ButtonElement($"Show Editor [{(Settings.showEditor ? "On" : "Off")}]", () => Settings.showEditor = !Settings.showEditor),
+                        ButtonElement.ToggleButton("Hide Players", () => Settings.hidePlayers, () => Settings.hidePlayers = !Settings.hidePlayers),
+                        ButtonElement.ToggleButton("Capture All Layers", () => Settings.captureAllLayers, () => Settings.captureAllLayers = !Settings.captureAllLayers),
+                        ButtonElement.ToggleButton("Show Editor", () => Settings.showEditor, () => Settings.showEditor = !Settings.showEditor),
                         new SpacerElement(),
-                        new ButtonElement($"Use Custom BG Color [{(Settings.useCustomBGColor ? "On" : "Off")}]", () => Settings.useCustomBGColor = !Settings.useCustomBGColor),
-                        new ButtonElement($"Set Custom BG Color", () =>
-                        {
-                            RTColorPicker.inst.Show(
-                                currentColor: Settings.customBGColor,
-                                colorChanged: (col, hex) => { },
-                                colorSaved: (col, hex) =>
-                                {
-                                    Settings.customBGColor = col;
-                                });
-                        }),
+                        ButtonElement.ToggleButton($"Use Custom BG Color", () => Settings.useCustomBGColor, () => Settings.useCustomBGColor = !Settings.useCustomBGColor),
+                        new ButtonElement($"Set Custom BG Color", () => RTColorPicker.inst.Show(
+                            currentColor: Settings.customBGColor,
+                            colorChanged: (col, hex) => { },
+                            colorSaved: (col, hex) => Settings.customBGColor = col)),
                         new SpacerElement(),
                         new ButtonElement("Copy", () => copiedSettings = Settings.Copy()),
                         new ButtonElement("Paste", () =>
@@ -141,17 +135,17 @@ namespace BetterLegacy.Editor.Managers
                     buttonFunctions.AddRange(new List<EditorElement>
                     {
                         new SpacerElement(),
-                        new ButtonElement($"{(Settings.lockDragMode == CaptureSettings.LockDragMode.None ? "> " : string.Empty)}No Lock", () =>
+                        ButtonElement.SelectionButton(() => Settings.lockDragMode == CaptureSettings.LockDragMode.None, "No Lock", () =>
                         {
                             Settings.lockDragMode = CaptureSettings.LockDragMode.None;
                             EditorManager.inst.DisplayNotification($"Set lock drag to {Settings.lockDragMode}!", 2f, EditorManager.NotificationType.Success);
                         }),
-                        new ButtonElement($"{(Settings.lockDragMode == CaptureSettings.LockDragMode.PositionX ? "> " : string.Empty)}Position X Lock", () =>
+                        ButtonElement.SelectionButton(() => Settings.lockDragMode == CaptureSettings.LockDragMode.PositionX, "Position X Lock", () =>
                         {
                             Settings.lockDragMode = CaptureSettings.LockDragMode.PositionX;
                             EditorManager.inst.DisplayNotification($"Set lock drag to {Settings.lockDragMode}!", 2f, EditorManager.NotificationType.Success);
                         }),
-                        new ButtonElement($"{(Settings.lockDragMode == CaptureSettings.LockDragMode.PositionY ? "> " : string.Empty)}Position Y Lock", () =>
+                        ButtonElement.SelectionButton(() => Settings.lockDragMode == CaptureSettings.LockDragMode.PositionY, "Position Y Lock", () =>
                         {
                             Settings.lockDragMode = CaptureSettings.LockDragMode.PositionY;
                             EditorManager.inst.DisplayNotification($"Set lock drag to {Settings.lockDragMode}!", 2f, EditorManager.NotificationType.Success);

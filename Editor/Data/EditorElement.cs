@@ -51,11 +51,6 @@ namespace BetterLegacy.Editor.Data
         public GameObject GameObject { get; set; }
 
         /// <summary>
-        /// Height of the element in the context menu.
-        /// </summary>
-        public virtual float ContextMenuHeight => 0f;
-
-        /// <summary>
         /// Local sibling index separate from <see cref="InitSettings"/>. Use if the init settings is used for several items.
         /// </summary>
         public int siblingIndex = -1;
@@ -63,7 +58,7 @@ namespace BetterLegacy.Editor.Data
         /// <summary>
         /// Labels element reference.
         /// </summary>
-        public LabelsElement labelsElement;
+        public EditorElement labelsElement;
 
         /// <summary>
         /// Sub-elements inside of the element.
@@ -104,7 +99,18 @@ namespace BetterLegacy.Editor.Data
         /// Initializes the editor element.
         /// </summary>
         /// <param name="initSettings">Initialize settings.</param>
-        public abstract void Init(InitSettings initSettings);
+        public virtual void Init(InitSettings initSettings)
+        {
+            if (this.initSettings.HasValue)
+                initSettings = this.initSettings.Value;
+
+            if (!initSettings.parent)
+                return;
+
+            CoreHelper.Delete(GameObject);
+            GameObject = GetPrefab(initSettings).Duplicate(initSettings.parent, !string.IsNullOrEmpty(initSettings.name) ? initSettings.name : "element", GetSiblingIndex(initSettings));
+            Apply(GameObject, initSettings);
+        }
 
         /// <summary>
         /// Initializes all sub elements.
@@ -276,6 +282,79 @@ namespace BetterLegacy.Editor.Data
         public abstract void Apply(T component, InitSettings initSettings);
     }
 
+    /// <summary>
+    /// Represents a group of elements in the editor.
+    /// </summary>
+    public class EditorElementGroup : Exists
+    {
+        public EditorElementGroup(Func<bool> shouldGenerate) => this.shouldGenerate = shouldGenerate;
+
+        public EditorElementGroup(Func<bool> shouldGenerate, EditorElement editorElement) : this(shouldGenerate, new List<EditorElement> { editorElement }) { }
+
+        public EditorElementGroup(Func<bool> shouldGenerate, List<EditorElement> elements)
+        {
+            this.shouldGenerate = shouldGenerate;
+            this.elements = elements;
+        }
+
+        public EditorElementGroup(Func<bool> shouldGenerate, params EditorElement[] elements)
+        {
+            this.shouldGenerate = shouldGenerate;
+            this.elements = elements.ToList();
+        }
+
+        public EditorElementGroup(Func<bool> shouldGenerate, Func<List<EditorElement>> getElements)
+        {
+            this.shouldGenerate = shouldGenerate;
+            this.getElements = getElements;
+        }
+
+        public EditorElementGroup() : this(null, new List<EditorElement>()) { }
+
+        public List<EditorElement> elements;
+
+        public Func<List<EditorElement>> getElements;
+
+        List<EditorElement> cachedElements;
+
+        public List<EditorElement> Elements
+        {
+            get
+            {
+                if (getElements != null)
+                {
+                    cachedElements = getElements.Invoke();
+                    return cachedElements;
+                }
+                return elements;
+            }
+        }
+
+        /// <summary>
+        /// Sets the active state of the editor elements in the group.
+        /// </summary>
+        /// <param name="state">Active state to set.</param>
+        public void SetActive(bool state)
+        {
+            if (cachedElements != null)
+                for (int i = 0; i < cachedElements.Count; i++)
+                    cachedElements[i].SetActive(state);
+            if (elements != null)
+                for (int i = 0; i < elements.Count; i++)
+                    elements[i].SetActive(state);
+        }
+
+        /// <summary>
+        /// Function to run when checking if the editor element group should generate.
+        /// </summary>
+        readonly Func<bool> shouldGenerate;
+
+        /// <summary>
+        /// If the editor element group should generate.
+        /// </summary>
+        public bool ShouldGenerate => shouldGenerate == null || shouldGenerate.Invoke();
+    }
+
     #endregion
 
     /// <summary>
@@ -299,8 +378,6 @@ namespace BetterLegacy.Editor.Data
         VerticalLayoutGroup vertical;
         HorizontalLayoutGroup horizontal;
 
-        public override float ContextMenuHeight => 37f;
-
         #endregion
 
         #region Functions
@@ -315,8 +392,8 @@ namespace BetterLegacy.Editor.Data
 
             CoreHelper.Delete(GameObject);
             GameObject = initSettings.prefab ?
-                initSettings.prefab.Duplicate(initSettings.parent, !string.IsNullOrEmpty(initSettings.name) ? initSettings.name : "spacer element", GetSiblingIndex(initSettings)) :
-                Creator.NewUIObject(!string.IsNullOrEmpty(initSettings.name) ? initSettings.name : "spacer element", initSettings.parent, GetSiblingIndex(initSettings));
+                initSettings.prefab.Duplicate(initSettings.parent, !string.IsNullOrEmpty(initSettings.name) ? initSettings.name : "layout element", GetSiblingIndex(initSettings)) :
+                Creator.NewUIObject(!string.IsNullOrEmpty(initSettings.name) ? initSettings.name : "layout element", initSettings.parent, GetSiblingIndex(initSettings));
 
             switch (layoutValues.type)
             {
@@ -356,6 +433,9 @@ namespace BetterLegacy.Editor.Data
         #endregion
     }
 
+    /// <summary>
+    /// Represents a scroll view element in the editor.
+    /// </summary>
     public class ScrollViewElement : EditorElement<ScrollRect>
     {
         public ScrollViewElement(Direction direction)
@@ -364,26 +444,19 @@ namespace BetterLegacy.Editor.Data
             vertical = direction == Direction.Vertical;
         }
 
+        #region Values
+
         public RectTransform Content { get; set; }
 
         public bool horizontal;
 
         public bool vertical;
 
+        #endregion
+
+        #region Functions
+
         public override GameObject GetPrefab(InitSettings initSettings) => initSettings.prefab ? initSettings.prefab : EditorPrefabHolder.Instance.ScrollView;
-
-        public override void Init(InitSettings initSettings)
-        {
-            if (this.initSettings.HasValue)
-                initSettings = this.initSettings.Value;
-
-            if (!initSettings.parent)
-                return;
-
-            CoreHelper.Delete(GameObject);
-            GameObject = GetPrefab(initSettings).Duplicate(initSettings.parent, !string.IsNullOrEmpty(initSettings.name) ? initSettings.name : "Scroll View", GetSiblingIndex(initSettings));
-            Apply(GameObject, initSettings);
-        }
 
         public override void Apply(ScrollRect component, InitSettings initSettings)
         {
@@ -399,6 +472,8 @@ namespace BetterLegacy.Editor.Data
 
             EditorThemeManager.ApplyScrollbar(component.verticalScrollbar);
         }
+
+        #endregion
 
         public enum Direction
         {
@@ -419,8 +494,6 @@ namespace BetterLegacy.Editor.Data
         public Vector2 size = new Vector2(0f, 4f);
 
         public ThemeGroup themeGroup = ThemeGroup.Background_3;
-
-        public override float ContextMenuHeight => 6f;
 
         #endregion
 
@@ -532,8 +605,6 @@ namespace BetterLegacy.Editor.Data
 
         public ButtonAdapter buttonAdapter;
 
-        public override float ContextMenuHeight => 37f;
-
         #endregion
 
         #region Functions
@@ -545,19 +616,6 @@ namespace BetterLegacy.Editor.Data
             Type.Sprite => EditorPrefabHolder.Instance.SpriteButton,
             _ => EditorPrefabHolder.Instance.Function1Button,
         };
-
-        public override void Init(InitSettings initSettings)
-        {
-            if (this.initSettings.HasValue)
-                initSettings = this.initSettings.Value;
-
-            if (!initSettings.parent)
-                return;
-
-            CoreHelper.Delete(GameObject);
-            GameObject = GetPrefab(initSettings).Duplicate(initSettings.parent, !string.IsNullOrEmpty(initSettings.name) ? initSettings.name : "button", GetSiblingIndex(initSettings));
-            Apply(GameObject, initSettings);
-        }
 
         public override void Apply(GameObject gameObject, InitSettings initSettings)
         {
@@ -765,26 +823,11 @@ namespace BetterLegacy.Editor.Data
 
         public ThemeGroup textThemeGroup = ThemeGroup.Input_Field_Text;
 
-        public override float ContextMenuHeight => 37f;
-
         #endregion
 
         #region Functions
 
         public override GameObject GetPrefab(InitSettings initSettings) => initSettings.prefab ? initSettings.prefab : EditorPrefabHolder.Instance.StringInputField;
-
-        public override void Init(InitSettings initSettings)
-        {
-            if (this.initSettings.HasValue)
-                initSettings = this.initSettings.Value;
-
-            if (!initSettings.parent)
-                return;
-
-            CoreHelper.Delete(GameObject);
-            GameObject = GetPrefab(initSettings).Duplicate(initSettings.parent, !string.IsNullOrEmpty(initSettings.name) ? initSettings.name : "field", GetSiblingIndex(initSettings));
-            Apply(GameObject, initSettings);
-        }
 
         public override void Apply(InputField component, InitSettings initSettings)
         {
@@ -904,26 +947,11 @@ namespace BetterLegacy.Editor.Data
 
         public ThemeGroup buttonThemeGroup = ThemeGroup.Function_2;
 
-        public override float ContextMenuHeight => 37f;
-
         #endregion
 
         #region Functions
 
         public override GameObject GetPrefab(InitSettings initSettings) => initSettings.prefab ? initSettings.prefab : EditorPrefabHolder.Instance.NumberInputField;
-
-        public override void Init(InitSettings initSettings)
-        {
-            if (this.initSettings.HasValue)
-                initSettings = this.initSettings.Value;
-
-            if (!initSettings.parent)
-                return;
-
-            CoreHelper.Delete(GameObject);
-            GameObject = GetPrefab(initSettings).Duplicate(initSettings.parent, !string.IsNullOrEmpty(initSettings.name) ? initSettings.name : "field", GetSiblingIndex(initSettings));
-            Apply(GameObject, initSettings);
-        }
 
         public override void Apply(InputFieldStorage component, InitSettings initSettings)
         {
@@ -1063,6 +1091,48 @@ namespace BetterLegacy.Editor.Data
     }
 
     /// <summary>
+    /// Represents a dropdown element in the editor.
+    /// </summary>
+    public class DropdownElement : EditorElement<Dropdown>
+    {
+        public DropdownElement() { }
+
+        #region Values
+
+        public List<Dropdown.OptionData> options;
+        public int value;
+        public Func<int> getValue;
+        public int Value => getValue != null ? getValue.Invoke() : value;
+        public Action<int> onValueChanged;
+
+        #endregion
+
+        #region Functions
+
+        public override GameObject GetPrefab(InitSettings initSettings) => initSettings.prefab ? initSettings.prefab : EditorPrefabHolder.Instance.Dropdown;
+
+        public override void Apply(Dropdown component, InitSettings initSettings)
+        {
+            if (options != null)
+                component.options = options;
+            component.SetValueWithoutNotify(Value);
+            component.onValueChanged.NewListener(_val =>
+            {
+                onValueChanged?.Invoke(_val);
+                value = _val;
+            });
+
+            if (initSettings.rectValues.HasValue)
+                initSettings.rectValues.Value.AssignToRectTransform(component.transform.AsRT());
+
+            if (initSettings.applyThemes)
+                EditorThemeManager.ApplyDropdown(component);
+        }
+
+        #endregion
+    }
+
+    /// <summary>
     /// Represents a label element in the editor.
     /// </summary>
     public class LabelElement : EditorElement<Text>
@@ -1085,24 +1155,13 @@ namespace BetterLegacy.Editor.Data
 
         public Vector2? sizeDelta;
 
+        public Text uiText;
+
         #endregion
 
         #region Functions
 
         public override GameObject GetPrefab(InitSettings initSettings) => initSettings.prefab ? initSettings.prefab : EditorPrefabHolder.Instance.Labels.transform.GetChild(0).gameObject;
-
-        public override void Init(InitSettings initSettings)
-        {
-            if (this.initSettings.HasValue)
-                initSettings = this.initSettings.Value;
-
-            if (!initSettings.parent)
-                return;
-
-            CoreHelper.Delete(GameObject);
-            GameObject = GetPrefab(initSettings).Duplicate(initSettings.parent, !string.IsNullOrEmpty(initSettings.name) ? initSettings.name : "label", GetSiblingIndex(initSettings));
-            Apply(GameObject, initSettings);
-        }
 
         public override void Apply(GameObject gameObject, InitSettings initSettings) => Apply(gameObject.GetComponent<Text>(), initSettings);
 
@@ -1145,6 +1204,8 @@ namespace BetterLegacy.Editor.Data
     {
         #region Constructors
 
+        public LabelsElement() { }
+
         public LabelsElement(params LabelElement[] labels) => this.labels = labels.ToList();
 
         public LabelsElement(InitSettings initSettings, params LabelElement[] labels)
@@ -1169,26 +1230,11 @@ namespace BetterLegacy.Editor.Data
 
         public ThemeGroup themeGroup;
 
-        public override float ContextMenuHeight => 24f;
-
         #endregion
 
         #region Functions
 
         public override GameObject GetPrefab(InitSettings initSettings) => initSettings.prefab ? initSettings.prefab : EditorPrefabHolder.Instance.Labels;
-
-        public override void Init(InitSettings initSettings)
-        {
-            if (this.initSettings.HasValue)
-                initSettings = this.initSettings.Value;
-
-            if (!initSettings.parent)
-                return;
-
-            CoreHelper.Delete(GameObject);
-            GameObject = GetPrefab(initSettings).Duplicate(initSettings.parent, !string.IsNullOrEmpty(initSettings.name) ? initSettings.name : "labels", GetSiblingIndex(initSettings));
-            Apply(GameObject, initSettings);
-        }
 
         public override void Apply(GameObject gameObject, InitSettings initSettings)
         {

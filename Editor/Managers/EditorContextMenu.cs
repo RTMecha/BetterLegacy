@@ -59,13 +59,17 @@ namespace BetterLegacy.Editor.Managers
                 var contextMenuImage = contextMenu.AddComponent<Image>();
 
                 var contextMenuLayout = Creator.NewUIObject("Context Menu Layout", contextMenu.transform);
-                RectValues.FullAnchored.SizeDelta(-8f, -8f).AssignToRectTransform(contextMenuLayout.transform.AsRT());
+                RectValues.Default.AnchorMax(1f, 0.5f).AnchorMin(0f, 0.5f).SizeDelta(0f, 0f).AssignToRectTransform(contextMenuLayout.transform.AsRT());
                 this.contextMenuLayout = contextMenuLayout.transform.AsRT();
 
                 var contextMenuLayoutVLG = contextMenuLayout.AddComponent<VerticalLayoutGroup>();
                 contextMenuLayoutVLG.childControlHeight = false;
                 contextMenuLayoutVLG.childForceExpandHeight = false;
                 contextMenuLayoutVLG.spacing = 4f;
+                contextMenuLayoutVLG.padding = new RectOffset(8, 8, 8, 8);
+
+                var contentSizeFitter = contextMenuLayout.AddComponent<ContentSizeFitter>();
+                contentSizeFitter.verticalFit = ContentSizeFitter.FitMode.MinSize;
 
                 var disable = contextMenu.AddComponent<Clickable>();
                 disable.onExit = pointerEventData => contextMenu.SetActive(false);
@@ -184,6 +188,33 @@ namespace BetterLegacy.Editor.Managers
         /// <summary>
         /// Shows the editor context menu.
         /// </summary>
+        /// <param name="editorElementGroup">The context menus' functions.</param>
+        public void ShowContextMenu(EditorElementGroup editorElementGroup) => ShowContextMenu(DEFAULT_CONTEXT_MENU_WIDTH, editorElementGroup);
+
+        public void ShowContextMenu(List<EditorElementGroup> editorElementGroups) => ShowContextMenu(DEFAULT_CONTEXT_MENU_WIDTH, editorElementGroups);
+
+        public void ShowContextMenu(params EditorElementGroup[] editorElementGroups) => ShowContextMenu(DEFAULT_CONTEXT_MENU_WIDTH, editorElementGroups);
+
+        public void ShowContextMenu(float width, EditorElementGroup editorElementGroup) => ShowContextMenu(width, editorElementGroup.Elements);
+
+        public void ShowContextMenu(float width, List<EditorElementGroup> editorElementGroups) => ShowContextMenu(width, editorElementGroups.ToArray());
+
+        public void ShowContextMenu(float width, params EditorElementGroup[] editorElementGroups)
+        {
+            var list = new List<EditorElement>();
+            for (int i = 0; i < editorElementGroups.Length; i++)
+            {
+                var editorElementGroup = editorElementGroups[i];
+                if (editorElementGroup.ShouldGenerate)
+                    list.AddRange(editorElementGroup.Elements);
+            }
+            if (!list.IsEmpty())
+                ShowContextMenu(width, list);
+        }
+
+        /// <summary>
+        /// Shows the editor context menu.
+        /// </summary>
         /// <param name="buttonFunctions">The context menus' functions.</param>
         public void ShowContextMenu(List<EditorElement> editorElements) => ShowContextMenu(DEFAULT_CONTEXT_MENU_WIDTH, editorElements.ToArray());
 
@@ -207,9 +238,8 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="editorElements">The context menus' functions.</param>
         public void ShowContextMenu(float width, params EditorElement[] editorElements)
         {
-            float height = 0f;
             contextMenu.SetActive(true);
-            LSHelpers.DeleteChildren(contextMenuLayout);
+            CoreHelper.DestroyChildren(contextMenuLayout);
             for (int i = 0; i < editorElements.Length; i++)
             {
                 var element = editorElements[i];
@@ -217,14 +247,17 @@ namespace BetterLegacy.Editor.Managers
                     continue;
 
                 element.Init(EditorElement.InitSettings.Default.Parent(contextMenuLayout).OnClick(pointerEventData => contextMenu.SetActive(false)));
-                height += element.ContextMenuHeight;
             }
+
+            // rebuild layout so it's correct
+            LayoutRebuilder.ForceRebuildLayoutImmediate(contextMenuLayout.transform.AsRT());
+            LayoutRebuilder.ForceRebuildLayoutImmediate(contextMenu.transform.AsRT());
 
             var pos = Input.mousePosition * CoreHelper.ScreenScaleInverse;
             pos.x = Mathf.Clamp(pos.x, float.NegativeInfinity, (Screen.width * CoreHelper.ScreenScaleInverse) - width);
-            pos.y = Mathf.Clamp(pos.y, height, float.PositiveInfinity);
+            pos.y = Mathf.Clamp(pos.y, contextMenuLayout.transform.AsRT().sizeDelta.y, float.PositiveInfinity);
             contextMenu.transform.AsRT().anchoredPosition = pos;
-            contextMenu.transform.AsRT().sizeDelta = new Vector2(width, height);
+            contextMenu.transform.AsRT().sizeDelta = new Vector2(width, contextMenuLayout.transform.AsRT().sizeDelta.y);
         }
 
         public static List<EditorElement> GetMoveIndexFunctions<T>(List<T> list, int index, Action onMove = null) => new List<EditorElement>
@@ -704,6 +737,18 @@ namespace BetterLegacy.Editor.Managers
             new ButtonElement("Set to Timeline Cursor", () => setTime?.Invoke(AudioManager.inst.CurrentAudioSource.time)),
             new ButtonElement("Snap to BPM", () => setTime?.Invoke(RTEditor.SnapToBPM(getObjectTime?.Invoke() ?? AudioManager.inst.CurrentAudioSource.time)))
         };
+
+        public void Test(bool singleTest, bool groupTest)
+        {
+            // editor element groups can be used to generate a specific group of elements.
+            ShowContextMenu(
+                new EditorElementGroup(null,
+                    new ButtonElement("Test", () => { }),
+                    new ButtonElement("Test Generate", () => { }, shouldGenerate: () => singleTest)),
+                new EditorElementGroup(() => groupTest,
+                    new SpacerElement(),
+                    new ButtonElement("Test Group", () => { })));
+        }
 
         #endregion
     }
