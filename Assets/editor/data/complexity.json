@@ -94,5 +94,61 @@
   "parent/parallax": {
     "complexity": 2,
     "only_this": false
+  },
+  "event/shake_direction": {
+    "complexity": 1,
+    "only_this": false
+  },
+  "event/shake_notice": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "event/shake_interpolation": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "event/shake_speed": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "event/bloom_diffusion": {
+    "complexity": 1,
+    "only_this": false
+  },
+  "event/bloom_threshold": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "event/bloom_anamorphic_ratio": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "event/bloom_colors": {
+    "complexity": 1,
+    "only_this": false
+  },
+  "event/bloom_hsv": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "event/vignette_colors": {
+    "complexity": 1,
+    "only_this": false
+  },
+  "event/vignette_hsv": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "event/lens_center": {
+    "complexity": 1,
+    "only_this": false
+  },
+  "event/lens_intensity_xy": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "event/lens_scale": {
+    "complexity": 2,
+    "only_this": false
   }
 }

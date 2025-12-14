@@ -1,4 +1,5 @@
-﻿using BetterLegacy.Core.Prefabs;
+﻿using BetterLegacy.Core;
+using BetterLegacy.Core.Prefabs;
 
 namespace BetterLegacy.Editor.Data.Dialogs
 {
@@ -12,7 +13,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
         {
             base.Init();
 
-            Vector2Field = GameObject.transform.GetChild(9).gameObject.AddComponent<Vector2InputFieldStorage>();
+            Vector2Field = GameObject.transform.GetChild(9).gameObject.GetOrAddComponent<Vector2InputFieldStorage>();
             Vector2Field.Assign();
         }
     }

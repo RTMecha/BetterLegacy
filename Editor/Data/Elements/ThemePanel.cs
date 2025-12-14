@@ -582,8 +582,6 @@ namespace BetterLegacy.Editor.Data.Elements
                         }
 
                         RTEventEditor.inst.SetKeyframeValue(0, Parser.TryParse(Item.id, 0));
-
-                        RTLevel.Current?.UpdateEvents(4);
                         RTThemeEditor.inst.RenderThemePreview();
 
                         break;

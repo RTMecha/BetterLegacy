@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Runtime.Events;
 
 namespace BetterLegacy.Editor.Data.Dialogs
 {
@@ -33,8 +34,37 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 var dialog = EventEditor.inst.dialogRight.GetChild(i);
                 KeyframeDialog keyframeDialog = i switch
                 {
-                    0 => new Vector2KeyframeDialog(i),
-                    4 => new ThemeKeyframeDialog(),
+                    EventEngine.MOVE => new Vector2KeyframeDialog(i),
+                    EventEngine.ZOOM => new FloatKeyframeDialog(i),
+                    EventEngine.ROTATE => new FloatKeyframeDialog(i),
+                    EventEngine.SHAKE => new ShakeKeyframeDialog(),
+                    EventEngine.THEME => new ThemeKeyframeDialog(),
+                    EventEngine.CHROMA => new FloatKeyframeDialog(i),
+                    EventEngine.BLOOM => new BloomKeyframeDialog(),
+                    EventEngine.VIGNETTE => new VignetteKeyframeDialog(),
+                    EventEngine.LENS => new LensKeyframeDialog(),
+                    EventEngine.GRAIN => new GrainKeyframeDialog(),
+                    // ...
+                    EventEngine.COLORSPLIT => new FloatKeyframeModeDialog(i),
+                    EventEngine.OFFSET => new Vector2KeyframeDialog(i),
+                    // ...
+                    EventEngine.DOUBLEVISION => new FloatKeyframeModeDialog(i),
+                    // ...
+                    EventEngine.PIXEL => new FloatKeyframeDialog(i),
+                    // ...
+                    EventEngine.INVERT => new FloatKeyframeDialog(i),
+                    // ...
+                    EventEngine.SHARPNESS => new FloatKeyframeDialog(i),
+                    EventEngine.BARS => new FloatKeyframeModeDialog(i),
+                    // ...
+                    EventEngine.ROTATION => new Vector2KeyframeDialog(i),
+                    // ...
+                    EventEngine.WINDOW_POSITION_X => new FloatKeyframeDialog(i),
+                    EventEngine.WINDOW_POSITION_Y => new FloatKeyframeDialog(i),
+                    EventEngine.PLAYER_FORCE => new Vector2KeyframeDialog(i),
+                    EventEngine.MOSAIC => new FloatKeyframeDialog(i),
+                    // ...
+                    EventEngine.DIGITAL_GLITCH => new FloatKeyframeDialog(i),
                     _ => new KeyframeDialog(i),
                 };
                 keyframeDialog.GameObject = dialog.gameObject;
