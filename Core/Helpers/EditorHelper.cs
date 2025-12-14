@@ -51,6 +51,9 @@ namespace BetterLegacy.Core.Helpers
 
         public static void SetComplexity(GameObject gameObject, string path, Complexity defaultComplexity, bool defaultOnlySpecificComplexity = false, Func<bool> visible = null, Action<ComplexityObject> onUpdate = null)
         {
+            if (!gameObject)
+                return;
+
             if (complexityJSON == null)
             {
                 SetComplexity(gameObject, defaultComplexity, defaultOnlySpecificComplexity, visible, onUpdate, false);
