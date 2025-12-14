@@ -192,17 +192,17 @@ namespace BetterLegacy.Editor.Data.Dialogs
             SelectIconButton = selectIconStorage.button;
             selectIconStorage.Text = "Browse";
 
-            EditorThemeManager.AddSelectable(SelectIconButton, ThemeGroup.Function_2);
-            EditorThemeManager.AddGraphic(selectIconStorage.label, ThemeGroup.Function_2_Text);
+            EditorThemeManager.ApplySelectable(SelectIconButton, ThemeGroup.Function_2);
+            EditorThemeManager.ApplyGraphic(selectIconStorage.label, ThemeGroup.Function_2_Text);
 
             var collapser = EditorPrefabHolder.Instance.CollapseToggle.Duplicate(IconBase, "collapse");
             new RectValues(new Vector2(340f, -62f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(32f, 32f)).AssignToRectTransform(collapser.transform.AsRT());
             CollapseToggle = collapser.GetComponent<Toggle>();
 
-            EditorThemeManager.AddToggle(CollapseToggle, ThemeGroup.Background_1);
+            EditorThemeManager.ApplyToggle(CollapseToggle, ThemeGroup.Background_1);
 
             for (int i = 0; i < collapser.transform.Find("dots").childCount; i++)
-                EditorThemeManager.AddGraphic(collapser.transform.Find("dots").GetChild(i).GetComponent<Image>(), ThemeGroup.Dark_Text);
+                EditorThemeManager.ApplyGraphic(collapser.transform.Find("dots").GetChild(i).GetComponent<Image>(), ThemeGroup.Dark_Text);
 
             #endregion
 
@@ -267,11 +267,11 @@ namespace BetterLegacy.Editor.Data.Dialogs
             ChangelogField = changelog.GetComponent<InputField>();
             ChangelogField.textComponent.alignment = TextAnchor.UpperLeft;
             ChangelogField.lineType = InputField.LineType.MultiLineNewline;
-            EditorThemeManager.AddInputField(DescriptionField);
+            EditorThemeManager.ApplyInputField(DescriptionField);
             var changelogLayoutElement = changelog.GetComponent<LayoutElement>();
             changelogLayoutElement.minHeight = 140f;
             changelogLayoutElement.preferredHeight = 140f;
-            EditorThemeManager.AddInputField(ChangelogField);
+            EditorThemeManager.ApplyInputField(ChangelogField);
 
             ServerVisibilityDropdown = GenerateDropdown(server.transform, "Server Visibility", true, CoreHelper.ToOptionData<ServerVisibility>());
 
@@ -306,24 +306,24 @@ namespace BetterLegacy.Editor.Data.Dialogs
             UploadButton = uploadStorage.button;
             UploadButtonText = uploadStorage.label;
             UploadContextMenu = upload.GetOrAddComponent<ContextClickable>();
-            EditorThemeManager.AddGraphic(uploadStorage.button.image, ThemeGroup.Function_1, true);
-            EditorThemeManager.AddGraphic(uploadStorage.label, ThemeGroup.Function_1_Text);
+            EditorThemeManager.ApplyGraphic(uploadStorage.button.image, ThemeGroup.Function_1, true);
+            EditorThemeManager.ApplyGraphic(uploadStorage.label, ThemeGroup.Function_1_Text);
 
             var pull = EditorPrefabHolder.Instance.Function1Button.Duplicate(serverButtons.transform, "pull");
             var pullStorage = pull.GetComponent<FunctionButtonStorage>();
             pullStorage.Text = "Pull";
             PullButton = pullStorage.button;
             PullContextMenu = pull.GetOrAddComponent<ContextClickable>();
-            EditorThemeManager.AddGraphic(pullStorage.button.image, ThemeGroup.Function_1, true);
-            EditorThemeManager.AddGraphic(pullStorage.label, ThemeGroup.Function_1_Text);
+            EditorThemeManager.ApplyGraphic(pullStorage.button.image, ThemeGroup.Function_1, true);
+            EditorThemeManager.ApplyGraphic(pullStorage.label, ThemeGroup.Function_1_Text);
 
             var delete = EditorPrefabHolder.Instance.Function1Button.Duplicate(serverButtons.transform, "delete");
             var deleteStorage = delete.GetComponent<FunctionButtonStorage>();
             deleteStorage.Text = "Delete";
             DeleteButton = deleteStorage.button;
             DeleteContextMenu = delete.GetOrAddComponent<ContextClickable>();
-            EditorThemeManager.AddGraphic(deleteStorage.button.image, ThemeGroup.Delete, true);
-            EditorThemeManager.AddGraphic(deleteStorage.label, ThemeGroup.Delete_Text);
+            EditorThemeManager.ApplyGraphic(deleteStorage.button.image, ThemeGroup.Delete, true);
+            EditorThemeManager.ApplyGraphic(deleteStorage.label, ThemeGroup.Delete_Text);
 
             #endregion
 
@@ -331,18 +331,18 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             #region Editor Themes
 
-            EditorThemeManager.AddGraphic(TypeButton.button.image, ThemeGroup.Null, true);
+            EditorThemeManager.ApplyGraphic(TypeButton.button.image, ThemeGroup.Null, true);
 
-            EditorThemeManager.AddInputField(CreatorField);
-            EditorThemeManager.AddInputField(NameField);
-            EditorThemeManager.AddInputField(DescriptionField);
-            EditorThemeManager.AddInputField(VersionField);
+            EditorThemeManager.ApplyInputField(CreatorField);
+            EditorThemeManager.ApplyInputField(NameField);
+            EditorThemeManager.ApplyInputField(DescriptionField);
+            EditorThemeManager.ApplyInputField(VersionField);
 
-            EditorThemeManager.AddGraphic(editorDialog.GetComponent<Image>(), ThemeGroup.Background_1);
-            EditorThemeManager.AddSelectable(ImportPrefabButton.button, ThemeGroup.Function_2);
-            EditorThemeManager.AddGraphic(ImportPrefabButton.label, ThemeGroup.Function_2_Text);
-            EditorThemeManager.AddSelectable(ConvertPrefabButton.button, ThemeGroup.Function_2);
-            EditorThemeManager.AddGraphic(ConvertPrefabButton.label, ThemeGroup.Function_2_Text);
+            EditorThemeManager.ApplyGraphic(editorDialog.GetComponent<Image>(), ThemeGroup.Background_1);
+            EditorThemeManager.ApplySelectable(ImportPrefabButton.button, ThemeGroup.Function_2);
+            EditorThemeManager.ApplyGraphic(ImportPrefabButton.label, ThemeGroup.Function_2_Text);
+            EditorThemeManager.ApplySelectable(ConvertPrefabButton.button, ThemeGroup.Function_2);
+            EditorThemeManager.ApplyGraphic(ConvertPrefabButton.label, ThemeGroup.Function_2_Text);
 
             #endregion
         }
@@ -379,7 +379,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             layoutElement.preferredWidth = 200f;
             var dropdown = gameObject.GetComponent<Dropdown>();
             dropdown.options = list;
-            EditorThemeManager.AddDropdown(dropdown);
+            EditorThemeManager.ApplyDropdown(dropdown);
             return dropdown;
         }
 
@@ -395,7 +395,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             //layoutElement.preferredWidth = 200f;
             var toggleStorage = gameObject.GetComponent<ToggleButtonStorage>();
             toggleStorage.label.text = text;
-            EditorThemeManager.AddToggle(toggleStorage.toggle, graphic: toggleStorage.label);
+            EditorThemeManager.ApplyToggle(toggleStorage.toggle, graphic: toggleStorage.label);
             return toggleStorage.toggle;
         }
 
@@ -413,7 +413,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var labelText = label.GetComponent<Text>();
             labelText.text = text;
             labelText.rectTransform.sizeDelta = new Vector2(210f, 32f);
-            EditorThemeManager.AddLightText(labelText);
+            EditorThemeManager.ApplyLightText(labelText);
 
             var dropdownObj = EditorPrefabHolder.Instance.Dropdown.Duplicate(dropdownBase.transform, "dropdown");
             var layoutElement = dropdownObj.GetOrAddComponent<LayoutElement>();
@@ -421,7 +421,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             layoutElement.minWidth = 126f;
             dropdownObj.transform.AsRT().sizeDelta = new Vector2(256f, 32f);
             var dropdown = dropdownObj.GetComponent<Dropdown>();
-            EditorThemeManager.AddDropdown(dropdown);
+            EditorThemeManager.ApplyDropdown(dropdown);
             return dropdown;
         }
 
@@ -439,14 +439,14 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var labelText = label.GetComponent<Text>();
             labelText.text = text;
             labelText.rectTransform.sizeDelta = new Vector2(210, 32f);
-            EditorThemeManager.AddLightText(labelText);
+            EditorThemeManager.ApplyLightText(labelText);
 
             var toggleObj = EditorPrefabHolder.Instance.Toggle.Duplicate(toggleBase.transform, "toggle");
             var layoutElement = toggleObj.GetOrAddComponent<LayoutElement>();
             layoutElement.preferredWidth = 32f;
             layoutElement.minWidth = 32f;
             var toggle = toggleObj.GetComponent<Toggle>();
-            EditorThemeManager.AddToggle(toggle);
+            EditorThemeManager.ApplyToggle(toggle);
             return toggle;
         }
     }

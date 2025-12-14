@@ -59,8 +59,8 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 Label = buttonStorage.label;
 
-                EditorThemeManager.AddGraphic(buttonStorage.button.image, ThemeGroup.Function_3, true);
-                EditorThemeManager.AddGraphic(buttonStorage.label, ThemeGroup.Function_3_Text);
+                EditorThemeManager.ApplyGraphic(buttonStorage.button.image, ThemeGroup.Function_3, true);
+                EditorThemeManager.ApplyGraphic(buttonStorage.label, ThemeGroup.Function_3_Text);
 
                 var icon = item.GetIcon();
 
@@ -73,7 +73,7 @@ namespace BetterLegacy.Editor.Data.Elements
                     var iconImage = iconObject.AddComponent<Image>();
                     iconImage.sprite = icon;
 
-                    EditorThemeManager.AddGraphic(iconImage, ThemeGroup.Function_3_Text);
+                    EditorThemeManager.ApplyGraphic(iconImage, ThemeGroup.Function_3_Text);
                 }
             }
             else

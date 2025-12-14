@@ -55,7 +55,7 @@ namespace BetterLegacy.Editor.Data
                 label.Apply(labelText);
 
                 if (initSettings.applyThemes)
-                    EditorThemeManager.AddLightText(labelText);
+                    EditorThemeManager.ApplyLightText(labelText);
             }
         }
 

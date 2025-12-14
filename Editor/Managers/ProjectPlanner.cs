@@ -44,8 +44,8 @@ namespace BetterLegacy.Editor.Managers
             planner = plannerBase.GetChild(0);
             topBarBase = planner.GetChild(0);
 
-            EditorThemeManager.AddGraphic(planner.GetComponent<Image>(), ThemeGroup.Background_1);
-            EditorThemeManager.AddGraphic(topBarBase.GetComponent<Image>(), ThemeGroup.Background_1);
+            EditorThemeManager.ApplyGraphic(planner.GetComponent<Image>(), ThemeGroup.Background_1);
+            EditorThemeManager.ApplyGraphic(topBarBase.GetComponent<Image>(), ThemeGroup.Background_1);
 
             var assets = Creator.NewGameObject("Planner Assets", transform);
             assetsParent = assets.transform;
@@ -72,10 +72,10 @@ namespace BetterLegacy.Editor.Managers
             var closeButton = close.GetComponent<Button>();
             closeButton.onClick.NewListener(Close);
 
-            EditorThemeManager.AddSelectable(closeButton, ThemeGroup.Close);
+            EditorThemeManager.ApplySelectable(closeButton, ThemeGroup.Close);
 
             var closeX = close.transform.GetChild(0).gameObject;
-            EditorThemeManager.AddGraphic(close.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
+            EditorThemeManager.ApplyGraphic(close.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
 
             EditorHelper.AddEditorDropdown("Open Project Planner", string.Empty, "Edit", EditorSprites.DocumentSprite, () =>
             {
@@ -114,11 +114,11 @@ namespace BetterLegacy.Editor.Managers
             handleImage.color = new Color(0.878f, 0.878f, 0.878f, 1f);
             handleImage.sprite = null;
 
-            EditorThemeManager.AddScrollbar(scrollBarVertical.GetComponent<Scrollbar>(), scrollBarVertical.GetComponent<Image>(), scrollbarRoundedSide: SpriteHelper.RoundedSide.Bottom_Right_I);
+            EditorThemeManager.ApplyScrollbar(scrollBarVertical.GetComponent<Scrollbar>(), scrollBarVertical.GetComponent<Image>(), scrollbarRoundedSide: SpriteHelper.RoundedSide.Bottom_Right_I);
 
             contentBase.Find("Image").AsRT().anchoredPosition = new Vector2(690f, /*-94f*/ -104f);
             contentBase.Find("Image").AsRT().sizeDelta = new Vector2(1384f, 48f);
-            EditorThemeManager.AddGraphic(contentBase.Find("Image").GetComponent<Image>(), ThemeGroup.Background_1);
+            EditorThemeManager.ApplyGraphic(contentBase.Find("Image").GetComponent<Image>(), ThemeGroup.Background_1);
 
             // List handlers
             {
@@ -137,7 +137,7 @@ namespace BetterLegacy.Editor.Managers
                     RefreshList();
                 });
 
-                EditorThemeManager.AddInputField(searchField, ThemeGroup.Search_Field_1, 1, SpriteHelper.RoundedSide.Bottom);
+                EditorThemeManager.ApplyInputField(searchField, ThemeGroup.Search_Field_1, 1, SpriteHelper.RoundedSide.Bottom);
 
                 var addNewItem = EditorPrefabHolder.Instance.Function2Button.Duplicate(contentBase, "new", 1);
                 addNewItem.transform.AsRT().anchoredPosition = new Vector2(120f, 970f);
@@ -220,8 +220,8 @@ namespace BetterLegacy.Editor.Managers
                     RefreshList();
                 });
 
-                EditorThemeManager.AddSelectable(addNewItemStorage.button, ThemeGroup.Function_2);
-                EditorThemeManager.AddGraphic(addNewItemStorage.label, ThemeGroup.Function_2_Text);
+                EditorThemeManager.ApplySelectable(addNewItemStorage.button, ThemeGroup.Function_2);
+                EditorThemeManager.ApplyGraphic(addNewItemStorage.label, ThemeGroup.Function_2_Text);
 
                 var reload = EditorPrefabHolder.Instance.Function2Button.Duplicate(contentBase, "reload", 2);
                 reload.transform.AsRT().anchoredPosition = new Vector2(370f, 970f);
@@ -230,8 +230,8 @@ namespace BetterLegacy.Editor.Managers
                 reloadStorage.Text = "Reload";
                 reloadStorage.OnClick.NewListener(Load);
 
-                EditorThemeManager.AddSelectable(reloadStorage.button, ThemeGroup.Function_2);
-                EditorThemeManager.AddGraphic(reloadStorage.label, ThemeGroup.Function_2_Text);
+                EditorThemeManager.ApplySelectable(reloadStorage.button, ThemeGroup.Function_2);
+                EditorThemeManager.ApplyGraphic(reloadStorage.label, ThemeGroup.Function_2_Text);
 
                 var paste = EditorPrefabHolder.Instance.Function1Button.Duplicate(contentBase, "paste", 3);
                 RectValues.Default.AnchoredPosition(-340f, 462f).SizeDelta(200f, 32f).AssignToRectTransform(paste.transform.AsRT());
@@ -239,8 +239,8 @@ namespace BetterLegacy.Editor.Managers
                 pasteStorage.Text = "Paste";
                 pasteStorage.OnClick.NewListener(PastePlanners);
 
-                EditorThemeManager.AddGraphic(pasteStorage.button.image, ThemeGroup.Paste);
-                EditorThemeManager.AddGraphic(pasteStorage.label, ThemeGroup.Paste_Text);
+                EditorThemeManager.ApplyGraphic(pasteStorage.button.image, ThemeGroup.Paste);
+                EditorThemeManager.ApplyGraphic(pasteStorage.label, ThemeGroup.Paste_Text);
 
                 var path = EditorPrefabHolder.Instance.StringInputField.Duplicate(contentBase, "path", 4);
                 new RectValues(new Vector2(1750f, 970f), Vector2.zero, Vector2.zero, RectValues.CenterPivot, new Vector2(300f, 32f)).AssignToRectTransform(path.transform.AsRT());
@@ -257,7 +257,7 @@ namespace BetterLegacy.Editor.Managers
                 pathField.GetPlaceholderText().alignment = TextAnchor.MiddleLeft;
                 pathField.GetPlaceholderText().text = "Set a folder...";
 
-                EditorThemeManager.AddInputField(pathField);
+                EditorThemeManager.ApplyInputField(pathField);
 
                 EditorContextMenu.AddContextMenu(path, leftClick: null,
                     new ButtonElement("Set Folder", () =>
@@ -676,7 +676,7 @@ namespace BetterLegacy.Editor.Managers
                 fullViewImage.color = new Color(0.082f, 0.082f, 0.078f, 1f);
                 UIManager.SetRectTransform(fullView.transform.AsRT(), new Vector2(690f, -548f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0.5f, 0.5f), new Vector2(1384f, 936f));
 
-                EditorThemeManager.AddGraphic(fullViewImage, ThemeGroup.Background_1);
+                EditorThemeManager.ApplyGraphic(fullViewImage, ThemeGroup.Background_1);
 
                 var docTitle = tmpTextPrefab.Duplicate(fullView.transform, "title");
 
@@ -712,8 +712,8 @@ namespace BetterLegacy.Editor.Managers
                 var docTextButton = docText.gameObject.AddComponent<Button>();
                 docTextButton.enabled = true;
 
-                EditorThemeManager.AddLightText(documentTitle);
-                EditorThemeManager.AddInputField(documentInputField);
+                EditorThemeManager.ApplyLightText(documentTitle);
+                EditorThemeManager.ApplyInputField(documentInputField);
 
                 var docToggle = EditorPrefabHolder.Instance.ToggleButton.Duplicate(fullView.transform);
                 RectValues.Default.AnchoredPosition(500f, 420f).SizeDelta(300f, 32f).AssignToRectTransform(docToggle.transform.AsRT());
@@ -730,7 +730,7 @@ namespace BetterLegacy.Editor.Managers
                 });
                 EditorThemeManager.ClearSelectableColors(docTextButton);
 
-                EditorThemeManager.AddToggle(documentInteractibleToggle, graphic: docToggleStorage.label);
+                EditorThemeManager.ApplyToggle(documentInteractibleToggle, graphic: docToggleStorage.label);
 
                 fullView.SetActive(false);
             }
@@ -743,7 +743,7 @@ namespace BetterLegacy.Editor.Managers
                 fullViewImage.color = new Color(0.082f, 0.082f, 0.078f, 1f);
                 UIManager.SetRectTransform(fullView.transform.AsRT(), new Vector2(690f, -548f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0.5f, 0.5f), new Vector2(1384f, 936f));
 
-                EditorThemeManager.AddGraphic(fullViewImage, ThemeGroup.Background_1);
+                EditorThemeManager.ApplyGraphic(fullViewImage, ThemeGroup.Background_1);
 
                 var characterSpriteBase = Creator.NewUIObject("sprite", fullView.transform);
                 RectValues.Default.AnchoredPosition(-500f, 300f).SizeDelta(300f, 300f).AssignToRectTransform(characterSpriteBase.transform.AsRT());
@@ -766,7 +766,7 @@ namespace BetterLegacy.Editor.Managers
                 var characterAttributesScrollView = new ScrollViewElement(ScrollViewElement.Direction.Vertical);
                 characterAttributesScrollView.Init(EditorElement.InitSettings.Default.Parent(fullView.transform).Rect(RectValues.Default.AnchoredPosition(-450f, -230f).SizeDelta(400f, 400f)));
                 characterAttributesContent = characterAttributesScrollView.Content;
-                EditorThemeManager.AddGraphic(characterAttributesScrollView.GameObject.GetOrAddComponent<Image>(), ThemeGroup.Background_2, true);
+                EditorThemeManager.ApplyGraphic(characterAttributesScrollView.GameObject.GetOrAddComponent<Image>(), ThemeGroup.Background_2, true);
 
                 var characterDescription = Creator.NewUIObject("description", fullView.transform);
                 RectValues.Default.AnchoredPosition(220f, 0f).SizeDelta(900f, 900f).AssignToRectTransform(characterDescription.transform.AsRT());
@@ -792,9 +792,9 @@ namespace BetterLegacy.Editor.Managers
                 var docTextButton = characterDescriptionInputFieldText.AddComponent<Button>();
                 docTextButton.enabled = true;
 
-                EditorThemeManager.AddGraphic(characterSprite, ThemeGroup.Null, true);
-                EditorThemeManager.AddLightText(this.characterDetails);
-                EditorThemeManager.AddInputField(characterDescriptionInputField);
+                EditorThemeManager.ApplyGraphic(characterSprite, ThemeGroup.Null, true);
+                EditorThemeManager.ApplyLightText(this.characterDetails);
+                EditorThemeManager.ApplyInputField(characterDescriptionInputField);
 
                 fullView.SetActive(false);
             }
@@ -807,7 +807,7 @@ namespace BetterLegacy.Editor.Managers
                 var editorBaseImage = editorBase.AddComponent<Image>();
                 editorBaseImage.color = new Color(0.078f, 0.067f, 0.067f, 1f);
 
-                EditorThemeManager.AddGraphic(editorBaseImage, ThemeGroup.Background_3);
+                EditorThemeManager.ApplyGraphic(editorBaseImage, ThemeGroup.Background_3);
 
                 var editor = Creator.NewUIObject("editor", editorBase.transform);
                 editor.transform.AsRT().anchoredPosition = Vector3.zero;
@@ -817,7 +817,7 @@ namespace BetterLegacy.Editor.Managers
                 UIManager.SetRectTransform(panel.transform.AsRT(), new Vector2(0f, 436f), new Vector2(1f, 0.5f), new Vector2(0f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(14f, 64f));
                 editorTitlePanel = panel.AddComponent<Image>();
                 editorTitlePanel.color = new Color(0.310f, 0.467f, 0.737f, 1f);
-                EditorThemeManager.AddGraphic(editorTitlePanel, ThemeGroup.Null, true);
+                EditorThemeManager.ApplyGraphic(editorTitlePanel, ThemeGroup.Null, true);
 
                 var editorTitle = baseCardPrefab.transform.Find("artist").gameObject.Duplicate(panel.transform, "title");
                 RectValues.FullAnchored.AssignToRectTransform(editorTitle.transform.AsRT());
@@ -847,7 +847,7 @@ namespace BetterLegacy.Editor.Managers
                     text1.gameObject.SetActive(true);
 
                     documentEditorName = text1.GetComponent<InputField>();
-                    EditorThemeManager.AddInputField(documentEditorName);
+                    EditorThemeManager.ApplyInputField(documentEditorName);
 
                     new LabelsElement("Edit Text").Init(labelInitSettings);
 
@@ -859,7 +859,7 @@ namespace BetterLegacy.Editor.Managers
                     documentEditorText.textComponent.alignment = TextAnchor.UpperLeft;
                     ((Text)documentEditorText.placeholder).alignment = TextAnchor.UpperLeft;
                     documentEditorText.lineType = InputField.LineType.MultiLineNewline;
-                    EditorThemeManager.AddInputField(documentEditorText);
+                    EditorThemeManager.ApplyInputField(documentEditorText);
 
                     g1.SetActive(false);
                     editors.Add(g1);
@@ -884,7 +884,7 @@ namespace BetterLegacy.Editor.Managers
                     text1.gameObject.SetActive(true);
 
                     todoEditorText = text1.GetComponent<InputField>();
-                    EditorThemeManager.AddInputField(todoEditorText);
+                    EditorThemeManager.ApplyInputField(todoEditorText);
 
                     new LabelsElement("Change TODO Priority").Init(labelInitSettings);
 
@@ -896,8 +896,8 @@ namespace BetterLegacy.Editor.Managers
                     moveUp.transform.AsRT().sizeDelta = new Vector2(200f, 32f);
                     moveUpStorage.Text = "Move Up";
                     todoEditorMoveUpButton = moveUpStorage.button;
-                    EditorThemeManager.AddSelectable(todoEditorMoveUpButton, ThemeGroup.Function_2);
-                    EditorThemeManager.AddGraphic(moveUpStorage.label, ThemeGroup.Function_2_Text);
+                    EditorThemeManager.ApplySelectable(todoEditorMoveUpButton, ThemeGroup.Function_2);
+                    EditorThemeManager.ApplyGraphic(moveUpStorage.label, ThemeGroup.Function_2_Text);
 
                     var moveDown = EditorPrefabHolder.Instance.Function2Button.Duplicate(g1.transform);
                     var moveDownStorage = moveDown.GetComponent<FunctionButtonStorage>();
@@ -907,8 +907,8 @@ namespace BetterLegacy.Editor.Managers
                     moveDown.transform.AsRT().sizeDelta = new Vector2(200f, 32f);
                     moveDownStorage.Text = "Move Down";
                     todoEditorMoveDownButton = moveDownStorage.button;
-                    EditorThemeManager.AddSelectable(todoEditorMoveDownButton, ThemeGroup.Function_2);
-                    EditorThemeManager.AddGraphic(moveDownStorage.label, ThemeGroup.Function_2_Text);
+                    EditorThemeManager.ApplySelectable(todoEditorMoveDownButton, ThemeGroup.Function_2);
+                    EditorThemeManager.ApplyGraphic(moveDownStorage.label, ThemeGroup.Function_2_Text);
 
                     g1.SetActive(false);
                     editors.Add(g1);
@@ -929,7 +929,7 @@ namespace BetterLegacy.Editor.Managers
                     text1.gameObject.SetActive(true);
 
                     characterEditorName = text1.GetComponent<InputField>();
-                    EditorThemeManager.AddInputField(characterEditorName);
+                    EditorThemeManager.ApplyInputField(characterEditorName);
 
                     new LabelsElement("Edit Gender").Init(labelInitSettings);
 
@@ -938,7 +938,7 @@ namespace BetterLegacy.Editor.Managers
                     text2.gameObject.SetActive(true);
 
                     characterEditorGender = text2.GetComponent<InputField>();
-                    EditorThemeManager.AddInputField(characterEditorGender);
+                    EditorThemeManager.ApplyInputField(characterEditorGender);
 
                     new LabelsElement("Edit Origin").Init(labelInitSettings);
 
@@ -947,7 +947,7 @@ namespace BetterLegacy.Editor.Managers
                     text3.gameObject.SetActive(true);
 
                     characterEditorOrigin = text3.GetComponent<InputField>();
-                    EditorThemeManager.AddInputField(characterEditorOrigin);
+                    EditorThemeManager.ApplyInputField(characterEditorOrigin);
 
                     new LabelsElement("Edit Description").Init(labelInitSettings);
 
@@ -959,7 +959,7 @@ namespace BetterLegacy.Editor.Managers
                     characterEditorDescription.textComponent.alignment = TextAnchor.UpperLeft;
                     ((Text)characterEditorDescription.placeholder).alignment = TextAnchor.UpperLeft;
                     characterEditorDescription.lineType = InputField.LineType.MultiLineNewline;
-                    EditorThemeManager.AddInputField(characterEditorDescription);
+                    EditorThemeManager.ApplyInputField(characterEditorDescription);
 
                     new LabelsElement("Select Profile Image").Init(labelInitSettings);
 
@@ -1122,7 +1122,7 @@ namespace BetterLegacy.Editor.Managers
                     text1.gameObject.SetActive(true);
 
                     timelineEditorName = text1.GetComponent<InputField>();
-                    EditorThemeManager.AddInputField(timelineEditorName);
+                    EditorThemeManager.ApplyInputField(timelineEditorName);
 
                     g1.SetActive(false);
                     editors.Add(g1);
@@ -1147,7 +1147,7 @@ namespace BetterLegacy.Editor.Managers
                     text1.gameObject.SetActive(true);
 
                     eventEditorName = text1.GetComponent<InputField>();
-                    EditorThemeManager.AddInputField(eventEditorName);
+                    EditorThemeManager.ApplyInputField(eventEditorName);
 
                     new LabelsElement("Edit Description").Init(labelInitSettings);
 
@@ -1159,7 +1159,7 @@ namespace BetterLegacy.Editor.Managers
                     eventEditorDescription.textComponent.alignment = TextAnchor.UpperLeft;
                     ((Text)eventEditorDescription.placeholder).alignment = TextAnchor.UpperLeft;
                     eventEditorDescription.lineType = InputField.LineType.MultiLineNewline;
-                    EditorThemeManager.AddInputField(eventEditorDescription);
+                    EditorThemeManager.ApplyInputField(eventEditorDescription);
 
                     new LabelsElement("Edit Path").Init(labelInitSettings);
 
@@ -1168,14 +1168,14 @@ namespace BetterLegacy.Editor.Managers
                     text3.gameObject.SetActive(true);
 
                     eventEditorPath = text3.GetComponent<InputField>();
-                    EditorThemeManager.AddInputField(eventEditorPath);
+                    EditorThemeManager.ApplyInputField(eventEditorPath);
 
                     new LabelsElement("Edit Type").Init(labelInitSettings);
 
                     var renderType = EditorPrefabHolder.Instance.Dropdown.Duplicate(g1.transform, "type");
                     eventEditorType = renderType.GetComponent<Dropdown>();
                     eventEditorType.options = CoreHelper.StringToOptionData("Level", "Cutscene", "Story");
-                    EditorThemeManager.AddDropdown(eventEditorType);
+                    EditorThemeManager.ApplyDropdown(eventEditorType);
 
                     g1.SetActive(false);
                     editors.Add(g1);
@@ -1200,7 +1200,7 @@ namespace BetterLegacy.Editor.Managers
                     text1.gameObject.SetActive(true);
 
                     scheduleEditorDescription = text1.GetComponent<InputField>();
-                    EditorThemeManager.AddInputField(scheduleEditorDescription);
+                    EditorThemeManager.ApplyInputField(scheduleEditorDescription);
 
                     new LabelsElement("Edit Year").Init(labelInitSettings);
 
@@ -1209,14 +1209,14 @@ namespace BetterLegacy.Editor.Managers
                     text2.gameObject.SetActive(true);
 
                     scheduleEditorYear = text2.GetComponent<InputField>();
-                    EditorThemeManager.AddInputField(scheduleEditorYear);
+                    EditorThemeManager.ApplyInputField(scheduleEditorYear);
 
                     new LabelsElement("Edit Month").Init(labelInitSettings);
 
                     var renderType = EditorPrefabHolder.Instance.Dropdown.Duplicate(g1.transform, "month");
                     scheduleEditorMonth = renderType.GetComponent<Dropdown>();
                     scheduleEditorMonth.options = CoreHelper.StringToOptionData("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December");
-                    EditorThemeManager.AddDropdown(scheduleEditorMonth);
+                    EditorThemeManager.ApplyDropdown(scheduleEditorMonth);
 
                     new LabelsElement("Edit Day").Init(labelInitSettings);
 
@@ -1225,7 +1225,7 @@ namespace BetterLegacy.Editor.Managers
                     text3.gameObject.SetActive(true);
 
                     scheduleEditorDay = text3.GetComponent<InputField>();
-                    EditorThemeManager.AddInputField(scheduleEditorDay);
+                    EditorThemeManager.ApplyInputField(scheduleEditorDay);
 
                     new LabelsElement("Edit Hour").Init(labelInitSettings);
 
@@ -1234,7 +1234,7 @@ namespace BetterLegacy.Editor.Managers
                     text4.gameObject.SetActive(true);
 
                     scheduleEditorHour = text4.GetComponent<InputField>();
-                    EditorThemeManager.AddInputField(scheduleEditorHour);
+                    EditorThemeManager.ApplyInputField(scheduleEditorHour);
 
                     new LabelsElement("Edit Minute").Init(labelInitSettings);
 
@@ -1243,7 +1243,7 @@ namespace BetterLegacy.Editor.Managers
                     text5.gameObject.SetActive(true);
 
                     scheduleEditorMinute = text5.GetComponent<InputField>();
-                    EditorThemeManager.AddInputField(scheduleEditorMinute);
+                    EditorThemeManager.ApplyInputField(scheduleEditorMinute);
 
                     g1.SetActive(false);
                     editors.Add(g1);
@@ -1268,7 +1268,7 @@ namespace BetterLegacy.Editor.Managers
                     text1.gameObject.SetActive(true);
 
                     noteEditorName = text1.GetComponent<InputField>();
-                    EditorThemeManager.AddInputField(noteEditorName);
+                    EditorThemeManager.ApplyInputField(noteEditorName);
 
                     new LabelsElement("Edit Text").Init(labelInitSettings);
 
@@ -1280,7 +1280,7 @@ namespace BetterLegacy.Editor.Managers
                     noteEditorText.textComponent.alignment = TextAnchor.UpperLeft;
                     ((Text)noteEditorText.placeholder).alignment = TextAnchor.UpperLeft;
                     noteEditorText.lineType = InputField.LineType.MultiLineNewline;
-                    EditorThemeManager.AddInputField(noteEditorText);
+                    EditorThemeManager.ApplyInputField(noteEditorText);
 
                     new LabelsElement("Edit Color").Init(labelInitSettings);
 
@@ -1299,8 +1299,8 @@ namespace BetterLegacy.Editor.Managers
                         var toggle = col.GetComponent<Toggle>();
                         noteEditorColors.Add(toggle);
 
-                        EditorThemeManager.AddGraphic(toggle.image, ThemeGroup.Null, true);
-                        EditorThemeManager.AddGraphic(toggle.graphic, ThemeGroup.Background_3);
+                        EditorThemeManager.ApplyGraphic(toggle.image, ThemeGroup.Null, true);
+                        EditorThemeManager.ApplyGraphic(toggle.graphic, ThemeGroup.Background_3);
                     }
 
                     new LabelsElement("Reset Position and Scale").Init(labelInitSettings);
@@ -1313,8 +1313,8 @@ namespace BetterLegacy.Editor.Managers
                     reset.transform.AsRT().sizeDelta = new Vector2(200f, 32f);
                     resetStorage.Text = "Reset";
                     noteEditorReset = resetStorage.button;
-                    EditorThemeManager.AddSelectable(noteEditorReset, ThemeGroup.Function_2);
-                    EditorThemeManager.AddGraphic(resetStorage.label, ThemeGroup.Function_2_Text);
+                    EditorThemeManager.ApplySelectable(noteEditorReset, ThemeGroup.Function_2);
+                    EditorThemeManager.ApplyGraphic(resetStorage.label, ThemeGroup.Function_2_Text);
 
                     g1.SetActive(false);
                     editors.Add(g1);
@@ -1339,7 +1339,7 @@ namespace BetterLegacy.Editor.Managers
                     text1.gameObject.SetActive(true);
 
                     ostEditorPath = text1.GetComponent<InputField>();
-                    EditorThemeManager.AddInputField(ostEditorPath);
+                    EditorThemeManager.ApplyInputField(ostEditorPath);
 
                     new LabelsElement("Edit Name").Init(labelInitSettings);
 
@@ -1348,7 +1348,7 @@ namespace BetterLegacy.Editor.Managers
                     text2.gameObject.SetActive(true);
 
                     ostEditorName = text2.GetComponent<InputField>();
-                    EditorThemeManager.AddInputField(ostEditorName);
+                    EditorThemeManager.ApplyInputField(ostEditorName);
 
                     new LabelsElement("Use Global Path").Init(labelInitSettings);
 
@@ -1362,8 +1362,8 @@ namespace BetterLegacy.Editor.Managers
                     ostEditorUseGlobal = globalStorage.button;
                     ostEditorUseGlobalText = globalStorage.label;
                     globalStorage.Text = "False";
-                    EditorThemeManager.AddSelectable(ostEditorUseGlobal, ThemeGroup.Function_2);
-                    EditorThemeManager.AddGraphic(ostEditorUseGlobalText, ThemeGroup.Function_2_Text);
+                    EditorThemeManager.ApplySelectable(ostEditorUseGlobal, ThemeGroup.Function_2);
+                    EditorThemeManager.ApplyGraphic(ostEditorUseGlobalText, ThemeGroup.Function_2_Text);
 
                     new LabelsElement("Edit Index").Init(labelInitSettings);
 
@@ -1372,7 +1372,7 @@ namespace BetterLegacy.Editor.Managers
                     text3.gameObject.SetActive(true);
 
                     ostEditorIndex = text3.GetComponent<InputField>();
-                    EditorThemeManager.AddInputField(ostEditorIndex);
+                    EditorThemeManager.ApplyInputField(ostEditorIndex);
 
                     new SpacerElement().Init(labelInitSettings);
 
@@ -1386,8 +1386,8 @@ namespace BetterLegacy.Editor.Managers
                     play.transform.AsRT().sizeDelta = new Vector2(200f, 32f);
                     playStorage.Text = "Play";
                     ostEditorPlay = playStorage.button;
-                    EditorThemeManager.AddSelectable(ostEditorPlay, ThemeGroup.Function_2);
-                    EditorThemeManager.AddGraphic(playStorage.label, ThemeGroup.Function_2_Text);
+                    EditorThemeManager.ApplySelectable(ostEditorPlay, ThemeGroup.Function_2);
+                    EditorThemeManager.ApplyGraphic(playStorage.label, ThemeGroup.Function_2_Text);
 
                     new LabelsElement("Stop Playing").Init(labelInitSettings);
 
@@ -1400,7 +1400,7 @@ namespace BetterLegacy.Editor.Managers
                     stopStorage.Text = "Stop";
                     ostEditorStop = stopStorage.button;
                     EditorThemeManager.ApplySelectable(ostEditorStop, ThemeGroup.Function_2);
-                    EditorThemeManager.AddGraphic(stopStorage.label, ThemeGroup.Function_2_Text);
+                    EditorThemeManager.ApplyGraphic(stopStorage.label, ThemeGroup.Function_2_Text);
 
                     new LabelsElement("Shuffle All OST").Init(labelInitSettings);
 
@@ -1413,7 +1413,7 @@ namespace BetterLegacy.Editor.Managers
                     shuffleStorage.Text = "Shuffle";
                     ostEditorShuffle = shuffleStorage.button;
                     EditorThemeManager.ApplySelectable(ostEditorShuffle, ThemeGroup.Function_2);
-                    EditorThemeManager.AddGraphic(shuffleStorage.label, ThemeGroup.Function_2_Text);
+                    EditorThemeManager.ApplyGraphic(shuffleStorage.label, ThemeGroup.Function_2_Text);
 
                     g1.SetActive(false);
                     editors.Add(g1);
@@ -3123,8 +3123,8 @@ namespace BetterLegacy.Editor.Managers
             var toggle = gameObject.GetComponent<Toggle>();
             tabs.Add(gameObject.GetComponent<Toggle>());
 
-            EditorThemeManager.AddGraphic(image, EditorTheme.GetGroup($"Tab Color {tabs.Count}"), true);
-            EditorThemeManager.AddGraphic(toggle.graphic, ThemeGroup.Background_1);
+            EditorThemeManager.ApplyGraphic(image, EditorTheme.GetGroup($"Tab Color {tabs.Count}"), true);
+            EditorThemeManager.ApplyGraphic(toggle.graphic, ThemeGroup.Background_1);
 
             return gameObject;
         }

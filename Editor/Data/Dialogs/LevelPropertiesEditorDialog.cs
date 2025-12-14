@@ -50,10 +50,10 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             dialogStorage.title.text = "- Level Properties Editor -";
 
-            EditorThemeManager.AddGraphic(editorDialogObject.GetComponent<Image>(), ThemeGroup.Background_1);
+            EditorThemeManager.ApplyGraphic(editorDialogObject.GetComponent<Image>(), ThemeGroup.Background_1);
 
-            EditorThemeManager.AddGraphic(dialogStorage.topPanel, ThemeGroup.Add);
-            EditorThemeManager.AddGraphic(dialogStorage.title, ThemeGroup.Add_Text);
+            EditorThemeManager.ApplyGraphic(dialogStorage.topPanel, ThemeGroup.Add);
+            EditorThemeManager.ApplyGraphic(dialogStorage.title, ThemeGroup.Add_Text);
 
             var editorDialogSpacer = editorDialogObject.transform.GetChild(1);
             editorDialogSpacer.AsRT().sizeDelta = new Vector2(765f, 54f);
@@ -79,7 +79,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var levelStartOffset = EditorPrefabHolder.Instance.NumberInputField.Duplicate(Content, "level start offset");
             levelStartOffset.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
             LevelStartOffsetField = levelStartOffset.GetComponent<InputFieldStorage>();
-            EditorThemeManager.AddInputField(LevelStartOffsetField);
+            EditorThemeManager.ApplyInputField(LevelStartOffsetField);
 
             ReverseToggle = GenerateToggle(Content, "Level Can Rewind");
 
@@ -88,7 +88,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var levelEndOffset = EditorPrefabHolder.Instance.NumberInputField.Duplicate(Content, "level end offset");
             levelEndOffset.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
             LevelEndOffsetField = levelEndOffset.GetComponent<InputFieldStorage>();
-            EditorThemeManager.AddInputField(LevelEndOffsetField);
+            EditorThemeManager.ApplyInputField(LevelEndOffsetField);
 
             AutoEndLevelToggle = GenerateToggle(Content, "Auto End");
 
@@ -98,7 +98,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var levelEndData = EditorPrefabHolder.Instance.StringInputField.Duplicate(Content, "level end data");
             levelEndData.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
             LevelEndDataField = levelEndData.GetComponent<InputField>();
-            EditorThemeManager.AddInputField(LevelEndDataField);
+            EditorThemeManager.ApplyInputField(LevelEndDataField);
 
             new Labels(Labels.InitSettings.Default.Parent(Content), new Label("Level Modifiers") { fontStyle = FontStyle.Bold, });
             LevelModifiers = new ModifiersEditorDialog();
@@ -125,7 +125,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             layoutElement.preferredWidth = 200f;
             var dropdown = gameObject.GetComponent<Dropdown>();
             dropdown.options = list;
-            EditorThemeManager.AddDropdown(dropdown);
+            EditorThemeManager.ApplyDropdown(dropdown);
             return dropdown;
         }
 
@@ -135,7 +135,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             gameObject.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
             var toggleStorage = gameObject.GetComponent<ToggleButtonStorage>();
             toggleStorage.label.text = text;
-            EditorThemeManager.AddToggle(toggleStorage.toggle, graphic: toggleStorage.label);
+            EditorThemeManager.ApplyToggle(toggleStorage.toggle, graphic: toggleStorage.label);
             return toggleStorage.toggle;
         }
     }

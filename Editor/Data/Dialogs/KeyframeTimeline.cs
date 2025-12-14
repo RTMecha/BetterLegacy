@@ -113,7 +113,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 eventTrigger.triggers.RemoveAll(x => x.eventID == EventTriggerType.PointerUp);
                 eventTrigger.triggers.Add(entry);
 
-                EditorThemeManager.AddGraphic(idRight.GetChild(type).GetComponent<Image>(), EditorTheme.GetGroup($"Object Keyframe Color {type + 1}"));
+                EditorThemeManager.ApplyGraphic(idRight.GetChild(type).GetComponent<Image>(), EditorTheme.GetGroup($"Object Keyframe Color {type + 1}"));
             }
 
             TimelineLeft = Viewport.Find("id/left").AsRT();
@@ -185,21 +185,21 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             #region Editor Theme
 
-            EditorThemeManager.AddScrollbar(ScrollView.Find("Scrollbar Horizontal").GetComponent<Scrollbar>(),
+            EditorThemeManager.ApplyScrollbar(ScrollView.Find("Scrollbar Horizontal").GetComponent<Scrollbar>(),
                 scrollbarGroup: ThemeGroup.Timeline_Scrollbar_Base, handleGroup: ThemeGroup.Timeline_Scrollbar, canSetScrollbarRounded: false);
-            EditorThemeManager.AddGraphic(Cursor.transform.Find("Background").GetComponent<Image>(), ThemeGroup.Timeline_Time_Scrollbar);
-            EditorThemeManager.AddGraphic(ScrollView.GetComponent<Image>(), ThemeGroup.Background_1);
+            EditorThemeManager.ApplyGraphic(Cursor.transform.Find("Background").GetComponent<Image>(), ThemeGroup.Timeline_Time_Scrollbar);
+            EditorThemeManager.ApplyGraphic(ScrollView.GetComponent<Image>(), ThemeGroup.Background_1);
 
             var zoomSliderBack = Viewport.parent.Find("zoom back");
             var zoomSliderBase = ZoomSlider.transform.parent;
 
-            EditorThemeManager.AddGraphic(zoomSliderBack.GetComponent<Image>(), ThemeGroup.Timeline_Scrollbar_Base);
-            EditorThemeManager.AddGraphic(zoomSliderBase.GetComponent<Image>(), ThemeGroup.Background_1, true);
-            EditorThemeManager.AddGraphic(zoomSliderBase.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Slider_2);
-            EditorThemeManager.AddGraphic(zoomSliderBase.transform.GetChild(2).GetComponent<Image>(), ThemeGroup.Slider_2);
-            EditorThemeManager.AddGraphic(ZoomSlider.transform.Find("Background").GetComponent<Image>(), ThemeGroup.Slider_2, true);
-            EditorThemeManager.AddGraphic(ZoomSlider.transform.Find("Fill Area/Fill").GetComponent<Image>(), ThemeGroup.Slider_2, true);
-            EditorThemeManager.AddGraphic(ZoomSlider.image, ThemeGroup.Slider_2_Handle, true);
+            EditorThemeManager.ApplyGraphic(zoomSliderBack.GetComponent<Image>(), ThemeGroup.Timeline_Scrollbar_Base);
+            EditorThemeManager.ApplyGraphic(zoomSliderBase.GetComponent<Image>(), ThemeGroup.Background_1, true);
+            EditorThemeManager.ApplyGraphic(zoomSliderBase.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Slider_2);
+            EditorThemeManager.ApplyGraphic(zoomSliderBase.transform.GetChild(2).GetComponent<Image>(), ThemeGroup.Slider_2);
+            EditorThemeManager.ApplyGraphic(ZoomSlider.transform.Find("Background").GetComponent<Image>(), ThemeGroup.Slider_2, true);
+            EditorThemeManager.ApplyGraphic(ZoomSlider.transform.Find("Fill Area/Fill").GetComponent<Image>(), ThemeGroup.Slider_2, true);
+            EditorThemeManager.ApplyGraphic(ZoomSlider.image, ThemeGroup.Slider_2_Handle, true);
 
             #endregion
         }

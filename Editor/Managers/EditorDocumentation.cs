@@ -77,7 +77,7 @@ namespace BetterLegacy.Editor.Managers
             scrollView.transform.AsRT().anchoredPosition = new Vector2(392.5f, 320f);
             scrollView.transform.AsRT().sizeDelta = new Vector2(735f, 638f);
 
-            EditorThemeManager.AddGraphic(editorDialogObject.GetComponent<Image>(), ThemeGroup.Background_1);
+            EditorThemeManager.ApplyGraphic(editorDialogObject.GetComponent<Image>(), ThemeGroup.Background_1);
 
             documentationContent.GetComponent<VerticalLayoutGroup>().spacing = 12f;
 
@@ -1191,7 +1191,7 @@ namespace BetterLegacy.Editor.Managers
             var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(RTEditor.inst.DocumentationPopup.Content, "Document");
             var documentation = new EditorDocument(gameObject, name, description);
 
-            EditorThemeManager.AddSelectable(gameObject.GetComponent<Button>(), ThemeGroup.List_Button_1);
+            EditorThemeManager.ApplySelectable(gameObject.GetComponent<Button>(), ThemeGroup.List_Button_1);
 
             documentation.elements.AddRange(elements);
 
@@ -1200,7 +1200,7 @@ namespace BetterLegacy.Editor.Managers
             var text = gameObject.transform.GetChild(0).GetComponent<Text>();
 
             text.text = documentation.Name;
-            EditorThemeManager.AddLightText(text);
+            EditorThemeManager.ApplyLightText(text);
 
             documents.Add(documentation);
             return documentation;

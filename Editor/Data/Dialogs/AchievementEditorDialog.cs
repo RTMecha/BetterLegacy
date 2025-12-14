@@ -98,8 +98,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
             titleBarRight.Find("bg").GetComponent<Image>().color = RTColors.HexToColor("3A25F7");
             titleBarRight.Find("title").GetComponent<Text>().text = "- Achievement List -";
 
-            EditorThemeManager.AddGraphic(dialog.GetComponent<Image>(), ThemeGroup.Background_1);
-            EditorThemeManager.AddGraphic(Right.GetComponent<Image>(), ThemeGroup.Background_3);
+            EditorThemeManager.ApplyGraphic(dialog.GetComponent<Image>(), ThemeGroup.Background_1);
+            EditorThemeManager.ApplyGraphic(Right.GetComponent<Image>(), ThemeGroup.Background_3);
 
             var list = Right.Find("checkpoints");
             list.name = "achievements";
@@ -107,10 +107,10 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             SearchField = Right.Find("search").GetComponent<InputField>();
             SearchField.GetPlaceholderText().text = "Search for achievement...";
-            EditorThemeManager.AddInputField(SearchField, ThemeGroup.Search_Field_2);
+            EditorThemeManager.ApplyInputField(SearchField, ThemeGroup.Search_Field_2);
 
             ContentScrollbar = list.Find("Scrollbar Vertical").GetComponent<Scrollbar>();
-            EditorThemeManager.AddScrollbar(ContentScrollbar, scrollbarGroup: ThemeGroup.Scrollbar_2, handleGroup: ThemeGroup.Scrollbar_2_Handle);
+            EditorThemeManager.ApplyScrollbar(ContentScrollbar, scrollbarGroup: ThemeGroup.Scrollbar_2, handleGroup: ThemeGroup.Scrollbar_2_Handle);
 
             CoreHelper.DestroyChildren(Left);
 
@@ -136,19 +136,19 @@ namespace BetterLegacy.Editor.Data.Dialogs
             IDText.horizontalOverflow = HorizontalWrapMode.Overflow;
 
             var image = id.AddComponent<Image>();
-            EditorThemeManager.AddGraphic(image, ThemeGroup.Background_2, true);
+            EditorThemeManager.ApplyGraphic(image, ThemeGroup.Background_2, true);
 
             new Labels(Labels.InitSettings.Default.Parent(LeftContent), "Name");
             var name = EditorPrefabHolder.Instance.StringInputField.Duplicate(LeftContent, "name");
             NameField = name.GetComponent<InputField>();
             NameField.GetPlaceholderText().text = "Set name...";
-            EditorThemeManager.AddInputField(NameField);
+            EditorThemeManager.ApplyInputField(NameField);
             
             new Labels(Labels.InitSettings.Default.Parent(LeftContent), "Description");
             var description = EditorPrefabHolder.Instance.StringInputField.Duplicate(LeftContent, "desc");
             DescriptionField = description.GetComponent<InputField>();
             DescriptionField.GetPlaceholderText().text = "Set description...";
-            EditorThemeManager.AddInputField(DescriptionField);
+            EditorThemeManager.ApplyInputField(DescriptionField);
 
             new Labels(Labels.InitSettings.Default.Parent(LeftContent), "Icon");
             var iconBase = Creator.NewUIObject("icon base", LeftContent);
@@ -159,8 +159,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var selectIcon = EditorPrefabHolder.Instance.Function2Button.Duplicate(iconBase.transform, "select");
             SelectIconButton = selectIcon.GetComponent<FunctionButtonStorage>();
             SelectIconButton.Text = "Select Icon";
-            EditorThemeManager.AddSelectable(SelectIconButton.button, ThemeGroup.Function_2);
-            EditorThemeManager.AddGraphic(SelectIconButton.label, ThemeGroup.Function_2_Text);
+            EditorThemeManager.ApplySelectable(SelectIconButton.button, ThemeGroup.Function_2);
+            EditorThemeManager.ApplyGraphic(SelectIconButton.label, ThemeGroup.Function_2_Text);
             RectValues.Default.AnchoredPosition(75f, 0f).SizeDelta(200f, 32f).AssignToRectTransform(selectIcon.transform.AsRT());
             
             new Labels(Labels.InitSettings.Default.Parent(LeftContent), "Locked Icon");
@@ -172,34 +172,34 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var selectLockedIcon = EditorPrefabHolder.Instance.Function2Button.Duplicate(lockedIconBase.transform, "select");
             SelectLockedIconButton = selectLockedIcon.GetComponent<FunctionButtonStorage>();
             SelectLockedIconButton.Text = "Select Locked Icon";
-            EditorThemeManager.AddSelectable(SelectLockedIconButton.button, ThemeGroup.Function_2);
-            EditorThemeManager.AddGraphic(SelectLockedIconButton.label, ThemeGroup.Function_2_Text);
+            EditorThemeManager.ApplySelectable(SelectLockedIconButton.button, ThemeGroup.Function_2);
+            EditorThemeManager.ApplyGraphic(SelectLockedIconButton.label, ThemeGroup.Function_2_Text);
             RectValues.Default.AnchoredPosition(75f, 20f).SizeDelta(200f, 32f).AssignToRectTransform(selectLockedIcon.transform.AsRT());
             
             var removeLockedIcon = EditorPrefabHolder.Instance.Function2Button.Duplicate(lockedIconBase.transform, "remove");
             RemoveLockedIconButton = removeLockedIcon.GetComponent<FunctionButtonStorage>();
             RemoveLockedIconButton.Text = "Remove Locked Icon";
-            EditorThemeManager.AddSelectable(RemoveLockedIconButton.button, ThemeGroup.Function_2);
-            EditorThemeManager.AddGraphic(RemoveLockedIconButton.label, ThemeGroup.Function_2_Text);
+            EditorThemeManager.ApplySelectable(RemoveLockedIconButton.button, ThemeGroup.Function_2);
+            EditorThemeManager.ApplyGraphic(RemoveLockedIconButton.label, ThemeGroup.Function_2_Text);
             RectValues.Default.AnchoredPosition(75f, -20f).SizeDelta(200f, 32f).AssignToRectTransform(removeLockedIcon.transform.AsRT());
 
             new Labels(Labels.InitSettings.Default.Parent(LeftContent), new Label("Achievement hidden until unlocked") { horizontalWrap = HorizontalWrapMode.Overflow });
             var hidden = EditorPrefabHolder.Instance.ToggleButton.Duplicate(LeftContent, "hidden");
             HiddenToggle = hidden.GetComponent<ToggleButtonStorage>();
             HiddenToggle.Text = "Hidden";
-            EditorThemeManager.AddToggle(HiddenToggle.toggle, graphic: HiddenToggle.label);
+            EditorThemeManager.ApplyToggle(HiddenToggle.toggle, graphic: HiddenToggle.label);
 
             new Labels(Labels.InitSettings.Default.Parent(LeftContent), "Hint");
             var hint = EditorPrefabHolder.Instance.StringInputField.Duplicate(LeftContent, "hint");
             HintField = hint.GetComponent<InputField>();
             HintField.GetPlaceholderText().text = "Set hint (empty for default)";
-            EditorThemeManager.AddInputField(HintField);
+            EditorThemeManager.ApplyInputField(HintField);
 
             new Labels(Labels.InitSettings.Default.Parent(LeftContent), new Label("Unlocked state is shared everywhere") { horizontalWrap = HorizontalWrapMode.Overflow });
             var shared = EditorPrefabHolder.Instance.ToggleButton.Duplicate(LeftContent, "shared");
             SharedToggle = shared.GetComponent<ToggleButtonStorage>();
             SharedToggle.Text = "Shared";
-            EditorThemeManager.AddToggle(SharedToggle.toggle, graphic: SharedToggle.label);
+            EditorThemeManager.ApplyToggle(SharedToggle.toggle, graphic: SharedToggle.label);
 
             new Labels(Labels.InitSettings.Default.Parent(LeftContent), new Label("Difficulty"));
             var difficultyParent = Creator.NewUIObject("difficulty", LeftContent);
@@ -212,8 +212,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var preview = EditorPrefabHolder.Instance.Function2Button.Duplicate(LeftContent, "preview");
             PreviewButton = preview.GetComponent<FunctionButtonStorage>();
             PreviewButton.Text = "Preview";
-            EditorThemeManager.AddSelectable(PreviewButton.button, ThemeGroup.Function_2);
-            EditorThemeManager.AddGraphic(PreviewButton.label, ThemeGroup.Function_2_Text);
+            EditorThemeManager.ApplySelectable(PreviewButton.button, ThemeGroup.Function_2);
+            EditorThemeManager.ApplyGraphic(PreviewButton.label, ThemeGroup.Function_2_Text);
 
             #endregion
         }

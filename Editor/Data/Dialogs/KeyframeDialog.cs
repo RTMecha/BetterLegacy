@@ -158,9 +158,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
                             {
                                 var eventValueField = valuesTransform.GetChild(i).gameObject.GetOrAddComponent<InputFieldStorage>();
                                 eventValueField.Assign(eventValueField.gameObject);
-                                EditorThemeManager.AddSelectable(eventValueField.middleButton, ThemeGroup.Function_2, false);
-                                EditorThemeManager.AddSelectable(eventValueField.subButton, ThemeGroup.Function_2, false);
-                                EditorThemeManager.AddSelectable(eventValueField.addButton, ThemeGroup.Function_2, false);
+                                EditorThemeManager.ApplySelectable(eventValueField.middleButton, ThemeGroup.Function_2, false);
+                                EditorThemeManager.ApplySelectable(eventValueField.subButton, ThemeGroup.Function_2, false);
+                                EditorThemeManager.ApplySelectable(eventValueField.addButton, ThemeGroup.Function_2, false);
                                 EventValueFields.Add(eventValueField);
                             }
                         else if (type != 3)
@@ -176,9 +176,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         {
                             var eventValueField = randomValuesTransform.GetChild(i).gameObject.GetOrAddComponent<InputFieldStorage>();
                             eventValueField.Assign(eventValueField.gameObject);
-                            EditorThemeManager.AddSelectable(eventValueField.middleButton, ThemeGroup.Function_2, false);
-                            EditorThemeManager.AddSelectable(eventValueField.subButton, ThemeGroup.Function_2, false);
-                            EditorThemeManager.AddSelectable(eventValueField.addButton, ThemeGroup.Function_2, false);
+                            EditorThemeManager.ApplySelectable(eventValueField.middleButton, ThemeGroup.Function_2, false);
+                            EditorThemeManager.ApplySelectable(eventValueField.subButton, ThemeGroup.Function_2, false);
+                            EditorThemeManager.ApplySelectable(eventValueField.addButton, ThemeGroup.Function_2, false);
                             RandomEventValueFields.Add(eventValueField);
                         }
                     }

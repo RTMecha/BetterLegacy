@@ -132,9 +132,9 @@ namespace BetterLegacy.Core.Helpers
             var image = gameObject.transform.Find("Image").GetComponent<Image>();
             gameObject.transform.Find("Image").GetComponent<Image>().sprite = sprite;
 
-            EditorThemeManager.AddSelectable(propWinButton, ThemeGroup.Title_Bar_Dropdown, false);
-            EditorThemeManager.AddGraphic(gameObject.transform.GetChild(0).GetComponent<Text>(), ThemeGroup.Title_Bar_Text);
-            EditorThemeManager.AddGraphic(image, ThemeGroup.Title_Bar_Text);
+            EditorThemeManager.ApplySelectable(propWinButton, ThemeGroup.Title_Bar_Dropdown, false);
+            EditorThemeManager.ApplyGraphic(gameObject.transform.GetChild(0).GetComponent<Text>(), ThemeGroup.Title_Bar_Text);
+            EditorThemeManager.ApplyGraphic(image, ThemeGroup.Title_Bar_Text);
 
             return gameObject;
         }
@@ -665,20 +665,20 @@ namespace BetterLegacy.Core.Helpers
             EditorThemeManager.EditorThemes.ForLoop(action);
 
             EditorThemeManager.SaveEditorThemes();
-            CoroutineHelper.StartCoroutine(EditorThemeManager.RenderElements());
+            EditorThemeManager.RenderElements();
         }
 
         public static void ModifyEditorTheme(EditorThemeType editorThemeType, ThemeGroup themeGroup, Color color) => ModifyEditorTheme(editorThemeType.Name.ToString(), themeGroup, color);
 
         public static void ModifyEditorTheme(string name, ThemeGroup themeGroup, Color color)
         {
-            if (!EditorThemeManager.EditorThemesDictionary.TryGetValue(name, out EditorTheme editorTheme))
+            if (!EditorThemeManager.EditorThemes.TryFind(x => x.name == name, out EditorTheme editorTheme))
                 return;
 
             editorTheme.ColorGroups[themeGroup] = color;
 
             EditorThemeManager.SaveEditorThemes();
-            CoroutineHelper.StartCoroutine(EditorThemeManager.RenderElements());
+            EditorThemeManager.RenderElements();
         }
 
         public static void ShuffleIDs()

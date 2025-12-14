@@ -231,8 +231,6 @@ namespace BetterLegacy
 
         void Update()
         {
-            EditorThemeManager.Update(); // Checks if editor scene has been exited, if it has it'll clear the editor theme elements.
-
             Application.runInBackground = CoreConfig.Instance.RunInBackground.Value; // If the game should continue playing in the background while you don't have the app focused.
 
             DebugInfo.Update();

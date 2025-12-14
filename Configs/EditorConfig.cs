@@ -1236,8 +1236,8 @@ namespace BetterLegacy.Configs
 
         void EditorThemeChanged()
         {
-            EditorThemeManager.currentTheme = (int)EditorTheme.Value;
-            CoroutineHelper.StartCoroutine(EditorThemeManager.RenderElements());
+            EditorThemeManager.currentTheme = EditorTheme.Value;
+            EditorThemeManager.RenderElements();
         }
 
         void MarkerChanged() => RTMarkerEditor.inst?.RenderMarkers();

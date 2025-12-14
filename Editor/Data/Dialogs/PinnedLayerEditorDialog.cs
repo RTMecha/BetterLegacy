@@ -199,18 +199,18 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             #region Editor Themes
 
-            EditorThemeManager.AddGraphic(editorDialog.GetComponent<Image>(), ThemeGroup.Background_1);
+            EditorThemeManager.ApplyGraphic(editorDialog.GetComponent<Image>(), ThemeGroup.Background_1);
 
-            EditorThemeManager.AddLightText(labelLayerText);
-            EditorThemeManager.AddInputField(LayerField);
-            EditorThemeManager.AddDropdown(LayerTypeDropdown);
-            EditorThemeManager.AddLightText(labelNameText);
-            EditorThemeManager.AddInputField(NameField);
-            EditorThemeManager.AddLightText(labelDescriptionText);
-            EditorThemeManager.AddInputField(DescriptionField);
-            EditorThemeManager.AddLightText(labelColorText);
-            EditorThemeManager.AddInputField(ColorField);
-            EditorThemeManager.AddToggle(ColorOverrideToggle.toggle, graphic: ColorOverrideToggle.label);
+            EditorThemeManager.ApplyLightText(labelLayerText);
+            EditorThemeManager.ApplyInputField(LayerField);
+            EditorThemeManager.ApplyDropdown(LayerTypeDropdown);
+            EditorThemeManager.ApplyLightText(labelNameText);
+            EditorThemeManager.ApplyInputField(NameField);
+            EditorThemeManager.ApplyLightText(labelDescriptionText);
+            EditorThemeManager.ApplyInputField(DescriptionField);
+            EditorThemeManager.ApplyLightText(labelColorText);
+            EditorThemeManager.ApplyInputField(ColorField);
+            EditorThemeManager.ApplyToggle(ColorOverrideToggle.toggle, graphic: ColorOverrideToggle.label);
 
             #endregion
 

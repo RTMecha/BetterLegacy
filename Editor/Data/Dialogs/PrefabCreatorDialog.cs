@@ -53,7 +53,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             GameObject.name = "PrefabCreatorDialog";
             GameObject.AddComponent<ActiveState>().onStateChanged = enabled => CaptureArea.inst.SetActive(enabled);
-            EditorThemeManager.AddGraphic(GameObject.GetComponent<Image>(), ThemeGroup.Background_1);
+            EditorThemeManager.ApplyGraphic(GameObject.GetComponent<Image>(), ThemeGroup.Background_1);
 
             var prefabEditorData = GameObject.transform.Find("data");
             var scrollView = EditorPrefabHolder.Instance.ScrollView.Duplicate(GameObject.transform, "Scroll View", 1);
@@ -90,7 +90,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             descriptionGO.transform.AsRT().sizeDelta = new Vector2(749f, 108f);
             var descriptionTitle = descriptionGO.transform.Find("title").GetComponent<Text>();
             descriptionTitle.text = "Desc";
-            EditorThemeManager.AddLightText(descriptionTitle);
+            EditorThemeManager.ApplyLightText(descriptionTitle);
             DescriptionField = descriptionGO.transform.Find("input").GetComponent<InputField>();
             DescriptionField.GetPlaceholderText().alignment = TextAnchor.UpperLeft;
             DescriptionField.GetPlaceholderText().text = "Enter description...";
@@ -147,17 +147,17 @@ namespace BetterLegacy.Editor.Data.Dialogs
             SelectIconButton = selectIconStorage.button;
             selectIconStorage.Text = "Browse";
 
-            EditorThemeManager.AddSelectable(SelectIconButton, ThemeGroup.Function_2);
-            EditorThemeManager.AddGraphic(selectIconStorage.label, ThemeGroup.Function_2_Text);
+            EditorThemeManager.ApplySelectable(SelectIconButton, ThemeGroup.Function_2);
+            EditorThemeManager.ApplyGraphic(selectIconStorage.label, ThemeGroup.Function_2_Text);
 
             var collapser = EditorPrefabHolder.Instance.CollapseToggle.Duplicate(IconBase, "collapse");
             new RectValues(new Vector2(340f, -62f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(32f, 32f)).AssignToRectTransform(collapser.transform.AsRT());
             CollapseToggle = collapser.GetComponent<Toggle>();
 
-            EditorThemeManager.AddToggle(CollapseToggle, ThemeGroup.Background_1);
+            EditorThemeManager.ApplyToggle(CollapseToggle, ThemeGroup.Background_1);
 
             for (int i = 0; i < collapser.transform.Find("dots").childCount; i++)
-                EditorThemeManager.AddGraphic(collapser.transform.Find("dots").GetChild(i).GetComponent<Image>(), ThemeGroup.Dark_Text);
+                EditorThemeManager.ApplyGraphic(collapser.transform.Find("dots").GetChild(i).GetComponent<Image>(), ThemeGroup.Dark_Text);
 
             #endregion
 
@@ -165,31 +165,31 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             #region Editor Themes
 
-            EditorThemeManager.AddGraphic(Content.Find("title/Panel/icon").GetComponent<Image>(), ThemeGroup.Light_Text);
-            EditorThemeManager.AddLightText(Content.Find("title/title").GetComponent<Text>());
-            EditorThemeManager.AddLightText(Content.Find("name/title").GetComponent<Text>());
-            EditorThemeManager.AddLightText(Content.Find("offset/title").GetComponent<Text>());
-            EditorThemeManager.AddLightText(Content.Find("type/title").GetComponent<Text>());
+            EditorThemeManager.ApplyGraphic(Content.Find("title/Panel/icon").GetComponent<Image>(), ThemeGroup.Light_Text);
+            EditorThemeManager.ApplyLightText(Content.Find("title/title").GetComponent<Text>());
+            EditorThemeManager.ApplyLightText(Content.Find("name/title").GetComponent<Text>());
+            EditorThemeManager.ApplyLightText(Content.Find("offset/title").GetComponent<Text>());
+            EditorThemeManager.ApplyLightText(Content.Find("type/title").GetComponent<Text>());
 
-            EditorThemeManager.AddInputField(NameField);
-            EditorThemeManager.AddGraphic(OffsetSlider.transform.Find("Background").GetComponent<Image>(), ThemeGroup.Slider_2, true);
+            EditorThemeManager.ApplyInputField(NameField);
+            EditorThemeManager.ApplyGraphic(OffsetSlider.transform.Find("Background").GetComponent<Image>(), ThemeGroup.Slider_2, true);
 
-            EditorThemeManager.AddGraphic(OffsetSlider.image, ThemeGroup.Slider_2_Handle, true);
-            EditorThemeManager.AddInputField(OffsetField);
+            EditorThemeManager.ApplyGraphic(OffsetSlider.image, ThemeGroup.Slider_2_Handle, true);
+            EditorThemeManager.ApplyInputField(OffsetField);
 
-            EditorThemeManager.AddGraphic(TypeButton.button.image, ThemeGroup.Null, true);
+            EditorThemeManager.ApplyGraphic(TypeButton.button.image, ThemeGroup.Null, true);
 
-            EditorThemeManager.AddInputField(DescriptionField);
+            EditorThemeManager.ApplyInputField(DescriptionField);
 
-            EditorThemeManager.AddInputField(SelectionSearchField, ThemeGroup.Search_Field_2);
+            EditorThemeManager.ApplyInputField(SelectionSearchField, ThemeGroup.Search_Field_2);
 
-            EditorThemeManager.AddGraphic(selection.GetComponent<Image>(), ThemeGroup.Background_3, true);
+            EditorThemeManager.ApplyGraphic(selection.GetComponent<Image>(), ThemeGroup.Background_3, true);
 
-            EditorThemeManager.AddGraphic(GameObject.transform.Find("submit/submit").GetComponent<Image>(), ThemeGroup.Add, true);
-            EditorThemeManager.AddGraphic(GameObject.transform.Find("submit/submit/Text").GetComponent<Text>(), ThemeGroup.Add_Text);
+            EditorThemeManager.ApplyGraphic(GameObject.transform.Find("submit/submit").GetComponent<Image>(), ThemeGroup.Add, true);
+            EditorThemeManager.ApplyGraphic(GameObject.transform.Find("submit/submit/Text").GetComponent<Text>(), ThemeGroup.Add_Text);
 
             var scrollbar = selection.Find("scrollbar");
-            EditorThemeManager.AddScrollbar(scrollbar.GetComponent<Scrollbar>(), scrollbar.GetComponent<Image>(), ThemeGroup.Scrollbar_2, ThemeGroup.Scrollbar_2_Handle);
+            EditorThemeManager.ApplyScrollbar(scrollbar.GetComponent<Scrollbar>(), scrollbar.GetComponent<Image>(), ThemeGroup.Scrollbar_2, ThemeGroup.Scrollbar_2_Handle);
 
             #endregion
         }
@@ -211,8 +211,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
             timelineObjectsTabStorage.Text = name;
             SelectionTabButtons.Add(timelineObjectsTabStorage.button);
 
-            EditorThemeManager.AddGraphic(timelineObjectsTabStorage.button.image, ThemeGroup.Function_1, true);
-            EditorThemeManager.AddGraphic(timelineObjectsTabStorage.label, ThemeGroup.Function_1_Text);
+            EditorThemeManager.ApplyGraphic(timelineObjectsTabStorage.button.image, ThemeGroup.Function_1, true);
+            EditorThemeManager.ApplyGraphic(timelineObjectsTabStorage.label, ThemeGroup.Function_1_Text);
         }
 
         public void ClearSelectionContent() => LSHelpers.DeleteChildren(SelectionContent);

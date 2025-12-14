@@ -64,7 +64,7 @@ namespace BetterLegacy.Editor.Managers
                 reloadButton.onClick.NewListener(() => LoadAssets(RenderPopup));
                 reloadButton.image.sprite = EditorSprites.ReloadSprite;
 
-                EditorThemeManager.AddSelectable(reloadButton, ThemeGroup.Function_2, false);
+                EditorThemeManager.ApplySelectable(reloadButton, ThemeGroup.Function_2, false);
             }
             catch (Exception ex)
             {

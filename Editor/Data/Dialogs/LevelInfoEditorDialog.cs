@@ -93,10 +93,10 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             dialogStorage.title.text = "- Level Info Editor -";
 
-            EditorThemeManager.AddGraphic(editorDialogObject.GetComponent<Image>(), ThemeGroup.Background_1);
+            EditorThemeManager.ApplyGraphic(editorDialogObject.GetComponent<Image>(), ThemeGroup.Background_1);
 
-            EditorThemeManager.AddGraphic(dialogStorage.topPanel, ThemeGroup.Add);
-            EditorThemeManager.AddGraphic(dialogStorage.title, ThemeGroup.Add_Text);
+            EditorThemeManager.ApplyGraphic(dialogStorage.topPanel, ThemeGroup.Add);
+            EditorThemeManager.ApplyGraphic(dialogStorage.title, ThemeGroup.Add_Text);
 
             var editorDialogSpacer = editorDialogObject.transform.GetChild(1);
             editorDialogSpacer.AsRT().sizeDelta = new Vector2(765f, 54f);
@@ -122,32 +122,32 @@ namespace BetterLegacy.Editor.Data.Dialogs
             new Labels(Labels.InitSettings.Default.Parent(Content), "Path");
             var path = EditorPrefabHolder.Instance.StringInputField.Duplicate(Content, "path");
             PathField = path.GetComponent<InputField>();
-            EditorThemeManager.AddInputField(PathField);
+            EditorThemeManager.ApplyInputField(PathField);
 
             new Labels(Labels.InitSettings.Default.Parent(Content), "Editor Path");
             var editorPath = EditorPrefabHolder.Instance.StringInputField.Duplicate(Content, "editor path");
             EditorPathField = editorPath.GetComponent<InputField>();
-            EditorThemeManager.AddInputField(EditorPathField);
+            EditorThemeManager.ApplyInputField(EditorPathField);
 
             new Labels(Labels.InitSettings.Default.Parent(Content), "Song Artist");
             var songArtist = EditorPrefabHolder.Instance.StringInputField.Duplicate(Content, "song artist");
             SongArtistField = songArtist.GetComponent<InputField>();
-            EditorThemeManager.AddInputField(SongArtistField);
+            EditorThemeManager.ApplyInputField(SongArtistField);
             
             new Labels(Labels.InitSettings.Default.Parent(Content), "Song Title");
             var songTitle = EditorPrefabHolder.Instance.StringInputField.Duplicate(Content, "song title");
             SongTitleField = songTitle.GetComponent<InputField>();
-            EditorThemeManager.AddInputField(SongTitleField);
+            EditorThemeManager.ApplyInputField(SongTitleField);
 
             new Labels(Labels.InitSettings.Default.Parent(Content), "Name");
             var name = EditorPrefabHolder.Instance.StringInputField.Duplicate(Content, "name");
             NameField = name.GetComponent<InputField>();
-            EditorThemeManager.AddInputField(NameField);
+            EditorThemeManager.ApplyInputField(NameField);
 
             new Labels(Labels.InitSettings.Default.Parent(Content), "Creator");
             var creator = EditorPrefabHolder.Instance.StringInputField.Duplicate(Content, "creator");
             CreatorField = creator.GetComponent<InputField>();
-            EditorThemeManager.AddInputField(CreatorField);
+            EditorThemeManager.ApplyInputField(CreatorField);
 
             new Labels(Labels.InitSettings.Default.Parent(Content), "Difficulty");
             var difficulty = Creator.NewUIObject("difficulty", Content);
@@ -163,17 +163,17 @@ namespace BetterLegacy.Editor.Data.Dialogs
             new Labels(Labels.InitSettings.Default.Parent(Content), "Arcade ID");
             var arcadeID = EditorPrefabHolder.Instance.StringInputField.Duplicate(Content, "arcade id");
             ArcadeIDField = arcadeID.GetComponent<InputField>();
-            EditorThemeManager.AddInputField(ArcadeIDField);
+            EditorThemeManager.ApplyInputField(ArcadeIDField);
 
             new Labels(Labels.InitSettings.Default.Parent(Content), "Server ID");
             var serverID = EditorPrefabHolder.Instance.StringInputField.Duplicate(Content, "server id");
             ServerIDField = serverID.GetComponent<InputField>();
-            EditorThemeManager.AddInputField(ServerIDField);
+            EditorThemeManager.ApplyInputField(ServerIDField);
 
             new Labels(Labels.InitSettings.Default.Parent(Content), "Workshop ID");
             var workshopID = EditorPrefabHolder.Instance.StringInputField.Duplicate(Content, "workshop id");
             WorkshopIDField = workshopID.GetComponent<InputField>();
-            EditorThemeManager.AddInputField(WorkshopIDField);
+            EditorThemeManager.ApplyInputField(WorkshopIDField);
 
             #endregion
 
@@ -196,17 +196,17 @@ namespace BetterLegacy.Editor.Data.Dialogs
             SelectIconButton = selectIconStorage.button;
             selectIconStorage.Text = "Browse";
 
-            EditorThemeManager.AddSelectable(SelectIconButton, ThemeGroup.Function_2);
-            EditorThemeManager.AddGraphic(selectIconStorage.label, ThemeGroup.Function_2_Text);
+            EditorThemeManager.ApplySelectable(SelectIconButton, ThemeGroup.Function_2);
+            EditorThemeManager.ApplyGraphic(selectIconStorage.label, ThemeGroup.Function_2_Text);
 
             var collapseIcon = EditorPrefabHolder.Instance.CollapseToggle.Duplicate(IconBase, "collapse");
             new RectValues(new Vector2(340f, -62f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(32f, 32f)).AssignToRectTransform(collapseIcon.transform.AsRT());
             CollapseIconToggle = collapseIcon.GetComponent<Toggle>();
 
-            EditorThemeManager.AddToggle(CollapseIconToggle, ThemeGroup.Background_1);
+            EditorThemeManager.ApplyToggle(CollapseIconToggle, ThemeGroup.Background_1);
 
             for (int i = 0; i < collapseIcon.transform.Find("dots").childCount; i++)
-                EditorThemeManager.AddGraphic(collapseIcon.transform.Find("dots").GetChild(i).GetComponent<Image>(), ThemeGroup.Dark_Text);
+                EditorThemeManager.ApplyGraphic(collapseIcon.transform.Find("dots").GetChild(i).GetComponent<Image>(), ThemeGroup.Dark_Text);
 
             #endregion
 
@@ -234,8 +234,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
             SubmitButton = submitStorage.button;
             submitStorage.Text = "Submit";
 
-            EditorThemeManager.AddGraphic(submitStorage.button.image, ThemeGroup.Function_1, true);
-            EditorThemeManager.AddGraphic(submitStorage.label, ThemeGroup.Function_1_Text);
+            EditorThemeManager.ApplyGraphic(submitStorage.button.image, ThemeGroup.Function_1, true);
+            EditorThemeManager.ApplyGraphic(submitStorage.label, ThemeGroup.Function_1_Text);
 
             #endregion
         }
@@ -255,7 +255,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             gameObject.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
             var toggleStorage = gameObject.GetComponent<ToggleButtonStorage>();
             toggleStorage.label.text = text;
-            EditorThemeManager.AddToggle(toggleStorage.toggle, graphic: toggleStorage.label);
+            EditorThemeManager.ApplyToggle(toggleStorage.toggle, graphic: toggleStorage.label);
             return toggleStorage.toggle;
         }
     }

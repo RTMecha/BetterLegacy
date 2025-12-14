@@ -1,13 +1,11 @@
 ﻿using System.Collections.Generic;
 
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 using LSFunctions;
 
 using BetterLegacy.Core;
-using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
@@ -96,8 +94,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
             importThemeStorage.Text = "Import";
             importThemeStorage.OnClick.NewListener(() => RTThemeEditor.inst.OpenExternalThemesPopup());
 
-            EditorThemeManager.AddSelectable(importThemeStorage.button, ThemeGroup.Function_2);
-            EditorThemeManager.AddGraphic(importThemeStorage.label, ThemeGroup.Function_2_Text);
+            EditorThemeManager.ApplySelectable(importThemeStorage.button, ThemeGroup.Function_2);
+            EditorThemeManager.ApplyGraphic(importThemeStorage.label, ThemeGroup.Function_2_Text);
 
             var themePage = EditorPrefabHolder.Instance.NumberInputField.Duplicate(themePathBase.transform, "page");
             UIManager.SetRectTransform(themePage.transform.AsRT(), new Vector2(205f, 0f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
@@ -132,7 +130,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             CoreHelper.Delete(PageField.middleButton);
 
-            EditorThemeManager.AddInputField(PageField);
+            EditorThemeManager.ApplyInputField(PageField);
 
             SearchField = GameObject.transform.Find("theme-search").GetComponent<InputField>();
             Content = GameObject.transform.Find("themes/viewport/content");
@@ -165,9 +163,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     new ButtonElement("Clear Themes", () => RTThemeEditor.inst.ClearInternalThemes()),
                     new ButtonElement("Remove Unused Themes", () => RTThemeEditor.inst.RemoveUnusedThemes(), "Internal Remove Unused Themes"));
 
-                EditorThemeManager.AddGraphic(button.image, ThemeGroup.List_Button_2_Normal, true);
-                EditorThemeManager.AddGraphic(themeAddButton.transform.Find("edit").GetComponent<Image>(), ThemeGroup.List_Button_2_Text);
-                EditorThemeManager.AddGraphic(themeAddButton.transform.Find("text").GetComponent<Text>(), ThemeGroup.List_Button_2_Text);
+                EditorThemeManager.ApplyGraphic(button.image, ThemeGroup.List_Button_2_Normal, true);
+                EditorThemeManager.ApplyGraphic(themeAddButton.transform.Find("edit").GetComponent<Image>(), ThemeGroup.List_Button_2_Text);
+                EditorThemeManager.ApplyGraphic(themeAddButton.transform.Find("text").GetComponent<Text>(), ThemeGroup.List_Button_2_Text);
             }
 
             #endregion
@@ -246,8 +244,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                 var button = shuffleID.GetComponent<Button>();
 
-                EditorThemeManager.AddSelectable(button, ThemeGroup.Function_2);
-                EditorThemeManager.AddGraphic(shuffleIDText, ThemeGroup.Function_2_Text);
+                EditorThemeManager.ApplySelectable(button, ThemeGroup.Function_2);
+                EditorThemeManager.ApplyGraphic(shuffleIDText, ThemeGroup.Function_2_Text);
             }
 
             Editor.transform.Find("theme").AsRT().sizeDelta = new Vector2(366f, 530f);
@@ -256,7 +254,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             // fixes theme name not allowing non-alphabetical characters
             EditorNameField.characterValidation = InputField.CharacterValidation.None;
 
-            EditorThemeManager.AddInputField(EditorNameField);
+            EditorThemeManager.ApplyInputField(EditorNameField);
 
             var creator = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(Editor.transform, "creator", 2);
             EditorCreatorField = creator.GetComponent<InputField>();
@@ -265,15 +263,15 @@ namespace BetterLegacy.Editor.Data.Dialogs
             EditorCreatorField.textComponent.fontSize = 20;
             EditorCreatorField.textComponent.resizeTextMinSize = 2;
 
-            EditorThemeManager.AddInputField(EditorCreatorField);
+            EditorThemeManager.ApplyInputField(EditorCreatorField);
 
             for (int i = 0; i < EditorActions.childCount; i++)
             {
                 var child = EditorActions.GetChild(i);
                 var button = child.GetComponent<Button>();
 
-                EditorThemeManager.AddSelectable(button, child.name == "cancel" ? ThemeGroup.Close : ThemeGroup.Function_2);
-                EditorThemeManager.AddGraphic(child.GetChild(0).GetComponent<Text>(), child.name == "cancel" ? ThemeGroup.Close_X : ThemeGroup.Function_2_Text);
+                EditorThemeManager.ApplySelectable(button, child.name == "cancel" ? ThemeGroup.Close : ThemeGroup.Function_2);
+                EditorThemeManager.ApplyGraphic(child.GetChild(0).GetComponent<Text>(), child.name == "cancel" ? ThemeGroup.Close_X : ThemeGroup.Function_2_Text);
             }
 
             for (int i = 0; i < EditorContent.childCount; i++)
@@ -282,20 +280,20 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                 if (child.name == "label" || child.name == "effect_label")
                 {
-                    EditorThemeManager.AddLightText(child.GetChild(0).GetComponent<Text>());
+                    EditorThemeManager.ApplyLightText(child.GetChild(0).GetComponent<Text>());
                     continue;
                 }
 
                 var hex = child.Find("hex");
                 var pound = hex.Find("pound");
 
-                EditorThemeManager.AddLightText(child.Find("text").GetComponent<Text>());
-                EditorThemeManager.AddGraphic(child.Find("preview").GetComponent<Image>(), ThemeGroup.Null, true);
-                EditorThemeManager.AddInputField(hex.GetComponent<InputField>());
-                EditorThemeManager.AddGraphic(pound.GetComponent<Text>(), ThemeGroup.Input_Field_Text);
+                EditorThemeManager.ApplyLightText(child.Find("text").GetComponent<Text>());
+                EditorThemeManager.ApplyGraphic(child.Find("preview").GetComponent<Image>(), ThemeGroup.Null, true);
+                EditorThemeManager.ApplyInputField(hex.GetComponent<InputField>());
+                EditorThemeManager.ApplyGraphic(pound.GetComponent<Text>(), ThemeGroup.Input_Field_Text);
             }
 
-            EditorThemeManager.AddScrollbar(Editor.transform.Find("theme/Scrollbar Vertical").GetComponent<Scrollbar>(), scrollbarGroup: ThemeGroup.Scrollbar_2, handleGroup: ThemeGroup.Scrollbar_2_Handle);
+            EditorThemeManager.ApplyScrollbar(Editor.transform.Find("theme/Scrollbar Vertical").GetComponent<Scrollbar>(), scrollbarGroup: ThemeGroup.Scrollbar_2, handleGroup: ThemeGroup.Scrollbar_2_Handle);
 
             #endregion
         }

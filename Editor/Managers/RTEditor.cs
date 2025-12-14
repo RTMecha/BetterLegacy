@@ -1105,11 +1105,11 @@ namespace BetterLegacy.Editor.Managers
             mouseTooltipRT.localScale = new Vector3(0.9f, 0.9f, 1f);
             mouseTooltipText = mouseTooltip.transform.Find("text").GetComponent<TextMeshProUGUI>();
 
-            EditorThemeManager.AddGraphic(mouseTooltip.GetComponent<Image>(), ThemeGroup.Notification_Background, true);
-            EditorThemeManager.AddGraphic(mouseTooltipRT.Find("bg/bg").GetComponent<Image>(), ThemeGroup.Notification_Info, true, roundedSide: SpriteHelper.RoundedSide.Top);
-            EditorThemeManager.AddLightText(mouseTooltipText);
-            EditorThemeManager.AddGraphic(mouseTooltipRT.Find("bg/Image").GetComponent<Image>(), ThemeGroup.Light_Text);
-            EditorThemeManager.AddLightText(mouseTooltipRT.Find("bg/title").GetComponent<Text>());
+            EditorThemeManager.ApplyGraphic(mouseTooltip.GetComponent<Image>(), ThemeGroup.Notification_Background, true);
+            EditorThemeManager.ApplyGraphic(mouseTooltipRT.Find("bg/bg").GetComponent<Image>(), ThemeGroup.Notification_Info, true, roundedSide: SpriteHelper.RoundedSide.Top);
+            EditorThemeManager.ApplyLightText(mouseTooltipText);
+            EditorThemeManager.ApplyGraphic(mouseTooltipRT.Find("bg/Image").GetComponent<Image>(), ThemeGroup.Light_Text);
+            EditorThemeManager.ApplyLightText(mouseTooltipRT.Find("bg/title").GetComponent<Text>());
 
             var timelineParent = Creator.NewUIObject("Timeline Objects", EditorManager.inst.timeline.transform, 1);
             EditorTimeline.inst.timelineObjectsParent = timelineParent.transform.AsRT();
@@ -1475,7 +1475,7 @@ namespace BetterLegacy.Editor.Managers
         /// <summary>
         /// Hides the preview area until a level is loaded.
         /// </summary>
-        public EditorThemeManager.Element PreviewCover { get; set; }
+        public EditorThemeElement PreviewCover { get; set; }
 
         /// <summary>
         /// Helper component for object selection in preview.
@@ -1899,11 +1899,11 @@ namespace BetterLegacy.Editor.Managers
         void SetupNotificationValues()
         {
             var tooltip = EditorManager.inst.tooltip.transform.parent.gameObject;
-            EditorThemeManager.AddGraphic(tooltip.GetComponent<Image>(), ThemeGroup.Notification_Background, true);
-            EditorThemeManager.AddGraphic(tooltip.transform.Find("bg/bg").GetComponent<Image>(), ThemeGroup.Notification_Info, true, roundedSide: SpriteHelper.RoundedSide.Top);
-            EditorThemeManager.AddLightText(tooltipText);
-            EditorThemeManager.AddGraphic(tooltip.transform.Find("bg/Image").GetComponent<Image>(), ThemeGroup.Light_Text);
-            EditorThemeManager.AddLightText(tooltip.transform.Find("bg/title").GetComponent<Text>());
+            EditorThemeManager.ApplyGraphic(tooltip.GetComponent<Image>(), ThemeGroup.Notification_Background, true);
+            EditorThemeManager.ApplyGraphic(tooltip.transform.Find("bg/bg").GetComponent<Image>(), ThemeGroup.Notification_Info, true, roundedSide: SpriteHelper.RoundedSide.Top);
+            EditorThemeManager.ApplyLightText(tooltipText);
+            EditorThemeManager.ApplyGraphic(tooltip.transform.Find("bg/Image").GetComponent<Image>(), ThemeGroup.Light_Text);
+            EditorThemeManager.ApplyLightText(tooltip.transform.Find("bg/title").GetComponent<Text>());
 
             UpdateNotificationConfig();
         }
@@ -3173,7 +3173,7 @@ namespace BetterLegacy.Editor.Managers
                 var labelText = child.GetComponent<Text>();
                 labelSetting.Apply(labelText);
 
-                EditorThemeManager.AddLightText(labelText);
+                EditorThemeManager.ApplyLightText(labelText);
             }
 
             return label;
@@ -3195,7 +3195,7 @@ namespace BetterLegacy.Editor.Managers
                 labelSetting.Apply(labelText);
 
                 if (applyThemes)
-                    EditorThemeManager.AddLightText(labelText);
+                    EditorThemeManager.ApplyLightText(labelText);
             }
 
             return label;
@@ -3272,8 +3272,8 @@ namespace BetterLegacy.Editor.Managers
                 if (!string.IsNullOrEmpty(editorLayer.color))
                     toggle.image.color = RTColors.HexToColor(editorLayer.color);
                 else
-                    EditorThemeManager.AddGraphic(toggle.image, editorLayer.themeGroup);
-                EditorThemeManager.AddGraphic(toggle.graphic, ThemeGroup.Timeline_Bar);
+                    EditorThemeManager.ApplyGraphic(toggle.image, editorLayer.themeGroup);
+                EditorThemeManager.ApplyGraphic(toggle.graphic, ThemeGroup.Timeline_Bar);
 
                 var label = toggle.transform.Find("Background/Text").GetComponent<Text>();
                 label.text = (i + 1).ToString();
@@ -3436,65 +3436,65 @@ namespace BetterLegacy.Editor.Managers
             pitchObj.AddComponent<InputFieldSwapper>();
 
             var timelineBarBase = timelineBar.transform.parent.gameObject;
-            EditorThemeManager.AddGraphic(timelineBarBase.GetComponent<Image>(), ThemeGroup.Timeline_Bar);
-            EditorThemeManager.AddSelectable(timeDefault.AddComponent<Button>(), ThemeGroup.List_Button_1);
-            EditorThemeManager.AddLightText(timeDefault.transform.GetChild(0).GetComponent<Text>());
+            EditorThemeManager.ApplyGraphic(timelineBarBase.GetComponent<Image>(), ThemeGroup.Timeline_Bar);
+            EditorThemeManager.ApplySelectable(timeDefault.AddComponent<Button>(), ThemeGroup.List_Button_1);
+            EditorThemeManager.ApplyLightText(timeDefault.transform.GetChild(0).GetComponent<Text>());
 
-            EditorThemeManager.AddInputField(timeField);
+            EditorThemeManager.ApplyInputField(timeField);
 
             var play = timelineBar.transform.Find("play").gameObject;
             Destroy(play.GetComponent<Animator>());
             var playButton = play.GetComponent<Button>();
             playButton.transition = Selectable.Transition.ColorTint;
-            EditorThemeManager.AddSelectable(playButton, ThemeGroup.Function_2, false);
+            EditorThemeManager.ApplySelectable(playButton, ThemeGroup.Function_2, false);
 
             var leftPitch = timelineBar.transform.Find("<").gameObject;
             Destroy(leftPitch.GetComponent<Animator>());
             var leftPitchButton = leftPitch.GetComponent<Button>();
             leftPitchButton.transition = Selectable.Transition.ColorTint;
-            EditorThemeManager.AddSelectable(leftPitchButton, ThemeGroup.Function_2, false);
+            EditorThemeManager.ApplySelectable(leftPitchButton, ThemeGroup.Function_2, false);
 
-            EditorThemeManager.AddInputField(pitchField);
+            EditorThemeManager.ApplyInputField(pitchField);
 
             var rightPitch = timelineBar.transform.Find(">").gameObject;
             Destroy(rightPitch.GetComponent<Animator>());
             var rightPitchButton = rightPitch.GetComponent<Button>();
             rightPitchButton.transition = Selectable.Transition.ColorTint;
-            EditorThemeManager.AddSelectable(rightPitchButton, ThemeGroup.Function_2, false);
+            EditorThemeManager.ApplySelectable(rightPitchButton, ThemeGroup.Function_2, false);
 
             // Leave this group empty since the color is already handled via the custom layer colors. This is only here for the rounded corners.
-            EditorThemeManager.AddGraphic(EditorTimeline.inst.EditorLayerField.image, ThemeGroup.Null, true);
-            EditorThemeManager.AddGraphic(eventLayerToggle.image, ThemeGroup.Event_Check, true);
-            EditorThemeManager.AddGraphic(eventLayerToggle.transform.Find("Background/Text").GetComponent<Text>(), ThemeGroup.Event_Check_Text);
+            EditorThemeManager.ApplyGraphic(EditorTimeline.inst.EditorLayerField.image, ThemeGroup.Null, true);
+            EditorThemeManager.ApplyGraphic(eventLayerToggle.image, ThemeGroup.Event_Check, true);
+            EditorThemeManager.ApplyGraphic(eventLayerToggle.transform.Find("Background/Text").GetComponent<Text>(), ThemeGroup.Event_Check_Text);
 
-            EditorThemeManager.AddGraphic(eventLayerToggle.graphic, ThemeGroup.Timeline_Bar);
+            EditorThemeManager.ApplyGraphic(eventLayerToggle.graphic, ThemeGroup.Timeline_Bar);
 
             var prefabButton = timelineBar.transform.Find("prefab").gameObject;
-            EditorThemeManager.AddGraphic(prefabButton.GetComponent<Image>(), ThemeGroup.Prefab, true);
-            EditorThemeManager.AddGraphic(prefabButton.transform.GetChild(0).GetComponent<Text>(), ThemeGroup.Prefab_Text);
+            EditorThemeManager.ApplyGraphic(prefabButton.GetComponent<Image>(), ThemeGroup.Prefab, true);
+            EditorThemeManager.ApplyGraphic(prefabButton.transform.GetChild(0).GetComponent<Text>(), ThemeGroup.Prefab_Text);
 
             var objectButton = timelineBar.transform.Find("object").gameObject;
             objectButton.GetComponent<Button>().onClick.ClearAll();
-            EditorThemeManager.AddGraphic(objectButton.GetComponent<Image>(), ThemeGroup.Object, true);
-            EditorThemeManager.AddGraphic(objectButton.transform.GetChild(0).GetComponent<Text>(), ThemeGroup.Object_Text);
+            EditorThemeManager.ApplyGraphic(objectButton.GetComponent<Image>(), ThemeGroup.Object, true);
+            EditorThemeManager.ApplyGraphic(objectButton.transform.GetChild(0).GetComponent<Text>(), ThemeGroup.Object_Text);
 
             var markerButton = timelineBar.transform.Find("event").gameObject;
-            EditorThemeManager.AddGraphic(markerButton.GetComponent<Image>(), ThemeGroup.Marker, true);
-            EditorThemeManager.AddGraphic(markerButton.transform.GetChild(0).GetComponent<Text>(), ThemeGroup.Marker_Text);
+            EditorThemeManager.ApplyGraphic(markerButton.GetComponent<Image>(), ThemeGroup.Marker, true);
+            EditorThemeManager.ApplyGraphic(markerButton.transform.GetChild(0).GetComponent<Text>(), ThemeGroup.Marker_Text);
 
             var checkpointButton = timelineBar.transform.Find("checkpoint").gameObject;
-            EditorThemeManager.AddGraphic(checkpointButton.GetComponent<Image>(), ThemeGroup.Checkpoint, true);
-            EditorThemeManager.AddGraphic(checkpointButton.transform.GetChild(0).GetComponent<Text>(), ThemeGroup.Checkpoint_Text);
+            EditorThemeManager.ApplyGraphic(checkpointButton.GetComponent<Image>(), ThemeGroup.Checkpoint, true);
+            EditorThemeManager.ApplyGraphic(checkpointButton.transform.GetChild(0).GetComponent<Text>(), ThemeGroup.Checkpoint_Text);
 
             var backgroundButton = timelineBar.transform.Find("background").gameObject;
-            EditorThemeManager.AddGraphic(backgroundButton.GetComponent<Image>(), ThemeGroup.Background_Object, true);
-            EditorThemeManager.AddGraphic(backgroundButton.transform.GetChild(0).GetComponent<Text>(), ThemeGroup.Background_Object_Text);
+            EditorThemeManager.ApplyGraphic(backgroundButton.GetComponent<Image>(), ThemeGroup.Background_Object, true);
+            EditorThemeManager.ApplyGraphic(backgroundButton.transform.GetChild(0).GetComponent<Text>(), ThemeGroup.Background_Object_Text);
 
             var playTest = timelineBar.transform.Find("playtest").gameObject;
             Destroy(playTest.GetComponent<Animator>());
             var playTestButton = playTest.GetComponent<Button>();
             playTestButton.transition = Selectable.Transition.ColorTint;
-            EditorThemeManager.AddSelectable(playTestButton, ThemeGroup.Function_2, false);
+            EditorThemeManager.ApplySelectable(playTestButton, ThemeGroup.Function_2, false);
 
             var openBG = backgroundButton.transform.Find("BG Options Popup/open").GetComponent<Button>();
             openBG.onClick.NewListener(() => RTBackgroundEditor.inst.OpenDialog());
@@ -3786,24 +3786,24 @@ namespace BetterLegacy.Editor.Managers
 
             #region Editor Themes
 
-            EditorThemeManager.AddGraphic(binScrollImage, ThemeGroup.Slider_2, true);
-            EditorThemeManager.AddGraphic(EditorTimeline.inst.binSlider.image, ThemeGroup.Slider_2_Handle, true);
+            EditorThemeManager.ApplyGraphic(binScrollImage, ThemeGroup.Slider_2, true);
+            EditorThemeManager.ApplyGraphic(EditorTimeline.inst.binSlider.image, ThemeGroup.Slider_2_Handle, true);
 
-            EditorThemeManager.AddScrollbar(EditorManager.inst.timelineScrollbar.GetComponent<Scrollbar>(),
+            EditorThemeManager.ApplyScrollbar(EditorManager.inst.timelineScrollbar.GetComponent<Scrollbar>(),
                 scrollbarGroup: ThemeGroup.Timeline_Scrollbar_Base, handleGroup: ThemeGroup.Timeline_Scrollbar, canSetScrollbarRounded: false);
 
-            EditorThemeManager.AddGraphic(EditorManager.inst.timelineSlider.transform.Find("Background").GetComponent<Image>(), ThemeGroup.Timeline_Time_Scrollbar);
+            EditorThemeManager.ApplyGraphic(EditorManager.inst.timelineSlider.transform.Find("Background").GetComponent<Image>(), ThemeGroup.Timeline_Time_Scrollbar);
 
-            EditorThemeManager.AddGraphic(EditorTimeline.inst.wholeTimeline.GetComponent<Image>(), ThemeGroup.Timeline_Time_Scrollbar);
+            EditorThemeManager.ApplyGraphic(EditorTimeline.inst.wholeTimeline.GetComponent<Image>(), ThemeGroup.Timeline_Time_Scrollbar);
 
             var zoomSliderBase = EditorManager.inst.zoomSlider.transform.parent;
-            EditorThemeManager.AddGraphic(zoomSliderBase.GetComponent<Image>(), ThemeGroup.Background_1, true);
-            EditorThemeManager.AddGraphic(zoomSliderBase.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Slider_2);
-            EditorThemeManager.AddGraphic(zoomSliderBase.transform.GetChild(2).GetComponent<Image>(), ThemeGroup.Slider_2);
+            EditorThemeManager.ApplyGraphic(zoomSliderBase.GetComponent<Image>(), ThemeGroup.Background_1, true);
+            EditorThemeManager.ApplyGraphic(zoomSliderBase.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Slider_2);
+            EditorThemeManager.ApplyGraphic(zoomSliderBase.transform.GetChild(2).GetComponent<Image>(), ThemeGroup.Slider_2);
 
-            EditorThemeManager.AddGraphic(EditorManager.inst.zoomSlider.transform.Find("Background").GetComponent<Image>(), ThemeGroup.Slider_2, true);
-            EditorThemeManager.AddGraphic(EditorManager.inst.zoomSlider.transform.Find("Fill Area/Fill").GetComponent<Image>(), ThemeGroup.Slider_2, true);
-            EditorThemeManager.AddGraphic(EditorManager.inst.zoomSlider.image, ThemeGroup.Slider_2_Handle, true);
+            EditorThemeManager.ApplyGraphic(EditorManager.inst.zoomSlider.transform.Find("Background").GetComponent<Image>(), ThemeGroup.Slider_2, true);
+            EditorThemeManager.ApplyGraphic(EditorManager.inst.zoomSlider.transform.Find("Fill Area/Fill").GetComponent<Image>(), ThemeGroup.Slider_2, true);
+            EditorThemeManager.ApplyGraphic(EditorManager.inst.zoomSlider.image, ThemeGroup.Slider_2_Handle, true);
 
             #endregion
 
@@ -4194,7 +4194,7 @@ namespace BetterLegacy.Editor.Managers
             var doggoBaseImage = doggoBase.AddComponent<Image>();
             var doggoMask = doggoBase.AddComponent<Mask>();
             doggoMask.showMaskGraphic = false;
-            EditorThemeManager.AddGraphic(doggoBaseImage, ThemeGroup.Null, true);
+            EditorThemeManager.ApplyGraphic(doggoBaseImage, ThemeGroup.Null, true);
 
             var doggoObject = Creator.NewUIObject("loading", doggoBase.transform);
             RectValues.FullAnchored.AssignToRectTransform(doggoObject.transform.AsRT());
@@ -4358,17 +4358,17 @@ namespace BetterLegacy.Editor.Managers
 
             EditorHelper.AddEditorPopup(EditorPopup.BROWSER_POPUP, fileBrowser);
 
-            EditorThemeManager.AddGraphic(fileBrowser.GetComponent<Image>(), ThemeGroup.Background_1, true);
+            EditorThemeManager.ApplyGraphic(fileBrowser.GetComponent<Image>(), ThemeGroup.Background_1, true);
 
             var panel = fileBrowser.transform.Find("Panel").gameObject;
-            EditorThemeManager.AddGraphic(panel.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Top);
-            EditorThemeManager.AddSelectable(close, ThemeGroup.Close);
+            EditorThemeManager.ApplyGraphic(panel.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Top);
+            EditorThemeManager.ApplySelectable(close, ThemeGroup.Close);
 
-            EditorThemeManager.AddGraphic(close.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
+            EditorThemeManager.ApplyGraphic(close.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
 
-            EditorThemeManager.AddLightText(panel.transform.Find("Text").GetComponent<TextMeshProUGUI>());
+            EditorThemeManager.ApplyLightText(panel.transform.Find("Text").GetComponent<TextMeshProUGUI>());
 
-            EditorThemeManager.AddInputField(fileBrowser.transform.Find("folder-bar").GetComponent<InputField>());
+            EditorThemeManager.ApplyInputField(fileBrowser.transform.Find("folder-bar").GetComponent<InputField>());
 
             try
             {
@@ -4425,7 +4425,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 var top = Creator.NewUIObject("Top", EditorTimeline.inst.wholeTimeline, 3); // creates a cover so the bin scrolling doesn't overlay outside the regular slider range.
                 RectValues.Default.AnchorMax(0f, 1f).AnchorMin(0f, 1f).Pivot(0f, 1f).SizeDelta(1920f, 25f).AssignToRectTransform(top.transform.AsRT());
-                EditorThemeManager.AddGraphic(top.AddComponent<Image>(), ThemeGroup.Background_3);
+                EditorThemeManager.ApplyGraphic(top.AddComponent<Image>(), ThemeGroup.Background_3);
 
                 EditorTimeline.inst.timelineSliderHandle = EditorTimeline.inst.wholeTimeline.Find("Slider_Parent/Slider/Handle Slide Area/Image/Handle").GetComponent<Image>();
                 EditorTimeline.inst.timelineSliderRuler = EditorTimeline.inst.wholeTimeline.Find("Slider_Parent/Slider/Handle Slide Area/Image").GetComponent<Image>();
@@ -4508,19 +4508,19 @@ namespace BetterLegacy.Editor.Managers
                 LevelTemplateEditor.inst.Dialog.Close();
             };
 
-            EditorThemeManager.AddGraphic(newFilePopup.GetComponent<Image>(), ThemeGroup.Background_1, true);
+            EditorThemeManager.ApplyGraphic(newFilePopup.GetComponent<Image>(), ThemeGroup.Background_1, true);
 
             var newFilePopupPanel = newFilePopup.Find("Panel").gameObject;
-            EditorThemeManager.AddGraphic(newFilePopupPanel.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Top);
+            EditorThemeManager.ApplyGraphic(newFilePopupPanel.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Top);
 
             var newFilePopupClose = newFilePopupPanel.transform.Find("x").gameObject;
-            EditorThemeManager.AddSelectable(newFilePopupClose.GetComponent<Button>(), ThemeGroup.Close);
+            EditorThemeManager.ApplySelectable(newFilePopupClose.GetComponent<Button>(), ThemeGroup.Close);
 
             var newFilePopupCloseX = newFilePopupClose.transform.GetChild(0).gameObject;
-            EditorThemeManager.AddGraphic(newFilePopupClose.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
+            EditorThemeManager.ApplyGraphic(newFilePopupClose.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
 
             var newFilePopupTitle = newFilePopupPanel.transform.Find("Title").gameObject;
-            EditorThemeManager.AddLightText(newFilePopupPanel.transform.Find("Title").GetComponent<TextMeshProUGUI>());
+            EditorThemeManager.ApplyLightText(newFilePopupPanel.transform.Find("Title").GetComponent<TextMeshProUGUI>());
 
             var openFilePopupSelect = newFilePopup.gameObject.AddComponent<DraggableUI>();
             openFilePopupSelect.target = newFilePopup;
@@ -4664,36 +4664,36 @@ namespace BetterLegacy.Editor.Managers
                 Example.Current?.tutorials?.AdvanceTutorial(ExampleTutorial.CREATE_LEVEL, 4);
             });
 
-            EditorThemeManager.AddLightText(levelNameLabel.GetComponent<Text>());
-            EditorThemeManager.AddInputField(levelNameField);
+            EditorThemeManager.ApplyLightText(levelNameLabel.GetComponent<Text>());
+            EditorThemeManager.ApplyInputField(levelNameField);
 
-            EditorThemeManager.AddLightText(difficultyLabelText);
+            EditorThemeManager.ApplyLightText(difficultyLabelText);
 
-            EditorThemeManager.AddLightText(formatLabelText);
+            EditorThemeManager.ApplyLightText(formatLabelText);
 
-            EditorThemeManager.AddLightText(songArtistLabelText);
-            EditorThemeManager.AddInputField(songArtistInputField);
+            EditorThemeManager.ApplyLightText(songArtistLabelText);
+            EditorThemeManager.ApplyInputField(songArtistInputField);
 
-            EditorThemeManager.AddLightText(songTitleLabelText);
-            EditorThemeManager.AddInputField(songTitleInputField);
+            EditorThemeManager.ApplyLightText(songTitleLabelText);
+            EditorThemeManager.ApplyInputField(songTitleInputField);
 
-            EditorThemeManager.AddLightText(songPathLabel);
-            EditorThemeManager.AddInputField(path);
+            EditorThemeManager.ApplyLightText(songPathLabel);
+            EditorThemeManager.ApplyInputField(path);
 
-            EditorThemeManager.AddGraphic(browseLocalButton.image, ThemeGroup.Function_2_Normal, true);
-            EditorThemeManager.AddGraphic(browseLocalText, ThemeGroup.Function_2_Text);
+            EditorThemeManager.ApplyGraphic(browseLocalButton.image, ThemeGroup.Function_2_Normal, true);
+            EditorThemeManager.ApplyGraphic(browseLocalText, ThemeGroup.Function_2_Text);
 
-            EditorThemeManager.AddGraphic(browseInternalButton.image, ThemeGroup.Function_2_Normal, true);
-            EditorThemeManager.AddGraphic(browseInternalText, ThemeGroup.Function_2_Text);
+            EditorThemeManager.ApplyGraphic(browseInternalButton.image, ThemeGroup.Function_2_Normal, true);
+            EditorThemeManager.ApplyGraphic(browseInternalText, ThemeGroup.Function_2_Text);
 
-            EditorThemeManager.AddGraphic(chooseTemplateButton.image, ThemeGroup.Function_2_Normal, true);
-            EditorThemeManager.AddGraphic(chooseTemplateText, ThemeGroup.Function_2_Text);
+            EditorThemeManager.ApplyGraphic(chooseTemplateButton.image, ThemeGroup.Function_2_Normal, true);
+            EditorThemeManager.ApplyGraphic(chooseTemplateText, ThemeGroup.Function_2_Text);
 
             Destroy(create.GetComponent<Animator>());
             create.transition = Selectable.Transition.ColorTint;
-            EditorThemeManager.AddGraphic(create.image, ThemeGroup.Add, true);
+            EditorThemeManager.ApplyGraphic(create.image, ThemeGroup.Add, true);
 
-            EditorThemeManager.AddGraphic(create.transform.Find("text").GetComponent<Text>(), ThemeGroup.Add_Text);
+            EditorThemeManager.ApplyGraphic(create.transform.Find("text").GetComponent<Text>(), ThemeGroup.Add_Text);
 
             EditorLevelManager.inst.NewLevelPopup.SongPath = path;
 
@@ -4710,8 +4710,8 @@ namespace BetterLegacy.Editor.Managers
             rectTransform.anchoredPosition = Vector2.zero;
             rectTransform.sizeDelta = new Vector2(10000f, 10000f);
 
-            PreviewCover = new EditorThemeManager.Element(ThemeGroup.Preview_Cover, gameObject, new List<Component> { image, });
-            EditorThemeManager.AddElement(PreviewCover);
+            PreviewCover = new EditorThemeElement(ThemeGroup.Preview_Cover, gameObject, new Component[] { image, });
+            EditorThemeManager.ApplyElement(PreviewCover);
 
             gameObject.SetActive(!Seasons.IsAprilFools);
 
@@ -4807,19 +4807,19 @@ namespace BetterLegacy.Editor.Managers
 
             EditorHelper.AddEditorPopup(EditorPopup.WARNING_POPUP, warningPopup);
 
-            EditorThemeManager.AddGraphic(main.GetComponent<Image>(), ThemeGroup.Background_1, true);
-            EditorThemeManager.AddGraphic(panel.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Top);
+            EditorThemeManager.ApplyGraphic(main.GetComponent<Image>(), ThemeGroup.Background_1, true);
+            EditorThemeManager.ApplyGraphic(panel.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Top);
 
-            EditorThemeManager.AddSelectable(close, ThemeGroup.Close, true);
-            EditorThemeManager.AddGraphic(close.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
+            EditorThemeManager.ApplySelectable(close, ThemeGroup.Close, true);
+            EditorThemeManager.ApplyGraphic(close.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
 
-            EditorThemeManager.AddLightText(title);
+            EditorThemeManager.ApplyLightText(title);
 
-            EditorThemeManager.AddLightText(main.Find("Level Name").GetComponent<Text>());
-            EditorThemeManager.AddGraphic(submit1Image, ThemeGroup.Warning_Confirm, true);
-            EditorThemeManager.AddGraphic(submit1Button.transform.GetChild(0).GetComponent<Text>(), ThemeGroup.Add_Text);
-            EditorThemeManager.AddGraphic(submit2Image, ThemeGroup.Warning_Cancel, true);
-            EditorThemeManager.AddGraphic(submit2Image.transform.GetChild(0).GetComponent<Text>(), ThemeGroup.Add_Text);
+            EditorThemeManager.ApplyLightText(main.Find("Level Name").GetComponent<Text>());
+            EditorThemeManager.ApplyGraphic(submit1Image, ThemeGroup.Warning_Confirm, true);
+            EditorThemeManager.ApplyGraphic(submit1Button.transform.GetChild(0).GetComponent<Text>(), ThemeGroup.Add_Text);
+            EditorThemeManager.ApplyGraphic(submit2Image, ThemeGroup.Warning_Cancel, true);
+            EditorThemeManager.ApplyGraphic(submit2Image.transform.GetChild(0).GetComponent<Text>(), ThemeGroup.Add_Text);
 
             try
             {
@@ -4877,7 +4877,7 @@ namespace BetterLegacy.Editor.Managers
             var reloadButton = reload.GetComponent<Button>();
             reloadButton.onClick.NewListener(ReloadFunctions);
 
-            EditorThemeManager.AddSelectable(reloadButton, ThemeGroup.Function_2, false);
+            EditorThemeManager.ApplySelectable(reloadButton, ThemeGroup.Function_2, false);
 
             reloadButton.image.sprite = EditorSprites.ReloadSprite;
 
@@ -5005,23 +5005,23 @@ namespace BetterLegacy.Editor.Managers
             {
                 var options = ObjectOptionsPopup.GameObject.transform;
 
-                EditorThemeManager.AddGraphic(options.GetComponent<Image>(), ThemeGroup.Background_1, true);
-                EditorThemeManager.AddGraphic(options.Find("arrow").GetComponent<Image>(), ThemeGroup.Background_1);
+                EditorThemeManager.ApplyGraphic(options.GetComponent<Image>(), ThemeGroup.Background_1, true);
+                EditorThemeManager.ApplyGraphic(options.Find("arrow").GetComponent<Image>(), ThemeGroup.Background_1);
 
                 //for (int i = 1; i < options.childCount - 1; i++)
                 //{
                 //    var child = options.GetChild(i);
 
-                //    EditorThemeManager.AddGraphic(child.GetComponent<Image>(), ThemeGroup.Function_3, true);
-                //    EditorThemeManager.AddGraphic(child.GetChild(0).GetComponent<Text>(), ThemeGroup.Function_3_Text);
+                //    EditorThemeManager.ApplyGraphic(child.GetComponent<Image>(), ThemeGroup.Function_3, true);
+                //    EditorThemeManager.ApplyGraphic(child.GetChild(0).GetComponent<Text>(), ThemeGroup.Function_3_Text);
                 //}
 
                 //for (int i = 0; i < options.Find("shapes").childCount; i++)
                 //{
                 //    var child = options.Find("shapes").GetChild(i);
 
-                //    EditorThemeManager.AddGraphic(child.GetComponent<Image>(), ThemeGroup.Function_3, true);
-                //    EditorThemeManager.AddGraphic(child.GetChild(0).GetComponent<Image>(), ThemeGroup.Function_3_Text);
+                //    EditorThemeManager.ApplyGraphic(child.GetComponent<Image>(), ThemeGroup.Function_3, true);
+                //    EditorThemeManager.ApplyGraphic(child.GetChild(0).GetComponent<Image>(), ThemeGroup.Function_3_Text);
                 //}
             }
 
@@ -5029,15 +5029,15 @@ namespace BetterLegacy.Editor.Managers
             {
                 var options = BGObjectOptionsPopup.GameObject.transform;
 
-                EditorThemeManager.AddGraphic(options.GetComponent<Image>(), ThemeGroup.Background_1, true);
-                EditorThemeManager.AddGraphic(options.Find("arrow").GetComponent<Image>(), ThemeGroup.Background_1);
+                EditorThemeManager.ApplyGraphic(options.GetComponent<Image>(), ThemeGroup.Background_1, true);
+                EditorThemeManager.ApplyGraphic(options.Find("arrow").GetComponent<Image>(), ThemeGroup.Background_1);
 
                 for (int i = 1; i < options.childCount; i++)
                 {
                     var child = options.GetChild(i);
 
-                    EditorThemeManager.AddGraphic(child.GetComponent<Image>(), ThemeGroup.Function_3, true);
-                    EditorThemeManager.AddGraphic(child.GetChild(0).GetComponent<Text>(), ThemeGroup.Function_3_Text);
+                    EditorThemeManager.ApplyGraphic(child.GetComponent<Image>(), ThemeGroup.Function_3, true);
+                    EditorThemeManager.ApplyGraphic(child.GetChild(0).GetComponent<Text>(), ThemeGroup.Function_3_Text);
                 }
             }
         }
@@ -5096,11 +5096,11 @@ namespace BetterLegacy.Editor.Managers
 
             Destroy(pageStorage.middleButton.gameObject);
 
-            EditorThemeManager.AddInputField(pageStorage.inputField);
-            EditorThemeManager.AddSelectable(pageStorage.leftGreaterButton, ThemeGroup.Function_2, false);
-            EditorThemeManager.AddSelectable(pageStorage.leftButton, ThemeGroup.Function_2, false);
-            EditorThemeManager.AddSelectable(pageStorage.rightButton, ThemeGroup.Function_2, false);
-            EditorThemeManager.AddSelectable(pageStorage.rightGreaterButton, ThemeGroup.Function_2, false);
+            EditorThemeManager.ApplyInputField(pageStorage.inputField);
+            EditorThemeManager.ApplySelectable(pageStorage.leftGreaterButton, ThemeGroup.Function_2, false);
+            EditorThemeManager.ApplySelectable(pageStorage.leftButton, ThemeGroup.Function_2, false);
+            EditorThemeManager.ApplySelectable(pageStorage.rightButton, ThemeGroup.Function_2, false);
+            EditorThemeManager.ApplySelectable(pageStorage.rightGreaterButton, ThemeGroup.Function_2, false);
 
             var scrollView = EditorPrefabHolder.Instance.ScrollView.Duplicate(editorDialogObject.transform, "Scroll View");
             screenshotContent = scrollView.transform.Find("Viewport/Content");
@@ -5114,7 +5114,7 @@ namespace BetterLegacy.Editor.Managers
             scrollView.transform.AsRT().anchoredPosition = new Vector2(392.5f, 320f);
             scrollView.transform.AsRT().sizeDelta = new Vector2(735f, 638f);
 
-            EditorThemeManager.AddGraphic(editorDialogObject.GetComponent<Image>(), ThemeGroup.Background_1);
+            EditorThemeManager.ApplyGraphic(editorDialogObject.GetComponent<Image>(), ThemeGroup.Background_1);
 
             EditorHelper.AddEditorDropdown("View Screenshots", string.Empty, EditorHelper.VIEW_DROPDOWN, EditorSprites.SearchSprite, () =>
             {
@@ -5162,18 +5162,18 @@ namespace BetterLegacy.Editor.Managers
                 folderCreatorSubmitText = folderCreatorPopup.Find("submit/text").GetComponent<Text>();
                 folderCreatorSubmitText.text = "Create Folder";
 
-                EditorThemeManager.AddGraphic(folderCreatorPopup.GetComponent<Image>(), ThemeGroup.Background_1, true);
-                EditorThemeManager.AddGraphic(folderCreatorPopupPanel.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Top);
+                EditorThemeManager.ApplyGraphic(folderCreatorPopup.GetComponent<Image>(), ThemeGroup.Background_1, true);
+                EditorThemeManager.ApplyGraphic(folderCreatorPopupPanel.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Top);
 
-                EditorThemeManager.AddSelectable(close, ThemeGroup.Close, true);
-                EditorThemeManager.AddGraphic(close.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
+                EditorThemeManager.ApplySelectable(close, ThemeGroup.Close, true);
+                EditorThemeManager.ApplyGraphic(close.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
 
-                EditorThemeManager.AddLightText(folderCreatorTitle);
-                EditorThemeManager.AddLightText(folderCreatorNameLabel);
-                EditorThemeManager.AddInputField(folderCreatorName);
+                EditorThemeManager.ApplyLightText(folderCreatorTitle);
+                EditorThemeManager.ApplyLightText(folderCreatorNameLabel);
+                EditorThemeManager.ApplyInputField(folderCreatorName);
 
-                EditorThemeManager.AddGraphic(submitImage, ThemeGroup.Function_1, true);
-                EditorThemeManager.AddGraphic(folderCreatorSubmitText, ThemeGroup.Function_1_Text);
+                EditorThemeManager.ApplyGraphic(submitImage, ThemeGroup.Function_1, true);
+                EditorThemeManager.ApplyGraphic(folderCreatorSubmitText, ThemeGroup.Function_1_Text);
 
                 EditorHelper.AddEditorPopup(EditorPopup.FOLDER_CREATOR_POPUP, folderCreator);
 

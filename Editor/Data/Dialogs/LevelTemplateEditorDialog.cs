@@ -58,10 +58,10 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             dialogStorage.title.text = "- Level Templates -";
 
-            EditorThemeManager.AddGraphic(editorDialogObject.GetComponent<Image>(), ThemeGroup.Background_1);
+            EditorThemeManager.ApplyGraphic(editorDialogObject.GetComponent<Image>(), ThemeGroup.Background_1);
 
-            EditorThemeManager.AddGraphic(dialogStorage.topPanel, ThemeGroup.Add);
-            EditorThemeManager.AddGraphic(dialogStorage.title, ThemeGroup.Add_Text);
+            EditorThemeManager.ApplyGraphic(dialogStorage.topPanel, ThemeGroup.Add);
+            EditorThemeManager.ApplyGraphic(dialogStorage.title, ThemeGroup.Add_Text);
 
             var editorDialogSpacer = editorDialogObject.transform.GetChild(1);
             editorDialogSpacer.AsRT().sizeDelta = new Vector2(765f, 54f);
@@ -96,8 +96,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                 EditorManager.inst.DisplayNotification("Choose a level to create a template from.", 4f, EditorManager.NotificationType.Info);
             });
-            EditorThemeManager.AddSelectable(CreateNewTemplateButton.button, ThemeGroup.Function_2);
-            EditorThemeManager.AddGraphic(CreateNewTemplateButton.label, ThemeGroup.Function_2_Text);
+            EditorThemeManager.ApplySelectable(CreateNewTemplateButton.button, ThemeGroup.Function_2);
+            EditorThemeManager.ApplyGraphic(CreateNewTemplateButton.label, ThemeGroup.Function_2_Text);
 
             var gameObject2 = Creator.NewUIObject("name", editorDialogObject.transform, 3);
             gameObject2.transform.AsRT().sizeDelta = new Vector2(765f, 32f);
@@ -105,7 +105,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             NameField = EditorPrefabHolder.Instance.NumberInputField.GetComponent<InputFieldStorage>().inputField.gameObject.Duplicate(gameObject2.transform, "name").GetComponent<InputField>();
             NameField.onValueChanged.ClearAll();
             NameField.text = "New Level Template";
-            EditorThemeManager.AddInputField(NameField);
+            EditorThemeManager.ApplyInputField(NameField);
             RectValues.Default.AnchoredPosition(160f, 42f).SizeDelta(400f, 32f).AssignToRectTransform(NameField.image.rectTransform);
 
             var gameObject3 = Creator.NewUIObject("preview", editorDialogObject.transform, 4);
@@ -162,8 +162,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     RTEditor.inst.HideWarningPopup();
                 }, "System Browser", "Editor Browser");
             });
-            EditorThemeManager.AddSelectable(ChoosePreviewButton.button, ThemeGroup.Function_2);
-            EditorThemeManager.AddGraphic(ChoosePreviewButton.label, ThemeGroup.Function_2_Text);
+            EditorThemeManager.ApplySelectable(ChoosePreviewButton.button, ThemeGroup.Function_2);
+            EditorThemeManager.ApplyGraphic(ChoosePreviewButton.label, ThemeGroup.Function_2_Text);
         }
     }
 }

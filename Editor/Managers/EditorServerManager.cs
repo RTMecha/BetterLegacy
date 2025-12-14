@@ -244,8 +244,8 @@ namespace BetterLegacy.Editor.Managers
                 searchUsersButton.OnClick.ClearAll();
                 SearchUsersButton = searchUsersButton.button;
 
-                EditorThemeManager.AddSelectable(SearchUsersButton, ThemeGroup.Function_2);
-                EditorThemeManager.AddGraphic(searchUsersButton.label, ThemeGroup.Function_2_Text);
+                EditorThemeManager.ApplySelectable(SearchUsersButton, ThemeGroup.Function_2);
+                EditorThemeManager.ApplyGraphic(searchUsersButton.label, ThemeGroup.Function_2_Text);
 
                 UserSearchPopup.PageField.OnEndEdit.NewListener(_val => SearchUsersButton.onClick.Invoke());
                 UserSearchPopup.SearchField.onEndEdit.NewListener(_val => SearchUsersButton.onClick.Invoke());

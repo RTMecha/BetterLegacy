@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 
 using UnityEngine;
 using UnityEngine.UI;
-
-using LSFunctions;
 
 using TMPro;
 using SimpleJSON;
@@ -18,6 +14,8 @@ using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Data;
 
+using UnityObject = UnityEngine.Object;
+
 namespace BetterLegacy.Editor.Managers
 {
     /// <summary>
@@ -25,39 +23,40 @@ namespace BetterLegacy.Editor.Managers
     /// </summary>
     public class EditorThemeManager
     {
-        public static void Update()
-        {
-            if (!CoreHelper.InEditor && EditorGUIElements.Count > 0)
-                Clear();
-        }
+        #region Values
 
-        public static void Clear()
-        {
-            var elements = EditorGUIElements;
+        /// <summary>
+        /// The currently selected editor theme.
+        /// </summary>
+        public static EditorTheme CurrentTheme => EditorThemes[Mathf.Clamp(currentTheme, 0, EditorThemes.Count - 1)];
+        /// <summary>
+        /// The currently selected editor theme.
+        /// </summary>
+        public static int currentTheme = 0;
+        /// <summary>
+        /// List of all loaded editor themes.
+        /// </summary>
+        public static List<EditorTheme> EditorThemes { get; set; } = new List<EditorTheme>();
 
-            if (!elements.IsEmpty())
-                for (int i = 0; i < elements.Count; i++)
-                    elements[i]?.Clear();
+        #endregion
 
-            elements.Clear();
-        }
+        #region Functions
 
-        public static IEnumerator RenderElements()
+        /// <summary>
+        /// Renders all theme elements.
+        /// </summary>
+        public static void RenderElements() => CoroutineHelper.StartCoroutine(IRenderElements());
+
+        /// <summary>
+        /// Renders all theme elements.
+        /// </summary>
+        public static IEnumerator IRenderElements()
         {
             var theme = CurrentTheme;
 
-            for (int i = 0; i < EditorGUIElements.Count; i++)
-                EditorGUIElements[i].ApplyTheme(theme);
-
-            try
-            {
-                foreach (var temp in TemporaryEditorGUIElements)
-                    temp.Value.ApplyTheme(theme);
-            }
-            catch (Exception ex)
-            {
-                Debug.LogException(ex);
-            }
+            var elements = UnityObject.FindObjectsOfType<EditorThemeObject>();
+            for (int i = 0; i < elements.Length; i++)
+                elements[i].element?.ApplyTheme(theme);
 
             if (EditorTimeline.inst && EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
             {
@@ -69,6 +68,9 @@ namespace BetterLegacy.Editor.Managers
             yield break;
         }
 
+        /// <summary>
+        /// Loads the list of editor themes.
+        /// </summary>
         public static void LoadEditorThemes()
         {
             EditorThemes.Clear();
@@ -77,8 +79,16 @@ namespace BetterLegacy.Editor.Managers
 
             for (int i = 0; i < jn["themes"].Count; i++)
                 EditorThemes.Add(EditorTheme.Parse(jn["themes"][i]));
+
+            var values = new EditorThemeType[EditorThemes.Count];
+            for (int i = 0; i < values.Length; i++)
+                values[i] = new EditorThemeType(i, EditorThemes[i].name);
+            CustomEnumHelper.SetValues(values);
         }
 
+        /// <summary>
+        /// Saves the current list of editor themes.
+        /// </summary>
         public static void SaveEditorThemes()
         {
             var jn = Parser.NewJSONObject();
@@ -87,54 +97,60 @@ namespace BetterLegacy.Editor.Managers
             RTFile.WriteToFile(AssetPack.GetFile("editor/data/editor_themes.json"), jn.ToString());
         }
 
-        public static EditorTheme CurrentTheme => EditorThemes[Mathf.Clamp(currentTheme, 0, EditorThemes.Count - 1)];
-        public static int currentTheme = 0;
+        #region Apply
 
-        public static void AddElement(Element element)
-        {
-            EditorGUIElements.Add(element);
-            element.ApplyTheme(CurrentTheme);
-        }
-
-        public static void ApplyElement(Element element)
+        /// <summary>
+        /// Applies a theme to an editor element.
+        /// </summary>
+        /// <param name="element">Element to apply.</param>
+        public static void ApplyElement(EditorThemeElement element)
         {
             element.ApplyTheme(CurrentTheme);
 
             if (!element.gameObject)
                 return;
 
-            var id = LSText.randomNumString(16);
-            element.gameObject.AddComponent<EditorThemeElement>().Init(element, id);
-
-            TemporaryEditorGUIElements[id] = element;
+            var component = element.gameObject.GetOrAddComponent<EditorThemeObject>();
+            component.element = element;
         }
 
-        public static List<Element> EditorGUIElements { get; set; } = new List<Element>();
-        public static Dictionary<string, Element> TemporaryEditorGUIElements { get; set; } = new Dictionary<string, Element>();
-
-        public static List<EditorTheme> EditorThemes { get; set; } = new List<EditorTheme>();
-
-        public static Dictionary<string, EditorTheme> EditorThemesDictionary => EditorThemes.ToDictionary(x => x.name, x => x);
-
-        public static void AddDropdown(Dropdown dropdown)
+        /// <summary>
+        /// Applies a theme to a selectable object.
+        /// </summary>
+        /// <param name="selectable">Selectable to apply.</param>
+        /// <param name="group">Color group to assign.</param>
+        /// <param name="canSetRounded">If the selectable can be rounded.</param>
+        /// <param name="rounded">Rounded value of the selectable.</param>
+        /// <param name="roundedSide">Rounded side of the selectable.</param>
+        public static void ApplySelectable(Selectable selectable, ThemeGroup group, bool canSetRounded = true, int rounded = 1, SpriteHelper.RoundedSide roundedSide = SpriteHelper.RoundedSide.W)
         {
-            AddGraphic(dropdown.image, ThemeGroup.Dropdown_1, true);
-            AddGraphic(dropdown.captionText, ThemeGroup.Dropdown_1_Overlay);
-            AddGraphic(dropdown.transform.Find("Arrow").GetComponent<Image>(), ThemeGroup.Dropdown_1_Overlay);
-            if (dropdown.captionImage)
-                AddGraphic(dropdown.captionImage, ThemeGroup.Dropdown_1_Overlay);
-
-            var template = dropdown.template.gameObject;
-            AddGraphic(template.GetComponent<Image>(), ThemeGroup.Dropdown_1, true, roundedSide: SpriteHelper.RoundedSide.Bottom);
-
-            var templateItem = template.transform.Find("Viewport/Content/Item");
-            AddGraphic(templateItem.Find("Item Background").GetComponent<Image>(), ThemeGroup.Dropdown_1_Item, true);
-            AddGraphic(templateItem.Find("Item Checkmark").GetComponent<Image>(), ThemeGroup.Dropdown_1_Overlay);
-            AddGraphic(dropdown.itemText, ThemeGroup.Dropdown_1_Overlay);
-            if (dropdown.itemImage)
-                AddGraphic(dropdown.itemImage, ThemeGroup.Dropdown_1_Overlay);
+            ApplyElement(new EditorThemeElement(group, selectable.gameObject, new Component[]
+            {
+                selectable.image,
+                selectable,
+            }, canSetRounded, rounded, roundedSide, true));
         }
 
+        /// <summary>
+        /// Applies a theme to a graphic.
+        /// </summary>
+        /// <param name="graphic">Graphic to apply.</param>
+        /// <param name="group">Color group to assign.</param>
+        /// <param name="canSetRounded">If the graphic can be rounded.</param>
+        /// <param name="rounded">Rounded value of the graphic.</param>
+        /// <param name="roundedSide">Rounded side of the graphic.</param>
+        public static void ApplyGraphic(Graphic graphic, ThemeGroup group, bool canSetRounded = false, int rounded = 1, SpriteHelper.RoundedSide roundedSide = SpriteHelper.RoundedSide.W)
+        {
+            ApplyElement(new EditorThemeElement(group, graphic.gameObject, new Component[]
+            {
+                graphic,
+            }, canSetRounded, rounded, roundedSide));
+        }
+
+        /// <summary>
+        /// Applies a theme to a dropdown.
+        /// </summary>
+        /// <param name="dropdown">Dropdown to apply.</param>
         public static void ApplyDropdown(Dropdown dropdown)
         {
             ApplyGraphic(dropdown.image, ThemeGroup.Dropdown_1, true);
@@ -154,34 +170,10 @@ namespace BetterLegacy.Editor.Managers
                 ApplyGraphic(dropdown.itemImage, ThemeGroup.Dropdown_1_Overlay);
         }
 
-        public static void AddInputField(Vector2InputFieldStorage vector2InputFieldStorage)
-        {
-            if (vector2InputFieldStorage.x)
-                AddInputField(vector2InputFieldStorage.x);
-            if (vector2InputFieldStorage.y)
-                AddInputField(vector2InputFieldStorage.y);
-        }
-
-        public static void AddInputField(InputFieldStorage inputFieldStorage)
-        {
-            if (inputFieldStorage.inputField)
-                AddInputField(inputFieldStorage.inputField);
-            if (inputFieldStorage.subButton)
-                AddSelectable(inputFieldStorage.subButton, ThemeGroup.Function_2, false);
-            if (inputFieldStorage.addButton)
-                AddSelectable(inputFieldStorage.addButton, ThemeGroup.Function_2, false);
-            if (inputFieldStorage.leftGreaterButton)
-                AddSelectable(inputFieldStorage.leftGreaterButton, ThemeGroup.Function_2, false);
-            if (inputFieldStorage.leftButton)
-                AddSelectable(inputFieldStorage.leftButton, ThemeGroup.Function_2, false);
-            if (inputFieldStorage.middleButton)
-                AddSelectable(inputFieldStorage.middleButton, ThemeGroup.Function_2, false);
-            if (inputFieldStorage.rightButton)
-                AddSelectable(inputFieldStorage.rightButton, ThemeGroup.Function_2, false);
-            if (inputFieldStorage.rightGreaterButton)
-                AddSelectable(inputFieldStorage.rightGreaterButton, ThemeGroup.Function_2, false);
-        }
-
+        /// <summary>
+        /// Applies a theme to a number input field.
+        /// </summary>
+        /// <param name="inputFieldStorage">Number input field to apply.</param>
         public static void ApplyInputField(InputFieldStorage inputFieldStorage)
         {
             if (inputFieldStorage.inputField)
@@ -202,49 +194,75 @@ namespace BetterLegacy.Editor.Managers
                 ApplySelectable(inputFieldStorage.rightGreaterButton, ThemeGroup.Function_2, false);
         }
 
-        public static void AddInputField(InputField inputField, ThemeGroup group = ThemeGroup.Input_Field, int rounded = 1, SpriteHelper.RoundedSide roundedSide = SpriteHelper.RoundedSide.W)
+        /// <summary>
+        /// Applies a a theme to a Vector2 input fields.
+        /// </summary>
+        /// <param name="vector2InputFieldStorage">Vector2 input fields to apply.</param>
+        public static void ApplyInputField(Vector2InputFieldStorage vector2InputFieldStorage)
         {
-            inputField.image.fillCenter = true;
-            AddElement(new Element(group, inputField.gameObject, new List<Component>
-            {
-                inputField.image,
-            }, true, rounded, roundedSide));
-
-            AddElement(new Element(EditorTheme.GetGroup($"{EditorTheme.GetString(group)} Text"), inputField.textComponent.gameObject, new List<Component>
-            {
-                inputField.textComponent,
-            }));
+            if (vector2InputFieldStorage.x)
+                ApplyInputField(vector2InputFieldStorage.x);
+            if (vector2InputFieldStorage.y)
+                ApplyInputField(vector2InputFieldStorage.y);
         }
 
-        public static void AddInputField(TMP_InputField inputField, ThemeGroup group = ThemeGroup.Input_Field, int rounded = 1, SpriteHelper.RoundedSide roundedSide = SpriteHelper.RoundedSide.W)
+        /// <summary>
+        /// Applies a a theme to a Vector3 input fields.
+        /// </summary>
+        /// <param name="vector3InputFieldStorage">Vector3 input fields to apply.</param>
+        public static void ApplyInputField(Vector3InputFieldStorage vector3InputFieldStorage)
         {
-            inputField.image.fillCenter = true;
-            AddElement(new Element(group, inputField.gameObject, new List<Component>
-            {
-                inputField.image,
-            }, true, rounded, roundedSide));
-
-            AddElement(new Element(EditorTheme.GetGroup($"{EditorTheme.GetString(group)} Text"), inputField.textComponent.gameObject, new List<Component>
-            {
-                inputField.textComponent,
-            }));
+            if (vector3InputFieldStorage.x)
+                ApplyInputField(vector3InputFieldStorage.x);
+            if (vector3InputFieldStorage.y)
+                ApplyInputField(vector3InputFieldStorage.y);
+            if (vector3InputFieldStorage.z)
+                ApplyInputField(vector3InputFieldStorage.z);
         }
 
-        public static void ApplyInputField(InputField inputField, ThemeGroup group = ThemeGroup.Input_Field, SpriteHelper.RoundedSide roundedSide = SpriteHelper.RoundedSide.W)
+        /// <summary>
+        /// Applies a theme to an input field.
+        /// </summary>
+        /// <param name="inputField">Input field to apply.</param>
+        /// <param name="group">Color group to assign.</param>
+        /// <param name="rounded">Rounded value of the input field.</param>
+        /// <param name="roundedSide">Rounded side of the input field.</param>
+        public static void ApplyInputField(TMP_InputField inputField, ThemeGroup group = ThemeGroup.Input_Field, int rounded = 1, SpriteHelper.RoundedSide roundedSide = SpriteHelper.RoundedSide.W)
         {
-            inputField.image.fillCenter = true;
-            ApplyElement(new Element(group, inputField.gameObject, new List<Component>
-            {
-                inputField.image,
-            }, true, 1, roundedSide));
+            if (!inputField)
+                return;
 
-            ApplyElement(new Element(EditorTheme.GetGroup($"{EditorTheme.GetString(group)} Text"), inputField.textComponent.gameObject, new List<Component>
-            {
-                inputField.textComponent,
-            }));
+            if (!inputField.image)
+                inputField.image = inputField.transform.childCount > 0 ? inputField.transform.GetChild(0).GetComponent<Image>() ?? inputField.GetComponent<Image>() : inputField.GetComponent<Image>();
+
+            if (inputField.image)
+                inputField.image.fillCenter = true;
+            ApplyGraphic(inputField.image, group, true, rounded, roundedSide);
+            ApplyGraphic(inputField.textComponent, EditorTheme.GetGroup($"{EditorTheme.GetString(group)} Text"));
         }
 
-        public static void AddInputFields(GameObject gameObject, bool self, string name, bool selfInput = false, bool searchChildren = true)
+        /// <summary>
+        /// Applies a theme to an input field.
+        /// </summary>
+        /// <param name="inputField">Input field to apply.</param>
+        /// <param name="group">Color group to assign.</param>
+        /// <param name="rounded">Rounded value of the input field.</param>
+        /// <param name="roundedSide">Rounded side of the input field.</param>
+        public static void ApplyInputField(InputField inputField, ThemeGroup group = ThemeGroup.Input_Field, int rounded = 1, SpriteHelper.RoundedSide roundedSide = SpriteHelper.RoundedSide.W)
+        {
+            if (!inputField)
+                return;
+
+            if (!inputField.image)
+                inputField.image = inputField.transform.childCount > 0 ? inputField.transform.GetChild(0).GetComponent<Image>() ?? inputField.GetComponent<Image>() : inputField.GetComponent<Image>();
+
+            if (inputField.image)
+                inputField.image.fillCenter = true;
+            ApplyGraphic(inputField.image, group, true, rounded, roundedSide);
+            ApplyGraphic(inputField.textComponent, EditorTheme.GetGroup($"{EditorTheme.GetString(group)} Text"));
+        }
+
+        public static void ApplyInputFields(GameObject gameObject, bool self, string name, bool selfInput = false, bool searchChildren = true)
         {
             if (!searchChildren)
             {
@@ -255,12 +273,12 @@ namespace BetterLegacy.Editor.Managers
 
                 var input = selfInput ? inputField.transform : gameObject.transform.Find("input") ?? gameObject.transform.Find("Input") ?? gameObject.transform.Find("text-field");
 
-                AddElement(new Element(ThemeGroup.Input_Field, input.gameObject, new List<Component>
+                ApplyElement(new EditorThemeElement(ThemeGroup.Input_Field, input.gameObject, new Component[]
                 {
                     selfInput ? inputField.image : input.GetComponent<Image>(),
                 }, true, 1, SpriteHelper.RoundedSide.W));
 
-                AddElement(new Element(ThemeGroup.Input_Field_Text, inputField.textComponent.gameObject, new List<Component>
+                ApplyElement(new EditorThemeElement(ThemeGroup.Input_Field_Text, inputField.textComponent.gameObject, new Component[]
                 {
                     inputField.textComponent,
                 }));
@@ -274,14 +292,14 @@ namespace BetterLegacy.Editor.Managers
                 var buttonLeftComponent = buttonLeft.GetComponent<Button>();
                 var buttonRightComponent = buttonRight.GetComponent<Button>();
 
-                UnityEngine.Object.Destroy(buttonLeftComponent.GetComponent<Animator>());
+                UnityObject.Destroy(buttonLeftComponent.GetComponent<Animator>());
                 buttonLeftComponent.transition = Selectable.Transition.ColorTint;
 
-                UnityEngine.Object.Destroy(buttonRightComponent.GetComponent<Animator>());
+                UnityObject.Destroy(buttonRightComponent.GetComponent<Animator>());
                 buttonRightComponent.transition = Selectable.Transition.ColorTint;
 
-                AddSelectable(buttonLeftComponent, ThemeGroup.Function_2, false);
-                AddSelectable(buttonRightComponent, ThemeGroup.Function_2, false);
+                ApplySelectable(buttonLeftComponent, ThemeGroup.Function_2, false);
+                ApplySelectable(buttonRightComponent, ThemeGroup.Function_2, false);
 
                 return;
             }
@@ -297,12 +315,12 @@ namespace BetterLegacy.Editor.Managers
 
                 var input = selfInput ? inputField.transform : child.Find("input") ?? child.Find("Input") ?? child.Find("text-field");
 
-                AddElement(new Element(ThemeGroup.Input_Field, input.gameObject, new List<Component>
+                ApplyElement(new EditorThemeElement(ThemeGroup.Input_Field, input.gameObject, new Component[]
                 {
                     selfInput ? inputField.image : input.GetComponent<Image>(),
                 }, true, 1, SpriteHelper.RoundedSide.W));
 
-                AddElement(new Element(ThemeGroup.Input_Field_Text, inputField.textComponent.gameObject, new List<Component>
+                ApplyElement(new EditorThemeElement(ThemeGroup.Input_Field_Text, inputField.textComponent.gameObject, new Component[]
                 {
                     inputField.textComponent,
                 }));
@@ -316,219 +334,117 @@ namespace BetterLegacy.Editor.Managers
                 var buttonLeftComponent = buttonLeft.GetComponent<Button>();
                 var buttonRightComponent = buttonRight.GetComponent<Button>();
 
-                UnityEngine.Object.Destroy(buttonLeftComponent.GetComponent<Animator>());
+                UnityObject.Destroy(buttonLeftComponent.GetComponent<Animator>());
                 buttonLeftComponent.transition = Selectable.Transition.ColorTint;
 
-                UnityEngine.Object.Destroy(buttonRightComponent.GetComponent<Animator>());
+                UnityObject.Destroy(buttonRightComponent.GetComponent<Animator>());
                 buttonRightComponent.transition = Selectable.Transition.ColorTint;
 
-                AddSelectable(buttonLeftComponent, ThemeGroup.Function_2, false);
-                AddSelectable(buttonRightComponent, ThemeGroup.Function_2, false);
+                ApplySelectable(buttonLeftComponent, ThemeGroup.Function_2, false);
+                ApplySelectable(buttonRightComponent, ThemeGroup.Function_2, false);
             }
         }
 
-        public static void AddDeleteButton(DeleteButtonStorage delete)
-        {
-            AddGraphic(delete.button.image, ThemeGroup.Delete, true);
-            AddGraphic(delete.image, ThemeGroup.Delete_Text);
-        }
-        
+        /// <summary>
+        /// Applies a theme to a delete button.
+        /// </summary>
+        /// <param name="delete">Delete button to apply.</param>
         public static void ApplyDeleteButton(DeleteButtonStorage delete)
         {
             ApplyGraphic(delete.button.image, ThemeGroup.Delete, true);
             ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
         }
 
-        public static void AddToggle(Toggle toggle, ThemeGroup checkGroup = ThemeGroup.Null, Graphic graphic = null)
-        {
-            toggle.image.fillCenter = true;
-            AddElement(new Element(ThemeGroup.Toggle_1, toggle.gameObject, new List<Component>
-            {
-                toggle.image,
-            }, true, 1, SpriteHelper.RoundedSide.W));
-
-            var checkMarkGroup = checkGroup != ThemeGroup.Null ? checkGroup : ThemeGroup.Toggle_1_Check;
-            AddElement(new Element(checkMarkGroup, toggle.graphic.gameObject, new List<Component>
-            {
-                toggle.graphic,
-            }));
-
-            if (graphic)
-            {
-                AddElement(new Element(checkMarkGroup, graphic.gameObject, new List<Component>
-                {
-                    graphic,
-                }));
-                return;
-            }
-
-            if (toggle.transform.Find("Text"))
-                AddElement(new Element(checkMarkGroup, toggle.transform.Find("Text").gameObject, new List<Component>
-                {
-                    toggle.transform.Find("Text").GetComponent<Text>(),
-                }));
-
-            if (toggle.transform.Find("text"))
-                AddElement(new Element(checkMarkGroup, toggle.transform.Find("text").gameObject, new List<Component>
-                {
-                    toggle.transform.Find("text").GetComponent<Text>(),
-                }));
-        }
-
+        /// <summary>
+        /// Applies a theme to a toggle.
+        /// </summary>
+        /// <param name="toggle">Toggle to apply.</param>
+        /// <param name="checkGroup">Check mark color group.</param>
+        /// <param name="graphic">Extra graphic to apply.</param>
         public static void ApplyToggle(Toggle toggle, ThemeGroup checkGroup = ThemeGroup.Null, Graphic graphic = null)
         {
             toggle.image.fillCenter = true;
-            ApplyElement(new Element(ThemeGroup.Toggle_1, toggle.image.gameObject, new List<Component>
-            {
-                toggle.image,
-            }, true, 1, SpriteHelper.RoundedSide.W));
+            ApplyGraphic(toggle.image, ThemeGroup.Toggle_1, true);
 
             var checkMarkGroup = checkGroup != ThemeGroup.Null ? checkGroup : ThemeGroup.Toggle_1_Check;
-            ApplyElement(new Element(checkMarkGroup, toggle.graphic.gameObject, new List<Component>
-            {
-                toggle.graphic,
-            }));
+            ApplyGraphic(toggle.graphic, checkMarkGroup);
 
             if (graphic)
             {
-                ApplyElement(new Element(checkMarkGroup, graphic.gameObject, new List<Component>
-                {
-                    graphic,
-                }));
+                ApplyGraphic(graphic, checkMarkGroup);
                 return;
             }
 
             if (toggle.transform.Find("Text"))
-                ApplyElement(new Element(checkMarkGroup, toggle.transform.Find("Text").gameObject, new List<Component>
-                {
-                    toggle.transform.Find("Text").GetComponent<Text>(),
-                }));
-
+                ApplyGraphic(toggle.transform.Find("Text").GetComponent<Text>(), checkMarkGroup);
             if (toggle.transform.Find("text"))
-                ApplyElement(new Element(checkMarkGroup, toggle.transform.Find("text").gameObject, new List<Component>
-                {
-                    toggle.transform.Find("text").GetComponent<Text>(),
-                }));
+                ApplyGraphic(toggle.transform.Find("text").GetComponent<Text>(), checkMarkGroup);
         }
 
-        public static void AddLightText(Text text)
-        {
-            AddElement(new Element(ThemeGroup.Light_Text, text.gameObject, new List<Component>
-            {
-                text,
-            }));
-        }
+        /// <summary>
+        /// Applies a theme to a label.
+        /// </summary>
+        /// <param name="text">Text to apply.</param>
+        public static void ApplyLightText(Text text) => ApplyGraphic(text, ThemeGroup.Light_Text);
 
-        public static void ApplyLightText(Text text)
-        {
-            ApplyElement(new Element(ThemeGroup.Light_Text, text.gameObject, new List<Component>
-            {
-                text,
-            }));
-        }
+        /// <summary>
+        /// Applies a theme to a label.
+        /// </summary>
+        /// <param name="text">Text to apply.</param>
+        public static void ApplyLightText(TextMeshProUGUI text) => ApplyGraphic(text, ThemeGroup.Light_Text);
 
-        public static void AddLightText(TextMeshProUGUI text)
-        {
-            AddElement(new Element(ThemeGroup.Light_Text, text.gameObject, new List<Component>
-            {
-                text,
-            }));
-        }
-
-        public static void ApplyLightText(TextMeshProUGUI text)
-        {
-            ApplyElement(new Element(ThemeGroup.Light_Text, text.gameObject, new List<Component>
-            {
-                text,
-            }));
-        }
-
-        public static void AddSelectable(Selectable selectable, ThemeGroup group, bool canSetRounded = true, int rounded = 1, SpriteHelper.RoundedSide roundedSide = SpriteHelper.RoundedSide.W)
-        {
-            AddElement(new Element(group, selectable.gameObject, new List<Component>
-            {
-                selectable.image,
-                selectable,
-            }, canSetRounded, rounded, roundedSide, true));
-        }
-
-        public static void ApplySelectable(Selectable selectable, ThemeGroup group, bool canSetRounded = true, int rounded = 1, SpriteHelper.RoundedSide roundedSide = SpriteHelper.RoundedSide.W)
-        {
-            ApplyElement(new Element(group, selectable.gameObject, new List<Component>
-            {
-                selectable.image,
-                selectable,
-            }, canSetRounded, rounded, roundedSide, true));
-        }
-
-        public static void AddGraphic(Graphic graphic, ThemeGroup group, bool canSetRounded = false, int rounded = 1, SpriteHelper.RoundedSide roundedSide = SpriteHelper.RoundedSide.W)
-        {
-            AddElement(new Element(group, graphic.gameObject, new List<Component>
-            {
-                graphic,
-            }, canSetRounded, rounded, roundedSide));
-        }
-
-        public static void ApplyGraphic(Graphic graphic, ThemeGroup group, bool canSetRounded = false, int rounded = 1, SpriteHelper.RoundedSide roundedSide = SpriteHelper.RoundedSide.W)
-        {
-            ApplyElement(new Element(group, graphic.gameObject, new List<Component>
-            {
-                graphic,
-            }, canSetRounded, rounded, roundedSide));
-        }
-
-        public static void AddScrollbar(Scrollbar scrollbar, Image backgroundImage = null, ThemeGroup scrollbarGroup = ThemeGroup.Background_1, ThemeGroup handleGroup = ThemeGroup.Scrollbar_1_Handle,
-            bool canSetScrollbarRounded = true, bool canSetHandleRounded = true, int scrollbarRounded = 1, int handleRounded = 1,
-            SpriteHelper.RoundedSide scrollbarRoundedSide = SpriteHelper.RoundedSide.W, SpriteHelper.RoundedSide handleRoundedSide = SpriteHelper.RoundedSide.W)
-        {
-            AddGraphic(backgroundImage ?? scrollbar.GetComponent<Image>(), scrollbarGroup, canSetScrollbarRounded, scrollbarRounded, scrollbarRoundedSide);
-
-            AddElement(new Element(handleGroup, scrollbar.image.gameObject, new List<Component>
-            {
-                scrollbar.image,
-                scrollbar
-            }, canSetHandleRounded, handleRounded, handleRoundedSide, true));
-        }
-
+        /// <summary>
+        /// Applies a theme to a scrollbar.
+        /// </summary>
+        /// <param name="scrollbar">Scrollbar to apply.</param>
+        /// <param name="backgroundImage">Background image to apply.</param>
+        /// <param name="scrollbarGroup">Scrollbar color group to assign.</param>
+        /// <param name="handleGroup">Handle color group to assign.</param>
+        /// <param name="canSetScrollbarRounded">If the scrollbar can be rounded.</param>
+        /// <param name="canSetHandleRounded">If the handle can be rounded.</param>
+        /// <param name="scrollbarRounded">Rounded value of the scrollbar.</param>
+        /// <param name="handleRounded">Rounded value of the handle.</param>
+        /// <param name="scrollbarRoundedSide">Rounded side of the scrollbar.</param>
+        /// <param name="handleRoundedSide">Rounded side of the handle.</param>
         public static void ApplyScrollbar(Scrollbar scrollbar, Image backgroundImage = null, ThemeGroup scrollbarGroup = ThemeGroup.Background_1, ThemeGroup handleGroup = ThemeGroup.Scrollbar_1_Handle,
             bool canSetScrollbarRounded = true, bool canSetHandleRounded = true, int scrollbarRounded = 1, int handleRounded = 1,
             SpriteHelper.RoundedSide scrollbarRoundedSide = SpriteHelper.RoundedSide.W, SpriteHelper.RoundedSide handleRoundedSide = SpriteHelper.RoundedSide.W)
         {
             ApplyGraphic(backgroundImage ?? scrollbar.GetComponent<Image>(), scrollbarGroup, canSetScrollbarRounded, scrollbarRounded, scrollbarRoundedSide);
-
-            ApplyElement(new Element(handleGroup, scrollbar.image.gameObject, new List<Component>
-            {
-                scrollbar.image,
-                scrollbar
-            }, canSetHandleRounded, handleRounded, handleRoundedSide, true));
+            ApplySelectable(scrollbar, handleGroup, canSetHandleRounded, handleRounded, handleRoundedSide);
         }
 
-        public static void AddSlider(Slider slider, Image backgroundImage = null, ThemeGroup sliderGroup = ThemeGroup.Slider_2, ThemeGroup handleGroup = ThemeGroup.Slider_2_Handle,
-            bool canSetSliderRounded = true, bool canSetHandleRounded = true, int sliderRounded = 1, int handleRounded = 1,
-            SpriteHelper.RoundedSide sliderRoundedSide = SpriteHelper.RoundedSide.W, SpriteHelper.RoundedSide handleRoundedSide = SpriteHelper.RoundedSide.W, bool selectable = false)
-        {
-            AddGraphic(backgroundImage ?? slider.GetComponent<Image>(), sliderGroup, canSetSliderRounded, sliderRounded, sliderRoundedSide);
-
-            AddElement(new Element(handleGroup, slider.image.gameObject, new List<Component>
-            {
-                slider.image,
-                slider
-            }, canSetHandleRounded, handleRounded, handleRoundedSide, selectable));
-        }
-
+        /// <summary>
+        /// Applies a theme to a slider.
+        /// </summary>
+        /// <param name="slider">Slider to apply.</param>
+        /// <param name="backgroundImage">Background image to apply.</param>
+        /// <param name="sliderGroup">Slider color group to assign.</param>
+        /// <param name="handleGroup">Handle color group to assign.</param>
+        /// <param name="canSetSliderRounded">If the slider can be rounded.</param>
+        /// <param name="canSetHandleRounded">If the handle can be rounded.</param>
+        /// <param name="sliderRounded">Rounded value of the slider.</param>
+        /// <param name="handleRounded">Rounded value of the handle.</param>
+        /// <param name="sliderRoundedSide">Rounded side of the slider.</param>
+        /// <param name="handleRoundedSide">Rounded side of the handle.</param>
+        /// <param name="selectable">If the slider should be handled as a selectable.</param>
         public static void ApplySlider(Slider slider, Image backgroundImage = null, ThemeGroup sliderGroup = ThemeGroup.Slider_2, ThemeGroup handleGroup = ThemeGroup.Slider_2_Handle,
             bool canSetSliderRounded = true, bool canSetHandleRounded = true, int sliderRounded = 1, int handleRounded = 1,
             SpriteHelper.RoundedSide sliderRoundedSide = SpriteHelper.RoundedSide.W, SpriteHelper.RoundedSide handleRoundedSide = SpriteHelper.RoundedSide.W, bool selectable = false)
         {
             ApplyGraphic(backgroundImage ?? slider.GetComponent<Image>(), sliderGroup, canSetSliderRounded, sliderRounded, sliderRoundedSide);
-
-            ApplyElement(new Element(handleGroup, slider.image.gameObject, new List<Component>
-            {
-                slider.image,
-                slider
-            }, canSetHandleRounded, handleRounded, handleRoundedSide, selectable));
+            if (selectable)
+                ApplySelectable(slider, handleGroup, canSetHandleRounded, handleRounded, handleRoundedSide);
+            else
+                ApplyGraphic(slider.image, handleGroup, canSetHandleRounded, handleRounded, handleRoundedSide);
         }
 
+        #endregion
+
+        /// <summary>
+        /// Resets selectable colors to the default.
+        /// </summary>
+        /// <param name="selectable">Selectable to clear.</param>
         public static void ClearSelectableColors(Selectable selectable) => selectable.colors = new ColorBlock()
         {
             normalColor = Color.white,
@@ -540,6 +456,13 @@ namespace BetterLegacy.Editor.Managers
             fadeDuration = 0.2f,
         };
 
+        /// <summary>
+        /// Applies a theme to an array of component.
+        /// </summary>
+        /// <param name="theme">Theme to get the color from.</param>
+        /// <param name="themeGroup">Color group to assign.</param>
+        /// <param name="isSelectable">If the components are selectable.</param>
+        /// <param name="components">Array of components.</param>
         public static void ApplyTheme(EditorTheme theme, ThemeGroup themeGroup, bool isSelectable, params Component[] components)
         {
             try
@@ -591,6 +514,11 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
+        /// <summary>
+        /// Sets the color of an array of components.
+        /// </summary>
+        /// <param name="color">Color to assign.</param>
+        /// <param name="components">Array of components.</param>
         public static void SetColor(Color color, params Component[] components)
         {
             try
@@ -615,6 +543,12 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
+        /// <summary>
+        /// Sets the color of an array of components.
+        /// </summary>
+        /// <param name="color">Color to assign.</param>
+        /// <param name="colorBlock">Color block to assign to selectables.</param>
+        /// <param name="components">Array of components.</param>
         public static void SetColor(Color color, ColorBlock colorBlock, params Component[] components)
         {
             foreach (var component in components)
@@ -626,6 +560,13 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
+        /// <summary>
+        /// Applies the rounded setting to graphics.
+        /// </summary>
+        /// <param name="canSetRounded">If the element can be rounded.</param>
+        /// <param name="rounded">Rounded value.</param>
+        /// <param name="roundedSide">Sounded side.</param>
+        /// <param name="components">Array of components.</param>
         public static void SetRounded(bool canSetRounded, int rounded, SpriteHelper.RoundedSide roundedSide, params Component[] components)
         {
             try
@@ -652,50 +593,6 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
-        public class Element
-        {
-            public Element(ThemeGroup group, GameObject gameObject, List<Component> components, bool canSetRounded = false, int rounded = 0, SpriteHelper.RoundedSide roundedSide = SpriteHelper.RoundedSide.W, bool isSelectable = false)
-            {
-                themeGroup = group;
-                this.gameObject = gameObject;
-                this.components = components.ToArray(); // replaced List with Array
-                this.canSetRounded = canSetRounded;
-                this.rounded = rounded;
-                this.roundedSide = roundedSide;
-                this.isSelectable = isSelectable;
-            }
-
-            readonly ThemeGroup themeGroup = ThemeGroup.Null;
-
-            public GameObject gameObject;
-
-            Component[] components;
-
-            readonly bool isSelectable = false;
-
-            readonly bool canSetRounded = false;
-
-            readonly int rounded;
-
-            readonly SpriteHelper.RoundedSide roundedSide = SpriteHelper.RoundedSide.W;
-
-            public void Clear()
-            {
-                gameObject = null;
-                for (int i = 0; i < components.Length; i++)
-                    components[i] = null;
-                components = null;
-            }
-
-            public void ApplyTheme(EditorTheme theme)
-            {
-                SetRounded();
-                EditorThemeManager.ApplyTheme(theme, themeGroup, isSelectable, components);
-            }
-
-            public void SetRounded() => EditorThemeManager.SetRounded(canSetRounded, rounded, roundedSide, components);
-
-            public override string ToString() => gameObject.name;
-        }
+        #endregion
     }
 }

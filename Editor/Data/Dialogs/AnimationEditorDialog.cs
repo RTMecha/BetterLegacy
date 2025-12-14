@@ -107,8 +107,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var returnButtonStorage = returnButton.GetComponent<FunctionButtonStorage>();
             ReturnButton = returnButtonStorage.button;
             returnButtonStorage.Text = "Return";
-            EditorThemeManager.AddSelectable(ReturnButton, ThemeGroup.Function_2);
-            EditorThemeManager.AddGraphic(returnButtonStorage.label, ThemeGroup.Function_2_Text);
+            EditorThemeManager.ApplySelectable(ReturnButton, ThemeGroup.Function_2);
+            EditorThemeManager.ApplyGraphic(returnButtonStorage.label, ThemeGroup.Function_2_Text);
 
             SetupID();
             SetupReference();
@@ -172,8 +172,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
             IDText.horizontalOverflow = HorizontalWrapMode.Overflow;
 
             var image = id.AddComponent<Image>();
-            EditorThemeManager.AddGraphic(image, ThemeGroup.Background_2, true);
-            EditorThemeManager.AddLightText(IDText);
+            EditorThemeManager.ApplyGraphic(image, ThemeGroup.Background_2, true);
+            EditorThemeManager.ApplyLightText(IDText);
         }
 
         void SetupReference()
@@ -182,7 +182,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var reference = EditorPrefabHolder.Instance.StringInputField.Duplicate(Content, "reference");
             reference.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
             ReferenceField = reference.GetComponent<InputField>();
-            EditorThemeManager.AddInputField(ReferenceField);
+            EditorThemeManager.ApplyInputField(ReferenceField);
             TooltipHelper.AssignTooltip(reference, "Animation Reference ID");
         }
 
@@ -192,7 +192,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var name = EditorPrefabHolder.Instance.StringInputField.Duplicate(Content, "name");
             name.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
             NameField = name.GetComponent<InputField>();
-            EditorThemeManager.AddInputField(NameField);
+            EditorThemeManager.ApplyInputField(NameField);
         }
 
         void SetupDescription()
@@ -204,7 +204,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             DescriptionField.lineType = InputField.LineType.MultiLineNewline;
             DescriptionField.textComponent.alignment = TextAnchor.UpperLeft;
             DescriptionField.GetPlaceholderText().alignment = TextAnchor.UpperLeft;
-            EditorThemeManager.AddInputField(DescriptionField);
+            EditorThemeManager.ApplyInputField(DescriptionField);
         }
 
         void SetupStartTime()
@@ -213,7 +213,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var startTime = EditorPrefabHolder.Instance.NumberInputField.Duplicate(Content, "start time");
             startTime.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
             StartTimeField = startTime.GetComponent<InputFieldStorage>();
-            EditorThemeManager.AddInputField(StartTimeField);
+            EditorThemeManager.ApplyInputField(StartTimeField);
         }
 
         void SetupStates()
@@ -224,31 +224,31 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var animatePositionStorage = animatePosition.GetComponent<ToggleButtonStorage>();
             AnimatePositionToggle = animatePositionStorage.toggle;
             animatePositionStorage.label.text = "Animate Position";
-            EditorThemeManager.AddToggle(AnimatePositionToggle, graphic: animatePositionStorage.label);
+            EditorThemeManager.ApplyToggle(AnimatePositionToggle, graphic: animatePositionStorage.label);
 
             var animateScale = EditorPrefabHolder.Instance.ToggleButton.Duplicate(Content, "animate sca");
             var animateScaleStorage = animateScale.GetComponent<ToggleButtonStorage>();
             AnimateScaleToggle = animateScaleStorage.toggle;
             animateScaleStorage.label.text = "Animate Scale";
-            EditorThemeManager.AddToggle(AnimateScaleToggle, graphic: animateScaleStorage.label);
+            EditorThemeManager.ApplyToggle(AnimateScaleToggle, graphic: animateScaleStorage.label);
 
             var animateRotation = EditorPrefabHolder.Instance.ToggleButton.Duplicate(Content, "animate rot");
             var animateRotationStorage = animateRotation.GetComponent<ToggleButtonStorage>();
             AnimateRotationToggle = animateRotationStorage.toggle;
             animateRotationStorage.label.text = "Animate Rotation";
-            EditorThemeManager.AddToggle(AnimateRotationToggle, graphic: animateRotationStorage.label);
+            EditorThemeManager.ApplyToggle(AnimateRotationToggle, graphic: animateRotationStorage.label);
 
             var animateColor = EditorPrefabHolder.Instance.ToggleButton.Duplicate(Content, "animate col");
             var animateColorStorage = animateColor.GetComponent<ToggleButtonStorage>();
             AnimateColorToggle = animateColorStorage.toggle;
             animateColorStorage.label.text = "Animate Color";
-            EditorThemeManager.AddToggle(AnimateColorToggle, graphic: animateColorStorage.label);
+            EditorThemeManager.ApplyToggle(AnimateColorToggle, graphic: animateColorStorage.label);
 
             var transition = EditorPrefabHolder.Instance.ToggleButton.Duplicate(Content, "transition");
             var transitionStorage = transition.GetComponent<ToggleButtonStorage>();
             TransitionToggle = transitionStorage.toggle;
             transitionStorage.label.text = "Transition Override";
-            EditorThemeManager.AddToggle(TransitionToggle, graphic: transitionStorage.label);
+            EditorThemeManager.ApplyToggle(TransitionToggle, graphic: transitionStorage.label);
             TooltipHelper.AssignTooltip(transition, "Animation Transition");
         }
 

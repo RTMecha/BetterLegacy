@@ -135,12 +135,12 @@ namespace BetterLegacy.Editor.Managers
             var startOffsetDisplay = Creator.NewUIObject("Start", wholeTimeline.Find("Timeline/Panel 1"));
             RectValues.LeftAnchored.AnchoredPosition(4f, 0f).AnchorMin(0f, 0f).Pivot(0f, 0.5f).SizeDelta(0f, 0f).AssignToRectTransform(startOffsetDisplay.transform.AsRT());
             this.startOffsetDisplay = startOffsetDisplay.gameObject.AddComponent<Image>();
-            EditorThemeManager.AddGraphic(this.startOffsetDisplay, ThemeGroup.Light_Text, true, roundedSide: SpriteHelper.RoundedSide.Right);
+            EditorThemeManager.ApplyGraphic(this.startOffsetDisplay, ThemeGroup.Light_Text, true, roundedSide: SpriteHelper.RoundedSide.Right);
 
             var endOffsetDisplay = Creator.NewUIObject("End", wholeTimeline.Find("Timeline/Panel 1"));
             RectValues.LeftAnchored.AnchoredPosition(-4f, 0f).AnchorMax(1f, 1f).AnchorMin(1f, 0f).Pivot(1f, 0.5f).SizeDelta(0f, 0f).AssignToRectTransform(endOffsetDisplay.transform.AsRT());
             this.endOffsetDisplay = endOffsetDisplay.gameObject.AddComponent<Image>();
-            EditorThemeManager.AddGraphic(this.endOffsetDisplay, ThemeGroup.Light_Text, true, roundedSide: SpriteHelper.RoundedSide.Right);
+            EditorThemeManager.ApplyGraphic(this.endOffsetDisplay, ThemeGroup.Light_Text, true, roundedSide: SpriteHelper.RoundedSide.Right);
         }
 
         /// <summary>

@@ -84,16 +84,16 @@ namespace BetterLegacy.Editor.Data.Dialogs
             Left = dialog.Find("data/left").AsRT();
             Right = dialog.Find("data/right").AsRT();
 
-            EditorThemeManager.AddGraphic(dialog.GetComponent<Image>(), ThemeGroup.Background_1);
-            EditorThemeManager.AddGraphic(Right.GetComponent<Image>(), ThemeGroup.Background_3);
+            EditorThemeManager.ApplyGraphic(dialog.GetComponent<Image>(), ThemeGroup.Background_1);
+            EditorThemeManager.ApplyGraphic(Right.GetComponent<Image>(), ThemeGroup.Background_3);
 
             Content = Right.Find("checkpoints/viewport/content");
 
             SearchField = Right.Find("search").GetComponent<InputField>();
-            EditorThemeManager.AddInputField(SearchField, ThemeGroup.Search_Field_2);
+            EditorThemeManager.ApplyInputField(SearchField, ThemeGroup.Search_Field_2);
 
             ContentScrollbar = Right.Find("checkpoints/Scrollbar Vertical").GetComponent<Scrollbar>();
-            EditorThemeManager.AddScrollbar(ContentScrollbar, scrollbarGroup: ThemeGroup.Scrollbar_2, handleGroup: ThemeGroup.Scrollbar_2_Handle);
+            EditorThemeManager.ApplyScrollbar(ContentScrollbar, scrollbarGroup: ThemeGroup.Scrollbar_2, handleGroup: ThemeGroup.Scrollbar_2_Handle);
 
             Edit = Left.Find("edit");
             RTEditor.inst.SetupIndexer(this);
@@ -110,9 +110,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 {
                     var buttonBG = button.GetChild(0).GetComponent<Image>();
 
-                    EditorThemeManager.AddGraphic(buttonBG, ThemeGroup.Delete_Keyframe_BG);
+                    EditorThemeManager.ApplyGraphic(buttonBG, ThemeGroup.Delete_Keyframe_BG);
 
-                    EditorThemeManager.AddSelectable(buttonComponent, ThemeGroup.Delete_Keyframe_Button, false);
+                    EditorThemeManager.ApplySelectable(buttonComponent, ThemeGroup.Delete_Keyframe_Button, false);
 
                     continue;
                 }
@@ -120,7 +120,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 CoreHelper.Destroy(button.GetComponent<Animator>());
                 buttonComponent.transition = Selectable.Transition.ColorTint;
 
-                EditorThemeManager.AddSelectable(buttonComponent, ThemeGroup.Function_2, false);
+                EditorThemeManager.ApplySelectable(buttonComponent, ThemeGroup.Function_2, false);
             }
 
             // Labels
@@ -132,15 +132,15 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     continue;
 
                 for (int j = 0; j < label.childCount; j++)
-                    EditorThemeManager.AddLightText(label.GetChild(j).GetComponent<Text>());
+                    EditorThemeManager.ApplyLightText(label.GetChild(j).GetComponent<Text>());
             }
 
             NameField = Left.Find("name").GetComponent<InputField>();
-            EditorThemeManager.AddInputField(NameField);
+            EditorThemeManager.ApplyInputField(NameField);
             var time = Left.Find("time");
             TimeField = time.gameObject.AddComponent<InputFieldStorage>();
             TimeField.Assign();
-            EditorThemeManager.AddInputField(TimeField);
+            EditorThemeManager.ApplyInputField(TimeField);
             for (int i = 1; i < time.childCount; i++)
             {
                 var button = time.GetChild(i);
@@ -153,8 +153,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var position = Left.Find("position");
             PositionFields = position.gameObject.AddComponent<Vector2InputFieldStorage>();
             PositionFields.Assign();
-            EditorThemeManager.AddInputField(PositionFields.x);
-            EditorThemeManager.AddInputField(PositionFields.y);
+            EditorThemeManager.ApplyInputField(PositionFields.x);
+            EditorThemeManager.ApplyInputField(PositionFields.y);
             for (int i = 0; i < position.childCount; i++)
             {
                 var child = position.GetChild(i);
@@ -166,7 +166,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     CoreHelper.Destroy(button.GetComponent<Animator>());
                     buttonComponent.transition = Selectable.Transition.ColorTint;
 
-                    EditorThemeManager.AddSelectable(buttonComponent, ThemeGroup.Function_2, false);
+                    EditorThemeManager.ApplySelectable(buttonComponent, ThemeGroup.Function_2, false);
                 }
             }
 
@@ -199,37 +199,37 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var respawn = EditorPrefabHolder.Instance.ToggleButton.Duplicate(LeftContent);
             RespawnToggle = respawn.GetComponent<ToggleButtonStorage>();
             RespawnToggle.label.text = "Respawn";
-            EditorThemeManager.AddToggle(RespawnToggle.toggle, graphic: RespawnToggle.label);
+            EditorThemeManager.ApplyToggle(RespawnToggle.toggle, graphic: RespawnToggle.label);
 
             new Labels(Labels.InitSettings.Default.Parent(LeftContent), "Heal Players");
             var heal = EditorPrefabHolder.Instance.ToggleButton.Duplicate(LeftContent);
             HealToggle = heal.GetComponent<ToggleButtonStorage>();
             HealToggle.label.text = "Heal";
-            EditorThemeManager.AddToggle(HealToggle.toggle, graphic: HealToggle.label);
+            EditorThemeManager.ApplyToggle(HealToggle.toggle, graphic: HealToggle.label);
             
             new Labels(Labels.InitSettings.Default.Parent(LeftContent), "Set time on reverse");
             var setTime = EditorPrefabHolder.Instance.ToggleButton.Duplicate(LeftContent);
             SetTimeToggle = setTime.GetComponent<ToggleButtonStorage>();
             SetTimeToggle.label.text = "Set Time";
-            EditorThemeManager.AddToggle(SetTimeToggle.toggle, graphic: SetTimeToggle.label);
+            EditorThemeManager.ApplyToggle(SetTimeToggle.toggle, graphic: SetTimeToggle.label);
             
             new Labels(Labels.InitSettings.Default.Parent(LeftContent), "Reverse level on death");
             var reverse = EditorPrefabHolder.Instance.ToggleButton.Duplicate(LeftContent);
             ReverseToggle = reverse.GetComponent<ToggleButtonStorage>();
             ReverseToggle.label.text = "Reverse";
-            EditorThemeManager.AddToggle(ReverseToggle.toggle, graphic: ReverseToggle.label);
+            EditorThemeManager.ApplyToggle(ReverseToggle.toggle, graphic: ReverseToggle.label);
             
             new Labels(Labels.InitSettings.Default.Parent(LeftContent), "Triggers on reached");
             var autoTriggerable = EditorPrefabHolder.Instance.ToggleButton.Duplicate(LeftContent);
             AutoTriggerableToggle = autoTriggerable.GetComponent<ToggleButtonStorage>();
             AutoTriggerableToggle.Text = "Auto Triggerable";
-            EditorThemeManager.AddToggle(AutoTriggerableToggle.toggle, graphic: AutoTriggerableToggle.label);
+            EditorThemeManager.ApplyToggle(AutoTriggerableToggle.toggle, graphic: AutoTriggerableToggle.label);
 
             new Labels(Labels.InitSettings.Default.Parent(LeftContent), "Spawn position type");
             var spawnPositionType = EditorPrefabHolder.Instance.Dropdown.Duplicate(LeftContent);
             SpawnPositionDropdown = spawnPositionType.GetComponent<Dropdown>();
             SpawnPositionDropdown.options = CoreHelper.StringToOptionData("Single", "Fill All", "Random Single", "Random Fill All", "Random");
-            EditorThemeManager.AddDropdown(SpawnPositionDropdown);
+            EditorThemeManager.ApplyDropdown(SpawnPositionDropdown);
 
             new Labels(Labels.InitSettings.Default.Parent(LeftContent), "Multi Positions");
             var positionScrollView = EditorPrefabHolder.Instance.ScrollView.Duplicate(LeftContent);

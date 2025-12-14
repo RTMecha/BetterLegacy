@@ -61,7 +61,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             IndexText.fontSize = 16;
             IndexText.horizontalOverflow = HorizontalWrapMode.Overflow;
 
-            EditorThemeManager.AddLightText(IndexText);
+            EditorThemeManager.ApplyLightText(IndexText);
 
             EditorHelper.SetComplexity(indexparent, Complexity.Normal);
 
@@ -72,31 +72,31 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var descriptionLabel = MarkerEditor.inst.left.GetChild(5).GetChild(0).GetComponent<Text>();
             descriptionLabel.text = "Description";
 
-            EditorThemeManager.AddGraphic(dialog.GetComponent<Image>(), ThemeGroup.Background_1);
+            EditorThemeManager.ApplyGraphic(dialog.GetComponent<Image>(), ThemeGroup.Background_1);
 
-            EditorThemeManager.AddInputField(MarkerEditor.inst.right.Find("InputField").GetComponent<InputField>(), ThemeGroup.Search_Field_2);
+            EditorThemeManager.ApplyInputField(MarkerEditor.inst.right.Find("InputField").GetComponent<InputField>(), ThemeGroup.Search_Field_2);
 
             var scrollbar = MarkerEditor.inst.right.transform.Find("Scrollbar").GetComponent<Scrollbar>();
             EditorThemeManager.ApplyGraphic(scrollbar.GetComponent<Image>(), ThemeGroup.Scrollbar_2, true);
             EditorThemeManager.ApplyGraphic(scrollbar.image, ThemeGroup.Scrollbar_2_Handle, true);
 
-            EditorThemeManager.AddLightText(MarkerEditor.inst.left.GetChild(1).GetChild(0).GetComponent<Text>());
-            EditorThemeManager.AddLightText(timeLabel);
-            EditorThemeManager.AddLightText(descriptionLabel);
+            EditorThemeManager.ApplyLightText(MarkerEditor.inst.left.GetChild(1).GetChild(0).GetComponent<Text>());
+            EditorThemeManager.ApplyLightText(timeLabel);
+            EditorThemeManager.ApplyLightText(descriptionLabel);
 
             NameField = MarkerEditor.inst.left.Find("name").GetComponent<InputField>();
             DescriptionField = MarkerEditor.inst.left.Find("desc").GetComponent<InputField>();
             //DescriptionField.transform.AsRT().sizeDelta = new Vector2(371f, 192f);
             DescriptionField.transform.AsRT().sizeDelta = new Vector2(371f, 256f);
 
-            EditorThemeManager.AddInputField(NameField);
-            EditorThemeManager.AddInputField(DescriptionField);
+            EditorThemeManager.ApplyInputField(NameField);
+            EditorThemeManager.ApplyInputField(DescriptionField);
 
             var time = EditorPrefabHolder.Instance.NumberInputField.Duplicate(MarkerEditor.inst.left, "time new", 4);
             CoreHelper.Delete(MarkerEditor.inst.left.Find("time").gameObject);
 
             TimeField = time.GetComponent<InputFieldStorage>();
-            EditorThemeManager.AddInputField(TimeField);
+            EditorThemeManager.ApplyInputField(TimeField);
 
             time.name = "time";
 

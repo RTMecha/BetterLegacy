@@ -7,6 +7,7 @@ using UnityEngine.UI;
 using TMPro;
 
 using BetterLegacy.Core.Components;
+using BetterLegacy.Core.Helpers;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Core.Prefabs
@@ -332,13 +333,22 @@ namespace BetterLegacy.Core.Prefabs
         public void Assign(GameObject gameObject)
         {
             if (gameObject.transform.TryFind("<<", out Transform leftGreater))
+            {
                 leftGreaterButton = leftGreater.GetComponent<Button>();
+                CoreHelper.RemoveAnimator(leftGreaterButton);
+            }
 
             if (gameObject.transform.TryFind("<", out Transform left))
+            {
                 leftButton = left.GetComponent<Button>();
+                CoreHelper.RemoveAnimator(leftButton);
+            }
 
             if (gameObject.transform.TryFind("|", out Transform middle))
+            {
                 middleButton = middle.GetComponent<Button>();
+                CoreHelper.RemoveAnimator(leftButton);
+            }
             else if (EditorPrefabHolder.Instance.NumberInputField.transform.TryFind("|", out Transform prefabMiddleTransform))
             {
                 var index = leftButton?.transform?.GetSiblingIndex() ?? -2;
@@ -348,20 +358,40 @@ namespace BetterLegacy.Core.Prefabs
             }
 
             if (gameObject.transform.TryFind(">", out Transform right))
+            {
                 rightButton = right.GetComponent<Button>();
+                CoreHelper.RemoveAnimator(rightButton);
+            }
 
             if (gameObject.transform.TryFind(">>", out Transform rightGreater))
+            {
                 rightGreaterButton = rightGreater.GetComponent<Button>();
+                CoreHelper.RemoveAnimator(rightGreaterButton);
+            }
 
             if (gameObject.transform.TryFind("input", out Transform input) && input.gameObject.TryGetComponent(out InputField inputField))
+            {
                 this.inputField = inputField;
+                if (!this.inputField.image)
+                    this.inputField.image = this.inputField.GetComponent<Image>();
+            }
             else if (gameObject.transform.TryFind("time", out Transform time) && time.gameObject.TryGetComponent(out InputField timeField))
+            {
                 this.inputField = timeField;
+                if (!this.inputField.image)
+                    this.inputField.image = this.inputField.GetComponent<Image>();
+            }
             else if (gameObject.TryGetComponent(out InputField baseInput))
                 this.inputField = baseInput;
 
+            if (gameObject.transform.TryFind("text-field", out Transform textField) && textField.gameObject.TryGetComponent(out Image textFieldImage))
+                this.inputField.image = textFieldImage;
+
             if (gameObject.transform.TryFind("sub", out Transform subTransform))
+            {
                 subButton = subTransform.GetComponent<Button>();
+                CoreHelper.RemoveAnimator(subButton);
+            }
             else if (EditorPrefabHolder.Instance.NumberInputField.transform.TryFind("sub", out Transform prefabSubTransform))
             {
                 subButton = prefabSubTransform.gameObject.Duplicate(gameObject.transform, "sub").GetComponent<Button>();
@@ -370,7 +400,10 @@ namespace BetterLegacy.Core.Prefabs
             }
 
             if (gameObject.transform.TryFind("add", out Transform addTransform))
+            {
                 addButton = addTransform.GetComponent<Button>();
+                CoreHelper.RemoveAnimator(addButton);
+            }
             else if (EditorPrefabHolder.Instance.NumberInputField.transform.TryFind("add", out Transform prefabAddTransform))
             {
                 addButton = prefabAddTransform.gameObject.Duplicate(gameObject.transform, "add").GetComponent<Button>();

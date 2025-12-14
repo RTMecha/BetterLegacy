@@ -180,8 +180,8 @@ namespace BetterLegacy.Editor.Managers
             EventEditor.inst.dialogRight = eventEditorDialog.Find("data/right");
             SetEventActive(false);
 
-            EditorThemeManager.AddGraphic(eventEditorDialog.GetComponent<Image>(), ThemeGroup.Background_3);
-            EditorThemeManager.AddGraphic(EventEditor.inst.dialogRight.GetComponent<Image>(), ThemeGroup.Background_1);
+            EditorThemeManager.ApplyGraphic(eventEditorDialog.GetComponent<Image>(), ThemeGroup.Background_3);
+            EditorThemeManager.ApplyGraphic(EventEditor.inst.dialogRight.GetComponent<Image>(), ThemeGroup.Background_1);
 
             for (int i = 0; i < EventEditor.inst.dialogRight.childCount; i++)
             {
@@ -207,15 +207,15 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var buttonBG = button.GetChild(0).GetComponent<Image>();
 
-                        EditorThemeManager.AddGraphic(buttonBG, ThemeGroup.Delete_Keyframe_BG);
-                        EditorThemeManager.AddSelectable(buttonComponent, ThemeGroup.Delete_Keyframe_Button, false);
+                        EditorThemeManager.ApplyGraphic(buttonBG, ThemeGroup.Delete_Keyframe_BG);
+                        EditorThemeManager.ApplySelectable(buttonComponent, ThemeGroup.Delete_Keyframe_Button, false);
 
                         continue;
                     }
 
                     Destroy(button.GetComponent<Animator>());
                     buttonComponent.transition = Selectable.Transition.ColorTint;
-                    EditorThemeManager.AddSelectable(buttonComponent, ThemeGroup.Function_2, false);
+                    EditorThemeManager.ApplySelectable(buttonComponent, ThemeGroup.Function_2, false);
                 }
 
                 // Labels
@@ -227,13 +227,13 @@ namespace BetterLegacy.Editor.Managers
                         continue;
 
                     for (int k = 0; k < label.childCount; k++)
-                        EditorThemeManager.AddLightText(label.GetChild(k).GetComponent<Text>());
+                        EditorThemeManager.ApplyLightText(label.GetChild(k).GetComponent<Text>());
                 }
 
                 var timeBase = dialog.Find("time");
                 var timeInput = timeBase.Find("time").GetComponent<InputField>();
 
-                EditorThemeManager.AddInputField(timeInput);
+                EditorThemeManager.ApplyInputField(timeInput);
 
                 for (int j = 1; j < timeBase.childCount; j++)
                 {
@@ -245,10 +245,10 @@ namespace BetterLegacy.Editor.Managers
 
                     Destroy(button.GetComponent<Animator>());
                     buttonComponent.transition = Selectable.Transition.ColorTint;
-                    EditorThemeManager.AddSelectable(buttonComponent, ThemeGroup.Function_2, false);
+                    EditorThemeManager.ApplySelectable(buttonComponent, ThemeGroup.Function_2, false);
                 }
 
-                EditorThemeManager.AddDropdown(dialog.Find("curves").GetComponent<Dropdown>());
+                EditorThemeManager.ApplyDropdown(dialog.Find("curves").GetComponent<Dropdown>());
 
                 switch (i)
                 {
@@ -272,7 +272,7 @@ namespace BetterLegacy.Editor.Managers
                             };
 
                             var positionBase = dialog.Find(valueNames[i]);
-                            EditorThemeManager.AddInputFields(positionBase.gameObject, true, "Event Editor");
+                            EditorThemeManager.ApplyInputFields(positionBase.gameObject, true, "Event Editor");
 
                             break;
                         }
@@ -280,7 +280,7 @@ namespace BetterLegacy.Editor.Managers
                         {
                             var themesSearch = dialog.Find("theme-search").GetComponent<InputField>();
 
-                            EditorThemeManager.AddInputField(themesSearch, ThemeGroup.Search_Field_2);
+                            EditorThemeManager.ApplyInputField(themesSearch, ThemeGroup.Search_Field_2);
 
                             var themes = dialog.Find("themes").GetComponent<Image>();
 
@@ -301,24 +301,24 @@ namespace BetterLegacy.Editor.Managers
                             };
                             themes.gameObject.AddComponent<Button>();
 
-                            EditorThemeManager.AddGraphic(themes, ThemeGroup.Background_3);
-                            EditorThemeManager.AddGraphic(dialog.Find("themes/viewport").GetComponent<Image>(), ThemeGroup.Null, true);
+                            EditorThemeManager.ApplyGraphic(themes, ThemeGroup.Background_3);
+                            EditorThemeManager.ApplyGraphic(dialog.Find("themes/viewport").GetComponent<Image>(), ThemeGroup.Null, true);
 
-                            EditorThemeManager.AddScrollbar(themes.transform.Find("Scrollbar Vertical").GetComponent<Scrollbar>(), scrollbarGroup: ThemeGroup.Scrollbar_2, handleGroup: ThemeGroup.Scrollbar_2_Handle);
+                            EditorThemeManager.ApplyScrollbar(themes.transform.Find("Scrollbar Vertical").GetComponent<Scrollbar>(), scrollbarGroup: ThemeGroup.Scrollbar_2, handleGroup: ThemeGroup.Scrollbar_2_Handle);
 
                             var current = dialog.Find("current_title");
                             current.AsRT().sizeDelta = new Vector2(366f, 24f);
 
                             for (int k = 0; k < current.childCount; k++)
-                                EditorThemeManager.AddLightText(current.GetChild(k).GetComponent<Text>());
+                                EditorThemeManager.ApplyLightText(current.GetChild(k).GetComponent<Text>());
 
                             var objectCols = dialog.Find("object_cols/text").GetComponent<Text>();
                             var bgCols = dialog.Find("bg_cols/text").GetComponent<Text>();
                             var playerCols = dialog.Find("player_cols/text").GetComponent<Text>();
 
-                            EditorThemeManager.AddLightText(dialog.Find("object_cols/text").GetComponent<Text>());
-                            EditorThemeManager.AddLightText(dialog.Find("bg_cols/text").GetComponent<Text>());
-                            EditorThemeManager.AddLightText(dialog.Find("player_cols/text").GetComponent<Text>());
+                            EditorThemeManager.ApplyLightText(dialog.Find("object_cols/text").GetComponent<Text>());
+                            EditorThemeManager.ApplyLightText(dialog.Find("bg_cols/text").GetComponent<Text>());
+                            EditorThemeManager.ApplyLightText(dialog.Find("player_cols/text").GetComponent<Text>());
 
                             dialog.Find("object_cols").AsRT().sizeDelta = new Vector2(366f, 24f);
                             dialog.Find("object_cols").GetComponent<HorizontalLayoutGroup>().spacing = 6f;
@@ -327,7 +327,7 @@ namespace BetterLegacy.Editor.Managers
                                 var child = dialog.Find("object_cols").GetChild(j);
                                 child.AsRT().sizeDelta = new Vector2(24f, 24f);
 
-                                EditorThemeManager.AddGraphic(child.GetComponent<Image>(), ThemeGroup.Null, true);
+                                EditorThemeManager.ApplyGraphic(child.GetComponent<Image>(), ThemeGroup.Null, true);
                             }
 
                             dialog.Find("bg_cols").AsRT().sizeDelta = new Vector2(366f, 24f);
@@ -337,7 +337,7 @@ namespace BetterLegacy.Editor.Managers
                                 var child = dialog.Find("bg_cols").GetChild(j);
                                 child.AsRT().sizeDelta = new Vector2(24f, 24f);
 
-                                EditorThemeManager.AddGraphic(child.GetComponent<Image>(), ThemeGroup.Null, true);
+                                EditorThemeManager.ApplyGraphic(child.GetComponent<Image>(), ThemeGroup.Null, true);
                             }
 
                             dialog.Find("player_cols").AsRT().sizeDelta = new Vector2(366f, 24f);
@@ -347,7 +347,7 @@ namespace BetterLegacy.Editor.Managers
                                 var child = dialog.Find("player_cols").GetChild(j);
                                 child.AsRT().sizeDelta = new Vector2(24f, 24f);
 
-                                EditorThemeManager.AddGraphic(child.GetComponent<Image>(), ThemeGroup.Null, true);
+                                EditorThemeManager.ApplyGraphic(child.GetComponent<Image>(), ThemeGroup.Null, true);
                             }
 
                             break;
@@ -380,13 +380,13 @@ namespace BetterLegacy.Editor.Managers
                                 if (valueNames[j] == "colored" || valueNames[j] == "roundness")
                                 {
                                     var toggle = dialog.Find(valueNames[j] == "colored" ? "colored" : "roundness/rounded").GetComponent<Toggle>();
-                                    EditorThemeManager.AddToggle(toggle);
+                                    EditorThemeManager.ApplyToggle(toggle);
 
                                     if (valueNames[j] == "colored")
                                         continue;
                                 }
 
-                                EditorThemeManager.AddInputFields(positionBase.gameObject, true, "Event Editor", false, valueNames[j] == "position");
+                                EditorThemeManager.ApplyInputFields(positionBase.gameObject, true, "Event Editor", false, valueNames[j] == "position");
                             }
 
                             break;
@@ -900,7 +900,7 @@ namespace BetterLegacy.Editor.Managers
                 var labelText = label.GetComponent<Text>();
                 labelText.text = labels[i];
 
-                EditorThemeManager.AddLightText(labelText);
+                EditorThemeManager.ApplyLightText(labelText);
             }
         }
 
@@ -953,8 +953,8 @@ namespace BetterLegacy.Editor.Managers
                 {
                     var buttonBG = button.GetChild(0).GetComponent<Image>();
 
-                    EditorThemeManager.AddGraphic(buttonBG, ThemeGroup.Delete_Keyframe_BG);
-                    EditorThemeManager.AddSelectable(buttonComponent, ThemeGroup.Delete_Keyframe_Button, false);
+                    EditorThemeManager.ApplyGraphic(buttonBG, ThemeGroup.Delete_Keyframe_BG);
+                    EditorThemeManager.ApplySelectable(buttonComponent, ThemeGroup.Delete_Keyframe_Button, false);
 
                     continue;
                 }
@@ -962,7 +962,7 @@ namespace BetterLegacy.Editor.Managers
                 Destroy(button.GetComponent<Animator>());
                 buttonComponent.transition = Selectable.Transition.ColorTint;
 
-                EditorThemeManager.AddSelectable(buttonComponent, ThemeGroup.Function_2, false);
+                EditorThemeManager.ApplySelectable(buttonComponent, ThemeGroup.Function_2, false);
             }
 
             // Labels
@@ -973,13 +973,13 @@ namespace BetterLegacy.Editor.Managers
                     continue;
 
                 for (int k = 0; k < label.childCount; k++)
-                    EditorThemeManager.AddLightText(label.GetChild(k).GetComponent<Text>());
+                    EditorThemeManager.ApplyLightText(label.GetChild(k).GetComponent<Text>());
             }
 
             var timeBase = dialog.transform.Find("time");
             var timeInput = timeBase.Find("time").GetComponent<InputField>();
 
-            EditorThemeManager.AddInputField(timeInput);
+            EditorThemeManager.ApplyInputField(timeInput);
 
             for (int j = 1; j < timeBase.childCount; j++)
             {
@@ -991,10 +991,10 @@ namespace BetterLegacy.Editor.Managers
 
                 Destroy(button.GetComponent<Animator>());
                 buttonComponent.transition = Selectable.Transition.ColorTint;
-                EditorThemeManager.AddSelectable(buttonComponent, ThemeGroup.Function_2, false);
+                EditorThemeManager.ApplySelectable(buttonComponent, ThemeGroup.Function_2, false);
             }
 
-            EditorThemeManager.AddDropdown(easing);
+            EditorThemeManager.ApplyDropdown(easing);
 
             return dialog;
         }
@@ -1019,8 +1019,8 @@ namespace BetterLegacy.Editor.Managers
 
                 toggle.AddComponent<Mask>();
 
-                EditorThemeManager.AddGraphic(t.image, ThemeGroup.Null, true);
-                EditorThemeManager.AddGraphic(t.graphic, ThemeGroup.Background_1);
+                EditorThemeManager.ApplyGraphic(t.image, ThemeGroup.Null, true);
+                EditorThemeManager.ApplyGraphic(t.graphic, ThemeGroup.Background_1);
 
                 toggles.Add(t);
             }
@@ -1056,10 +1056,10 @@ namespace BetterLegacy.Editor.Managers
                 var interpolation = GenerateUIElement("interpolation", "Single", shake, 13, "Smoothness");
                 var speed = GenerateUIElement("speed", "Single", shake, 15, "Speed");
 
-                EditorThemeManager.AddLightText(labelText);
-                EditorThemeManager.AddInputFields(direction["UI"], true, "Event Editor");
-                EditorThemeManager.AddInputFields(interpolation["UI"], true, "Event Editor");
-                EditorThemeManager.AddInputFields(speed["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyLightText(labelText);
+                EditorThemeManager.ApplyInputFields(direction["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(interpolation["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(speed["UI"], true, "Event Editor");
             }
 
             var bloom = EventEditor.inst.dialogRight.Find("bloom");
@@ -1071,10 +1071,10 @@ namespace BetterLegacy.Editor.Managers
 
                 var colorShift = GenerateUIElement("colorshift", "Vector3", bloom.transform, 18, "Hue", "Sat", "Val");
 
-                EditorThemeManager.AddInputFields(diffusion["UI"], true, "Event Editor");
-                EditorThemeManager.AddInputFields(threshold["UI"], true, "Event Editor");
-                EditorThemeManager.AddInputFields(ratio["UI"], true, "Event Editor");
-                EditorThemeManager.AddInputFields(colorShift["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(diffusion["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(threshold["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(ratio["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(colorShift["UI"], true, "Event Editor");
             }
 
             var vignette = EventEditor.inst.dialogRight.Find("vignette");
@@ -1082,7 +1082,7 @@ namespace BetterLegacy.Editor.Managers
                 var colors = SetupColorButtons("colors", "Colors", vignette, 18, vignetteColorButtons);
 
                 var colorShift = GenerateUIElement("colorshift", "Vector3", vignette.transform, 20, "Hue", "Sat", "Val");
-                EditorThemeManager.AddInputFields(colorShift["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(colorShift["UI"], true, "Event Editor");
             }
 
             var lens = EventEditor.inst.dialogRight.Find("lens");
@@ -1091,9 +1091,9 @@ namespace BetterLegacy.Editor.Managers
                 var intensity = GenerateUIElement("intensity", "Vector2", lens, 12, "Intensity X", "Intensity Y");
                 var scale = GenerateUIElement("scale", "Single", lens, 14, "Scale");
 
-                EditorThemeManager.AddInputFields(center["UI"], true, "Event Editor");
-                EditorThemeManager.AddInputFields(intensity["UI"], true, "Event Editor");
-                EditorThemeManager.AddInputFields(scale["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(center["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(intensity["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(scale["UI"], true, "Event Editor");
             }
 
             var colorGrading = GenerateEventDialog("colorgrading");
@@ -1105,12 +1105,12 @@ namespace BetterLegacy.Editor.Managers
                 var temperature = GenerateUIElement("temperature", "Single", colorGrading.transform, 14, "Temperature");
                 var tint = GenerateUIElement("tint", "Single", colorGrading.transform, 16, "Tint");
 
-                EditorThemeManager.AddInputFields(hueShift["UI"], true, "Event Editor");
-                EditorThemeManager.AddInputFields(contrast["UI"], true, "Event Editor");
-                EditorThemeManager.AddInputFields(gamma["UI"], true, "Event Editor");
-                EditorThemeManager.AddInputFields(saturation["UI"], true, "Event Editor");
-                EditorThemeManager.AddInputFields(temperature["UI"], true, "Event Editor");
-                EditorThemeManager.AddInputFields(tint["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(hueShift["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(contrast["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(gamma["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(saturation["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(temperature["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(tint["UI"], true, "Event Editor");
             }
 
             var ripples = GenerateEventDialog("ripples");
@@ -1127,12 +1127,12 @@ namespace BetterLegacy.Editor.Managers
                 var modeDropdown = mode.GetComponent<Dropdown>();
                 modeDropdown.options = CoreHelper.StringToOptionData("Radial", "Omni-Directional");
 
-                EditorThemeManager.AddDropdown(modeDropdown);
+                EditorThemeManager.ApplyDropdown(modeDropdown);
 
-                EditorThemeManager.AddInputFields(strength["UI"], true, "Event Editor");
-                EditorThemeManager.AddInputFields(speed["UI"], true, "Event Editor");
-                EditorThemeManager.AddInputFields(distance["UI"], true, "Event Editor");
-                EditorThemeManager.AddInputFields(size["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(strength["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(speed["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(distance["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(size["UI"], true, "Event Editor");
             }
 
             var radialBlur = GenerateEventDialog("radialblur");
@@ -1140,8 +1140,8 @@ namespace BetterLegacy.Editor.Managers
                 var intensity = GenerateUIElement("intensity", "Single", radialBlur.transform, 8, "Intensity");
                 var iterations = GenerateUIElement("iterations", "Single", radialBlur.transform, 10, "Iterations");
 
-                EditorThemeManager.AddInputFields(intensity["UI"], true, "Event Editor");
-                EditorThemeManager.AddInputFields(iterations["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(intensity["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(iterations["UI"], true, "Event Editor");
             }
 
             var colorSplit = GenerateEventDialog("colorsplit");
@@ -1155,14 +1155,14 @@ namespace BetterLegacy.Editor.Managers
                 var modeDropdown = mode.GetComponent<Dropdown>();
                 modeDropdown.options = CoreHelper.StringToOptionData("Single", "Single Box Filtered", "Double", "Double Box Filtered");
 
-                EditorThemeManager.AddInputFields(offset["UI"], true, "Event Editor");
-                EditorThemeManager.AddDropdown(modeDropdown);
+                EditorThemeManager.ApplyInputFields(offset["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyDropdown(modeDropdown);
             }
 
             var cameraOffset = GenerateEventDialog("camoffset");
             {
                 var position = GenerateUIElement("position", "Vector2", cameraOffset.transform, 8, "Offset X", "Offset Y");
-                EditorThemeManager.AddInputFields(position["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(position["UI"], true, "Event Editor");
             }
 
             var gradient = GenerateEventDialog("gradient");
@@ -1180,10 +1180,10 @@ namespace BetterLegacy.Editor.Managers
                 var modeDropdown = mode.GetComponent<Dropdown>();
                 modeDropdown.options = CoreHelper.StringToOptionData("Linear", "Additive", "Multiply", "Screen");
 
-                EditorThemeManager.AddInputFields(intensity["UI"], true, "Event Editor");
-                EditorThemeManager.AddInputFields(colorShiftTop["UI"], true, "Event Editor");
-                EditorThemeManager.AddInputFields(colorShiftBottom["UI"], true, "Event Editor");
-                EditorThemeManager.AddDropdown(modeDropdown);
+                EditorThemeManager.ApplyInputFields(intensity["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(colorShiftTop["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(colorShiftBottom["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyDropdown(modeDropdown);
             }
 
             var doubleVision = GenerateEventDialog("doublevision");
@@ -1197,8 +1197,8 @@ namespace BetterLegacy.Editor.Managers
                 var modeDropdown = mode.GetComponent<Dropdown>();
                 modeDropdown.options = CoreHelper.StringToOptionData("Split", "Edges");
 
-                EditorThemeManager.AddInputFields(intensity["UI"], true, "Event Editor");
-                EditorThemeManager.AddDropdown(modeDropdown);
+                EditorThemeManager.ApplyInputFields(intensity["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyDropdown(modeDropdown);
             }
 
             var scanLines = GenerateEventDialog("scanlines");
@@ -1207,9 +1207,9 @@ namespace BetterLegacy.Editor.Managers
                 var amount = GenerateUIElement("amount", "Single", scanLines.transform, 10, "Amount Horizontal");
                 var speed = GenerateUIElement("speed", "Single", scanLines.transform, 12, "Speed");
 
-                EditorThemeManager.AddInputFields(intensity["UI"], true, "Event Editor");
-                EditorThemeManager.AddInputFields(amount["UI"], true, "Event Editor");
-                EditorThemeManager.AddInputFields(speed["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(intensity["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(amount["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(speed["UI"], true, "Event Editor");
             }
 
             var blur = GenerateEventDialog("blur");
@@ -1217,15 +1217,15 @@ namespace BetterLegacy.Editor.Managers
                 var intensity = GenerateUIElement("intensity", "Single", blur.transform, 8, "Intensity");
                 var iterations = GenerateUIElement("iterations", "Single", blur.transform, 10, "Iterations");
 
-                EditorThemeManager.AddInputFields(intensity["UI"], true, "Event Editor");
-                EditorThemeManager.AddInputFields(iterations["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(intensity["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(iterations["UI"], true, "Event Editor");
             }
 
             var pixelize = GenerateEventDialog("pixelize");
             {
                 var amount = GenerateUIElement("amount", "Single", pixelize.transform, 8, "Amount");
 
-                EditorThemeManager.AddInputFields(amount["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(amount["UI"], true, "Event Editor");
             }
 
             var bg = GenerateEventDialog("bg");
@@ -1237,15 +1237,15 @@ namespace BetterLegacy.Editor.Managers
                 var activeText = active["UI"].transform.Find("Text").GetComponent<Text>();
                 activeText.text = "Active";
 
-                EditorThemeManager.AddInputFields(colorShift["UI"], true, "Event Editor");
-                EditorThemeManager.AddToggle(active["UI"].GetComponent<Toggle>(), graphic: activeText);
+                EditorThemeManager.ApplyInputFields(colorShift["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyToggle(active["UI"].GetComponent<Toggle>(), graphic: activeText);
             }
 
             var invert = GenerateEventDialog("invert");
             {
                 var intensity = GenerateUIElement("amount", "Single", invert.transform, 8, "Invert Amount");
 
-                EditorThemeManager.AddInputFields(intensity["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(intensity["UI"], true, "Event Editor");
             }
 
             var timeline = GenerateEventDialog("timeline");
@@ -1260,11 +1260,11 @@ namespace BetterLegacy.Editor.Managers
                 var colors = SetupColorButtons("colors", "Colors", timeline.transform, 16, timelineColorButtons);
                 var colorShift = GenerateUIElement("colorshift", "Vector4", timeline.transform, 18, "Opacity", "Hue", "Sat", "Val");
 
-                EditorThemeManager.AddToggle(active["UI"].GetComponent<Toggle>(), graphic: activeText);
-                EditorThemeManager.AddInputFields(position["UI"], true, "Event Editor");
-                EditorThemeManager.AddInputFields(scale["UI"], true, "Event Editor");
-                EditorThemeManager.AddInputFields(rotation["UI"], true, "Event Editor");
-                EditorThemeManager.AddInputFields(colorShift["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyToggle(active["UI"].GetComponent<Toggle>(), graphic: activeText);
+                EditorThemeManager.ApplyInputFields(position["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(scale["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(rotation["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(colorShift["UI"], true, "Event Editor");
             }
 
             var player = GenerateEventDialog("player");
@@ -1285,11 +1285,11 @@ namespace BetterLegacy.Editor.Managers
                 var outOfBoundsText = outOfBounds["UI"].transform.Find("Text").GetComponent<Text>();
                 outOfBoundsText.text = "Out of Bounds";
 
-                EditorThemeManager.AddToggle(active["UI"].GetComponent<Toggle>(), graphic: activeText);
-                EditorThemeManager.AddToggle(moveable["UI"].GetComponent<Toggle>(), graphic: moveableText);
-                EditorThemeManager.AddInputFields(position["UI"], true, "Event Editor");
-                EditorThemeManager.AddInputFields(rotation["UI"], true, "Event Editor");
-                EditorThemeManager.AddToggle(outOfBounds["UI"].GetComponent<Toggle>(), graphic: outOfBoundsText);
+                EditorThemeManager.ApplyToggle(active["UI"].GetComponent<Toggle>(), graphic: activeText);
+                EditorThemeManager.ApplyToggle(moveable["UI"].GetComponent<Toggle>(), graphic: moveableText);
+                EditorThemeManager.ApplyInputFields(position["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(rotation["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyToggle(outOfBounds["UI"].GetComponent<Toggle>(), graphic: outOfBoundsText);
             }
 
             var follow = GenerateEventDialog("follow");
@@ -1311,13 +1311,13 @@ namespace BetterLegacy.Editor.Managers
                 var limitVertical = GenerateUIElement("limit vertical", "Vector2", follow.transform, 18, "Limit Up", "Limit Down");
                 var anchor = GenerateUIElement("anchor", "Single", follow.transform, 20, "Anchor");
 
-                EditorThemeManager.AddToggle(active["UI"].GetComponent<Toggle>(), graphic: activeText);
-                EditorThemeManager.AddToggle(moveable["UI"].GetComponent<Toggle>(), graphic: moveableText);
-                EditorThemeManager.AddToggle(rotateable["UI"].GetComponent<Toggle>(), graphic: rotateableText);
-                EditorThemeManager.AddInputFields(position["UI"], true, "Event Editor");
-                EditorThemeManager.AddInputFields(limitHorizontal["UI"], true, "Event Editor");
-                EditorThemeManager.AddInputFields(limitVertical["UI"], true, "Event Editor");
-                EditorThemeManager.AddInputFields(anchor["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyToggle(active["UI"].GetComponent<Toggle>(), graphic: activeText);
+                EditorThemeManager.ApplyToggle(moveable["UI"].GetComponent<Toggle>(), graphic: moveableText);
+                EditorThemeManager.ApplyToggle(rotateable["UI"].GetComponent<Toggle>(), graphic: rotateableText);
+                EditorThemeManager.ApplyInputFields(position["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(limitHorizontal["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(limitVertical["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(anchor["UI"], true, "Event Editor");
             }
 
             var audio = GenerateEventDialog("audio");
@@ -1325,8 +1325,8 @@ namespace BetterLegacy.Editor.Managers
                 var pitchVol = GenerateUIElement("music", "Vector2", audio.transform, 8, "Pitch", "Volume");
                 var panStereo = GenerateUIElement("panstereo", "Single", audio.transform, 10, "Pan Stereo");
 
-                EditorThemeManager.AddInputFields(pitchVol["UI"], true, "Event Editor");
-                EditorThemeManager.AddInputFields(panStereo["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(pitchVol["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(panStereo["UI"], true, "Event Editor");
             }
 
             var videoBGParent = GenerateEventDialog("videobgparent");
@@ -1335,9 +1335,9 @@ namespace BetterLegacy.Editor.Managers
                 var scale = GenerateUIElement("scale", "Vector3", videoBGParent.transform, 10, "Scale X", "Scale Y", "Scale Z");
                 var rotation = GenerateUIElement("rotation", "Vector3", videoBGParent.transform, 12, "Rotation X", "Rotation Y", "Rotation Z");
 
-                EditorThemeManager.AddInputFields(position["UI"], true, "Event Editor");
-                EditorThemeManager.AddInputFields(scale["UI"], true, "Event Editor");
-                EditorThemeManager.AddInputFields(rotation["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(position["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(scale["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(rotation["UI"], true, "Event Editor");
             }
 
             var videoBG = GenerateEventDialog("videobg");
@@ -1353,17 +1353,17 @@ namespace BetterLegacy.Editor.Managers
                 var renderTypeDropdown = renderTypeD.GetComponent<Dropdown>();
                 renderTypeDropdown.options = CoreHelper.StringToOptionData("Background", "Foreground");
 
-                EditorThemeManager.AddInputFields(position["UI"], true, "Event Editor");
-                EditorThemeManager.AddInputFields(scale["UI"], true, "Event Editor");
-                EditorThemeManager.AddInputFields(rotation["UI"], true, "Event Editor");
-                EditorThemeManager.AddDropdown(renderTypeDropdown);
+                EditorThemeManager.ApplyInputFields(position["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(scale["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(rotation["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyDropdown(renderTypeDropdown);
             }
 
             var sharpen = GenerateEventDialog("sharpen");
             {
                 var intensity = GenerateUIElement("intensity", "Single", sharpen.transform, 8, "Intensity");
 
-                EditorThemeManager.AddInputFields(intensity["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(intensity["UI"], true, "Event Editor");
             }
 
             var bars = GenerateEventDialog("bars");
@@ -1377,8 +1377,8 @@ namespace BetterLegacy.Editor.Managers
                 var directionDropdown = direction.GetComponent<Dropdown>();
                 directionDropdown.options = CoreHelper.StringToOptionData("Horizontal", "Vertical");
 
-                EditorThemeManager.AddInputFields(intensity["UI"], true, "Event Editor");
-                EditorThemeManager.AddDropdown(directionDropdown);
+                EditorThemeManager.ApplyInputFields(intensity["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyDropdown(directionDropdown);
             }
 
             var danger = GenerateEventDialog("danger");
@@ -1388,16 +1388,16 @@ namespace BetterLegacy.Editor.Managers
                 var colors = SetupColorButtons("colors", "Colors", danger.transform, 12, dangerColorButtons);
                 var colorShift = GenerateUIElement("colorshift", "Vector4", danger.transform, 18, "Opacity", "Hue", "Sat", "Val");
 
-                EditorThemeManager.AddInputFields(intensity["UI"], true, "Event Editor");
-                EditorThemeManager.AddInputFields(size["UI"], true, "Event Editor");
-                EditorThemeManager.AddInputFields(colorShift["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(intensity["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(size["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(colorShift["UI"], true, "Event Editor");
             }
 
             var rotxy = GenerateEventDialog("3d rotation");
             {
                 var rotation = GenerateUIElement("rotation", "Vector2", rotxy.transform, 8, "Rotation X", "Rotation Y");
 
-                EditorThemeManager.AddInputFields(rotation["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(rotation["UI"], true, "Event Editor");
             }
 
             var cameraDepth = GenerateEventDialog("cameradepth");
@@ -1413,9 +1413,9 @@ namespace BetterLegacy.Editor.Managers
                 var alignText = align["UI"].transform.Find("Text").GetComponent<Text>();
                 alignText.text = "Align";
 
-                EditorThemeManager.AddInputFields(depth["UI"], true, "Event Editor");
-                EditorThemeManager.AddInputFields(perspectiveZoom["UI"], true, "Event Editor");
-                EditorThemeManager.AddToggle(global["UI"].GetComponent<Toggle>(), graphic: globalText);
+                EditorThemeManager.ApplyInputFields(depth["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(perspectiveZoom["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyToggle(global["UI"].GetComponent<Toggle>(), graphic: globalText);
             }
 
             var windowBase = GenerateEventDialog("windowbase");
@@ -1431,33 +1431,33 @@ namespace BetterLegacy.Editor.Managers
                 var allowText = allow["UI"].transform.Find("Text").GetComponent<Text>();
                 allowText.text = "Force";
 
-                EditorThemeManager.AddToggle(force["UI"].GetComponent<Toggle>(), graphic: forceText);
-                EditorThemeManager.AddInputFields(resolution["UI"], true, "Event Editor");
-                EditorThemeManager.AddToggle(allow["UI"].GetComponent<Toggle>(), graphic: allowText);
+                EditorThemeManager.ApplyToggle(force["UI"].GetComponent<Toggle>(), graphic: forceText);
+                EditorThemeManager.ApplyInputFields(resolution["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyToggle(allow["UI"].GetComponent<Toggle>(), graphic: allowText);
             }
 
             var windowPositionX = GenerateEventDialog("windowpositionx");
             {
                 var x = GenerateUIElement("x", "Single", windowPositionX.transform, 8, "Position X (Requires Force Resolution)");
-                EditorThemeManager.AddInputFields(x["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(x["UI"], true, "Event Editor");
             }
 
             var windowPositionY = GenerateEventDialog("windowpositiony");
             {
                 var y = GenerateUIElement("y", "Single", windowPositionY.transform, 8, "Position Y (Requires Force Resolution)");
-                EditorThemeManager.AddInputFields(y["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(y["UI"], true, "Event Editor");
             }
 
             var playerForce = GenerateEventDialog("playerforce");
             {
                 var position = GenerateUIElement("position", "Vector2", playerForce.transform, 8, "Force X", "Force Y");
-                EditorThemeManager.AddInputFields(position["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(position["UI"], true, "Event Editor");
             }
 
             var mosaic = GenerateEventDialog("mosaic");
             {
                 var amount = GenerateUIElement("amount", "Single", mosaic.transform, 8, "Amount");
-                EditorThemeManager.AddInputFields(amount["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(amount["UI"], true, "Event Editor");
             }
 
             var analogGlitch = GenerateEventDialog("analogglitch");
@@ -1467,24 +1467,24 @@ namespace BetterLegacy.Editor.Managers
                 enabledText.text = "Enabled";
 
                 var colorDrift = GenerateUIElement("colordrift", "Single", analogGlitch.transform, 10, "Color Drift");
-                EditorThemeManager.AddInputFields(colorDrift["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(colorDrift["UI"], true, "Event Editor");
 
                 var horizontalShake = GenerateUIElement("horizontalshake", "Single", analogGlitch.transform, 12, "Horizontal Shake");
-                EditorThemeManager.AddInputFields(horizontalShake["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(horizontalShake["UI"], true, "Event Editor");
 
                 var scanLineJitter = GenerateUIElement("scanlinejitter", "Single", analogGlitch.transform, 14, "Scan Line Jitter");
-                EditorThemeManager.AddInputFields(scanLineJitter["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(scanLineJitter["UI"], true, "Event Editor");
 
                 var verticalJump = GenerateUIElement("verticaljump", "Single", analogGlitch.transform, 16, "Vertical Jump");
-                EditorThemeManager.AddInputFields(verticalJump["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(verticalJump["UI"], true, "Event Editor");
 
-                EditorThemeManager.AddToggle(enabled["UI"].GetComponent<Toggle>(), graphic: enabledText);
+                EditorThemeManager.ApplyToggle(enabled["UI"].GetComponent<Toggle>(), graphic: enabledText);
             }
 
             var digitalGlitch = GenerateEventDialog("digitalglitch");
             {
                 var intensity = GenerateUIElement("intensity", "Single", digitalGlitch.transform, 8, "Intensity");
-                EditorThemeManager.AddInputFields(intensity["UI"], true, "Event Editor");
+                EditorThemeManager.ApplyInputFields(intensity["UI"], true, "Event Editor");
             }
 
             #endregion
@@ -1495,7 +1495,7 @@ namespace BetterLegacy.Editor.Managers
 
             multiKeyframeEditor.Find("Text").gameObject.SetActive(false);
 
-            EditorThemeManager.AddGraphic(multiKeyframeEditor.GetComponent<Image>(), ThemeGroup.Background_1);
+            EditorThemeManager.ApplyGraphic(multiKeyframeEditor.GetComponent<Image>(), ThemeGroup.Background_1);
 
             var multiKeyframeEditorVLG = multiKeyframeEditor.GetComponent<VerticalLayoutGroup>();
             multiKeyframeEditorVLG.childControlWidth = false;
@@ -1541,13 +1541,13 @@ namespace BetterLegacy.Editor.Managers
             var timeStorage = time.GetComponent<InputFieldStorage>();
             time.transform.GetChild(0).name = "time";
 
-            EditorThemeManager.AddInputField(timeStorage.inputField);
+            EditorThemeManager.ApplyInputField(timeStorage.inputField);
 
-            EditorThemeManager.AddSelectable(timeStorage.leftGreaterButton, ThemeGroup.Function_2, false);
-            EditorThemeManager.AddSelectable(timeStorage.leftButton, ThemeGroup.Function_2, false);
-            EditorThemeManager.AddSelectable(timeStorage.middleButton, ThemeGroup.Function_2, false);
-            EditorThemeManager.AddSelectable(timeStorage.rightButton, ThemeGroup.Function_2, false);
-            EditorThemeManager.AddSelectable(timeStorage.rightGreaterButton, ThemeGroup.Function_2, false);
+            EditorThemeManager.ApplySelectable(timeStorage.leftGreaterButton, ThemeGroup.Function_2, false);
+            EditorThemeManager.ApplySelectable(timeStorage.leftButton, ThemeGroup.Function_2, false);
+            EditorThemeManager.ApplySelectable(timeStorage.middleButton, ThemeGroup.Function_2, false);
+            EditorThemeManager.ApplySelectable(timeStorage.rightButton, ThemeGroup.Function_2, false);
+            EditorThemeManager.ApplySelectable(timeStorage.rightGreaterButton, ThemeGroup.Function_2, false);
 
             // Label
             {
@@ -1574,7 +1574,7 @@ namespace BetterLegacy.Editor.Managers
             var curves = EditorPrefabHolder.Instance.CurvesDropdown.Duplicate(curveBaseRT, "curves");
             curves.transform.AsRT().anchoredPosition = new Vector2(191f, 0f);
 
-            EditorThemeManager.AddDropdown(curves.GetComponent<Dropdown>());
+            EditorThemeManager.ApplyDropdown(curves.GetComponent<Dropdown>());
 
             // Label
             {
@@ -1603,10 +1603,10 @@ namespace BetterLegacy.Editor.Managers
             var valueIndexStorage = valueIndex.GetComponent<InputFieldStorage>();
             valueIndex.transform.GetChild(0).name = "input";
 
-            EditorThemeManager.AddInputField(valueIndexStorage.inputField);
+            EditorThemeManager.ApplyInputField(valueIndexStorage.inputField);
 
-            EditorThemeManager.AddSelectable(valueIndexStorage.leftButton, ThemeGroup.Function_2, false);
-            EditorThemeManager.AddSelectable(valueIndexStorage.rightButton, ThemeGroup.Function_2, false);
+            EditorThemeManager.ApplySelectable(valueIndexStorage.leftButton, ThemeGroup.Function_2, false);
+            EditorThemeManager.ApplySelectable(valueIndexStorage.rightButton, ThemeGroup.Function_2, false);
 
             Destroy(valueIndexStorage.leftGreaterButton.gameObject);
             Destroy(valueIndexStorage.middleButton.gameObject);
@@ -1639,13 +1639,13 @@ namespace BetterLegacy.Editor.Managers
             var valueStorage = value.GetComponent<InputFieldStorage>();
             value.transform.GetChild(0).name = "input";
 
-            EditorThemeManager.AddInputField(valueStorage.inputField);
+            EditorThemeManager.ApplyInputField(valueStorage.inputField);
 
-            EditorThemeManager.AddSelectable(valueStorage.leftGreaterButton, ThemeGroup.Function_2, false);
-            EditorThemeManager.AddSelectable(valueStorage.leftButton, ThemeGroup.Function_2, false);
-            EditorThemeManager.AddSelectable(valueStorage.middleButton, ThemeGroup.Function_2, false);
-            EditorThemeManager.AddSelectable(valueStorage.rightButton, ThemeGroup.Function_2, false);
-            EditorThemeManager.AddSelectable(valueStorage.rightGreaterButton, ThemeGroup.Function_2, false);
+            EditorThemeManager.ApplySelectable(valueStorage.leftGreaterButton, ThemeGroup.Function_2, false);
+            EditorThemeManager.ApplySelectable(valueStorage.leftButton, ThemeGroup.Function_2, false);
+            EditorThemeManager.ApplySelectable(valueStorage.middleButton, ThemeGroup.Function_2, false);
+            EditorThemeManager.ApplySelectable(valueStorage.rightButton, ThemeGroup.Function_2, false);
+            EditorThemeManager.ApplySelectable(valueStorage.rightGreaterButton, ThemeGroup.Function_2, false);
 
             // Label
             {
@@ -1690,8 +1690,8 @@ namespace BetterLegacy.Editor.Managers
                 EditorManager.inst.DisplayNotification($"Snapped all keyframes time!", 2f, EditorManager.NotificationType.Success);
             });
 
-            EditorThemeManager.AddGraphic(snapStorage.button.image, ThemeGroup.Function_1, true);
-            EditorThemeManager.AddGraphic(snapStorage.label, ThemeGroup.Function_1_Text);
+            EditorThemeManager.ApplyGraphic(snapStorage.button.image, ThemeGroup.Function_1, true);
+            EditorThemeManager.ApplyGraphic(snapStorage.label, ThemeGroup.Function_1_Text);
 
             // Label
             {
@@ -1739,8 +1739,8 @@ namespace BetterLegacy.Editor.Managers
                 EditorManager.inst.DisplayNotification($"Aligned all keyframes to the first keyframe!", 2f, EditorManager.NotificationType.Success);
             });
 
-            EditorThemeManager.AddGraphic(alignToFirstStorage.button.image, ThemeGroup.Function_1, true);
-            EditorThemeManager.AddGraphic(alignToFirstStorage.label, ThemeGroup.Function_1_Text);
+            EditorThemeManager.ApplyGraphic(alignToFirstStorage.button.image, ThemeGroup.Function_1, true);
+            EditorThemeManager.ApplyGraphic(alignToFirstStorage.label, ThemeGroup.Function_1_Text);
 
             // Label
             {
@@ -1792,8 +1792,8 @@ namespace BetterLegacy.Editor.Managers
                 EditorManager.inst.DisplayNotification($"Pasted all keyframe data to current selected keyframes!", 2f, EditorManager.NotificationType.Success);
             });
 
-            EditorThemeManager.AddGraphic(pasteAllStorage.button.image, ThemeGroup.Function_1, true);
-            EditorThemeManager.AddGraphic(pasteAllStorage.label, ThemeGroup.Function_1_Text);
+            EditorThemeManager.ApplyGraphic(pasteAllStorage.button.image, ThemeGroup.Function_1, true);
+            EditorThemeManager.ApplyGraphic(pasteAllStorage.label, ThemeGroup.Function_1_Text);
 
             #endregion
 
@@ -1815,11 +1815,11 @@ namespace BetterLegacy.Editor.Managers
                 pasteStorage.Text = "Paste";
                 paste.transform.AsRT().sizeDelta = new Vector2(70f, 32f);
 
-                EditorThemeManager.AddGraphic(copyStorage.button.image, ThemeGroup.Copy, true);
-                EditorThemeManager.AddGraphic(copyStorage.label, ThemeGroup.Copy_Text);
+                EditorThemeManager.ApplyGraphic(copyStorage.button.image, ThemeGroup.Copy, true);
+                EditorThemeManager.ApplyGraphic(copyStorage.label, ThemeGroup.Copy_Text);
 
-                EditorThemeManager.AddGraphic(pasteStorage.button.image, ThemeGroup.Paste, true);
-                EditorThemeManager.AddGraphic(pasteStorage.label, ThemeGroup.Paste_Text);
+                EditorThemeManager.ApplyGraphic(pasteStorage.button.image, ThemeGroup.Paste, true);
+                EditorThemeManager.ApplyGraphic(pasteStorage.label, ThemeGroup.Paste_Text);
 
                 EditorHelper.SetComplexity(copy, Complexity.Normal);
                 EditorHelper.SetComplexity(paste, Complexity.Normal);

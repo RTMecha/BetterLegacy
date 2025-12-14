@@ -204,7 +204,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 if (EditorConfig.Instance.AutoSearch.Value)
                     EditorServerManager.inst.Search();
             });
-            EditorThemeManager.AddToggle(uploadedToggleStorage.toggle, graphic: uploadedToggleStorage.label);
+            EditorThemeManager.ApplyToggle(uploadedToggleStorage.toggle, graphic: uploadedToggleStorage.label);
 
             var searchButton = EditorPrefabHolder.Instance.Function2Button.Duplicate(bar, "search button");
             RectValues.Default.AnchoredPosition(310f, 0f).SizeDelta(100f, 32f).AssignToRectTransform(searchButton.transform.AsRT());
@@ -212,10 +212,10 @@ namespace BetterLegacy.Editor.Data.Dialogs
             searchButtonStorage.Text = "Search";
             searchButtonStorage.OnClick.NewListener(EditorServerManager.inst.Search);
 
-            EditorThemeManager.AddInputField(SearchField);
-            EditorThemeManager.AddInputField(pageStorage);
-            EditorThemeManager.AddSelectable(searchButtonStorage.button, ThemeGroup.Function_2);
-            EditorThemeManager.AddGraphic(searchButtonStorage.label, ThemeGroup.Function_2_Text);
+            EditorThemeManager.ApplyInputField(SearchField);
+            EditorThemeManager.ApplyInputField(pageStorage);
+            EditorThemeManager.ApplySelectable(searchButtonStorage.button, ThemeGroup.Function_2);
+            EditorThemeManager.ApplyGraphic(searchButtonStorage.label, ThemeGroup.Function_2_Text);
 
             var scrollView = EditorPrefabHolder.Instance.ScrollView.Duplicate(editorDialogObject.transform, "Scroll View");
             Content = scrollView.transform.Find("Viewport/Content");
@@ -229,7 +229,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             scrollView.transform.AsRT().anchoredPosition = new Vector2(392.5f, 320f);
             scrollView.transform.AsRT().sizeDelta = new Vector2(735f, 560f);
 
-            EditorThemeManager.AddGraphic(editorDialogObject.GetComponent<Image>(), ThemeGroup.Background_1);
+            EditorThemeManager.ApplyGraphic(editorDialogObject.GetComponent<Image>(), ThemeGroup.Background_1);
 
             EditorHelper.AddEditorDropdown("View Uploaded", string.Empty, "Steam", EditorSprites.ListSprite, () =>
             {
@@ -265,8 +265,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
             });
             TabButtons.Add(tabStorage.button);
 
-            EditorThemeManager.AddGraphic(tabStorage.button.image, ThemeGroup.Function_1, true);
-            EditorThemeManager.AddGraphic(tabStorage.label, ThemeGroup.Function_1_Text);
+            EditorThemeManager.ApplyGraphic(tabStorage.button.image, ThemeGroup.Function_1, true);
+            EditorThemeManager.ApplyGraphic(tabStorage.label, ThemeGroup.Function_1_Text);
         }
     }
 }

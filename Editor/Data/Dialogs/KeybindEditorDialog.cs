@@ -135,9 +135,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             settingsScrollRectSR.content = SettingsContent;
 
-            EditorThemeManager.AddGraphic(editorDialog.GetComponent<Image>(), ThemeGroup.Background_1);
-            EditorThemeManager.AddSelectable(SelectActionButton.button, ThemeGroup.Function_2);
-            EditorThemeManager.AddGraphic(SelectActionButton.label, ThemeGroup.Function_2_Text);
+            EditorThemeManager.ApplyGraphic(editorDialog.GetComponent<Image>(), ThemeGroup.Background_1);
+            EditorThemeManager.ApplySelectable(SelectActionButton.button, ThemeGroup.Function_2);
+            EditorThemeManager.ApplyGraphic(SelectActionButton.label, ThemeGroup.Function_2_Text);
 
             #endregion
         }

@@ -99,7 +99,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             CoreHelper.Delete(dialog.transform.Find("Text").gameObject);
 
-            EditorThemeManager.AddGraphic(dialog.GetComponent<Image>(), ThemeGroup.Background_1);
+            EditorThemeManager.ApplyGraphic(dialog.GetComponent<Image>(), ThemeGroup.Background_1);
 
             var search = EditorLevelManager.inst.OpenLevelPopup.GameObject.transform.Find("search-box").gameObject.Duplicate(dialog.transform, "search");
 
@@ -453,8 +453,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     CoroutineHelper.StartCoroutine(PlayerEditor.inst.RefreshModels());
                 });
 
-                EditorThemeManager.AddSelectable(selectStorage.button, ThemeGroup.Function_2);
-                EditorThemeManager.AddGraphic(selectStorage.label, ThemeGroup.Function_2_Text);
+                EditorThemeManager.ApplySelectable(selectStorage.button, ThemeGroup.Function_2);
+                EditorThemeManager.ApplyGraphic(selectStorage.label, ThemeGroup.Function_2_Text);
 
                 var playerIndexObject = EditorPrefabHolder.Instance.Dropdown.Duplicate(functionsLayout.transform, "dropdown");
                 playerIndexObject.transform.AsRT().sizeDelta = new Vector2(200f, 43.2f);
@@ -469,7 +469,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     CoroutineHelper.StartCoroutine(PlayerEditor.inst.RefreshEditor());
                 });
 
-                EditorThemeManager.AddDropdown(playerIndexDropdown);
+                EditorThemeManager.ApplyDropdown(playerIndexDropdown);
 
                 var create = EditorPrefabHolder.Instance.Function1Button.Duplicate(functionsLayout.transform, "function");
                 create.transform.AsRT().sizeDelta = new Vector2(92f, 43.2f);
@@ -478,8 +478,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 createStorage.Text = "Create";
                 createStorage.OnClick.NewListener(PlayerEditor.inst.CreateNewModel);
 
-                EditorThemeManager.AddSelectable(createStorage.button, ThemeGroup.Function_2);
-                EditorThemeManager.AddGraphic(createStorage.label, ThemeGroup.Function_2_Text);
+                EditorThemeManager.ApplySelectable(createStorage.button, ThemeGroup.Function_2);
+                EditorThemeManager.ApplyGraphic(createStorage.label, ThemeGroup.Function_2_Text);
 
                 var save = EditorPrefabHolder.Instance.Function1Button.Duplicate(functionsLayout.transform, "function");
                 save.transform.AsRT().sizeDelta = new Vector2(92f, 43.2f);
@@ -488,8 +488,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 saveStorage.Text = "Save";
                 saveStorage.OnClick.NewListener(PlayerEditor.inst.Save);
 
-                EditorThemeManager.AddSelectable(saveStorage.button, ThemeGroup.Function_2);
-                EditorThemeManager.AddGraphic(saveStorage.label, ThemeGroup.Function_2_Text);
+                EditorThemeManager.ApplySelectable(saveStorage.button, ThemeGroup.Function_2);
+                EditorThemeManager.ApplyGraphic(saveStorage.label, ThemeGroup.Function_2_Text);
 
                 var load = EditorPrefabHolder.Instance.Function1Button.Duplicate(functionsLayout.transform, "function");
                 load.transform.AsRT().sizeDelta = new Vector2(92f, 43.2f);
@@ -498,8 +498,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 loadStorage.Text = "Reload";
                 loadStorage.OnClick.NewListener(PlayerEditor.inst.Reload);
 
-                EditorThemeManager.AddSelectable(loadStorage.button, ThemeGroup.Function_2);
-                EditorThemeManager.AddGraphic(loadStorage.label, ThemeGroup.Function_2_Text);
+                EditorThemeManager.ApplySelectable(loadStorage.button, ThemeGroup.Function_2);
+                EditorThemeManager.ApplyGraphic(loadStorage.label, ThemeGroup.Function_2_Text);
 
                 var setToGlobal = EditorPrefabHolder.Instance.Function1Button.Duplicate(functionsLayout.transform, "function");
                 setToGlobal.transform.AsRT().sizeDelta = new Vector2(92f, 43.2f);
@@ -508,8 +508,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 setToGlobalStorage.Text = "Set to Global";
                 setToGlobalStorage.OnClick.NewListener(() => PlayerManager.PlayerIndexes[PlayerEditor.inst.playerModelIndex].Value = PlayersData.Current.playerModelsIndex[PlayerEditor.inst.playerModelIndex]);
 
-                EditorThemeManager.AddSelectable(setToGlobalStorage.button, ThemeGroup.Function_2);
-                EditorThemeManager.AddGraphic(setToGlobalStorage.label, ThemeGroup.Function_2_Text);
+                EditorThemeManager.ApplySelectable(setToGlobalStorage.button, ThemeGroup.Function_2);
+                EditorThemeManager.ApplyGraphic(setToGlobalStorage.label, ThemeGroup.Function_2_Text);
             }
 
             LSHelpers.SetActiveChildren(Content, false);
@@ -530,7 +530,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 CoroutineHelper.StartCoroutine(PlayerEditor.inst.RefreshEditor());
             });
 
-            EditorThemeManager.AddSelectable(tabButton.button, EditorTheme.GetGroup($"Tab Color {tabIndex + 1}"));
+            EditorThemeManager.ApplySelectable(tabButton.button, EditorTheme.GetGroup($"Tab Color {tabIndex + 1}"));
             tab.AddComponent<ContrastColors>().Init(tabButton.label, tab.GetComponent<Image>());
 
             TabButtons.Add(tabButton);
@@ -545,7 +545,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var labelText = label.GetComponent<Text>();
             labelText.text = text ?? name;
             UIManager.SetRectTransform(label.transform.AsRT(), new Vector2(32f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(762f, 32f));
-            EditorThemeManager.AddLightText(labelText);
+            EditorThemeManager.ApplyLightText(labelText);
 
             return gameObject;
         }
@@ -591,13 +591,13 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var label = labelPrefab.Duplicate(gameObject.transform, "label");
             var labelText = label.GetComponent<Text>();
             labelText.text = name;
-            EditorThemeManager.AddLightText(labelText);
+            EditorThemeManager.ApplyLightText(labelText);
             UIManager.SetRectTransform(label.transform.AsRT(), new Vector2(32f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(762f, 32f));
 
             var toggle = EditorPrefabHolder.Instance.Toggle.Duplicate(gameObject.transform, "toggle").GetComponent<Toggle>();
             toggle.transform.AsRT().anchoredPosition = new Vector2(725f, -21f);
 
-            EditorThemeManager.AddToggle(toggle);
+            EditorThemeManager.ApplyToggle(toggle);
 
             var ui = new PlayerEditorToggle
             {
@@ -619,7 +619,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var label = labelPrefab.Duplicate(gameObject.transform, "label");
             var labelText = label.GetComponent<Text>();
             labelText.text = name;
-            EditorThemeManager.AddLightText(labelText);
+            EditorThemeManager.ApplyLightText(labelText);
             UIManager.SetRectTransform(label.transform.AsRT(), new Vector2(32f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(762f, 32f));
 
             var input = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "input");
@@ -628,7 +628,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var inputFieldStorage = input.GetComponent<InputFieldStorage>();
 
             CoreHelper.Delete(inputFieldStorage.middleButton.gameObject);
-            EditorThemeManager.AddInputField(inputFieldStorage);
+            EditorThemeManager.ApplyInputField(inputFieldStorage);
 
             var ui = new PlayerEditorNumber
             {
@@ -650,7 +650,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var label = labelPrefab.Duplicate(gameObject.transform, "label");
             var labelText = label.GetComponent<Text>();
             labelText.text = name;
-            EditorThemeManager.AddLightText(labelText);
+            EditorThemeManager.ApplyLightText(labelText);
             UIManager.SetRectTransform(label.transform.AsRT(), new Vector2(32f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(762f, 32f));
 
             var dropdown = EditorPrefabHolder.Instance.Dropdown.Duplicate(gameObject.transform, "dropdown").GetComponent<Dropdown>();
@@ -659,7 +659,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             dropdown.options = options;
             dropdown.GetComponent<HideDropdownOptions>().DisabledOptions.Clear();
 
-            EditorThemeManager.AddDropdown(dropdown);
+            EditorThemeManager.ApplyDropdown(dropdown);
 
             var ui = new PlayerEditorDropdown
             {
@@ -681,7 +681,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var label = labelPrefab.Duplicate(gameObject.transform, "label");
             var labelText = label.GetComponent<Text>();
             labelText.text = name;
-            EditorThemeManager.AddLightText(labelText);
+            EditorThemeManager.ApplyLightText(labelText);
             UIManager.SetRectTransform(label.transform.AsRT(), new Vector2(32f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(762f, 32f));
 
             var inputX = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "x");
@@ -692,7 +692,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             CoreHelper.Delete(inputXStorage.middleButton.gameObject);
             CoreHelper.Delete(inputXStorage.leftGreaterButton.gameObject);
             CoreHelper.Delete(inputXStorage.rightGreaterButton.gameObject);
-            EditorThemeManager.AddInputField(inputXStorage);
+            EditorThemeManager.ApplyInputField(inputXStorage);
 
             var inputY = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "y");
             UIManager.SetRectTransform(inputY.transform.AsRT(), new Vector2(246f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(230f, 32f));
@@ -702,7 +702,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             CoreHelper.Delete(inputYStorage.middleButton.gameObject);
             CoreHelper.Delete(inputYStorage.leftGreaterButton.gameObject);
             CoreHelper.Delete(inputYStorage.rightGreaterButton.gameObject);
-            EditorThemeManager.AddInputField(inputYStorage);
+            EditorThemeManager.ApplyInputField(inputYStorage);
 
             var ui = new PlayerEditorVector2
             {
@@ -727,7 +727,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var button = gameObject.AddComponent<Button>();
             button.image = image;
 
-            EditorThemeManager.AddSelectable(button, ThemeGroup.List_Button_1);
+            EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
 
             var ui = new PlayerEditorButton
             {
@@ -749,7 +749,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             UIManager.SetRectTransform(input.transform.AsRT(), new Vector2(260f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(200f, 32f));
 
             var inputField = input.GetComponent<InputField>();
-            EditorThemeManager.AddInputField(inputField);
+            EditorThemeManager.ApplyInputField(inputField);
 
             var ui = new PlayerEditorString
             {
@@ -780,8 +780,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
             for (int j = 0; j < 25; j++)
             {
                 var color = EditorManager.inst.colorGUI.Duplicate(colorsLayout.transform, $"{j + 1}");
-                EditorThemeManager.AddGraphic(color.GetComponent<Image>(), ThemeGroup.Null, true);
-                EditorThemeManager.AddGraphic(color.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Background_1);
+                EditorThemeManager.ApplyGraphic(color.GetComponent<Image>(), ThemeGroup.Null, true);
+                EditorThemeManager.ApplyGraphic(color.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Background_1);
                 colorButtons.Add(color.GetComponent<Button>());
             }
 
@@ -864,7 +864,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             layout.spacing = 8f;
 
             var image = gameObject.AddComponent<Image>();
-            EditorThemeManager.AddGraphic(image, ThemeGroup.Background_2, true);
+            EditorThemeManager.ApplyGraphic(image, ThemeGroup.Background_2, true);
 
             var dialog = new ModifiersEditorDialog();
             dialog.Init(gameObject.transform, false, false, false);

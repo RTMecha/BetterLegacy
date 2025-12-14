@@ -172,7 +172,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 scrollView.transform.AsRT().sizeDelta = new Vector2(765f, 696f);
                 Content = scrollView.transform.Find("Viewport/Content").AsRT();
 
-                EditorThemeManager.AddGraphic(GameObject.GetComponent<Image>(), ThemeGroup.Background_1);
+                EditorThemeManager.ApplyGraphic(GameObject.GetComponent<Image>(), ThemeGroup.Background_1);
 
                 var labelRect = new RectValues(new Vector2(16f, 0f), new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(0f, -32f));
 
@@ -221,23 +221,23 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 var artistName = EditorPrefabHolder.Instance.StringInputField.Duplicate(artist.transform, "name");
                 ArtistNameField = artistName.GetComponent<InputField>();
                 ArtistNameField.textComponent.alignment = TextAnchor.MiddleLeft;
-                EditorThemeManager.AddInputField(ArtistNameField);
+                EditorThemeManager.ApplyInputField(ArtistNameField);
 
                 new Labels(Labels.InitSettings.Default.Parent(artist.transform), "Link");
                 var artistLinkBase = linkPrefab.Duplicate(artist.transform, "link");
 
                 var openArtistLinkButton = artistLinkBase.transform.Find("open url").GetComponent<DeleteButtonStorage>();
                 OpenArtistURLButton = openArtistLinkButton.button;
-                EditorThemeManager.AddGraphic(openArtistLinkButton.baseImage, ThemeGroup.Copy, true);
-                EditorThemeManager.AddGraphic(openArtistLinkButton.image, ThemeGroup.Copy_Text);
+                EditorThemeManager.ApplyGraphic(openArtistLinkButton.baseImage, ThemeGroup.Copy, true);
+                EditorThemeManager.ApplyGraphic(openArtistLinkButton.image, ThemeGroup.Copy_Text);
 
                 ArtistLinkTypeDropdown = artistLinkBase.transform.Find("type").GetComponent<Dropdown>();
                 ArtistLinkTypeDropdown.options = AlephNetwork.ArtistLinks.Select(x => new Dropdown.OptionData(x.name)).ToList();
-                EditorThemeManager.AddDropdown(ArtistLinkTypeDropdown);
+                EditorThemeManager.ApplyDropdown(ArtistLinkTypeDropdown);
 
                 ArtistLinkField = artistLinkBase.transform.Find("input").GetComponent<InputField>();
                 ArtistLinkField.textComponent.alignment = TextAnchor.MiddleLeft;
-                EditorThemeManager.AddInputField(ArtistLinkField);
+                EditorThemeManager.ApplyInputField(ArtistLinkField);
 
                 #endregion
 
@@ -255,23 +255,23 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 var songTitle = EditorPrefabHolder.Instance.StringInputField.Duplicate(song.transform, "title");
                 SongTitleField = songTitle.GetComponent<InputField>();
                 SongTitleField.textComponent.alignment = TextAnchor.MiddleLeft;
-                EditorThemeManager.AddInputField(SongTitleField);
+                EditorThemeManager.ApplyInputField(SongTitleField);
 
                 new Labels(Labels.InitSettings.Default.Parent(song.transform), "Link");
                 var songLinkBase = linkPrefab.Duplicate(song.transform, "link");
 
                 var openSongLinkButton = songLinkBase.transform.Find("open url").GetComponent<DeleteButtonStorage>();
                 OpenSongURLButton = openSongLinkButton.button;
-                EditorThemeManager.AddGraphic(openSongLinkButton.baseImage, ThemeGroup.Copy, true);
-                EditorThemeManager.AddGraphic(openSongLinkButton.image, ThemeGroup.Copy_Text);
+                EditorThemeManager.ApplyGraphic(openSongLinkButton.baseImage, ThemeGroup.Copy, true);
+                EditorThemeManager.ApplyGraphic(openSongLinkButton.image, ThemeGroup.Copy_Text);
 
                 SongLinkTypeDropdown = songLinkBase.transform.Find("type").GetComponent<Dropdown>();
                 SongLinkTypeDropdown.options = AlephNetwork.SongLinks.Select(x => new Dropdown.OptionData(x.name)).ToList();
-                EditorThemeManager.AddDropdown(SongLinkTypeDropdown);
+                EditorThemeManager.ApplyDropdown(SongLinkTypeDropdown);
 
                 SongLinkField = songLinkBase.transform.Find("input").GetComponent<InputField>();
                 SongLinkField.textComponent.alignment = TextAnchor.MiddleLeft;
-                EditorThemeManager.AddInputField(SongLinkField);
+                EditorThemeManager.ApplyInputField(SongLinkField);
 
                 #endregion
 
@@ -289,23 +289,23 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 var creatorName = EditorPrefabHolder.Instance.StringInputField.Duplicate(creator.transform, "name");
                 CreatorNameField = creatorName.GetComponent<InputField>();
                 CreatorNameField.textComponent.alignment = TextAnchor.MiddleLeft;
-                EditorThemeManager.AddInputField(CreatorNameField);
+                EditorThemeManager.ApplyInputField(CreatorNameField);
 
                 new Labels(Labels.InitSettings.Default.Parent(creator.transform), "Link");
                 var creatorLinkBase = linkPrefab.Duplicate(creator.transform, "link");
 
                 var openCreatorLinkButton = creatorLinkBase.transform.Find("open url").GetComponent<DeleteButtonStorage>();
                 OpenCreatorURLButton = openCreatorLinkButton.button;
-                EditorThemeManager.AddGraphic(openCreatorLinkButton.baseImage, ThemeGroup.Copy, true);
-                EditorThemeManager.AddGraphic(openCreatorLinkButton.image, ThemeGroup.Copy_Text);
+                EditorThemeManager.ApplyGraphic(openCreatorLinkButton.baseImage, ThemeGroup.Copy, true);
+                EditorThemeManager.ApplyGraphic(openCreatorLinkButton.image, ThemeGroup.Copy_Text);
 
                 CreatorLinkTypeDropdown = creatorLinkBase.transform.Find("type").GetComponent<Dropdown>();
                 CreatorLinkTypeDropdown.options = AlephNetwork.CreatorLinks.Select(x => new Dropdown.OptionData(x.name)).ToList();
-                EditorThemeManager.AddDropdown(CreatorLinkTypeDropdown);
+                EditorThemeManager.ApplyDropdown(CreatorLinkTypeDropdown);
 
                 CreatorLinkField = creatorLinkBase.transform.Find("input").GetComponent<InputField>();
                 CreatorLinkField.textComponent.alignment = TextAnchor.MiddleLeft;
-                EditorThemeManager.AddInputField(CreatorLinkField);
+                EditorThemeManager.ApplyInputField(CreatorLinkField);
 
                 #endregion
 
@@ -336,7 +336,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 var levelName = EditorPrefabHolder.Instance.StringInputField.Duplicate(level.transform, "name");
                 LevelNameField = levelName.GetComponent<InputField>();
                 LevelNameField.textComponent.alignment = TextAnchor.MiddleLeft;
-                EditorThemeManager.AddInputField(LevelNameField);
+                EditorThemeManager.ApplyInputField(LevelNameField);
 
                 new Labels(Labels.InitSettings.Default.Parent(level.transform), "Description");
                 var description = EditorPrefabHolder.Instance.StringInputField.Duplicate(level.transform, "desc");
@@ -344,7 +344,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 DescriptionField = description.GetComponent<InputField>();
                 DescriptionField.textComponent.alignment = TextAnchor.UpperLeft;
                 DescriptionField.lineType = InputField.LineType.MultiLineNewline;
-                EditorThemeManager.AddInputField(DescriptionField);
+                EditorThemeManager.ApplyInputField(DescriptionField);
                 var descriptionLayoutElement = description.GetComponent<LayoutElement>();
                 descriptionLayoutElement.minHeight = 140f;
                 descriptionLayoutElement.preferredHeight = 140f;
@@ -390,16 +390,16 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                 var openVideoLinkButton = videoLinkBase.transform.Find("open url").GetComponent<DeleteButtonStorage>();
                 OpenVideoURLButton = openVideoLinkButton.button;
-                EditorThemeManager.AddGraphic(openVideoLinkButton.baseImage, ThemeGroup.Copy, true);
-                EditorThemeManager.AddGraphic(openVideoLinkButton.image, ThemeGroup.Copy_Text);
+                EditorThemeManager.ApplyGraphic(openVideoLinkButton.baseImage, ThemeGroup.Copy, true);
+                EditorThemeManager.ApplyGraphic(openVideoLinkButton.image, ThemeGroup.Copy_Text);
 
                 VideoLinkTypeDropdown = videoLinkBase.transform.Find("type").GetComponent<Dropdown>();
                 VideoLinkTypeDropdown.options = AlephNetwork.VideoLinks.Select(x => new Dropdown.OptionData(x.name)).ToList();
-                EditorThemeManager.AddDropdown(VideoLinkTypeDropdown);
+                EditorThemeManager.ApplyDropdown(VideoLinkTypeDropdown);
 
                 VideoLinkField = videoLinkBase.transform.Find("input").GetComponent<InputField>();
                 VideoLinkField.textComponent.alignment = TextAnchor.MiddleLeft;
-                EditorThemeManager.AddInputField(VideoLinkField);
+                EditorThemeManager.ApplyInputField(VideoLinkField);
 
                 new Labels(Labels.InitSettings.Default.Parent(level.transform), "Level Version");
 
@@ -409,7 +409,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 VersionField = version.GetComponent<InputField>();
                 VersionField.GetPlaceholderText().text = "Set version...";
                 VersionField.GetPlaceholderText().color = new Color(0.1961f, 0.1961f, 0.1961f, 0.5f);
-                EditorThemeManager.AddInputField(VersionField);
+                EditorThemeManager.ApplyInputField(VersionField);
 
                 #endregion
 
@@ -430,17 +430,17 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 SelectIconButton = selectIconStorage.button;
                 selectIconStorage.Text = "Browse";
 
-                EditorThemeManager.AddSelectable(SelectIconButton, ThemeGroup.Function_2);
-                EditorThemeManager.AddGraphic(selectIconStorage.label, ThemeGroup.Function_2_Text);
+                EditorThemeManager.ApplySelectable(SelectIconButton, ThemeGroup.Function_2);
+                EditorThemeManager.ApplyGraphic(selectIconStorage.label, ThemeGroup.Function_2_Text);
 
                 var collapser = EditorPrefabHolder.Instance.CollapseToggle.Duplicate(IconBase, "collapse");
                 new RectValues(new Vector2(340f, -62f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(32f, 32f)).AssignToRectTransform(collapser.transform.AsRT());
                 CollapseToggle = collapser.GetComponent<Toggle>();
 
-                EditorThemeManager.AddToggle(CollapseToggle, ThemeGroup.Background_1);
+                EditorThemeManager.ApplyToggle(CollapseToggle, ThemeGroup.Background_1);
 
                 for (int i = 0; i < collapser.transform.Find("dots").childCount; i++)
-                    EditorThemeManager.AddGraphic(collapser.transform.Find("dots").GetChild(i).GetComponent<Image>(), ThemeGroup.Dark_Text);
+                    EditorThemeManager.ApplyGraphic(collapser.transform.Find("dots").GetChild(i).GetComponent<Image>(), ThemeGroup.Dark_Text);
 
                 #endregion
 
@@ -491,11 +491,11 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 ChangelogField = changelog.GetComponent<InputField>();
                 ChangelogField.textComponent.alignment = TextAnchor.UpperLeft;
                 ChangelogField.lineType = InputField.LineType.MultiLineNewline;
-                EditorThemeManager.AddInputField(DescriptionField);
+                EditorThemeManager.ApplyInputField(DescriptionField);
                 var changelogLayoutElement = changelog.GetComponent<LayoutElement>();
                 changelogLayoutElement.minHeight = 140f;
                 changelogLayoutElement.preferredHeight = 140f;
-                EditorThemeManager.AddInputField(ChangelogField);
+                EditorThemeManager.ApplyInputField(ChangelogField);
 
                 ServerVisibilityDropdown = GenerateDropdown(server.transform, "Server Visibility", true, CoreHelper.ToOptionData<ServerVisibility>());
 
@@ -552,8 +552,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 convertStorage.Text = "Convert";
                 ConvertButton = convertStorage.button;
                 ConvertContextMenu = convert.GetOrAddComponent<ContextClickable>();
-                EditorThemeManager.AddGraphic(convertStorage.button.image, ThemeGroup.Function_1, true);
-                EditorThemeManager.AddGraphic(convertStorage.label, ThemeGroup.Function_1_Text);
+                EditorThemeManager.ApplyGraphic(convertStorage.button.image, ThemeGroup.Function_1, true);
+                EditorThemeManager.ApplyGraphic(convertStorage.label, ThemeGroup.Function_1_Text);
                 
                 var upload = EditorPrefabHolder.Instance.Function1Button.Duplicate(buttons.transform, "upload");
                 var uploadStorage = upload.GetComponent<FunctionButtonStorage>();
@@ -561,24 +561,24 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 UploadButton = uploadStorage.button;
                 UploadButtonText = uploadStorage.label;
                 UploadContextMenu = upload.GetOrAddComponent<ContextClickable>();
-                EditorThemeManager.AddGraphic(uploadStorage.button.image, ThemeGroup.Function_1, true);
-                EditorThemeManager.AddGraphic(uploadStorage.label, ThemeGroup.Function_1_Text);
+                EditorThemeManager.ApplyGraphic(uploadStorage.button.image, ThemeGroup.Function_1, true);
+                EditorThemeManager.ApplyGraphic(uploadStorage.label, ThemeGroup.Function_1_Text);
                 
                 var pull = EditorPrefabHolder.Instance.Function1Button.Duplicate(buttons.transform, "pull");
                 var pullStorage = pull.GetComponent<FunctionButtonStorage>();
                 pullStorage.Text = "Pull";
                 PullButton = pullStorage.button;
                 PullContextMenu = pull.GetOrAddComponent<ContextClickable>();
-                EditorThemeManager.AddGraphic(pullStorage.button.image, ThemeGroup.Function_1, true);
-                EditorThemeManager.AddGraphic(pullStorage.label, ThemeGroup.Function_1_Text);
+                EditorThemeManager.ApplyGraphic(pullStorage.button.image, ThemeGroup.Function_1, true);
+                EditorThemeManager.ApplyGraphic(pullStorage.label, ThemeGroup.Function_1_Text);
                 
                 var delete = EditorPrefabHolder.Instance.Function1Button.Duplicate(buttons.transform, "delete");
                 var deleteStorage = delete.GetComponent<FunctionButtonStorage>();
                 deleteStorage.Text = "Delete";
                 DeleteButton = deleteStorage.button;
                 DeleteContextMenu = delete.GetOrAddComponent<ContextClickable>();
-                EditorThemeManager.AddGraphic(deleteStorage.button.image, ThemeGroup.Delete, true);
-                EditorThemeManager.AddGraphic(deleteStorage.label, ThemeGroup.Delete_Text);
+                EditorThemeManager.ApplyGraphic(deleteStorage.button.image, ThemeGroup.Delete, true);
+                EditorThemeManager.ApplyGraphic(deleteStorage.label, ThemeGroup.Delete_Text);
 
                 #endregion
 
@@ -833,7 +833,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 var changelogLabel = Changelog.transform.Find("Panel/title").GetComponent<Text>();
                 changelogLabel.text = "Changelog";
                 ChangelogField = Changelog.transform.Find("input").GetComponent<InputField>();
-                EditorThemeManager.AddInputField(ChangelogField);
+                EditorThemeManager.ApplyInputField(ChangelogField);
 
                 ModdedDisplayText = Content.Find("id/revisions").GetComponent<Text>();
 
@@ -841,18 +841,18 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 var levelName = creator.Find("name").gameObject.Duplicate(creator, "level_name", 4);
                 var levelNameTitle = levelName.transform.Find("title").GetComponent<Text>();
                 levelNameTitle.text = "Level Name";
-                EditorThemeManager.AddLightText(levelNameTitle);
+                EditorThemeManager.ApplyLightText(levelNameTitle);
                 LevelNameField = levelName.transform.Find("input").GetComponent<InputField>();
                 LevelNameField.GetPlaceholderText().text = "Level Name";
-                EditorThemeManager.AddInputField(LevelNameField);
+                EditorThemeManager.ApplyInputField(LevelNameField);
 
                 var uploaderName = creator.Find("name").gameObject.Duplicate(creator, "uploader_name", 1);
                 var uploaderNameTitle = uploaderName.transform.Find("title").GetComponent<Text>();
                 uploaderNameTitle.text = "Uploader Name";
-                EditorThemeManager.AddLightText(uploaderNameTitle);
+                EditorThemeManager.ApplyLightText(uploaderNameTitle);
                 UploaderNameField = uploaderName.transform.Find("input").GetComponent<InputField>();
                 UploaderNameField.GetPlaceholderText().text = "Uploader Name";
-                EditorThemeManager.AddInputField(UploaderNameField);
+                EditorThemeManager.ApplyInputField(UploaderNameField);
 
                 #region Cache
 
@@ -877,67 +877,67 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                 #region Editor Theme Setup
 
-                EditorThemeManager.AddGraphic(dialog.GetComponent<Image>(), ThemeGroup.Background_1);
-                EditorThemeManager.AddGraphic(convertImage, ThemeGroup.Function_1, true);
-                EditorThemeManager.AddGraphic(convertText, ThemeGroup.Function_1_Text);
-                EditorThemeManager.AddGraphic(upload.GetComponent<Image>(), ThemeGroup.Function_1, true);
-                EditorThemeManager.AddGraphic(uploadText, ThemeGroup.Function_1_Text);
-                EditorThemeManager.AddGraphic(pull.GetComponent<Image>(), ThemeGroup.Delete, true);
-                EditorThemeManager.AddGraphic(pullText, ThemeGroup.Delete_Text);
-                EditorThemeManager.AddGraphic(delete.GetComponent<Image>(), ThemeGroup.Delete, true);
-                EditorThemeManager.AddGraphic(deleteText, ThemeGroup.Delete_Text);
+                EditorThemeManager.ApplyGraphic(dialog.GetComponent<Image>(), ThemeGroup.Background_1);
+                EditorThemeManager.ApplyGraphic(convertImage, ThemeGroup.Function_1, true);
+                EditorThemeManager.ApplyGraphic(convertText, ThemeGroup.Function_1_Text);
+                EditorThemeManager.ApplyGraphic(upload.GetComponent<Image>(), ThemeGroup.Function_1, true);
+                EditorThemeManager.ApplyGraphic(uploadText, ThemeGroup.Function_1_Text);
+                EditorThemeManager.ApplyGraphic(pull.GetComponent<Image>(), ThemeGroup.Delete, true);
+                EditorThemeManager.ApplyGraphic(pullText, ThemeGroup.Delete_Text);
+                EditorThemeManager.ApplyGraphic(delete.GetComponent<Image>(), ThemeGroup.Delete, true);
+                EditorThemeManager.ApplyGraphic(deleteText, ThemeGroup.Delete_Text);
 
-                EditorThemeManager.AddLightText(uploadInfoLabel);
-                EditorThemeManager.AddLightText(changelogLabel);
-                EditorThemeManager.AddLightText(artist.Find("title/title").GetComponent<Text>());
-                EditorThemeManager.AddLightText(song.Find("title_/title").GetComponent<Text>());
-                EditorThemeManager.AddLightText(creator.Find("title/title").GetComponent<Text>());
-                EditorThemeManager.AddLightText(artist.Find("name/title").GetComponent<Text>());
-                EditorThemeManager.AddLightText(artist.Find("link/title").GetComponent<Text>());
-                EditorThemeManager.AddLightText(song.Find("title/title").GetComponent<Text>());
-                EditorThemeManager.AddLightText(song.Find("difficulty/title").GetComponent<Text>());
-                EditorThemeManager.AddLightText(creator.Find("cover_art/title").GetComponent<Text>());
-                EditorThemeManager.AddLightText(creator.Find("cover_art/title (1)").GetComponent<Text>());
-                EditorThemeManager.AddLightText(creator.Find("name/title").GetComponent<Text>());
-                EditorThemeManager.AddLightText(creatorLinkTitle);
-                EditorThemeManager.AddLightText(creator.Find("description/Panel/title").GetComponent<Text>());
-                EditorThemeManager.AddLightText(creator.Find("tags/Panel/title").GetComponent<Text>());
-                EditorThemeManager.AddLightText(agreementText);
-                EditorThemeManager.AddLightText(Content.Find("id/id").GetComponent<Text>());
-                EditorThemeManager.AddLightText(Content.Find("id/revisions").GetComponent<Text>());
-                EditorThemeManager.AddLightText(serverID.transform.Find("id").GetComponent<Text>());
+                EditorThemeManager.ApplyLightText(uploadInfoLabel);
+                EditorThemeManager.ApplyLightText(changelogLabel);
+                EditorThemeManager.ApplyLightText(artist.Find("title/title").GetComponent<Text>());
+                EditorThemeManager.ApplyLightText(song.Find("title_/title").GetComponent<Text>());
+                EditorThemeManager.ApplyLightText(creator.Find("title/title").GetComponent<Text>());
+                EditorThemeManager.ApplyLightText(artist.Find("name/title").GetComponent<Text>());
+                EditorThemeManager.ApplyLightText(artist.Find("link/title").GetComponent<Text>());
+                EditorThemeManager.ApplyLightText(song.Find("title/title").GetComponent<Text>());
+                EditorThemeManager.ApplyLightText(song.Find("difficulty/title").GetComponent<Text>());
+                EditorThemeManager.ApplyLightText(creator.Find("cover_art/title").GetComponent<Text>());
+                EditorThemeManager.ApplyLightText(creator.Find("cover_art/title (1)").GetComponent<Text>());
+                EditorThemeManager.ApplyLightText(creator.Find("name/title").GetComponent<Text>());
+                EditorThemeManager.ApplyLightText(creatorLinkTitle);
+                EditorThemeManager.ApplyLightText(creator.Find("description/Panel/title").GetComponent<Text>());
+                EditorThemeManager.ApplyLightText(creator.Find("tags/Panel/title").GetComponent<Text>());
+                EditorThemeManager.ApplyLightText(agreementText);
+                EditorThemeManager.ApplyLightText(Content.Find("id/id").GetComponent<Text>());
+                EditorThemeManager.ApplyLightText(Content.Find("id/revisions").GetComponent<Text>());
+                EditorThemeManager.ApplyLightText(serverID.transform.Find("id").GetComponent<Text>());
 
-                EditorThemeManager.AddInputField(artist.Find("name/input").GetComponent<InputField>());
+                EditorThemeManager.ApplyInputField(artist.Find("name/input").GetComponent<InputField>());
 
-                EditorThemeManager.AddGraphic(artist.Find("link/inputs/openurl").GetComponent<Image>(), ThemeGroup.Function_1, true);
-                EditorThemeManager.AddGraphic(artist.Find("link/inputs/openurl/Image").GetComponent<Image>(), ThemeGroup.Function_1_Text);
+                EditorThemeManager.ApplyGraphic(artist.Find("link/inputs/openurl").GetComponent<Image>(), ThemeGroup.Function_1, true);
+                EditorThemeManager.ApplyGraphic(artist.Find("link/inputs/openurl/Image").GetComponent<Image>(), ThemeGroup.Function_1_Text);
 
-                EditorThemeManager.AddInputField(artist.Find("link/inputs/input").GetComponent<InputField>());
+                EditorThemeManager.ApplyInputField(artist.Find("link/inputs/input").GetComponent<InputField>());
 
-                EditorThemeManager.AddDropdown(artist.Find("link/inputs/dropdown").GetComponent<Dropdown>());
+                EditorThemeManager.ApplyDropdown(artist.Find("link/inputs/dropdown").GetComponent<Dropdown>());
 
-                EditorThemeManager.AddInputField(song.Find("title/input").GetComponent<InputField>());
+                EditorThemeManager.ApplyInputField(song.Find("title/input").GetComponent<InputField>());
 
-                EditorThemeManager.AddGraphic(creator.Find("cover_art/browse").GetComponent<Image>(), ThemeGroup.Function_2_Normal, true);
-                EditorThemeManager.AddGraphic(creator.Find("cover_art/browse/Text").GetComponent<Text>(), ThemeGroup.Function_2_Text);
+                EditorThemeManager.ApplyGraphic(creator.Find("cover_art/browse").GetComponent<Image>(), ThemeGroup.Function_2_Normal, true);
+                EditorThemeManager.ApplyGraphic(creator.Find("cover_art/browse/Text").GetComponent<Text>(), ThemeGroup.Function_2_Text);
 
-                EditorThemeManager.AddInputField(creator.Find("name/input").GetComponent<InputField>());
+                EditorThemeManager.ApplyInputField(creator.Find("name/input").GetComponent<InputField>());
 
-                EditorThemeManager.AddGraphic(creator.Find("link/inputs/openurl").GetComponent<Image>(), ThemeGroup.Function_1, true);
-                EditorThemeManager.AddGraphic(creator.Find("link/inputs/openurl/Image").GetComponent<Image>(), ThemeGroup.Function_1_Text);
+                EditorThemeManager.ApplyGraphic(creator.Find("link/inputs/openurl").GetComponent<Image>(), ThemeGroup.Function_1, true);
+                EditorThemeManager.ApplyGraphic(creator.Find("link/inputs/openurl/Image").GetComponent<Image>(), ThemeGroup.Function_1_Text);
 
-                EditorThemeManager.AddInputField(creator.Find("link/inputs/input").GetComponent<InputField>());
+                EditorThemeManager.ApplyInputField(creator.Find("link/inputs/input").GetComponent<InputField>());
 
-                EditorThemeManager.AddDropdown(creator.Find("link/inputs/dropdown").GetComponent<Dropdown>());
+                EditorThemeManager.ApplyDropdown(creator.Find("link/inputs/dropdown").GetComponent<Dropdown>());
 
-                EditorThemeManager.AddGraphic(song.Find("link/inputs/openurl").GetComponent<Image>(), ThemeGroup.Function_1, true);
-                EditorThemeManager.AddGraphic(song.Find("link/inputs/openurl/Image").GetComponent<Image>(), ThemeGroup.Function_1_Text);
+                EditorThemeManager.ApplyGraphic(song.Find("link/inputs/openurl").GetComponent<Image>(), ThemeGroup.Function_1, true);
+                EditorThemeManager.ApplyGraphic(song.Find("link/inputs/openurl/Image").GetComponent<Image>(), ThemeGroup.Function_1_Text);
 
-                EditorThemeManager.AddInputField(song.Find("link/inputs/input").GetComponent<InputField>());
+                EditorThemeManager.ApplyInputField(song.Find("link/inputs/input").GetComponent<InputField>());
 
-                EditorThemeManager.AddDropdown(song.Find("link/inputs/dropdown").GetComponent<Dropdown>());
+                EditorThemeManager.ApplyDropdown(song.Find("link/inputs/dropdown").GetComponent<Dropdown>());
 
-                EditorThemeManager.AddInputField(creator.Find("description/input").GetComponent<InputField>());
+                EditorThemeManager.ApplyInputField(creator.Find("description/input").GetComponent<InputField>());
 
                 #endregion
             }
@@ -975,7 +975,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             layoutElement.preferredWidth = 200f;
             var dropdown = gameObject.GetComponent<Dropdown>();
             dropdown.options = list;
-            EditorThemeManager.AddDropdown(dropdown);
+            EditorThemeManager.ApplyDropdown(dropdown);
             return dropdown;
         }
 
@@ -991,7 +991,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             //layoutElement.preferredWidth = 200f;
             var toggleStorage = gameObject.GetComponent<ToggleButtonStorage>();
             toggleStorage.label.text = text;
-            EditorThemeManager.AddToggle(toggleStorage.toggle, graphic: toggleStorage.label);
+            EditorThemeManager.ApplyToggle(toggleStorage.toggle, graphic: toggleStorage.label);
             return toggleStorage.toggle;
         }
 
@@ -1009,7 +1009,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var labelText = label.GetComponent<Text>();
             labelText.text = text;
             labelText.rectTransform.sizeDelta = new Vector2(210f, 32f);
-            EditorThemeManager.AddLightText(labelText);
+            EditorThemeManager.ApplyLightText(labelText);
 
             var dropdownObj = EditorPrefabHolder.Instance.Dropdown.Duplicate(dropdownBase.transform, "dropdown");
             var layoutElement = dropdownObj.GetOrAddComponent<LayoutElement>();
@@ -1017,7 +1017,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             layoutElement.minWidth = 126f;
             dropdownObj.transform.AsRT().sizeDelta = new Vector2(256f, 32f);
             var dropdown = dropdownObj.GetComponent<Dropdown>();
-            EditorThemeManager.AddDropdown(dropdown);
+            EditorThemeManager.ApplyDropdown(dropdown);
             return dropdown;
         }
 
@@ -1035,14 +1035,14 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var labelText = label.GetComponent<Text>();
             labelText.text = text;
             labelText.rectTransform.sizeDelta = new Vector2(210, 32f);
-            EditorThemeManager.AddLightText(labelText);
+            EditorThemeManager.ApplyLightText(labelText);
 
             var toggleObj = EditorPrefabHolder.Instance.Toggle.Duplicate(toggleBase.transform, "toggle");
             var layoutElement = toggleObj.GetOrAddComponent<LayoutElement>();
             layoutElement.preferredWidth = 32f;
             layoutElement.minWidth = 32f;
             var toggle = toggleObj.GetComponent<Toggle>();
-            EditorThemeManager.AddToggle(toggle);
+            EditorThemeManager.ApplyToggle(toggle);
             return toggle;
         }
     }

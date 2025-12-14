@@ -85,19 +85,19 @@ namespace BetterLegacy.Editor.Managers
 
 			TriggerHelper.AddEventTriggers(baseColorPicker.brightnessPanel, TriggerHelper.CreateEntry(EventTriggerType.PointerClick, ClickTrigger), TriggerHelper.CreateEntry(EventTriggerType.Drag, ClickTrigger));
 
-			EditorThemeManager.AddGraphic(dialog.GetComponent<Image>(), ThemeGroup.Background_2, true);
+			EditorThemeManager.ApplyGraphic(dialog.GetComponent<Image>(), ThemeGroup.Background_2, true);
 
 			var topPanel = dialog.Find("title").GetComponent<Image>();
-			EditorThemeManager.AddGraphic(topPanel, ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Top);
+			EditorThemeManager.ApplyGraphic(topPanel, ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Top);
 
 			var title = topPanel.transform.Find("Text").GetComponent<Text>();
-			EditorThemeManager.AddLightText(title);
+			EditorThemeManager.ApplyLightText(title);
 
 			closeButton = topPanel.transform.Find("x").GetComponent<Button>();
 			Destroy(closeButton.GetComponent<Animator>());
 			closeButton.transition = Selectable.Transition.ColorTint;
-			EditorThemeManager.AddSelectable(closeButton, ThemeGroup.Close);
-			EditorThemeManager.AddGraphic(closeButton.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
+			EditorThemeManager.ApplySelectable(closeButton, ThemeGroup.Close);
+			EditorThemeManager.ApplyGraphic(closeButton.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
 			closeButton.onClick.NewListener(Cancel);
 
 			rField = baseColorPicker.rgb.transform.Find("R/input").GetComponent<InputField>();
@@ -110,15 +110,15 @@ namespace BetterLegacy.Editor.Managers
 
 			hexField = baseColorPicker.hex.GetComponent<InputField>();
 
-			EditorThemeManager.AddInputField(rField);
-			EditorThemeManager.AddInputField(gField);
-			EditorThemeManager.AddInputField(bField);
+			EditorThemeManager.ApplyInputField(rField);
+			EditorThemeManager.ApplyInputField(gField);
+			EditorThemeManager.ApplyInputField(bField);
 			
-			EditorThemeManager.AddInputField(hField);
-			EditorThemeManager.AddInputField(sField);
-			EditorThemeManager.AddInputField(vField);
+			EditorThemeManager.ApplyInputField(hField);
+			EditorThemeManager.ApplyInputField(sField);
+			EditorThemeManager.ApplyInputField(vField);
 
-			EditorThemeManager.AddInputField(hexField);
+			EditorThemeManager.ApplyInputField(hexField);
 
 			rField.characterValidation = InputField.CharacterValidation.None;
 			rField.keyboardType = TouchScreenKeyboardType.Default;
@@ -147,11 +147,11 @@ namespace BetterLegacy.Editor.Managers
 			previewImage = baseColorPicker.preview.GetComponent<Image>();
 
 			var info = baseColorPicker.transform.Find("info").GetComponent<Image>();
-			EditorThemeManager.AddGraphic(info, ThemeGroup.Background_3, true);
+			EditorThemeManager.ApplyGraphic(info, ThemeGroup.Background_3, true);
 
 			saveButton = info.transform.Find("hex/save").GetComponent<Button>();
-			EditorThemeManager.AddSelectable(saveButton, ThemeGroup.Function_2);
-			EditorThemeManager.AddGraphic(saveButton.transform.GetChild(0).GetComponent<Text>(), ThemeGroup.Function_2_Text);
+			EditorThemeManager.ApplySelectable(saveButton, ThemeGroup.Function_2);
+			EditorThemeManager.ApplyGraphic(saveButton.transform.GetChild(0).GetComponent<Text>(), ThemeGroup.Function_2_Text);
 			saveButton.onClick.NewListener(SaveColor);
 
 			RenderPanel(hueSlider.value);

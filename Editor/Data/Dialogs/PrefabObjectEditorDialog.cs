@@ -169,7 +169,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             EditorHelper.LogAvailableInstances<PrefabEditor>();
 
-            EditorThemeManager.AddGraphic(GameObject.GetComponent<Image>(), ThemeGroup.Background_1);
+            EditorThemeManager.ApplyGraphic(GameObject.GetComponent<Image>(), ThemeGroup.Background_1);
 
             CoreHelper.Delete(LeftContent.GetChild(4).gameObject);
             CoreHelper.Delete(LeftContent.GetChild(4).gameObject);
@@ -181,10 +181,10 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var expandPrefab = LeftContent.GetChild(1).gameObject;
             var expandPrefabButton = expandPrefab.GetComponent<Button>();
             var expandPrefabText = expandPrefab.transform.GetChild(0).GetComponent<Text>();
-            EditorThemeManager.AddLightText(expandPrefabLabelText);
+            EditorThemeManager.ApplyLightText(expandPrefabLabelText);
             CoreHelper.RemoveAnimator(expandPrefabButton);
-            EditorThemeManager.AddSelectable(expandPrefabButton, ThemeGroup.Function_2);
-            EditorThemeManager.AddGraphic(expandPrefabText, ThemeGroup.Function_2_Text);
+            EditorThemeManager.ApplySelectable(expandPrefabButton, ThemeGroup.Function_2);
+            EditorThemeManager.ApplyGraphic(expandPrefabText, ThemeGroup.Function_2_Text);
 
             #endregion
 
@@ -236,12 +236,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var time = EditorPrefabHolder.Instance.NumberInputField.Duplicate(LeftContent, "time");
             StartTimeField = time.GetComponent<InputFieldStorage>();
 
-            EditorThemeManager.AddInputField(StartTimeField.inputField);
-            EditorThemeManager.AddSelectable(StartTimeField.leftGreaterButton, ThemeGroup.Function_2, false);
-            EditorThemeManager.AddSelectable(StartTimeField.leftButton, ThemeGroup.Function_2, false);
-            EditorThemeManager.AddSelectable(StartTimeField.middleButton, ThemeGroup.Function_2, false);
-            EditorThemeManager.AddSelectable(StartTimeField.rightButton, ThemeGroup.Function_2, false);
-            EditorThemeManager.AddSelectable(StartTimeField.rightGreaterButton, ThemeGroup.Function_2, false);
+            EditorThemeManager.ApplyInputField(StartTimeField.inputField);
+            EditorThemeManager.ApplySelectable(StartTimeField.leftGreaterButton, ThemeGroup.Function_2, false);
+            EditorThemeManager.ApplySelectable(StartTimeField.leftButton, ThemeGroup.Function_2, false);
+            EditorThemeManager.ApplySelectable(StartTimeField.middleButton, ThemeGroup.Function_2, false);
+            EditorThemeManager.ApplySelectable(StartTimeField.rightButton, ThemeGroup.Function_2, false);
+            EditorThemeManager.ApplySelectable(StartTimeField.rightGreaterButton, ThemeGroup.Function_2, false);
 
             var locker = EditorPrefabHolder.Instance.Toggle.Duplicate(time.transform, "lock", 0);
 
@@ -251,7 +251,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             StartTimeField.Assign(StartTimeField.gameObject);
             StartTimeField.inputField.transform.AsRT().sizeDelta = new Vector2(135f, 32f);
 
-            EditorThemeManager.AddToggle(StartTimeField.lockToggle);
+            EditorThemeManager.ApplyToggle(StartTimeField.lockToggle);
 
             #endregion
 
@@ -276,7 +276,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             AutokillDropdown.options = CoreHelper.StringToOptionData("Regular", "Start Time", "Song Time");
             TooltipHelper.AssignTooltip(AutokillDropdown.gameObject, "Prefab Object Autokill Type");
 
-            EditorThemeManager.AddDropdown(AutokillDropdown);
+            EditorThemeManager.ApplyDropdown(AutokillDropdown);
 
             var ako = EditorPrefabHolder.Instance.NumberInputField.Duplicate(autoKillParent.transform, "akoffset");
             ako.transform.AsRT().sizeDelta = new Vector2(100f, 32f);
@@ -285,7 +285,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             CoreHelper.Delete(AutokillField.leftGreaterButton.gameObject);
             CoreHelper.Delete(AutokillField.rightButton.gameObject);
             CoreHelper.Delete(AutokillField.rightGreaterButton.gameObject);
-            EditorThemeManager.AddInputField(AutokillField);
+            EditorThemeManager.ApplyInputField(AutokillField);
             AutokillField.middleButton.transform.SetSiblingIndex(AutokillField.transform.childCount - 1);
 
             AutokillField.inputField.characterValidation = InputField.CharacterValidation.None;
@@ -296,10 +296,10 @@ namespace BetterLegacy.Editor.Data.Dialogs
             CollapseToggle = collapser.GetComponent<Toggle>();
             collapser.gameObject.GetOrAddComponent<LayoutElement>().minWidth = 32f;
 
-            EditorThemeManager.AddToggle(CollapseToggle, ThemeGroup.Background_1);
+            EditorThemeManager.ApplyToggle(CollapseToggle, ThemeGroup.Background_1);
 
             for (int i = 0; i < collapser.transform.Find("dots").childCount; i++)
-                EditorThemeManager.AddGraphic(collapser.transform.Find("dots").GetChild(i).GetComponent<Image>(), ThemeGroup.Dark_Text);
+                EditorThemeManager.ApplyGraphic(collapser.transform.Find("dots").GetChild(i).GetComponent<Image>(), ThemeGroup.Dark_Text);
 
             #endregion
 
@@ -333,18 +333,18 @@ namespace BetterLegacy.Editor.Data.Dialogs
             ParentPickerButton = parentUI.transform.Find("parent picker").GetComponent<Button>();
             ParentDesyncToggle = ParentSettingsParent.transform.Find("desync").GetComponent<Toggle>();
 
-            EditorThemeManager.AddGraphic(ParentSearchButton.image, ThemeGroup.Function_3, true);
-            EditorThemeManager.AddGraphic(ParentSearchButton.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Function_3_Text);
-            EditorThemeManager.AddSelectable(ParentClearButton, ThemeGroup.Close);
-            EditorThemeManager.AddGraphic(ParentClearButton.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
-            EditorThemeManager.AddSelectable(ParentPickerButton, ThemeGroup.Picker);
-            EditorThemeManager.AddGraphic(ParentPickerButton.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Picker_Icon);
+            EditorThemeManager.ApplyGraphic(ParentSearchButton.image, ThemeGroup.Function_3, true);
+            EditorThemeManager.ApplyGraphic(ParentSearchButton.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Function_3_Text);
+            EditorThemeManager.ApplySelectable(ParentClearButton, ThemeGroup.Close);
+            EditorThemeManager.ApplyGraphic(ParentClearButton.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
+            EditorThemeManager.ApplySelectable(ParentPickerButton, ThemeGroup.Picker);
+            EditorThemeManager.ApplyGraphic(ParentPickerButton.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Picker_Icon);
 
-            EditorThemeManager.AddSelectable(ParentButton.button, ThemeGroup.Function_2);
-            EditorThemeManager.AddGraphic(ParentButton.label, ThemeGroup.Function_2_Text);
-            EditorThemeManager.AddSelectable(ParentMoreButton, ThemeGroup.Function_2, false);
+            EditorThemeManager.ApplySelectable(ParentButton.button, ThemeGroup.Function_2);
+            EditorThemeManager.ApplyGraphic(ParentButton.label, ThemeGroup.Function_2_Text);
+            EditorThemeManager.ApplySelectable(ParentMoreButton, ThemeGroup.Function_2, false);
 
-            EditorThemeManager.AddToggle(ParentDesyncToggle, graphic: ParentDesyncToggle.transform.Find("Text").GetComponent<Text>());
+            EditorThemeManager.ApplyToggle(ParentDesyncToggle, graphic: ParentDesyncToggle.transform.Find("Text").GetComponent<Text>());
 
             for (int i = 0; i < 3; i++)
             {
@@ -368,14 +368,14 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 ParentSettings.Add(parentSetting);
 
                 parentSetting.label.fontSize = 19;
-                EditorThemeManager.AddLightText(parentSetting.label);
+                EditorThemeManager.ApplyLightText(parentSetting.label);
 
-                EditorThemeManager.AddToggle(parentSetting.activeToggle, ThemeGroup.Background_1);
-                EditorThemeManager.AddGraphic(parentSetting.activeToggle.transform.Find("Image").GetComponent<Image>(), ThemeGroup.Toggle_1_Check);
-                EditorThemeManager.AddInputField(parentSetting.offsetField);
-                EditorThemeManager.AddToggle(parentSetting.additiveToggle, ThemeGroup.Background_1);
-                EditorThemeManager.AddGraphic(parentSetting.additiveToggle.transform.Find("Image").GetComponent<Image>(), ThemeGroup.Toggle_1_Check);
-                EditorThemeManager.AddInputField(parentSetting.parallaxField);
+                EditorThemeManager.ApplyToggle(parentSetting.activeToggle, ThemeGroup.Background_1);
+                EditorThemeManager.ApplyGraphic(parentSetting.activeToggle.transform.Find("Image").GetComponent<Image>(), ThemeGroup.Toggle_1_Check);
+                EditorThemeManager.ApplyInputField(parentSetting.offsetField);
+                EditorThemeManager.ApplyToggle(parentSetting.additiveToggle, ThemeGroup.Background_1);
+                EditorThemeManager.ApplyGraphic(parentSetting.additiveToggle.transform.Find("Image").GetComponent<Image>(), ThemeGroup.Toggle_1_Check);
+                EditorThemeManager.ApplyInputField(parentSetting.parallaxField);
             }
 
             #endregion
@@ -395,7 +395,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 positionStorage.y.transform.Find("input").AsRT().sizeDelta = new Vector2(110f, 32f);
             TriggerHelper.InversableField(positionStorage.x);
             TriggerHelper.InversableField(positionStorage.y);
-            EditorThemeManager.AddInputField(positionStorage);
+            EditorThemeManager.ApplyInputField(positionStorage);
             TransformFields[0] = new InputFieldStorage[2] { positionStorage.x, positionStorage.y };
 
             EditorHelper.SetComplexity(posLabel, Complexity.Normal);
@@ -413,7 +413,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 r_positionStorage.y.transform.Find("input").AsRT().sizeDelta = new Vector2(110f, 32f);
             TriggerHelper.InversableField(r_positionStorage.x);
             TriggerHelper.InversableField(r_positionStorage.y);
-            EditorThemeManager.AddInputField(r_positionStorage);
+            EditorThemeManager.ApplyInputField(r_positionStorage);
             RandomTransformFields[0] = new InputFieldStorage[2] { r_positionStorage.x, r_positionStorage.y };
 
             EditorHelper.SetComplexity(r_posLabel, Complexity.Normal);
@@ -427,11 +427,11 @@ namespace BetterLegacy.Editor.Data.Dialogs
             PositionRandomToggles = randomPosition.GetComponentsInChildren<Toggle>();
             foreach (var toggle in PositionRandomToggles)
             {
-                EditorThemeManager.AddToggle(toggle, ThemeGroup.Background_3);
-                EditorThemeManager.AddGraphic(toggle.transform.Find("Image").GetComponent<Image>(), ThemeGroup.Toggle_1_Check);
+                EditorThemeManager.ApplyToggle(toggle, ThemeGroup.Background_3);
+                EditorThemeManager.ApplyGraphic(toggle.transform.Find("Image").GetComponent<Image>(), ThemeGroup.Toggle_1_Check);
             }
             var randomPositionInterval = randomPosition.transform.Find("interval-input").GetComponent<InputField>();
-            EditorThemeManager.AddInputField(randomPositionInterval);
+            EditorThemeManager.ApplyInputField(randomPositionInterval);
             RandomIntervalFields[0] = randomPositionInterval;
 
             EditorHelper.SetComplexity(randomPositionLabel, Complexity.Normal);
@@ -450,7 +450,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 scaleStorage.y.transform.Find("input").AsRT().sizeDelta = new Vector2(110f, 32f);
             TriggerHelper.InversableField(scaleStorage.x);
             TriggerHelper.InversableField(scaleStorage.y);
-            EditorThemeManager.AddInputField(scaleStorage);
+            EditorThemeManager.ApplyInputField(scaleStorage);
             TransformFields[1] = new InputFieldStorage[2] { scaleStorage.x, scaleStorage.y };
 
             EditorHelper.SetComplexity(scaLabel, Complexity.Normal);
@@ -468,7 +468,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 r_scaleStorage.y.transform.Find("input").AsRT().sizeDelta = new Vector2(110f, 32f);
             TriggerHelper.InversableField(r_scaleStorage.x);
             TriggerHelper.InversableField(r_scaleStorage.y);
-            EditorThemeManager.AddInputField(r_scaleStorage);
+            EditorThemeManager.ApplyInputField(r_scaleStorage);
             RandomTransformFields[1] = new InputFieldStorage[2] { r_scaleStorage.x, r_scaleStorage.y };
 
             EditorHelper.SetComplexity(r_scaLabel, Complexity.Normal);
@@ -481,11 +481,11 @@ namespace BetterLegacy.Editor.Data.Dialogs
             ScaleRandomToggles = randomScale.GetComponentsInChildren<Toggle>();
             foreach (var toggle in ScaleRandomToggles)
             {
-                EditorThemeManager.AddToggle(toggle, ThemeGroup.Background_3);
-                EditorThemeManager.AddGraphic(toggle.transform.Find("Image").GetComponent<Image>(), ThemeGroup.Toggle_1_Check);
+                EditorThemeManager.ApplyToggle(toggle, ThemeGroup.Background_3);
+                EditorThemeManager.ApplyGraphic(toggle.transform.Find("Image").GetComponent<Image>(), ThemeGroup.Toggle_1_Check);
             }
             var randomScaleInterval = randomScale.transform.Find("interval-input").GetComponent<InputField>();
-            EditorThemeManager.AddInputField(randomScaleInterval);
+            EditorThemeManager.ApplyInputField(randomScaleInterval);
             RandomIntervalFields[1] = randomScaleInterval;
 
             EditorHelper.SetComplexity(randomScaleLabel, Complexity.Normal);
@@ -500,7 +500,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             rotationStorage.inputField.transform.AsRT().sizeDelta = new Vector2(110f, 32f);
             CoreHelper.Delete(rotationStorage.middleButton.gameObject);
             TriggerHelper.InversableField(rotationStorage);
-            EditorThemeManager.AddInputField(rotationStorage);
+            EditorThemeManager.ApplyInputField(rotationStorage);
             TransformFields[2] = new InputFieldStorage[1] { rotationStorage };
 
             EditorHelper.SetComplexity(rotLabel, Complexity.Normal);
@@ -514,7 +514,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             r_rotationStorage.inputField.transform.AsRT().sizeDelta = new Vector2(110f, 32f);
             CoreHelper.Delete(r_rotationStorage.middleButton.gameObject);
             TriggerHelper.InversableField(r_rotationStorage);
-            EditorThemeManager.AddInputField(r_rotationStorage);
+            EditorThemeManager.ApplyInputField(r_rotationStorage);
             RandomTransformFields[2] = new InputFieldStorage[1] { r_rotationStorage };
 
             var randomRotationLabel = RTEditor.GenerateLabels("rotation-random-label", LeftContent, new Label("Randomize"));
@@ -524,11 +524,11 @@ namespace BetterLegacy.Editor.Data.Dialogs
             RotationRandomToggles = randomRotation.GetComponentsInChildren<Toggle>();
             foreach (var toggle in RotationRandomToggles)
             {
-                EditorThemeManager.AddToggle(toggle, ThemeGroup.Background_3);
-                EditorThemeManager.AddGraphic(toggle.transform.Find("Image").GetComponent<Image>(), ThemeGroup.Toggle_1_Check);
+                EditorThemeManager.ApplyToggle(toggle, ThemeGroup.Background_3);
+                EditorThemeManager.ApplyGraphic(toggle.transform.Find("Image").GetComponent<Image>(), ThemeGroup.Toggle_1_Check);
             }
             var randomRotationInterval = randomRotation.transform.Find("interval-input").GetComponent<InputField>();
-            EditorThemeManager.AddInputField(randomRotationInterval);
+            EditorThemeManager.ApplyInputField(randomRotationInterval);
             RandomIntervalFields[2] = randomRotationInterval;
 
             EditorHelper.SetComplexity(randomRotationLabel, Complexity.Normal);
@@ -540,7 +540,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             DepthField = depth.GetComponent<InputFieldStorage>();
             CoreHelper.Delete(DepthField.middleButton);
             TriggerHelper.InversableField(DepthField);
-            EditorThemeManager.AddInputField(DepthField);
+            EditorThemeManager.ApplyInputField(DepthField);
 
             EditorHelper.SetComplexity(depthLabel, Complexity.Normal);
             EditorHelper.SetComplexity(depth, Complexity.Advanced);
@@ -573,8 +573,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
             RepeatOffsetTimeField.inputField.contentType = InputField.ContentType.Standard;
             RepeatOffsetTimeField.inputField.characterLimit = 0;
 
-            EditorThemeManager.AddInputField(RepeatCountField);
-            EditorThemeManager.AddInputField(RepeatOffsetTimeField);
+            EditorThemeManager.ApplyInputField(RepeatCountField);
+            EditorThemeManager.ApplyInputField(RepeatOffsetTimeField);
 
             // Speed
             RTEditor.GenerateLabels("speed label", LeftContent, new Label("Speed"));
@@ -591,7 +591,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             CoreHelper.Delete(SpeedField.middleButton.gameObject);
             CoreHelper.Delete(SpeedField.rightGreaterButton.gameObject);
 
-            EditorThemeManager.AddInputField(SpeedField);
+            EditorThemeManager.ApplyInputField(SpeedField);
 
             #endregion
 
@@ -603,24 +603,24 @@ namespace BetterLegacy.Editor.Data.Dialogs
             copyInstanceData.transform.AsRT().sizeDelta = new Vector2(356f, 32f);
             CopyInstanceDataButton = copyInstanceData.GetComponent<FunctionButtonStorage>();
             CopyInstanceDataButton.Text = "Copy Data";
-            EditorThemeManager.AddGraphic(CopyInstanceDataButton.button.image, ThemeGroup.Copy, true);
-            EditorThemeManager.AddGraphic(CopyInstanceDataButton.label, ThemeGroup.Copy_Text);
+            EditorThemeManager.ApplyGraphic(CopyInstanceDataButton.button.image, ThemeGroup.Copy, true);
+            EditorThemeManager.ApplyGraphic(CopyInstanceDataButton.label, ThemeGroup.Copy_Text);
             TooltipHelper.AssignTooltip(copyInstanceData, "Copy Prefab Instance Data");
             
             var pasteInstanceData = EditorPrefabHolder.Instance.Function1Button.Duplicate(LeftContent, "paste instance data");
             pasteInstanceData.transform.AsRT().sizeDelta = new Vector2(356f, 32f);
             PasteInstanceDataButton = pasteInstanceData.GetComponent<FunctionButtonStorage>();
             PasteInstanceDataButton.Text = "Paste Data";
-            EditorThemeManager.AddGraphic(PasteInstanceDataButton.button.image, ThemeGroup.Paste, true);
-            EditorThemeManager.AddGraphic(PasteInstanceDataButton.label, ThemeGroup.Paste_Text);
+            EditorThemeManager.ApplyGraphic(PasteInstanceDataButton.button.image, ThemeGroup.Paste, true);
+            EditorThemeManager.ApplyGraphic(PasteInstanceDataButton.label, ThemeGroup.Paste_Text);
             TooltipHelper.AssignTooltip(pasteInstanceData, "Paste Prefab Instance Data");
 
             var removeInstanceData = EditorPrefabHolder.Instance.Function1Button.Duplicate(LeftContent, "remove instance data");
             removeInstanceData.transform.AsRT().sizeDelta = new Vector2(356f, 32f);
             RemoveInstanceDataButton = removeInstanceData.GetComponent<FunctionButtonStorage>();
             RemoveInstanceDataButton.Text = "Remove Copied Data";
-            EditorThemeManager.AddGraphic(RemoveInstanceDataButton.button.image, ThemeGroup.Delete, true);
-            EditorThemeManager.AddGraphic(RemoveInstanceDataButton.label, ThemeGroup.Delete_Text);
+            EditorThemeManager.ApplyGraphic(RemoveInstanceDataButton.button.image, ThemeGroup.Delete, true);
+            EditorThemeManager.ApplyGraphic(RemoveInstanceDataButton.label, ThemeGroup.Delete_Text);
             TooltipHelper.AssignTooltip(removeInstanceData, "Remove Prefab Instance Data");
 
             #endregion
@@ -641,7 +641,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             EditorLayerField = layers.GetComponent<InputField>();
             EditorLayerField.textComponent.alignment = TextAnchor.MiddleCenter;
             layers.gameObject.AddComponent<ContrastColors>().Init(EditorLayerField.textComponent, EditorLayerField.image);
-            EditorThemeManager.AddGraphic(EditorLayerField.image, ThemeGroup.Null, true);
+            EditorThemeManager.ApplyGraphic(EditorLayerField.image, ThemeGroup.Null, true);
 
             var edhlg = EditorSettingsParent.GetComponent<HorizontalLayoutGroup>();
             edhlg.childControlWidth = false;
@@ -653,8 +653,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
             BinSlider.transform.AsRT().sizeDelta = new Vector2(237f, 32f);
             var binSliderImage = BinSlider.transform.Find("Image").GetComponent<Image>();
             BinSlider.colors = UIManager.SetColorBlock(BinSlider.colors, Color.white, new Color(0.9f, 0.9f, 0.9f), Color.white, Color.white, Color.white);
-            EditorThemeManager.AddGraphic(binSliderImage, ThemeGroup.Slider_2, true);
-            EditorThemeManager.AddGraphic(BinSlider.image, ThemeGroup.Slider_2_Handle, true);
+            EditorThemeManager.ApplyGraphic(binSliderImage, ThemeGroup.Slider_2, true);
+            EditorThemeManager.ApplyGraphic(BinSlider.image, ThemeGroup.Slider_2_Handle, true);
 
             EditorLayerTogglesParent = EditorSettingsParent.Find("layer").AsRT();
             EditorLayerToggles = EditorLayerTogglesParent.GetComponentsInChildren<Toggle>();
@@ -668,13 +668,13 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             var labelText = label.transform.GetChild(0).GetComponent<Text>();
             labelText.text = "Editor Index";
-            EditorThemeManager.AddLightText(labelText);
+            EditorThemeManager.ApplyLightText(labelText);
 
             var indexEditor = EditorPrefabHolder.Instance.NumberInputField.Duplicate(LeftContent, "indexer");
             EditorIndexField = indexEditor.GetComponent<InputFieldStorage>();
             if (EditorIndexField.middleButton)
                 CoreHelper.Delete(EditorIndexField.middleButton.gameObject);
-            EditorThemeManager.AddInputField(EditorIndexField);
+            EditorThemeManager.ApplyInputField(EditorIndexField);
 
             var baseColorParent = EditorPrefabHolder.Instance.Labels.Duplicate(LeftContent, "base color");
             baseColorParent.transform.AsRT().sizeDelta = new Vector2(351f, 32f);
@@ -682,13 +682,13 @@ namespace BetterLegacy.Editor.Data.Dialogs
             baseColorLabel.alignment = TextAnchor.MiddleLeft;
             baseColorLabel.text = "Editor Base Color";
             baseColorLabel.rectTransform.sizeDelta = new Vector2(232f, 32f);
-            EditorThemeManager.AddLightText(baseColorLabel);
+            EditorThemeManager.ApplyLightText(baseColorLabel);
             var baseColor = EditorPrefabHolder.Instance.StringInputField.Duplicate(baseColorParent.transform, "hex");
             BaseColorField = baseColor.GetComponent<InputField>();
             BaseColorField.transform.AsRT().sizeDelta = new Vector2(100f, 32f);
             BaseColorField.GetPlaceholderText().text = "Enter Color";
             BaseColorField.GetPlaceholderText().fontSize = 15;
-            EditorThemeManager.AddInputField(BaseColorField);
+            EditorThemeManager.ApplyInputField(BaseColorField);
 
             var selectColorParent = EditorPrefabHolder.Instance.Labels.Duplicate(LeftContent, "select color");
             selectColorParent.transform.AsRT().sizeDelta = new Vector2(351f, 32f);
@@ -696,13 +696,13 @@ namespace BetterLegacy.Editor.Data.Dialogs
             selectColorLabel.alignment = TextAnchor.MiddleLeft;
             selectColorLabel.text = "Editor Select Color";
             selectColorLabel.rectTransform.sizeDelta = new Vector2(232f, 32f);
-            EditorThemeManager.AddLightText(selectColorLabel);
+            EditorThemeManager.ApplyLightText(selectColorLabel);
             var selectColor = EditorPrefabHolder.Instance.StringInputField.Duplicate(selectColorParent.transform, "hex");
             SelectColorField = selectColor.GetComponent<InputField>();
             SelectColorField.transform.AsRT().sizeDelta = new Vector2(100f, 32f);
             SelectColorField.GetPlaceholderText().text = "Enter Color";
             SelectColorField.GetPlaceholderText().fontSize = 15;
-            EditorThemeManager.AddInputField(SelectColorField);
+            EditorThemeManager.ApplyInputField(SelectColorField);
 
             var textColorParent = EditorPrefabHolder.Instance.Labels.Duplicate(LeftContent, "text color");
             textColorParent.transform.AsRT().sizeDelta = new Vector2(351f, 32f);
@@ -710,13 +710,13 @@ namespace BetterLegacy.Editor.Data.Dialogs
             textColorLabel.alignment = TextAnchor.MiddleLeft;
             textColorLabel.text = "Editor Text Color";
             textColorLabel.rectTransform.sizeDelta = new Vector2(232f, 32f);
-            EditorThemeManager.AddLightText(textColorLabel);
+            EditorThemeManager.ApplyLightText(textColorLabel);
             var textColor = EditorPrefabHolder.Instance.StringInputField.Duplicate(textColorParent.transform, "hex");
             TextColorField = textColor.GetComponent<InputField>();
             TextColorField.transform.AsRT().sizeDelta = new Vector2(100f, 32f);
             TextColorField.GetPlaceholderText().text = "Enter Color";
             TextColorField.GetPlaceholderText().fontSize = 15;
-            EditorThemeManager.AddInputField(TextColorField);
+            EditorThemeManager.ApplyInputField(TextColorField);
 
             var markColorParent = EditorPrefabHolder.Instance.Labels.Duplicate(LeftContent, "mark color");
             markColorParent.transform.AsRT().sizeDelta = new Vector2(351f, 32f);
@@ -724,13 +724,13 @@ namespace BetterLegacy.Editor.Data.Dialogs
             markColorLabel.alignment = TextAnchor.MiddleLeft;
             markColorLabel.text = "Editor Mark Color";
             markColorLabel.rectTransform.sizeDelta = new Vector2(232f, 32f);
-            EditorThemeManager.AddLightText(markColorLabel);
+            EditorThemeManager.ApplyLightText(markColorLabel);
             var markColor = EditorPrefabHolder.Instance.StringInputField.Duplicate(markColorParent.transform, "hex");
             MarkColorField = markColor.GetComponent<InputField>();
             MarkColorField.transform.AsRT().sizeDelta = new Vector2(100f, 32f);
             MarkColorField.GetPlaceholderText().text = "Enter Color";
             MarkColorField.GetPlaceholderText().fontSize = 15;
-            EditorThemeManager.AddInputField(MarkColorField);
+            EditorThemeManager.ApplyInputField(MarkColorField);
 
             #endregion
 
@@ -743,20 +743,20 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 var inspectPrefabObject = EditorPrefabHolder.Instance.Function2Button.Duplicate(LeftContent, "inspect prefab object");
                 InspectPrefabObject = inspectPrefabObject.GetComponent<FunctionButtonStorage>();
                 InspectPrefabObject.Text = "Inspect Prefab Object";
-                EditorThemeManager.AddSelectable(InspectPrefabObject.button, ThemeGroup.Function_2);
-                EditorThemeManager.AddGraphic(InspectPrefabObject.label, ThemeGroup.Function_2_Text);
+                EditorThemeManager.ApplySelectable(InspectPrefabObject.button, ThemeGroup.Function_2);
+                EditorThemeManager.ApplyGraphic(InspectPrefabObject.label, ThemeGroup.Function_2_Text);
 
                 var inspectRuntimeObject = EditorPrefabHolder.Instance.Function2Button.Duplicate(LeftContent, "inspect runtime object");
                 InspectRuntimeObjectButton = inspectRuntimeObject.GetComponent<FunctionButtonStorage>();
                 InspectRuntimeObjectButton.Text = "Inspect Runtime Object";
-                EditorThemeManager.AddSelectable(InspectRuntimeObjectButton.button, ThemeGroup.Function_2);
-                EditorThemeManager.AddGraphic(InspectRuntimeObjectButton.label, ThemeGroup.Function_2_Text);
+                EditorThemeManager.ApplySelectable(InspectRuntimeObjectButton.button, ThemeGroup.Function_2);
+                EditorThemeManager.ApplyGraphic(InspectRuntimeObjectButton.label, ThemeGroup.Function_2_Text);
 
                 var inspectTimelineObject = EditorPrefabHolder.Instance.Function2Button.Duplicate(LeftContent, "inspect timeline object");
                 InspectTimelineObject = inspectTimelineObject.GetComponent<FunctionButtonStorage>();
                 InspectTimelineObject.Text = "Inspect Timeline Object";
-                EditorThemeManager.AddSelectable(InspectTimelineObject.button, ThemeGroup.Function_2);
-                EditorThemeManager.AddGraphic(InspectTimelineObject.label, ThemeGroup.Function_2_Text);
+                EditorThemeManager.ApplySelectable(InspectTimelineObject.button, ThemeGroup.Function_2);
+                EditorThemeManager.ApplyGraphic(InspectTimelineObject.label, ThemeGroup.Function_2_Text);
             }
 
             #endregion
@@ -781,13 +781,13 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var offsetLabel = Right.GetChild(0);
             var offsetLabelText = offsetLabel.GetChild(0).GetComponent<Text>();
             offsetLabelText.text = "Global Offset Time";
-            EditorThemeManager.AddLightText(offsetLabelText);
+            EditorThemeManager.ApplyLightText(offsetLabelText);
 
             CoreHelper.Delete(Right.Find("time").gameObject);
             var offsetTime = EditorPrefabHolder.Instance.NumberInputField.Duplicate(Right, "time", 1);
             OffsetField = offsetTime.GetComponent<InputFieldStorage>();
             CoreHelper.Delete(OffsetField.middleButton.gameObject);
-            EditorThemeManager.AddInputField(OffsetField);
+            EditorThemeManager.ApplyInputField(OffsetField);
 
             #endregion
 
@@ -806,7 +806,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             NameField.contentType = InputField.ContentType.Standard;
             NameField.characterLimit = 0;
 
-            EditorThemeManager.AddInputField(NameField);
+            EditorThemeManager.ApplyInputField(NameField);
             EditorHelper.SetComplexity(prefabName, Complexity.Normal);
 
             #endregion
@@ -824,7 +824,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             type.transform.AsRT().sizeDelta = new Vector2(371f, 32f);
             type.gameObject.AddComponent<ContrastColors>().Init(PrefabTypeSelectorButton.label, PrefabTypeSelectorButton.button.image);
 
-            EditorThemeManager.AddGraphic(PrefabTypeSelectorButton.button.image, ThemeGroup.Null, true);
+            EditorThemeManager.ApplyGraphic(PrefabTypeSelectorButton.button.image, ThemeGroup.Null, true);
             EditorHelper.SetComplexity(type, Complexity.Normal);
 
             #endregion
@@ -839,8 +839,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             EditorHelper.SetComplexity(savePrefabLabel.GameObject, Complexity.Normal);
             EditorHelper.SetComplexity(savePrefab, Complexity.Normal);
-            EditorThemeManager.AddSelectable(SavePrefabButton.button, ThemeGroup.Function_2);
-            EditorThemeManager.AddGraphic(SavePrefabButton.label, ThemeGroup.Function_2_Text);
+            EditorThemeManager.ApplySelectable(SavePrefabButton.button, ThemeGroup.Function_2);
+            EditorThemeManager.ApplyGraphic(SavePrefabButton.label, ThemeGroup.Function_2_Text);
 
             #endregion
 
@@ -854,8 +854,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             EditorHelper.SetComplexity(defaultInstanceDataLabel.GameObject, Complexity.Advanced);
             EditorHelper.SetComplexity(defaultInstanceData, Complexity.Advanced);
-            EditorThemeManager.AddSelectable(DefaultInstanceDataButton.button, ThemeGroup.Function_2);
-            EditorThemeManager.AddGraphic(DefaultInstanceDataButton.label, ThemeGroup.Function_2_Text);
+            EditorThemeManager.ApplySelectable(DefaultInstanceDataButton.button, ThemeGroup.Function_2);
+            EditorThemeManager.ApplyGraphic(DefaultInstanceDataButton.label, ThemeGroup.Function_2_Text);
 
             #endregion
 
@@ -871,8 +871,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                 EditorHelper.SetComplexity(inspectPrefabLabel.GameObject, Complexity.Advanced);
                 EditorHelper.SetComplexity(inspectPrefab, Complexity.Advanced);
-                EditorThemeManager.AddSelectable(InspectPrefab.button, ThemeGroup.Function_2);
-                EditorThemeManager.AddGraphic(InspectPrefab.label, ThemeGroup.Function_2_Text);
+                EditorThemeManager.ApplySelectable(InspectPrefab.button, ThemeGroup.Function_2);
+                EditorThemeManager.ApplyGraphic(InspectPrefab.label, ThemeGroup.Function_2_Text);
             }
 
 

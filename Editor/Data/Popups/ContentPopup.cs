@@ -166,13 +166,13 @@ namespace BetterLegacy.Editor.Data.Popups
 
             EditorHelper.AddEditorPopup(name, popup);
 
-            EditorThemeManager.AddGraphic(popup.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Bottom_Left_I);
-            EditorThemeManager.AddGraphic(TopPanel.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Top);
-            EditorThemeManager.AddSelectable(CloseButton, ThemeGroup.Close);
-            EditorThemeManager.AddGraphic(CloseButton.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
-            EditorThemeManager.AddLightText(Title);
-            EditorThemeManager.AddScrollbar(ContentScrollbar, scrollbarRoundedSide: SpriteHelper.RoundedSide.Bottom_Right_I);
-            EditorThemeManager.AddInputField(SearchField, ThemeGroup.Search_Field_1, 1, SpriteHelper.RoundedSide.Bottom);
+            EditorThemeManager.ApplyGraphic(popup.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Bottom_Left_I);
+            EditorThemeManager.ApplyGraphic(TopPanel.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Top);
+            EditorThemeManager.ApplySelectable(CloseButton, ThemeGroup.Close);
+            EditorThemeManager.ApplyGraphic(CloseButton.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
+            EditorThemeManager.ApplyLightText(Title);
+            EditorThemeManager.ApplyScrollbar(ContentScrollbar, scrollbarRoundedSide: SpriteHelper.RoundedSide.Bottom_Right_I);
+            EditorThemeManager.ApplyInputField(SearchField, ThemeGroup.Search_Field_1, 1, SpriteHelper.RoundedSide.Bottom);
 
             InitTopElementsParent();
 
@@ -345,7 +345,7 @@ namespace BetterLegacy.Editor.Data.Popups
             else
                 PathField.onEndEdit.ClearAll();
 
-            EditorThemeManager.AddInputField(PathField);
+            EditorThemeManager.ApplyInputField(PathField);
         }
 
         /// <summary>
@@ -370,7 +370,7 @@ namespace BetterLegacy.Editor.Data.Popups
             ReloadButton = reload.GetComponent<Button>();
             ReloadButton.onClick.NewListener(() => action?.Invoke());
 
-            EditorThemeManager.AddSelectable(ReloadButton, ThemeGroup.Function_2, false);
+            EditorThemeManager.ApplySelectable(ReloadButton, ThemeGroup.Function_2, false);
 
             ReloadButton.image.sprite = EditorSprites.ReloadSprite;
         }
@@ -423,7 +423,7 @@ namespace BetterLegacy.Editor.Data.Popups
 
             CoreHelper.Delete(PageField.middleButton);
 
-            EditorThemeManager.AddInputField(PageField);
+            EditorThemeManager.ApplyInputField(PageField);
         }
 
         /// <summary>
@@ -451,7 +451,7 @@ namespace BetterLegacy.Editor.Data.Popups
             SortDropdown.SetValueWithoutNotify(getValue?.Invoke() ?? 0);
             SortDropdown.onValueChanged.NewListener(_val => setValue?.Invoke(_val));
 
-            EditorThemeManager.AddDropdown(SortDropdown);
+            EditorThemeManager.ApplyDropdown(SortDropdown);
         }
 
         /// <summary>
@@ -469,7 +469,7 @@ namespace BetterLegacy.Editor.Data.Popups
             AscendToggle.SetIsOnWithoutNotify(getValue?.Invoke() ?? false);
             AscendToggle.onValueChanged.NewListener(_val => setValue?.Invoke(_val));
 
-            EditorThemeManager.AddToggle(AscendToggle);
+            EditorThemeManager.ApplyToggle(AscendToggle);
 
         }
 

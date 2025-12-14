@@ -390,11 +390,11 @@ namespace BetterLegacy.Editor.Data.Popups
 
             EditorHelper.AddEditorPopup(name, popup);
 
-            EditorThemeManager.AddGraphic(popup.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Bottom_Left_I);
-            EditorThemeManager.AddGraphic(TopPanel.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Top);
-            EditorThemeManager.AddSelectable(CloseButton, ThemeGroup.Close);
-            EditorThemeManager.AddGraphic(CloseButton.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
-            EditorThemeManager.AddLightText(Title);
+            EditorThemeManager.ApplyGraphic(popup.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Bottom_Left_I);
+            EditorThemeManager.ApplyGraphic(TopPanel.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Top);
+            EditorThemeManager.ApplySelectable(CloseButton, ThemeGroup.Close);
+            EditorThemeManager.ApplyGraphic(CloseButton.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
+            EditorThemeManager.ApplyLightText(Title);
 
             Render();
         }

@@ -74,7 +74,7 @@ namespace BetterLegacy.Editor.Managers
                 var disable = contextMenu.AddComponent<Clickable>();
                 disable.onExit = pointerEventData => contextMenu.SetActive(false);
 
-                EditorThemeManager.AddGraphic(contextMenuImage, ThemeGroup.Background_2, true);
+                EditorThemeManager.ApplyGraphic(contextMenuImage, ThemeGroup.Background_2, true);
                 contextMenu.SetActive(false);
             }
             catch (Exception ex)

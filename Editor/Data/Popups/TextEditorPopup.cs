@@ -95,20 +95,20 @@ namespace BetterLegacy.Editor.Data.Popups
             RectValues.Default.AnchoredPosition(-192f, 0f).SizeDelta(100f, 32f).AssignToRectTransform(update.transform.AsRT());
             UpdateButton = update;
 
-            EditorThemeManager.AddGraphic(textEditorPopup.GetComponent<Image>(), ThemeGroup.Background_1, true);
-            EditorThemeManager.AddGraphic(textEditorPopupPanel.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Top);
+            EditorThemeManager.ApplyGraphic(textEditorPopup.GetComponent<Image>(), ThemeGroup.Background_1, true);
+            EditorThemeManager.ApplyGraphic(textEditorPopupPanel.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Top);
 
-            EditorThemeManager.AddSelectable(close, ThemeGroup.Close, true);
-            EditorThemeManager.AddGraphic(close.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
+            EditorThemeManager.ApplySelectable(close, ThemeGroup.Close, true);
+            EditorThemeManager.ApplyGraphic(close.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
 
-            EditorThemeManager.AddLightText(textEditorPopupPanelTitle);
-            EditorThemeManager.AddInputField(EditorField);
+            EditorThemeManager.ApplyLightText(textEditorPopupPanelTitle);
+            EditorThemeManager.ApplyInputField(EditorField);
 
-            EditorThemeManager.AddSelectable(update.button, ThemeGroup.Function_2);
-            EditorThemeManager.AddGraphic(update.label, ThemeGroup.Function_2_Text);
+            EditorThemeManager.ApplySelectable(update.button, ThemeGroup.Function_2);
+            EditorThemeManager.ApplyGraphic(update.label, ThemeGroup.Function_2_Text);
 
-            EditorThemeManager.AddToggle(toggle);
-            EditorThemeManager.AddLightText(label);
+            EditorThemeManager.ApplyToggle(toggle);
+            EditorThemeManager.ApplyLightText(label);
 
             EditorHelper.AddEditorPopup(TEXT_EDITOR, textEditor);
 

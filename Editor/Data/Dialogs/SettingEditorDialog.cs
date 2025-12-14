@@ -98,12 +98,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
         {
             base.Init();
 
-            EditorThemeManager.AddGraphic(GameObject.GetComponent<Image>(), ThemeGroup.Background_1);
+            EditorThemeManager.ApplyGraphic(GameObject.GetComponent<Image>(), ThemeGroup.Background_1);
 
             var scrollView = EditorPrefabHolder.Instance.ScrollView.Duplicate(GameObject.transform, "Scroll View");
             scrollView.transform.AsRT().sizeDelta = new Vector2(765f, 600f);
             Content = scrollView.transform.Find("Viewport/Content");
-            EditorThemeManager.AddScrollbar(scrollView.transform.Find("Scrollbar Vertical").GetComponent<Scrollbar>());
+            EditorThemeManager.ApplyScrollbar(scrollView.transform.Find("Scrollbar Vertical").GetComponent<Scrollbar>());
 
             var snap = GameObject.transform.Find("snap");
 
@@ -118,48 +118,48 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             CoreHelper.Destroy(snap.Find("bpm/<").gameObject, true);
             CoreHelper.Destroy(snap.Find("bpm/>").gameObject, true);
-            EditorThemeManager.AddToggle(BPMToggle);
-            EditorThemeManager.AddLightText(snap.Find("toggle/title").GetComponent<Text>());
-            EditorThemeManager.AddLightText(snap.Find("bpm/title").GetComponent<Text>());
+            EditorThemeManager.ApplyToggle(BPMToggle);
+            EditorThemeManager.ApplyLightText(snap.Find("toggle/title").GetComponent<Text>());
+            EditorThemeManager.ApplyLightText(snap.Find("bpm/title").GetComponent<Text>());
             snap.Find("toggle/title").AsRT().sizeDelta = new Vector2(100f, 32f);
             snap.Find("bpm/title").AsRT().sizeDelta = new Vector2(100f, 32f);
 
-            EditorThemeManager.AddGraphic(snap.transform.Find("title_/Panel/icon").GetComponent<Image>(), ThemeGroup.Light_Text);
-            EditorThemeManager.AddLightText(snap.transform.Find("title_/title").GetComponent<Text>());
+            EditorThemeManager.ApplyGraphic(snap.transform.Find("title_/Panel/icon").GetComponent<Image>(), ThemeGroup.Light_Text);
+            EditorThemeManager.ApplyLightText(snap.transform.Find("title_/title").GetComponent<Text>());
 
-            EditorThemeManager.AddGraphic(BPMSlider.transform.Find("Background").GetComponent<Image>(), ThemeGroup.Slider_2, true);
-            EditorThemeManager.AddGraphic(BPMSlider.image, ThemeGroup.Slider_2_Handle, true);
+            EditorThemeManager.ApplyGraphic(BPMSlider.transform.Find("Background").GetComponent<Image>(), ThemeGroup.Slider_2, true);
+            EditorThemeManager.ApplyGraphic(BPMSlider.image, ThemeGroup.Slider_2_Handle, true);
 
             BPMInput = snap.Find("bpm/input").GetComponent<InputField>();
-            EditorThemeManager.AddInputField(BPMInput);
+            EditorThemeManager.ApplyInputField(BPMInput);
 
             var snapOffset = snap.Find("bpm").gameObject.Duplicate(snap, "bpm offset");
             var snapOffsetText = snapOffset.transform.Find("title").GetComponent<Text>();
             snapOffsetText.text = "BPM Offset";
             snapOffsetText.rectTransform.sizeDelta = new Vector2(100f, 32f);
-            EditorThemeManager.AddLightText(snapOffsetText);
+            EditorThemeManager.ApplyLightText(snapOffsetText);
 
             BPMOffsetSlider = snapOffset.transform.Find("slider").GetComponent<Slider>();
-            EditorThemeManager.AddGraphic(BPMOffsetSlider.transform.Find("Background").GetComponent<Image>(), ThemeGroup.Slider_2, true);
-            EditorThemeManager.AddGraphic(BPMOffsetSlider.image, ThemeGroup.Slider_2_Handle, true);
+            EditorThemeManager.ApplyGraphic(BPMOffsetSlider.transform.Find("Background").GetComponent<Image>(), ThemeGroup.Slider_2, true);
+            EditorThemeManager.ApplyGraphic(BPMOffsetSlider.image, ThemeGroup.Slider_2_Handle, true);
 
             BPMOffsetInput = snapOffset.transform.Find("input").GetComponent<InputField>();
-            EditorThemeManager.AddInputField(BPMOffsetInput);
+            EditorThemeManager.ApplyInputField(BPMOffsetInput);
 
             var snapSignature = snap.Find("bpm").gameObject.Duplicate(snap, "bpm signature");
             var snapSignatureText = snapSignature.transform.Find("title").GetComponent<Text>();
             snapSignatureText.text = "Signature";
             snapSignatureText.rectTransform.sizeDelta = new Vector2(100f, 32f);
-            EditorThemeManager.AddLightText(snapSignatureText);
+            EditorThemeManager.ApplyLightText(snapSignatureText);
 
             BPMTimingSlider = snapSignature.transform.Find("slider").GetComponent<Slider>();
-            EditorThemeManager.AddGraphic(BPMTimingSlider.transform.Find("Background").GetComponent<Image>(), ThemeGroup.Slider_2, true);
-            EditorThemeManager.AddGraphic(BPMTimingSlider.image, ThemeGroup.Slider_2_Handle, true);
+            EditorThemeManager.ApplyGraphic(BPMTimingSlider.transform.Find("Background").GetComponent<Image>(), ThemeGroup.Slider_2, true);
+            EditorThemeManager.ApplyGraphic(BPMTimingSlider.image, ThemeGroup.Slider_2_Handle, true);
 
             BPMTimingSlider.wholeNumbers = true;
 
             BPMTimingInput = snapSignature.transform.Find("input").GetComponent<InputField>();
-            EditorThemeManager.AddInputField(BPMTimingInput);
+            EditorThemeManager.ApplyInputField(BPMTimingInput);
 
             snap.AsRT().sizeDelta = new Vector2(765f, 180f);
 
@@ -167,8 +167,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var editorInformationText = title1.transform.Find("title").GetComponent<Text>();
             editorInformationText.text = "Editor Information";
 
-            EditorThemeManager.AddGraphic(title1.transform.Find("Panel/icon").GetComponent<Image>(), ThemeGroup.Light_Text);
-            EditorThemeManager.AddLightText(editorInformationText);
+            EditorThemeManager.ApplyGraphic(title1.transform.Find("Panel/icon").GetComponent<Image>(), ThemeGroup.Light_Text);
+            EditorThemeManager.ApplyLightText(editorInformationText);
 
             InfoScrollView = EditorPrefabHolder.Instance.ScrollView.Duplicate(Content, "Scroll View");
             InfoScrollView.transform.AsRT().sizeDelta = new Vector2(765f, 120f);
@@ -183,7 +183,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                 iImage.color = new Color(1f, 1f, 1f, 0.12f);
 
-                EditorThemeManager.AddGraphic(iImage, ThemeGroup.List_Button_1_Normal, true);
+                EditorThemeManager.ApplyGraphic(iImage, ThemeGroup.List_Button_1_Normal, true);
 
                 baseInfo.AddComponent<HorizontalLayoutGroup>();
 
@@ -195,7 +195,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 titleText.alignment = TextAnchor.MiddleLeft;
                 titleText.text = "  " + info.label;
 
-                EditorThemeManager.AddLightText(titleText);
+                EditorThemeManager.ApplyLightText(titleText);
 
                 var infoGO = Creator.NewUIObject("Title", baseInfo.transform);
 
@@ -205,7 +205,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 infoText.alignment = TextAnchor.MiddleRight;
                 infoText.text = "[ 0 ]";
 
-                EditorThemeManager.AddLightText(infoText);
+                EditorThemeManager.ApplyLightText(infoText);
 
                 info.text = infoText;
             }
@@ -225,9 +225,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var markerColorsText = title2.transform.Find("title").GetComponent<Text>();
             markerColorsText.text = "Marker Colors / Editor Layer Colors";
 
-            EditorThemeManager.AddGraphic(title2.transform.Find("Panel/icon").GetComponent<Image>(), ThemeGroup.Light_Text);
+            EditorThemeManager.ApplyGraphic(title2.transform.Find("Panel/icon").GetComponent<Image>(), ThemeGroup.Light_Text);
 
-            EditorThemeManager.AddLightText(markerColorsText);
+            EditorThemeManager.ApplyLightText(markerColorsText);
 
             var colorEditors = Creator.NewUIObject("Color Editors", Content);
             var colorEditorsLayout = colorEditors.AddComponent<HorizontalLayoutGroup>();
@@ -237,12 +237,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
             // Marker Colors
             var markerColorsScrollView = EditorPrefabHolder.Instance.ScrollView.Duplicate(colorEditors.transform, "Scroll View");
             MarkerColorsContent = markerColorsScrollView.transform.Find("Viewport/Content");
-            EditorThemeManager.AddScrollbar(markerColorsScrollView.transform.Find("Scrollbar Vertical").GetComponent<Scrollbar>());
+            EditorThemeManager.ApplyScrollbar(markerColorsScrollView.transform.Find("Scrollbar Vertical").GetComponent<Scrollbar>());
 
             // Layer Colors
             var layerColorsScrollView = EditorPrefabHolder.Instance.ScrollView.Duplicate(colorEditors.transform, "Scroll View");
             LayerColorsContent = layerColorsScrollView.transform.Find("Viewport/Content");
-            EditorThemeManager.AddScrollbar(layerColorsScrollView.transform.Find("Scrollbar Vertical").GetComponent<Scrollbar>());
+            EditorThemeManager.ApplyScrollbar(layerColorsScrollView.transform.Find("Scrollbar Vertical").GetComponent<Scrollbar>());
 
             var analyzeBPM = EditorPrefabHolder.Instance.Function2Button.Duplicate(snap.Find("toggle"), "analyze");
             analyzeBPM.transform.AsRT().sizeDelta = new Vector2(140f, 32f);
@@ -260,8 +260,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 }));
             });
 
-            EditorThemeManager.AddSelectable(AnalyzeBPMButton.button, ThemeGroup.Function_2);
-            EditorThemeManager.AddGraphic(AnalyzeBPMButton.label, ThemeGroup.Function_2_Text);
+            EditorThemeManager.ApplySelectable(AnalyzeBPMButton.button, ThemeGroup.Function_2);
+            EditorThemeManager.ApplyGraphic(AnalyzeBPMButton.label, ThemeGroup.Function_2_Text);
         }
 
         #endregion

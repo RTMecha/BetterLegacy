@@ -355,7 +355,7 @@ namespace BetterLegacy.Editor.Managers
             CoreHelper.Delete(xPositionField.leftGreaterButton);
             CoreHelper.Delete(xPositionField.middleButton);
             CoreHelper.Delete(xPositionField.rightGreaterButton);
-            EditorThemeManager.AddInputField(xPositionField);
+            EditorThemeManager.ApplyInputField(xPositionField);
             TriggerHelper.IncreaseDecreaseButtons(xPositionField);
             TriggerHelper.InversableField(xPositionField);
 
@@ -378,7 +378,7 @@ namespace BetterLegacy.Editor.Managers
             CoreHelper.Delete(yPositionField.leftGreaterButton);
             CoreHelper.Delete(yPositionField.middleButton);
             CoreHelper.Delete(yPositionField.rightGreaterButton);
-            EditorThemeManager.AddInputField(yPositionField);
+            EditorThemeManager.ApplyInputField(yPositionField);
             TriggerHelper.IncreaseDecreaseButtons(yPositionField);
             TriggerHelper.InversableField(yPositionField);
 
@@ -408,7 +408,7 @@ namespace BetterLegacy.Editor.Managers
             CoreHelper.Delete(rotationField.leftGreaterButton);
             CoreHelper.Delete(rotationField.middleButton);
             CoreHelper.Delete(rotationField.rightGreaterButton);
-            EditorThemeManager.AddInputField(rotationField);
+            EditorThemeManager.ApplyInputField(rotationField);
             TriggerHelper.IncreaseDecreaseButtons(rotationField);
             TriggerHelper.InversableField(rotationField);
 

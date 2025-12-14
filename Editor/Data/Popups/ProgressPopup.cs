@@ -35,7 +35,7 @@ namespace BetterLegacy.Editor.Data.Popups
             RectValues.Default.SizeDelta(500f, 300f).AssignToRectTransform(GameObject.transform.AsRT());
             var baseImage = GameObject.AddComponent<Image>();
 
-            EditorThemeManager.AddGraphic(baseImage, ThemeGroup.Background_1, true);
+            EditorThemeManager.ApplyGraphic(baseImage, ThemeGroup.Background_1, true);
 
             Dragger = GameObject.AddComponent<DraggableUI>();
             Dragger.target = GameObject.transform;
@@ -46,19 +46,19 @@ namespace BetterLegacy.Editor.Data.Popups
             var progressBaseImage = progressBase.AddComponent<Image>();
             progressBase.AddComponent<Mask>();
 
-            EditorThemeManager.AddGraphic(progressBaseImage, ThemeGroup.Background_2, true);
+            EditorThemeManager.ApplyGraphic(progressBaseImage, ThemeGroup.Background_2, true);
 
             var progress = Creator.NewUIObject("Progress", progressBase.transform);
             RectValues.LeftAnchored.SizeDelta(0f, 32f).AssignToRectTransform(progress.transform.AsRT());
             var progressImage = progress.AddComponent<Image>();
 
-            EditorThemeManager.AddGraphic(progressImage, ThemeGroup.Light_Text, true);
+            EditorThemeManager.ApplyGraphic(progressImage, ThemeGroup.Light_Text, true);
 
             ProgressBar = progress.transform.AsRT();
             ProgressText = EditorPrefabHolder.Instance.Labels.transform.GetChild(0).gameObject.Duplicate(GameObject.transform).GetComponent<Text>();
             RectValues.Default.AnchoredPosition(0f, 60f).SizeDelta(400f, 100f).AssignToRectTransform(ProgressText.rectTransform);
             ProgressText.alignment = TextAnchor.UpperLeft;
-            EditorThemeManager.AddLightText(ProgressText);
+            EditorThemeManager.ApplyLightText(ProgressText);
 
             var close = EditorPrefabHolder.Instance.CloseButton.Duplicate(GameObject.transform);
             RectValues.TopRightAnchored.SizeDelta(32f, 32f).AssignToRectTransform(close.transform.AsRT());
@@ -66,10 +66,10 @@ namespace BetterLegacy.Editor.Data.Popups
             var closeButton = close.GetComponent<Button>();
             closeButton.onClick.NewListener(Close);
 
-            EditorThemeManager.AddSelectable(closeButton, ThemeGroup.Close);
+            EditorThemeManager.ApplySelectable(closeButton, ThemeGroup.Close);
 
             var closeX = close.transform.GetChild(0).gameObject;
-            EditorThemeManager.AddGraphic(close.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
+            EditorThemeManager.ApplyGraphic(close.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
 
             GameObject.SetActive(false);
         }
