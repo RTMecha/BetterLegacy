@@ -130,6 +130,49 @@ namespace BetterLegacy.Core
         public static Transform TryGetChild(this Transform transform, int index) => transform.InRange(index) ? transform.GetChild(index) : null;
 
         /// <summary>
+        /// Gets the previous sibling related to the transform.
+        /// </summary>
+        /// <returns>Returns the sibling that appears before this object on the parent.</returns>
+        public static Transform GetPreviousSibling(this Transform transform)
+        {
+            var parent = transform.parent;
+            if (!parent)
+                return null;
+            var siblingIndex = transform.GetSiblingIndex() - 1;
+            if (siblingIndex < 0)
+                return null;
+            return parent.GetChild(siblingIndex);
+        }
+
+        /// <summary>
+        /// Gets the next sibling related to the transform.
+        /// </summary>
+        /// <returns>Returns the sibling that appears after this object on the parent.</returns>
+        public static Transform GetNextSibling(this Transform transform)
+        {
+            var parent = transform.parent;
+            if (!parent)
+                return null;
+            var siblingIndex = transform.GetSiblingIndex() + 1;
+            if (siblingIndex >= parent.childCount)
+                return null;
+            return parent.GetChild(siblingIndex);
+        }
+
+        /// <summary>
+        /// Gets a sibling related to the transform.
+        /// </summary>
+        /// <param name="index">Index of the sibling to get.</param>
+        /// <returns>Returns a found sibling if the index is in the range of the parent.</returns>
+        public static Transform GetSibling(this Transform transform, int index)
+        {
+            var parent = transform.parent;
+            if (!parent)
+                return null;
+            return parent.TryGetChild(index);
+        }
+
+        /// <summary>
         /// Duplicates a <see cref="GameObject"/>, sets a parent and ensures the same local position and scale. Wraps the <see cref="Object.Instantiate(Object)"/> method.
         /// </summary>
         /// <param name="parent">Parent to set.</param>
@@ -1576,7 +1619,7 @@ namespace BetterLegacy.Core
         /// Gets the <see cref="Animation.EaseFunction"/> in the easing dictionary.
         /// </summary>
         /// <returns>Returns an <see cref="Animation.EaseFunction"/>.</returns>
-        public static Animation.EaseFunction GetFunction(this Easing easing) => Animation.Ease.GetEaseFunction(easing.ToString());
+        public static EaseFunction GetFunction(this Easing easing) => Animation.Ease.GetEaseFunction(easing.ToString());
 
         /// <summary>
         /// Gets the actual registered scene name.
