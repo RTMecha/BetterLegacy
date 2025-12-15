@@ -104,7 +104,7 @@ namespace BetterLegacy.Editor.Managers
 
         public Prefab copy;
 
-        public CustomUIDisplay copiedUIDisplay;
+        public CustomValueDisplay copiedUIDisplay;
 
 
         public List<Toggle> gradientColorButtons = new List<Toggle>();
@@ -2688,15 +2688,25 @@ namespace BetterLegacy.Editor.Managers
         public void RenderCustomUIDisplay(BeatmapObject beatmapObject)
         {
             Dialog.keyframeDialogs[0].InitCustomUI(
-                beatmapObject.editorData.GetDisplay("position/x", CustomUIDisplay.DefaultPositionXDisplay),
-                beatmapObject.editorData.GetDisplay("position/y", CustomUIDisplay.DefaultPositionYDisplay),
-                beatmapObject.editorData.GetDisplay("position/z", CustomUIDisplay.DefaultPositionZDisplay));
-            Dialog.keyframeDialogs[0].EventValueElements[2].GameObject.SetActive(RTEditor.ShowModdedUI);
+                beatmapObject.editorData.GetDisplay("position/x", CustomValueDisplay.DefaultPositionXDisplay),
+                beatmapObject.editorData.GetDisplay("position/y", CustomValueDisplay.DefaultPositionYDisplay),
+                beatmapObject.editorData.GetDisplay("position/z", CustomValueDisplay.DefaultPositionZDisplay));
+
+            EditorHelper.SetComplexity(Dialog.KeyframeDialogs[0].EventValueLabels[2].gameObject,
+                EditorHelper.GetComplexity("position_keyframe/z_axis", Complexity.Advanced));
+            EditorHelper.SetComplexity(Dialog.KeyframeDialogs[0].EventValueElements[2].GameObject,
+                EditorHelper.GetComplexity("position_keyframe/z_axis", Complexity.Advanced));
+
+            Dialog.KeyframeDialogs[0].EventValuesParent.AsRT().sizeDelta = new Vector2(553f, 32f);
+            var grp = Dialog.KeyframeDialogs[0].EventValuesParent.gameObject.GetComponent<GridLayoutGroup>();
+            grp.cellSize = new Vector2(EditorHelper.CheckComplexity(EditorHelper.GetComplexity("position_keyframe/z_axis", Complexity.Advanced)) ? 122f : 183f, 40f);
+            LayoutRebuilder.ForceRebuildLayoutImmediate(Dialog.KeyframeDialogs[0].EventValuesParent.AsRT());
+
             Dialog.keyframeDialogs[1].InitCustomUI(
-                beatmapObject.editorData.GetDisplay("scale/x", CustomUIDisplay.DefaultScaleXDisplay),
-                beatmapObject.editorData.GetDisplay("scale/y", CustomUIDisplay.DefaultScaleYDisplay));
+                beatmapObject.editorData.GetDisplay("scale/x", CustomValueDisplay.DefaultScaleXDisplay),
+                beatmapObject.editorData.GetDisplay("scale/y", CustomValueDisplay.DefaultScaleYDisplay));
             Dialog.keyframeDialogs[2].InitCustomUI(
-                beatmapObject.editorData.GetDisplay("rotation/x", CustomUIDisplay.DefaultRotationDisplay));
+                beatmapObject.editorData.GetDisplay("rotation/x", CustomValueDisplay.DefaultRotationDisplay));
         }
 
         /// <summary>

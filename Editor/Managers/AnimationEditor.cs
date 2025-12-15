@@ -274,15 +274,15 @@ namespace BetterLegacy.Editor.Managers
         public void RenderCustomUIDisplay(PAAnimation animation)
         {
             Dialog.keyframeDialogs[0].InitCustomUI(
-                animation.EditorData.GetDisplay("position/x", CustomUIDisplay.DefaultPositionXDisplay),
-                animation.EditorData.GetDisplay("position/y", CustomUIDisplay.DefaultPositionYDisplay),
-                animation.EditorData.GetDisplay("position/z", CustomUIDisplay.DefaultPositionZDisplay));
+                animation.EditorData.GetDisplay("position/x", CustomValueDisplay.DefaultPositionXDisplay),
+                animation.EditorData.GetDisplay("position/y", CustomValueDisplay.DefaultPositionYDisplay),
+                animation.EditorData.GetDisplay("position/z", CustomValueDisplay.DefaultPositionZDisplay));
             Dialog.keyframeDialogs[0].EventValueElements[2].GameObject.SetActive(RTEditor.ShowModdedUI);
             Dialog.keyframeDialogs[1].InitCustomUI(
-                animation.EditorData.GetDisplay("scale/x", CustomUIDisplay.DefaultScaleXDisplay),
-                animation.EditorData.GetDisplay("scale/y", CustomUIDisplay.DefaultScaleYDisplay));
+                animation.EditorData.GetDisplay("scale/x", CustomValueDisplay.DefaultScaleXDisplay),
+                animation.EditorData.GetDisplay("scale/y", CustomValueDisplay.DefaultScaleYDisplay));
             Dialog.keyframeDialogs[2].InitCustomUI(
-                animation.EditorData.GetDisplay("rotation/x", CustomUIDisplay.DefaultRotationDisplay));
+                animation.EditorData.GetDisplay("rotation/x", CustomValueDisplay.DefaultRotationDisplay));
         }
 
         #endregion

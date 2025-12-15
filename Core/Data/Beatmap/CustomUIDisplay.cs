@@ -8,9 +8,9 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// <summary>
     /// Allows specific editor UI to be customized per-object.
     /// </summary>
-    public class CustomUIDisplay : PAObject<CustomUIDisplay>
+    public class CustomValueDisplay : PAObject<CustomValueDisplay>
     {
-        public CustomUIDisplay() { }
+        public CustomValueDisplay() { }
 
         #region Values
 
@@ -133,39 +133,39 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Global
 
-        public static CustomUIDisplay DefaultPositionXDisplay => new CustomUIDisplay()
+        public static CustomValueDisplay DefaultPositionXDisplay => new CustomValueDisplay()
         {
             path = "position/x",
             type = UIType.InputField,
         };
         
-        public static CustomUIDisplay DefaultPositionYDisplay => new CustomUIDisplay()
+        public static CustomValueDisplay DefaultPositionYDisplay => new CustomValueDisplay()
         {
             path = "position/y",
             type = UIType.InputField,
         };
         
-        public static CustomUIDisplay DefaultPositionZDisplay => new CustomUIDisplay()
+        public static CustomValueDisplay DefaultPositionZDisplay => new CustomValueDisplay()
         {
             path = "position/z",
             type = UIType.InputField,
         };
         
-        public static CustomUIDisplay DefaultScaleXDisplay => new CustomUIDisplay()
+        public static CustomValueDisplay DefaultScaleXDisplay => new CustomValueDisplay()
         {
             path = "scale/x",
             type = UIType.InputField,
             resetValue = 1.0f,
         };
         
-        public static CustomUIDisplay DefaultScaleYDisplay => new CustomUIDisplay()
+        public static CustomValueDisplay DefaultScaleYDisplay => new CustomValueDisplay()
         {
             path = "scale/y",
             type = UIType.InputField,
             resetValue = 1.0f,
         };
 
-        public static CustomUIDisplay DefaultRotationDisplay => new CustomUIDisplay()
+        public static CustomValueDisplay DefaultRotationDisplay => new CustomValueDisplay()
         {
             path = "rotation/x",
             type = UIType.InputField,
@@ -175,7 +175,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Methods
 
-        public override void CopyData(CustomUIDisplay orig, bool newID = true)
+        public override void CopyData(CustomValueDisplay orig, bool newID = true)
         {
             path = orig.path;
             ApplyFrom(orig);
@@ -294,7 +294,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// Applies custom UI settings from another display element.
         /// </summary>
         /// <param name="other">Other element to copy from.</param>
-        public void ApplyFrom(CustomUIDisplay other)
+        public void ApplyFrom(CustomValueDisplay other)
         {
             type = other.type;
 
