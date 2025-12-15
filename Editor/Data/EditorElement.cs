@@ -1272,7 +1272,7 @@ namespace BetterLegacy.Editor.Data
 
         public List<LabelElement> labels = new List<LabelElement>();
 
-        public ThemeGroup themeGroup;
+        public ThemeGroup themeGroup = ThemeGroup.Light_Text;
 
         public LayoutValues layoutValues;
 
@@ -1359,6 +1359,8 @@ namespace BetterLegacy.Editor.Data
 
         public Vector2? spacing;
 
+        public ThemeGroup backgroundColor = ThemeGroup.Background_1;
+
         public override string DefaultName => "colors";
 
         #endregion
@@ -1394,7 +1396,7 @@ namespace BetterLegacy.Editor.Data
                     continue;
 
                 EditorThemeManager.ApplyGraphic(toggle.image, ThemeGroup.Null, true);
-                EditorThemeManager.ApplyGraphic(toggle.graphic, ThemeGroup.Background_3);
+                EditorThemeManager.ApplyGraphic(toggle.graphic, backgroundColor);
             }
         }
 
