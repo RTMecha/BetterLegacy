@@ -130,6 +130,18 @@ namespace BetterLegacy.Core
         public static Transform TryGetChild(this Transform transform, int index) => transform.InRange(index) ? transform.GetChild(index) : null;
 
         /// <summary>
+        /// Gets the first child of a transform.
+        /// </summary>
+        /// <returns>Returns the first child of a transform.</returns>
+        public static Transform GetFirstChild(this Transform transform) => transform.GetChild(0);
+
+        /// <summary>
+        /// Gets the last child of a transform.
+        /// </summary>
+        /// <returns>Returns the last child of a transform.</returns>
+        public static Transform GetLastChild(this Transform transform) => transform.GetChild(transform.childCount - 1);
+
+        /// <summary>
         /// Gets the previous sibling related to the transform.
         /// </summary>
         /// <returns>Returns the sibling that appears before this object on the parent.</returns>
