@@ -993,23 +993,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 posZLabelText.text = "Position Z";
                 EditorThemeManager.ApplyLightText(posZLabelText);
 
-                EditorConfig.AdjustPositionInputsChanged = () =>
-                {
-                    if (!ObjectEditor.inst)
-                        return;
-
-                    positionBase.AsRT().sizeDelta = new Vector2(553f, 32f);
-                    grp.cellSize = new Vector2(RTEditor.ShowModdedUI ? 122f : 183f, 40f);
-
-                    posZLabel.gameObject.SetActive(RTEditor.ShowModdedUI);
-                    LayoutRebuilder.ForceRebuildLayoutImmediate(positionBase.transform.AsRT());
-                };
-
                 positionBase.AsRT().sizeDelta = new Vector2(553f, 32f);
-                grp.cellSize = new Vector2(RTEditor.ShowModdedUI ? 122f : 183f, 40f);
-
-                posZLabel.SetActive(RTEditor.ShowModdedUI);
-                posZ.SetActive(RTEditor.ShowModdedUI);
             }
 
             // Opacity
@@ -1031,6 +1015,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                 var inputFieldStorage = opacity.transform.Find("x").gameObject.GetOrAddComponent<InputFieldStorage>();
                 inputFieldStorage.Assign();
+                inputFieldStorage.inputField.image = opacity.transform.Find("x/input").GetComponent<Image>();
 
                 EditorThemeManager.ApplyInputField(inputFieldStorage);
                 EditorThemeManager.ApplyToggle(collisionToggle.GetComponent<Toggle>(), graphic: collisionToggleText);
@@ -1333,7 +1318,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     var list = beatmapObject.TimelineKeyframes.Where(x => x.Selected);
 
                     foreach (var timelineObject in list)
-                        ObjectEditor.inst.Dialog.Timeline.SetCopiedData(timelineObject.Type, timelineObject.eventKeyframe);
+                        ObjectEditor.inst.Dialog.Timeline.SetCopiedData(timelineObject.Type, timelineObject.eventKeyframe, beatmapObject);
 
                     Timeline.RenderKeyframes(beatmapObject);
                     Timeline.RenderDialog(beatmapObject);
@@ -1375,7 +1360,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     var list = beatmapObject.TimelineKeyframes.Where(x => x.Selected && x.Type == 0);
 
                     foreach (var timelineObject in list)
-                        ObjectEditor.inst.Dialog.Timeline.SetCopiedData(0, timelineObject.eventKeyframe);
+                        ObjectEditor.inst.Dialog.Timeline.SetCopiedData(0, timelineObject.eventKeyframe, beatmapObject);
 
                     Timeline.RenderKeyframes(beatmapObject);
                     Timeline.RenderDialog(beatmapObject);
@@ -1401,7 +1386,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     var list = beatmapObject.TimelineKeyframes.Where(x => x.Selected && x.Type == 1);
 
                     foreach (var timelineObject in list)
-                        ObjectEditor.inst.Dialog.Timeline.SetCopiedData(1, timelineObject.eventKeyframe);
+                        ObjectEditor.inst.Dialog.Timeline.SetCopiedData(1, timelineObject.eventKeyframe, beatmapObject);
 
                     Timeline.RenderKeyframes(beatmapObject);
                     Timeline.RenderDialog(beatmapObject);
@@ -1443,7 +1428,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     var list = beatmapObject.TimelineKeyframes.Where(x => x.Selected && x.Type == 2);
 
                     foreach (var timelineObject in list)
-                        ObjectEditor.inst.Dialog.Timeline.SetCopiedData(2, timelineObject.eventKeyframe);
+                        ObjectEditor.inst.Dialog.Timeline.SetCopiedData(2, timelineObject.eventKeyframe, beatmapObject);
 
                     Timeline.RenderKeyframes(beatmapObject);
                     Timeline.RenderDialog(beatmapObject);
@@ -1469,7 +1454,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     var list = beatmapObject.TimelineKeyframes.Where(x => x.Selected && x.Type == 3);
 
                     foreach (var timelineObject in list)
-                        ObjectEditor.inst.Dialog.Timeline.SetCopiedData(3, timelineObject.eventKeyframe);
+                        ObjectEditor.inst.Dialog.Timeline.SetCopiedData(3, timelineObject.eventKeyframe, beatmapObject);
 
                     Timeline.RenderKeyframes(beatmapObject);
                     Timeline.RenderDialog(beatmapObject);

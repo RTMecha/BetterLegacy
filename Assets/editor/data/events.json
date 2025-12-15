@@ -2,163 +2,203 @@
   "items": [
     {
       "name": "Move",
-      "index": 0
+      "index": 0,
+      "complexity_path": "event/move"
     },
     {
       "name": "Zoom",
-      "index": 1
+      "index": 1,
+      "complexity_path": "event/zoom"
     },
     {
       "name": "Rotate",
-      "index": 2
+      "index": 2,
+      "complexity_path": "event/rotate"
     },
     {
       "name": "Shake",
-      "index": 3
+      "index": 3,
+      "complexity_path": "event/shake"
     },
     {
       "name": "Theme",
-      "index": 4
+      "index": 4,
+      "complexity_path": "event/theme"
     },
     {
       "name": "Chroma",
-      "index": 5
+      "index": 5,
+      "complexity_path": "event/chroma"
     },
     {
       "name": "Bloom",
-      "index": 6
+      "index": 6,
+      "complexity_path": "event/bloom"
     },
     {
       "name": "Vignette",
-      "index": 7
+      "index": 7,
+      "complexity_path": "event/vignette"
     },
     {
       "name": "Lens",
-      "index": 8
+      "index": 8,
+      "complexity_path": "event/lens"
     },
     {
       "name": "Grain",
-      "index": 9
+      "index": 9,
+      "complexity_path": "event/grain"
     },
     {
       "name": "Color Grading",
-      "index": 10
+      "index": 10,
+      "complexity_path": "event/color_grading"
     },
     {
       "name": "Ripples",
-      "index": 11
+      "index": 11,
+      "complexity_path": "event/ripples"
     },
     {
       "name": "Radial Blur",
-      "index": 12
+      "index": 12,
+      "complexity_path": "event/radial_blur"
     },
     {
       "name": "Color Split",
-      "index": 13
+      "index": 13,
+      "complexity_path": "event/color_split"
     },
     {
       "name": "Move Offset",
-      "index": 14
+      "index": 14,
+      "complexity_path": "event/move_offset"
     },
     {
       "name": "Gradient",
-      "index": 15
+      "index": 15,
+      "complexity_path": "event/gradient"
     },
     {
       "name": "Double Vision",
-      "index": 16
+      "index": 16,
+      "complexity_path": "event/double_vision"
     },
     {
       "name": "Scan Lines",
-      "index": 17
+      "index": 17,
+      "complexity_path": "event/scan_lines"
     },
     {
       "name": "Blur",
-      "index": 18
+      "index": 18,
+      "complexity_path": "event/blur"
     },
     {
       "name": "Pixelize",
-      "index": 19
+      "index": 19,
+      "complexity_path": "event/pixelize"
     },
     {
       "name": "BG",
-      "index": 20
+      "index": 20,
+      "complexity_path": "event/bg"
     },
     {
       "name": "Invert",
-      "index": 21
+      "index": 21,
+      "complexity_path": "event/invert"
     },
     {
       "name": "Timeline",
-      "index": 22
+      "index": 22,
+      "complexity_path": "event/timeline"
     },
     {
       "name": "Player",
-      "index": 23
+      "index": 23,
+      "complexity_path": "event/player"
     },
     {
       "name": "Follow Player",
-      "index": 24
+      "index": 24,
+      "complexity_path": "event/follow_player"
     },
     {
       "name": "Audio",
-      "index": 25
+      "index": 25,
+      "complexity_path": "event/audio"
     },
     {
-      "name": "Video BG Parent",
-      "index": 26
+      "name": "Video Parent",
+      "index": 26,
+      "complexity_path": "event/video_parent"
     },
     {
-      "name": "Video BG",
-      "index": 27
+      "name": "Video",
+      "index": 27,
+      "complexity_path": "event/video"
     },
     {
       "name": "Sharpen",
-      "index": 28
+      "index": 28,
+      "complexity_path": "event/sharpen"
     },
     {
       "name": "Bars",
-      "index": 29
+      "index": 29,
+      "complexity_path": "event/bars"
     },
     {
       "name": "Danger",
-      "index": 30
+      "index": 30,
+      "complexity_path": "event/danger"
     },
     {
       "name": "3D Rotation",
-      "index": 31
+      "index": 31,
+      "complexity_path": "event/depth_rotation"
     },
     {
       "name": "Camera Depth",
-      "index": 32
+      "index": 32,
+      "complexity_path": "event/camera_depth"
     },
     {
       "name": "Window Base",
-      "index": 33
+      "index": 33,
+      "complexity_path": "event/window_base"
     },
     {
       "name": "Window Position X",
-      "index": 34
+      "index": 34,
+      "complexity_path": "event/window_position_x"
     },
     {
       "name": "Window Position Y",
-      "index": 35
+      "index": 35,
+      "complexity_path": "event/window_position_y"
     },
     {
       "name": "Player Force",
-      "index": 36
+      "index": 36,
+      "complexity_path": "event/player_force"
     },
     {
       "name": "Mosaic",
-      "index": 37
+      "index": 37,
+      "complexity_path": "event/mosaic"
     },
     {
       "name": "Analog Glitch",
-      "index": 38
+      "index": 38,
+      "complexity_path": "event/analog_glitch"
     },
     {
       "name": "Digital Glitch",
-      "index": 39
+      "index": 39,
+      "complexity_path": "event/digital_glitch"
     }
   ]
 }

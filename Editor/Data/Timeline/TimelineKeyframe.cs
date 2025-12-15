@@ -91,7 +91,12 @@ namespace BetterLegacy.Editor.Data.Timeline
         /// <summary>
         /// If the timeline object is on the currently viewed editor layer.
         /// </summary>
-        public bool IsCurrentLayer => (RTEventEditor.inst.GetEventTypeIndex(Type) / RTEventEditor.EVENT_LIMIT) == EditorTimeline.inst.Layer && EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events && (RTEditor.ShowModdedUI || Type < 10);
+        public bool IsCurrentLayer =>
+            (RTEventEditor.inst.GetEventTypeIndex(Type) / RTEventEditor.EVENT_LIMIT) == EditorTimeline.inst.Layer &&
+            EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events &&
+            (RTEventEditor.inst.eventBins.TryFindIndex(x => x.index == Type, out int eventBinIndex) ?
+                RTEventEditor.inst.eventBins[eventBinIndex].IsActive :
+                (RTEditor.ShowModdedUI || Type < 10));
 
         bool selected;
         /// <summary>

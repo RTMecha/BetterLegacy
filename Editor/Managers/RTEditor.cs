@@ -441,7 +441,6 @@ namespace BetterLegacy.Editor.Managers
         public override void OnManagerDestroyed()
         {
             CoreHelper.LogError($"RTEditor was destroyed!");
-            EditorConfig.AdjustPositionInputsChanged = null;
             EditorManager.inst = null;
         }
 
@@ -3762,14 +3761,16 @@ namespace BetterLegacy.Editor.Managers
 
                     switch (pointerEventData.button)
                     {
-                        case PointerEventData.InputButton.Right:
-                                if (RTEventEditor.EventTypes.Length > currentEvent && (ShowModdedUI && GameData.Current.events.Count > currentEvent || 10 > currentEvent))
+                        case PointerEventData.InputButton.Right: {
+                                if (RTEventEditor.EventTypes.Length > currentEvent && (RTEventEditor.inst.eventBins.TryGetAt(type, out EventBin eventBin) ? eventBin.IsActive : ShowModdedUI && GameData.Current.events.Count > currentEvent || 10 > currentEvent))
                                     RTEventEditor.inst.NewKeyframeFromTimeline(currentEvent);
                                 break;
-                        case PointerEventData.InputButton.Middle:
-                            if (RTEventEditor.EventTypes.Length > currentEvent && (ShowModdedUI && GameData.Current.events.Count > currentEvent || 10 > currentEvent) && GameData.Current.events[currentEvent].TryFindLastIndex(x => x.time < EditorTimeline.inst.GetTimelineTime(false), out int index))
-                                RTEventEditor.inst.SetCurrentEvent(currentEvent, index);
-                            break;
+                            }
+                        case PointerEventData.InputButton.Middle: {
+                                if (RTEventEditor.EventTypes.Length > currentEvent && (RTEventEditor.inst.eventBins.TryGetAt(type, out EventBin eventBin) ? eventBin.IsActive : ShowModdedUI && GameData.Current.events.Count > currentEvent || 10 > currentEvent) && GameData.Current.events[currentEvent].TryFindLastIndex(x => x.time < EditorTimeline.inst.GetTimelineTime(false), out int index))
+                                    RTEventEditor.inst.SetCurrentEvent(currentEvent, index);
+                                break;
+                            }
                     }
                 }));
             }
@@ -5410,6 +5411,40 @@ namespace BetterLegacy.Editor.Managers
         }
 
         /// <summary>
+        /// Shows the warning popup.
+        /// </summary>
+        /// <param name="warning">The warning message.</param>
+        /// <param name="onConfirm">Function to run when the user confirms.</param>
+        /// <param name="confirm">Confirm button text.</param>
+        /// <param name="cancel">Cancel button text.</param>
+        /// <param name="onClose">Function to run when the user closes the popup.</param>
+        public void ShowWarningPopup(string warning, Action onConfirm, string confirm = "Yes", string cancel = "No", Action onClose = null)
+        {
+            WarningPopup.Open();
+            RefreshWarningPopup(warning, onConfirm, confirm, cancel, onClose);
+
+            Example.Current?.brain?.Notice(ExampleBrain.Notices.WARNING_POPUP);
+        }
+
+        /// <summary>
+        /// Renders the warning popup.
+        /// </summary>
+        /// <param name="warning">The warning message.</param>
+        /// <param name="onConfirm">Function to run when the user confirms.</param>
+        /// <param name="confirm">Confirm button text.</param>
+        /// <param name="cancel">Cancel button text.</param>
+        /// <param name="onClose">Function to run when the user closes the popup.</param>
+        public void RefreshWarningPopup(string warning, Action onConfirm, string confirm = "Yes", string cancel = "No", Action onClose = null) => RefreshWarningPopup(warning, () =>
+        {
+            onConfirm?.Invoke();
+            HideWarningPopup();
+        }, HideWarningPopup, confirm, cancel, () =>
+        {
+            onClose?.Invoke();
+            HideWarningPopup();
+        });
+
+        /// <summary>
         /// Renders the warning popup.
         /// </summary>
         /// <param name="warning">The warning message.</param>
@@ -6324,12 +6359,6 @@ namespace BetterLegacy.Editor.Managers
         }
 
         public static float SnapToBPM(float time, float offset, float divisions, float bpm) => Mathf.RoundToInt((time + offset) / (60f / bpm / divisions)) * (60f / bpm / divisions) - offset;
-
-        public static void SetActive(GameObject gameObject, bool active)
-        {
-            gameObject.SetActive(active);
-            gameObject.transform.parent.GetChild(gameObject.transform.GetSiblingIndex() - 1).gameObject.SetActive(active);
-        }
 
         /// <summary>
         /// Removes a package of objects from the level.

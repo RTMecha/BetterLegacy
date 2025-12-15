@@ -1247,7 +1247,6 @@ namespace BetterLegacy.Configs
             RTEditor.ShowModdedUI = EditorComplexity.Value == Complexity.Advanced;
 
             ComplexityObject.UpdateAll();
-            AdjustPositionInputsChanged?.Invoke();
 
             if (EditorTimeline.inst && EditorTimeline.inst.SelectedObjectCount == 1 && EditorTimeline.inst.CurrentSelection.isBeatmapObject)
                 ObjectEditor.inst.RenderDialog(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>());

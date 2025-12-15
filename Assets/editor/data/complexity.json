@@ -35,6 +35,74 @@
     "complexity": 2,
     "only_this": false
   },
+  "keyframe/homing_type_static": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "keyframe/homing_type_dynamic": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "keyframe/homing_axis": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "keyframe/homing_flee": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "keyframe/relative": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "position_keyframe/z_axis": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "position_keyframe/homing_type_static": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "position_keyframe/homing_type_dynamic": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "position_keyframe/homing_axis": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "position_keyframe/homing_flee": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "position_keyframe/relative": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "scale_keyframe/relative": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "rotation_keyframe/homing_type_static": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "rotation_keyframe/homing_type_dynamic": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "rotation_keyframe/homing_axis": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "rotation_keyframe/homing_flee": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "rotation_keyframe/relative": {
+    "complexity": 1,
+    "only_this": false
+  },
   "color_keyframe/opacity": {
     "complexity": 1,
     "only_this": false
@@ -95,6 +163,22 @@
     "complexity": 2,
     "only_this": false
   },
+  "event/move": {
+    "complexity": 0,
+    "only_this": false
+  },
+  "event/zoom": {
+    "complexity": 0,
+    "only_this": false
+  },
+  "event/rotate": {
+    "complexity": 0,
+    "only_this": false
+  },
+  "event/shake": {
+    "complexity": 0,
+    "only_this": false
+  },
   "event/shake_direction": {
     "complexity": 1,
     "only_this": false
@@ -109,6 +193,18 @@
   },
   "event/shake_speed": {
     "complexity": 2,
+    "only_this": false
+  },
+  "event/theme": {
+    "complexity": 0,
+    "only_this": false
+  },
+  "event/chroma": {
+    "complexity": 0,
+    "only_this": false
+  },
+  "event/bloom": {
+    "complexity": 0,
     "only_this": false
   },
   "event/bloom_diffusion": {
@@ -131,12 +227,20 @@
     "complexity": 2,
     "only_this": false
   },
+  "event/vignette": {
+    "complexity": 0,
+    "only_this": false
+  },
   "event/vignette_colors": {
     "complexity": 1,
     "only_this": false
   },
   "event/vignette_hsv": {
     "complexity": 2,
+    "only_this": false
+  },
+  "event/lens": {
+    "complexity": 0,
     "only_this": false
   },
   "event/lens_center": {
@@ -148,6 +252,130 @@
     "only_this": false
   },
   "event/lens_scale": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "event/grain": {
+    "complexity": 0,
+    "only_this": false
+  },
+  "event/color_grading": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "event/ripples": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "event/radial_blur": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "event/color_split": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "event/move_offset": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "event/gradient": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "event/double_vision": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "event/scan_lines": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "event/blur": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "event/pixelize": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "event/bg": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "event/invert": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "event/timeline": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "event/player": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "event/follow_player": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "event/audio": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "event/video_parent": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "event/video": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "event/sharpen": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "event/bars": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "event/danger": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "event/depth_rotation": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "event/camera_depth": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "event/window_base": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "event/window_position_x": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "event/window_position_y": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "event/player_force": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "event/mosaic": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "event/analog_glitch": {
+    "complexity": 2,
+    "only_this": false
+  },
+  "event/digital_glitch": {
     "complexity": 2,
     "only_this": false
   }

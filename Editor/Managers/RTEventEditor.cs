@@ -170,6 +170,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         name = jn["items"][i]["name"],
                         index = jn["items"][i]["index"].AsInt,
+                        complexityPath = jn["items"][i]["complexity_path"],
                     });
             }
 
@@ -3693,49 +3694,77 @@ namespace BetterLegacy.Editor.Managers
             var renderLeft = EditorConfig.Instance.EventLabelsRenderLeft.Value;
 
             var layer = EditorTimeline.inst.Layer + 1;
-            int num = Mathf.Clamp(layer * EVENT_LIMIT, 0, (RTEditor.ShowModdedUI ? layer * EVENT_LIMIT : 10));
+            //int num = Mathf.Clamp(layer * EVENT_LIMIT, 0, (RTEditor.ShowModdedUI ? layer * EVENT_LIMIT : 10));
 
-            for (int i = 0; i < GameData.Current.events.Count; i++)
+            //for (int i = 0; i < GameData.Current.events.Count; i++)
+            //{
+            //    var text = EventLabels[i % EVENT_LIMIT];
+
+            //    if (eventBins.TryGetAt(i, out EventBin eventBin))
+            //    {
+            //        if (i >= num - EVENT_LIMIT && i < num)
+            //            text.text = eventBin.name;
+            //        else if (i < num)
+            //            text.text = layer == 69 ? "lol" : layer == 555 ? "Hahaha" : NO_EVENT_LABEL;
+            //    }
+            //    else if (i < EventTypes.Length)
+            //    {
+            //        if (i >= num - EVENT_LIMIT && i < num)
+            //            text.text = EventTypes[i];
+            //        else if (i < num)
+            //            text.text = layer == 69 ? "lol" : layer == 555 ? "Hahaha" : NO_EVENT_LABEL;
+            //    }
+            //    else
+            //        text.text = layer == 69 ? "lol" : layer == 555 ? "Hahaha" : NO_EVENT_LABEL;
+
+            //    text.alignment = renderLeft ? TextAnchor.MiddleLeft : TextAnchor.MiddleRight;
+
+            //    if (!RTEditor.ShowModdedUI && EditorTimeline.inst.Layer > 0)
+            //        text.text = "No Event";
+            //}
+
+            var theme = EditorThemeManager.CurrentTheme;
+            for (int i = 0; i < EVENT_LIMIT + 1; i++) // include checkpoints
             {
-                var text = EventLabels[i % EVENT_LIMIT];
-
-                if (eventBins.TryGetAt(i, out EventBin eventBin))
-                {
-                    if (i >= num - EVENT_LIMIT && i < num)
-                        text.text = eventBin.name;
-                    else if (i < num)
-                        text.text = layer == 69 ? "lol" : layer == 555 ? "Hahaha" : NO_EVENT_LABEL;
-                }
-                else if (i < EventTypes.Length)
-                {
-                    if (i >= num - EVENT_LIMIT && i < num)
-                        text.text = EventTypes[i];
-                    else if (i < num)
-                        text.text = layer == 69 ? "lol" : layer == 555 ? "Hahaha" : NO_EVENT_LABEL;
-                }
-                else
-                    text.text = layer == 69 ? "lol" : layer == 555 ? "Hahaha" : NO_EVENT_LABEL;
+                var text = EventLabels[i];
+                var img = EventBins[i];
 
                 text.alignment = renderLeft ? TextAnchor.MiddleLeft : TextAnchor.MiddleRight;
 
-                if (!RTEditor.ShowModdedUI && EditorTimeline.inst.Layer > 0)
-                    text.text = "No Event";
-            }
+                if (i == EVENT_LIMIT) // checkpoint
+                {
+                    img.enabled = true;
+                    text.enabled = true;
+                    img.color = theme.ContainsGroup($"Event Color {i % EVENT_LIMIT + 1}") ? theme.GetColor($"Event Color {i % EVENT_LIMIT + 1}") : Color.white;
+                    continue;
+                }
 
-            var theme = EditorThemeManager.CurrentTheme;
-            for (int i = 0; i < 15; i++)
-            {
-                var img = EventBins[i];
+                bool enabled;
+                var index = i + (EVENT_LIMIT * EditorTimeline.inst.Layer);
+                if (eventBins.TryGetAt(index, out EventBin eventBin))
+                {
+                    enabled = eventBin.IsActive;
+                    text.text = eventBin.name;
+                }
+                else
+                {
+                    enabled = layer == 69 || layer == 555;
+                    text.text = GetNullEventTypeName(layer);
+                }
 
-                var enabled = i == 14 || i < (RTEditor.ShowModdedUI ? 14 : 10);
-
+                text.enabled = enabled;
                 img.enabled = enabled;
-                EventLabels[i].enabled = enabled;
-
                 if (enabled)
                     img.color = theme.ContainsGroup($"Event Color {i % EVENT_LIMIT + 1}") ? theme.GetColor($"Event Color {i % EVENT_LIMIT + 1}") : Color.white;
             }
         }
+
+        public string GetNullEventTypeName(int layer) => layer switch
+        {
+            69 => "lol",
+            555 => "Hahaha",
+            _ => NO_EVENT_LABEL,
+        };
 
         public void SetEventActive(bool active)
         {
