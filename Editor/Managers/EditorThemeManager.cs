@@ -124,6 +124,9 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="roundedSide">Rounded side of the selectable.</param>
         public static void ApplySelectable(Selectable selectable, ThemeGroup group, bool canSetRounded = true, int rounded = 1, SpriteHelper.RoundedSide roundedSide = SpriteHelper.RoundedSide.W)
         {
+            if (!selectable)
+                return;
+
             ApplyElement(new EditorThemeElement(group, selectable.gameObject, new Component[]
             {
                 selectable.image,
@@ -141,6 +144,9 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="roundedSide">Rounded side of the graphic.</param>
         public static void ApplyGraphic(Graphic graphic, ThemeGroup group, bool canSetRounded = false, int rounded = 1, SpriteHelper.RoundedSide roundedSide = SpriteHelper.RoundedSide.W)
         {
+            if (!graphic)
+                return;
+
             ApplyElement(new EditorThemeElement(group, graphic.gameObject, new Component[]
             {
                 graphic,
@@ -153,6 +159,9 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="dropdown">Dropdown to apply.</param>
         public static void ApplyDropdown(Dropdown dropdown)
         {
+            if (!dropdown)
+                return;
+
             ApplyGraphic(dropdown.image, ThemeGroup.Dropdown_1, true);
             ApplyGraphic(dropdown.captionText, ThemeGroup.Dropdown_1_Overlay);
             ApplyGraphic(dropdown.transform.Find("Arrow").GetComponent<Image>(), ThemeGroup.Dropdown_1_Overlay);
@@ -176,6 +185,9 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="inputFieldStorage">Number input field to apply.</param>
         public static void ApplyInputField(InputFieldStorage inputFieldStorage)
         {
+            if (!inputFieldStorage)
+                return;
+
             if (inputFieldStorage.inputField)
                 ApplyInputField(inputFieldStorage.inputField);
             if (inputFieldStorage.subButton)
@@ -200,6 +212,9 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="vector2InputFieldStorage">Vector2 input fields to apply.</param>
         public static void ApplyInputField(Vector2InputFieldStorage vector2InputFieldStorage)
         {
+            if (!vector2InputFieldStorage)
+                return;
+
             if (vector2InputFieldStorage.x)
                 ApplyInputField(vector2InputFieldStorage.x);
             if (vector2InputFieldStorage.y)
@@ -212,12 +227,34 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="vector3InputFieldStorage">Vector3 input fields to apply.</param>
         public static void ApplyInputField(Vector3InputFieldStorage vector3InputFieldStorage)
         {
+            if (!vector3InputFieldStorage)
+                return;
+
             if (vector3InputFieldStorage.x)
                 ApplyInputField(vector3InputFieldStorage.x);
             if (vector3InputFieldStorage.y)
                 ApplyInputField(vector3InputFieldStorage.y);
             if (vector3InputFieldStorage.z)
                 ApplyInputField(vector3InputFieldStorage.z);
+        }
+
+        /// <summary>
+        /// Applies a a theme to a Vector4 input fields.
+        /// </summary>
+        /// <param name="vector4InputFieldStorage">Vector4 input fields to apply.</param>
+        public static void ApplyInputField(Vector4InputFieldStorage vector4InputFieldStorage)
+        {
+            if (!vector4InputFieldStorage)
+                return;
+
+            if (vector4InputFieldStorage.x)
+                ApplyInputField(vector4InputFieldStorage.x);
+            if (vector4InputFieldStorage.y)
+                ApplyInputField(vector4InputFieldStorage.y);
+            if (vector4InputFieldStorage.z)
+                ApplyInputField(vector4InputFieldStorage.z);
+            if (vector4InputFieldStorage.w)
+                ApplyInputField(vector4InputFieldStorage.w);
         }
 
         /// <summary>
@@ -262,95 +299,15 @@ namespace BetterLegacy.Editor.Managers
             ApplyGraphic(inputField.textComponent, EditorTheme.GetGroup($"{EditorTheme.GetString(group)} Text"));
         }
 
-        public static void ApplyInputFields(GameObject gameObject, bool self, string name, bool selfInput = false, bool searchChildren = true)
-        {
-            if (!searchChildren)
-            {
-                var inputField = gameObject.GetComponent<InputField>();
-
-                if (!inputField)
-                    return;
-
-                var input = selfInput ? inputField.transform : gameObject.transform.Find("input") ?? gameObject.transform.Find("Input") ?? gameObject.transform.Find("text-field");
-
-                ApplyElement(new EditorThemeElement(ThemeGroup.Input_Field, input.gameObject, new Component[]
-                {
-                    selfInput ? inputField.image : input.GetComponent<Image>(),
-                }, true, 1, SpriteHelper.RoundedSide.W));
-
-                ApplyElement(new EditorThemeElement(ThemeGroup.Input_Field_Text, inputField.textComponent.gameObject, new Component[]
-                {
-                    inputField.textComponent,
-                }));
-
-                var buttonLeft = self ? gameObject.transform.Find("<") : gameObject.transform.parent.Find("<");
-                var buttonRight = self ? gameObject.transform.Find(">") : gameObject.transform.parent.Find(">");
-
-                if (!buttonLeft || !buttonRight)
-                    return;
-
-                var buttonLeftComponent = buttonLeft.GetComponent<Button>();
-                var buttonRightComponent = buttonRight.GetComponent<Button>();
-
-                UnityObject.Destroy(buttonLeftComponent.GetComponent<Animator>());
-                buttonLeftComponent.transition = Selectable.Transition.ColorTint;
-
-                UnityObject.Destroy(buttonRightComponent.GetComponent<Animator>());
-                buttonRightComponent.transition = Selectable.Transition.ColorTint;
-
-                ApplySelectable(buttonLeftComponent, ThemeGroup.Function_2, false);
-                ApplySelectable(buttonRightComponent, ThemeGroup.Function_2, false);
-
-                return;
-            }
-
-            for (int j = 0; j < gameObject.transform.childCount; j++)
-            {
-                var child = gameObject.transform.GetChild(j);
-
-                var inputField = child.GetComponent<InputField>();
-
-                if (!inputField)
-                    continue;
-
-                var input = selfInput ? inputField.transform : child.Find("input") ?? child.Find("Input") ?? child.Find("text-field");
-
-                ApplyElement(new EditorThemeElement(ThemeGroup.Input_Field, input.gameObject, new Component[]
-                {
-                    selfInput ? inputField.image : input.GetComponent<Image>(),
-                }, true, 1, SpriteHelper.RoundedSide.W));
-
-                ApplyElement(new EditorThemeElement(ThemeGroup.Input_Field_Text, inputField.textComponent.gameObject, new Component[]
-                {
-                    inputField.textComponent,
-                }));
-
-                var buttonLeft = self ? child.Find("<") : child.parent.Find("<");
-                var buttonRight = self ? child.Find(">") : child.parent.Find(">");
-
-                if (!buttonLeft || !buttonRight)
-                    continue;
-
-                var buttonLeftComponent = buttonLeft.GetComponent<Button>();
-                var buttonRightComponent = buttonRight.GetComponent<Button>();
-
-                UnityObject.Destroy(buttonLeftComponent.GetComponent<Animator>());
-                buttonLeftComponent.transition = Selectable.Transition.ColorTint;
-
-                UnityObject.Destroy(buttonRightComponent.GetComponent<Animator>());
-                buttonRightComponent.transition = Selectable.Transition.ColorTint;
-
-                ApplySelectable(buttonLeftComponent, ThemeGroup.Function_2, false);
-                ApplySelectable(buttonRightComponent, ThemeGroup.Function_2, false);
-            }
-        }
-
         /// <summary>
         /// Applies a theme to a delete button.
         /// </summary>
         /// <param name="delete">Delete button to apply.</param>
         public static void ApplyDeleteButton(DeleteButtonStorage delete)
         {
+            if (!delete)
+                return;
+
             ApplyGraphic(delete.button.image, ThemeGroup.Delete, true);
             ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
         }
@@ -363,6 +320,9 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="graphic">Extra graphic to apply.</param>
         public static void ApplyToggle(Toggle toggle, ThemeGroup checkGroup = ThemeGroup.Null, Graphic graphic = null)
         {
+            if (!toggle)
+                return;
+
             toggle.image.fillCenter = true;
             ApplyGraphic(toggle.image, ThemeGroup.Toggle_1, true);
 
@@ -380,6 +340,13 @@ namespace BetterLegacy.Editor.Managers
             if (toggle.transform.Find("text"))
                 ApplyGraphic(toggle.transform.Find("text").GetComponent<Text>(), checkMarkGroup);
         }
+
+        /// <summary>
+        /// Applies a theme to a toggle.
+        /// </summary>
+        /// <param name="toggle">Toggle to apply.</param>
+        /// <param name="checkGroup">Check mark color group.</param>
+        public static void ApplyToggle(ToggleButtonStorage toggleButtonStorage, ThemeGroup checkGroup = ThemeGroup.Null) => ApplyToggle(toggleButtonStorage.toggle, checkGroup, toggleButtonStorage.label);
 
         /// <summary>
         /// Applies a theme to a label.
@@ -410,6 +377,9 @@ namespace BetterLegacy.Editor.Managers
             bool canSetScrollbarRounded = true, bool canSetHandleRounded = true, int scrollbarRounded = 1, int handleRounded = 1,
             SpriteHelper.RoundedSide scrollbarRoundedSide = SpriteHelper.RoundedSide.W, SpriteHelper.RoundedSide handleRoundedSide = SpriteHelper.RoundedSide.W)
         {
+            if (!scrollbar)
+                return;
+
             ApplyGraphic(backgroundImage ?? scrollbar.GetComponent<Image>(), scrollbarGroup, canSetScrollbarRounded, scrollbarRounded, scrollbarRoundedSide);
             ApplySelectable(scrollbar, handleGroup, canSetHandleRounded, handleRounded, handleRoundedSide);
         }
@@ -432,6 +402,9 @@ namespace BetterLegacy.Editor.Managers
             bool canSetSliderRounded = true, bool canSetHandleRounded = true, int sliderRounded = 1, int handleRounded = 1,
             SpriteHelper.RoundedSide sliderRoundedSide = SpriteHelper.RoundedSide.W, SpriteHelper.RoundedSide handleRoundedSide = SpriteHelper.RoundedSide.W, bool selectable = false)
         {
+            if (!slider)
+                return;
+
             ApplyGraphic(backgroundImage ?? slider.GetComponent<Image>(), sliderGroup, canSetSliderRounded, sliderRounded, sliderRoundedSide);
             if (selectable)
                 ApplySelectable(slider, handleGroup, canSetHandleRounded, handleRounded, handleRoundedSide);
@@ -445,16 +418,20 @@ namespace BetterLegacy.Editor.Managers
         /// Resets selectable colors to the default.
         /// </summary>
         /// <param name="selectable">Selectable to clear.</param>
-        public static void ClearSelectableColors(Selectable selectable) => selectable.colors = new ColorBlock()
+        public static void ClearSelectableColors(Selectable selectable)
         {
-            normalColor = Color.white,
-            highlightedColor = Color.white,
-            pressedColor = Color.white,
-            selectedColor = Color.white,
-            disabledColor = Color.white,
-            colorMultiplier = 1f,
-            fadeDuration = 0.2f,
-        };
+            if (selectable)
+                selectable.colors = new ColorBlock()
+                {
+                    normalColor = Color.white,
+                    highlightedColor = Color.white,
+                    pressedColor = Color.white,
+                    selectedColor = Color.white,
+                    disabledColor = Color.white,
+                    colorMultiplier = 1f,
+                    fadeDuration = 0.2f,
+                };
+        }
 
         /// <summary>
         /// Applies a theme to an array of component.

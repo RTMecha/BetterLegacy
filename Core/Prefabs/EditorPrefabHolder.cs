@@ -21,7 +21,10 @@ namespace BetterLegacy.Core.Prefabs
         public Transform PrefabParent { get; set; }
         public GameObject StringInputField { get; set; }
         public GameObject NumberInputField { get; set; }
+        public GameObject LayoutInputField { get; set; }
         public GameObject Vector2InputFields { get; set; }
+        public GameObject Vector3InputFields { get; set; }
+        public GameObject Vector4InputFields { get; set; }
         public GameObject DefaultInputField { get; set; }
 
         public GameObject SpriteButton { get; set; }
@@ -50,6 +53,8 @@ namespace BetterLegacy.Core.Prefabs
         public GameObject ContentPopup { get; set; }
 
         public GameObject DoubleContentPopup { get; set; }
+
+        public GameObject EventEditor { get; set; }
 
         public FunctionButtonStorage CreateAddButton(Transform parent, string name = "add", bool applyThemes = true)
         {
@@ -252,6 +257,34 @@ namespace BetterLegacy.Core.Prefabs
                 y.Assign(y.gameObject);
             }
         }
+
+        public virtual InputFieldStorage[] GetInputFields() => new InputFieldStorage[]
+        {
+            x,
+            y,
+        };
+
+        public void SetSize(Vector2 baseSize, Vector2 inputSize)
+        {
+            foreach (var inputFieldStorage in GetInputFields())
+            {
+                inputFieldStorage.transform.AsRT().sizeDelta = baseSize;
+                inputFieldStorage.inputField.image.rectTransform.sizeDelta = inputSize;
+                LayoutRebuilder.ForceRebuildLayoutImmediate(inputFieldStorage.inputField.image.rectTransform);
+                LayoutRebuilder.ForceRebuildLayoutImmediate(inputFieldStorage.transform.AsRT());
+            }
+            LayoutRebuilder.ForceRebuildLayoutImmediate(transform.AsRT());
+        }
+
+        public void SetIndividualSpacing(float spacing)
+        {
+            foreach (var inputFieldStorage in GetInputFields())
+            {
+                var layoutGroup = inputFieldStorage.GetComponent<HorizontalLayoutGroup>();
+                if (layoutGroup)
+                    layoutGroup.spacing = spacing;
+            }
+        }
     }
     
     public class Vector3InputFieldStorage : Vector2InputFieldStorage
@@ -268,6 +301,37 @@ namespace BetterLegacy.Core.Prefabs
                 z.Assign(z.gameObject);
             }
         }
+
+        public override InputFieldStorage[] GetInputFields() => new InputFieldStorage[]
+        {
+            x,
+            y,
+            z,
+        };
+    }
+
+    public class Vector4InputFieldStorage : Vector3InputFieldStorage
+    {
+        [SerializeField]
+        public InputFieldStorage w;
+
+        public override void Assign()
+        {
+            base.Assign();
+            if (gameObject.transform.TryFind("w", out Transform zTransform))
+            {
+                w = zTransform.gameObject.GetOrAddComponent<InputFieldStorage>();
+                w.Assign(w.gameObject);
+            }
+        }
+
+        public override InputFieldStorage[] GetInputFields() => new InputFieldStorage[]
+        {
+            x,
+            y,
+            z,
+            w,
+        };
     }
 
     public class InputFieldStorage : MonoBehaviour
@@ -384,8 +448,8 @@ namespace BetterLegacy.Core.Prefabs
             else if (gameObject.TryGetComponent(out InputField baseInput))
                 this.inputField = baseInput;
 
-            if (gameObject.transform.TryFind("text-field", out Transform textField) && textField.gameObject.TryGetComponent(out Image textFieldImage))
-                this.inputField.image = textFieldImage;
+            if (this.inputField.image && this.inputField.image.name == gameObject.name)
+                this.inputField.image = this.inputField.textComponent.transform.parent.GetComponent<Image>();
 
             if (gameObject.transform.TryFind("sub", out Transform subTransform))
             {

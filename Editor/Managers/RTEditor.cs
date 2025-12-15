@@ -960,6 +960,28 @@ namespace BetterLegacy.Editor.Managers
                 floatInputFieldStorage.inputField.characterLimit = 0;
             }
 
+            prefabHolder.LayoutInputField = prefabHolder.Vector2InputFields.Duplicate(prefabHolder.PrefabParent);
+            CoreHelper.Delete(prefabHolder.LayoutInputField.transform.TryGetChild(1));
+
+            prefabHolder.Vector3InputFields = prefabHolder.Vector2InputFields.Duplicate(prefabHolder.PrefabParent);
+            CoreHelper.Destroy(prefabHolder.Vector3InputFields.GetComponent<Vector2InputFieldStorage>(), true);
+            var vector3InputFieldStorage = prefabHolder.Vector3InputFields.AddComponent<Vector3InputFieldStorage>();
+            vector3InputFieldStorage.Assign();
+            vector3InputFieldStorage.z = vector3InputFieldStorage.x.gameObject.Duplicate(prefabHolder.Vector3InputFields.transform, "z").GetComponent<InputFieldStorage>();
+            vector3InputFieldStorage.z.Assign();
+            
+            prefabHolder.Vector4InputFields = prefabHolder.Vector3InputFields.Duplicate(prefabHolder.PrefabParent);
+            CoreHelper.Destroy(prefabHolder.Vector4InputFields.GetComponent<Vector3InputFieldStorage>(), true);
+            var vector4InputFieldStorage = prefabHolder.Vector4InputFields.AddComponent<Vector4InputFieldStorage>();
+            vector4InputFieldStorage.Assign();
+            vector4InputFieldStorage.w = vector4InputFieldStorage.x.gameObject.Duplicate(prefabHolder.Vector4InputFields.transform, "w").GetComponent<InputFieldStorage>();
+            vector4InputFieldStorage.w.Assign();
+
+            prefabHolder.EventEditor = EditorManager.inst.GetDialog("Event Editor").Dialog.Find("data/right/grain").gameObject.Duplicate(prefabHolder.PrefabParent);
+
+            while (prefabHolder.EventEditor.transform.childCount > 8)
+                CoreHelper.Delete(prefabHolder.EventEditor.transform.GetChild(prefabHolder.EventEditor.transform.childCount - 1).gameObject);
+
             prefabHolder.Toggle = EditorManager.inst.GetDialog("Settings Editor").Dialog.Find("snap/toggle/toggle").gameObject.Duplicate(prefabHolder.PrefabParent, "toggle");
 
             prefabHolder.Function1Button = timelineBar.transform.Find("event").gameObject.Duplicate(prefabHolder.PrefabParent, "function 1 button");
@@ -3246,6 +3268,23 @@ namespace BetterLegacy.Editor.Managers
                     dialog.PasteButton = pasteTransform.GetComponent<FunctionButtonStorage>();
                 dialog.DeleteButton = dialog.Edit.Find("del").gameObject.AddComponent<DeleteButtonStorage>();
                 dialog.DeleteButton.Assign(dialog.DeleteButton.gameObject);
+
+                CoreHelper.RemoveAnimator(dialog.JumpToStartButton);
+                EditorThemeManager.ApplySelectable(dialog.JumpToStartButton, ThemeGroup.Function_2, false);
+                CoreHelper.RemoveAnimator(dialog.JumpToPrevButton);
+                EditorThemeManager.ApplySelectable(dialog.JumpToPrevButton, ThemeGroup.Function_2, false);
+                CoreHelper.RemoveAnimator(dialog.JumpToNextButton);
+                EditorThemeManager.ApplySelectable(dialog.JumpToNextButton, ThemeGroup.Function_2, false);
+                CoreHelper.RemoveAnimator(dialog.JumpToLastButton);
+                EditorThemeManager.ApplySelectable(dialog.JumpToLastButton, ThemeGroup.Function_2, false);
+
+                if (dialog.Edit.TryFind("|", out Transform indexer))
+                    EditorThemeManager.ApplyGraphic(indexer.GetComponent<Image>(), ThemeGroup.Light_Text);
+                if (dialog.KeyframeIndexer)
+                    EditorThemeManager.ApplyGraphic(dialog.KeyframeIndexer, ThemeGroup.Background_1);
+
+                EditorThemeManager.ApplyGraphic(dialog.DeleteButton.image, ThemeGroup.Delete_Keyframe_BG);
+                EditorThemeManager.ApplySelectable(dialog.DeleteButton.button, ThemeGroup.Delete_Keyframe_Button, false);
             }
             catch (Exception ex)
             {
