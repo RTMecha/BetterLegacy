@@ -9,6 +9,7 @@ namespace BetterLegacy.Editor.Components
     /// </summary>
     public class EditorThemeObject : MonoBehaviour
     {
+        [SerializeField]
         /// <summary>
         /// Element reference.
         /// </summary>
