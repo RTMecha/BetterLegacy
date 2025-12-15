@@ -11,22 +11,27 @@ namespace BetterLegacy.Editor.Components
     /// </summary>
     public class ComplexityObject : MonoBehaviour
     {
+        [SerializeField]
         /// <summary>
         /// Complexity of the element.
         /// </summary>
         public Complexity complexity;
+        [SerializeField]
         /// <summary>
         /// If the element can only appear on the exact complexity.
         /// </summary>
         public bool onlySpecificComplexity;
+        [SerializeField]
         /// <summary>
         /// Path of the complexity value in the complexity.json file.
         /// </summary>
         public string path;
+        [SerializeField]
         /// <summary>
         /// If complexity detection is disabled.
         /// </summary>
         public bool disabled;
+        [SerializeField]
         /// <summary>
         /// If the element is active with <see cref="disabled"/> is on.
         /// </summary>

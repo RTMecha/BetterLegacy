@@ -34,19 +34,26 @@ namespace BetterLegacy.Editor.Data
             this.isSelectable = isSelectable;
         }
 
-        readonly ThemeGroup themeGroup = ThemeGroup.Null;
-
+        [SerializeField]
         public GameObject gameObject;
 
-        Component[] components;
+        [SerializeField]
+        public Component[] components;
 
-        readonly bool isSelectable = false;
+        [SerializeField]
+        public ThemeGroup themeGroup = ThemeGroup.Null;
 
-        readonly bool canSetRounded = false;
+        [SerializeField]
+        public bool isSelectable = false;
 
-        readonly int rounded;
+        [SerializeField]
+        public bool canSetRounded = false;
 
-        readonly SpriteHelper.RoundedSide roundedSide = SpriteHelper.RoundedSide.W;
+        [SerializeField]
+        public int rounded;
+
+        [SerializeField]
+        public SpriteHelper.RoundedSide roundedSide = SpriteHelper.RoundedSide.W;
 
         public void Clear()
         {
