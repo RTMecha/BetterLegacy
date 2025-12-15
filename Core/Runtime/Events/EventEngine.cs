@@ -357,8 +357,8 @@ namespace BetterLegacy.Core.Runtime.Events
         public const int PLAYER = 23;
         public const int FOLLOW_PLAYER = 24;
         public const int AUDIO = 25;
-        public const int VIDEO_BG_PARENT = 26;
-        public const int VIDEO_BG = 27;
+        public const int VIDEO_PARENT = 26;
+        public const int VIDEO = 27;
         public const int SHARPNESS = 28;
         public const int BARS = 29;
         public const int DANGER = 30;
