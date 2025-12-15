@@ -86,7 +86,9 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public string markColor;
 
-        public List<CustomUIDisplay> displays = new List<CustomUIDisplay>();
+        public List<CustomValueDisplay> displays = new List<CustomValueDisplay>();
+
+        public Dictionary<string, float> miscDisplayValues = new Dictionary<string, float>();
 
         /// <summary>
         /// If the editor data should serialize to JSON.
@@ -95,7 +97,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             Bin != 0 || Layer != 0 ||
             collapse || locked || !selectable || hidden ||
             !string.IsNullOrEmpty(color) || !string.IsNullOrEmpty(selectedColor) || !string.IsNullOrEmpty(textColor) || !string.IsNullOrEmpty(markColor) ||
-            !displays.IsEmpty();
+            !displays.IsEmpty() || !miscDisplayValues.IsEmpty();
 
         #endregion
 
@@ -129,7 +131,8 @@ namespace BetterLegacy.Core.Data.Beatmap
             selectedColor = orig.selectedColor;
             textColor = orig.textColor;
             markColor = orig.markColor;
-            displays = new List<CustomUIDisplay>(orig.displays.Select(x => x.Copy()));
+            displays = new List<CustomValueDisplay>(orig.displays.Select(x => x.Copy()));
+            miscDisplayValues = new Dictionary<string, float>(orig.miscDisplayValues);
         }
 
         public override void ReadJSONVG(JSONNode jn, Version version = default)
@@ -162,7 +165,11 @@ namespace BetterLegacy.Core.Data.Beatmap
             displays.Clear();
             if (jn["ui"] != null)
                 for (int i = 0; i < jn["ui"].Count; i++)
-                    displays.Add(CustomUIDisplay.Parse(jn["ui"][i]));
+                    displays.Add(CustomValueDisplay.Parse(jn["ui"][i]));
+
+            if (jn["mdv"] != null)
+                for (int i = 0; i < jn["mdv"].Count; i++)
+                    miscDisplayValues[jn["mdv"][i]["n"]] = jn["mdv"][i]["v"].AsFloat;
         }
 
         public override JSONNode ToJSONVG()
@@ -219,6 +226,14 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             for (int i = 0; i < displays.Count; i++)
                 jn["ui"][i] = displays[i].ToJSON();
+
+            int num = 0;
+            foreach (var keyValuePair in miscDisplayValues)
+            {
+                jn["mdv"][num]["n"] = keyValuePair.Key;
+                jn["mdv"][num]["v"] = keyValuePair.Value;
+                num++;
+            }
 
             return jn;
         }
@@ -281,7 +296,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <param name="path">Path of the display to find.</param>
         /// <param name="display">Display result.</param>
         /// <returns>Returns true if a display was found, otherwise returns false.</returns>
-        public bool TryGetDisplay(string path, out CustomUIDisplay display) => displays.TryFind(x => x.path == path, out display);
+        public bool TryGetDisplay(string path, out CustomValueDisplay display) => displays.TryFind(x => x.path == path, out display);
 
         /// <summary>
         /// Gets a custom UI display.
@@ -289,7 +304,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <param name="path">Path of the display to find.</param>
         /// <param name="defaultDisplay">Default display to return if no custom display was found.</param>
         /// <returns>Returns the found custom UI display.</returns>
-        public CustomUIDisplay GetDisplay(string path, CustomUIDisplay defaultDisplay) => TryGetDisplay(path, out CustomUIDisplay display) ? display : defaultDisplay;
+        public CustomValueDisplay GetDisplay(string path, CustomValueDisplay defaultDisplay) => TryGetDisplay(path, out CustomValueDisplay display) ? display : defaultDisplay;
 
         #endregion
     }

@@ -73,6 +73,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public List<InputFieldStorage> RandomEventValueFields { get; set; }
         public ToggleButtonStorage RelativeToggle { get; set; }
         public ToggleButtonStorage FleeToggle { get; set; }
+        public Transform RandomTogglesParent { get; set; }
         public List<Toggle> RandomToggles { get; set; }
         public InputField RandomIntervalField { get; set; }
         public Dropdown RandomAxisDropdown { get; set; }
@@ -192,6 +193,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                 if (GameObject.transform.TryFind("random", out Transform randomTransform))
                 {
+                    RandomTogglesParent = randomTransform;
                     RandomToggles = new List<Toggle>();
                     for (int i = 0; i < randomTransform.childCount - 2; i++)
                     {
@@ -229,7 +231,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 GameObject.SetActive(active);
         }
 
-        public void InitCustomUI(params CustomUIDisplay[] displays)
+        public void InitCustomUI(params CustomValueDisplay[] displays)
         {
             CoreHelper.DestroyChildren(EventValuesParent);
             EventValueElements.Clear();
@@ -248,9 +250,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 var display = displays[i];
                 KeyframeElement element = display.type switch
                 {
-                    CustomUIDisplay.UIType.InputField => new KeyframeInputField(display.path),
-                    CustomUIDisplay.UIType.Dropdown => new KeyframeDropdown(display.path),
-                    CustomUIDisplay.UIType.Toggle => new KeyframeToggle(display.path),
+                    CustomValueDisplay.UIType.InputField => new KeyframeInputField(display.path),
+                    CustomValueDisplay.UIType.Dropdown => new KeyframeDropdown(display.path),
+                    CustomValueDisplay.UIType.Toggle => new KeyframeToggle(display.path),
                     _ => null,
                 };
                 element?.Init(this, EventValuesParent, name, display);
@@ -259,7 +261,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             }
         }
 
-        public void InitCustomUI(CustomUIDisplay display)
+        public void InitCustomUI(CustomValueDisplay display)
         {
             int index = EventValueElements.Count;
             if (EventValueElements.TryFindIndex(x => x.path == display.path, out index))
@@ -276,9 +278,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             KeyframeElement element = display.type switch
             {
-                CustomUIDisplay.UIType.InputField => new KeyframeInputField(display.path),
-                CustomUIDisplay.UIType.Dropdown => new KeyframeDropdown(display.path),
-                CustomUIDisplay.UIType.Toggle => new KeyframeToggle(display.path),
+                CustomValueDisplay.UIType.InputField => new KeyframeInputField(display.path),
+                CustomValueDisplay.UIType.Dropdown => new KeyframeDropdown(display.path),
+                CustomValueDisplay.UIType.Toggle => new KeyframeToggle(display.path),
                 _ => null,
             };
             if (element)
@@ -320,9 +322,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public GameObject GameObject { get; set; }
 
         /// <summary>
-        /// Custom UI display.
+        /// Custom value display.
         /// </summary>
-        public CustomUIDisplay Display { get; set; }
+        public CustomValueDisplay Display { get; set; }
 
         /// <summary>
         /// Path of the element.
@@ -340,7 +342,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
         /// <param name="parent">Transform to parent the element to.</param>
         /// <param name="name">Name of the element.</param>
         /// <param name="display">Custom UI display.</param>
-        public abstract void Init(KeyframeDialog dialog, Transform parent, string name, CustomUIDisplay display);
+        public abstract void Init(KeyframeDialog dialog, Transform parent, string name, CustomValueDisplay display);
 
         /// <summary>
         /// Renders the keyframe element.
@@ -423,7 +425,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         #region Methods
 
-        public override void Init(KeyframeDialog dialog, Transform parent, string name, CustomUIDisplay display)
+        public override void Init(KeyframeDialog dialog, Transform parent, string name, CustomValueDisplay display)
         {
             Display = display;
             Dialog = dialog;
@@ -541,12 +543,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 new SpacerElement(),
                 new ButtonElement("Change to Dropdown", () =>
                 {
-                    Display.type = CustomUIDisplay.UIType.Dropdown;
+                    Display.type = CustomValueDisplay.UIType.Dropdown;
                     UpdateDisplay(animatable);
                 }),
                 new ButtonElement("Change to Toggle", () =>
                 {
-                    Display.type = CustomUIDisplay.UIType.Toggle;
+                    Display.type = CustomValueDisplay.UIType.Toggle;
                     UpdateDisplay(animatable);
                 }),
                 new SpacerElement(),
@@ -753,7 +755,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         #region Methods
 
-        public override void Init(KeyframeDialog dialog, Transform parent, string name, CustomUIDisplay display)
+        public override void Init(KeyframeDialog dialog, Transform parent, string name, CustomValueDisplay display)
         {
             Display = display;
             Dialog = dialog;
@@ -819,7 +821,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         if (!float.TryParse(RTEditor.inst.folderCreatorName.text, out float value))
                             return;
 
-                        Display.options.Add(new CustomUIDisplay.Option(name, value));
+                        Display.options.Add(new CustomValueDisplay.Option(name, value));
                         UpdateDisplay(animatable);
                         RTEditor.inst.HideNameEditor();
                     });
@@ -840,12 +842,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 new SpacerElement(),
                 new ButtonElement("Change to Input Field", () =>
                 {
-                    Display.type = CustomUIDisplay.UIType.InputField;
+                    Display.type = CustomValueDisplay.UIType.InputField;
                     UpdateDisplay(animatable);
                 }),
                 new ButtonElement("Change to Toggle", () =>
                 {
-                    Display.type = CustomUIDisplay.UIType.Toggle;
+                    Display.type = CustomValueDisplay.UIType.Toggle;
                     UpdateDisplay(animatable);
                 }),
                 new SpacerElement(),
@@ -934,7 +936,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         #region Methods
 
-        public override void Init(KeyframeDialog dialog, Transform parent, string name, CustomUIDisplay display)
+        public override void Init(KeyframeDialog dialog, Transform parent, string name, CustomValueDisplay display)
         {
             Display = display;
             Dialog = dialog;
@@ -1037,12 +1039,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 new SpacerElement(),
                 new ButtonElement("Change to Input Field", () =>
                 {
-                    Display.type = CustomUIDisplay.UIType.InputField;
+                    Display.type = CustomValueDisplay.UIType.InputField;
                     UpdateDisplay(animatable);
                 }),
                 new ButtonElement("Change to Dropdown", () =>
                 {
-                    Display.type = CustomUIDisplay.UIType.Dropdown;
+                    Display.type = CustomValueDisplay.UIType.Dropdown;
                     UpdateDisplay(animatable);
                 }),
                 new SpacerElement(),
