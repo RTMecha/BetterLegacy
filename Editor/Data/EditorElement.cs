@@ -31,6 +31,11 @@ namespace BetterLegacy.Editor.Data
         }
 
         /// <summary>
+        /// Name of the element.
+        /// </summary>
+        public string name;
+
+        /// <summary>
         /// Tooltip group of the editor element.
         /// </summary>
         public string tooltipGroup;
@@ -71,6 +76,11 @@ namespace BetterLegacy.Editor.Data
         public InitSettings? initSettings;
 
         /// <summary>
+        /// The default name of the element.
+        /// </summary>
+        public abstract string DefaultName { get; }
+
+        /// <summary>
         /// Sets the active state of the editor element.
         /// </summary>
         /// <param name="state">Active state to set.</param>
@@ -96,6 +106,13 @@ namespace BetterLegacy.Editor.Data
         public virtual int GetSiblingIndex(InitSettings initSettings) => siblingIndex >= 0 ? siblingIndex : initSettings.siblingIndex;
 
         /// <summary>
+        /// Gets the name of the editor element.
+        /// </summary>
+        /// <param name="initSettings">Initialize settings.</param>
+        /// <returns>Returns the name the editor element should use.</returns>
+        public virtual string GetName(InitSettings initSettings) => !string.IsNullOrEmpty(initSettings.name) ? initSettings.name : DefaultName;
+
+        /// <summary>
         /// Initializes the editor element.
         /// </summary>
         /// <param name="initSettings">Initialize settings.</param>
@@ -108,7 +125,7 @@ namespace BetterLegacy.Editor.Data
                 return;
 
             CoreHelper.Delete(GameObject);
-            GameObject = GetPrefab(initSettings).Duplicate(initSettings.parent, !string.IsNullOrEmpty(initSettings.name) ? initSettings.name : "element", GetSiblingIndex(initSettings));
+            GameObject = GetPrefab(initSettings).Duplicate(initSettings.parent, GetName(initSettings), GetSiblingIndex(initSettings));
             Apply(GameObject, initSettings);
         }
 
@@ -138,6 +155,11 @@ namespace BetterLegacy.Editor.Data
                 TooltipHelper.AssignTooltip(GameObject, tooltipGroup);
         }
 
+        /// <summary>
+        /// Applies the editor element values to a game object.
+        /// </summary>
+        /// <param name="gameObject">Game object to apply to.</param>
+        /// <param name="initSettings">Initialize settings.</param>
         public abstract void Apply(GameObject gameObject, InitSettings initSettings);
 
         /// <summary>
@@ -378,6 +400,8 @@ namespace BetterLegacy.Editor.Data
         VerticalLayoutGroup vertical;
         HorizontalLayoutGroup horizontal;
 
+        public override string DefaultName => "layout element";
+
         #endregion
 
         #region Functions
@@ -392,8 +416,8 @@ namespace BetterLegacy.Editor.Data
 
             CoreHelper.Delete(GameObject);
             GameObject = initSettings.prefab ?
-                initSettings.prefab.Duplicate(initSettings.parent, !string.IsNullOrEmpty(initSettings.name) ? initSettings.name : "layout element", GetSiblingIndex(initSettings)) :
-                Creator.NewUIObject(!string.IsNullOrEmpty(initSettings.name) ? initSettings.name : "layout element", initSettings.parent, GetSiblingIndex(initSettings));
+                initSettings.prefab.Duplicate(initSettings.parent, GetName(initSettings), GetSiblingIndex(initSettings)) :
+                Creator.NewUIObject(GetName(initSettings), initSettings.parent, GetSiblingIndex(initSettings));
 
             switch (layoutValues.type)
             {
@@ -452,6 +476,8 @@ namespace BetterLegacy.Editor.Data
 
         public bool vertical;
 
+        public override string DefaultName => "Scroll View";
+
         #endregion
 
         #region Functions
@@ -494,6 +520,8 @@ namespace BetterLegacy.Editor.Data
         public Vector2 size = new Vector2(0f, 4f);
 
         public ThemeGroup themeGroup = ThemeGroup.Background_3;
+
+        public override string DefaultName => "spacer element";
 
         #endregion
 
@@ -563,10 +591,6 @@ namespace BetterLegacy.Editor.Data
         #region Values
 
         /// <summary>
-        /// Name of the button.
-        /// </summary>
-        public string name;
-        /// <summary>
         /// Function to run on click.
         /// </summary>
         public Action action;
@@ -604,6 +628,8 @@ namespace BetterLegacy.Editor.Data
         public ThemeGroup graphicThemeGroup = ThemeGroup.Function_2_Text;
 
         public ButtonAdapter buttonAdapter;
+
+        public override string DefaultName => "button element";
 
         #endregion
 
@@ -823,6 +849,8 @@ namespace BetterLegacy.Editor.Data
 
         public ThemeGroup textThemeGroup = ThemeGroup.Input_Field_Text;
 
+        public override string DefaultName => "input element";
+
         #endregion
 
         #region Functions
@@ -946,6 +974,8 @@ namespace BetterLegacy.Editor.Data
         public ThemeGroup textThemeGroup = ThemeGroup.Input_Field_Text;
 
         public ThemeGroup buttonThemeGroup = ThemeGroup.Function_2;
+
+        public override string DefaultName => "number input element";
 
         #endregion
 
@@ -1095,15 +1125,24 @@ namespace BetterLegacy.Editor.Data
     /// </summary>
     public class DropdownElement : EditorElement<Dropdown>
     {
+        #region Constructors
+
         public DropdownElement() { }
+
+        public DropdownElement(List<Dropdown.OptionData> options) => this.options = options;
+
+        #endregion
 
         #region Values
 
+        public Dropdown dropdown;
         public List<Dropdown.OptionData> options;
         public int value;
         public Func<int> getValue;
         public int Value => getValue != null ? getValue.Invoke() : value;
         public Action<int> onValueChanged;
+
+        public override string DefaultName => "dropdown element";
 
         #endregion
 
@@ -1113,20 +1152,21 @@ namespace BetterLegacy.Editor.Data
 
         public override void Apply(Dropdown component, InitSettings initSettings)
         {
+            dropdown = component;
             if (options != null)
-                component.options = options;
-            component.SetValueWithoutNotify(Value);
-            component.onValueChanged.NewListener(_val =>
+                dropdown.options = options;
+            dropdown.SetValueWithoutNotify(Value);
+            dropdown.onValueChanged.NewListener(_val =>
             {
                 onValueChanged?.Invoke(_val);
                 value = _val;
             });
 
             if (initSettings.rectValues.HasValue)
-                initSettings.rectValues.Value.AssignToRectTransform(component.transform.AsRT());
+                initSettings.rectValues.Value.AssignToRectTransform(dropdown.transform.AsRT());
 
             if (initSettings.applyThemes)
-                EditorThemeManager.ApplyDropdown(component);
+                EditorThemeManager.ApplyDropdown(dropdown);
         }
 
         #endregion
@@ -1156,6 +1196,8 @@ namespace BetterLegacy.Editor.Data
         public Vector2? sizeDelta;
 
         public Text uiText;
+
+        public override string DefaultName => "label";
 
         #endregion
 
@@ -1208,6 +1250,8 @@ namespace BetterLegacy.Editor.Data
 
         public LabelsElement(params LabelElement[] labels) => this.labels = labels.ToList();
 
+        public LabelsElement(LayoutValues layoutValues, params LabelElement[] labels) : this(labels) => this.layoutValues = layoutValues;
+
         public LabelsElement(InitSettings initSettings, params LabelElement[] labels)
         {
             this.labels = labels.ToList();
@@ -1230,6 +1274,10 @@ namespace BetterLegacy.Editor.Data
 
         public ThemeGroup themeGroup;
 
+        public LayoutValues layoutValues;
+
+        public override string DefaultName => "labels";
+
         #endregion
 
         #region Functions
@@ -1243,6 +1291,19 @@ namespace BetterLegacy.Editor.Data
             if (initSettings.rectValues.HasValue)
                 initSettings.rectValues.Value.AssignToRectTransform(GameObject.transform.AsRT());
 
+            if (layoutValues && layoutValues is HorizontalOrVerticalLayoutValues hvLayoutValues)
+            {
+                var hvLayoutGroup = gameObject.GetComponent<HorizontalOrVerticalLayoutGroup>();
+                if (hvLayoutGroup)
+                    hvLayoutValues.AssignToLayout(hvLayoutGroup);
+            }
+            else if (layoutValues && layoutValues is GridLayoutValues gridLayoutValues)
+            {
+                var gridLayoutGroup = gameObject.GetComponent<GridLayoutGroup>();
+                if (gridLayoutGroup)
+                    gridLayoutValues.AssignToLayout(gridLayoutGroup);
+            }
+
             var labelPrefab = EditorPrefabHolder.Instance.Labels.transform.GetChild(0).gameObject;
 
             for (int i = 0; i < Count; i++)
@@ -1255,6 +1316,85 @@ namespace BetterLegacy.Editor.Data
 
                 if (initSettings.applyThemes)
                     EditorThemeManager.ApplyGraphic(labelText, themeGroup);
+            }
+        }
+
+        #endregion
+    }
+
+    public class ColorGroupElement : EditorElement
+    {
+        #region Constructors
+
+        public ColorGroupElement() { }
+
+        public ColorGroupElement(int count) => this.count = count;
+
+        public ColorGroupElement(int count, Vector2 sizeDelta, Vector2 cellSize, Vector2 spacing) : this(count)
+        {
+            this.sizeDelta = sizeDelta;
+            this.cellSize = cellSize;
+            this.spacing = spacing;
+        }
+
+        #endregion
+
+        #region Values
+
+        public Toggle this[int index]
+        {
+            get => toggles[index];
+            set => toggles[index] = value;
+        }
+
+        public int count = 9;
+
+        public List<Toggle> toggles = new List<Toggle>();
+
+        public GridLayoutGroup gridLayout;
+
+        public Vector2? sizeDelta;
+
+        public Vector2? cellSize;
+
+        public Vector2? spacing;
+
+        public override string DefaultName => "colors";
+
+        #endregion
+
+        #region Functions
+
+        public override GameObject GetPrefab(InitSettings initSettings) => initSettings.prefab ? initSettings.prefab : EditorPrefabHolder.Instance.ColorsLayout;
+
+        public override void Apply(GameObject gameObject, InitSettings initSettings)
+        {
+            CoreHelper.DestroyChildren(gameObject.transform);
+
+            if (initSettings.rectValues.HasValue)
+                initSettings.rectValues.Value.AssignToRectTransform(GameObject.transform.AsRT());
+
+            if (sizeDelta.HasValue)
+                gameObject.transform.AsRT().sizeDelta = sizeDelta.Value;
+
+            gridLayout = gameObject.GetComponent<GridLayoutGroup>();
+            if (cellSize.HasValue)
+                gridLayout.cellSize = cellSize.Value;
+            if (spacing.HasValue)
+                gridLayout.spacing = spacing.Value;
+
+            var prefab = EditorPrefabHolder.Instance.ColorsLayout.transform.GetChild(0).gameObject;
+            for (int i = 0; i < count; i++)
+            {
+                var col = prefab.Duplicate(gameObject.transform, (i + 1).ToString());
+                var toggle = col.GetComponent<Toggle>();
+                toggles.Add(toggle);
+
+                if (!initSettings.applyThemes)
+                    continue;
+
+                EditorThemeManager.ApplyGraphic(toggle.image, ThemeGroup.Null, true);
+                EditorThemeManager.ApplyGraphic(toggle.graphic, ThemeGroup.Background_3);
             }
         }
 
