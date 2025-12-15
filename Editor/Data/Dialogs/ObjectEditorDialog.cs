@@ -191,6 +191,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             var dialog = ObjEditor.inst.ObjectView.transform.parent.parent.parent.parent.parent; // lol wtf
             var right = dialog.Find("data/right");
+            var colorDialog = ObjEditor.inst.KeyframeDialogs[3].transform;
 
             right.gameObject.AddComponent<Mask>();
 
@@ -746,128 +747,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                 EditorThemeManager.ApplyInputField(Content.transform.Find("shapesettings/5").GetComponent<InputField>());
 
-                try
-                {
-                    for (int i = 0; i < ObjEditor.inst.KeyframeDialogs.Count - 1; i++)
-                    {
-                        var kfdialog = ObjEditor.inst.KeyframeDialogs[i].transform;
-
-                        var topPanel = kfdialog.GetChild(0);
-                        var bg = topPanel.GetChild(0).GetComponent<Image>();
-                        var title = topPanel.GetChild(1).GetComponent<Text>();
-                        bg.gameObject.AddComponent<ContrastColors>().Init(title, bg);
-
-                        EditorThemeManager.ApplyGraphic(bg, EditorTheme.GetGroup($"Object Keyframe Color {i + 1}"));
-
-                        var edit = kfdialog.Find("edit");
-                        for (int j = 0; j < edit.childCount; j++)
-                        {
-                            var button = edit.GetChild(j);
-                            if (button.name == "copy" || button.name == "paste")
-                                continue;
-
-                            var buttonComponent = button.GetComponent<Button>();
-
-                            if (!buttonComponent)
-                                continue;
-
-                            if (button.name == "del")
-                            {
-                                EditorThemeManager.ApplyGraphic(button.GetChild(0).GetComponent<Image>(), ThemeGroup.Delete_Keyframe_BG);
-                                EditorThemeManager.ApplySelectable(buttonComponent, ThemeGroup.Delete_Keyframe_Button, false);
-
-                                continue;
-                            }
-
-                            CoreHelper.Destroy(button.GetComponent<Animator>());
-                            buttonComponent.transition = Selectable.Transition.ColorTint;
-
-                            EditorThemeManager.ApplySelectable(buttonComponent, ThemeGroup.Function_2, false);
-                        }
-
-                        // Labels
-                        for (int j = 0; j < kfdialog.childCount; j++)
-                        {
-                            var label = kfdialog.GetChild(j);
-                            if (label.name == "label" || label.name == "curves_label" || label.name == "r_label" ||
-                                label.name == "r_position_label" || label.name == "r_scale_label" || label.name == "r_rotation_label")
-                            {
-                                for (int k = 0; k < label.childCount; k++)
-                                    EditorThemeManager.ApplyLightText(label.GetChild(k).GetComponent<Text>());
-                            }
-                        }
-
-                        var timeBase = kfdialog.Find("time");
-                        var timeInput = timeBase.Find("time").GetComponent<InputField>();
-
-                        EditorThemeManager.ApplyInputField(timeInput, ThemeGroup.Input_Field);
-
-                        for (int j = 1; j < timeBase.childCount; j++)
-                        {
-                            var button = timeBase.GetChild(j);
-                            var buttonComponent = button.GetComponent<Button>();
-
-                            if (!buttonComponent)
-                                continue;
-
-                            CoreHelper.Destroy(button.GetComponent<Animator>());
-                            buttonComponent.transition = Selectable.Transition.ColorTint;
-
-                            EditorThemeManager.ApplySelectable(buttonComponent, ThemeGroup.Function_2, false);
-                        }
-
-                        EditorThemeManager.ApplyDropdown(kfdialog.Find("curves").GetComponent<Dropdown>());
-
-                        if (i < 3)
-                        {
-                            var find = i switch
-                            {
-                                0 => "position",
-                                1 => "scale",
-                                _ => "rotation",
-                            };
-                            for (int j = 0; j < kfdialog.Find(find).childCount; j++)
-                            {
-                                var field = kfdialog.Find(find).GetChild(j).GetComponent<InputField>();
-                                if (!field)
-                                    continue;
-                                var fieldStorage = field.gameObject.GetOrAddComponent<InputFieldStorage>();
-                                fieldStorage.Assign();
-                                EditorThemeManager.ApplyInputField(fieldStorage);
-                            }
-                            for (int j = 0; j < kfdialog.Find($"r_{find}").childCount; j++)
-                            {
-                                var field = kfdialog.Find($"r_{find}").GetChild(j).GetComponent<InputField>();
-                                if (!field)
-                                    continue;
-                                var fieldStorage = field.gameObject.GetOrAddComponent<InputFieldStorage>();
-                                fieldStorage.Assign();
-                                EditorThemeManager.ApplyInputField(fieldStorage);
-                            }
-                        }
-
-                        if (kfdialog.Find("random"))
-                        {
-                            for (int j = 0; j < kfdialog.Find("random").childCount; j++)
-                            {
-                                var toggle = kfdialog.Find("random").GetChild(j).GetComponent<Toggle>();
-                                if (!toggle)
-                                    continue;
-
-                                toggle.group = null;
-                                EditorThemeManager.ApplyToggle(toggle, ThemeGroup.Background_3);
-                                EditorThemeManager.ApplyGraphic(toggle.transform.Find("Image").GetComponent<Image>(), ThemeGroup.Toggle_1_Check);
-                            }
-
-                            EditorThemeManager.ApplyInputField(kfdialog.Find("random/interval-input").GetComponent<InputField>());
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Debug.LogError($"\nException: {ex}");
-                }
-
                 var zoomSliderBase = ObjEditor.inst.zoomSlider.transform.parent;
 
                 var gameObject = Creator.NewUIObject("zoom back", zoomSliderBase.parent, 1);
@@ -882,10 +761,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             // Colors
             {
-                var colorParent = ObjEditor.inst.KeyframeDialogs[3].transform.Find("color");
+                var colorParent = colorDialog.Find("color");
                 colorParent.GetComponent<GridLayoutGroup>().spacing = new Vector2(9.32f, 9.32f);
-
-                ObjEditor.inst.KeyframeDialogs[3].transform.GetChild(colorParent.GetSiblingIndex() - 1).gameObject.name = "color_label";
+                colorParent.GetPreviousSibling().name = "color_label";
 
                 for (int i = 1; i < 19; i++)
                 {
@@ -998,50 +876,38 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             // Opacity
             {
-                var opacityLabel = EditorPrefabHolder.Instance.Labels.Duplicate(ObjEditor.inst.KeyframeDialogs[3].transform, "opacity_label");
-                opacityLabel.transform.localScale = Vector3.one;
-                var opacityLabelText = opacityLabel.transform.GetChild(0).GetComponent<Text>();
-                opacityLabelText.text = "Opacity";
+                new LabelsElement("Opacity").Init(EditorElement.InitSettings.Default.Parent(colorDialog).Name("opacity_label"));
 
-                EditorThemeManager.ApplyLightText(opacityLabelText);
-
-                var opacity = ObjEditor.inst.KeyframeDialogs[2].transform.Find("rotation").gameObject.Duplicate(ObjEditor.inst.KeyframeDialogs[3].transform, "opacity");
-
-                var collisionToggle = EditorPrefabHolder.Instance.ToggleButton.Duplicate(opacity.transform, "collision");
-
-                var collisionToggleText = collisionToggle.transform.Find("Text").GetComponent<Text>();
-                collisionToggleText.text = "Collide";
+                var opacity = ObjEditor.inst.KeyframeDialogs[2].transform.Find("rotation").gameObject.Duplicate(colorDialog, "opacity");
                 opacity.transform.Find("x/input").AsRT().sizeDelta = new Vector2(136f, 32f);
+
+                var collision = EditorPrefabHolder.Instance.ToggleButton.Duplicate(opacity.transform, "collision");
+                var collisionToggle = collision.GetComponent<ToggleButtonStorage>();
+                collisionToggle.Text = "Collide";
 
                 var inputFieldStorage = opacity.transform.Find("x").gameObject.GetOrAddComponent<InputFieldStorage>();
                 inputFieldStorage.Assign();
-                inputFieldStorage.inputField.image = opacity.transform.Find("x/input").GetComponent<Image>();
 
                 EditorThemeManager.ApplyInputField(inputFieldStorage);
-                EditorThemeManager.ApplyToggle(collisionToggle.GetComponent<Toggle>(), graphic: collisionToggleText);
+                EditorThemeManager.ApplyToggle(collisionToggle);
             }
 
             // Hue / Sat / Val
             {
-                var hsvLabels = EditorPrefabHolder.Instance.Labels.Duplicate(ObjEditor.inst.KeyframeDialogs[3].transform, "huesatval_label");
-                hsvLabels.transform.GetChild(0).AsRT().sizeDelta = new Vector2(120f, 20f);
-                hsvLabels.transform.GetChild(0).GetComponent<Text>().text = "Hue";
+                new LabelsElement(HorizontalOrVerticalLayoutValues.Horizontal.ChildControlHeight(false), "Hue", "Saturation", "Value").Init(
+                    EditorElement.InitSettings.Default
+                    .Parent(colorDialog)
+                    .Name("huesatval_label")
+                    .Rect(new RectValues(new Vector2(8f, -330f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(371f, 20f))));
 
-                var saturationLabel = hsvLabels.transform.GetChild(0).gameObject.Duplicate(hsvLabels.transform);
-                saturationLabel.transform.AsRT().sizeDelta = new Vector2(120f, 20f);
-                saturationLabel.GetComponent<Text>().text = "Saturation";
+                var hsv = ObjEditor.inst.KeyframeDialogs[1].transform.Find("scale").gameObject.Duplicate(colorDialog);
+                hsv.name = "huesatval";
 
-                var valueLabel = hsvLabels.transform.GetChild(0).gameObject.Duplicate(hsvLabels.transform);
-                valueLabel.GetComponent<Text>().text = "Value";
+                hsv.transform.GetChild(1).gameObject.Duplicate(hsv.transform, "z");
 
-                var opacity = ObjEditor.inst.KeyframeDialogs[1].transform.Find("scale").gameObject.Duplicate(ObjEditor.inst.KeyframeDialogs[3].transform);
-                opacity.name = "huesatval";
-
-                opacity.transform.GetChild(1).gameObject.Duplicate(opacity.transform, "z");
-
-                for (int i = 0; i < opacity.transform.childCount; i++)
+                for (int i = 0; i < hsv.transform.childCount; i++)
                 {
-                    var child = opacity.transform.GetChild(i);
+                    var child = hsv.transform.GetChild(i);
                     if (!child.GetComponent<InputFieldSwapper>())
                     {
                         var inputField = child.GetComponent<InputField>();
@@ -1173,15 +1039,16 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 }
             }
 
+            // remove unnecessary spacers
             CoreHelper.Delete(ObjEditor.inst.KeyframeDialogs[2].transform.GetChild(1).gameObject);
-            CoreHelper.Delete(ObjEditor.inst.KeyframeDialogs[3].transform.GetChild(1).gameObject);
+            CoreHelper.Delete(colorDialog.GetChild(1).gameObject);
 
             var multiKF = ObjEditor.inst.KeyframeDialogs[4];
             multiKF.transform.AsRT().anchorMax = new Vector2(0f, 1f);
             multiKF.transform.AsRT().anchorMin = new Vector2(0f, 1f);
 
             // Shift Dialogs
-                CoreHelper.Destroy(right.GetComponent<VerticalLayoutGroup>(), true);
+            CoreHelper.Destroy(right.GetComponent<VerticalLayoutGroup>(), true);
 
             // Multi Keyframe Editor
             {
@@ -1712,8 +1579,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         gradientRotationLabelLayout.minWidth = 100f;
                     }
 
-                    var colorDialog = ObjEditor.inst.KeyframeDialogs[3].transform;
-
                     var shift = EditorPrefabHolder.Instance.ToggleButton.Duplicate(colorDialog, "shift", 16);
                     var shiftToggleButton = shift.GetComponent<ToggleButtonStorage>();
                     shiftToggleButton.label.text = "Shift Dialog Down";
@@ -1724,14 +1589,14 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         shiftToggleButton.label.text = _val ? "Shift Dialog Up" : "Shift Dialog Down";
                         var animation = new RTAnimation("shift color UI");
                         animation.animationHandlers = new List<AnimationHandlerBase>
+                        {
+                            new AnimationHandler<float>(new List<IKeyframe<float>>
                             {
-                                new AnimationHandler<float>(new List<IKeyframe<float>>
-                                {
-                                    new FloatKeyframe(0f, _val ? 0f : 195f, Ease.Linear),
-                                    new FloatKeyframe(0.3f, _val ? 195f : 0f, Ease.CircOut),
-                                    new FloatKeyframe(0.32f, _val ? 195f : 0f, Ease.Linear),
-                                }, x => { if (ObjEditor.inst) ObjEditor.inst.KeyframeDialogs[3].transform.AsRT().anchoredPosition = new Vector2(0f, x); }),
-                            };
+                                new FloatKeyframe(0f, _val ? 0f : 195f, Ease.Linear),
+                                new FloatKeyframe(0.3f, _val ? 195f : 0f, Ease.CircOut),
+                                new FloatKeyframe(0.32f, _val ? 195f : 0f, Ease.Linear),
+                            }, x => { if (ObjEditor.inst) ObjEditor.inst.KeyframeDialogs[3].transform.AsRT().anchoredPosition = new Vector2(0f, x); }),
+                        };
 
                         animation.onComplete = () =>
                         {
@@ -1755,11 +1620,13 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     var endOpacity = colorDialog.Find("opacity").gameObject.Duplicate(colorDialog, "gradient_opacity");
                     CoreHelper.Delete(endOpacity.transform.Find("collision"));
 
-                    var endHSVLabel = colorDialog.Find("huesatval_label").gameObject.Duplicate(colorDialog, "gradient_huesatval_label");
-                    endHSVLabel.transform.GetChild(0).GetComponent<Text>().text = "End Hue";
-                    endHSVLabel.transform.GetChild(1).GetComponent<Text>().text = "End Sat";
-                    endHSVLabel.transform.GetChild(2).GetComponent<Text>().text = "End Val";
-                    var endHSV = colorDialog.Find("huesatval").gameObject.Duplicate(colorDialog, "gradient_huesatval");
+                    new LabelsElement(HorizontalOrVerticalLayoutValues.Horizontal.ChildControlHeight(false), "End Hue", "End Sat", "End Val").Init(
+                        EditorElement.InitSettings.Default
+                        .Parent(colorDialog)
+                        .Name("gradient_huesatval_label")
+                        .Rect(new RectValues(new Vector2(8f, -330f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(371f, 20f))));
+
+                    colorDialog.Find("huesatval").gameObject.Duplicate(colorDialog, "gradient_huesatval");
 
                     ObjEditor.inst.colorButtons.Clear();
                     for (int i = 1; i <= 18; i++)

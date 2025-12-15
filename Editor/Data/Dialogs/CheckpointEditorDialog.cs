@@ -98,31 +98,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
             Edit = Left.Find("edit");
             RTEditor.inst.SetupIndexer(this);
 
-            for (int i = 0; i < Edit.childCount; i++)
-            {
-                var button = Edit.GetChild(i);
-                var buttonComponent = button.GetComponent<Button>();
-
-                if (!buttonComponent)
-                    continue;
-
-                if (button.name == "del")
-                {
-                    var buttonBG = button.GetChild(0).GetComponent<Image>();
-
-                    EditorThemeManager.ApplyGraphic(buttonBG, ThemeGroup.Delete_Keyframe_BG);
-
-                    EditorThemeManager.ApplySelectable(buttonComponent, ThemeGroup.Delete_Keyframe_Button, false);
-
-                    continue;
-                }
-
-                CoreHelper.Destroy(button.GetComponent<Animator>());
-                buttonComponent.transition = Selectable.Transition.ColorTint;
-
-                EditorThemeManager.ApplySelectable(buttonComponent, ThemeGroup.Function_2, false);
-            }
-
             // Labels
             for (int i = 0; i < Left.childCount; i++)
             {
@@ -153,22 +128,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var position = Left.Find("position");
             PositionFields = position.gameObject.AddComponent<Vector2InputFieldStorage>();
             PositionFields.Assign();
-            EditorThemeManager.ApplyInputField(PositionFields.x);
-            EditorThemeManager.ApplyInputField(PositionFields.y);
-            for (int i = 0; i < position.childCount; i++)
-            {
-                var child = position.GetChild(i);
-                for (int j = 1; j < child.childCount; j++)
-                {
-                    var button = child.GetChild(j);
-                    var buttonComponent = button.GetComponent<Button>();
-
-                    CoreHelper.Destroy(button.GetComponent<Animator>());
-                    buttonComponent.transition = Selectable.Transition.ColorTint;
-
-                    EditorThemeManager.ApplySelectable(buttonComponent, ThemeGroup.Function_2, false);
-                }
-            }
+            EditorThemeManager.ApplyInputField(PositionFields);
 
             var scrollView = EditorPrefabHolder.Instance.ScrollView.Duplicate(RTCheckpointEditor.inst.transform, "Scroll View");
             LeftContent = scrollView.transform.Find("Viewport/Content").AsRT();

@@ -231,9 +231,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                             {
                                 var eventValueField = valuesTransform.GetChild(i).gameObject.GetOrAddComponent<InputFieldStorage>();
                                 eventValueField.Assign(eventValueField.gameObject);
-                                EditorThemeManager.ApplySelectable(eventValueField.middleButton, ThemeGroup.Function_2, false);
-                                EditorThemeManager.ApplySelectable(eventValueField.subButton, ThemeGroup.Function_2, false);
-                                EditorThemeManager.ApplySelectable(eventValueField.addButton, ThemeGroup.Function_2, false);
+                                EditorThemeManager.ApplyInputField(eventValueField);
                                 EventValueFields.Add(eventValueField);
                             }
                         else if (type != 3)
@@ -260,9 +258,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         {
                             var eventValueField = randomValuesTransform.GetChild(i).gameObject.GetOrAddComponent<InputFieldStorage>();
                             eventValueField.Assign(eventValueField.gameObject);
-                            EditorThemeManager.ApplySelectable(eventValueField.middleButton, ThemeGroup.Function_2, false);
-                            EditorThemeManager.ApplySelectable(eventValueField.subButton, ThemeGroup.Function_2, false);
-                            EditorThemeManager.ApplySelectable(eventValueField.addButton, ThemeGroup.Function_2, false);
+                            EditorThemeManager.ApplyInputField(eventValueField);
                             RandomEventValueFields.Add(eventValueField);
                         }
                     }
@@ -274,6 +270,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 if (GameObject.transform.TryFind("flee", out Transform fleeTransform))
                     FleeToggle = fleeTransform.GetComponent<ToggleButtonStorage>();
 
+                if (GameObject.transform.TryFind("r_label", out Transform randomLabelTransform))
+                {
+                    for (int i = 0; i < randomLabelTransform.childCount; i++)
+                        EditorThemeManager.ApplyLightText(randomLabelTransform.GetChild(i).GetComponent<Text>());
+                }
+
                 if (GameObject.transform.TryFind("random", out Transform randomTransform))
                 {
                     RandomTogglesParent = randomTransform;
@@ -281,8 +283,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     for (int i = 0; i < randomTransform.childCount - 2; i++)
                     {
                         var toggle = randomTransform.GetChild(i).GetComponent<Toggle>();
-                        RandomToggles.Add(toggle);
-
+                        toggle.group = null;
+                        EditorThemeManager.ApplyToggle(toggle, ThemeGroup.Background_3);
+                        EditorThemeManager.ApplyGraphic(toggle.transform.Find("Image").GetComponent<Image>(), ThemeGroup.Toggle_1_Check);
                         if (!toggle.GetComponent<HoverUI>())
                         {
                             var hoverUI = toggle.gameObject.AddComponent<HoverUI>();
@@ -290,9 +293,11 @@ namespace BetterLegacy.Editor.Data.Dialogs
                             hoverUI.animateSca = true;
                             hoverUI.size = 1.1f;
                         }
+                        RandomToggles.Add(toggle);
                     }
 
                     RandomIntervalField = randomTransform.Find("interval-input").GetComponent<InputField>();
+                    EditorThemeManager.ApplyInputField(RandomIntervalField);
 
                     if (GameObject.transform.TryFind("r_axis", out Transform rAxisTransform))
                         RandomAxisDropdown = rAxisTransform.GetComponent<Dropdown>();
@@ -585,6 +590,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 var bg = topPanel.GetChild(0).GetComponent<Image>();
                 var title = topPanel.GetChild(1).GetComponent<Text>();
                 bg.gameObject.GetOrAddComponent<ContrastColors>().Init(title, bg);
+
+                if (isObjectKeyframe)
+                    EditorThemeManager.ApplyGraphic(bg, EditorTheme.GetGroup($"Object Keyframe Color {type + 1}"));
             }
             catch (Exception ex)
             {
