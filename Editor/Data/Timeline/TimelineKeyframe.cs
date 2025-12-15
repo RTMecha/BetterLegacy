@@ -350,6 +350,12 @@ namespace BetterLegacy.Editor.Data.Timeline
             return;
         }
 
+        /// <summary>
+        /// Gets the index coordinates of the timeline keyframe.
+        /// </summary>
+        /// <returns>Returns a <see cref="KeyframeCoord"/>.</returns>
+        public KeyframeCoord GetCoord() => new KeyframeCoord(Type, Index);
+
         #endregion
     }
 }
