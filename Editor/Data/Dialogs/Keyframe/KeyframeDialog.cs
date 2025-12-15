@@ -6,6 +6,8 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
+using LSFunctions;
+
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
@@ -14,6 +16,7 @@ using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Core.Runtime;
+using BetterLegacy.Core.Runtime.Events;
 using BetterLegacy.Editor.Data.Timeline;
 using BetterLegacy.Editor.Managers;
 
@@ -97,9 +100,75 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public List<string> originalLabels;
 
+        public bool newDialog;
+
+        public string ObjectName => type switch
+        {
+            EventEngine.MOVE => "move",
+            EventEngine.ZOOM => "zoom",
+            EventEngine.ROTATE => "rotate",
+            EventEngine.SHAKE => "shake",
+            EventEngine.THEME => "theme",
+            EventEngine.CHROMA => "chroma",
+            EventEngine.BLOOM => "bloom",
+            EventEngine.VIGNETTE => "vignette",
+            EventEngine.LENS => "lens",
+            EventEngine.GRAIN => "grain",
+            EventEngine.COLORGRADING => "colorgrading",
+            EventEngine.RIPPLES => "ripples",
+            EventEngine.RADIALBLUR => "radialblur",
+            EventEngine.COLORSPLIT => "colorsplit",
+            EventEngine.OFFSET => "camoffset",
+            EventEngine.GRADIENT => "gradient",
+            EventEngine.DOUBLEVISION => "doublevision",
+            EventEngine.SCANLINES => "scanlines",
+            EventEngine.BLUR => "blur",
+            EventEngine.PIXEL => "pixelize",
+            EventEngine.BG => "bg",
+            EventEngine.INVERT => "invert",
+            EventEngine.TIMELINE => "timeline",
+            EventEngine.PLAYER => "player",
+            EventEngine.FOLLOW_PLAYER => "followplayer",
+            EventEngine.AUDIO => "audio",
+            EventEngine.VIDEO_PARENT => "videoparent",
+            EventEngine.VIDEO => "video",
+            EventEngine.SHARPNESS => "sharpen",
+            EventEngine.BARS => "bars",
+            EventEngine.DANGER => "danger",
+            EventEngine.ROTATION => "depthrotation",
+            EventEngine.CAMERA_DEPTH => "cameradepth",
+            EventEngine.WINDOW_BASE => "windowbase",
+            EventEngine.WINDOW_POSITION_X => "windowpositionx",
+            EventEngine.WINDOW_POSITION_Y => "windowpositionY",
+            EventEngine.PLAYER_FORCE => "playerforce",
+            EventEngine.MOSAIC => "mosaic",
+            EventEngine.ANALOG_GLITCH => "analogglitch",
+            EventEngine.DIGITAL_GLITCH => "digitalglitch",
+            _ => string.Empty,
+        };
+
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Creates a new object for the keyframe dialog.
+        /// </summary>
+        /// <param name="parent">Parent of the dialog.</param>
+        public void CreateNew(Transform parent) => CreateNew(parent, ObjectName);
+
+        /// <summary>
+        /// Creates a new object for the keyframe dialog.
+        /// </summary>
+        /// <param name="parent">Parent of the dialog.</param>
+        /// <param name="name">Name of the dialog.</param>
+        public virtual void CreateNew(Transform parent, string name)
+        {
+            newDialog = true;
+            CoreHelper.Delete(GameObject);
+
+            GameObject = EditorPrefabHolder.Instance.EventEditor.Duplicate(parent, name);
+        }
 
         /// <summary>
         /// Initializes the keyframe dialog.
@@ -110,7 +179,10 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 return;
 
             Edit = GameObject.transform.Find("edit");
+            if (!isObjectKeyframe)
+                InitEdit();
             RTEditor.inst.SetupIndexer(this);
+            InitTopPanel();
 
             if (isMulti)
                 return;
@@ -119,7 +191,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             {
                 CurvesLabel = GameObject.transform.Find("curves_label").gameObject;
                 CurvesDropdown = GameObject.transform.Find("curves").GetComponent<Dropdown>();
-                EventTimeField = GameObject.transform.Find("time").gameObject.AddComponent<InputFieldStorage>();
+                EventTimeField = GameObject.transform.Find("time").gameObject.GetOrAddComponent<InputFieldStorage>();
                 EventTimeField.Assign(EventTimeField.gameObject);
 
                 GameObject.transform.GetChild(2).gameObject.SetActive(false);
@@ -131,12 +203,11 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     if (GameObject.transform.TryFind(Name.ToLower(), out Transform valuesTransform))
                     {
                         EventValuesParent = valuesTransform;
-                        var siblingIndex = valuesTransform.GetSiblingIndex();
+                        var labels = valuesTransform.GetPreviousSibling();
                         try
                         {
-                            if (siblingIndex - 1 >= 0)
+                            if (labels)
                             {
-                                var labels = GameObject.transform.GetChild(siblingIndex - 1);
                                 originalLabels = new List<string>(labels.childCount);
                                 EventValueLabels = new List<Text>(labels.childCount);
                                 for (int i = 0; i < labels.childCount; i++)
@@ -144,6 +215,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                     var label = labels.GetChild(i).GetComponent<Text>();
                                     originalLabels.Add(label ? label.text : string.Empty);
                                     EventValueLabels.Add(label);
+                                    EditorThemeManager.ApplyLightText(label);
                                 }
                             }
                         }
@@ -170,7 +242,18 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                     if (GameObject.transform.TryFind($"r_{Name.ToLower()}", out Transform randomValuesTransform))
                     {
-                        RandomEventValueLabels = GameObject.transform.Find($"r_{Name.ToLower()}_label").gameObject;
+                        RandomEventValueLabels = GameObject.transform.Find($"r_{Name.ToLower()}_label")?.gameObject;
+                        try
+                        {
+                            if (RandomEventValueLabels)
+                                for (int i = 0; i < RandomEventValueLabels.transform.childCount; i++)
+                                    EditorThemeManager.ApplyLightText(RandomEventValueLabels.transform.GetChild(i).GetComponent<Text>());
+                        }
+                        catch (Exception ex)
+                        {
+                            CoreHelper.LogException(ex);
+                        }
+
                         RandomEventValueFields = new List<InputFieldStorage>();
                         RandomEventValueParent = randomValuesTransform.gameObject;
                         for (int i = 0; i < randomValuesTransform.childCount; i++)
@@ -214,11 +297,205 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     if (GameObject.transform.TryFind("r_axis", out Transform rAxisTransform))
                         RandomAxisDropdown = rAxisTransform.GetComponent<Dropdown>();
                 }
+
+                var curvesLabel = CurvesLabel.transform.GetChild(0).GetComponent<Text>();
+                curvesLabel.text = "Ease Type";
+
+                EditorThemeManager.ApplyLightText(curvesLabel);
+                EditorThemeManager.ApplyDropdown(CurvesDropdown);
+                EditorThemeManager.ApplyInputField(EventTimeField);
+
+                ApplyLabelThemes();
             }
             catch (Exception ex)
             {
                 CoreHelper.LogError($"Failed to set main: {ex}");
             }
+        }
+
+        /// <summary>
+        /// Renders the keyframe dialog.
+        /// </summary>
+        public virtual void Render()
+        {
+            var currentKeyframe = GetCurrentKeyframe();
+            var keyframeCoord = GetSelectionCoord();
+
+            bool isNotFirst = keyframeCoord.index != 0;
+
+            CurvesLabel.gameObject.SetActive(isNotFirst);
+            CurvesDropdown.gameObject.SetActive(isNotFirst);
+
+            EventTimeField.inputField.onValueChanged.ClearAll();
+            EventTimeField.inputField.text = currentKeyframe.time.ToString("f3");
+
+            TriggerHelper.SetInteractable(isNotFirst,
+                EventTimeField.inputField,
+                EventTimeField.leftGreaterButton,
+                EventTimeField.leftButton,
+                EventTimeField.rightButton,
+                EventTimeField.rightGreaterButton);
+
+            if (isNotFirst)
+            {
+                CurvesDropdown.SetValueWithoutNotify(RTEditor.inst.GetEaseIndex(currentKeyframe.curve.ToString()));
+                CurvesDropdown.onValueChanged.NewListener(_val =>
+                {
+                    var anim = RTEditor.inst.GetEasing(_val);
+                    foreach (var kf in GetSelectedKeyframes())
+                        kf.eventKeyframe.curve = anim;
+
+                    if (isObjectKeyframe)
+                    {
+                        KeyframeTimeline.CurrentTimeline.RenderKeyframes(KeyframeTimeline.CurrentTimeline.CurrentObject);
+                        if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
+                            RTLevel.Current?.UpdateObject(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>(), ObjectContext.KEYFRAMES);
+                    }
+                    else
+                    {
+                        RTEventEditor.inst.RenderEventObjects();
+                        RTLevel.Current?.UpdateEvents();
+                    }
+                });
+                TriggerHelper.AddEventTriggers(CurvesDropdown.gameObject, TriggerHelper.ScrollDelta(CurvesDropdown));
+
+                EventTimeField.inputField.onValueChanged.AddListener(_val =>
+                {
+                    if (!float.TryParse(_val, out float num))
+                        return;
+
+                    num = Mathf.Clamp(num, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
+
+                    foreach (var kf in GetSelectedKeyframes())
+                    {
+                        kf.Time = num;
+                        kf.Render();
+                    }
+
+                    if (!isObjectKeyframe)
+                        RTLevel.Current?.UpdateEvents(EventEditor.inst.currentEventType);
+                    else if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
+                        RTLevel.Current?.UpdateObject(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>(), ObjectContext.KEYFRAMES);
+                });
+
+                TriggerHelper.IncreaseDecreaseButtons(EventTimeField);
+                TriggerHelper.AddEventTriggers(EventTimeField.gameObject, TriggerHelper.ScrollDelta(EventTimeField.inputField, min: 0.001f, max: AudioManager.inst.CurrentAudioSource.clip.length));
+            }
+
+            #region Edit
+
+            if (JumpToStartButton)
+            {
+                JumpToStartButton.interactable = isNotFirst;
+                JumpToStartButton.onClick.NewListener(() =>
+                {
+                    if (isObjectKeyframe)
+                        KeyframeTimeline.CurrentTimeline.SetCurrentKeyframe(KeyframeTimeline.CurrentTimeline.CurrentObject, 0);
+                    else
+                    {
+                        RTLevel.Current?.UpdateEvents(EventEditor.inst.currentEventType);
+                        EventEditor.inst.SetCurrentEvent(EventEditor.inst.currentEventType, 0);
+                    }
+                });
+            }
+
+            if (JumpToPrevButton)
+            {
+                JumpToPrevButton.interactable = isNotFirst;
+                JumpToPrevButton.onClick.NewListener(() =>
+                {
+                    if (isObjectKeyframe)
+                    {
+                        var num = KeyframeTimeline.CurrentTimeline.currentKeyframeIndex - 1;
+                        if (num < 0)
+                            num = 0;
+                        KeyframeTimeline.CurrentTimeline.SetCurrentKeyframe(KeyframeTimeline.CurrentTimeline.CurrentObject, num);
+                    }
+                    else
+                    {
+                        RTLevel.Current?.UpdateEvents(EventEditor.inst.currentEventType);
+                        int num = EventEditor.inst.currentEvent - 1;
+                        if (num < 0)
+                            num = 0;
+
+                        EventEditor.inst.SetCurrentEvent(EventEditor.inst.currentEventType, num);
+                    }
+                });
+            }
+
+            var events = isObjectKeyframe ? KeyframeTimeline.CurrentTimeline.CurrentObject.Events[keyframeCoord.type] : GameData.Current.events[keyframeCoord.type];
+
+            if (KeyframeIndexer)
+                KeyframeIndexer.text = !isNotFirst ? "S" : keyframeCoord.index == events.Count - 1 ? "E" : keyframeCoord.index.ToString();
+
+            if (JumpToNextButton)
+            {
+                JumpToNextButton.interactable = keyframeCoord.index != events.Count - 1;
+                JumpToNextButton.onClick.NewListener(() =>
+                {
+                    if (isObjectKeyframe)
+                    {
+                        var num = KeyframeTimeline.CurrentTimeline.currentKeyframeIndex + 1;
+                        if (num >= events.Count)
+                            num = events.Count - 1;
+
+                        KeyframeTimeline.CurrentTimeline.SetCurrentKeyframe(KeyframeTimeline.CurrentTimeline.CurrentObject, num);
+                    }
+                    else
+                    {
+                        RTLevel.Current?.UpdateEvents(EventEditor.inst.currentEventType);
+                        int num = EventEditor.inst.currentEvent + 1;
+                        if (num >= events.Count)
+                            num = events.Count - 1;
+
+                        EventEditor.inst.SetCurrentEvent(EventEditor.inst.currentEventType, num);
+                    }
+                });
+            }
+
+            if (JumpToLastButton)
+            {
+                JumpToLastButton.interactable = keyframeCoord.index != events.Count - 1;
+                JumpToLastButton.onClick.NewListener(() =>
+                {
+                    if (isObjectKeyframe)
+                        KeyframeTimeline.CurrentTimeline.SetCurrentKeyframe(KeyframeTimeline.CurrentTimeline.CurrentObject, events.Count - 1);
+                    else
+                    {
+                        RTLevel.Current?.UpdateEvents(EventEditor.inst.currentEventType);
+                        EventEditor.inst.SetCurrentEvent(EventEditor.inst.currentEventType, events.Count - 1);
+                    }
+                });
+            }
+
+            DeleteButton.Interactable = isNotFirst;
+            DeleteButton.OnClick.NewListener(() =>
+            {
+                if (isObjectKeyframe)
+                    CoroutineHelper.StartCoroutine(KeyframeTimeline.CurrentTimeline.DeleteKeyframes(KeyframeTimeline.CurrentTimeline.CurrentObject));
+                else
+                    CoroutineHelper.StartCoroutine(RTEventEditor.inst.DeleteKeyframes());
+            });
+
+            if (CopyButton && PasteButton)
+            {
+                CopyButton.OnClick.NewListener(() =>
+                {
+                    if (isObjectKeyframe)
+                        KeyframeTimeline.CurrentTimeline.CopyData(KeyframeTimeline.CurrentTimeline.currentKeyframeType, currentKeyframe);
+                    else
+                        RTEventEditor.inst.CopyKeyframeData(RTEventEditor.inst.CurrentSelectedTimelineKeyframe);
+                });
+                PasteButton.OnClick.NewListener(() =>
+                {
+                    if (isObjectKeyframe)
+                        KeyframeTimeline.CurrentTimeline.PasteKeyframeData(KeyframeTimeline.CurrentTimeline.currentKeyframeType, GetSelectedKeyframes(), KeyframeTimeline.CurrentTimeline.CurrentObject);
+                    else
+                        RTEventEditor.inst.PasteKeyframeData(EventEditor.inst.currentEventType);
+                });
+            }
+
+            #endregion
         }
 
         /// <summary>
@@ -298,6 +575,477 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 EventValueElements.Add(element);
                 EventValueFields.Add(element is KeyframeInputField inputField ? inputField.Field : null);
             }
+        }
+
+        public void InitTopPanel()
+        {
+            try
+            {
+                var topPanel = GameObject.transform.GetChild(0);
+                var bg = topPanel.GetChild(0).GetComponent<Image>();
+                var title = topPanel.GetChild(1).GetComponent<Text>();
+                bg.gameObject.GetOrAddComponent<ContrastColors>().Init(title, bg);
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            }
+        }
+
+        public void InitEdit()
+        {
+            if (!Edit)
+                return;
+
+            EditorHelper.SetComplexity(Edit.Find("spacer")?.gameObject, Complexity.Simple);
+
+            if (!Edit.Find("copy"))
+            {
+                var copy = EditorPrefabHolder.Instance.Function1Button.Duplicate(Edit, "copy", 5);
+                var copyStorage = copy.GetComponent<FunctionButtonStorage>();
+                copyStorage.Text = "Copy";
+                copy.transform.AsRT().sizeDelta = new Vector2(70f, 32f);
+
+                EditorThemeManager.ApplyGraphic(copyStorage.button.image, ThemeGroup.Copy, true);
+                EditorThemeManager.ApplyGraphic(copyStorage.label, ThemeGroup.Copy_Text);
+
+                EditorHelper.SetComplexity(copy, Complexity.Normal);
+            }
+
+            if (!Edit.Find("paste"))
+            {
+                var paste = EditorPrefabHolder.Instance.Function1Button.Duplicate(Edit, "paste", 6);
+                var pasteStorage = paste.GetComponent<FunctionButtonStorage>();
+                pasteStorage.Text = "Paste";
+                paste.transform.AsRT().sizeDelta = new Vector2(70f, 32f);
+
+                EditorThemeManager.ApplyGraphic(pasteStorage.button.image, ThemeGroup.Paste, true);
+                EditorThemeManager.ApplyGraphic(pasteStorage.label, ThemeGroup.Paste_Text);
+
+                EditorHelper.SetComplexity(paste, Complexity.Normal);
+            }
+        }
+
+        public void ApplyLabelThemes()
+        {
+            if (!GameObject)
+                return;
+
+            for (int j = 0; j < GameObject.transform.childCount; j++)
+            {
+                var label = GameObject.transform.GetChild(j);
+                if (label.name != "label")
+                    continue;
+
+                for (int k = 0; k < label.childCount; k++)
+                    EditorThemeManager.ApplyLightText(label.GetChild(k).GetComponent<Text>());
+            }
+        }
+
+        public EventKeyframe GetCurrentKeyframe() => isObjectKeyframe ? EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>().events[KeyframeTimeline.CurrentTimeline.currentKeyframeType][KeyframeTimeline.CurrentTimeline.currentKeyframeIndex] : RTEventEditor.inst.CurrentSelectedKeyframe;
+
+        public IEnumerable<TimelineKeyframe> GetSelectedKeyframes() => isObjectKeyframe ?
+            EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>().TimelineKeyframes?.Where(x => x.Selected && x.Type == type) :
+            EditorTimeline.inst.timelineKeyframes.Where(x => x.Selected && x.Type == type);
+
+        /// <summary>
+        /// Gets a keyframe coordinate of the currently selected keyframe.
+        /// </summary>
+        /// <returns>Returns a <see cref="KeyframeCoord"/>.</returns>
+        public KeyframeCoord GetSelectionCoord() => isObjectKeyframe ? KeyframeTimeline.CurrentTimeline.GetSelectionCoord() : RTEventEditor.inst.GetSelectionCoord();
+
+        public void SetKeyframeValue(int index, string input)
+        {
+            if (RTMath.TryParse(input, 0f, out float value))
+                SetKeyframeValue(index, value);
+        }
+
+        public void SetKeyframeValue(int type, int index, string input)
+        {
+            if (RTMath.TryParse(input, 0f, out float value))
+                SetKeyframeValue(type, index, value);
+        }
+
+        public void SetKeyframeValue(int index, float value) => SetKeyframeValue(isObjectKeyframe ? KeyframeTimeline.CurrentTimeline.currentKeyframeType : EventEditor.inst.currentEventType, index, value);
+
+        public void SetKeyframeValue(int type, int index, float value)
+        {
+            foreach (var timelineKeyframe in GetSelectedKeyframes())
+                timelineKeyframe.eventKeyframe.values[index] = value;
+
+            if (isObjectKeyframe)
+                RTLevel.Current?.UpdateObject(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>(), ObjectContext.KEYFRAMES);
+            else
+                RTLevel.Current?.UpdateEvents(type);
+        }
+        
+        public void SetListColor(int value, int index, List<Toggle> toggles, Color defaultColor, Color secondaryDefaultColor, int opacityIndex = -1, int hueIndex = -1, int satIndex = -1, int valIndex = -1)
+        {
+            int num = 0;
+            foreach (var toggle in toggles)
+            {
+                int tmpIndex = num;
+                var color = num < 18 ? CoreHelper.CurrentBeatmapTheme.effectColors[num] : num == 19 ? secondaryDefaultColor : defaultColor;
+
+                if (EditorConfig.Instance.ShowModifiedColors.Value && hueIndex >= 0 && satIndex >= 0 && valIndex >= 0)
+                {
+                    float hueNum = RTLevel.Current.eventEngine.Interpolate(EventEditor.inst.currentEventType, hueIndex, RTLevel.Current.FixedTime);
+                    float satNum = RTLevel.Current.eventEngine.Interpolate(EventEditor.inst.currentEventType, satIndex, RTLevel.Current.FixedTime);
+                    float valNum = RTLevel.Current.eventEngine.Interpolate(EventEditor.inst.currentEventType, valIndex, RTLevel.Current.FixedTime);
+
+                    toggle.image.color = RTColors.ChangeColorHSV(color, hueNum, satNum, valNum);
+                }
+                else
+                    toggle.image.color = color;
+
+                toggle.SetIsOnWithoutNotify(num == value);
+                toggle.onValueChanged.NewListener(_val =>
+                {
+                    SetKeyframeValue(index, tmpIndex);
+                    SetListColor(tmpIndex, index, toggles, defaultColor, secondaryDefaultColor, opacityIndex, hueIndex, satIndex, valIndex);
+                });
+
+                EditorContextMenu.AddContextMenu(toggle.gameObject,
+                    new ButtonElement("Reset Value", () =>
+                    {
+                        int value = (int)GameData.DefaultKeyframes[EventEditor.inst.currentEventType].values[index];
+                        SetKeyframeValue(index, value);
+                        SetListColor(value, index, toggles, defaultColor, secondaryDefaultColor, opacityIndex, hueIndex, satIndex, valIndex);
+                    }),
+                    ButtonElement.ToggleButton("Show Modified Colors", () => EditorConfig.Instance.ShowModifiedColors.Value, () => EditorConfig.Instance.ShowModifiedColors.Value = !EditorConfig.Instance.ShowModifiedColors.Value),
+                    new ButtonElement("Copy Hex Color", () => LSText.CopyToClipboard(RTColors.ColorToHexOptional(color))),
+                    new ButtonElement("Copy Modified Hex Color", () =>
+                    {
+                        float hueNum = RTLevel.Current.eventEngine.Interpolate(EventEditor.inst.currentEventType, hueIndex, RTLevel.Current.FixedTime);
+                        float satNum = RTLevel.Current.eventEngine.Interpolate(EventEditor.inst.currentEventType, satIndex, RTLevel.Current.FixedTime);
+                        float valNum = RTLevel.Current.eventEngine.Interpolate(EventEditor.inst.currentEventType, valIndex, RTLevel.Current.FixedTime);
+
+                        LSText.CopyToClipboard(RTColors.ColorToHexOptional(RTColors.ChangeColorHSV(color, hueNum, satNum, valNum)));
+                    }, shouldGenerate: () => hueIndex >= 0 && satIndex >= 0 && valIndex >= 0));
+
+                num++;
+            }
+        }
+
+        public void SetToggle(Toggle toggle, int index, int onValue, int offValue)
+        {
+            var currentKeyframe = GameData.Current.events[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent];
+
+            toggle.SetIsOnWithoutNotify(currentKeyframe.values[index] == onValue);
+            toggle.onValueChanged.NewListener(_val => SetKeyframeValue(index, _val ? onValue : offValue));
+
+            EditorContextMenu.AddContextMenu(toggle.gameObject,
+                new ButtonElement("Reset Value", () => toggle.isOn = GameData.DefaultKeyframes[EventEditor.inst.currentEventType].values[index] == onValue));
+        }
+
+        public void SetFloatInputField(InputFieldStorage inputFieldStorage, int index, float increase = 0.1f, float multiply = 10f, float min = 0f, float max = 0f, bool allowNegative = true, Action<float> onValueChanged = null)
+        {
+            var currentKeyframe = GameData.Current.events[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent];
+
+            if (!inputFieldStorage)
+                return;
+
+            inputFieldStorage.SetTextWithoutNotify(currentKeyframe.values[index].ToString());
+            inputFieldStorage.OnValueChanged.NewListener(_val =>
+            {
+                if (!float.TryParse(_val, out float num))
+                    return;
+
+                if (min != 0f || max != 0f)
+                    num = Mathf.Clamp(num, min, max);
+
+                SetKeyframeValue(index, num);
+
+                onValueChanged?.Invoke(num);
+            });
+            inputFieldStorage.OnEndEdit.NewListener(_val =>
+            {
+                var variables = new Dictionary<string, float>
+                {
+                    { "eventTime", currentKeyframe.time },
+                    { "currentValue", currentKeyframe.values[index] }
+                };
+
+                if (!float.TryParse(_val, out float n) && RTMath.TryParse(_val, currentKeyframe.values[index], variables, out float calc))
+                    inputFieldStorage.Text = calc.ToString();
+            });
+
+            if (inputFieldStorage.leftButton && inputFieldStorage.rightButton)
+            {
+                float num = 1f;
+
+                inputFieldStorage.leftButton.onClick.NewListener(() =>
+                {
+                    if (float.TryParse(inputFieldStorage.Text, out float result))
+                    {
+                        result -= Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
+
+                        if (min != 0f || max != 0f)
+                            result = Mathf.Clamp(result, min, max);
+
+                        var list = GetSelectedKeyframes();
+
+                        if (list.Count() > 1)
+                            foreach (var kf in list)
+                                kf.eventKeyframe.values[index] -= Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
+                        else
+                            inputFieldStorage.Text = result.ToString();
+                    }
+                });
+                inputFieldStorage.rightButton.onClick.NewListener(() =>
+                {
+                    if (float.TryParse(inputFieldStorage.Text, out float result))
+                    {
+                        result += Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
+
+                        if (min != 0f || max != 0f)
+                            result = Mathf.Clamp(result, min, max);
+
+                        var list = GetSelectedKeyframes();
+
+                        if (list.Count() > 1)
+                            foreach (var kf in list)
+                                kf.eventKeyframe.values[index] += Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
+                        else
+                            inputFieldStorage.Text = result.ToString();
+                    }
+                });
+            }
+
+            TriggerHelper.AddEventTriggers(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDelta(inputFieldStorage.inputField, increase, multiply, min, max));
+
+            if (allowNegative)
+                TriggerHelper.InversableField(inputFieldStorage.inputField);
+
+            EditorContextMenu.AddContextMenu(inputFieldStorage.inputField.gameObject,
+                new ButtonElement("Reset Value", () => inputFieldStorage.Text = GameData.DefaultKeyframes[EventEditor.inst.currentEventType].values[index].ToString()));
+        }
+
+        public void SetIntInputField(InputFieldStorage inputFieldStorage, int index, int increase = 1, int min = 0, int max = 0, bool allowNegative = true)
+        {
+            var currentKeyframe = GameData.Current.events[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent];
+
+            if (!inputFieldStorage)
+                return;
+
+            inputFieldStorage.SetTextWithoutNotify(currentKeyframe.values[index].ToString());
+            inputFieldStorage.OnValueChanged.NewListener(_val =>
+            {
+                if (!int.TryParse(_val, out int num))
+                    return;
+
+                if (min != 0 && max != 0)
+                    num = Mathf.Clamp(num, min, max);
+
+                SetKeyframeValue(index, num);
+            });
+
+            if (inputFieldStorage.leftButton && inputFieldStorage.rightButton)
+            {
+                float num = 1f;
+
+                inputFieldStorage.leftButton.onClick.NewListener(() =>
+                {
+                    if (float.TryParse(inputFieldStorage.Text, out float result))
+                    {
+                        result -= Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
+
+                        if (min != 0f || max != 0f)
+                            result = Mathf.Clamp(result, min, max);
+
+                        var list = GetSelectedKeyframes();
+
+                        if (list.Count() > 1)
+                            foreach (var kf in list)
+                                kf.eventKeyframe.values[index] -= Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
+                        else
+                            inputFieldStorage.Text = result.ToString();
+                    }
+                });
+                inputFieldStorage.rightButton.onClick.NewListener(() =>
+                {
+                    if (float.TryParse(inputFieldStorage.Text, out float result))
+                    {
+                        result += Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
+
+                        if (min != 0f || max != 0f)
+                            result = Mathf.Clamp(result, min, max);
+
+                        var list = GetSelectedKeyframes();
+
+                        if (list.Count() > 1)
+                            foreach (var kf in list)
+                                kf.eventKeyframe.values[index] += Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
+                        else
+                            inputFieldStorage.Text = result.ToString();
+                    }
+                });
+            }
+
+            TriggerHelper.AddEventTriggers(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputFieldStorage.inputField, increase, min, max));
+
+            if (allowNegative)
+                TriggerHelper.InversableField(inputFieldStorage.inputField);
+
+            EditorContextMenu.AddContextMenu(inputFieldStorage.inputField.gameObject,
+                new ButtonElement("Reset Value", () => inputFieldStorage.Text = GameData.DefaultKeyframes[EventEditor.inst.currentEventType].values[index].ToString()));
+        }
+
+        public void SetVector2InputField(Vector2InputFieldStorage vector2Field, int xindex, int yindex, float min = 0f, float max = 0f, bool allowNegative = true)
+        {
+            var currentKeyframe = GameData.Current.events[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent];
+
+            var posX = vector2Field.x.inputField;
+            var posY = vector2Field.y.inputField;
+
+            vector2Field.x.SetTextWithoutNotify(currentKeyframe.values[xindex].ToString());
+            vector2Field.x.OnValueChanged.NewListener(_val =>
+            {
+                if (!float.TryParse(_val, out float num))
+                    return;
+
+                if (min != 0f && max != 0f)
+                    num = Mathf.Clamp(num, min, max);
+
+                SetKeyframeValue(xindex, num);
+            });
+            vector2Field.x.OnEndEdit.NewListener(_val =>
+            {
+                var variables = new Dictionary<string, float>
+                {
+                    { "eventTime", currentKeyframe.time },
+                    { "currentValueX", currentKeyframe.values[xindex] },
+                    { "currentValueY", currentKeyframe.values[yindex] }
+                };
+
+                if (!float.TryParse(_val, out float n) && RTMath.TryParse(_val, currentKeyframe.values[xindex], variables, out float calc))
+                    posX.text = calc.ToString();
+            });
+
+            vector2Field.y.SetTextWithoutNotify(currentKeyframe.values[yindex].ToString());
+            vector2Field.y.OnValueChanged.NewListener(_val =>
+            {
+                if (!float.TryParse(_val, out float num))
+                    return;
+
+                if (min != 0f && max != 0f)
+                    num = Mathf.Clamp(num, min, max);
+
+                SetKeyframeValue(yindex, num);
+            });
+            vector2Field.y.OnEndEdit.NewListener(_val =>
+            {
+                var variables = new Dictionary<string, float>
+                {
+                    { "eventTime", currentKeyframe.time },
+                    { "currentValueX", currentKeyframe.values[xindex] },
+                    { "currentValueY", currentKeyframe.values[yindex] }
+                };
+
+                if (!float.TryParse(_val, out float n) && RTMath.TryParse(_val, currentKeyframe.values[yindex], variables, out float calc))
+                    posY.text = calc.ToString();
+            });
+
+            if (vector2Field.x.leftButton && vector2Field.x.rightButton)
+            {
+                float num = 1f;
+                vector2Field.x.leftButton.onClick.NewListener(() =>
+                {
+                    if (float.TryParse(posX.text, out float result))
+                    {
+                        result -= Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
+
+                        if (min != 0f || max != 0f)
+                            result = Mathf.Clamp(result, min, max);
+
+                        var list = GetSelectedKeyframes();
+
+                        if (list.Count() > 1)
+                            foreach (var kf in list)
+                                kf.eventKeyframe.values[xindex] -= Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
+                        else
+                            posX.text = result.ToString();
+                    }
+                });
+                vector2Field.x.rightButton.onClick.NewListener(() =>
+                {
+                    if (float.TryParse(posX.text, out float result))
+                    {
+                        result += Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
+
+                        if (min != 0f || max != 0f)
+                            result = Mathf.Clamp(result, min, max);
+
+                        var list = GetSelectedKeyframes();
+
+                        if (list.Count() > 1)
+                            foreach (var kf in list)
+                                kf.eventKeyframe.values[xindex] += Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
+                        else
+                            posX.text = result.ToString();
+                    }
+                });
+            }
+
+            if (vector2Field.y.leftButton && vector2Field.y.rightButton)
+            {
+                float num = 1f;
+                vector2Field.y.leftButton.onClick.NewListener(() =>
+                {
+                    if (float.TryParse(posY.text, out float result))
+                    {
+                        result -= Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
+
+                        if (min != 0f || max != 0f)
+                            result = Mathf.Clamp(result, min, max);
+
+                        var list = GetSelectedKeyframes();
+
+                        if (list.Count() > 1)
+                            foreach (var kf in list)
+                                kf.eventKeyframe.values[yindex] -= Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
+                        else
+                            posY.text = result.ToString();
+                    }
+                });
+                vector2Field.y.rightButton.onClick.NewListener(() =>
+                {
+                    if (float.TryParse(posY.text, out float result))
+                    {
+                        result += Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
+
+                        if (min != 0f || max != 0f)
+                            result = Mathf.Clamp(result, min, max);
+
+                        var list = GetSelectedKeyframes();
+
+                        if (list.Count() > 1)
+                            foreach (var kf in list)
+                                kf.eventKeyframe.values[yindex] += Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
+                        else
+                            posY.text = result.ToString();
+                    }
+                });
+            }
+
+            var clampList = new List<float> { min, max };
+            TriggerHelper.AddEventTriggers(posX.gameObject,
+                TriggerHelper.ScrollDelta(posX, 0.1f, 10f, min, max, true),
+                TriggerHelper.ScrollDeltaVector2(posX, posY, 0.1f, 10f, clampList));
+            TriggerHelper.AddEventTriggers(posY.gameObject,
+                TriggerHelper.ScrollDelta(posY, 0.1f, 10f, min, max, true),
+                TriggerHelper.ScrollDeltaVector2(posX, posY, 0.1f, 10f, clampList));
+
+            if (allowNegative)
+            {
+                TriggerHelper.InversableField(posX);
+                TriggerHelper.InversableField(posY);
+            }
+
+            EditorContextMenu.AddContextMenu(posX.gameObject,
+                new ButtonElement("Reset Value", () => posX.text = GameData.DefaultKeyframes[EventEditor.inst.currentEventType].values[xindex].ToString()));
+            EditorContextMenu.AddContextMenu(posY.gameObject,
+                new ButtonElement("Reset Value", () => posY.text = GameData.DefaultKeyframes[EventEditor.inst.currentEventType].values[yindex].ToString()));
         }
 
         public override string ToString() => GameObject?.name;

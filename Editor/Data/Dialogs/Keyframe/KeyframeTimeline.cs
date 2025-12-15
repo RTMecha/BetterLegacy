@@ -817,6 +817,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
             }
         }
 
+        /// <summary>
+        /// Gets a keyframe coordinate of the currently selected keyframe.
+        /// </summary>
+        /// <returns>Returns a <see cref="KeyframeCoord"/>.</returns>
+        public KeyframeCoord GetSelectionCoord() => new KeyframeCoord(currentKeyframeType, currentKeyframeIndex);
+
         #endregion
 
         #region Timeline

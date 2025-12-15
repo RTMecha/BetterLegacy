@@ -1,11 +1,14 @@
 ﻿using System.Collections.Generic;
 
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 using LSFunctions;
 
+using BetterLegacy.Configs;
 using BetterLegacy.Core;
+using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
@@ -84,6 +87,76 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             #region Content
 
+            var dialog = GameObject.transform;
+
+            var themes = dialog.Find("themes").GetComponent<Image>();
+
+            var contextClickable = themes.gameObject.AddComponent<ContextClickable>();
+            contextClickable.onClick = eventData =>
+            {
+                if (eventData.button != PointerEventData.InputButton.Right)
+                    return;
+
+                EditorContextMenu.inst.ShowContextMenu(
+                    new ButtonElement("Create folder", () =>
+                    {
+                        RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.ThemePath), () => { RTEditor.inst.UpdateThemePath(true); RTEditor.inst.HideNameEditor(); });
+                    }),
+                    new ButtonElement("Create theme", RTThemeEditor.inst.RenderThemeEditor),
+                    new SpacerElement(),
+                    new ButtonElement("Paste", RTThemeEditor.inst.PasteTheme));
+            };
+            themes.gameObject.AddComponent<Button>();
+
+            EditorThemeManager.ApplyGraphic(themes, ThemeGroup.Background_3);
+            EditorThemeManager.ApplyGraphic(dialog.Find("themes/viewport").GetComponent<Image>(), ThemeGroup.Null, true);
+
+            EditorThemeManager.ApplyScrollbar(themes.transform.Find("Scrollbar Vertical").GetComponent<Scrollbar>(), scrollbarGroup: ThemeGroup.Scrollbar_2, handleGroup: ThemeGroup.Scrollbar_2_Handle);
+
+            var current = dialog.Find("current_title");
+            current.AsRT().sizeDelta = new Vector2(366f, 24f);
+
+            for (int k = 0; k < current.childCount; k++)
+                EditorThemeManager.ApplyLightText(current.GetChild(k).GetComponent<Text>());
+
+            var objectCols = dialog.Find("object_cols/text").GetComponent<Text>();
+            var bgCols = dialog.Find("bg_cols/text").GetComponent<Text>();
+            var playerCols = dialog.Find("player_cols/text").GetComponent<Text>();
+
+            EditorThemeManager.ApplyLightText(dialog.Find("object_cols/text").GetComponent<Text>());
+            EditorThemeManager.ApplyLightText(dialog.Find("bg_cols/text").GetComponent<Text>());
+            EditorThemeManager.ApplyLightText(dialog.Find("player_cols/text").GetComponent<Text>());
+
+            dialog.Find("object_cols").AsRT().sizeDelta = new Vector2(366f, 24f);
+            dialog.Find("object_cols").GetComponent<HorizontalLayoutGroup>().spacing = 6f;
+            for (int j = 1; j < dialog.Find("object_cols").childCount; j++)
+            {
+                var child = dialog.Find("object_cols").GetChild(j);
+                child.AsRT().sizeDelta = new Vector2(24f, 24f);
+
+                EditorThemeManager.ApplyGraphic(child.GetComponent<Image>(), ThemeGroup.Null, true);
+            }
+
+            dialog.Find("bg_cols").AsRT().sizeDelta = new Vector2(366f, 24f);
+            dialog.Find("bg_cols").GetComponent<HorizontalLayoutGroup>().spacing = 6f;
+            for (int j = 1; j < dialog.Find("bg_cols").childCount; j++)
+            {
+                var child = dialog.Find("bg_cols").GetChild(j);
+                child.AsRT().sizeDelta = new Vector2(24f, 24f);
+
+                EditorThemeManager.ApplyGraphic(child.GetComponent<Image>(), ThemeGroup.Null, true);
+            }
+
+            dialog.Find("player_cols").AsRT().sizeDelta = new Vector2(366f, 24f);
+            dialog.Find("player_cols").GetComponent<HorizontalLayoutGroup>().spacing = 6f;
+            for (int j = 1; j < dialog.Find("player_cols").childCount; j++)
+            {
+                var child = dialog.Find("player_cols").GetChild(j);
+                child.AsRT().sizeDelta = new Vector2(24f, 24f);
+
+                EditorThemeManager.ApplyGraphic(child.GetComponent<Image>(), ThemeGroup.Null, true);
+            }
+
             var themePathBase = GameObject.transform.GetChild(2).gameObject.Duplicate(GameObject.transform, "themepathers", 8);
             themePathBase.SetActive(true);
 
@@ -133,6 +206,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
             EditorThemeManager.ApplyInputField(PageField);
 
             SearchField = GameObject.transform.Find("theme-search").GetComponent<InputField>();
+            EditorThemeManager.ApplyInputField(SearchField, ThemeGroup.Search_Field_2);
+
             Content = GameObject.transform.Find("themes/viewport/content");
             ClearContent();
 
@@ -296,6 +371,30 @@ namespace BetterLegacy.Editor.Data.Dialogs
             EditorThemeManager.ApplyScrollbar(Editor.transform.Find("theme/Scrollbar Vertical").GetComponent<Scrollbar>(), scrollbarGroup: ThemeGroup.Scrollbar_2, handleGroup: ThemeGroup.Scrollbar_2_Handle);
 
             #endregion
+        }
+
+        public override void Render()
+        {
+            base.Render();
+
+            EditorContextMenu.AddContextMenu(RTThemeEditor.inst.Dialog.SearchField.gameObject,
+                ButtonElement.ToggleButton("Filter: Used", () => RTThemeEditor.inst.filterUsed, () =>
+                {
+                    RTThemeEditor.inst.filterUsed = !RTThemeEditor.inst.filterUsed;
+                    RTThemeEditor.inst.RenderThemeList();
+                }),
+                ButtonElement.ToggleButton("Show Default", () => EditorConfig.Instance.ShowDefaultThemes.Value, () =>
+                {
+                    EditorConfig.Instance.ShowDefaultThemes.Value = !EditorConfig.Instance.ShowDefaultThemes.Value;
+                    RTThemeEditor.inst.RenderThemeList();
+                }),
+                new SpacerElement(),
+                new ButtonElement("Clear Themes", RTThemeEditor.inst.ClearInternalThemes),
+                new ButtonElement("Remove Unused Themes", RTThemeEditor.inst.RemoveUnusedThemes, "Internal Remove Unused Themes"));
+
+            RTThemeEditor.inst.Dialog.SearchField.onValueChanged.NewListener(_val => RTThemeEditor.inst.RenderThemeList());
+            RTThemeEditor.inst.RenderThemeList();
+            RTThemeEditor.inst.RenderThemePreview();
         }
 
         /// <summary>

@@ -1,7 +1,11 @@
 ﻿using System.Collections.Generic;
 
+using BetterLegacy.Core;
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime.Events;
+using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Dialogs
 {
@@ -29,45 +33,59 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             base.Init();
 
-            for (int i = 0; i < EventEditor.inst.dialogRight.childCount; i++)
+            for (int i = 0; i < RTEventEditor.EventTypes.Length; i++)
             {
-                var dialog = EventEditor.inst.dialogRight.GetChild(i);
                 KeyframeDialog keyframeDialog = i switch
                 {
                     EventEngine.MOVE => new Vector2KeyframeDialog(i),
-                    EventEngine.ZOOM => new FloatKeyframeDialog(i),
-                    EventEngine.ROTATE => new FloatKeyframeDialog(i),
+                    EventEngine.ZOOM => new FloatKeyframeDialog(i, min: -9999f, max: 9999f, onValueChanged: _val =>
+                    {
+                        if (_val < 0f)
+                            AchievementManager.inst.UnlockAchievement("editor_zoom_break");
+                    }),
+                    EventEngine.ROTATE => new FloatKeyframeDialog(i, 15f, 3f),
                     EventEngine.SHAKE => new ShakeKeyframeDialog(),
                     EventEngine.THEME => new ThemeKeyframeDialog(),
-                    EventEngine.CHROMA => new FloatKeyframeDialog(i),
+                    EventEngine.CHROMA => new FloatKeyframeDialog(i, max: float.PositiveInfinity, allowNegative: false),
                     EventEngine.BLOOM => new BloomKeyframeDialog(),
                     EventEngine.VIGNETTE => new VignetteKeyframeDialog(),
                     EventEngine.LENS => new LensKeyframeDialog(),
                     EventEngine.GRAIN => new GrainKeyframeDialog(),
-                    // ...
-                    EventEngine.COLORSPLIT => new FloatKeyframeModeDialog(i),
-                    EventEngine.OFFSET => new Vector2KeyframeDialog(i),
-                    // ...
-                    EventEngine.DOUBLEVISION => new FloatKeyframeModeDialog(i),
-                    // ...
-                    EventEngine.PIXEL => new FloatKeyframeDialog(i),
-                    // ...
-                    EventEngine.INVERT => new FloatKeyframeDialog(i),
-                    // ...
-                    EventEngine.SHARPNESS => new FloatKeyframeDialog(i),
-                    EventEngine.BARS => new FloatKeyframeModeDialog(i),
-                    // ...
-                    EventEngine.ROTATION => new Vector2KeyframeDialog(i),
-                    // ...
-                    EventEngine.WINDOW_POSITION_X => new FloatKeyframeDialog(i),
-                    EventEngine.WINDOW_POSITION_Y => new FloatKeyframeDialog(i),
-                    EventEngine.PLAYER_FORCE => new Vector2KeyframeDialog(i),
-                    EventEngine.MOSAIC => new FloatKeyframeDialog(i),
-                    // ...
-                    EventEngine.DIGITAL_GLITCH => new FloatKeyframeDialog(i),
+                    EventEngine.COLORGRADING => new ColorGradingKeyframeDialog(),
+                    EventEngine.RIPPLES => new RipplesKeyframeDialog(),
+                    EventEngine.RADIALBLUR => new BlurKeyframeDialog(i, 20),
+                    EventEngine.COLORSPLIT => new FloatKeyframeModeDialog(i, "Offset", CoreHelper.StringToOptionData("Single", "Single Box Filtered", "Double", "Double Box Filtered")),
+                    EventEngine.OFFSET => new Vector2KeyframeDialog(i, new LabelsElement(HorizontalOrVerticalLayoutValues.Horizontal.ChildControlHeight(false), "Offset X", "Offset Y")),
+                    EventEngine.GRADIENT => new GradientKeyframeDialog(),
+                    EventEngine.DOUBLEVISION => new FloatKeyframeModeDialog(i, "Intensity", CoreHelper.StringToOptionData("Split", "Edges")),
+                    EventEngine.SCANLINES => new ScanlinesKeyframeDialog(),
+                    EventEngine.BLUR => new BlurKeyframeDialog(i, 12),
+                    EventEngine.PIXEL => new FloatKeyframeDialog(i, "Amount", max: 0.99f),
+                    EventEngine.BG => new BGKeyframeDialog(),
+                    EventEngine.INVERT => new FloatKeyframeDialog(i, "Invert Amount", max: 1f),
+                    EventEngine.TIMELINE => new TimelineKeyframeDialog(),
+                    EventEngine.PLAYER => new PlayerKeyframeDialog(),
+                    EventEngine.FOLLOW_PLAYER => new FollowPlayerKeyframeDialog(),
+                    EventEngine.AUDIO => new AudioKeyframeDialog(),
+                    EventEngine.VIDEO_PARENT => new VideoKeyframeDialog(i, false),
+                    EventEngine.VIDEO => new VideoKeyframeDialog(i, true),
+                    EventEngine.SHARPNESS => new FloatKeyframeDialog(i, "Intensity"),
+                    EventEngine.BARS => new FloatKeyframeModeDialog(i, "Intensity", "Direction", CoreHelper.StringToOptionData("Horizontal", "Vertical")),
+                    EventEngine.DANGER => new DangerKeyframeDialog(),
+                    EventEngine.ROTATION => new Vector2KeyframeDialog(i, new LabelsElement(HorizontalOrVerticalLayoutValues.Horizontal.ChildControlHeight(false), "Rotation X", "Rotation Y")) { increase = 15f, multiply = 3f, },
+                    EventEngine.CAMERA_DEPTH => new CameraDepthKeyframeDialog(),
+                    EventEngine.WINDOW_BASE => new WindowBaseKeyframeDialog(),
+                    EventEngine.WINDOW_POSITION_X => new FloatKeyframeDialog(i, "Position X"),
+                    EventEngine.WINDOW_POSITION_Y => new FloatKeyframeDialog(i, "Position Y"),
+                    EventEngine.PLAYER_FORCE => new Vector2KeyframeDialog(i, new LabelsElement(HorizontalOrVerticalLayoutValues.Horizontal.ChildControlHeight(false), "Force X", "Force Y")),
+                    EventEngine.MOSAIC => new FloatKeyframeDialog(i, "Amount"),
+                    EventEngine.ANALOG_GLITCH => new AnalogGlitchKeyframeDialog(),
+                    EventEngine.DIGITAL_GLITCH => new FloatKeyframeDialog(i, "Intensity"),
                     _ => new KeyframeDialog(i),
                 };
-                keyframeDialog.GameObject = dialog.gameObject;
+                var dialog = EventEditor.inst.dialogRight.TryGetChild(i);
+                if (dialog)
+                    keyframeDialog.GameObject = dialog.gameObject;
                 try
                 {
                     keyframeDialog.Init();
