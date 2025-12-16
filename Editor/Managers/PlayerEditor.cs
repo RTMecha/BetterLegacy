@@ -11,6 +11,7 @@ using UnityEngine.EventSystems;
 using LSFunctions;
 
 using Crosstales.FB;
+using SimpleJSON;
 
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
@@ -51,6 +52,7 @@ namespace BetterLegacy.Editor.Managers
 
         public PlayerEditorDialog Dialog { get; set; }
         public ContentPopup ModelsPopup { get; set; }
+        public ContentPopup CustomObjectsPopup { get; set; }
 
         public Tab CurrentTab { get; set; } = Tab.Base;
 
@@ -91,11 +93,79 @@ namespace BetterLegacy.Editor.Managers
                 CoreHelper.LogException(ex);
             } // init dialog
 
-            ModelsPopup = RTEditor.inst.GeneratePopup(EditorPopup.PLAYER_MODELS_POPUP, "Player Models", Vector2.zero, Vector2.zero, _val =>
+            ModelsPopup = RTEditor.inst.GeneratePopup(EditorPopup.PLAYER_MODELS_POPUP, "Select a Player Model", Vector2.zero, new Vector2(600f, 450f), _val => StartCoroutine(RefreshModels()));
+            ModelsPopup.InitTopElementsParent();
+            ModelsPopup.InitReload(Reload);
+            ModelsPopup.onRender = () =>
             {
-                modelSearchTerm = _val;
-                StartCoroutine(RefreshModels());
-            });
+                if (AssetPack.TryReadFromFile("editor/ui/popups/player_models_popup.json", out string uiFile))
+                {
+                    var jn = JSON.Parse(uiFile);
+                    RectValues.TryParse(jn["base"]["rect"], RectValues.Default.SizeDelta(600f, 450f)).AssignToRectTransform(ModelsPopup.GameObject.transform.AsRT());
+                    RectValues.TryParse(jn["top_panel"]["rect"], RectValues.FullAnchored.AnchorMin(0, 1).Pivot(0f, 0f).SizeDelta(32f, 32f)).AssignToRectTransform(ModelsPopup.TopPanel);
+                    RectValues.TryParse(jn["search"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(0f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, 32f))).AssignToRectTransform(ModelsPopup.GameObject.transform.Find("search-box").AsRT());
+                    RectValues.TryParse(jn["scrollbar"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(0f, 0.5f), new Vector2(32f, 0f))).AssignToRectTransform(ModelsPopup.GameObject.transform.Find("Scrollbar").AsRT());
+
+                    var layoutValues = LayoutValues.Parse(jn["layout"]);
+                    if (layoutValues is GridLayoutValues gridLayoutValues)
+                        gridLayoutValues.AssignToLayout(ModelsPopup.Grid ? ModelsPopup.Grid : ModelsPopup.GameObject.transform.Find("mask/content").GetComponent<GridLayoutGroup>());
+
+                    if (jn["title"] != null)
+                    {
+                        ModelsPopup.title = jn["title"]["text"] != null ? jn["title"]["text"] : "Select a Player Model";
+
+                        var title = ModelsPopup.Title;
+                        RectValues.TryParse(jn["title"]["rect"], RectValues.FullAnchored.AnchoredPosition(2f, 0f).SizeDelta(-12f, -8f)).AssignToRectTransform(title.rectTransform);
+                        title.alignment = jn["title"]["alignment"] != null ? (TextAnchor)jn["title"]["alignment"].AsInt : TextAnchor.MiddleLeft;
+                        title.fontSize = jn["title"]["font_size"] != null ? jn["title"]["font_size"].AsInt : 20;
+                        title.fontStyle = (FontStyle)jn["title"]["font_style"].AsInt;
+                        title.horizontalOverflow = jn["title"]["horizontal_overflow"] != null ? (HorizontalWrapMode)jn["title"]["horizontal_overflow"].AsInt : HorizontalWrapMode.Wrap;
+                        title.verticalOverflow = jn["title"]["vertical_overflow"] != null ? (VerticalWrapMode)jn["title"]["vertical_overflow"].AsInt : VerticalWrapMode.Overflow;
+                    }
+
+                    if (jn["anim"] != null)
+                        ModelsPopup.ReadAnimationJSON(jn["anim"]);
+
+                    if (jn["drag_mode"] != null && ModelsPopup.Dragger)
+                        ModelsPopup.Dragger.mode = (DraggableUI.DragMode)jn["drag_mode"].AsInt;
+                }
+            };
+
+            CustomObjectsPopup = RTEditor.inst.GeneratePopup(EditorPopup.PLAYER_OBJECTS_POPUP, "Select a Custom Object", Vector2.zero, new Vector2(600f, 450f), _val => StartCoroutine(RefreshCustomObjects()));
+            CustomObjectsPopup.onRender = () =>
+            {
+                if (AssetPack.TryReadFromFile("editor/ui/popups/player_objects_popup.json", out string uiFile))
+                {
+                    var jn = JSON.Parse(uiFile);
+                    RectValues.TryParse(jn["base"]["rect"], RectValues.Default.SizeDelta(600f, 450f)).AssignToRectTransform(CustomObjectsPopup.GameObject.transform.AsRT());
+                    RectValues.TryParse(jn["top_panel"]["rect"], RectValues.FullAnchored.AnchorMin(0, 1).Pivot(0f, 0f).SizeDelta(32f, 32f)).AssignToRectTransform(CustomObjectsPopup.TopPanel);
+                    RectValues.TryParse(jn["search"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(0f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, 32f))).AssignToRectTransform(CustomObjectsPopup.GameObject.transform.Find("search-box").AsRT());
+                    RectValues.TryParse(jn["scrollbar"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(0f, 0.5f), new Vector2(32f, 0f))).AssignToRectTransform(CustomObjectsPopup.GameObject.transform.Find("Scrollbar").AsRT());
+
+                    var layoutValues = LayoutValues.Parse(jn["layout"]);
+                    if (layoutValues is GridLayoutValues gridLayoutValues)
+                        gridLayoutValues.AssignToLayout(CustomObjectsPopup.Grid ? CustomObjectsPopup.Grid : CustomObjectsPopup.GameObject.transform.Find("mask/content").GetComponent<GridLayoutGroup>());
+
+                    if (jn["title"] != null)
+                    {
+                        CustomObjectsPopup.title = jn["title"]["text"] != null ? jn["title"]["text"] : "Select an Achievement";
+
+                        var title = CustomObjectsPopup.Title;
+                        RectValues.TryParse(jn["title"]["rect"], RectValues.FullAnchored.AnchoredPosition(2f, 0f).SizeDelta(-12f, -8f)).AssignToRectTransform(title.rectTransform);
+                        title.alignment = jn["title"]["alignment"] != null ? (TextAnchor)jn["title"]["alignment"].AsInt : TextAnchor.MiddleLeft;
+                        title.fontSize = jn["title"]["font_size"] != null ? jn["title"]["font_size"].AsInt : 20;
+                        title.fontStyle = (FontStyle)jn["title"]["font_style"].AsInt;
+                        title.horizontalOverflow = jn["title"]["horizontal_overflow"] != null ? (HorizontalWrapMode)jn["title"]["horizontal_overflow"].AsInt : HorizontalWrapMode.Wrap;
+                        title.verticalOverflow = jn["title"]["vertical_overflow"] != null ? (VerticalWrapMode)jn["title"]["vertical_overflow"].AsInt : VerticalWrapMode.Overflow;
+                    }
+
+                    if (jn["anim"] != null)
+                        CustomObjectsPopup.ReadAnimationJSON(jn["anim"]);
+
+                    if (jn["drag_mode"] != null && CustomObjectsPopup.Dragger)
+                        CustomObjectsPopup.Dragger.mode = (DraggableUI.DragMode)jn["drag_mode"].AsInt;
+                }
+            };
         }
 
         public void ShowTab(Tab tab)
@@ -2061,20 +2131,15 @@ namespace BetterLegacy.Editor.Managers
 
         public IEnumerator RefreshModels(Action<PlayerModel> onSelect = null)
         {
-            ModelsPopup.SetTitle("Player Models");
             ModelsPopup.ClearContent();
-            ModelsPopup.SearchField.onValueChanged.NewListener(_val =>
-            {
-                modelSearchTerm = _val;
-                StartCoroutine(RefreshModels(onSelect));
-            });
+            ModelsPopup.SearchField.onValueChanged.NewListener(_val => StartCoroutine(RefreshModels(onSelect)));
 
             int num = 0;
             foreach (var playerModel in PlayersData.externalPlayerModels)
             {
                 int index = num;
                 var name = playerModel.Value.basePart.name;
-                if (!RTString.SearchString(modelSearchTerm, name))
+                if (!RTString.SearchString(ModelsPopup.SearchTerm, name))
                 {
                     num++;
                     continue;
@@ -2189,13 +2254,8 @@ namespace BetterLegacy.Editor.Managers
 
         public IEnumerator RefreshCustomObjects()
         {
-            ModelsPopup.SetTitle("Custom Objects");
-            ModelsPopup.ClearContent();
-            ModelsPopup.SearchField.onValueChanged.NewListener(_val =>
-            {
-                modelSearchTerm = _val;
-                StartCoroutine(RefreshCustomObjects());
-            });
+            CustomObjectsPopup.ClearContent();
+            CustomObjectsPopup.SearchField.onValueChanged.NewListener(_val => StartCoroutine(RefreshCustomObjects()));
 
             var currentModel = PlayersData.Current.GetPlayerModel(playerModelIndex);
 
@@ -2204,7 +2264,7 @@ namespace BetterLegacy.Editor.Managers
             if (isDefault)
                 yield break;
 
-            var add = EditorPrefabHolder.Instance.CreateAddButton(ModelsPopup.Content, "Create");
+            var add = EditorPrefabHolder.Instance.CreateAddButton(CustomObjectsPopup.Content, "Create");
             add.Text = "Create Custom Object";
             add.OnClick.NewListener(() =>
             {
@@ -2224,10 +2284,10 @@ namespace BetterLegacy.Editor.Managers
             foreach (var customObject in currentModel.customObjects)
             {
                 int index = num;
-                if (!RTString.SearchString(modelSearchTerm, customObject.name))
+                if (!RTString.SearchString(CustomObjectsPopup.SearchTerm, customObject.name))
                     continue;
 
-                var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(ModelsPopup.Content, customObject.name);
+                var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(CustomObjectsPopup.Content, customObject.name);
                 var folderButtonFunction = gameObject.AddComponent<FolderButtonFunction>();
                 var folderButtonStorage = gameObject.GetComponent<FunctionButtonStorage>();
                 folderButtonStorage.Text = customObject.name;
@@ -2304,7 +2364,7 @@ namespace BetterLegacy.Editor.Managers
 
                     CustomObjectID = customObject.id;
                     StartCoroutine(RefreshEditor());
-                    ModelsPopup.Close();
+                    CustomObjectsPopup.Close();
                 };
 
                 var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(gameObject.transform, "Delete");
@@ -2902,7 +2962,9 @@ namespace BetterLegacy.Editor.Managers
             PlayerManager.RespawnPlayers();
             if (Dialog.IsCurrent)
                 StartCoroutine(RefreshEditor());
-            ModelsPopup.Close();
+            if (ModelsPopup.IsOpen)
+                StartCoroutine(RefreshModels());
+            CustomObjectsPopup.Close();
 
             EditorManager.inst.DisplayNotification("Loaded player models", 1.5f, EditorManager.NotificationType.Success);
         }

@@ -202,19 +202,81 @@ namespace BetterLegacy.Editor.Managers
                         FunctionPopup.Close();
                 };
 
-                Popup = RTEditor.inst.GeneratePopup(EditorPopup.KEYBIND_LIST_POPUP, "Edit a Keybind", Vector2.zero, new Vector2(600f, 400f),
+                Popup = RTEditor.inst.GeneratePopup(EditorPopup.KEYBIND_LIST_POPUP, "Edit Keybinds", Vector2.zero, new Vector2(600f, 400f),
                     refreshSearch: _val => RenderPopup(), placeholderText: "Search for keybind...");
+                Popup.InitTopElementsParent();
+                Popup.InitReload(Load);
+                Popup.onRender = () =>
+                {
+                    if (AssetPack.TryReadFromFile("editor/ui/popups/keybinds_list_popup.json", out string uiFile))
+                    {
+                        var jn = JSON.Parse(uiFile);
+                        RectValues.TryParse(jn["base"]["rect"], RectValues.Default.SizeDelta(600f, 400f)).AssignToRectTransform(Popup.GameObject.transform.AsRT());
+                        RectValues.TryParse(jn["top_panel"]["rect"], RectValues.FullAnchored.AnchorMin(0, 1).Pivot(0f, 0f).SizeDelta(32f, 32f)).AssignToRectTransform(Popup.TopPanel);
+                        RectValues.TryParse(jn["search"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(0f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, 32f))).AssignToRectTransform(Popup.GameObject.transform.Find("search-box").AsRT());
+                        RectValues.TryParse(jn["scrollbar"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(0f, 0.5f), new Vector2(32f, 0f))).AssignToRectTransform(Popup.GameObject.transform.Find("Scrollbar").AsRT());
 
-                FunctionPopup = RTEditor.inst.GeneratePopup(EditorPopup.KEYBIND_LIST_POPUP, "Select a Function", Vector2.zero, new Vector2(300f, 400f),
+                        var layoutValues = LayoutValues.Parse(jn["layout"]);
+                        if (layoutValues is GridLayoutValues gridLayoutValues)
+                            gridLayoutValues.AssignToLayout(Popup.Grid ? Popup.Grid : Popup.GameObject.transform.Find("mask/content").GetComponent<GridLayoutGroup>());
+
+                        if (jn["title"] != null)
+                        {
+                            Popup.title = jn["title"]["text"] != null ? jn["title"]["text"] : "Edit Keybinds";
+
+                            var title = Popup.Title;
+                            RectValues.TryParse(jn["title"]["rect"], RectValues.FullAnchored.AnchoredPosition(2f, 0f).SizeDelta(-12f, -8f)).AssignToRectTransform(title.rectTransform);
+                            title.alignment = jn["title"]["alignment"] != null ? (TextAnchor)jn["title"]["alignment"].AsInt : TextAnchor.MiddleLeft;
+                            title.fontSize = jn["title"]["font_size"] != null ? jn["title"]["font_size"].AsInt : 20;
+                            title.fontStyle = (FontStyle)jn["title"]["font_style"].AsInt;
+                            title.horizontalOverflow = jn["title"]["horizontal_overflow"] != null ? (HorizontalWrapMode)jn["title"]["horizontal_overflow"].AsInt : HorizontalWrapMode.Wrap;
+                            title.verticalOverflow = jn["title"]["vertical_overflow"] != null ? (VerticalWrapMode)jn["title"]["vertical_overflow"].AsInt : VerticalWrapMode.Overflow;
+                        }
+
+                        if (jn["anim"] != null)
+                            Popup.ReadAnimationJSON(jn["anim"]);
+
+                        if (jn["drag_mode"] != null && Popup.Dragger)
+                            Popup.Dragger.mode = (DraggableUI.DragMode)jn["drag_mode"].AsInt;
+                    }
+                };
+
+                FunctionPopup = RTEditor.inst.GeneratePopup(EditorPopup.KEYBIND_FUNCTIONS_POPUP, "Select a Function", Vector2.zero, new Vector2(300f, 400f),
                     refreshSearch: _val => RenderFunctionPopup(), placeholderText: "Search for function...");
+                FunctionPopup.onRender = () =>
+                {
+                    if (AssetPack.TryReadFromFile("editor/ui/popups/keybind_functions_popup.json", out string uiFile))
+                    {
+                        var jn = JSON.Parse(uiFile);
+                        RectValues.TryParse(jn["base"]["rect"], RectValues.Default.SizeDelta(600f, 400f)).AssignToRectTransform(FunctionPopup.GameObject.transform.AsRT());
+                        RectValues.TryParse(jn["top_panel"]["rect"], RectValues.FullAnchored.AnchorMin(0, 1).Pivot(0f, 0f).SizeDelta(32f, 32f)).AssignToRectTransform(FunctionPopup.TopPanel);
+                        RectValues.TryParse(jn["search"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(0f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, 32f))).AssignToRectTransform(FunctionPopup.GameObject.transform.Find("search-box").AsRT());
+                        RectValues.TryParse(jn["scrollbar"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(0f, 0.5f), new Vector2(32f, 0f))).AssignToRectTransform(FunctionPopup.GameObject.transform.Find("Scrollbar").AsRT());
 
-                var reload = EditorPrefabHolder.Instance.SpriteButton.Duplicate(Popup.TopPanel, "Reload");
-                RectValues.TopRightAnchored.AnchoredPosition(-64f, 0f).SizeDelta(32f, 32f).AssignToRectTransform(reload.transform.AsRT());
-                var reloadButton = reload.GetComponent<Button>();
-                reloadButton.onClick.NewListener(Load);
+                        var layoutValues = LayoutValues.Parse(jn["layout"]);
+                        if (layoutValues is GridLayoutValues gridLayoutValues)
+                            gridLayoutValues.AssignToLayout(FunctionPopup.Grid ? FunctionPopup.Grid : FunctionPopup.GameObject.transform.Find("mask/content").GetComponent<GridLayoutGroup>());
 
-                reloadButton.image.sprite = EditorSprites.ReloadSprite;
-                EditorThemeManager.ApplySelectable(reloadButton, ThemeGroup.Function_2, false);
+                        if (jn["title"] != null)
+                        {
+                            FunctionPopup.title = jn["title"]["text"] != null ? jn["title"]["text"] : "Select a Function";
+
+                            var title = FunctionPopup.Title;
+                            RectValues.TryParse(jn["title"]["rect"], RectValues.FullAnchored.AnchoredPosition(2f, 0f).SizeDelta(-12f, -8f)).AssignToRectTransform(title.rectTransform);
+                            title.alignment = jn["title"]["alignment"] != null ? (TextAnchor)jn["title"]["alignment"].AsInt : TextAnchor.MiddleLeft;
+                            title.fontSize = jn["title"]["font_size"] != null ? jn["title"]["font_size"].AsInt : 20;
+                            title.fontStyle = (FontStyle)jn["title"]["font_style"].AsInt;
+                            title.horizontalOverflow = jn["title"]["horizontal_overflow"] != null ? (HorizontalWrapMode)jn["title"]["horizontal_overflow"].AsInt : HorizontalWrapMode.Wrap;
+                            title.verticalOverflow = jn["title"]["vertical_overflow"] != null ? (VerticalWrapMode)jn["title"]["vertical_overflow"].AsInt : VerticalWrapMode.Overflow;
+                        }
+
+                        if (jn["anim"] != null)
+                            FunctionPopup.ReadAnimationJSON(jn["anim"]);
+
+                        if (jn["drag_mode"] != null && FunctionPopup.Dragger)
+                            FunctionPopup.Dragger.mode = (DraggableUI.DragMode)jn["drag_mode"].AsInt;
+                    }
+                };
 
                 // Key Prefab
                 {

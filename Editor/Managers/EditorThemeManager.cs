@@ -36,6 +36,11 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public static List<EditorTheme> EditorThemes { get; set; } = new List<EditorTheme>();
 
+        /// <summary>
+        /// If only the active elements should be re-rendered.
+        /// </summary>
+        public static bool onlyRenderActive;
+
         #endregion
 
         #region Functions
@@ -52,7 +57,7 @@ namespace BetterLegacy.Editor.Managers
         {
             var theme = CurrentTheme;
 
-            var elements = UnityObject.FindObjectsOfType<EditorThemeObject>();
+            var elements = onlyRenderActive ? UnityObject.FindObjectsOfType<EditorThemeObject>() : Resources.FindObjectsOfTypeAll<EditorThemeObject>();
             for (int i = 0; i < elements.Length; i++)
                 elements[i].element?.ApplyTheme(theme);
 

@@ -4,7 +4,10 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
+using SimpleJSON;
+
 using BetterLegacy.Core;
+using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Modifiers;
@@ -28,7 +31,7 @@ namespace BetterLegacy.Editor.Managers
         /// <summary>
         /// The default modifier list content popup.
         /// </summary>
-        public ContentPopup DefaultModifiersPopup { get; set; }
+        public ContentPopup Popup { get; set; }
 
         public GameObject modifierCardPrefab;
         public GameObject modifierAddPrefab;
@@ -155,7 +158,41 @@ namespace BetterLegacy.Editor.Managers
 
             #endregion
 
-            DefaultModifiersPopup = RTEditor.inst.GeneratePopup(EditorPopup.DEFAULT_MODIFIERS_POPUP, "Choose a modifer to add", Vector2.zero, new Vector2(600f, 400f), _val => { }, placeholderText: "Search for default Modifier...");
+            Popup = RTEditor.inst.GeneratePopup(EditorPopup.DEFAULT_MODIFIERS_POPUP, "Choose a modifer to add", Vector2.zero, new Vector2(600f, 400f), _val => { }, placeholderText: "Search for default Modifier...");
+            Popup.onRender = () =>
+            {
+                if (AssetPack.TryReadFromFile("editor/ui/popups/default_modifiers_popup.json", out string uiFile))
+                {
+                    var jn = JSON.Parse(uiFile);
+                    RectValues.TryParse(jn["base"]["rect"], RectValues.Default.SizeDelta(600f, 400f)).AssignToRectTransform(Popup.GameObject.transform.AsRT());
+                    RectValues.TryParse(jn["top_panel"]["rect"], RectValues.FullAnchored.AnchorMin(0, 1).Pivot(0f, 0f).SizeDelta(32f, 32f)).AssignToRectTransform(Popup.TopPanel);
+                    RectValues.TryParse(jn["search"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(0f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, 32f))).AssignToRectTransform(Popup.GameObject.transform.Find("search-box").AsRT());
+                    RectValues.TryParse(jn["scrollbar"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(0f, 0.5f), new Vector2(32f, 0f))).AssignToRectTransform(Popup.GameObject.transform.Find("Scrollbar").AsRT());
+
+                    var layoutValues = LayoutValues.Parse(jn["layout"]);
+                    if (layoutValues is GridLayoutValues gridLayoutValues)
+                        gridLayoutValues.AssignToLayout(Popup.Grid ? Popup.Grid : Popup.GameObject.transform.Find("mask/content").GetComponent<GridLayoutGroup>());
+
+                    if (jn["title"] != null)
+                    {
+                        Popup.title = jn["title"]["text"] != null ? jn["title"]["text"] : "Choose a modifier to add";
+
+                        var title = Popup.Title;
+                        RectValues.TryParse(jn["title"]["rect"], RectValues.FullAnchored.AnchoredPosition(2f, 0f).SizeDelta(-12f, -8f)).AssignToRectTransform(title.rectTransform);
+                        title.alignment = jn["title"]["alignment"] != null ? (TextAnchor)jn["title"]["alignment"].AsInt : TextAnchor.MiddleLeft;
+                        title.fontSize = jn["title"]["font_size"] != null ? jn["title"]["font_size"].AsInt : 20;
+                        title.fontStyle = (FontStyle)jn["title"]["font_style"].AsInt;
+                        title.horizontalOverflow = jn["title"]["horizontal_overflow"] != null ? (HorizontalWrapMode)jn["title"]["horizontal_overflow"].AsInt : HorizontalWrapMode.Wrap;
+                        title.verticalOverflow = jn["title"]["vertical_overflow"] != null ? (VerticalWrapMode)jn["title"]["vertical_overflow"].AsInt : VerticalWrapMode.Overflow;
+                    }
+
+                    if (jn["anim"] != null)
+                        Popup.ReadAnimationJSON(jn["anim"]);
+
+                    if (jn["drag_mode"] != null && Popup.Dragger)
+                        Popup.Dragger.mode = (DraggableUI.DragMode)jn["drag_mode"].AsInt;
+                }
+            };
         }
 
         /// <summary>
@@ -174,7 +211,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="dialog">Dialog to render on modifier added.</param>
         public void OpenDefaultModifiersList(ModifierReferenceType referenceType, IModifyable modifyable, int addIndex = -1, ModifiersEditorDialog dialog = null)
         {
-            DefaultModifiersPopup.Open();
+            Popup.Open();
             RefreshDefaultModifiersList(referenceType, modifyable, addIndex, dialog);
         }
 
@@ -187,25 +224,25 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="dialog">Dialog to render on modifier added.</param>
         public void RefreshDefaultModifiersList(ModifierReferenceType referenceType, IModifyable modifyable, int addIndex = -1, ModifiersEditorDialog dialog = null)
         {
-            DefaultModifiersPopup.SearchField.onValueChanged.NewListener(_val =>
+            Popup.SearchField.onValueChanged.NewListener(_val =>
             {
                 RefreshDefaultModifiersList(referenceType, modifyable, addIndex, dialog);
             });
 
             int shape = modifyable is IShapeable shapeable ? shapeable.Shape : 0;
 
-            DefaultModifiersPopup.ClearContent();
+            Popup.ClearContent();
 
             var modifiersEditorDialog = dialog;
 
             foreach (var defaultModifier in ModifiersManager.inst.modifiers)
             {
-                if (!SearchModifier(DefaultModifiersPopup.SearchTerm, defaultModifier) || !defaultModifier.compatibility.CompareType(referenceType) || defaultModifier.compatibility.StoryOnly && !ModifiersHelper.development)
+                if (!SearchModifier(Popup.SearchTerm, defaultModifier) || !defaultModifier.compatibility.CompareType(referenceType) || defaultModifier.compatibility.StoryOnly && !ModifiersHelper.development)
                     continue;
 
                 var name = $"{defaultModifier.Name} ({defaultModifier.type})";
 
-                var gameObject = EditorManager.inst.spriteFolderButtonPrefab.Duplicate(DefaultModifiersPopup.Content, name);
+                var gameObject = EditorManager.inst.spriteFolderButtonPrefab.Duplicate(Popup.Content, name);
                 var spriteFunctionButton = gameObject.GetComponent<SpriteFunctionButtonStorage>();
 
                 TooltipHelper.AssignTooltip(gameObject, $"Object Modifier - {name}");
@@ -230,7 +267,7 @@ namespace BetterLegacy.Editor.Managers
                     modifyable.UpdateFunctions();
 
                     CoroutineHelper.StartCoroutine(modifiersEditorDialog.RenderModifiers(modifyable));
-                    DefaultModifiersPopup.Close();
+                    Popup.Close();
                     switch (referenceType)
                     {
                         case ModifierReferenceType.BeatmapObject: {

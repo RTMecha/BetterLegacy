@@ -56,11 +56,12 @@ namespace BetterLegacy.Editor.Data.Popups
         public const string OBJECT_SEARCH_POPUP = "Object Search Popup";
         public const string WARNING_POPUP = "Warning Popup";
         public const string DEBUGGER_POPUP = "Debugger Popup";
-        public const string AUTOSAVE_POPUP = "Autosave Popup";
-        public const string THEME_POPUP = "Theme Popup";
+        public const string AUTOSAVES_POPUP = "Autosaves Popup";
+        public const string THEMES_POPUP = "Themes Popup";
         public const string KEYBIND_LIST_POPUP = "Keybind List Popup";
-        public const string KEYBIND_FUNCTION_POPUP = "Keybind Function Popup";
+        public const string KEYBIND_FUNCTIONS_POPUP = "Keybind Functions Popup";
         public const string PLAYER_MODELS_POPUP = "Player Models Popup";
+        public const string PLAYER_OBJECTS_POPUP = "Player Objects Popup";
         public const string DEFAULT_MODIFIERS_POPUP = "Default Modifiers Popup";
         public const string DOCUMENTATION_POPUP = "Documentation Popup";
         public const string FOLDER_CREATOR_POPUP = "Folder Creator Popup";

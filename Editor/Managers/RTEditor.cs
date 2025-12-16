@@ -694,10 +694,8 @@ namespace BetterLegacy.Editor.Managers
                 PrefabPopups.External.Dragger.ogPos = PrefabPopups.External.GameObject.transform.position;
                 PrefabPopups.External.Dragger.target = PrefabPopups.External.GameObject.transform;
 
-                PrefabPopups.Internal.title = "Internal Prefabs";
-                PrefabPopups.Internal.RenderTitle();
-                PrefabPopups.External.title = "External Prefabs";
-                PrefabPopups.External.RenderTitle();
+                PrefabPopups.Internal.SetTitle("Internal Prefabs");
+                PrefabPopups.External.SetTitle("External Prefabs");
                 PrefabPopups.onRender = () =>
                 {
                     if (AssetPack.TryReadFromFile("editor/ui/popups/prefab_popup.json", out string uiFile))
@@ -1550,13 +1548,9 @@ namespace BetterLegacy.Editor.Managers
         public EditorPopup ObjectOptionsPopup { get; set; }
         public EditorPopup BGObjectOptionsPopup { get; set; }
 
-        public ContentPopup ObjectTemplatePopup { get; set; }
-
         public ContentPopup DebuggerPopup { get; set; }
 
         public ContentPopup AutosavePopup { get; set; }
-
-        public ContentPopup DocumentationPopup { get; set; }
 
         public EditorPopup WarningPopup { get; set; }
 
@@ -3898,8 +3892,6 @@ namespace BetterLegacy.Editor.Managers
             //var hexagon = dialog.Find("shapes/hexagon").gameObject.GetComponent<Button>();
             //hexagon.onClick.ClearAll();
             //hexagon.onClick.AddListener(() => ObjectEditor.inst.CreateNewHexagonObject());
-
-            ObjectTemplatePopup = GeneratePopup(EditorPopup.OBJECT_TEMPLATES_POPUP, "Pick a template", Vector2.zero, new Vector2(600f, 400f), placeholderText: "Search for template...");
         }
 
         void SetupTitleBar()
@@ -4903,22 +4895,42 @@ namespace BetterLegacy.Editor.Managers
                 debugSearch = _val;
                 RefreshDebugger();
             }, placeholderText: "Search for function...");
-
-            var reload = EditorPrefabHolder.Instance.SpriteButton.Duplicate(DebuggerPopup.TopPanel, "reload");
-            UIManager.SetRectTransform(reload.transform.AsRT(), new Vector2(-42f, 0f), Vector2.one, Vector2.one, Vector2.one, new Vector2(32f, 32f));
-
-            reload.GetOrAddComponent<HoverTooltip>().tooltipLangauges.Add(new HoverTooltip.Tooltip
+            DebuggerPopup.InitTopElementsParent();
+            DebuggerPopup.InitReload(ReloadFunctions);
+            DebuggerPopup.onRender = () =>
             {
-                desc = "Refresh the function list",
-                hint = "Clicking this will reload the function list."
-            });
+                if (AssetPack.TryReadFromFile("editor/ui/popups/debugger_popup.json", out string uiFile))
+                {
+                    var jn = JSON.Parse(uiFile);
+                    RectValues.TryParse(jn["base"]["rect"], RectValues.Default.SizeDelta(600f, 400f)).AssignToRectTransform(DebuggerPopup.GameObject.transform.AsRT());
+                    RectValues.TryParse(jn["top_panel"]["rect"], RectValues.FullAnchored.AnchorMin(0, 1).Pivot(0f, 0f).SizeDelta(32f, 32f)).AssignToRectTransform(DebuggerPopup.TopPanel);
+                    RectValues.TryParse(jn["search"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(0f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, 32f))).AssignToRectTransform(DebuggerPopup.GameObject.transform.Find("search-box").AsRT());
+                    RectValues.TryParse(jn["scrollbar"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(0f, 0.5f), new Vector2(32f, 0f))).AssignToRectTransform(DebuggerPopup.GameObject.transform.Find("Scrollbar").AsRT());
 
-            var reloadButton = reload.GetComponent<Button>();
-            reloadButton.onClick.NewListener(ReloadFunctions);
+                    var layoutValues = LayoutValues.Parse(jn["layout"]);
+                    if (layoutValues is GridLayoutValues gridLayoutValues)
+                        gridLayoutValues.AssignToLayout(DebuggerPopup.Grid ? DebuggerPopup.Grid : DebuggerPopup.GameObject.transform.Find("mask/content").GetComponent<GridLayoutGroup>());
 
-            EditorThemeManager.ApplySelectable(reloadButton, ThemeGroup.Function_2, false);
+                    if (jn["title"] != null)
+                    {
+                        DebuggerPopup.title = jn["title"]["text"] != null ? jn["title"]["text"] : "Debugger (Only use this if you know what you're doing)";
 
-            reloadButton.image.sprite = EditorSprites.ReloadSprite;
+                        var title = DebuggerPopup.Title;
+                        RectValues.TryParse(jn["title"]["rect"], RectValues.FullAnchored.AnchoredPosition(2f, 0f).SizeDelta(-12f, -8f)).AssignToRectTransform(title.rectTransform);
+                        title.alignment = jn["title"]["alignment"] != null ? (TextAnchor)jn["title"]["alignment"].AsInt : TextAnchor.MiddleLeft;
+                        title.fontSize = jn["title"]["font_size"] != null ? jn["title"]["font_size"].AsInt : 20;
+                        title.fontStyle = (FontStyle)jn["title"]["font_style"].AsInt;
+                        title.horizontalOverflow = jn["title"]["horizontal_overflow"] != null ? (HorizontalWrapMode)jn["title"]["horizontal_overflow"].AsInt : HorizontalWrapMode.Wrap;
+                        title.verticalOverflow = jn["title"]["vertical_overflow"] != null ? (VerticalWrapMode)jn["title"]["vertical_overflow"].AsInt : VerticalWrapMode.Overflow;
+                    }
+
+                    if (jn["anim"] != null)
+                        DebuggerPopup.ReadAnimationJSON(jn["anim"]);
+
+                    if (jn["drag_mode"] != null && DebuggerPopup.Dragger)
+                        DebuggerPopup.Dragger.mode = (DraggableUI.DragMode)jn["drag_mode"].AsInt;
+                }
+            };
 
             EditorHelper.AddEditorDropdown("Debugger", string.Empty, EditorHelper.VIEW_DROPDOWN, SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/debugger{FileFormat.PNG.Dot()}")), () =>
             {
@@ -5035,7 +5047,44 @@ namespace BetterLegacy.Editor.Managers
             RefreshDebugger();
         }
 
-        void CreateAutosavePopup() => AutosavePopup = GeneratePopup(EditorPopup.AUTOSAVE_POPUP, "Open / Backup an Autosave", new Vector2(572f, 0f), new Vector2(460f, 350f), placeholderText: "Search autosaves...");
+        void CreateAutosavePopup()
+        {
+            AutosavePopup = GeneratePopup(EditorPopup.AUTOSAVES_POPUP, "Open / Backup an Autosave", new Vector2(572f, 0f), new Vector2(460f, 350f), placeholderText: "Search autosaves...");
+            AutosavePopup.onRender = () =>
+            {
+                if (AssetPack.TryReadFromFile("editor/ui/popups/autosaves_popup.json", out string uiFile))
+                {
+                    var jn = JSON.Parse(uiFile);
+                    RectValues.TryParse(jn["base"]["rect"], RectValues.Default.AnchoredPosition(572f, 0f).SizeDelta(460f, 350f)).AssignToRectTransform(AutosavePopup.GameObject.transform.AsRT());
+                    RectValues.TryParse(jn["top_panel"]["rect"], RectValues.FullAnchored.AnchorMin(0, 1).Pivot(0f, 0f).SizeDelta(32f, 32f)).AssignToRectTransform(AutosavePopup.TopPanel);
+                    RectValues.TryParse(jn["search"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(0f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, 32f))).AssignToRectTransform(AutosavePopup.GameObject.transform.Find("search-box").AsRT());
+                    RectValues.TryParse(jn["scrollbar"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(0f, 0.5f), new Vector2(32f, 0f))).AssignToRectTransform(AutosavePopup.GameObject.transform.Find("Scrollbar").AsRT());
+
+                    var layoutValues = LayoutValues.Parse(jn["layout"]);
+                    if (layoutValues is GridLayoutValues gridLayoutValues)
+                        gridLayoutValues.AssignToLayout(AutosavePopup.Grid ? AutosavePopup.Grid : AutosavePopup.GameObject.transform.Find("mask/content").GetComponent<GridLayoutGroup>());
+
+                    if (jn["title"] != null)
+                    {
+                        AutosavePopup.title = jn["title"]["text"] != null ? jn["title"]["text"] : "Select an Achievement";
+
+                        var title = AutosavePopup.Title;
+                        RectValues.TryParse(jn["title"]["rect"], RectValues.FullAnchored.AnchoredPosition(2f, 0f).SizeDelta(-12f, -8f)).AssignToRectTransform(title.rectTransform);
+                        title.alignment = jn["title"]["alignment"] != null ? (TextAnchor)jn["title"]["alignment"].AsInt : TextAnchor.MiddleLeft;
+                        title.fontSize = jn["title"]["font_size"] != null ? jn["title"]["font_size"].AsInt : 20;
+                        title.fontStyle = (FontStyle)jn["title"]["font_style"].AsInt;
+                        title.horizontalOverflow = jn["title"]["horizontal_overflow"] != null ? (HorizontalWrapMode)jn["title"]["horizontal_overflow"].AsInt : HorizontalWrapMode.Wrap;
+                        title.verticalOverflow = jn["title"]["vertical_overflow"] != null ? (VerticalWrapMode)jn["title"]["vertical_overflow"].AsInt : VerticalWrapMode.Overflow;
+                    }
+
+                    if (jn["anim"] != null)
+                        AutosavePopup.ReadAnimationJSON(jn["anim"]);
+
+                    if (jn["drag_mode"] != null && AutosavePopup.Dragger)
+                        AutosavePopup.Dragger.mode = (DraggableUI.DragMode)jn["drag_mode"].AsInt;
+                }
+            };
+        }
 
         void SetupMiscEditorThemes()
         {
@@ -5233,6 +5282,40 @@ namespace BetterLegacy.Editor.Managers
         void CreateFontSelector()
         {
             FontSelectorPopup = GeneratePopup(EditorPopup.FONT_SELECTOR_POPUP, "Select a Font", Vector2.zero, new Vector2(600f, 400f), placeholderText: "Search fonts...");
+            FontSelectorPopup.onRender = () =>
+            {
+                if (AssetPack.TryReadFromFile("editor/ui/popups/font_selector_popup.json", out string uiFile))
+                {
+                    var jn = JSON.Parse(uiFile);
+                    RectValues.TryParse(jn["base"]["rect"], RectValues.Default.SizeDelta(600f, 400f)).AssignToRectTransform(FontSelectorPopup.GameObject.transform.AsRT());
+                    RectValues.TryParse(jn["top_panel"]["rect"], RectValues.FullAnchored.AnchorMin(0, 1).Pivot(0f, 0f).SizeDelta(32f, 32f)).AssignToRectTransform(FontSelectorPopup.TopPanel);
+                    RectValues.TryParse(jn["search"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(0f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, 32f))).AssignToRectTransform(FontSelectorPopup.GameObject.transform.Find("search-box").AsRT());
+                    RectValues.TryParse(jn["scrollbar"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(0f, 0.5f), new Vector2(32f, 0f))).AssignToRectTransform(FontSelectorPopup.GameObject.transform.Find("Scrollbar").AsRT());
+
+                    var layoutValues = LayoutValues.Parse(jn["layout"]);
+                    if (layoutValues is GridLayoutValues gridLayoutValues)
+                        gridLayoutValues.AssignToLayout(FontSelectorPopup.Grid ? FontSelectorPopup.Grid : FontSelectorPopup.GameObject.transform.Find("mask/content").GetComponent<GridLayoutGroup>());
+
+                    if (jn["title"] != null)
+                    {
+                        FontSelectorPopup.title = jn["title"]["text"] != null ? jn["title"]["text"] : "Select a Font";
+
+                        var title = FontSelectorPopup.Title;
+                        RectValues.TryParse(jn["title"]["rect"], RectValues.FullAnchored.AnchoredPosition(2f, 0f).SizeDelta(-12f, -8f)).AssignToRectTransform(title.rectTransform);
+                        title.alignment = jn["title"]["alignment"] != null ? (TextAnchor)jn["title"]["alignment"].AsInt : TextAnchor.MiddleLeft;
+                        title.fontSize = jn["title"]["font_size"] != null ? jn["title"]["font_size"].AsInt : 20;
+                        title.fontStyle = (FontStyle)jn["title"]["font_style"].AsInt;
+                        title.horizontalOverflow = jn["title"]["horizontal_overflow"] != null ? (HorizontalWrapMode)jn["title"]["horizontal_overflow"].AsInt : HorizontalWrapMode.Wrap;
+                        title.verticalOverflow = jn["title"]["vertical_overflow"] != null ? (VerticalWrapMode)jn["title"]["vertical_overflow"].AsInt : VerticalWrapMode.Overflow;
+                    }
+
+                    if (jn["anim"] != null)
+                        FontSelectorPopup.ReadAnimationJSON(jn["anim"]);
+
+                    if (jn["drag_mode"] != null && FontSelectorPopup.Dragger)
+                        FontSelectorPopup.Dragger.mode = (DraggableUI.DragMode)jn["drag_mode"].AsInt;
+                }
+            };
 
             fontSelectionPrefab = Creator.NewUIObject("element", transform);
             RectValues.Default.SizeDelta(0f, 32f).AssignToRectTransform(fontSelectionPrefab.transform.AsRT());

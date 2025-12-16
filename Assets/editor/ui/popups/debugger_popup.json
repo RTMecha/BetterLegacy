@@ -1,0 +1,162 @@
+﻿{
+  // 0 = no drag, regardless of settings
+  // 1 = optional drag
+  // 2 = forced drag, regardless of settings
+  "drag_mode": 1,
+  "base": {
+    "rect": {
+      "anc_pos": [ 0, 0 ],
+      "anc_max": [ 0.5, 0.5 ],
+      "anc_min": [ 0.5, 0.5 ],
+      "pivot": [ 0.5, 0.5 ],
+      "size": [ 600, 450 ]
+    },
+    "theme_group": "Background_1"
+  },
+  "top_panel": {
+    "rect": {
+      "anc_pos": [ 0, 0 ],
+      "anc_max": [ 1, 1 ],
+      "anc_min": [ 0, 1 ],
+      "pivot": [ 0, 0 ],
+      "size": [ 32, 32 ]
+    },
+    "theme_group": "Background_1"
+  },
+  "title": {
+    "rect": {
+      "anc_pos": [ 2, 0 ],
+      "anc_max": [ 1, 1 ],
+      "anc_min": [ 0, 0 ],
+      "pivot": [ 0.5, 0.5 ],
+      "size": [ -12, -8 ]
+    },
+    "alignment": 3, // MiddleLeft
+    "text": "Debugger (Only use this if you know what you're doing)",
+    "font_size": 20,
+    "font_style": 0, // Normal
+    "horizontal_overflow": 0, // Wrap
+    "vertical_overflow": 1, // Overflow
+    "theme_group": "Light_Text"
+  },
+  "search": {
+    "rect": {
+      "anc_pos": [ 0, 0 ],
+      "anc_max": [ 1, 1 ],
+      "anc_min": [ 0, 1 ],
+      "pivot": [ 0.5, 1 ],
+      "size": [ 0, 32 ]
+    }
+  },
+  "scrollbar": {
+    "rect": {
+      "anc_pos": [ 0, 0 ],
+      "anc_max": [ 1, 1 ],
+      "anc_min": [ 1, 0 ],
+      "pivot": [ 0, 0.5 ],
+      "size": [ 32, 0 ]
+    }
+  },
+  "layout": {
+    "cell_size": [ 584.0, 32.0 ],
+    "spacing": [ 0.0, 8.0 ],
+    "constraint": 1,
+    "constraint_count": 1,
+    "padding": {
+      "top": 40,
+      "bottom": 4,
+      "left": 8,
+      "right": 8
+    }
+  } //,
+  //"anim": {
+  //  "open": {
+  //    "anim": {
+  //      "pos": false,
+  //      "sca": true,
+  //      "rot": false
+  //    },
+  //    "pos": [
+  //      {
+  //        "t": "0",
+  //        "x": "0",
+  //        "y": "0",
+  //        "z": "0"
+  //      }
+  //    ],
+  //    "sca": [
+  //      {
+  //        "t": "0",
+  //        "x": "0",
+  //        "y": "0"
+  //      },
+  //      {
+  //        "t": "0.6",
+  //        "x": "1",
+  //        "y": "1",
+  //        "ct": "OutElastic"
+  //      }
+  //    ],
+  //    "rot": [
+  //      {
+  //        "t": "0",
+  //        "x": "0"
+  //      }
+  //    ],
+  //    "col": [
+  //      {
+  //        "t": "0",
+  //        "x": "0",
+  //        "y": "0",
+  //        "z": "0",
+  //        "x2": "0",
+  //        "y2": "0"
+  //      }
+  //    ]
+  //  },
+  //  "close": {
+  //    "anim": {
+  //      "pos": false,
+  //      "sca": true,
+  //      "rot": false
+  //    },
+  //    "pos": [
+  //      {
+  //        "t": "0",
+  //        "x": "0",
+  //        "y": "0",
+  //        "z": "0"
+  //      }
+  //    ],
+  //    "sca": [
+  //      {
+  //        "t": "0",
+  //        "x": "1",
+  //        "y": "1"
+  //      },
+  //      {
+  //        "t": "0.1",
+  //        "x": "0",
+  //        "y": "0",
+  //        "ct": "InCirc"
+  //      }
+  //    ],
+  //    "rot": [
+  //      {
+  //        "t": "0",
+  //        "x": "0"
+  //      }
+  //    ],
+  //    "col": [
+  //      {
+  //        "t": "0",
+  //        "x": "0",
+  //        "y": "0",
+  //        "z": "0",
+  //        "x2": "0",
+  //        "y2": "0"
+  //      }
+  //    ]
+  //  }
+  //}
+}

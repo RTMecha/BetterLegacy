@@ -51,8 +51,8 @@ namespace BetterLegacy.Core.Helpers
         public static void ToggleDevelopment()
         {
             development = !development;
-            if (ModifiersEditor.inst.DefaultModifiersPopup.IsOpen)
-                ModifiersEditor.inst.DefaultModifiersPopup.SearchField.onValueChanged.Invoke(ModifiersEditor.inst.DefaultModifiersPopup.SearchTerm);
+            if (ModifiersEditor.inst.Popup.IsOpen)
+                ModifiersEditor.inst.Popup.SearchField.onValueChanged.Invoke(ModifiersEditor.inst.Popup.SearchTerm);
         }
 
         #region Running

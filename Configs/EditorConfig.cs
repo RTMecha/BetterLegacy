@@ -772,11 +772,11 @@ namespace BetterLegacy.Configs
             RegisterPopupAnimation(EditorPopup.TEXT_EDITOR);
             RegisterPopupAnimation(EditorPopup.DOCUMENTATION_POPUP);
             RegisterPopupAnimation(EditorPopup.DEBUGGER_POPUP);
-            RegisterPopupAnimation(EditorPopup.AUTOSAVE_POPUP);
+            RegisterPopupAnimation(EditorPopup.AUTOSAVES_POPUP);
             RegisterPopupAnimation(EditorPopup.DEFAULT_MODIFIERS_POPUP);
             RegisterPopupAnimation(EditorPopup.KEYBIND_LIST_POPUP);
-            RegisterPopupAnimation(EditorPopup.KEYBIND_FUNCTION_POPUP);
-            RegisterPopupAnimation(EditorPopup.THEME_POPUP);
+            RegisterPopupAnimation(EditorPopup.KEYBIND_FUNCTIONS_POPUP);
+            RegisterPopupAnimation(EditorPopup.THEMES_POPUP);
             RegisterPopupAnimation(EditorPopup.PREFAB_TYPES_POPUP);
             RegisterPopupAnimation(EditorPopup.FONT_SELECTOR_POPUP);
             RegisterPopupAnimation(EditorPopup.PINNED_EDITOR_LAYER_POPUP);
@@ -788,6 +788,7 @@ namespace BetterLegacy.Configs
             RegisterPopupAnimation(EditorPopup.ACHIEVEMENTS_POPUP);
             RegisterPopupAnimation(EditorPopup.PROGRESS_POPUP);
             RegisterPopupAnimation(EditorPopup.PLAYER_MODELS_POPUP);
+            RegisterPopupAnimation(EditorPopup.PLAYER_OBJECTS_POPUP);
             RegisterPopupAnimation(EditorPopup.USER_SEARCH_POPUP);
 
             RegisterDropdownAnimation(EditorHelper.FILE_DROPDOWN);

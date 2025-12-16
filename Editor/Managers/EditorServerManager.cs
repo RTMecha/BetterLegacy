@@ -17,6 +17,7 @@ using SimpleJSON;
 
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
+using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
@@ -230,12 +231,13 @@ namespace BetterLegacy.Editor.Managers
                 Dialog = new ServerContentDialog();
                 Dialog.Init();
 
-                UserSearchPopup = RTEditor.inst.GeneratePopup(EditorPopup.USER_SEARCH_POPUP, "Users", Vector2.zero, new Vector2(600f, 400f),
+                UserSearchPopup = RTEditor.inst.GeneratePopup(EditorPopup.USER_SEARCH_POPUP, "Online Users", Vector2.zero, new Vector2(600f, 400f),
                     refreshSearch: _val => { },
                     placeholderText: "Search users...");
                 UserSearchPopup.Grid.cellSize = new Vector2(595f, 80f);
                 UserSearchPopup.InitTopElementsParent();
                 UserSearchPopup.InitPageField();
+
                 var searchUsers = EditorPrefabHolder.Instance.Function2Button.Duplicate(UserSearchPopup.TopElements, "search");
                 searchUsers.transform.AsRT().sizeDelta = new Vector2(138f, 32f);
                 var searchUsersButton = searchUsers.GetComponent<FunctionButtonStorage>();
@@ -248,6 +250,41 @@ namespace BetterLegacy.Editor.Managers
 
                 UserSearchPopup.PageField.OnEndEdit.NewListener(_val => SearchUsersButton.onClick.Invoke());
                 UserSearchPopup.SearchField.onEndEdit.NewListener(_val => SearchUsersButton.onClick.Invoke());
+
+                UserSearchPopup.onRender = () =>
+                {
+                    if (AssetPack.TryReadFromFile("editor/ui/popups/user_search_popup.json", out string uiFile))
+                    {
+                        var jn = JSON.Parse(uiFile);
+                        RectValues.TryParse(jn["base"]["rect"], RectValues.Default.SizeDelta(600f, 400f)).AssignToRectTransform(UserSearchPopup.GameObject.transform.AsRT());
+                        RectValues.TryParse(jn["top_panel"]["rect"], RectValues.FullAnchored.AnchorMin(0, 1).Pivot(0f, 0f).SizeDelta(32f, 32f)).AssignToRectTransform(UserSearchPopup.TopPanel);
+                        RectValues.TryParse(jn["search"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(0f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, 32f))).AssignToRectTransform(UserSearchPopup.GameObject.transform.Find("search-box").AsRT());
+                        RectValues.TryParse(jn["scrollbar"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(0f, 0.5f), new Vector2(32f, 0f))).AssignToRectTransform(UserSearchPopup.GameObject.transform.Find("Scrollbar").AsRT());
+
+                        var layoutValues = LayoutValues.Parse(jn["layout"]);
+                        if (layoutValues is GridLayoutValues gridLayoutValues)
+                            gridLayoutValues.AssignToLayout(UserSearchPopup.Grid ? UserSearchPopup.Grid : UserSearchPopup.GameObject.transform.Find("mask/content").GetComponent<GridLayoutGroup>());
+
+                        if (jn["title"] != null)
+                        {
+                            UserSearchPopup.title = jn["title"]["text"] != null ? jn["title"]["text"] : "Online Users";
+
+                            var title = UserSearchPopup.Title;
+                            RectValues.TryParse(jn["title"]["rect"], RectValues.FullAnchored.AnchoredPosition(2f, 0f).SizeDelta(-12f, -8f)).AssignToRectTransform(title.rectTransform);
+                            title.alignment = jn["title"]["alignment"] != null ? (TextAnchor)jn["title"]["alignment"].AsInt : TextAnchor.MiddleLeft;
+                            title.fontSize = jn["title"]["font_size"] != null ? jn["title"]["font_size"].AsInt : 20;
+                            title.fontStyle = (FontStyle)jn["title"]["font_style"].AsInt;
+                            title.horizontalOverflow = jn["title"]["horizontal_overflow"] != null ? (HorizontalWrapMode)jn["title"]["horizontal_overflow"].AsInt : HorizontalWrapMode.Wrap;
+                            title.verticalOverflow = jn["title"]["vertical_overflow"] != null ? (VerticalWrapMode)jn["title"]["vertical_overflow"].AsInt : VerticalWrapMode.Overflow;
+                        }
+
+                        if (jn["anim"] != null)
+                            UserSearchPopup.ReadAnimationJSON(jn["anim"]);
+
+                        if (jn["drag_mode"] != null && UserSearchPopup.Dragger)
+                            UserSearchPopup.Dragger.mode = (DraggableUI.DragMode)jn["drag_mode"].AsInt;
+                    }
+                };
             }
             catch (Exception ex)
             {
@@ -257,8 +294,44 @@ namespace BetterLegacy.Editor.Managers
             try
             {
                 LoadDefaultTags();
-                TagPopup = RTEditor.inst.GeneratePopup(EditorPopup.DEFAULT_TAGS_POPUP, "Add a default tag",
+                TagPopup = RTEditor.inst.GeneratePopup(EditorPopup.DEFAULT_TAGS_POPUP, "Select a default tag",
                     refreshSearch: _val => { });
+                TagPopup.InitTopElementsParent();
+                TagPopup.InitReload(LoadDefaultTags);
+                TagPopup.onRender = () =>
+                {
+                    if (AssetPack.TryReadFromFile("editor/ui/popups/default_tags_popup.json", out string uiFile))
+                    {
+                        var jn = JSON.Parse(uiFile);
+                        RectValues.TryParse(jn["base"]["rect"], RectValues.Default.SizeDelta(600f, 400f)).AssignToRectTransform(TagPopup.GameObject.transform.AsRT());
+                        RectValues.TryParse(jn["top_panel"]["rect"], RectValues.FullAnchored.AnchorMin(0, 1).Pivot(0f, 0f).SizeDelta(32f, 32f)).AssignToRectTransform(TagPopup.TopPanel);
+                        RectValues.TryParse(jn["search"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(0f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, 32f))).AssignToRectTransform(TagPopup.GameObject.transform.Find("search-box").AsRT());
+                        RectValues.TryParse(jn["scrollbar"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(0f, 0.5f), new Vector2(32f, 0f))).AssignToRectTransform(TagPopup.GameObject.transform.Find("Scrollbar").AsRT());
+
+                        var layoutValues = LayoutValues.Parse(jn["layout"]);
+                        if (layoutValues is GridLayoutValues gridLayoutValues)
+                            gridLayoutValues.AssignToLayout(TagPopup.Grid ? TagPopup.Grid : TagPopup.GameObject.transform.Find("mask/content").GetComponent<GridLayoutGroup>());
+
+                        if (jn["title"] != null)
+                        {
+                            TagPopup.title = jn["title"]["text"] != null ? jn["title"]["text"] : "Select a default tag";
+
+                            var title = TagPopup.Title;
+                            RectValues.TryParse(jn["title"]["rect"], RectValues.FullAnchored.AnchoredPosition(2f, 0f).SizeDelta(-12f, -8f)).AssignToRectTransform(title.rectTransform);
+                            title.alignment = jn["title"]["alignment"] != null ? (TextAnchor)jn["title"]["alignment"].AsInt : TextAnchor.MiddleLeft;
+                            title.fontSize = jn["title"]["font_size"] != null ? jn["title"]["font_size"].AsInt : 20;
+                            title.fontStyle = (FontStyle)jn["title"]["font_style"].AsInt;
+                            title.horizontalOverflow = jn["title"]["horizontal_overflow"] != null ? (HorizontalWrapMode)jn["title"]["horizontal_overflow"].AsInt : HorizontalWrapMode.Wrap;
+                            title.verticalOverflow = jn["title"]["vertical_overflow"] != null ? (VerticalWrapMode)jn["title"]["vertical_overflow"].AsInt : VerticalWrapMode.Overflow;
+                        }
+
+                        if (jn["anim"] != null)
+                            TagPopup.ReadAnimationJSON(jn["anim"]);
+
+                        if (jn["drag_mode"] != null && TagPopup.Dragger)
+                            TagPopup.Dragger.mode = (DraggableUI.DragMode)jn["drag_mode"].AsInt;
+                    }
+                };
             }
             catch (Exception ex)
             {

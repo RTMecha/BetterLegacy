@@ -19,6 +19,7 @@ using BetterLegacy.Companion.Entity;
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Modifiers;
 using BetterLegacy.Core.Helpers;
@@ -52,10 +53,80 @@ namespace BetterLegacy.Editor.Managers
                 ObjectSearchPopup = RTEditor.inst.GeneratePopup(EditorPopup.OBJECT_SEARCH_POPUP, "Object Search", Vector2.zero, new Vector2(600f, 450f), placeholderText: "Search for object...");
                 ObjectSearchPopup.getMaxPageCount = () => GameData.Current.beatmapObjects.FindAll(x => !x.FromPrefab).Count / ObjectsPerPage;
                 ObjectSearchPopup.InitPageField();
+                ObjectSearchPopup.onRender = () =>
+                {
+                    if (AssetPack.TryReadFromFile("editor/ui/popups/object_search_popup.json", out string uiFile))
+                    {
+                        var jn = JSON.Parse(uiFile);
+                        RectValues.TryParse(jn["base"]["rect"], RectValues.Default.SizeDelta(600f, 400f)).AssignToRectTransform(ObjectSearchPopup.GameObject.transform.AsRT());
+                        RectValues.TryParse(jn["top_panel"]["rect"], RectValues.FullAnchored.AnchorMin(0, 1).Pivot(0f, 0f).SizeDelta(32f, 32f)).AssignToRectTransform(ObjectSearchPopup.TopPanel);
+                        RectValues.TryParse(jn["search"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(0f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, 32f))).AssignToRectTransform(ObjectSearchPopup.GameObject.transform.Find("search-box").AsRT());
+                        RectValues.TryParse(jn["scrollbar"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(0f, 0.5f), new Vector2(32f, 0f))).AssignToRectTransform(ObjectSearchPopup.GameObject.transform.Find("Scrollbar").AsRT());
+
+                        var layoutValues = LayoutValues.Parse(jn["layout"]);
+                        if (layoutValues is GridLayoutValues gridLayoutValues)
+                            gridLayoutValues.AssignToLayout(ObjectSearchPopup.Grid ? ObjectSearchPopup.Grid : ObjectSearchPopup.GameObject.transform.Find("mask/content").GetComponent<GridLayoutGroup>());
+
+                        if (jn["title"] != null)
+                        {
+                            ObjectSearchPopup.title = jn["title"]["text"] != null ? jn["title"]["text"] : "Object Search";
+
+                            var title = ObjectSearchPopup.Title;
+                            RectValues.TryParse(jn["title"]["rect"], RectValues.FullAnchored.AnchoredPosition(2f, 0f).SizeDelta(-12f, -8f)).AssignToRectTransform(title.rectTransform);
+                            title.alignment = jn["title"]["alignment"] != null ? (TextAnchor)jn["title"]["alignment"].AsInt : TextAnchor.MiddleLeft;
+                            title.fontSize = jn["title"]["font_size"] != null ? jn["title"]["font_size"].AsInt : 20;
+                            title.fontStyle = (FontStyle)jn["title"]["font_style"].AsInt;
+                            title.horizontalOverflow = jn["title"]["horizontal_overflow"] != null ? (HorizontalWrapMode)jn["title"]["horizontal_overflow"].AsInt : HorizontalWrapMode.Wrap;
+                            title.verticalOverflow = jn["title"]["vertical_overflow"] != null ? (VerticalWrapMode)jn["title"]["vertical_overflow"].AsInt : VerticalWrapMode.Overflow;
+                        }
+
+                        if (jn["anim"] != null)
+                            ObjectSearchPopup.ReadAnimationJSON(jn["anim"]);
+
+                        if (jn["drag_mode"] != null && ObjectSearchPopup.Dragger)
+                            ObjectSearchPopup.Dragger.mode = (DraggableUI.DragMode)jn["drag_mode"].AsInt;
+                    }
+                };
 
                 var dropdown = EditorHelper.AddEditorDropdown("Search Objects", string.Empty, EditorHelper.VIEW_DROPDOWN, EditorSprites.SearchSprite, ShowObjectSearch);
 
                 EditorHelper.SetComplexity(dropdown, Complexity.Normal);
+
+                ObjectTemplatePopup = RTEditor.inst.GeneratePopup(EditorPopup.OBJECT_TEMPLATES_POPUP, "Create an Object", Vector2.zero, new Vector2(600f, 400f), placeholderText: "Search for template...");
+                ObjectTemplatePopup.onRender = () =>
+                {
+                    if (AssetPack.TryReadFromFile("editor/ui/popups/object_template_popup.json", out string uiFile))
+                    {
+                        var jn = JSON.Parse(uiFile);
+                        RectValues.TryParse(jn["base"]["rect"], RectValues.Default.SizeDelta(600f, 400f)).AssignToRectTransform(ObjectTemplatePopup.GameObject.transform.AsRT());
+                        RectValues.TryParse(jn["top_panel"]["rect"], RectValues.FullAnchored.AnchorMin(0, 1).Pivot(0f, 0f).SizeDelta(32f, 32f)).AssignToRectTransform(ObjectTemplatePopup.TopPanel);
+                        RectValues.TryParse(jn["search"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(0f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, 32f))).AssignToRectTransform(ObjectTemplatePopup.GameObject.transform.Find("search-box").AsRT());
+                        RectValues.TryParse(jn["scrollbar"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(0f, 0.5f), new Vector2(32f, 0f))).AssignToRectTransform(ObjectTemplatePopup.GameObject.transform.Find("Scrollbar").AsRT());
+
+                        var layoutValues = LayoutValues.Parse(jn["layout"]);
+                        if (layoutValues is GridLayoutValues gridLayoutValues)
+                            gridLayoutValues.AssignToLayout(ObjectTemplatePopup.Grid ? ObjectTemplatePopup.Grid : ObjectTemplatePopup.GameObject.transform.Find("mask/content").GetComponent<GridLayoutGroup>());
+
+                        if (jn["title"] != null)
+                        {
+                            ObjectTemplatePopup.title = jn["title"]["text"] != null ? jn["title"]["text"] : "Create an Object";
+
+                            var title = ObjectTemplatePopup.Title;
+                            RectValues.TryParse(jn["title"]["rect"], RectValues.FullAnchored.AnchoredPosition(2f, 0f).SizeDelta(-12f, -8f)).AssignToRectTransform(title.rectTransform);
+                            title.alignment = jn["title"]["alignment"] != null ? (TextAnchor)jn["title"]["alignment"].AsInt : TextAnchor.MiddleLeft;
+                            title.fontSize = jn["title"]["font_size"] != null ? jn["title"]["font_size"].AsInt : 20;
+                            title.fontStyle = (FontStyle)jn["title"]["font_style"].AsInt;
+                            title.horizontalOverflow = jn["title"]["horizontal_overflow"] != null ? (HorizontalWrapMode)jn["title"]["horizontal_overflow"].AsInt : HorizontalWrapMode.Wrap;
+                            title.verticalOverflow = jn["title"]["vertical_overflow"] != null ? (VerticalWrapMode)jn["title"]["vertical_overflow"].AsInt : VerticalWrapMode.Overflow;
+                        }
+
+                        if (jn["anim"] != null)
+                            ObjectTemplatePopup.ReadAnimationJSON(jn["anim"]);
+
+                        if (jn["drag_mode"] != null && ObjectTemplatePopup.Dragger)
+                            ObjectTemplatePopup.Dragger.mode = (DraggableUI.DragMode)jn["drag_mode"].AsInt;
+                    }
+                };
             }
             catch (Exception ex)
             {
@@ -97,6 +168,8 @@ namespace BetterLegacy.Editor.Managers
         public ObjectEditorDialog Dialog { get; set; }
 
         public ContentPopup ObjectSearchPopup { get; set; }
+
+        public ContentPopup ObjectTemplatePopup { get; set; }
 
         public static bool AllowTimeExactlyAtStart => false;
 
@@ -568,9 +641,9 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void ShowObjectTemplates()
         {
-            RTEditor.inst.ObjectTemplatePopup.Open();
-            RTEditor.inst.ObjectTemplatePopup.UpdateSearchFunction(RefreshObjectTemplates);
-            RefreshObjectTemplates(RTEditor.inst.ObjectTemplatePopup.SearchField.text);
+            ObjectTemplatePopup.Open();
+            ObjectTemplatePopup.UpdateSearchFunction(RefreshObjectTemplates);
+            RefreshObjectTemplates(ObjectTemplatePopup.SearchField.text);
         }
 
         /// <summary>
@@ -579,7 +652,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="search">The search term.</param>
         public void RefreshObjectTemplates(string search)
         {
-            RTEditor.inst.ObjectTemplatePopup.ClearContent();
+            ObjectTemplatePopup.ClearContent();
             var objectOptions = customObjectOptions.IsEmpty() ? this.objectOptions : this.objectOptions.Union(customObjectOptions).ToList();
             for (int i = 0; i < objectOptions.Count; i++)
             {
@@ -589,7 +662,7 @@ namespace BetterLegacy.Editor.Managers
                 var name = objectOptions[i].name;
                 var hint = objectOptions[i].hint;
 
-                var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(RTEditor.inst.ObjectTemplatePopup.Content, "Function");
+                var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(ObjectTemplatePopup.Content, "Function");
 
                 gameObject.AddComponent<HoverTooltip>().tooltipLangauges.Add(new HoverTooltip.Tooltip { desc = name, hint = hint });
 

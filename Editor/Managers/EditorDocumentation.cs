@@ -8,8 +8,10 @@ using UnityEngine.UI;
 using LSFunctions;
 
 using TMPro;
+using SimpleJSON;
 
 using BetterLegacy.Core;
+using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
@@ -28,6 +30,8 @@ namespace BetterLegacy.Editor.Managers
 
         public EditorDialog Dialog { get; set; }
 
+        public ContentPopup Popup { get; set; }
+
         public List<EditorDocument> documents = new List<EditorDocument>();
 
         public Text documentationTitle;
@@ -40,15 +44,49 @@ namespace BetterLegacy.Editor.Managers
 
         public override void OnInit()
         {
-            RTEditor.inst.DocumentationPopup = RTEditor.inst.GeneratePopup(EditorPopup.DOCUMENTATION_POPUP, "Documentation", Vector2.zero, new Vector2(600f, 450f), _val =>
+            Popup = RTEditor.inst.GeneratePopup(EditorPopup.DOCUMENTATION_POPUP, "Documentation", Vector2.zero, new Vector2(600f, 450f), _val =>
             {
                 documentationSearch = _val;
                 RefreshDocumentation();
             }, placeholderText: "Search for document...");
+            Popup.onRender = () =>
+            {
+                if (AssetPack.TryReadFromFile("editor/ui/popups/documentation_popup.json", out string uiFile))
+                {
+                    var jn = JSON.Parse(uiFile);
+                    RectValues.TryParse(jn["base"]["rect"], RectValues.Default.SizeDelta(600f, 450f)).AssignToRectTransform(Popup.GameObject.transform.AsRT());
+                    RectValues.TryParse(jn["top_panel"]["rect"], RectValues.FullAnchored.AnchorMin(0, 1).Pivot(0f, 0f).SizeDelta(32f, 32f)).AssignToRectTransform(Popup.TopPanel);
+                    RectValues.TryParse(jn["search"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(0f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, 32f))).AssignToRectTransform(Popup.GameObject.transform.Find("search-box").AsRT());
+                    RectValues.TryParse(jn["scrollbar"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(0f, 0.5f), new Vector2(32f, 0f))).AssignToRectTransform(Popup.GameObject.transform.Find("Scrollbar").AsRT());
+
+                    var layoutValues = LayoutValues.Parse(jn["layout"]);
+                    if (layoutValues is GridLayoutValues gridLayoutValues)
+                        gridLayoutValues.AssignToLayout(Popup.Grid ? Popup.Grid : Popup.GameObject.transform.Find("mask/content").GetComponent<GridLayoutGroup>());
+
+                    if (jn["title"] != null)
+                    {
+                        Popup.title = jn["title"]["text"] != null ? jn["title"]["text"] : "Documentation";
+
+                        var title = Popup.Title;
+                        RectValues.TryParse(jn["title"]["rect"], RectValues.FullAnchored.AnchoredPosition(2f, 0f).SizeDelta(-12f, -8f)).AssignToRectTransform(title.rectTransform);
+                        title.alignment = jn["title"]["alignment"] != null ? (TextAnchor)jn["title"]["alignment"].AsInt : TextAnchor.MiddleLeft;
+                        title.fontSize = jn["title"]["font_size"] != null ? jn["title"]["font_size"].AsInt : 20;
+                        title.fontStyle = (FontStyle)jn["title"]["font_style"].AsInt;
+                        title.horizontalOverflow = jn["title"]["horizontal_overflow"] != null ? (HorizontalWrapMode)jn["title"]["horizontal_overflow"].AsInt : HorizontalWrapMode.Wrap;
+                        title.verticalOverflow = jn["title"]["vertical_overflow"] != null ? (VerticalWrapMode)jn["title"]["vertical_overflow"].AsInt : VerticalWrapMode.Overflow;
+                    }
+
+                    if (jn["anim"] != null)
+                        Popup.ReadAnimationJSON(jn["anim"]);
+
+                    if (jn["drag_mode"] != null && Popup.Dragger)
+                        Popup.Dragger.mode = (DraggableUI.DragMode)jn["drag_mode"].AsInt;
+                }
+            };
 
             EditorHelper.AddEditorDropdown("Wiki / Documentation", string.Empty, "Help", EditorSprites.QuestionSprite, () =>
             {
-                RTEditor.inst.DocumentationPopup.Open();
+                Popup.Open();
                 RefreshDocumentation();
             });
 
@@ -1188,7 +1226,7 @@ namespace BetterLegacy.Editor.Managers
 
         EditorDocument GenerateDocument(string name, string description, List<EditorDocument.Element> elements)
         {
-            var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(RTEditor.inst.DocumentationPopup.Content, "Document");
+            var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(Popup.Content, "Document");
             var documentation = new EditorDocument(gameObject, name, description);
 
             EditorThemeManager.ApplySelectable(gameObject.GetComponent<Button>(), ThemeGroup.List_Button_1);

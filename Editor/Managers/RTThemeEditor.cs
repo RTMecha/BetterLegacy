@@ -15,6 +15,7 @@ using SimpleJSON;
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
@@ -80,7 +81,7 @@ namespace BetterLegacy.Editor.Managers
 
             try
             {
-                Popup = RTEditor.inst.GeneratePopup(EditorPopup.THEME_POPUP, "Beatmap Themes", Vector2.zero, new Vector2(600f, 450f), _val =>
+                Popup = RTEditor.inst.GeneratePopup(EditorPopup.THEMES_POPUP, "External Themes", Vector2.zero, new Vector2(600f, 450f), _val =>
                 {
                     RenderExternalThemesPopup();
                 }, placeholderText: "Search for theme...");
@@ -93,6 +94,7 @@ namespace BetterLegacy.Editor.Managers
                 layoutGroup.childForceExpandWidth = false;
                 layoutGroup.childForceExpandHeight = false;
                 layoutGroup.spacing = 8f;
+                layoutGroup.padding = new RectOffset(left: 8, right: 8, top: 40, bottom: 8);
 
                 Popup.getMaxPageCount = () => ExternalThemesCount / themesPerPage;
                 Popup.InitPageField();
@@ -134,6 +136,41 @@ namespace BetterLegacy.Editor.Managers
                         RTEditor.inst.editorInfo.themePath = null;
                         EditorManager.inst.DisplayNotification($"Removed default theme folder.", 5f, EditorManager.NotificationType.Success);
                     }, "Theme Default Path"));
+
+                Popup.onRender = () =>
+                {
+                    if (AssetPack.TryReadFromFile("editor/ui/popups/themes_popup.json", out string uiFile))
+                    {
+                        var jn = JSON.Parse(uiFile);
+                        RectValues.TryParse(jn["base"]["rect"], RectValues.Default.SizeDelta(600f, 450f)).AssignToRectTransform(Popup.GameObject.transform.AsRT());
+                        RectValues.TryParse(jn["top_panel"]["rect"], RectValues.FullAnchored.AnchorMin(0, 1).Pivot(0f, 0f).SizeDelta(32f, 32f)).AssignToRectTransform(Popup.TopPanel);
+                        RectValues.TryParse(jn["search"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(0f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, 32f))).AssignToRectTransform(Popup.GameObject.transform.Find("search-box").AsRT());
+                        RectValues.TryParse(jn["scrollbar"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(0f, 0.5f), new Vector2(32f, 0f))).AssignToRectTransform(Popup.GameObject.transform.Find("Scrollbar").AsRT());
+
+                        var layoutValues = LayoutValues.Parse(jn["layout"]);
+                        if (layoutGroup && layoutValues is HorizontalOrVerticalLayoutValues hvLayoutValues)
+                            hvLayoutValues.AssignToLayout(layoutGroup);
+
+                        if (jn["title"] != null)
+                        {
+                            Popup.title = jn["title"]["text"] != null ? jn["title"]["text"] : "External Themes";
+
+                            var title = Popup.Title;
+                            RectValues.TryParse(jn["title"]["rect"], RectValues.FullAnchored.AnchoredPosition(2f, 0f).SizeDelta(-12f, -8f)).AssignToRectTransform(title.rectTransform);
+                            title.alignment = jn["title"]["alignment"] != null ? (TextAnchor)jn["title"]["alignment"].AsInt : TextAnchor.MiddleLeft;
+                            title.fontSize = jn["title"]["font_size"] != null ? jn["title"]["font_size"].AsInt : 20;
+                            title.fontStyle = (FontStyle)jn["title"]["font_style"].AsInt;
+                            title.horizontalOverflow = jn["title"]["horizontal_overflow"] != null ? (HorizontalWrapMode)jn["title"]["horizontal_overflow"].AsInt : HorizontalWrapMode.Wrap;
+                            title.verticalOverflow = jn["title"]["vertical_overflow"] != null ? (VerticalWrapMode)jn["title"]["vertical_overflow"].AsInt : VerticalWrapMode.Overflow;
+                        }
+
+                        if (jn["anim"] != null)
+                            Popup.ReadAnimationJSON(jn["anim"]);
+
+                        if (jn["drag_mode"] != null && Popup.Dragger)
+                            Popup.Dragger.mode = (DraggableUI.DragMode)jn["drag_mode"].AsInt;
+                    }
+                };
 
                 EditorHelper.AddEditorDropdown("View Themes", string.Empty, EditorHelper.VIEW_DROPDOWN, EditorSprites.SearchSprite, OpenExternalThemesPopup);
 
@@ -429,9 +466,6 @@ namespace BetterLegacy.Editor.Managers
 
             if (!themeUpFolderButton)
             {
-                var spacer = Creator.NewUIObject("spacer", Popup.Content, 0);
-                spacer.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
-
                 themeUpFolderButton = EditorManager.inst.folderButtonPrefab.Duplicate(Popup.Content, "back", 1);
                 themeUpFolderButton.transform.AsRT().sizeDelta = new Vector2(600f, 32f);
                 var folderButtonStorageFolder = themeUpFolderButton.GetComponent<FunctionButtonStorage>();
