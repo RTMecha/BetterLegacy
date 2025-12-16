@@ -18,6 +18,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         #region Values
 
+        public FunctionButtonStorage SubmitButton { get; set; }
+
         #region Reference
 
         public InputField PathField { get; set; }
@@ -67,8 +69,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public Toggle SkipToggle { get; set; }
 
-        public Button SubmitButton { get; set; }
-
         #endregion
 
         public override void Init()
@@ -108,6 +108,14 @@ namespace BetterLegacy.Editor.Data.Dialogs
             Content = scrollView.transform.Find("Viewport/Content").AsRT();
 
             #region Setup
+
+            var submit = EditorPrefabHolder.Instance.Function1Button.Duplicate(Content, "submit");
+            submit.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
+            SubmitButton = submit.GetComponent<FunctionButtonStorage>();
+            SubmitButton.Text = "Submit";
+
+            EditorThemeManager.ApplySelectable(SubmitButton.button, ThemeGroup.Function_2);
+            EditorThemeManager.ApplyGraphic(SubmitButton.label, ThemeGroup.Function_2_Text);
 
             #region Reference
 
@@ -219,15 +227,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
             HiddenToggle = GenerateToggle(Content, "Hidden");
             ShowAfterUnlockToggle = GenerateToggle(Content, "Show After Unlock");
             SkipToggle = GenerateToggle(Content, "Skip");
-
-            var submit = EditorPrefabHolder.Instance.Function1Button.Duplicate(Content, "submit");
-            submit.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
-            var submitStorage = submit.GetComponent<FunctionButtonStorage>();
-            SubmitButton = submitStorage.button;
-            submitStorage.Text = "Submit";
-
-            EditorThemeManager.ApplyGraphic(submitStorage.button.image, ThemeGroup.Function_1, true);
-            EditorThemeManager.ApplyGraphic(submitStorage.label, ThemeGroup.Function_1_Text);
 
             #endregion
         }

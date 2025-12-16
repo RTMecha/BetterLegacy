@@ -34,11 +34,6 @@ namespace BetterLegacy.Editor.Data.Elements
         #region UI
 
         /// <summary>
-        /// Game object used for the level combiner.
-        /// </summary>
-        public GameObject CombinerGameObject { get; set; }
-
-        /// <summary>
         /// The icon of the level panel.
         /// </summary>
         public Image IconImage { get; set; }
@@ -728,7 +723,11 @@ namespace BetterLegacy.Editor.Data.Elements
                     {
                         if (info)
                         {
-                            list.Add(new ButtonElement("Edit Info", () => EditorLevelManager.inst.OpenLevelInfoEditor(info)));
+                            list.Add(new ButtonElement("Edit Info", () => EditorLevelManager.inst.OpenLevelInfoEditor(info, Item ? () =>
+                            {
+                                EditorLevelManager.inst.LoadLevel(this);
+                                EditorLevelManager.inst.OpenLevelPopup.Close();
+                            } : null, Item ? "Open" : null)));
                             list.Add(new ButtonElement("Remove from Collection", () =>
                             {
                                 RTEditor.inst.ShowWarningPopup("Are you sure you want to remove the level from the current collection?", () =>
@@ -751,7 +750,7 @@ namespace BetterLegacy.Editor.Data.Elements
                             if (!info)
                                 return;
 
-                            if (info.index - 1 <= 0)
+                            if (info.index - 1 < 0)
                             {
                                 EditorManager.inst.DisplayNotification($"Cannot move the level earlier than the start!", 2f, EditorManager.NotificationType.Warning);
                                 return;
@@ -799,7 +798,11 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 if (currentLevelCollection && info)
                 {
-                    EditorLevelManager.inst.OpenLevelInfoEditor(info);
+                    EditorLevelManager.inst.OpenLevelInfoEditor(info, Item ? () =>
+                    {
+                        EditorLevelManager.inst.LoadLevel(this);
+                        EditorLevelManager.inst.OpenLevelPopup.Close();
+                    } : null, Item ? "Open" : null);
                     return;
                 }
 
@@ -884,16 +887,6 @@ namespace BetterLegacy.Editor.Data.Elements
         {
             if (SelectedUI)
                 SelectedUI.SetActive(selected);
-        }
-
-        /// <summary>
-        /// Sets the level panel (combiner object) active state.
-        /// </summary>
-        /// <param name="active">Active state to set.</param>
-        public void CombinerSetActive(bool active)
-        {
-            if (CombinerGameObject)
-                CombinerGameObject.SetActive(active);
         }
 
         /// <summary>
