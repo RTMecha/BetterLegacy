@@ -2263,7 +2263,11 @@ namespace BetterLegacy.Core.Helpers
 
         public static void GetSoundPath(string id, string path, bool fromSoundLibrary = false, float pitch = 1f, float volume = 1f, bool loop = false, float panStereo = 0f, Action<AudioSource> getAudioSource = null)
         {
-            string fullPath = !fromSoundLibrary ? RTFile.CombinePaths(RTFile.BasePath, path) : RTFile.CombinePaths(RTFile.ApplicationDirectory, ModifiersManager.SOUNDLIBRARY_PATH, path);
+            string fullPath = !fromSoundLibrary ?
+                RTFile.CombinePaths(RTFile.BasePath, path) :
+                AssetPack.TryGetFile(path, out string assetFile) ?
+                    assetFile :
+                    RTFile.CombinePaths(RTFile.ApplicationDirectory, ModifiersManager.SOUNDLIBRARY_PATH, path);
 
             var audioDotFormats = RTFile.AudioDotFormats;
             for (int i = 0; i < audioDotFormats.Length; i++)
@@ -4058,7 +4062,9 @@ namespace BetterLegacy.Core.Helpers
             string fullPath =
                 !bool.TryParse(modifier.GetValue(1, modifierLoop.variables), out bool global) || !global ?
                 RTFile.CombinePaths(RTFile.BasePath, path) :
-                RTFile.CombinePaths(RTFile.ApplicationDirectory, ModifiersManager.SOUNDLIBRARY_PATH, path);
+                AssetPack.TryGetFile(path, out string assetFile) ?
+                    assetFile :
+                    RTFile.CombinePaths(RTFile.ApplicationDirectory, ModifiersManager.SOUNDLIBRARY_PATH, path);
 
             var audioDotFormats = RTFile.AudioDotFormats;
             for (int i = 0; i < audioDotFormats.Length; i++)
