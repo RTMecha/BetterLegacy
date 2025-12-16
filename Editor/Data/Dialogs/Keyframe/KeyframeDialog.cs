@@ -36,7 +36,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
         /// <summary>
         /// Name of the keyframes' type.
         /// </summary>
-        public string Name => isObjectKeyframe ? KeyframeTimeline.IntToTypeName(type) : RTEventEditor.EventTypes[type];
+        public string Name => isObjectKeyframe ? KeyframeTimeline.IntToTypeName(type) : EventLibrary.displayNames[type];
 
         /// <summary>
         /// Game object of the keyframe editor.
@@ -104,46 +104,46 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public string ObjectName => type switch
         {
-            EventEngine.MOVE => "move",
-            EventEngine.ZOOM => "zoom",
-            EventEngine.ROTATE => "rotate",
-            EventEngine.SHAKE => "shake",
-            EventEngine.THEME => "theme",
-            EventEngine.CHROMA => "chroma",
-            EventEngine.BLOOM => "bloom",
-            EventEngine.VIGNETTE => "vignette",
-            EventEngine.LENS => "lens",
-            EventEngine.GRAIN => "grain",
-            EventEngine.COLORGRADING => "colorgrading",
-            EventEngine.RIPPLES => "ripples",
-            EventEngine.RADIALBLUR => "radialblur",
-            EventEngine.COLORSPLIT => "colorsplit",
-            EventEngine.OFFSET => "camoffset",
-            EventEngine.GRADIENT => "gradient",
-            EventEngine.DOUBLEVISION => "doublevision",
-            EventEngine.SCANLINES => "scanlines",
-            EventEngine.BLUR => "blur",
-            EventEngine.PIXEL => "pixelize",
-            EventEngine.BG => "bg",
-            EventEngine.INVERT => "invert",
-            EventEngine.TIMELINE => "timeline",
-            EventEngine.PLAYER => "player",
-            EventEngine.FOLLOW_PLAYER => "followplayer",
-            EventEngine.AUDIO => "audio",
-            EventEngine.VIDEO_PARENT => "videoparent",
-            EventEngine.VIDEO => "video",
-            EventEngine.SHARPNESS => "sharpen",
-            EventEngine.BARS => "bars",
-            EventEngine.DANGER => "danger",
-            EventEngine.ROTATION => "depthrotation",
-            EventEngine.CAMERA_DEPTH => "cameradepth",
-            EventEngine.WINDOW_BASE => "windowbase",
-            EventEngine.WINDOW_POSITION_X => "windowpositionx",
-            EventEngine.WINDOW_POSITION_Y => "windowpositionY",
-            EventEngine.PLAYER_FORCE => "playerforce",
-            EventEngine.MOSAIC => "mosaic",
-            EventEngine.ANALOG_GLITCH => "analogglitch",
-            EventEngine.DIGITAL_GLITCH => "digitalglitch",
+            EventLibrary.Indexes.MOVE => "move",
+            EventLibrary.Indexes.ZOOM => "zoom",
+            EventLibrary.Indexes.ROTATE => "rotate",
+            EventLibrary.Indexes.SHAKE => "shake",
+            EventLibrary.Indexes.THEME => "theme",
+            EventLibrary.Indexes.CHROMA => "chroma",
+            EventLibrary.Indexes.BLOOM => "bloom",
+            EventLibrary.Indexes.VIGNETTE => "vignette",
+            EventLibrary.Indexes.LENS => "lens",
+            EventLibrary.Indexes.GRAIN => "grain",
+            EventLibrary.Indexes.COLORGRADING => "colorgrading",
+            EventLibrary.Indexes.RIPPLES => "ripples",
+            EventLibrary.Indexes.RADIALBLUR => "radialblur",
+            EventLibrary.Indexes.COLORSPLIT => "colorsplit",
+            EventLibrary.Indexes.MOVE_OFFSET => "camoffset",
+            EventLibrary.Indexes.GRADIENT => "gradient",
+            EventLibrary.Indexes.DOUBLEVISION => "doublevision",
+            EventLibrary.Indexes.SCANLINES => "scanlines",
+            EventLibrary.Indexes.BLUR => "blur",
+            EventLibrary.Indexes.PIXELIZE => "pixelize",
+            EventLibrary.Indexes.BG => "bg",
+            EventLibrary.Indexes.INVERT => "invert",
+            EventLibrary.Indexes.TIMELINE => "timeline",
+            EventLibrary.Indexes.PLAYER => "player",
+            EventLibrary.Indexes.FOLLOW_PLAYER => "followplayer",
+            EventLibrary.Indexes.AUDIO => "audio",
+            EventLibrary.Indexes.VIDEO_PARENT => "videoparent",
+            EventLibrary.Indexes.VIDEO => "video",
+            EventLibrary.Indexes.SHARPEN => "sharpen",
+            EventLibrary.Indexes.BARS => "bars",
+            EventLibrary.Indexes.DANGER => "danger",
+            EventLibrary.Indexes.DEPTH_ROTATION => "depthrotation",
+            EventLibrary.Indexes.CAMERA_DEPTH => "cameradepth",
+            EventLibrary.Indexes.WINDOW_BASE => "windowbase",
+            EventLibrary.Indexes.WINDOW_POSITION_X => "windowpositionx",
+            EventLibrary.Indexes.WINDOW_POSITION_Y => "windowpositionY",
+            EventLibrary.Indexes.PLAYER_FORCE => "playerforce",
+            EventLibrary.Indexes.MOSAIC => "mosaic",
+            EventLibrary.Indexes.ANALOG_GLITCH => "analogglitch",
+            EventLibrary.Indexes.DIGITAL_GLITCH => "digitalglitch",
             _ => string.Empty,
         };
 
@@ -358,7 +358,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     }
                     else
                     {
-                        RTEventEditor.inst.RenderEventObjects();
+                        RTEventEditor.inst.RenderTimelineKeyframes();
                         RTLevel.Current?.UpdateEvents();
                     }
                 });
@@ -479,7 +479,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 if (isObjectKeyframe)
                     CoroutineHelper.StartCoroutine(KeyframeTimeline.CurrentTimeline.DeleteKeyframes(KeyframeTimeline.CurrentTimeline.CurrentObject));
                 else
-                    CoroutineHelper.StartCoroutine(RTEventEditor.inst.DeleteKeyframes());
+                    RTEventEditor.inst.DeleteKeyframes();
             });
 
             if (CopyButton && PasteButton)
@@ -489,7 +489,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     if (isObjectKeyframe)
                         KeyframeTimeline.CurrentTimeline.CopyData(KeyframeTimeline.CurrentTimeline.currentKeyframeType, currentKeyframe);
                     else
-                        RTEventEditor.inst.CopyKeyframeData(RTEventEditor.inst.CurrentSelectedTimelineKeyframe);
+                        RTEventEditor.inst.CopyKeyframeData(RTEventEditor.inst.CurrentSelectedKeyframe?.timelineKeyframe);
                 });
                 PasteButton.OnClick.NewListener(() =>
                 {
@@ -716,7 +716,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 EditorContextMenu.AddContextMenu(toggle.gameObject,
                     new ButtonElement("Reset Value", () =>
                     {
-                        int value = (int)GameData.DefaultKeyframes[EventEditor.inst.currentEventType].values[index];
+                        int value = (int)EventLibrary.cachedDefaultKeyframes[EventEditor.inst.currentEventType].values[index];
                         SetKeyframeValue(index, value);
                         SetListColor(value, index, toggles, defaultColor, secondaryDefaultColor, opacityIndex, hueIndex, satIndex, valIndex);
                     }),
@@ -737,18 +737,18 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public void SetToggle(Toggle toggle, int index, int onValue, int offValue)
         {
-            var currentKeyframe = GameData.Current.events[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent];
+            var currentKeyframe = RTEventEditor.inst.CurrentSelectedKeyframe;
 
             toggle.SetIsOnWithoutNotify(currentKeyframe.values[index] == onValue);
             toggle.onValueChanged.NewListener(_val => SetKeyframeValue(index, _val ? onValue : offValue));
 
             EditorContextMenu.AddContextMenu(toggle.gameObject,
-                new ButtonElement("Reset Value", () => toggle.isOn = GameData.DefaultKeyframes[EventEditor.inst.currentEventType].values[index] == onValue));
+                new ButtonElement("Reset Value", () => toggle.isOn = EventLibrary.cachedDefaultKeyframes[EventEditor.inst.currentEventType].values[index] == onValue));
         }
 
         public void SetFloatInputField(InputFieldStorage inputFieldStorage, int index, float increase = 0.1f, float multiply = 10f, float min = 0f, float max = 0f, bool allowNegative = true, Action<float> onValueChanged = null)
         {
-            var currentKeyframe = GameData.Current.events[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent];
+            var currentKeyframe = RTEventEditor.inst.CurrentSelectedKeyframe;
 
             if (!inputFieldStorage)
                 return;
@@ -826,12 +826,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 TriggerHelper.InversableField(inputFieldStorage.inputField);
 
             EditorContextMenu.AddContextMenu(inputFieldStorage.inputField.gameObject,
-                new ButtonElement("Reset Value", () => inputFieldStorage.Text = GameData.DefaultKeyframes[EventEditor.inst.currentEventType].values[index].ToString()));
+                new ButtonElement("Reset Value", () => inputFieldStorage.Text = EventLibrary.cachedDefaultKeyframes[EventEditor.inst.currentEventType].values[index].ToString()));
         }
 
         public void SetIntInputField(InputFieldStorage inputFieldStorage, int index, int increase = 1, int min = 0, int max = 0, bool allowNegative = true)
         {
-            var currentKeyframe = GameData.Current.events[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent];
+            var currentKeyframe = RTEventEditor.inst.CurrentSelectedKeyframe;
 
             if (!inputFieldStorage)
                 return;
@@ -896,12 +896,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 TriggerHelper.InversableField(inputFieldStorage.inputField);
 
             EditorContextMenu.AddContextMenu(inputFieldStorage.inputField.gameObject,
-                new ButtonElement("Reset Value", () => inputFieldStorage.Text = GameData.DefaultKeyframes[EventEditor.inst.currentEventType].values[index].ToString()));
+                new ButtonElement("Reset Value", () => inputFieldStorage.Text = EventLibrary.cachedDefaultKeyframes[EventEditor.inst.currentEventType].values[index].ToString()));
         }
 
         public void SetVector2InputField(Vector2InputFieldStorage vector2Field, int xindex, int yindex, float min = 0f, float max = 0f, bool allowNegative = true)
         {
-            var currentKeyframe = GameData.Current.events[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent];
+            var currentKeyframe = RTEventEditor.inst.CurrentSelectedKeyframe;
 
             var posX = vector2Field.x.inputField;
             var posY = vector2Field.y.inputField;
@@ -1051,9 +1051,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
             }
 
             EditorContextMenu.AddContextMenu(posX.gameObject,
-                new ButtonElement("Reset Value", () => posX.text = GameData.DefaultKeyframes[EventEditor.inst.currentEventType].values[xindex].ToString()));
+                new ButtonElement("Reset Value", () => posX.text = EventLibrary.cachedDefaultKeyframes[EventEditor.inst.currentEventType].values[xindex].ToString()));
             EditorContextMenu.AddContextMenu(posY.gameObject,
-                new ButtonElement("Reset Value", () => posY.text = GameData.DefaultKeyframes[EventEditor.inst.currentEventType].values[yindex].ToString()));
+                new ButtonElement("Reset Value", () => posY.text = EventLibrary.cachedDefaultKeyframes[EventEditor.inst.currentEventType].values[yindex].ToString()));
         }
 
         public override string ToString() => GameObject?.name;

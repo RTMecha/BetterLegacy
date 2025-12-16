@@ -7,14 +7,13 @@ using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Prefabs;
-using BetterLegacy.Core.Runtime.Events;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Dialogs
 {
     public class DangerKeyframeDialog : KeyframeDialog
     {
-        public DangerKeyframeDialog() : base(EventEngine.DANGER) { }
+        public DangerKeyframeDialog() : base(EventLibrary.Indexes.DANGER) { }
 
         public InputFieldStorage IntensityField { get; set; }
 

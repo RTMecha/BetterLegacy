@@ -29,16 +29,10 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Values
 
-        #region Properties
-
-        #region Instance
-
         /// <summary>
         /// The current GameData that is being used by the game.
         /// </summary>
         public static GameData Current { get; set; }
-
-        #endregion
 
         #region Verifying
 
@@ -72,7 +66,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
                         for (int k = 0; k < eventKeyframe.values.Length; k++)
                         {
-                            if ((DefaultUnmoddedEventKeyframes.Length <= i || DefaultUnmoddedEventKeyframes[i] <= k) && DefaultKeyframes[i].values[k] != eventKeyframe.values[k])
+                            if ((EventLibrary.vanillaLegacyValueCounts.Length <= i || EventLibrary.vanillaLegacyValueCounts[i] <= k) && EventLibrary.cachedDefaultKeyframes[i].values[k] != eventKeyframe.values[k])
                             {
                                 eventKeyframesModded = true;
                                 break;
@@ -95,532 +89,10 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #endregion
 
-        #region Events
-
-        /// <summary>
-        /// The total amount of event keyframes.
-        /// </summary>
-        public static int EventCount => DefaultKeyframes.Count;
-
         /// <summary>
         /// If opacity should be saved to themes.
         /// </summary>
         public static bool SaveOpacityToThemes { get; set; } = false;
-
-        /// <summary>
-        /// The vanilla event keyframe value counts.
-        /// </summary>
-        public static int[] DefaultUnmoddedEventKeyframes => new int[]
-        {
-            2, // Move
-            1, // Zoom
-            1, // Rotate
-            1, // Shake
-            1, // Theme
-            1, // Chroma
-            1, // Bloom
-            6, // Vignette
-            1, // Lens
-            3, // Grain
-        };
-
-        /// <summary>
-        /// The JSON names of all the events in BetterLegacy.
-        /// </summary>
-        public static string[] EventTypes => new string[]
-        {
-            #region Vanilla
-
-            "pos", // 0
-			"zoom", // 1
-			"rot", // 2
-			"shake", // 3
-			"theme", // 4
-			"chroma", // 5
-			"bloom", // 6
-			"vignette", // 7
-			"lens", // 8
-			"grain", // 9
-
-            #endregion
-
-            #region Modded
-
-            "cg", // 10
-			"rip", // 11
-			"rb", // 12
-			"cs", // 13
-			"offset", // 14
-			"grd", // 15
-			"dbv", // 16
-			"scan", // 17
-			"blur", // 18
-			"pixel", // 19
-			"bg", // 20
-			"invert", // 21
-			"timeline", // 22
-			"player", // 23
-			"follow_player", // 24
-			"audio", // 25
-			"vidbg_p", // 26
-			"vidbg", // 27
-			"sharp", // 28
-			"bars", // 29
-			"danger", // 30
-			"xyrot", // 31
-			"camdepth", // 32
-			"winbase", // 33
-			"winposx", // 34
-			"winposy", // 35
-			"playerforce", // 36
-			"mosaic", // 37
-			"analog_glitch", // 38
-			"digital_glitch", // 39
-
-            #endregion
-        };
-
-        /// <summary>
-        /// The default events in BetterLegacy.
-        /// </summary>
-        public static List<EventKeyframe> DefaultKeyframes => new List<EventKeyframe>
-        {
-            #region Vanilla
-
-            new EventKeyframe
-            {
-                time = 0f,
-                values = new float[2],
-                id = LSText.randomNumString(8),
-            }, // Move
-			new EventKeyframe
-            {
-                time = 0f,
-                values = new float[1]
-                { 20f },
-                id = LSText.randomNumString(8),
-            }, // Zoom
-			new EventKeyframe
-            {
-                time = 0f,
-                values = new float[1],
-                id = LSText.randomNumString(8),
-            }, // Rotate
-			new EventKeyframe
-            {
-                time = 0f,
-                values = new float[5]
-                {
-                    0f, // Shake Intensity
-					1f, // Shake X
-					1f, // Shake Y
-					0f, // Shake Interpolation
-					1f, // Shake Speed
-                },
-                id = LSText.randomNumString(8),
-            }, // Shake
-			new EventKeyframe
-            {
-                time = 0f,
-                values = new float[1],
-                id = LSText.randomNumString(8),
-            }, // Theme
-			new EventKeyframe
-            {
-                time = 0f,
-                values = new float[1],
-                id = LSText.randomNumString(8),
-            }, // Chroma
-			new EventKeyframe
-            {
-                time = 0f,
-                values = new float[8]
-                {
-                    0f, // Bloom Intensity
-					7f, // Bloom Diffusion
-					1f, // Bloom Threshold
-					0f, // Bloom Anamorphic Ratio
-					18f, // Bloom Color
-					0f, // Bloom Hue
-					0f, // Bloom Sat
-					0f, // Bloom Val
-				},
-                id = LSText.randomNumString(8),
-            }, // Bloom
-			new EventKeyframe
-            {
-                time = 0f,
-                values = new float[10]
-                {
-                    0f, // Vignette Intensity
-					0f, // Vignette Smoothness
-					0f, // Vignette Rounded
-					0f, // Vignette Roundness
-					0f, // Vignette Center X
-					0f, // Vignette Center Y
-					18f, // Vignette Color
-					0f, // Vignette Hue
-					0f, // Vignette Sat
-					0f, // Vignette Val
-                },
-                id = LSText.randomNumString(8),
-            }, // Vignette
-			new EventKeyframe
-            {
-                time = 0f,
-                values = new float[6]
-                {
-                    0f,
-                    0f,
-                    0f,
-                    1f,
-                    1f,
-                    1f
-                },
-                id = LSText.randomNumString(8),
-            }, // Lens
-			new EventKeyframe
-            {
-                time = 0f,
-                values = new float[3],
-                id = LSText.randomNumString(8),
-            }, // Grain
-
-            #endregion
-
-            #region Modded
-
-            new EventKeyframe
-            {
-                time = 0f,
-                values = new float[9],
-                id = LSText.randomNumString(8),
-            }, // ColorGrading
-			new EventKeyframe
-            {
-                time = 0f,
-                values = new float[6]
-                {
-                    0f,
-                    0f,
-                    1f,
-                    0f,
-                    0f,
-                    0f,
-                },
-                id = LSText.randomNumString(8),
-            }, // Ripples
-			new EventKeyframe
-            {
-                time = 0f,
-                values = new float[2]
-                {
-                    0f,
-                    6f
-                },
-                id = LSText.randomNumString(8),
-            }, // RadialBlur
-			new EventKeyframe
-            {
-                time = 0f,
-                values = new float[2],
-                id = LSText.randomNumString(8),
-            }, // ColorSplit
-			new EventKeyframe
-            {
-                time = 0f,
-                values = new float[2],
-                id = LSText.randomNumString(8),
-            }, // Offset
-			new EventKeyframe
-            {
-                time = 0f,
-                values = new float[13]
-                {
-                    0f,
-                    0f,
-                    18f,
-                    18f,
-                    0f,
-                    1f, // Top Opacity
-					0f, // Top Hue
-					0f, // Top Sat
-					0f, // Top Val
-					1f, // Bottom Opacity
-					0f, // Bottom Hue
-					0f, // Bottom Sat
-					0f, // Bottom Val
-				},
-                id = LSText.randomNumString(8),
-            }, // Gradient
-			new EventKeyframe
-            {
-                time = 0f,
-                values = new float[2],
-                id = LSText.randomNumString(8),
-            }, // DoubleVision
-			new EventKeyframe
-            {
-                time = 0f,
-                values = new float[3],
-                id = LSText.randomNumString(8),
-            }, // ScanLines
-			new EventKeyframe
-            {
-                time = 0f,
-                values = new float[2]
-                {
-                    0f,
-                    6f
-                },
-                id = LSText.randomNumString(8),
-            }, // Blur
-			new EventKeyframe
-            {
-                time = 0f,
-                values = new float[1],
-                id = LSText.randomNumString(8),
-            }, // Pixelize
-			new EventKeyframe
-            {
-                time = 0f,
-                values = new float[5]
-                {
-                    18f, // Color
-					0f, // Active
-					0f, // Hue
-					0f, // Sat
-					0f, // Val
-				},
-                id = LSText.randomNumString(8),
-            }, // BG
-			new EventKeyframe
-            {
-                time = 0f,
-                values = new float[1],
-                id = LSText.randomNumString(8),
-            }, // Invert
-			new EventKeyframe
-            {
-                time = 0f,
-                values = new float[11]
-                {
-                    0f,
-                    0f,
-                    -342f,
-                    1f,
-                    1f,
-                    0f,
-                    18f,
-                    1f, // Opacity
-					0f, // Hue
-					0f, // Sat
-					0f, // Val
-				},
-                id = LSText.randomNumString(8),
-            }, // Timeline
-			new EventKeyframe
-            {
-                time = 0f,
-                values = new float[6],
-                id = LSText.randomNumString(8),
-            }, // Player
-			new EventKeyframe
-            {
-                time = 0f,
-                values = new float[10]
-                {
-                    0f, // Active
-					0f, // Move
-					0f, // Rotate
-					0.5f,
-                    0f,
-                    9999f,
-                    -9999f,
-                    9999f,
-                    -9999f,
-                    1f,
-                },
-                id = LSText.randomNumString(8),
-            }, // Follow Player
-			new EventKeyframe
-            {
-                time = 0f,
-                values = new float[3]
-                {
-                    1f,
-                    1f,
-                    0f
-                },
-                id = LSText.randomNumString(8),
-            }, // Audio
-			new EventKeyframe
-            {
-                time = 0f,
-                values = new float[9]
-                {
-                    0f, // Position X
-                    0f, // Position Y
-                    0f, // Position Z
-                    1f, // Scale X
-                    1f, // Scale Y
-                    1f, // Scale Z
-                    0f, // Rotation X
-                    0f, // Rotation Y
-                    0f, // Rotation Z
-                },
-                id = LSText.randomNumString(8),
-            }, // Video BG Parent
-			new EventKeyframe
-            {
-                time = 0f,
-                values = new float[10]
-                {
-                    0f, // Position X
-                    0f, // Position Y
-                    120f, // Position Z
-                    240f, // Scale X
-                    135f, // Scale Y
-                    1f, // Scale Z
-                    0f, // Rotation X
-                    0f, // Rotation Y
-                    0f, // Rotation Z
-                    0f, // Render Layer (Foreground / Background)
-                },
-                id = LSText.randomNumString(8),
-            }, // Video BG
-			new EventKeyframe
-            {
-                time = 0f,
-                values = new float[1]
-                {
-                    0f, // Sharpen Amount
-                },
-                id = LSText.randomNumString(8),
-            }, // Sharpen
-			new EventKeyframe
-            {
-                time = 0f,
-                values = new float[2]
-                {
-                    0f, // Amount
-					0f, // Mode
-                },
-                id = LSText.randomNumString(8),
-            }, // Bars
-			new EventKeyframe
-            {
-                time = 0f,
-                values = new float[7]
-                {
-                    0f, // Intensity
-					0f, // Size
-					18f, // Color
-					1f, // Opacity
-					0f, // Hue
-					0f, // Sat
-					0f, // Val
-                },
-                id = LSText.randomNumString(8),
-            }, // Danger
-			new EventKeyframe
-            {
-                time = 0f,
-                values = new float[2]
-                {
-                    0f, // X
-					0f, // Y
-                },
-                id = LSText.randomNumString(8),
-            }, // 3D Rotation
-			new EventKeyframe
-            {
-                time = 0f,
-                values = new float[4]
-                {
-                    -10f, // Depth
-					0f, // Zoom
-					0f, // Global Position
-					1f, // Near Clip Plane Align
-                },
-                id = LSText.randomNumString(8),
-            }, // Camera Depth
-			new EventKeyframe
-            {
-                time = 0f,
-                values = new float[4]
-                {
-                    0f, // Force Resolution (1 = true, includes position)
-					1280f, // X
-					720f, // Y
-					0f, // Allow Position
-                },
-                id = LSText.randomNumString(8),
-            }, // Window Base
-			new EventKeyframe
-            {
-                time = 0f,
-                values = new float[1]
-                {
-                    0f, // Position X
-                },
-                id = LSText.randomNumString(8),
-            }, // Window Position X
-			new EventKeyframe
-            {
-                time = 0f,
-                values = new float[1]
-                {
-                    0f, // Position Y
-                },
-                id = LSText.randomNumString(8),
-            }, // Window Position Y
-			new EventKeyframe
-            {
-                time = 0f,
-                values = new float[2]
-                {
-                    0f, // Player Force X
-					0f, // Player Force Y
-                },
-                id = LSText.randomNumString(8),
-            }, // Player Force
-			new EventKeyframe
-            {
-                time = 0f,
-                values = new float[1]
-                {
-                    0f, // Intensity
-                },
-                id = LSText.randomNumString(8),
-            }, // Mosaic
-			new EventKeyframe
-            {
-                time = 0f,
-                values = new float[5]
-                {
-                    0f, // Enabled
-                    0f, // ColorDrift
-                    0f, // HorizontalShake
-                    0f, // ScanLineJitter
-                    0f, // VerticalJump
-                },
-                id = LSText.randomNumString(8),
-            }, // Analog Glitch
-			new EventKeyframe
-            {
-                time = 0f,
-                values = new float[1]
-                {
-                    0f, // Intensity
-                },
-                id = LSText.randomNumString(8),
-            }, // Digital Glitch
-
-            #endregion
-        };
-
-        #endregion
 
         /// <summary>
         /// The vanilla shape options.
@@ -652,8 +124,6 @@ namespace BetterLegacy.Core.Data.Beatmap
         public ModifierReferenceType ReferenceType => ModifierReferenceType.GameData;
 
         public int IntVariable { get; set; }
-
-        #endregion
 
         public BeatmapData data;
 
@@ -701,7 +171,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public override void CopyData(GameData orig, bool newID = true)
         {
@@ -1072,13 +542,13 @@ namespace BetterLegacy.Core.Data.Beatmap
                 }
 
                 events.Add(new List<EventKeyframe>());
-                events[11].Add(DefaultKeyframes[11].Copy());
+                events[11].Add(EventLibrary.cachedDefaultKeyframes[11].Copy());
                 events.Add(new List<EventKeyframe>());
-                events[12].Add(DefaultKeyframes[12].Copy());
+                events[12].Add(EventLibrary.cachedDefaultKeyframes[12].Copy());
                 events.Add(new List<EventKeyframe>());
-                events[13].Add(DefaultKeyframes[13].Copy());
+                events[13].Add(EventLibrary.cachedDefaultKeyframes[13].Copy());
                 events.Add(new List<EventKeyframe>());
-                events[14].Add(DefaultKeyframes[14].Copy());
+                events[14].Add(EventLibrary.cachedDefaultKeyframes[14].Copy());
 
                 // Gradient
                 breakContext = "Gradient";
@@ -1104,10 +574,10 @@ namespace BetterLegacy.Core.Data.Beatmap
                     events[15].Add(eventKeyframe);
                 }
 
-                for (int i = 16; i < DefaultKeyframes.Count; i++)
+                for (int i = 16; i < EventLibrary.cachedDefaultKeyframes.Count; i++)
                 {
                     events.Add(new List<EventKeyframe>());
-                    events[i].Add(DefaultKeyframes[i].Copy());
+                    events[i].Add(EventLibrary.cachedDefaultKeyframes[i].Copy());
                 }
             }
             catch (Exception ex)
@@ -1675,8 +1145,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             for (int i = 0; i < events.Count; i++)
                 for (int j = 0; j < events[i].Count; j++)
-                    if (EventTypes.Length > i)
-                        jn["events"][EventTypes[i]][j] = events[i][j].ToJSON();
+                    if (EventLibrary.jsonNames.Length > i)
+                        jn["events"][EventLibrary.jsonNames[i]][j] = events[i][j].ToJSON();
 
             return jn;
         }
@@ -1797,17 +1267,19 @@ namespace BetterLegacy.Core.Data.Beatmap
         {
             var allEvents = new List<List<EventKeyframe>>();
 
+            var defaultEventKeyframes = EventLibrary.GetDefaultKeyframes();
+
             // here we iterate through the default event types and check if the JSON exists. This is so we don't need to have a ton of repeating code.
-            for (int i = 0; i < EventCount; i++)
+            for (int i = 0; i < EventLibrary.Count; i++)
             {
                 allEvents.Add(new List<EventKeyframe>());
-                if (jn[EventTypes[i]] == null)
+                if (jn[EventLibrary.jsonNames[i]] == null)
                     continue;
 
-                for (int j = 0; j < jn[EventTypes[i]].Count; j++)
+                for (int j = 0; j < jn[EventLibrary.jsonNames[i]].Count; j++)
                 {
-                    var defaultKeyframe = DefaultKeyframes[i];
-                    allEvents[i].Add(EventKeyframe.Parse(jn[EventTypes[i]][j], i, defaultKeyframe.values.Length, defaultKeyframe.randomValues.Length, defaultKeyframe.values, defaultKeyframe.randomValues));
+                    var defaultKeyframe = defaultEventKeyframes[i];
+                    allEvents[i].Add(EventKeyframe.Parse(jn[EventLibrary.jsonNames[i]][j], i, defaultKeyframe.values.Length, defaultKeyframe.randomValues.Length, defaultKeyframe.values, defaultKeyframe.randomValues));
                 }
             }
 
@@ -1826,7 +1298,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <param name="eventKeyframes">List of event keyframes to check.</param>
         public static void ClampEventListValues(List<List<EventKeyframe>> eventKeyframes)
         {
-            int totalTypes = EventCount;
+            int totalTypes = EventLibrary.Count;
 
             // first, check if event keyframes count is higher than normal.
             while (eventKeyframes.Count > totalTypes)
@@ -1840,22 +1312,29 @@ namespace BetterLegacy.Core.Data.Beatmap
 
                 // add an event if the list contains none.
                 if (eventKeyframes[type].Count < 1)
-                    eventKeyframes[type].Add(DefaultKeyframes[type].Copy());
+                    eventKeyframes[type].Add(EventLibrary.cachedDefaultKeyframes[type].Copy());
 
                 // verify the event value lengths are correct.
                 for (int index = 0; index < eventKeyframes[type].Count; index++)
                 {
                     var array = eventKeyframes[type][index].values;
-                    if (array.Length != DefaultKeyframes[type].values.Length)
+                    if (array.Length != EventLibrary.cachedDefaultKeyframes[type].values.Length)
                     {
-                        array = new float[DefaultKeyframes[type].values.Length];
-                        for (int i = 0; i < DefaultKeyframes[type].values.Length; i++)
-                            array[i] = i < eventKeyframes[type][index].values.Length ? eventKeyframes[type][index].values[i] : DefaultKeyframes[type].values[i];
+                        array = new float[EventLibrary.cachedDefaultKeyframes[type].values.Length];
+                        for (int i = 0; i < EventLibrary.cachedDefaultKeyframes[type].values.Length; i++)
+                            array[i] = i < eventKeyframes[type][index].values.Length ? eventKeyframes[type][index].values[i] : EventLibrary.cachedDefaultKeyframes[type].values[i];
                     }
                     eventKeyframes[type][index].values = array;
                 }
             }
         }
+
+        /// <summary>
+        /// Gets an event keyframe at an index coordinate.
+        /// </summary>
+        /// <param name="keyframeCoord">Coordinates of the keyframe to get.</param>
+        /// <returns>Returns a found event keyframe.</returns>
+        public EventKeyframe GetEventKeyframe(KeyframeCoord keyframeCoord) => events[keyframeCoord.type][keyframeCoord.index];
 
         /// <summary>
         /// Gets a variable from the level.

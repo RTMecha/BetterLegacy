@@ -305,8 +305,8 @@ namespace BetterLegacy.Patchers
                 EditorTimeline.inst.UpdateTimelineSizes();
                 Instance.firstOpened = true;
 
-                CoreHelper.Log($"EDITOR START -> {nameof(RTEventEditor.CreateEventObjects)}");
-                RTEventEditor.inst.CreateEventObjects();
+                CoreHelper.Log($"EDITOR START -> {nameof(RTEventEditor.CreateTimelineKeyframes)}");
+                RTEventEditor.inst.CreateTimelineKeyframes();
                 CoreHelper.Log($"EDITOR START -> {nameof(RTCheckpointEditor.CreateGhostCheckpoints)}");
                 RTCheckpointEditor.inst.ClearTimelineCheckpoints();
                 CoreHelper.Log($"EDITOR START -> {nameof(GameManager.UpdateTimeline)}");

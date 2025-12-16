@@ -62,7 +62,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 RTEventEditor.inst.RenderLayerBins();
                 if (EventEditor.inst.dialogRight.gameObject.activeInHierarchy)
-                    RTEventEditor.inst.RenderEventsDialog();
+                    RTEventEditor.inst.RenderDialog();
             }
 
             yield break;

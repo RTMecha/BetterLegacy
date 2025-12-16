@@ -87,8 +87,8 @@ namespace BetterLegacy.Patchers
 
                     RTEditor.inst.dragOffset = timelineTime + Instance.mouseOffsetXForDrag;
 
-                    RTEventEditor.inst.RenderEventObjects();
-                    RTEventEditor.inst.RenderEventsDialog();
+                    RTEventEditor.inst.RenderTimelineKeyframes();
+                    RTEventEditor.inst.RenderDialog();
                 }
             }
 
@@ -101,7 +101,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool CopyAllSelectedEventsPrefix()
         {
-            RTEventEditor.inst.CopyAllSelectedEvents();
+            RTEventEditor.inst.CopyKeyframes();
             return false;
         }
 
@@ -109,7 +109,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool AddedSelectedEventPrefix(int __0, int __1)
         {
-            RTEventEditor.inst.AddSelectedEvent(__0, __1);
+            RTEventEditor.inst.AddSelectedKeyframe(__0, __1);
             return false;
         }
 
@@ -117,7 +117,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool SetCurrentEventPrefix(int __0, int __1)
         {
-            RTEventEditor.inst.SetCurrentEvent(__0, __1);
+            RTEventEditor.inst.SetCurrentKeyframe(__0, __1);
             return false;
         }
 
@@ -125,7 +125,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool CreateNewEventObjectPrefix(int __0)
         {
-            RTEventEditor.inst.CreateNewEventObject(__0);
+            RTEventEditor.inst.CreateNewEventKeyframe(__0);
             return false;
         }
 
@@ -133,23 +133,19 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool CreateNewEventObjectPrefix(float __0, int __1)
         {
-            RTEventEditor.inst.CreateNewEventObject(__0, __1);
+            RTEventEditor.inst.CreateNewEventKeyframe(__0, __1);
             return false;
         }
 
         [HarmonyPatch(nameof(EventEditor.NewKeyframeFromTimeline))]
         [HarmonyPrefix]
-        static bool NewKeyframeFromTimelinePrefix(int __0)
-        {
-            RTEventEditor.inst.NewKeyframeFromTimeline(__0);
-            return false;
-        }
+        static bool NewKeyframeFromTimelinePrefix(int __0) => false;
 
         [HarmonyPatch(nameof(EventEditor.CreateEventObjects))]
         [HarmonyPrefix]
         static bool CreateEventObjectsPrefix()
         {
-            RTEventEditor.inst.CreateEventObjects();
+            RTEventEditor.inst.CreateTimelineKeyframes();
             return false;
         }
 
@@ -157,7 +153,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool RenderEventObjectsPatch()
         {
-            RTEventEditor.inst.RenderEventObjects();
+            RTEventEditor.inst.RenderTimelineKeyframes();
             return false;
         }
 
@@ -185,7 +181,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool RenderEventsDialogPrefix()
         {
-            RTEventEditor.inst.RenderEventsDialog();
+            RTEventEditor.inst.RenderDialog();
             return false;
         }
 
@@ -209,7 +205,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool DeleteEventPrefix(ref IEnumerator __result)
         {
-            __result = RTEventEditor.inst.DeleteKeyframes();
+            __result = RTEventEditor.inst.IDeleteKeyframes();
             return false;
         }
     }

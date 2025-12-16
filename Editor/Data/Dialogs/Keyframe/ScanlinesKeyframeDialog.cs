@@ -2,14 +2,13 @@
 
 using BetterLegacy.Core;
 using BetterLegacy.Core.Prefabs;
-using BetterLegacy.Core.Runtime.Events;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Dialogs
 {
     public class ScanlinesKeyframeDialog : KeyframeDialog
     {
-        public ScanlinesKeyframeDialog() : base(EventEngine.SCANLINES) { }
+        public ScanlinesKeyframeDialog() : base(EventLibrary.Indexes.SCANLINES) { }
 
         public InputFieldStorage IntensityField { get; set; }
 

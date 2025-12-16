@@ -1,13 +1,12 @@
 ﻿using BetterLegacy.Core;
 using BetterLegacy.Core.Prefabs;
-using BetterLegacy.Core.Runtime.Events;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Dialogs
 {
     public class AudioKeyframeDialog : KeyframeDialog
     {
-        public AudioKeyframeDialog() : base(EventEngine.AUDIO) { }
+        public AudioKeyframeDialog() : base(EventLibrary.Indexes.AUDIO) { }
 
         public InputFieldStorage PitchField { get; set; }
 

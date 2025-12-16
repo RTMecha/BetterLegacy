@@ -8,14 +8,13 @@ using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
-using BetterLegacy.Core.Runtime.Events;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Dialogs
 {
     public class BGKeyframeDialog : KeyframeDialog
     {
-        public BGKeyframeDialog() : base(EventEngine.BG) { }
+        public BGKeyframeDialog() : base(EventLibrary.Indexes.BG) { }
 
         public Toggle ActiveToggle { get; set; }
 

@@ -439,22 +439,24 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         #region Copy / Paste
 
-        public void CopyAllSelectedEvents(IAnimatable animatable)
+        public void CopyKeyframes(IAnimatable animatable)
         {
             copiedObjectKeyframes.Clear();
             UpdateKeyframeOrder(animatable);
 
-            float num = animatable.TimelineKeyframes.Where(x => x.Selected).Min(x => x.Time);
+            var selectedKeyframes = animatable.TimelineKeyframes.Where(x => x.Selected);
+            float num = selectedKeyframes.Min(x => x.Time);
             var events = animatable.Events;
 
-            foreach (var timelineObject in animatable.TimelineKeyframes.Where(x => x.Selected))
+            foreach (var selectedTimelineKeyframe in selectedKeyframes)
             {
-                int type = timelineObject.Type;
-                int index = timelineObject.Index;
-                var eventKeyframe = events[type][index].Copy();
+                var coord = selectedTimelineKeyframe.GetCoord();
+                var eventKeyframe = animatable.GetEventKeyframe(coord).Copy();
                 eventKeyframe.time -= num;
 
-                copiedObjectKeyframes.Add(new TimelineKeyframe(eventKeyframe) { Type = type, Index = index, isObjectKeyframe = true });
+                var timelineKeyframe = new TimelineKeyframe(eventKeyframe) { isObjectKeyframe = true };
+                timelineKeyframe.SetCoord(coord);
+                copiedObjectKeyframes.Add(timelineKeyframe);
             }
         }
 
@@ -677,35 +679,36 @@ namespace BetterLegacy.Editor.Data.Dialogs
             yield break;
         }
 
-        public void SetCurrentKeyframe(IAnimatable animatable, int _keyframe, bool _bringTo = false) => SetCurrentKeyframe(animatable, currentKeyframeType, _keyframe, _bringTo, false);
+        public void SetCurrentKeyframe(IAnimatable animatable, int keyframe, bool bringTo = false) => SetCurrentKeyframe(animatable, currentKeyframeType, keyframe, bringTo, false);
 
-        public void AddCurrentKeyframe(IAnimatable animatable, int _add, bool _bringTo = false)
+        public void AddCurrentKeyframe(IAnimatable animatable, int add, bool bringTo = false)
         {
             SetCurrentKeyframe(animatable,
                 currentKeyframeType,
-                Mathf.Clamp(currentKeyframeIndex + _add == int.MaxValue ? 1000000 : _add, 0, animatable.GetEventKeyframes(currentKeyframeType).Count - 1),
-                _bringTo);
+                Mathf.Clamp(currentKeyframeIndex + add == int.MaxValue ? 1000000 : add, 0, animatable.GetEventKeyframes(currentKeyframeType).Count - 1),
+                bringTo);
         }
 
-        public void SetCurrentKeyframe(IAnimatable animatable, int type, int index, bool _bringTo = false, bool _shift = false)
+        public void SetCurrentKeyframe(IAnimatable animatable, int type, int index, bool bringTo = false, bool shift = false) => SetCurrentKeyframe(animatable, new KeyframeCoord(type, index), bringTo, shift);
+
+        public void SetCurrentKeyframe(IAnimatable animatable, KeyframeCoord keyframeCoord, bool bringTo = false, bool shift = false)
         {
             if (!draggingKeyframes)
             {
-                Debug.Log($"{ObjEditor.inst.className}Setting Current Keyframe: {type}, {index}");
-                if (!_shift && animatable.TimelineKeyframes.Count > 0)
+                Debug.Log($"{ObjEditor.inst.className}Setting Current Keyframe: {keyframeCoord.type}, {keyframeCoord.index}");
+                if (!shift && animatable.TimelineKeyframes.Count > 0)
                     animatable.TimelineKeyframes.ForEach(timelineObject => timelineObject.Selected = false);
 
-                var kf = GetKeyframe(animatable, type, index);
+                var kf = GetKeyframe(animatable, keyframeCoord.type, keyframeCoord.index);
 
-                kf.Selected = !_shift || !kf.Selected;
+                kf.Selected = !shift || !kf.Selected;
             }
 
-            currentKeyframeType = type;
-            currentKeyframeIndex = index;
+            SetSelectionCoord(keyframeCoord);
 
-            if (_bringTo)
+            if (bringTo)
             {
-                float value = animatable.GetEventKeyframes(currentKeyframeType)[currentKeyframeIndex].time + animatable.StartTime;
+                float value = animatable.GetEventKeyframe(keyframeCoord).time + animatable.StartTime;
 
                 if (animatable is BeatmapObject beatmapObject)
                 {
@@ -723,9 +726,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public EventKeyframe CreateEventKeyframe(IAnimatable animatable, float time, int type, EventKeyframe previousKeyframe, bool openDialog)
         {
             var eventKeyframe = previousKeyframe.Copy();
-            var t = RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsCreated.Value && EditorConfig.Instance.BPMSnapsKeyframes.Value ? -(animatable.StartTime - RTEditor.SnapToBPM(animatable.StartTime + time)) : time;
-            eventKeyframe.time = t;
-
+            eventKeyframe.time = RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsCreated.Value && EditorConfig.Instance.BPMSnapsKeyframes.Value ? -(animatable.StartTime - RTEditor.SnapToBPM(animatable.StartTime + time)) : time;
+            
             if (eventKeyframe.relative)
                 for (int i = 0; i < eventKeyframe.values.Length; i++)
                     eventKeyframe.values[i] = 0f;
@@ -822,6 +824,16 @@ namespace BetterLegacy.Editor.Data.Dialogs
         /// </summary>
         /// <returns>Returns a <see cref="KeyframeCoord"/>.</returns>
         public KeyframeCoord GetSelectionCoord() => new KeyframeCoord(currentKeyframeType, currentKeyframeIndex);
+
+        /// <summary>
+        /// Sets the currently selected keyframe coordinate.
+        /// </summary>
+        /// <param name="keyframeCoord">Keyframe coordinates to set.</param>
+        public void SetSelectionCoord(KeyframeCoord keyframeCoord)
+        {
+            currentKeyframeType = keyframeCoord.type;
+            currentKeyframeIndex = keyframeCoord.index;
+        }
 
         #endregion
 

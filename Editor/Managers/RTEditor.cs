@@ -2635,7 +2635,7 @@ namespace BetterLegacy.Editor.Managers
                                 EditorManager.inst.DisplayNotification("Copied Event Keyframe", 1f, EditorManager.NotificationType.Success);
                             else
                             {
-                                StartCoroutine(RTEventEditor.inst.DeleteKeyframes());
+                                RTEventEditor.inst.DeleteKeyframes();
                                 EditorManager.inst.DisplayNotification("Cut Event Keyframe", 1f, EditorManager.NotificationType.Success);
                             }
 
@@ -2725,7 +2725,7 @@ namespace BetterLegacy.Editor.Managers
                         if (!AnimationEditor.inst.CurrentAnimation)
                             return;
 
-                        AnimationEditor.inst.Dialog.Timeline.CopyAllSelectedEvents(AnimationEditor.inst.CurrentAnimation);
+                        AnimationEditor.inst.Dialog.Timeline.CopyKeyframes(AnimationEditor.inst.CurrentAnimation);
 
                         if (!cut)
                             EditorManager.inst.DisplayNotification("Copied Object Keyframe", 1f, EditorManager.NotificationType.Success);
@@ -2763,7 +2763,7 @@ namespace BetterLegacy.Editor.Managers
                             break;
                         }
                     case EditorTimeline.LayerType.Events: {
-                            RTEventEditor.inst.PasteEvents();
+                            RTEventEditor.inst.PasteKeyframes();
                             EditorManager.inst.DisplayNotification($"Pasted Event Keyframe{(RTEventEditor.inst.copiedEventKeyframes.Count > 1 ? "s" : string.Empty)}", 1f, EditorManager.NotificationType.Success);
                             break;
                         }
@@ -2885,11 +2885,11 @@ namespace BetterLegacy.Editor.Managers
                                 () =>
                                 {
                                     EditorDialog.CurrentDialog?.Close();
-                                    CoroutineHelper.StartCoroutine(RTEventEditor.inst.DeleteKeyframes(list));
+                                    RTEventEditor.inst.DeleteKeyframes(list);
                                 },
                                 () =>
                                 {
-                                    var pasted = RTEventEditor.inst.PasteEvents(list, false);
+                                    var pasted = RTEventEditor.inst.PasteKeyframes(list, false);
                                     if (pasted != null)
                                         list = pasted;
                                 }), true);
@@ -3801,13 +3801,13 @@ namespace BetterLegacy.Editor.Managers
                     switch (pointerEventData.button)
                     {
                         case PointerEventData.InputButton.Right: {
-                                if (RTEventEditor.EventTypes.Length > currentEvent && (RTEventEditor.inst.eventBins.TryGetAt(type, out EventBin eventBin) ? eventBin.IsActive : ShowModdedUI && GameData.Current.events.Count > currentEvent || 10 > currentEvent))
-                                    RTEventEditor.inst.NewKeyframeFromTimeline(currentEvent);
+                                if (EventLibrary.displayNames.Length > currentEvent && (RTEventEditor.inst.eventBins.TryGetAt(type, out EventBin eventBin) ? eventBin.IsActive : ShowModdedUI && GameData.Current.events.Count > currentEvent || 10 > currentEvent))
+                                    RTEventEditor.inst.CreateNewEventKeyframe(EditorTimeline.inst.GetTimelineTime(RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsKeyframes.Value), type);
                                 break;
                             }
                         case PointerEventData.InputButton.Middle: {
-                                if (RTEventEditor.EventTypes.Length > currentEvent && (RTEventEditor.inst.eventBins.TryGetAt(type, out EventBin eventBin) ? eventBin.IsActive : ShowModdedUI && GameData.Current.events.Count > currentEvent || 10 > currentEvent) && GameData.Current.events[currentEvent].TryFindLastIndex(x => x.time < EditorTimeline.inst.GetTimelineTime(false), out int index))
-                                    RTEventEditor.inst.SetCurrentEvent(currentEvent, index);
+                                if (EventLibrary.displayNames.Length > currentEvent && (RTEventEditor.inst.eventBins.TryGetAt(type, out EventBin eventBin) ? eventBin.IsActive : ShowModdedUI && GameData.Current.events.Count > currentEvent || 10 > currentEvent) && GameData.Current.events[currentEvent].TryFindLastIndex(x => x.time < EditorTimeline.inst.GetTimelineTime(false), out int index))
+                                    RTEventEditor.inst.SetCurrentKeyframe(currentEvent, index);
                                 break;
                             }
                     }

@@ -8,14 +8,13 @@ using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
-using BetterLegacy.Core.Runtime.Events;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Dialogs
 {
     public class TimelineKeyframeDialog : KeyframeDialog
     {
-        public TimelineKeyframeDialog() : base(EventEngine.TIMELINE) { }
+        public TimelineKeyframeDialog() : base(EventLibrary.Indexes.TIMELINE) { }
 
         public Toggle ActiveToggle { get; set; }
 

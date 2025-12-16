@@ -2,14 +2,13 @@
 
 using BetterLegacy.Core;
 using BetterLegacy.Core.Prefabs;
-using BetterLegacy.Core.Runtime.Events;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Dialogs
 {
     public class GrainKeyframeDialog : KeyframeDialog
     {
-        public GrainKeyframeDialog() : base(EventEngine.GRAIN) { }
+        public GrainKeyframeDialog() : base(EventLibrary.Indexes.GRAIN) { }
 
         public InputFieldStorage IntensityField { get; set; }
 

@@ -3,14 +3,13 @@
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Prefabs;
-using BetterLegacy.Core.Runtime.Events;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Dialogs
 {
     public class ColorGradingKeyframeDialog : KeyframeDialog
     {
-        public ColorGradingKeyframeDialog() : base(EventEngine.COLORGRADING) { }
+        public ColorGradingKeyframeDialog() : base(EventLibrary.Indexes.COLORGRADING) { }
 
         public InputFieldStorage HueshiftField { get; set; }
 

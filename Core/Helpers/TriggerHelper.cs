@@ -8,6 +8,7 @@ using UnityEngine.UI;
 
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Components;
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Core.Prefabs;
@@ -393,7 +394,7 @@ namespace BetterLegacy.Core.Helpers
                 timelineKeyframe.timeline?.SetCurrentKeyframe(timelineKeyframe.animatable, timelineKeyframe.Type, timelineKeyframe.Index, false, InputDataManager.inst.editorActions.MultiSelect.IsPressed);
             else if (!EventEditor.inst.eventDrag)
                 (InputDataManager.inst.editorActions.MultiSelect.IsPressed ?
-                    (Action<int, int>)RTEventEditor.inst.AddSelectedEvent : RTEventEditor.inst.SetCurrentEvent)(timelineKeyframe.Type, timelineKeyframe.Index);
+                    (Action<KeyframeCoord>)RTEventEditor.inst.AddSelectedKeyframe : RTEventEditor.inst.SetCurrentKeyframe)(timelineKeyframe.GetCoord());
         });
 
         public static EventTrigger.Entry CreateTimelineKeyframeStartDragTrigger(TimelineKeyframe timelineKeyframe) => CreateEntry(EventTriggerType.BeginDrag, eventData =>
@@ -507,7 +508,7 @@ namespace BetterLegacy.Core.Helpers
                         RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                     }),
                     new SpacerElement(),
-                    new ButtonElement("Copy", () => ObjectEditor.inst.Dialog.Timeline.CopyAllSelectedEvents(beatmapObject)),
+                    new ButtonElement("Copy", () => ObjectEditor.inst.Dialog.Timeline.CopyKeyframes(beatmapObject)),
                     new ButtonElement("Paste", () => ObjectEditor.inst.Dialog.Timeline.PasteKeyframes(beatmapObject)),
                     new ButtonElement("Copy Data", () =>
                     {
@@ -564,21 +565,21 @@ namespace BetterLegacy.Core.Helpers
                             selected[i].Time = Mathf.Clamp(time, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
 
                         RTLevel.Current?.UpdateEvents(timelineKeyframe.Type);
-                        RTEventEditor.inst.RenderEventObjects();
+                        RTEventEditor.inst.RenderTimelineKeyframes();
                     }),
                     new SpacerElement(),
                     new ButtonElement("Reset", () =>
                     {
                         var eventKeyframe = timelineKeyframe.eventKeyframe;
-                        var defaultKeyframe = GameData.DefaultKeyframes[timelineKeyframe.Type];
+                        var defaultKeyframe = EventLibrary.cachedDefaultKeyframes[timelineKeyframe.Type];
                         for (int i = 0; i < eventKeyframe.values.Length; i++)
                             if (i < defaultKeyframe.values.Length)
                                 eventKeyframe.values[i] = defaultKeyframe.values[i];
                     }),
                     new SpacerElement(),
-                    new ButtonElement("Copy", RTEventEditor.inst.CopyAllSelectedEvents),
-                    new ButtonElement("Paste", () => RTEventEditor.inst.PasteEvents()),
-                    new ButtonElement("Copy Data", () => RTEventEditor.inst.CopyKeyframeData(RTEventEditor.inst.CurrentSelectedTimelineKeyframe)),
+                    new ButtonElement("Copy", RTEventEditor.inst.CopyKeyframes),
+                    new ButtonElement("Paste", () => RTEventEditor.inst.PasteKeyframes()),
+                    new ButtonElement("Copy Data", () => RTEventEditor.inst.CopyKeyframeData(RTEventEditor.inst.CurrentSelectedKeyframe?.timelineKeyframe)),
                     new ButtonElement("Paste Data", () => RTEventEditor.inst.PasteKeyframeData(EventEditor.inst.currentEventType)),
                     new ButtonElement("Delete", RTEditor.inst.Delete)
                     );

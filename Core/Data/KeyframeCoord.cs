@@ -2,7 +2,7 @@
 
 using BetterLegacy.Core.Helpers;
 
-namespace BetterLegacy.Editor.Data
+namespace BetterLegacy.Core.Data
 {
     /// <summary>
     /// Represents a keyframes' location on a two-dimensional list.

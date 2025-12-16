@@ -143,7 +143,7 @@ namespace BetterLegacy.Patchers
         static bool CopyAllSelectedEventsPrefix()
         {
             if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
-                ObjectEditor.inst.Dialog.Timeline.CopyAllSelectedEvents(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>());
+                ObjectEditor.inst.Dialog.Timeline.CopyKeyframes(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>());
             return false;
         }
 

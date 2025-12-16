@@ -3,14 +3,13 @@ using UnityEngine.UI;
 
 using BetterLegacy.Core;
 using BetterLegacy.Core.Prefabs;
-using BetterLegacy.Core.Runtime.Events;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Dialogs
 {
     public class FollowPlayerKeyframeDialog : KeyframeDialog
     {
-        public FollowPlayerKeyframeDialog() : base(EventEngine.FOLLOW_PLAYER) { }
+        public FollowPlayerKeyframeDialog() : base(EventLibrary.Indexes.FOLLOW_PLAYER) { }
 
         public Toggle ActiveToggle { get; set; }
 

@@ -3,14 +3,13 @@ using UnityEngine.UI;
 
 using BetterLegacy.Core;
 using BetterLegacy.Core.Prefabs;
-using BetterLegacy.Core.Runtime.Events;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Dialogs
 {
     public class PlayerKeyframeDialog : KeyframeDialog
     {
-        public PlayerKeyframeDialog() : base(EventEngine.PLAYER) { }
+        public PlayerKeyframeDialog() : base(EventLibrary.Indexes.PLAYER) { }
 
         public Toggle ActiveToggle { get; set; }
 

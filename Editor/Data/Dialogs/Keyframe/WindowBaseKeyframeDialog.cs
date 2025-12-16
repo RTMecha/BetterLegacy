@@ -2,14 +2,13 @@
 
 using BetterLegacy.Core;
 using BetterLegacy.Core.Prefabs;
-using BetterLegacy.Core.Runtime.Events;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Dialogs
 {
     public class WindowBaseKeyframeDialog : KeyframeDialog
     {
-        public WindowBaseKeyframeDialog() : base(EventEngine.WINDOW_BASE) { }
+        public WindowBaseKeyframeDialog() : base(EventLibrary.Indexes.WINDOW_BASE) { }
 
         public Toggle ForceToggle { get; set; }
 

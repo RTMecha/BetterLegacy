@@ -356,6 +356,16 @@ namespace BetterLegacy.Editor.Data.Timeline
         /// <returns>Returns a <see cref="KeyframeCoord"/>.</returns>
         public KeyframeCoord GetCoord() => new KeyframeCoord(Type, Index);
 
+        /// <summary>
+        /// Sets the index coordinates of the timeline keyframe.
+        /// </summary>
+        /// <param name="keyframeCoord">Coordinates of the keyframe to set.</param>
+        public void SetCoord(KeyframeCoord keyframeCoord)
+        {
+            Type = keyframeCoord.type;
+            Index = keyframeCoord.index;
+        }
+
         #endregion
     }
 }

@@ -4,14 +4,13 @@ using UnityEngine.UI;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Prefabs;
-using BetterLegacy.Core.Runtime.Events;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Dialogs
 {
     public class RipplesKeyframeDialog : KeyframeDialog
     {
-        public RipplesKeyframeDialog() : base(EventEngine.RIPPLES) { }
+        public RipplesKeyframeDialog() : base(EventLibrary.Indexes.RIPPLES) { }
 
         public InputFieldStorage StrengthField { get; set; }
 

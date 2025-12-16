@@ -1965,8 +1965,8 @@ namespace BetterLegacy.Editor.Managers
             }
             if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
             {
-                RTEventEditor.inst.SetCurrentEvent(EventEditor.inst.currentEventType, 0);
-                AudioManager.inst.SetMusicTime(GameData.Current.events[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent].time);
+                RTEventEditor.inst.SetCurrentKeyframe(EventEditor.inst.currentEventType, 0);
+                AudioManager.inst.SetMusicTime(RTEventEditor.inst.CurrentSelectedKeyframe.time);
             }
         }
 
@@ -1983,8 +1983,8 @@ namespace BetterLegacy.Editor.Managers
             }
             if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
             {
-                RTEventEditor.inst.SetCurrentEvent(EventEditor.inst.currentEventType, GameData.Current.events[EventEditor.inst.currentEventType].Count - 1);
-                AudioManager.inst.SetMusicTime(GameData.Current.events[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent].time);
+                RTEventEditor.inst.SetCurrentKeyframe(EventEditor.inst.currentEventType, GameData.Current.events[EventEditor.inst.currentEventType].Count - 1);
+                AudioManager.inst.SetMusicTime(RTEventEditor.inst.CurrentSelectedKeyframe.time);
             }
         }
 
@@ -2005,7 +2005,7 @@ namespace BetterLegacy.Editor.Managers
                 int num = EventEditor.inst.currentEvent + 1 >= count ? count - 1 : EventEditor.inst.currentEvent + 1;
 
                 EventEditor.inst.SetCurrentEvent(EventEditor.inst.currentEventType, num);
-                AudioManager.inst.SetMusicTime(GameData.Current.events[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent].time);
+                AudioManager.inst.SetMusicTime(RTEventEditor.inst.CurrentSelectedKeyframe.time);
             }
         }
 
@@ -2025,7 +2025,7 @@ namespace BetterLegacy.Editor.Managers
                 int num = EventEditor.inst.currentEvent - 1 < 0 ? 0 : EventEditor.inst.currentEvent - 1;
 
                 EventEditor.inst.SetCurrentEvent(EventEditor.inst.currentEventType, num);
-                AudioManager.inst.SetMusicTime(GameData.Current.events[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent].time);
+                AudioManager.inst.SetMusicTime(RTEventEditor.inst.CurrentSelectedKeyframe.time);
             }
         }
 

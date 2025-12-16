@@ -1255,7 +1255,7 @@ namespace BetterLegacy.Configs
             {
                 RTEventEditor.inst.RenderLayerBins();
                 if (EventEditor.inst.dialogRight.gameObject.activeInHierarchy)
-                    RTEventEditor.inst.RenderEventsDialog();
+                    RTEventEditor.inst.RenderDialog();
             }
 
             if (RTPrefabEditor.inst && EditorTimeline.inst.CurrentSelection.isPrefabObject)

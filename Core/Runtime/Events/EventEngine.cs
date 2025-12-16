@@ -322,60 +322,6 @@ namespace BetterLegacy.Core.Runtime.Events
             SetupShake();
         }
 
-        #region Constants
-
-        #region Vanilla
-
-        public const int MOVE = 0;
-        public const int ZOOM = 1;
-        public const int ROTATE = 2;
-        public const int SHAKE = 3;
-        public const int THEME = 4;
-        public const int CHROMA = 5;
-        public const int BLOOM = 6;
-        public const int VIGNETTE = 7;
-        public const int LENS = 8;
-        public const int GRAIN = 9;
-
-        #endregion
-
-        #region Modded
-
-        public const int COLORGRADING = 10;
-        public const int RIPPLES = 11;
-        public const int RADIALBLUR = 12;
-        public const int COLORSPLIT = 13;
-        public const int OFFSET = 14;
-        public const int GRADIENT = 15;
-        public const int DOUBLEVISION = 16;
-        public const int SCANLINES = 17;
-        public const int BLUR = 18;
-        public const int PIXEL = 19;
-        public const int BG = 20;
-        public const int INVERT = 21;
-        public const int TIMELINE = 22;
-        public const int PLAYER = 23;
-        public const int FOLLOW_PLAYER = 24;
-        public const int AUDIO = 25;
-        public const int VIDEO_PARENT = 26;
-        public const int VIDEO = 27;
-        public const int SHARPNESS = 28;
-        public const int BARS = 29;
-        public const int DANGER = 30;
-        public const int ROTATION = 31;
-        public const int CAMERA_DEPTH = 32;
-        public const int WINDOW_BASE = 33;
-        public const int WINDOW_POSITION_X = 34;
-        public const int WINDOW_POSITION_Y = 35;
-        public const int PLAYER_FORCE = 36;
-        public const int MOSAIC = 37;
-        public const int ANALOG_GLITCH = 38;
-        public const int DIGITAL_GLITCH = 39;
-
-        #endregion
-
-        #endregion
-
         #region Updates
 
         /// <summary>

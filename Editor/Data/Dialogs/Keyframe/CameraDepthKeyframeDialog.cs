@@ -3,14 +3,13 @@ using UnityEngine.UI;
 
 using BetterLegacy.Core;
 using BetterLegacy.Core.Prefabs;
-using BetterLegacy.Core.Runtime.Events;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Dialogs
 {
     public class CameraDepthKeyframeDialog : KeyframeDialog
     {
-        public CameraDepthKeyframeDialog() : base(EventEngine.CAMERA_DEPTH) { }
+        public CameraDepthKeyframeDialog() : base(EventLibrary.Indexes.CAMERA_DEPTH) { }
 
         public InputFieldStorage DepthField { get; set; }
 

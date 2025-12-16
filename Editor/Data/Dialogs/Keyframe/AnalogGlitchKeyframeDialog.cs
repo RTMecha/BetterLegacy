@@ -2,14 +2,13 @@
 
 using BetterLegacy.Core;
 using BetterLegacy.Core.Prefabs;
-using BetterLegacy.Core.Runtime.Events;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Dialogs
 {
     public class AnalogGlitchKeyframeDialog : KeyframeDialog
     {
-        public AnalogGlitchKeyframeDialog() : base(EventEngine.ANALOG_GLITCH) { }
+        public AnalogGlitchKeyframeDialog() : base(EventLibrary.Indexes.ANALOG_GLITCH) { }
 
         public Toggle EnabledToggle { get; set; }
 

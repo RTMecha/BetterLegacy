@@ -107,7 +107,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     kf.RenderPos();
                 }
 
-                RTEventEditor.inst.RenderEventsDialog();
+                RTEventEditor.inst.RenderDialog();
                 RTLevel.Current?.UpdateEvents();
                 EditorManager.inst.DisplayNotification($"Snapped all keyframes time!", 2f, EditorManager.NotificationType.Success);
             });
@@ -136,7 +136,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     kf.RenderPos();
                 }
 
-                RTEventEditor.inst.RenderEventsDialog();
+                RTEventEditor.inst.RenderDialog();
                 RTLevel.Current?.UpdateEvents();
                 EditorManager.inst.DisplayNotification($"Aligned all keyframes to the first keyframe!", 2f, EditorManager.NotificationType.Success);
             });
@@ -169,7 +169,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     keyframe.Render();
                 }
 
-                RTEventEditor.inst.RenderEventsDialog();
+                RTEventEditor.inst.RenderDialog();
                 RTLevel.Current?.UpdateEvents();
                 EditorManager.inst.DisplayNotification($"Pasted all keyframe data to current selected keyframes!", 2f, EditorManager.NotificationType.Success);
             });

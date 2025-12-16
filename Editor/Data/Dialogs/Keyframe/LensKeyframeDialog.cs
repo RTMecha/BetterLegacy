@@ -4,14 +4,13 @@ using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Prefabs;
-using BetterLegacy.Core.Runtime.Events;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Dialogs
 {
     public class LensKeyframeDialog : KeyframeDialog
     {
-        public LensKeyframeDialog() : base(EventEngine.LENS) { }
+        public LensKeyframeDialog() : base(EventLibrary.Indexes.LENS) { }
 
         public InputFieldStorage IntensityField { get; set; }
 

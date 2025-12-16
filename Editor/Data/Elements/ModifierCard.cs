@@ -1765,7 +1765,7 @@ namespace BetterLegacy.Editor.Data.Elements
                 case nameof(ModifierFunctions.getEventValue): {
                         StringGenerator(modifier, reference, "Variable Name", 0, renderVariables: false);
 
-                        DropdownGenerator(modifier, reference, "Type", 1, CoreHelper.StringToOptionData(RTEventEditor.EventTypes));
+                        DropdownGenerator(modifier, reference, "Type", 1, CoreHelper.StringToOptionData(EventLibrary.displayNames));
                         IntegerGenerator(modifier, reference, "Axis", 2, 0);
 
                         SingleGenerator(modifier, reference, "Delay", 3, 0f);
@@ -2393,28 +2393,28 @@ namespace BetterLegacy.Editor.Data.Elements
                 #region Events
 
                 case nameof(ModifierFunctions.eventOffset): {
-                        DropdownGenerator(modifier, reference, "Event Type", 1, CoreHelper.StringToOptionData(RTEventEditor.EventTypes));
+                        DropdownGenerator(modifier, reference, "Event Type", 1, CoreHelper.StringToOptionData(EventLibrary.displayNames));
                         IntegerGenerator(modifier, reference, "Value Index", 2, 0);
                         SingleGenerator(modifier, reference, "Offset Value", 0, 0f);
 
                         break;
                     }
                 case nameof(ModifierFunctions.eventOffsetVariable): {
-                        DropdownGenerator(modifier, reference, "Event Type", 1, CoreHelper.StringToOptionData(RTEventEditor.EventTypes));
+                        DropdownGenerator(modifier, reference, "Event Type", 1, CoreHelper.StringToOptionData(EventLibrary.displayNames));
                         IntegerGenerator(modifier, reference, "Value Index", 2, 0);
                         SingleGenerator(modifier, reference, "Multiply Variable", 0, 1f);
 
                         break;
                     }
                 case nameof(ModifierFunctions.eventOffsetMath): {
-                        DropdownGenerator(modifier, reference, "Event Type", 1, CoreHelper.StringToOptionData(RTEventEditor.EventTypes));
+                        DropdownGenerator(modifier, reference, "Event Type", 1, CoreHelper.StringToOptionData(EventLibrary.displayNames));
                         IntegerGenerator(modifier, reference, "Value Index", 2, 0);
                         StringGenerator(modifier, reference, "Evaluation", 0);
 
                         break;
                     }
                 case nameof(ModifierFunctions.eventOffsetAnimate): {
-                        DropdownGenerator(modifier, reference, "Event Type", 1, CoreHelper.StringToOptionData(RTEventEditor.EventTypes));
+                        DropdownGenerator(modifier, reference, "Event Type", 1, CoreHelper.StringToOptionData(EventLibrary.displayNames));
                         IntegerGenerator(modifier, reference, "Value Index", 2, 0);
                         SingleGenerator(modifier, reference, "Offset Value", 0, 0f);
 
@@ -2428,7 +2428,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         DropdownGenerator(modifier, reference, "From Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation", "Color"));
                         DropdownGenerator(modifier, reference, "From Axis", 2, CoreHelper.StringToOptionData("X", "Y", "Z"));
 
-                        DropdownGenerator(modifier, reference, "To Type", 3, CoreHelper.StringToOptionData(RTEventEditor.EventTypes));
+                        DropdownGenerator(modifier, reference, "To Type", 3, CoreHelper.StringToOptionData(EventLibrary.displayNames));
                         IntegerGenerator(modifier, reference, "To Axis", 4, 0);
 
                         SingleGenerator(modifier, reference, "Delay", 5, 0f);
@@ -4365,7 +4365,7 @@ namespace BetterLegacy.Editor.Data.Elements
                 case nameof(ModifierFunctions.eventGreaterEquals):
                 case nameof(ModifierFunctions.eventLesser):
                 case nameof(ModifierFunctions.eventGreater): {
-                        DropdownGenerator(modifier, reference, "Event Type", 1, CoreHelper.StringToOptionData(RTEventEditor.EventTypes));
+                        DropdownGenerator(modifier, reference, "Event Type", 1, CoreHelper.StringToOptionData(EventLibrary.displayNames));
                         IntegerGenerator(modifier, reference, "Value Index", 2, 0);
                         SingleGenerator(modifier, reference, "Time", 0, 0f);
                         SingleGenerator(modifier, reference, "Equals", 3, 0f);

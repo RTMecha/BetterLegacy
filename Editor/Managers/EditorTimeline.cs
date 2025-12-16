@@ -149,7 +149,7 @@ namespace BetterLegacy.Editor.Managers
         public void RenderTimeline()
         {
             if (layerType == LayerType.Events)
-                RTEventEditor.inst.RenderEventObjects();
+                RTEventEditor.inst.RenderTimelineKeyframes();
             else
                 RenderTimelineObjectsPositions();
 
@@ -1742,7 +1742,7 @@ namespace BetterLegacy.Editor.Managers
             Layer = layer;
             this.layerType = layerType;
             RenderLayerInput(layer, layerType);
-            RTEventEditor.inst.SetEventActive(layerType == LayerType.Events);
+            RTEventEditor.inst.SetEventTimelineActive(layerType == LayerType.Events);
 
             if (prevLayer != layer || prevLayerType != layerType)
             {
@@ -1765,7 +1765,7 @@ namespace BetterLegacy.Editor.Managers
                             if (EditorManager.inst.timelineScrollRectBar.value < 0f)
                                 EditorManager.inst.timelineScrollRectBar.value = 0f;
 
-                            RTEventEditor.inst.RenderEventObjects();
+                            RTEventEditor.inst.RenderTimelineKeyframes();
                             RTEventEditor.inst.RenderLayerBins();
 
                             ClampTimeline(true);

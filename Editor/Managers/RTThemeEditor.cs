@@ -629,7 +629,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderThemePreview()
         {
-            if (EventEditor.inst.currentEventType != 4)
+            if (EventEditor.inst.currentEventType != EventLibrary.Indexes.THEME)
                 return;
 
             var beatmapTheme = ThemeManager.inst.GetTheme((int)RTEventEditor.inst.CurrentSelectedKeyframe.values[0]);

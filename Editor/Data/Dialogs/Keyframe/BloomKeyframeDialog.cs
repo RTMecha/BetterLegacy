@@ -8,14 +8,13 @@ using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Prefabs;
-using BetterLegacy.Core.Runtime.Events;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Dialogs
 {
     public class BloomKeyframeDialog : KeyframeDialog
     {
-        public BloomKeyframeDialog() : base(EventEngine.BLOOM) { }
+        public BloomKeyframeDialog() : base(EventLibrary.Indexes.BLOOM) { }
 
         public InputFieldStorage IntensityField { get; set; }
 

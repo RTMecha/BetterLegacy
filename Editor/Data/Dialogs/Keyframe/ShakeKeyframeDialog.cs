@@ -4,14 +4,13 @@ using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Prefabs;
-using BetterLegacy.Core.Runtime.Events;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Dialogs
 {
     public class ShakeKeyframeDialog : KeyframeDialog
     {
-        public ShakeKeyframeDialog() : base(EventEngine.SHAKE) { }
+        public ShakeKeyframeDialog() : base(EventLibrary.Indexes.SHAKE) { }
 
         public InputFieldStorage IntensityField { get; set; }
 

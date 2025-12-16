@@ -2062,6 +2062,13 @@ namespace BetterLegacy.Core
             }
         }
 
+        /// <summary>
+        /// Gets an event keyframe at an index coordinate.
+        /// </summary>
+        /// <param name="keyframeCoord">Coordinates of the keyframe to get.</param>
+        /// <returns>Returns a found event keyframe.</returns>
+        public static EventKeyframe GetEventKeyframe(this IAnimatable animatable, KeyframeCoord keyframeCoord) => animatable.GetEventKeyframes(keyframeCoord.type)[keyframeCoord.index];
+
         #region Beatmap
 
         /// <summary>

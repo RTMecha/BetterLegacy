@@ -451,13 +451,13 @@ namespace BetterLegacy.Core.Runtime
             EventManager.inst.eventSequence = null;
             switch (currentEvent)
             {
-                case EventEngine.SHAKE: {
+                case EventLibrary.Indexes.SHAKE: {
                         eventEngine?.SetupShake();
                         EventManager.inst.shakeSequence?.Kill();
                         EventManager.inst.shakeSequence = null;
                         break;
                     }
-                case EventEngine.THEME: {
+                case EventLibrary.Indexes.THEME: {
                         EventManager.inst.themeSequence?.Kill();
                         EventManager.inst.themeSequence = null;
                         break;

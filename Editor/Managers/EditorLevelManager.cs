@@ -862,7 +862,7 @@ namespace BetterLegacy.Editor.Managers
             CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
 
             CoreHelper.Log("Updating timeline...");
-            RTEventEditor.inst.CreateEventObjects();
+            RTEventEditor.inst.CreateTimelineKeyframes();
 
             RTMarkerEditor.inst.CreateMarkers();
             RTMarkerEditor.inst.markerLooping = false;
