@@ -7,8 +7,6 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 using TMPro;
-
-using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;

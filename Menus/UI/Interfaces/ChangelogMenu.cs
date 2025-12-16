@@ -1,10 +1,8 @@
-﻿using System.Collections.Generic;
-
+﻿
 using LSFunctions;
 
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
-using BetterLegacy.Core.Helpers;
 using BetterLegacy.Menus.UI.Elements;
 using BetterLegacy.Menus.UI.Layouts;
 

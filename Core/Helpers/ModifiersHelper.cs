@@ -3688,13 +3688,13 @@ namespace BetterLegacy.Core.Helpers
                 int max = modifier.GetInt(2, 0, modifierLoop.variables);
 
                 foreach (var beatmapObject in list)
-                    beatmapObject.integerVariable = UnityEngine.Random.Range(min, max < 0 ? max - 1 : max + 1);
+                    beatmapObject.integerVariable = UnityRandom.Range(min, max < 0 ? max - 1 : max + 1);
             }
             else
             {
                 var min = modifier.GetInt(0, 0, modifierLoop.variables);
                 var max = modifier.GetInt(1, 0, modifierLoop.variables);
-                modifierLoop.reference.IntVariable = UnityEngine.Random.Range(min, max < 0 ? max - 1 : max + 1);
+                modifierLoop.reference.IntVariable = UnityRandom.Range(min, max < 0 ? max - 1 : max + 1);
             }
         }
 
@@ -3711,7 +3711,7 @@ namespace BetterLegacy.Core.Helpers
             int max = modifier.GetInt(2, 0, modifierLoop.variables);
 
             foreach (var beatmapObject in list)
-                beatmapObject.integerVariable = UnityEngine.Random.Range(min, max < 0 ? max - 1 : max + 1);
+                beatmapObject.integerVariable = UnityRandom.Range(min, max < 0 ? max - 1 : max + 1);
         }
 
         public static void animateVariableOther(Modifier modifier, ModifierLoop modifierLoop)
@@ -9050,7 +9050,7 @@ namespace BetterLegacy.Core.Helpers
                 float pitchVary = modifier.GetFloat(8, 0f, modifierLoop.variables);
 
                 if (pitchVary != 0f)
-                    pitch += UnityEngine.Random.Range(-pitchVary, pitchVary);
+                    pitch += UnityRandom.Range(-pitchVary, pitchVary);
 
                 // Don't play any sounds.
                 if (!modifier.GetBool(2, true, modifierLoop.variables))
@@ -13421,7 +13421,7 @@ namespace BetterLegacy.Core.Helpers
                 if (modifierLoop.reference is PAObjectBase obj)
                     modifier.Result = RandomHelper.FromIDRange(RandomHelper.CurrentSeed, obj.id, modifier.GetInt(1, 0, modifierLoop.variables), modifier.GetInt(2, 0, modifierLoop.variables)) == modifier.GetInt(0, 0, modifierLoop.variables);
                 else
-                    modifier.Result = UnityEngine.Random.Range(modifier.GetInt(1, 0, modifierLoop.variables), modifier.GetInt(2, 0, modifierLoop.variables)) == modifier.GetInt(0, 0, modifierLoop.variables);
+                    modifier.Result = UnityRandom.Range(modifier.GetInt(1, 0, modifierLoop.variables), modifier.GetInt(2, 0, modifierLoop.variables)) == modifier.GetInt(0, 0, modifierLoop.variables);
             }
 
             return modifier.HasResult() && modifier.GetResult<bool>();
@@ -13434,7 +13434,7 @@ namespace BetterLegacy.Core.Helpers
                 if (modifierLoop.reference is PAObjectBase obj)
                     modifier.Result = RandomHelper.FromIDRange(RandomHelper.CurrentSeed, obj.id, modifier.GetInt(1, 0, modifierLoop.variables), modifier.GetInt(2, 0, modifierLoop.variables)) < modifier.GetInt(0, 0, modifierLoop.variables);
                 else
-                    modifier.Result = UnityEngine.Random.Range(modifier.GetInt(1, 0, modifierLoop.variables), modifier.GetInt(2, 0, modifierLoop.variables)) < modifier.GetInt(0, 0, modifierLoop.variables);
+                    modifier.Result = UnityRandom.Range(modifier.GetInt(1, 0, modifierLoop.variables), modifier.GetInt(2, 0, modifierLoop.variables)) < modifier.GetInt(0, 0, modifierLoop.variables);
             }
 
             return modifier.HasResult() && modifier.GetResult<bool>();
@@ -13447,7 +13447,7 @@ namespace BetterLegacy.Core.Helpers
                 if (modifierLoop.reference is PAObjectBase obj)
                     modifier.Result = RandomHelper.FromIDRange(RandomHelper.CurrentSeed, obj.id, modifier.GetInt(1, 0, modifierLoop.variables), modifier.GetInt(2, 0, modifierLoop.variables)) > modifier.GetInt(0, 0, modifierLoop.variables);
                 else
-                    modifier.Result = UnityEngine.Random.Range(modifier.GetInt(1, 0, modifierLoop.variables), modifier.GetInt(2, 0, modifierLoop.variables)) > modifier.GetInt(0, 0, modifierLoop.variables);
+                    modifier.Result = UnityRandom.Range(modifier.GetInt(1, 0, modifierLoop.variables), modifier.GetInt(2, 0, modifierLoop.variables)) > modifier.GetInt(0, 0, modifierLoop.variables);
             }
 
             return modifier.HasResult() && modifier.GetResult<bool>();

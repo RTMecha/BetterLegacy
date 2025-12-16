@@ -351,7 +351,7 @@ namespace BetterLegacy.Editor.Managers
                 currentPreview.playOnAwake = true;
                 currentPreview.loop = true;
                 currentPreview.volume = AudioManager.inst.sfxVol;
-                currentPreview.time = length < 0f || audioClip.length <= length ? 0f : UnityEngine.Random.Range(0f, audioClip.length);
+                currentPreview.time = length < 0f || audioClip.length <= length ? 0f : UnityRandom.Range(0f, audioClip.length);
                 currentPreview.Play();
                 DestroyAudioPreviewAfterSeconds(Mathf.Clamp(length, 0f, audioClip.length));
             }));

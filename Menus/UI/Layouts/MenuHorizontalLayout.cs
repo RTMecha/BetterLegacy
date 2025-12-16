@@ -4,7 +4,6 @@ using UnityEngine.UI;
 using SimpleJSON;
 
 using BetterLegacy.Core;
-using BetterLegacy.Core.Data;
 
 namespace BetterLegacy.Menus.UI.Layouts
 {

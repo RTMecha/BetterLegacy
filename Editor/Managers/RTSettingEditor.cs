@@ -195,13 +195,13 @@ namespace BetterLegacy.Editor.Managers
         public void RenderDialog()
         {
             EditorManager.inst.CancelInvoke(nameof(EditorManager.LoadingIconUpdate));
-            EditorManager.inst.InvokeRepeating(nameof(EditorManager.LoadingIconUpdate), 0f, UnityEngine.Random.Range(0.01f, 0.4f));
+            EditorManager.inst.InvokeRepeating(nameof(EditorManager.LoadingIconUpdate), 0f, UnityRandom.Range(0.01f, 0.4f));
 
             var transform = Dialog.GameObject.transform.AsRT();
             var loadingDoggoRect = Dialog.Doggo.rectTransform;
 
-            loadingDoggoRect.anchoredPosition = new Vector2(UnityEngine.Random.Range(-320f, 320f), UnityEngine.Random.Range(-310f, -340f));
-            float sizeRandom = 64 * UnityEngine.Random.Range(0.5f, 1f);
+            loadingDoggoRect.anchoredPosition = new Vector2(UnityRandom.Range(-320f, 320f), UnityRandom.Range(-310f, -340f));
+            float sizeRandom = 64 * UnityRandom.Range(0.5f, 1f);
             loadingDoggoRect.sizeDelta = new Vector2(sizeRandom, sizeRandom);
 
             Dialog.BPMToggle.SetIsOnWithoutNotify(RTEditor.inst.editorInfo.bpmSnapActive);

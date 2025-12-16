@@ -29,8 +29,6 @@ using BetterLegacy.Core.Runtime.Objects;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
 
-using Object = UnityEngine.Object;
-
 namespace BetterLegacy.Core
 {
     /// <summary>
@@ -185,13 +183,13 @@ namespace BetterLegacy.Core
         }
 
         /// <summary>
-        /// Duplicates a <see cref="GameObject"/>, sets a parent and ensures the same local position and scale. Wraps the <see cref="Object.Instantiate(Object)"/> method.
+        /// Duplicates a <see cref="GameObject"/>, sets a parent and ensures the same local position and scale. Wraps the <see cref="UnityObject.Instantiate(UnityObject)"/> method.
         /// </summary>
         /// <param name="parent">Parent to set.</param>
         /// <returns>Returns a duplicated <see cref="GameObject"/>.</returns>
         public static GameObject Duplicate(this GameObject gameObject, Transform parent)
         {
-            var copy = Object.Instantiate(gameObject);
+            var copy = UnityObject.Instantiate(gameObject);
             copy.transform.SetParent(parent);
             copy.transform.localPosition = gameObject.transform.localPosition;
             copy.transform.localScale = gameObject.transform.localScale;
@@ -200,7 +198,7 @@ namespace BetterLegacy.Core
         }
 
         /// <summary>
-        /// Duplicates a <see cref="GameObject"/>, sets a parent, name and ensures the same local position and scale. Wraps the <see cref="Object.Instantiate(Object)"/> method.
+        /// Duplicates a <see cref="GameObject"/>, sets a parent, name and ensures the same local position and scale. Wraps the <see cref="UnityObject.Instantiate(UnityObject)"/> method.
         /// </summary>
         /// <param name="parent">Parent to set.</param>
         /// <param name="name">Name of the <see cref="GameObject"/>.</param>
@@ -213,7 +211,7 @@ namespace BetterLegacy.Core
         }
 
         /// <summary>
-        /// Duplicates a <see cref="GameObject"/>, sets a parent & sibling index, name and ensures the same local position and scale. Wraps the <see cref="Object.Instantiate(Object)"/> method.
+        /// Duplicates a <see cref="GameObject"/>, sets a parent & sibling index, name and ensures the same local position and scale. Wraps the <see cref="UnityObject.Instantiate(UnityObject)"/> method.
         /// </summary>
         /// <param name="parent">Parent to set.</param>
         /// <param name="name">Name of the <see cref="GameObject"/>.</param>
@@ -959,7 +957,7 @@ namespace BetterLegacy.Core
         /// </summary>
         /// <typeparam name="T">The type of the List.</typeparam>
         /// <returns>Returns a shuffled list.</returns>
-        public static List<T> Shuffle<T>(this List<T> list) => list.Order(x => x?.GetHashCode() + UnityEngine.Random.Range(-100, 100) * UnityEngine.Random.Range(0, 100), false);
+        public static List<T> Shuffle<T>(this List<T> list) => list.Order(x => x?.GetHashCode() + UnityRandom.Range(-100, 100) * UnityRandom.Range(0, 100), false);
 
         /// <summary>
         /// Checks if an array has a specific item.

@@ -229,7 +229,7 @@ namespace BetterLegacy.Menus
                 randomIndex = MenuConfig.Instance.MusicIndex.Value;
 
             if (randomIndex < 0 || randomIndex >= songFiles.Length)
-                randomIndex = UnityEngine.Random.Range(0, songFiles.Length);
+                randomIndex = UnityRandom.Range(0, songFiles.Length);
 
             var songFileCurrent = songFiles[Mathf.Clamp(randomIndex, 0, songFiles.Length - 1)];
 

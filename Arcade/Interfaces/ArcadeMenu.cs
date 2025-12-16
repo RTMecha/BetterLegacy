@@ -2022,7 +2022,7 @@ namespace BetterLegacy.Arcade.Interfaces
                                 button.icon = sprite;
                             else
                             {
-                                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{coverURL}{id}{FileFormat.JPG.Dot()}?r" + UnityEngine.Random.Range(0, int.MaxValue), bytes =>
+                                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{coverURL}{id}{FileFormat.JPG.Dot()}?r" + UnityRandom.Range(0, int.MaxValue), bytes =>
                                 {
                                     var sprite = SpriteHelper.LoadSprite(bytes);
                                     OnlineLevelIcons[id] = sprite;
@@ -2547,11 +2547,11 @@ namespace BetterLegacy.Arcade.Interfaces
                 queueRandom.Add(i);
             }
 
-            queueRandom = queueRandom.OrderBy(x => -(x - UnityEngine.Random.Range(0, levels.Count))).ToList();
+            queueRandom = queueRandom.OrderBy(x => -(x - UnityRandom.Range(0, levels.Count))).ToList();
 
             var shuffleQueueAmount = ArcadeConfig.Instance.ShuffleQueueAmount.Value;
 
-            var minRandom = UnityEngine.Random.Range(0, levels.Count - shuffleQueueAmount);
+            var minRandom = UnityRandom.Range(0, levels.Count - shuffleQueueAmount);
 
             for (int i = 0; i < queueRandom.Count; i++)
             {

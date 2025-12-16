@@ -3,12 +3,10 @@ using System.Collections.Generic;
 
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.UI;
 
 using LSFunctions;
 
 using BetterLegacy.Core;
-using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;

@@ -1,6 +1,4 @@
-﻿using UnityEngine;
-using UnityEngine.UI;
-
+﻿
 using BetterLegacy.Core.Prefabs;
 
 namespace BetterLegacy.Editor.Data

@@ -6,9 +6,6 @@ using UnityEngine.UI;
 
 using LSFunctions;
 
-using SimpleJSON;
-using Crosstales.FB;
-
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Components;

@@ -5,8 +5,6 @@ using UnityEngine.UI;
 
 using BetterLegacy.Core.Helpers;
 
-using UnityObject = UnityEngine.Object;
-
 namespace BetterLegacy.Core.Data
 {
     /// <summary>

@@ -1297,26 +1297,26 @@ namespace BetterLegacy.Editor.Managers
             {
                 var backgroundObject = new BackgroundObject();
                 backgroundObject.name = "bg - " + i;
-                if (UnityEngine.Random.value > 0.5f)
-                    backgroundObject.scale = new Vector2(UnityEngine.Random.Range(2, 8), UnityEngine.Random.Range(2, 8));
+                if (UnityRandom.value > 0.5f)
+                    backgroundObject.scale = new Vector2(UnityRandom.Range(2, 8), UnityRandom.Range(2, 8));
                 else
                 {
-                    float num = UnityEngine.Random.Range(2, 6);
+                    float num = UnityRandom.Range(2, 6);
                     backgroundObject.scale = new Vector2(num, num);
                 }
-                backgroundObject.pos = new Vector2(UnityEngine.Random.Range(-48, 48), UnityEngine.Random.Range(-32, 32));
-                backgroundObject.color = UnityEngine.Random.Range(1, 6);
-                backgroundObject.depth = UnityEngine.Random.Range(0, 6);
+                backgroundObject.pos = new Vector2(UnityRandom.Range(-48, 48), UnityRandom.Range(-32, 32));
+                backgroundObject.color = UnityRandom.Range(1, 6);
+                backgroundObject.depth = UnityRandom.Range(0, 6);
 
-                if (UnityEngine.Random.value > 0.5f)
+                if (UnityRandom.value > 0.5f)
                 {
-                    backgroundObject.reactiveType = (BackgroundObject.ReactiveType)UnityEngine.Random.Range(1, 5);
-                    backgroundObject.reactiveScale = UnityEngine.Random.Range(0.01f, 0.04f);
+                    backgroundObject.reactiveType = (BackgroundObject.ReactiveType)UnityRandom.Range(1, 5);
+                    backgroundObject.reactiveScale = UnityRandom.Range(0.01f, 0.04f);
                 }
 
                 if (Seasons.IsAprilFools)
                 {
-                    var randomShape = UnityEngine.Random.Range(0, ShapeManager.inst.Shapes3D.Count - 1);
+                    var randomShape = UnityRandom.Range(0, ShapeManager.inst.Shapes3D.Count - 1);
                     if (randomShape != 4 && randomShape != 6)
                         backgroundObject.shape = randomShape;
                 }

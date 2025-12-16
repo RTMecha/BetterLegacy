@@ -29,9 +29,9 @@ namespace BetterLegacy.Core.Threading
 
 		public static SimpleCoroutineAwaiter<AsyncOperation> GetAwaiter(this AsyncOperation instruction) => GetAwaiterReturnSelf(instruction);
 
-		public static SimpleCoroutineAwaiter<UnityEngine.Object> GetAwaiter(this ResourceRequest instruction)
+		public static SimpleCoroutineAwaiter<UnityObject> GetAwaiter(this ResourceRequest instruction)
 		{
-			var awaiter = new SimpleCoroutineAwaiter<UnityEngine.Object>();
+			var awaiter = new SimpleCoroutineAwaiter<UnityObject>();
 			RunOnUnityScheduler(InstructionWrappers.ResourceRequest(awaiter, instruction).Start);
 			return awaiter;
 		}
@@ -45,9 +45,9 @@ namespace BetterLegacy.Core.Threading
 			return awaiter;
 		}
 
-		public static SimpleCoroutineAwaiter<UnityEngine.Object> GetAwaiter(this AssetBundleRequest instruction)
+		public static SimpleCoroutineAwaiter<UnityObject> GetAwaiter(this AssetBundleRequest instruction)
 		{
-			var awaiter = new SimpleCoroutineAwaiter<UnityEngine.Object>();
+			var awaiter = new SimpleCoroutineAwaiter<UnityObject>();
 			RunOnUnityScheduler(InstructionWrappers.AssetBundleRequest(awaiter, instruction).Start);
 			return awaiter;
 		}
@@ -280,14 +280,14 @@ namespace BetterLegacy.Core.Threading
 				yield break;
 			}
 
-			public static IEnumerator AssetBundleRequest(SimpleCoroutineAwaiter<UnityEngine.Object> awaiter, AssetBundleRequest instruction)
+			public static IEnumerator AssetBundleRequest(SimpleCoroutineAwaiter<UnityObject> awaiter, AssetBundleRequest instruction)
 			{
 				yield return instruction;
 				awaiter.Complete(instruction.asset, null);
 				yield break;
 			}
 
-			public static IEnumerator ResourceRequest(SimpleCoroutineAwaiter<UnityEngine.Object> awaiter, ResourceRequest instruction)
+			public static IEnumerator ResourceRequest(SimpleCoroutineAwaiter<UnityObject> awaiter, ResourceRequest instruction)
 			{
 				yield return instruction;
 				awaiter.Complete(instruction.asset, null);

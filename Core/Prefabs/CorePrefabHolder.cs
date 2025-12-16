@@ -9,7 +9,7 @@ namespace BetterLegacy.Core.Prefabs
         public CorePrefabHolder()
         {
             var gameObject = new GameObject("Core Prefab Holder");
-            UnityEngine.Object.DontDestroyOnLoad(gameObject);
+            UnityObject.DontDestroyOnLoad(gameObject);
             PrefabParent = gameObject.transform;
 
             NumberInputField = new GameObject("Input Field");

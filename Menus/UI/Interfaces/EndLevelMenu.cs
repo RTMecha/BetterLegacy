@@ -1,9 +1,6 @@
 ﻿using System.Linq;
-using UnityEngine;
 
 using LSFunctions;
-
-using BetterLegacy.Arcade.Managers;
 using BetterLegacy.Companion.Data.Parameters;
 using BetterLegacy.Companion.Entity;
 using BetterLegacy.Core;
@@ -155,7 +152,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             else
             {
                 var rankSayings = metadata && metadata.customSayings.TryGetValue(rank, out string[] customSayings) ? customSayings : LegacyResources.sayings[rank];
-                var sayings = LSText.WordWrap(rankSayings[Random.Range(0, rankSayings.Length)], 32);
+                var sayings = LSText.WordWrap(rankSayings[UnityRandom.Range(0, rankSayings.Length)], 32);
                 layouts.Add("sayings", new MenuVerticalLayout
                 {
                     name = "sayings",

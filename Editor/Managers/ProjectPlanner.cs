@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -199,7 +198,7 @@ namespace BetterLegacy.Editor.Managers
                                 CreateNote(
                                     active: true,
                                     name: "New Note",
-                                    color: UnityEngine.Random.Range(0, MarkerEditor.inst.markerColors.Count),
+                                    color: UnityRandom.Range(0, MarkerEditor.inst.markerColors.Count),
                                     position: new Vector2(Screen.width / 2, Screen.height / 2),
                                     text: "This note appears in the editor and can be dragged to anywhere.");
                                 break;
@@ -3925,7 +3924,7 @@ namespace BetterLegacy.Editor.Managers
             StopOST();
             forceShuffleOST = true;
             if (!osts.IsEmpty())
-                osts[UnityEngine.Random.Range(0, osts.Count)].Play();
+                osts[UnityRandom.Range(0, osts.Count)].Play();
         }
 
         /// <summary>
@@ -3944,7 +3943,7 @@ namespace BetterLegacy.Editor.Managers
                 int num = 0;
                 while (attempts < 40)
                 {
-                    num = UnityEngine.Random.Range(0, osts.Count);
+                    num = UnityRandom.Range(0, osts.Count);
                     ost = list[num];
                     if (!recentOST.Has(x => x.Path == ost.Path))
                         break;

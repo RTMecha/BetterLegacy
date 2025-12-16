@@ -72,7 +72,7 @@ namespace BetterLegacy.Companion.Data.Parameters
 
         public RandomPoseParameters(Func<int> poseSelection) : base() => this.poseSelection = poseSelection;
 
-        public RandomPoseParameters(int min, int max) : this(UnityEngine.Random.Range(min, max)) { }
+        public RandomPoseParameters(int min, int max) : this(UnityRandom.Range(min, max)) { }
 
         public Func<int> poseSelection;
     }

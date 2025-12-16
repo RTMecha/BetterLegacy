@@ -175,19 +175,19 @@ namespace BetterLegacy.Core.Helpers
         /// <param name="obj">Unity Object to destroy.</param>
         /// <param name="instant">If object should destroy instantly.</param>
         /// <param name="t">The delay to destroy the object at if instant is off.</param>
-        public static void Destroy(UnityEngine.Object obj) => UnityEngine.Object.Destroy(obj);
+        public static void Destroy(UnityObject obj) => UnityObject.Destroy(obj);
 
         /// <summary>
         /// Destroys a Unity Object.
         /// </summary>
         /// <param name="obj">Unity Object to destroy.</param>
         /// <param name="instant">If object should destroy instantly.</param>
-        public static void Destroy(UnityEngine.Object obj, bool instant)
+        public static void Destroy(UnityObject obj, bool instant)
         {
             if (instant)
-                UnityEngine.Object.DestroyImmediate(obj);
+                UnityObject.DestroyImmediate(obj);
             else
-                UnityEngine.Object.Destroy(obj);
+                UnityObject.Destroy(obj);
         }
 
         /// <summary>
@@ -195,13 +195,13 @@ namespace BetterLegacy.Core.Helpers
         /// </summary>
         /// <param name="obj">Unity Object to destroy.</param>
         /// <param name="t">The delay to destroy the object at if instant is off.</param>
-        public static void Destroy(UnityEngine.Object obj, float t) => UnityEngine.Object.Destroy(obj, t);
+        public static void Destroy(UnityObject obj, float t) => UnityObject.Destroy(obj, t);
 
         /// <summary>
         /// Destroys multiple Unity Objects.
         /// </summary>
         /// <param name="objects">Unity Objects to destroy.</param>
-        public static void Destroy(params UnityEngine.Object[] objects)
+        public static void Destroy(params UnityObject[] objects)
         {
             for (int i = 0; i < objects.Length; i++)
                 Destroy(objects[i]);
@@ -212,7 +212,7 @@ namespace BetterLegacy.Core.Helpers
         /// </summary>
         /// <param name="t">The delay to destroy the object at if instant is off.</param>
         /// <param name="objects">Unity Objects to destroy.</param>
-        public static void Destroy(float t, params UnityEngine.Object[] objects)
+        public static void Destroy(float t, params UnityObject[] objects)
         {
             for (int i = 0; i < objects.Length; i++)
                 Destroy(objects[i], t);
@@ -223,7 +223,7 @@ namespace BetterLegacy.Core.Helpers
         /// </summary>
         /// <param name="instant">If object should destroy instantly.</param>
         /// <param name="objects">Unity Objects to destroy.</param>
-        public static void Destroy(bool instant, params UnityEngine.Object[] objects)
+        public static void Destroy(bool instant, params UnityObject[] objects)
         {
             for (int i = 0; i < objects.Length; i++)
                 Destroy(objects[i], instant);
@@ -239,7 +239,7 @@ namespace BetterLegacy.Core.Helpers
                 return;
 
             gameObject.transform.SetParent(null);
-            UnityEngine.Object.Destroy(gameObject);
+            UnityObject.Destroy(gameObject);
         }
 
         /// <summary>

@@ -1009,8 +1009,8 @@ namespace BetterLegacy.Editor.Managers
 
                 var dir = Directory.GetFiles(RTFile.ApplicationDirectory, FileFormat.PNG.ToPattern(), SearchOption.AllDirectories);
 
-                for (int i = 0; i < UnityEngine.Random.Range(0, Mathf.Clamp(dir.Length, 0, 20)); i++)
-                    elements.Add(new EditorDocument.Element(dir[UnityEngine.Random.Range(0, dir.Length)].Replace("\\", "/").Remove(RTFile.ApplicationDirectory), EditorDocument.Element.Type.Image));
+                for (int i = 0; i < UnityRandom.Range(0, Mathf.Clamp(dir.Length, 0, 20)); i++)
+                    elements.Add(new EditorDocument.Element(dir[UnityRandom.Range(0, dir.Length)].Replace("\\", "/").Remove(RTFile.ApplicationDirectory), EditorDocument.Element.Type.Image));
 
                 GenerateDocument("April Fools!", "fol.", elements);
             }

@@ -442,7 +442,7 @@ namespace BetterLegacy.Core.Data.Level
                             }
 
                             InterfaceManager.inst.CloseMenus();
-                            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.LevelCoverURL}{levelInfo.serverID}{FileFormat.JPG.Dot()}?r" + UnityEngine.Random.Range(0, int.MaxValue), bytes =>
+                            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.LevelCoverURL}{levelInfo.serverID}{FileFormat.JPG.Dot()}?r" + UnityRandom.Range(0, int.MaxValue), bytes =>
                             {
                                 var sprite = SpriteHelper.LoadSprite(bytes);
                                 ArcadeMenu.OnlineLevelIcons[levelInfo.serverID] = sprite;

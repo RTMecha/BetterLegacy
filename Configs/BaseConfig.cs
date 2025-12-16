@@ -8,7 +8,6 @@ using LSFunctions;
 using SimpleJSON;
 
 using BetterLegacy.Core;
-using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Configs
 {

@@ -4,15 +4,11 @@ using System.Collections.Generic;
 using UnityEngine;
 
 using LSFunctions;
-
-using TMPro;
 using SimpleJSON;
 
 using BetterLegacy.Core;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;
-using BetterLegacy.Core.Data;
-using BetterLegacy.Core.Helpers;
 using BetterLegacy.Menus.UI.Interfaces;
 
 namespace BetterLegacy.Menus.UI.Elements

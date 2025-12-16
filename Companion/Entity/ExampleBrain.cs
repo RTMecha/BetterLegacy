@@ -394,7 +394,7 @@ namespace BetterLegacy.Companion.Entity
             saidDialogue = true;
 
             reference.chatBubble.SayDialogue(ExampleChatBubble.Dialogues.OCCASIONAL);
-            dialogueRepeatRate = UnityEngine.Random.Range(120f, 600f);
+            dialogueRepeatRate = UnityRandom.Range(120f, 600f);
         }
 
         #endregion
@@ -404,7 +404,7 @@ namespace BetterLegacy.Companion.Entity
         public override void Build()
         {
             interactedTimer.Reset();
-            dialogueRepeatRate = UnityEngine.Random.Range(120f, 600f);
+            dialogueRepeatRate = UnityRandom.Range(120f, 600f);
             LoadMemory();
         }
 
@@ -642,7 +642,7 @@ namespace BetterLegacy.Companion.Entity
                         break;
                     }
                 case Interactions.HOLD_HAND: {
-                        SoundManager.inst.PlaySound(reference.model.baseCanvas, DefaultSounds.example_speak, UnityEngine.Random.Range(0.08f, 0.12f), UnityEngine.Random.Range(1.1f, 1.3f));
+                        SoundManager.inst.PlaySound(reference.model.baseCanvas, DefaultSounds.example_speak, UnityRandom.Range(0.08f, 0.12f), UnityRandom.Range(1.1f, 1.3f));
                         reference?.model?.SetPose(ExampleModel.Poses.WORRY);
                         break;
                     }

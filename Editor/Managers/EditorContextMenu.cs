@@ -6,10 +6,6 @@ using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-
-using LSFunctions;
-
-using SimpleJSON;
 using Crosstales.FB;
 
 using BetterLegacy.Configs;
@@ -20,7 +16,6 @@ using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Managers.Settings;
-using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Elements;
 

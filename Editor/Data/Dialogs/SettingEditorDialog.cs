@@ -215,8 +215,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
             Doggo = loadingDoggo.AddComponent<Image>();
             var loadingDoggoLE = loadingDoggo.AddComponent<LayoutElement>();
 
-            loadingDoggo.transform.AsRT().anchoredPosition = new Vector2(UnityEngine.Random.Range(-320f, 320f), UnityEngine.Random.Range(-300f, -275f));
-            float sizeRandom = 64f * UnityEngine.Random.Range(0.5f, 1f);
+            loadingDoggo.transform.AsRT().anchoredPosition = new Vector2(UnityRandom.Range(-320f, 320f), UnityRandom.Range(-300f, -275f));
+            float sizeRandom = 64f * UnityRandom.Range(0.5f, 1f);
             loadingDoggo.transform.AsRT().sizeDelta = new Vector2(sizeRandom, sizeRandom);
 
             loadingDoggoLE.ignoreLayout = true;

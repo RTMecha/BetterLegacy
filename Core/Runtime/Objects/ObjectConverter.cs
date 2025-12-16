@@ -15,7 +15,6 @@ using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime.Objects.Visual;
 using BetterLegacy.Editor.Components;
 
-using Object = UnityEngine.Object;
 using ObjectType = BetterLegacy.Core.Data.Beatmap.BeatmapObject.ObjectType;
 
 namespace BetterLegacy.Core.Runtime.Objects
@@ -115,7 +114,7 @@ namespace BetterLegacy.Core.Runtime.Objects
             var shapeOption = Mathf.Clamp(beatmapObject.ShapeOption, 0, ObjectManager.inst.objectPrefabs[shape].options.Count - 1);
             var shapeType = (ShapeType)shape;
 
-            GameObject baseObject = Object.Instantiate(ObjectManager.inst.objectPrefabs[shape].options[shapeOption], parent ? parent.transform : runtimeLevel.Parent);
+            GameObject baseObject = UnityObject.Instantiate(ObjectManager.inst.objectPrefabs[shape].options[shapeOption], parent ? parent.transform : runtimeLevel.Parent);
             
             baseObject.transform.localScale = Vector3.one;
 
@@ -166,7 +165,7 @@ namespace BetterLegacy.Core.Runtime.Objects
                 }
             }
 
-            Object.Destroy(visualObject.GetComponent<SelectObjectInEditor>());
+            UnityObject.Destroy(visualObject.GetComponent<SelectObjectInEditor>());
 
             visual.colorSequence = beatmapObject.cachedSequences.ColorSequence;
             visual.secondaryColorSequence = beatmapObject.cachedSequences.SecondaryColorSequence;

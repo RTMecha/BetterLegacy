@@ -514,7 +514,7 @@ namespace BetterLegacy.Menus.UI.Elements
                     return;
                 }
 
-                var pitch = textSoundPitch + UnityEngine.Random.Range(-textSoundPitchVary, textSoundPitchVary);
+                var pitch = textSoundPitch + UnityRandom.Range(-textSoundPitchVary, textSoundPitchVary);
                 if (!string.IsNullOrEmpty(textSound))
                 {
                     if (SoundManager.inst.TryGetSound(textSound, out AudioClip audioClip))

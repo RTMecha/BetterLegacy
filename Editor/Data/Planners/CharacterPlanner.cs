@@ -5,8 +5,6 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-using LSFunctions;
-
 using TMPro;
 using SimpleJSON;
 

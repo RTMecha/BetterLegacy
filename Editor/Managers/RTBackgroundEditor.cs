@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -172,30 +171,30 @@ namespace BetterLegacy.Editor.Managers
                 var backgroundObject = new BackgroundObject();
                 backgroundObject.name = "bg - " + i;
 
-                float num = UnityEngine.Random.Range(2, 6);
-                backgroundObject.scale = UnityEngine.Random.value > 0.5f ? new Vector2((float)UnityEngine.Random.Range(2, 8), (float)UnityEngine.Random.Range(2, 8)) : new Vector2(num, num);
+                float num = UnityRandom.Range(2f, 6f);
+                backgroundObject.scale = UnityRandom.value > 0.5f ? new Vector2(UnityRandom.Range(2f, 8f), UnityRandom.Range(2f, 8f)) : new Vector2(num, num);
 
-                backgroundObject.pos = new Vector2((float)UnityEngine.Random.Range(-48, 48), (float)UnityEngine.Random.Range(-32, 32));
-                backgroundObject.color = UnityEngine.Random.Range(1, 6);
-                backgroundObject.depth = UnityEngine.Random.Range(0, 6);
+                backgroundObject.pos = new Vector2(UnityRandom.Range(-48f, 48f), UnityRandom.Range(-32f, 32f));
+                backgroundObject.color = UnityRandom.Range(1, 6);
+                backgroundObject.depth = UnityRandom.Range(0, 6);
 
-                if (UnityEngine.Random.value > 0.5f)
+                if (UnityRandom.value > 0.5f)
                 {
-                    backgroundObject.reactiveType = (BackgroundObject.ReactiveType)UnityEngine.Random.Range(1, 5);
+                    backgroundObject.reactiveType = (BackgroundObject.ReactiveType)UnityRandom.Range(1, 5);
 
-                    backgroundObject.reactiveScale = UnityEngine.Random.Range(0.01f, 0.04f);
+                    backgroundObject.reactiveScale = UnityRandom.Range(0.01f, 0.04f);
                 }
 
                 if (backgroundObject.reactiveType == BackgroundObject.ReactiveType.Custom)
                 {
-                    backgroundObject.reactivePosIntensity = new Vector2(UnityEngine.Random.Range(0, 100) > 65 ? UnityEngine.Random.Range(0f, 1f) : 0f, UnityEngine.Random.Range(0, 100) > 65 ? UnityEngine.Random.Range(0f, 1f) : 0f);
-                    backgroundObject.reactiveScaIntensity = new Vector2(UnityEngine.Random.Range(0, 100) > 45 ? UnityEngine.Random.Range(0f, 1f) : 0f, UnityEngine.Random.Range(0, 100) > 45 ? UnityEngine.Random.Range(0f, 1f) : 0f);
-                    backgroundObject.reactiveRotIntensity = UnityEngine.Random.Range(0, 100) > 45 ? UnityEngine.Random.Range(0f, 1f) : 0f;
-                    backgroundObject.reactiveCol = UnityEngine.Random.Range(1, 6);
+                    backgroundObject.reactivePosIntensity = new Vector2(UnityRandom.Range(0, 100) > 65 ? UnityRandom.Range(0f, 1f) : 0f, UnityRandom.Range(0, 100) > 65 ? UnityRandom.Range(0f, 1f) : 0f);
+                    backgroundObject.reactiveScaIntensity = new Vector2(UnityRandom.Range(0, 100) > 45 ? UnityRandom.Range(0f, 1f) : 0f, UnityRandom.Range(0, 100) > 45 ? UnityRandom.Range(0f, 1f) : 0f);
+                    backgroundObject.reactiveRotIntensity = UnityRandom.Range(0, 100) > 45 ? UnityRandom.Range(0f, 1f) : 0f;
+                    backgroundObject.reactiveCol = UnityRandom.Range(1, 6);
                 }
 
-                backgroundObject.shape = UnityEngine.Random.Range(0, ShapeManager.inst.Shapes3D.Count);
-                backgroundObject.shapeOption = UnityEngine.Random.Range(0, ShapeManager.inst.Shapes3D[backgroundObject.shape].Count);
+                backgroundObject.shape = UnityRandom.Range(0, ShapeManager.inst.Shapes3D.Count);
+                backgroundObject.shapeOption = UnityRandom.Range(0, ShapeManager.inst.Shapes3D[backgroundObject.shape].Count);
 
                 backgroundObject.editorData.Layer = EditorTimeline.inst.Layer;
                 backgroundObject.editorData.Bin = EditorTimeline.inst.CalculateMaxBin(i);

@@ -1889,7 +1889,7 @@ namespace BetterLegacy.Editor.Managers
                 SetBinPosition(BinCount);
 
             if (EditorConfig.Instance.BinControlsPlaysSounds.Value)
-                SoundManager.inst.PlaySound(DefaultSounds.pop, 0.7f, 1.3f + UnityEngine.Random.Range(-0.05f, 0.05f));
+                SoundManager.inst.PlaySound(DefaultSounds.pop, 0.7f, 1.3f + UnityRandom.Range(-0.05f, 0.05f));
         }
 
         /// <summary>
@@ -1929,7 +1929,7 @@ namespace BetterLegacy.Editor.Managers
             if (!EditorConfig.Instance.BinControlsPlaysSounds.Value)
                 return;
 
-            float add = UnityEngine.Random.Range(-0.05f, 0.05f);
+            float add = UnityRandom.Range(-0.05f, 0.05f);
             SoundManager.inst.PlaySound(DefaultSounds.Block, 0.5f, 1.3f + add);
             SoundManager.inst.PlaySound(DefaultSounds.menuflip, 0.4f, 1.5f + add);
         }

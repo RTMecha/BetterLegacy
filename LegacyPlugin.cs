@@ -1,4 +1,7 @@
-﻿using System;
+﻿global using UnityObject = UnityEngine.Object;
+global using UnityRandom = UnityEngine.Random;
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -296,7 +299,7 @@ namespace BetterLegacy
                 if (RTFile.FileExists(splashTextPath))
                 {
                     var splashes = RTString.GetLines(RTFile.ReadFromFile(splashTextPath));
-                    var splashIndex = UnityEngine.Random.Range(0, splashes.Length);
+                    var splashIndex = UnityRandom.Range(0, splashes.Length);
                     var spashText = splashes[splashIndex];
                     SplashText = spashText.StartsWith("{") && spashText.EndsWith("}") ? Lang.Parse(JSON.Parse(spashText)) : spashText;
                 }
@@ -598,7 +601,7 @@ namespace BetterLegacy
             new Universe("Axiom Nexus", Universe.UniDes.Chardax, "000"),
         };
 
-        public static User player = new User("Player", UnityEngine.Random.Range(0, ulong.MaxValue).ToString(), new Universe(Universe.UniDes.MUS));
+        public static User player = new User("Player", UnityRandom.Range(0, ulong.MaxValue).ToString(), new Universe(Universe.UniDes.MUS));
 
         public class User : Exists
         {
@@ -620,26 +623,26 @@ namespace BetterLegacy
         {
             public Universe()
             {
-                uniDes = (UniDes)UnityEngine.Random.Range(0, 3);
-                uniNum = string.Format("{0:000}", UnityEngine.Random.Range(0, int.MaxValue));
+                uniDes = (UniDes)UnityRandom.Range(0, 3);
+                uniNum = string.Format("{0:000}", UnityRandom.Range(0, int.MaxValue));
 
-                for (int i = 0; i < UnityEngine.Random.Range(0, 10); i++)
+                for (int i = 0; i < UnityRandom.Range(0, 10); i++)
                 {
-                    timelines.Add(new Timeline(UnityEngine.Random.Range(0f, 9999999f)));
+                    timelines.Add(new Timeline(UnityRandom.Range(0f, 9999999f)));
                 }
             }
 
             public Universe(UniDes uniDes)
             {
                 this.uniDes = uniDes;
-                uniNum = string.Format("{0:000}", UnityEngine.Random.Range(0, int.MaxValue));
+                uniNum = string.Format("{0:000}", UnityRandom.Range(0, int.MaxValue));
 
                 Debug.LogFormat("{0}UniNum: {1}", className, uniNum);
 
                 timelines = new List<Timeline>();
-                for (int i = 0; i < UnityEngine.Random.Range(0, 10); i++)
+                for (int i = 0; i < UnityRandom.Range(0, 10); i++)
                 {
-                    timelines.Add(new Timeline(UnityEngine.Random.Range(0f, 9999999f)));
+                    timelines.Add(new Timeline(UnityRandom.Range(0f, 9999999f)));
                 }
 
                 Debug.LogFormat("{0}Timeline Count: {1}", className, timelines.Count);

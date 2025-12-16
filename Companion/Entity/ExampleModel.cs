@@ -418,7 +418,7 @@ namespace BetterLegacy.Companion.Entity
                 reference.dragPos = new Vector3(position.x, position.y);
                 reference.dragging = true;
 
-                SoundManager.inst.PlaySound(baseCanvas, DefaultSounds.example_speak, UnityEngine.Random.Range(0.6f, 0.7f), UnityEngine.Random.Range(1.1f, 1.3f));
+                SoundManager.inst.PlaySound(baseCanvas, DefaultSounds.example_speak, UnityRandom.Range(0.6f, 0.7f), UnityRandom.Range(1.1f, 1.3f));
 
                 SetPose(Poses.START_DRAG);
 
@@ -533,7 +533,7 @@ namespace BetterLegacy.Companion.Entity
 
                 // Here we add a tiny amount of movement to the pupils to make Example feel a lot more alive.
                 if (t > CompanionManager.PUPILS_LOOK_RATE - 0.3f && GetAttribute("PUPILS_CAN_CHANGE").Value == 1.0)
-                    pupilsOffset = new Vector2(UnityEngine.Random.Range(0f, 0.5f), UnityEngine.Random.Range(0f, 0.5f));
+                    pupilsOffset = new Vector2(UnityRandom.Range(0f, 0.5f), UnityRandom.Range(0f, 0.5f));
 
                 GetAttribute("PUPILS_CAN_CHANGE").Value = (t <= CompanionManager.PUPILS_LOOK_RATE - 0.3f) ? 0.0 : 1.0;
 
@@ -1611,7 +1611,7 @@ namespace BetterLegacy.Companion.Entity
 
                 var pose = parameters is RandomPoseParameters randomPose && randomPose.poseSelection != null ?
                     randomPose.poseSelection() :
-                    UnityEngine.Random.Range(0, 3);
+                    UnityRandom.Range(0, 3);
 
                 var animation = new RTAnimation("Hiii");
                 switch (pose)
@@ -1719,7 +1719,7 @@ namespace BetterLegacy.Companion.Entity
             {
                 var pose = parameters is RandomPoseParameters randomPose && randomPose.poseSelection != null ?
                     randomPose.poseSelection() :
-                    UnityEngine.Random.Range(0, 3);
+                    UnityRandom.Range(0, 3);
 
                 var animation = new RTAnimation("Cya");
                 switch (pose)
@@ -2423,7 +2423,7 @@ namespace BetterLegacy.Companion.Entity
                     new FloatKeyframe(1.6f, 0f, Ease.SineIn),
                 }, x => handsBase.rotation = x),
             };
-            danceLoopAnimation.speed = UnityEngine.Random.Range(0.5f, 2f);
+            danceLoopAnimation.speed = UnityRandom.Range(0.5f, 2f);
             CompanionManager.inst.animationController.Play(danceLoopAnimation);
 
             SetPose(Poses.WORRY);
@@ -2824,7 +2824,7 @@ namespace BetterLegacy.Companion.Entity
 
                     case "UpdatePupilsOffset": {
                             if (thisElement && thisElement.model)
-                                thisElement.model.pupilsOffset = new Vector2(UnityEngine.Random.Range(0f, 0.5f), UnityEngine.Random.Range(0f, 0.5f));
+                                thisElement.model.pupilsOffset = new Vector2(UnityRandom.Range(0f, 0.5f), UnityRandom.Range(0f, 0.5f));
                             return;
                         }
                     case "UpdateBlinking": {

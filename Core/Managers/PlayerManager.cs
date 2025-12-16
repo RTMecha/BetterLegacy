@@ -14,8 +14,6 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers.Settings;
 using BetterLegacy.Core.Runtime;
 
-using UnityRandom = UnityEngine.Random;
-
 namespace BetterLegacy.Core.Managers
 {
     /// <summary>

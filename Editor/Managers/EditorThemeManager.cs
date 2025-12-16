@@ -14,8 +14,6 @@ using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Data;
 
-using UnityObject = UnityEngine.Object;
-
 namespace BetterLegacy.Editor.Managers
 {
     /// <summary>

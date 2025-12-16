@@ -364,13 +364,15 @@ namespace BetterLegacy.Companion.Entity
                     parameters => reference.brain.Check(ExampleBrain.Checks.NO_ASSETS)),
                 new ExampleDialogue((companion, parameters) =>
                 {
-                    var index = UnityEngine.Random.Range(0, ProjectPlanner.inst.todos.Count);
+                    var index = UnityRandom.Range(0, ProjectPlanner.inst.todos.Count);
                     while (ProjectPlanner.inst.todos[index].Checked)
-                        index = UnityEngine.Random.Range(0, ProjectPlanner.inst.todos.Count);
+                        index = UnityRandom.Range(0, ProjectPlanner.inst.todos.Count);
 
                     var todo = ProjectPlanner.inst.todos[index];
+                    var str = todo.Text;
+                    ProjectPlanner.inst.SetupPlannerLinks(todo.Text, null, false, _val => str = _val);
 
-                    return $"Have you done the \"{todo.Text}\" yet?";
+                    return $"Have you done the \"{str}\" yet?";
                 },
                     parameters => ExampleConfig.Instance.CanRemindTODO.Value && RandomHelper.PercentChance(ExampleConfig.Instance.RemindRarity.Value) && ProjectPlanner.inst && ProjectPlanner.inst.todos.Has(x => !x.Checked)),
                 new ExampleDialogue((companion, parameters) => "Seems like you have no levels... maybe you should make one?",
@@ -497,8 +499,8 @@ namespace BetterLegacy.Companion.Entity
                     parameters => parameters is IdeaDialogueParameters ideaParameters && ideaParameters.ideaContext == IdeaDialogueParameters.IdeaContext.Character),
                 new ExampleDialogue((companion, parameters) =>
                 {
-                    var shape = UnityEngine.Random.Range(0, ShapeManager.inst.Shapes2D.Count);
-                    var shapeOption = UnityEngine.Random.Range(0, ShapeManager.inst.Shapes2D[shape].Count);
+                    var shape = UnityRandom.Range(0, ShapeManager.inst.Shapes2D.Count);
+                    var shapeOption = UnityRandom.Range(0, ShapeManager.inst.Shapes2D[shape].Count);
 
                     return $"Try adding a {ShapeManager.inst.Shapes2D[shape][shapeOption].name} to a prefab.";
                 }, parameters => parameters is IdeaDialogueParameters ideaParameters && ideaParameters.ideaContext == IdeaDialogueParameters.IdeaContext.Prefab),
@@ -757,7 +759,7 @@ namespace BetterLegacy.Companion.Entity
         public void Say(ExampleDialogue dialogue, DialogueParameters parameters = null)
         {
             if (!parameters)
-                parameters = new DialogueParameters(UnityEngine.Random.Range(0, dialogue.dialogueCount));
+                parameters = new DialogueParameters(UnityRandom.Range(0, dialogue.dialogueCount));
 
             var text = dialogue?.get?.Invoke(Example.Current, parameters);
 
@@ -826,7 +828,7 @@ namespace BetterLegacy.Companion.Entity
                     if (prevLetterNum != (int)x)
                     {
                         prevLetterNum = (int)x;
-                        SoundManager.inst.PlaySound(reference.model.baseCanvas, DefaultSounds.example_speak, UnityEngine.Random.Range(0.2f, 0.3f), UnityEngine.Random.Range(0.97f, 1.03f));
+                        SoundManager.inst.PlaySound(reference.model.baseCanvas, DefaultSounds.example_speak, UnityRandom.Range(0.2f, 0.3f), UnityRandom.Range(0.97f, 1.03f));
                     }
 
                     try

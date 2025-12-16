@@ -698,7 +698,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
         public void SetupGridLayout(MenuGridLayout layout, Transform parent)
         {
             if (layout.gameObject)
-                UnityEngine.Object.Destroy(layout.gameObject);
+                CoreHelper.Delete(layout.gameObject);
 
             layout.gameObject = Creator.NewUIObject(layout.name, parent);
 
@@ -743,7 +743,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
         public void SetupHorizontalLayout(MenuHorizontalLayout layout, Transform parent)
         {
             if (layout.gameObject)
-                UnityEngine.Object.Destroy(layout.gameObject);
+                CoreHelper.Delete(layout.gameObject);
 
             layout.gameObject = Creator.NewUIObject(layout.name, parent);
 
@@ -789,7 +789,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
         public void SetupVerticalLayout(MenuVerticalLayout layout, Transform parent)
         {
             if (layout.gameObject)
-                UnityEngine.Object.Destroy(layout.gameObject);
+                CoreHelper.Delete(layout.gameObject);
 
             layout.gameObject = Creator.NewUIObject(layout.name, parent);
 
@@ -859,7 +859,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
         public void SetupImage(MenuImage menuImage, Transform parent)
         {
             if (menuImage.gameObject)
-                UnityEngine.Object.Destroy(menuImage.gameObject);
+                CoreHelper.Delete(menuImage.gameObject);
 
             menuImage.gameObject = Creator.NewUIObject(menuImage.name, parent);
             menuImage.gameObject.layer = 5;
@@ -902,7 +902,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
         public void SetupText(MenuText menuText, Transform parent)
         {
             if (menuText.gameObject)
-                UnityEngine.Object.Destroy(menuText.gameObject);
+                CoreHelper.Delete(menuText.gameObject);
 
             menuText.gameObject = Creator.NewUIObject(menuText.name, parent);
             menuText.gameObject.layer = 5;
@@ -973,7 +973,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
         public void SetupButton(MenuButton menuButton, Transform parent)
         {
             if (menuButton.gameObject)
-                UnityEngine.Object.Destroy(menuButton.gameObject);
+                CoreHelper.Delete(menuButton.gameObject);
 
             menuButton.gameObject = Creator.NewUIObject(menuButton.name, parent);
             menuButton.gameObject.layer = 5;
@@ -1051,7 +1051,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
         public void SetupInputField(MenuInputField menuInputField, Transform parent)
         {
             if (menuInputField.gameObject)
-                UnityEngine.Object.Destroy(menuInputField.gameObject);
+                CoreHelper.Delete(menuInputField.gameObject);
 
             menuInputField.inputField = UIManager.GenerateInputField(menuInputField.name, parent);
 
@@ -1117,7 +1117,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             for (int i = 0; i < elements.Count; i++)
                 elements[i]?.Clear();
 
-            UnityEngine.Object.Destroy(canvas?.GameObject);
+            CoreHelper.Delete(canvas?.GameObject);
             if (loopingEvents != null)
                 AnimationManager.inst.Remove(loopingEvents.id);
             if (spawnEvents != null)

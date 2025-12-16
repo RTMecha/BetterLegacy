@@ -1,10 +1,7 @@
 ﻿using UnityEngine;
 
 using LSFunctions;
-
-using BetterLegacy.Configs;
 using BetterLegacy.Core.Data;
-using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Core.Runtime.Objects.Visual
 {

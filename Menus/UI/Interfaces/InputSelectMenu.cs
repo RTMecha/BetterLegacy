@@ -129,13 +129,13 @@ namespace BetterLegacy.Menus.UI.Interfaces
         {
             for (int i = 0; i < nanobots.Count; i++)
             {
-                if (UnityEngine.Random.value < 0.5f)
+                if (UnityRandom.value < 0.5f)
                 {
                     noTexts[i] = $"<{LSText.randomHex("666666")}>{LSText.randomString(36)}</color>";
                     noColors[i] = LSText.randomHex("666666");
                 }
             }
-            yield return CoroutineHelper.Seconds(UnityEngine.Random.Range(0f, 0.4f));
+            yield return CoroutineHelper.Seconds(UnityRandom.Range(0f, 0.4f));
             changeTextCoroutine = CoroutineHelper.StartCoroutine(ChangeText());
             yield break;
         }

@@ -74,7 +74,7 @@ namespace BetterLegacy.Companion
                     "Test 3",
                     "Test 4",
                 };
-                return dialogues[UnityEngine.Random.Range(0, dialogues.Length)];
+                return dialogues[UnityRandom.Range(0, dialogues.Length)];
             }));
             dialogues.Add(new ExampleDialogue("Check Dialogue", (companion, parameters) =>
             {
@@ -104,7 +104,7 @@ namespace BetterLegacy.Companion
         public static void Say(ExampleDialogue dialogue, DialogueParameters parameters = null)
         {
             if (!parameters)
-                parameters = new DialogueParameters(UnityEngine.Random.Range(0, dialogue.dialogueCount));
+                parameters = new DialogueParameters(UnityRandom.Range(0, dialogue.dialogueCount));
 
             var text = dialogue?.get?.Invoke(Example.Current, parameters);
             Example.Current?.chatBubble?.Say(text, parameters);

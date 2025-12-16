@@ -179,7 +179,7 @@ namespace BetterLegacy.Core.Managers
             };
 
             if (musicGroup.group.Count > 1 && musicGroup.alwaysRandom)
-                musicGroup.randomIndex = Random.Range(0, musicGroup.Count);
+                musicGroup.randomIndex = UnityRandom.Range(0, musicGroup.Count);
             LegacyResources.musicClips.Add(musicGroup);
         }
 

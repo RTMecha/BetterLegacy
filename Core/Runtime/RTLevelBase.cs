@@ -16,8 +16,6 @@ using BetterLegacy.Core.Runtime.Objects;
 using BetterLegacy.Core.Runtime.Objects.Visual;
 using BetterLegacy.Editor.Components;
 
-using UnityObject = UnityEngine.Object;
-
 namespace BetterLegacy.Core.Runtime
 {
     /// <summary>

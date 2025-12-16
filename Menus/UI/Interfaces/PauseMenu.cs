@@ -178,7 +178,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     continue;
 
                 elements[i].Clear();
-                UnityEngine.Object.Destroy(elements[i].gameObject);
+                CoreHelper.Delete(elements[i].gameObject);
             }
             elements.RemoveAll(x => x.id != "321" && x.id != "35255236785");
 

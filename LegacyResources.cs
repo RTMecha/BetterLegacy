@@ -10,8 +10,6 @@ using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 
-using UnityObject = UnityEngine.Object;
-
 namespace BetterLegacy
 {
     public class LegacyResources
@@ -336,7 +334,7 @@ namespace BetterLegacy
             foreach (var musicGroup in library.musicGroups)
             {
                 if (musicGroup.music.Length > 1 && !musicGroup.alwaysRandom) // not alwaysRandom is apparently ACTUALLY RANDOM???
-                    library.musicClipsRandomIndex[musicGroup.musicID] = Random.Range(0, musicGroup.music.Length);
+                    library.musicClipsRandomIndex[musicGroup.musicID] = UnityRandom.Range(0, musicGroup.music.Length);
 
                 musicClips.Add(musicGroup);
             }

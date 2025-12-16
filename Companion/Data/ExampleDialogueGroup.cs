@@ -38,11 +38,11 @@ namespace BetterLegacy.Companion.Data
             if (dialogues.Length == 1)
                 return dialogues[0];
 
-            int num = UnityEngine.Random.Range(0, dialogues.Length);
+            int num = UnityRandom.Range(0, dialogues.Length);
             int attempts = 0;
             while (!dialogues[num].CanSay(parameters))
             {
-                num = UnityEngine.Random.Range(0, dialogues.Length);
+                num = UnityRandom.Range(0, dialogues.Length);
 
                 // prevents the game from getting stuck if Example chooses to not say anything.
                 attempts++;
