@@ -36,6 +36,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public Toggle AllowZenProgressionToggle { get; set; }
 
+        public InputField EditorPathField { get; set; }
+
         public Button ViewLevelsButton { get; set; }
 
         public Button SaveButton { get; set; }
@@ -283,6 +285,16 @@ namespace BetterLegacy.Editor.Data.Dialogs
             #endregion
 
             AllowZenProgressionToggle = GenerateToggle(Content, "Allow Zen Progression");
+
+            new Labels(Labels.InitSettings.Default.Parent(Content), new Label("Editor Path") { horizontalWrap = HorizontalWrapMode.Overflow });
+
+            var editorPath = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(Content);
+            RectValues.Default.SizeDelta(740f, 32f).AssignToRectTransform(editorPath.transform.AsRT());
+
+            EditorPathField = editorPath.GetComponent<InputField>();
+            EditorPathField.GetPlaceholderText().text = "Set editor folder...";
+            EditorPathField.GetPlaceholderText().color = new Color(0.1961f, 0.1961f, 0.1961f, 0.5f);
+            EditorThemeManager.ApplyInputField(EditorPathField);
 
             var viewLevels = EditorPrefabHolder.Instance.Function2Button.Duplicate(Content, "view levels");
             var viewLevelsStorage = viewLevels.GetComponent<FunctionButtonStorage>();

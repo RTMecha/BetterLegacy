@@ -336,6 +336,9 @@ namespace BetterLegacy.Editor.Managers
                 }
                 else
                     CurrentLevelCollection = null;
+
+                if (OpenLevelCollection && !string.IsNullOrEmpty(OpenLevelCollection.editorPath))
+                    fullPath = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, OpenLevelCollection.editorPath);
             }
             catch (Exception ex)
             {
@@ -1215,12 +1218,14 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
+            var fullPath = OpenLevelCollection ? OpenLevelCollection.path : RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.EditorPath);
+
             bool setNew = false;
             int num = 0;
-            string p = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.EditorPath, newLevelName);
+            string p = RTFile.CombinePaths(fullPath, newLevelName);
             while (RTFile.DirectoryExists(p))
             {
-                p = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.EditorPath, newLevelName) + " - " + num.ToString();
+                p = RTFile.CombinePaths(fullPath, newLevelName) + " - " + num.ToString();
                 num += 1;
                 setNew = true;
 
@@ -1228,7 +1233,7 @@ namespace BetterLegacy.Editor.Managers
             if (setNew)
                 newLevelName += " - " + num.ToString();
 
-            var path = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.EditorPath, newLevelName);
+            var path = RTFile.CombinePaths(fullPath, newLevelName);
 
             if (RTFile.DirectoryExists(path))
             {
@@ -1237,7 +1242,6 @@ namespace BetterLegacy.Editor.Managers
             }
 
             var gameData = func?.Invoke();
-
             if (!gameData)
                 return;
 
@@ -1270,6 +1274,7 @@ namespace BetterLegacy.Editor.Managers
             var levelPanel = new LevelPanel();
             levelPanel.Init(new Level(path));
             LevelPanels.Add(levelPanel);
+            OpenLevelCollection?.AddLevel(levelPanel.Item);
             LoadLevel(levelPanel);
             NewLevelPopup.Close();
         }
@@ -1708,6 +1713,9 @@ namespace BetterLegacy.Editor.Managers
             LevelCollectionDialog.AllowZenProgressionToggle.SetIsOnWithoutNotify(levelCollection.allowZenProgression);
             LevelCollectionDialog.AllowZenProgressionToggle.onValueChanged.NewListener(_val => levelCollection.allowZenProgression = _val);
 
+            LevelCollectionDialog.EditorPathField.SetTextWithoutNotify(levelCollection.editorPath);
+            LevelCollectionDialog.EditorPathField.onValueChanged.NewListener(_val => levelCollection.editorPath = _val);
+
             LevelCollectionDialog.ViewLevelsButton.onClick.NewListener(() => LoadLevelCollection(levelCollection));
             LevelCollectionDialog.SaveButton.onClick.NewListener(() =>
             {
@@ -1792,7 +1800,7 @@ namespace BetterLegacy.Editor.Managers
             }, errorFile => EditorManager.inst.DisplayNotification("Please resize your image to be less than or equal to 512 x 512 pixels. It must also be a jpg.", 2f, EditorManager.NotificationType.Error)));
         }
 
-        public void OpenIconSelector(LevelInfo levelInfo, Action onSubmit = null)
+        public void OpenIconSelector(LevelInfo levelInfo, Action onSubmit = null, string submitLabel = null)
         {
             string jpgFile = FileBrowser.OpenSingleFile("jpg");
             CoreHelper.Log("Selected file: " + jpgFile);
@@ -1802,7 +1810,7 @@ namespace BetterLegacy.Editor.Managers
             CoroutineHelper.StartCoroutine(EditorManager.inst.GetSprite(jpgFile, new EditorManager.SpriteLimits(new Vector2(512f, 512f)), cover =>
             {
                 levelInfo.icon = cover;
-                RenderLevelInfoEditor(levelInfo, onSubmit);
+                RenderLevelInfoEditor(levelInfo, onSubmit, submitLabel);
             }, errorFile => EditorManager.inst.DisplayNotification("Please resize your image to be less than or equal to 512 x 512 pixels. It must also be a jpg.", 2f, EditorManager.NotificationType.Error)));
         }
 
@@ -1841,17 +1849,21 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
-        public void OpenLevelInfoEditor(LevelInfo levelInfo, Action onSubmit = null)
+        public void OpenLevelInfoEditor(LevelInfo levelInfo, Action onSubmit = null, string submitLabel = null)
         {
             if (!levelInfo)
                 return;
 
             LevelInfoDialog.Open();
-            RenderLevelInfoEditor(levelInfo, onSubmit);
+            RenderLevelInfoEditor(levelInfo, onSubmit, submitLabel);
         }
 
-        public void RenderLevelInfoEditor(LevelInfo levelInfo, Action onSubmit = null)
+        public void RenderLevelInfoEditor(LevelInfo levelInfo, Action onSubmit = null, string submitLabel = null)
         {
+            LevelInfoDialog.SubmitButton.gameObject.SetActive(onSubmit != null);
+            LevelInfoDialog.SubmitButton.OnClick.NewListener(() => onSubmit?.Invoke());
+            LevelInfoDialog.SubmitButton.Text = !string.IsNullOrEmpty(submitLabel) ? submitLabel : "Submit";
+
             LevelInfoDialog.PathField.SetTextWithoutNotify(levelInfo.path);
             LevelInfoDialog.PathField.onValueChanged.NewListener(_val => levelInfo.path = _val);
             LevelInfoDialog.PathField.onEndEdit.NewListener(_val =>
@@ -1961,9 +1973,6 @@ namespace BetterLegacy.Editor.Managers
                 levelInfo.skip = _val;
                 levelInfo.collection?.Save();
             });
-
-            LevelInfoDialog.SubmitButton.gameObject.SetActive(onSubmit != null);
-            LevelInfoDialog.SubmitButton.onClick.NewListener(() => onSubmit?.Invoke());
         }
 
         public void RenderLevelInfoDifficulty(LevelInfo levelInfo)

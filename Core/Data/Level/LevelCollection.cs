@@ -168,6 +168,11 @@ namespace BetterLegacy.Core.Data.Level
         /// </summary>
         public bool allowZenProgression;
 
+        /// <summary>
+        /// Path to set when the level collections' levels are viewed.
+        /// </summary>
+        public string editorPath;
+
         #region Server
 
         /// <summary>
@@ -257,7 +262,8 @@ namespace BetterLegacy.Core.Data.Level
             set
             {
                 var index = levels.FindIndex(x => x.id == id);
-                levels[index] = value;
+                if (levels.InRange(index))
+                    levels[index] = value;
             }
         }
 
@@ -296,6 +302,9 @@ namespace BetterLegacy.Core.Data.Level
                 collection.datePublished = jn["date_published"];
             if (jn["version_number"] != null)
                 collection.versionNumber = jn["version_number"].AsInt;
+
+            if (jn["editor_path"] != null)
+                collection.editorPath = jn["editor_path"];
 
             collection.ReadUploadableJSON(jn);
 
@@ -611,8 +620,12 @@ namespace BetterLegacy.Core.Data.Level
         /// <param name="moveTo">Index to move to.</param>
         public void Move(string id, int moveTo)
         {
-            levels.Move(x => x.id == id, moveTo);
-            levelInformation.Move(x => x.id == id, moveTo);
+            var index = levelInformation.FindIndex(x => x.id == id);
+            if (index < 0)
+                return;
+
+            levels.Move(index, moveTo);
+            levelInformation.Move(index, moveTo);
             levelInformation[moveTo].index = moveTo;
         }
 
@@ -647,6 +660,9 @@ namespace BetterLegacy.Core.Data.Level
                 jn["version_number"] = versionNumber;
 
             this.WriteUploadableJSON(jn);
+
+            if (!string.IsNullOrEmpty(editorPath))
+                jn["editor_path"] = editorPath;
 
             for (int i = 0; i < levelInformation.Count; i++)
                 jn["levels"][i] = levelInformation[i].ToJSON();
