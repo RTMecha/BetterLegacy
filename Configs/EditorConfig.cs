@@ -71,6 +71,7 @@ namespace BetterLegacy.Configs
         public Setting<bool> LoopTimeline { get; set; }
         public Setting<bool> ExitPreviewOnEnd { get; set; }
         public Setting<bool> SkipLevelStartTime { get; set; }
+        public Setting<bool> LoadCollectionLevelDirectly { get; set; }
 
         #endregion
 
@@ -479,6 +480,7 @@ namespace BetterLegacy.Configs
             LoopTimeline = Bind(this, GENERAL, "Loop Timeline", true, "If the editor timeline should loop when the level reaches the end time.");
             SkipLevelStartTime = Bind(this, GENERAL, "Skip Level Start Time", true, "If the level start time should be automatically skipped whenever the level time enters the range.");
             ExitPreviewOnEnd = Bind(this, GENERAL, "Exit Preview On End", false, "If preview mode should be exited on level end.");
+            LoadCollectionLevelDirectly = Bind(this, GENERAL, "Load Collection Level Directly", false, "If level collection levels should be opened directly by clicking them instead of through the level info editor.");
 
             #endregion
 
