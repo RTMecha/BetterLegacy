@@ -33,16 +33,19 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var position = EditorPrefabHolder.Instance.Vector3InputFields.Duplicate(GameObject.transform, "position");
             PositionFields = position.GetComponent<Vector3InputFieldStorage>();
             PositionFields.Assign();
-            
+            PositionFields.SetSize(new Vector2(122f, 32f), new Vector2(60f, 32f));
+
             new LabelsElement(HorizontalOrVerticalLayoutValues.Horizontal.ChildControlHeight(false), "Scale X", "Scale Y", "Scale Z").Init(EditorElement.InitSettings.Default.Parent(GameObject.transform));
             var scale = EditorPrefabHolder.Instance.Vector3InputFields.Duplicate(GameObject.transform, "scale");
             ScaleFields = scale.GetComponent<Vector3InputFieldStorage>();
             ScaleFields.Assign();
-            
+            ScaleFields.SetSize(new Vector2(122f, 32f), new Vector2(60f, 32f));
+
             new LabelsElement(HorizontalOrVerticalLayoutValues.Horizontal.ChildControlHeight(false), "Rotation X", "Rotation Y", "Rotation Z").Init(EditorElement.InitSettings.Default.Parent(GameObject.transform));
             var rotation = EditorPrefabHolder.Instance.Vector3InputFields.Duplicate(GameObject.transform, "rotation");
             RotationFields = rotation.GetComponent<Vector3InputFieldStorage>();
             RotationFields.Assign();
+            RotationFields.SetSize(new Vector2(122f, 32f), new Vector2(60f, 32f));
 
             if (doRenderType)
             {

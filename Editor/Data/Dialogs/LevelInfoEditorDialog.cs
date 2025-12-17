@@ -110,7 +110,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             #region Setup
 
             var submit = EditorPrefabHolder.Instance.Function1Button.Duplicate(Content, "submit");
-            submit.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
+            submit.transform.AsRT().sizeDelta = new Vector2(730f, 64f);
             SubmitButton = submit.GetComponent<FunctionButtonStorage>();
             SubmitButton.Text = "Submit";
 

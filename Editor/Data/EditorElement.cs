@@ -1219,7 +1219,9 @@ namespace BetterLegacy.Editor.Data
             component.horizontalOverflow = horizontalWrap;
             component.verticalOverflow = verticalWrap;
 
-            if (sizeDelta != null && sizeDelta.HasValue)
+            if (initSettings.rectValues.HasValue)
+                initSettings.rectValues.Value.AssignToRectTransform(component.rectTransform);
+            if (sizeDelta.HasValue)
                 component.rectTransform.sizeDelta = sizeDelta.Value;
         }
 

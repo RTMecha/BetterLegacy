@@ -28,7 +28,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             base.Init();
 
-            new LabelsElement("Background Objects Active").Init(EditorElement.InitSettings.Default.Parent(GameObject.transform));
+            new LabelsElement(HorizontalOrVerticalLayoutValues.Horizontal.ChildControlHeight(false), "Background Objects Active").Init(EditorElement.InitSettings.Default.Parent(GameObject.transform));
             var active = EditorPrefabHolder.Instance.ToggleButton.Duplicate(GameObject.transform, "active");
             var activeToggle = active.GetComponent<ToggleButtonStorage>();
             activeToggle.Text = "Active";
