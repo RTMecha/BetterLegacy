@@ -22,7 +22,7 @@ using BetterLegacy.Editor.Managers;
 namespace BetterLegacy.Editor.Data.Dialogs
 {
     /// <summary>
-    /// Represents the object editor dialog for editing a <see cref="Core.Data.Beatmap.BeatmapObject"/>.
+    /// Represents the object editor dialog for editing a <see cref="BeatmapObject"/>.
     /// </summary>
     public class ObjectEditorDialog : EditorDialog, ITagDialog, IParentDialog, IAnimationDialog, IEditorLayerUI, IPrefabableDialog
     {
