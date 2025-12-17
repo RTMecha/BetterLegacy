@@ -44,5 +44,23 @@
       "pivot": [ 1, 0.5 ],
       "size": [ 32, 0 ]
     }
+  },
+  "progress": {
+    "rect": {
+      "anc_pos": [ 0, 0 ],
+      "anc_max": [ 1, 1 ],
+      "anc_min": [ 1, 1 ],
+      "pivot": [ 1, 1 ],
+      "size": [ 44, 20 ]
+    }
+  },
+  "checkmark": {
+    "rect": {
+      "anc_pos": [ 0, 0 ],
+      "anc_max": [ 1, 1 ],
+      "anc_min": [ 1, 1 ],
+      "pivot": [ 1, 1 ],
+      "size": [ 32, 32 ]
+    }
   }
 }

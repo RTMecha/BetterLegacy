@@ -64,7 +64,7 @@ namespace BetterLegacy.Editor.Managers
             text.fontSize = 17;
 
             var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(colorPrefab.transform, "Delete");
-            UIManager.SetRectTransform(delete.transform.AsRT(), new Vector2(748f, 0f), new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.one, new Vector2(32f, 32f));
+            UIManager.SetRectTransform(delete.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.one, Vector2.one, new Vector2(32f, 32f));
         }
 
         public override void OnTick()
@@ -225,8 +225,48 @@ namespace BetterLegacy.Editor.Managers
             TriggerHelper.AddEventTriggers(Dialog.BPMTimingInput.gameObject,
                 TriggerHelper.ScrollDelta(Dialog.BPMTimingInput));
 
+            Dialog.LevelProgressField.SetTextWithoutNotify(RTEditor.inst.editorInfo.Progress.ToString());
+            Dialog.LevelProgressField.OnValueChanged.NewListener(_val =>
+            {
+                if (float.TryParse(_val, out float num))
+                    SetLevelProgress(num);
+            });
+
+            TriggerHelper.IncreaseDecreaseButtons(Dialog.LevelProgressField, max: 100f);
+            TriggerHelper.AddEventTriggers(Dialog.LevelProgressField.inputField.gameObject,
+                TriggerHelper.ScrollDelta(Dialog.LevelProgressField.inputField, max: 100f));
+
+            EditorContextMenu.AddContextMenu(Dialog.LevelProgressField.inputField.gameObject,
+                new Data.ButtonElement("100%", () =>
+                {
+                    SetLevelProgress(100f);
+                    RenderDialog();
+                }),
+                new Data.ButtonElement("50%", () =>
+                {
+                    SetLevelProgress(50f);
+                    RenderDialog();
+                }),
+                new Data.ButtonElement("0%", () =>
+                {
+                    SetLevelProgress(0f);
+                    RenderDialog();
+                }));
+
             RenderMarkerColors();
             RenderLayerColors();
+        }
+
+        void SetLevelProgress(float num)
+        {
+            RTEditor.inst.editorInfo.Progress = num;
+
+            if (!EditorLevelManager.inst.LevelPanels.TryFind(x => x.Path == EditorLevelManager.inst.CurrentLevel.path, out Data.Elements.LevelPanel levelPanel))
+                return;
+
+            if (levelPanel.EditorInfo)
+                levelPanel.EditorInfo.Progress = num;
+            levelPanel.RenderProgress();
         }
 
         public void RenderMarkerColors()

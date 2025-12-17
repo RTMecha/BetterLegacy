@@ -18,7 +18,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
     {
         public SettingEditorDialog() : base(SETTINGS_EDITOR) { }
 
-        #region Properties
+        #region Values
 
         public Transform Content { get; set; }
 
@@ -52,11 +52,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         #endregion
 
+        public InputFieldStorage LevelProgressField { get; set; }
+
         public Image Doggo { get; set; }
-
-        #endregion
-
-        #region Fields
 
         public List<Info> infos = new List<Info>()
         {
@@ -220,6 +218,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
             loadingDoggo.transform.AsRT().sizeDelta = new Vector2(sizeRandom, sizeRandom);
 
             loadingDoggoLE.ignoreLayout = true;
+
+            new LabelsElement("Level Progress").Init(EditorElement.InitSettings.Default.Parent(Content));
+            var levelProgress = EditorPrefabHolder.Instance.NumberInputField.Duplicate(Content, "progress");
+            LevelProgressField = levelProgress.GetComponent<InputFieldStorage>();
+            CoreHelper.Delete(LevelProgressField.middleButton);
+            EditorThemeManager.ApplyInputField(LevelProgressField);
 
             var title2 = snap.GetChild(0).gameObject.Duplicate(Content, "marker colors title");
             var markerColorsText = title2.transform.Find("title").GetComponent<Text>();

@@ -1,4 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+
+using UnityEngine;
 
 using SimpleJSON;
 
@@ -13,6 +16,8 @@ namespace BetterLegacy.Editor.Data
 {
     public class EditorInfo : PAObject<EditorInfo>, IFile
     {
+        #region Values
+
         #region Usage
 
         /// <summary>
@@ -106,7 +111,46 @@ namespace BetterLegacy.Editor.Data
 
         #endregion
 
+        float progress;
+        /// <summary>
+        /// Completion progress of the level in the editor.
+        /// </summary>
+        public float Progress
+        {
+            get => Mathf.Clamp(progress, 0f, 100f);
+            set => progress = Mathf.Clamp(value, 0f, 100f);
+        }
+
+        /// <summary>
+        /// If the level is done.
+        /// </summary>
+        public bool IsComplete => Progress == 100f;
+
+        /// <summary>
+        /// Audio time.
+        /// </summary>
+        public float time;
+
+        /// <summary>
+        /// Path to load prefabs from.
+        /// </summary>
+        public string prefabPath;
+
+        /// <summary>
+        /// Path to load themes from.
+        /// </summary>
+        public string themePath;
+
+        /// <summary>
+        /// Settings for the capture area.
+        /// </summary>
+        public CaptureSettings captureSettings = new CaptureSettings();
+
         public FileFormat FileFormat => FileFormat.LSE;
+
+        #endregion
+
+        #region Functions
 
         public string GetFileName() => $"editor{FileFormat.Dot()}";
 
@@ -133,26 +177,33 @@ namespace BetterLegacy.Editor.Data
                 RTFile.WriteToFile(path, jn.ToString(3));
         }
 
-        /// <summary>
-        /// Audio time.
-        /// </summary>
-        public float time;
-
-        /// <summary>
-        /// Path to load prefabs from.
-        /// </summary>
-        public string prefabPath;
-
-        /// <summary>
-        /// Path to load themes from.
-        /// </summary>
-        public string themePath;
-
-        public CaptureSettings captureSettings = new CaptureSettings();
-
         public override void CopyData(EditorInfo orig, bool newID = true)
         {
-
+            timer = orig.timer;
+            savedTimeEditng = orig.savedTimeEditng;
+            openAmount = orig.openAmount;
+            mainZoom = orig.mainZoom;
+            mainPosition = orig.mainPosition;
+            binCount = orig.binCount;
+            binPosition = orig.binPosition;
+            layer = orig.layer;
+            layerType = orig.layerType;
+            pinnedEditorLayers = new List<PinnedEditorLayer>(orig.pinnedEditorLayers.Select(x => x.Copy()));
+            analyzedBPM = orig.analyzedBPM;
+            bpmSnapActive = orig.bpmSnapActive;
+            bpm = orig.bpm;
+            bpmOffset = orig.bpmOffset;
+            timeSignature = orig.timeSignature;
+            isStory = orig.isStory;
+            storyChapter = orig.storyChapter;
+            storyLevel = orig.storyLevel;
+            cutscene = orig.cutscene;
+            cutsceneDestination = orig.cutsceneDestination;
+            Progress = orig.Progress;
+            time = orig.time;
+            prefabPath = orig.prefabPath;
+            themePath = orig.themePath;
+            captureSettings = orig.captureSettings.Copy();
         }
 
         public override void ReadJSON(JSONNode jn)
@@ -208,6 +259,9 @@ namespace BetterLegacy.Editor.Data
 
             if (jn["editor"] != null)
             {
+                if (jn["editor"]["progress"] != null)
+                    Progress = jn["editor"]["progress"].AsFloat;
+
                 if (jn["editor"]["t"] != null)
                     timer.offset = jn["editor"]["t"].AsFloat;
                 if (jn["editor"]["editing_time"] != null)
@@ -272,10 +326,6 @@ namespace BetterLegacy.Editor.Data
             }
         }
 
-        /// <summary>
-        /// Converts the editor info into a JSON object.
-        /// </summary>
-        /// <returns>Returns a JSON object representing the editor info.</returns>
         public override JSONNode ToJSON()
         {
             var jn = Parser.NewJSONObject();
@@ -296,6 +346,7 @@ namespace BetterLegacy.Editor.Data
             for (int i = 0; i < pinnedEditorLayers.Count; i++)
                 jn["timeline"]["pinned_layers"][i] = pinnedEditorLayers[i].ToJSON();
 
+            jn["editor"]["progress"] = Progress;
             jn["editor"]["editing_time"] = timer.time;
             jn["editor"]["open_amount"] = openAmount;
 
@@ -374,5 +425,7 @@ namespace BetterLegacy.Editor.Data
 
             // don't apply paths since it's just an override.
         }
+
+        #endregion
     }
 }

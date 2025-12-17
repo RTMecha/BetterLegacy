@@ -48,11 +48,15 @@ namespace BetterLegacy.Editor.Data.Elements
         /// </summary>
         public GameObject SelectedUI { get; set; }
 
+        public GameObject Progress { get; set; }
+
         #endregion
 
         #region Data
 
         public LevelInfo Info { get; set; }
+
+        public EditorInfo EditorInfo { get; set; }
 
         public override float FocusSize => EditorConfig.Instance.OpenLevelButtonHoverSize.Value;
 
@@ -120,6 +124,10 @@ namespace BetterLegacy.Editor.Data.Elements
         public static RectValues iconRect = RectValues.Default.AnchoredPosition(-276f, 0f).SizeDelta(26f, 26f);
 
         public static RectValues deleteRect = new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(1f, 0.5f), new Vector2(32f, 0f));
+
+        public static RectValues progressRect = new RectValues(Vector2.zero, Vector2.one, Vector2.one, Vector2.one, new Vector2(44f, 20f));
+
+        public static RectValues checkmarkRect = new RectValues(Vector2.zero, Vector2.one, Vector2.one, Vector2.one, new Vector2(32f, 32f));
 
         public static string labelFormat = "/{0} : {1} by {2}";
 
@@ -201,6 +209,8 @@ namespace BetterLegacy.Editor.Data.Elements
             level.editorLevelPanel = this;
             level.isEditor = true;
 
+            LoadEditorInfo();
+
             var gameObject = GameObject;
             if (gameObject)
                 CoreHelper.Destroy(gameObject);
@@ -255,6 +265,7 @@ namespace BetterLegacy.Editor.Data.Elements
             RectValues.FullAnchored.AssignToRectTransform(selectedImage.rectTransform);
 
             Render();
+            RenderProgress();
         }
 
         public void Init(LevelInfo levelInfo)
@@ -300,6 +311,8 @@ namespace BetterLegacy.Editor.Data.Elements
 
             var deleteStorage = delete.GetComponent<DeleteButtonStorage>();
             DeleteButton = deleteStorage;
+
+            deleteRect.AssignToRectTransform(delete.transform.AsRT());
 
             new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(1f, 0.5f), new Vector2(32f, 0f)).AssignToRectTransform(delete.transform.AsRT());
 
@@ -392,6 +405,32 @@ namespace BetterLegacy.Editor.Data.Elements
 
             TooltipHelper.AddHoverTooltip(GameObject, "<#" + LSColors.ColorToHex(metadata.song.Difficulty.Color) + ">" + metadata.artist.name + " - " + metadata.song.title,
                 $"</color><br>Folder: {Item.FolderName}<br>Date Edited: {metadata.beatmap.dateEdited}<br>Date Created: {metadata.beatmap.dateCreated}<br>Description: {metadata.song.description}");
+        }
+
+        /// <summary>
+        /// Renders the levels' progress.
+        /// </summary>
+        public void RenderProgress()
+        {
+            CoreHelper.Delete(Progress);
+            if (!EditorInfo)
+                return;
+
+            if (EditorInfo.IsComplete)
+            {
+                var checkmark = Creator.NewUIObject("check", GameObject.transform);
+                checkmarkRect.AssignToRectTransform(checkmark.transform.AsRT());
+                var checkmarkImage = checkmark.AddComponent<Image>();
+                checkmarkImage.sprite = EditorSprites.CheckmarkSprite;
+                EditorThemeManager.ApplyGraphic(checkmarkImage, ThemeGroup.Light_Text);
+                Progress = checkmark;
+            }
+            else
+            {
+                var labelElement = new LabelElement($"{RTString.Percentage(EditorInfo.Progress, 100f)}%");
+                labelElement.Init(EditorElement.InitSettings.Default.Parent(GameObject.transform).Rect(progressRect));
+                Progress = labelElement.GameObject;
+            }
         }
 
         /// <summary>
@@ -590,7 +629,7 @@ namespace BetterLegacy.Editor.Data.Elements
                             }),
                         };
 
-                        if (currentLevelCollection)
+                        if (currentLevelCollection && info)
                             list.Add(new SpacerElement());
                     }
                     else if (Item)
@@ -715,35 +754,46 @@ namespace BetterLegacy.Editor.Data.Elements
                             }),
                         };
 
-                        if (currentLevelCollection)
+                        if (currentLevelCollection && info)
                             list.Add(new SpacerElement());
                     }
 
-                    if (currentLevelCollection)
+                    if (currentLevelCollection && info)
                     {
-                        if (info)
+                        list.Add(new ButtonElement("Edit Info", () => EditorLevelManager.inst.OpenLevelInfoEditor(info, Item ? () =>
                         {
-                            list.Add(new ButtonElement("Edit Info", () => EditorLevelManager.inst.OpenLevelInfoEditor(info, Item ? () =>
+                            EditorLevelManager.inst.LoadLevel(this);
+                            EditorLevelManager.inst.OpenLevelPopup.Close();
+                        } : null, Item ? "Open" : null)));
+                        list.Add(new ButtonElement("Remove from Collection", () =>
+                        {
+                            RTEditor.inst.ShowWarningPopup("Are you sure you want to remove the level from the current collection?", () =>
                             {
-                                EditorLevelManager.inst.LoadLevel(this);
-                                EditorLevelManager.inst.OpenLevelPopup.Close();
-                            } : null, Item ? "Open" : null)));
-                            list.Add(new ButtonElement("Remove from Collection", () =>
+                                if (Item)
+                                    currentLevelCollection.RemoveLevelFromFolder(Item);
+                                else
+                                    currentLevelCollection.Remove(info);
+                                currentLevelCollection.Save();
+
+                                EditorLevelManager.inst.LoadLevels();
+                            });
+                        }));
+                        list.Add(new ButtonElement("Move to Start", () =>
+                        {
+                            var info = GetLevelInfo();
+                            if (!info)
+                                return;
+
+                            if (info.index == 0)
                             {
-                                RTEditor.inst.ShowWarningPopup("Are you sure you want to remove the level from the current collection?", () =>
-                                {
-                                    if (Item)
-                                        currentLevelCollection.RemoveLevelFromFolder(Item);
-                                    else
-                                        currentLevelCollection.Remove(info);
-                                    currentLevelCollection.Save();
+                                EditorManager.inst.DisplayNotification($"The level is already at the start!", 2f, EditorManager.NotificationType.Warning);
+                                return;
+                            }
 
-                                    EditorLevelManager.inst.LoadLevels();
-                                    RTEditor.inst.HideWarningPopup();
-                                }, RTEditor.inst.HideWarningPopup);
-                            }));
-                        }
-
+                            currentLevelCollection.Move(info.id, 0);
+                            currentLevelCollection.Save();
+                            EditorLevelManager.inst.LoadLevels();
+                        }));
                         list.Add(new ButtonElement("Move Earlier", () =>
                         {
                             var info = GetLevelInfo();
@@ -777,6 +827,22 @@ namespace BetterLegacy.Editor.Data.Elements
                             currentLevelCollection.Save();
                             EditorLevelManager.inst.LoadLevels();
                         }));
+                        list.Add(new ButtonElement("Move to End", () =>
+                        {
+                            var info = GetLevelInfo();
+                            if (!info)
+                                return;
+
+                            if (info.index == currentLevelCollection.Count - 1)
+                            {
+                                EditorManager.inst.DisplayNotification($"The level is already at the end!", 2f, EditorManager.NotificationType.Warning);
+                                return;
+                            }
+
+                            currentLevelCollection.Move(info.id, currentLevelCollection.Count - 1);
+                            currentLevelCollection.Save();
+                            EditorLevelManager.inst.LoadLevels();
+                        }));
                     }
 
                     EditorContextMenu.inst.ShowContextMenu(list);
@@ -798,6 +864,12 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 if (currentLevelCollection && info)
                 {
+                    if (EditorConfig.Instance.LoadCollectionLevelDirectly.Value && Item)
+                    {
+                        EditorLevelManager.inst.LoadLevel(this);
+                        EditorLevelManager.inst.OpenLevelPopup.Close();
+                        return;
+                    }
                     EditorLevelManager.inst.OpenLevelInfoEditor(info, Item ? () =>
                     {
                         EditorLevelManager.inst.LoadLevel(this);
@@ -916,6 +988,15 @@ namespace BetterLegacy.Editor.Data.Elements
         /// Sets the default icon.
         /// </summary>
         public void SetDefaultIcon() => SetIcon(isFolder ? EditorSprites.OpenSprite : LegacyPlugin.AtanPlaceholder);
+
+        /// <summary>
+        /// Loads the level's editor info.
+        /// </summary>
+        public void LoadEditorInfo()
+        {
+            if (RTFile.FileExists(RTFile.CombinePaths(Path, Level.EDITOR_LSE)))
+                EditorInfo = RTFile.CreateFromFile<EditorInfo>(RTFile.CombinePaths(Path, Level.EDITOR_LSE));
+        }
 
         void EndFolderCreation()
         {

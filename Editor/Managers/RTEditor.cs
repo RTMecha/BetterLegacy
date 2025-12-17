@@ -3047,6 +3047,8 @@ namespace BetterLegacy.Editor.Managers
 
             LevelPanel.iconRect = RectValues.TryParse(jn["icon"]["rect"], RectValues.Default.AnchoredPosition(-276f, 0f).SizeDelta(26f, 26f));
             LevelPanel.deleteRect = RectValues.TryParse(jn["delete"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(1f, 0.5f), new Vector2(32f, 0f)));
+            LevelPanel.progressRect = RectValues.TryParse(jn["progress"]["rect"], new RectValues(Vector2.zero, Vector2.one, Vector2.one, Vector2.one, new Vector2(44f, 20f)));
+            LevelPanel.checkmarkRect = RectValues.TryParse(jn["checkmark"]["rect"], new RectValues(Vector2.zero, Vector2.one, Vector2.one, Vector2.one, new Vector2(32f, 32f)));
 
             if (update)
                 EditorLevelManager.inst.LoadLevels();
