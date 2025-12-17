@@ -271,6 +271,11 @@ namespace BetterLegacy.Editor.Data
                 prefabObjectCopy.id = ids[i];
                 prefabObjectCopy.prefabID = prefabObject.prefabID;
 
+                if (!retainID && !string.IsNullOrEmpty(prefabObject.Parent) && objectIDs.TryFind(x => x.oldID == prefabObject.Parent, out IDPair idPair))
+                    prefabObjectCopy.Parent = idPair.newID;
+                else if (!retainID && !string.IsNullOrEmpty(prefabObject.Parent) && GameData.Current.beatmapObjects.FindIndex(x => x.id == prefabObject.Parent) == -1 && prefabObject.Parent != BeatmapObject.CAMERA_PARENT)
+                    prefabObjectCopy.Parent = string.Empty;
+
                 if (regen)
                     prefabObjectCopy.prefabInstanceID = string.Empty;
                 else if (this.prefabObject)
