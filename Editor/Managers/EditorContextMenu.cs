@@ -233,6 +233,9 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="editorElements">The context menus' functions.</param>
         public void ShowContextMenu(float width, params EditorElement[] editorElements)
         {
+            if (editorElements.IsEmpty())
+                return;
+
             contextMenu.SetActive(true);
             CoreHelper.DestroyChildren(contextMenuLayout);
             for (int i = 0; i < editorElements.Length; i++)
