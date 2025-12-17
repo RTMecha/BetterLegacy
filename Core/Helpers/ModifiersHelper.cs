@@ -178,7 +178,7 @@ namespace BetterLegacy.Core.Helpers
                     bool returned = false;
                     actions.ForLoop(act =>
                     {
-                        if (act.compatibility.StoryOnly && !CoreHelper.InStory || returned || act.active || act.triggerCount > 0 && act.runCount >= act.triggerCount) // Continue if modifier is not constant and was already activated
+                        if (!act.enabled || act.compatibility.StoryOnly && !CoreHelper.InStory || returned || act.active || act.triggerCount > 0 && act.runCount >= act.triggerCount) // Continue if modifier is not constant and was already activated
                             return;
 
                         if (!act.running)
@@ -199,7 +199,7 @@ namespace BetterLegacy.Core.Helpers
                 // Deactivate both action and trigger modifiers
                 modifiers.ForLoop(modifier =>
                 {
-                    if (modifier.compatibility.StoryOnly && !CoreHelper.InStory || !modifier.active && !modifier.running)
+                    if (!modifier.enabled || modifier.compatibility.StoryOnly && !CoreHelper.InStory || !modifier.active && !modifier.running)
                         return;
 
                     modifier.active = false;
@@ -213,7 +213,7 @@ namespace BetterLegacy.Core.Helpers
 
             actions.ForLoop(act =>
             {
-                if (act.compatibility.StoryOnly && !CoreHelper.InStory || act.active || act.triggerCount > 0 && act.runCount >= act.triggerCount)
+                if (!act.enabled || act.compatibility.StoryOnly && !CoreHelper.InStory || act.active || act.triggerCount > 0 && act.runCount >= act.triggerCount)
                     return;
 
                 if (!act.running)
@@ -246,7 +246,7 @@ namespace BetterLegacy.Core.Helpers
             while (loop.state.index < modifiers.Count)
             {
                 var modifier = modifiers[loop.state.index];
-                if (modifier.compatibility.StoryOnly && !CoreHelper.InStory)
+                if (!modifier.enabled || modifier.compatibility.StoryOnly && !CoreHelper.InStory)
                 {
                     loop.state.index++;
                     continue;
@@ -264,82 +264,6 @@ namespace BetterLegacy.Core.Helpers
                     loop.state.index++;
                     continue;
                 }
-
-                //if (name == "forLoop") // this modifier requires a specific function, so it's placed here.
-                //{
-                //    if (!modifier.running)
-                //        modifier.runCount++;
-
-                //    modifier.running = true;
-
-                //    var variable = FormatStringVariables(modifier.GetValue(0), loop.variables);
-                //    var startIndex = modifier.GetInt(1, 0, loop.variables);
-                //    var endCount = modifier.GetInt(2, 0, loop.variables);
-                //    var increment = modifier.GetInt(3, 1, loop.variables);
-
-                //    var endIndex = modifiers.FindLastIndex(x => x.Name == "return"); // return is treated as a break of the for loop
-                //    endIndex = endIndex < 0 ? modifiers.Count : endIndex + 1;
-
-                //    try
-                //    {
-                //        // if result is false, then skip the for loop sequence.
-                //        if (!(modifier.active || !loop.state.result || modifier.triggerCount > 0 && modifier.runCount >= modifier.triggerCount))
-                //        {
-                //            var selectModifiers = modifiers.GetIndexRange(loop.state.index + 1, endIndex);
-
-                //            for (int i = startIndex; i < endCount; i += increment)
-                //            {
-                //                loop.variables[variable] = i.ToString();
-                //                RunModifiersLoop(selectModifiers, new ModifierLoop(loop.reference, loop.variables), i, endCount);
-                //            }
-                //        }
-                //    }
-                //    catch (Exception ex)
-                //    {
-                //        CoreHelper.LogError($"Had an exception with the forLoop modifier.\n" +
-                //            $"Index: {loop.state.index}\n" +
-                //            $"End Index: {endIndex}\nException: {ex}");
-                //    }
-
-                //    // Only occur once
-                //    if (!modifier.constant && loop.state.sequence + 1 >= loop.state.end)
-                //        modifier.active = true;
-
-                //    loop.state.index = endIndex; // exit for loop.
-                //    continue;
-                //}
-
-                //if (name == "resetLoop")
-                //{
-                //    var runCount = modifier.runCount;
-                //    if (!modifier.running)
-                //        runCount++;
-
-                //    modifier.running = true;
-
-                //    if (!(modifier.active || !loop.state.result || modifier.triggerCount > 0 && runCount >= modifier.triggerCount))
-                //        modifiers.ForLoop(modifier =>
-                //        {
-                //            if (modifier.compatibility.StoryOnly && !CoreHelper.InStory || !modifier.active && !modifier.running)
-                //                return;
-
-                //            modifier.active = false;
-                //            modifier.running = false;
-                //            modifier.runCount = 0;
-                //            if (modifier.Inactive == null && TryGetInactive(modifier, loop.reference, out ModifierInactive action))
-                //                modifier.Inactive = action.function;
-                //            modifier.RunInactive(modifier, loop);
-                //        });
-
-                //    // Only occur once
-                //    if (!modifier.constant && loop.state.sequence + 1 >= loop.state.end)
-                //        modifier.active = true;
-
-                //    modifier.runCount = runCount;
-
-                //    loop.state.index++;
-                //    continue;
-                //}
 
                 if (isTrigger)
                 {
@@ -11066,9 +10990,6 @@ namespace BetterLegacy.Core.Helpers
 
         public static void spawnClone(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (!modifier.enabled) // TODO: implement to the actual modifier loop
-                return;
-
             if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
@@ -11323,9 +11244,6 @@ namespace BetterLegacy.Core.Helpers
 
         public static void spawnCloneMath(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (!modifier.enabled) // TODO: implement to the actual modifier loop
-                return;
-
             if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return;
 
