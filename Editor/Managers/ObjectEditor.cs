@@ -326,7 +326,7 @@ namespace BetterLegacy.Editor.Managers
             }
 
             RTLevel.Current?.Sort();
-            RTLevel.Current?.backgroundEngine?.spawner?.RecalculateObjectStates();
+            RTLevel.Current?.backgroundEngine?.Recalculate();
 
             if (EditorConfig.Instance.UpdateHomingKeyframesDrag.Value && RTLevel.Current)
                 System.Threading.Tasks.Task.Run(RTLevel.Current.UpdateHomingKeyframes);

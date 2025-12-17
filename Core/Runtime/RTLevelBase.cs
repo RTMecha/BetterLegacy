@@ -191,12 +191,12 @@ namespace BetterLegacy.Core.Runtime
         /// </summary>
         public virtual void RecalculateObjectStates()
         {
-            objectEngine?.spawner?.RecalculateObjectStates();
-            objectModifiersEngine?.spawner?.RecalculateObjectStates();
-            backgroundEngine?.spawner?.RecalculateObjectStates();
-            bgModifiersEngine?.spawner?.RecalculateObjectStates();
-            prefabEngine?.spawner?.RecalculateObjectStates();
-            prefabModifiersEngine?.spawner?.RecalculateObjectStates();
+            objectEngine?.Recalculate();
+            objectModifiersEngine?.Recalculate();
+            backgroundEngine?.Recalculate();
+            bgModifiersEngine?.Recalculate();
+            prefabEngine?.Recalculate();
+            prefabModifiersEngine?.Recalculate();
         }
 
         #endregion
@@ -469,10 +469,10 @@ namespace BetterLegacy.Core.Runtime
                             break;
 
                         objectEngine?.spawner?.deactivateList?.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
-                        objectEngine?.spawner?.RecalculateObjectStates();
+                        objectEngine?.Recalculate();
 
                         objectModifiersEngine?.spawner?.deactivateList?.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
-                        objectModifiersEngine?.spawner?.RecalculateObjectStates();
+                        objectModifiersEngine?.Recalculate();
 
                         break;
                     } // Autokill
@@ -631,7 +631,7 @@ namespace BetterLegacy.Core.Runtime
                         }
 
                         if (sort)
-                            objectModifiersEngine?.spawner?.RecalculateObjectStates();
+                            objectModifiersEngine?.Recalculate();
 
                         break;
                     }
@@ -1063,7 +1063,7 @@ namespace BetterLegacy.Core.Runtime
             ReinitObject(backgroundObject, reinsert);
 
             if (recalculate)
-                backgroundEngine?.spawner?.RecalculateObjectStates();
+                backgroundEngine?.Recalculate();
         }
 
         public virtual void UpdateBackgroundObject(BackgroundObject backgroundObject, string context, bool sort = true)
@@ -1111,10 +1111,10 @@ namespace BetterLegacy.Core.Runtime
                             break;
 
                         backgroundEngine?.spawner?.deactivateList?.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
-                        backgroundEngine?.spawner?.RecalculateObjectStates();
+                        backgroundEngine?.Recalculate();
 
                         bgModifiersEngine?.spawner?.deactivateList?.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
-                        bgModifiersEngine?.spawner?.RecalculateObjectStates();
+                        bgModifiersEngine?.Recalculate();
 
                         break;
                     }
@@ -1138,7 +1138,7 @@ namespace BetterLegacy.Core.Runtime
                         }
 
                         if (sort)
-                            bgModifiersEngine?.spawner?.RecalculateObjectStates();
+                            bgModifiersEngine?.Recalculate();
 
                         break;
                     }
@@ -1278,10 +1278,8 @@ namespace BetterLegacy.Core.Runtime
             if (!recalculate)
                 return;
 
-            objectEngine?.spawner?.RecalculateObjectStates();
-            objectModifiersEngine?.spawner?.RecalculateObjectStates();
-            prefabEngine?.spawner?.RecalculateObjectStates();
-            prefabModifiersEngine?.spawner?.RecalculateObjectStates();
+            prefabEngine?.Recalculate();
+            prefabModifiersEngine?.Recalculate();
         }
 
         /// <summary>
@@ -1332,8 +1330,8 @@ namespace BetterLegacy.Core.Runtime
 
                         if (sort)
                         {
-                            prefabEngine?.spawner?.RecalculateObjectStates();
-                            prefabModifiersEngine?.spawner?.RecalculateObjectStates();
+                            prefabEngine?.Recalculate();
+                            prefabModifiersEngine?.Recalculate();
                         }
 
                         runtimePrefabObject.SetActive(prefabObject.Alive);
@@ -1427,7 +1425,7 @@ namespace BetterLegacy.Core.Runtime
                         }
 
                         if (sort)
-                            prefabModifiersEngine?.spawner?.RecalculateObjectStates();
+                            prefabModifiersEngine?.Recalculate();
 
                         break;
                     }

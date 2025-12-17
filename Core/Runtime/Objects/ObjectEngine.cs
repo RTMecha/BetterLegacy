@@ -14,6 +14,11 @@ namespace BetterLegacy.Core.Runtime.Objects
         /// </summary>
         public readonly ObjectSpawner spawner;
 
+        /// <summary>
+        /// If the engine should recalculate.
+        /// </summary>
+        public bool shouldRecalculate;
+
         public ObjectEngine(IReadOnlyList<IRTObject> objects) => spawner = new ObjectSpawner(objects);
 
         /// <summary>
@@ -22,10 +27,19 @@ namespace BetterLegacy.Core.Runtime.Objects
         /// <param name="time">Time since the level started.</param>
         public void Update(float time)
         {
+            if (shouldRecalculate)
+                spawner.RecalculateObjectStates();
+            shouldRecalculate = false;
+
             spawner.Update(time);
 
             foreach (IRTObject runtimeObject in spawner.ActiveObjects)
                 runtimeObject.Interpolate(time);
         }
+
+        /// <summary>
+        /// Queues the engine to recalculate object states before spawner is updated.
+        /// </summary>
+        public void Recalculate() => shouldRecalculate = true;
     }
 }

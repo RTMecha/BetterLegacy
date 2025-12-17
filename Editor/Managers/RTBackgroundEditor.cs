@@ -215,7 +215,7 @@ namespace BetterLegacy.Editor.Managers
                 RTLevel.Current?.UpdateBackgroundObject(backgroundObject, false, false);
                 EditorTimeline.inst.DeleteObject(EditorTimeline.inst.GetTimelineObject(backgroundObject), false, false);
             });
-            RTLevel.Current?.backgroundEngine?.spawner?.RecalculateObjectStates();
+            RTLevel.Current?.backgroundEngine?.Recalculate();
             GameData.Current.backgroundObjects.Clear();
             UpdateBackgroundList();
             SetCurrentBackground(null);
