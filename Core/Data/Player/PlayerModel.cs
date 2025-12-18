@@ -6,6 +6,7 @@ using UnityEngine;
 
 using SimpleJSON;
 
+using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Modifiers;
 using BetterLegacy.Core.Managers;
@@ -294,6 +295,15 @@ namespace BetterLegacy.Core.Data.Player
 
         public PlayerModelPanel editorPanel;
 
+        /// <summary>
+        /// Data of the icon.
+        /// </summary>
+        public string iconData;
+        /// <summary>
+        /// Icon of the model.
+        /// </summary>
+        public Sprite icon;
+
         #region Modifiers
 
         public ModifierReferenceType ReferenceType => ModifierReferenceType.PlayerModel;
@@ -377,6 +387,10 @@ namespace BetterLegacy.Core.Data.Player
                 customObjects.Add(orig.customObjects[i].Copy(false));
             this.CopyModifyableData(orig);
             this.CopyUploadableData(orig);
+
+            iconData = orig.iconData;
+            if (string.IsNullOrEmpty(iconData) && orig.icon)
+                iconData = SpriteHelper.SpriteToString(orig.icon);
         }
 
         public override void ReadJSON(JSONNode jn)
@@ -444,6 +458,8 @@ namespace BetterLegacy.Core.Data.Player
                         customObjects.Add(customObject);
                 }
 
+            iconData = jn["icon"];
+
             needsUpdate = false;
         }
 
@@ -501,6 +517,11 @@ namespace BetterLegacy.Core.Data.Player
                 for (int i = 0; i < customObjects.Count; i++)
                     jn["custom_objects"][i] = customObjects[i].ToJSON();
 
+            if (icon)
+                jn["icon"] = SpriteHelper.SpriteToString(icon);
+            else if (!string.IsNullOrEmpty(iconData))
+                jn["icon"] = iconData;
+
             return jn;
         }
 
@@ -553,6 +574,21 @@ namespace BetterLegacy.Core.Data.Player
             sneakSpeed = basePart.sneakSpeed,
             canBoost = basePart.canBoost,
         };
+
+        /// <summary>
+        /// Loads and gets the models' icon.
+        /// </summary>
+        public Sprite GetIcon()
+        {
+            if (icon)
+                return icon;
+
+            if (string.IsNullOrEmpty(iconData))
+                return null;
+
+            icon = SpriteHelper.StringToSprite(iconData);
+            return icon;
+        }
 
         #endregion
 

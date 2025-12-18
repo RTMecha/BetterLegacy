@@ -1,5 +1,7 @@
-﻿
+﻿using System;
+
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 using BetterLegacy.Core;
@@ -7,6 +9,7 @@ using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Managers;
@@ -15,14 +18,21 @@ namespace BetterLegacy.Editor.Data.Elements
 {
     public class PlayerModelPanel : EditorPanel<PlayerModel>
     {
+        public PlayerModelPanel(int index) : base() => this.index = index;
+
         #region Values
 
         #region UI
 
         /// <summary>
-        /// The icon of the level panel.
+        /// The icon of the player model panel.
         /// </summary>
         public Image IconImage { get; set; }
+
+        /// <summary>
+        /// The delete button of the player model panel.
+        /// </summary>
+        public DeleteButtonStorage DeleteButton { get; set; }
 
         #endregion
 
@@ -51,6 +61,8 @@ namespace BetterLegacy.Editor.Data.Elements
         public static VerticalWrapMode labelVerticalWrap = VerticalWrapMode.Truncate;
 
         public static int labelFontSize = 20;
+
+        public Action<PointerEventData> onClick;
 
         #endregion
 
@@ -93,9 +105,7 @@ namespace BetterLegacy.Editor.Data.Elements
             var icon = Creator.NewUIObject("icon", iconBase.transform);
             RectValues.FullAnchored.AssignToRectTransform(icon.transform.AsRT());
 
-            var iconImage = icon.AddComponent<Image>();
-            iconImage.sprite = EditorSprites.PlayerSprite;
-            IconImage = iconImage;
+            IconImage = icon.AddComponent<Image>();
 
             //SelectedUI = Creator.NewUIObject("selected", gameObject.transform);
             //SelectedUI.SetActive(false);
@@ -104,25 +114,139 @@ namespace BetterLegacy.Editor.Data.Elements
 
             //RectValues.FullAnchored.AssignToRectTransform(selectedImage.rectTransform);
 
+            if (index >= 5)
+            {
+                var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(gameObject.transform, "Delete");
+                deleteRect.AssignToRectTransform(delete.transform.AsRT());
+                DeleteButton = delete.GetComponent<DeleteButtonStorage>();
+                EditorThemeManager.ApplyDeleteButton(DeleteButton);
+            }
+
             Render();
         }
 
         public override void Render()
         {
+            RenderIcon();
             RenderLabel();
             RenderHover();
             RenderTooltip();
             UpdateFunction();
+            UpdateDeleteFunction();
+        }
+
+        /// <summary>
+        /// Renders the level panel icon.
+        /// </summary>
+        public void RenderIcon()
+        {
+            if (isFolder)
+                return;
+
+            RenderIcon(Item?.icon ?? EditorSprites.PlayerSprite);
+        }
+
+        /// <summary>
+        /// Renders the level panel icon.
+        /// </summary>
+        /// <param name="icon">Icon of the level panel.</param>
+        public void RenderIcon(Sprite icon)
+        {
+            if (IconImage)
+                IconImage.sprite = icon;
         }
 
         public override void RenderLabel(string text)
         {
+            Label.text = text;
 
+            Label.alignment = labelAlignment;
+            Label.horizontalOverflow = labelHorizontalWrap;
+            Label.verticalOverflow = labelVerticalWrap;
+            Label.fontSize = labelFontSize;
         }
 
         public void UpdateFunction()
         {
+            if (isFolder)
+            {
+                return;
+            }
 
+            Button.onClick = pointerEventData =>
+            {
+                if (pointerEventData.button == PointerEventData.InputButton.Right)
+                {
+                    EditorContextMenu.inst.ShowContextMenu(
+                        new ButtonElement("Open & Use", () =>
+                        {
+                            PlayersData.Current.SetPlayerModel(PlayerEditor.inst.playerModelIndex, Item.basePart.id);
+                            PlayerManager.RespawnPlayers();
+                            CoroutineHelper.StartCoroutine(PlayerEditor.inst.RefreshEditor());
+                        }),
+                        new ButtonElement("Set to Global", () => PlayerManager.PlayerIndexes[PlayerEditor.inst.playerModelIndex].Value = Item.basePart.id),
+                        new ButtonElement("Create New", PlayerEditor.inst.CreateNewModel),
+                        new ButtonElement("Save", PlayerEditor.inst.Save),
+                        new ButtonElement("Reload", PlayerEditor.inst.Reload),
+                        new SpacerElement(),
+                        new ButtonElement("Duplicate", () =>
+                        {
+                            var dup = PlayersData.Current.DuplicatePlayerModel(Item.basePart.id);
+                            PlayersData.externalPlayerModels[dup.basePart.id] = dup;
+                            if (dup)
+                                PlayersData.Current.SetPlayerModel(PlayerEditor.inst.playerModelIndex, dup.basePart.id);
+                        }),
+                        new ButtonElement("Delete", () =>
+                        {
+                            if (index < 5)
+                            {
+                                EditorManager.inst.DisplayNotification($"Cannot delete a default player model.", 2f, EditorManager.NotificationType.Warning);
+                                return;
+                            }
+
+                            RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this Player Model?", () =>
+                            {
+                                PlayersData.Current.SetPlayerModel(PlayerEditor.inst.playerModelIndex, PlayerModel.DEFAULT_ID);
+                                PlayersData.externalPlayerModels.Remove(Item.basePart.id);
+                                PlayersData.Current.playerModels.Remove(Item.basePart.id);
+                                PlayerManager.RespawnPlayers();
+                                CoroutineHelper.StartCoroutine(PlayerEditor.inst.RefreshEditor());
+                                CoroutineHelper.StartCoroutine(PlayerEditor.inst.RefreshModels(PlayerEditor.inst.onSelectModel));
+
+                                RTEditor.inst.HideWarningPopup();
+                            }, RTEditor.inst.HideWarningPopup);
+                        }));
+                    return;
+                }
+
+                if (onClick != null)
+                {
+                    onClick.Invoke(pointerEventData);
+                    return;
+                }
+
+                PlayerEditor.inst.SetCurrentModel(Item);
+            };
+        }
+
+        /// <summary>
+        /// Updates the player model panels' deletion function
+        /// </summary>
+        public void UpdateDeleteFunction()
+        {
+            if (DeleteButton)
+                DeleteButton.OnClick.NewListener(() =>
+                {
+                    RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this Player Model?", () =>
+                    {
+                        PlayersData.Current.SetPlayerModel(PlayerEditor.inst.playerModelIndex, PlayerModel.DEFAULT_ID);
+                        PlayersData.externalPlayerModels.Remove(Item.basePart.id);
+                        PlayersData.Current.playerModels.Remove(Item.basePart.id);
+                        PlayerManager.RespawnPlayers();
+                        CoroutineHelper.StartCoroutine(PlayerEditor.inst.RefreshEditor());
+                        CoroutineHelper.StartCoroutine(PlayerEditor.inst.RefreshModels(PlayerEditor.inst.onSelectModel));
+                    });
+                });
         }
     }
 }

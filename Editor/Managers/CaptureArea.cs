@@ -87,7 +87,7 @@ namespace BetterLegacy.Editor.Managers
                         new ButtonElement("Reset Zoom", () => Settings.Zoom = 1f),
                         new ButtonElement("Reset Rotation", () => Settings.rot = 0f),
                         new SpacerElement(),
-                        ButtonElement.ToggleButton("Hide Players", () => Settings.hidePlayers, () => Settings.hidePlayers = !Settings.hidePlayers),
+                        ButtonElement.ToggleButton(View == ViewType.PlayerModel ? "Hide Objects" : "Hide Players", () => Settings.hidePlayers, () => Settings.hidePlayers = !Settings.hidePlayers),
                         ButtonElement.ToggleButton("Capture All Layers", () => Settings.captureAllLayers, () => Settings.captureAllLayers = !Settings.captureAllLayers),
                         ButtonElement.ToggleButton("Show Editor", () => Settings.showEditor, () => Settings.showEditor = !Settings.showEditor),
                         new SpacerElement(),
@@ -128,6 +128,16 @@ namespace BetterLegacy.Editor.Managers
                                 var resolutions = CustomEnumHelper.GetValues<ResolutionType>();
                                 foreach (var resolution in resolutions)
                                     buttonFunctions.Add(new ButtonElement($"Set {resolution.Width} x {resolution.Height}", () => Settings.Resolution = new Vector2Int(resolution.Width, resolution.Height)));
+                                break;
+                            }
+                        case ViewType.PlayerModel: {
+                                buttonFunctions.AddRange(new List<EditorElement>
+                                {
+                                    new SpacerElement(),
+                                    new ButtonElement("Set 256 x 256", () => Settings.Resolution = new Vector2Int(256, 256)),
+                                    new ButtonElement("Set 128 x 128", () => Settings.Resolution = new Vector2Int(128, 128)),
+                                    new ButtonElement("Set 64 x 64", () => Settings.Resolution = new Vector2Int(64, 64)),
+                                });
                                 break;
                             }
                     }
@@ -577,6 +587,8 @@ namespace BetterLegacy.Editor.Managers
                     return ViewType.Prefab;
                 if (RTEditor.inst && RTEditor.inst.ScreenshotsDialog && RTEditor.inst.ScreenshotsDialog.IsCurrent)
                     return ViewType.Screenshot;
+                if (PlayerEditor.inst && PlayerEditor.inst.Dialog && PlayerEditor.inst.Dialog.IsCurrent)
+                    return ViewType.PlayerModel;
                 return ViewType.Null;
             }
         }
@@ -592,6 +604,7 @@ namespace BetterLegacy.Editor.Managers
             Null,
             Prefab,
             Screenshot,
+            PlayerModel,
         }
 
         public CaptureSettings copiedSettings;
@@ -737,6 +750,15 @@ namespace BetterLegacy.Editor.Managers
 
                         break;
                     }
+                case ViewType.PlayerModel: {
+                        var playerModel = PlayerEditor.inst.CurrentModel;
+                        if (!playerModel)
+                            return;
+
+                        playerModel.icon = Capture();
+
+                        break;
+                    }
             }
         }
 
@@ -765,6 +787,15 @@ namespace BetterLegacy.Editor.Managers
                         RTPrefabEditor.inst.RenderPrefabEditorDialog(RTPrefabEditor.inst.CurrentPrefabPanel);
                         break;
                     }
+                case ViewType.PlayerModel: {
+                        var playerModel = PlayerEditor.inst.CurrentModel;
+                        if (!playerModel)
+                            return;
+
+                        playerModel.icon = null;
+
+                        break;
+                    }
             }
         }
 
@@ -790,9 +821,10 @@ namespace BetterLegacy.Editor.Managers
             var trackerPos = RTEventManager.inst.delayTracker.transform.localPosition;
             RTEventManager.inst.delayTracker.transform.localPosition = Vector2.zero;
 
-            var playersActive = GameManager.inst.players.activeSelf;
+            var objectToHide = View == ViewType.PlayerModel ? ObjectManager.inst.objectParent : GameManager.inst.players;
+            var playersActive = objectToHide.activeSelf;
             if (captureSettings.hidePlayers)
-                GameManager.inst.players.SetActive(false);
+                objectToHide.SetActive(false);
 
             var clearFlags = RTLevel.Cameras.FG.clearFlags;
             var bgColor = RTLevel.Cameras.FG.backgroundColor;
@@ -852,7 +884,7 @@ namespace BetterLegacy.Editor.Managers
             RTLevel.Cameras.UI.enabled = true;
 
             if (captureSettings.hidePlayers)
-                GameManager.inst.players.SetActive(true);
+                objectToHide.SetActive(true);
 
             if (captureSettings.useCustomBGColor && !captureSettings.captureAllLayers)
             {

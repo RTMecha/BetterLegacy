@@ -29,6 +29,7 @@ using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
+using BetterLegacy.Editor.Data.Elements;
 using BetterLegacy.Editor.Data.Popups;
 
 namespace BetterLegacy.Editor.Managers
@@ -67,6 +68,8 @@ namespace BetterLegacy.Editor.Managers
             Tail, // All tail related parts go here
             Custom
         }
+
+        public Action<PlayerModel> onSelectModel;
 
         #endregion
 
@@ -2131,6 +2134,7 @@ namespace BetterLegacy.Editor.Managers
 
         public IEnumerator RefreshModels(Action<PlayerModel> onSelect = null)
         {
+            onSelectModel = onSelect;
             ModelsPopup.ClearContent();
             ModelsPopup.SearchField.onValueChanged.NewListener(_val => StartCoroutine(RefreshModels(onSelect)));
 
@@ -2145,106 +2149,10 @@ namespace BetterLegacy.Editor.Managers
                     continue;
                 }
 
-                var model = EditorManager.inst.spriteFolderButtonPrefab.Duplicate(ModelsPopup.Content, name);
-                var modelButton = model.GetComponent<Button>();
-                modelButton.onClick.NewListener(() =>
-                {
-                    if (onSelect != null)
-                    {
-                        onSelect.Invoke(playerModel.Value);
-                        return;
-                    }
-
-                    PlayersData.Current.playerModels[playerModel.Key] = playerModel.Value;
-                    PlayersData.Current.SetPlayerModel(playerModelIndex, playerModel.Key);
-                    PlayerManager.RespawnPlayers();
-                    StartCoroutine(RefreshEditor());
-                });
-
-                var modelContextMenu = model.AddComponent<ContextClickable>();
-                modelContextMenu.onClick = eventData =>
-                {
-                    if (eventData.button != PointerEventData.InputButton.Right)
-                        return;
-
-                    EditorContextMenu.inst.ShowContextMenu(
-                        new ButtonElement("Open & Use", () =>
-                        {
-                            PlayersData.Current.SetPlayerModel(playerModelIndex, playerModel.Key);
-                            PlayerManager.RespawnPlayers();
-                            StartCoroutine(RefreshEditor());
-                        }),
-                        new ButtonElement("Set to Global", () => PlayerManager.PlayerIndexes[playerModelIndex].Value = playerModel.Key),
-                        new ButtonElement("Create New", CreateNewModel),
-                        new ButtonElement("Save", Save),
-                        new ButtonElement("Reload", Reload),
-                        new SpacerElement(),
-                        new ButtonElement("Duplicate", () =>
-                        {
-                            var dup = PlayersData.Current.DuplicatePlayerModel(playerModel.Key);
-                            PlayersData.externalPlayerModels[dup.basePart.id] = dup;
-                            if (dup)
-                                PlayersData.Current.SetPlayerModel(playerModelIndex, dup.basePart.id);
-                        }),
-                        new ButtonElement("Delete", () =>
-                        {
-                            if (index < 5)
-                            {
-                                EditorManager.inst.DisplayNotification($"Cannot delete a default player model.", 2f, EditorManager.NotificationType.Warning);
-                                return;
-                            }
-
-                            RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this Player Model?", () =>
-                            {
-                                PlayersData.Current.SetPlayerModel(playerModelIndex, PlayerModel.DEFAULT_ID);
-                                PlayersData.externalPlayerModels.Remove(playerModel.Key);
-                                PlayersData.Current.playerModels.Remove(playerModel.Key);
-                                PlayerManager.RespawnPlayers();
-                                StartCoroutine(RefreshEditor());
-                                StartCoroutine(RefreshModels(onSelect));
-
-                                RTEditor.inst.HideWarningPopup();
-                            }, RTEditor.inst.HideWarningPopup);
-                        })
-                        );
-                };
-
-                var text = model.transform.GetChild(0).GetComponent<Text>();
-                text.text = name;
-
-                var image = model.transform.Find("Image").GetComponent<Image>();
-                image.sprite = EditorSprites.PlayerSprite;
-
-                EditorThemeManager.ApplySelectable(modelButton, ThemeGroup.List_Button_1);
-                EditorThemeManager.ApplyGraphic(image, ThemeGroup.Light_Text);
-                EditorThemeManager.ApplyLightText(text);
-
-                if (index < 5)
-                {
-                    num++;
-                    continue;
-                }
-
-                var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(model.transform, "Delete");
-                UIManager.SetRectTransform(delete.transform.AsRT(), new Vector2(280f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(32f, 32f));
-                var deleteStorage = delete.GetComponent<DeleteButtonStorage>();
-                deleteStorage.OnClick.NewListener(() =>
-                {
-                    RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this Player Model?", () =>
-                    {
-                        PlayersData.Current.SetPlayerModel(playerModelIndex, PlayerModel.DEFAULT_ID);
-                        PlayersData.externalPlayerModels.Remove(playerModel.Key);
-                        PlayersData.Current.playerModels.Remove(playerModel.Key);
-                        PlayerManager.RespawnPlayers();
-                        StartCoroutine(RefreshEditor());
-                        StartCoroutine(RefreshModels(onSelect));
-
-
-                        RTEditor.inst.HideWarningPopup();
-                    }, RTEditor.inst.HideWarningPopup);
-                });
-
-                EditorThemeManager.ApplyDeleteButton(deleteStorage);
+                var playerModelPanel = new PlayerModelPanel(index);
+                playerModelPanel.Init(playerModel.Value);
+                if (onSelect != null)
+                    playerModelPanel.onClick = pointerEventData => onSelect.Invoke(playerModel.Value);
 
                 num++;
             }
@@ -2411,6 +2319,17 @@ namespace BetterLegacy.Editor.Managers
             }
 
             yield break;
+        }
+
+        public void SetCurrentModel(PlayerModel playerModel)
+        {
+            if (!playerModel)
+                return;
+
+            PlayersData.Current.playerModels[playerModel.basePart.id] = playerModel;
+            PlayersData.Current.SetPlayerModel(playerModelIndex, playerModel.basePart.id);
+            PlayerManager.RespawnPlayers();
+            StartCoroutine(RefreshEditor());
         }
 
         public CustomPlayerObject copiedCustomObject;
