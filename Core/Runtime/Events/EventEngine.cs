@@ -373,23 +373,34 @@ namespace BetterLegacy.Core.Runtime.Events
                         if (events[i].Length <= j || prevKF.values.Length <= j || events[i][j] == null)
                             continue;
 
-                        var total = 0f;
-                        var prevtotal = 0f;
-                        for (int k = 0; k < nextKFIndex; k++)
+                        var next = 0f;
+                        var prev = 0f;
+
+                        if (SupportsRelative(i, j))
                         {
-                            if (allEvents[i][k + 1].relative)
-                                total += allEvents[i][k].values[j];
-                            else
-                                total = 0f;
+                            var total = 0f;
+                            var prevtotal = 0f;
+                            for (int k = 0; k < nextKFIndex; k++)
+                            {
+                                if (allEvents[i][k + 1].relative)
+                                    total += allEvents[i][k].values[j];
+                                else
+                                    total = 0f;
 
-                            if (allEvents[i][k].relative)
-                                prevtotal += allEvents[i][k].values[j];
-                            else
-                                prevtotal = 0f;
+                                if (allEvents[i][k].relative)
+                                    prevtotal += allEvents[i][k].values[j];
+                                else
+                                    prevtotal = 0f;
+                            }
+
+                            next = nextKF.relative ? total + nextKF.values[j] : nextKF.values[j];
+                            prev = prevKF.relative || nextKF.relative ? prevtotal : prevKF.values[j];
                         }
-
-                        var next = nextKF.relative ? total + nextKF.values[j] : nextKF.values[j];
-                        var prev = prevKF.relative || nextKF.relative ? prevtotal : prevKF.values[j];
+                        else
+                        {
+                            next = nextKF.values[j];
+                            prev = prevKF.values[j];
+                        }
 
                         bool isLerper = IsLerper(i, j);
 
@@ -431,13 +442,14 @@ namespace BetterLegacy.Core.Runtime.Events
                             continue;
 
                         var total = 0f;
-                        for (int k = 0; k < list.Count - 1; k++)
-                        {
-                            if (allEvents[i][k + 1].relative)
-                                total += allEvents[i][k].values[j];
-                            else
-                                total = 0f;
-                        }
+                        if (SupportsRelative(i, j))
+                            for (int k = 0; k < list.Count - 1; k++)
+                            {
+                                if (allEvents[i][k + 1].relative)
+                                    total += allEvents[i][k].values[j];
+                                else
+                                    total = 0f;
+                            }
 
                         bool isLerper = IsLerper(i, j);
 
@@ -670,6 +682,23 @@ namespace BetterLegacy.Core.Runtime.Events
 
         bool IsLerper(int i, int j)
             => !(i == 4 || i == 6 && j == 4 || i == 7 && j == 6 || i == 15 && (j == 2 || j == 3) || i == 20 && j == 0 || i == 22 && j == 6 || i == 30 && j == 2);
+
+        bool SupportsRelative(int type, int valueIndex) => !(type switch
+        {
+            4 => false,
+            7 => valueIndex == 2,
+            9 => valueIndex == 1,
+            20 => valueIndex == 1,
+            22 => valueIndex == 0,
+            23 => valueIndex <= 1 || valueIndex == 5,
+            24 => valueIndex <= 2,
+            27 => valueIndex == 9,
+            29 => valueIndex == 1,
+            32 => valueIndex == 2 || valueIndex == 3,
+            33 => valueIndex == 0 || valueIndex == 3,
+            38 => valueIndex == 0,
+            _ => true,
+        });
 
         /// <summary>
         /// Renders the interpolated events.
@@ -1378,7 +1407,7 @@ namespace BetterLegacy.Core.Runtime.Events
 
         #endregion
 
-        #region Offset - 14
+        #region Move Offset - 14
 
         // 14 - 0
         void UpdateCameraOffsetX(float x) => camOffsetX = x;
