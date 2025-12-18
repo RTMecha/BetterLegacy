@@ -258,6 +258,12 @@ namespace BetterLegacy.Editor.Managers
                         return;
                     }
 
+                    if ((defaultModifier.Name == nameof(ModifierFunctions.spawnClone) || defaultModifier.Name == nameof(ModifierFunctions.spawnCloneMath)) && modifyable.Modifiers.Has(x => x.Name == defaultModifier.Name))
+                    {
+                        EditorManager.inst.DisplayNotification($"Object cannot have multiple {defaultModifier.Name} modifiers, otherwise the game will crash.", 3f, EditorManager.NotificationType.Warning);
+                        return;
+                    }
+
                     var modifier = defaultModifier.Copy();
                     if (addIndex == -1)
                         modifyable.Modifiers.Add(modifier);
