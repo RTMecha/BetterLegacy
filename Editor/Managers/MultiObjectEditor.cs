@@ -1,10 +1,14 @@
 ﻿using System;
+using System.Linq;
 
+using BetterLegacy.Core;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Managers.Settings;
+using BetterLegacy.Core.Runtime;
 using BetterLegacy.Editor.Data.Dialogs;
+using BetterLegacy.Editor.Data.Timeline;
 
 namespace BetterLegacy.Editor.Managers
 {
@@ -50,6 +54,204 @@ namespace BetterLegacy.Editor.Managers
                 EditorTimeline.inst.SelectedBackgroundObjects.Count,
                 GameData.Current.backgroundObjects.Count);
         }
+
+        public void ForEachTimelineObject(Action<TimelineObject> action)
+        {
+            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+                action?.Invoke(timelineObject);
+        }
+
+        public void ForEachBeatmapObject(Action<BeatmapObject> action)
+        {
+            foreach (var timelineObject in EditorTimeline.inst.SelectedBeatmapObjects)
+                action?.Invoke(timelineObject.GetData<BeatmapObject>());
+        }
+        
+        public void ForEachBeatmapObject(Action<TimelineObject> action)
+        {
+            foreach (var timelineObject in EditorTimeline.inst.SelectedBeatmapObjects)
+                action?.Invoke(timelineObject);
+        }
+
+        public void ForEachPrefabObject(Action<PrefabObject> action)
+        {
+            foreach (var timelineObject in EditorTimeline.inst.SelectedPrefabObjects)
+                action?.Invoke(timelineObject.GetData<PrefabObject>());
+        }
+        
+        public void ForEachPrefabObject(Action<TimelineObject> action)
+        {
+            foreach (var timelineObject in EditorTimeline.inst.SelectedPrefabObjects)
+                action?.Invoke(timelineObject);
+        }
+        
+        public void ForEachBackgroundObject(Action<BackgroundObject> action)
+        {
+            foreach (var timelineObject in EditorTimeline.inst.SelectedBackgroundObjects)
+                action?.Invoke(timelineObject.GetData<BackgroundObject>());
+        }
+        
+        public void ForEachBackgroundObject(Action<TimelineObject> action)
+        {
+            foreach (var timelineObject in EditorTimeline.inst.SelectedBackgroundObjects)
+                action?.Invoke(timelineObject);
+        }
+
+        public void ForEachModifyable(Action<Core.Data.Modifiers.IModifyable> action)
+        {
+            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+            {
+                if (timelineObject.TryGetData(out Core.Data.Modifiers.IModifyable modifyable))
+                    action?.Invoke(modifyable);
+            }
+        }
+
+        public void ClearKeyframes(int type) => RTEditor.inst.ShowWarningPopup($"You are about to clear the {KeyframeTimeline.IntToTypeName(type).ToLower()} keyframes from all selected objects, this <b>CANNOT</b> be undone!", () =>
+        {
+            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
+            {
+                var bm = timelineObject.GetData<BeatmapObject>();
+                bm.TimelineKeyframes.ForLoopReverse((timelineKeyframe, index) =>
+                {
+                    if (timelineKeyframe.Type != type)
+                        return;
+                    CoreHelper.Delete(timelineKeyframe.GameObject);
+                    bm.TimelineKeyframes.RemoveAt(index);
+                });
+                bm.events[type].Sort((a, b) => a.time.CompareTo(b.time));
+                var firstKF = bm.events[type][0].Copy(false);
+                bm.events[type].Clear();
+                bm.events[type].Add(firstKF);
+                if (EditorTimeline.inst.SelectedObjects.Count == 1)
+                {
+                    ObjectEditor.inst.Dialog.Timeline.ResizeKeyframeTimeline(bm);
+                    ObjectEditor.inst.Dialog.Timeline.RenderKeyframes(bm);
+                }
+
+                RTLevel.Current?.UpdateObject(bm, ObjectContext.KEYFRAMES);
+                EditorTimeline.inst.RenderTimelineObject(timelineObject);
+            }
+        });
+
+        public void SetParentToggle(int type, int operation) => ForEachTimelineObject(timelineObject =>
+        {
+            if (timelineObject.isBeatmapObject)
+            {
+                var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                switch (operation)
+                {
+                    case 0: {
+                            beatmapObject.SetParentType(type, false);
+                            break;
+                        }
+                    case 1: {
+                            beatmapObject.SetParentType(type, true);
+                            break;
+                        }
+                    case 2: {
+                            beatmapObject.SetParentType(type, !beatmapObject.GetParentType(type));
+                            break;
+                        }
+                }
+                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARENT);
+            }
+            if (timelineObject.isPrefabObject)
+            {
+                var prefabObject = timelineObject.GetData<PrefabObject>();
+                switch (operation)
+                {
+                    case 0: {
+                            prefabObject.SetParentType(type, false);
+                            break;
+                        }
+                    case 1: {
+                            prefabObject.SetParentType(type, true);
+                            break;
+                        }
+                    case 2: {
+                            prefabObject.SetParentType(type, !prefabObject.GetParentType(type));
+                            break;
+                        }
+                }
+                RTLevel.Current?.UpdatePrefab(prefabObject);
+            }
+        });
+
+        public void SetParentOffset(int type, float value, MathOperation operation) => ForEachTimelineObject(timelineObject =>
+        {
+            if (timelineObject.isBeatmapObject)
+            {
+                var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                RTMath.Operation(ref beatmapObject.parentOffsets[type], value, operation);
+                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARENT);
+            }
+            if (timelineObject.isPrefabObject)
+            {
+                var prefabObject = timelineObject.GetData<PrefabObject>();
+                RTMath.Operation(ref prefabObject.parentOffsets[type], value, operation);
+                RTLevel.Current?.UpdatePrefab(prefabObject);
+            }
+        });
+
+        public void SetParentAdditive(int type, int operation) => ForEachTimelineObject(timelineObject =>
+        {
+            if (timelineObject.isBeatmapObject)
+            {
+                var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                switch (operation)
+                {
+                    case 0: {
+                            beatmapObject.SetParentAdditive(type, false);
+                            break;
+                        }
+                    case 1: {
+                            beatmapObject.SetParentAdditive(type, true);
+                            break;
+                        }
+                    case 2: {
+                            beatmapObject.SetParentAdditive(type, !beatmapObject.GetParentAdditive(type));
+                            break;
+                        }
+                }
+                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARENT);
+            }
+            if (timelineObject.isPrefabObject)
+            {
+                var prefabObject = timelineObject.GetData<PrefabObject>();
+                switch (operation)
+                {
+                    case 0: {
+                            prefabObject.SetParentAdditive(type, false);
+                            break;
+                        }
+                    case 1: {
+                            prefabObject.SetParentAdditive(type, true);
+                            break;
+                        }
+                    case 2: {
+                            prefabObject.SetParentAdditive(type, !prefabObject.GetParentAdditive(type));
+                            break;
+                        }
+                }
+                RTLevel.Current?.UpdatePrefab(prefabObject);
+            }
+        });
+
+        public void SetParentParallax(int type, float value, MathOperation operation) => ForEachTimelineObject(timelineObject =>
+        {
+            if (timelineObject.isBeatmapObject)
+            {
+                var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                RTMath.Operation(ref beatmapObject.ParentParallax[type], value, operation);
+                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARENT);
+            }
+            if (timelineObject.isPrefabObject)
+            {
+                var prefabObject = timelineObject.GetData<PrefabObject>();
+                RTMath.Operation(ref prefabObject.ParentParallax[type], value, operation);
+                RTLevel.Current?.UpdatePrefab(prefabObject);
+            }
+        });
 
         #endregion
     }

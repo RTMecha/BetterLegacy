@@ -92,7 +92,21 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public Vector2Int multiShapeSelection;
         public Transform multiObjectContent;
 
-        public bool rework = false;
+        public bool rework = true;
+
+        /// <summary>
+        /// Parent of the tab buttons.
+        /// </summary>
+        public Transform TabsParent { get; set; }
+
+        /// <summary>
+        /// Tabs of the dialog.
+        /// </summary>
+        public List<FunctionButtonStorage> TabButtons { get; set; } = new List<FunctionButtonStorage>();
+
+        public List<ScrollViewElement> ScrollViews { get; set; } = new List<ScrollViewElement>();
+
+        public ScrollViewElement ActiveScrollView { get; set; }
 
         /*
         TABS
@@ -125,6 +139,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
         - Sync
          */
 
+        public Tab CurrentTab { get; set; }
+
         public enum Tab
         {
             Editor,
@@ -153,11 +169,1245 @@ namespace BetterLegacy.Editor.Data.Dialogs
             {
                 EditorThemeManager.ApplyGraphic(GameObject.GetComponent<Image>(), ThemeGroup.Background_1);
 
+                var title = GameObject.transform.Find("data/right/Object Editor Title");
+                title.SetParent(GameObject.transform);
+                RectValues.FullAnchored.AnchoredPosition(0f, -16f).AnchorMin(0f, 1f).SizeDelta(0f, 32f).AssignToRectTransform(title.AsRT());
+
+                CoreHelper.Delete(GameObject.transform.Find("data"));
+
+                var layout = Creator.NewUIObject("layout", GameObject.transform);
+                TabsParent = layout.transform;
+                new RectValues(new Vector2(0f, 310f), new Vector2(1f, 0.5f), new Vector2(0f, 0.5f), RectValues.CenterPivot, new Vector2(-16f, 32f)).AssignToRectTransform(layout.transform.AsRT());
+                HorizontalOrVerticalLayoutValues.Horizontal.ChildControlHeight(false).Spacing(4f).AssignToLayout(layout.AddComponent<HorizontalLayoutGroup>());
+
                 var tabNames = EnumHelper.GetNames<Tab>();
                 for (int i = 0; i < tabNames.Length; i++)
                 {
-                    // generate tab
+                    int index = i;
+                    var name = tabNames[i];
+                    var tab = EditorPrefabHolder.Instance.Function1Button.Duplicate(TabsParent.transform, name);
+                    tab.transform.AsRT().sizeDelta = new Vector2(92f, 43.2f);
+                    var tabButton = tab.GetComponent<FunctionButtonStorage>();
+                    tabButton.label.fontSize = 16;
+                    tabButton.Text = name;
+                    tabButton.OnClick.NewListener(() =>
+                    {
+                        CurrentTab = (Tab)index;
+                        ActiveScrollView?.SetActive(false);
+                        ScrollViews[index].SetActive(true);
+                        ActiveScrollView = ScrollViews[index];
+                    });
+
+                    EditorThemeManager.ApplySelectable(tabButton.button, EditorTheme.GetGroup($"Tab Color {index + 1}"));
+                    tab.AddComponent<ContrastColors>().Init(tabButton.label, tab.GetComponent<Image>());
+
+                    TabButtons.Add(tabButton);
+
+                    var scrollViewElement = new ScrollViewElement(ScrollViewElement.Direction.Vertical);
+                    scrollViewElement.Init(EditorElement.InitSettings.Default.Parent(GameObject.transform).Rect(RectValues.HorizontalAnchored.AnchoredPosition(0f, -45f).SizeDelta(0f, 635f)));
+                    scrollViewElement.SetActive(i == 0);
+                    ScrollViews.Add(scrollViewElement);
+                    var parent = scrollViewElement.Content;
+                    parent.GetComponent<VerticalLayoutGroup>().padding = new RectOffset(left: 8, right: 8, top: 8, bottom: 8);
+
+                    switch ((Tab)i)
+                    {
+                        case Tab.Editor: {
+                                new LabelsElement("Editor Layer").Init(EditorElement.InitSettings.Default.Parent(parent));
+                                new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerInt()
+                                {
+                                    standardArrowFunctions = false,
+                                    max = int.MaxValue,
+                                    leftGreaterArrowClicked = _val => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject => timelineObject.Layer = 0),
+                                    leftArrowClicked = _val =>
+                                    {
+                                        if (int.TryParse(_val, out int num))
+                                            MultiObjectEditor.inst.ForEachTimelineObject(timelineObject => timelineObject.Layer = Mathf.Clamp(timelineObject.Layer - num, 0, int.MaxValue));
+                                    },
+                                    middleClicked = _val =>
+                                    {
+                                        if (int.TryParse(_val, out int num))
+                                            MultiObjectEditor.inst.ForEachTimelineObject(timelineObject => timelineObject.Layer = Mathf.Clamp(num - 1, 0, int.MaxValue));
+                                    },
+                                    rightArrowClicked = _val =>
+                                    {
+                                        if (int.TryParse(_val, out int num))
+                                            MultiObjectEditor.inst.ForEachTimelineObject(timelineObject => timelineObject.Layer = Mathf.Clamp(timelineObject.Layer + num, 0, int.MaxValue));
+                                    },
+                                    rightGreaterArrowClicked = _val => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject => timelineObject.Layer = EditorTimeline.inst.Layer),
+                                    rightGreaterSprite = EditorSprites.DownArrow,
+                                }).Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                                new LabelsElement("Object Name").Init(EditorElement.InitSettings.Default.Parent(parent));
+                                new NumberInputElement("object name", null, new NumberInputElement.ArrowHandler()
+                                {
+                                    standardArrowFunctions = false,
+                                    middleClicked = _val =>
+                                    {
+                                        MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                        {
+                                            switch (timelineObject.TimelineReference)
+                                            {
+                                                case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                                                        timelineObject.GetData<BeatmapObject>().name = _val;
+                                                        break;
+                                                    }
+                                                case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                                                        timelineObject.GetData<BackgroundObject>().name = _val;
+                                                        break;
+                                                    }
+                                            }
+                                            timelineObject.RenderText(timelineObject.Name);
+                                        });
+                                        EditorManager.inst.DisplayNotification($"Added the name \"{_val}\" to all selected objects.", 4f, EditorManager.NotificationType.Success);
+                                    },
+                                    subClicked = _val =>
+                                    {
+                                        MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                        {
+                                            switch (timelineObject.TimelineReference)
+                                            {
+                                                case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                                                        var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                                        beatmapObject.name = beatmapObject.name.Remove(_val);
+                                                        break;
+                                                    }
+                                                case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                                                        var backgroundObject = timelineObject.GetData<BackgroundObject>();
+                                                        backgroundObject.name = backgroundObject.name.Remove(_val);
+                                                        break;
+                                                    }
+                                            }
+                                            timelineObject.RenderText(timelineObject.Name);
+                                        });
+                                        EditorManager.inst.DisplayNotification($"Removed the name \"{_val}\" from all selected objects.", 4f, EditorManager.NotificationType.Success);
+                                    },
+                                    addClicked = _val =>
+                                    {
+                                        MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                        {
+                                            switch (timelineObject.TimelineReference)
+                                            {
+                                                case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                                                        timelineObject.GetData<BeatmapObject>().name += _val;
+                                                        break;
+                                                    }
+                                                case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                                                        timelineObject.GetData<BackgroundObject>().name += _val;
+                                                        break;
+                                                    }
+                                            }
+                                            timelineObject.RenderText(timelineObject.Name);
+                                        });
+                                        EditorManager.inst.DisplayNotification($"Added the name \"{_val}\" to all selected objects.", 4f, EditorManager.NotificationType.Success);
+                                    },
+                                }).Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                                new LabelsElement("Editor Index").Init(EditorElement.InitSettings.Default.Parent(parent));
+                                new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerInt()
+                                {
+                                    standardArrowFunctions = false,
+                                    leftGreaterArrowClicked = _val => EditorHelper.SetSelectedObjectIndexes(0),
+                                    leftArrowClicked = _val =>
+                                    {
+                                        if (int.TryParse(_val, out int num))
+                                            EditorHelper.AddSelectedObjectIndexes(-num);
+                                    },
+                                    middleClicked = _val =>
+                                    {
+                                        if (int.TryParse(_val, out int num))
+                                            EditorHelper.SetSelectedObjectIndexes(num);
+                                    },
+                                    rightArrowClicked = _val =>
+                                    {
+                                        if (int.TryParse(_val, out int num))
+                                            EditorHelper.AddSelectedObjectIndexes(num);
+                                    },
+                                    rightGreaterArrowClicked = _val => EditorHelper.SetSelectedObjectIndexes(EditorTimeline.inst.timelineObjects.Count),
+                                }).Init(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced));
+                                ButtonElement.Label1Button("Reverse Indexes", EditorHelper.ReverseSelectedObjectIndexes).Init(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced).Rect(RectValues.Default.SizeDelta(0f, 32f)));
+
+                                var baseColorInput = new StringInputElement("FFFFFF", null)
+                                {
+                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
+                                };
+                                new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                    new LabelElement("Base Color")
+                                    {
+                                        layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                    },
+                                    baseColorInput,
+                                    ButtonElement.Label1Button("Set", () =>
+                                    {
+                                        if (!baseColorInput.inputField)
+                                            return;
+
+                                        MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                        {
+                                            timelineObject.EditorData.color = baseColorInput.inputField.text;
+                                            timelineObject.Render();
+                                        });
+                                    }, labelAlignment: TextAnchor.MiddleCenter));
+
+                                var selectColorInput = new StringInputElement("FFFFFF", null)
+                                {
+                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
+                                };
+                                new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                    new LabelElement("Select Color")
+                                    {
+                                        layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                    },
+                                    selectColorInput,
+                                    ButtonElement.Label1Button("Set", () =>
+                                    {
+                                        if (!baseColorInput.inputField)
+                                            return;
+
+                                        MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                        {
+                                            timelineObject.EditorData.selectedColor = baseColorInput.inputField.text;
+                                            timelineObject.Render();
+                                        });
+                                    }, labelAlignment: TextAnchor.MiddleCenter));
+
+                                var textColorInput = new StringInputElement("FFFFFF", null)
+                                {
+                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
+                                };
+                                new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                    new LabelElement("Text Color")
+                                    {
+                                        layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                    },
+                                    textColorInput,
+                                    ButtonElement.Label1Button("Set", () =>
+                                    {
+                                        if (!baseColorInput.inputField)
+                                            return;
+
+                                        MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                        {
+                                            timelineObject.EditorData.textColor = baseColorInput.inputField.text;
+                                            timelineObject.Render();
+                                        });
+                                    }, labelAlignment: TextAnchor.MiddleCenter));
+
+                                var markColorInput = new StringInputElement("FFFFFF", null)
+                                {
+                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
+                                };
+                                new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                    new LabelElement("Mark Color")
+                                    {
+                                        layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                    },
+                                    markColorInput,
+                                    ButtonElement.Label1Button("Set", () =>
+                                    {
+                                        if (!baseColorInput.inputField)
+                                            return;
+
+                                        MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                        {
+                                            timelineObject.EditorData.markColor = baseColorInput.inputField.text;
+                                            timelineObject.Render();
+                                        });
+                                    }, labelAlignment: TextAnchor.MiddleCenter));
+                                break;
+                            }
+                        case Tab.Prefab: {
+                                new LabelsElement(HorizontalOrVerticalLayoutValues.Horizontal.ChildControlHeight(false), "Assign Objects to Prefab").Init(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Normal));
+
+                                new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Normal), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                    ButtonElement.Label1Button("Assign", () =>
+                                    {
+                                        RTEditor.inst.selectingMultiple = true;
+                                        RTEditor.inst.prefabPickerEnabled = true;
+                                    }),
+                                    ButtonElement.Label1Button("Remove", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                    {
+                                        if (timelineObject.TryGetPrefabable(out IPrefabable prefabable))
+                                            prefabable.RemovePrefabReference();
+                                    }), buttonThemeGroup: ThemeGroup.Delete, graphicThemeGroup: ThemeGroup.Delete_Text));
+
+                                new LabelsElement("New Prefab Instance").Init(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Normal));
+
+                                ButtonElement.Label1Button("New Instance", () => RTEditor.inst.ShowWarningPopup("This will change the instance ID of all selected objects, assuming they all have the same ID. Are you sure you want to do this?", () =>
+                                {
+                                    var selected = EditorTimeline.inst.timelineObjects.Where(x => x.Selected).ToList();
+                                    if (selected.Count < 0)
+                                        return;
+
+                                    var firstSelected = selected.Find(x => !x.isPrefabObject);
+
+                                    var first = !firstSelected ? string.Empty : firstSelected.TimelineReference switch
+                                    {
+                                        TimelineObject.TimelineReferenceType.BeatmapObject => firstSelected.GetData<BeatmapObject>().prefabInstanceID,
+                                        TimelineObject.TimelineReferenceType.BackgroundObject => firstSelected.GetData<BackgroundObject>().prefabInstanceID,
+                                        _ => string.Empty,
+                                    };
+
+                                    // validate that all selected timeline objects are beatmap objects and have the same prefab instance ID.
+                                    if (selected.Any(x => x.isPrefabObject || x.isBeatmapObject && x.GetData<BeatmapObject>().prefabInstanceID != first || x.isBackgroundObject && x.GetData<BackgroundObject>().prefabInstanceID != first))
+                                        return;
+
+                                    var prefabInstanceID = PAObjectBase.GetStringID();
+
+                                    selected.ForLoop(timelineObject =>
+                                    {
+                                        if (timelineObject.TryGetPrefabable(out IPrefabable prefabable))
+                                            prefabable.PrefabInstanceID = prefabInstanceID;
+                                    });
+                                    EditorManager.inst.DisplayNotification("Successfully created a new instance ID.", 2f, EditorManager.NotificationType.Success);
+                                }), buttonThemeGroup: ThemeGroup.Add, graphicThemeGroup: ThemeGroup.Add_Text).Init(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Normal).Rect(RectValues.Default.SizeDelta(0f, 32f)));
+
+                                new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Normal), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                    ButtonElement.Label1Button("Collapse", () => RTPrefabEditor.inst.CollapseCurrentPrefab()),
+                                    ButtonElement.Label1Button("Collapse New", () => RTPrefabEditor.inst.CollapseCurrentPrefab(true)));
+
+                                new LabelsElement("Move Prefabs X", "Move Prefabs Y").Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                                new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Normal), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                    new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerFloat()
+                                    {
+                                        standardArrowFunctions = false,
+                                        leftArrowClicked = _val =>
+                                        {
+                                            if (float.TryParse(_val, out float num))
+                                                MultiObjectEditor.inst.ForEachPrefabObject((PrefabObject prefabObject) =>
+                                                {
+                                                    prefabObject.events[0].values[0] -= num;
+                                                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
+                                                });
+                                        },
+                                        middleClicked = _val =>
+                                        {
+                                            if (float.TryParse(_val, out float num))
+                                                MultiObjectEditor.inst.ForEachPrefabObject((PrefabObject prefabObject) =>
+                                                {
+                                                    prefabObject.events[0].values[0] = num;
+                                                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
+                                                });
+                                        },
+                                        rightArrowClicked = _val =>
+                                        {
+                                            if (float.TryParse(_val, out float num))
+                                                MultiObjectEditor.inst.ForEachPrefabObject((PrefabObject prefabObject) =>
+                                                {
+                                                    prefabObject.events[0].values[0] += num;
+                                                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
+                                                });
+                                        },
+                                    }),
+                                    new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerFloat()
+                                    {
+                                        standardArrowFunctions = false,
+                                        leftArrowClicked = _val =>
+                                        {
+                                            if (float.TryParse(_val, out float num))
+                                                MultiObjectEditor.inst.ForEachPrefabObject((PrefabObject prefabObject) =>
+                                                {
+                                                    prefabObject.events[0].values[1] -= num;
+                                                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
+                                                });
+                                        },
+                                        middleClicked = _val =>
+                                        {
+                                            if (float.TryParse(_val, out float num))
+                                                MultiObjectEditor.inst.ForEachPrefabObject((PrefabObject prefabObject) =>
+                                                {
+                                                    prefabObject.events[0].values[1] = num;
+                                                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
+                                                });
+                                        },
+                                        rightArrowClicked = _val =>
+                                        {
+                                            if (float.TryParse(_val, out float num))
+                                                MultiObjectEditor.inst.ForEachPrefabObject((PrefabObject prefabObject) =>
+                                                {
+                                                    prefabObject.events[0].values[1] += num;
+                                                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
+                                                });
+                                        },
+                                    }));
+
+                                new LabelsElement("Scale Prefabs X", "Scale Prefabs Y").Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                                new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Normal), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                    new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerFloat()
+                                    {
+                                        standardArrowFunctions = false,
+                                        leftArrowClicked = _val =>
+                                        {
+                                            if (float.TryParse(_val, out float num))
+                                                MultiObjectEditor.inst.ForEachPrefabObject((PrefabObject prefabObject) =>
+                                                {
+                                                    prefabObject.events[1].values[0] -= num;
+                                                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
+                                                });
+                                        },
+                                        middleClicked = _val =>
+                                        {
+                                            if (float.TryParse(_val, out float num))
+                                                MultiObjectEditor.inst.ForEachPrefabObject((PrefabObject prefabObject) =>
+                                                {
+                                                    prefabObject.events[1].values[0] = num;
+                                                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
+                                                });
+                                        },
+                                        rightArrowClicked = _val =>
+                                        {
+                                            if (float.TryParse(_val, out float num))
+                                                MultiObjectEditor.inst.ForEachPrefabObject((PrefabObject prefabObject) =>
+                                                {
+                                                    prefabObject.events[1].values[0] += num;
+                                                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
+                                                });
+                                        },
+                                    }),
+                                    new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerFloat()
+                                    {
+                                        standardArrowFunctions = false,
+                                        leftArrowClicked = _val =>
+                                        {
+                                            if (float.TryParse(_val, out float num))
+                                                MultiObjectEditor.inst.ForEachPrefabObject((PrefabObject prefabObject) =>
+                                                {
+                                                    prefabObject.events[1].values[1] -= num;
+                                                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
+                                                });
+                                        },
+                                        middleClicked = _val =>
+                                        {
+                                            if (float.TryParse(_val, out float num))
+                                                MultiObjectEditor.inst.ForEachPrefabObject((PrefabObject prefabObject) =>
+                                                {
+                                                    prefabObject.events[1].values[1] = num;
+                                                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
+                                                });
+                                        },
+                                        rightArrowClicked = _val =>
+                                        {
+                                            if (float.TryParse(_val, out float num))
+                                                MultiObjectEditor.inst.ForEachPrefabObject((PrefabObject prefabObject) =>
+                                                {
+                                                    prefabObject.events[1].values[1] += num;
+                                                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
+                                                });
+                                        },
+                                    }));
+
+                                new LabelsElement("Rotate Prefabs").Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                                new NumberInputElement("15", null, new NumberInputElement.ArrowHandlerFloat()
+                                {
+                                    standardArrowFunctions = false,
+                                    leftArrowClicked = _val =>
+                                    {
+                                        if (float.TryParse(_val, out float num))
+                                            MultiObjectEditor.inst.ForEachPrefabObject((PrefabObject prefabObject) =>
+                                            {
+                                                prefabObject.events[2].values[0] -= num;
+                                                RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
+                                            });
+                                    },
+                                    middleClicked = _val =>
+                                    {
+                                        if (float.TryParse(_val, out float num))
+                                            MultiObjectEditor.inst.ForEachPrefabObject((PrefabObject prefabObject) =>
+                                            {
+                                                prefabObject.events[2].values[0] = num;
+                                                RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
+                                            });
+                                    },
+                                    rightArrowClicked = _val =>
+                                    {
+                                        if (float.TryParse(_val, out float num))
+                                            MultiObjectEditor.inst.ForEachPrefabObject((PrefabObject prefabObject) =>
+                                            {
+                                                prefabObject.events[2].values[0] += num;
+                                                RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
+                                            });
+                                    },
+                                }).Init(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Normal));
+
+                                new LabelsElement("Change Prefab Depth").Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                                new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerFloat()
+                                {
+                                    standardArrowFunctions = false,
+                                    leftArrowClicked = _val =>
+                                    {
+                                        if (float.TryParse(_val, out float num))
+                                            MultiObjectEditor.inst.ForEachPrefabObject((PrefabObject prefabObject) =>
+                                            {
+                                                prefabObject.depth -= num;
+                                                RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
+                                            });
+                                    },
+                                    middleClicked = _val =>
+                                    {
+                                        if (float.TryParse(_val, out float num))
+                                            MultiObjectEditor.inst.ForEachPrefabObject((PrefabObject prefabObject) =>
+                                            {
+                                                prefabObject.depth = num;
+                                                RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
+                                            });
+                                    },
+                                    rightArrowClicked = _val =>
+                                    {
+                                        if (float.TryParse(_val, out float num))
+                                            MultiObjectEditor.inst.ForEachPrefabObject((PrefabObject prefabObject) =>
+                                            {
+                                                prefabObject.depth += num;
+                                                RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
+                                            });
+                                    },
+                                }).Init(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Normal));
+
+                                new LabelsElement("Instance Data").Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                                ButtonElement.Label1Button("Paste Data", () =>
+                                {
+                                    if (!RTPrefabEditor.inst.copiedInstanceData)
+                                    {
+                                        EditorManager.inst.DisplayNotification($"No copied data.", 2f, EditorManager.NotificationType.Warning);
+                                        return;
+                                    }
+
+                                    var timelineObjects = EditorTimeline.inst.SelectedPrefabObjects;
+                                    foreach (var timelineObject in timelineObjects)
+                                        RTPrefabEditor.inst.PasteInstanceData(timelineObject.GetData<PrefabObject>());
+
+                                    if (!timelineObjects.IsEmpty())
+                                        EditorManager.inst.DisplayNotification($"Pasted Prefab instance data.", 2f, EditorManager.NotificationType.Success);
+                                }, buttonThemeGroup: ThemeGroup.Paste, graphicThemeGroup: ThemeGroup.Paste_Text).Init(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Normal).Rect(RectValues.Default.SizeDelta(0f, 32f)));
+                                break;
+                            }
+                        case Tab.Properties: {
+                                new LabelsElement("Start Time").Init(EditorElement.InitSettings.Default.Parent(parent));
+                                new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerFloat()
+                                {
+                                    standardArrowFunctions = false,
+                                    leftArrowClicked = _val =>
+                                    {
+                                        if (float.TryParse(_val, out float num))
+                                            MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                            {
+                                                timelineObject.Time -= num;
+
+                                                switch (timelineObject.TimelineReference)
+                                                {
+                                                    case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                                                            RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.START_TIME);
+                                                            break;
+                                                        }
+                                                    case TimelineObject.TimelineReferenceType.PrefabObject: {
+                                                            RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.TIME);
+                                                            break;
+                                                        }
+                                                    case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                                                            RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.START_TIME);
+                                                            break;
+                                                        }
+                                                }
+
+                                                timelineObject.RenderPosLength();
+                                            });
+                                    },
+                                    middleClicked = _val =>
+                                    {
+                                        if (float.TryParse(_val, out float num))
+                                            MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                            {
+                                                timelineObject.Time = num;
+
+                                                switch (timelineObject.TimelineReference)
+                                                {
+                                                    case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                                                            RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.START_TIME);
+                                                            break;
+                                                        }
+                                                    case TimelineObject.TimelineReferenceType.PrefabObject: {
+                                                            RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.TIME);
+                                                            break;
+                                                        }
+                                                    case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                                                            RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.START_TIME);
+                                                            break;
+                                                        }
+                                                }
+
+                                                timelineObject.RenderPosLength();
+                                            });
+                                    },
+                                    rightArrowClicked = _val =>
+                                    {
+                                        if (float.TryParse(_val, out float num))
+                                            MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                            {
+                                                timelineObject.Time += num;
+
+                                                switch (timelineObject.TimelineReference)
+                                                {
+                                                    case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                                                            RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.START_TIME);
+                                                            break;
+                                                        }
+                                                    case TimelineObject.TimelineReferenceType.PrefabObject: {
+                                                            RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.TIME);
+                                                            break;
+                                                        }
+                                                    case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                                                            RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.START_TIME);
+                                                            break;
+                                                        }
+                                                }
+
+                                                timelineObject.RenderPosLength();
+                                            });
+                                    },
+                                    rightGreaterArrowClicked = _val => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                    {
+                                        timelineObject.Time = RTLevel.Current.FixedTime;
+
+                                        switch (timelineObject.TimelineReference)
+                                        {
+                                            case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                                                    RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.START_TIME);
+                                                    break;
+                                                }
+                                            case TimelineObject.TimelineReferenceType.PrefabObject: {
+                                                    RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.TIME);
+                                                    break;
+                                                }
+                                            case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                                                    RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.START_TIME);
+                                                    break;
+                                                }
+                                        }
+
+                                        timelineObject.RenderPosLength();
+                                    }),
+                                    rightGreaterSprite = EditorSprites.DownArrow,
+                                }).Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                                new LabelsElement("Autokill").Init(EditorElement.InitSettings.Default.Parent(parent));
+                                new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerFloat()
+                                {
+                                    standardArrowFunctions = false,
+                                    leftArrowClicked = _val =>
+                                    {
+                                        if (float.TryParse(_val, out float num))
+                                            MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                            {
+                                                if (timelineObject.isBeatmapObject)
+                                                {
+                                                    var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                                    beatmapObject.autoKillOffset -= num;
+                                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
+                                                }
+                                                if (timelineObject.isBackgroundObject)
+                                                {
+                                                    var backgroundObject = timelineObject.GetData<BackgroundObject>();
+                                                    backgroundObject.autoKillOffset -= num;
+                                                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.AUTOKILL);
+                                                }
+                                                EditorTimeline.inst.RenderTimelineObject(timelineObject);
+                                            });
+                                    },
+                                    middleClicked = _val =>
+                                    {
+                                        if (float.TryParse(_val, out float num))
+                                            MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                            {
+                                                if (timelineObject.isBeatmapObject)
+                                                {
+                                                    var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                                    beatmapObject.autoKillOffset = num;
+                                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
+                                                }
+                                                if (timelineObject.isBackgroundObject)
+                                                {
+                                                    var backgroundObject = timelineObject.GetData<BackgroundObject>();
+                                                    backgroundObject.autoKillOffset = num;
+                                                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.AUTOKILL);
+                                                }
+                                                EditorTimeline.inst.RenderTimelineObject(timelineObject);
+                                            });
+                                    },
+                                    rightArrowClicked = _val =>
+                                    {
+                                        if (float.TryParse(_val, out float num))
+                                            MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                            {
+                                                if (timelineObject.isBeatmapObject)
+                                                {
+                                                    var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                                    beatmapObject.autoKillOffset += num;
+                                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
+                                                }
+                                                if (timelineObject.isBackgroundObject)
+                                                {
+                                                    var backgroundObject = timelineObject.GetData<BackgroundObject>();
+                                                    backgroundObject.autoKillOffset += num;
+                                                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.AUTOKILL);
+                                                }
+                                                EditorTimeline.inst.RenderTimelineObject(timelineObject);
+                                            });
+                                    },
+                                    rightGreaterArrowClicked = _val => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                    {
+                                        if (timelineObject.isBeatmapObject)
+                                        {
+                                            var beatmapObject = timelineObject.GetData<BeatmapObject>();
+
+                                            float num = 0f;
+
+                                            if (beatmapObject.autoKillType == AutoKillType.SongTime)
+                                                num = AudioManager.inst.CurrentAudioSource.time;
+                                            else num = AudioManager.inst.CurrentAudioSource.time - beatmapObject.StartTime;
+
+                                            if (num < 0f)
+                                                num = 0f;
+
+                                            beatmapObject.autoKillOffset = num;
+
+                                            EditorTimeline.inst.RenderTimelineObject(timelineObject);
+                                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
+                                        }
+                                        if (timelineObject.isBackgroundObject)
+                                        {
+                                            var backgroundObject = timelineObject.GetData<BackgroundObject>();
+
+                                            float num = 0f;
+
+                                            if (backgroundObject.autoKillType == AutoKillType.SongTime)
+                                                num = AudioManager.inst.CurrentAudioSource.time;
+                                            else num = AudioManager.inst.CurrentAudioSource.time - backgroundObject.StartTime;
+
+                                            if (num < 0f)
+                                                num = 0f;
+
+                                            backgroundObject.autoKillOffset = num;
+
+                                            EditorTimeline.inst.RenderTimelineObject(timelineObject);
+                                            RTLevel.Current?.UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.AUTOKILL);
+                                        }
+                                    }),
+                                    rightGreaterSprite = EditorSprites.DownArrow,
+                                }).Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                                new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                    ButtonElement.Label1Button("No Autokill", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                    {
+                                        if (timelineObject.isBeatmapObject)
+                                        {
+                                            var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                            beatmapObject.autoKillType = AutoKillType.NoAutokill;
+                                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
+                                        }
+                                        if (timelineObject.isBackgroundObject)
+                                        {
+                                            var backgroundObject = timelineObject.GetData<BackgroundObject>();
+                                            backgroundObject.autoKillType = AutoKillType.NoAutokill;
+                                            RTLevel.Current?.UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.AUTOKILL);
+                                        }
+                                        timelineObject.RenderPosLength();
+                                    })),
+                                    ButtonElement.Label1Button("Last KF", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                    {
+                                        if (timelineObject.isBeatmapObject)
+                                        {
+                                            var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                            beatmapObject.autoKillType = AutoKillType.LastKeyframe;
+                                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
+                                        }
+                                        if (timelineObject.isBackgroundObject)
+                                        {
+                                            var backgroundObject = timelineObject.GetData<BackgroundObject>();
+                                            backgroundObject.autoKillType = AutoKillType.LastKeyframe;
+                                            RTLevel.Current?.UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.AUTOKILL);
+                                        }
+                                        timelineObject.RenderPosLength();
+                                    })),
+                                    ButtonElement.Label1Button("Last KF Offset", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                    {
+                                        if (timelineObject.isBeatmapObject)
+                                        {
+                                            var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                            beatmapObject.autoKillType = AutoKillType.LastKeyframeOffset;
+                                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
+                                        }
+                                        if (timelineObject.isBackgroundObject)
+                                        {
+                                            var backgroundObject = timelineObject.GetData<BackgroundObject>();
+                                            backgroundObject.autoKillType = AutoKillType.LastKeyframeOffset;
+                                            RTLevel.Current?.UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.AUTOKILL);
+                                        }
+                                        timelineObject.RenderPosLength();
+                                    })),
+                                    ButtonElement.Label1Button("Fixed Time", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                    {
+                                        if (timelineObject.isBeatmapObject)
+                                        {
+                                            var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                            beatmapObject.autoKillType = AutoKillType.FixedTime;
+                                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
+                                        }
+                                        if (timelineObject.isBackgroundObject)
+                                        {
+                                            var backgroundObject = timelineObject.GetData<BackgroundObject>();
+                                            backgroundObject.autoKillType = AutoKillType.FixedTime;
+                                            RTLevel.Current?.UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.AUTOKILL);
+                                        }
+                                        timelineObject.RenderPosLength();
+                                    })),
+                                    ButtonElement.Label1Button("Song Time", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                    {
+                                        if (timelineObject.isBeatmapObject)
+                                        {
+                                            var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                            beatmapObject.autoKillType = AutoKillType.SongTime;
+                                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
+                                        }
+                                        if (timelineObject.isBackgroundObject)
+                                        {
+                                            var backgroundObject = timelineObject.GetData<BackgroundObject>();
+                                            backgroundObject.autoKillType = AutoKillType.SongTime;
+                                            RTLevel.Current?.UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.AUTOKILL);
+                                        }
+                                        timelineObject.RenderPosLength();
+                                    })));
+
+                                ButtonElement.Label1Button("Set Autokill to Scaled 0x0", () => MultiObjectEditor.inst.ForEachBeatmapObject(timelineObject =>
+                                {
+                                    var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                    beatmapObject.SetAutokillToScale(GameData.Current.beatmapObjects);
+                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
+                                    timelineObject.RenderPosLength();
+                                })).Init(EditorElement.InitSettings.Default.Parent(parent).Rect(RectValues.Default.SizeDelta(0f, 32f)));
+
+                                new LabelsElement("Parent").Init(EditorElement.InitSettings.Default.Parent(parent));
+                                new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.ChildForceExpandWidth(false).Spacing(4f),
+                                    new ButtonElement(ButtonElement.Type.Sprite, "Search List", ObjectEditor.inst.ShowObjectSearch)
+                                    {
+                                        buttonThemeGroup = ThemeGroup.Function_2,
+                                        sprite = EditorSprites.SearchSprite,
+                                    },
+                                    new ButtonElement(ButtonElement.Type.Icon, "Picker", () =>
+                                    {
+                                        RTEditor.inst.parentPickerEnabled = true;
+                                        RTEditor.inst.selectingMultiple = true;
+                                    })
+                                    {
+                                        buttonThemeGroup = ThemeGroup.Picker,
+                                        sprite = EditorSprites.DropperSprite,
+                                    },
+                                    new ButtonElement(ButtonElement.Type.Icon, "Remove", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to remove parents from all selected objects? This <b>CANNOT</b> be undone!", () =>
+                                    {
+                                        MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                        {
+                                            beatmapObject.Parent = string.Empty;
+                                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARENT_CHAIN);
+                                        });
+                                        MultiObjectEditor.inst.ForEachPrefabObject(prefabObject =>
+                                        {
+                                            prefabObject.Parent = string.Empty;
+                                            RTLevel.Current?.UpdatePrefab(prefabObject, ObjectContext.PARENT_CHAIN);
+                                        });
+                                    }))
+                                    {
+                                        buttonThemeGroup = ThemeGroup.Close,
+                                        graphicThemeGroup = ThemeGroup.Close_X,
+                                        sprite = EditorSprites.CloseSprite,
+                                    });
+
+                                new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                    new LabelElement("Desync")
+                                    {
+                                        layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                    },
+                                    ButtonElement.Label1Button("On", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                    {
+                                        if (timelineObject.isBeatmapObject)
+                                        {
+                                            var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                            beatmapObject.desync = true;
+                                            RTLevel.Current?.UpdateObject(beatmapObject);
+                                        }
+                                        if (timelineObject.isPrefabObject)
+                                        {
+                                            var prefabObject = timelineObject.GetData<PrefabObject>();
+                                            prefabObject.desync = true;
+                                            RTLevel.Current?.UpdatePrefab(prefabObject);
+                                        }
+                                    })),
+                                    ButtonElement.Label1Button("Off", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                    {
+                                        if (timelineObject.isBeatmapObject)
+                                        {
+                                            var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                            beatmapObject.desync = false;
+                                            RTLevel.Current?.UpdateObject(beatmapObject);
+                                        }
+                                        if (timelineObject.isPrefabObject)
+                                        {
+                                            var prefabObject = timelineObject.GetData<PrefabObject>();
+                                            prefabObject.desync = false;
+                                            RTLevel.Current?.UpdatePrefab(prefabObject);
+                                        }
+                                    })),
+                                    ButtonElement.Label1Button("Swap", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                    {
+                                        if (timelineObject.isBeatmapObject)
+                                        {
+                                            var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                            beatmapObject.desync = !beatmapObject.desync;
+                                            RTLevel.Current?.UpdateObject(beatmapObject);
+                                        }
+                                        if (timelineObject.isPrefabObject)
+                                        {
+                                            var prefabObject = timelineObject.GetData<PrefabObject>();
+                                            prefabObject.desync = !prefabObject.desync;
+                                            RTLevel.Current?.UpdatePrefab(prefabObject);
+                                        }
+                                    })));
+
+                                new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                    new LabelElement("Position Toggle")
+                                    {
+                                        layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                    },
+                                    ButtonElement.Label1Button("On", () => MultiObjectEditor.inst.SetParentToggle(0, 1)),
+                                    ButtonElement.Label1Button("Off", () => MultiObjectEditor.inst.SetParentToggle(0, 0)),
+                                    ButtonElement.Label1Button("Swap", () => MultiObjectEditor.inst.SetParentToggle(0, 2)));
+
+                                new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                    new LabelElement("Scale Toggle")
+                                    {
+                                        layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                    },
+                                    ButtonElement.Label1Button("On", () => MultiObjectEditor.inst.SetParentToggle(1, 1)),
+                                    ButtonElement.Label1Button("Off", () => MultiObjectEditor.inst.SetParentToggle(1, 0)),
+                                    ButtonElement.Label1Button("Swap", () => MultiObjectEditor.inst.SetParentToggle(01, 2)));
+
+                                new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                    new LabelElement("Rotation Toggle")
+                                    {
+                                        layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                    },
+                                    ButtonElement.Label1Button("On", () => MultiObjectEditor.inst.SetParentToggle(2, 1)),
+                                    ButtonElement.Label1Button("Off", () => MultiObjectEditor.inst.SetParentToggle(2, 0)),
+                                    ButtonElement.Label1Button("Swap", () => MultiObjectEditor.inst.SetParentToggle(2, 2)));
+
+                                new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                    new LabelElement("Position Offset (Delay)")
+                                    {
+                                        layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                    },
+                                    new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerFloat()
+                                    {
+                                        standardArrowFunctions = false,
+                                        leftArrowClicked = _val =>
+                                        {
+                                            if (float.TryParse(_val, out float num))
+                                                MultiObjectEditor.inst.SetParentOffset(0, num, MathOperation.Subtract);
+                                        },
+                                        middleClicked = _val =>
+                                        {
+                                            if (float.TryParse(_val, out float num))
+                                                MultiObjectEditor.inst.SetParentOffset(0, num, MathOperation.Subtract);
+                                        },
+                                        rightArrowClicked = _val =>
+                                        {
+                                            if (float.TryParse(_val, out float num))
+                                                MultiObjectEditor.inst.SetParentOffset(0, num, MathOperation.Addition);
+                                        },
+                                    })
+                                    {
+                                        layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
+                                    });
+
+                                new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                    new LabelElement("Scale Offset (Delay)")
+                                    {
+                                        layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                    },
+                                    new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerFloat()
+                                    {
+                                        standardArrowFunctions = false,
+                                        leftArrowClicked = _val =>
+                                        {
+                                            if (float.TryParse(_val, out float num))
+                                                MultiObjectEditor.inst.SetParentOffset(1, num, MathOperation.Subtract);
+                                        },
+                                        middleClicked = _val =>
+                                        {
+                                            if (float.TryParse(_val, out float num))
+                                                MultiObjectEditor.inst.SetParentOffset(1, num, MathOperation.Set);
+                                        },
+                                        rightArrowClicked = _val =>
+                                        {
+                                            if (float.TryParse(_val, out float num))
+                                                MultiObjectEditor.inst.SetParentOffset(1, num, MathOperation.Addition);
+                                        },
+                                    })
+                                    {
+                                        layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
+                                    });
+
+                                new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                    new LabelElement("Rotation Offset (Delay)")
+                                    {
+                                        layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                    },
+                                    new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerFloat()
+                                    {
+                                        standardArrowFunctions = false,
+                                        leftArrowClicked = _val =>
+                                        {
+                                            if (float.TryParse(_val, out float num))
+                                                MultiObjectEditor.inst.SetParentOffset(2, num, MathOperation.Subtract);
+                                        },
+                                        middleClicked = _val =>
+                                        {
+                                            if (float.TryParse(_val, out float num))
+                                                MultiObjectEditor.inst.SetParentOffset(2, num, MathOperation.Set);
+                                        },
+                                        rightArrowClicked = _val =>
+                                        {
+                                            if (float.TryParse(_val, out float num))
+                                                MultiObjectEditor.inst.SetParentOffset(2, num, MathOperation.Addition);
+                                        },
+                                    })
+                                    {
+                                        layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
+                                    });
+
+                                new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                    new LabelElement("Position Additive")
+                                    {
+                                        layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                    },
+                                    ButtonElement.Label1Button("On", () => MultiObjectEditor.inst.SetParentAdditive(0, 1)),
+                                    ButtonElement.Label1Button("Off", () => MultiObjectEditor.inst.SetParentAdditive(0, 0)),
+                                    ButtonElement.Label1Button("Swap", () => MultiObjectEditor.inst.SetParentAdditive(0, 2)));
+
+                                new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                    new LabelElement("Scale Additive")
+                                    {
+                                        layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                    },
+                                    ButtonElement.Label1Button("On", () => MultiObjectEditor.inst.SetParentAdditive(1, 1)),
+                                    ButtonElement.Label1Button("Off", () => MultiObjectEditor.inst.SetParentAdditive(1, 0)),
+                                    ButtonElement.Label1Button("Swap", () => MultiObjectEditor.inst.SetParentAdditive(01, 2)));
+
+                                new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                    new LabelElement("Rotation Additive")
+                                    {
+                                        layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                    },
+                                    ButtonElement.Label1Button("On", () => MultiObjectEditor.inst.SetParentAdditive(2, 1)),
+                                    ButtonElement.Label1Button("Off", () => MultiObjectEditor.inst.SetParentAdditive(2, 0)),
+                                    ButtonElement.Label1Button("Swap", () => MultiObjectEditor.inst.SetParentAdditive(2, 2)));
+
+                                new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                    new LabelElement("Position Parallax (Delay)")
+                                    {
+                                        layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                    },
+                                    new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerFloat()
+                                    {
+                                        standardArrowFunctions = false,
+                                        leftArrowClicked = _val =>
+                                        {
+                                            if (float.TryParse(_val, out float num))
+                                                MultiObjectEditor.inst.SetParentParallax(0, num, MathOperation.Subtract);
+                                        },
+                                        middleClicked = _val =>
+                                        {
+                                            if (float.TryParse(_val, out float num))
+                                                MultiObjectEditor.inst.SetParentParallax(0, num, MathOperation.Set);
+                                        },
+                                        rightArrowClicked = _val =>
+                                        {
+                                            if (float.TryParse(_val, out float num))
+                                                MultiObjectEditor.inst.SetParentParallax(0, num, MathOperation.Addition);
+                                        },
+                                    })
+                                    {
+                                        layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
+                                    });
+
+                                new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                    new LabelElement("Scale Parallax (Delay)")
+                                    {
+                                        layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                    },
+                                    new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerFloat()
+                                    {
+                                        standardArrowFunctions = false,
+                                        leftArrowClicked = _val =>
+                                        {
+                                            if (float.TryParse(_val, out float num))
+                                                MultiObjectEditor.inst.SetParentParallax(1, num, MathOperation.Subtract);
+                                        },
+                                        middleClicked = _val =>
+                                        {
+                                            if (float.TryParse(_val, out float num))
+                                                MultiObjectEditor.inst.SetParentParallax(1, num, MathOperation.Set);
+                                        },
+                                        rightArrowClicked = _val =>
+                                        {
+                                            if (float.TryParse(_val, out float num))
+                                                MultiObjectEditor.inst.SetParentParallax(1, num, MathOperation.Addition);
+                                        },
+                                    })
+                                    {
+                                        layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
+                                    });
+
+                                new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                    new LabelElement("Rotation Parallax (Delay)")
+                                    {
+                                        layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                    },
+                                    new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerFloat()
+                                    {
+                                        standardArrowFunctions = false,
+                                        leftArrowClicked = _val =>
+                                        {
+                                            if (float.TryParse(_val, out float num))
+                                                MultiObjectEditor.inst.SetParentParallax(2, num, MathOperation.Subtract);
+                                        },
+                                        middleClicked = _val =>
+                                        {
+                                            if (float.TryParse(_val, out float num))
+                                                MultiObjectEditor.inst.SetParentParallax(2, num, MathOperation.Set);
+                                        },
+                                        rightArrowClicked = _val =>
+                                        {
+                                            if (float.TryParse(_val, out float num))
+                                                MultiObjectEditor.inst.SetParentParallax(2, num, MathOperation.Addition);
+                                        },
+                                    })
+                                    {
+                                        layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
+                                    });
+
+                                new LabelsElement("Render Depth").Init(EditorElement.InitSettings.Default.Parent(parent));
+                                new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerInt()
+                                {
+                                    standardArrowFunctions = false,
+                                    leftArrowClicked = _val =>
+                                    {
+                                        if (int.TryParse(_val, out int num))
+                                            MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                            {
+                                                beatmapObject.Depth -= num;
+                                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+                                            });
+                                    },
+                                    middleClicked = _val =>
+                                    {
+                                        if (int.TryParse(_val, out int num))
+                                            MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                            {
+                                                beatmapObject.Depth = num;
+                                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+                                            });
+                                    },
+                                    rightArrowClicked = _val =>
+                                    {
+                                        if (int.TryParse(_val, out int num))
+                                            MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                            {
+                                                beatmapObject.Depth += num;
+                                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+                                            });
+                                    },
+                                }).Init(EditorElement.InitSettings.Default.Parent(parent));
+                                break;
+                            }
+                        case Tab.Modifiers: {
+                                new LabelsElement("Clear Data").Init(EditorElement.InitSettings.Default.Parent(parent));
+                                ButtonElement.Label1Button("Clear Modifiers", () => RTEditor.inst.ShowWarningPopup("You are about to clear modifiers from all selected objects, this <b>CANNOT</b> be undone!", () =>
+                                {
+                                    MultiObjectEditor.inst.ForEachModifyable(modifyable =>
+                                    {
+                                        modifyable.Modifiers.Clear();
+                                        if (modifyable is BeatmapObject beatmapObject)
+                                            RTLevel.Current?.UpdateObject(beatmapObject, recalculate: false);
+                                        if (modifyable is BackgroundObject backgroundObject)
+                                            RTLevel.Current?.UpdateBackgroundObject(backgroundObject, recalculate: false);
+                                    });
+                                    RTLevel.Current?.RecalculateObjectStates();
+                                }), buttonThemeGroup: ThemeGroup.Delete, graphicThemeGroup: ThemeGroup.Delete_Text).Init(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced).Rect(RectValues.Default.SizeDelta(0f, 32f)));
+                                ButtonElement.Label1Button("Clear Tags", () => RTEditor.inst.ShowWarningPopup("You are about to clear tags from all selected objects, this <b>CANNOT</b> be undone!", () =>
+                                {
+                                    MultiObjectEditor.inst.ForEachModifyable(modifyable => modifyable.Tags.Clear());
+                                }), buttonThemeGroup: ThemeGroup.Delete, graphicThemeGroup: ThemeGroup.Delete_Text).Init(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced).Rect(RectValues.Default.SizeDelta(0f, 32f)));
+
+                                new LabelsElement("Tags").Init(EditorElement.InitSettings.Default.Parent(parent));
+                                new NumberInputElement("object group", null, new NumberInputElement.ArrowHandler()
+                                {
+                                    standardArrowFunctions = false,
+                                    subClicked = _val =>
+                                    {
+                                        MultiObjectEditor.inst.ForEachModifyable(modifyable => modifyable.Tags.Remove(_val));
+                                        EditorManager.inst.DisplayNotification($"Removed the tag \"{_val}\" from all selected objects.", 4f, EditorManager.NotificationType.Success);
+                                    },
+                                    addClicked = _val =>
+                                    {
+                                        MultiObjectEditor.inst.ForEachModifyable(modifyable =>
+                                        {
+                                            if (!modifyable.Tags.Contains(_val))
+                                                modifyable.Tags.Add(_val);
+                                        });
+                                        EditorManager.inst.DisplayNotification($"Added the tag \"{_val}\" to all selected objects.", 4f, EditorManager.NotificationType.Success);
+                                    },
+                                }).Init(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced));
+                                break;
+                            }
+                        case Tab.Keyframes: {
+                                new LabelsElement("Clear").Init(EditorElement.InitSettings.Default.Parent(parent));
+                                ButtonElement.Label1Button("Clear All Keyframes", () => RTEditor.inst.ShowWarningPopup("You are about to clear animations from all selected objects, this <b>CANNOT</b> be undone!", () =>
+                                {
+                                    foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
+                                    {
+                                        var bm = timelineObject.GetData<BeatmapObject>();
+                                        foreach (var tkf in bm.TimelineKeyframes)
+                                            CoreHelper.Delete(tkf.GameObject);
+                                        bm.TimelineKeyframes.Clear();
+                                        for (int i = 0; i < bm.events.Count; i++)
+                                        {
+                                            bm.events[i].Sort((a, b) => a.time.CompareTo(b.time));
+                                            var firstKF = bm.events[i][0].Copy(false);
+                                            bm.events[i].Clear();
+                                            bm.events[i].Add(firstKF);
+                                        }
+                                        if (EditorTimeline.inst.SelectedObjects.Count == 1)
+                                        {
+                                            ObjectEditor.inst.Dialog.Timeline.ResizeKeyframeTimeline(bm);
+                                            ObjectEditor.inst.Dialog.Timeline.RenderKeyframes(bm);
+                                        }
+
+                                        RTLevel.Current?.UpdateObject(bm, ObjectContext.KEYFRAMES);
+                                        EditorTimeline.inst.RenderTimelineObject(timelineObject);
+                                    }
+                                }), buttonThemeGroup: ThemeGroup.Delete, graphicThemeGroup: ThemeGroup.Delete_Text).Init(EditorElement.InitSettings.Default.Parent(parent).Rect(RectValues.Default.SizeDelta(0f, 32f)));
+                                ButtonElement.Label1Button("Clear Position Keyframes", () => MultiObjectEditor.inst.ClearKeyframes(0), buttonThemeGroup: ThemeGroup.Delete, graphicThemeGroup: ThemeGroup.Delete_Text).Init(EditorElement.InitSettings.Default.Parent(parent).Rect(RectValues.Default.SizeDelta(0f, 32f)));
+                                ButtonElement.Label1Button("Clear Scale Keyframes", () => MultiObjectEditor.inst.ClearKeyframes(1), buttonThemeGroup: ThemeGroup.Delete, graphicThemeGroup: ThemeGroup.Delete_Text).Init(EditorElement.InitSettings.Default.Parent(parent).Rect(RectValues.Default.SizeDelta(0f, 32f)));
+                                ButtonElement.Label1Button("Clear Rotation Keyframes", () => MultiObjectEditor.inst.ClearKeyframes(2), buttonThemeGroup: ThemeGroup.Delete, graphicThemeGroup: ThemeGroup.Delete_Text).Init(EditorElement.InitSettings.Default.Parent(parent).Rect(RectValues.Default.SizeDelta(0f, 32f)));
+                                ButtonElement.Label1Button("Clear Color Keyframes", () => MultiObjectEditor.inst.ClearKeyframes(3), buttonThemeGroup: ThemeGroup.Delete, graphicThemeGroup: ThemeGroup.Delete_Text).Init(EditorElement.InitSettings.Default.Parent(parent).Rect(RectValues.Default.SizeDelta(0f, 32f)));
+                                break;
+                            }
+                    }
                 }
+
+                ActiveScrollView = ScrollViews[0];
             }
             else
             {
@@ -192,13 +1442,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 textHolderText.fontSize = 22;
 
                 textHolder.AsRT().anchoredPosition = new Vector2(0f, -125f);
-
                 textHolder.AsRT().sizeDelta = new Vector2(-68f, 0f);
 
                 CoreHelper.Destroy(dataLeft.GetComponent<VerticalLayoutGroup>());
 
                 GenerateLabels(parent, 32f, new Label("- Main Properties -", 22, FontStyle.Bold, TextAnchor.MiddleCenter));
-                // Layers
+                // Layers (done)
                 {
                     GenerateLabels(parent, 32f, "Set Group Editor Layer");
 
@@ -241,7 +1490,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     EditorHelper.SetComplexity(inputFieldStorage.leftGreaterButton.gameObject, Complexity.Normal);
                 }
 
-                // Depth
+                // Depth (done)
                 {
                     GenerateLabels(parent, 32f, "Set Group Render Depth");
 
@@ -282,7 +1531,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     TriggerHelper.AddEventTriggers(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputFieldStorage.inputField));
                 }
 
-                // Song Time
+                // Song Time (done)
                 {
                     GenerateLabels(parent, 32f, "Set Song Time");
 
@@ -313,7 +1562,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                         break;
                                     }
                             }
-
 
                             timelineObject.RenderPosLength();
                         }
@@ -379,7 +1627,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     TriggerHelper.AddEventTriggers(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDelta(inputFieldStorage.inputField));
                 }
 
-                // Autokill Offset
+                // Autokill Offset (done)
                 {
                     var labels = GenerateLabels(parent, 32f, "Set Autokill Offset");
 
@@ -453,7 +1701,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     EditorHelper.SetComplexity(inputFieldStorage.gameObject, Complexity.Normal);
                 }
 
-                // Name
+                // Name (done)
                 {
                     GenerateLabels(parent, 32f, "Set Name");
 
@@ -511,7 +1759,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     });
                 }
 
-                // Tags
+                // Tags (done)
                 {
                     var labels = GenerateLabels(parent, 32f, "Add a Tag");
 
@@ -596,7 +1844,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     EditorHelper.SetComplexity(multiNameSet, Complexity.Advanced);
                 }
 
-                // Timeline Object Index
+                // Timeline Object Index (done)
                 {
                     var labels1 = GenerateLabels(parent, 32f, "Set Group Index");
 
@@ -629,7 +1877,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     EditorHelper.SetComplexity(buttons1, Complexity.Normal);
                 }
 
-                // Editor Colors
+                // Editor Colors (done)
                 {
                     SetupEditorColorSetter(parent, "base color", "Set Base Color", "Set Base Color...", "Set", inputField =>
                     {
@@ -672,7 +1920,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 GeneratePad(parent);
                 GenerateLabels(parent, 32f, new Label("- Actions -", 22, FontStyle.Bold, TextAnchor.MiddleCenter));
 
-                // Clear data
+                // Clear data (donE)
                 {
                     var labels = GenerateLabels(parent, 32f, "Clear data from objects");
 
@@ -745,7 +1993,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     EditorHelper.SetComplexity(buttons1, Complexity.Normal);
                 }
 
-                // Optimization
+                // Optimization (done)
                 {
                     var labels = GenerateLabels(parent, 32f, "Auto optimize objects");
                     var buttons1 = GenerateButtons(parent, 32f, 0f, new ButtonFunction("Optimize", () =>
@@ -763,7 +2011,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     EditorHelper.SetComplexity(buttons1, Complexity.Advanced);
                 }
 
-                // Song Time Autokill
+                // Song Time Autokill (done)
                 {
                     var labels = GenerateLabels(parent, 32f, "Set autokill to current time");
                     var buttons1 = GenerateButtons(parent, 32f, 0f, new ButtonFunction("Set", () =>
@@ -816,7 +2064,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 GeneratePad(parent);
                 GenerateLabels(parent, 32f, new Label("- Object Properties -", 22, FontStyle.Bold, TextAnchor.MiddleCenter));
 
-                // Autokill Type
+                // Autokill Type (done)
                 {
                     var labels = GenerateLabels(parent, 32f, "Set Autokill Type");
 
@@ -940,7 +2188,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     EditorHelper.SetComplexity(buttons1, Complexity.Normal);
                 }
 
-                // Set Parent
+                // Set Parent (done)
                 {
                     GenerateLabels(parent, 32f, "Set Parent");
                     GenerateButtons(parent, 32f, 8f,
@@ -965,7 +2213,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         }, buttonThemeGroup: ThemeGroup.Delete, labelThemeGroup: ThemeGroup.Delete_Text));
                 }
 
-                // Parent Desync
+                // Parent Desync (done)
                 {
                     var labels = GenerateLabels(parent, 32f, "Modify parent desync");
 
