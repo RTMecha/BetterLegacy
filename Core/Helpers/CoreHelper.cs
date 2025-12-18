@@ -819,6 +819,25 @@ namespace BetterLegacy.Core.Helpers
                 action?.Invoke(current);
         }
 
+        public static void SetBool(ref bool b, int operation)
+        {
+            switch (operation)
+            {
+                case 0: {
+                        b = false;
+                        break;
+                    }
+                case 1: {
+                        b = true;
+                        break;
+                    }
+                case 2: {
+                        b = !b;
+                        break;
+                    }
+            }
+        }
+
         /// <summary>
         /// Cleans up memory.
         /// </summary>

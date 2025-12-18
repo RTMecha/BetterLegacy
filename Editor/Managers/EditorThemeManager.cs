@@ -100,6 +100,35 @@ namespace BetterLegacy.Editor.Managers
             RTFile.WriteToFile(AssetPack.GetFile("editor/data/editor_themes.json"), jn.ToString());
         }
 
+        /// <summary>
+        /// Checks if a theme group is a selectable theme group.
+        /// </summary>
+        /// <param name="themeGroup">Theme group to check.</param>
+        /// <returns>Returns true if the theme group has associated selectable theme groups.</returns>
+        public static bool IsSelectable(ThemeGroup themeGroup) => themeGroup switch
+        {
+            ThemeGroup.Close => true,
+            ThemeGroup.Delete_Keyframe_Button => true,
+            ThemeGroup.Function_2 => true,
+            ThemeGroup.List_Button_1 => true,
+            ThemeGroup.List_Button_2 => true,
+            ThemeGroup.Picker => true,
+            ThemeGroup.Scrollbar_1_Handle => true,
+            ThemeGroup.Scrollbar_2_Handle => true,
+            ThemeGroup.Slider_1 => true,
+            ThemeGroup.Tab_Color_1 => true,
+            ThemeGroup.Tab_Color_2 => true,
+            ThemeGroup.Tab_Color_3 => true,
+            ThemeGroup.Tab_Color_4 => true,
+            ThemeGroup.Tab_Color_5 => true,
+            ThemeGroup.Tab_Color_6 => true,
+            ThemeGroup.Tab_Color_7 => true,
+            ThemeGroup.Timeline_Scrollbar => true,
+            ThemeGroup.Title_Bar_Button => true,
+            ThemeGroup.Title_Bar_Dropdown => true,
+            _ => false,
+        };
+
         #region Apply
 
         /// <summary>

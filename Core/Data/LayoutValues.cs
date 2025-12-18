@@ -388,4 +388,81 @@ namespace BetterLegacy.Core.Data
             AssignPadding(layout);
         }
     }
+
+    public struct LayoutElementValues
+    {
+        public static LayoutElementValues Default => new LayoutElementValues
+        {
+            flexibleHeight = -1f,
+            flexibleWidth = -1,
+            ignoreLayout = false,
+            layoutPriority = 1,
+            minHeight = -1f,
+            minWidth = -1f,
+            preferredHeight = -1f,
+            preferredWidth = -1f,
+        };
+
+        public bool ignoreLayout;
+        public float flexibleHeight;
+        public float flexibleWidth;
+        public int layoutPriority;
+        public float minHeight;
+        public float minWidth;
+        public float preferredHeight;
+        public float preferredWidth;
+
+        public LayoutElementValues IgnoreLayout(bool ignoreLayout)
+        {
+            this.ignoreLayout = ignoreLayout;
+            return this;
+        }
+
+        public LayoutElementValues FlexibleHeight(float flexibleHeight)
+        {
+            this.flexibleHeight = flexibleHeight;
+            return this;
+        }
+
+        public LayoutElementValues FlexibleWidth(float flexibleWidth)
+        {
+            this.flexibleWidth = flexibleWidth;
+            return this;
+        }
+
+        public LayoutElementValues MinHeight(float minHeight)
+        {
+            this.minHeight = minHeight;
+            return this;
+        }
+
+        public LayoutElementValues MinWidth(float minWidth)
+        {
+            this.minWidth = minWidth;
+            return this;
+        }
+
+        public LayoutElementValues PreferredHeight(float preferredHeight)
+        {
+            this.preferredHeight = preferredHeight;
+            return this;
+        }
+
+        public LayoutElementValues PreferredWidth(float preferredWidth)
+        {
+            this.preferredWidth = preferredWidth;
+            return this;
+        }
+
+        public void AssignToLayoutElement(LayoutElement layoutElement)
+        {
+            layoutElement.ignoreLayout = ignoreLayout;
+            layoutElement.flexibleHeight = flexibleHeight;
+            layoutElement.flexibleWidth = flexibleWidth;
+            layoutElement.minHeight = minHeight;
+            layoutElement.minWidth = minWidth;
+            layoutElement.preferredHeight = preferredHeight;
+            layoutElement.preferredWidth = preferredWidth;
+        }
+    }
 }

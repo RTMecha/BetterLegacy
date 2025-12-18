@@ -76,6 +76,16 @@ namespace BetterLegacy.Editor.Data
         public InitSettings? initSettings;
 
         /// <summary>
+        /// Size delta of the element.
+        /// </summary>
+        public Vector2? sizeDelta;
+
+        /// <summary>
+        /// Layout element values of the element.
+        /// </summary>
+        public LayoutElementValues? layoutElementValues;
+
+        /// <summary>
         /// The default name of the element.
         /// </summary>
         public abstract string DefaultName { get; }
@@ -126,6 +136,8 @@ namespace BetterLegacy.Editor.Data
 
             CoreHelper.Delete(GameObject);
             GameObject = GetPrefab(initSettings).Duplicate(initSettings.parent, GetName(initSettings), GetSiblingIndex(initSettings));
+            if (initSettings.complexity.HasValue)
+                EditorHelper.SetComplexity(GameObject, initSettings.complexity.Value, initSettings.onlySpecificComplexity, initSettings.visible, autoSpecify: false);
             Apply(GameObject, initSettings);
         }
 
@@ -161,6 +173,50 @@ namespace BetterLegacy.Editor.Data
         /// <param name="gameObject">Game object to apply to.</param>
         /// <param name="initSettings">Initialize settings.</param>
         public abstract void Apply(GameObject gameObject, InitSettings initSettings);
+
+        /// <summary>
+        /// Applies rect values to a rect transform.
+        /// </summary>
+        /// <param name="initSettings">Initialize settings.</param>
+        public void ApplyRect(InitSettings initSettings)
+        {
+            if (GameObject)
+                ApplyRect(GameObject.transform.AsRT(), initSettings);
+        }
+
+        /// <summary>
+        /// Applies rect values to a rect transform.
+        /// </summary>
+        /// <param name="rectTransform">Rect transform to apply to.</param>
+        /// <param name="initSettings">Initialize settings.</param>
+        public void ApplyRect(RectTransform rectTransform, InitSettings initSettings)
+        {
+            if (sizeDelta.HasValue)
+                rectTransform.sizeDelta = sizeDelta.Value;
+            if (initSettings.rectValues.HasValue)
+                initSettings.rectValues.Value.AssignToRectTransform(rectTransform);
+        }
+
+        /// <summary>
+        /// Applies layout element values to a layout element.
+        /// </summary>
+        public void ApplyLayoutElement()
+        {
+            var layoutElement = GameObject.GetComponent<LayoutElement>();
+            if (!layoutElement && layoutElementValues.HasValue)
+                layoutElement = GameObject.AddComponent<LayoutElement>();
+            ApplyLayoutElement(layoutElement);
+        }
+
+        /// <summary>
+        /// Applies layout element values to a layout element.
+        /// </summary>
+        /// <param name="layoutElement">Layout element to apply.</param>
+        public void ApplyLayoutElement(LayoutElement layoutElement)
+        {
+            if (layoutElement && layoutElementValues.HasValue)
+                layoutElementValues.Value.AssignToLayoutElement(layoutElement);
+        }
 
         /// <summary>
         /// Initialize settings for <see cref="EditorElement"/>.
@@ -209,6 +265,21 @@ namespace BetterLegacy.Editor.Data
             /// RectTransform values of the editor element.
             /// </summary>
             public RectValues? rectValues;
+
+            /// <summary>
+            /// Complexity of the editor element.
+            /// </summary>
+            public Complexity? complexity;
+
+            /// <summary>
+            /// If the editor element only uses the specific complexity.
+            /// </summary>
+            public bool onlySpecificComplexity;
+
+            /// <summary>
+            /// Visible check function of the editor element.
+            /// </summary>
+            public Func<bool> visible;
 
             /// <summary>
             /// Sets the prefab of the editor element.
@@ -284,6 +355,39 @@ namespace BetterLegacy.Editor.Data
             public InitSettings Rect(RectValues rectValues)
             {
                 this.rectValues = rectValues;
+                return this;
+            }
+
+            /// <summary>
+            /// Sets the complexity of the editor element.
+            /// </summary>
+            /// <param name="complexity">Complexity to set.</param>
+            /// <returns>Returns the current <see cref="InitSettings"/></returns>
+            public InitSettings Complexity(Complexity complexity)
+            {
+                this.complexity = complexity;
+                return this;
+            }
+
+            /// <summary>
+            /// Sets the onlySpecificComplexity value of the editor element.
+            /// </summary>
+            /// <param name="onlySpecificComplexity">Setting to set.</param>
+            /// <returns>Returns the current <see cref="InitSettings"/></returns>
+            public InitSettings OnlySpecificComplexity(bool onlySpecificComplexity)
+            {
+                this.onlySpecificComplexity = onlySpecificComplexity;
+                return this;
+            }
+
+            /// <summary>
+            /// Sets the visible check function of the editor element.
+            /// </summary>
+            /// <param name="visible">Visible check function to set.</param>
+            /// <returns>Returns the current <see cref="InitSettings"/></returns>
+            public InitSettings Visible(Func<bool> visible)
+            {
+                this.visible = visible;
                 return this;
             }
         }
@@ -384,6 +488,13 @@ namespace BetterLegacy.Editor.Data
     /// </summary>
     public class LayoutGroupElement : EditorElement
     {
+        public LayoutGroupElement(InitSettings initSettings, LayoutValues layoutValues, params EditorElement[] editorElements)
+        {
+            this.layoutValues = layoutValues;
+            subElements = editorElements.ToList();
+            Init(initSettings);
+        }
+        
         public LayoutGroupElement(LayoutValues layoutValues, params EditorElement[] editorElements)
         {
             this.layoutValues = layoutValues;
@@ -438,6 +549,8 @@ namespace BetterLegacy.Editor.Data
                     }
             }
 
+            if (initSettings.complexity.HasValue)
+                EditorHelper.SetComplexity(GameObject, initSettings.complexity.Value, initSettings.onlySpecificComplexity, initSettings.visible, autoSpecify: false);
             Apply(GameObject, initSettings);
             InitSubElements(InitSettings.Default.OnClick(initSettings.onClick));
         }
@@ -445,6 +558,8 @@ namespace BetterLegacy.Editor.Data
         public override void Apply(GameObject gameObject, InitSettings initSettings)
         {
             GameObject.transform.AsRT().sizeDelta = size;
+            ApplyRect(initSettings);
+            ApplyLayoutElement();
 
             if (grid && layoutValues is GridLayoutValues gridLayoutValues)
                 gridLayoutValues.AssignToLayout(grid);
@@ -562,6 +677,13 @@ namespace BetterLegacy.Editor.Data
     {
         #region Constructors
 
+        public ButtonElement(Type buttonType, string name, Action action, string tooltipGroup = null, Func<bool> shouldGenerate = null) : base(tooltipGroup, shouldGenerate)
+        {
+            this.buttonType = buttonType;
+            this.name = name;
+            this.action = action;
+        }
+
         public ButtonElement(string name, Action action, string tooltipGroup = null, Func<bool> shouldGenerate = null) : base(tooltipGroup, shouldGenerate)
         {
             this.name = name;
@@ -624,6 +746,8 @@ namespace BetterLegacy.Editor.Data
             Sprite,
         }
 
+        public TextAnchor? labelAlignment;
+
         public ThemeGroup buttonThemeGroup = ThemeGroup.Function_2;
         public ThemeGroup graphicThemeGroup = ThemeGroup.Function_2_Text;
 
@@ -649,6 +773,8 @@ namespace BetterLegacy.Editor.Data
                 initSettings = this.initSettings.Value;
 
             GameObject = gameObject;
+            ApplyRect(initSettings);
+            ApplyLayoutElement();
 
             switch (buttonType)
             {
@@ -656,19 +782,19 @@ namespace BetterLegacy.Editor.Data
                         var labelButton = GameObject.GetOrAddComponent<FunctionButtonStorage>();
                         buttonAdapter = new ButtonAdapter(labelButton);
 
-                        if (initSettings.rectValues.HasValue)
-                            initSettings.rectValues.Value.AssignToRectTransform(GameObject.transform.AsRT());
-
                         buttonAdapter.Apply(this, initSettings);
 
-                        labelButton.label.alignment = TextAnchor.MiddleLeft;
+                        labelButton.label.alignment = labelAlignment ?? TextAnchor.MiddleLeft;
                         labelButton.Text = Name;
                         labelButton.label.rectTransform.sizeDelta = new Vector2(-12f, 0f);
 
                         if (!initSettings.applyThemes)
                             break;
 
-                        EditorThemeManager.ApplySelectable(labelButton.button, buttonThemeGroup);
+                        if (EditorThemeManager.IsSelectable(buttonThemeGroup))
+                            EditorThemeManager.ApplySelectable(labelButton.button, buttonThemeGroup);
+                        else
+                            EditorThemeManager.ApplyGraphic(labelButton.button.image, buttonThemeGroup);
                         EditorThemeManager.ApplyGraphic(labelButton.label, graphicThemeGroup);
                         break;
                     }
@@ -676,8 +802,9 @@ namespace BetterLegacy.Editor.Data
                         var iconButton = GameObject.GetOrAddComponent<DeleteButtonStorage>();
                         buttonAdapter = new ButtonAdapter(iconButton);
 
-                        if (initSettings.rectValues.HasValue)
-                            initSettings.rectValues.Value.AssignToRectTransform(GameObject.transform.AsRT());
+                        var layoutElement = GameObject.GetComponent<LayoutElement>();
+                        if (layoutElement)
+                            layoutElement.ignoreLayout = false;
 
                         buttonAdapter.Apply(this, initSettings);
 
@@ -686,16 +813,20 @@ namespace BetterLegacy.Editor.Data
                         if (!initSettings.applyThemes)
                             break;
 
-                        EditorThemeManager.ApplySelectable(iconButton.button, buttonThemeGroup);
+                        if (EditorThemeManager.IsSelectable(buttonThemeGroup))
+                            EditorThemeManager.ApplySelectable(iconButton.button, buttonThemeGroup);
+                        else
+                            EditorThemeManager.ApplyGraphic(iconButton.button.image, buttonThemeGroup);
                         EditorThemeManager.ApplyGraphic(iconButton.image, graphicThemeGroup);
                         break;
                     }
                 case Type.Sprite: {
                         var button = GameObject.GetOrAddComponent<Button>();
                         buttonAdapter = new ButtonAdapter(button);
-
-                        if (initSettings.rectValues.HasValue)
-                            initSettings.rectValues.Value.AssignToRectTransform(GameObject.transform.AsRT());
+                        
+                        var layoutElement = GameObject.GetComponent<LayoutElement>();
+                        if (layoutElement)
+                            layoutElement.ignoreLayout = false;
 
                         buttonAdapter.Apply(this, initSettings);
 
@@ -704,26 +835,26 @@ namespace BetterLegacy.Editor.Data
                         if (!initSettings.applyThemes)
                             break;
 
-                        EditorThemeManager.ApplySelectable(button, buttonThemeGroup);
+                        EditorThemeManager.ApplySelectable(button, buttonThemeGroup, false);
                         break;
                     }
                 default: {
                         var labelButton = GameObject.GetOrAddComponent<FunctionButtonStorage>();
                         buttonAdapter = new ButtonAdapter(labelButton);
 
-                        if (initSettings.rectValues.HasValue)
-                            initSettings.rectValues.Value.AssignToRectTransform(GameObject.transform.AsRT());
-
                         buttonAdapter.Apply(this, initSettings);
 
-                        labelButton.label.alignment = TextAnchor.MiddleLeft;
+                        labelButton.label.alignment = labelAlignment ?? TextAnchor.MiddleLeft;
                         labelButton.Text = Name;
                         labelButton.label.rectTransform.sizeDelta = new Vector2(-12f, 0f);
 
                         if (!initSettings.applyThemes)
                             break;
 
-                        EditorThemeManager.ApplyGraphic(labelButton.button.image, buttonThemeGroup);
+                        if (EditorThemeManager.IsSelectable(buttonThemeGroup))
+                            EditorThemeManager.ApplySelectable(labelButton.button, buttonThemeGroup);
+                        else
+                            EditorThemeManager.ApplyGraphic(labelButton.button.image, buttonThemeGroup);
                         EditorThemeManager.ApplyGraphic(labelButton.label, graphicThemeGroup);
                         break;
                     }
@@ -733,6 +864,14 @@ namespace BetterLegacy.Editor.Data
         }
 
         public override void Apply(Button component, InitSettings initSettings) => Apply(component.gameObject, initSettings);
+
+        public static ButtonElement Label1Button(string name, Action action, string tooltipGroup = null, Func<bool> shouldGenerate = null, ThemeGroup buttonThemeGroup = ThemeGroup.Function_1, ThemeGroup graphicThemeGroup = ThemeGroup.Function_1_Text, TextAnchor? labelAlignment = default, LayoutElementValues? layoutElementValues = default) => new ButtonElement(Type.Label1, name, action, tooltipGroup, shouldGenerate)
+        {
+            layoutElementValues = layoutElementValues,
+            labelAlignment = labelAlignment,
+            buttonThemeGroup = buttonThemeGroup,
+            graphicThemeGroup = graphicThemeGroup,
+        };
 
         public static ButtonElement ToggleButton(string name, Func<bool> onState, Action action, string tooltipGroup = null, Func<bool> shouldGenerate = null) => new ButtonElement(() => $"{name} [{(onState?.Invoke() ?? false ? "On" : "Off")}]", action, tooltipGroup, shouldGenerate);
 
@@ -866,6 +1005,9 @@ namespace BetterLegacy.Editor.Data
             if (!string.IsNullOrEmpty(placeholder))
                 inputField.GetPlaceholderText().text = placeholder;
 
+            ApplyRect(initSettings);
+            ApplyLayoutElement();
+
             if (!initSettings.applyThemes)
                 return;
 
@@ -994,6 +1136,9 @@ namespace BetterLegacy.Editor.Data
             if (!string.IsNullOrEmpty(placeholder))
                 numberInputField.inputField.GetPlaceholderText().text = placeholder;
 
+            ApplyRect(initSettings);
+            ApplyLayoutElement();
+
             arrowHandler?.Apply(numberInputField);
 
             if (!arrowHandler)
@@ -1039,47 +1184,76 @@ namespace BetterLegacy.Editor.Data
         {
             public bool standardArrowFunctions = true;
 
-            public Action leftArrowClicked;
+            public Action<string> leftGreaterArrowClicked;
 
-            public Action rightArrowClicked;
+            public Action<string> leftArrowClicked;
 
-            public Action leftGreaterArrowClicked;
+            public Action<string> middleClicked;
 
-            public Action rightGreaterArrowClicked;
+            public Action<string> rightArrowClicked;
 
-            public Action middleClicked;
+            public Action<string> rightGreaterArrowClicked;
 
-            public Action subClicked;
+            public Action<string> subClicked;
 
-            public Action addClicked;
+            public Action<string> addClicked;
+
+            public Sprite leftGreaterSprite;
+
+            public Sprite leftSprite;
+
+            public Sprite middleSprite;
+
+            public Sprite rightSprite;
+
+            public Sprite rightGreaterSprite;
+
+            public Sprite subSprite;
+
+            public Sprite addSprite;
 
             public virtual void Apply(InputFieldStorage numberInputField)
             {
+                if (leftGreaterSprite)
+                    numberInputField.leftGreaterButton.image.sprite = leftGreaterSprite;
+                if (leftSprite)
+                    numberInputField.leftButton.image.sprite = leftSprite;
+                if (middleSprite)
+                    numberInputField.middleButton.image.sprite = middleSprite;
+                if (rightSprite)
+                    numberInputField.rightButton.image.sprite = rightSprite;
+                if (rightGreaterSprite)
+                    numberInputField.rightGreaterButton.image.sprite = rightGreaterSprite;
+                if (subSprite)
+                    numberInputField.subButton.image.sprite = subSprite;
+                if (addSprite)
+                    numberInputField.addButton.image.sprite = addSprite;
+
                 numberInputField.middleButton.gameObject.SetActive(middleClicked != null);
                 if (middleClicked != null)
-                    numberInputField.middleButton.onClick.NewListener(() => middleClicked?.Invoke());
+                    numberInputField.middleButton.onClick.NewListener(() => middleClicked?.Invoke(numberInputField.Text));
                 numberInputField.addButton.gameObject.SetActive(addClicked != null);
                 if (addClicked != null)
-                    numberInputField.addButton.onClick.NewListener(() => addClicked?.Invoke());
+                    numberInputField.addButton.onClick.NewListener(() => addClicked?.Invoke(numberInputField.Text));
                 numberInputField.subButton.gameObject.SetActive(subClicked != null);
                 if (subClicked != null)
-                    numberInputField.subButton.onClick.NewListener(() => subClicked?.Invoke());
+                    numberInputField.subButton.onClick.NewListener(() => subClicked?.Invoke(numberInputField.Text));
 
                 if (standardArrowFunctions)
                     return;
 
-                numberInputField.leftButton.gameObject.SetActive(leftArrowClicked != null);
-                if (leftArrowClicked != null)
-                    numberInputField.leftButton.onClick.NewListener(() => rightArrowClicked?.Invoke());
-                numberInputField.rightButton.gameObject.SetActive(rightArrowClicked != null);
-                if (rightArrowClicked != null)
-                    numberInputField.rightButton.onClick.NewListener(() => rightArrowClicked?.Invoke());
                 numberInputField.leftGreaterButton.gameObject.SetActive(leftGreaterArrowClicked != null);
                 if (leftGreaterArrowClicked != null)
-                    numberInputField.leftGreaterButton.onClick.NewListener(() => leftGreaterArrowClicked?.Invoke());
+                    numberInputField.leftGreaterButton.onClick.NewListener(() => leftGreaterArrowClicked?.Invoke(numberInputField.Text));
+                numberInputField.leftButton.gameObject.SetActive(leftArrowClicked != null);
+                if (leftArrowClicked != null)
+                    numberInputField.leftButton.onClick.NewListener(() => rightArrowClicked?.Invoke(numberInputField.Text));
+                numberInputField.rightButton.gameObject.SetActive(rightArrowClicked != null);
+                if (rightArrowClicked != null)
+                    numberInputField.rightButton.onClick.NewListener(() => rightArrowClicked?.Invoke(numberInputField.Text));
                 numberInputField.rightGreaterButton.gameObject.SetActive(rightGreaterArrowClicked != null);
                 if (rightGreaterArrowClicked != null)
-                    numberInputField.rightGreaterButton.onClick.NewListener(() => rightGreaterArrowClicked?.Invoke());
+                    numberInputField.rightGreaterButton.onClick.NewListener(() => rightGreaterArrowClicked?.Invoke(numberInputField.Text));
             }
         }
 
@@ -1193,8 +1367,6 @@ namespace BetterLegacy.Editor.Data
         public HorizontalWrapMode horizontalWrap = HorizontalWrapMode.Wrap;
         public VerticalWrapMode verticalWrap = VerticalWrapMode.Overflow;
 
-        public Vector2? sizeDelta;
-
         public Text uiText;
 
         public override string DefaultName => "label";
@@ -1212,6 +1384,7 @@ namespace BetterLegacy.Editor.Data
             if (!component)
                 return;
 
+            GameObject = component.gameObject;
             component.text = this;
             component.alignment = alignment;
             component.fontSize = fontSize;
@@ -1219,10 +1392,8 @@ namespace BetterLegacy.Editor.Data
             component.horizontalOverflow = horizontalWrap;
             component.verticalOverflow = verticalWrap;
 
-            if (initSettings.rectValues.HasValue)
-                initSettings.rectValues.Value.AssignToRectTransform(component.rectTransform);
-            if (sizeDelta.HasValue)
-                component.rectTransform.sizeDelta = sizeDelta.Value;
+            ApplyRect(initSettings);
+            ApplyLayoutElement();
         }
 
         public static implicit operator string(LabelElement label) => label.text;
@@ -1355,8 +1526,6 @@ namespace BetterLegacy.Editor.Data
 
         public GridLayoutGroup gridLayout;
 
-        public Vector2? sizeDelta;
-
         public Vector2? cellSize;
 
         public Vector2? spacing;
@@ -1375,11 +1544,8 @@ namespace BetterLegacy.Editor.Data
         {
             CoreHelper.DestroyChildren(gameObject.transform);
 
-            if (initSettings.rectValues.HasValue)
-                initSettings.rectValues.Value.AssignToRectTransform(GameObject.transform.AsRT());
-
-            if (sizeDelta.HasValue)
-                gameObject.transform.AsRT().sizeDelta = sizeDelta.Value;
+            ApplyRect(initSettings);
+            ApplyLayoutElement();
 
             gridLayout = gameObject.GetComponent<GridLayoutGroup>();
             if (cellSize.HasValue)
