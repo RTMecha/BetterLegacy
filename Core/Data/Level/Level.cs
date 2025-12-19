@@ -27,12 +27,19 @@ namespace BetterLegacy.Core.Data.Level
             this.path = path;
             isInterface = RTFile.FileIsFormat(path, FileFormat.LSI);
 
-            if (CoreConfig.Instance.PrioritizeVG.Value && RTFile.FileExists(GetFile(METADATA_VGM)))
-                metadata = MetaData.ParseVG(JSON.Parse(RTFile.ReadFromFile(GetFile(METADATA_VGM))));
-            else if (RTFile.FileExists(GetFile(METADATA_LSB)))
-                metadata = MetaData.Parse(JSON.Parse(RTFile.ReadFromFile(GetFile(METADATA_LSB))));
-            else if (RTFile.FileExists(GetFile(METADATA_VGM)))
-                metadata = MetaData.ParseVG(JSON.Parse(RTFile.ReadFromFile(GetFile(METADATA_VGM))));
+            try
+            {
+                if (CoreConfig.Instance.PrioritizeVG.Value && RTFile.FileExists(GetFile(METADATA_VGM)))
+                    metadata = MetaData.ParseVG(JSON.Parse(RTFile.ReadFromFile(GetFile(METADATA_VGM))));
+                else if (RTFile.FileExists(GetFile(METADATA_LSB)))
+                    metadata = MetaData.Parse(JSON.Parse(RTFile.ReadFromFile(GetFile(METADATA_LSB))));
+                else if (RTFile.FileExists(GetFile(METADATA_VGM)))
+                    metadata = MetaData.ParseVG(JSON.Parse(RTFile.ReadFromFile(GetFile(METADATA_VGM))));
+            }
+            catch (Exception ex)
+            {
+                throw new MetaDataException($"Could not parse the metadata of \'{Path.GetFileName(path)}\'.\nInner exception: {ex}");
+            }
 
             if (loadIcon)
                 icon =

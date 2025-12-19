@@ -994,8 +994,15 @@ namespace BetterLegacy.Editor.Data.Elements
         /// </summary>
         public void LoadEditorInfo()
         {
-            if (RTFile.FileExists(RTFile.CombinePaths(Path, Level.EDITOR_LSE)))
-                EditorInfo = RTFile.CreateFromFile<EditorInfo>(RTFile.CombinePaths(Path, Level.EDITOR_LSE));
+            try
+            {
+                if (RTFile.FileExists(RTFile.CombinePaths(Path, Level.EDITOR_LSE)))
+                    EditorInfo = RTFile.CreateFromFile<EditorInfo>(RTFile.CombinePaths(Path, Level.EDITOR_LSE));
+            }
+            catch
+            {
+
+            }
         }
 
         void EndFolderCreation()

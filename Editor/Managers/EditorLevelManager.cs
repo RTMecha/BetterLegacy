@@ -415,49 +415,56 @@ namespace BetterLegacy.Editor.Managers
 
                 foreach (var levelInfo in currentLevelCollection.levelInformation)
                 {
-                    var path = !string.IsNullOrEmpty(levelInfo.editorPath) ? levelInfo.editorPath : levelInfo.path;
-                    var full = fullPath;
-                    if (string.IsNullOrEmpty(levelInfo.editorPath))
-                        full = currentLevelCollection.path;
-                    Level level;
-                    if (!(!string.IsNullOrEmpty(path) && Level.TryVerify(RTFile.CombinePaths(full, path), false, out level) ||
-                        Level.TryVerify(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, path), false, out level) ||
-                        (RTSteamManager.inst && RTSteamManager.inst.Initialized && RTSteamManager.inst.Levels.TryFind(x => x && x.id == levelInfo.workshopID, out level)) ||
-                        LevelManager.Levels.TryFind(x => x && x.id == levelInfo.arcadeID, out level)))
+                    try
                     {
-                        currentLevelCollection.levels.Add(null);
-
-                        var levelPanel = new LevelPanel();
-                        levelPanel.Init(levelInfo);
-
-                        if (levelInfo.icon)
-                            levelPanel.SetIcon(levelInfo.icon);
-                        else
-                            levelPanel.SetDefaultIcon();
-                        LevelPanels.Add(levelPanel);
-                    }
-                    else
-                    {
-                        levelInfo.level = level;
-                        level.collectionInfo = levelInfo;
-                        currentLevelCollection.levels.Add(level);
-
-                        var levelPanel = new LevelPanel();
-                        levelPanel.Init(levelInfo.level);
-
-                        LevelPanels.Add(levelPanel);
-
-                        if (RTFile.FileExists(levelInfo.level.GetFile(Level.LEVEL_JPG)))
-                            list.Add(levelPanel.LoadImageCoroutine(Level.LEVEL_JPG));
-                        else if (RTFile.FileExists(levelInfo.level.GetFile(Level.COVER_JPG)))
-                            list.Add(levelPanel.LoadImageCoroutine(Level.COVER_JPG));
-                        else
+                        var path = !string.IsNullOrEmpty(levelInfo.editorPath) ? levelInfo.editorPath : levelInfo.path;
+                        var full = fullPath;
+                        if (string.IsNullOrEmpty(levelInfo.editorPath))
+                            full = currentLevelCollection.path;
+                        Level level;
+                        if (!(!string.IsNullOrEmpty(path) && Level.TryVerify(RTFile.CombinePaths(full, path), false, out level) ||
+                            Level.TryVerify(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, path), false, out level) ||
+                            (RTSteamManager.inst && RTSteamManager.inst.Initialized && RTSteamManager.inst.Levels.TryFind(x => x && x.id == levelInfo.workshopID, out level)) ||
+                            LevelManager.Levels.TryFind(x => x && x.id == levelInfo.arcadeID, out level)))
                         {
+                            currentLevelCollection.levels.Add(null);
+
+                            var levelPanel = new LevelPanel();
+                            levelPanel.Init(levelInfo);
+
                             if (levelInfo.icon)
                                 levelPanel.SetIcon(levelInfo.icon);
                             else
                                 levelPanel.SetDefaultIcon();
+                            LevelPanels.Add(levelPanel);
                         }
+                        else
+                        {
+                            levelInfo.level = level;
+                            level.collectionInfo = levelInfo;
+                            currentLevelCollection.levels.Add(level);
+
+                            var levelPanel = new LevelPanel();
+                            levelPanel.Init(levelInfo.level);
+
+                            LevelPanels.Add(levelPanel);
+
+                            if (RTFile.FileExists(levelInfo.level.GetFile(Level.LEVEL_JPG)))
+                                list.Add(levelPanel.LoadImageCoroutine(Level.LEVEL_JPG));
+                            else if (RTFile.FileExists(levelInfo.level.GetFile(Level.COVER_JPG)))
+                                list.Add(levelPanel.LoadImageCoroutine(Level.COVER_JPG));
+                            else
+                            {
+                                if (levelInfo.icon)
+                                    levelPanel.SetIcon(levelInfo.icon);
+                                else
+                                    levelPanel.SetDefaultIcon();
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        CoreHelper.LogException(ex);
                     }
                 }
             }
@@ -468,31 +475,38 @@ namespace BetterLegacy.Editor.Managers
                 {
                     var path = RTFile.ReplaceSlash(file);
 
-                    var levelPanel = new LevelPanel();
-
-                    if (!Level.TryVerify(path, false, out Level level))
+                    try
                     {
-                        if (!EditorConfig.Instance.ShowFoldersInLevelList.Value)
+                        var levelPanel = new LevelPanel();
+
+                        if (!Level.TryVerify(path, false, out Level level))
+                        {
+                            if (!EditorConfig.Instance.ShowFoldersInLevelList.Value)
+                                continue;
+
+                            levelPanel.Init(path);
+                            LevelPanels.Add(levelPanel);
+
+                            list.Add(levelPanel.LoadImageCoroutine($"folder_icon{FileFormat.PNG.Dot()}"));
+
                             continue;
+                        }
 
-                        levelPanel.Init(path);
-                        LevelPanels.Add(levelPanel);
+                        levelPanel.Init(level);
 
-                        list.Add(levelPanel.LoadImageCoroutine($"folder_icon{FileFormat.PNG.Dot()}"));
-
-                        continue;
+                        if (RTFile.FileExists(RTFile.CombinePaths(path, Level.LEVEL_JPG)))
+                            list.Add(levelPanel.LoadImageCoroutine(Level.LEVEL_JPG, LevelPanels.Add));
+                        else if (RTFile.FileExists(RTFile.CombinePaths(path, Level.COVER_JPG)))
+                            list.Add(levelPanel.LoadImageCoroutine(Level.COVER_JPG, LevelPanels.Add));
+                        else
+                        {
+                            levelPanel.SetDefaultIcon();
+                            LevelPanels.Add(levelPanel);
+                        }
                     }
-
-                    levelPanel.Init(level);
-
-                    if (RTFile.FileExists(RTFile.CombinePaths(path, Level.LEVEL_JPG)))
-                        list.Add(levelPanel.LoadImageCoroutine(Level.LEVEL_JPG, LevelPanels.Add));
-                    else if (RTFile.FileExists(RTFile.CombinePaths(path, Level.COVER_JPG)))
-                        list.Add(levelPanel.LoadImageCoroutine(Level.COVER_JPG, LevelPanels.Add));
-                    else
+                    catch (Exception ex)
                     {
-                        levelPanel.SetDefaultIcon();
-                        LevelPanels.Add(levelPanel);
+                        CoreHelper.LogException(ex);
                     }
                 }
             }

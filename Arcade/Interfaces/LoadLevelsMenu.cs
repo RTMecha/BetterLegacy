@@ -189,10 +189,19 @@ namespace BetterLegacy.Arcade.Interfaces
 
                 MetaData metadata = null;
 
-                if (RTFile.FileExists(RTFile.CombinePaths(path, Level.METADATA_VGM)))
-                    metadata = MetaData.ParseVG(JSON.Parse(RTFile.ReadFromFile(RTFile.CombinePaths(path, Level.METADATA_VGM))));
-                else if (RTFile.FileExists(RTFile.CombinePaths(path, Level.METADATA_LSB)))
-                    metadata = MetaData.Parse(JSON.Parse(RTFile.ReadFromFile(RTFile.CombinePaths(path, RTFile.CombinePaths(path, Level.METADATA_LSB)))));
+                try
+                {
+                    if (RTFile.FileExists(RTFile.CombinePaths(path, Level.METADATA_VGM)))
+                        metadata = MetaData.ParseVG(JSON.Parse(RTFile.ReadFromFile(RTFile.CombinePaths(path, Level.METADATA_VGM))));
+                    else if (RTFile.FileExists(RTFile.CombinePaths(path, Level.METADATA_LSB)))
+                        metadata = MetaData.Parse(JSON.Parse(RTFile.ReadFromFile(RTFile.CombinePaths(path, RTFile.CombinePaths(path, Level.METADATA_LSB)))));
+                }
+                catch (Exception ex)
+                {
+                    CoreHelper.LogError($"Could not load metadata of {name} due to the exception: {ex}");
+                    UpdateInfo(LegacyPlugin.AtanPlaceholder, $"<color=$FF0000>Failed to load metadata of {name}</color>", i, true);
+                    continue;
+                }
 
                 if (!metadata)
                 {
@@ -213,14 +222,23 @@ namespace BetterLegacy.Arcade.Interfaces
                     continue;
                 }
 
-                metadata.VerifyID(path);
-                var level = new Level(path, metadata);
+                try
+                {
+                    metadata.VerifyID(path);
+                    var level = new Level(path, metadata);
 
-                LevelManager.AssignSaveData(level);
-                
-                UpdateInfo(level.icon, $"Loading {name}", i);
+                    LevelManager.AssignSaveData(level);
 
-                LevelManager.Levels.Add(level);
+                    UpdateInfo(level.icon, $"Loading {name}", i);
+
+                    LevelManager.Levels.Add(level);
+                }
+                catch (Exception ex)
+                {
+                    CoreHelper.LogError($"Could not load {name} due to the exception: {ex}");
+                    UpdateInfo(LegacyPlugin.AtanPlaceholder, $"<color=$FF0000>Failed to load {name}</color>", i, true);
+                    continue;
+                }
             }
 
             CoreHelper.Log($"Finished loading Arcade levels at {sw.Elapsed}");
