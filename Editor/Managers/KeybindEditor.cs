@@ -117,6 +117,8 @@ namespace BetterLegacy.Editor.Managers
 
                     new KeybindFunction(nameof(ResetIntegerVariables), ResetIntegerVariables),
 
+                    new KeybindFunction(nameof(OpenMultiObjectEditor), OpenMultiObjectEditor),
+
                     #endregion
 
                     #region Prefab
@@ -1896,6 +1898,8 @@ namespace BetterLegacy.Editor.Managers
             foreach (var beatmapObject in GameData.Current.beatmapObjects)
                 beatmapObject.integerVariable = 0;
         }
+
+        public void OpenMultiObjectEditor(Keybind keybind) => MultiObjectEditor.inst.Dialog.Open();
 
         #endregion
 

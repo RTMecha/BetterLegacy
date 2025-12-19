@@ -202,6 +202,8 @@ namespace BetterLegacy.Editor.Data
 
             new Keybind(nameof(KeybindEditor.ForceSnapBPM), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.J)),
             new Keybind(nameof(KeybindEditor.ToggleBPMSnap), new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftAlt), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.S)),
+
+            new Keybind(nameof(KeybindEditor.OpenMultiObjectEditor), new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftAlt), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.M)),
         };
 
         #endregion
