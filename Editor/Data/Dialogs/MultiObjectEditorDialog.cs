@@ -17,6 +17,7 @@ using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Modifiers;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
@@ -31,56 +32,17 @@ namespace BetterLegacy.Editor.Data.Dialogs
     /// </summary>
     public class MultiObjectEditorDialog : EditorDialog
     {
-        /*
-        TABS
-        - Editor
-           - Editor Layer
-           - Editor Bin
-           - Object Name
-           - Index
-           - Colors
-           - Timeline Collapse
-           - Hidden
-           - Opacity Collision
-        - Prefab
-        - Object Properties
-           - Start Time
-           - Autokill
-           - Parent
-           - Time lock state
-           - Low Detail Mode
-        - Modifiers
-           - Ignore Lifespan
-           - Order Matters
-        - Keyframes
-           - Assign Colors
-           - Paste Keyframes to Selected
-           - Repeat Paste Keyframes to Selected
-           - Pasting Data
-        - Replace
-        - Sync
-         */
-
         public MultiObjectEditorDialog() : base(MULTI_OBJECT_EDITOR) { }
 
         #region Values
 
-        /// <summary>
-        /// Text to update.
-        /// </summary>
-        public Text Text { get; set; }
-
         public EditorDialog Dialog { get; set; }
-
-        /// <summary>
-        /// String to format from.
-        /// </summary>
-        public const string DEFAULT_TEXT = "You are currently editing multiple objects.\n\nObject Count: {0}/{3}\nBG Count: {5}/{6}\nPrefab Object Count: {1}/{4}\nTotal: {2}";
 
         List<MultiColorButton> multiColorButtons = new List<MultiColorButton>();
         List<MultiColorButton> multiGradientColorButtons = new List<MultiColorButton>();
         int currentMultiColorSelection = -1;
         int currentMultiGradientColorSelection = -1;
+        bool setCurve;
 
         bool updatedShapes;
         bool updatedText;
@@ -89,10 +51,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         Transform multiShapes;
         Transform multiShapeSettings;
-        public Vector2Int multiShapeSelection;
+        public Vector2Int shapeSelection;
         public Transform multiObjectContent;
-
-        public bool rework = true;
 
         /// <summary>
         /// Parent of the tab buttons.
@@ -108,36 +68,10 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public ScrollViewElement ActiveScrollView { get; set; }
 
-        /*
-        TABS
-        - Editor
-           - Editor Layer
-           - Editor Bin
-           - Object Name
-           - Index
-           - Colors
-           - Timeline Collapse
-           - Hidden
-           - Opacity Collision
-           - Info
-        - Prefab
-        - Object Properties
-           - Start Time
-           - Autokill
-           - Parent
-           - Time lock state
-           - Low Detail Mode
-        - Modifiers
-           - Ignore Lifespan
-           - Order Matters
-        - Keyframes
-           - Assign Colors
-           - Paste Keyframes to Selected
-           - Repeat Paste Keyframes to Selected
-           - Pasting Data
-        - Replace
-        - Sync
-         */
+        public LabelElement SelectedObjectCountLabel { get; set; }
+        public LabelElement SelectedBackgroundObjectCountLabel { get; set; }
+        public LabelElement SelectedPrefabObjectCountLabel { get; set; }
+        public LabelElement SelectedTotalCountLabel { get; set; }
 
         public Tab CurrentTab { get; set; }
 
@@ -165,475 +99,442 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             #region Setup
 
-            if (rework)
+            EditorThemeManager.ApplyGraphic(GameObject.GetComponent<Image>(), ThemeGroup.Background_1);
+
+            var title = GameObject.transform.Find("data/right/Object Editor Title");
+            title.SetParent(GameObject.transform);
+            RectValues.FullAnchored.AnchoredPosition(0f, -16f).AnchorMin(0f, 1f).SizeDelta(0f, 32f).AssignToRectTransform(title.AsRT());
+
+            CoreHelper.Delete(GameObject.transform.Find("data"));
+
+            var layout = Creator.NewUIObject("layout", GameObject.transform);
+            TabsParent = layout.transform;
+            new RectValues(new Vector2(0f, 310f), new Vector2(1f, 0.5f), new Vector2(0f, 0.5f), RectValues.CenterPivot, new Vector2(-16f, 32f)).AssignToRectTransform(layout.transform.AsRT());
+            HorizontalOrVerticalLayoutValues.Horizontal.ChildControlHeight(false).Spacing(4f).AssignToLayout(layout.AddComponent<HorizontalLayoutGroup>());
+
+            var tabNames = EnumHelper.GetNames<Tab>();
+            for (int i = 0; i < tabNames.Length; i++)
             {
-                EditorThemeManager.ApplyGraphic(GameObject.GetComponent<Image>(), ThemeGroup.Background_1);
-
-                var title = GameObject.transform.Find("data/right/Object Editor Title");
-                title.SetParent(GameObject.transform);
-                RectValues.FullAnchored.AnchoredPosition(0f, -16f).AnchorMin(0f, 1f).SizeDelta(0f, 32f).AssignToRectTransform(title.AsRT());
-
-                CoreHelper.Delete(GameObject.transform.Find("data"));
-
-                var layout = Creator.NewUIObject("layout", GameObject.transform);
-                TabsParent = layout.transform;
-                new RectValues(new Vector2(0f, 310f), new Vector2(1f, 0.5f), new Vector2(0f, 0.5f), RectValues.CenterPivot, new Vector2(-16f, 32f)).AssignToRectTransform(layout.transform.AsRT());
-                HorizontalOrVerticalLayoutValues.Horizontal.ChildControlHeight(false).Spacing(4f).AssignToLayout(layout.AddComponent<HorizontalLayoutGroup>());
-
-                var tabNames = EnumHelper.GetNames<Tab>();
-                for (int i = 0; i < tabNames.Length; i++)
+                int index = i;
+                var name = tabNames[i];
+                var tab = EditorPrefabHolder.Instance.Function1Button.Duplicate(TabsParent.transform, name);
+                tab.transform.AsRT().sizeDelta = new Vector2(92f, 43.2f);
+                var tabButton = tab.GetComponent<FunctionButtonStorage>();
+                tabButton.label.fontSize = 16;
+                tabButton.Text = name;
+                tabButton.OnClick.NewListener(() =>
                 {
-                    int index = i;
-                    var name = tabNames[i];
-                    var tab = EditorPrefabHolder.Instance.Function1Button.Duplicate(TabsParent.transform, name);
-                    tab.transform.AsRT().sizeDelta = new Vector2(92f, 43.2f);
-                    var tabButton = tab.GetComponent<FunctionButtonStorage>();
-                    tabButton.label.fontSize = 16;
-                    tabButton.Text = name;
-                    tabButton.OnClick.NewListener(() =>
-                    {
-                        CurrentTab = (Tab)index;
-                        ActiveScrollView?.SetActive(false);
-                        ScrollViews[index].SetActive(true);
-                        ActiveScrollView = ScrollViews[index];
-                    });
+                    CurrentTab = (Tab)index;
+                    ActiveScrollView?.SetActive(false);
+                    ScrollViews[index].SetActive(true);
+                    ActiveScrollView = ScrollViews[index];
+                });
 
-                    EditorThemeManager.ApplySelectable(tabButton.button, EditorTheme.GetGroup($"Tab Color {index + 1}"));
-                    tab.AddComponent<ContrastColors>().Init(tabButton.label, tab.GetComponent<Image>());
+                EditorThemeManager.ApplySelectable(tabButton.button, EditorTheme.GetGroup($"Tab Color {index + 1}"));
+                tab.AddComponent<ContrastColors>().Init(tabButton.label, tab.GetComponent<Image>());
 
-                    TabButtons.Add(tabButton);
+                var tabType = (Tab)i;
+                if (tabType == Tab.Modifiers || tabType == Tab.Sync)
+                    EditorHelper.SetComplexity(tab, Complexity.Advanced);
+                CoreHelper.Log($"Setting up {tabType}");
 
-                    var scrollViewElement = new ScrollViewElement(ScrollViewElement.Direction.Vertical);
-                    scrollViewElement.Init(EditorElement.InitSettings.Default.Parent(GameObject.transform).Rect(RectValues.HorizontalAnchored.AnchoredPosition(0f, -45f).SizeDelta(0f, 635f)));
-                    scrollViewElement.SetActive(i == 0);
-                    ScrollViews.Add(scrollViewElement);
-                    var parent = scrollViewElement.Content;
-                    parent.GetComponent<VerticalLayoutGroup>().padding = new RectOffset(left: 8, right: 8, top: 8, bottom: 8);
+                TabButtons.Add(tabButton);
 
-                    switch ((Tab)i)
-                    {
-                        case Tab.Editor: {
-                                new LabelsElement("Editor Layer").Init(EditorElement.InitSettings.Default.Parent(parent));
-                                new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerInt()
+                var scrollViewElement = new ScrollViewElement(ScrollViewElement.Direction.Vertical);
+                scrollViewElement.Init(EditorElement.InitSettings.Default.Parent(GameObject.transform).Rect(RectValues.HorizontalAnchored.AnchoredPosition(0f, -45f).SizeDelta(0f, 635f)));
+                scrollViewElement.SetActive(i == 0);
+                ScrollViews.Add(scrollViewElement);
+                var parent = scrollViewElement.Content;
+                parent.GetComponent<VerticalLayoutGroup>().padding = new RectOffset(left: 8, right: 8, top: 8, bottom: 8);
+
+                switch (tabType)
+                {
+                    case Tab.Editor: {
+                            new LabelsElement("Editor Layer").Init(EditorElement.InitSettings.Default.Parent(parent));
+                            new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerInt()
+                            {
+                                standardArrowFunctions = false,
+                                max = int.MaxValue,
+                                leftGreaterArrowClicked = _val => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject => timelineObject.Layer = 0),
+                                leftArrowClicked = _val =>
                                 {
-                                    standardArrowFunctions = false,
-                                    max = int.MaxValue,
-                                    leftGreaterArrowClicked = _val => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject => timelineObject.Layer = 0),
-                                    leftArrowClicked = _val =>
-                                    {
-                                        if (int.TryParse(_val, out int num))
-                                            MultiObjectEditor.inst.ForEachTimelineObject(timelineObject => timelineObject.Layer = Mathf.Clamp(timelineObject.Layer - num, 0, int.MaxValue));
-                                    },
-                                    middleClicked = _val =>
-                                    {
-                                        if (int.TryParse(_val, out int num))
-                                            MultiObjectEditor.inst.ForEachTimelineObject(timelineObject => timelineObject.Layer = Mathf.Clamp(num - 1, 0, int.MaxValue));
-                                    },
-                                    rightArrowClicked = _val =>
-                                    {
-                                        if (int.TryParse(_val, out int num))
-                                            MultiObjectEditor.inst.ForEachTimelineObject(timelineObject => timelineObject.Layer = Mathf.Clamp(timelineObject.Layer + num, 0, int.MaxValue));
-                                    },
-                                    rightGreaterArrowClicked = _val => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject => timelineObject.Layer = EditorTimeline.inst.Layer),
-                                    rightGreaterSprite = EditorSprites.DownArrow,
-                                }).Init(EditorElement.InitSettings.Default.Parent(parent));
-
-                                new LabelsElement("Object Name").Init(EditorElement.InitSettings.Default.Parent(parent));
-                                new NumberInputElement("object name", null, new NumberInputElement.ArrowHandler()
+                                    if (int.TryParse(_val, out int num))
+                                        MultiObjectEditor.inst.ForEachTimelineObject(timelineObject => timelineObject.Layer = Mathf.Clamp(timelineObject.Layer - num, 0, int.MaxValue));
+                                },
+                                middleClicked = _val =>
                                 {
-                                    standardArrowFunctions = false,
-                                    middleClicked = _val =>
-                                    {
-                                        MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
-                                        {
-                                            switch (timelineObject.TimelineReference)
-                                            {
-                                                case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                                                        timelineObject.GetData<BeatmapObject>().name = _val;
-                                                        break;
-                                                    }
-                                                case TimelineObject.TimelineReferenceType.BackgroundObject: {
-                                                        timelineObject.GetData<BackgroundObject>().name = _val;
-                                                        break;
-                                                    }
-                                            }
-                                            timelineObject.RenderText(timelineObject.Name);
-                                        });
-                                        EditorManager.inst.DisplayNotification($"Added the name \"{_val}\" to all selected objects.", 4f, EditorManager.NotificationType.Success);
-                                    },
-                                    subClicked = _val =>
-                                    {
-                                        MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
-                                        {
-                                            switch (timelineObject.TimelineReference)
-                                            {
-                                                case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                                                        var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                                                        beatmapObject.name = beatmapObject.name.Remove(_val);
-                                                        break;
-                                                    }
-                                                case TimelineObject.TimelineReferenceType.BackgroundObject: {
-                                                        var backgroundObject = timelineObject.GetData<BackgroundObject>();
-                                                        backgroundObject.name = backgroundObject.name.Remove(_val);
-                                                        break;
-                                                    }
-                                            }
-                                            timelineObject.RenderText(timelineObject.Name);
-                                        });
-                                        EditorManager.inst.DisplayNotification($"Removed the name \"{_val}\" from all selected objects.", 4f, EditorManager.NotificationType.Success);
-                                    },
-                                    addClicked = _val =>
-                                    {
-                                        MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
-                                        {
-                                            switch (timelineObject.TimelineReference)
-                                            {
-                                                case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                                                        timelineObject.GetData<BeatmapObject>().name += _val;
-                                                        break;
-                                                    }
-                                                case TimelineObject.TimelineReferenceType.BackgroundObject: {
-                                                        timelineObject.GetData<BackgroundObject>().name += _val;
-                                                        break;
-                                                    }
-                                            }
-                                            timelineObject.RenderText(timelineObject.Name);
-                                        });
-                                        EditorManager.inst.DisplayNotification($"Added the name \"{_val}\" to all selected objects.", 4f, EditorManager.NotificationType.Success);
-                                    },
-                                }).Init(EditorElement.InitSettings.Default.Parent(parent));
-
-                                new LabelsElement("Editor Index").Init(EditorElement.InitSettings.Default.Parent(parent));
-                                new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerInt()
+                                    if (int.TryParse(_val, out int num))
+                                        MultiObjectEditor.inst.ForEachTimelineObject(timelineObject => timelineObject.Layer = Mathf.Clamp(num - 1, 0, int.MaxValue));
+                                },
+                                rightArrowClicked = _val =>
                                 {
-                                    standardArrowFunctions = false,
-                                    leftGreaterArrowClicked = _val => EditorHelper.SetSelectedObjectIndexes(0),
-                                    leftArrowClicked = _val =>
-                                    {
-                                        if (int.TryParse(_val, out int num))
-                                            EditorHelper.AddSelectedObjectIndexes(-num);
-                                    },
-                                    middleClicked = _val =>
-                                    {
-                                        if (int.TryParse(_val, out int num))
-                                            EditorHelper.SetSelectedObjectIndexes(num);
-                                    },
-                                    rightArrowClicked = _val =>
-                                    {
-                                        if (int.TryParse(_val, out int num))
-                                            EditorHelper.AddSelectedObjectIndexes(num);
-                                    },
-                                    rightGreaterArrowClicked = _val => EditorHelper.SetSelectedObjectIndexes(EditorTimeline.inst.timelineObjects.Count),
-                                }).Init(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced));
-                                ButtonElement.Label1Button("Reverse Indexes", EditorHelper.ReverseSelectedObjectIndexes).Init(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced).Rect(RectValues.Default.SizeDelta(0f, 32f)));
-
-                                var baseColorInput = new StringInputElement("FFFFFF", null)
+                                    if (int.TryParse(_val, out int num))
+                                        MultiObjectEditor.inst.ForEachTimelineObject(timelineObject => timelineObject.Layer = Mathf.Clamp(timelineObject.Layer + num, 0, int.MaxValue));
+                                },
+                                rightGreaterArrowClicked = _val => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject => timelineObject.Layer = EditorTimeline.inst.Layer),
+                                rightGreaterSprite = EditorSprites.DownArrow,
+                            }).Init(EditorElement.InitSettings.Default.Parent(parent));
+                                
+                            new LabelsElement("Editor Bin").Init(EditorElement.InitSettings.Default.Parent(parent));
+                            new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerInt()
+                            {
+                                standardArrowFunctions = false,
+                                max = EditorTimeline.MAX_BINS,
+                                leftGreaterArrowClicked = _val => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject => timelineObject.Bin = 0),
+                                leftArrowClicked = _val =>
                                 {
-                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
-                                };
-                                new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
-                                    new LabelElement("Base Color")
-                                    {
-                                        layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
-                                    },
-                                    baseColorInput,
-                                    ButtonElement.Label1Button("Set", () =>
-                                    {
-                                        if (!baseColorInput.inputField)
-                                            return;
-
-                                        MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
-                                        {
-                                            timelineObject.EditorData.color = baseColorInput.inputField.text;
-                                            timelineObject.Render();
-                                        });
-                                    }, labelAlignment: TextAnchor.MiddleCenter));
-
-                                var selectColorInput = new StringInputElement("FFFFFF", null)
+                                    if (int.TryParse(_val, out int num))
+                                        MultiObjectEditor.inst.ForEachTimelineObject(timelineObject => timelineObject.Bin -= num);
+                                },
+                                middleClicked = _val =>
                                 {
-                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
-                                };
-                                new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
-                                    new LabelElement("Select Color")
-                                    {
-                                        layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
-                                    },
-                                    selectColorInput,
-                                    ButtonElement.Label1Button("Set", () =>
-                                    {
-                                        if (!baseColorInput.inputField)
-                                            return;
-
-                                        MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
-                                        {
-                                            timelineObject.EditorData.selectedColor = baseColorInput.inputField.text;
-                                            timelineObject.Render();
-                                        });
-                                    }, labelAlignment: TextAnchor.MiddleCenter));
-
-                                var textColorInput = new StringInputElement("FFFFFF", null)
+                                    if (int.TryParse(_val, out int num))
+                                        MultiObjectEditor.inst.ForEachTimelineObject(timelineObject => timelineObject.Bin = num);
+                                },
+                                rightArrowClicked = _val =>
                                 {
-                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
-                                };
-                                new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
-                                    new LabelElement("Text Color")
-                                    {
-                                        layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
-                                    },
-                                    textColorInput,
-                                    ButtonElement.Label1Button("Set", () =>
-                                    {
-                                        if (!baseColorInput.inputField)
-                                            return;
+                                    if (int.TryParse(_val, out int num))
+                                        MultiObjectEditor.inst.ForEachTimelineObject(timelineObject => timelineObject.Bin += num);
+                                },
+                                rightGreaterArrowClicked = _val => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject => timelineObject.Bin = EditorTimeline.inst.BinCount),
+                                rightGreaterSprite = EditorSprites.DownArrow,
+                            }).Init(EditorElement.InitSettings.Default.Parent(parent));
 
-                                        MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
-                                        {
-                                            timelineObject.EditorData.textColor = baseColorInput.inputField.text;
-                                            timelineObject.Render();
-                                        });
-                                    }, labelAlignment: TextAnchor.MiddleCenter));
-
-                                var markColorInput = new StringInputElement("FFFFFF", null)
+                            new LabelsElement("Object Name").Init(EditorElement.InitSettings.Default.Parent(parent));
+                            new NumberInputElement("object name", null, new NumberInputElement.ArrowHandler()
+                            {
+                                standardArrowFunctions = false,
+                                middleClicked = _val =>
                                 {
-                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
-                                };
-                                new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
-                                    new LabelElement("Mark Color")
-                                    {
-                                        layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
-                                    },
-                                    markColorInput,
-                                    ButtonElement.Label1Button("Set", () =>
-                                    {
-                                        if (!baseColorInput.inputField)
-                                            return;
-
-                                        MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
-                                        {
-                                            timelineObject.EditorData.markColor = baseColorInput.inputField.text;
-                                            timelineObject.Render();
-                                        });
-                                    }, labelAlignment: TextAnchor.MiddleCenter));
-                                break;
-                            }
-                        case Tab.Prefab: {
-                                new LabelsElement(HorizontalOrVerticalLayoutValues.Horizontal.ChildControlHeight(false), "Assign Objects to Prefab").Init(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Normal));
-
-                                new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Normal), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
-                                    ButtonElement.Label1Button("Assign", () =>
-                                    {
-                                        RTEditor.inst.selectingMultiple = true;
-                                        RTEditor.inst.prefabPickerEnabled = true;
-                                    }),
-                                    ButtonElement.Label1Button("Remove", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
-                                    {
-                                        if (timelineObject.TryGetPrefabable(out IPrefabable prefabable))
-                                            prefabable.RemovePrefabReference();
-                                    }), buttonThemeGroup: ThemeGroup.Delete, graphicThemeGroup: ThemeGroup.Delete_Text));
-
-                                new LabelsElement("New Prefab Instance").Init(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Normal));
-
-                                ButtonElement.Label1Button("New Instance", () => RTEditor.inst.ShowWarningPopup("This will change the instance ID of all selected objects, assuming they all have the same ID. Are you sure you want to do this?", () =>
+                                    MultiObjectEditor.inst.ForEachTimelineObject(timelineObject => timelineObject.SetName(_val));
+                                    EditorManager.inst.DisplayNotification($"Set the name \"{_val}\" to all selected objects.", 4f, EditorManager.NotificationType.Success);
+                                },
+                                subClicked = _val =>
                                 {
-                                    var selected = EditorTimeline.inst.timelineObjects.Where(x => x.Selected).ToList();
-                                    if (selected.Count < 0)
-                                        return;
-
-                                    var firstSelected = selected.Find(x => !x.isPrefabObject);
-
-                                    var first = !firstSelected ? string.Empty : firstSelected.TimelineReference switch
+                                    MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
                                     {
-                                        TimelineObject.TimelineReferenceType.BeatmapObject => firstSelected.GetData<BeatmapObject>().prefabInstanceID,
-                                        TimelineObject.TimelineReferenceType.BackgroundObject => firstSelected.GetData<BackgroundObject>().prefabInstanceID,
-                                        _ => string.Empty,
-                                    };
-
-                                    // validate that all selected timeline objects are beatmap objects and have the same prefab instance ID.
-                                    if (selected.Any(x => x.isPrefabObject || x.isBeatmapObject && x.GetData<BeatmapObject>().prefabInstanceID != first || x.isBackgroundObject && x.GetData<BackgroundObject>().prefabInstanceID != first))
-                                        return;
-
-                                    var prefabInstanceID = PAObjectBase.GetStringID();
-
-                                    selected.ForLoop(timelineObject =>
-                                    {
-                                        if (timelineObject.TryGetPrefabable(out IPrefabable prefabable))
-                                            prefabable.PrefabInstanceID = prefabInstanceID;
+                                        if (!timelineObject.isPrefabObject)
+                                            timelineObject.SetName(timelineObject.Name.Remove(_val));
                                     });
-                                    EditorManager.inst.DisplayNotification("Successfully created a new instance ID.", 2f, EditorManager.NotificationType.Success);
-                                }), buttonThemeGroup: ThemeGroup.Add, graphicThemeGroup: ThemeGroup.Add_Text).Init(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Normal).Rect(RectValues.Default.SizeDelta(0f, 32f)));
-
-                                new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Normal), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
-                                    ButtonElement.Label1Button("Collapse", () => RTPrefabEditor.inst.CollapseCurrentPrefab()),
-                                    ButtonElement.Label1Button("Collapse New", () => RTPrefabEditor.inst.CollapseCurrentPrefab(true)));
-
-                                new LabelsElement("Move Prefabs X", "Move Prefabs Y").Init(EditorElement.InitSettings.Default.Parent(parent));
-
-                                new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Normal), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
-                                    new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerFloat()
-                                    {
-                                        standardArrowFunctions = false,
-                                        leftArrowClicked = _val =>
-                                        {
-                                            if (float.TryParse(_val, out float num))
-                                                MultiObjectEditor.inst.ForEachPrefabObject((PrefabObject prefabObject) =>
-                                                {
-                                                    prefabObject.events[0].values[0] -= num;
-                                                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
-                                                });
-                                        },
-                                        middleClicked = _val =>
-                                        {
-                                            if (float.TryParse(_val, out float num))
-                                                MultiObjectEditor.inst.ForEachPrefabObject((PrefabObject prefabObject) =>
-                                                {
-                                                    prefabObject.events[0].values[0] = num;
-                                                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
-                                                });
-                                        },
-                                        rightArrowClicked = _val =>
-                                        {
-                                            if (float.TryParse(_val, out float num))
-                                                MultiObjectEditor.inst.ForEachPrefabObject((PrefabObject prefabObject) =>
-                                                {
-                                                    prefabObject.events[0].values[0] += num;
-                                                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
-                                                });
-                                        },
-                                    }),
-                                    new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerFloat()
-                                    {
-                                        standardArrowFunctions = false,
-                                        leftArrowClicked = _val =>
-                                        {
-                                            if (float.TryParse(_val, out float num))
-                                                MultiObjectEditor.inst.ForEachPrefabObject((PrefabObject prefabObject) =>
-                                                {
-                                                    prefabObject.events[0].values[1] -= num;
-                                                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
-                                                });
-                                        },
-                                        middleClicked = _val =>
-                                        {
-                                            if (float.TryParse(_val, out float num))
-                                                MultiObjectEditor.inst.ForEachPrefabObject((PrefabObject prefabObject) =>
-                                                {
-                                                    prefabObject.events[0].values[1] = num;
-                                                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
-                                                });
-                                        },
-                                        rightArrowClicked = _val =>
-                                        {
-                                            if (float.TryParse(_val, out float num))
-                                                MultiObjectEditor.inst.ForEachPrefabObject((PrefabObject prefabObject) =>
-                                                {
-                                                    prefabObject.events[0].values[1] += num;
-                                                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
-                                                });
-                                        },
-                                    }));
-
-                                new LabelsElement("Scale Prefabs X", "Scale Prefabs Y").Init(EditorElement.InitSettings.Default.Parent(parent));
-
-                                new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Normal), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
-                                    new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerFloat()
-                                    {
-                                        standardArrowFunctions = false,
-                                        leftArrowClicked = _val =>
-                                        {
-                                            if (float.TryParse(_val, out float num))
-                                                MultiObjectEditor.inst.ForEachPrefabObject((PrefabObject prefabObject) =>
-                                                {
-                                                    prefabObject.events[1].values[0] -= num;
-                                                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
-                                                });
-                                        },
-                                        middleClicked = _val =>
-                                        {
-                                            if (float.TryParse(_val, out float num))
-                                                MultiObjectEditor.inst.ForEachPrefabObject((PrefabObject prefabObject) =>
-                                                {
-                                                    prefabObject.events[1].values[0] = num;
-                                                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
-                                                });
-                                        },
-                                        rightArrowClicked = _val =>
-                                        {
-                                            if (float.TryParse(_val, out float num))
-                                                MultiObjectEditor.inst.ForEachPrefabObject((PrefabObject prefabObject) =>
-                                                {
-                                                    prefabObject.events[1].values[0] += num;
-                                                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
-                                                });
-                                        },
-                                    }),
-                                    new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerFloat()
-                                    {
-                                        standardArrowFunctions = false,
-                                        leftArrowClicked = _val =>
-                                        {
-                                            if (float.TryParse(_val, out float num))
-                                                MultiObjectEditor.inst.ForEachPrefabObject((PrefabObject prefabObject) =>
-                                                {
-                                                    prefabObject.events[1].values[1] -= num;
-                                                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
-                                                });
-                                        },
-                                        middleClicked = _val =>
-                                        {
-                                            if (float.TryParse(_val, out float num))
-                                                MultiObjectEditor.inst.ForEachPrefabObject((PrefabObject prefabObject) =>
-                                                {
-                                                    prefabObject.events[1].values[1] = num;
-                                                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
-                                                });
-                                        },
-                                        rightArrowClicked = _val =>
-                                        {
-                                            if (float.TryParse(_val, out float num))
-                                                MultiObjectEditor.inst.ForEachPrefabObject((PrefabObject prefabObject) =>
-                                                {
-                                                    prefabObject.events[1].values[1] += num;
-                                                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
-                                                });
-                                        },
-                                    }));
-
-                                new LabelsElement("Rotate Prefabs").Init(EditorElement.InitSettings.Default.Parent(parent));
-
-                                new NumberInputElement("15", null, new NumberInputElement.ArrowHandlerFloat()
+                                    EditorManager.inst.DisplayNotification($"Removed the name \"{_val}\" from all selected objects.", 4f, EditorManager.NotificationType.Success);
+                                },
+                                addClicked = _val =>
                                 {
-                                    standardArrowFunctions = false,
-                                    leftArrowClicked = _val =>
+                                    MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
                                     {
-                                        if (float.TryParse(_val, out float num))
-                                            MultiObjectEditor.inst.ForEachPrefabObject((PrefabObject prefabObject) =>
-                                            {
-                                                prefabObject.events[2].values[0] -= num;
-                                                RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
-                                            });
-                                    },
-                                    middleClicked = _val =>
-                                    {
-                                        if (float.TryParse(_val, out float num))
-                                            MultiObjectEditor.inst.ForEachPrefabObject((PrefabObject prefabObject) =>
-                                            {
-                                                prefabObject.events[2].values[0] = num;
-                                                RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
-                                            });
-                                    },
-                                    rightArrowClicked = _val =>
-                                    {
-                                        if (float.TryParse(_val, out float num))
-                                            MultiObjectEditor.inst.ForEachPrefabObject((PrefabObject prefabObject) =>
-                                            {
-                                                prefabObject.events[2].values[0] += num;
-                                                RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
-                                            });
-                                    },
-                                }).Init(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Normal));
+                                        if (!timelineObject.isPrefabObject)
+                                            timelineObject.SetName(timelineObject.Name + _val);
+                                    });
+                                    EditorManager.inst.DisplayNotification($"Added the name \"{_val}\" to all selected objects.", 4f, EditorManager.NotificationType.Success);
+                                },
+                            }).Init(EditorElement.InitSettings.Default.Parent(parent));
 
-                                new LabelsElement("Change Prefab Depth").Init(EditorElement.InitSettings.Default.Parent(parent));
+                            new LabelsElement("Editor Index").Init(EditorElement.InitSettings.Default.Parent(parent));
+                            new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerInt()
+                            {
+                                standardArrowFunctions = false,
+                                leftGreaterArrowClicked = _val => EditorHelper.SetSelectedObjectIndexes(0),
+                                leftArrowClicked = _val =>
+                                {
+                                    if (int.TryParse(_val, out int num))
+                                        EditorHelper.AddSelectedObjectIndexes(-num);
+                                },
+                                middleClicked = _val =>
+                                {
+                                    if (int.TryParse(_val, out int num))
+                                        EditorHelper.SetSelectedObjectIndexes(num);
+                                },
+                                rightArrowClicked = _val =>
+                                {
+                                    if (int.TryParse(_val, out int num))
+                                        EditorHelper.AddSelectedObjectIndexes(num);
+                                },
+                                rightGreaterArrowClicked = _val => EditorHelper.SetSelectedObjectIndexes(EditorTimeline.inst.timelineObjects.Count),
+                            }).Init(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced));
+                            ButtonElement.Label1Button("Reverse Indexes", EditorHelper.ReverseSelectedObjectIndexes).Init(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced).Rect(RectValues.Default.SizeDelta(0f, 32f)));
 
+                            new SpacerElement().Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                            var baseColorInput = new StringInputElement("FFFFFF", null)
+                            {
+                                layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
+                            };
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                new LabelElement("Base Color")
+                                {
+                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                },
+                                baseColorInput,
+                                ButtonElement.Label1Button("Set", () =>
+                                {
+                                    if (!baseColorInput.inputField)
+                                        return;
+
+                                    MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                    {
+                                        timelineObject.EditorData.color = baseColorInput.inputField.text;
+                                        timelineObject.Render();
+                                    });
+                                }, labelAlignment: TextAnchor.MiddleCenter));
+
+                            var selectColorInput = new StringInputElement("FFFFFF", null)
+                            {
+                                layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
+                            };
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                new LabelElement("Select Color")
+                                {
+                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                },
+                                selectColorInput,
+                                ButtonElement.Label1Button("Set", () =>
+                                {
+                                    if (!baseColorInput.inputField)
+                                        return;
+
+                                    MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                    {
+                                        timelineObject.EditorData.selectedColor = baseColorInput.inputField.text;
+                                        timelineObject.Render();
+                                    });
+                                }, labelAlignment: TextAnchor.MiddleCenter));
+
+                            var textColorInput = new StringInputElement("FFFFFF", null)
+                            {
+                                layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
+                            };
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                new LabelElement("Text Color")
+                                {
+                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                },
+                                textColorInput,
+                                ButtonElement.Label1Button("Set", () =>
+                                {
+                                    if (!baseColorInput.inputField)
+                                        return;
+
+                                    MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                    {
+                                        timelineObject.EditorData.textColor = baseColorInput.inputField.text;
+                                        timelineObject.Render();
+                                    });
+                                }, labelAlignment: TextAnchor.MiddleCenter));
+
+                            var markColorInput = new StringInputElement("FFFFFF", null)
+                            {
+                                layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
+                            };
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                new LabelElement("Mark Color")
+                                {
+                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                },
+                                markColorInput,
+                                ButtonElement.Label1Button("Set", () =>
+                                {
+                                    if (!baseColorInput.inputField)
+                                        return;
+
+                                    MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                    {
+                                        timelineObject.EditorData.markColor = baseColorInput.inputField.text;
+                                        timelineObject.Render();
+                                    });
+                                }, labelAlignment: TextAnchor.MiddleCenter));
+
+                            new SpacerElement().Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                new LabelElement("Hidden State")
+                                {
+                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                },
+                                ButtonElement.Label1Button("On", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                {
+                                    timelineObject.Hidden = true;
+                                    switch (timelineObject.TimelineReference)
+                                    {
+                                        case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                                                RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.HIDE);
+                                                break;
+                                            }
+                                        case TimelineObject.TimelineReferenceType.PrefabObject: {
+                                                RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.HIDE);
+                                                break;
+                                            }
+                                        case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                                                RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.HIDE);
+                                                break;
+                                            }
+                                    }
+                                }), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button("Off", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                {
+                                    timelineObject.Hidden = false;
+                                    switch (timelineObject.TimelineReference)
+                                    {
+                                        case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                                                RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.HIDE);
+                                                break;
+                                            }
+                                        case TimelineObject.TimelineReferenceType.PrefabObject: {
+                                                RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.HIDE);
+                                                break;
+                                            }
+                                        case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                                                RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.HIDE);
+                                                break;
+                                            }
+                                    }
+                                }), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button("Swap", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                {
+                                    timelineObject.Hidden = !timelineObject.Hidden;
+                                    switch (timelineObject.TimelineReference)
+                                    {
+                                        case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                                                RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.HIDE);
+                                                break;
+                                            }
+                                        case TimelineObject.TimelineReferenceType.PrefabObject: {
+                                                RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.HIDE);
+                                                break;
+                                            }
+                                        case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                                                RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.HIDE);
+                                                break;
+                                            }
+                                    }
+                                }), labelAlignment: TextAnchor.MiddleCenter));
+                                
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                new LabelElement("Selectable in Preview")
+                                {
+                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                },
+                                ButtonElement.Label1Button("On", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                {
+                                    if (timelineObject.isBackgroundObject)
+                                        return;
+                                    timelineObject.SelectableInPreview = true;
+                                    switch (timelineObject.TimelineReference)
+                                    {
+                                        case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                                                RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.SELECTABLE);
+                                                break;
+                                            }
+                                        case TimelineObject.TimelineReferenceType.PrefabObject: {
+                                                RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.SELECTABLE);
+                                                break;
+                                            }
+                                    }
+                                }), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button("Off", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                {
+                                    if (timelineObject.isBackgroundObject)
+                                        return;
+                                    timelineObject.SelectableInPreview = false;
+                                    switch (timelineObject.TimelineReference)
+                                    {
+                                        case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                                                RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.SELECTABLE);
+                                                break;
+                                            }
+                                        case TimelineObject.TimelineReferenceType.PrefabObject: {
+                                                RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.SELECTABLE);
+                                                break;
+                                            }
+                                    }
+                                }), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button("Swap", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                {
+                                    if (timelineObject.isBackgroundObject)
+                                        return;
+                                    timelineObject.SelectableInPreview = !timelineObject.SelectableInPreview;
+                                    switch (timelineObject.TimelineReference)
+                                    {
+                                        case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                                                RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.SELECTABLE);
+                                                break;
+                                            }
+                                        case TimelineObject.TimelineReferenceType.PrefabObject: {
+                                                RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.SELECTABLE);
+                                                break;
+                                            }
+                                    }
+                                }), labelAlignment: TextAnchor.MiddleCenter));
+
+                            new SpacerElement().Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                            SelectedObjectCountLabel = new LabelElement(string.Empty);
+                            SelectedObjectCountLabel.Init(EditorElement.InitSettings.Default.Parent(parent));
+                            SelectedBackgroundObjectCountLabel = new LabelElement(string.Empty);
+                            SelectedBackgroundObjectCountLabel.Init(EditorElement.InitSettings.Default.Parent(parent));
+                            SelectedPrefabObjectCountLabel = new LabelElement(string.Empty);
+                            SelectedPrefabObjectCountLabel.Init(EditorElement.InitSettings.Default.Parent(parent));
+                            SelectedTotalCountLabel = new LabelElement(string.Empty);
+                            SelectedTotalCountLabel.Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                            break;
+                        }
+                    case Tab.Prefab: {
+                            new LabelsElement(HorizontalOrVerticalLayoutValues.Horizontal.ChildControlHeight(false), "Assign Objects to Prefab").Init(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Normal));
+
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Normal), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                ButtonElement.Label1Button("Assign", () =>
+                                {
+                                    RTEditor.inst.selectingMultiple = true;
+                                    RTEditor.inst.prefabPickerEnabled = true;
+                                }),
+                                ButtonElement.Label1Button("Remove", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                {
+                                    if (timelineObject.TryGetPrefabable(out IPrefabable prefabable))
+                                        prefabable.RemovePrefabReference();
+                                }), buttonThemeGroup: ThemeGroup.Delete, graphicThemeGroup: ThemeGroup.Delete_Text));
+
+                            new SpacerElement().Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                            new LabelsElement("New Prefab Instance").Init(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Normal));
+
+                            ButtonElement.Label1Button("New Instance", () => RTEditor.inst.ShowWarningPopup("This will change the instance ID of all selected objects, assuming they all have the same ID. Are you sure you want to do this?", () =>
+                            {
+                                var selected = EditorTimeline.inst.timelineObjects.Where(x => x.Selected).ToList();
+                                if (selected.Count < 0)
+                                    return;
+
+                                var firstSelected = selected.Find(x => !x.isPrefabObject);
+
+                                var first = !firstSelected ? string.Empty : firstSelected.TimelineReference switch
+                                {
+                                    TimelineObject.TimelineReferenceType.BeatmapObject => firstSelected.GetData<BeatmapObject>().prefabInstanceID,
+                                    TimelineObject.TimelineReferenceType.BackgroundObject => firstSelected.GetData<BackgroundObject>().prefabInstanceID,
+                                    _ => string.Empty,
+                                };
+
+                                // validate that all selected timeline objects are beatmap objects and have the same prefab instance ID.
+                                if (selected.Any(x => x.isPrefabObject || x.isBeatmapObject && x.GetData<BeatmapObject>().prefabInstanceID != first || x.isBackgroundObject && x.GetData<BackgroundObject>().prefabInstanceID != first))
+                                    return;
+
+                                var prefabInstanceID = PAObjectBase.GetStringID();
+
+                                selected.ForLoop(timelineObject =>
+                                {
+                                    if (timelineObject.TryGetPrefabable(out IPrefabable prefabable))
+                                        prefabable.PrefabInstanceID = prefabInstanceID;
+                                });
+                                EditorManager.inst.DisplayNotification("Successfully created a new instance ID.", 2f, EditorManager.NotificationType.Success);
+                            }), buttonThemeGroup: ThemeGroup.Add, graphicThemeGroup: ThemeGroup.Add_Text).Init(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Normal).Rect(RectValues.Default.SizeDelta(0f, 32f)));
+
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Normal), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                ButtonElement.Label1Button("Collapse", () => RTPrefabEditor.inst.CollapseCurrentPrefab()),
+                                ButtonElement.Label1Button("Collapse New", () => RTPrefabEditor.inst.CollapseCurrentPrefab(true)));
+
+                            new SpacerElement().Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                            new LabelsElement("Move Prefabs X", "Move Prefabs Y").Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Normal), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
                                 new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerFloat()
                                 {
                                     standardArrowFunctions = false,
@@ -642,7 +543,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                         if (float.TryParse(_val, out float num))
                                             MultiObjectEditor.inst.ForEachPrefabObject((PrefabObject prefabObject) =>
                                             {
-                                                prefabObject.depth -= num;
+                                                prefabObject.events[0].values[0] -= num;
                                                 RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                                             });
                                     },
@@ -651,7 +552,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                         if (float.TryParse(_val, out float num))
                                             MultiObjectEditor.inst.ForEachPrefabObject((PrefabObject prefabObject) =>
                                             {
-                                                prefabObject.depth = num;
+                                                prefabObject.events[0].values[0] = num;
                                                 RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                                             });
                                     },
@@ -660,118 +561,361 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                         if (float.TryParse(_val, out float num))
                                             MultiObjectEditor.inst.ForEachPrefabObject((PrefabObject prefabObject) =>
                                             {
-                                                prefabObject.depth += num;
+                                                prefabObject.events[0].values[0] += num;
                                                 RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                                             });
                                     },
-                                }).Init(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Normal));
-
-                                new LabelsElement("Instance Data").Init(EditorElement.InitSettings.Default.Parent(parent));
-
-                                ButtonElement.Label1Button("Paste Data", () =>
+                                }),
+                                new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerFloat()
                                 {
-                                    if (!RTPrefabEditor.inst.copiedInstanceData)
+                                    standardArrowFunctions = false,
+                                    leftArrowClicked = _val =>
                                     {
-                                        EditorManager.inst.DisplayNotification($"No copied data.", 2f, EditorManager.NotificationType.Warning);
-                                        return;
+                                        if (float.TryParse(_val, out float num))
+                                            MultiObjectEditor.inst.ForEachPrefabObject((PrefabObject prefabObject) =>
+                                            {
+                                                prefabObject.events[0].values[1] -= num;
+                                                RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
+                                            });
+                                    },
+                                    middleClicked = _val =>
+                                    {
+                                        if (float.TryParse(_val, out float num))
+                                            MultiObjectEditor.inst.ForEachPrefabObject((PrefabObject prefabObject) =>
+                                            {
+                                                prefabObject.events[0].values[1] = num;
+                                                RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
+                                            });
+                                    },
+                                    rightArrowClicked = _val =>
+                                    {
+                                        if (float.TryParse(_val, out float num))
+                                            MultiObjectEditor.inst.ForEachPrefabObject((PrefabObject prefabObject) =>
+                                            {
+                                                prefabObject.events[0].values[1] += num;
+                                                RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
+                                            });
+                                    },
+                                }));
+
+                            new LabelsElement("Scale Prefabs X", "Scale Prefabs Y").Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Normal), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerFloat()
+                                {
+                                    standardArrowFunctions = false,
+                                    leftArrowClicked = _val =>
+                                    {
+                                        if (float.TryParse(_val, out float num))
+                                            MultiObjectEditor.inst.ForEachPrefabObject((PrefabObject prefabObject) =>
+                                            {
+                                                prefabObject.events[1].values[0] -= num;
+                                                RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
+                                            });
+                                    },
+                                    middleClicked = _val =>
+                                    {
+                                        if (float.TryParse(_val, out float num))
+                                            MultiObjectEditor.inst.ForEachPrefabObject((PrefabObject prefabObject) =>
+                                            {
+                                                prefabObject.events[1].values[0] = num;
+                                                RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
+                                            });
+                                    },
+                                    rightArrowClicked = _val =>
+                                    {
+                                        if (float.TryParse(_val, out float num))
+                                            MultiObjectEditor.inst.ForEachPrefabObject((PrefabObject prefabObject) =>
+                                            {
+                                                prefabObject.events[1].values[0] += num;
+                                                RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
+                                            });
+                                    },
+                                }),
+                                new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerFloat()
+                                {
+                                    standardArrowFunctions = false,
+                                    leftArrowClicked = _val =>
+                                    {
+                                        if (float.TryParse(_val, out float num))
+                                            MultiObjectEditor.inst.ForEachPrefabObject((PrefabObject prefabObject) =>
+                                            {
+                                                prefabObject.events[1].values[1] -= num;
+                                                RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
+                                            });
+                                    },
+                                    middleClicked = _val =>
+                                    {
+                                        if (float.TryParse(_val, out float num))
+                                            MultiObjectEditor.inst.ForEachPrefabObject((PrefabObject prefabObject) =>
+                                            {
+                                                prefabObject.events[1].values[1] = num;
+                                                RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
+                                            });
+                                    },
+                                    rightArrowClicked = _val =>
+                                    {
+                                        if (float.TryParse(_val, out float num))
+                                            MultiObjectEditor.inst.ForEachPrefabObject((PrefabObject prefabObject) =>
+                                            {
+                                                prefabObject.events[1].values[1] += num;
+                                                RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
+                                            });
+                                    },
+                                }));
+
+                            new LabelsElement("Rotate Prefabs").Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                            new NumberInputElement("15", null, new NumberInputElement.ArrowHandlerFloat()
+                            {
+                                standardArrowFunctions = false,
+                                leftArrowClicked = _val =>
+                                {
+                                    if (float.TryParse(_val, out float num))
+                                        MultiObjectEditor.inst.ForEachPrefabObject((PrefabObject prefabObject) =>
+                                        {
+                                            prefabObject.events[2].values[0] -= num;
+                                            RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
+                                        });
+                                },
+                                middleClicked = _val =>
+                                {
+                                    if (float.TryParse(_val, out float num))
+                                        MultiObjectEditor.inst.ForEachPrefabObject((PrefabObject prefabObject) =>
+                                        {
+                                            prefabObject.events[2].values[0] = num;
+                                            RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
+                                        });
+                                },
+                                rightArrowClicked = _val =>
+                                {
+                                    if (float.TryParse(_val, out float num))
+                                        MultiObjectEditor.inst.ForEachPrefabObject((PrefabObject prefabObject) =>
+                                        {
+                                            prefabObject.events[2].values[0] += num;
+                                            RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
+                                        });
+                                },
+                            }).Init(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Normal));
+
+                            new LabelsElement("Change Prefab Depth").Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                            new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerFloat()
+                            {
+                                standardArrowFunctions = false,
+                                leftArrowClicked = _val =>
+                                {
+                                    if (float.TryParse(_val, out float num))
+                                        MultiObjectEditor.inst.ForEachPrefabObject((PrefabObject prefabObject) =>
+                                        {
+                                            prefabObject.depth -= num;
+                                            RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
+                                        });
+                                },
+                                middleClicked = _val =>
+                                {
+                                    if (float.TryParse(_val, out float num))
+                                        MultiObjectEditor.inst.ForEachPrefabObject((PrefabObject prefabObject) =>
+                                        {
+                                            prefabObject.depth = num;
+                                            RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
+                                        });
+                                },
+                                rightArrowClicked = _val =>
+                                {
+                                    if (float.TryParse(_val, out float num))
+                                        MultiObjectEditor.inst.ForEachPrefabObject((PrefabObject prefabObject) =>
+                                        {
+                                            prefabObject.depth += num;
+                                            RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
+                                        });
+                                },
+                            }).Init(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Normal));
+
+                            new SpacerElement().Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                            new LabelsElement("Instance Data").Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                            ButtonElement.Label1Button("Paste Data", () =>
+                            {
+                                if (!RTPrefabEditor.inst.copiedInstanceData)
+                                {
+                                    EditorManager.inst.DisplayNotification($"No copied data.", 2f, EditorManager.NotificationType.Warning);
+                                    return;
+                                }
+
+                                var timelineObjects = EditorTimeline.inst.SelectedPrefabObjects;
+                                foreach (var timelineObject in timelineObjects)
+                                    RTPrefabEditor.inst.PasteInstanceData(timelineObject.GetData<PrefabObject>());
+
+                                if (!timelineObjects.IsEmpty())
+                                    EditorManager.inst.DisplayNotification($"Pasted Prefab instance data.", 2f, EditorManager.NotificationType.Success);
+                            }, buttonThemeGroup: ThemeGroup.Paste, graphicThemeGroup: ThemeGroup.Paste_Text).Init(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Normal).Rect(RectValues.Default.SizeDelta(0f, 32f)));
+                            break;
+                        }
+                    case Tab.Properties: {
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                new LabelElement("Low Detail Mode State")
+                                {
+                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                },
+                                ButtonElement.Label1Button("On", () => MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                {
+                                    beatmapObject.LDM = true;
+                                    RTLevel.Current?.UpdateObject(beatmapObject);
+                                })),
+                                ButtonElement.Label1Button("Off", () => MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                {
+                                    beatmapObject.LDM = false;
+                                    RTLevel.Current?.UpdateObject(beatmapObject);
+                                })),
+                                ButtonElement.Label1Button("Swap", () => MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                {
+                                    beatmapObject.LDM = !beatmapObject.LDM;
+                                    RTLevel.Current?.UpdateObject(beatmapObject);
+                                })));
+
+                            new SpacerElement().Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                            #region Time
+
+                            new LabelsElement("Start Time").Init(EditorElement.InitSettings.Default.Parent(parent));
+                            new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerFloat()
+                            {
+                                standardArrowFunctions = false,
+                                leftArrowClicked = _val =>
+                                {
+                                    if (float.TryParse(_val, out float num))
+                                        MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                        {
+                                            timelineObject.Time -= num;
+
+                                            switch (timelineObject.TimelineReference)
+                                            {
+                                                case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                                                        RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.START_TIME);
+                                                        break;
+                                                    }
+                                                case TimelineObject.TimelineReferenceType.PrefabObject: {
+                                                        RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.TIME);
+                                                        break;
+                                                    }
+                                                case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                                                        RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.START_TIME);
+                                                        break;
+                                                    }
+                                            }
+
+                                            timelineObject.RenderPosLength();
+                                        });
+                                },
+                                middleClicked = _val =>
+                                {
+                                    if (float.TryParse(_val, out float num))
+                                        MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                        {
+                                            timelineObject.Time = num;
+
+                                            switch (timelineObject.TimelineReference)
+                                            {
+                                                case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                                                        RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.START_TIME);
+                                                        break;
+                                                    }
+                                                case TimelineObject.TimelineReferenceType.PrefabObject: {
+                                                        RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.TIME);
+                                                        break;
+                                                    }
+                                                case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                                                        RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.START_TIME);
+                                                        break;
+                                                    }
+                                            }
+
+                                            timelineObject.RenderPosLength();
+                                        });
+                                },
+                                rightArrowClicked = _val =>
+                                {
+                                    if (float.TryParse(_val, out float num))
+                                        MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                        {
+                                            timelineObject.Time += num;
+
+                                            switch (timelineObject.TimelineReference)
+                                            {
+                                                case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                                                        RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.START_TIME);
+                                                        break;
+                                                    }
+                                                case TimelineObject.TimelineReferenceType.PrefabObject: {
+                                                        RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.TIME);
+                                                        break;
+                                                    }
+                                                case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                                                        RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.START_TIME);
+                                                        break;
+                                                    }
+                                            }
+
+                                            timelineObject.RenderPosLength();
+                                        });
+                                },
+                                rightGreaterArrowClicked = _val => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                {
+                                    timelineObject.Time = RTLevel.Current.FixedTime;
+
+                                    switch (timelineObject.TimelineReference)
+                                    {
+                                        case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                                                RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.START_TIME);
+                                                break;
+                                            }
+                                        case TimelineObject.TimelineReferenceType.PrefabObject: {
+                                                RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.TIME);
+                                                break;
+                                            }
+                                        case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                                                RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.START_TIME);
+                                                break;
+                                            }
                                     }
 
-                                    var timelineObjects = EditorTimeline.inst.SelectedPrefabObjects;
-                                    foreach (var timelineObject in timelineObjects)
-                                        RTPrefabEditor.inst.PasteInstanceData(timelineObject.GetData<PrefabObject>());
-
-                                    if (!timelineObjects.IsEmpty())
-                                        EditorManager.inst.DisplayNotification($"Pasted Prefab instance data.", 2f, EditorManager.NotificationType.Success);
-                                }, buttonThemeGroup: ThemeGroup.Paste, graphicThemeGroup: ThemeGroup.Paste_Text).Init(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Normal).Rect(RectValues.Default.SizeDelta(0f, 32f)));
-                                break;
-                            }
-                        case Tab.Properties: {
-                                new LabelsElement("Start Time").Init(EditorElement.InitSettings.Default.Parent(parent));
-                                new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerFloat()
+                                    timelineObject.RenderPosLength();
+                                }),
+                                rightGreaterSprite = EditorSprites.DownArrow,
+                            }).Init(EditorElement.InitSettings.Default.Parent(parent));
+                                
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                ButtonElement.Label1Button("Snap BPM", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
                                 {
-                                    standardArrowFunctions = false,
-                                    leftArrowClicked = _val =>
+                                    timelineObject.Time = RTEditor.SnapToBPM(timelineObject.Time);
+                                    switch (timelineObject.TimelineReference)
                                     {
-                                        if (float.TryParse(_val, out float num))
-                                            MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
-                                            {
-                                                timelineObject.Time -= num;
-
-                                                switch (timelineObject.TimelineReference)
-                                                {
-                                                    case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                                                            RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.START_TIME);
-                                                            break;
-                                                        }
-                                                    case TimelineObject.TimelineReferenceType.PrefabObject: {
-                                                            RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.TIME);
-                                                            break;
-                                                        }
-                                                    case TimelineObject.TimelineReferenceType.BackgroundObject: {
-                                                            RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.START_TIME);
-                                                            break;
-                                                        }
-                                                }
-
-                                                timelineObject.RenderPosLength();
-                                            });
-                                    },
-                                    middleClicked = _val =>
+                                        case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                                                RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.START_TIME);
+                                                break;
+                                            }
+                                        case TimelineObject.TimelineReferenceType.PrefabObject: {
+                                                RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.TIME);
+                                                break;
+                                            }
+                                        case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                                                RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.START_TIME);
+                                                break;
+                                            }
+                                    }
+                                    timelineObject.RenderPosLength();
+                                })),
+                                ButtonElement.Label1Button("Snap Offset BPM", () =>
+                                {
+                                    var selectedObjects = EditorTimeline.inst.SelectedObjects;
+                                    var time = selectedObjects.Min(x => x.Time);
+                                    var snappedTime = RTEditor.SnapToBPM(time);
+                                    var distance = -time + snappedTime;
+                                    foreach (var timelineObject in selectedObjects)
                                     {
-                                        if (float.TryParse(_val, out float num))
-                                            MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
-                                            {
-                                                timelineObject.Time = num;
-
-                                                switch (timelineObject.TimelineReference)
-                                                {
-                                                    case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                                                            RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.START_TIME);
-                                                            break;
-                                                        }
-                                                    case TimelineObject.TimelineReferenceType.PrefabObject: {
-                                                            RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.TIME);
-                                                            break;
-                                                        }
-                                                    case TimelineObject.TimelineReferenceType.BackgroundObject: {
-                                                            RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.START_TIME);
-                                                            break;
-                                                        }
-                                                }
-
-                                                timelineObject.RenderPosLength();
-                                            });
-                                    },
-                                    rightArrowClicked = _val =>
-                                    {
-                                        if (float.TryParse(_val, out float num))
-                                            MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
-                                            {
-                                                timelineObject.Time += num;
-
-                                                switch (timelineObject.TimelineReference)
-                                                {
-                                                    case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                                                            RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.START_TIME);
-                                                            break;
-                                                        }
-                                                    case TimelineObject.TimelineReferenceType.PrefabObject: {
-                                                            RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.TIME);
-                                                            break;
-                                                        }
-                                                    case TimelineObject.TimelineReferenceType.BackgroundObject: {
-                                                            RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.START_TIME);
-                                                            break;
-                                                        }
-                                                }
-
-                                                timelineObject.RenderPosLength();
-                                            });
-                                    },
-                                    rightGreaterArrowClicked = _val => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
-                                    {
-                                        timelineObject.Time = RTLevel.Current.FixedTime;
-
+                                        timelineObject.Time += distance;
                                         switch (timelineObject.TimelineReference)
                                         {
                                             case TimelineObject.TimelineReferenceType.BeatmapObject: {
@@ -787,3659 +931,2036 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                                     break;
                                                 }
                                         }
-
                                         timelineObject.RenderPosLength();
-                                    }),
-                                    rightGreaterSprite = EditorSprites.DownArrow,
-                                }).Init(EditorElement.InitSettings.Default.Parent(parent));
+                                    }
+                                }));
 
-                                new LabelsElement("Autokill").Init(EditorElement.InitSettings.Default.Parent(parent));
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                new LabelElement("Lock State")
+                                {
+                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                },
+                                ButtonElement.Label1Button("On", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                {
+                                    timelineObject.Locked = true;
+                                    EditorTimeline.inst.RenderTimelineObject(timelineObject);
+                                }), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button("Off", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                {
+                                    timelineObject.Locked = false;
+                                    EditorTimeline.inst.RenderTimelineObject(timelineObject);
+                                }), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button("Swap", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                {
+                                    timelineObject.Locked = !timelineObject.Locked;
+                                    EditorTimeline.inst.RenderTimelineObject(timelineObject);
+                                }), labelAlignment: TextAnchor.MiddleCenter));
+
+                            new LabelsElement("Autokill").Init(EditorElement.InitSettings.Default.Parent(parent));
+                            new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerFloat()
+                            {
+                                standardArrowFunctions = false,
+                                leftArrowClicked = _val =>
+                                {
+                                    if (float.TryParse(_val, out float num))
+                                        MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                        {
+                                            if (timelineObject.isBeatmapObject)
+                                            {
+                                                var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                                beatmapObject.autoKillOffset -= num;
+                                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
+                                            }
+                                            if (timelineObject.isBackgroundObject)
+                                            {
+                                                var backgroundObject = timelineObject.GetData<BackgroundObject>();
+                                                backgroundObject.autoKillOffset -= num;
+                                                RTLevel.Current?.UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.AUTOKILL);
+                                            }
+                                            EditorTimeline.inst.RenderTimelineObject(timelineObject);
+                                        });
+                                },
+                                middleClicked = _val =>
+                                {
+                                    if (float.TryParse(_val, out float num))
+                                        MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                        {
+                                            if (timelineObject.isBeatmapObject)
+                                            {
+                                                var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                                beatmapObject.autoKillOffset = num;
+                                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
+                                            }
+                                            if (timelineObject.isBackgroundObject)
+                                            {
+                                                var backgroundObject = timelineObject.GetData<BackgroundObject>();
+                                                backgroundObject.autoKillOffset = num;
+                                                RTLevel.Current?.UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.AUTOKILL);
+                                            }
+                                            EditorTimeline.inst.RenderTimelineObject(timelineObject);
+                                        });
+                                },
+                                rightArrowClicked = _val =>
+                                {
+                                    if (float.TryParse(_val, out float num))
+                                        MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                        {
+                                            if (timelineObject.isBeatmapObject)
+                                            {
+                                                var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                                beatmapObject.autoKillOffset += num;
+                                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
+                                            }
+                                            if (timelineObject.isBackgroundObject)
+                                            {
+                                                var backgroundObject = timelineObject.GetData<BackgroundObject>();
+                                                backgroundObject.autoKillOffset += num;
+                                                RTLevel.Current?.UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.AUTOKILL);
+                                            }
+                                            EditorTimeline.inst.RenderTimelineObject(timelineObject);
+                                        });
+                                },
+                                rightGreaterArrowClicked = _val => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                {
+                                    if (timelineObject.isBeatmapObject)
+                                    {
+                                        var beatmapObject = timelineObject.GetData<BeatmapObject>();
+
+                                        float num = 0f;
+
+                                        if (beatmapObject.autoKillType == AutoKillType.SongTime)
+                                            num = AudioManager.inst.CurrentAudioSource.time;
+                                        else num = AudioManager.inst.CurrentAudioSource.time - beatmapObject.StartTime;
+
+                                        if (num < 0f)
+                                            num = 0f;
+
+                                        beatmapObject.autoKillOffset = num;
+
+                                        EditorTimeline.inst.RenderTimelineObject(timelineObject);
+                                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
+                                    }
+                                    if (timelineObject.isBackgroundObject)
+                                    {
+                                        var backgroundObject = timelineObject.GetData<BackgroundObject>();
+
+                                        float num = 0f;
+
+                                        if (backgroundObject.autoKillType == AutoKillType.SongTime)
+                                            num = AudioManager.inst.CurrentAudioSource.time;
+                                        else num = AudioManager.inst.CurrentAudioSource.time - backgroundObject.StartTime;
+
+                                        if (num < 0f)
+                                            num = 0f;
+
+                                        backgroundObject.autoKillOffset = num;
+
+                                        EditorTimeline.inst.RenderTimelineObject(timelineObject);
+                                        RTLevel.Current?.UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.AUTOKILL);
+                                    }
+                                }),
+                                rightGreaterSprite = EditorSprites.DownArrow,
+                            }).Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                ButtonElement.Label1Button("No Autokill", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                {
+                                    if (timelineObject.isBeatmapObject)
+                                    {
+                                        var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                        beatmapObject.autoKillType = AutoKillType.NoAutokill;
+                                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
+                                    }
+                                    if (timelineObject.isBackgroundObject)
+                                    {
+                                        var backgroundObject = timelineObject.GetData<BackgroundObject>();
+                                        backgroundObject.autoKillType = AutoKillType.NoAutokill;
+                                        RTLevel.Current?.UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.AUTOKILL);
+                                    }
+                                    timelineObject.RenderPosLength();
+                                }), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button("Last KF", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                {
+                                    if (timelineObject.isBeatmapObject)
+                                    {
+                                        var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                        beatmapObject.autoKillType = AutoKillType.LastKeyframe;
+                                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
+                                    }
+                                    if (timelineObject.isBackgroundObject)
+                                    {
+                                        var backgroundObject = timelineObject.GetData<BackgroundObject>();
+                                        backgroundObject.autoKillType = AutoKillType.LastKeyframe;
+                                        RTLevel.Current?.UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.AUTOKILL);
+                                    }
+                                    timelineObject.RenderPosLength();
+                                }), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button("Last KF Offset", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                {
+                                    if (timelineObject.isBeatmapObject)
+                                    {
+                                        var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                        beatmapObject.autoKillType = AutoKillType.LastKeyframeOffset;
+                                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
+                                    }
+                                    if (timelineObject.isBackgroundObject)
+                                    {
+                                        var backgroundObject = timelineObject.GetData<BackgroundObject>();
+                                        backgroundObject.autoKillType = AutoKillType.LastKeyframeOffset;
+                                        RTLevel.Current?.UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.AUTOKILL);
+                                    }
+                                    timelineObject.RenderPosLength();
+                                })),
+                                ButtonElement.Label1Button("Fixed Time", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                {
+                                    if (timelineObject.isBeatmapObject)
+                                    {
+                                        var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                        beatmapObject.autoKillType = AutoKillType.FixedTime;
+                                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
+                                    }
+                                    if (timelineObject.isBackgroundObject)
+                                    {
+                                        var backgroundObject = timelineObject.GetData<BackgroundObject>();
+                                        backgroundObject.autoKillType = AutoKillType.FixedTime;
+                                        RTLevel.Current?.UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.AUTOKILL);
+                                    }
+                                    timelineObject.RenderPosLength();
+                                }), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button("Song Time", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                {
+                                    if (timelineObject.isBeatmapObject)
+                                    {
+                                        var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                        beatmapObject.autoKillType = AutoKillType.SongTime;
+                                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
+                                    }
+                                    if (timelineObject.isBackgroundObject)
+                                    {
+                                        var backgroundObject = timelineObject.GetData<BackgroundObject>();
+                                        backgroundObject.autoKillType = AutoKillType.SongTime;
+                                        RTLevel.Current?.UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.AUTOKILL);
+                                    }
+                                    timelineObject.RenderPosLength();
+                                }), labelAlignment: TextAnchor.MiddleCenter));
+
+                            ButtonElement.Label1Button("Set Autokill to Scaled 0x0", () => MultiObjectEditor.inst.ForEachBeatmapObject(timelineObject =>
+                            {
+                                var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                beatmapObject.SetAutokillToScale(GameData.Current.beatmapObjects);
+                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
+                                timelineObject.RenderPosLength();
+                            })).Init(EditorElement.InitSettings.Default.Parent(parent).Rect(RectValues.Default.SizeDelta(0f, 32f)));
+
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                new LabelElement("Collapse State")
+                                {
+                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                },
+                                ButtonElement.Label1Button("On", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                {
+                                    timelineObject.Collapse = true;
+                                    EditorTimeline.inst.RenderTimelineObject(timelineObject);
+                                }), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button("Off", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                {
+                                    timelineObject.Collapse = false;
+                                    EditorTimeline.inst.RenderTimelineObject(timelineObject);
+                                }), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button("Swap", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                {
+                                    timelineObject.Collapse = !timelineObject.Collapse;
+                                    EditorTimeline.inst.RenderTimelineObject(timelineObject);
+                                }), labelAlignment: TextAnchor.MiddleCenter));
+
+                            #endregion
+
+                            new SpacerElement().Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                            #region Parent
+
+                            new LabelsElement("Parent").Init(EditorElement.InitSettings.Default.Parent(parent));
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.ChildForceExpandWidth(false).Spacing(4f),
+                                new ButtonElement(ButtonElement.Type.Sprite, "Search List", ObjectEditor.inst.ShowObjectSearch)
+                                {
+                                    buttonThemeGroup = ThemeGroup.Function_2,
+                                    sprite = EditorSprites.SearchSprite,
+                                },
+                                new ButtonElement(ButtonElement.Type.Icon, "Picker", () =>
+                                {
+                                    RTEditor.inst.parentPickerEnabled = true;
+                                    RTEditor.inst.selectingMultiple = true;
+                                })
+                                {
+                                    buttonThemeGroup = ThemeGroup.Picker,
+                                    sprite = EditorSprites.DropperSprite,
+                                },
+                                new ButtonElement(ButtonElement.Type.Icon, "Remove", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to remove parents from all selected objects? This <b>CANNOT</b> be undone!", () =>
+                                {
+                                    MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                    {
+                                        beatmapObject.Parent = string.Empty;
+                                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARENT_CHAIN);
+                                    });
+                                    MultiObjectEditor.inst.ForEachPrefabObject(prefabObject =>
+                                    {
+                                        prefabObject.Parent = string.Empty;
+                                        RTLevel.Current?.UpdatePrefab(prefabObject, ObjectContext.PARENT_CHAIN);
+                                    });
+                                }))
+                                {
+                                    buttonThemeGroup = ThemeGroup.Close,
+                                    graphicThemeGroup = ThemeGroup.Close_X,
+                                    sprite = EditorSprites.CloseSprite,
+                                });
+
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                new LabelElement("Desync")
+                                {
+                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                },
+                                ButtonElement.Label1Button("On", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                {
+                                    if (timelineObject.isBeatmapObject)
+                                    {
+                                        var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                        beatmapObject.desync = true;
+                                        RTLevel.Current?.UpdateObject(beatmapObject);
+                                    }
+                                    if (timelineObject.isPrefabObject)
+                                    {
+                                        var prefabObject = timelineObject.GetData<PrefabObject>();
+                                        prefabObject.desync = true;
+                                        RTLevel.Current?.UpdatePrefab(prefabObject);
+                                    }
+                                }), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button("Off", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                {
+                                    if (timelineObject.isBeatmapObject)
+                                    {
+                                        var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                        beatmapObject.desync = false;
+                                        RTLevel.Current?.UpdateObject(beatmapObject);
+                                    }
+                                    if (timelineObject.isPrefabObject)
+                                    {
+                                        var prefabObject = timelineObject.GetData<PrefabObject>();
+                                        prefabObject.desync = false;
+                                        RTLevel.Current?.UpdatePrefab(prefabObject);
+                                    }
+                                }), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button("Swap", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                {
+                                    if (timelineObject.isBeatmapObject)
+                                    {
+                                        var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                        beatmapObject.desync = !beatmapObject.desync;
+                                        RTLevel.Current?.UpdateObject(beatmapObject);
+                                    }
+                                    if (timelineObject.isPrefabObject)
+                                    {
+                                        var prefabObject = timelineObject.GetData<PrefabObject>();
+                                        prefabObject.desync = !prefabObject.desync;
+                                        RTLevel.Current?.UpdatePrefab(prefabObject);
+                                    }
+                                }), labelAlignment: TextAnchor.MiddleCenter));
+
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                new LabelElement("Position Toggle")
+                                {
+                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                },
+                                ButtonElement.Label1Button("On", () => MultiObjectEditor.inst.SetParentToggle(0, 1), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button("Off", () => MultiObjectEditor.inst.SetParentToggle(0, 0), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button("Swap", () => MultiObjectEditor.inst.SetParentToggle(0, 2), labelAlignment: TextAnchor.MiddleCenter));
+
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                new LabelElement("Scale Toggle")
+                                {
+                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                },
+                                ButtonElement.Label1Button("On", () => MultiObjectEditor.inst.SetParentToggle(1, 1), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button("Off", () => MultiObjectEditor.inst.SetParentToggle(1, 0), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button("Swap", () => MultiObjectEditor.inst.SetParentToggle(01, 2), labelAlignment: TextAnchor.MiddleCenter));
+
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                new LabelElement("Rotation Toggle")
+                                {
+                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                },
+                                ButtonElement.Label1Button("On", () => MultiObjectEditor.inst.SetParentToggle(2, 1), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button("Off", () => MultiObjectEditor.inst.SetParentToggle(2, 0), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button("Swap", () => MultiObjectEditor.inst.SetParentToggle(2, 2), labelAlignment: TextAnchor.MiddleCenter));
+
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                new LabelElement("Position Offset (Delay)")
+                                {
+                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                },
                                 new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerFloat()
                                 {
                                     standardArrowFunctions = false,
                                     leftArrowClicked = _val =>
                                     {
                                         if (float.TryParse(_val, out float num))
-                                            MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
-                                            {
-                                                if (timelineObject.isBeatmapObject)
-                                                {
-                                                    var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                                                    beatmapObject.autoKillOffset -= num;
-                                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
-                                                }
-                                                if (timelineObject.isBackgroundObject)
-                                                {
-                                                    var backgroundObject = timelineObject.GetData<BackgroundObject>();
-                                                    backgroundObject.autoKillOffset -= num;
-                                                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.AUTOKILL);
-                                                }
-                                                EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                                            });
+                                            MultiObjectEditor.inst.SetParentOffset(0, num, MathOperation.Subtract);
                                     },
                                     middleClicked = _val =>
                                     {
                                         if (float.TryParse(_val, out float num))
-                                            MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
-                                            {
-                                                if (timelineObject.isBeatmapObject)
-                                                {
-                                                    var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                                                    beatmapObject.autoKillOffset = num;
-                                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
-                                                }
-                                                if (timelineObject.isBackgroundObject)
-                                                {
-                                                    var backgroundObject = timelineObject.GetData<BackgroundObject>();
-                                                    backgroundObject.autoKillOffset = num;
-                                                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.AUTOKILL);
-                                                }
-                                                EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                                            });
+                                            MultiObjectEditor.inst.SetParentOffset(0, num, MathOperation.Subtract);
                                     },
                                     rightArrowClicked = _val =>
                                     {
                                         if (float.TryParse(_val, out float num))
-                                            MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
-                                            {
-                                                if (timelineObject.isBeatmapObject)
-                                                {
-                                                    var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                                                    beatmapObject.autoKillOffset += num;
-                                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
-                                                }
-                                                if (timelineObject.isBackgroundObject)
-                                                {
-                                                    var backgroundObject = timelineObject.GetData<BackgroundObject>();
-                                                    backgroundObject.autoKillOffset += num;
-                                                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.AUTOKILL);
-                                                }
-                                                EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                                            });
+                                            MultiObjectEditor.inst.SetParentOffset(0, num, MathOperation.Addition);
                                     },
-                                    rightGreaterArrowClicked = _val => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
-                                    {
-                                        if (timelineObject.isBeatmapObject)
-                                        {
-                                            var beatmapObject = timelineObject.GetData<BeatmapObject>();
-
-                                            float num = 0f;
-
-                                            if (beatmapObject.autoKillType == AutoKillType.SongTime)
-                                                num = AudioManager.inst.CurrentAudioSource.time;
-                                            else num = AudioManager.inst.CurrentAudioSource.time - beatmapObject.StartTime;
-
-                                            if (num < 0f)
-                                                num = 0f;
-
-                                            beatmapObject.autoKillOffset = num;
-
-                                            EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
-                                        }
-                                        if (timelineObject.isBackgroundObject)
-                                        {
-                                            var backgroundObject = timelineObject.GetData<BackgroundObject>();
-
-                                            float num = 0f;
-
-                                            if (backgroundObject.autoKillType == AutoKillType.SongTime)
-                                                num = AudioManager.inst.CurrentAudioSource.time;
-                                            else num = AudioManager.inst.CurrentAudioSource.time - backgroundObject.StartTime;
-
-                                            if (num < 0f)
-                                                num = 0f;
-
-                                            backgroundObject.autoKillOffset = num;
-
-                                            EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                                            RTLevel.Current?.UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.AUTOKILL);
-                                        }
-                                    }),
-                                    rightGreaterSprite = EditorSprites.DownArrow,
-                                }).Init(EditorElement.InitSettings.Default.Parent(parent));
-
-                                new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
-                                    ButtonElement.Label1Button("No Autokill", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
-                                    {
-                                        if (timelineObject.isBeatmapObject)
-                                        {
-                                            var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                                            beatmapObject.autoKillType = AutoKillType.NoAutokill;
-                                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
-                                        }
-                                        if (timelineObject.isBackgroundObject)
-                                        {
-                                            var backgroundObject = timelineObject.GetData<BackgroundObject>();
-                                            backgroundObject.autoKillType = AutoKillType.NoAutokill;
-                                            RTLevel.Current?.UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.AUTOKILL);
-                                        }
-                                        timelineObject.RenderPosLength();
-                                    })),
-                                    ButtonElement.Label1Button("Last KF", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
-                                    {
-                                        if (timelineObject.isBeatmapObject)
-                                        {
-                                            var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                                            beatmapObject.autoKillType = AutoKillType.LastKeyframe;
-                                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
-                                        }
-                                        if (timelineObject.isBackgroundObject)
-                                        {
-                                            var backgroundObject = timelineObject.GetData<BackgroundObject>();
-                                            backgroundObject.autoKillType = AutoKillType.LastKeyframe;
-                                            RTLevel.Current?.UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.AUTOKILL);
-                                        }
-                                        timelineObject.RenderPosLength();
-                                    })),
-                                    ButtonElement.Label1Button("Last KF Offset", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
-                                    {
-                                        if (timelineObject.isBeatmapObject)
-                                        {
-                                            var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                                            beatmapObject.autoKillType = AutoKillType.LastKeyframeOffset;
-                                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
-                                        }
-                                        if (timelineObject.isBackgroundObject)
-                                        {
-                                            var backgroundObject = timelineObject.GetData<BackgroundObject>();
-                                            backgroundObject.autoKillType = AutoKillType.LastKeyframeOffset;
-                                            RTLevel.Current?.UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.AUTOKILL);
-                                        }
-                                        timelineObject.RenderPosLength();
-                                    })),
-                                    ButtonElement.Label1Button("Fixed Time", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
-                                    {
-                                        if (timelineObject.isBeatmapObject)
-                                        {
-                                            var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                                            beatmapObject.autoKillType = AutoKillType.FixedTime;
-                                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
-                                        }
-                                        if (timelineObject.isBackgroundObject)
-                                        {
-                                            var backgroundObject = timelineObject.GetData<BackgroundObject>();
-                                            backgroundObject.autoKillType = AutoKillType.FixedTime;
-                                            RTLevel.Current?.UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.AUTOKILL);
-                                        }
-                                        timelineObject.RenderPosLength();
-                                    })),
-                                    ButtonElement.Label1Button("Song Time", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
-                                    {
-                                        if (timelineObject.isBeatmapObject)
-                                        {
-                                            var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                                            beatmapObject.autoKillType = AutoKillType.SongTime;
-                                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
-                                        }
-                                        if (timelineObject.isBackgroundObject)
-                                        {
-                                            var backgroundObject = timelineObject.GetData<BackgroundObject>();
-                                            backgroundObject.autoKillType = AutoKillType.SongTime;
-                                            RTLevel.Current?.UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.AUTOKILL);
-                                        }
-                                        timelineObject.RenderPosLength();
-                                    })));
-
-                                ButtonElement.Label1Button("Set Autokill to Scaled 0x0", () => MultiObjectEditor.inst.ForEachBeatmapObject(timelineObject =>
+                                })
                                 {
-                                    var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                                    beatmapObject.SetAutokillToScale(GameData.Current.beatmapObjects);
-                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
-                                    timelineObject.RenderPosLength();
-                                })).Init(EditorElement.InitSettings.Default.Parent(parent).Rect(RectValues.Default.SizeDelta(0f, 32f)));
+                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
+                                });
 
-                                new LabelsElement("Parent").Init(EditorElement.InitSettings.Default.Parent(parent));
-                                new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.ChildForceExpandWidth(false).Spacing(4f),
-                                    new ButtonElement(ButtonElement.Type.Sprite, "Search List", ObjectEditor.inst.ShowObjectSearch)
-                                    {
-                                        buttonThemeGroup = ThemeGroup.Function_2,
-                                        sprite = EditorSprites.SearchSprite,
-                                    },
-                                    new ButtonElement(ButtonElement.Type.Icon, "Picker", () =>
-                                    {
-                                        RTEditor.inst.parentPickerEnabled = true;
-                                        RTEditor.inst.selectingMultiple = true;
-                                    })
-                                    {
-                                        buttonThemeGroup = ThemeGroup.Picker,
-                                        sprite = EditorSprites.DropperSprite,
-                                    },
-                                    new ButtonElement(ButtonElement.Type.Icon, "Remove", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to remove parents from all selected objects? This <b>CANNOT</b> be undone!", () =>
-                                    {
-                                        MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
-                                        {
-                                            beatmapObject.Parent = string.Empty;
-                                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARENT_CHAIN);
-                                        });
-                                        MultiObjectEditor.inst.ForEachPrefabObject(prefabObject =>
-                                        {
-                                            prefabObject.Parent = string.Empty;
-                                            RTLevel.Current?.UpdatePrefab(prefabObject, ObjectContext.PARENT_CHAIN);
-                                        });
-                                    }))
-                                    {
-                                        buttonThemeGroup = ThemeGroup.Close,
-                                        graphicThemeGroup = ThemeGroup.Close_X,
-                                        sprite = EditorSprites.CloseSprite,
-                                    });
-
-                                new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
-                                    new LabelElement("Desync")
-                                    {
-                                        layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
-                                    },
-                                    ButtonElement.Label1Button("On", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
-                                    {
-                                        if (timelineObject.isBeatmapObject)
-                                        {
-                                            var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                                            beatmapObject.desync = true;
-                                            RTLevel.Current?.UpdateObject(beatmapObject);
-                                        }
-                                        if (timelineObject.isPrefabObject)
-                                        {
-                                            var prefabObject = timelineObject.GetData<PrefabObject>();
-                                            prefabObject.desync = true;
-                                            RTLevel.Current?.UpdatePrefab(prefabObject);
-                                        }
-                                    })),
-                                    ButtonElement.Label1Button("Off", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
-                                    {
-                                        if (timelineObject.isBeatmapObject)
-                                        {
-                                            var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                                            beatmapObject.desync = false;
-                                            RTLevel.Current?.UpdateObject(beatmapObject);
-                                        }
-                                        if (timelineObject.isPrefabObject)
-                                        {
-                                            var prefabObject = timelineObject.GetData<PrefabObject>();
-                                            prefabObject.desync = false;
-                                            RTLevel.Current?.UpdatePrefab(prefabObject);
-                                        }
-                                    })),
-                                    ButtonElement.Label1Button("Swap", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
-                                    {
-                                        if (timelineObject.isBeatmapObject)
-                                        {
-                                            var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                                            beatmapObject.desync = !beatmapObject.desync;
-                                            RTLevel.Current?.UpdateObject(beatmapObject);
-                                        }
-                                        if (timelineObject.isPrefabObject)
-                                        {
-                                            var prefabObject = timelineObject.GetData<PrefabObject>();
-                                            prefabObject.desync = !prefabObject.desync;
-                                            RTLevel.Current?.UpdatePrefab(prefabObject);
-                                        }
-                                    })));
-
-                                new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
-                                    new LabelElement("Position Toggle")
-                                    {
-                                        layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
-                                    },
-                                    ButtonElement.Label1Button("On", () => MultiObjectEditor.inst.SetParentToggle(0, 1)),
-                                    ButtonElement.Label1Button("Off", () => MultiObjectEditor.inst.SetParentToggle(0, 0)),
-                                    ButtonElement.Label1Button("Swap", () => MultiObjectEditor.inst.SetParentToggle(0, 2)));
-
-                                new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
-                                    new LabelElement("Scale Toggle")
-                                    {
-                                        layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
-                                    },
-                                    ButtonElement.Label1Button("On", () => MultiObjectEditor.inst.SetParentToggle(1, 1)),
-                                    ButtonElement.Label1Button("Off", () => MultiObjectEditor.inst.SetParentToggle(1, 0)),
-                                    ButtonElement.Label1Button("Swap", () => MultiObjectEditor.inst.SetParentToggle(01, 2)));
-
-                                new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
-                                    new LabelElement("Rotation Toggle")
-                                    {
-                                        layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
-                                    },
-                                    ButtonElement.Label1Button("On", () => MultiObjectEditor.inst.SetParentToggle(2, 1)),
-                                    ButtonElement.Label1Button("Off", () => MultiObjectEditor.inst.SetParentToggle(2, 0)),
-                                    ButtonElement.Label1Button("Swap", () => MultiObjectEditor.inst.SetParentToggle(2, 2)));
-
-                                new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
-                                    new LabelElement("Position Offset (Delay)")
-                                    {
-                                        layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
-                                    },
-                                    new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerFloat()
-                                    {
-                                        standardArrowFunctions = false,
-                                        leftArrowClicked = _val =>
-                                        {
-                                            if (float.TryParse(_val, out float num))
-                                                MultiObjectEditor.inst.SetParentOffset(0, num, MathOperation.Subtract);
-                                        },
-                                        middleClicked = _val =>
-                                        {
-                                            if (float.TryParse(_val, out float num))
-                                                MultiObjectEditor.inst.SetParentOffset(0, num, MathOperation.Subtract);
-                                        },
-                                        rightArrowClicked = _val =>
-                                        {
-                                            if (float.TryParse(_val, out float num))
-                                                MultiObjectEditor.inst.SetParentOffset(0, num, MathOperation.Addition);
-                                        },
-                                    })
-                                    {
-                                        layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
-                                    });
-
-                                new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
-                                    new LabelElement("Scale Offset (Delay)")
-                                    {
-                                        layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
-                                    },
-                                    new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerFloat()
-                                    {
-                                        standardArrowFunctions = false,
-                                        leftArrowClicked = _val =>
-                                        {
-                                            if (float.TryParse(_val, out float num))
-                                                MultiObjectEditor.inst.SetParentOffset(1, num, MathOperation.Subtract);
-                                        },
-                                        middleClicked = _val =>
-                                        {
-                                            if (float.TryParse(_val, out float num))
-                                                MultiObjectEditor.inst.SetParentOffset(1, num, MathOperation.Set);
-                                        },
-                                        rightArrowClicked = _val =>
-                                        {
-                                            if (float.TryParse(_val, out float num))
-                                                MultiObjectEditor.inst.SetParentOffset(1, num, MathOperation.Addition);
-                                        },
-                                    })
-                                    {
-                                        layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
-                                    });
-
-                                new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
-                                    new LabelElement("Rotation Offset (Delay)")
-                                    {
-                                        layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
-                                    },
-                                    new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerFloat()
-                                    {
-                                        standardArrowFunctions = false,
-                                        leftArrowClicked = _val =>
-                                        {
-                                            if (float.TryParse(_val, out float num))
-                                                MultiObjectEditor.inst.SetParentOffset(2, num, MathOperation.Subtract);
-                                        },
-                                        middleClicked = _val =>
-                                        {
-                                            if (float.TryParse(_val, out float num))
-                                                MultiObjectEditor.inst.SetParentOffset(2, num, MathOperation.Set);
-                                        },
-                                        rightArrowClicked = _val =>
-                                        {
-                                            if (float.TryParse(_val, out float num))
-                                                MultiObjectEditor.inst.SetParentOffset(2, num, MathOperation.Addition);
-                                        },
-                                    })
-                                    {
-                                        layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
-                                    });
-
-                                new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
-                                    new LabelElement("Position Additive")
-                                    {
-                                        layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
-                                    },
-                                    ButtonElement.Label1Button("On", () => MultiObjectEditor.inst.SetParentAdditive(0, 1)),
-                                    ButtonElement.Label1Button("Off", () => MultiObjectEditor.inst.SetParentAdditive(0, 0)),
-                                    ButtonElement.Label1Button("Swap", () => MultiObjectEditor.inst.SetParentAdditive(0, 2)));
-
-                                new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
-                                    new LabelElement("Scale Additive")
-                                    {
-                                        layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
-                                    },
-                                    ButtonElement.Label1Button("On", () => MultiObjectEditor.inst.SetParentAdditive(1, 1)),
-                                    ButtonElement.Label1Button("Off", () => MultiObjectEditor.inst.SetParentAdditive(1, 0)),
-                                    ButtonElement.Label1Button("Swap", () => MultiObjectEditor.inst.SetParentAdditive(01, 2)));
-
-                                new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
-                                    new LabelElement("Rotation Additive")
-                                    {
-                                        layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
-                                    },
-                                    ButtonElement.Label1Button("On", () => MultiObjectEditor.inst.SetParentAdditive(2, 1)),
-                                    ButtonElement.Label1Button("Off", () => MultiObjectEditor.inst.SetParentAdditive(2, 0)),
-                                    ButtonElement.Label1Button("Swap", () => MultiObjectEditor.inst.SetParentAdditive(2, 2)));
-
-                                new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
-                                    new LabelElement("Position Parallax (Delay)")
-                                    {
-                                        layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
-                                    },
-                                    new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerFloat()
-                                    {
-                                        standardArrowFunctions = false,
-                                        leftArrowClicked = _val =>
-                                        {
-                                            if (float.TryParse(_val, out float num))
-                                                MultiObjectEditor.inst.SetParentParallax(0, num, MathOperation.Subtract);
-                                        },
-                                        middleClicked = _val =>
-                                        {
-                                            if (float.TryParse(_val, out float num))
-                                                MultiObjectEditor.inst.SetParentParallax(0, num, MathOperation.Set);
-                                        },
-                                        rightArrowClicked = _val =>
-                                        {
-                                            if (float.TryParse(_val, out float num))
-                                                MultiObjectEditor.inst.SetParentParallax(0, num, MathOperation.Addition);
-                                        },
-                                    })
-                                    {
-                                        layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
-                                    });
-
-                                new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
-                                    new LabelElement("Scale Parallax (Delay)")
-                                    {
-                                        layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
-                                    },
-                                    new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerFloat()
-                                    {
-                                        standardArrowFunctions = false,
-                                        leftArrowClicked = _val =>
-                                        {
-                                            if (float.TryParse(_val, out float num))
-                                                MultiObjectEditor.inst.SetParentParallax(1, num, MathOperation.Subtract);
-                                        },
-                                        middleClicked = _val =>
-                                        {
-                                            if (float.TryParse(_val, out float num))
-                                                MultiObjectEditor.inst.SetParentParallax(1, num, MathOperation.Set);
-                                        },
-                                        rightArrowClicked = _val =>
-                                        {
-                                            if (float.TryParse(_val, out float num))
-                                                MultiObjectEditor.inst.SetParentParallax(1, num, MathOperation.Addition);
-                                        },
-                                    })
-                                    {
-                                        layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
-                                    });
-
-                                new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
-                                    new LabelElement("Rotation Parallax (Delay)")
-                                    {
-                                        layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
-                                    },
-                                    new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerFloat()
-                                    {
-                                        standardArrowFunctions = false,
-                                        leftArrowClicked = _val =>
-                                        {
-                                            if (float.TryParse(_val, out float num))
-                                                MultiObjectEditor.inst.SetParentParallax(2, num, MathOperation.Subtract);
-                                        },
-                                        middleClicked = _val =>
-                                        {
-                                            if (float.TryParse(_val, out float num))
-                                                MultiObjectEditor.inst.SetParentParallax(2, num, MathOperation.Set);
-                                        },
-                                        rightArrowClicked = _val =>
-                                        {
-                                            if (float.TryParse(_val, out float num))
-                                                MultiObjectEditor.inst.SetParentParallax(2, num, MathOperation.Addition);
-                                        },
-                                    })
-                                    {
-                                        layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
-                                    });
-
-                                new LabelsElement("Render Depth").Init(EditorElement.InitSettings.Default.Parent(parent));
-                                new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerInt()
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                new LabelElement("Scale Offset (Delay)")
+                                {
+                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                },
+                                new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerFloat()
                                 {
                                     standardArrowFunctions = false,
                                     leftArrowClicked = _val =>
                                     {
-                                        if (int.TryParse(_val, out int num))
+                                        if (float.TryParse(_val, out float num))
+                                            MultiObjectEditor.inst.SetParentOffset(1, num, MathOperation.Subtract);
+                                    },
+                                    middleClicked = _val =>
+                                    {
+                                        if (float.TryParse(_val, out float num))
+                                            MultiObjectEditor.inst.SetParentOffset(1, num, MathOperation.Set);
+                                    },
+                                    rightArrowClicked = _val =>
+                                    {
+                                        if (float.TryParse(_val, out float num))
+                                            MultiObjectEditor.inst.SetParentOffset(1, num, MathOperation.Addition);
+                                    },
+                                })
+                                {
+                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
+                                });
+
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                new LabelElement("Rotation Offset (Delay)")
+                                {
+                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                },
+                                new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerFloat()
+                                {
+                                    standardArrowFunctions = false,
+                                    leftArrowClicked = _val =>
+                                    {
+                                        if (float.TryParse(_val, out float num))
+                                            MultiObjectEditor.inst.SetParentOffset(2, num, MathOperation.Subtract);
+                                    },
+                                    middleClicked = _val =>
+                                    {
+                                        if (float.TryParse(_val, out float num))
+                                            MultiObjectEditor.inst.SetParentOffset(2, num, MathOperation.Set);
+                                    },
+                                    rightArrowClicked = _val =>
+                                    {
+                                        if (float.TryParse(_val, out float num))
+                                            MultiObjectEditor.inst.SetParentOffset(2, num, MathOperation.Addition);
+                                    },
+                                })
+                                {
+                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
+                                });
+
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                new LabelElement("Position Additive")
+                                {
+                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                },
+                                ButtonElement.Label1Button("On", () => MultiObjectEditor.inst.SetParentAdditive(0, 1), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button("Off", () => MultiObjectEditor.inst.SetParentAdditive(0, 0), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button("Swap", () => MultiObjectEditor.inst.SetParentAdditive(0, 2), labelAlignment: TextAnchor.MiddleCenter));
+
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                new LabelElement("Scale Additive")
+                                {
+                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                },
+                                ButtonElement.Label1Button("On", () => MultiObjectEditor.inst.SetParentAdditive(1, 1), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button("Off", () => MultiObjectEditor.inst.SetParentAdditive(1, 0), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button("Swap", () => MultiObjectEditor.inst.SetParentAdditive(01, 2), labelAlignment: TextAnchor.MiddleCenter));
+
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                new LabelElement("Rotation Additive")
+                                {
+                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                },
+                                ButtonElement.Label1Button("On", () => MultiObjectEditor.inst.SetParentAdditive(2, 1), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button("Off", () => MultiObjectEditor.inst.SetParentAdditive(2, 0), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button("Swap", () => MultiObjectEditor.inst.SetParentAdditive(2, 2), labelAlignment: TextAnchor.MiddleCenter));
+
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                new LabelElement("Position Parallax (Delay)")
+                                {
+                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                },
+                                new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerFloat()
+                                {
+                                    standardArrowFunctions = false,
+                                    leftArrowClicked = _val =>
+                                    {
+                                        if (float.TryParse(_val, out float num))
+                                            MultiObjectEditor.inst.SetParentParallax(0, num, MathOperation.Subtract);
+                                    },
+                                    middleClicked = _val =>
+                                    {
+                                        if (float.TryParse(_val, out float num))
+                                            MultiObjectEditor.inst.SetParentParallax(0, num, MathOperation.Set);
+                                    },
+                                    rightArrowClicked = _val =>
+                                    {
+                                        if (float.TryParse(_val, out float num))
+                                            MultiObjectEditor.inst.SetParentParallax(0, num, MathOperation.Addition);
+                                    },
+                                })
+                                {
+                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
+                                });
+
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                new LabelElement("Scale Parallax (Delay)")
+                                {
+                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                },
+                                new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerFloat()
+                                {
+                                    standardArrowFunctions = false,
+                                    leftArrowClicked = _val =>
+                                    {
+                                        if (float.TryParse(_val, out float num))
+                                            MultiObjectEditor.inst.SetParentParallax(1, num, MathOperation.Subtract);
+                                    },
+                                    middleClicked = _val =>
+                                    {
+                                        if (float.TryParse(_val, out float num))
+                                            MultiObjectEditor.inst.SetParentParallax(1, num, MathOperation.Set);
+                                    },
+                                    rightArrowClicked = _val =>
+                                    {
+                                        if (float.TryParse(_val, out float num))
+                                            MultiObjectEditor.inst.SetParentParallax(1, num, MathOperation.Addition);
+                                    },
+                                })
+                                {
+                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
+                                });
+
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                new LabelElement("Rotation Parallax (Delay)")
+                                {
+                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                },
+                                new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerFloat()
+                                {
+                                    standardArrowFunctions = false,
+                                    leftArrowClicked = _val =>
+                                    {
+                                        if (float.TryParse(_val, out float num))
+                                            MultiObjectEditor.inst.SetParentParallax(2, num, MathOperation.Subtract);
+                                    },
+                                    middleClicked = _val =>
+                                    {
+                                        if (float.TryParse(_val, out float num))
+                                            MultiObjectEditor.inst.SetParentParallax(2, num, MathOperation.Set);
+                                    },
+                                    rightArrowClicked = _val =>
+                                    {
+                                        if (float.TryParse(_val, out float num))
+                                            MultiObjectEditor.inst.SetParentParallax(2, num, MathOperation.Addition);
+                                    },
+                                })
+                                {
+                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
+                                });
+
+                            #endregion
+
+                            new SpacerElement().Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                            #region Object Type
+
+                            new LabelsElement("Object Type").Init(EditorElement.InitSettings.Default.Parent(parent));
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                CreateAddSubButtons(
+                                    timelineObject => timelineObject.isBeatmapObject,
+                                    timelineObject => (int)timelineObject.GetData<BeatmapObject>().renderLayerType,
+                                    EnumHelper.GetNames<BeatmapObject.ObjectType>().Length,
+                                    (timelineObject, num) =>
+                                    {
+                                        var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                        beatmapObject.objectType = (BeatmapObject.ObjectType)num;
+                                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.RENDERING);
+                                    }));
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                ButtonElement.Label1Button(nameof(BeatmapObject.ObjectType.Normal), () => MultiObjectEditor.inst.SetObjectType(BeatmapObject.ObjectType.Normal), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button(nameof(BeatmapObject.ObjectType.Helper), () => MultiObjectEditor.inst.SetObjectType(BeatmapObject.ObjectType.Helper), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button(nameof(BeatmapObject.ObjectType.Decoration), () => MultiObjectEditor.inst.SetObjectType(BeatmapObject.ObjectType.Decoration), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button(nameof(BeatmapObject.ObjectType.Empty), () => MultiObjectEditor.inst.SetObjectType(BeatmapObject.ObjectType.Empty), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button(nameof(BeatmapObject.ObjectType.Solid), () => MultiObjectEditor.inst.SetObjectType(BeatmapObject.ObjectType.Solid), labelAlignment: TextAnchor.MiddleCenter));
+
+                            #endregion
+
+                            new SpacerElement().Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                            #region Color Blend Mode
+
+                            new LabelsElement("Color Blend Mode").Init(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced));
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                CreateAddSubButtons(
+                                    timelineObject => timelineObject.isBeatmapObject,
+                                    timelineObject => (int)timelineObject.GetData<BeatmapObject>().gradientType,
+                                    EnumHelper.GetNames<ColorBlendMode>().Length,
+                                    (timelineObject, num) =>
+                                    {
+                                        var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                        beatmapObject.colorBlendMode = (ColorBlendMode)num;
+                                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.RENDERING);
+                                    }));
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                ButtonElement.Label1Button(nameof(ColorBlendMode.Normal), () => MultiObjectEditor.inst.SetColorBlendMode(ColorBlendMode.Normal), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button(nameof(ColorBlendMode.Multiply), () => MultiObjectEditor.inst.SetColorBlendMode(ColorBlendMode.Multiply), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button(nameof(ColorBlendMode.Additive), () => MultiObjectEditor.inst.SetColorBlendMode(ColorBlendMode.Additive), labelAlignment: TextAnchor.MiddleCenter));
+
+                            #endregion
+
+                            new SpacerElement().Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                            #region Gradient Type
+
+                            new LabelsElement("Gradient Type").Init(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Normal));
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                CreateAddSubButtons(
+                                    timelineObject => timelineObject.isBeatmapObject,
+                                    timelineObject => (int)timelineObject.GetData<BeatmapObject>().gradientType,
+                                    EnumHelper.GetNames<GradientType>().Length,
+                                    (timelineObject, num) =>
+                                    {
+                                        var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                        beatmapObject.gradientType = (GradientType)num;
+                                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.RENDERING);
+                                    }));
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Normal), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                ButtonElement.Label1Button(nameof(GradientType.Normal), () => MultiObjectEditor.inst.SetGradientType(GradientType.Normal), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button(nameof(GradientType.RightLinear), () => MultiObjectEditor.inst.SetGradientType(GradientType.RightLinear), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button(nameof(GradientType.LeftLinear), () => MultiObjectEditor.inst.SetGradientType(GradientType.LeftLinear), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button(nameof(GradientType.OutInRadial), () => MultiObjectEditor.inst.SetGradientType(GradientType.OutInRadial), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button(nameof(GradientType.InOutRadial), () => MultiObjectEditor.inst.SetGradientType(GradientType.InOutRadial), labelAlignment: TextAnchor.MiddleCenter));
+
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                new LabelElement("Gradient Scale")
+                                {
+                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                },
+                                new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerFloat()
+                                {
+                                    standardArrowFunctions = false,
+                                    leftArrowClicked = _val =>
+                                    {
+                                        if (float.TryParse(_val, out float num))
                                             MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
                                             {
-                                                beatmapObject.Depth -= num;
-                                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+                                                beatmapObject.gradientScale -= num;
+                                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.RENDERING);
                                             });
                                     },
                                     middleClicked = _val =>
                                     {
-                                        if (int.TryParse(_val, out int num))
+                                        if (float.TryParse(_val, out float num))
                                             MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
                                             {
-                                                beatmapObject.Depth = num;
-                                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+                                                beatmapObject.gradientScale = num;
+                                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.RENDERING);
                                             });
                                     },
                                     rightArrowClicked = _val =>
                                     {
-                                        if (int.TryParse(_val, out int num))
+                                        if (float.TryParse(_val, out float num))
                                             MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
                                             {
-                                                beatmapObject.Depth += num;
-                                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+                                                beatmapObject.gradientScale += num;
+                                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.RENDERING);
                                             });
                                     },
-                                }).Init(EditorElement.InitSettings.Default.Parent(parent));
-                                break;
-                            }
-                        case Tab.Modifiers: {
-                                new LabelsElement("Clear Data").Init(EditorElement.InitSettings.Default.Parent(parent));
-                                ButtonElement.Label1Button("Clear Modifiers", () => RTEditor.inst.ShowWarningPopup("You are about to clear modifiers from all selected objects, this <b>CANNOT</b> be undone!", () =>
+                                })
+                                {
+                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
+                                });
+                                
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                new LabelElement("Gradient Rotation")
+                                {
+                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                },
+                                new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerFloat()
+                                {
+                                    standardArrowFunctions = false,
+                                    leftArrowClicked = _val =>
+                                    {
+                                        if (float.TryParse(_val, out float num))
+                                            MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                            {
+                                                beatmapObject.gradientRotation -= num;
+                                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.RENDERING);
+                                            });
+                                    },
+                                    middleClicked = _val =>
+                                    {
+                                        if (float.TryParse(_val, out float num))
+                                            MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                            {
+                                                beatmapObject.gradientRotation = num;
+                                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.RENDERING);
+                                            });
+                                    },
+                                    rightArrowClicked = _val =>
+                                    {
+                                        if (float.TryParse(_val, out float num))
+                                            MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                            {
+                                                beatmapObject.gradientRotation += num;
+                                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.RENDERING);
+                                            });
+                                    },
+                                })
+                                {
+                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
+                                });
+
+                            #endregion
+
+                            new SpacerElement().Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                            new LabelsElement("Shape").Init(EditorElement.InitSettings.Default.Parent(parent));
+                            InitShape(parent);
+                            RenderShape();
+
+                            new SpacerElement().Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                            new LabelsElement("Images").Init(EditorElement.InitSettings.Default.Parent(parent));
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                ButtonElement.Label1Button("Store Images", () => MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                {
+                                    if (beatmapObject.ShapeType != ShapeType.Image)
+                                        return;
+
+                                    if (GameData.Current.assets.sprites.Has(x => x.name == beatmapObject.text))
+                                        return;
+
+                                    var regex = new Regex(@"img\((.*?)\)");
+                                    var match = regex.Match(beatmapObject.text);
+
+                                    var path = match.Success ? RTFile.CombinePaths(RTFile.BasePath, match.Groups[1].ToString()) : RTFile.CombinePaths(RTFile.BasePath, beatmapObject.text);
+
+                                    ObjectEditor.inst.StoreImage(beatmapObject, path);
+                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.IMAGE);
+                                })),
+                                ButtonElement.Label1Button("Clear Images", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to clear the images of all selected objects?", () => MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                {
+                                    if (beatmapObject.ShapeType != ShapeType.Image)
+                                        return;
+
+                                    beatmapObject.text = string.Empty;
+                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.IMAGE);
+                                }))));
+
+                            new SpacerElement().Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                            new LabelsElement("Render Depth").Init(EditorElement.InitSettings.Default.Parent(parent));
+                            new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerInt()
+                            {
+                                standardArrowFunctions = false,
+                                leftArrowClicked = _val =>
+                                {
+                                    if (int.TryParse(_val, out int num))
+                                        MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                        {
+                                            beatmapObject.Depth += num;
+                                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+                                        });
+                                },
+                                middleClicked = _val =>
+                                {
+                                    if (int.TryParse(_val, out int num))
+                                        MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                        {
+                                            beatmapObject.Depth = num;
+                                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+                                        });
+                                },
+                                rightArrowClicked = _val =>
+                                {
+                                    if (int.TryParse(_val, out int num))
+                                        MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                        {
+                                            beatmapObject.Depth -= num;
+                                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+                                        });
+                                },
+                            }).Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                            new SpacerElement().Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                            #region Render Layer Type
+
+                            new LabelsElement("Render Layer Type").Init(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Normal));
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                CreateAddSubButtons(
+                                    timelineObject => timelineObject.isBeatmapObject,
+                                    timelineObject => (int)timelineObject.GetData<BeatmapObject>().renderLayerType,
+                                    EnumHelper.GetNames<BeatmapObject.RenderLayerType>().Length,
+                                    (timelineObject, num) =>
+                                    {
+                                        var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                        beatmapObject.renderLayerType = (BeatmapObject.RenderLayerType)num;
+                                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.RENDERING);
+                                    }));
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Normal), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                ToButtonArray<BeatmapObject.RenderLayerType>(index => MultiObjectEditor.inst.SetRenderLayerType((BeatmapObject.RenderLayerType)index)));
+
+                            #endregion
+
+                            new SpacerElement().Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                new LabelElement("Opacity Collision State")
+                                {
+                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                },
+                                ButtonElement.Label1Button("On", () => MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                {
+                                    beatmapObject.opacityCollision = true;
+                                    RTLevel.Current?.UpdateObject(beatmapObject);
+                                }), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button("Off", () => MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                {
+                                    beatmapObject.opacityCollision = false;
+                                    RTLevel.Current?.UpdateObject(beatmapObject);
+                                }), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button("Swap", () => MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                {
+                                    beatmapObject.opacityCollision = !beatmapObject.opacityCollision;
+                                    RTLevel.Current?.UpdateObject(beatmapObject);
+                                }), labelAlignment: TextAnchor.MiddleCenter));
+
+                            break;
+                        }
+                    case Tab.Modifiers: {
+                            new LabelsElement("Tags").Init(EditorElement.InitSettings.Default.Parent(parent));
+                            new NumberInputElement("object group", null, new NumberInputElement.ArrowHandler()
+                            {
+                                standardArrowFunctions = false,
+                                subClicked = _val =>
+                                {
+                                    MultiObjectEditor.inst.ForEachModifyable(modifyable => modifyable.Tags.Remove(_val));
+                                    EditorManager.inst.DisplayNotification($"Removed the tag \"{_val}\" from all selected objects.", 4f, EditorManager.NotificationType.Success);
+                                },
+                                addClicked = _val =>
                                 {
                                     MultiObjectEditor.inst.ForEachModifyable(modifyable =>
                                     {
-                                        modifyable.Modifiers.Clear();
-                                        if (modifyable is BeatmapObject beatmapObject)
-                                            RTLevel.Current?.UpdateObject(beatmapObject, recalculate: false);
-                                        if (modifyable is BackgroundObject backgroundObject)
-                                            RTLevel.Current?.UpdateBackgroundObject(backgroundObject, recalculate: false);
+                                        if (!modifyable.Tags.Contains(_val))
+                                            modifyable.Tags.Add(_val);
                                     });
-                                    RTLevel.Current?.RecalculateObjectStates();
-                                }), buttonThemeGroup: ThemeGroup.Delete, graphicThemeGroup: ThemeGroup.Delete_Text).Init(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced).Rect(RectValues.Default.SizeDelta(0f, 32f)));
-                                ButtonElement.Label1Button("Clear Tags", () => RTEditor.inst.ShowWarningPopup("You are about to clear tags from all selected objects, this <b>CANNOT</b> be undone!", () =>
-                                {
-                                    MultiObjectEditor.inst.ForEachModifyable(modifyable => modifyable.Tags.Clear());
-                                }), buttonThemeGroup: ThemeGroup.Delete, graphicThemeGroup: ThemeGroup.Delete_Text).Init(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced).Rect(RectValues.Default.SizeDelta(0f, 32f)));
+                                    EditorManager.inst.DisplayNotification($"Added the tag \"{_val}\" to all selected objects.", 4f, EditorManager.NotificationType.Success);
+                                },
+                            }).Init(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced));
 
-                                new LabelsElement("Tags").Init(EditorElement.InitSettings.Default.Parent(parent));
-                                new NumberInputElement("object group", null, new NumberInputElement.ArrowHandler()
+                            new SpacerElement().Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                new LabelElement("Ignore Lifespan State")
                                 {
-                                    standardArrowFunctions = false,
-                                    subClicked = _val =>
+                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                },
+                                ButtonElement.Label1Button("On", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                {
+                                    if (!timelineObject.TryGetData(out IModifyable modifyable))
+                                        return;
+                                    modifyable.IgnoreLifespan = true;
+                                    switch (timelineObject.TimelineReference)
                                     {
-                                        MultiObjectEditor.inst.ForEachModifyable(modifyable => modifyable.Tags.Remove(_val));
-                                        EditorManager.inst.DisplayNotification($"Removed the tag \"{_val}\" from all selected objects.", 4f, EditorManager.NotificationType.Success);
-                                    },
-                                    addClicked = _val =>
+                                        case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                                                RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.MODIFIERS);
+                                                break;
+                                            }
+                                        case TimelineObject.TimelineReferenceType.PrefabObject: {
+                                                RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), BackgroundObjectContext.MODIFIERS);
+                                                break;
+                                            }
+                                        case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                                                RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.MODIFIERS);
+                                                break;
+                                            }
+                                    }
+                                }), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button("Off", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                {
+                                    if (!timelineObject.TryGetData(out IModifyable modifyable))
+                                        return;
+                                    modifyable.IgnoreLifespan = false;
+                                    switch (timelineObject.TimelineReference)
                                     {
-                                        MultiObjectEditor.inst.ForEachModifyable(modifyable =>
-                                        {
-                                            if (!modifyable.Tags.Contains(_val))
-                                                modifyable.Tags.Add(_val);
-                                        });
-                                        EditorManager.inst.DisplayNotification($"Added the tag \"{_val}\" to all selected objects.", 4f, EditorManager.NotificationType.Success);
-                                    },
-                                }).Init(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced));
-                                break;
-                            }
-                        case Tab.Keyframes: {
-                                new LabelsElement("Clear").Init(EditorElement.InitSettings.Default.Parent(parent));
-                                ButtonElement.Label1Button("Clear All Keyframes", () => RTEditor.inst.ShowWarningPopup("You are about to clear animations from all selected objects, this <b>CANNOT</b> be undone!", () =>
+                                        case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                                                RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.MODIFIERS);
+                                                break;
+                                            }
+                                        case TimelineObject.TimelineReferenceType.PrefabObject: {
+                                                RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), BackgroundObjectContext.MODIFIERS);
+                                                break;
+                                            }
+                                        case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                                                RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.MODIFIERS);
+                                                break;
+                                            }
+                                    }
+                                }), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button("Swap", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
                                 {
-                                    foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
+                                    if (!timelineObject.TryGetData(out IModifyable modifyable))
+                                        return;
+                                    modifyable.IgnoreLifespan = !modifyable.IgnoreLifespan;
+                                    switch (timelineObject.TimelineReference)
                                     {
-                                        var bm = timelineObject.GetData<BeatmapObject>();
-                                        foreach (var tkf in bm.TimelineKeyframes)
-                                            CoreHelper.Delete(tkf.GameObject);
-                                        bm.TimelineKeyframes.Clear();
-                                        for (int i = 0; i < bm.events.Count; i++)
-                                        {
-                                            bm.events[i].Sort((a, b) => a.time.CompareTo(b.time));
-                                            var firstKF = bm.events[i][0].Copy(false);
-                                            bm.events[i].Clear();
-                                            bm.events[i].Add(firstKF);
-                                        }
-                                        if (EditorTimeline.inst.SelectedObjects.Count == 1)
-                                        {
-                                            ObjectEditor.inst.Dialog.Timeline.ResizeKeyframeTimeline(bm);
-                                            ObjectEditor.inst.Dialog.Timeline.RenderKeyframes(bm);
-                                        }
-
-                                        RTLevel.Current?.UpdateObject(bm, ObjectContext.KEYFRAMES);
-                                        EditorTimeline.inst.RenderTimelineObject(timelineObject);
+                                        case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                                                RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.MODIFIERS);
+                                                break;
+                                            }
+                                        case TimelineObject.TimelineReferenceType.PrefabObject: {
+                                                RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), BackgroundObjectContext.MODIFIERS);
+                                                break;
+                                            }
+                                        case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                                                RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.MODIFIERS);
+                                                break;
+                                            }
                                     }
-                                }), buttonThemeGroup: ThemeGroup.Delete, graphicThemeGroup: ThemeGroup.Delete_Text).Init(EditorElement.InitSettings.Default.Parent(parent).Rect(RectValues.Default.SizeDelta(0f, 32f)));
-                                ButtonElement.Label1Button("Clear Position Keyframes", () => MultiObjectEditor.inst.ClearKeyframes(0), buttonThemeGroup: ThemeGroup.Delete, graphicThemeGroup: ThemeGroup.Delete_Text).Init(EditorElement.InitSettings.Default.Parent(parent).Rect(RectValues.Default.SizeDelta(0f, 32f)));
-                                ButtonElement.Label1Button("Clear Scale Keyframes", () => MultiObjectEditor.inst.ClearKeyframes(1), buttonThemeGroup: ThemeGroup.Delete, graphicThemeGroup: ThemeGroup.Delete_Text).Init(EditorElement.InitSettings.Default.Parent(parent).Rect(RectValues.Default.SizeDelta(0f, 32f)));
-                                ButtonElement.Label1Button("Clear Rotation Keyframes", () => MultiObjectEditor.inst.ClearKeyframes(2), buttonThemeGroup: ThemeGroup.Delete, graphicThemeGroup: ThemeGroup.Delete_Text).Init(EditorElement.InitSettings.Default.Parent(parent).Rect(RectValues.Default.SizeDelta(0f, 32f)));
-                                ButtonElement.Label1Button("Clear Color Keyframes", () => MultiObjectEditor.inst.ClearKeyframes(3), buttonThemeGroup: ThemeGroup.Delete, graphicThemeGroup: ThemeGroup.Delete_Text).Init(EditorElement.InitSettings.Default.Parent(parent).Rect(RectValues.Default.SizeDelta(0f, 32f)));
-                                break;
-                            }
-                    }
-                }
-
-                ActiveScrollView = ScrollViews[0];
-            }
-            else
-            {
-                var multiObjectEditorDialog = GameObject.transform;
-
-                EditorThemeManager.ApplyGraphic(multiObjectEditorDialog.GetComponent<Image>(), ThemeGroup.Background_1);
-
-                var dataLeft = multiObjectEditorDialog.Find("data/left");
-
-                dataLeft.gameObject.SetActive(true);
-
-                CoreHelper.DestroyChildren(dataLeft);
-
-                var scrollView = EditorPrefabHolder.Instance.ScrollView.Duplicate(dataLeft, "Scroll View");
-                scrollView.transform.AsRT().anchoredPosition = new Vector2(240f, 345f);
-                scrollView.transform.AsRT().sizeDelta = new Vector2(410f, 690f);
-
-                var parent = scrollView.transform.Find("Viewport/Content");
-                multiObjectContent = parent;
-
-                var title = multiObjectEditorDialog.Find("data/right/Object Editor Title");
-                title.SetParent(multiObjectEditorDialog);
-                RectValues.FullAnchored.AnchoredPosition(0f, -16f).AnchorMin(0f, 1f).SizeDelta(0f, 32f).AssignToRectTransform(title.AsRT());
-
-                var textHolder = multiObjectEditorDialog.Find("data/right/text holder/Text");
-                var textHolderText = textHolder.GetComponent<Text>();
-
-                EditorThemeManager.ApplyLightText(textHolderText);
-
-                Text = textHolderText;
-
-                textHolderText.fontSize = 22;
-
-                textHolder.AsRT().anchoredPosition = new Vector2(0f, -125f);
-                textHolder.AsRT().sizeDelta = new Vector2(-68f, 0f);
-
-                CoreHelper.Destroy(dataLeft.GetComponent<VerticalLayoutGroup>());
-
-                GenerateLabels(parent, 32f, new Label("- Main Properties -", 22, FontStyle.Bold, TextAnchor.MiddleCenter));
-                // Layers (done)
-                {
-                    GenerateLabels(parent, 32f, "Set Group Editor Layer");
-
-                    var inputFieldStorage = GenerateInputField(parent, "layer", "1", "Enter layer...", true, true, true);
-                    inputFieldStorage.GetComponent<HorizontalLayoutGroup>().spacing = 0f;
-                    inputFieldStorage.leftGreaterButton.onClick.NewListener(() =>
-                    {
-                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                            timelineObject.Layer = 0;
-                    });
-                    inputFieldStorage.leftButton.onClick.NewListener(() =>
-                    {
-                        if (!int.TryParse(inputFieldStorage.inputField.text, out int num))
-                            return;
-                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                            timelineObject.Layer = Mathf.Clamp(timelineObject.Layer - num, 0, int.MaxValue);
-                    });
-                    inputFieldStorage.middleButton.onClick.NewListener(() =>
-                    {
-                        if (!int.TryParse(inputFieldStorage.inputField.text, out int num))
-                            return;
-                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                            timelineObject.Layer = Mathf.Clamp(num - 1, 0, int.MaxValue);
-                    });
-                    inputFieldStorage.rightButton.onClick.NewListener(() =>
-                    {
-                        if (!int.TryParse(inputFieldStorage.inputField.text, out int num))
-                            return;
-                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                            timelineObject.Layer = Mathf.Clamp(timelineObject.Layer + num, 0, int.MaxValue);
-                    });
-                    inputFieldStorage.rightGreaterButton.image.sprite = EditorSprites.DownArrow;
-                    inputFieldStorage.rightGreaterButton.onClick.NewListener(() =>
-                    {
-                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                            timelineObject.Layer = EditorTimeline.inst.Layer;
-                    });
-                    TriggerHelper.AddEventTriggers(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputFieldStorage.inputField));
-
-                    EditorHelper.SetComplexity(inputFieldStorage.leftGreaterButton.gameObject, Complexity.Normal);
-                }
-
-                // Depth (done)
-                {
-                    GenerateLabels(parent, 32f, "Set Group Render Depth");
-
-                    var inputFieldStorage = GenerateInputField(parent, "depth", "1", "Enter depth...", true);
-                    inputFieldStorage.leftButton.onClick.NewListener(() =>
-                    {
-                        if (!int.TryParse(inputFieldStorage.inputField.text, out int num))
-                            return;
-                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
-                        {
-                            var bm = timelineObject.GetData<BeatmapObject>();
-                            bm.Depth -= num;
-                            RTLevel.Current?.UpdateObject(bm, ObjectContext.VISUAL_OFFSET);
-                        }
-                    });
-                    inputFieldStorage.middleButton.onClick.NewListener(() =>
-                    {
-                        if (!int.TryParse(inputFieldStorage.inputField.text, out int num))
-                            return;
-                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
-                        {
-                            var bm = timelineObject.GetData<BeatmapObject>();
-                            bm.Depth = num;
-                            RTLevel.Current?.UpdateObject(bm, ObjectContext.VISUAL_OFFSET);
-                        }
-                    });
-                    inputFieldStorage.rightButton.onClick.NewListener(() =>
-                    {
-                        if (!int.TryParse(inputFieldStorage.inputField.text, out int num))
-                            return;
-                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
-                        {
-                            var bm = timelineObject.GetData<BeatmapObject>();
-                            bm.Depth += num;
-                            RTLevel.Current?.UpdateObject(bm, ObjectContext.VISUAL_OFFSET);
-                        }
-                    });
-                    TriggerHelper.AddEventTriggers(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputFieldStorage.inputField));
-                }
-
-                // Song Time (done)
-                {
-                    GenerateLabels(parent, 32f, "Set Song Time");
-
-                    var inputFieldStorage = GenerateInputField(parent, "time", "1", "Enter time...", true);
-                    inputFieldStorage.leftButton.onClick.NewListener(() =>
-                    {
-                        if (!float.TryParse(inputFieldStorage.inputField.text, out float num))
-                            return;
-                        //float first = EditorTimeline.inst.SelectedObjects.Min(x => x.Time);
-
-                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                        {
-                            //timelineObject.Time = AudioManager.inst.CurrentAudioSource.time - first + timelineObject.Time + num;
-                            timelineObject.Time -= num;
-
-                            switch (timelineObject.TimelineReference)
-                            {
-                                case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                                        RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.START_TIME);
-                                        break;
-                                    }
-                                case TimelineObject.TimelineReferenceType.PrefabObject: {
-                                        RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.TIME);
-                                        break;
-                                    }
-                                case TimelineObject.TimelineReferenceType.BackgroundObject: {
-                                        RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.START_TIME);
-                                        break;
-                                    }
-                            }
-
-                            timelineObject.RenderPosLength();
-                        }
-                    });
-                    inputFieldStorage.middleButton.onClick.NewListener(() =>
-                    {
-                        if (!float.TryParse(inputFieldStorage.inputField.text, out float num))
-                            return;
-
-                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                        {
-                            timelineObject.Time = num;
-
-                            switch (timelineObject.TimelineReference)
-                            {
-                                case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                                        RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.START_TIME);
-                                        break;
-                                    }
-                                case TimelineObject.TimelineReferenceType.PrefabObject: {
-                                        RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.TIME);
-                                        break;
-                                    }
-                                case TimelineObject.TimelineReferenceType.BackgroundObject: {
-                                        RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.START_TIME);
-                                        break;
-                                    }
-                            }
-
-                            timelineObject.RenderPosLength();
-                        }
-                    });
-                    inputFieldStorage.rightButton.onClick.NewListener(() =>
-                    {
-                        if (!float.TryParse(inputFieldStorage.inputField.text, out float num))
-                            return;
-                        //float first = EditorTimeline.inst.SelectedObjects.Min(x => x.Time);
-
-                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                        {
-                            //timelineObject.Time = AudioManager.inst.CurrentAudioSource.time - first + timelineObject.Time - num;
-                            timelineObject.Time += num;
-
-                            switch (timelineObject.TimelineReference)
-                            {
-                                case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                                        RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.START_TIME);
-                                        break;
-                                    }
-                                case TimelineObject.TimelineReferenceType.PrefabObject: {
-                                        RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.TIME);
-                                        break;
-                                    }
-                                case TimelineObject.TimelineReferenceType.BackgroundObject: {
-                                        RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.START_TIME);
-                                        break;
-                                    }
-                            }
-
-                            timelineObject.RenderPosLength();
-                        }
-                    });
-                    TriggerHelper.AddEventTriggers(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDelta(inputFieldStorage.inputField));
-                }
-
-                // Autokill Offset (done)
-                {
-                    var labels = GenerateLabels(parent, 32f, "Set Autokill Offset");
-
-                    var inputFieldStorage = GenerateInputField(parent, "autokill offset", "0", "Enter autokill...", true);
-                    inputFieldStorage.leftButton.onClick.NewListener(() =>
-                    {
-                        if (!float.TryParse(inputFieldStorage.inputField.text, out float num))
-                            return;
-                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                        {
-                            if (timelineObject.isBeatmapObject)
-                            {
-                                var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                                beatmapObject.autoKillOffset -= num;
-                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
-                            }
-                            if (timelineObject.isBackgroundObject)
-                            {
-                                var backgroundObject = timelineObject.GetData<BackgroundObject>();
-                                backgroundObject.autoKillOffset -= num;
-                                RTLevel.Current?.UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.AUTOKILL);
-                            }
-                            EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                        }
-                    });
-                    inputFieldStorage.middleButton.onClick.NewListener(() =>
-                    {
-                        if (!float.TryParse(inputFieldStorage.inputField.text, out float num))
-                            return;
-                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                        {
-                            if (timelineObject.isBeatmapObject)
-                            {
-                                var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                                beatmapObject.autoKillOffset = num;
-                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
-                            }
-                            if (timelineObject.isBackgroundObject)
-                            {
-                                var backgroundObject = timelineObject.GetData<BackgroundObject>();
-                                backgroundObject.autoKillOffset = num;
-                                RTLevel.Current?.UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.AUTOKILL);
-                            }
-                            EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                        }
-                    });
-                    inputFieldStorage.rightButton.onClick.NewListener(() =>
-                    {
-                        if (!float.TryParse(inputFieldStorage.inputField.text, out float num))
-                            return;
-                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                        {
-                            if (timelineObject.isBeatmapObject)
-                            {
-                                var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                                beatmapObject.autoKillOffset += num;
-                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
-                            }
-                            if (timelineObject.isBackgroundObject)
-                            {
-                                var backgroundObject = timelineObject.GetData<BackgroundObject>();
-                                backgroundObject.autoKillOffset += num;
-                                RTLevel.Current?.UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.AUTOKILL);
-                            }
-                            EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                        }
-                    });
-                    TriggerHelper.AddEventTriggers(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDelta(inputFieldStorage.inputField));
-
-                    EditorHelper.SetComplexity(labels, Complexity.Normal);
-                    EditorHelper.SetComplexity(inputFieldStorage.gameObject, Complexity.Normal);
-                }
-
-                // Name (done)
-                {
-                    GenerateLabels(parent, 32f, "Set Name");
-
-                    var multiNameSet = EditorPrefabHolder.Instance.NumberInputField.Duplicate(parent, "name");
-                    multiNameSet.transform.localScale = Vector3.one;
-                    var inputFieldStorage = multiNameSet.GetComponent<InputFieldStorage>();
-
-                    multiNameSet.transform.AsRT().sizeDelta = new Vector2(428f, 32f);
-
-                    inputFieldStorage.inputField.onValueChanged.ClearAll();
-                    inputFieldStorage.inputField.characterValidation = InputField.CharacterValidation.None;
-                    inputFieldStorage.inputField.characterLimit = 0;
-                    inputFieldStorage.inputField.text = "name";
-                    inputFieldStorage.inputField.transform.AsRT().sizeDelta = new Vector2(300f, 32f);
-                    inputFieldStorage.inputField.GetPlaceholderText().text = "Enter name...";
-
-                    CoreHelper.Delete(inputFieldStorage.leftGreaterButton);
-                    CoreHelper.Delete(inputFieldStorage.leftButton);
-                    CoreHelper.Delete(inputFieldStorage.rightButton);
-                    CoreHelper.Delete(inputFieldStorage.rightGreaterButton);
-
-                    EditorThemeManager.ApplyInputField(inputFieldStorage);
-
-                    inputFieldStorage.addButton.gameObject.SetActive(true);
-                    inputFieldStorage.middleButton.onClick.NewListener(() =>
-                    {
-                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                        {
-                            if (timelineObject.isBeatmapObject)
-                                timelineObject.GetData<BeatmapObject>().name = inputFieldStorage.inputField.text;
-                            if (timelineObject.isBackgroundObject)
-                                timelineObject.GetData<BackgroundObject>().name = inputFieldStorage.inputField.text;
-                            EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                        }
-                    });
-
-                    EditorThemeManager.ApplySelectable(inputFieldStorage.middleButton, ThemeGroup.Function_2, false);
-
-                    var mtnLeftLE = inputFieldStorage.addButton.gameObject.AddComponent<LayoutElement>();
-                    mtnLeftLE.ignoreLayout = true;
-
-                    inputFieldStorage.addButton.transform.AsRT().anchoredPosition = new Vector2(339f, 0f);
-                    inputFieldStorage.addButton.transform.AsRT().sizeDelta = new Vector2(32f, 32f);
-
-                    inputFieldStorage.addButton.onClick.NewListener(() =>
-                    {
-                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                        {
-                            if (timelineObject.isBeatmapObject)
-                                timelineObject.GetData<BeatmapObject>().name += inputFieldStorage.inputField.text;
-                            if (timelineObject.isBackgroundObject)
-                                timelineObject.GetData<BackgroundObject>().name += inputFieldStorage.inputField.text;
-                            EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                        }
-                    });
-                }
-
-                // Tags (done)
-                {
-                    var labels = GenerateLabels(parent, 32f, "Add a Tag");
-
-                    var multiNameSet = EditorPrefabHolder.Instance.NumberInputField.Duplicate(parent, "name");
-                    multiNameSet.transform.localScale = Vector3.one;
-                    var inputFieldStorage = multiNameSet.GetComponent<InputFieldStorage>();
-
-                    multiNameSet.transform.AsRT().sizeDelta = new Vector2(428f, 32f);
-
-                    inputFieldStorage.inputField.onValueChanged.ClearAll();
-                    inputFieldStorage.inputField.characterValidation = InputField.CharacterValidation.None;
-                    inputFieldStorage.inputField.characterLimit = 0;
-                    inputFieldStorage.inputField.text = "object group";
-                    inputFieldStorage.inputField.transform.AsRT().sizeDelta = new Vector2(300f, 32f);
-                    inputFieldStorage.inputField.GetPlaceholderText().text = "Enter a tag...";
-
-                    CoreHelper.Delete(inputFieldStorage.leftGreaterButton);
-                    CoreHelper.Delete(inputFieldStorage.leftButton);
-                    CoreHelper.Delete(inputFieldStorage.middleButton);
-                    CoreHelper.Delete(inputFieldStorage.rightButton);
-                    CoreHelper.Delete(inputFieldStorage.rightGreaterButton);
-
-                    EditorThemeManager.ApplyInputField(inputFieldStorage);
-
-                    inputFieldStorage.addButton.gameObject.SetActive(true);
-                    inputFieldStorage.addButton.transform.AsRT().sizeDelta = new Vector2(32f, 32f);
-                    inputFieldStorage.addButton.onClick.NewListener(() =>
-                    {
-                        var tag = inputFieldStorage.inputField.text;
-                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                        {
-                            switch (timelineObject.TimelineReference)
-                            {
-                                case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                                        var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                                        if (!beatmapObject.tags.Contains(tag))
-                                            beatmapObject.tags.Add(tag);
-                                        break;
-                                    }
-                                case TimelineObject.TimelineReferenceType.PrefabObject: {
-                                        var prefabObject = timelineObject.GetData<PrefabObject>();
-                                        if (!prefabObject.tags.Contains(tag))
-                                            prefabObject.tags.Add(tag);
-                                        break;
-                                    }
-                                case TimelineObject.TimelineReferenceType.BackgroundObject: {
-                                        var backgroundObject = timelineObject.GetData<BackgroundObject>();
-                                        if (!backgroundObject.tags.Contains(tag))
-                                            backgroundObject.tags.Add(tag);
-                                        break;
-                                    }
-                            }
-                        }
-                    });
-
-                    inputFieldStorage.subButton.gameObject.SetActive(true);
-                    inputFieldStorage.subButton.transform.AsRT().sizeDelta = new Vector2(32f, 32f);
-                    inputFieldStorage.subButton.onClick.NewListener(() =>
-                    {
-                        var tag = inputFieldStorage.inputField.text;
-                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                        {
-                            switch (timelineObject.TimelineReference)
-                            {
-                                case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                                        timelineObject.GetData<BeatmapObject>().tags.Remove(tag);
-                                        break;
-                                    }
-                                case TimelineObject.TimelineReferenceType.PrefabObject: {
-                                        timelineObject.GetData<PrefabObject>().tags.Remove(tag);
-                                        break;
-                                    }
-                                case TimelineObject.TimelineReferenceType.BackgroundObject: {
-                                        timelineObject.GetData<BackgroundObject>().tags.Remove(tag);
-                                        break;
-                                    }
-                            }
-                        }
-                    });
-
-                    EditorHelper.SetComplexity(labels, Complexity.Advanced);
-                    EditorHelper.SetComplexity(multiNameSet, Complexity.Advanced);
-                }
-
-                // Timeline Object Index (done)
-                {
-                    var labels1 = GenerateLabels(parent, 32f, "Set Group Index");
-
-                    var inputFieldStorage = GenerateInputField(parent, "indexer", "1", "Enter index...", true, true, true);
-                    inputFieldStorage.GetComponent<HorizontalLayoutGroup>().spacing = 0f;
-                    inputFieldStorage.leftGreaterButton.onClick.NewListener(() => { EditorHelper.SetSelectedObjectIndexes(0); });
-                    inputFieldStorage.leftButton.onClick.NewListener(() =>
-                    {
-                        if (int.TryParse(inputFieldStorage.inputField.text, out int num))
-                            EditorHelper.AddSelectedObjectIndexes(-num);
-                    });
-                    inputFieldStorage.middleButton.onClick.NewListener(() =>
-                    {
-                        if (int.TryParse(inputFieldStorage.inputField.text, out int num))
-                            EditorHelper.SetSelectedObjectIndexes(num);
-                    });
-                    inputFieldStorage.rightButton.onClick.NewListener(() =>
-                    {
-                        if (int.TryParse(inputFieldStorage.inputField.text, out int num))
-                            EditorHelper.AddSelectedObjectIndexes(num);
-                    });
-                    inputFieldStorage.rightGreaterButton.onClick.NewListener(() => EditorHelper.SetSelectedObjectIndexes(EditorTimeline.inst.timelineObjects.Count));
-                    TriggerHelper.AddEventTriggers(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputFieldStorage.inputField));
-
-                    var buttons1 = GenerateButtons(parent, 32f, 0f, new ButtonFunction("Reverse Indexes", EditorHelper.ReverseSelectedObjectIndexes));
-
-                    EditorHelper.SetComplexity(labels1, Complexity.Normal);
-                    EditorHelper.SetComplexity(inputFieldStorage.leftGreaterButton.gameObject, Complexity.Advanced);
-                    EditorHelper.SetComplexity(inputFieldStorage.gameObject, Complexity.Normal);
-                    EditorHelper.SetComplexity(buttons1, Complexity.Normal);
-                }
-
-                // Editor Colors (done)
-                {
-                    SetupEditorColorSetter(parent, "base color", "Set Base Color", "Set Base Color...", "Set", inputField =>
-                    {
-                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                        {
-                            var editorData = timelineObject.EditorData;
-                            editorData.color = inputField.text;
-                            timelineObject.Render();
-                        }
-                    });
-                    SetupEditorColorSetter(parent, "select color", "Set Select Color", "Set Select Color...", "Set", inputField =>
-                    {
-                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                        {
-                            var editorData = timelineObject.EditorData;
-                            editorData.selectedColor = inputField.text;
-                            timelineObject.Render();
-                        }
-                    });
-                    SetupEditorColorSetter(parent, "text color", "Set Text Color", "Set Text Color...", "Set", inputField =>
-                    {
-                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                        {
-                            var editorData = timelineObject.EditorData;
-                            editorData.textColor = inputField.text;
-                            timelineObject.Render();
-                        }
-                    });
-                    SetupEditorColorSetter(parent, "mark color", "Set Mark Color", "Set Mark Color...", "Set", inputField =>
-                    {
-                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                        {
-                            var editorData = timelineObject.EditorData;
-                            editorData.markColor = inputField.text;
-                            timelineObject.Render();
-                        }
-                    });
-                }
-
-                GeneratePad(parent);
-                GenerateLabels(parent, 32f, new Label("- Actions -", 22, FontStyle.Bold, TextAnchor.MiddleCenter));
-
-                // Clear data (donE)
-                {
-                    var labels = GenerateLabels(parent, 32f, "Clear data from objects");
-
-                    var buttons1 = GenerateButtons(parent, 32f, 8f,
-                         new ButtonFunction("Clear tags", () =>
-                         {
-                             RTEditor.inst.ShowWarningPopup("You are about to clear tags from all selected objects, this <b>CANNOT</b> be undone!", () =>
-                             {
-                                 foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                                 {
-                                     if (timelineObject.isBeatmapObject)
-                                         timelineObject.GetData<BeatmapObject>().tags.Clear();
-                                     if (timelineObject.isBackgroundObject)
-                                         timelineObject.GetData<BackgroundObject>().tags.Clear();
-                                 }
-                             });
-                         }, buttonThemeGroup: ThemeGroup.Delete, labelThemeGroup: ThemeGroup.Delete_Text) { FontSize = 16 },
-                         new ButtonFunction("Clear anims", () =>
-                         {
-                             RTEditor.inst.ShowWarningPopup("You are about to clear animations from all selected objects, this <b>CANNOT</b> be undone!", () =>
-                             {
-                                 foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
-                                 {
-                                     var bm = timelineObject.GetData<BeatmapObject>();
-                                     foreach (var tkf in bm.TimelineKeyframes)
-                                         CoreHelper.Delete(tkf.GameObject);
-                                     bm.TimelineKeyframes.Clear();
-                                     for (int i = 0; i < bm.events.Count; i++)
-                                     {
-                                         bm.events[i].Sort((a, b) => a.time.CompareTo(b.time));
-                                         var firstKF = bm.events[i][0].Copy(false);
-                                         bm.events[i].Clear();
-                                         bm.events[i].Add(firstKF);
-                                     }
-                                     if (EditorTimeline.inst.SelectedObjects.Count == 1)
-                                     {
-                                         ObjectEditor.inst.Dialog.Timeline.ResizeKeyframeTimeline(bm);
-                                         ObjectEditor.inst.Dialog.Timeline.RenderKeyframes(bm);
-                                     }
-
-                                     RTLevel.Current?.UpdateObject(bm, ObjectContext.KEYFRAMES);
-                                     EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                                 }
-                             });
-                         }, buttonThemeGroup: ThemeGroup.Delete, labelThemeGroup: ThemeGroup.Delete_Text) { FontSize = 16 },
-                         new ButtonFunction("Clear modifiers", () =>
-                         {
-                             RTEditor.inst.ShowWarningPopup("You are about to clear modifiers from all selected objects, this <b>CANNOT</b> be undone!", () =>
-                             {
-                                 foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                                 {
-                                     if (timelineObject.isBeatmapObject)
-                                     {
-                                         var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                                         beatmapObject.modifiers.Clear();
-                                         RTLevel.Current?.UpdateObject(beatmapObject, recalculate: false);
-                                     }
-                                     if (timelineObject.isBackgroundObject)
-                                     {
-                                         var backgroundObject = timelineObject.GetData<BackgroundObject>();
-                                         backgroundObject.modifiers.Clear();
-                                         RTLevel.Current?.UpdateBackgroundObject(backgroundObject, recalculate: false);
-                                     }
-                                 }
-                                 RTLevel.Current?.RecalculateObjectStates();
-                             });
-                         }, buttonThemeGroup: ThemeGroup.Delete, labelThemeGroup: ThemeGroup.Delete_Text) { FontSize = 16 });
-
-                    EditorHelper.SetComplexity(labels, Complexity.Normal);
-                    EditorHelper.SetComplexity(buttons1, Complexity.Normal);
-                }
-
-                // Optimization (done)
-                {
-                    var labels = GenerateLabels(parent, 32f, "Auto optimize objects");
-                    var buttons1 = GenerateButtons(parent, 32f, 0f, new ButtonFunction("Optimize", () =>
-                    {
-                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
-                        {
-                            var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                            beatmapObject.SetAutokillToScale(GameData.Current.beatmapObjects);
-                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
-                            timelineObject.RenderPosLength();
-                        }
-                    }));
-
-                    EditorHelper.SetComplexity(labels, Complexity.Advanced);
-                    EditorHelper.SetComplexity(buttons1, Complexity.Advanced);
-                }
-
-                // Song Time Autokill (done)
-                {
-                    var labels = GenerateLabels(parent, 32f, "Set autokill to current time");
-                    var buttons1 = GenerateButtons(parent, 32f, 0f, new ButtonFunction("Set", () =>
-                    {
-                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                        {
-                            if (timelineObject.isBeatmapObject)
-                            {
-                                var beatmapObject = timelineObject.GetData<BeatmapObject>();
-
-                                float num = 0f;
-
-                                if (beatmapObject.autoKillType == AutoKillType.SongTime)
-                                    num = AudioManager.inst.CurrentAudioSource.time;
-                                else num = AudioManager.inst.CurrentAudioSource.time - beatmapObject.StartTime;
-
-                                if (num < 0f)
-                                    num = 0f;
-
-                                beatmapObject.autoKillOffset = num;
-
-                                EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
-                            }
-                            if (timelineObject.isBackgroundObject)
-                            {
-                                var backgroundObject = timelineObject.GetData<BackgroundObject>();
-
-                                float num = 0f;
-
-                                if (backgroundObject.autoKillType == AutoKillType.SongTime)
-                                    num = AudioManager.inst.CurrentAudioSource.time;
-                                else num = AudioManager.inst.CurrentAudioSource.time - backgroundObject.StartTime;
-
-                                if (num < 0f)
-                                    num = 0f;
-
-                                backgroundObject.autoKillOffset = num;
-
-                                EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                                RTLevel.Current?.UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.AUTOKILL);
-                            }
-                        }
-                    }));
-
-                    EditorHelper.SetComplexity(labels, Complexity.Normal);
-                    EditorHelper.SetComplexity(buttons1, Complexity.Normal);
-                }
-
-                GeneratePad(parent);
-                GenerateLabels(parent, 32f, new Label("- Object Properties -", 22, FontStyle.Bold, TextAnchor.MiddleCenter));
-
-                // Autokill Type (done)
-                {
-                    var labels = GenerateLabels(parent, 32f, "Set Autokill Type");
-
-                    var buttons1 = GenerateButtons(parent, 48f, 8f,
-                        new ButtonFunction("No Autokill", () =>
-                        {
-                            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                            {
-                                if (timelineObject.isBeatmapObject)
+                                }), labelAlignment: TextAnchor.MiddleCenter));
+                                
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                new LabelElement("Order Matters State")
                                 {
-
-                                    var bm = timelineObject.GetData<BeatmapObject>();
-                                    bm.autoKillType = AutoKillType.NoAutokill;
-
-                                    EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                                    RTLevel.Current?.UpdateObject(bm, ObjectContext.AUTOKILL);
-                                }
-                                if (timelineObject.isBackgroundObject)
+                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                },
+                                ButtonElement.Label1Button("On", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
                                 {
-                                    var backgroundObject = timelineObject.GetData<BackgroundObject>();
-                                    backgroundObject.autoKillType = AutoKillType.NoAutokill;
+                                    if (!timelineObject.TryGetData(out IModifyable modifyable))
+                                        return;
+                                    modifyable.OrderModifiers = true;
+                                    switch (timelineObject.TimelineReference)
+                                    {
+                                        case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                                                RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.MODIFIERS);
+                                                break;
+                                            }
+                                        case TimelineObject.TimelineReferenceType.PrefabObject: {
+                                                RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), BackgroundObjectContext.MODIFIERS);
+                                                break;
+                                            }
+                                        case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                                                RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.MODIFIERS);
+                                                break;
+                                            }
+                                    }
+                                }), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button("Off", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                {
+                                    if (!timelineObject.TryGetData(out IModifyable modifyable))
+                                        return;
+                                    modifyable.OrderModifiers = false;
+                                    switch (timelineObject.TimelineReference)
+                                    {
+                                        case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                                                RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.MODIFIERS);
+                                                break;
+                                            }
+                                        case TimelineObject.TimelineReferenceType.PrefabObject: {
+                                                RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), BackgroundObjectContext.MODIFIERS);
+                                                break;
+                                            }
+                                        case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                                                RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.MODIFIERS);
+                                                break;
+                                            }
+                                    }
+                                }), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button("Swap", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                {
+                                    if (!timelineObject.TryGetData(out IModifyable modifyable))
+                                        return;
+                                    modifyable.OrderModifiers = !modifyable.OrderModifiers;
+                                    switch (timelineObject.TimelineReference)
+                                    {
+                                        case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                                                RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.MODIFIERS);
+                                                break;
+                                            }
+                                        case TimelineObject.TimelineReferenceType.PrefabObject: {
+                                                RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), BackgroundObjectContext.MODIFIERS);
+                                                break;
+                                            }
+                                        case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                                                RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.MODIFIERS);
+                                                break;
+                                            }
+                                    }
+                                }), labelAlignment: TextAnchor.MiddleCenter));
 
-                                    EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                                    RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.AUTOKILL);
-                                }
-                            }
-                        }),
-                        new ButtonFunction("Last KF", () =>
-                        {
-                            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+                            new SpacerElement().Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                            ButtonElement.Label1Button("Paste Modifiers", () =>
                             {
-                                if (timelineObject.isBeatmapObject)
+                                bool pasted = false;
+                                MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
                                 {
+                                    if (!timelineObject.TryGetData(out IModifyable modifyable))
+                                        return;
 
-                                    var bm = timelineObject.GetData<BeatmapObject>();
-                                    bm.autoKillType = AutoKillType.LastKeyframe;
+                                    var copiedModifiers = ModifiersEditor.inst.GetCopiedModifiers(modifyable.ReferenceType);
+                                    if (copiedModifiers == null || copiedModifiers.IsEmpty())
+                                        return;
 
-                                    EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                                    RTLevel.Current?.UpdateObject(bm, ObjectContext.AUTOKILL);
-                                }
-                                if (timelineObject.isBackgroundObject)
-                                {
-                                    var backgroundObject = timelineObject.GetData<BackgroundObject>();
-                                    backgroundObject.autoKillType = AutoKillType.LastKeyframe;
+                                    modifyable.Modifiers.AddRange(copiedModifiers.Select(x => x.Copy()));
+                                    pasted = true;
 
-                                    EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                                    RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.AUTOKILL);
-                                }
-                            }
-                        }),
-                        new ButtonFunction("Last KF Offset", () =>
-                        {
-                            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
+                                    switch (timelineObject.TimelineReference)
+                                    {
+                                        case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                                                RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.MODIFIERS);
+                                                break;
+                                            }
+                                        case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                                                RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.MODIFIERS);
+                                                break;
+                                            }
+                                        case TimelineObject.TimelineReferenceType.PrefabObject: {
+                                                RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.MODIFIERS);
+                                                break;
+                                            }
+                                    }
+                                });
+
+                                if (pasted)
+                                    EditorManager.inst.DisplayNotification("Pasted Modifier!", 1.5f, EditorManager.NotificationType.Success);
+                                else
+                                    EditorManager.inst.DisplayNotification($"No copied modifiers yet.", 3f, EditorManager.NotificationType.Error);
+                            }, buttonThemeGroup: ThemeGroup.Paste, graphicThemeGroup: ThemeGroup.Paste_Text).Init(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced).Rect(RectValues.Default.SizeDelta(0f, 32f)));
+
+                            new SpacerElement().Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                            new LabelsElement(new LabelElement("Clear") { fontSize = 22, fontStyle = FontStyle.Bold }).Init(EditorElement.InitSettings.Default.Parent(parent));
+                            ButtonElement.Label1Button("Clear Modifiers", () => RTEditor.inst.ShowWarningPopup("You are about to clear modifiers from all selected objects, this <b>CANNOT</b> be undone!", () =>
                             {
-                                if (timelineObject.isBeatmapObject)
+                                MultiObjectEditor.inst.ForEachModifyable(modifyable =>
                                 {
-
-                                    var bm = timelineObject.GetData<BeatmapObject>();
-                                    bm.autoKillType = AutoKillType.LastKeyframeOffset;
-
-                                    EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                                    RTLevel.Current?.UpdateObject(bm, ObjectContext.AUTOKILL);
-                                }
-                                if (timelineObject.isBackgroundObject)
-                                {
-                                    var backgroundObject = timelineObject.GetData<BackgroundObject>();
-                                    backgroundObject.autoKillType = AutoKillType.LastKeyframeOffset;
-
-                                    EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                                    RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.AUTOKILL);
-                                }
-                            }
-                        }),
-                        new ButtonFunction("Fixed Time", () =>
-                        {
-                            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+                                    modifyable.Modifiers.Clear();
+                                    if (modifyable is BeatmapObject beatmapObject)
+                                        RTLevel.Current?.UpdateObject(beatmapObject, recalculate: false);
+                                    if (modifyable is BackgroundObject backgroundObject)
+                                        RTLevel.Current?.UpdateBackgroundObject(backgroundObject, recalculate: false);
+                                });
+                                RTLevel.Current?.RecalculateObjectStates();
+                            }), buttonThemeGroup: ThemeGroup.Delete, graphicThemeGroup: ThemeGroup.Delete_Text).Init(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced).Rect(RectValues.Default.SizeDelta(0f, 32f)));
+                            ButtonElement.Label1Button("Clear Tags", () => RTEditor.inst.ShowWarningPopup("You are about to clear tags from all selected objects, this <b>CANNOT</b> be undone!", () =>
                             {
-                                if (timelineObject.isBeatmapObject)
-                                {
+                                MultiObjectEditor.inst.ForEachModifyable(modifyable => modifyable.Tags.Clear());
+                            }), buttonThemeGroup: ThemeGroup.Delete, graphicThemeGroup: ThemeGroup.Delete_Text).Init(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced).Rect(RectValues.Default.SizeDelta(0f, 32f)));
 
-                                    var bm = timelineObject.GetData<BeatmapObject>();
-                                    bm.autoKillType = AutoKillType.FixedTime;
-
-                                    EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                                    RTLevel.Current?.UpdateObject(bm, ObjectContext.AUTOKILL);
-                                }
-                                if (timelineObject.isBackgroundObject)
-                                {
-                                    var backgroundObject = timelineObject.GetData<BackgroundObject>();
-                                    backgroundObject.autoKillType = AutoKillType.FixedTime;
-
-                                    EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                                    RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.AUTOKILL);
-                                }
-                            }
-                        }),
-                        new ButtonFunction("Song Time", () =>
-                        {
-                            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                            {
-                                if (timelineObject.isBeatmapObject)
-                                {
-                                    var bm = timelineObject.GetData<BeatmapObject>();
-                                    bm.autoKillType = AutoKillType.SongTime;
-
-                                    EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                                    RTLevel.Current?.UpdateObject(bm, ObjectContext.AUTOKILL);
-                                }
-                                if (timelineObject.isBackgroundObject)
-                                {
-                                    var backgroundObject = timelineObject.GetData<BackgroundObject>();
-                                    backgroundObject.autoKillType = AutoKillType.SongTime;
-
-                                    EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                                    RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.AUTOKILL);
-                                }
-                            }
-                        }));
-
-                    EditorHelper.SetComplexity(labels, Complexity.Normal);
-                    EditorHelper.SetComplexity(buttons1, Complexity.Normal);
-                }
-
-                // Set Parent (done)
-                {
-                    GenerateLabels(parent, 32f, "Set Parent");
-                    GenerateButtons(parent, 32f, 8f,
-                        new ButtonFunction("Search list", ObjectEditor.inst.ShowParentSearch),
-                        new ButtonFunction("Picker", () =>
-                        {
-                            RTEditor.inst.parentPickerEnabled = true;
-                            RTEditor.inst.selectingMultiple = true;
-                        }),
-                        new ButtonFunction("Remove", () =>
-                        {
-                            RTEditor.inst.ShowWarningPopup("Are you sure you want to remove parents from all selected objects? This <b>CANNOT</b> be undone!", () =>
-                            {
-                                foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
-                                {
-                                    beatmapObject.Parent = string.Empty;
-                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARENT_CHAIN);
-                                }
-
-                                RTEditor.inst.HideWarningPopup();
-                            }, RTEditor.inst.HideWarningPopup);
-                        }, buttonThemeGroup: ThemeGroup.Delete, labelThemeGroup: ThemeGroup.Delete_Text));
-                }
-
-                // Parent Desync (done)
-                {
-                    var labels = GenerateLabels(parent, 32f, "Modify parent desync");
-
-                    var buttons1 = GenerateButtons(parent, 32f, 8f,
-                        new ButtonFunction("On", () =>
-                        {
-                            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.FindAll(x => x.isBeatmapObject))
-                            {
-                                timelineObject.GetData<BeatmapObject>().desync = true;
-
-                                EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                            }
-                        }, buttonThemeGroup: ThemeGroup.Add, labelThemeGroup: ThemeGroup.Add_Text),
-                        new ButtonFunction("Off", () =>
-                        {
-                            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.FindAll(x => x.isBeatmapObject))
-                            {
-                                timelineObject.GetData<BeatmapObject>().desync = false;
-
-                                EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                            }
-                        }, buttonThemeGroup: ThemeGroup.Delete, labelThemeGroup: ThemeGroup.Delete_Text));
-                    var buttons2 = GenerateButtons(parent, 32f, 0f, new ButtonFunction("Swap", () =>
-                    {
-                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.FindAll(x => x.isBeatmapObject))
-                        {
-                            timelineObject.GetData<BeatmapObject>().desync = !timelineObject.GetData<BeatmapObject>().desync;
-
-                            EditorTimeline.inst.RenderTimelineObject(timelineObject);
+                            break;
                         }
-                    }));
+                    case Tab.Keyframes: {
+                            // todo: add creating keyframes for other types
+                                
+                            #region Assign Colors
 
-                    EditorHelper.SetComplexity(labels, Complexity.Advanced);
-                    EditorHelper.SetComplexity(buttons1, Complexity.Advanced);
-                    EditorHelper.SetComplexity(buttons2, Complexity.Advanced);
-                }
+                            var checkmarkRect = RectValues.Default.SizeDelta(32f, 32f);
+                            new LabelsElement(new LabelElement("Assign Colors") { fontSize = 22, fontStyle = FontStyle.Bold }).Init(EditorElement.InitSettings.Default.Parent(parent));
 
-                // Force Snap BPM
-                {
-                    var labels = GenerateLabels(parent, 32f, "Force Snap Start Time to BPM");
-                    var buttons1 = GenerateButtons(parent, 32f, 8f,
-                        new ButtonFunction("Snap", () =>
-                        {
-                            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+                            #region Primary
+
+                            new LabelsElement("Primary Color").Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                            var colorLayout = Creator.NewUIObject("color layout", parent);
+                            colorLayout.transform.AsRT().sizeDelta = new Vector2(390f, 32f);
+                            var colorLayoutGLG = colorLayout.AddComponent<GridLayoutGroup>();
+                            colorLayoutGLG.spacing = new Vector2(4f, 4f);
+                            colorLayoutGLG.cellSize = new Vector2(32f, 32f);
+
+                            var disable = EditorPrefabHolder.Instance.Function2Button.Duplicate(colorLayout.transform, "disable color");
+                            var disableX = EditorManager.inst.colorGUI.transform.Find("Image").gameObject.Duplicate(disable.transform, "x");
+                            var disableXImage = disableX.GetComponent<Image>();
+                            disableXImage.sprite = EditorSprites.CloseSprite;
+                            checkmarkRect.AssignToRectTransform(disableXImage.rectTransform);
+                            var disableButtonStorage = disable.GetComponent<FunctionButtonStorage>();
+                            disableButtonStorage.OnClick.NewListener(() =>
                             {
-                                timelineObject.Time = RTEditor.SnapToBPM(timelineObject.Time);
-
-                                switch (timelineObject.TimelineReference)
-                                {
-                                    case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                                            RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.START_TIME);
-                                            break;
-                                        }
-                                    case TimelineObject.TimelineReferenceType.PrefabObject: {
-                                            RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.TIME);
-                                            break;
-                                        }
-                                    case TimelineObject.TimelineReferenceType.BackgroundObject: {
-                                            RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.START_TIME);
-                                            break;
-                                        }
-                                }
-
-                                timelineObject.RenderPosLength();
-                            }
-                        }),
-                        new ButtonFunction("Snap Offset", () =>
-                        {
-                            var time = EditorTimeline.inst.SelectedObjects.Min(x => x.Time);
-                            var snappedTime = RTEditor.SnapToBPM(time);
-                            var distance = -time + snappedTime;
-                            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                            {
-                                timelineObject.Time += distance;
-
-                                switch (timelineObject.TimelineReference)
-                                {
-                                    case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                                            RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.START_TIME);
-                                            break;
-                                        }
-                                    case TimelineObject.TimelineReferenceType.PrefabObject: {
-                                            RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.TIME);
-                                            break;
-                                        }
-                                    case TimelineObject.TimelineReferenceType.BackgroundObject: {
-                                            RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.START_TIME);
-                                            break;
-                                        }
-                                }
-
-                                timelineObject.RenderPosLength();
-                            }
-                        }));
-
-                    EditorHelper.SetComplexity(labels, Complexity.Normal);
-                    EditorHelper.SetComplexity(buttons1, Complexity.Normal);
-                }
-
-                // Object Type
-                {
-                    GenerateLabels(parent, 32f, "Set Object Type");
-
-                    var buttons1 = GenerateButtons(parent, 32f, 8f,
-                        new ButtonFunction("Sub", () =>
-                        {
-                            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
-                            {
-                                var bm = timelineObject.GetData<BeatmapObject>();
-
-                                int objectType = (int)bm.objectType;
-
-                                objectType--;
-                                if (objectType < 0)
-                                    objectType = 4;
-
-                                bm.objectType = (BeatmapObject.ObjectType)objectType;
-
-                                EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                                RTLevel.Current?.UpdateObject(bm, ObjectContext.OBJECT_TYPE);
-                            }
-                        }),
-                        new ButtonFunction("Add", () =>
-                        {
-                            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
-                            {
-                                var bm = timelineObject.GetData<BeatmapObject>();
-
-                                int objectType = (int)bm.objectType;
-
-                                objectType++;
-                                if (objectType > 4)
-                                    objectType = 0;
-
-                                bm.objectType = (BeatmapObject.ObjectType)objectType;
-
-
-                                EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                                RTLevel.Current?.UpdateObject(bm, ObjectContext.OBJECT_TYPE);
-                            }
-                        }));
-
-                    GenerateButtons(parent, 48f, 8f,
-                        new ButtonFunction(nameof(BeatmapObject.ObjectType.Normal), () =>
-                        {
-                            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
-                            {
-                                var bm = timelineObject.GetData<BeatmapObject>();
-                                bm.objectType = BeatmapObject.ObjectType.Normal;
-
-                                EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                                RTLevel.Current?.UpdateObject(bm, ObjectContext.OBJECT_TYPE);
-                            }
-                        }),
-                        new ButtonFunction(nameof(BeatmapObject.ObjectType.Helper), () =>
-                        {
-                            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
-                            {
-                                var bm = timelineObject.GetData<BeatmapObject>();
-                                bm.objectType = BeatmapObject.ObjectType.Helper;
-
-                                EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                                RTLevel.Current?.UpdateObject(bm, ObjectContext.OBJECT_TYPE);
-                            }
-                        }),
-                        new ButtonFunction("Deco", () =>
-                        {
-                            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
-                            {
-                                var bm = timelineObject.GetData<BeatmapObject>();
-                                bm.objectType = BeatmapObject.ObjectType.Decoration;
-
-                                EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                                RTLevel.Current?.UpdateObject(bm, ObjectContext.OBJECT_TYPE);
-                            }
-                        }),
-                        new ButtonFunction(nameof(BeatmapObject.ObjectType.Empty), () =>
-                        {
-                            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
-                            {
-                                var bm = timelineObject.GetData<BeatmapObject>();
-                                bm.objectType = BeatmapObject.ObjectType.Empty;
-
-                                EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                                RTLevel.Current?.UpdateObject(bm, ObjectContext.OBJECT_TYPE);
-                            }
-                        }),
-                        new ButtonFunction(nameof(BeatmapObject.ObjectType.Solid), () =>
-                        {
-                            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
-                            {
-                                var bm = timelineObject.GetData<BeatmapObject>();
-                                bm.objectType = BeatmapObject.ObjectType.Solid;
-
-                                EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                                RTLevel.Current?.UpdateObject(bm, ObjectContext.OBJECT_TYPE);
-                            }
-                        }));
-
-                    EditorHelper.SetComplexity(buttons1, Complexity.Advanced);
-                }
-            
-                // Color Blend Mode
-                {
-                    var labels = GenerateLabels(parent, 32f, "Set Color Blend Mode");
-
-                    var buttons1 = GenerateButtons(parent, 32f, 8f,
-                        new ButtonFunction("Sub", () =>
-                        {
-                            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
-                            {
-                                var bm = timelineObject.GetData<BeatmapObject>();
-
-                                int colorBlendMode = (int)bm.colorBlendMode;
-
-                                colorBlendMode--;
-                                if (colorBlendMode < 0)
-                                    colorBlendMode = 2;
-
-                                bm.colorBlendMode = (ColorBlendMode)colorBlendMode;
-
-                                EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                                RTLevel.Current?.UpdateObject(bm, ObjectContext.RENDERING);
-                            }
-                        }),
-                        new ButtonFunction("Add", () =>
-                        {
-                            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
-                            {
-                                var bm = timelineObject.GetData<BeatmapObject>();
-                                int colorBlendMode = (int)bm.colorBlendMode;
-
-                                colorBlendMode--;
-                                if (colorBlendMode > 2)
-                                    colorBlendMode = 0;
-
-                                bm.colorBlendMode = (ColorBlendMode)colorBlendMode;
-
-                                EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                                RTLevel.Current?.UpdateObject(bm, ObjectContext.RENDERING);
-                            }
-                        }));
-
-                    var buttons2 = GenerateButtons(parent, 48f, 8f,
-                        new ButtonFunction("Normal", () =>
-                        {
-                            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
-                            {
-                                var bm = timelineObject.GetData<BeatmapObject>();
-                                bm.colorBlendMode = ColorBlendMode.Normal;
-
-                                EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                                RTLevel.Current?.UpdateObject(bm, ObjectContext.RENDERING);
-                            }
-                        }),
-                        new ButtonFunction("Multiply", () =>
-                        {
-                            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
-                            {
-                                var bm = timelineObject.GetData<BeatmapObject>();
-                                bm.colorBlendMode = ColorBlendMode.Multiply;
-
-                                EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                                RTLevel.Current?.UpdateObject(bm, ObjectContext.RENDERING);
-                            }
-                        }),
-                        new ButtonFunction("Additive", () =>
-                        {
-                            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
-                            {
-                                var bm = timelineObject.GetData<BeatmapObject>();
-                                bm.colorBlendMode = ColorBlendMode.Additive;
-
-                                EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                                RTLevel.Current?.UpdateObject(bm, ObjectContext.RENDERING);
-                            }
-                        }));
-
-                    EditorHelper.SetComplexity(labels, Complexity.Advanced);
-                    EditorHelper.SetComplexity(buttons1, Complexity.Advanced);
-                    EditorHelper.SetComplexity(buttons2, Complexity.Advanced);
-                }
-
-                // Gradient Type
-                {
-                    var labels = GenerateLabels(parent, 32f, "Set Gradient Type");
-
-                    var buttons1 = GenerateButtons(parent, 32f, 8f,
-                        new ButtonFunction("Sub", () =>
-                        {
-                            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
-                            {
-                                var bm = timelineObject.GetData<BeatmapObject>();
-
-                                int gradientType = (int)bm.gradientType;
-
-                                gradientType--;
-                                if (gradientType < 0)
-                                    gradientType = 4;
-
-                                bm.gradientType = (GradientType)gradientType;
-
-                                EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                                RTLevel.Current?.UpdateObject(bm, ObjectContext.RENDERING);
-                            }
-                        }),
-                        new ButtonFunction("Add", () =>
-                        {
-                            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
-                            {
-                                var bm = timelineObject.GetData<BeatmapObject>();
-                                int gradientType = (int)bm.gradientType;
-
-                                gradientType--;
-                                if (gradientType > 4)
-                                    gradientType = 0;
-
-                                bm.gradientType = (GradientType)gradientType;
-
-                                EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                                RTLevel.Current?.UpdateObject(bm, ObjectContext.RENDERING);
-                            }
-                        }));
-
-                    var buttons2 = GenerateButtons(parent, 48f, 8f,
-                        new ButtonFunction("None", () =>
-                        {
-                            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
-                            {
-                                var bm = timelineObject.GetData<BeatmapObject>();
-                                bm.gradientType = GradientType.Normal;
-
-                                EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                                RTLevel.Current?.UpdateObject(bm, ObjectContext.RENDERING);
-                            }
-                        }),
-                        new ButtonFunction("Linear Right", () =>
-                        {
-                            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
-                            {
-                                var bm = timelineObject.GetData<BeatmapObject>();
-                                bm.gradientType = GradientType.RightLinear;
-
-                                EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                                RTLevel.Current?.UpdateObject(bm, ObjectContext.RENDERING);
-                            }
-                        }),
-                        new ButtonFunction("Linear Left", () =>
-                        {
-                            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
-                            {
-                                var bm = timelineObject.GetData<BeatmapObject>();
-                                bm.gradientType = GradientType.LeftLinear;
-
-                                EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                                RTLevel.Current?.UpdateObject(bm, ObjectContext.RENDERING);
-                            }
-                        }),
-                        new ButtonFunction("Radial In", () =>
-                        {
-                            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
-                            {
-                                var bm = timelineObject.GetData<BeatmapObject>();
-                                bm.gradientType = GradientType.OutInRadial;
-
-                                EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                                RTLevel.Current?.UpdateObject(bm, ObjectContext.RENDERING);
-                            }
-                        }),
-                        new ButtonFunction("Radial Out", () =>
-                        {
-                            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
-                            {
-                                var bm = timelineObject.GetData<BeatmapObject>();
-                                bm.gradientType = GradientType.InOutRadial;
-
-                                EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                                RTLevel.Current?.UpdateObject(bm, ObjectContext.RENDERING);
-                            }
-                        }));
-
-                    EditorHelper.SetComplexity(labels, Complexity.Normal);
-                    EditorHelper.SetComplexity(buttons1, Complexity.Normal);
-                    EditorHelper.SetComplexity(buttons2, Complexity.Normal);
-                }
-
-                // Shape
-                {
-                    GenerateLabels(parent, 32f, "Shape");
-                    RenderShape();
-                }
-
-                // Store Images
-                {
-                    var labels = GenerateLabels(parent, 32f, "Image");
-
-                    var buttons1 = GenerateButtons(parent, 32f, 8f,
-                        new ButtonFunction("Store", () =>
-                        {
-                            foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
-                            {
-                                if (beatmapObject.ShapeType != ShapeType.Image)
-                                    continue;
-
-                                if (GameData.Current.assets.sprites.Has(x => x.name == beatmapObject.text))
-                                    continue;
-
-                                var regex = new Regex(@"img\((.*?)\)");
-                                var match = regex.Match(beatmapObject.text);
-
-                                var path = match.Success ? RTFile.CombinePaths(RTFile.BasePath, match.Groups[1].ToString()) : RTFile.CombinePaths(RTFile.BasePath, beatmapObject.text);
-
-                                ObjectEditor.inst.StoreImage(beatmapObject, path);
-                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.IMAGE);
-                            }
-                        }),
-                        new ButtonFunction("Clear", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to clear the images of all selected objects?", () =>
-                        {
-                            foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
-                            {
-                                if (beatmapObject.ShapeType != ShapeType.Image)
-                                    continue;
-
-                                beatmapObject.text = string.Empty;
-                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.IMAGE);
-                            }
-                        }), buttonThemeGroup: ThemeGroup.Delete, labelThemeGroup: ThemeGroup.Delete_Text));
-
-                    EditorHelper.SetComplexity(labels, Complexity.Advanced);
-                }
-
-                // Render Type
-                {
-                    var labels = GenerateLabels(parent, 32f, "Render Type");
-
-                    var buttons1 = GenerateButtons(parent, 32f, 8f,
-                        new ButtonFunction("Background", () =>
-                        {
-                            foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
-                            {
-                                beatmapObject.renderLayerType = BeatmapObject.RenderLayerType.Background;
-                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.RENDERING);
-                            }
-                        }),
-                        new ButtonFunction("Foreground", () =>
-                        {
-                            foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
-                            {
-                                beatmapObject.renderLayerType = BeatmapObject.RenderLayerType.Foreground;
-                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.RENDERING);
-                            }
-                        }),
-                        new ButtonFunction("UI", () =>
-                        {
-                            foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
-                            {
-                                beatmapObject.renderLayerType = BeatmapObject.RenderLayerType.UI;
-                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.RENDERING);
-                            }
-                        }));
-
-                    EditorHelper.SetComplexity(labels, Complexity.Advanced);
-                    EditorHelper.SetComplexity(buttons1, Complexity.Advanced);
-                }
-
-                GeneratePad(parent);
-                GenerateLabels(parent, 32f, new Label("- Prefab -", 22, FontStyle.Bold, TextAnchor.MiddleCenter));
-
-                // Assign Objects to Prefab
-                {
-                    var labels = GenerateLabels(parent, 32f, "Assign Objects to Prefab");
-                    var buttons1 = GenerateButtons(parent, 32f, 8f,
-                        new ButtonFunction("Assign", () =>
-                        {
-                            RTEditor.inst.selectingMultiple = true;
-                            RTEditor.inst.prefabPickerEnabled = true;
-                        }),
-                        new ButtonFunction("Remove", () =>
-                        {
-                            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
-                            {
-                                timelineObject.GetData<BeatmapObject>().RemovePrefabReference();
-                                EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                            }
-                        }, buttonThemeGroup: ThemeGroup.Delete, labelThemeGroup: ThemeGroup.Delete_Text));
-
-                    EditorHelper.SetComplexity(labels, Complexity.Normal);
-                    EditorHelper.SetComplexity(buttons1, Complexity.Normal);
-                }
-            
-                // New Prefab Instance
-                {
-                    var labels = GenerateLabels(parent, 32f, "New Prefab Instance");
-                    var buttons1 = GenerateButtons(parent, 32f, 8f, ThemeGroup.Add, ThemeGroup.Add_Text,
-                        new ButtonFunction("New Instance", () => RTEditor.inst.ShowWarningPopup("This will change the instance ID of all selected beatmap objects, assuming they all have the same ID. Are you sure you want to do this?", () =>
-                        {
-                            var selected = EditorTimeline.inst.timelineObjects.Where(x => x.Selected).ToList();
-                            if (selected.Count < 0)
-                                return;
-
-                            var firstSelected = selected.Find(x => !x.isPrefabObject);
-
-                            var first = !firstSelected ? string.Empty : firstSelected.TimelineReference switch
-                            {
-                                TimelineObject.TimelineReferenceType.BeatmapObject => firstSelected.GetData<BeatmapObject>().prefabInstanceID,
-                                TimelineObject.TimelineReferenceType.BackgroundObject => firstSelected.GetData<BackgroundObject>().prefabInstanceID,
-                                _ => string.Empty,
-                            };
-
-                            // validate that all selected timeline objects are beatmap objects and have the same prefab instance ID.
-                            if (selected.Any(x => x.isPrefabObject || x.isBeatmapObject && x.GetData<BeatmapObject>().prefabInstanceID != first || x.isBackgroundObject && x.GetData<BackgroundObject>().prefabInstanceID != first))
-                                return;
-
-                            var prefabInstanceID = PAObjectBase.GetStringID();
-
-                            selected.ForLoop(timelineObject =>
-                            {
-                                if (timelineObject.TryGetPrefabable(out IPrefabable prefabable))
-                                    prefabable.PrefabInstanceID = prefabInstanceID;
+                                disableX.gameObject.SetActive(true);
+                                currentMultiColorSelection = -1;
+                                UpdateMultiColorButtons();
                             });
-                            EditorManager.inst.DisplayNotification("Successfully created a new instance ID.", 2f, EditorManager.NotificationType.Success);
-                        })));
+                            CoreHelper.Delete(disableButtonStorage.label);
+                            EditorThemeManager.ApplyGraphic(disableXImage, ThemeGroup.Function_2_Text);
+                            EditorThemeManager.ApplySelectable(disableButtonStorage.button, ThemeGroup.Function_2);
 
-                    EditorHelper.SetComplexity(labels, Complexity.Normal);
-                    EditorHelper.SetComplexity(buttons1, Complexity.Normal);
-                }
-
-                // Collapse
-                {
-                    var labels = GenerateLabels(parent, 32f, "Collapse Prefab");
-                    var buttons1 = GenerateButtons(parent, 32f, 8f,
-                        new ButtonFunction("Collapse", () => RTPrefabEditor.inst.CollapseCurrentPrefab()),
-                        new ButtonFunction("Collapse New", () => RTPrefabEditor.inst.CollapseCurrentPrefab(true))
-                        );
-
-                    EditorHelper.SetComplexity(labels, Complexity.Normal);
-                    EditorHelper.SetComplexity(buttons1, Complexity.Normal);
-                }
-
-                // Move Prefabs
-                {
-                    GenerateLabels(parent, 32f, "Move Prefabs X", "Move Prefabs Y");
-
-                    var movePrefabsParent = Creator.NewUIObject("move prefabs", parent);
-                    movePrefabsParent.transform.AsRT().sizeDelta = new Vector2(390f, 32f);
-                    var multiSyncGLG = movePrefabsParent.AddComponent<GridLayoutGroup>();
-                    multiSyncGLG.spacing = new Vector2(8f, 8f);
-                    multiSyncGLG.cellSize = new Vector2(188f, 32f);
-
-                    var inputFieldStorageX = GenerateInputField(movePrefabsParent.transform, "move prefabs", "1", "Enter value...", true);
-                    inputFieldStorageX.inputField.transform.AsRT().sizeDelta = new Vector2(100f, 32f);
-                    inputFieldStorageX.leftButton.onClick.NewListener(() =>
-                    {
-                        if (!float.TryParse(inputFieldStorageX.inputField.text, out float num))
-                            return;
-                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isPrefabObject))
-                        {
-                            var prefabObject = timelineObject.GetData<PrefabObject>();
-                            prefabObject.events[0].values[0] -= num;
-                            RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
-                        }
-                    });
-                    inputFieldStorageX.middleButton.onClick.NewListener(() =>
-                    {
-                        if (!float.TryParse(inputFieldStorageX.inputField.text, out float num))
-                            return;
-                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isPrefabObject))
-                        {
-                            var prefabObject = timelineObject.GetData<PrefabObject>();
-                            prefabObject.events[0].values[0] = num;
-                            RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
-                        }
-                    });
-                    inputFieldStorageX.rightButton.onClick.NewListener(() =>
-                    {
-                        if (!float.TryParse(inputFieldStorageX.inputField.text, out float num))
-                            return;
-                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isPrefabObject))
-                        {
-                            var prefabObject = timelineObject.GetData<PrefabObject>();
-                            prefabObject.events[0].values[0] += num;
-                            RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
-                        }
-                    });
-                    var inputFieldStorageY = GenerateInputField(movePrefabsParent.transform, "move prefabs", "1", "Enter value...", true);
-                    inputFieldStorageY.inputField.transform.AsRT().sizeDelta = new Vector2(100f, 32f);
-                    inputFieldStorageY.leftButton.onClick.NewListener(() =>
-                    {
-                        if (!float.TryParse(inputFieldStorageY.inputField.text, out float num))
-                            return;
-                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isPrefabObject))
-                        {
-                            var prefabObject = timelineObject.GetData<PrefabObject>();
-                            prefabObject.events[0].values[1] -= num;
-                            RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
-                        }
-                    });
-                    inputFieldStorageY.middleButton.onClick.NewListener(() =>
-                    {
-                        if (!float.TryParse(inputFieldStorageY.inputField.text, out float num))
-                            return;
-                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isPrefabObject))
-                        {
-                            var prefabObject = timelineObject.GetData<PrefabObject>();
-                            prefabObject.events[0].values[1] = num;
-                            RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
-                        }
-                    });
-                    inputFieldStorageY.rightButton.onClick.NewListener(() =>
-                    {
-                        if (!float.TryParse(inputFieldStorageY.inputField.text, out float num))
-                            return;
-                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isPrefabObject))
-                        {
-                            var prefabObject = timelineObject.GetData<PrefabObject>();
-                            prefabObject.events[0].values[1] += num;
-                            RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
-                        }
-                    });
-                    TriggerHelper.AddEventTriggers(inputFieldStorageX.inputField.gameObject, TriggerHelper.ScrollDelta(inputFieldStorageX.inputField));
-                    TriggerHelper.AddEventTriggers(inputFieldStorageY.inputField.gameObject, TriggerHelper.ScrollDelta(inputFieldStorageY.inputField));
-                }
-            
-                // Scale Prefabs
-                {
-                    GenerateLabels(parent, 32f, "Scale Prefabs X", "Scale Prefabs Y");
-
-                    var movePrefabsParent = Creator.NewUIObject("scale prefabs", parent);
-                    movePrefabsParent.transform.AsRT().sizeDelta = new Vector2(390f, 32f);
-                    var multiSyncGLG = movePrefabsParent.AddComponent<GridLayoutGroup>();
-                    multiSyncGLG.spacing = new Vector2(8f, 8f);
-                    multiSyncGLG.cellSize = new Vector2(188f, 32f);
-
-                    var inputFieldStorageX = GenerateInputField(movePrefabsParent.transform, "scale prefabs", "0.1", "Enter value...", true);
-                    inputFieldStorageX.inputField.transform.AsRT().sizeDelta = new Vector2(100f, 32f);
-                    inputFieldStorageX.leftButton.onClick.NewListener(() =>
-                    {
-                        if (!float.TryParse(inputFieldStorageX.inputField.text, out float num))
-                            return;
-                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isPrefabObject))
-                        {
-                            var prefabObject = timelineObject.GetData<PrefabObject>();
-                            prefabObject.events[1].values[0] -= num;
-                            RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
-                        }
-                    });
-                    inputFieldStorageX.middleButton.onClick.NewListener(() =>
-                    {
-                        if (!float.TryParse(inputFieldStorageX.inputField.text, out float num))
-                            return;
-                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isPrefabObject))
-                        {
-                            var prefabObject = timelineObject.GetData<PrefabObject>();
-                            prefabObject.events[1].values[0] = num;
-                            RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
-                        }
-                    });
-                    inputFieldStorageX.rightButton.onClick.NewListener(() =>
-                    {
-                        if (!float.TryParse(inputFieldStorageX.inputField.text, out float num))
-                            return;
-                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isPrefabObject))
-                        {
-                            var prefabObject = timelineObject.GetData<PrefabObject>();
-                            prefabObject.events[1].values[0] += num;
-                            RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
-                        }
-                    });
-                    var inputFieldStorageY = GenerateInputField(movePrefabsParent.transform, "scale prefabs", "0.1", "Enter value...", true);
-                    inputFieldStorageY.inputField.transform.AsRT().sizeDelta = new Vector2(100f, 32f);
-                    inputFieldStorageY.leftButton.onClick.NewListener(() =>
-                    {
-                        if (!float.TryParse(inputFieldStorageY.inputField.text, out float num))
-                            return;
-                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isPrefabObject))
-                        {
-                            var prefabObject = timelineObject.GetData<PrefabObject>();
-                            prefabObject.events[1].values[1] -= num;
-                            RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
-                        }
-                    });
-                    inputFieldStorageY.middleButton.onClick.NewListener(() =>
-                    {
-                        if (!float.TryParse(inputFieldStorageY.inputField.text, out float num))
-                            return;
-                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isPrefabObject))
-                        {
-                            var prefabObject = timelineObject.GetData<PrefabObject>();
-                            prefabObject.events[1].values[1] = num;
-                            RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
-                        }
-                    });
-                    inputFieldStorageY.rightButton.onClick.NewListener(() =>
-                    {
-                        if (!float.TryParse(inputFieldStorageY.inputField.text, out float num))
-                            return;
-                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isPrefabObject))
-                        {
-                            var prefabObject = timelineObject.GetData<PrefabObject>();
-                            prefabObject.events[1].values[1] += num;
-                            RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
-                        }
-                    });
-                    TriggerHelper.AddEventTriggers(inputFieldStorageX.inputField.gameObject, TriggerHelper.ScrollDelta(inputFieldStorageX.inputField));
-                    TriggerHelper.AddEventTriggers(inputFieldStorageY.inputField.gameObject, TriggerHelper.ScrollDelta(inputFieldStorageY.inputField));
-                }
-            
-                // Rotate Prefabs
-                {
-                    GenerateLabels(parent, 32f, "Rotate Prefabs");
-
-                    var inputFieldStorage = GenerateInputField(parent, "rotate prefabs", "15", "Enter value...", true);
-                    inputFieldStorage.leftButton.onClick.NewListener(() =>
-                    {
-                        if (!float.TryParse(inputFieldStorage.inputField.text, out float num))
-                            return;
-                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isPrefabObject))
-                        {
-                            var prefabObject = timelineObject.GetData<PrefabObject>();
-                            prefabObject.events[2].values[0] -= num;
-                            RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
-                        }
-                    });
-                    inputFieldStorage.middleButton.onClick.NewListener(() =>
-                    {
-                        if (!float.TryParse(inputFieldStorage.inputField.text, out float num))
-                            return;
-                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isPrefabObject))
-                        {
-                            var prefabObject = timelineObject.GetData<PrefabObject>();
-                            prefabObject.events[2].values[0] = num;
-                            RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
-                        }
-                    });
-                    inputFieldStorage.rightButton.onClick.NewListener(() =>
-                    {
-                        if (!float.TryParse(inputFieldStorage.inputField.text, out float num))
-                            return;
-                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isPrefabObject))
-                        {
-                            var prefabObject = timelineObject.GetData<PrefabObject>();
-                            prefabObject.events[2].values[0] += num;
-                            RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
-                        }
-                    });
-                    TriggerHelper.AddEventTriggers(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDelta(inputFieldStorage.inputField));
-                }
-
-                // Instance Data
-                {
-                    var labels = GenerateLabels(parent, 32f, "Instance Data");
-                    var buttons1 = GenerateButtons(parent, 32f, 8f, ThemeGroup.Paste, ThemeGroup.Paste_Text,
-                        new ButtonFunction("Paste Data", () =>
-                        {
-                            if (!RTPrefabEditor.inst.copiedInstanceData)
+                            for (int j = 0; j < 18; j++)
                             {
-                                EditorManager.inst.DisplayNotification($"No copied data.", 2f, EditorManager.NotificationType.Warning);
-                                return;
-                            }
+                                var colorSlot = j;
+                                var colorGUI = EditorManager.inst.colorGUI.Duplicate(colorLayout.transform, (colorSlot + 1).ToString());
+                                var assigner = colorGUI.AddComponent<AssignToTheme>();
+                                assigner.Index = colorSlot;
+                                var image = colorGUI.GetComponent<Image>();
+                                assigner.Graphic = image;
 
-                            var timelineObjects = EditorTimeline.inst.SelectedPrefabObjects;
-                            foreach (var timelineObject in timelineObjects)
-                                RTPrefabEditor.inst.PasteInstanceData(timelineObject.GetData<PrefabObject>());
+                                var selected = colorGUI.transform.GetChild(0).gameObject;
+                                selected.SetActive(false);
 
-                            if (!timelineObjects.IsEmpty())
-                                EditorManager.inst.DisplayNotification($"Pasted Prefab instance data.", 2f, EditorManager.NotificationType.Success);
-                        })
-                        );
-
-                    EditorHelper.SetComplexity(labels, Complexity.Normal);
-                    EditorHelper.SetComplexity(buttons1, Complexity.Normal);
-                }
-
-                GeneratePad(parent);
-                GenerateLabels(parent, 32f, new Label("- Toggles -", 22, FontStyle.Bold, TextAnchor.MiddleCenter));
-
-                // Lock
-                {
-                    GenerateLabels(parent, 32f, "Modify time lock state");
-
-                    GenerateButtons(parent, 32f, 8f,
-                        new ButtonFunction("On", () =>
-                        {
-                            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                            {
-                                timelineObject.Locked = true;
-
-                                EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                            }
-                        }, buttonThemeGroup: ThemeGroup.Add, labelThemeGroup: ThemeGroup.Add_Text),
-                        new ButtonFunction("Off", () =>
-                        {
-                            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                            {
-                                timelineObject.Locked = false;
-
-                                EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                            }
-                        }, buttonThemeGroup: ThemeGroup.Delete, labelThemeGroup: ThemeGroup.Delete_Text));
-                    GenerateButtons(parent, 32f, 0f, new ButtonFunction("Swap", () =>
-                    {
-                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                        {
-                            timelineObject.Locked = !timelineObject.Locked;
-
-                            EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                        }
-                    }));
-                }
-
-                // Collapse
-                {
-                    GenerateLabels(parent, 32f, "Modify timeline collapse state");
-
-                    GenerateButtons(parent, 32f, 8f,
-                        new ButtonFunction("On", () =>
-                        {
-                            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                            {
-                                timelineObject.Collapse = true;
-
-                                EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                            }
-                        }, buttonThemeGroup: ThemeGroup.Add, labelThemeGroup: ThemeGroup.Add_Text),
-                        new ButtonFunction("Off", () =>
-                        {
-                            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                            {
-                                timelineObject.Collapse = false;
-
-                                EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                            }
-                        }, buttonThemeGroup: ThemeGroup.Delete, labelThemeGroup: ThemeGroup.Delete_Text));
-                    GenerateButtons(parent, 32f, 0f, new ButtonFunction("Swap", () =>
-                    {
-                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                        {
-                            timelineObject.Collapse = !timelineObject.Collapse;
-
-                            EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                        }
-                    }));
-                }
-
-                // Hidden
-                {
-                    GenerateLabels(parent, 32f, "Modify hidden state");
-
-                    GenerateButtons(parent, 32f, 8f,
-                        new ButtonFunction("On", () =>
-                        {
-                            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                            {
-                                timelineObject.Hidden = true;
-                                switch (timelineObject.TimelineReference)
+                                var button = colorGUI.GetComponent<Button>();
+                                button.onClick.NewListener(() =>
                                 {
-                                    case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                                            RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.HIDE);
+                                    disableX.gameObject.SetActive(false);
+                                    currentMultiColorSelection = colorSlot;
+                                    UpdateMultiColorButtons();
+                                });
 
-                                            break;
-                                        }
-                                    case TimelineObject.TimelineReferenceType.PrefabObject: {
-                                            RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.HIDE);
-
-                                            break;
-                                        }
-                                    case TimelineObject.TimelineReferenceType.BackgroundObject: {
-                                            RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.HIDE);
-
-                                            break;
-                                        }
-                                }
-                            }
-                        }, buttonThemeGroup: ThemeGroup.Add, labelThemeGroup: ThemeGroup.Add_Text),
-                        new ButtonFunction("Off", () =>
-                        {
-                            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                            {
-                                timelineObject.Hidden = false;
-                                switch (timelineObject.TimelineReference)
+                                multiColorButtons.Add(new MultiColorButton
                                 {
-                                    case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                                            RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.HIDE);
-
-                                            break;
-                                        }
-                                    case TimelineObject.TimelineReferenceType.PrefabObject: {
-                                            RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.HIDE);
-
-                                            break;
-                                        }
-                                    case TimelineObject.TimelineReferenceType.BackgroundObject: {
-                                            RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.HIDE);
-
-                                            break;
-                                        }
-                                }
+                                    Button = button,
+                                    Image = image,
+                                    Selected = selected
+                                });
                             }
-                        }, buttonThemeGroup: ThemeGroup.Delete, labelThemeGroup: ThemeGroup.Delete_Text));
-                    GenerateButtons(parent, 32f, 0f, new ButtonFunction("Swap", () =>
-                    {
-                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                        {
-                            timelineObject.Hidden = !timelineObject.Hidden;
-                            switch (timelineObject.TimelineReference)
+
+                            var primaryOpacityField = new NumberInputElement(string.Empty, null, new NumberInputElement.ArrowHandlerFloat());
+                            var primaryHueField = new NumberInputElement(string.Empty, null, new NumberInputElement.ArrowHandlerFloat());
+                            var primarySaturationField = new NumberInputElement(string.Empty, null, new NumberInputElement.ArrowHandlerFloat());
+                            var primaryValueField = new NumberInputElement(string.Empty, null, new NumberInputElement.ArrowHandlerFloat());
+
+                            new LabelsElement(HorizontalOrVerticalLayoutValues.Horizontal.ChildControlHeight(false), "Primary Opacity", "Primary Hue", "Primary Saturation", "Primary Value").Init(EditorElement.InitSettings.Default.Parent(parent));
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                primaryOpacityField,
+                                primaryHueField,
+                                primarySaturationField,
+                                primaryValueField);
+
+                            #endregion
+
+                            new SpacerElement().Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                            #region Secondary
+
+                            new LabelsElement("Secondary Color").Init(EditorElement.InitSettings.Default.Parent(parent));
+                            var colorGradientLayout = Creator.NewUIObject("color layout", parent);
+                            colorGradientLayout.transform.AsRT().sizeDelta = new Vector2(390f, 32f);
+                            var colorGradientLayoutGLG = colorGradientLayout.AddComponent<GridLayoutGroup>();
+                            colorGradientLayoutGLG.spacing = new Vector2(4f, 4f);
+                            colorGradientLayoutGLG.cellSize = new Vector2(32f, 32f);
+
+                            var disableGradient = EditorPrefabHolder.Instance.Function2Button.Duplicate(colorGradientLayout.transform, "disable color");
+                            var disableGradientX = EditorManager.inst.colorGUI.transform.Find("Image").gameObject.Duplicate(disableGradient.transform, "x");
+                            var disableGradientXImage = disableGradientX.GetComponent<Image>();
+                            disableGradientXImage.sprite = EditorSprites.CloseSprite;
+                            checkmarkRect.AssignToRectTransform(disableGradientXImage.rectTransform);
+                            var disableGradientButtonStorage = disableGradient.GetComponent<FunctionButtonStorage>();
+                            disableGradientButtonStorage.OnClick.NewListener(() =>
                             {
-                                case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                                        RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.HIDE);
+                                disableGradientX.gameObject.SetActive(true);
+                                currentMultiGradientColorSelection = -1;
+                                UpdateMultiColorButtons();
+                            });
+                            CoreHelper.Delete(disableGradientButtonStorage.label);
+                            EditorThemeManager.ApplyGraphic(disableGradientXImage, ThemeGroup.Function_2_Text);
+                            EditorThemeManager.ApplySelectable(disableGradientButtonStorage.button, ThemeGroup.Function_2);
 
-                                        break;
-                                    }
-                                case TimelineObject.TimelineReferenceType.PrefabObject: {
-                                        RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.HIDE);
-
-                                        break;
-                                    }
-                                case TimelineObject.TimelineReferenceType.BackgroundObject: {
-                                        RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.HIDE);
-
-                                        break;
-                                    }
-                            }
-                        }
-                    }));
-                }
-            
-                // Selectable
-                {
-                    GenerateLabels(parent, 32f, "Modify selectable in preview state");
-
-                    GenerateButtons(parent, 32f, 8f,
-                        new ButtonFunction("On", () =>
-                        {
-                            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+                            for (int j = 0; j < 18; j++)
                             {
-                                if (timelineObject.isBackgroundObject)
-                                    continue;
+                                var colorSlot = j;
+                                var colorGUI = EditorManager.inst.colorGUI.Duplicate(colorGradientLayout.transform, (colorSlot + 1).ToString());
+                                var assigner = colorGUI.AddComponent<AssignToTheme>();
+                                assigner.Index = colorSlot;
+                                var image = colorGUI.GetComponent<Image>();
+                                assigner.Graphic = image;
 
-                                timelineObject.SelectableInPreview = true;
-                                switch (timelineObject.TimelineReference)
+                                var selected = colorGUI.transform.GetChild(0).gameObject;
+                                selected.SetActive(false);
+
+                                var button = colorGUI.GetComponent<Button>();
+                                button.onClick.NewListener(() =>
                                 {
-                                    case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                                            RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.SELECTABLE);
+                                    disableGradientX.gameObject.SetActive(false);
+                                    currentMultiGradientColorSelection = colorSlot;
+                                    UpdateMultiColorButtons();
+                                });
 
-                                            break;
-                                        }
-                                    case TimelineObject.TimelineReferenceType.PrefabObject: {
-                                            RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.SELECTABLE);
-
-                                            break;
-                                        }
-                                }
-                            }
-                        }, buttonThemeGroup: ThemeGroup.Add, labelThemeGroup: ThemeGroup.Add_Text),
-                        new ButtonFunction("Off", () =>
-                        {
-                            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                            {
-                                if (timelineObject.isBackgroundObject)
-                                    continue;
-
-                                timelineObject.SelectableInPreview = false;
-                                switch (timelineObject.TimelineReference)
+                                multiGradientColorButtons.Add(new MultiColorButton
                                 {
-                                    case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                                            RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.SELECTABLE);
-
-                                            break;
-                                        }
-                                    case TimelineObject.TimelineReferenceType.PrefabObject: {
-                                            RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.SELECTABLE);
-
-                                            break;
-                                        }
-                                }
+                                    Button = button,
+                                    Image = image,
+                                    Selected = selected
+                                });
                             }
-                        }, buttonThemeGroup: ThemeGroup.Delete, labelThemeGroup: ThemeGroup.Delete_Text));
-                    GenerateButtons(parent, 32f, 0f, new ButtonFunction("Swap", () =>
-                    {
-                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                        {
-                            if (timelineObject.isBackgroundObject)
-                                continue;
 
-                            timelineObject.SelectableInPreview = !timelineObject.SelectableInPreview;
-                            switch (timelineObject.TimelineReference)
+                            var secondaryOpacityField = new NumberInputElement(string.Empty, null, new NumberInputElement.ArrowHandlerFloat());
+                            var secondaryHueField = new NumberInputElement(string.Empty, null, new NumberInputElement.ArrowHandlerFloat());
+                            var secondarySaturationField = new NumberInputElement(string.Empty, null, new NumberInputElement.ArrowHandlerFloat());
+                            var secondaryValueField = new NumberInputElement(string.Empty, null, new NumberInputElement.ArrowHandlerFloat());
+
+                            new LabelsElement(HorizontalOrVerticalLayoutValues.Horizontal.ChildControlHeight(false), "Secondary Opacity", "Secondary Hue", "Secondary Saturation", "Secondary Value").Init(EditorElement.InitSettings.Default.Parent(parent));
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                secondaryOpacityField,
+                                secondaryHueField,
+                                secondarySaturationField,
+                                secondaryValueField);
+
+                            #endregion
+
+                            new SpacerElement().Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                            #region Ease Type
+
+                            new LabelsElement("Ease Type").Init(EditorElement.InitSettings.Default.Parent(parent));
+                            var easeTypeLayout = new LayoutGroupElement(LayoutGroupElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f));
+
+                            var enableCurves = EditorPrefabHolder.Instance.Function2Button.Duplicate(easeTypeLayout.GameObject.transform, "disable curves");
+                            enableCurves.GetOrAddComponent<LayoutElement>().minWidth = 200f;
+                            var enableCurvesX = EditorManager.inst.colorGUI.transform.Find("Image").gameObject.Duplicate(enableCurves.transform, "x");
+                            var enableCurvesXImage = enableCurvesX.GetComponent<Image>();
+                            enableCurvesXImage.sprite = EditorSprites.CheckmarkSprite;
+                            RectValues.Default.AnchorMax(0f, 0.5f).AnchorMin(0f, 0.5f).Pivot(0f, 0.5f).SizeDelta(32f, 32f).AssignToRectTransform(enableCurvesXImage.rectTransform);
+                            var enableCurvesButtonStorage = enableCurves.GetComponent<FunctionButtonStorage>();
+                            enableCurvesButtonStorage.OnClick.NewListener(() =>
                             {
-                                case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                                        RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.SELECTABLE);
+                                setCurve = !setCurve;
+                                enableCurvesX.gameObject.SetActive(setCurve);
+                            });
+                            enableCurvesX.gameObject.SetActive(setCurve);
+                            enableCurvesButtonStorage.Text = "Set Easing";
+                            EditorThemeManager.ApplyGraphic(enableCurvesXImage, ThemeGroup.Function_2_Text);
+                            EditorThemeManager.ApplyGraphic(enableCurvesButtonStorage.label, ThemeGroup.Function_2_Text);
+                            EditorThemeManager.ApplySelectable(enableCurvesButtonStorage.button, ThemeGroup.Function_2);
 
-                                        break;
-                                    }
-                                case TimelineObject.TimelineReferenceType.PrefabObject: {
-                                        RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.SELECTABLE);
+                            var curvesObject = EditorPrefabHolder.Instance.CurvesDropdown.Duplicate(easeTypeLayout.GameObject.transform, "curves");
+                            var curves = curvesObject.GetComponent<Dropdown>();
+                            RTEditor.inst.SetupEaseDropdown(curves);
+                            curves.onValueChanged.ClearAll();
+                            TriggerHelper.AddEventTriggers(curves.gameObject, TriggerHelper.ScrollDelta(curves));
+                            EditorThemeManager.ApplyDropdown(curves);
 
-                                        break;
-                                    }
-                            }
-                        }
-                    }));
-                }
+                            #endregion
 
-                // LDM
-                {
-                    var labels = GenerateLabels(parent, 32f, "Modify Low Detail Mode");
+                            new SpacerElement().Init(EditorElement.InitSettings.Default.Parent(parent));
 
-                    var buttons1 = GenerateButtons(parent, 32f, 8f,
-                        new ButtonFunction("On", () =>
-                        {
-                            foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
-                            {
-                                beatmapObject.LDM = true;
-                                RTLevel.Current?.UpdateObject(beatmapObject);
-                            }
-                        }, buttonThemeGroup: ThemeGroup.Add, labelThemeGroup: ThemeGroup.Add_Text),
-                        new ButtonFunction("Off", () =>
-                        {
-                            foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
-                            {
-                                beatmapObject.LDM = false;
-                                RTLevel.Current?.UpdateObject(beatmapObject);
-                            }
-                        }, buttonThemeGroup: ThemeGroup.Delete, labelThemeGroup: ThemeGroup.Delete_Text));
-                    var buttons2 = GenerateButtons(parent, 32f, 0f, new ButtonFunction("Swap", () =>
-                    {
-                        foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
-                        {
-                            beatmapObject.LDM = !beatmapObject.LDM;
-                            RTLevel.Current?.UpdateObject(beatmapObject);
-                        }
-                    }));
+                            #region Set
 
-                    EditorHelper.SetComplexity(labels, Complexity.Advanced);
-                    EditorHelper.SetComplexity(buttons1, Complexity.Advanced);
-                    EditorHelper.SetComplexity(buttons2, Complexity.Advanced);
-                }
-
-                // Ignore Lifespan
-                {
-                    var labels = GenerateLabels(parent, 32f, "Modify Modifier Ignore Lifespan");
-
-                    var buttons1 = GenerateButtons(parent, 32f, 8f,
-                        new ButtonFunction("On", () =>
-                        {
-                            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                            {
-                                switch (timelineObject.TimelineReference)
+                            new LabelsElement(HorizontalOrVerticalLayoutValues.Horizontal.ChildControlHeight(false), "Assign to All Color Keyframes").Init(EditorElement.InitSettings.Default.Parent(parent));
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                ButtonElement.Label1Button("Set", () =>
                                 {
-                                    case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                                            var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                                            beatmapObject.ignoreLifespan = true;
-                                            RTLevel.Current?.UpdateObject(beatmapObject, recalculate: false);
-                                            break;
-                                        }
-                                    case TimelineObject.TimelineReferenceType.PrefabObject: {
-                                            var prefabObject = timelineObject.GetData<PrefabObject>();
-                                            prefabObject.ignoreLifespan = true;
-                                            RTLevel.Current?.UpdatePrefab(prefabObject, recalculate: false);
-                                            break;
-                                        }
-                                    case TimelineObject.TimelineReferenceType.BackgroundObject: {
-                                            var backgroundObject = timelineObject.GetData<BackgroundObject>();
-                                            backgroundObject.ignoreLifespan = true;
-                                            RTLevel.Current?.UpdateBackgroundObject(backgroundObject, recalculate: false);
-                                            break;
-                                        }
-                                }
-                            }
-                            RTLevel.Current?.RecalculateObjectStates();
-                        }, buttonThemeGroup: ThemeGroup.Add, labelThemeGroup: ThemeGroup.Add_Text),
-                        new ButtonFunction("Off", () =>
-                        {
-                            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                            {
-                                switch (timelineObject.TimelineReference)
-                                {
-                                    case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                                            var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                                            beatmapObject.ignoreLifespan = false;
-                                            RTLevel.Current?.UpdateObject(beatmapObject, recalculate: false);
-                                            break;
-                                        }
-                                    case TimelineObject.TimelineReferenceType.PrefabObject: {
-                                            var prefabObject = timelineObject.GetData<PrefabObject>();
-                                            prefabObject.ignoreLifespan = false;
-                                            RTLevel.Current?.UpdatePrefab(prefabObject, recalculate: false);
-                                            break;
-                                        }
-                                    case TimelineObject.TimelineReferenceType.BackgroundObject: {
-                                            var backgroundObject = timelineObject.GetData<BackgroundObject>();
-                                            backgroundObject.ignoreLifespan = false;
-                                            RTLevel.Current?.UpdateBackgroundObject(backgroundObject, recalculate: false);
-                                            break;
-                                        }
-                                }
-                            }
-                            RTLevel.Current?.RecalculateObjectStates();
-                        }, buttonThemeGroup: ThemeGroup.Delete, labelThemeGroup: ThemeGroup.Delete_Text));
-                    var buttons2 = GenerateButtons(parent, 32f, 0f, new ButtonFunction("Swap", () =>
-                    {
-                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                        {
-                            switch (timelineObject.TimelineReference)
-                            {
-                                case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                                        var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                                        beatmapObject.ignoreLifespan = !beatmapObject.ignoreLifespan;
-                                        RTLevel.Current?.UpdateObject(beatmapObject, recalculate: false);
-                                        break;
-                                    }
-                                case TimelineObject.TimelineReferenceType.PrefabObject: {
-                                        var prefabObject = timelineObject.GetData<PrefabObject>();
-                                        prefabObject.ignoreLifespan = !prefabObject.ignoreLifespan;
-                                        RTLevel.Current?.UpdatePrefab(prefabObject, recalculate: false);
-                                        break;
-                                    }
-                                case TimelineObject.TimelineReferenceType.BackgroundObject: {
-                                        var backgroundObject = timelineObject.GetData<BackgroundObject>();
-                                        backgroundObject.ignoreLifespan = !backgroundObject.ignoreLifespan;
-                                        RTLevel.Current?.UpdateBackgroundObject(backgroundObject, recalculate: false);
-                                        break;
-                                    }
-                            }
-                        }
-                        RTLevel.Current?.RecalculateObjectStates();
-                    }));
-
-                    EditorHelper.SetComplexity(labels, Complexity.Advanced);
-                    EditorHelper.SetComplexity(buttons1, Complexity.Advanced);
-                    EditorHelper.SetComplexity(buttons2, Complexity.Advanced);
-                }
-            
-                // Order Matters
-                {
-                    var labels = GenerateLabels(parent, 32f, "Modify Modifier Order Matters");
-
-                    var buttons1 = GenerateButtons(parent, 32f, 8f,
-                        new ButtonFunction("On", () =>
-                        {
-                            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                            {
-                                switch (timelineObject.TimelineReference)
-                                {
-                                    case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                                            var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                                            beatmapObject.orderModifiers = true;
-                                            RTLevel.Current?.UpdateObject(beatmapObject, recalculate: false);
-                                            break;
-                                        }
-                                    case TimelineObject.TimelineReferenceType.PrefabObject: {
-                                            var prefabObject = timelineObject.GetData<PrefabObject>();
-                                            prefabObject.orderModifiers = true;
-                                            RTLevel.Current?.UpdatePrefab(prefabObject, recalculate: false);
-                                            break;
-                                        }
-                                    case TimelineObject.TimelineReferenceType.BackgroundObject: {
-                                            var backgroundObject = timelineObject.GetData<BackgroundObject>();
-                                            backgroundObject.orderModifiers = true;
-                                            RTLevel.Current?.UpdateBackgroundObject(backgroundObject, recalculate: false);
-                                            break;
-                                        }
-                                }
-                            }
-                            RTLevel.Current?.RecalculateObjectStates();
-                        }, buttonThemeGroup: ThemeGroup.Add, labelThemeGroup: ThemeGroup.Add_Text),
-                        new ButtonFunction("Off", () =>
-                        {
-                            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                            {
-                                switch (timelineObject.TimelineReference)
-                                {
-                                    case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                                            var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                                            beatmapObject.orderModifiers = false;
-                                            RTLevel.Current?.UpdateObject(beatmapObject, recalculate: false);
-                                            break;
-                                        }
-                                    case TimelineObject.TimelineReferenceType.PrefabObject: {
-                                            var prefabObject = timelineObject.GetData<PrefabObject>();
-                                            prefabObject.orderModifiers = false;
-                                            RTLevel.Current?.UpdatePrefab(prefabObject, recalculate: false);
-                                            break;
-                                        }
-                                    case TimelineObject.TimelineReferenceType.BackgroundObject: {
-                                            var backgroundObject = timelineObject.GetData<BackgroundObject>();
-                                            backgroundObject.orderModifiers = false;
-                                            RTLevel.Current?.UpdateBackgroundObject(backgroundObject, recalculate: false);
-                                            break;
-                                        }
-                                }
-                            }
-                            RTLevel.Current?.RecalculateObjectStates();
-                        }, buttonThemeGroup: ThemeGroup.Delete, labelThemeGroup: ThemeGroup.Delete_Text));
-                    var buttons2 = GenerateButtons(parent, 32f, 0f, new ButtonFunction("Swap", () =>
-                    {
-                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                        {
-                            switch (timelineObject.TimelineReference)
-                            {
-                                case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                                        var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                                        beatmapObject.orderModifiers = !beatmapObject.ignoreLifespan;
-                                        RTLevel.Current?.UpdateObject(beatmapObject, recalculate: false);
-                                        break;
-                                    }
-                                case TimelineObject.TimelineReferenceType.PrefabObject: {
-                                        var prefabObject = timelineObject.GetData<PrefabObject>();
-                                        prefabObject.orderModifiers = !prefabObject.ignoreLifespan;
-                                        RTLevel.Current?.UpdatePrefab(prefabObject, recalculate: false);
-                                        break;
-                                    }
-                                case TimelineObject.TimelineReferenceType.BackgroundObject: {
-                                        var backgroundObject = timelineObject.GetData<BackgroundObject>();
-                                        backgroundObject.orderModifiers = !backgroundObject.ignoreLifespan;
-                                        RTLevel.Current?.UpdateBackgroundObject(backgroundObject, recalculate: false);
-                                        break;
-                                    }
-                            }
-                        }
-                        RTLevel.Current?.RecalculateObjectStates();
-                    }));
-
-                    EditorHelper.SetComplexity(labels, Complexity.Advanced);
-                    EditorHelper.SetComplexity(buttons1, Complexity.Advanced);
-                    EditorHelper.SetComplexity(buttons2, Complexity.Advanced);
-                }
-            
-                // Opacity Collision
-                {
-                    var labels = GenerateLabels(parent, 32f, "Modify Opacity Collision");
-
-                    var buttons1 = GenerateButtons(parent, 32f, 8f,
-                        new ButtonFunction("On", () =>
-                        {
-                            foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
-                            {
-                                beatmapObject.opacityCollision = true;
-                                RTLevel.Current?.UpdateObject(beatmapObject);
-                            }
-                        }, buttonThemeGroup: ThemeGroup.Add, labelThemeGroup: ThemeGroup.Add_Text),
-                        new ButtonFunction("Off", () =>
-                        {
-                            foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
-                            {
-                                beatmapObject.opacityCollision = false;
-                                RTLevel.Current?.UpdateObject(beatmapObject);
-                            }
-                        }, buttonThemeGroup: ThemeGroup.Delete, labelThemeGroup: ThemeGroup.Delete_Text));
-                    var buttons2 = GenerateButtons(parent, 32f, 0f, new ButtonFunction("Swap", () =>
-                    {
-                        foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
-                        {
-                            beatmapObject.opacityCollision = !beatmapObject.opacityCollision;
-                            RTLevel.Current?.UpdateObject(beatmapObject);
-                        }
-                    }));
-
-                    EditorHelper.SetComplexity(labels, Complexity.Advanced);
-                    EditorHelper.SetComplexity(buttons1, Complexity.Advanced);
-                    EditorHelper.SetComplexity(buttons2, Complexity.Advanced);
-                }
-
-                GeneratePad(parent);
-                GenerateLabels(parent, 32f, new Label("- Pasting -", 22, FontStyle.Bold, TextAnchor.MiddleCenter));
-
-                // Paste Modifier
-                {
-                    var labels = GenerateLabels(parent, 32f, "Paste Modifiers to Selected");
-                    var buttons1 = GenerateButtons(parent, 32f, 8f, ThemeGroup.Paste, ThemeGroup.Paste_Text,
-                        new ButtonFunction("Paste", () =>
-                        {
-                            bool pasted = false;
-                            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                            {
-                                switch (timelineObject.TimelineReference)
-                                {
-                                    case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                                            var copiedModifiers = ModifiersEditor.inst.GetCopiedModifiers(ModifierReferenceType.BeatmapObject);
-                                            if (copiedModifiers == null || copiedModifiers.IsEmpty())
-                                                continue;
-
-                                            var beatmapObject = timelineObject.GetData<BeatmapObject>();
-
-                                            beatmapObject.modifiers.AddRange(copiedModifiers.Select(x => x.Copy()));
-
-                                            CoroutineHelper.StartCoroutine(ObjectEditor.inst.Dialog.ModifiersDialog.RenderModifiers(beatmapObject));
-                                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.MODIFIERS);
-
-                                            pasted = true;
-                                            break;
-                                        }
-                                    case TimelineObject.TimelineReferenceType.BackgroundObject: {
-                                            var copiedModifiers = ModifiersEditor.inst.GetCopiedModifiers(ModifierReferenceType.BackgroundObject);
-                                            if (copiedModifiers == null || copiedModifiers.IsEmpty())
-                                                continue;
-
-                                            var backgroundObject = timelineObject.GetData<BackgroundObject>();
-
-                                            backgroundObject.modifiers.AddRange(copiedModifiers.Select(x => x.Copy()));
-
-                                            CoroutineHelper.StartCoroutine(RTBackgroundEditor.inst.Dialog.ModifiersDialog.RenderModifiers(backgroundObject));
-                                            RTLevel.Current?.UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.MODIFIERS);
-
-                                            pasted = true;
-                                            break;
-                                        }
-                                    case TimelineObject.TimelineReferenceType.PrefabObject: {
-                                            var copiedModifiers = ModifiersEditor.inst.GetCopiedModifiers(ModifierReferenceType.PrefabObject);
-                                            if (copiedModifiers == null || copiedModifiers.IsEmpty())
-                                                continue;
-
-                                            var prefabObject = timelineObject.GetData<PrefabObject>();
-
-                                            prefabObject.modifiers.AddRange(copiedModifiers.Select(x => x.Copy()));
-
-                                            CoroutineHelper.StartCoroutine(RTPrefabEditor.inst.PrefabObjectEditor.ModifiersDialog.RenderModifiers(prefabObject));
-                                            RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.MODIFIERS);
-
-                                            pasted = true;
-                                            break;
-                                        }
-                                }
-                            }
-
-                            if (pasted)
-                                EditorManager.inst.DisplayNotification("Pasted Modifier!", 1.5f, EditorManager.NotificationType.Success);
-                            else
-                                EditorManager.inst.DisplayNotification($"No copied modifiers yet.", 3f, EditorManager.NotificationType.Error);
-                        }));
-
-                    EditorHelper.SetComplexity(labels, Complexity.Advanced);
-                    EditorHelper.SetComplexity(buttons1, Complexity.Advanced);
-                }
-
-                // Paste Keyframes
-                {
-                    var labels = GenerateLabels(parent, 32f, "Paste Keyframes to Selected");
-                    var buttons1 = GenerateButtons(parent, 32f, 8f, ThemeGroup.Paste, ThemeGroup.Paste_Text,
-                        new ButtonFunction("Paste", EditorHelper.PasteKeyframes));
-
-                    EditorHelper.SetComplexity(labels, Complexity.Normal);
-                    EditorHelper.SetComplexity(buttons1, Complexity.Normal);
-                }
-
-                // Repeat Paste Keyframes
-                {
-                    var labels = GenerateLabels(parent, 32f, "Repeat Paste Keyframes to Selected");
-
-                    var repeatCountInputField = GenerateInputField(parent, "repeat count", "1", "Enter count...", false, false);
-                    TriggerHelper.IncreaseDecreaseButtonsInt(repeatCountInputField);
-                    TriggerHelper.AddEventTriggers(repeatCountInputField.inputField.gameObject, TriggerHelper.ScrollDeltaInt(repeatCountInputField.inputField));
-                    var repeatOffsetTimeInputField = GenerateInputField(parent, "repeat offset time", "1", "Enter offset time...", false, false);
-                    TriggerHelper.IncreaseDecreaseButtons(repeatOffsetTimeInputField);
-                    TriggerHelper.AddEventTriggers(repeatOffsetTimeInputField.inputField.gameObject, TriggerHelper.ScrollDelta(repeatOffsetTimeInputField.inputField));
-
-                    var buttons1 = GenerateButtons(parent, 32f, 8f, ThemeGroup.Paste, ThemeGroup.Paste_Text,
-                        new ButtonFunction("Paste", () => EditorHelper.RepeatPasteKeyframes(Parser.TryParse(repeatCountInputField.inputField.text, 0), Parser.TryParse(repeatOffsetTimeInputField.inputField.text, 1f))));
-
-                    EditorHelper.SetComplexity(repeatCountInputField.gameObject, Complexity.Advanced);
-                    EditorHelper.SetComplexity(repeatOffsetTimeInputField.gameObject, Complexity.Advanced);
-
-                    EditorHelper.SetComplexity(labels, Complexity.Advanced);
-                    EditorHelper.SetComplexity(buttons1, Complexity.Advanced);
-                }
-
-                GeneratePad(parent);
-
-                // Sync object selection
-                {
-                    var labels = GenerateLabels(parent, 32f, "Sync to specific object");
-
-                    var syncLayout = Creator.NewUIObject("sync layout", parent);
-                    syncLayout.transform.AsRT().sizeDelta = new Vector2(390f, 210f);
-                    var multiSyncGLG = syncLayout.AddComponent<GridLayoutGroup>();
-                    multiSyncGLG.spacing = new Vector2(4f, 4f);
-                    multiSyncGLG.cellSize = new Vector2(61.6f, 49f);
-
-                    GenerateButton(syncLayout.transform, new ButtonFunction("ST", eventData =>
-                    {
-                        SyncObjectData("Start Time", eventData, (timelineObject, beatmapObject) =>
-                        {
-                            timelineObject.GetData<BeatmapObject>().StartTime = beatmapObject.StartTime;
-                        }, true, true, "StartTime");
-                    })); // Start Time
-                    GenerateButton(syncLayout.transform, new ButtonFunction("N", eventData =>
-                    {
-                        SyncObjectData("Name", eventData, (timelineObject, beatmapObject) =>
-                        {
-                            timelineObject.GetData<BeatmapObject>().name = beatmapObject.name;
-                        }, true, false);
-                    })); // Name
-                    GenerateButton(syncLayout.transform, new ButtonFunction("OT", eventData =>
-                    {
-                        SyncObjectData("Object Type", eventData, (timelineObject, beatmapObject) =>
-                        {
-                            timelineObject.GetData<BeatmapObject>().objectType = beatmapObject.objectType;
-                        }, true, true, "ObjectType");
-                    })); // Object Type
-                    GenerateButton(syncLayout.transform, new ButtonFunction("AKT", eventData =>
-                    {
-                        SyncObjectData("AutoKill Type", eventData, (timelineObject, beatmapObject) =>
-                        {
-                            timelineObject.GetData<BeatmapObject>().autoKillType = beatmapObject.autoKillType;
-                        }, true, true, "AutoKill");
-                    })); // Autokill Type
-                    GenerateButton(syncLayout.transform, new ButtonFunction("AKO", eventData =>
-                    {
-                        SyncObjectData("AutoKill Offset", eventData, (timelineObject, beatmapObject) =>
-                        {
-                            timelineObject.GetData<BeatmapObject>().autoKillOffset = beatmapObject.autoKillOffset;
-                        }, true, true, "AutoKill");
-                    })); // Autokill Offset
-                    GenerateButton(syncLayout.transform, new ButtonFunction("P", eventData =>
-                    {
-                        SyncObjectData("Parent", eventData, (TimelineObject currentSelection, BeatmapObject beatmapObjectToParentTo) =>
-                        {
-                            currentSelection.GetData<BeatmapObject>().SetParent(beatmapObjectToParentTo, renderParent: false);
-                        }, false, true, "Parent");
-                    })); // Parent
-                    GenerateButton(syncLayout.transform, new ButtonFunction("PD", eventData =>
-                    {
-                        SyncObjectData("Parent Desync", eventData, (timelineObject, beatmapObject) =>
-                        {
-                            timelineObject.GetData<BeatmapObject>().desync = beatmapObject.desync;
-                        }, false, true, "Parent");
-                    })); // Parent Desync
-                    GenerateButton(syncLayout.transform, new ButtonFunction("PT", eventData =>
-                    {
-                        SyncObjectData("Parent Types", eventData, (timelineObject, beatmapObject) =>
-                        {
-                            timelineObject.GetData<BeatmapObject>().parentType = beatmapObject.parentType;
-                        }, false, true, "ParentType");
-                    })); // Parent Type
-                    GenerateButton(syncLayout.transform, new ButtonFunction("PO", eventData =>
-                    {
-                        SyncObjectData("Parent Offsets", eventData, (timelineObject, beatmapObject) =>
-                        {
-                            timelineObject.GetData<BeatmapObject>().parentOffsets = beatmapObject.parentOffsets.Copy();
-                        }, false, true, "ParentOffset");
-                    })); // Parent Offset
-                    GenerateButton(syncLayout.transform, new ButtonFunction("PA", eventData =>
-                    {
-                        SyncObjectData("Parent Additive", eventData, (timelineObject, beatmapObject) =>
-                        {
-                            timelineObject.GetData<BeatmapObject>().parentAdditive = beatmapObject.parentAdditive;
-                        }, false, true, "ParentOffset");
-                    })); // Parent Additive
-                    GenerateButton(syncLayout.transform, new ButtonFunction("PP", eventData =>
-                    {
-                        SyncObjectData("Parent Parallax", eventData, (timelineObject, beatmapObject) =>
-                        {
-                            timelineObject.GetData<BeatmapObject>().parallaxSettings = beatmapObject.parallaxSettings.Copy();
-                        }, false, true, "ParentOffset");
-                    })); // Parent Parallax
-                    GenerateButton(syncLayout.transform, new ButtonFunction("O", eventData =>
-                    {
-                        SyncObjectData("Origin", eventData, (timelineObject, beatmapObject) =>
-                        {
-                            timelineObject.GetData<BeatmapObject>().origin = beatmapObject.origin;
-                        }, false, true, "Origin");
-                    })); // Origin
-                    GenerateButton(syncLayout.transform, new ButtonFunction("S", eventData =>
-                    {
-                        SyncObjectData("Shape", eventData, (timelineObject, beatmapObject) =>
-                        {
-                            var syncTo = timelineObject.GetData<BeatmapObject>();
-                            syncTo.Shape = beatmapObject.Shape;
-                            syncTo.ShapeOption = beatmapObject.ShapeOption;
-                            syncTo.Polygon.CopyData(beatmapObject.Polygon);
-                        }, false, true, "Shape");
-                    })); // Shape
-                    GenerateButton(syncLayout.transform, new ButtonFunction("T", eventData =>
-                    {
-                        SyncObjectData("Text", eventData, (timelineObject, beatmapObject) =>
-                        {
-                            timelineObject.GetData<BeatmapObject>().text = beatmapObject.text;
-                        }, false, true, "Text");
-                    })); // Text
-                    GenerateButton(syncLayout.transform, new ButtonFunction("D", eventData =>
-                    {
-                        SyncObjectData("Depth", eventData, (timelineObject, beatmapObject) =>
-                        {
-                            timelineObject.GetData<BeatmapObject>().Depth = beatmapObject.Depth;
-                        }, false, true, "Depth");
-                    })); // Depth
-                    GenerateButton(syncLayout.transform, new ButtonFunction("KF", eventData =>
-                    {
-                        SyncObjectData("Keyframes", eventData, (timelineObject, beatmapObject) =>
-                        {
-                            var bm = timelineObject.GetData<BeatmapObject>();
-
-                            for (int i = 0; i < bm.events.Count; i++)
-                            {
-                                bm.events[i].Clear();
-                                for (int j = 0; j < beatmapObject.events[i].Count; j++)
-                                    bm.events[i].Add(beatmapObject.events[i][j].Copy());
-                            }
-
-                        }, true, true, "Keyframes");
-                    })); // Keyframes
-                    GenerateButton(syncLayout.transform, new ButtonFunction("MOD", eventData =>
-                    {
-                        SyncObjectData("Modifiers", eventData, (timelineObject, beatmapObject) =>
-                        {
-                            var bm = timelineObject.GetData<BeatmapObject>();
-
-                            bm.modifiers.AddRange(beatmapObject.modifiers.Select(x => x.Copy()));
-                        }, false, true);
-                    })); // Modifiers
-                    GenerateButton(syncLayout.transform, new ButtonFunction("IGN", eventData =>
-                    {
-                        SyncObjectData("Ignore Lifespan", eventData, (timelineObject, beatmapObject) =>
-                        {
-                            timelineObject.GetData<BeatmapObject>().ignoreLifespan = beatmapObject.ignoreLifespan;
-                        }, false, false);
-                    })); // Ignore lifespan
-                    GenerateButton(syncLayout.transform, new ButtonFunction("ORD", eventData =>
-                    {
-                        SyncObjectData("Order Matters", eventData, (timelineObject, beatmapObject) =>
-                        {
-                            timelineObject.GetData<BeatmapObject>().ignoreLifespan = beatmapObject.ignoreLifespan;
-                        }, false, true);
-                    })); // Modifiers
-                    GenerateButton(syncLayout.transform, new ButtonFunction("IGN", eventData =>
-                    {
-                        SyncObjectData("Ignore Lifespan", eventData, (timelineObject, beatmapObject) =>
-                        {
-                            timelineObject.GetData<BeatmapObject>().ignoreLifespan = beatmapObject.ignoreLifespan;
-                        }, false, false);
-                    })); // Ignore lifespan
-                    GenerateButton(syncLayout.transform, new ButtonFunction("TAG", eventData =>
-                    {
-                        SyncObjectData("Tags", eventData, (timelineObject, beatmapObject) =>
-                        {
-                            timelineObject.GetData<BeatmapObject>().tags = beatmapObject.tags.Clone();
-                        }, false, false);
-                    })); // Tags
-                    GenerateButton(syncLayout.transform, new ButtonFunction("RT", eventData =>
-                    {
-                        SyncObjectData("Render Type", eventData, (timelineObject, beatmapObject) =>
-                        {
-                            timelineObject.GetData<BeatmapObject>().renderLayerType = beatmapObject.renderLayerType;
-                        }, false, true);
-                    })); // Render Type
-                    GenerateButton(syncLayout.transform, new ButtonFunction("PR", eventData =>
-                    {
-                        SyncObjectData("Prefab Reference", eventData, (timelineObject, beatmapObject) =>
-                        {
-                            var bm = timelineObject.GetData<BeatmapObject>();
-                            bm.prefabID = beatmapObject.prefabID;
-                            bm.prefabInstanceID = beatmapObject.prefabInstanceID;
-                        }, true, false);
-                    })); // Prefab
-
-                    EditorHelper.SetComplexity(labels, Complexity.Advanced);
-                    EditorHelper.SetComplexity(syncLayout, Complexity.Advanced);
-                }
-
-                GeneratePad(parent, Complexity.Advanced);
-
-                var replaceLabels = GenerateLabels(parent, 32f, new Label("- Replace strings -", 22, FontStyle.Bold, TextAnchor.MiddleCenter));
-                EditorHelper.SetComplexity(replaceLabels, Complexity.Advanced);
-
-                // Replace Name
-                SetupReplaceStrings(parent, "Replace Name", "Old Name", "Enter old name...", "New Name", "Enter new name...", (oldNameIF, newNameIF) =>
-                {
-                    foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
-                    {
-                        var bm = timelineObject.GetData<BeatmapObject>();
-                        bm.name = bm.name.Replace(oldNameIF.text, newNameIF.text);
-                        EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                    }
-                });
-
-                // Replace Tags
-                SetupReplaceStrings(parent, "Replace Tags", "Old Tag", "Enter old tag...", "New Tag", "Enter new tag...", (oldNameIF, newNameIF) =>
-                {
-                    foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
-                    {
-                        var bm = timelineObject.GetData<BeatmapObject>();
-                        for (int i = 0; i < bm.tags.Count; i++)
-                            bm.tags[i] = bm.tags[i].Replace(oldNameIF.text, newNameIF.text);
-                    }
-                });
-
-                // Replace Text
-                SetupReplaceStrings(parent, "Replace Text", "Old Text", "Enter old text...", "New Text", "Enter new text...", (oldNameIF, newNameIF) =>
-                {
-                    foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
-                    {
-                        var bm = timelineObject.GetData<BeatmapObject>();
-                        bm.text = bm.text.Replace(oldNameIF.text, newNameIF.text);
-                        RTLevel.Current?.UpdateObject(bm, ObjectContext.SHAPE);
-                    }
-                });
-
-                // Replace Modifier
-                SetupReplaceStrings(parent, "Replace Modifier values", "Old Value", "Enter old value...", "New Value", "Enter new value...", (oldNameIF, newNameIF) =>
-                {
-                    foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
-                    {
-                        var bm = timelineObject.GetData<BeatmapObject>();
-
-                        foreach (var modifier in bm.modifiers)
-                        {
-                            for (int i = 0; i < modifier.values.Count; i++)
-                                modifier.values[i] = modifier.values[i].Replace(oldNameIF.text, newNameIF.text);
-                        }
-                    }
-                });
-
-                GeneratePad(parent);
-
-                // Assign Colors
-                {
-                    var labels1 = GenerateLabels(parent, 32f, new Label("- Assign colors -", 22, FontStyle.Bold, TextAnchor.MiddleCenter));
-
-                    var labelsColor = GenerateLabels(parent, 32f, "Primary Color");
-
-                    var disable = EditorPrefabHolder.Instance.Function2Button.Duplicate(parent, "disable color");
-                    var disableX = EditorManager.inst.colorGUI.transform.Find("Image").gameObject.Duplicate(disable.transform, "x");
-                    var disableXImage = disableX.GetComponent<Image>();
-                    disableXImage.sprite = EditorSprites.CloseSprite;
-                    RectValues.Default.AnchoredPosition(-170f, 0f).SizeDelta(32f, 32f).AssignToRectTransform(disableXImage.rectTransform);
-                    var disableButtonStorage = disable.GetComponent<FunctionButtonStorage>();
-                    disableButtonStorage.OnClick.NewListener(() =>
-                    {
-                        disableX.gameObject.SetActive(true);
-                        currentMultiColorSelection = -1;
-                        UpdateMultiColorButtons();
-                    });
-                    disableButtonStorage.Text = "Don't set color";
-                    EditorThemeManager.ApplyGraphic(disableXImage, ThemeGroup.Function_2_Text);
-                    EditorThemeManager.ApplyGraphic(disableButtonStorage.label, ThemeGroup.Function_2_Text);
-                    EditorThemeManager.ApplySelectable(disableButtonStorage.button, ThemeGroup.Function_2);
-
-                    var colorLayout = Creator.NewUIObject("color layout", parent);
-                    colorLayout.transform.AsRT().sizeDelta = new Vector2(390f, 76f);
-                    var colorLayoutGLG = colorLayout.AddComponent<GridLayoutGroup>();
-                    colorLayoutGLG.spacing = new Vector2(4f, 4f);
-                    colorLayoutGLG.cellSize = new Vector2(36f, 36f);
-
-                    for (int i = 0; i < 18; i++)
-                    {
-                        var index = i;
-                        var colorGUI = EditorManager.inst.colorGUI.Duplicate(colorLayout.transform, (i + 1).ToString());
-                        var assigner = colorGUI.AddComponent<AssignToTheme>();
-                        assigner.Index = i;
-                        var image = colorGUI.GetComponent<Image>();
-                        assigner.Graphic = image;
-
-                        var selected = colorGUI.transform.GetChild(0).gameObject;
-                        selected.SetActive(false);
-
-                        var button = colorGUI.GetComponent<Button>();
-                        button.onClick.NewListener(() =>
-                        {
-                            disableX.gameObject.SetActive(false);
-                            currentMultiColorSelection = index;
-                            UpdateMultiColorButtons();
-                        });
-
-                        multiColorButtons.Add(new MultiColorButton
-                        {
-                            Button = button,
-                            Image = image,
-                            Selected = selected
-                        });
-                    }
-
-                    var labels2 = GenerateLabels(parent, 32f, "Primary Opacity");
-
-                    var opacityIF = CreateInputField("opacity", string.Empty, "Enter value... (Keep empty to not set)", parent, isInteger: false);
-                    ((Text)opacityIF.placeholder).fontSize = 13;
-
-                    var labels3 = GenerateLabels(parent, 32f, "Primary Hue");
-
-                    var hueIF = CreateInputField("hue", string.Empty, "Enter value... (Keep empty to not set)", parent, isInteger: false);
-                    ((Text)hueIF.placeholder).fontSize = 13;
-
-                    var labels4 = GenerateLabels(parent, 32f, "Primary Saturation");
-
-                    var satIF = CreateInputField("sat", string.Empty, "Enter value... (Keep empty to not set)", parent, isInteger: false);
-                    ((Text)satIF.placeholder).fontSize = 13;
-
-                    var labels5 = GenerateLabels(parent, 32f, "Primary Value (Brightness)");
-
-                    var valIF = CreateInputField("val", string.Empty, "Enter value... (Keep empty to not set)", parent, isInteger: false);
-                    ((Text)valIF.placeholder).fontSize = 13;
-
-                    var labelsSecondaryColor = GenerateLabels(parent, 32f, "Secondary Color");
-
-                    var disableGradient = EditorPrefabHolder.Instance.Function2Button.Duplicate(parent, "disable color");
-                    var disableGradientX = EditorManager.inst.colorGUI.transform.Find("Image").gameObject.Duplicate(disableGradient.transform, "x");
-                    var disableGradientXImage = disableGradientX.GetComponent<Image>();
-                    disableGradientXImage.sprite = EditorSprites.CloseSprite;
-                    RectValues.Default.AnchoredPosition(-170f, 0f).SizeDelta(32f, 32f).AssignToRectTransform(disableGradientXImage.rectTransform);
-                    var disableGradientButtonStorage = disableGradient.GetComponent<FunctionButtonStorage>();
-                    disableGradientButtonStorage.OnClick.NewListener(() =>
-                    {
-                        disableGradientX.gameObject.SetActive(true);
-                        currentMultiGradientColorSelection = -1;
-                        UpdateMultiColorButtons();
-                    });
-                    disableGradientButtonStorage.Text = "Don't set color";
-                    EditorThemeManager.ApplyGraphic(disableGradientXImage, ThemeGroup.Function_2_Text);
-                    EditorThemeManager.ApplyGraphic(disableGradientButtonStorage.label, ThemeGroup.Function_2_Text);
-                    EditorThemeManager.ApplySelectable(disableGradientButtonStorage.button, ThemeGroup.Function_2);
-
-                    var colorGradientLayout = Creator.NewUIObject("color layout", parent);
-                    colorGradientLayout.transform.AsRT().sizeDelta = new Vector2(390f, 76f);
-                    var colorGradientLayoutGLG = colorGradientLayout.AddComponent<GridLayoutGroup>();
-                    colorGradientLayoutGLG.spacing = new Vector2(4f, 4f);
-                    colorGradientLayoutGLG.cellSize = new Vector2(36f, 36f);
-
-                    for (int i = 0; i < 18; i++)
-                    {
-                        var index = i;
-                        var colorGUI = EditorManager.inst.colorGUI.Duplicate(colorGradientLayout.transform, (i + 1).ToString());
-                        var assigner = colorGUI.AddComponent<AssignToTheme>();
-                        assigner.Index = i;
-                        var image = colorGUI.GetComponent<Image>();
-                        assigner.Graphic = image;
-
-                        var selected = colorGUI.transform.GetChild(0).gameObject;
-                        selected.SetActive(false);
-
-                        var button = colorGUI.GetComponent<Button>();
-                        button.onClick.NewListener(() =>
-                        {
-                            disableGradientX.gameObject.SetActive(false);
-                            currentMultiGradientColorSelection = index;
-                            UpdateMultiColorButtons();
-                        });
-
-                        multiGradientColorButtons.Add(new MultiColorButton
-                        {
-                            Button = button,
-                            Image = image,
-                            Selected = selected
-                        });
-                    }
-
-                    var labels6 = GenerateLabels(parent, 32f, "Secondary Opacity");
-
-                    var opacityGradientIF = CreateInputField("opacity", string.Empty, "Enter value... (Keep empty to not set)", parent, isInteger: false);
-                    ((Text)opacityGradientIF.placeholder).fontSize = 13;
-
-                    var labels7 = GenerateLabels(parent, 32f, "Secondary Hue");
-
-                    var hueGradientIF = CreateInputField("hue", string.Empty, "Enter value... (Keep empty to not set)", parent, isInteger: false);
-                    ((Text)hueGradientIF.placeholder).fontSize = 13;
-
-                    var labels8 = GenerateLabels(parent, 32f, "Secondary Saturation");
-
-                    var satGradientIF = CreateInputField("sat", string.Empty, "Enter value... (Keep empty to not set)", parent, isInteger: false);
-                    ((Text)satGradientIF.placeholder).fontSize = 13;
-
-                    var labels9 = GenerateLabels(parent, 32f, "Secondary Value (Brightness)");
-
-                    var valGradientIF = CreateInputField("val", string.Empty, "Enter value... (Keep empty to not set)", parent, isInteger: false);
-                    ((Text)valGradientIF.placeholder).fontSize = 13;
-
-                    var labels10 = GenerateLabels(parent, 32f, "Ease Type");
-
-                    var curvesObject = EditorPrefabHolder.Instance.CurvesDropdown.Duplicate(parent, "curves");
-                    var curves = curvesObject.GetComponent<Dropdown>();
-                    RTEditor.inst.SetupEaseDropdown(curves);
-                    curves.onValueChanged.ClearAll();
-                    curves.options.Insert(0, new Dropdown.OptionData("None (Doesn't Set Easing)"));
-
-                    TriggerHelper.AddEventTriggers(curves.gameObject, TriggerHelper.ScrollDelta(curves));
-
-                    EditorThemeManager.ApplyDropdown(curves);
-
-                    // Assign to All
-                    {
-                        var labels = GenerateLabels(parent, 32f, "Assign to all Color Keyframes");
-                        var buttons1 = GenerateButtons(parent, 32f, 8f,
-                            new ButtonFunction("Set", () =>
-                            {
-                                var anim = RTEditor.inst.GetEasing(curves.value - 1);
-                                bool setCurve = curves.value != 0;
-                                foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
-                                {
-                                    var bm = timelineObject.GetData<BeatmapObject>();
-
-                                    for (int i = 0; i < bm.events[3].Count; i++)
+                                    var anim = RTEditor.inst.GetEasing(curves.value);
+                                    MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
                                     {
-                                        var kf = bm.events[3][i];
-                                        if (setCurve)
-                                            kf.curve = anim;
-                                        if (currentMultiColorSelection >= 0)
-                                            kf.values[0] = Mathf.Clamp(currentMultiColorSelection, 0, 18);
-                                        if (!string.IsNullOrEmpty(opacityIF.text))
-                                            kf.values[1] = -Mathf.Clamp(Parser.TryParse(opacityIF.text, 1f), 0f, 1f) + 1f;
-                                        if (!string.IsNullOrEmpty(hueIF.text))
-                                            kf.values[2] = Parser.TryParse(hueIF.text, 0f);
-                                        if (!string.IsNullOrEmpty(satIF.text))
-                                            kf.values[3] = Parser.TryParse(satIF.text, 0f);
-                                        if (!string.IsNullOrEmpty(valIF.text))
-                                            kf.values[4] = Parser.TryParse(valIF.text, 0f);
-
-                                        // Gradient
-                                        if (currentMultiGradientColorSelection >= 0)
-                                            kf.values[5] = Mathf.Clamp(currentMultiGradientColorSelection, 0, 18);
-                                        if (!string.IsNullOrEmpty(opacityGradientIF.text))
-                                            kf.values[6] = -Mathf.Clamp(Parser.TryParse(opacityGradientIF.text, 1f), 0f, 1f) + 1f;
-                                        if (!string.IsNullOrEmpty(hueGradientIF.text))
-                                            kf.values[7] = Parser.TryParse(hueGradientIF.text, 0f);
-                                        if (!string.IsNullOrEmpty(satGradientIF.text))
-                                            kf.values[8] = Parser.TryParse(satGradientIF.text, 0f);
-                                        if (!string.IsNullOrEmpty(valGradientIF.text))
-                                            kf.values[9] = Parser.TryParse(valGradientIF.text, 0f);
-                                    }
-
-                                    RTLevel.Current?.UpdateObject(bm, ObjectContext.KEYFRAMES);
-                                }
-                            }),
-                            new ButtonFunction("Add", () =>
-                            {
-                                var anim = RTEditor.inst.GetEasing(curves.value - 1);
-                                bool setCurve = curves.value != 0;
-                                foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
-                                {
-                                    var bm = timelineObject.GetData<BeatmapObject>();
-
-                                    for (int i = 0; i < bm.events[3].Count; i++)
-                                    {
-                                        var kf = bm.events[3][i];
-                                        if (setCurve)
-                                            kf.curve = anim;
-                                        if (currentMultiColorSelection >= 0)
-                                            kf.values[0] = Mathf.Clamp(currentMultiColorSelection, 0, 18); // color slots can't be added onto.
-                                        if (!string.IsNullOrEmpty(opacityIF.text))
-                                            kf.values[1] = Mathf.Clamp(kf.values[1] - Parser.TryParse(opacityIF.text, 1f), 0f, 1f);
-                                        if (!string.IsNullOrEmpty(hueIF.text))
-                                            kf.values[2] += Parser.TryParse(hueIF.text, 0f);
-                                        if (!string.IsNullOrEmpty(satIF.text))
-                                            kf.values[3] += Parser.TryParse(satIF.text, 0f);
-                                        if (!string.IsNullOrEmpty(valIF.text))
-                                            kf.values[4] += Parser.TryParse(valIF.text, 0f);
-
-                                        // Gradient
-                                        if (currentMultiGradientColorSelection >= 0)
-                                            kf.values[5] = Mathf.Clamp(currentMultiGradientColorSelection, 0, 18); // color slots can't be added onto.
-                                        if (!string.IsNullOrEmpty(opacityGradientIF.text))
-                                            kf.values[6] = Mathf.Clamp(kf.values[6] - Parser.TryParse(opacityGradientIF.text, 1f), 0f, 1f);
-                                        if (!string.IsNullOrEmpty(hueGradientIF.text))
-                                            kf.values[7] += Parser.TryParse(hueGradientIF.text, 0f);
-                                        if (!string.IsNullOrEmpty(satGradientIF.text))
-                                            kf.values[8] += Parser.TryParse(satGradientIF.text, 0f);
-                                        if (!string.IsNullOrEmpty(valGradientIF.text))
-                                            kf.values[9] += Parser.TryParse(valGradientIF.text, 0f);
-                                    }
-
-                                    RTLevel.Current?.UpdateObject(bm, ObjectContext.KEYFRAMES);
-                                }
-                            }),
-                            new ButtonFunction("Sub", () =>
-                            {
-                                var anim = RTEditor.inst.GetEasing(curves.value - 1);
-                                bool setCurve = curves.value != 0;
-                                foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
-                                {
-                                    var bm = timelineObject.GetData<BeatmapObject>();
-
-                                    for (int i = 0; i < bm.events[3].Count; i++)
-                                    {
-                                        var kf = bm.events[3][i];
-                                        if (setCurve)
-                                            kf.curve = anim;
-                                        if (currentMultiColorSelection >= 0)
-                                            kf.values[0] = Mathf.Clamp(currentMultiColorSelection, 0, 18); // color slots can't be added onto.
-                                        if (!string.IsNullOrEmpty(opacityIF.text))
-                                            kf.values[1] = Mathf.Clamp(kf.values[1] + Parser.TryParse(opacityIF.text, 1f), 0f, 1f);
-                                        if (!string.IsNullOrEmpty(hueIF.text))
-                                            kf.values[2] -= Parser.TryParse(hueIF.text, 0f);
-                                        if (!string.IsNullOrEmpty(satIF.text))
-                                            kf.values[3] -= Parser.TryParse(satIF.text, 0f);
-                                        if (!string.IsNullOrEmpty(valIF.text))
-                                            kf.values[4] -= Parser.TryParse(valIF.text, 0f);
-
-                                        // Gradient
-                                        if (currentMultiGradientColorSelection >= 0)
-                                            kf.values[5] = Mathf.Clamp(currentMultiGradientColorSelection, 0, 18); // color slots can't be added onto.
-                                        if (!string.IsNullOrEmpty(opacityGradientIF.text))
-                                            kf.values[6] = Mathf.Clamp(kf.values[6] + Parser.TryParse(opacityGradientIF.text, 1f), 0f, 1f);
-                                        if (!string.IsNullOrEmpty(hueGradientIF.text))
-                                            kf.values[7] -= Parser.TryParse(hueGradientIF.text, 0f);
-                                        if (!string.IsNullOrEmpty(satGradientIF.text))
-                                            kf.values[8] -= Parser.TryParse(satGradientIF.text, 0f);
-                                        if (!string.IsNullOrEmpty(valGradientIF.text))
-                                            kf.values[9] -= Parser.TryParse(valGradientIF.text, 0f);
-                                    }
-
-                                    RTLevel.Current?.UpdateObject(bm, ObjectContext.KEYFRAMES);
-                                }
-                            }));
-
-                        EditorHelper.SetComplexity(labels, Complexity.Advanced);
-                        EditorHelper.SetComplexity(buttons1, Complexity.Advanced);
-                    }
-
-                    // Assign to Index
-                    {
-                        var labels = GenerateLabels(parent, 32f, "Assign to Index");
-
-                        var assignIndex = CreateInputField("index", "0", "Enter index...", parent, maxValue: int.MaxValue);
-                        var buttons1 = GenerateButtons(parent, 32f, 8f,
-                            new ButtonFunction("Set", () =>
-                            {
-                                if (assignIndex.text.Contains(","))
-                                {
-                                    var split = assignIndex.text.Split(',');
-
-                                    for (int i = 0; i < split.Length; i++)
-                                    {
-                                        var text = split[i];
-                                        if (!int.TryParse(text, out int a))
-                                            continue;
-
-                                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
+                                        for (int i = 0; i < beatmapObject.events[3].Count; i++)
                                         {
-                                            var bm = timelineObject.GetData<BeatmapObject>();
+                                            var kf = beatmapObject.events[3][i];
+                                            if (setCurve)
+                                                kf.curve = anim;
+                                            if (currentMultiColorSelection >= 0)
+                                                kf.values[0] = Mathf.Clamp(currentMultiColorSelection, 0, 18);
+                                            if (!string.IsNullOrEmpty(primaryOpacityField.numberInputField.Text))
+                                                kf.values[1] = -Mathf.Clamp(Parser.TryParse(primaryOpacityField.numberInputField.Text, 1f), 0f, 1f) + 1f;
+                                            if (!string.IsNullOrEmpty(primaryHueField.numberInputField.Text))
+                                                kf.values[2] = Parser.TryParse(primaryHueField.numberInputField.Text, 0f);
+                                            if (!string.IsNullOrEmpty(primarySaturationField.numberInputField.Text))
+                                                kf.values[3] = Parser.TryParse(primarySaturationField.numberInputField.Text, 0f);
+                                            if (!string.IsNullOrEmpty(primaryValueField.numberInputField.Text))
+                                                kf.values[4] = Parser.TryParse(primaryValueField.numberInputField.Text, 0f);
 
-                                            SetKeyframeValues(bm.events[3][Mathf.Clamp(a, 0, bm.events[3].Count - 1)], curves,
-                                                opacityIF.text, hueIF.text, satIF.text, valIF.text, opacityGradientIF.text, hueGradientIF.text, satGradientIF.text, valGradientIF.text);
-
-                                            RTLevel.Current?.UpdateObject(bm, ObjectContext.KEYFRAMES);
+                                            // Gradient
+                                            if (currentMultiGradientColorSelection >= 0)
+                                                kf.values[5] = Mathf.Clamp(currentMultiGradientColorSelection, 0, 18);
+                                            if (!string.IsNullOrEmpty(secondaryOpacityField.numberInputField.Text))
+                                                kf.values[6] = -Mathf.Clamp(Parser.TryParse(secondaryOpacityField.numberInputField.Text, 1f), 0f, 1f) + 1f;
+                                            if (!string.IsNullOrEmpty(secondaryHueField.numberInputField.Text))
+                                                kf.values[7] = Parser.TryParse(secondaryHueField.numberInputField.Text, 0f);
+                                            if (!string.IsNullOrEmpty(secondarySaturationField.numberInputField.Text))
+                                                kf.values[8] = Parser.TryParse(secondarySaturationField.numberInputField.Text, 0f);
+                                            if (!string.IsNullOrEmpty(secondaryValueField.numberInputField.Text))
+                                                kf.values[9] = Parser.TryParse(secondaryValueField.numberInputField.Text, 0f);
                                         }
-                                    }
-
-                                    return;
-                                }
-
-                                if (!int.TryParse(assignIndex.text, out int num))
-                                    return;
-                                foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
+                                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                                    });
+                                }),
+                                ButtonElement.Label1Button("Sub", () =>
                                 {
-                                    var bm = timelineObject.GetData<BeatmapObject>();
-
-                                    SetKeyframeValues(bm.events[3][Mathf.Clamp(num, 0, bm.events[3].Count - 1)], curves,
-                                        opacityIF.text, hueIF.text, satIF.text, valIF.text, opacityGradientIF.text, hueGradientIF.text, satGradientIF.text, valGradientIF.text);
-
-                                    RTLevel.Current?.UpdateObject(bm, ObjectContext.KEYFRAMES);
-                                }
-                            }),
-                            new ButtonFunction("Add", () =>
-                            {
-                                if (assignIndex.text.Contains(","))
-                                {
-                                    var split = assignIndex.text.Split(',');
-
-                                    for (int i = 0; i < split.Length; i++)
+                                    var anim = RTEditor.inst.GetEasing(curves.value);
+                                    MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
                                     {
-                                        var text = split[i];
-                                        if (!int.TryParse(text, out int a))
+                                        for (int i = 0; i < beatmapObject.events[3].Count; i++)
+                                        {
+                                            var kf = beatmapObject.events[3][i];
+                                            if (setCurve)
+                                                kf.curve = anim;
+                                            if (currentMultiColorSelection >= 0)
+                                                kf.values[0] = Mathf.Clamp(currentMultiColorSelection, 0, 18); // color slots can't be added onto.
+                                            if (!string.IsNullOrEmpty(primaryOpacityField.numberInputField.Text))
+                                                kf.values[1] = Mathf.Clamp(kf.values[1] + Parser.TryParse(primaryOpacityField.numberInputField.Text, 1f), 0f, 1f);
+                                            if (!string.IsNullOrEmpty(primaryHueField.numberInputField.Text))
+                                                kf.values[2] -= Parser.TryParse(primaryHueField.numberInputField.Text, 0f);
+                                            if (!string.IsNullOrEmpty(primarySaturationField.numberInputField.Text))
+                                                kf.values[3] -= Parser.TryParse(primarySaturationField.numberInputField.Text, 0f);
+                                            if (!string.IsNullOrEmpty(primaryValueField.numberInputField.Text))
+                                                kf.values[4] -= Parser.TryParse(primaryValueField.numberInputField.Text, 0f);
+
+                                            // Gradient
+                                            if (currentMultiGradientColorSelection >= 0)
+                                                kf.values[5] = Mathf.Clamp(currentMultiGradientColorSelection, 0, 18); // color slots can't be added onto.
+                                            if (!string.IsNullOrEmpty(secondaryOpacityField.numberInputField.Text))
+                                                kf.values[6] = Mathf.Clamp(kf.values[6] + Parser.TryParse(secondaryOpacityField.numberInputField.Text, 1f), 0f, 1f);
+                                            if (!string.IsNullOrEmpty(secondaryHueField.numberInputField.Text))
+                                                kf.values[7] -= Parser.TryParse(secondaryHueField.numberInputField.Text, 0f);
+                                            if (!string.IsNullOrEmpty(secondarySaturationField.numberInputField.Text))
+                                                kf.values[8] -= Parser.TryParse(secondarySaturationField.numberInputField.Text, 0f);
+                                            if (!string.IsNullOrEmpty(secondaryValueField.numberInputField.Text))
+                                                kf.values[9] -= Parser.TryParse(secondaryValueField.numberInputField.Text, 0f);
+                                        }
+                                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                                    });
+                                }),
+                                ButtonElement.Label1Button("Add", () =>
+                                {
+                                    var anim = RTEditor.inst.GetEasing(curves.value);
+                                    MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                    {
+                                        for (int i = 0; i < beatmapObject.events[3].Count; i++)
+                                        {
+                                            var kf = beatmapObject.events[3][i];
+                                            if (setCurve)
+                                                kf.curve = anim;
+                                            if (currentMultiColorSelection >= 0)
+                                                kf.values[0] = Mathf.Clamp(currentMultiColorSelection, 0, 18); // color slots can't be added onto.
+                                            if (!string.IsNullOrEmpty(primaryOpacityField.numberInputField.Text))
+                                                kf.values[1] = Mathf.Clamp(kf.values[1] - Parser.TryParse(primaryOpacityField.numberInputField.Text, 1f), 0f, 1f);
+                                            if (!string.IsNullOrEmpty(primaryHueField.numberInputField.Text))
+                                                kf.values[2] += Parser.TryParse(primaryHueField.numberInputField.Text, 0f);
+                                            if (!string.IsNullOrEmpty(primarySaturationField.numberInputField.Text))
+                                                kf.values[3] += Parser.TryParse(primarySaturationField.numberInputField.Text, 0f);
+                                            if (!string.IsNullOrEmpty(primaryValueField.numberInputField.Text))
+                                                kf.values[4] += Parser.TryParse(primaryValueField.numberInputField.Text, 0f);
+
+                                            // Gradient
+                                            if (currentMultiGradientColorSelection >= 0)
+                                                kf.values[5] = Mathf.Clamp(currentMultiGradientColorSelection, 0, 18); // color slots can't be added onto.
+                                            if (!string.IsNullOrEmpty(secondaryOpacityField.numberInputField.Text))
+                                                kf.values[6] = Mathf.Clamp(kf.values[6] - Parser.TryParse(secondaryOpacityField.numberInputField.Text, 1f), 0f, 1f);
+                                            if (!string.IsNullOrEmpty(secondaryHueField.numberInputField.Text))
+                                                kf.values[7] += Parser.TryParse(secondaryHueField.numberInputField.Text, 0f);
+                                            if (!string.IsNullOrEmpty(secondarySaturationField.numberInputField.Text))
+                                                kf.values[8] += Parser.TryParse(secondarySaturationField.numberInputField.Text, 0f);
+                                            if (!string.IsNullOrEmpty(secondaryValueField.numberInputField.Text))
+                                                kf.values[9] += Parser.TryParse(secondaryValueField.numberInputField.Text, 0f);
+                                        }
+                                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                                    });
+                                }));
+
+                            new LabelsElement(HorizontalOrVerticalLayoutValues.Horizontal.ChildControlHeight(false), "Assign to Color Keyframes").Init(EditorElement.InitSettings.Default.Parent(parent));
+                            var assignToIndexField = new StringInputElement("0", null, "Set the indexes you want to modify. e.g 0,1,2");
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                new LabelElement("Indexes")
+                                {
+                                    layoutElementValues = LayoutElementValues.Default.MinWidth(120),
+                                },
+                                assignToIndexField);
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                ButtonElement.Label1Button("Set", () =>
+                                {
+                                    var anim = RTEditor.inst.GetEasing(curves.value);
+                                    ParseIterationIndex(assignToIndexField.inputField.text, index => MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                    {
+                                        SetKeyframeValues(beatmapObject.events[3][Mathf.Clamp(index, 0, beatmapObject.events[3].Count - 1)], setCurve, anim,
+                                            primaryOpacityField.numberInputField.Text,
+                                            primaryHueField.numberInputField.Text,
+                                            primarySaturationField.numberInputField.Text,
+                                            primaryValueField.numberInputField.Text,
+                                            secondaryOpacityField.numberInputField.Text,
+                                            secondaryHueField.numberInputField.Text,
+                                            secondarySaturationField.numberInputField.Text,
+                                            secondaryValueField.numberInputField.Text, MathOperation.Set);
+                                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                                    }));
+                                }),
+                                ButtonElement.Label1Button("Sub", () =>
+                                {
+                                    var anim = RTEditor.inst.GetEasing(curves.value);
+                                    ParseIterationIndex(assignToIndexField.inputField.text, index => MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                    {
+                                        SetKeyframeValues(beatmapObject.events[3][Mathf.Clamp(index, 0, beatmapObject.events[3].Count - 1)], setCurve, anim,
+                                            primaryOpacityField.numberInputField.Text,
+                                            primaryHueField.numberInputField.Text,
+                                            primarySaturationField.numberInputField.Text,
+                                            primaryValueField.numberInputField.Text,
+                                            secondaryOpacityField.numberInputField.Text,
+                                            secondaryHueField.numberInputField.Text,
+                                            secondarySaturationField.numberInputField.Text,
+                                            secondaryValueField.numberInputField.Text, MathOperation.Subtract);
+                                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                                    }));
+                                }),
+                                ButtonElement.Label1Button("Add", () =>
+                                {
+                                    var anim = RTEditor.inst.GetEasing(curves.value);
+                                    ParseIterationIndex(assignToIndexField.inputField.text, index => MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                    {
+                                        SetKeyframeValues(beatmapObject.events[3][Mathf.Clamp(index, 0, beatmapObject.events[3].Count - 1)], setCurve, anim,
+                                            primaryOpacityField.numberInputField.Text,
+                                            primaryHueField.numberInputField.Text,
+                                            primarySaturationField.numberInputField.Text,
+                                            primaryValueField.numberInputField.Text,
+                                            secondaryOpacityField.numberInputField.Text,
+                                            secondaryHueField.numberInputField.Text,
+                                            secondarySaturationField.numberInputField.Text,
+                                            secondaryValueField.numberInputField.Text, MathOperation.Addition);
+                                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                                    }));
+                                }));
+
+                            ButtonElement.Label1Button("Create Color Keyframe", () =>
+                            {
+                                var anim = RTEditor.inst.GetEasing(curves.value);
+                                MultiObjectEditor.inst.ForEachBeatmapObject(timelineObject =>
+                                {
+                                    var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                    var currentTime = AudioManager.inst.CurrentAudioSource.time;
+                                    if (currentTime < beatmapObject.StartTime) // don't want people creating keyframes before the objects' start time.
+                                        return;
+
+                                    var index = beatmapObject.events[3].FindLastIndex(x => currentTime > beatmapObject.StartTime + x.time);
+                                    if (index < 0)
+                                        return;
+
+                                    var kf = beatmapObject.events[3][index].Copy();
+                                    kf.time = currentTime - beatmapObject.StartTime;
+                                    SetKeyframeValues(kf, setCurve, anim,
+                                        primaryOpacityField.numberInputField.Text,
+                                        primaryHueField.numberInputField.Text,
+                                        primarySaturationField.numberInputField.Text,
+                                        primaryValueField.numberInputField.Text,
+                                        secondaryOpacityField.numberInputField.Text,
+                                        secondaryHueField.numberInputField.Text,
+                                        secondarySaturationField.numberInputField.Text,
+                                        secondaryValueField.numberInputField.Text,
+                                        MathOperation.Set);
+                                    beatmapObject.events[3].Add(kf);
+
+                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                                    EditorTimeline.inst.RenderTimelineObject(timelineObject);
+                                });
+                            }, buttonThemeGroup: ThemeGroup.Add, graphicThemeGroup: ThemeGroup.Add_Text).Init(EditorElement.InitSettings.Default.Rect(RectValues.Default.SizeDelta(0f, 32f)).Parent(parent));
+
+                            #endregion
+
+                            #endregion
+
+                            new SpacerElement().Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                            #region Pasting
+
+                            new LabelsElement(new LabelElement("Pasting") { fontSize = 22, fontStyle = FontStyle.Bold }).Init(EditorElement.InitSettings.Default.Parent(parent));
+                            new LabelsElement(HorizontalOrVerticalLayoutValues.Horizontal.ChildControlHeight(false), "Paste Keyframes to Selected").Init(EditorElement.InitSettings.Default.Parent(parent));
+                            ButtonElement.Label1Button("Paste Keyframes", EditorHelper.PasteKeyframes, buttonThemeGroup: ThemeGroup.Paste, graphicThemeGroup: ThemeGroup.Paste_Text).Init(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced).Rect(RectValues.Default.SizeDelta(0f, 32f)));
+
+                            new LabelsElement("Repeat Paste Keyframes").Init(EditorElement.InitSettings.Default.Parent(parent));
+                            var repeatCountElement = new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerInt()
+                            {
+                                max = int.MaxValue,
+                            });
+                            var repeatOffsetTime = new NumberInputElement("0.1", null, new NumberInputElement.ArrowHandlerFloat());
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Normal), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                new LabelElement("Repeat Count")
+                                {
+                                    layoutElementValues = LayoutElementValues.Default.MinWidth(120f),
+                                },
+                                repeatCountElement,
+                                new LabelElement("Repeat Offset Time")
+                                {
+                                    layoutElementValues = LayoutElementValues.Default.MinWidth(120f),
+                                },
+                                repeatOffsetTime,
+                                ButtonElement.Label1Button("Repeat Paste Keyframes", () => EditorHelper.RepeatPasteKeyframes(Parser.TryParse(repeatCountElement.numberInputField.Text, 0), Parser.TryParse(repeatOffsetTime.numberInputField.Text, 0f)),
+                                    buttonThemeGroup: ThemeGroup.Paste,
+                                    graphicThemeGroup: ThemeGroup.Paste_Text,
+                                    labelAlignment: TextAnchor.MiddleCenter,
+                                    layoutElementValues: LayoutElementValues.Default.MinWidth(120f)));
+
+                            #endregion
+
+                            new SpacerElement().Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                            #region Keyframe Data
+
+                            new LabelsElement(new LabelElement("Keyframe Data") { fontSize = 22, fontStyle = FontStyle.Bold }).Init(EditorElement.InitSettings.Default.Parent(parent));
+                            new LabelsElement("Paste All Types").Init(EditorElement.InitSettings.Default.Parent(parent));
+                            GeneratePasteKeyframeDataElements(parent,
+                                () =>
+                                {
+                                    MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                    {
+                                        for (int i = 0; i < beatmapObject.events.Count; i++)
+                                        {
+                                            var copiedKeyframeData = ObjectEditor.inst.Dialog.Timeline.GetCopiedData(i);
+                                            if (copiedKeyframeData == null)
+                                                continue;
+
+                                            for (int j = 0; j < beatmapObject.events[i].Count; j++)
+                                            {
+                                                var kf = beatmapObject.events[i][j];
+                                                kf.curve = copiedKeyframeData.curve;
+                                                kf.values = copiedKeyframeData.values.Copy();
+                                                kf.randomValues = copiedKeyframeData.randomValues.Copy();
+                                                kf.random = copiedKeyframeData.random;
+                                                kf.relative = copiedKeyframeData.relative;
+                                            }
+                                        }
+                                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                                    });
+                                    EditorManager.inst.DisplayNotification("Pasted keyframe data to all keyframes.", 2f, EditorManager.NotificationType.Success);
+                                },
+                                _val =>
+                                {
+                                    ParseIterationIndex(_val, index => MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                    {
+                                        for (int i = 0; i < beatmapObject.events.Count; i++)
+                                        {
+                                            var copiedKeyframeData = ObjectEditor.inst.Dialog.Timeline.GetCopiedData(i);
+                                            if (copiedKeyframeData == null)
+                                                continue;
+
+                                            var kf = beatmapObject.events[i][Mathf.Clamp(index, 0, beatmapObject.events[i].Count - 1)];
+                                            kf.curve = copiedKeyframeData.curve;
+                                            kf.values = copiedKeyframeData.values.Copy();
+                                            kf.randomValues = copiedKeyframeData.randomValues.Copy();
+                                            kf.random = copiedKeyframeData.random;
+                                            kf.relative = copiedKeyframeData.relative;
+                                        }
+                                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                                    }));
+                                    EditorManager.inst.DisplayNotification("Pasted keyframe data to current selected keyframe.", 2f, EditorManager.NotificationType.Success);
+                                });
+                            for (int j = 0; j < 4; j++)
+                            {
+                                int type = j;
+                                string n = j switch
+                                {
+                                    0 => "Position",
+                                    1 => "Scale",
+                                    2 => "Rotation",
+                                    3 => "Color",
+                                    _ => "Null",
+                                };
+                                new LabelsElement($"Paste {n}").Init(EditorElement.InitSettings.Default.Parent(parent));
+                                GeneratePasteKeyframeDataElements(parent,
+                                    () =>
+                                    {
+                                        var copiedKeyframeData = ObjectEditor.inst.Dialog.Timeline.GetCopiedData(type);
+                                        if (copiedKeyframeData == null)
+                                        {
+                                            EditorManager.inst.DisplayNotification($"{n} keyframe data not copied yet.", 2f, EditorManager.NotificationType.Error);
                                             return;
-
-                                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
-                                        {
-                                            var bm = timelineObject.GetData<BeatmapObject>();
-
-                                            AddKeyframeValues(bm.events[3][Mathf.Clamp(a, 0, bm.events[3].Count - 1)], curves,
-                                                opacityIF.text, hueIF.text, satIF.text, valIF.text, opacityGradientIF.text, hueGradientIF.text, satGradientIF.text, valGradientIF.text);
-
-                                            RTLevel.Current?.UpdateObject(bm, ObjectContext.KEYFRAMES);
                                         }
-                                    }
 
-                                    return;
-                                }
-
-                                if (!int.TryParse(assignIndex.text, out int num))
-                                    return;
-                                foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
-                                {
-                                    var bm = timelineObject.GetData<BeatmapObject>();
-
-                                    AddKeyframeValues(bm.events[3][Mathf.Clamp(num, 0, bm.events[3].Count - 1)], curves,
-                                        opacityIF.text, hueIF.text, satIF.text, valIF.text, opacityGradientIF.text, hueGradientIF.text, satGradientIF.text, valGradientIF.text);
-
-                                    RTLevel.Current?.UpdateObject(bm, ObjectContext.KEYFRAMES);
-                                }
-                            }),
-                            new ButtonFunction("Sub", () =>
-                            {
-                                if (assignIndex.text.Contains(","))
-                                {
-                                    var split = assignIndex.text.Split(',');
-
-                                    for (int i = 0; i < split.Length; i++)
+                                        MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                        {
+                                            for (int i = 0; i < beatmapObject.events[type].Count; i++)
+                                            {
+                                                var kf = beatmapObject.events[type][i];
+                                                kf.curve = copiedKeyframeData.curve;
+                                                kf.values = copiedKeyframeData.values.Copy();
+                                                kf.randomValues = copiedKeyframeData.randomValues.Copy();
+                                                kf.random = copiedKeyframeData.random;
+                                                kf.relative = copiedKeyframeData.relative;
+                                            }
+                                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                                        });
+                                        EditorManager.inst.DisplayNotification($"Pasted {n.ToLower()} keyframe data to current selected keyframe.", 2f, EditorManager.NotificationType.Success);
+                                    },
+                                    _val =>
                                     {
-                                        var text = split[i];
-                                        if (!int.TryParse(text, out int a))
+                                        var copiedKeyframeData = ObjectEditor.inst.Dialog.Timeline.GetCopiedData(type);
+                                        if (!copiedKeyframeData)
+                                        {
+                                            EditorManager.inst.DisplayNotification($"{n} keyframe data not copied yet.", 2f, EditorManager.NotificationType.Error);
                                             return;
-
-                                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
-                                        {
-                                            var bm = timelineObject.GetData<BeatmapObject>();
-
-                                            SubKeyframeValues(bm.events[3][Mathf.Clamp(a, 0, bm.events[3].Count - 1)], curves,
-                                                opacityIF.text, hueIF.text, satIF.text, valIF.text, opacityGradientIF.text, hueGradientIF.text, satGradientIF.text, valGradientIF.text);
-
-                                            RTLevel.Current?.UpdateObject(bm, ObjectContext.KEYFRAMES);
                                         }
-                                    }
 
-                                    return;
-                                }
+                                        ParseIterationIndex(_val, index => MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                        {
+                                            var kf = beatmapObject.events[type][Mathf.Clamp(index, 0, beatmapObject.events[type].Count - 1)];
+                                            kf.curve = copiedKeyframeData.curve;
+                                            kf.values = copiedKeyframeData.values.Copy();
+                                            kf.randomValues = copiedKeyframeData.randomValues.Copy();
+                                            kf.random = copiedKeyframeData.random;
+                                            kf.relative = copiedKeyframeData.relative;
+                                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                                        }));
+                                        EditorManager.inst.DisplayNotification($"Pasted {n.ToLower()} keyframe data to current selected keyframe.", 2f, EditorManager.NotificationType.Success);
+                                    });
+                            }
 
-                                if (!int.TryParse(assignIndex.text, out int num))
-                                    return;
+                            #endregion
+
+                            new SpacerElement().Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                            #region Clear
+
+                            new LabelsElement(new LabelElement("Clear") { fontSize = 22, fontStyle = FontStyle.Bold }).Init(EditorElement.InitSettings.Default.Parent(parent));
+                            ButtonElement.Label1Button("Clear All Keyframes", () => RTEditor.inst.ShowWarningPopup("You are about to clear animations from all selected objects, this <b>CANNOT</b> be undone!", () =>
+                            {
                                 foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                                 {
                                     var bm = timelineObject.GetData<BeatmapObject>();
-
-                                    SubKeyframeValues(bm.events[3][Mathf.Clamp(num, 0, bm.events[3].Count - 1)], curves,
-                                        opacityIF.text, hueIF.text, satIF.text, valIF.text, opacityGradientIF.text, hueGradientIF.text, satGradientIF.text, valGradientIF.text);
-
-                                    RTLevel.Current?.UpdateObject(bm, ObjectContext.KEYFRAMES);
-                                }
-                            }));
-
-                        EditorHelper.SetComplexity(labels, Complexity.Advanced);
-                        try
-                        {
-                            EditorHelper.SetComplexity(assignIndex.transform.parent.gameObject, Complexity.Normal);
-                        }
-                        catch (Exception ex)
-                        {
-                            CoreHelper.LogException(ex);
-                        }
-                        EditorHelper.SetComplexity(buttons1, Complexity.Advanced);
-                    }
-
-                    // Create Color Keyframe
-                    {
-                        var labels = GenerateLabels(parent, 32f, "Create Color Keyframe");
-                        var buttons1 = GenerateButtons(parent, 32f, 0f, ThemeGroup.Add, ThemeGroup.Add_Text, new ButtonFunction("Create", () =>
-                        {
-                            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
-                            {
-                                var bm = timelineObject.GetData<BeatmapObject>();
-
-                                var currentTime = AudioManager.inst.CurrentAudioSource.time;
-
-                                if (currentTime < bm.StartTime) // don't want people creating keyframes before the objects' start time.
-                                    continue;
-
-                                var index = bm.events[3].FindLastIndex(x => currentTime > bm.StartTime + x.time);
-
-                                if (index >= 0 && currentTime > bm.StartTime)
-                                {
-                                    var kf = bm.events[3][index].Copy();
-                                    kf.time = currentTime - bm.StartTime;
-                                    if (curves.value != 0)
-                                        kf.curve = RTEditor.inst.GetEasing(curves.value - 1);
-
-                                    if (currentMultiColorSelection >= 0)
-                                        kf.values[0] = Mathf.Clamp(currentMultiColorSelection, 0, 18);
-                                    if (!string.IsNullOrEmpty(opacityIF.text))
-                                        kf.values[1] = -Mathf.Clamp(Parser.TryParse(opacityIF.text, 1f), 0f, 1f) + 1f;
-                                    if (!string.IsNullOrEmpty(hueIF.text))
-                                        kf.values[2] = Parser.TryParse(hueIF.text, 0f);
-                                    if (!string.IsNullOrEmpty(satIF.text))
-                                        kf.values[3] = Parser.TryParse(satIF.text, 0f);
-                                    if (!string.IsNullOrEmpty(valIF.text))
-                                        kf.values[4] = Parser.TryParse(valIF.text, 0f);
-
-                                    // Gradient
-                                    if (currentMultiGradientColorSelection >= 0)
-                                        kf.values[5] = Mathf.Clamp(currentMultiGradientColorSelection, 0, 18);
-                                    if (!string.IsNullOrEmpty(opacityGradientIF.text))
-                                        kf.values[6] = -Mathf.Clamp(Parser.TryParse(opacityGradientIF.text, 1f), 0f, 1f) + 1f;
-                                    if (!string.IsNullOrEmpty(hueGradientIF.text))
-                                        kf.values[7] = Parser.TryParse(hueGradientIF.text, 0f);
-                                    if (!string.IsNullOrEmpty(satGradientIF.text))
-                                        kf.values[8] = Parser.TryParse(satGradientIF.text, 0f);
-                                    if (!string.IsNullOrEmpty(valGradientIF.text))
-                                        kf.values[9] = Parser.TryParse(valGradientIF.text, 0f);
-
-                                    bm.events[3].Add(kf);
-                                }
-
-                                RTLevel.Current?.UpdateObject(bm, ObjectContext.KEYFRAMES);
-                                EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(bm));
-                            }
-                        }));
-
-                        EditorHelper.SetComplexity(labels, Complexity.Advanced);
-                        EditorHelper.SetComplexity(buttons1, Complexity.Advanced);
-                    }
-
-                    EditorHelper.SetComplexity(labelsColor, Complexity.Advanced);
-                    EditorHelper.SetComplexity(labelsSecondaryColor, Complexity.Advanced);
-                    EditorHelper.SetComplexity(labels1, Complexity.Advanced);
-                    EditorHelper.SetComplexity(labels2, Complexity.Advanced);
-                    EditorHelper.SetComplexity(labels3, Complexity.Advanced);
-                    EditorHelper.SetComplexity(labels4, Complexity.Advanced);
-                    EditorHelper.SetComplexity(labels5, Complexity.Advanced);
-                    EditorHelper.SetComplexity(labels6, Complexity.Advanced);
-                    EditorHelper.SetComplexity(labels7, Complexity.Advanced);
-                    EditorHelper.SetComplexity(labels8, Complexity.Advanced);
-                    EditorHelper.SetComplexity(labels9, Complexity.Advanced);
-                    EditorHelper.SetComplexity(labels10, Complexity.Advanced);
-
-                    EditorHelper.SetComplexity(disable, Complexity.Advanced);
-                    EditorHelper.SetComplexity(colorLayout, Complexity.Advanced);
-                    EditorHelper.SetComplexity(disableGradient, Complexity.Advanced);
-                    EditorHelper.SetComplexity(colorGradientLayout, Complexity.Advanced);
-                    EditorHelper.SetComplexity(curvesObject, Complexity.Advanced);
-                    try
-                    {
-                        EditorHelper.SetComplexity(opacityIF.transform.parent.gameObject, Complexity.Advanced);
-                        EditorHelper.SetComplexity(hueIF.transform.parent.gameObject, Complexity.Advanced);
-                        EditorHelper.SetComplexity(satIF.transform.parent.gameObject, Complexity.Advanced);
-                        EditorHelper.SetComplexity(valIF.transform.parent.gameObject, Complexity.Advanced);
-                        EditorHelper.SetComplexity(opacityGradientIF.transform.parent.gameObject, Complexity.Advanced);
-                        EditorHelper.SetComplexity(hueGradientIF.transform.parent.gameObject, Complexity.Advanced);
-                        EditorHelper.SetComplexity(satGradientIF.transform.parent.gameObject, Complexity.Advanced);
-                        EditorHelper.SetComplexity(valGradientIF.transform.parent.gameObject, Complexity.Advanced);
-                    }
-                    catch (Exception ex)
-                    {
-                        CoreHelper.LogException(ex);
-                    }
-                }
-
-                GeneratePad(parent, Complexity.Normal);
-                var pastingDataLabels = GenerateLabels(parent, 32f, new Label("- Pasting Data -", 22, FontStyle.Bold, TextAnchor.MiddleCenter));
-                EditorHelper.SetComplexity(pastingDataLabels, Complexity.Normal);
-
-                // Paste Data
-                {
-                    var allTypesLabel = GenerateLabels(parent, 32f, "Paste Keyframe data (All types)");
-
-                    // All Types
-                    {
-                        GeneratePasteKeyframeData(parent, () =>
-                        {
-                            foreach (var timelineObject in EditorTimeline.inst.SelectedBeatmapObjects)
-                            {
-                                var bm = timelineObject.GetData<BeatmapObject>();
-
-                                for (int i = 0; i < bm.events.Count; i++)
-                                {
-                                    var copiedKeyframeData = ObjectEditor.inst.Dialog.Timeline.GetCopiedData(i);
-                                    if (copiedKeyframeData == null)
-                                        continue;
-
-                                    for (int j = 0; j < bm.events[i].Count; j++)
-                                    {
-                                        var kf = bm.events[i][j];
-                                        kf.curve = copiedKeyframeData.curve;
-                                        kf.values = copiedKeyframeData.values.Copy();
-                                        kf.randomValues = copiedKeyframeData.randomValues.Copy();
-                                        kf.random = copiedKeyframeData.random;
-                                        kf.relative = copiedKeyframeData.relative;
-
-                                        RTLevel.Current?.UpdateObject(bm, ObjectContext.KEYFRAMES);
-                                    }
-                                }
-                            }
-                            EditorManager.inst.DisplayNotification("Pasted keyframe data to all keyframes.", 2f, EditorManager.NotificationType.Success);
-                        }, _val =>
-                        {
-                            if (int.TryParse(_val, out int num))
-                            {
-                                foreach (var timelineObject in EditorTimeline.inst.SelectedBeatmapObjects)
-                                {
-                                    var bm = timelineObject.GetData<BeatmapObject>();
-
+                                    foreach (var tkf in bm.TimelineKeyframes)
+                                        CoreHelper.Delete(tkf.GameObject);
+                                    bm.TimelineKeyframes.Clear();
                                     for (int i = 0; i < bm.events.Count; i++)
                                     {
-                                        var copiedKeyframeData = ObjectEditor.inst.Dialog.Timeline.GetCopiedData(i);
-                                        if (copiedKeyframeData == null)
-                                            continue;
-
-                                        var kf = bm.events[i][Mathf.Clamp(num, 0, bm.events[i].Count - 1)];
-                                        kf.curve = copiedKeyframeData.curve;
-                                        kf.values = copiedKeyframeData.values.Copy();
-                                        kf.randomValues = copiedKeyframeData.randomValues.Copy();
-                                        kf.random = copiedKeyframeData.random;
-                                        kf.relative = copiedKeyframeData.relative;
-
-                                        RTLevel.Current?.UpdateObject(bm, ObjectContext.KEYFRAMES);
+                                        bm.events[i].Sort((a, b) => a.time.CompareTo(b.time));
+                                        var firstKF = bm.events[i][0].Copy(false);
+                                        bm.events[i].Clear();
+                                        bm.events[i].Add(firstKF);
                                     }
+                                    if (EditorTimeline.inst.SelectedObjects.Count == 1)
+                                    {
+                                        ObjectEditor.inst.Dialog.Timeline.ResizeKeyframeTimeline(bm);
+                                        ObjectEditor.inst.Dialog.Timeline.RenderKeyframes(bm);
+                                    }
+
+                                    RTLevel.Current?.UpdateObject(bm, ObjectContext.KEYFRAMES);
+                                    EditorTimeline.inst.RenderTimelineObject(timelineObject);
                                 }
-                                EditorManager.inst.DisplayNotification("Pasted keyframe data to current selected keyframe.", 2f, EditorManager.NotificationType.Success);
-                            }
-                        });
-                    }
+                            }), buttonThemeGroup: ThemeGroup.Delete, graphicThemeGroup: ThemeGroup.Delete_Text).Init(EditorElement.InitSettings.Default.Parent(parent).Rect(RectValues.Default.SizeDelta(0f, 32f)));
+                            ButtonElement.Label1Button("Clear Position Keyframes", () => MultiObjectEditor.inst.ClearKeyframes(0), buttonThemeGroup: ThemeGroup.Delete, graphicThemeGroup: ThemeGroup.Delete_Text).Init(EditorElement.InitSettings.Default.Parent(parent).Rect(RectValues.Default.SizeDelta(0f, 32f)));
+                            ButtonElement.Label1Button("Clear Scale Keyframes", () => MultiObjectEditor.inst.ClearKeyframes(1), buttonThemeGroup: ThemeGroup.Delete, graphicThemeGroup: ThemeGroup.Delete_Text).Init(EditorElement.InitSettings.Default.Parent(parent).Rect(RectValues.Default.SizeDelta(0f, 32f)));
+                            ButtonElement.Label1Button("Clear Rotation Keyframes", () => MultiObjectEditor.inst.ClearKeyframes(2), buttonThemeGroup: ThemeGroup.Delete, graphicThemeGroup: ThemeGroup.Delete_Text).Init(EditorElement.InitSettings.Default.Parent(parent).Rect(RectValues.Default.SizeDelta(0f, 32f)));
+                            ButtonElement.Label1Button("Clear Color Keyframes", () => MultiObjectEditor.inst.ClearKeyframes(3), buttonThemeGroup: ThemeGroup.Delete, graphicThemeGroup: ThemeGroup.Delete_Text).Init(EditorElement.InitSettings.Default.Parent(parent).Rect(RectValues.Default.SizeDelta(0f, 32f)));
 
-                    EditorHelper.SetComplexity(allTypesLabel, Complexity.Advanced);
+                            #endregion
 
-                    for (int i = 0; i < 4; i++)
-                    {
-                        string name = i switch
-                        {
-                            0 => "Position",
-                            1 => "Scale",
-                            2 => "Rotation",
-                            3 => "Color",
-                            _ => "Null",
-                        };
-                        var typeLabel = GenerateLabels(parent, 32f, $"Paste Keyframe data ({name})");
-                        GeneratePasteKeyframeData(parent, i, name);
-                        EditorHelper.SetComplexity(typeLabel, Complexity.Advanced);
-                    }
+                            break;
+                        }
+                    case Tab.Replace: {
+                            new LabelsElement(new LabelElement("Name") { fontSize = 22, fontStyle = FontStyle.Bold }).Init(EditorElement.InitSettings.Default.Parent(parent));
+                            var oldNameInput = new StringInputElement("name", null)
+                            {
+                                layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
+                            };
+                            var newNameInput = new StringInputElement("name", null)
+                            {
+                                layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
+                            };
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                new LabelElement("Old Name")
+                                {
+                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                },
+                                oldNameInput,
+                                new LabelElement("New Name")
+                                {
+                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                },
+                                newNameInput,
+                                ButtonElement.Label1Button("Replace", () =>
+                                {
+                                    if (!oldNameInput.inputField || !newNameInput.inputField)
+                                        return;
+
+                                    MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                    {
+                                        if (!timelineObject.isPrefabObject)
+                                            timelineObject.SetName(timelineObject.Name.Replace(oldNameInput.inputField.text, newNameInput.inputField.text));
+                                    });
+                                }, labelAlignment: TextAnchor.MiddleCenter));
+
+                            new SpacerElement().Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                            new LabelsElement(new LabelElement("Text") { fontSize = 22, fontStyle = FontStyle.Bold }).Init(EditorElement.InitSettings.Default.Parent(parent));
+                            var oldTextInput = new StringInputElement("text", null)
+                            {
+                                layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
+                            };
+                            var newTextInput = new StringInputElement("text", null)
+                            {
+                                layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
+                            };
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                new LabelElement("Old Text")
+                                {
+                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                },
+                                oldTextInput,
+                                new LabelElement("New Text")
+                                {
+                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                },
+                                newTextInput,
+                                ButtonElement.Label1Button("Replace", () =>
+                                {
+                                    if (!oldTextInput.inputField || !newTextInput.inputField)
+                                        return;
+
+                                    MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                    {
+                                        beatmapObject.text = beatmapObject.text.Replace(oldTextInput.inputField.text, newTextInput.inputField.text);
+                                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.TEXT);
+                                    });
+                                }, labelAlignment: TextAnchor.MiddleCenter));
+
+                            new SpacerElement().Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                            new LabelsElement(new LabelElement("Tag") { fontSize = 22, fontStyle = FontStyle.Bold }).Init(EditorElement.InitSettings.Default.Parent(parent));
+                            var oldTagInput = new StringInputElement("object group", null)
+                            {
+                                layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
+                            };
+                            var newTagInput = new StringInputElement("object group", null)
+                            {
+                                layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
+                            };
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                new LabelElement("Old Tag")
+                                {
+                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                },
+                                oldTagInput,
+                                new LabelElement("New Tag")
+                                {
+                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                },
+                                newTagInput,
+                                ButtonElement.Label1Button("Replace", () =>
+                                {
+                                    if (!oldTagInput.inputField || !newTagInput.inputField)
+                                        return;
+
+                                    MultiObjectEditor.inst.ForEachModifyable(modifyable =>
+                                    {
+                                        for (int i = 0; i < modifyable.Tags.Count; i++)
+                                            modifyable.Tags[i] = modifyable.Tags[i].Replace(oldTagInput.inputField.text, newTagInput.inputField.text);
+                                    });
+                                }, labelAlignment: TextAnchor.MiddleCenter));
+
+                            new SpacerElement().Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                            new LabelsElement(new LabelElement("Modifier Values") { fontSize = 22, fontStyle = FontStyle.Bold }).Init(EditorElement.InitSettings.Default.Parent(parent));
+                            var oldModifierValueInput = new StringInputElement("value", null)
+                            {
+                                layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
+                            };
+                            var newModifierValueInput = new StringInputElement("value", null)
+                            {
+                                layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
+                            };
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                new LabelElement("Old Modifier Value")
+                                {
+                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                },
+                                oldModifierValueInput,
+                                new LabelElement("New Modifier Value")
+                                {
+                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                },
+                                newModifierValueInput,
+                                ButtonElement.Label1Button("Replace", () =>
+                                {
+                                    if (!oldModifierValueInput.inputField || !newModifierValueInput.inputField)
+                                        return;
+
+                                    MultiObjectEditor.inst.ForEachModifyable(modifyable =>
+                                    {
+                                        for (int i = 0; i < modifyable.Modifiers.Count; i++)
+                                        {
+                                            var modifier = modifyable.Modifiers[i];
+                                            for (int j = 0; j < modifier.values.Count; j++)
+                                                modifier.values[j] = modifier.values[j].Replace(oldModifierValueInput.inputField.text, newModifierValueInput.inputField.text);
+                                        }
+                                    });
+                                }, labelAlignment: TextAnchor.MiddleCenter));
+
+                            break;
+                        }
+                    case Tab.Sync: {
+                            GenerateSyncButtons(parent, "Start Time", (syncObject, beatmapObject) =>
+                            {
+                                beatmapObject.StartTime = syncObject.StartTime;
+                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.START_TIME);
+                                EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
+                            });
+                            GenerateSyncButtons(parent, "Object Name", (syncObject, beatmapObject) =>
+                            {
+                                beatmapObject.name = syncObject.name;
+                                EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
+                            });
+                            GenerateSyncButtons(parent, "Object Type", (syncObject, beatmapObject) =>
+                            {
+                                beatmapObject.objectType = syncObject.objectType;
+                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.OBJECT_TYPE);
+                                EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
+                            });
+                            GenerateSyncButtons(parent, "Autokill Type", (syncObject, beatmapObject) =>
+                            {
+                                beatmapObject.autoKillType = syncObject.autoKillType;
+                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
+                                EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
+                            });
+                            GenerateSyncButtons(parent, "Autokill Offset", (syncObject, beatmapObject) =>
+                            {
+                                beatmapObject.autoKillOffset = syncObject.autoKillOffset;
+                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
+                                EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
+                            });
+                            GenerateSyncButtons(parent, "Parent", (syncObject, beatmapObject) =>
+                            {
+                                beatmapObject.Parent = syncObject.parent;
+                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARENT_CHAIN);
+                            });
+                            GenerateSyncButtons(parent, "Parent Desync", (syncObject, beatmapObject) =>
+                            {
+                                beatmapObject.desync = syncObject.desync;
+                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARENT_CHAIN);
+                            });
+                            GenerateSyncButtons(parent, "Parent Toggles", (syncObject, beatmapObject) =>
+                            {
+                                beatmapObject.parentType = syncObject.parentType;
+                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARENT_SETTING);
+                            });
+                            GenerateSyncButtons(parent, "Parent Offsets (Delay)", (syncObject, beatmapObject) =>
+                            {
+                                for (int i = 0; i < syncObject.parentOffsets.Length; i++)
+                                    beatmapObject.SetParentOffset(i, syncObject.GetParentOffset(i));
+                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARENT_SETTING);
+                            });
+                            GenerateSyncButtons(parent, "Parent Additive", (syncObject, beatmapObject) =>
+                            {
+                                beatmapObject.parentAdditive = syncObject.parentAdditive;
+                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARENT_SETTING);
+                            });
+                            GenerateSyncButtons(parent, "Parent Parallax", (syncObject, beatmapObject) =>
+                            {
+                                for (int i = 0; i < syncObject.parallaxSettings.Length; i++)
+                                    beatmapObject.parallaxSettings[i] = syncObject.parallaxSettings[i];
+                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARENT_SETTING);
+                            });
+                            GenerateSyncButtons(parent, "Origin", (syncObject, beatmapObject) =>
+                            {
+                                beatmapObject.origin = syncObject.origin;
+                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+                            });
+                            GenerateSyncButtons(parent, "Depth", (syncObject, beatmapObject) =>
+                            {
+                                beatmapObject.Depth = syncObject.Depth;
+                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+                            });
+                            GenerateSyncButtons(parent, "Render Layer Type", (syncObject, beatmapObject) =>
+                            {
+                                beatmapObject.renderLayerType = syncObject.renderLayerType;
+                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.RENDERING);
+                            });
+                            GenerateSyncButtons(parent, "Gradient Type", (syncObject, beatmapObject) =>
+                            {
+                                beatmapObject.gradientType = syncObject.gradientType;
+                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.RENDERING);
+                            });
+                            GenerateSyncButtons(parent, "Gradient Scale", (syncObject, beatmapObject) =>
+                            {
+                                beatmapObject.gradientScale = syncObject.gradientScale;
+                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.RENDERING);
+                            });
+                            GenerateSyncButtons(parent, "Gradient Rotation", (syncObject, beatmapObject) =>
+                            {
+                                beatmapObject.gradientRotation = syncObject.gradientRotation;
+                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.RENDERING);
+                            });
+                            GenerateSyncButtons(parent, "Shape", (syncObject, beatmapObject) =>
+                            {
+                                beatmapObject.shape = syncObject.shape;
+                                beatmapObject.shapeOption = syncObject.shapeOption;
+                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.SHAPE);
+                            });
+                            GenerateSyncButtons(parent, "Text", (syncObject, beatmapObject) =>
+                            {
+                                beatmapObject.text = syncObject.text;
+                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.TEXT);
+                            });
+                            GenerateSyncButtons(parent, "Polygon", (syncObject, beatmapObject) =>
+                            {
+                                beatmapObject.polygonShape = syncObject.polygonShape.Copy();
+                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.POLYGONS);
+                            });
+                            GenerateSyncButtons(parent, "Keyframes", (syncObject, beatmapObject) =>
+                            {
+                                for (int i = 0; i < beatmapObject.TimelineKeyframes.Count; i++)
+                                    CoreHelper.Delete(beatmapObject.TimelineKeyframes[i].GameObject);
+                                beatmapObject.TimelineKeyframes.Clear();
+                                beatmapObject.events.Clear();
+                                for (int i = 0; i < syncObject.events.Count; i++)
+                                    beatmapObject.events.Add(syncObject.events[i].Select(x => x.Copy()).ToList());
+
+                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                                EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
+                            });
+                            GenerateSyncButtons(parent, "Modifiers List", (syncObject, beatmapObject) =>
+                            {
+                                beatmapObject.Modifiers = new List<Modifier>(syncObject.Modifiers.Select(x => x.Copy()));
+                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.MODIFIERS);
+                            });
+                            GenerateSyncButtons(parent, "Modifiers Ignore Lifespan", (syncObject, beatmapObject) =>
+                            {
+                                beatmapObject.ignoreLifespan = syncObject.ignoreLifespan;
+                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.MODIFIERS);
+                            });
+                            GenerateSyncButtons(parent, "Modifiers Order Matters", (syncObject, beatmapObject) =>
+                            {
+                                beatmapObject.orderModifiers = syncObject.orderModifiers;
+                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.MODIFIERS);
+                            });
+                            GenerateSyncButtons(parent, "Tags", (syncObject, beatmapObject) =>
+                            {
+                                beatmapObject.tags = new List<string>(syncObject.tags);
+                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.MODIFIERS);
+                            });
+                            GenerateSyncButtons(parent, "Prefab", (syncObject, beatmapObject) =>
+                            {
+                                beatmapObject.SetPrefabReference(syncObject);
+                                EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
+                            });
+
+                            break;
+                        }
                 }
-
-                multiObjectEditorDialog.Find("data").AsRT().sizeDelta = new Vector2(810f, 730.11f);
-                multiObjectEditorDialog.Find("data/left").AsRT().sizeDelta = new Vector2(355f, 730f);
-
-                #endregion
             }
+
+            ActiveScrollView = ScrollViews[0];
+
+            #endregion
+        }
+
+        void GenerateSyncButtons(Transform parent, string name, Action<BeatmapObject, BeatmapObject> action)
+        {
+            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                new LabelElement(name)
+                {
+                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(1000f),
+                },
+                new ButtonElement(ButtonElement.Type.Sprite, "Search List", () => ObjectEditor.inst.ShowObjectSearch(syncObject => MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject => action?.Invoke(syncObject, beatmapObject))))
+                {
+                    layoutElementValues = LayoutElementValues.Default.MinWidth(32f).PreferredWidth(32f),
+                    buttonThemeGroup = ThemeGroup.Function_2,
+                    sprite = EditorSprites.SearchSprite,
+                },
+                new ButtonElement(ButtonElement.Type.Icon, "Picker", () => EditorTimeline.inst.onSelectTimelineObject = timelineObject =>
+                {
+                    if (!timelineObject.isBeatmapObject)
+                        return;
+                    var syncObject = timelineObject.GetData<BeatmapObject>();
+                    MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject => action?.Invoke(syncObject, beatmapObject));
+                })
+                {
+                    layoutElementValues = LayoutElementValues.Default.MinWidth(32f).PreferredWidth(32f),
+                    buttonThemeGroup = ThemeGroup.Picker,
+                    sprite = EditorSprites.DropperSprite,
+                });
+        }
+
+        void ParseIterationIndex(string _val, Action<int> action)
+        {
+            if (string.IsNullOrEmpty(_val))
+                return;
+
+            if (_val.Contains(","))
+            {
+                var split = _val.Split(",");
+                for (int i = 0; i < split.Length; i++)
+                {
+                    if (int.TryParse(split[i], out int splitIndex))
+                        action?.Invoke(splitIndex);
+                }
+                return;
+            }
+
+            if (int.TryParse(_val, out int index))
+                action?.Invoke(index);
+        }
+
+        EditorElement[] CreateAddSubButtons(Predicate<TimelineObject> predicate, Func<TimelineObject, int> get, int max, Action<TimelineObject, int> set) => new EditorElement[2]
+        {
+            ButtonElement.Label1Button("Sub", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+            {
+                if (!predicate.Invoke(timelineObject))
+                    return;
+
+                var num = get.Invoke(timelineObject);
+                num--;
+                if (num < 0)
+                    num = max - 1;
+                set.Invoke(timelineObject, num);
+            }), labelAlignment: TextAnchor.MiddleCenter),
+            ButtonElement.Label1Button("Add", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+            {
+                if (!predicate.Invoke(timelineObject))
+                    return;
+
+                var num = get.Invoke(timelineObject);
+                num++;
+                if (num >= max)
+                    num = 0;
+                set.Invoke(timelineObject, num);
+            }), labelAlignment: TextAnchor.MiddleCenter)
+        };
+
+        EditorElement[] ToButtonArray<T>(Action<int> onClick) where T : Enum
+        {
+            var enumNames = EnumHelper.GetNames<T>();
+            var elements = new EditorElement[enumNames.Length];
+            for (int i = 0; i < elements.Length; i++)
+            {
+                var index = i;
+                elements[i] = ButtonElement.Label1Button(enumNames[i], () => onClick?.Invoke(index), labelAlignment: TextAnchor.MiddleCenter);
+            }
+            return elements;
+        }
+
+        void GeneratePasteKeyframeDataElements(Transform parent, Action pasteToAll, Action<string> pasteToIndexes)
+        {
+            var indexField = new StringInputElement("0", null, "Set the indexes you want to modify. e.g 0,1,2");
+            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                new LabelElement("Indexes")
+                {
+                    layoutElementValues = LayoutElementValues.Default.MinWidth(120),
+                },
+                indexField);
+            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                ButtonElement.Label1Button("Paste to All", pasteToAll, buttonThemeGroup: ThemeGroup.Paste, graphicThemeGroup: ThemeGroup.Paste_Text),
+                ButtonElement.Label1Button("Paste to Indexes", () => pasteToIndexes?.Invoke(indexField.inputField.text), buttonThemeGroup: ThemeGroup.Paste, graphicThemeGroup: ThemeGroup.Paste_Text));
         }
 
         public void InitShape(Transform parent)
         {
             if (!multiShapes)
             {
-                var shapes = ObjEditor.inst.ObjectView.transform.Find("shape").gameObject.Duplicate(multiObjectContent, "shape");
-                var shapeOption = ObjEditor.inst.ObjectView.transform.Find("shapesettings").gameObject.Duplicate(multiObjectContent, "shapesettings");
+                var shapes = ObjEditor.inst.ObjectView.transform.Find("shape").gameObject.Duplicate(parent, "shape");
+                var shapeOption = ObjEditor.inst.ObjectView.transform.Find("shapesettings").gameObject.Duplicate(parent, "shapesettings");
                 multiShapes = shapes.transform;
                 multiShapeSettings = shapeOption.transform;
 
@@ -4812,35 +3333,33 @@ namespace BetterLegacy.Editor.Data.Dialogs
         /// </summary>
         public void RenderShape()
         {
-            InitShape(multiObjectContent);
-
             var shape = multiShapes;
             var shapeSettings = multiShapeSettings;
 
             LSHelpers.SetActiveChildren(shapeSettings, false);
 
-            shapeSettings.AsRT().sizeDelta = new Vector2(351f, multiShapeSelection.x == 4 ? 74f : 32f);
-            shapeSettings.GetChild(4).AsRT().sizeDelta = new Vector2(351f, multiShapeSelection.x == 4 ? 74f : 32f);
+            shapeSettings.AsRT().sizeDelta = new Vector2(351f, shapeSelection.x == 4 ? 74f : 32f);
+            shapeSettings.GetChild(4).AsRT().sizeDelta = new Vector2(351f, shapeSelection.x == 4 ? 74f : 32f);
 
-            shapeSettings.GetChild(multiShapeSelection.x).gameObject.SetActive(true);
+            shapeSettings.GetChild(shapeSelection.x).gameObject.SetActive(true);
 
             int num = 0;
             foreach (var toggle in shapeToggles)
             {
                 int index = num;
                 toggle.gameObject.SetActive(RTEditor.ShowModdedUI || index < Shape.unmoddedMaxShapes.Length);
-                toggle.SetIsOnWithoutNotify(multiShapeSelection.x == index);
+                toggle.SetIsOnWithoutNotify(shapeSelection.x == index);
                 toggle.onValueChanged.NewListener(_val =>
                 {
-                    multiShapeSelection = new Vector2Int(index, 0);
+                    shapeSelection = new Vector2Int(index, 0);
 
                     foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
                     {
                         if (timelineObject.isBeatmapObject)
                         {
                             var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                            beatmapObject.Shape = multiShapeSelection.x;
-                            beatmapObject.ShapeOption = multiShapeSelection.y;
+                            beatmapObject.Shape = shapeSelection.x;
+                            beatmapObject.ShapeOption = shapeSelection.y;
 
                             if (beatmapObject.gradientType != GradientType.Normal && (index == 4 || index == 6 || index == 10))
                                 beatmapObject.Shape = 0;
@@ -4853,8 +3372,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         if (timelineObject.isBackgroundObject)
                         {
                             var backgroundObject = timelineObject.GetData<BackgroundObject>();
-                            backgroundObject.Shape = multiShapeSelection.x;
-                            backgroundObject.ShapeOption = multiShapeSelection.y;
+                            backgroundObject.Shape = shapeSelection.x;
+                            backgroundObject.ShapeOption = shapeSelection.y;
 
                             RTLevel.Current?.UpdateBackgroundObject(backgroundObject, recalculate: false);
                         }
@@ -4867,7 +3386,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 num++;
             }
 
-            switch ((ShapeType)multiShapeSelection.x)
+            switch ((ShapeType)shapeSelection.x)
             {
                 case ShapeType.Text: {
                         var textIF = shapeSettings.Find("5").GetComponent<InputField>();
@@ -5158,22 +3677,22 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     }
                 default: {
                         num = 0;
-                        foreach (var toggle in shapeOptionToggles[multiShapeSelection.x])
+                        foreach (var toggle in shapeOptionToggles[shapeSelection.x])
                         {
                             int index = num;
-                            toggle.gameObject.SetActive(RTEditor.ShowModdedUI || index < Shape.unmoddedMaxShapes[multiShapeSelection.x]);
-                            toggle.SetIsOnWithoutNotify(multiShapeSelection.y == index);
+                            toggle.gameObject.SetActive(RTEditor.ShowModdedUI || index < Shape.unmoddedMaxShapes[shapeSelection.x]);
+                            toggle.SetIsOnWithoutNotify(shapeSelection.y == index);
                             toggle.onValueChanged.NewListener(_val =>
                             {
-                                multiShapeSelection.y = index;
+                                shapeSelection.y = index;
 
                                 foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
                                 {
                                     if (timelineObject.isBeatmapObject)
                                     {
                                         var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                                        beatmapObject.Shape = multiShapeSelection.x;
-                                        beatmapObject.ShapeOption = multiShapeSelection.y;
+                                        beatmapObject.Shape = shapeSelection.x;
+                                        beatmapObject.ShapeOption = shapeSelection.y;
 
                                         if (beatmapObject.gradientType != GradientType.Normal && (index == 4 || index == 6 || index == 10))
                                             beatmapObject.Shape = 0;
@@ -5183,8 +3702,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                     if (timelineObject.isBackgroundObject)
                                     {
                                         var backgroundObject = timelineObject.GetData<BackgroundObject>();
-                                        backgroundObject.Shape = multiShapeSelection.x;
-                                        backgroundObject.ShapeOption = multiShapeSelection.y;
+                                        backgroundObject.Shape = shapeSelection.x;
+                                        backgroundObject.ShapeOption = shapeSelection.y;
 
                                         RTLevel.Current?.UpdateBackgroundObject(backgroundObject, recalculate: false);
                                     }
@@ -5202,541 +3721,66 @@ namespace BetterLegacy.Editor.Data.Dialogs
             }
         }
 
-        void SetupEditorColorSetter(Transform parent, string name, string label, string placeholder, string buttonLabel, Action<InputField> setColor)
+        public void SetKeyframeValues(EventKeyframe kf, bool setCurves, Easing anim,
+            string primaryOpacity, string primaryHue, string primarySaturation, string primaryValue,
+            string secondaryOpacity, string secondaryHue, string secondarySaturation, string secondaryValue, MathOperation operation)
         {
-            var labels = GenerateLabels(parent, 32f, label);
-
-            var replaceName = Creator.NewUIObject(name.ToLower(), parent);
-            replaceName.transform.AsRT().sizeDelta = new Vector2(390f, 32f);
-            var multiSyncGLG = replaceName.AddComponent<GridLayoutGroup>();
-            multiSyncGLG.spacing = new Vector2(8f, 8f);
-            multiSyncGLG.cellSize = new Vector2(124f, 32f);
-
-            var oldName = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(replaceName.transform, name.ToLower());
-
-            CoreHelper.Destroy(oldName.GetComponent<EventTrigger>());
-            var inputField = oldName.GetComponent<InputField>();
-            inputField.characterValidation = InputField.CharacterValidation.None;
-            inputField.textComponent.alignment = TextAnchor.MiddleLeft;
-            inputField.textComponent.fontSize = 16;
-            inputField.text = string.Empty;
-            inputField.GetPlaceholderText().text = placeholder;
-            inputField.GetPlaceholderText().alignment = TextAnchor.MiddleLeft;
-            inputField.GetPlaceholderText().fontSize = 16;
-            inputField.GetPlaceholderText().color = new Color(0f, 0f, 0f, 0.3f);
-
-            inputField.onValueChanged.ClearAll();
-
-            var contextClickable = oldName.AddComponent<ContextClickable>();
-            contextClickable.onClick = pointerEventData =>
-            {
-                if (pointerEventData.button != PointerEventData.InputButton.Right)
-                    return;
-
-                var currentHexColor = inputField.text;
-                EditorContextMenu.inst.ShowContextMenu(EditorContextMenu.GetEditorColorFunctions(inputField, () => currentHexColor));
-            };
-
-            EditorHelper.AddInputFieldContextMenu(inputField);
-            TriggerHelper.InversableField(inputField, InputFieldSwapper.Type.String);
-
-            EditorThemeManager.ApplyInputField(inputField);
-
-            var setColorButton = EditorPrefabHolder.Instance.Function1Button.Duplicate(replaceName.transform, "set color");
-            var setColorButtonStorage = setColorButton.GetComponent<FunctionButtonStorage>();
-            setColorButton.transform.localScale = Vector3.one;
-            setColorButton.transform.AsRT().sizeDelta = new Vector2(66f, 32f);
-            setColorButton.GetComponent<LayoutElement>().minWidth = 32f;
-
-            setColorButtonStorage.Text = buttonLabel;
-            setColorButtonStorage.OnClick.NewListener(() => setColor?.Invoke(inputField));
-
-            EditorThemeManager.ApplyGraphic(setColorButtonStorage.button.image, ThemeGroup.Function_1, true);
-            EditorThemeManager.ApplyGraphic(setColorButtonStorage.label, ThemeGroup.Function_1_Text);
-
-            EditorHelper.SetComplexity(labels, Complexity.Normal);
-            EditorHelper.SetComplexity(replaceName, Complexity.Normal);
-        }
-
-        void SetupReplaceStrings(Transform parent, string name, string oldNameStr, string oldNamePlaceholder, string newNameStr, string newNamePlaceholder, Action<InputField, InputField> replacer)
-        {
-            var labels = GenerateLabels(parent, 32f, name);
-
-            var replaceName = Creator.NewUIObject(name.ToLower(), parent);
-            replaceName.transform.AsRT().sizeDelta = new Vector2(390f, 32f);
-            var multiSyncGLG = replaceName.AddComponent<GridLayoutGroup>();
-            multiSyncGLG.spacing = new Vector2(8f, 8f);
-            multiSyncGLG.cellSize = new Vector2(124f, 32f);
-
-            var oldName = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(replaceName.transform, oldNameStr.ToLower());
-
-            CoreHelper.Destroy(oldName.GetComponent<EventTrigger>());
-            var oldNameIF = oldName.GetComponent<InputField>();
-            oldNameIF.characterValidation = InputField.CharacterValidation.None;
-            oldNameIF.textComponent.alignment = TextAnchor.MiddleLeft;
-            oldNameIF.textComponent.fontSize = 16;
-            oldNameIF.text = oldNameStr;
-            oldNameIF.GetPlaceholderText().text = oldNamePlaceholder;
-            oldNameIF.GetPlaceholderText().alignment = TextAnchor.MiddleLeft;
-            oldNameIF.GetPlaceholderText().fontSize = 16;
-            oldNameIF.GetPlaceholderText().color = new Color(0f, 0f, 0f, 0.3f);
-
-            oldNameIF.onValueChanged.ClearAll();
-
-            EditorHelper.AddInputFieldContextMenu(oldNameIF);
-            TriggerHelper.InversableField(oldNameIF, InputFieldSwapper.Type.String);
-
-            EditorThemeManager.ApplyInputField(oldNameIF);
-
-            var newName = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(replaceName.transform, newNameStr.ToLower());
-
-            CoreHelper.Destroy(newName.GetComponent<EventTrigger>());
-            var newNameIF = newName.GetComponent<InputField>();
-            newNameIF.characterValidation = InputField.CharacterValidation.None;
-            newNameIF.textComponent.alignment = TextAnchor.MiddleLeft;
-            newNameIF.textComponent.fontSize = 16;
-            newNameIF.text = newNameStr;
-            newNameIF.GetPlaceholderText().text = newNamePlaceholder;
-            newNameIF.GetPlaceholderText().alignment = TextAnchor.MiddleLeft;
-            newNameIF.GetPlaceholderText().fontSize = 16;
-            newNameIF.GetPlaceholderText().color = new Color(0f, 0f, 0f, 0.3f);
-
-            newNameIF.onValueChanged.ClearAll();
-
-            EditorHelper.AddInputFieldContextMenu(newNameIF);
-            TriggerHelper.InversableField(newNameIF, InputFieldSwapper.Type.String);
-
-            EditorThemeManager.ApplyInputField(newNameIF);
-
-            var replace = EditorPrefabHolder.Instance.Function1Button.Duplicate(replaceName.transform, "replace");
-            replace.transform.localScale = Vector3.one;
-            replace.transform.AsRT().sizeDelta = new Vector2(66f, 32f);
-            replace.GetComponent<LayoutElement>().minWidth = 32f;
-
-            var replaceText = replace.transform.GetChild(0).GetComponent<Text>();
-
-            replaceText.text = "Replace";
-
-            EditorThemeManager.ApplyGraphic(replace.GetComponent<Image>(), ThemeGroup.Function_1, true);
-            EditorThemeManager.ApplyGraphic(replaceText, ThemeGroup.Function_1_Text);
-
-            var button = replace.GetComponent<Button>();
-            button.onClick.NewListener(() => replacer?.Invoke(oldNameIF, newNameIF));
-
-            EditorHelper.SetComplexity(labels, Complexity.Advanced);
-            EditorHelper.SetComplexity(replaceName, Complexity.Advanced);
-        }
-
-        void GeneratePad(Transform parent)
-        {
-            var gameObject = Creator.NewUIObject("padder", parent);
-            var image = gameObject.AddComponent<Image>();
-            image.rectTransform.sizeDelta = new Vector2(395f, 4f);
-            EditorThemeManager.ApplyGraphic(image, ThemeGroup.Background_3);
-        }
-
-        void GeneratePad(Transform parent, Complexity complexity, bool onlySpecificComplexity = false)
-        {
-            var gameObject = Creator.NewUIObject("padder", parent);
-            var image = gameObject.AddComponent<Image>();
-            image.rectTransform.sizeDelta = new Vector2(395f, 4f);
-            EditorThemeManager.ApplyGraphic(image, ThemeGroup.Background_3);
-            EditorHelper.SetComplexity(gameObject, complexity, onlySpecificComplexity);
-        }
-
-        void GeneratePasteKeyframeData(Transform parent, int type, string name)
-        {
-            GeneratePasteKeyframeData(parent, () =>
-            {
-                var copiedKeyframeData = ObjectEditor.inst.Dialog.Timeline.GetCopiedData(type);
-                if (copiedKeyframeData == null)
-                {
-                    EditorManager.inst.DisplayNotification($"{name} keyframe data not copied yet.", 2f, EditorManager.NotificationType.Error);
-                    return;
-                }
-
-                foreach (var timelineObject in EditorTimeline.inst.SelectedBeatmapObjects)
-                {
-                    var bm = timelineObject.GetData<BeatmapObject>();
-                    for (int i = 0; i < bm.events[type].Count; i++)
-                    {
-                        var kf = (EventKeyframe)bm.events[type][i];
-                        kf.curve = copiedKeyframeData.curve;
-                        kf.values = copiedKeyframeData.values.Copy();
-                        kf.randomValues = copiedKeyframeData.randomValues.Copy();
-                        kf.random = copiedKeyframeData.random;
-                        kf.relative = copiedKeyframeData.relative;
-
-                        RTLevel.Current?.UpdateObject(bm, ObjectContext.KEYFRAMES);
-                    }
-                }
-                EditorManager.inst.DisplayNotification($"Pasted {name.ToLower()} keyframe data to current selected keyframe.", 2f, EditorManager.NotificationType.Success);
-            }, _val =>
-            {
-                var copiedKeyframeData = ObjectEditor.inst.Dialog.Timeline.GetCopiedData(type);
-                string name = type switch
-                {
-                    0 => "Position",
-                    1 => "Scale",
-                    2 => "Rotation",
-                    3 => "Color",
-                    _ => "Null"
-                };
-                if (copiedKeyframeData == null)
-                {
-                    EditorManager.inst.DisplayNotification($"{name} keyframe data not copied yet.", 2f, EditorManager.NotificationType.Error);
-                    return;
-                }
-
-                if (int.TryParse(_val, out int num))
-                {
-                    foreach (var timelineObject in EditorTimeline.inst.SelectedBeatmapObjects)
-                    {
-                        var bm = timelineObject.GetData<BeatmapObject>();
-
-                        var kf = bm.events[type][Mathf.Clamp(num, 0, bm.events[type].Count - 1)];
-                        kf.curve = copiedKeyframeData.curve;
-                        kf.values = copiedKeyframeData.values.Copy();
-                        kf.randomValues = copiedKeyframeData.randomValues.Copy();
-                        kf.random = copiedKeyframeData.random;
-                        kf.relative = copiedKeyframeData.relative;
-
-                        RTLevel.Current?.UpdateObject(bm, ObjectContext.KEYFRAMES);
-                    }
-                    EditorManager.inst.DisplayNotification($"Pasted {name.ToLower()} keyframe data to current selected keyframe.", 2f, EditorManager.NotificationType.Success);
-                }
-            });
-        }
-
-        void GeneratePasteKeyframeData(Transform parent, Action pasteAll, Action<string> pasteToIndex)
-        {
-            var index = CreateInputField("index", "0", "Enter index...", parent, maxValue: int.MaxValue);
-
-            var pasteAllTypesBase = Creator.NewUIObject("paste all types", parent);
-            pasteAllTypesBase.transform.AsRT().sizeDelta = new Vector2(390f, 32f);
-
-            var pasteAllTypesBaseHLG = pasteAllTypesBase.AddComponent<HorizontalLayoutGroup>();
-            pasteAllTypesBaseHLG.childControlHeight = false;
-            pasteAllTypesBaseHLG.childControlWidth = false;
-            pasteAllTypesBaseHLG.childForceExpandHeight = false;
-            pasteAllTypesBaseHLG.childForceExpandWidth = false;
-            pasteAllTypesBaseHLG.spacing = 8f;
-
-            var pasteAllTypesToAllObject = EditorPrefabHolder.Instance.Function1Button.Duplicate(pasteAllTypesBase.transform, "paste");
-            pasteAllTypesToAllObject.transform.localScale = Vector3.one;
-
-            pasteAllTypesToAllObject.transform.AsRT().sizeDelta = new Vector2(180f, 32f);
-
-            var pasteAllTypesToAllText = pasteAllTypesToAllObject.transform.GetChild(0).GetComponent<Text>();
-            pasteAllTypesToAllText.text = "Paste to All";
-
-            EditorThemeManager.ApplyGraphic(pasteAllTypesToAllObject.GetComponent<Image>(), ThemeGroup.Paste, true);
-            EditorThemeManager.ApplyGraphic(pasteAllTypesToAllText, ThemeGroup.Paste_Text);
-
-            var pasteAllTypesToAll = pasteAllTypesToAllObject.GetComponent<Button>();
-            pasteAllTypesToAll.onClick.NewListener(() => pasteAll?.Invoke());
-
-            var pasteAllTypesToIndexObject = EditorPrefabHolder.Instance.Function1Button.Duplicate(pasteAllTypesBase.transform, "paste");
-            pasteAllTypesToIndexObject.transform.localScale = Vector3.one;
-
-            ((RectTransform)pasteAllTypesToIndexObject.transform).sizeDelta = new Vector2(180f, 32f);
-
-            var pasteAllTypesToIndexText = pasteAllTypesToIndexObject.transform.GetChild(0).GetComponent<Text>();
-            pasteAllTypesToIndexText.text = "Paste to Index";
-
-            EditorThemeManager.ApplyGraphic(pasteAllTypesToIndexObject.GetComponent<Image>(), ThemeGroup.Paste, true);
-            EditorThemeManager.ApplyGraphic(pasteAllTypesToIndexText, ThemeGroup.Paste_Text);
-
-            var pasteAllTypesToIndex = pasteAllTypesToIndexObject.GetComponent<Button>();
-            pasteAllTypesToIndex.onClick.NewListener(() => pasteToIndex?.Invoke(index.text));
-
-            EditorHelper.SetComplexity(index.transform.parent.gameObject, Complexity.Advanced);
-            EditorHelper.SetComplexity(pasteAllTypesBase, Complexity.Advanced);
-        }
-
-        void SyncObjectData(string nameContext, PointerEventData eventData, Action<TimelineObject, BeatmapObject> update, bool renderTimelineObject = false, bool updateObject = true, string updateContext = "")
-        {
-            if (eventData.button == PointerEventData.InputButton.Right)
-            {
-                EditorContextMenu.inst.ShowContextMenu(400f,
-                    new ButtonElement($"Sync {nameContext} via Search", () => ObjectEditor.inst.ShowObjectSearch(beatmapObject =>
-                    {
-                        SyncObjectData(timelineObject => update?.Invoke(timelineObject, beatmapObject), renderTimelineObject, updateObject, updateContext);
-                        ObjectEditor.inst.ObjectSearchPopup.Close();
-                    })),
-                    new ButtonElement($"Sync {nameContext} via Picker", () => EditorTimeline.inst.onSelectTimelineObject = to =>
-                    {
-                        if (!to.isBeatmapObject)
-                            return;
-
-                        var beatmapObject = to.GetData<BeatmapObject>();
-                        SyncObjectData(timelineObject => update?.Invoke(timelineObject, beatmapObject), renderTimelineObject, updateObject, updateContext);
-                    }));
-
-                return;
-            }
-
-            ObjectEditor.inst.ShowObjectSearch(beatmapObject =>
-            {
-                SyncObjectData(timelineObject => update?.Invoke(timelineObject, beatmapObject), renderTimelineObject, updateObject, updateContext);
-                ObjectEditor.inst.ObjectSearchPopup.Close();
-            });
-        }
-
-        void SyncObjectData(Action<TimelineObject> update, bool renderTimelineObject = false, bool updateObject = true, string updateContext = "")
-        {
-            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
-            {
-                update?.Invoke(timelineObject);
-
-                if (renderTimelineObject)
-                    EditorTimeline.inst.RenderTimelineObject(timelineObject);
-
-                if (!updateObject)
-                    continue;
-
-                if (!string.IsNullOrEmpty(updateContext))
-                    RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), updateContext);
-                else
-                    RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>());
-            }
-        }
-
-        public void SetKeyframeValues(EventKeyframe kf, Dropdown curves,
-            string opacity, string hue, string sat, string val, string opacityGradient, string hueGradient, string satGradient, string valGradient)
-        {
-            if (curves.value != 0)
-                kf.curve = RTEditor.inst.GetEasing(curves.value - 1);
+            if (setCurves)
+                kf.curve = anim;
             if (currentMultiColorSelection >= 0)
                 kf.values[0] = Mathf.Clamp(currentMultiColorSelection, 0, 18);
-            if (!string.IsNullOrEmpty(opacity))
-                kf.values[1] = Mathf.Clamp(kf.values[1] - Parser.TryParse(opacity, 1f), 0f, 1f);
-            if (!string.IsNullOrEmpty(hue))
-                kf.values[2] = Parser.TryParse(sat, 0f);
-            if (!string.IsNullOrEmpty(sat))
-                kf.values[3] = Parser.TryParse(sat, 0f);
-            if (!string.IsNullOrEmpty(val))
-                kf.values[4] = Parser.TryParse(val, 0f);
+            if (!string.IsNullOrEmpty(primaryOpacity))
+            {
+                switch (operation)
+                {
+                    case MathOperation.Addition: {
+                            kf.values[1] = Mathf.Clamp(kf.values[1] - Parser.TryParse(primaryOpacity, 1f), 0f, 1f);
+                            break;
+                        }
+                    case MathOperation.Subtract: {
+                            kf.values[1] = Mathf.Clamp(kf.values[1] + Parser.TryParse(primaryOpacity, 1f), 0f, 1f);
+                            break;
+                        }
+                    case MathOperation.Set: {
+                            kf.values[1] = -Mathf.Clamp(Parser.TryParse(primaryOpacity, 1f), 0f, 1f) + 1f;
+                            break;
+                        }
+                }
+            }
+            if (!string.IsNullOrEmpty(primaryHue))
+                RTMath.Operation(ref kf.values[2], Parser.TryParse(primaryHue, 0f), operation);
+            if (!string.IsNullOrEmpty(primarySaturation))
+                RTMath.Operation(ref kf.values[3], Parser.TryParse(primarySaturation, 0f), operation);
+            if (!string.IsNullOrEmpty(primaryValue))
+                RTMath.Operation(ref kf.values[4], Parser.TryParse(primaryValue, 0f), operation);
 
             // Gradient
             if (currentMultiGradientColorSelection >= 0)
                 kf.values[5] = Mathf.Clamp(currentMultiGradientColorSelection, 0, 18);
-            if (!string.IsNullOrEmpty(opacityGradient))
-                kf.values[6] = -Mathf.Clamp(Parser.TryParse(opacityGradient, 1f), 0f, 1f) + 1f;
-            if (!string.IsNullOrEmpty(hueGradient))
-                kf.values[7] = Parser.TryParse(hueGradient, 0f);
-            if (!string.IsNullOrEmpty(satGradient))
-                kf.values[8] = Parser.TryParse(satGradient, 0f);
-            if (!string.IsNullOrEmpty(valGradient))
-                kf.values[9] = Parser.TryParse(valGradient, 0f);
-        }
-
-        public void AddKeyframeValues(EventKeyframe kf, Dropdown curves,
-            string opacity, string hue, string sat, string val, string opacityGradient, string hueGradient, string satGradient, string valGradient)
-        {
-            if (curves.value != 0)
-                kf.curve = RTEditor.inst.GetEasing(curves.value - 1);
-            if (currentMultiColorSelection >= 0)
-                kf.values[0] = Mathf.Clamp(currentMultiColorSelection, 0, 18);
-            if (!string.IsNullOrEmpty(opacity))
-                kf.values[1] = Mathf.Clamp(kf.values[1] - Parser.TryParse(opacity, 1f), 0f, 1f);
-            if (!string.IsNullOrEmpty(hue))
-                kf.values[2] += Parser.TryParse(hue, 0f);
-            if (!string.IsNullOrEmpty(sat))
-                kf.values[3] += Parser.TryParse(sat, 0f);
-            if (!string.IsNullOrEmpty(val))
-                kf.values[4] += Parser.TryParse(val, 0f);
-
-            // Gradient
-            if (currentMultiGradientColorSelection >= 0)
-                kf.values[5] = Mathf.Clamp(currentMultiGradientColorSelection, 0, 18); // color slots can't be added onto.
-            if (!string.IsNullOrEmpty(opacityGradient))
-                kf.values[6] = Mathf.Clamp(kf.values[6] - Parser.TryParse(opacityGradient, 1f), 0f, 1f);
-            if (!string.IsNullOrEmpty(hueGradient))
-                kf.values[7] += Parser.TryParse(hueGradient, 0f);
-            if (!string.IsNullOrEmpty(satGradient))
-                kf.values[8] += Parser.TryParse(satGradient, 0f);
-            if (!string.IsNullOrEmpty(valGradient))
-                kf.values[9] += Parser.TryParse(valGradient, 0f);
-        }
-
-        public void SubKeyframeValues(EventKeyframe kf, Dropdown curves,
-            string opacity, string hue, string sat, string val, string opacityGradient, string hueGradient, string satGradient, string valGradient)
-        {
-            if (curves.value != 0)
-                kf.curve = RTEditor.inst.GetEasing(curves.value - 1);
-            if (currentMultiColorSelection >= 0)
-                kf.values[0] = Mathf.Clamp(currentMultiColorSelection, 0, 18);
-            if (!string.IsNullOrEmpty(opacity))
-                kf.values[1] = Mathf.Clamp(kf.values[1] + Parser.TryParse(opacity, 1f), 0f, 1f);
-            if (!string.IsNullOrEmpty(hue))
-                kf.values[2] -= Parser.TryParse(hue, 0f);
-            if (!string.IsNullOrEmpty(sat))
-                kf.values[3] -= Parser.TryParse(sat, 0f);
-            if (!string.IsNullOrEmpty(val))
-                kf.values[4] -= Parser.TryParse(val, 0f);
-
-            // Gradient
-            if (currentMultiGradientColorSelection >= 0)
-                kf.values[5] = Mathf.Clamp(currentMultiGradientColorSelection, 0, 18); // color slots can't be added onto.
-            if (!string.IsNullOrEmpty(opacityGradient))
-                kf.values[6] = Mathf.Clamp(kf.values[6] + Parser.TryParse(opacityGradient, 1f), 0f, 1f);
-            if (!string.IsNullOrEmpty(hueGradient))
-                kf.values[7] -= Parser.TryParse(hueGradient, 0f);
-            if (!string.IsNullOrEmpty(satGradient))
-                kf.values[8] -= Parser.TryParse(satGradient, 0f);
-            if (!string.IsNullOrEmpty(valGradient))
-                kf.values[9] -= Parser.TryParse(valGradient, 0f);
-        }
-
-        public GameObject GenerateLabels(Transform parent, float sizeY, params string[] labels)
-        {
-            var labelBase = Creator.NewUIObject("label", parent);
-            labelBase.transform.AsRT().sizeDelta = new Vector2(0f, sizeY);
-            labelBase.AddComponent<HorizontalLayoutGroup>();
-            var labelPrefab = EditorManager.inst.folderButtonPrefab.transform.GetChild(0).gameObject;
-
-            for (int i = 0; i < labels.Length; i++)
+            if (!string.IsNullOrEmpty(secondaryOpacity))
             {
-                var label = labelPrefab.Duplicate(labelBase.transform, "text");
-                var labelText = label.GetComponent<Text>();
-                labelText.text = labels[i];
-                EditorThemeManager.ApplyLightText(labelText);
+                switch (operation)
+                {
+                    case MathOperation.Addition: {
+                            kf.values[6] = Mathf.Clamp(kf.values[6] - Parser.TryParse(secondaryOpacity, 1f), 0f, 1f);
+                            break;
+                        }
+                    case MathOperation.Subtract: {
+                            kf.values[6] = Mathf.Clamp(kf.values[6] + Parser.TryParse(secondaryOpacity, 1f), 0f, 1f);
+                            break;
+                        }
+                    case MathOperation.Set: {
+                            kf.values[6] = -Mathf.Clamp(Parser.TryParse(secondaryOpacity, 1f), 0f, 1f) + 1f;
+                            break;
+                        }
+                }
             }
-
-            return labelBase;
-        }
-
-        public GameObject GenerateLabels(Transform parent, float sizeY, params Label[] labels)
-        {
-            var labelBase = Creator.NewUIObject("label", parent);
-            labelBase.transform.AsRT().sizeDelta = new Vector2(0f, sizeY);
-            labelBase.AddComponent<HorizontalLayoutGroup>();
-            var labelPrefab = EditorManager.inst.folderButtonPrefab.transform.GetChild(0).gameObject;
-
-            for (int i = 0; i < labels.Length; i++)
-            {
-                var label = labelPrefab.Duplicate(labelBase.transform, "text");
-                var labelText = label.GetComponent<Text>();
-                labels[i].Apply(labelText);
-                EditorThemeManager.ApplyLightText(labelText);
-            }
-
-            return labelBase;
-        }
-
-        public InputFieldStorage GenerateInputField(Transform parent, string name, string defaultValue, string placeholder, bool doMiddle = false, bool doLeftGreater = false, bool doRightGreater = false)
-        {
-            var gameObject = EditorPrefabHolder.Instance.NumberInputField.Duplicate(parent, name);
-            gameObject.transform.localScale = Vector3.one;
-            var inputFieldStorage = gameObject.GetComponent<InputFieldStorage>();
-            inputFieldStorage.inputField.GetPlaceholderText().text = placeholder;
-
-            gameObject.transform.AsRT().sizeDelta = new Vector2(428f, 32f);
-
-            inputFieldStorage.inputField.onValueChanged.ClearAll();
-            inputFieldStorage.inputField.text = defaultValue;
-            inputFieldStorage.inputField.transform.AsRT().sizeDelta = new Vector2(300f, 32f);
-
-            if (doLeftGreater)
-                EditorThemeManager.ApplySelectable(inputFieldStorage.leftGreaterButton, ThemeGroup.Function_2, false);
-            else
-                CoreHelper.Delete(inputFieldStorage.leftGreaterButton);
-
-            if (doRightGreater)
-                EditorThemeManager.ApplySelectable(inputFieldStorage.rightGreaterButton, ThemeGroup.Function_2, false);
-            else
-                CoreHelper.Delete(inputFieldStorage.rightGreaterButton);
-
-            if (doMiddle)
-                EditorThemeManager.ApplySelectable(inputFieldStorage.middleButton, ThemeGroup.Function_2, false);
-            else
-                CoreHelper.Delete(inputFieldStorage.middleButton);
-
-            EditorThemeManager.ApplyInputField(inputFieldStorage);
-
-            return inputFieldStorage;
-        }
-
-        public GameObject GenerateButtons(Transform parent, float sizeY, float spacing, params ButtonFunction[] buttons)
-        {
-            var p = Creator.NewUIObject("buttons", parent);
-            p.transform.AsRT().sizeDelta = new Vector2(0f, sizeY);
-            var pHLG = p.AddComponent<HorizontalLayoutGroup>();
-            pHLG.spacing = spacing;
-
-            for (int i = 0; i < buttons.Length; i++)
-                GenerateButton(p.transform, buttons[i]);
-
-            return p;
-        }
-
-        public GameObject GenerateButtons(Transform parent, float sizeY, float spacing, ThemeGroup buttonGroup, ThemeGroup labelGroup, params ButtonFunction[] buttons)
-        {
-            var p = Creator.NewUIObject("buttons", parent);
-            p.transform.AsRT().sizeDelta = new Vector2(0f, sizeY);
-            var pHLG = p.AddComponent<HorizontalLayoutGroup>();
-            pHLG.spacing = spacing;
-
-            for (int i = 0; i < buttons.Length; i++)
-                GenerateButton(p.transform, buttons[i], buttonGroup, labelGroup);
-
-            return p;
-        }
-
-        public GameObject GenerateButton(Transform parent, ButtonFunction buttonFunction, ThemeGroup buttonGroup = ThemeGroup.Function_1, ThemeGroup labelGroup = ThemeGroup.Function_1_Text)
-        {
-            var button = EditorPrefabHolder.Instance.Function1Button.Duplicate(parent, buttonFunction.Name);
-            var buttonStorage = button.GetComponent<FunctionButtonStorage>();
-
-            if (buttonFunction.OnClick != null)
-            {
-                var clickable = button.AddComponent<ContextClickable>();
-                clickable.onClick = buttonFunction.OnClick;
-            }
-            else
-                buttonStorage.OnClick.NewListener(() => buttonFunction.Action?.Invoke());
-
-            buttonStorage.label.fontSize = buttonFunction.FontSize;
-            buttonStorage.Text = buttonFunction.Name;
-
-            EditorThemeManager.ApplyGraphic(buttonStorage.button.image, buttonFunction.ButtonThemeGroup ?? buttonGroup, true);
-            EditorThemeManager.ApplyGraphic(buttonStorage.label, buttonFunction.LabelThemeGroup ?? labelGroup);
-
-            return button;
-        }
-
-        InputField CreateInputField(string name, string value, string placeholder, Transform parent, float length = 340f, bool isInteger = true, double minValue = 0f, double maxValue = 0f)
-        {
-            var gameObject = EditorPrefabHolder.Instance.NumberInputField.Duplicate(parent, name);
-            gameObject.transform.localScale = Vector3.one;
-            var inputFieldStorage = gameObject.GetComponent<InputFieldStorage>();
-
-            inputFieldStorage.inputField.image.rectTransform.sizeDelta = new Vector2(length, 32f);
-            inputFieldStorage.inputField.GetPlaceholderText().text = placeholder;
-
-            gameObject.transform.AsRT().sizeDelta = new Vector2(428f, 32f);
-
-            inputFieldStorage.inputField.text = value;
-
-            if (isInteger)
-            {
-                TriggerHelper.AddEventTriggers(gameObject, TriggerHelper.ScrollDeltaInt(inputFieldStorage.inputField, min: (int)minValue, max: (int)maxValue));
-                TriggerHelper.IncreaseDecreaseButtonsInt(inputFieldStorage.inputField, min: (int)minValue, max: (int)maxValue, t: gameObject.transform);
-            }
-            else
-            {
-                TriggerHelper.AddEventTriggers(gameObject, TriggerHelper.ScrollDelta(inputFieldStorage.inputField, min: (float)minValue, max: (float)maxValue));
-                TriggerHelper.IncreaseDecreaseButtons(inputFieldStorage.inputField, min: (float)minValue, max: (float)maxValue, t: gameObject.transform);
-            }
-
-            CoreHelper.Delete(inputFieldStorage.leftGreaterButton);
-            CoreHelper.Delete(inputFieldStorage.middleButton);
-            CoreHelper.Delete(inputFieldStorage.rightGreaterButton);
-
-            EditorThemeManager.ApplyInputField(inputFieldStorage);
-
-            return inputFieldStorage.inputField;
+            if (!string.IsNullOrEmpty(secondaryHue))
+                RTMath.Operation(ref kf.values[7], Parser.TryParse(secondaryHue, 0f), operation);
+            if (!string.IsNullOrEmpty(secondarySaturation))
+                RTMath.Operation(ref kf.values[8], Parser.TryParse(secondarySaturation, 0f), operation);
+            if (!string.IsNullOrEmpty(secondaryValue))
+                RTMath.Operation(ref kf.values[9], Parser.TryParse(secondaryValue, 0f), operation);
         }
 
         void UpdateMultiColorButtons()

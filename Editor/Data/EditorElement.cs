@@ -1385,6 +1385,7 @@ namespace BetterLegacy.Editor.Data
                 return;
 
             GameObject = component.gameObject;
+            uiText = component;
             component.text = this;
             component.alignment = alignment;
             component.fontSize = fontSize;
@@ -1394,6 +1395,13 @@ namespace BetterLegacy.Editor.Data
 
             ApplyRect(initSettings);
             ApplyLayoutElement();
+        }
+
+        public void SetText(string text)
+        {
+            this.text = text;
+            if (uiText)
+                uiText.text = text;
         }
 
         public static implicit operator string(LabelElement label) => label.text;

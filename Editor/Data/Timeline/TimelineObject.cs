@@ -982,6 +982,26 @@ namespace BetterLegacy.Editor.Data.Timeline
             return cachedPrefab;
         }
 
+        /// <summary>
+        /// Sets the name of the object.
+        /// </summary>
+        /// <param name="name">Name to set.</param>
+        public void SetName(string name)
+        {
+            switch (TimelineReference)
+            {
+                case TimelineReferenceType.BeatmapObject: {
+                        GetData<BeatmapObject>().name = name;
+                        break;
+                    }
+                case TimelineReferenceType.BackgroundObject: {
+                        GetData<BeatmapObject>().name = name;
+                        break;
+                    }
+            }
+            RenderText(Name);
+        }
+
         #endregion
 
         /// <summary>

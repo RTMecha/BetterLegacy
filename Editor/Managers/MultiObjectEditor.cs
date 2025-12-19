@@ -42,17 +42,13 @@ namespace BetterLegacy.Editor.Managers
 
         public override void OnTick()
         {
-            if (!Dialog || !Dialog.Text || !Dialog.Text.isActiveAndEnabled || !GameData.Current)
+            if (!Dialog || !Dialog.IsCurrent)
                 return;
 
-            Dialog.Text.text = string.Format(DEFAULT_TEXT,
-                EditorTimeline.inst.SelectedBeatmapObjects.Count,
-                EditorTimeline.inst.SelectedPrefabObjects.Count,
-                EditorTimeline.inst.SelectedObjects.Count,
-                GameData.Current.beatmapObjects.Count,
-                GameData.Current.prefabObjects.Count,
-                EditorTimeline.inst.SelectedBackgroundObjects.Count,
-                GameData.Current.backgroundObjects.Count);
+            Dialog.SelectedObjectCountLabel?.SetText($"Selected Object Count [{EditorTimeline.inst.SelectedBeatmapObjects.Count}]");
+            Dialog.SelectedBackgroundObjectCountLabel?.SetText($"Selected Background Object Count [{EditorTimeline.inst.SelectedBackgroundObjects.Count}]");
+            Dialog.SelectedPrefabObjectCountLabel?.SetText($"Selected Prefab Object Count [{EditorTimeline.inst.SelectedPrefabObjects.Count}]");
+            Dialog.SelectedTotalCountLabel?.SetText($"Selected Total Count [{EditorTimeline.inst.SelectedObjects.Count}]");
         }
 
         public void ForEachTimelineObject(Action<TimelineObject> action)
@@ -251,6 +247,33 @@ namespace BetterLegacy.Editor.Managers
                 RTMath.Operation(ref prefabObject.ParentParallax[type], value, operation);
                 RTLevel.Current?.UpdatePrefab(prefabObject);
             }
+        });
+
+        public void SetObjectType(BeatmapObject.ObjectType objectType) => ForEachBeatmapObject(timelineObject =>
+        {
+            var beatmapObject = timelineObject.GetData<BeatmapObject>();
+            beatmapObject.objectType = objectType;
+
+            EditorTimeline.inst.RenderTimelineObject(timelineObject);
+            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.OBJECT_TYPE);
+        });
+        
+        public void SetColorBlendMode(ColorBlendMode colorBlendMode) => ForEachBeatmapObject(beatmapObject =>
+        {
+            beatmapObject.colorBlendMode = colorBlendMode;
+            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.RENDERING);
+        });
+
+        public void SetGradientType(GradientType gradientType) => ForEachBeatmapObject(beatmapObject =>
+        {
+            beatmapObject.gradientType = gradientType;
+            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.RENDERING);
+        });
+        
+        public void SetRenderLayerType(BeatmapObject.RenderLayerType renderLayerType) => ForEachBeatmapObject(beatmapObject =>
+        {
+            beatmapObject.renderLayerType = renderLayerType;
+            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.RENDERING);
         });
 
         #endregion
