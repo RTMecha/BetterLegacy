@@ -336,7 +336,7 @@ namespace BetterLegacy.Core.Runtime
         /// <param name="reinsert">If the runtime object should be reinserted.</param>
         /// <param name="recursive">If updating should be recursive.</param>
         /// <param name="recalculate">If the engine should recalculate.</param>
-        public virtual void UpdateObject(BeatmapObject beatmapObject, bool recache = true, bool update = true, bool reinsert = true, bool recursive = true, bool recalculate = true)
+        public virtual void UpdateObject(BeatmapObject beatmapObject, bool recache = true, bool update = true, bool reinsert = true, bool recursive = true, bool recalculate = true, bool updateModifiers = true)
         {
             if (!beatmapObject)
                 return;
@@ -351,7 +351,7 @@ namespace BetterLegacy.Core.Runtime
                 RecacheSequences(beatmapObject, reinsert, recursive: recursive);
 
             if (update)
-                ReinitObject(beatmapObject, reinsert, recursive);
+                ReinitObject(beatmapObject, reinsert, recursive, updateModifiers);
 
             if (recalculate)
                 RecalculateObjectStates();
@@ -668,7 +668,7 @@ namespace BetterLegacy.Core.Runtime
         /// Removes a Beatmap Object from the runtime.
         /// </summary>
         /// <param name="beatmapObject">Beatmap Object to remove.</param>
-        public void RemoveObject(BeatmapObject beatmapObject)
+        public void RemoveObject(BeatmapObject beatmapObject, bool updateModifiers = true)
         {
             if (!beatmapObject)
                 return;
@@ -691,30 +691,15 @@ namespace BetterLegacy.Core.Runtime
                 beatmapObject.runtimeObject = null;
             }
 
-            var runtimeModifiers = beatmapObject.runtimeModifiers;
-
-            if (runtimeModifiers)
-            {
-                runtimeModifiers.modifiers.ForLoop(modifier =>
-                {
-                    modifier.RunInactive(modifier, beatmapObject);
-                    ModifiersHelper.OnRemoveCache(modifier);
-                    modifier.Result = null;
-                });
-
-                objectModifiersEngine?.spawner?.RemoveObject(runtimeModifiers, false);
-                modifiers.Remove(runtimeModifiers);
-
-                runtimeModifiers = null;
-                beatmapObject.runtimeModifiers = null;
-            }
+            if (updateModifiers)
+                RemoveModifiers(beatmapObject);
         }
 
         /// <summary>
         /// Adds a Beatmap Object to the runtime.
         /// </summary>
         /// <param name="beatmapObject">Beatmap Object to add.</param>
-        public void AddObject(BeatmapObject beatmapObject)
+        public void AddObject(BeatmapObject beatmapObject, bool updateModifiers = true)
         {
             if (!beatmapObject)
                 return;
@@ -726,12 +711,8 @@ namespace BetterLegacy.Core.Runtime
                 objectEngine?.spawner?.InsertObject(iRuntimeObject, false);
             }
 
-            var iRuntimeModifiers = converter.ToIRuntimeModifiers(beatmapObject);
-            if (iRuntimeModifiers != null)
-            {
-                modifiers.Add(iRuntimeModifiers);
-                objectModifiersEngine?.spawner?.InsertObject(iRuntimeModifiers, false);
-            }
+            if (updateModifiers)
+                AddModifiers(beatmapObject);
         }
 
         /// <summary>
@@ -743,7 +724,7 @@ namespace BetterLegacy.Core.Runtime
         /// <param name="spawner">Object spawner.</param>
         /// <param name="reinsert">If the object should be reinserted.</param>
         /// <param name="recursive">If the updating should be recursive.</param>
-        public virtual void ReinitObject(BeatmapObject beatmapObject, bool reinsert = true, bool recursive = true)
+        public virtual void ReinitObject(BeatmapObject beatmapObject, bool reinsert = true, bool recursive = true, bool updateModifiers = true)
         {
             if (!beatmapObject)
                 return;
@@ -758,15 +739,15 @@ namespace BetterLegacy.Core.Runtime
                 {
                     var bm = beatmapObjects[i];
                     if (bm.Parent == beatmapObject.id)
-                        ReinitObject(bm, reinsert, recursive);
+                        ReinitObject(bm, reinsert, recursive, updateModifiers);
                 }
             }
 
-            RemoveObject(beatmapObject);
+            RemoveObject(beatmapObject, updateModifiers);
 
             // If the object should be reinserted.
             if (reinsert)
-                AddObject(beatmapObject);
+                AddObject(beatmapObject, updateModifiers);
         }
 
         public virtual void UpdateParentChain(BeatmapObject beatmapObject, RTBeatmapObject runtimeObject = null, bool log = false)
@@ -976,6 +957,37 @@ namespace BetterLegacy.Core.Runtime
                 objectModifiersEngine?.Update(FixedTime);
         }
 
+        public void RemoveModifiers(BeatmapObject beatmapObject)
+        {
+            var runtimeModifiers = beatmapObject.runtimeModifiers;
+
+            if (runtimeModifiers)
+            {
+                runtimeModifiers.modifiers.ForLoop(modifier =>
+                {
+                    modifier.RunInactive(modifier, beatmapObject);
+                    ModifiersHelper.OnRemoveCache(modifier);
+                    modifier.Result = null;
+                });
+
+                objectModifiersEngine?.spawner?.RemoveObject(runtimeModifiers, false);
+                modifiers.Remove(runtimeModifiers);
+
+                runtimeModifiers = null;
+                beatmapObject.runtimeModifiers = null;
+            }
+        }
+
+        public void AddModifiers(BeatmapObject beatmapObject)
+        {
+            var iRuntimeModifiers = converter.ToIRuntimeModifiers(beatmapObject);
+            if (iRuntimeModifiers != null)
+            {
+                modifiers.Add(iRuntimeModifiers);
+                objectModifiersEngine?.spawner?.InsertObject(iRuntimeModifiers, false);
+            }
+        }
+
         #endregion
 
         #endregion
@@ -1055,12 +1067,12 @@ namespace BetterLegacy.Core.Runtime
         /// <param name="backgroundObject">Beatmap Objec to update.</param>
         /// <param name="reinsert">If the runtime object should be reinserted.</param>
         /// <param name="recalculate">If the engine should recalculate.</param>
-        public virtual void UpdateBackgroundObject(BackgroundObject backgroundObject, bool reinsert = true, bool recalculate = true)
+        public virtual void UpdateBackgroundObject(BackgroundObject backgroundObject, bool reinsert = true, bool recalculate = true, bool updateModifiers = true)
         {
             if (!backgroundObject)
                 return;
 
-            ReinitObject(backgroundObject, reinsert);
+            ReinitObject(backgroundObject, reinsert, updateModifiers);
 
             if (recalculate)
                 backgroundEngine?.Recalculate();
@@ -1155,7 +1167,7 @@ namespace BetterLegacy.Core.Runtime
         /// Removes a Background Object from the runtime.
         /// </summary>
         /// <param name="backgroundObject">Background Object to remove.</param>
-        public void RemoveBackgroundObject(BackgroundObject backgroundObject)
+        public void RemoveBackgroundObject(BackgroundObject backgroundObject, bool updateModifiers = true)
         {
             var runtimeObject = backgroundObject.runtimeObject;
 
@@ -1169,23 +1181,15 @@ namespace BetterLegacy.Core.Runtime
                 backgroundObject.runtimeObject = null;
             }
 
-            var runtimeModifiers = backgroundObject.runtimeModifiers;
-
-            if (runtimeModifiers)
-            {
-                bgModifiersEngine?.spawner?.RemoveObject(runtimeModifiers, false);
-                bgModifiers.Remove(runtimeModifiers);
-
-                runtimeModifiers = null;
-                backgroundObject.runtimeModifiers = null;
-            }
+            if (updateModifiers)
+                RemoveModifiers(backgroundObject);
         }
 
         /// <summary>
         /// Adds a Background Object to the runtime.
         /// </summary>
         /// <param name="backgroundObject">Background Object to add.</param>
-        public void AddBackgroundObject(BackgroundObject backgroundObject)
+        public void AddBackgroundObject(BackgroundObject backgroundObject, bool updateModifiers = true)
         {
             var iRuntimeBGObject = converter.ToIRuntimeBGObject(backgroundObject);
             if (iRuntimeBGObject != null)
@@ -1194,12 +1198,8 @@ namespace BetterLegacy.Core.Runtime
                 backgroundEngine?.spawner?.InsertObject(iRuntimeBGObject, false);
             }
 
-            var iRuntimeBGModifiers = converter.ToIRuntimeModifiers(backgroundObject);
-            if (iRuntimeBGModifiers != null)
-            {
-                bgModifiers.Add(iRuntimeBGModifiers);
-                bgModifiersEngine?.spawner?.InsertObject(iRuntimeBGModifiers, false);
-            }
+            if (updateModifiers)
+                AddModifiers(backgroundObject);
         }
 
         /// <summary>
@@ -1207,14 +1207,14 @@ namespace BetterLegacy.Core.Runtime
         /// </summary>
         /// <param name="backgroundObject">Background Object to update.</param>
         /// <param name="reinsert">If the object should be reinserted.</param>
-        public virtual void ReinitObject(BackgroundObject backgroundObject, bool reinsert = true)
+        public virtual void ReinitObject(BackgroundObject backgroundObject, bool reinsert = true, bool updateModifiers = true)
         {
             backgroundObject.ResetOffsets();
 
-            RemoveBackgroundObject(backgroundObject);
+            RemoveBackgroundObject(backgroundObject, updateModifiers);
 
             if (reinsert)
-                AddBackgroundObject(backgroundObject);
+                AddBackgroundObject(backgroundObject, updateModifiers);
         }
 
         #region Modifiers
@@ -1238,6 +1238,30 @@ namespace BetterLegacy.Core.Runtime
         {
             if (CoreConfig.Instance.ShowBackgroundObjects.Value)
                 bgModifiersEngine?.Update(FixedTime);
+        }
+
+        public void RemoveModifiers(BackgroundObject backgroundObject)
+        {
+            var runtimeModifiers = backgroundObject.runtimeModifiers;
+
+            if (runtimeModifiers)
+            {
+                bgModifiersEngine?.spawner?.RemoveObject(runtimeModifiers, false);
+                bgModifiers.Remove(runtimeModifiers);
+
+                runtimeModifiers = null;
+                backgroundObject.runtimeModifiers = null;
+            }
+        }
+
+        public void AddModifiers(BackgroundObject backgroundObject)
+        {
+            var iRuntimeBGModifiers = converter.ToIRuntimeModifiers(backgroundObject);
+            if (iRuntimeBGModifiers != null)
+            {
+                bgModifiers.Add(iRuntimeBGModifiers);
+                bgModifiersEngine?.spawner?.InsertObject(iRuntimeBGModifiers, false);
+            }
         }
 
         #endregion
@@ -1268,12 +1292,12 @@ namespace BetterLegacy.Core.Runtime
         /// </summary>
         /// <param name="prefabObject">The Prefab Object to update.</param>
         /// <param name="reinsert">If the object should be updated or removed.</param>
-        public void UpdatePrefab(PrefabObject prefabObject, bool reinsert = true, bool recalculate = true)
+        public void UpdatePrefab(PrefabObject prefabObject, bool reinsert = true, bool recalculate = true, bool updateModifiers = true)
         {
             if (!prefabObject)
                 return;
 
-            ReinitPrefab(prefabObject, reinsert);
+            ReinitPrefab(prefabObject, reinsert, updateModifiers);
 
             if (!recalculate)
                 return;
@@ -1450,7 +1474,7 @@ namespace BetterLegacy.Core.Runtime
         /// Removes a Prefab Object from the runtime.
         /// </summary>
         /// <param name="prefabObject">Prefab Object to remove.</param>
-        public void RemovePrefab(PrefabObject prefabObject)
+        public void RemovePrefab(PrefabObject prefabObject, bool updateModifiers = true)
         {
             if (!prefabObject)
                 return;
@@ -1489,23 +1513,15 @@ namespace BetterLegacy.Core.Runtime
                 prefabObject.runtimeObject = null;
             }
 
-            var runtimeModifiers = prefabObject.runtimeModifiers;
-
-            if (runtimeModifiers)
-            {
-                prefabModifiersEngine?.spawner?.RemoveObject(runtimeModifiers, false);
-                prefabModifiers.Remove(runtimeModifiers);
-
-                runtimeModifiers = null;
-                prefabObject.runtimeModifiers = null;
-            }
+            if (updateModifiers)
+                RemoveModifiers(prefabObject);
         }
 
         /// <summary>
         /// Adds a Prefab Object to the runtime.
         /// </summary>
         /// <param name="prefabObject">Prefab Object to add.</param>
-        public void AddPrefab(PrefabObject prefabObject)
+        public void AddPrefab(PrefabObject prefabObject, bool updateModifiers = true)
         {
             if (!prefabObject)
                 return;
@@ -1521,12 +1537,8 @@ namespace BetterLegacy.Core.Runtime
                 prefabEngine?.spawner?.InsertObject(iRuntimePrefabObject, false);
             }
 
-            var iRuntimePrefabModifiers = converter.ToIRuntimeModifiers(prefab, prefabObject);
-            if (iRuntimePrefabModifiers != null)
-            {
-                prefabModifiers.Add(iRuntimePrefabModifiers);
-                prefabModifiersEngine?.spawner?.InsertObject(iRuntimePrefabModifiers, false);
-            }
+            if (updateModifiers)
+                AddModifiers(prefab, prefabObject);
         }
 
         /// <summary>
@@ -1534,17 +1546,17 @@ namespace BetterLegacy.Core.Runtime
         /// </summary>
         /// <param name="prefabObject">Prefab Object to update.</param>
         /// <param name="reinsert">If the object should be reinserted.</param>
-        public virtual void ReinitPrefab(PrefabObject prefabObject, bool reinsert = true)
+        public virtual void ReinitPrefab(PrefabObject prefabObject, bool reinsert = true, bool updateModifiers = true)
         {
             if (!prefabObject)
                 return;
 
             prefabObject.ResetOffsets();
 
-            RemovePrefab(prefabObject);
+            RemovePrefab(prefabObject, updateModifiers);
 
             if (reinsert)
-                AddPrefab(prefabObject);
+                AddPrefab(prefabObject, updateModifiers);
         }
 
         #region Modifiers
@@ -1568,6 +1580,30 @@ namespace BetterLegacy.Core.Runtime
         {
             if (GameData.Current)
                 prefabModifiersEngine?.Update(FixedTime);
+        }
+
+        public void RemoveModifiers(PrefabObject prefabObject)
+        {
+            var runtimeModifiers = prefabObject.runtimeModifiers;
+
+            if (runtimeModifiers)
+            {
+                prefabModifiersEngine?.spawner?.RemoveObject(runtimeModifiers, false);
+                prefabModifiers.Remove(runtimeModifiers);
+
+                runtimeModifiers = null;
+                prefabObject.runtimeModifiers = null;
+            }
+        }
+
+        public void AddModifiers(Prefab prefab, PrefabObject prefabObject)
+        {
+            var iRuntimePrefabModifiers = converter.ToIRuntimeModifiers(prefab, prefabObject);
+            if (iRuntimePrefabModifiers != null)
+            {
+                prefabModifiers.Add(iRuntimePrefabModifiers);
+                prefabModifiersEngine?.spawner?.InsertObject(iRuntimePrefabModifiers, false);
+            }
         }
 
         #endregion

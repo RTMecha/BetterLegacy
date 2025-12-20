@@ -3088,14 +3088,14 @@
       {
         "type": 1,
         "name": "updateObject",
-        "values": [ "True" ],
+        "values": [ "True", "False" ],
         "const": "False",
         "compat": "full_beatmap"
       }, // updateObject
       {
         "type": 1,
         "name": "updateObjectOther",
-        "values": [ "Object Group", "True" ],
+        "values": [ "Object Group", "True", "False" ],
         "const": "False",
         "compat": "full_beatmap"
       }, // updateObjectOther

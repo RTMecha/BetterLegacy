@@ -11721,14 +11721,36 @@ namespace BetterLegacy.Core.Helpers
                 return;
 
             var reinsert = modifier.GetBool(0, true, modifierLoop.variables);
+            var retainRuntimeModifiers = modifier.GetBool(1, false, modifierLoop.variables);
             RTLevel.Current.postTick.Enqueue(() =>
             {
                 if (modifierLoop.reference is BeatmapObject beatmapObject)
-                    beatmapObject.GetParentRuntime()?.UpdateObject(beatmapObject, reinsert: reinsert);
+                {
+                    var parentRuntime = beatmapObject.GetParentRuntime();
+                    parentRuntime?.UpdateObject(beatmapObject, reinsert: reinsert, updateModifiers: false);
+
+                    parentRuntime?.RemoveModifiers(beatmapObject);
+                    if (reinsert || retainRuntimeModifiers)
+                        parentRuntime?.AddModifiers(beatmapObject);
+                }
                 if (modifierLoop.reference is BackgroundObject backgroundObject)
-                    backgroundObject.GetParentRuntime()?.UpdateBackgroundObject(backgroundObject, reinsert: reinsert);
+                {
+                    var parentRuntime = backgroundObject.GetParentRuntime();
+                    parentRuntime?.UpdateBackgroundObject(backgroundObject, reinsert: reinsert, updateModifiers: false);
+
+                    parentRuntime?.RemoveModifiers(backgroundObject);
+                    if (reinsert || retainRuntimeModifiers)
+                        parentRuntime?.AddModifiers(backgroundObject);
+                }
                 if (modifierLoop.reference is PrefabObject prefabObject)
-                    prefabObject.GetParentRuntime()?.UpdatePrefab(prefabObject, reinsert: reinsert);
+                {
+                    var parentRuntime = prefabObject.GetParentRuntime();
+                    parentRuntime?.UpdatePrefab(prefabObject, reinsert: reinsert, updateModifiers: false);
+
+                    parentRuntime?.RemoveModifiers(prefabObject);
+                    if (reinsert || retainRuntimeModifiers)
+                        parentRuntime?.AddModifiers(prefabObject.GetPrefab(), prefabObject);
+                }
             });
         }
 
@@ -11742,18 +11764,39 @@ namespace BetterLegacy.Core.Helpers
                 return;
 
             var reinsert = modifier.GetBool(1, true, modifierLoop.variables);
+            var retainRuntimeModifiers = modifier.GetBool(2, false, modifierLoop.variables);
             RTLevel.Current.postTick.Enqueue(() =>
             {
                 foreach (var other in prefabables)
                 {
                     if (other is BeatmapObject beatmapObject)
-                        beatmapObject.GetParentRuntime()?.UpdateObject(beatmapObject, reinsert: reinsert, recalculate: false);
+                    {
+                        var parentRuntime = beatmapObject.GetParentRuntime();
+                        parentRuntime?.UpdateObject(beatmapObject, reinsert: reinsert, updateModifiers: false);
+
+                        parentRuntime?.RemoveModifiers(beatmapObject);
+                        if (reinsert || retainRuntimeModifiers)
+                            parentRuntime?.AddModifiers(beatmapObject);
+                    }
                     if (other is BackgroundObject backgroundObject)
-                        backgroundObject.GetParentRuntime()?.UpdateBackgroundObject(backgroundObject, reinsert: reinsert, recalculate: false);
+                    {
+                        var parentRuntime = backgroundObject.GetParentRuntime();
+                        parentRuntime?.UpdateBackgroundObject(backgroundObject, reinsert: reinsert, updateModifiers: false);
+
+                        parentRuntime?.RemoveModifiers(backgroundObject);
+                        if (reinsert || retainRuntimeModifiers)
+                            parentRuntime?.AddModifiers(backgroundObject);
+                    }
                     if (other is PrefabObject prefabObject)
-                        prefabObject.GetParentRuntime()?.UpdatePrefab(prefabObject, reinsert: reinsert, recalculate: false);
+                    {
+                        var parentRuntime = prefabObject.GetParentRuntime();
+                        parentRuntime?.UpdatePrefab(prefabObject, reinsert: reinsert, updateModifiers: false);
+
+                        parentRuntime?.RemoveModifiers(prefabObject);
+                        if (reinsert || retainRuntimeModifiers)
+                            parentRuntime?.AddModifiers(prefabObject.GetPrefab(), prefabObject);
+                    }
                 }
-                RTLevel.Current?.RecalculateObjectStates();
             });
         }
 

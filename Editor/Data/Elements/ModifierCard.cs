@@ -3616,6 +3616,7 @@ namespace BetterLegacy.Editor.Data.Elements
                 //    }
                 case nameof(ModifierFunctions.updateObject): {
                         BoolGenerator(modifier, reference, "Respawn", 0);
+                        BoolGenerator(modifier, reference, "Retain Modifiers", 1);
 
                         break;
                     }
@@ -3624,6 +3625,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                         BoolGenerator(modifier, reference, "Respawn", 1);
+                        BoolGenerator(modifier, reference, "Retain Modifiers", 2);
 
                         break;
                     }
