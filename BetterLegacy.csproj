@@ -85,4 +85,6 @@
       <HintPath>..\lib\UnityEngine.UI-publicized.dll</HintPath>
     </Reference>
   </ItemGroup>
+  
+  <ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>
 </Project>

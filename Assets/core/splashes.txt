@@ -42,3 +42,4 @@ SPIN! NO WAIT-
 [I just spat out a bunch of dialogue because that's what I was told to do.]
 [Just to be safe, I'll keep doing that.]
 [sometimes it feels...]
+splash.dictionaries

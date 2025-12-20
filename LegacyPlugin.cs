@@ -112,6 +112,7 @@ namespace BetterLegacy
             {
                 CoreHelper.Log("Loading asset packs...");
                 AssetPack.LoadAssetPacks();
+                Lang.LoadGlobal();
                 CustomObjectType.LoadObjectTypes();
             }
             catch (Exception ex)

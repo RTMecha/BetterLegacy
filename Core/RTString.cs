@@ -9,6 +9,7 @@ using UnityEngine;
 using LSFunctions;
 
 using BetterLegacy.Configs;
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
@@ -715,6 +716,9 @@ namespace BetterLegacy.Core
             if (string.IsNullOrEmpty(input))
                 return input;
 
+            if (Lang.Current.strings.TryGetValue(input, out string l))
+                return l;
+
             RegexMatches(input, new Regex(@"{{LevelRank=([0-9]+)}}"), match =>
             {
                 Rank rank =
@@ -841,7 +845,7 @@ namespace BetterLegacy.Core
             int index = 0;
             while (index < input.Length)
             {
-                if (char.IsUpper(input[index]))
+                if (char.IsUpper(input[index]) && index != 0)
                 {
                     input = input.Insert(index, " ");
                     index++;

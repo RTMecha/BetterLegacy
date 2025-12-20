@@ -886,6 +886,7 @@ namespace BetterLegacy.Menus
 
                             LegacyPlugin.ParseProfile();
                             AssetPack.LoadAssetPacks();
+                            Lang.LoadGlobal();
                             LegacyPlugin.LoadSplashText();
                             ChangeLogMenu.Seen = false;
                             inst.randomIndex = -1;

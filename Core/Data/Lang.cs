@@ -8,7 +8,7 @@ using BetterLegacy.Configs;
 namespace BetterLegacy.Core.Data
 {
     /// <summary>
-    /// Language dictionary wrapper that stores strings for multiple languages.
+    /// Language dictionary wrapper that stores strings for multiple languages. Lang is for individual storing of languages, whilst <see cref="LangDictionary"/> is for global language keys.
     /// </summary>
     public class Lang : Exists
     {
@@ -28,6 +28,52 @@ namespace BetterLegacy.Core.Data
         /// Dictionary that contains the languages.
         /// </summary>
         public Dictionary<Language, string> languages = new Dictionary<Language, string>();
+
+        /// <summary>
+        /// Global dictionary of languages.
+        /// </summary>
+        public static Dictionary<Language, LangDictionary> global = new Dictionary<Language, LangDictionary>();
+
+        static LangDictionary defaultLang = new LangDictionary();
+
+        /// <summary>
+        /// The current language dictionary.
+        /// </summary>
+        public static LangDictionary Current => global.TryGetValue(CoreConfig.Instance.Language.Value, out LangDictionary langDictionary) ? langDictionary : defaultLang;
+
+        /// <summary>
+        /// Loads the global language dictionaries.
+        /// </summary>
+        public static void LoadGlobal()
+        {
+            var langValues = Helpers.EnumHelper.GetValues<Language>();
+            LoadGlobalAssetPack(AssetPack.BuiltIn, langValues);
+            var assetPacks = AssetPack.AssetPacks;
+            for (int i = 0; i < assetPacks.Count; i++)
+            {
+                var assetPack = assetPacks[i];
+                LoadGlobalAssetPack(assetPack, langValues);
+            }
+        }
+
+        static void LoadGlobalAssetPack(AssetPack assetPack, Language[] langValues)
+        {
+            for (int i = 0; i < langValues.Length; i++)
+            {
+                var langValue = langValues[i];
+                var name = RTString.SplitWords(langValue.ToString()).Replace(" ", "_");
+                var path = $"core/lang/{name}.json";
+                if (!assetPack.HasFile(path))
+                    continue;
+
+                var langDictionary = LangDictionary.Parse(JSON.Parse(RTFile.ReadFromFile(assetPack.GetPath(path))));
+                langDictionary.language = langValue;
+                if (global.TryGetValue(langValue, out LangDictionary orig))
+                    orig.AddDictionary(langDictionary);
+                else
+                    global[langValue] = langDictionary;
+            }
+        }
 
         #endregion
 
@@ -170,10 +216,54 @@ namespace BetterLegacy.Core.Data
 
         public static Language CurrentLanguage => CoreConfig.Instance?.Language?.Value ?? Language.English;
 
-        public string ToLower() => GetText(CurrentLanguage)?.ToLower() ?? string.Empty;
+        public string ToLower() => GetText()?.ToLower() ?? string.Empty;
 
         public override string ToString() => this;
 
         #endregion
+
+        public class LangDictionary : PAObject<LangDictionary>
+        {
+            public Language language;
+
+            public Dictionary<string, string> strings = new Dictionary<string, string>();
+
+            public override void CopyData(LangDictionary orig, bool newID = true)
+            {
+                language = orig.language;
+                strings = new Dictionary<string, string>(orig.strings);
+            }
+
+            public override void ReadJSON(JSONNode jn)
+            {
+                if (jn == null)
+                    return;
+
+                if (jn.IsArray)
+                    for (int i = 0; i < jn["strings"].Count; i++)
+                        strings[jn["strings"][i]["key"]] = jn["strings"][i]["text"];
+                else if (jn.IsObject)
+                    foreach (var keyValuePair in jn.Linq)
+                        strings[keyValuePair.Key] = keyValuePair.Value;
+            }
+
+            public override JSONNode ToJSON()
+            {
+                var jn = Parser.NewJSONObject();
+
+                foreach (var keyValuePair in strings)
+                    jn[keyValuePair.Key] = keyValuePair.Value;
+
+                return jn;
+            }
+
+            public string GetOrDefault(string key, string defaultValue) => strings.TryGetValue(key, out string value) ? value : defaultValue;
+
+            public void AddDictionary(LangDictionary langDictionary)
+            {
+                foreach (var keyValuePair in langDictionary.strings)
+                    strings[keyValuePair.Key] = keyValuePair.Value;
+            }
+        }
     }
 }
