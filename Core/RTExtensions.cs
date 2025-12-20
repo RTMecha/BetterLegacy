@@ -2067,6 +2067,19 @@ namespace BetterLegacy.Core
         /// <returns>Returns a found event keyframe.</returns>
         public static EventKeyframe GetEventKeyframe(this IAnimatable animatable, KeyframeCoord keyframeCoord) => animatable.GetEventKeyframes(keyframeCoord.type)[keyframeCoord.index];
 
+        /// <summary>
+        /// Checks if an object can spawn.
+        /// </summary>
+        /// <returns>Returns true if the LDM setting matches the detail mode, otherwise returns false.</returns>
+        public static bool CanSpawn(this LowDetailMode ldm) => ldm switch
+        {
+            LowDetailMode.None => true,
+            LowDetailMode.OffOnly => !CoreConfig.Instance.LDM.Value,
+            LowDetailMode.OnOnly => CoreConfig.Instance.LDM.Value,
+            LowDetailMode.Never => false,
+            _ => true,
+        };
+
         #region Beatmap
 
         /// <summary>

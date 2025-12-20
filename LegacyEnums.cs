@@ -1235,11 +1235,27 @@ namespace BetterLegacy
         // Random, // todo
     }
 
+    /// <summary>
+    /// Low Detail Mode value.
+    /// </summary>
     public enum LowDetailMode
     {
+        /// <summary>
+        /// Object will always spawn.
+        /// </summary>
         None,
+        /// <summary>
+        /// Object will only spawn if the LDM setting is off.
+        /// </summary>
         OffOnly,
+        /// <summary>
+        /// Object will only spawn if the LDM setting is on.
+        /// </summary>
         OnOnly,
+        /// <summary>
+        /// Object will never spawn.
+        /// </summary>
+        Never,
     }
 
     public class CustomObjectType : Exists
