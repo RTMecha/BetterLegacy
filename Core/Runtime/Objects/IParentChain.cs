@@ -113,10 +113,8 @@ namespace BetterLegacy.Core.Runtime.Objects
             // Update Camera Parent
             if (parentChain.PositionParent)
             {
-                var x = EventManager.inst.cam.transform.position.x;
-                var y = EventManager.inst.cam.transform.position.y;
-
-                parentChain.Parent.localPosition = (new Vector3(x, y, 0f) * parentChain.PositionParentOffset)
+                var pos = EventManager.inst.cam.transform.position;
+                parentChain.Parent.localPosition = (new Vector3(pos.x, pos.y, 0f) * parentChain.PositionParentOffset)
                     + new Vector3(0f, 0f, inBackground ? 20f : 0f)
                     + parentChain.TopPosition;
             }
@@ -126,8 +124,7 @@ namespace BetterLegacy.Core.Runtime.Objects
             if (parentChain.ScaleParent)
             {
                 float camOrthoZoom = EventManager.inst.cam.orthographicSize / 20f - 1f;
-
-                parentChain.Parent.localScale = RTMath.Scale(new Vector3(camOrthoZoom, camOrthoZoom, 1f) * parentChain.ScaleParentOffset, parentChain.TopScale);
+                parentChain.Parent.localScale = RTMath.Scale((new Vector3(camOrthoZoom, camOrthoZoom, 1f) * parentChain.ScaleParentOffset) + Vector3.one, parentChain.TopScale);
             }
             else
                 parentChain.Parent.localScale = parentChain.TopScale;
@@ -135,7 +132,6 @@ namespace BetterLegacy.Core.Runtime.Objects
             if (parentChain.RotationParent)
             {
                 var camRot = EventManager.inst.camParent.transform.rotation.eulerAngles;
-
                 parentChain.Parent.localRotation = Quaternion.Euler((camRot * parentChain.RotationParentOffset) + parentChain.TopRotation);
             }
             else
