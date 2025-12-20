@@ -579,11 +579,11 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     lel.minWidth = 64f;
                     lel.preferredWidth = 64f;
 
-                    EditorThemeManager.ApplyToggle(type.GetComponent<Toggle>(), ThemeGroup.Background_1);
+                    EditorThemeManager.ApplyToggle(type.GetComponent<Toggle>(), ThemeGroup.Background_3);
                     var typeImage = type.transform.Find("Image").GetComponent<Image>();
                     EditorThemeManager.ApplyGraphic(typeImage, ThemeGroup.Toggle_1_Check);
                     EditorThemeManager.ApplyInputField(offset.GetComponent<InputField>());
-                    EditorThemeManager.ApplyToggle(additive.GetComponent<Toggle>(), ThemeGroup.Background_1);
+                    EditorThemeManager.ApplyToggle(additive.GetComponent<Toggle>(), ThemeGroup.Background_3);
                     var additiveImage = additive.transform.Find("Image").GetComponent<Image>();
                     EditorThemeManager.ApplyGraphic(additiveImage, ThemeGroup.Toggle_1_Check);
                     EditorThemeManager.ApplyInputField(parallax.GetComponent<InputField>());
@@ -1420,6 +1420,15 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 };
                 ParentSettings.Add(parentSetting);
             }
+
+            var parentSettingsBG = ParentSettingsParent.transform.Find("bg").GetComponent<Image>();
+            parentSettingsBG.gameObject.SetActive(true);
+            EditorThemeManager.ApplyGraphic(parentSettingsBG, ThemeGroup.Background_3, true);
+
+            var parentSettingsLine = Creator.NewUIObject("line", ParentSettingsParent.transform);
+            RectValues.Default.SizeDelta(356f, 6f).AssignToRectTransform(parentSettingsLine.transform.AsRT());
+            var parentSettingsLineImage = parentSettingsLine.AddComponent<Image>();
+            EditorThemeManager.ApplyGraphic(parentSettingsLineImage, ThemeGroup.Toggle_1, true);
 
             #endregion
 
