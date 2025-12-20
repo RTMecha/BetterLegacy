@@ -1270,6 +1270,8 @@ namespace BetterLegacy.Editor.Data
             public override void Apply(InputFieldStorage numberInputField)
             {
                 base.Apply(numberInputField);
+                TriggerHelper.AddEventTriggers(numberInputField.inputField.gameObject,
+                    TriggerHelper.ScrollDelta(numberInputField.inputField, amount, multiply, min, max));
                 if (standardArrowFunctions)
                     TriggerHelper.IncreaseDecreaseButtons(numberInputField, amount, multiply, min, max);
             }
@@ -1288,6 +1290,8 @@ namespace BetterLegacy.Editor.Data
             public override void Apply(InputFieldStorage numberInputField)
             {
                 base.Apply(numberInputField);
+                TriggerHelper.AddEventTriggers(numberInputField.inputField.gameObject,
+                    TriggerHelper.ScrollDeltaInt(numberInputField.inputField, amount, min, max));
                 if (standardArrowFunctions)
                     TriggerHelper.IncreaseDecreaseButtonsInt(numberInputField, amount, multiply, min, max);
             }
