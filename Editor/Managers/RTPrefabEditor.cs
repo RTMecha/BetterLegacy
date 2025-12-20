@@ -440,6 +440,7 @@ namespace BetterLegacy.Editor.Managers
             RenderPrefabObjectLayer(prefabObject);
             RenderPrefabObjectBin(prefabObject);
             RenderPrefabObjectIndex(prefabObject);
+            RenderPrefabObjectGroup(prefabObject);
             RenderEditorColors(prefabObject);
 
             RenderPrefabObjectInspector(prefabObject);
@@ -993,6 +994,16 @@ namespace BetterLegacy.Editor.Managers
 
             EditorContextMenu.AddContextMenu(PrefabObjectEditor.EditorIndexField.inputField.gameObject,
                 EditorContextMenu.GetIndexerFunctions(currentIndex, GameData.Current.prefabObjects));
+        }
+
+        public void RenderPrefabObjectGroup(PrefabObject prefabObject)
+        {
+            PrefabObjectEditor.EditorGroupField.SetTextWithoutNotify(prefabObject.EditorData.editorGroup);
+            PrefabObjectEditor.EditorGroupField.onValueChanged.NewListener(_val =>
+            {
+                prefabObject.EditorData.editorGroup = _val;
+                EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(prefabObject));
+            });
         }
 
         public void RenderEditorColors(PrefabObject prefabObject)

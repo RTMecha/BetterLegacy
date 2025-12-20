@@ -792,6 +792,7 @@ namespace BetterLegacy.Configs
             RegisterPopupAnimation(EditorPopup.PLAYER_MODELS_POPUP);
             RegisterPopupAnimation(EditorPopup.PLAYER_OBJECTS_POPUP);
             RegisterPopupAnimation(EditorPopup.USER_SEARCH_POPUP);
+            RegisterPopupAnimation(EditorPopup.EDITOR_GROUPS_POPUP);
 
             RegisterDropdownAnimation(EditorHelper.FILE_DROPDOWN);
             RegisterDropdownAnimation(EditorHelper.EDIT_DROPDOWN);

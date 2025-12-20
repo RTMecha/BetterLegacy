@@ -10,6 +10,7 @@ using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Editor.Data.Timeline;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data
@@ -146,6 +147,8 @@ namespace BetterLegacy.Editor.Data
         /// </summary>
         public CaptureSettings captureSettings = new CaptureSettings();
 
+        public List<EditorGroup> editorGroups = new List<EditorGroup>();
+
         public FileFormat FileFormat => FileFormat.LSE;
 
         #endregion
@@ -204,6 +207,7 @@ namespace BetterLegacy.Editor.Data
             prefabPath = orig.prefabPath;
             themePath = orig.themePath;
             captureSettings = orig.captureSettings.Copy();
+            editorGroups = new List<EditorGroup>(orig.editorGroups.Select(x => x.Copy()));
         }
 
         public override void ReadJSON(JSONNode jn)
@@ -253,8 +257,18 @@ namespace BetterLegacy.Editor.Data
                 binPosition = jn["timeline"]["bin_position"].AsFloat;
 
                 if (jn["timeline"]["pinned_layers"] != null)
+                {
+                    pinnedEditorLayers.Clear();
                     for (int i = 0; i < jn["timeline"]["pinned_layers"].Count; i++)
                         pinnedEditorLayers.Add(PinnedEditorLayer.Parse(jn["timeline"]["pinned_layers"][i]));
+                }
+
+                if (jn["timeline"]["editor_groups"] != null)
+                {
+                    editorGroups.Clear();
+                    for (int i = 0; i < jn["timeline"]["editor_groups"].Count; i++)
+                        editorGroups.Add(EditorGroup.Parse(jn["timeline"]["editor_groups"][i]));
+                }
             }
 
             if (jn["editor"] != null)
@@ -346,6 +360,9 @@ namespace BetterLegacy.Editor.Data
             for (int i = 0; i < pinnedEditorLayers.Count; i++)
                 jn["timeline"]["pinned_layers"][i] = pinnedEditorLayers[i].ToJSON();
 
+            for (int i = 0; i < editorGroups.Count; i++)
+                jn["timeline"]["editor_groups"][i] = editorGroups[i].ToJSON();
+
             jn["editor"]["progress"] = Progress;
             jn["editor"]["editing_time"] = timer.time;
             jn["editor"]["open_amount"] = openAmount;
@@ -425,6 +442,14 @@ namespace BetterLegacy.Editor.Data
 
             // don't apply paths since it's just an override.
         }
+
+        public EditorGroup GetGroup(string name) => editorGroups.Find(x => x.name == name);
+
+        public bool TryGetGroup(string name, out EditorGroup editorGroup) => editorGroups.TryFind(x => x.name == name, out editorGroup);
+
+        public EditorGroup GetGroup(TimelineObject timelineObject) => GetGroup(timelineObject.EditorData.editorGroup);
+
+        public bool TryGetGroup(TimelineObject timelineObject, out EditorGroup editorGroup) => TryGetGroup(timelineObject.EditorData.editorGroup, out editorGroup);
 
         #endregion
     }

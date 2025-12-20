@@ -78,6 +78,11 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public bool hidden = false;
 
+        /// <summary>
+        /// Editor Group reference.
+        /// </summary>
+        public string editorGroup;
+
         public string color;
 
         public string selectedColor;
@@ -95,7 +100,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public bool ShouldSerialize =>
             Bin != 0 || Layer != 0 ||
-            collapse || locked || !selectable || hidden ||
+            collapse || locked || !selectable || hidden || !string.IsNullOrEmpty(editorGroup) ||
             !string.IsNullOrEmpty(color) || !string.IsNullOrEmpty(selectedColor) || !string.IsNullOrEmpty(textColor) || !string.IsNullOrEmpty(markColor) ||
             !displays.IsEmpty() || !miscDisplayValues.IsEmpty();
 
@@ -127,6 +132,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             locked = orig.locked;
             selectable = orig.selectable;
             hidden = orig.hidden;
+            editorGroup = orig.editorGroup;
             color = orig.color;
             selectedColor = orig.selectedColor;
             textColor = orig.textColor;
@@ -158,6 +164,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             locked = jn["locked"].AsBool;
             selectable = jn["select"] == null || jn["select"].AsBool;
             hidden = jn["hide"].AsBool;
+            editorGroup = jn["group"];
             color = jn["col"];
             selectedColor = jn["selcol"];
             textColor = jn["texcol"];
@@ -214,6 +221,9 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["select"] = selectable;
             if (hidden)
                 jn["hide"] = hidden;
+
+            if (!string.IsNullOrEmpty(editorGroup))
+                jn["group"] = editorGroup;
 
             if (!string.IsNullOrEmpty(color))
                 jn["col"] = color;

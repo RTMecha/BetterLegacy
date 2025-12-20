@@ -267,6 +267,7 @@ namespace BetterLegacy.Editor.Managers
             RenderLayers(backgroundObject);
             RenderBin(backgroundObject);
             RenderIndex(backgroundObject);
+            RenderGroup(backgroundObject);
             RenderEditorColors(backgroundObject);
             RenderPrefabReference(backgroundObject);
 
@@ -1008,6 +1009,16 @@ namespace BetterLegacy.Editor.Managers
 
             EditorContextMenu.AddContextMenu(Dialog.EditorIndexField.inputField.gameObject,
                 EditorContextMenu.GetIndexerFunctions(currentIndex, GameData.Current.backgroundObjects));
+        }
+
+        public void RenderGroup(BackgroundObject backgroundObject)
+        {
+            Dialog.EditorGroupField.SetTextWithoutNotify(backgroundObject.EditorData.editorGroup);
+            Dialog.EditorGroupField.onValueChanged.NewListener(_val =>
+            {
+                backgroundObject.EditorData.editorGroup = _val;
+                EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(backgroundObject));
+            });
         }
 
         public void RenderEditorColors(BackgroundObject backgroundObject)

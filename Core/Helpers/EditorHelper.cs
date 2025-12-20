@@ -272,6 +272,66 @@ namespace BetterLegacy.Core.Helpers
             return true;
         }
 
+        public static bool SelectAllObjectsFromGroup(string editorGroup)
+        {
+            if (!GameData.Current || !CoreHelper.InEditor || !EditorManager.inst.hasLoadedLevel)
+                return false;
+
+            int selectedCount = 0;
+            for (int i = 0; i < EditorTimeline.inst.timelineObjects.Count; i++)
+            {
+                var timelineObject = EditorTimeline.inst.timelineObjects[i];
+                timelineObject.Selected = timelineObject.EditorData && timelineObject.EditorData.editorGroup == editorGroup;
+                if (!timelineObject.Selected)
+                    continue;
+
+                EditorTimeline.inst.CurrentSelection = timelineObject;
+                selectedCount++;
+            }
+            EditorTimeline.inst.HandleSelection(EditorTimeline.inst.SelectedObjects);
+            return true;
+        }
+
+        public static bool SelectAllObjectsFromPrefab(Prefab prefab)
+        {
+            if (!GameData.Current || !CoreHelper.InEditor || !EditorManager.inst.hasLoadedLevel)
+                return false;
+
+            int selectedCount = 0;
+            for (int i = 0; i < EditorTimeline.inst.timelineObjects.Count; i++)
+            {
+                var timelineObject = EditorTimeline.inst.timelineObjects[i];
+                timelineObject.Selected = timelineObject.TryGetPrefabable(out IPrefabable prefabable) && prefabable.PrefabID == prefab.id;
+                if (!timelineObject.Selected)
+                    continue;
+
+                EditorTimeline.inst.CurrentSelection = timelineObject;
+                selectedCount++;
+            }
+            EditorTimeline.inst.HandleSelection(EditorTimeline.inst.SelectedObjects);
+            return true;
+        }
+        
+        public static bool SelectAllObjectsFromPrefabInstance(IPrefabable main)
+        {
+            if (!GameData.Current || !CoreHelper.InEditor || !EditorManager.inst.hasLoadedLevel)
+                return false;
+
+            int selectedCount = 0;
+            for (int i = 0; i < EditorTimeline.inst.timelineObjects.Count; i++)
+            {
+                var timelineObject = EditorTimeline.inst.timelineObjects[i];
+                timelineObject.Selected = timelineObject.TryGetPrefabable(out IPrefabable prefabable) && main.SamePrefabInstance(prefabable);
+                if (!timelineObject.Selected)
+                    continue;
+
+                EditorTimeline.inst.CurrentSelection = timelineObject;
+                selectedCount++;
+            }
+            EditorTimeline.inst.HandleSelection(EditorTimeline.inst.SelectedObjects);
+            return true;
+        }
+
         public static bool MirrorSelectedObjects()
         {
             if (!GameData.Current || !CoreHelper.InEditor || !EditorManager.inst.hasLoadedLevel)

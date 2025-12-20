@@ -1212,6 +1212,7 @@ namespace BetterLegacy.Editor.Managers
             RenderBin(beatmapObject);
 
             RenderIndex(beatmapObject);
+            RenderGroup(beatmapObject);
 
             RenderEditorColors(beatmapObject);
             RenderCustomUIDisplay(beatmapObject);
@@ -2688,6 +2689,20 @@ namespace BetterLegacy.Editor.Managers
 
             EditorContextMenu.AddContextMenu(Dialog.EditorIndexField.inputField.gameObject,
                 EditorContextMenu.GetIndexerFunctions(currentIndex, GameData.Current.beatmapObjects));
+        }
+
+        /// <summary>
+        /// Renders the Group field.
+        /// </summary>
+        /// <param name="beatmapObject">The BeatmapObject to set.</param>
+        public void RenderGroup(BeatmapObject beatmapObject)
+        {
+            Dialog.EditorGroupField.SetTextWithoutNotify(beatmapObject.EditorData.editorGroup);
+            Dialog.EditorGroupField.onValueChanged.NewListener(_val =>
+            {
+                beatmapObject.EditorData.editorGroup = _val;
+                EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
+            });
         }
 
         /// <summary>

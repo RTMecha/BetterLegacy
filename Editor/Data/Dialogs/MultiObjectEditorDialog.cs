@@ -150,6 +150,18 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 switch (tabType)
                 {
                     case Tab.Editor: {
+
+                            SelectedObjectCountLabel = new LabelElement(string.Empty);
+                            SelectedObjectCountLabel.Init(EditorElement.InitSettings.Default.Parent(parent));
+                            SelectedBackgroundObjectCountLabel = new LabelElement(string.Empty);
+                            SelectedBackgroundObjectCountLabel.Init(EditorElement.InitSettings.Default.Parent(parent));
+                            SelectedPrefabObjectCountLabel = new LabelElement(string.Empty);
+                            SelectedPrefabObjectCountLabel.Init(EditorElement.InitSettings.Default.Parent(parent));
+                            SelectedTotalCountLabel = new LabelElement(string.Empty);
+                            SelectedTotalCountLabel.Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                            new SpacerElement().Init(EditorElement.InitSettings.Default.Parent(parent));
+
                             new LabelsElement("Editor Layer").Init(EditorElement.InitSettings.Default.Parent(parent));
                             new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerInt()
                             {
@@ -467,14 +479,14 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                             new SpacerElement().Init(EditorElement.InitSettings.Default.Parent(parent));
 
-                            SelectedObjectCountLabel = new LabelElement(string.Empty);
-                            SelectedObjectCountLabel.Init(EditorElement.InitSettings.Default.Parent(parent));
-                            SelectedBackgroundObjectCountLabel = new LabelElement(string.Empty);
-                            SelectedBackgroundObjectCountLabel.Init(EditorElement.InitSettings.Default.Parent(parent));
-                            SelectedPrefabObjectCountLabel = new LabelElement(string.Empty);
-                            SelectedPrefabObjectCountLabel.Init(EditorElement.InitSettings.Default.Parent(parent));
-                            SelectedTotalCountLabel = new LabelElement(string.Empty);
-                            SelectedTotalCountLabel.Init(EditorElement.InitSettings.Default.Parent(parent));
+                            new LabelsElement("Editor Groups").Init(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced));
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                ButtonElement.Label1Button("Assign Selected to Editor Group", EditorTimeline.inst.OpenEditorGroupsPopup),
+                                ButtonElement.Label1Button("Remove Editor Groups from Selected", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                {
+                                    timelineObject.Group = string.Empty;
+                                    timelineObject.Render();
+                                }), buttonThemeGroup: ThemeGroup.Delete, graphicThemeGroup: ThemeGroup.Delete_Text));
 
                             break;
                         }

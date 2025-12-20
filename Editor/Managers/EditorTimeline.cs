@@ -20,10 +20,12 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
+using BetterLegacy.Editor.Data.Popups;
 using BetterLegacy.Editor.Data.Timeline;
 using BetterLegacy.Editor.Managers.Settings;
 
@@ -365,6 +367,8 @@ namespace BetterLegacy.Editor.Managers
         /// All timeline objects that are <see cref="BackgroundObject"/>.
         /// </summary>
         public List<TimelineObject> TimelineBackgroundObjects => timelineObjects.Where(x => x.isBackgroundObject).ToList();
+
+        public ContentPopup EditorGroupPopup { get; set; }
 
         /// <summary>
         /// Selects a group of objects based on drag selection.
@@ -1108,6 +1112,146 @@ namespace BetterLegacy.Editor.Managers
                     EditorManager.inst.DisplayNotification("Cannot set parent to child / self!", 1f, EditorManager.NotificationType.Warning);
                 else
                     RTEditor.inst.parentPickerEnabled = false;
+            }
+        }
+
+        public void OpenEditorGroupsPopup()
+        {
+            RefreshEditorGroupsPopup();
+            EditorGroupPopup.Open();
+        }
+
+        public void RefreshEditorGroupsPopup()
+        {
+            EditorGroupPopup.ClearContent();
+            for (int i = 0; i < RTEditor.inst.editorInfo.editorGroups.Count; i++)
+            {
+                var index = i;
+                var editorGroup = RTEditor.inst.editorInfo.editorGroups[i];
+                if (!RTString.SearchString(EditorGroupPopup.SearchTerm, editorGroup.name))
+                    continue;
+
+                var origName = editorGroup.name;
+                FunctionButtonStorage button = null;
+                button = EditorGroupPopup.GenerateListButton($"{editorGroup.name} [{RTString.SplitWords(editorGroup.collapsedType.ToString())}]", pointerEventData =>
+                {
+                    NumberInputElement layerField = null;
+                    layerField = new NumberInputElement(GetLayerString(editorGroup.Layer),
+                            _val =>
+                            {
+                                if (int.TryParse(_val, out int num))
+                                    editorGroup.Layer = num - 1;
+                            }, new NumberInputElement.ArrowHandlerInt()
+                            {
+                                min = 1,
+                                max = int.MaxValue,
+                                middleClicked = _val =>
+                                {
+                                    editorGroup.Layer = Layer;
+                                    layerField.numberInputField.SetTextWithoutNotify(GetLayerString(editorGroup.Layer));
+                                    RenderTimelineObjects();
+                                },
+                            });
+
+                    EditorContextMenu.inst.ShowContextMenu(
+                        new EditorElementGroup(() => true,
+                            new ButtonElement("Assign to Selected", () => AssignEditorGroup(editorGroup)),
+                            new ButtonElement("Select Object Group", () => EditorHelper.SelectAllObjectsFromGroup(editorGroup.name)),
+                            new LabelElement("Group Name"),
+                            new StringInputElement(editorGroup.name,
+                                _val =>
+                                {
+                                    editorGroup.name = _val;
+                                    if (button)
+                                        button.Text = $"{editorGroup.name} [{RTString.SplitWords(editorGroup.collapsedType.ToString())}]";
+                                },
+                                _val =>
+                                {
+                                    if (RTEditor.inst.editorInfo.editorGroups.Has(x => x.name == _val && x.id != editorGroup.id))
+                                    {
+                                        editorGroup.name = origName;
+                                        if (button)
+                                            button.Text = $"{editorGroup.name} [{RTString.SplitWords(editorGroup.collapsedType.ToString())}]";
+                                        return;
+                                    }
+
+                                    RefreshEditorGroupsPopup();
+                                }),
+                            new LabelElement("Collapse"),
+                            ButtonElement.SelectionButton(() => editorGroup.collapsedType == EditorGroup.CollapsedType.Off, "Off", () =>
+                            {
+                                editorGroup.collapsedType = EditorGroup.CollapsedType.Off;
+                                if (button)
+                                    button.Text = $"{editorGroup.name} [{RTString.SplitWords(editorGroup.collapsedType.ToString())}]";
+                                else
+                                    RefreshEditorGroupsPopup();
+                                RenderTimelineObjects();
+                            }),
+                            ButtonElement.SelectionButton(() => editorGroup.collapsedType == EditorGroup.CollapsedType.Collapsed, "Individual", () =>
+                            {
+                                editorGroup.collapsedType = EditorGroup.CollapsedType.Collapsed;
+                                if (button)
+                                    button.Text = $"{editorGroup.name} [{RTString.SplitWords(editorGroup.collapsedType.ToString())}]";
+                                else
+                                    RefreshEditorGroupsPopup();
+                                RenderTimelineObjects();
+                            }),
+                            ButtonElement.SelectionButton(() => editorGroup.collapsedType == EditorGroup.CollapsedType.Hidden, "Hidden", () =>
+                            {
+                                editorGroup.collapsedType = EditorGroup.CollapsedType.Hidden;
+                                if (button)
+                                    button.Text = $"{editorGroup.name} [{RTString.SplitWords(editorGroup.collapsedType.ToString())}]";
+                                else
+                                    RefreshEditorGroupsPopup();
+                                RenderTimelineObjects();
+                            }),
+                            new LabelElement("Layer"),
+                            layerField,
+                            new ButtonElement("Move Selected to Layer", () =>
+                            {
+                                foreach (var timelineObject in SelectedObjects)
+                                {
+                                    timelineObject.Layer = editorGroup.Layer;
+                                    timelineObject.RenderVisibleState();
+                                }
+                            }),
+                            new SpacerElement(),
+                            new ButtonElement("Delete", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to remove this editor group?", () =>
+                            {
+                                RTEditor.inst.editorInfo.editorGroups.RemoveAt(index);
+                                RefreshEditorGroupsPopup();
+                                RenderTimelineObjects();
+                                EditorManager.inst.DisplayNotification($"Deleted editor group!", 2f, EditorManager.NotificationType.Success);
+                            }))),
+                        new EditorElementGroup(() => true, EditorContextMenu.GetMoveIndexFunctions(RTEditor.inst.editorInfo.editorGroups, index, RefreshEditorGroupsPopup)));
+                });
+            }
+
+            var add = EditorPrefabHolder.Instance.CreateAddButton(EditorGroupPopup.Content);
+            add.Text = "Add Editor Group";
+            add.OnClick.NewListener(() =>
+            {
+                var name = "New Group";
+                int num = 1;
+                while (RTEditor.inst.editorInfo.editorGroups.Has(x => x.name == name))
+                {
+                    name = $"New Group [{num}]";
+                    num++;
+                }
+
+                var editorGroup = new EditorGroup(name);
+                editorGroup.Layer = Layer;
+                RTEditor.inst.editorInfo.editorGroups.Add(editorGroup);
+                RefreshEditorGroupsPopup();
+            });
+        }
+
+        public void AssignEditorGroup(EditorGroup editorGroup)
+        {
+            foreach (var timelineObject in SelectedObjects)
+            {
+                timelineObject.Group = editorGroup.name;
+                timelineObject.Render();
             }
         }
 

@@ -1142,6 +1142,44 @@ namespace BetterLegacy.Editor.Managers
 
             ParentSelectorPopup.InitPageField();
             ParentSelectorPopup.getMaxPageCount = () => GameData.Current.beatmapObjects.FindAll(x => !x.FromPrefab).Count / ObjectEditor.ParentObjectsPerPage; // temp
+
+            EditorTimeline.inst.EditorGroupPopup = GeneratePopup(EditorPopup.EDITOR_GROUPS_POPUP, "Editor Groups", Vector2.zero, new Vector2(600f, 400f),
+                _val => EditorTimeline.inst.RefreshEditorGroupsPopup());
+            EditorTimeline.inst.EditorGroupPopup.onRender = () =>
+            {
+                if (AssetPack.TryReadFromFile("editor/ui/popups/editor_groups_popup.json", out string uiFile))
+                {
+                    var jn = JSON.Parse(uiFile);
+                    RectValues.TryParse(jn["base"]["rect"], RectValues.Default.SizeDelta(600f, 400f)).AssignToRectTransform(EditorTimeline.inst.EditorGroupPopup.GameObject.transform.AsRT());
+                    RectValues.TryParse(jn["top_panel"]["rect"], RectValues.FullAnchored.AnchorMin(0, 1).Pivot(0f, 0f).SizeDelta(32f, 32f)).AssignToRectTransform(EditorTimeline.inst.EditorGroupPopup.TopPanel);
+                    RectValues.TryParse(jn["search"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(0f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, 32f))).AssignToRectTransform(EditorTimeline.inst.EditorGroupPopup.GameObject.transform.Find("search-box").AsRT());
+
+                    var layoutValues = LayoutValues.Parse(jn["layout"]);
+                    if (layoutValues is GridLayoutValues gridLayoutValues)
+                        gridLayoutValues.AssignToLayout(EditorTimeline.inst.EditorGroupPopup.Grid ? EditorTimeline.inst.EditorGroupPopup.Grid : EditorTimeline.inst.EditorGroupPopup.GameObject.transform.Find("mask/content").GetComponent<GridLayoutGroup>());
+
+                    if (jn["title"] != null)
+                    {
+                        EditorTimeline.inst.EditorGroupPopup.title = jn["title"]["text"] != null ? jn["title"]["text"] : "Editor Groups";
+
+                        var title = EditorTimeline.inst.EditorGroupPopup.Title;
+                        RectValues.TryParse(jn["title"]["rect"], RectValues.FullAnchored.AnchoredPosition(2f, 0f).SizeDelta(-12f, -8f)).AssignToRectTransform(title.rectTransform);
+                        title.alignment = jn["title"]["alignment"] != null ? (TextAnchor)jn["title"]["alignment"].AsInt : TextAnchor.MiddleLeft;
+                        title.fontSize = jn["title"]["font_size"] != null ? jn["title"]["font_size"].AsInt : 20;
+                        title.fontStyle = (FontStyle)jn["title"]["font_style"].AsInt;
+                        title.horizontalOverflow = jn["title"]["horizontal_overflow"] != null ? (HorizontalWrapMode)jn["title"]["horizontal_overflow"].AsInt : HorizontalWrapMode.Wrap;
+                        title.verticalOverflow = jn["title"]["vertical_overflow"] != null ? (VerticalWrapMode)jn["title"]["vertical_overflow"].AsInt : VerticalWrapMode.Overflow;
+                    }
+
+                    if (jn["anim"] != null)
+                        EditorTimeline.inst.EditorGroupPopup.ReadAnimationJSON(jn["anim"]);
+
+                    if (jn["drag_mode"] != null && EditorTimeline.inst.EditorGroupPopup.Dragger)
+                        EditorTimeline.inst.EditorGroupPopup.Dragger.mode = (DraggableUI.DragMode)jn["drag_mode"].AsInt;
+                }
+            };
+
+            EditorHelper.AddEditorDropdown("View Editor Groups", string.Empty, EditorHelper.VIEW_DROPDOWN, EditorSprites.OpenSprite, EditorTimeline.inst.OpenEditorGroupsPopup);
         }
 
         #endregion
@@ -3692,7 +3730,8 @@ namespace BetterLegacy.Editor.Managers
                     {
                         PinnedLayerEditor.inst.Popup.Open();
                         PinnedLayerEditor.inst.RenderPopup();
-                    })
+                    }),
+                    new ButtonElement("View Editor Groups", EditorTimeline.inst.OpenEditorGroupsPopup)
                 });
         }
 

@@ -76,6 +76,7 @@ namespace BetterLegacy.Editor.Data.Popups
         public const string ACHIEVEMENTS_POPUP = "Achievements Popup";
         public const string PROGRESS_POPUP = "Progress Popup";
         public const string USER_SEARCH_POPUP = "User Search Popup";
+        public const string EDITOR_GROUPS_POPUP = "Editor Groups Popup";
 
         #endregion
 

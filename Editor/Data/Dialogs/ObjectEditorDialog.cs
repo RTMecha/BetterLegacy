@@ -127,6 +127,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public Slider BinSlider { get; set; }
 
         public InputFieldStorage EditorIndexField { get; set; }
+        public InputField EditorGroupField { get; set; }
 
         public InputField BaseColorField { get; set; }
         public InputField SelectColorField { get; set; }
@@ -1679,7 +1680,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             var editorSettingsIndex = EditorSettingsParent.GetSiblingIndex() + 1;
             var editorIndexLabel = EditorPrefabHolder.Instance.Labels.Duplicate(Content, "indexer_label", editorSettingsIndex);
-
             var editorIndexLabelText = editorIndexLabel.transform.GetChild(0).GetComponent<Text>();
             editorIndexLabelText.text = "Editor Index";
             EditorThemeManager.ApplyLightText(editorIndexLabelText);
@@ -1689,7 +1689,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             CoreHelper.Delete(EditorIndexField.middleButton);
             EditorThemeManager.ApplyInputField(EditorIndexField);
-
+            
             EditorLayerField = EditorSettingsParent.Find("layers").GetComponent<InputField>();
             EditorLayerField.image = EditorLayerField.GetComponent<Image>();
             BinSlider = EditorSettingsParent.Find("bin").GetComponent<Slider>();
@@ -1701,7 +1701,17 @@ namespace BetterLegacy.Editor.Data.Dialogs
             EditorHelper.SetComplexity(EditorLayerTogglesParent.gameObject, "editor_layer_toggles", Complexity.Simple);
             EditorHelper.SetComplexity(EditorLayerField.gameObject, "editor_layer_field", Complexity.Normal);
 
-            var baseColorParent = EditorPrefabHolder.Instance.Labels.Duplicate(Content, "base color", editorSettingsIndex + 2);
+            var editorGroupLabel = EditorPrefabHolder.Instance.Labels.Duplicate(Content, "group_label", editorSettingsIndex + 2);
+            var editorGroupLabelText = editorGroupLabel.transform.GetChild(0).GetComponent<Text>();
+            editorGroupLabelText.text = "Editor Group";
+            EditorThemeManager.ApplyLightText(editorGroupLabelText);
+
+            var editorGroup = EditorPrefabHolder.Instance.StringInputField.Duplicate(Content, "group", editorSettingsIndex + 3);
+            EditorGroupField = editorGroup.GetComponent<InputField>();
+
+            EditorThemeManager.ApplyInputField(EditorGroupField);
+
+            var baseColorParent = EditorPrefabHolder.Instance.Labels.Duplicate(Content, "base color", editorSettingsIndex + 4);
             baseColorParent.transform.AsRT().sizeDelta = new Vector2(351f, 32f);
             var baseColorLabel = baseColorParent.transform.GetChild(0).GetComponent<Text>();
             baseColorLabel.alignment = TextAnchor.MiddleLeft;
@@ -1715,7 +1725,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             BaseColorField.GetPlaceholderText().fontSize = 15;
             EditorThemeManager.ApplyInputField(BaseColorField);
 
-            var selectColorParent = EditorPrefabHolder.Instance.Labels.Duplicate(Content, "select color", editorSettingsIndex + 3);
+            var selectColorParent = EditorPrefabHolder.Instance.Labels.Duplicate(Content, "select color", editorSettingsIndex + 5);
             selectColorParent.transform.AsRT().sizeDelta = new Vector2(351f, 32f);
             var selectColorLabel = selectColorParent.transform.GetChild(0).GetComponent<Text>();
             selectColorLabel.alignment = TextAnchor.MiddleLeft;
@@ -1729,7 +1739,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             SelectColorField.GetPlaceholderText().fontSize = 15;
             EditorThemeManager.ApplyInputField(SelectColorField);
 
-            var textColorParent = EditorPrefabHolder.Instance.Labels.Duplicate(Content, "text color", editorSettingsIndex + 4);
+            var textColorParent = EditorPrefabHolder.Instance.Labels.Duplicate(Content, "text color", editorSettingsIndex + 6);
             textColorParent.transform.AsRT().sizeDelta = new Vector2(351f, 32f);
             var textColorLabel = textColorParent.transform.GetChild(0).GetComponent<Text>();
             textColorLabel.alignment = TextAnchor.MiddleLeft;
@@ -1743,7 +1753,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             TextColorField.GetPlaceholderText().fontSize = 15;
             EditorThemeManager.ApplyInputField(TextColorField);
 
-            var markColorParent = EditorPrefabHolder.Instance.Labels.Duplicate(Content, "mark color", editorSettingsIndex + 5);
+            var markColorParent = EditorPrefabHolder.Instance.Labels.Duplicate(Content, "mark color", editorSettingsIndex + 7);
             markColorParent.transform.AsRT().sizeDelta = new Vector2(351f, 32f);
             var markColorLabel = markColorParent.transform.GetChild(0).GetComponent<Text>();
             markColorLabel.alignment = TextAnchor.MiddleLeft;

@@ -128,9 +128,9 @@ namespace BetterLegacy.Editor.Data.Timeline
         /// </summary>
         public float Length => TimelineReference switch
         {
-            TimelineReferenceType.BeatmapObject => GetData<BeatmapObject>().GetObjectLifeLength(collapse: true),
-            TimelineReferenceType.PrefabObject => GetData<PrefabObject>().GetObjectLifeLength(collapse: true),
-            TimelineReferenceType.BackgroundObject => GetData<BackgroundObject>().GetObjectLifeLength(collapse: true),
+            TimelineReferenceType.BeatmapObject => TryGetEditorGroup(out EditorGroup editorGroup) && editorGroup.collapsedType == EditorGroup.CollapsedType.Collapsed ? EditorConfig.Instance.TimelineObjectCollapseLength.Value : GetData<BeatmapObject>().GetObjectLifeLength(collapse: true),
+            TimelineReferenceType.PrefabObject => TryGetEditorGroup(out EditorGroup editorGroup) && editorGroup.collapsedType == EditorGroup.CollapsedType.Collapsed ? EditorConfig.Instance.TimelineObjectCollapseLength.Value : GetData<PrefabObject>().GetObjectLifeLength(collapse: true),
+            TimelineReferenceType.BackgroundObject => TryGetEditorGroup(out EditorGroup editorGroup) && editorGroup.collapsedType == EditorGroup.CollapsedType.Collapsed ? EditorConfig.Instance.TimelineObjectCollapseLength.Value : GetData<BackgroundObject>().GetObjectLifeLength(collapse: true),
             _ => 0f
         };
 
@@ -191,7 +191,7 @@ namespace BetterLegacy.Editor.Data.Timeline
         /// <summary>
         /// If the timeline object is on the currently viewed editor layer.
         /// </summary>
-        public bool IsCurrentLayer => EditorTimeline.inst.layerType == EditorTimeline.LayerType.Objects && Layer == EditorTimeline.inst.Layer;
+        public bool IsCurrentLayer => EditorTimeline.inst.layerType == EditorTimeline.LayerType.Objects && Layer == EditorTimeline.inst.Layer && (!TryGetEditorGroup(out EditorGroup editorGroup) || editorGroup.collapsedType != EditorGroup.CollapsedType.Hidden);
 
         /// <summary>
         /// If the object is currently selected.
@@ -225,6 +225,15 @@ namespace BetterLegacy.Editor.Data.Timeline
         /// If the timeline object data is prefabable.
         /// </summary>
         public bool IsPrefabable => data is IPrefabable;
+
+        /// <summary>
+        /// Group of the object in the editor.
+        /// </summary>
+        public string Group
+        {
+            get => EditorData.editorGroup;
+            set => EditorData.editorGroup = value;
+        }
 
         #endregion
 
@@ -393,7 +402,7 @@ namespace BetterLegacy.Editor.Data.Timeline
         {
             string name = "object name";
             float startTime = 0f;
-            float length = 0f;
+            float length = Length;
 
             var image = Image;
 
@@ -406,7 +415,6 @@ namespace BetterLegacy.Editor.Data.Timeline
             {
                 name = beatmapObject.name;
                 startTime = beatmapObject.StartTime;
-                length = beatmapObject.GetObjectLifeLength(collapse: true);
 
                 image.type = EditorTimeline.inst.GetObjectTypePattern(beatmapObject.objectType);
                 image.sprite = EditorTimeline.inst.GetObjectTypeSprite(beatmapObject.objectType);
@@ -419,7 +427,6 @@ namespace BetterLegacy.Editor.Data.Timeline
             {
                 name = prefab.name;
                 startTime = prefabObject.StartTime + prefab.offset;
-                length = prefabObject.GetObjectLifeLength(collapse: true);
 
                 image.type = Image.Type.Simple;
                 image.sprite = null;
@@ -429,7 +436,6 @@ namespace BetterLegacy.Editor.Data.Timeline
             {
                 name = backgroundObject.name;
                 startTime = backgroundObject.StartTime;
-                length = backgroundObject.GetObjectLifeLength(collapse: true);
 
                 image.type = Image.Type.Simple;
                 image.sprite = null;
@@ -1000,6 +1006,21 @@ namespace BetterLegacy.Editor.Data.Timeline
                     }
             }
             RenderText(Name);
+        }
+
+        /// <summary>
+        /// Tries to get the associated editor group.
+        /// </summary>
+        /// <param name="editorGroup">Editor group result.</param>
+        /// <returns>Returns true if an editor group is found, otherwise returns false.</returns>
+        public bool TryGetEditorGroup(out EditorGroup editorGroup)
+        {
+            if (!RTEditor.inst.editorInfo)
+            {
+                editorGroup = null;
+                return false;
+            }
+            return RTEditor.inst.editorInfo.TryGetGroup(Group, out editorGroup);
         }
 
         #endregion
