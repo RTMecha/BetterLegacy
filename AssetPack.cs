@@ -88,10 +88,10 @@ namespace BetterLegacy
                     continue;
 
                 if (assetPack.HasFile(assetPath))
-                    return RTFile.CombinePaths(assetPack.path, assetPath);
+                    return assetPack.GetPath(assetPath);
             }
 
-            return RTFile.CombinePaths(BuiltIn.path, assetPath);
+            return BuiltIn.GetPath(assetPath);
         }
 
         /// <summary>
@@ -135,10 +135,10 @@ namespace BetterLegacy
                     continue;
 
                 if (assetPack.HasDirectory(assetPath))
-                    return RTFile.CombinePaths(assetPack.path, assetPath);
+                    return assetPack.GetPath(assetPath);
             }
 
-            return RTFile.CombinePaths(BuiltIn.path, assetPath);
+            return BuiltIn.GetPath(assetPath);
         }
 
         /// <summary>
@@ -164,7 +164,7 @@ namespace BetterLegacy
             var jsonArray = Parser.NewJSONArray().AsArray;
 
             if (RTFile.FileExists(RTFile.CombinePaths(BuiltIn.path, assetPath)))
-                jsonArray = AddArray(jsonArray, RTFile.ReadFromFile(RTFile.CombinePaths(BuiltIn.path, assetPath)), false);
+                jsonArray = AddArray(jsonArray, RTFile.ReadFromFile(BuiltIn.GetPath(assetPath)), false);
 
             for (int i = AssetPacks.Count - 1; i >= 0; i--)
             {
@@ -173,7 +173,7 @@ namespace BetterLegacy
                 if (settings && !settings.enabled)
                     continue;
 
-                if (!assetPack.HasFile(assetPath) || !RTFile.TryReadFromFile(RTFile.CombinePaths(assetPack.path, assetPath), out string file))
+                if (!assetPack.HasFile(assetPath) || !RTFile.TryReadFromFile(assetPack.GetPath(assetPath), out string file))
                     continue;
 
                 jsonArray = AddArray(jsonArray, file, forceAdd);
@@ -420,14 +420,16 @@ namespace BetterLegacy
         /// </summary>
         /// <param name="assetPath">Asset file path.</param>
         /// <returns>Returns true if the asset pack contains the file, otherwise returns false.</returns>
-        public bool HasFile(string assetPath) => RTFile.FileExists(RTFile.CombinePaths(path, assetPath));
+        public bool HasFile(string assetPath) => RTFile.FileExists(GetPath(assetPath));
 
         /// <summary>
         /// If the asset pack has a directory.
         /// </summary>
         /// <param name="assetPath">Asset directory path.</param>
         /// <returns>Returns true if the asset pack contains the directory, otherwise returns false.</returns>
-        public bool HasDirectory(string assetPath) => RTFile.DirectoryExists(RTFile.CombinePaths(path, assetPath));
+        public bool HasDirectory(string assetPath) => RTFile.DirectoryExists(GetPath(assetPath));
+
+        public string GetPath(string assetPath) => RTFile.CombinePaths(path, assetPath);
 
         public string GetFileName() => Path.GetFileName(path);
 
