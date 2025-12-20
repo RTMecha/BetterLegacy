@@ -15,13 +15,14 @@ Next: Multiplayer Snapshots
 - Player models support multiplayer
 - Versus mode
 - Player Chat Bubble port (editable via Asset Packs and can select from a default list of bubble styles [Legacy, Modern, etc])
-1.10.0 - Editor Assistance Update  
+1.10.0 - Story Mode Update  
+- Chapter 2+
+- Improved workflow and customizability
+1.11.0 - Editor Assistance Update  
 - Fully customizable layouts, editor complexity and themes via Asset Packs.
 - New Example expressions, dialogue, commands, notices and implemented tutorials.
 - Complete tooltip system (old tooltip system reserved for information rather than descriptions)
 - Complete documentation (maybe include selecting documentation in context menus)
-1.11.0 - Story Mode Update  
-- Chapter 2+
 1.12.0 - Multiplayer Editor Update  
 - Steam friends can join editor sessions.
 - Players get different perspectives of the host editor.
@@ -56,15 +57,18 @@ Next: Multiplayer Snapshots
   - Consumable toggle (removes the item after use, heal mechanic always has this on for balance sake or I might go for a cooldown mechanic instead)
   - Aiming behavior (mouse, right stick, rotate with player, etc)
 - Endless shuffle.
+  Update: 1.9.0  
   Notes:  
   - "Next Level" button always shows in endless shuffle mode. Clicking it takes the player to a random level.
 - Arcade auto plays song config.
 - Global animation library.
+  Update: 1.11.0  
   Notes:  
   - Can turn an object into an animation and back.
   - Can be played onto an object using a modifier.
   - Modifiers can also use it to interpolate.
 - Homing targetting
+  Update: 1.10.0  
   NEEDS IMPLEMENTATION  
   - Closest
   - Furthest
@@ -73,13 +77,21 @@ Next: Multiplayer Snapshots
   - Lowest Health
   - Random
 - Multiple audio tracks.
+  Update: 1.10.0-1.11.0  
   Notes:  
   - The current song can be set from the loaded audio tracks via modifiers.
   - Tracks can be loaded / unloaded via modifiers.
 - Metadata controller config that can be used via modifiers.
+  Update: 1.9.0+  
 - End level music via custom audio source.
+  Update: 1.9.0  
 - Backup arcade and story savedata onto the server.
+  Update: 1.9.0  
 - Way to download all levels in Level Collection.
+  Update: 1.9.0+  
+- Extra credits (artists, creators, songs)
+- Implement BeatmapVariable
+  Update: 1.10.0+  
 
 ### Story
 - Chapter 1.  
@@ -100,19 +112,19 @@ Next: Multiplayer Snapshots
 - Interface editor.  
   Update: 1.9.0+  
 - Multiplayer editor (everyone has their own perspective of the hosts' editor but have limited functionality compared to the host)  
-  Update: 1.14.0  
+  Update: 1.12.0  
 - Sync value context menus  
 - Animation groups and animation ID
+  Update: 1.11.0  
   Notes:  
   - A group of selected objects that have a set animation ID can be turned into an animation group.
   - The same group of selected objects can then have that animation applied to them.
-- Timeline Group (objects can be collapsed into a single object, simiar to prefabs except without the prefab spawning)
+  - Be able to animate prefabs using internal level animations.
 
 ### Interfaces
-- A bind system for interfaces where an element prefab can be spawned based on a JSON file or file list.
 
 ### Modifiers
-- prizeObject action modifier  
+- giftAsset (originally prizeObject) action modifier  
   Update: 1.9.0  
   NEEDS IMPLEMENTATION  
   Details: rewards the player with a prefab, theme, player model or player toolkit item.  
@@ -121,7 +133,7 @@ Next: Multiplayer Snapshots
 - playerAction trigger (allows for multiple different keybinds and buttons)  
 - setStartTime modifiers.  
 - downloadLevelCollection modifier.  
-  Update: 1.8.x  
+  Update: 1.9.0+  
   Notes:  
   - Same as downloadLevel except for level collections.
 
@@ -161,23 +173,29 @@ Next: Multiplayer Snapshots
 ### Editor
 - Multi language support.
 - Make Editor Documentation read from a json file.  
-  Update: 1.10.0  
+  Update: 1.11.0  
 - Give Editor Documentation a cover image so people know what a specific document is talking about.  
-  Update: 1.10.0  
+  Update: 1.11.0  
 - Undo / redo everything.  
-  Update: 1.10.0+  
+  Update: 1.11.0+  
 - Optimize timeline objects by replacing TextMeshPro with UnityEngine.UI.Text. See if it could be optional?  
+  Update: 1.11.0+  
 - Editor Layer display settings  
+  Update: 1.11.0+  
   Notes:  
   - Can display different types of objects at different priorities.  
   - Certain types of objects can be hidden. (Beatmap Object only, Prefab Object only, etc)  
 - Documentation & tooltips.  
+  Update: 1.11.0  
 - Update the file browser UI to include more info / functions.  
+  Update: 1.11.0  
 - Overhaul the custom UI config settings to be more extensive.  
 - Rework object dragging to have a lot more control and settings. (take some inspiration from Modern + Blender + EditorManagement)  
+  Update: 1.11.0  
 - EditorFunction system
   Notes:  
   - Works a bit like modifiers, except it's a code block language for the editor itself. These can be found in a few different places, like the Multi Object Editor, etc.  
+  - Might scrap this.
 
 
 ### Fixes
