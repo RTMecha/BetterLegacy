@@ -16,6 +16,8 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
 
         public string path;
 
+        Color color;
+
         public ImageObject(GameObject gameObject, float opacity, string text, int renderType, Sprite imageData)
         {
             this.gameObject = gameObject;
@@ -78,11 +80,15 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
             CoroutineHelper.StartCoroutine(AlephNetwork.DownloadImageTexture("file://" + path, SetTexture, SetDefaultSprite));
         }
 
-        public override void SetColor(Color color) => material?.SetColor(new Color(color.r, color.g, color.b, color.a * opacity));
+        public override void SetColor(Color color)
+        {
+            this.color = color;
+            material?.SetColor(new Color(color.r, color.g, color.b, color.a * opacity));
+        }
 
         public override void SetPrimaryColor(Color color) => material.color = color;
 
-        public override Color GetPrimaryColor() => material.color;
+        public override Color GetPrimaryColor() => color;
 
         /// <summary>
         /// Sets the image objects' image to the default image.

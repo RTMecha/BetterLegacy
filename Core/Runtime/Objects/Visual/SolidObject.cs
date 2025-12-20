@@ -41,6 +41,8 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
         public int outlineType;
         public bool hasEditorOutline;
         public OutlineData editorOutlineData;
+        Color primaryColor;
+        Color secondaryColor;
 
         public SolidObject(GameObject gameObject, float opacity, bool deco, bool solid, int renderType, bool opacityCollision, int gradientType, float gradientScale, float gradientRotation, int colorBlendMode)
         {
@@ -109,6 +111,7 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
 
         public override void SetColor(Color color)
         {
+            primaryColor = color;
             float a = color.a * opacity;
             material?.SetColor(new Color(color.r, color.g, color.b, a));
             if (opacityCollision)
@@ -132,11 +135,15 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
 
             if (IsFlipped)
             {
+                primaryColor = color2;
+                secondaryColor = color;
                 material.SetColor("_Color", new Color(color2.r, color2.g, color2.b, color2.a * opacity));
                 material.SetColor("_ColorSecondary", new Color(color.r, color.g, color.b, color.a * opacity));
             }
             else
             {
+                primaryColor = color;
+                secondaryColor = color2;
                 material.SetColor("_Color", new Color(color.r, color.g, color.b, color.a * opacity));
                 material.SetColor("_ColorSecondary", new Color(color2.r, color2.g, color2.b, color2.a * opacity));
             }
@@ -153,9 +160,9 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
                 material.SetColor("_ColorSecondary", color);
         }
 
-        public override Color GetPrimaryColor() => material.color;
+        public override Color GetPrimaryColor() => primaryColor; // get cached primary color due to the opacity value for helpers.
 
-        public override Color GetSecondaryColor() => !isGradient ? LSColors.pink500 : material.GetColor("_ColorSecondary");
+        public override Color GetSecondaryColor() => !isGradient ? LSColors.pink500 : secondaryColor; // get cached secondary color due to the opacity value for helpers.
 
         /// <summary>
         /// Gets a specified color based on the gradients' flipped state.

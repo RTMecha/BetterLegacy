@@ -17,6 +17,8 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
         readonly bool autoTextAlign;
         public string text;
 
+        Color color;
+
         public TextObject(GameObject gameObject, float opacity, string text, bool autoTextAlign, TextAlignmentOptions textAlignment, int renderType)
         {
             this.gameObject = gameObject;
@@ -76,11 +78,15 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
         /// <returns>Returns the text of the text object.</returns>
         public string GetText() => textMeshPro ? textMeshPro.text : string.Empty;
 
-        public override void SetColor(Color color) => textMeshPro.color = new Color(color.r, color.g, color.b, color.a * opacity);
+        public override void SetColor(Color color)
+        {
+            this.color = color;
+            textMeshPro.color = new Color(color.r, color.g, color.b, color.a * opacity);
+        }
 
         public override void SetPrimaryColor(Color color) => textMeshPro.color = color;
 
-        public override Color GetPrimaryColor() => textMeshPro.color;
+        public override Color GetPrimaryColor() => color;
 
         public override void SetOrigin(Vector3 origin)
         {
