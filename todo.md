@@ -64,9 +64,6 @@ Next: Multiplayer Snapshots
   - Can turn an object into an animation and back.
   - Can be played onto an object using a modifier.
   - Modifiers can also use it to interpolate.
-- Prefab Parenting child option.
-  Notes:  
-  - The Prefab Object itself will be considered the child of the parent, rather than base parents spawned from the Prefab Object being considered the child.
 - Homing targetting
   NEEDS IMPLEMENTATION  
   - Closest
@@ -104,12 +101,12 @@ Next: Multiplayer Snapshots
   Update: 1.9.0+  
 - Multiplayer editor (everyone has their own perspective of the hosts' editor but have limited functionality compared to the host)  
   Update: 1.14.0  
-- Hide random / relative toggles (if either is off, the keyframe will be forced to have the random / relative set to default / off)  
 - Sync value context menus  
 - Animation groups and animation ID
   Notes:  
   - A group of selected objects that have a set animation ID can be turned into an animation group.
   - The same group of selected objects can then have that animation applied to them.
+- Timeline Group (objects can be collapsed into a single object, simiar to prefabs except without the prefab spawning)
 
 ### Interfaces
 - A bind system for interfaces where an element prefab can be spawned based on a JSON file or file list.
