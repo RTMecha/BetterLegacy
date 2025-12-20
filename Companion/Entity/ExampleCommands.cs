@@ -346,6 +346,17 @@ namespace BetterLegacy.Companion.Entity
 
                     reference?.chatBubble?.Say($"Set all selected objects' modiifers Prefab Group Only {(!value ? "on" : "off")}");
                 }));
+            commands.Add(new ExampleCommand("Select All In Prefab Group", "Selects all objects in the same prefab group as the earliest object.", true,
+                response =>
+                {
+                    var timelineObject = EditorTimeline.inst?.SelectedObjects?.GetAt(0);
+                    if (!timelineObject || !timelineObject.TryGetPrefabable(out Core.Data.Beatmap.IPrefabable prefabable))
+                        return;
+
+                    EditorHelper.SelectAllObjectsFromPrefabInstance(prefabable);
+
+                    reference?.chatBubble?.Say($"Set all selected objects' related to the prefab.");
+                }));
         }
 
         /// <summary>
