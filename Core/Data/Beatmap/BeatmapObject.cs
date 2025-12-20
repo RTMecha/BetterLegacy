@@ -1067,6 +1067,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                     eventKeyframe.SetRandomValues(kfjn["rx"].AsFloat, kfjn["ry"].AsFloat, kfjn["rz"].AsFloat);
 
                     eventKeyframe.relative = kfjn["rel"] == null || kfjn["rel"].AsBool;
+                    eventKeyframe.flee = kfjn["flee"].AsBool;
                     eventKeyframe.homingPriority = (HomingPriority)kfjn["hop"].AsInt;
                     eventKeyframe.playerIndex = kfjn["pindex"].AsInt;
                     eventKeyframe.locked = kfjn["l"].AsBool;
