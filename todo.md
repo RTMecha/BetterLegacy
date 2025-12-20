@@ -122,16 +122,11 @@ Next: Multiplayer Snapshots
   Notes:  
   - Change this to be a Prefab instead, since Prefabs can now store themes. (maybe they should also be able to store Player models? make Player models use the import / export system first)
 - playerAction trigger (allows for multiple different keybinds and buttons)  
-- Ignore opacity toggle for color modifiers.  
-  Update: 1.8.0+  
 - setStartTime modifiers.  
 - downloadLevelCollection modifier.  
   Update: 1.8.x  
   Notes:  
   - Same as downloadLevel except for level collections.
-- despawnPrefab modifier.  
-  Notes:  
-  - Despawns the Runtime Prefab Object. If the prefab was spawned from a modifier, clear the modifier.
 
 ### Effects
 - Camera Jiggle  
@@ -180,7 +175,6 @@ Next: Multiplayer Snapshots
   - Can display different types of objects at different priorities.  
   - Certain types of objects can be hidden. (Beatmap Object only, Prefab Object only, etc)  
 - Documentation & tooltips.  
-- Rework Multi Object Editor to be based on tabs instead of one scroll view.
 - Update the file browser UI to include more info / functions.  
 - Overhaul the custom UI config settings to be more extensive.  
 - Rework object dragging to have a lot more control and settings. (take some inspiration from Modern + Blender + EditorManagement)  
@@ -190,7 +184,6 @@ Next: Multiplayer Snapshots
 
 
 ### Fixes
-- Fix 1 life restart bug
 
 
 ## Ideas
@@ -211,12 +204,6 @@ Next: Multiplayer Snapshots
 - Update the TextMeshPro sprite asset.  
 - Event Modifiers layer that interpolate through a sequence and pass the variables to the modifiers.  
 - Prefab collections.
-- Asset pack
-  Notes:  
-  - Overhauls the Assets folder.
-  - Allows custom UI layout, displays, etc.
-  - Rework editor complexity and themes to use this?
-  - Only client-side stuff will be affected.
 
 
 ## Demos
