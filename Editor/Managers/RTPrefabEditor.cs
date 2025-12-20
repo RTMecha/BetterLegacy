@@ -563,7 +563,22 @@ namespace BetterLegacy.Editor.Managers
             });
         }
 
-        public void RenderPrefabObjectParent(PrefabObject prefabObject) => RTEditor.inst.RenderParent(prefabObject, PrefabObjectEditor);
+        public void RenderPrefabObjectParent(PrefabObject prefabObject)
+        {
+            PrefabObjectEditor.OffsetParentDesyncToggle.SetIsOnWithoutNotify(prefabObject.offsetParentDesyncTime);
+            PrefabObjectEditor.OffsetParentDesyncToggle.OnValueChanged.NewListener(_val =>
+            {
+                prefabObject.offsetParentDesyncTime = _val;
+                RTLevel.Current?.UpdatePrefab(prefabObject);
+            });
+            PrefabObjectEditor.ParentSelfToggle.SetIsOnWithoutNotify(prefabObject.parentSelf);
+            PrefabObjectEditor.ParentSelfToggle.OnValueChanged.NewListener(_val =>
+            {
+                prefabObject.parentSelf = _val;
+                RTLevel.Current?.UpdatePrefab(prefabObject);
+            });
+            RTEditor.inst.RenderParent(prefabObject, PrefabObjectEditor);
+        }
 
         public void RenderPrefabObjectTransforms(PrefabObject prefabObject)
         {
@@ -1394,23 +1409,27 @@ namespace BetterLegacy.Editor.Managers
 
             prefabObject.editorData.Layer = EditorManager.inst.layer;
 
-            if (EditorConfig.Instance.SpawnPrefabsAtCameraCenter.Value)
-            {
-                var pos = EventManager.inst.cam.transform.position;
-                prefabObject.events[0].values[0] = pos.x;
-                prefabObject.events[0].values[1] = pos.y;
-            }
-
             // Set default scale
             prefabObject.events[1].values[0] = 1f;
             prefabObject.events[1].values[1] = 1f;
-
-            prefabObject.orderModifiers = EditorConfig.Instance.CreateObjectModifierOrderDefault.Value;
 
             if (copiedInstanceData)
                 prefabObject.PasteInstanceData(copiedInstanceData);
             else if (prefab.defaultInstanceData)
                 prefabObject.PasteInstanceData(prefab.defaultInstanceData);
+            else if (AssetPack.TryReadFromFile("editor/data/default_prefab_object.json", out string defaultPrefabObjectFile))
+            {
+                try
+                {
+                    prefabObject.ReadJSON(JSON.Parse(defaultPrefabObjectFile));
+                }
+                catch (Exception ex)
+                {
+                    CoreHelper.LogException(ex);
+                }
+            }
+
+            prefabObject.orderModifiers = EditorConfig.Instance.CreateObjectModifierOrderDefault.Value;
 
             if (target)
             {
@@ -1419,6 +1438,12 @@ namespace BetterLegacy.Editor.Managers
                 prefabObject.events[1].values[0] = target.scale.x;
                 prefabObject.events[1].values[1] = target.scale.y;
                 prefabObject.events[2].values[0] = target.rotation;
+            }
+            else if (EditorConfig.Instance.SpawnPrefabsAtCameraCenter.Value)
+            {
+                var pos = EventManager.inst.cam.transform.position;
+                prefabObject.events[0].values[0] = pos.x;
+                prefabObject.events[0].values[1] = pos.y;
             }
 
             for (int i = 0; i < prefab.beatmapThemes.Count; i++)

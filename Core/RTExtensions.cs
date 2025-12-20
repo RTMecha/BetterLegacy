@@ -2609,10 +2609,10 @@ namespace BetterLegacy.Core
             if (jn["p"] != null)
                 parentable.Parent = jn["p"];
 
-            if (jn["pd"] != null && !string.IsNullOrEmpty(parentable.Parent))
+            if (jn["pd"] != null)
                 parentable.ParentDesync = jn["pd"].AsBool;
 
-            if (jn["desync"] != null && !string.IsNullOrEmpty(parentable.Parent))
+            if (jn["desync"] != null)
                 parentable.ParentDesync = jn["desync"].AsBool;
 
             if (jn["pt"] != null)

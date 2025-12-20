@@ -53,7 +53,12 @@ namespace BetterLegacy.Core.Runtime
         /// </summary>
         public static RTLevel Current { get; set; }
 
-        public override Transform Parent => ObjectManager.inst && ObjectManager.inst.objectParent ? ObjectManager.inst.objectParent.transform : GameObject.Find("GameObjects")?.transform;
+        Transform parent;
+        public override Transform SpawnParent
+        {
+            get => parent ? parent : ObjectManager.inst && ObjectManager.inst.objectParent ? ObjectManager.inst.objectParent.transform : GameObject.Find("GameObjects")?.transform;
+            set => parent = value;
+        }
 
         public override float FixedTime => AudioManager.inst.CurrentAudioSource.time;
 

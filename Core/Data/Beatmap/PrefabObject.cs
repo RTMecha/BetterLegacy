@@ -163,6 +163,16 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public bool ParentDetatched { get => detatched; set => detatched = value; }
 
+        /// <summary>
+        /// If the Prefab Object is treated as a regular parented object.
+        /// </summary>
+        public bool parentSelf;
+
+        /// <summary>
+        /// If the parent desync time should include the prefab time.
+        /// </summary>
+        public bool offsetParentDesyncTime = true;
+
         public BeatmapObject CachedParent { get; set; }
 
         #endregion
@@ -419,6 +429,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             CopyTransformData(orig);
 
+            parentSelf = orig.parentSelf;
+            offsetParentDesyncTime = orig.offsetParentDesyncTime;
             this.CopyParentData(orig);
             this.CopyModifyableData(orig);
 
@@ -427,11 +439,19 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public override void ReadJSONVG(JSONNode jn, Version version = default)
         {
-            id = jn["id"];
-            prefabID = jn["pid"];
+            if (jn["id"] != null)
+                id = jn["id"];
+            if (jn["pid"] != null)
+                prefabID = jn["pid"];
             StartTime = jn["t"] == null ? jn["st"].AsFloat : jn["t"].AsFloat;
+            if (jn["parid"] != null)
+                Parent = jn["parid"];
+            parentSelf = true;
+            desync = true;
+            offsetParentDesyncTime = false;
 
-            editorData = ObjectEditorData.ParseVG(jn["ed"]);
+            if (jn["ed"] != null)
+                editorData.ReadJSONVG(jn["ed"], version);
 
             events.Clear();
 
@@ -496,11 +516,17 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public override void ReadJSON(JSONNode jn)
         {
-            id = jn["id"] ?? LSText.randomString(16);
-            StartTime = jn["st"].AsFloat;
+            if (jn["id"] != null)
+                id = jn["id"];
+            if (jn["st"] != null)
+                StartTime = jn["st"].AsFloat;
 
             this.ReadPrefabJSON(jn);
             this.ReadParentJSON(jn);
+            if (jn["pself"] != null)
+                parentSelf = jn["pself"].AsBool;
+            if (jn["offset_pd"] != null)
+                offsetParentDesyncTime = jn["offset_pd"].AsBool;
 
             if (jn["rc"] != null)
                 RepeatCount = jn["rc"].AsInt;
@@ -518,14 +544,15 @@ namespace BetterLegacy.Core.Data.Beatmap
                 autoKillOffset = jn["ako"].AsFloat;
 
             if (jn["ed"] != null)
-                editorData = ObjectEditorData.Parse(jn["ed"]);
+                editorData.ReadJSON(jn["ed"]);
 
-            expanded = jn["exp"].AsBool;
+            if (jn["exp"] != null)
+                expanded = jn["exp"].AsBool;
 
-            depth = jn["d"].AsFloat;
+            if (jn["d"] != null)
+                depth = jn["d"].AsFloat;
 
             events.Clear();
-
             if (jn["e"] != null)
             {
                 if (jn["e"]["pos"] != null)
@@ -623,6 +650,10 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             this.WritePrefabJSON(jn);
             this.WriteParentJSON(jn);
+            if (parentSelf)
+                jn["pself"] = parentSelf;
+            if (!offsetParentDesyncTime)
+                jn["offset_pd"] = offsetParentDesyncTime;
 
             if (Speed != 1f)
                 jn["sp"] = Speed;
@@ -722,6 +753,9 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             this.CopyModifyableData(copiedInstanceData);
             this.CopyParentData(copiedInstanceData);
+            parentSelf = copiedInstanceData.parentSelf;
+            offsetParentDesyncTime = copiedInstanceData.offsetParentDesyncTime;
+            depth = copiedInstanceData.depth;
             RepeatCount = copiedInstanceData.RepeatCount;
             RepeatOffsetTime = copiedInstanceData.RepeatOffsetTime;
         }
@@ -820,7 +854,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             }
         }
 
-        public Vector3 GetFullPosition() => positionOffset + new Vector3(events[0].values[0], events[0].values[1]);
+        public Vector3 GetFullPosition() => runtimeObject && runtimeObject.SpawnParent ? runtimeObject.SpawnParent.position : positionOffset + new Vector3(events[0].values[0], events[0].values[1]);
 
         public Vector3 GetFullScale()
         {

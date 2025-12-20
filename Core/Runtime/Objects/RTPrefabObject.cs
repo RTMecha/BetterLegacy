@@ -12,7 +12,7 @@ namespace BetterLegacy.Core.Runtime.Objects
     /// <summary>
     /// Controls spawned objects from a Prefab Object at runtime.
     /// </summary>
-    public class RTPrefabObject : RTLevelBase, IRTObject, ICustomActivatable
+    public class RTPrefabObject : RTLevelBase, IRTObject, ICustomActivatable, IParentChain
     {
         public RTPrefabObject(Prefab prefab, PrefabObject prefabObject, RTLevelBase parentRuntime)
         {
@@ -23,8 +23,8 @@ namespace BetterLegacy.Core.Runtime.Objects
             StartTime = prefabObject.StartTime + prefab.offset;
             KillTime = prefabObject.StartTime + prefab.offset + prefabObject.SpawnDuration;
 
-            var gameObject = Creator.NewGameObject(prefab.name, parentRuntime.Parent);
-            Parent = gameObject.transform;
+            CachedParentSelf = prefabObject.parentSelf;
+            InitParentChain();
 
             prefabObject.cachedTransform = null;
             var transform = prefabObject.GetTransformOffset();
@@ -53,7 +53,9 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         public RTLevelBase ParentRuntime { get; set; }
 
-        public override Transform Parent { get; }
+        public Transform Parent { get; set; }
+
+        public override Transform SpawnParent { get; set; }
 
         public override float FixedTime => UseCustomTime ? CustomTime : GetTime(/*ParentRuntime.GetStartTime() + */ParentRuntime.FixedTime); // why did i do that?
 
@@ -137,11 +139,16 @@ namespace BetterLegacy.Core.Runtime.Objects
             OnPrefabModifiersTick(); // prefab modifiers update fifth
             OnPrefabObjectsTick(); // prefab objects update last
 
-            if (Parent)
+            if (PrefabObject.parentSelf && ParentObjects != null && !ParentObjects.IsEmpty())
             {
-                Parent.localPosition = Position + PrefabObject.PositionOffset + PrefabObject.fullTransform.position;
-                Parent.localScale = RTMath.Scale(Scale + PrefabObject.ScaleOffset, PrefabObject.fullTransform.scale);
-                Parent.localEulerAngles = Rotation + PrefabObject.RotationOffset + PrefabObject.fullTransform.rotation;
+                this.UpdateCameraParent();
+                this.InterpolateParentChain(PrefabObject.ParentDesync ? PrefabObject.offsetParentDesyncTime ? PrefabObject.StartTime : PrefabObject.StartTime + Prefab.offset : ParentRuntime.CurrentTime, PrefabObject.FromPrefab, true);
+            }
+            if (SpawnParent)
+            {
+                SpawnParent.localPosition = Position + PrefabObject.PositionOffset + PrefabObject.fullTransform.position;
+                SpawnParent.localScale = RTMath.Scale(Scale + PrefabObject.ScaleOffset, PrefabObject.fullTransform.scale);
+                SpawnParent.localEulerAngles = Rotation + PrefabObject.RotationOffset + PrefabObject.fullTransform.rotation;
             }
 
             PostTick();
@@ -201,6 +208,104 @@ namespace BetterLegacy.Core.Runtime.Objects
             if (parent)
                 parent.gameObject.SetActive(isActive);
         }
+
+        #region Parent Chain
+
+        public void InitParentChain()
+        {
+            var p = Creator.NewGameObject($"top - [{Prefab.name}]", ParentRuntime.SpawnParent).transform;
+            TransferSpawned(p);
+            CoreHelper.Delete(Parent);
+            Parent = p;
+            if (PrefabObject.parentSelf)
+            {
+                var parentObjects = new List<ParentObject>(ParentObject.DEFAULT_PARENT_CHAIN_CAPACITY);
+
+                GameObject gameObject = null;
+                PrefabObject.CachedParent = null;
+                if (!string.IsNullOrEmpty(PrefabObject.Parent) && GameData.Current.beatmapObjects.TryFind(x => x.id == PrefabObject.Parent, out BeatmapObject beatmapObjectParent))
+                {
+                    PrefabObject.CachedParent = beatmapObjectParent;
+                    gameObject = ParentRuntime.converter.InitParentChain(beatmapObjectParent, parentObjects);
+                }
+                ParentObjects = parentObjects;
+                if (gameObject)
+                {
+                    var firstParent = parentObjects[parentObjects.Count - 1];
+                    var tf = firstParent?.transform;
+
+                    if (tf)
+                    {
+                        tf.SetParent(Parent.transform);
+                        tf.localScale = Vector3.one;
+                    }
+
+                    SpawnParent = Creator.NewGameObject($"spawner - [{Prefab.name}]", gameObject.transform).transform;
+                    this.UpdateParentValues();
+                    TransferSpawned(SpawnParent);
+                    return;
+                }
+            }
+            SpawnParent = Parent;
+        }
+
+        public void TransferSpawned(Transform parent)
+        {
+            if (Objects != null)
+                foreach (var runtimeObject in Objects)
+                {
+                    if (runtimeObject is IParentChain parentChain)
+                        parentChain.SetParent(parent);
+                }
+            if (PrefabObjects != null)
+                foreach (var runtimeObject in PrefabObjects)
+                {
+                    if (runtimeObject is IParentChain parentChain)
+                        parentChain.SetParent(parent);
+                }
+            if (BGObjects != null)
+                foreach (var runtimeObject in BGObjects)
+                {
+                    if (runtimeObject is RTBackgroundObject runtimeBGObject)
+                        runtimeBGObject.top?.SetParent(parent);
+                }
+        }
+
+        public bool CachedParentSelf { get; set; }
+
+        public float Depth { get; set; }
+
+        public bool CameraParent { get; set; }
+
+        public bool PositionParent { get; set; }
+
+        public bool ScaleParent { get; set; }
+
+        public bool RotationParent { get; set; }
+
+        public float PositionParentOffset { get; set; }
+
+        public float ScaleParentOffset { get; set; }
+
+        public float RotationParentOffset { get; set; }
+
+        public Vector3 TopPosition { get; set; }
+
+        public Vector3 TopScale { get; set; } = Vector3.one;
+
+        public Vector3 TopRotation { get; set; }
+
+        public Vector3 CurrentScale { get; set; } // if scale is 0, 0 then disable collider and renderer
+
+        public List<ParentObject> ParentObjects { get; set; }
+
+        public void CheckScale()
+        {
+            //var active = RTMath.Distance(0f, CurrentScale.x) > 0.001f && RTMath.Distance(0f, CurrentScale.y) > 0.001f && RTMath.Distance(0f, CurrentScale.z) > 0.001f;
+
+        }
+
+        #endregion
 
         public void Interpolate(float time) => Tick();
         
@@ -298,7 +403,7 @@ namespace BetterLegacy.Core.Runtime.Objects
                     }
 
                     beatmapObjectCopy.fromPrefabBase = string.IsNullOrEmpty(beatmapObjectCopy.Parent);
-                    if (beatmapObjectCopy.fromPrefabBase && !string.IsNullOrEmpty(prefabObject.parent))
+                    if (beatmapObjectCopy.fromPrefabBase && !string.IsNullOrEmpty(prefabObject.parent) && !prefabObject.parentSelf)
                     {
                         beatmapObjectCopy.Parent = prefabObject.parent;
                         beatmapObjectCopy.parentType = prefabObject.parentType;

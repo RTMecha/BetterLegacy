@@ -45,6 +45,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public List<ParentSetting> ParentSettings { get; set; } = new List<ParentSetting>();
 
+        public ToggleButtonStorage ParentSelfToggle { get; set; }
+        public ToggleButtonStorage OffsetParentDesyncToggle { get; set; }
+
         #endregion
 
         #region Start Time / Autokill
@@ -369,13 +372,33 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 parentSetting.label.fontSize = 19;
                 EditorThemeManager.ApplyLightText(parentSetting.label);
 
-                EditorThemeManager.ApplyToggle(parentSetting.activeToggle, ThemeGroup.Background_1);
+                EditorThemeManager.ApplyToggle(parentSetting.activeToggle, ThemeGroup.Background_3);
                 EditorThemeManager.ApplyGraphic(parentSetting.activeToggle.transform.Find("Image").GetComponent<Image>(), ThemeGroup.Toggle_1_Check);
                 EditorThemeManager.ApplyInputField(parentSetting.offsetField);
-                EditorThemeManager.ApplyToggle(parentSetting.additiveToggle, ThemeGroup.Background_1);
+                EditorThemeManager.ApplyToggle(parentSetting.additiveToggle, ThemeGroup.Background_3);
                 EditorThemeManager.ApplyGraphic(parentSetting.additiveToggle.transform.Find("Image").GetComponent<Image>(), ThemeGroup.Toggle_1_Check);
                 EditorThemeManager.ApplyInputField(parentSetting.parallaxField);
             }
+
+            var parentSelf = EditorPrefabHolder.Instance.ToggleButton.Duplicate(ParentSettingsParent.transform, "parent self");
+            ParentSelfToggle = parentSelf.GetComponent<ToggleButtonStorage>();
+            ParentSelfToggle.Text = "Parent Self";
+            EditorThemeManager.ApplyToggle(ParentSelfToggle);
+            
+            var offsetParentDesync = EditorPrefabHolder.Instance.ToggleButton.Duplicate(ParentSettingsParent.transform, "offset parent desync", 2);
+            OffsetParentDesyncToggle = offsetParentDesync.GetComponent<ToggleButtonStorage>();
+            OffsetParentDesyncToggle.Text = "Offset Parent Desync";
+            EditorThemeManager.ApplyToggle(OffsetParentDesyncToggle);
+
+            var parentSettingsBG = ParentSettingsParent.transform.Find("bg").GetComponent<Image>();
+            parentSettingsBG.gameObject.SetActive(true);
+            EditorThemeManager.ApplyGraphic(parentSettingsBG, ThemeGroup.Background_3);
+
+            var parentSettingsLine = ParentSettingsParent.transform.Find("line") ? ParentSettingsParent.transform.Find("line").gameObject : Creator.NewUIObject("line", ParentSettingsParent.transform);
+            RectValues.Default.SizeDelta(356f, 6f).AssignToRectTransform(parentSettingsLine.transform.AsRT());
+            var parentSettingsLineImage = parentSettingsLine.GetOrAddComponent<Image>();
+            EditorThemeManager.ApplyGraphic(parentSettingsLineImage, ThemeGroup.Toggle_1, true);
+            parentSettingsLine.transform.SetAsLastSibling();
 
             #endregion
 

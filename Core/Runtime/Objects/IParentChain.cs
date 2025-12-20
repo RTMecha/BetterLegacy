@@ -54,17 +54,17 @@ namespace BetterLegacy.Core.Runtime.Objects
         /// <summary>
         /// Top position offset.
         /// </summary>
-        public Vector3 TopPositionOffset { get; set; }
+        public Vector3 TopPosition { get; set; }
 
         /// <summary>
         /// Top scale offset.
         /// </summary>
-        public Vector3 TopScaleOffset { get; set; }
+        public Vector3 TopScale { get; set; }
 
         /// <summary>
         /// Top rotation offset.
         /// </summary>
-        public Vector3 TopRotationOffset { get; set; }
+        public Vector3 TopRotation { get; set; }
 
         /// <summary>
         /// Parent of the runtime object.
@@ -90,6 +90,12 @@ namespace BetterLegacy.Core.Runtime.Objects
     public static class ParentChainExtension
     {
         /// <summary>
+        /// Sets the parent of a parent chain.
+        /// </summary>
+        /// <param name="parent">New parent to set.</param>
+        public static void SetParent(this IParentChain parentChain, Transform parent) => parentChain.Parent?.SetParent(parent);
+
+        /// <summary>
         /// Updates the camera parent.
         /// </summary>
         /// <param name="parentChain">Parent chain reference.</param>
@@ -98,9 +104,9 @@ namespace BetterLegacy.Core.Runtime.Objects
         {
             if (!parentChain.CameraParent)
             {
-                parentChain.Parent.localPosition = new Vector3(0f, 0f, inBackground ? 20f : 0f) + parentChain.TopPositionOffset;
-                parentChain.Parent.localScale = Vector3.one + parentChain.TopScaleOffset;
-                parentChain.Parent.localRotation = Quaternion.Euler(parentChain.TopRotationOffset);
+                parentChain.Parent.localPosition = new Vector3(0f, 0f, inBackground ? 20f : 0f) + parentChain.TopPosition;
+                parentChain.Parent.localScale = parentChain.TopScale;
+                parentChain.Parent.localRotation = Quaternion.Euler(parentChain.TopRotation);
                 return;
             }
 
@@ -112,28 +118,28 @@ namespace BetterLegacy.Core.Runtime.Objects
 
                 parentChain.Parent.localPosition = (new Vector3(x, y, 0f) * parentChain.PositionParentOffset)
                     + new Vector3(0f, 0f, inBackground ? 20f : 0f)
-                    + parentChain.TopPositionOffset;
+                    + parentChain.TopPosition;
             }
             else
-                parentChain.Parent.localPosition = new Vector3(0f, 0f, inBackground ? 20f : 0f) + parentChain.TopPositionOffset;
+                parentChain.Parent.localPosition = new Vector3(0f, 0f, inBackground ? 20f : 0f) + parentChain.TopPosition;
 
             if (parentChain.ScaleParent)
             {
                 float camOrthoZoom = EventManager.inst.cam.orthographicSize / 20f - 1f;
 
-                parentChain.Parent.localScale = (new Vector3(camOrthoZoom, camOrthoZoom, 1f) * parentChain.ScaleParentOffset) + Vector3.one + parentChain.TopScaleOffset;
+                parentChain.Parent.localScale = RTMath.Scale(new Vector3(camOrthoZoom, camOrthoZoom, 1f) * parentChain.ScaleParentOffset, parentChain.TopScale);
             }
             else
-                parentChain.Parent.localScale = Vector3.one + parentChain.TopScaleOffset;
+                parentChain.Parent.localScale = parentChain.TopScale;
 
             if (parentChain.RotationParent)
             {
                 var camRot = EventManager.inst.camParent.transform.rotation.eulerAngles;
 
-                parentChain.Parent.localRotation = Quaternion.Euler((camRot * parentChain.RotationParentOffset) + parentChain.TopRotationOffset);
+                parentChain.Parent.localRotation = Quaternion.Euler((camRot * parentChain.RotationParentOffset) + parentChain.TopRotation);
             }
             else
-                parentChain.Parent.localRotation = Quaternion.Euler(parentChain.TopRotationOffset);
+                parentChain.Parent.localRotation = Quaternion.Euler(parentChain.TopRotation);
         }
 
         /// <summary>
@@ -142,7 +148,7 @@ namespace BetterLegacy.Core.Runtime.Objects
         /// <param name="parentChain">Parent chain reference.</param>
         /// <param name="time">Time to interpolate.</param>
         /// <param name="fromPrefab">If the object is from a prefab.</param>
-        public static void InterpolateParentChain(this IParentChain parentChain, float time, bool fromPrefab = false)
+        public static void InterpolateParentChain(this IParentChain parentChain, float time, bool fromPrefab = false, bool isPrefab = false)
         {
             // Update parents
             float positionOffset = 0.0f;
@@ -179,10 +185,10 @@ namespace BetterLegacy.Core.Runtime.Objects
                 if (parentObject.spawned && desync) // continue if parent has desync setting on and was spawned.
                     continue;
 
-                if (parentObject.beatmapObject.detatched && desync) // for modifier use, probably
+                if (parentObject.beatmapObject.detatched && desync) // for modifier use
                     continue;
 
-                if (fromPrefab && !parentObject.beatmapObject.fromPrefab)
+                if (!isPrefab && fromPrefab && !parentObject.beatmapObject.fromPrefab)
                     localTime = RTLevel.Current.CurrentTime;
                 if (parentObject.beatmapObject.fromPrefab)
                     prefabOffset = 0f;

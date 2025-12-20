@@ -114,7 +114,7 @@ namespace BetterLegacy.Core.Runtime.Objects
             var shapeOption = Mathf.Clamp(beatmapObject.ShapeOption, 0, ObjectManager.inst.objectPrefabs[shape].options.Count - 1);
             var shapeType = (ShapeType)shape;
 
-            GameObject baseObject = UnityObject.Instantiate(ObjectManager.inst.objectPrefabs[shape].options[shapeOption], parent ? parent.transform : runtimeLevel.Parent);
+            GameObject baseObject = UnityObject.Instantiate(ObjectManager.inst.objectPrefabs[shape].options[shapeOption], parent ? parent.transform : runtimeLevel.SpawnParent);
             
             baseObject.transform.localScale = Vector3.one;
 
@@ -127,7 +127,7 @@ namespace BetterLegacy.Core.Runtime.Objects
 
             baseObject.name = beatmapObject.name;
 
-            var top = Creator.NewGameObject($"top - [{beatmapObject.name}]", runtimeLevel.Parent);
+            var top = Creator.NewGameObject($"top - [{beatmapObject.name}]", runtimeLevel.SpawnParent);
 
             var firstParent = parentObjects[parentObjects.Count - 1];
             var tf = firstParent?.transform ?? baseObject.transform;
@@ -405,7 +405,7 @@ namespace BetterLegacy.Core.Runtime.Objects
         {
             var renderers = new List<Renderer>();
 
-            var parent = runtimeLevel.Parent;
+            var parent = runtimeLevel.SpawnParent;
 
             if (!string.IsNullOrEmpty(backgroundObject.layer) &&
                 runtimeLevel.backgroundLayers.TryFind(x => x.backgroundLayer && x.backgroundLayer.id == backgroundObject.layer, out BackgroundLayerObject backgroundLayerObject) &&
@@ -477,7 +477,7 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         public BackgroundLayerObject ToBackgroundLayerObject(BackgroundLayer backgroundLayer)
         {
-            var gameObject = Creator.NewGameObject("Background Layer", runtimeLevel.Parent);
+            var gameObject = Creator.NewGameObject("Background Layer", runtimeLevel.SpawnParent);
             gameObject.transform.localPosition = new Vector3(0f, 0f, backgroundLayer.depth);
 
             var backgroundLayerObject = new BackgroundLayerObject()

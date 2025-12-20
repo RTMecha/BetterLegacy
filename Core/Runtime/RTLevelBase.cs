@@ -38,7 +38,7 @@ namespace BetterLegacy.Core.Runtime
         /// <summary>
         /// Parent of the runtime.
         /// </summary>
-        public abstract Transform Parent { get; }
+        public abstract Transform SpawnParent { get; set; }
 
         /// <summary>
         /// Fixed level time.
@@ -173,7 +173,7 @@ namespace BetterLegacy.Core.Runtime
         /// </summary>
         public virtual void Clear()
         {
-            var parent = Parent;
+            var parent = SpawnParent;
             if (parent)
                 LSHelpers.DeleteChildren(parent);
 
@@ -220,6 +220,24 @@ namespace BetterLegacy.Core.Runtime
                 UpdatePrefab(GameData.Current.prefabObjects[i], PrefabObjectContext.TRANSFORM_OFFSET);
         }
 
+        public virtual void RecacheSequences(PrefabObject prefabObject)
+        {
+            var runtimeObject = prefabObject.runtimeObject;
+            if (!runtimeObject || runtimeObject.ParentObjects == null || runtimeObject.ParentObjects.IsEmpty())
+                return;
+
+            foreach (var parentObject in runtimeObject.ParentObjects)
+            {
+                var cachedSequences = parentObject.beatmapObject.cachedSequences;
+                if (cachedSequences)
+                {
+                    parentObject.positionSequence = cachedSequences.PositionSequence;
+                    parentObject.scaleSequence = cachedSequences.ScaleSequence;
+                    parentObject.rotationSequence = cachedSequences.RotationSequence;
+                }
+            }
+        }
+
         /// <summary>
         /// Removes or updates an objects' sequences.
         /// </summary>
@@ -237,13 +255,18 @@ namespace BetterLegacy.Core.Runtime
                 // Recursive recaching.
                 if (recursive)
                 {
-                    var beatmapObjects = GameData.Current.beatmapObjects;
-                    for (int i = 0; i < beatmapObjects.Count; i++)
+                    for (int i = 0; i < GameData.Current.beatmapObjects.Count; i++)
                     {
-                        var bm = beatmapObjects[i];
-                        if (bm.Parent == beatmapObject.id)
-                            RecacheSequences(bm, reinsert, updateParents, recursive);
+                        var child = GameData.Current.beatmapObjects[i];
+                        if (child.Parent == beatmapObject.id)
+                            RecacheSequences(child, reinsert, updateParents, recursive);
                     }
+                }
+                for (int i = 0; i < GameData.Current.prefabObjects.Count; i++)
+                {
+                    var child = GameData.Current.prefabObjects[i];
+                    if (child.Parent == beatmapObject.id)
+                        RecacheSequences(child);
                 }
 
                 return;
@@ -254,13 +277,18 @@ namespace BetterLegacy.Core.Runtime
             // Recursive recaching.
             if (recursive)
             {
-                var beatmapObjects = GameData.Current.beatmapObjects;
-                for (int i = 0; i < beatmapObjects.Count; i++)
+                for (int i = 0; i < GameData.Current.beatmapObjects.Count; i++)
                 {
-                    var bm = beatmapObjects[i];
-                    if (bm.Parent == beatmapObject.id)
-                        RecacheSequences(bm, reinsert, updateParents, recursive);
+                    var child = GameData.Current.beatmapObjects[i];
+                    if (child.Parent == beatmapObject.id)
+                        RecacheSequences(child, reinsert, updateParents, recursive);
                 }
+            }
+            for (int i = 0; i < GameData.Current.prefabObjects.Count; i++)
+            {
+                var child = GameData.Current.prefabObjects[i];
+                if (child.Parent == beatmapObject.id)
+                    RecacheSequences(child);
             }
 
             var runtimeObject = beatmapObject.runtimeObject;
@@ -873,7 +901,7 @@ namespace BetterLegacy.Core.Runtime
             var shapeOption = Mathf.Clamp(beatmapObject.ShapeOption, 0, ObjectManager.inst.objectPrefabs[shape].options.Count - 1);
             var shapeType = (ShapeType)shape;
 
-            GameObject baseObject = UnityObject.Instantiate(ObjectManager.inst.objectPrefabs[shape].options[shapeOption], parent ? parent.transform : Parent);
+            GameObject baseObject = UnityObject.Instantiate(ObjectManager.inst.objectPrefabs[shape].options[shapeOption], parent ? parent.transform : SpawnParent);
 
             baseObject.transform.localScale = Vector3.one;
 
@@ -1392,6 +1420,20 @@ namespace BetterLegacy.Core.Runtime
                         break;
                     }
                 case PrefabObjectContext.PARENT: {
+                        bool r = true;
+                        if (runtimePrefabObject.CachedParentSelf != prefabObject.parentSelf)
+                        {
+                            runtimePrefabObject.CachedParentSelf = prefabObject.parentSelf;
+                            r = false;
+                        }
+
+                        if (prefabObject.parentSelf)
+                        {
+                            runtimePrefabObject.InitParentChain();
+                            if (r)
+                                return;
+                        }
+
                         for (int i = 0; i < prefabObject.expandedObjects.Count; i++)
                         {
                             var beatmapObject = prefabObject.expandedObjects[i] as BeatmapObject;

@@ -56,9 +56,9 @@ namespace BetterLegacy.Core.Runtime.Objects
         public float ScaleParentOffset { get; set; }
         public float RotationParentOffset { get; set; }
 
-        public Vector3 TopPositionOffset { get; set; }
-        public Vector3 TopScaleOffset { get; set; }
-        public Vector3 TopRotationOffset { get; set; }
+        public Vector3 TopPosition { get; set; }
+        public Vector3 TopScale { get; set; } = Vector3.one;
+        public Vector3 TopRotation { get; set; }
 
         public Transform Parent { get; set; }
 
