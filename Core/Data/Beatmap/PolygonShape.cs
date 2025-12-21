@@ -87,13 +87,18 @@ namespace BetterLegacy.Core.Data.Beatmap
         }
 
         /// <summary>
+        /// Outline thickness rotation of the polygon shape.
+        /// </summary>
+        public float ThicknessRotation
+        {
+            get => thicknessRotation;
+            set => thicknessRotation = value;
+        }
+
+        /// <summary>
         /// Angle offset of the shape.
         /// </summary>
         public float Angle { get; set; }
-
-        #endregion
-
-        #region Fields
 
         /// <summary>
         /// The default radius for the triangle polygon.
@@ -117,6 +122,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         int slices = 3;
         Vector2 thicknessOffset;
         Vector2 thicknessScale = Vector2.one;
+        float thicknessRotation = 0f;
 
         #endregion
 
@@ -131,6 +137,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             Slices = orig.Slices;
             ThicknessOffset = orig.ThicknessOffset;
             ThicknessScale = orig.ThicknessScale;
+            ThicknessRotation = orig.ThicknessRotation;
             Angle = orig.Angle;
         }
 
@@ -161,6 +168,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             Slices = jn["sl"].AsInt;
             ThicknessOffset = Parser.TryParse(jn["tho"], Vector2.zero);
             ThicknessScale = Parser.TryParse(jn["ths"], Vector2.one);
+            ThicknessRotation = jn["thr"].AsFloat;
             Angle = jn["ang"].AsFloat;
         }
 
@@ -187,6 +195,8 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["tho"] = thicknessOffset.ToJSONArray();
             if (thicknessScale.x != 1f || thicknessScale.y != 1f)
                 jn["ths"] = thicknessScale.ToJSONArray();
+            if (ThicknessRotation != 0f)
+                jn["thr"] = ThicknessRotation;
             if (Angle != 0f)
                 jn["ang"] = Angle;
             return jn;

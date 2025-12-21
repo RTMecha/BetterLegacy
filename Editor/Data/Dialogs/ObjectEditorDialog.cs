@@ -2216,6 +2216,30 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                         #endregion
 
+                        #region Thickness Rotation
+
+                        var thicknessRotation = EditorPrefabHolder.Instance.NumberInputField.Duplicate(so, "thickness angle");
+                        var thicknessRotationStorage = thicknessRotation.GetComponent<InputFieldStorage>();
+
+                        CoreHelper.Delete(thicknessRotationStorage.addButton);
+                        CoreHelper.Delete(thicknessRotationStorage.subButton);
+                        CoreHelper.Delete(thicknessRotationStorage.leftGreaterButton);
+                        CoreHelper.Delete(thicknessRotationStorage.middleButton);
+                        CoreHelper.Delete(thicknessRotationStorage.rightGreaterButton);
+
+                        EditorThemeManager.ApplyInputField(thicknessRotationStorage);
+
+                        var thicknessRotationLabel = EditorPrefabHolder.Instance.Labels.transform.GetChild(0).gameObject.Duplicate(thicknessRotation.transform, "label", 0);
+                        var thicknessRotationLabelText = thicknessRotationLabel.GetComponent<Text>();
+                        thicknessRotationLabelText.alignment = TextAnchor.MiddleLeft;
+                        thicknessRotationLabelText.text = "Thick Angle";
+                        thicknessRotationLabelText.rectTransform.sizeDelta = new Vector2(100f, 32f);
+                        EditorThemeManager.ApplyLightText(thicknessRotationLabelText);
+                        var thicknessRotationLabelLayout = thicknessRotationLabel.AddComponent<LayoutElement>();
+                        thicknessRotationLabelLayout.minWidth = 100f;
+
+                        #endregion
+
                         #region Slices
 
                         var slices = EditorPrefabHolder.Instance.NumberInputField.Duplicate(so, "slices");

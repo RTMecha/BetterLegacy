@@ -2187,15 +2187,15 @@ namespace BetterLegacy.Editor.Managers
                         break;
                     }
                 case ShapeType.Polygon: {
-                        shapeSettings.AsRT().sizeDelta = new Vector2(351f, 276f);
+                        shapeSettings.AsRT().sizeDelta = new Vector2(351f, 320f);
 
                         var radius = shapeSettings.Find("10/radius").gameObject.GetComponent<InputFieldStorage>();
-                        radius.inputField.onValueChanged.ClearAll();
-                        radius.inputField.text = beatmapObject.polygonShape.Radius.ToString();
+                        radius.OnValueChanged.ClearAll();
+                        radius.SetTextWithoutNotify(beatmapObject.polygonShape.Radius.ToString());
                         radius.SetInteractible(!EditorConfig.Instance.AutoPolygonRadius.Value);
                         if (!EditorConfig.Instance.AutoPolygonRadius.Value)
                         {
-                            radius.inputField.onValueChanged.AddListener(_val =>
+                            radius.OnValueChanged.AddListener(_val =>
                             {
                                 if (float.TryParse(_val, out float num))
                                 {
@@ -2242,8 +2242,8 @@ namespace BetterLegacy.Editor.Managers
                             });
 
                         var sides = shapeSettings.Find("10/sides").gameObject.GetComponent<InputFieldStorage>();
-                        sides.inputField.SetTextWithoutNotify(beatmapObject.polygonShape.Sides.ToString());
-                        sides.inputField.onValueChanged.NewListener(_val =>
+                        sides.SetTextWithoutNotify(beatmapObject.polygonShape.Sides.ToString());
+                        sides.OnValueChanged.NewListener(_val =>
                         {
                             if (int.TryParse(_val, out int num))
                             {
@@ -2262,8 +2262,8 @@ namespace BetterLegacy.Editor.Managers
                         TriggerHelper.AddEventTriggers(sides.inputField.gameObject, TriggerHelper.ScrollDeltaInt(sides.inputField, min: 3, max: 32));
                         
                         var roundness = shapeSettings.Find("10/roundness").gameObject.GetComponent<InputFieldStorage>();
-                        roundness.inputField.SetTextWithoutNotify(beatmapObject.polygonShape.Roundness.ToString());
-                        roundness.inputField.onValueChanged.NewListener(_val =>
+                        roundness.SetTextWithoutNotify(beatmapObject.polygonShape.Roundness.ToString());
+                        roundness.OnValueChanged.NewListener(_val =>
                         {
                             if (float.TryParse(_val, out float num))
                             {
@@ -2277,8 +2277,8 @@ namespace BetterLegacy.Editor.Managers
                         TriggerHelper.AddEventTriggers(roundness.inputField.gameObject, TriggerHelper.ScrollDelta(roundness.inputField, max: 1f));
 
                         var thickness = shapeSettings.Find("10/thickness").gameObject.GetComponent<InputFieldStorage>();
-                        thickness.inputField.SetTextWithoutNotify(beatmapObject.polygonShape.Thickness.ToString());
-                        thickness.inputField.onValueChanged.NewListener(_val =>
+                        thickness.SetTextWithoutNotify(beatmapObject.polygonShape.Thickness.ToString());
+                        thickness.OnValueChanged.NewListener(_val =>
                         {
                             if (float.TryParse(_val, out float num))
                             {
@@ -2292,8 +2292,8 @@ namespace BetterLegacy.Editor.Managers
                         TriggerHelper.AddEventTriggers(thickness.inputField.gameObject, TriggerHelper.ScrollDelta(thickness.inputField, max: 1f));
                         
                         var thicknessOffsetX = shapeSettings.Find("10/thickness offset/x").gameObject.GetComponent<InputFieldStorage>();
-                        thicknessOffsetX.inputField.SetTextWithoutNotify(beatmapObject.polygonShape.ThicknessOffset.x.ToString());
-                        thicknessOffsetX.inputField.onValueChanged.NewListener(_val =>
+                        thicknessOffsetX.SetTextWithoutNotify(beatmapObject.polygonShape.ThicknessOffset.x.ToString());
+                        thicknessOffsetX.OnValueChanged.NewListener(_val =>
                         {
                             if (float.TryParse(_val, out float num))
                             {
@@ -2306,8 +2306,8 @@ namespace BetterLegacy.Editor.Managers
                         TriggerHelper.AddEventTriggers(thicknessOffsetX.inputField.gameObject, TriggerHelper.ScrollDelta(thicknessOffsetX.inputField));
                         
                         var thicknessOffsetY = shapeSettings.Find("10/thickness offset/y").gameObject.GetComponent<InputFieldStorage>();
-                        thicknessOffsetY.inputField.SetTextWithoutNotify(beatmapObject.polygonShape.ThicknessOffset.y.ToString());
-                        thicknessOffsetY.inputField.onValueChanged.NewListener(_val =>
+                        thicknessOffsetY.SetTextWithoutNotify(beatmapObject.polygonShape.ThicknessOffset.y.ToString());
+                        thicknessOffsetY.OnValueChanged.NewListener(_val =>
                         {
                             if (float.TryParse(_val, out float num))
                             {
@@ -2320,8 +2320,8 @@ namespace BetterLegacy.Editor.Managers
                         TriggerHelper.AddEventTriggers(thicknessOffsetY.inputField.gameObject, TriggerHelper.ScrollDelta(thicknessOffsetY.inputField));
                         
                         var thicknessScaleX = shapeSettings.Find("10/thickness scale/x").gameObject.GetComponent<InputFieldStorage>();
-                        thicknessScaleX.inputField.SetTextWithoutNotify(beatmapObject.polygonShape.ThicknessScale.x.ToString());
-                        thicknessScaleX.inputField.onValueChanged.NewListener(_val =>
+                        thicknessScaleX.SetTextWithoutNotify(beatmapObject.polygonShape.ThicknessScale.x.ToString());
+                        thicknessScaleX.OnValueChanged.NewListener(_val =>
                         {
                             if (float.TryParse(_val, out float num))
                             {
@@ -2334,8 +2334,8 @@ namespace BetterLegacy.Editor.Managers
                         TriggerHelper.AddEventTriggers(thicknessScaleX.inputField.gameObject, TriggerHelper.ScrollDelta(thicknessScaleX.inputField));
                         
                         var thicknessScaleY = shapeSettings.Find("10/thickness scale/y").gameObject.GetComponent<InputFieldStorage>();
-                        thicknessScaleY.inputField.SetTextWithoutNotify(beatmapObject.polygonShape.ThicknessScale.y.ToString());
-                        thicknessScaleY.inputField.onValueChanged.NewListener(_val =>
+                        thicknessScaleY.SetTextWithoutNotify(beatmapObject.polygonShape.ThicknessScale.y.ToString());
+                        thicknessScaleY.OnValueChanged.NewListener(_val =>
                         {
                             if (float.TryParse(_val, out float num))
                             {
@@ -2347,9 +2347,23 @@ namespace BetterLegacy.Editor.Managers
                         TriggerHelper.IncreaseDecreaseButtons(thicknessScaleY);
                         TriggerHelper.AddEventTriggers(thicknessScaleY.inputField.gameObject, TriggerHelper.ScrollDelta(thicknessScaleY.inputField));
 
+                        var thicknessRotation = shapeSettings.Find("10/thickness angle").gameObject.GetComponent<InputFieldStorage>();
+                        thicknessRotation.SetTextWithoutNotify(beatmapObject.polygonShape.ThicknessRotation.ToString());
+                        thicknessRotation.OnValueChanged.NewListener(_val =>
+                        {
+                            if (float.TryParse(_val, out float num))
+                            {
+                                beatmapObject.polygonShape.ThicknessRotation = num;
+                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.POLYGONS);
+                            }
+                        });
+
+                        TriggerHelper.IncreaseDecreaseButtons(thicknessRotation, 15f, 3f);
+                        TriggerHelper.AddEventTriggers(thicknessRotation.inputField.gameObject, TriggerHelper.ScrollDelta(thicknessRotation.inputField, 15f, 3f));
+
                         var slices = shapeSettings.Find("10/slices").gameObject.GetComponent<InputFieldStorage>();
-                        slices.inputField.SetTextWithoutNotify(beatmapObject.polygonShape.Slices.ToString());
-                        slices.inputField.onValueChanged.NewListener(_val =>
+                        slices.SetTextWithoutNotify(beatmapObject.polygonShape.Slices.ToString());
+                        slices.OnValueChanged.NewListener(_val =>
                         {
                             if (int.TryParse(_val, out int num))
                             {
@@ -2363,8 +2377,8 @@ namespace BetterLegacy.Editor.Managers
                         TriggerHelper.AddEventTriggers(slices.inputField.gameObject, TriggerHelper.ScrollDeltaInt(slices.inputField, min: 1, max: 32));
                         
                         var rotation = shapeSettings.Find("10/rotation").gameObject.GetComponent<InputFieldStorage>();
-                        rotation.inputField.SetTextWithoutNotify(beatmapObject.polygonShape.Angle.ToString());
-                        rotation.inputField.onValueChanged.NewListener(_val =>
+                        rotation.SetTextWithoutNotify(beatmapObject.polygonShape.Angle.ToString());
+                        rotation.OnValueChanged.NewListener(_val =>
                         {
                             if (float.TryParse(_val, out float num))
                             {

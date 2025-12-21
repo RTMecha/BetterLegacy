@@ -20,6 +20,7 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
         int slices = 3;
         Vector2 thicknessOffset;
         Vector2 thicknessScale = Vector2.one;
+        float thicknessRotation = 0f;
         float angle = 0f;
 
         public PolygonObject(GameObject gameObject, float opacity, bool hasCollider, bool solid, int renderType, bool opacityCollision, int gradientType, float gradientScale, float gradientRotation, int colorBlendMode, PolygonShape polygonShape) : base(gameObject, opacity, hasCollider, solid, renderType, opacityCollision, gradientType, gradientScale, gradientRotation, colorBlendMode)
@@ -35,7 +36,7 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
         /// Updates the custom polygon.
         /// </summary>
         /// <param name="polygonShape">Polygon shape values to apply.</param>
-        public void UpdatePolygon(PolygonShape polygonShape) => UpdatePolygon(polygonShape.Radius, polygonShape.Sides, polygonShape.Roundness, polygonShape.Thickness, polygonShape.Slices, polygonShape.ThicknessOffset, polygonShape.ThicknessScale, polygonShape.Angle);
+        public void UpdatePolygon(PolygonShape polygonShape) => UpdatePolygon(polygonShape.Radius, polygonShape.Sides, polygonShape.Roundness, polygonShape.Thickness, polygonShape.Slices, polygonShape.ThicknessOffset, polygonShape.ThicknessScale, polygonShape.Angle, polygonShape.ThicknessRotation);
 
         /// <summary>
         /// Updates the custom polygon.
@@ -48,7 +49,7 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
         /// <param name="thicknessOffset">Offset of the center outline.</param>
         /// <param name="thicknessScale">Scale of the center outline.</param>
         /// <param name="rotation">Rotation offset of the polygon.</param>
-        public void UpdatePolygon(float radius, int sides, float roundness, float thickness, int slices, Vector2 thicknessOffset, Vector2 thicknessScale, float angle)
+        public void UpdatePolygon(float radius, int sides, float roundness, float thickness, int slices, Vector2 thicknessOffset, Vector2 thicknessScale, float angle, float thicknessRotation)
         {
             this.radius = radius;
             this.sides = sides;
@@ -57,6 +58,7 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
             this.slices = slices;
             this.thicknessOffset = thicknessOffset;
             this.thicknessScale = thicknessScale;
+            this.thicknessRotation = thicknessRotation;
             this.angle = angle;
             UpdatePolygon();
         }
@@ -78,7 +80,7 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
                 return;
             }
 
-            VGShapes.RoundedRingMesh(meshFilter, polygonCollider, radius, sides, roundness, thickness, slices, thicknessOffset, thicknessScale, angle);
+            VGShapes.RoundedRingMesh(meshFilter, polygonCollider, radius, sides, roundness, thickness, slices, thicknessOffset, thicknessScale, angle, thicknessRotation);
         }
 
         public override void Clear()

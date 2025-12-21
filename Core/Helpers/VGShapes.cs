@@ -46,6 +46,7 @@ namespace BetterLegacy.Core.Helpers
 
             public Vector2 thicknessOffset;
             public Vector2 thicknessScale;
+            public float thicknessRotation;
             public float rotation;
 
             public override int GetHashCode()
@@ -58,6 +59,7 @@ namespace BetterLegacy.Core.Helpers
                 hash = hash * 23 + SliceCount.GetHashCode();
                 hash = hash * 23 + thicknessOffset.GetHashCode();
                 hash = hash * 23 + thicknessScale.GetHashCode();
+                hash = hash * 23 + thicknessRotation.GetHashCode();
                 hash = hash * 23 + rotation.GetHashCode();
                 return hash;
             }
@@ -75,6 +77,7 @@ namespace BetterLegacy.Core.Helpers
                            Mathf.Approximately(thicknessOffset.y, other.thicknessOffset.y) &&
                            Mathf.Approximately(thicknessScale.x, other.thicknessScale.x) &&
                            Mathf.Approximately(thicknessScale.y, other.thicknessScale.y) &&
+                           Mathf.Approximately(thicknessRotation, other.thicknessRotation) &&
                            Mathf.Approximately(rotation, other.rotation);
                 }
                 return false;
@@ -300,7 +303,7 @@ namespace BetterLegacy.Core.Helpers
         /// <param name="thickness">Outline thickness.</param>
         /// <param name="thicknessOffset">Outline position offset.</param>
         /// <param name="thicknessScale">Outline scale offset.</param>
-        public static void RingMesh(MeshFilter meshFilter, PolygonCollider2D polygonCollider, float radius, int cornerCount, float thickness, Vector2 thicknessOffset = default, Vector2? thicknessScale = null, float rotation = 0f)
+        public static void RingMesh(MeshFilter meshFilter, PolygonCollider2D polygonCollider, float radius, int cornerCount, float thickness, Vector2 thicknessOffset = default, Vector2? thicknessScale = null, float rotation = 0f, float thicknessRotation = 0f)
         {
             if (thickness >= 1)
             {
@@ -351,6 +354,8 @@ namespace BetterLegacy.Core.Helpers
                     vertices[i + cornerCount].x *= scale.x;
                     vertices[i + cornerCount].y *= scale.y;
                 }
+                if (thicknessRotation != 0f)
+                    vertices[i + cornerCount] = RTMath.Rotate(vertices[i + cornerCount], thicknessRotation);
                 if (thicknessOffset != default)
                     vertices[i + cornerCount] += (Vector3)thicknessOffset;
             }
@@ -408,7 +413,7 @@ namespace BetterLegacy.Core.Helpers
             polygonCollider.SetPath(1, paths[1]);
         }
 
-        public static void RoundedRingMesh(GameObject _go, float radius = 0.5f, int cornerCount = 4, float cornerRoundness = 0.25f, float thickness = 0.2f, Vector2 thicknessOffset = default, Vector2? thicknessScale = null, float rotation = 0f) => RoundedRingMesh(_go.GetComponent<MeshFilter>(), _go.GetComponent<PolygonCollider2D>(), radius, cornerCount, cornerRoundness, thickness, thicknessOffset, thicknessScale, rotation);
+        public static void RoundedRingMesh(GameObject _go, float radius = 0.5f, int cornerCount = 4, float cornerRoundness = 0.25f, float thickness = 0.2f, Vector2 thicknessOffset = default, Vector2? thicknessScale = null, float rotation = 0f, float thicknessRotation = 0f) => RoundedRingMesh(_go.GetComponent<MeshFilter>(), _go.GetComponent<PolygonCollider2D>(), radius, cornerCount, cornerRoundness, thickness, thicknessOffset, thicknessScale, rotation, thicknessRotation);
 
         /// <summary>
         /// Generates a custom polygon shape.
@@ -421,7 +426,7 @@ namespace BetterLegacy.Core.Helpers
         /// <param name="thickness">Outline thickness.</param>
         /// <param name="thicknessOffset">Outline position offset.</param>
         /// <param name="thicknessScale">Outline scale offset.</param>
-        public static void RoundedRingMesh(MeshFilter meshFilter, PolygonCollider2D polygonCollider, float radius = 0.5f, int cornerCount = 4, float cornerRoundness = 0.25f, float thickness = 0.2f, Vector2 thicknessOffset = default, Vector2? thicknessScale = null, float rotation = 0f)
+        public static void RoundedRingMesh(MeshFilter meshFilter, PolygonCollider2D polygonCollider, float radius = 0.5f, int cornerCount = 4, float cornerRoundness = 0.25f, float thickness = 0.2f, Vector2 thicknessOffset = default, Vector2? thicknessScale = null, float rotation = 0f, float thicknessRotation = 0f)
         {
             if (thickness >= 1)
             {
@@ -431,7 +436,7 @@ namespace BetterLegacy.Core.Helpers
 
             if (cornerRoundness <= 0)
             {
-                RingMesh(meshFilter, polygonCollider, radius, cornerCount, thickness, thicknessOffset, thicknessScale, rotation);
+                RingMesh(meshFilter, polygonCollider, radius, cornerCount, thickness, thicknessOffset, thicknessScale, rotation, thicknessRotation);
                 return;
             }
 
@@ -460,6 +465,8 @@ namespace BetterLegacy.Core.Helpers
                     innerCorners[i].x *= scale.x;
                     innerCorners[i].y *= scale.y;
                 }
+                if (thicknessRotation != 0f)
+                    innerCorners[i] = RTMath.Rotate(innerCorners[i], thicknessRotation);
                 if (thicknessOffset != default)
                     innerCorners[i] += (Vector3)thicknessOffset;
             }
@@ -543,7 +550,7 @@ namespace BetterLegacy.Core.Helpers
             polygonCollider.SetPath(1, innerPath);
         }
 
-        public static void RoundedRingMesh(GameObject _go, float radius = 0.5f, int cornerCount = 4, float cornerRoundness = 0.25f, float thickness = 0.2f, int sliceCount = -1, Vector2 thicknessOffset = default, Vector2? thicknessScale = null, float rotation = 0f) => RoundedRingMesh(_go.GetComponent<MeshFilter>(), _go.GetComponent<PolygonCollider2D>(), radius, cornerCount, cornerRoundness, thickness, sliceCount, thicknessOffset, thicknessScale, rotation);
+        public static void RoundedRingMesh(GameObject _go, float radius = 0.5f, int cornerCount = 4, float cornerRoundness = 0.25f, float thickness = 0.2f, int sliceCount = -1, Vector2 thicknessOffset = default, Vector2? thicknessScale = null, float rotation = 0f, float thicknessRotation = 0f) => RoundedRingMesh(_go.GetComponent<MeshFilter>(), _go.GetComponent<PolygonCollider2D>(), radius, cornerCount, cornerRoundness, thickness, sliceCount, thicknessOffset, thicknessScale, rotation, thicknessRotation);
 
         /// <summary>
         /// Generates a custom polygon shape.
@@ -557,7 +564,7 @@ namespace BetterLegacy.Core.Helpers
         /// <param name="sliceCount">Amount of slices. -1 draws the full shape.</param>
         /// <param name="thicknessOffset">Outline position offset.</param>
         /// <param name="thicknessScale">Outline scale offset.</param>
-        public static void RoundedRingMesh(MeshFilter meshFilter, PolygonCollider2D polygonCollider, float radius = 0.5f, int cornerCount = 4, float cornerRoundness = 0.25f, float thickness = 0.2f, int sliceCount = -1, Vector2 thicknessOffset = default, Vector2? thicknessScale = null, float rotation = 0f)
+        public static void RoundedRingMesh(MeshFilter meshFilter, PolygonCollider2D polygonCollider, float radius = 0.5f, int cornerCount = 4, float cornerRoundness = 0.25f, float thickness = 0.2f, int sliceCount = -1, Vector2 thicknessOffset = default, Vector2? thicknessScale = null, float rotation = 0f, float thicknessRotation = 0f)
         {
             cornerCount = Mathf.Clamp(cornerCount, MIN_VERTEX_COUNT, MAX_VERTEX_COUNT);
             sliceCount = sliceCount < 0 ? cornerCount : Mathf.Clamp(sliceCount, 0, cornerCount);
@@ -576,7 +583,7 @@ namespace BetterLegacy.Core.Helpers
 
             if (cornerCount == sliceCount)
             {
-                RoundedRingMesh(meshFilter, polygonCollider, radius, cornerCount, cornerRoundness, thickness, thicknessOffset, thicknessScale, rotation);
+                RoundedRingMesh(meshFilter, polygonCollider, radius, cornerCount, cornerRoundness, thickness, thicknessOffset, thicknessScale, rotation, thicknessRotation);
                 return;
             }
 
@@ -611,6 +618,8 @@ namespace BetterLegacy.Core.Helpers
                     innerCorners[i].x *= scale.x;
                     innerCorners[i].y *= scale.y;
                 }
+                if (thicknessRotation != 0f)
+                    innerCorners[i] = RTMath.Rotate(innerCorners[i], thicknessRotation);
                 if (thicknessOffset != default)
                     innerCorners[i] += (Vector3)thicknessOffset;
             }

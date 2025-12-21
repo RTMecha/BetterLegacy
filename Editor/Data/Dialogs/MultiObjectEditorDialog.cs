@@ -3284,6 +3284,30 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                             #endregion
 
+                            #region Thickness Angle
+
+                            var thicknessRotation = EditorPrefabHolder.Instance.NumberInputField.Duplicate(so, "thickness angle");
+                            var thicknessRotationStorage = thicknessRotation.GetComponent<InputFieldStorage>();
+
+                            CoreHelper.Delete(thicknessRotationStorage.addButton);
+                            CoreHelper.Delete(thicknessRotationStorage.subButton);
+                            CoreHelper.Delete(thicknessRotationStorage.leftGreaterButton);
+                            CoreHelper.Delete(thicknessRotationStorage.middleButton);
+                            CoreHelper.Delete(thicknessRotationStorage.rightGreaterButton);
+
+                            EditorThemeManager.ApplyInputField(thicknessRotationStorage);
+
+                            var thicknessRotationLabel = EditorPrefabHolder.Instance.Labels.transform.GetChild(0).gameObject.Duplicate(thicknessRotation.transform, "label", 0);
+                            var thicknessRotationLabelText = thicknessRotationLabel.GetComponent<Text>();
+                            thicknessRotationLabelText.alignment = TextAnchor.MiddleLeft;
+                            thicknessRotationLabelText.text = "Thick Angle";
+                            thicknessRotationLabelText.rectTransform.sizeDelta = new Vector2(100f, 32f);
+                            EditorThemeManager.ApplyLightText(thicknessRotationLabelText);
+                            var thicknessRotationLabelLayout = thicknessRotationLabel.AddComponent<LayoutElement>();
+                            thicknessRotationLabelLayout.minWidth = 100f;
+
+                            #endregion
+
                             #region Slices
 
                             var slices = EditorPrefabHolder.Instance.NumberInputField.Duplicate(so, "slices");
@@ -3337,7 +3361,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                 updatedShapes = true;
             }
-
         }
         
         /// <summary>
@@ -3509,11 +3532,11 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         break;
                     }
                 case ShapeType.Polygon: {
-                        shapeSettings.AsRT().sizeDelta = new Vector2(351f, 276f);
-                        shapeSettings.GetChild(4).AsRT().sizeDelta = new Vector2(351f, 276f);
+                        shapeSettings.AsRT().sizeDelta = new Vector2(351f, 320f);
+                        shapeSettings.GetChild(4).AsRT().sizeDelta = new Vector2(351f, 320f);
 
                         var radius = shapeSettings.Find("10/radius").gameObject.GetComponent<InputFieldStorage>();
-                        radius.inputField.onValueChanged.NewListener(_val =>
+                        radius.OnValueChanged.NewListener(_val =>
                         {
                             if (EditorConfig.Instance.AutoPolygonRadius.Value)
                             {
@@ -3536,7 +3559,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         TriggerHelper.AddEventTriggers(radius.inputField.gameObject, TriggerHelper.ScrollDelta(radius.inputField, min: 0.1f, max: 10f));
                         
                         var sides = shapeSettings.Find("10/sides").gameObject.GetComponent<InputFieldStorage>();
-                        sides.inputField.onValueChanged.NewListener(_val =>
+                        sides.OnValueChanged.NewListener(_val =>
                         {
                             if (int.TryParse(_val, out int num))
                             {
@@ -3555,7 +3578,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         TriggerHelper.AddEventTriggers(sides.inputField.gameObject, TriggerHelper.ScrollDeltaInt(sides.inputField, min: 3, max: 32));
 
                         var roundness = shapeSettings.Find("10/roundness").gameObject.GetComponent<InputFieldStorage>();
-                        roundness.inputField.onValueChanged.NewListener(_val =>
+                        roundness.OnValueChanged.NewListener(_val =>
                         {
                             if (float.TryParse(_val, out float num))
                             {
@@ -3572,7 +3595,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         TriggerHelper.AddEventTriggers(roundness.inputField.gameObject, TriggerHelper.ScrollDelta(roundness.inputField, max: 1f));
 
                         var thickness = shapeSettings.Find("10/thickness").gameObject.GetComponent<InputFieldStorage>();
-                        thickness.inputField.onValueChanged.NewListener(_val =>
+                        thickness.OnValueChanged.NewListener(_val =>
                         {
                             if (float.TryParse(_val, out float num))
                             {
@@ -3589,7 +3612,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         TriggerHelper.AddEventTriggers(thickness.inputField.gameObject, TriggerHelper.ScrollDelta(thickness.inputField, max: 1f));
                         
                         var thicknessOffsetX = shapeSettings.Find("10/thickness offset/x").gameObject.GetComponent<InputFieldStorage>();
-                        thicknessOffsetX.inputField.onValueChanged.NewListener(_val =>
+                        thicknessOffsetX.OnValueChanged.NewListener(_val =>
                         {
                             if (float.TryParse(_val, out float num))
                             {
@@ -3605,7 +3628,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         TriggerHelper.AddEventTriggers(thicknessOffsetX.inputField.gameObject, TriggerHelper.ScrollDelta(thicknessOffsetX.inputField));
                         
                         var thicknessOffsetY = shapeSettings.Find("10/thickness offset/y").gameObject.GetComponent<InputFieldStorage>();
-                        thicknessOffsetY.inputField.onValueChanged.NewListener(_val =>
+                        thicknessOffsetY.OnValueChanged.NewListener(_val =>
                         {
                             if (float.TryParse(_val, out float num))
                             {
@@ -3621,7 +3644,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         TriggerHelper.AddEventTriggers(thicknessOffsetY.inputField.gameObject, TriggerHelper.ScrollDelta(thicknessOffsetY.inputField));
                         
                         var thicknessScaleX = shapeSettings.Find("10/thickness scale/x").gameObject.GetComponent<InputFieldStorage>();
-                        thicknessScaleX.inputField.onValueChanged.NewListener(_val =>
+                        thicknessScaleX.OnValueChanged.NewListener(_val =>
                         {
                             if (float.TryParse(_val, out float num))
                             {
@@ -3637,7 +3660,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         TriggerHelper.AddEventTriggers(thicknessScaleX.inputField.gameObject, TriggerHelper.ScrollDelta(thicknessScaleX.inputField));
                         
                         var thicknessScaleY = shapeSettings.Find("10/thickness scale/y").gameObject.GetComponent<InputFieldStorage>();
-                        thicknessScaleY.inputField.onValueChanged.NewListener(_val =>
+                        thicknessScaleY.OnValueChanged.NewListener(_val =>
                         {
                             if (float.TryParse(_val, out float num))
                             {
@@ -3652,8 +3675,25 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         TriggerHelper.IncreaseDecreaseButtons(thicknessScaleY);
                         TriggerHelper.AddEventTriggers(thicknessScaleY.inputField.gameObject, TriggerHelper.ScrollDelta(thicknessScaleY.inputField));
 
+                        var thicknessRotation = shapeSettings.Find("10/thickness angle").gameObject.GetComponent<InputFieldStorage>();
+                        thicknessRotation.OnValueChanged.NewListener(_val =>
+                        {
+                            if (float.TryParse(_val, out float num))
+                            {
+                                num = Mathf.Clamp(num, 0f, 1f);
+                                foreach (var beatmapObject in EditorTimeline.inst.SelectedBeatmapObjects.Select(x => x.GetData<BeatmapObject>()))
+                                {
+                                    beatmapObject.polygonShape.ThicknessRotation = num;
+                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.POLYGONS);
+                                }
+                            }
+                        });
+
+                        TriggerHelper.IncreaseDecreaseButtons(thicknessRotation, 15f, 3f);
+                        TriggerHelper.AddEventTriggers(thicknessRotation.inputField.gameObject, TriggerHelper.ScrollDelta(thicknessRotation.inputField, 15f, 3f));
+
                         var slices = shapeSettings.Find("10/slices").gameObject.GetComponent<InputFieldStorage>();
-                        slices.inputField.onValueChanged.NewListener(_val =>
+                        slices.OnValueChanged.NewListener(_val =>
                         {
                             if (int.TryParse(_val, out int num))
                             {
@@ -3670,7 +3710,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         TriggerHelper.AddEventTriggers(slices.inputField.gameObject, TriggerHelper.ScrollDeltaInt(slices.inputField, min: 1, max: 32));
 
                         var rotation = shapeSettings.Find("10/rotation").gameObject.GetComponent<InputFieldStorage>();
-                        rotation.inputField.onValueChanged.NewListener(_val =>
+                        rotation.OnValueChanged.NewListener(_val =>
                         {
                             if (float.TryParse(_val, out float num))
                             {
