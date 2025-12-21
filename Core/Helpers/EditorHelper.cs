@@ -834,5 +834,23 @@ namespace BetterLegacy.Core.Helpers
                     prefabable.PrefabInstanceID = newID;
             }
         }
+
+        /// <summary>
+        /// Calculates the total progress of the loaded levels.
+        /// </summary>
+        /// <returns>Returns the total progress of all loaded levels.</returns>
+        public static float TotalLevelProgress()
+        {
+            var p = 0f;
+            int count = 0;
+            foreach (var levelPanel in EditorLevelManager.inst.LevelPanels)
+            {
+                if (!levelPanel.EditorInfo)
+                    continue;
+                p += levelPanel.EditorInfo.Progress;
+                count++;
+            }
+            return p / count;
+        }
     }
 }
