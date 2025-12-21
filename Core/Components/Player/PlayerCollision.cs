@@ -29,10 +29,29 @@ namespace BetterLegacy.Core.Components.Player
                 player.triggerColliding = false;
         }
 
-        void OnCollisionEnter2D()
+        void OnCollisionEnter2D(Collision2D collision)
+        {
+            if (!player)
+                return;
+            
+            player.colliding = true;
+            player.cachedCollision = collision;
+            player.currentCollision = collision;
+        }
+
+        void OnCollisionStay2D(Collision2D collision)
+        {
+            if (!player)
+                return;
+
+            player.cachedCollision = collision;
+            player.currentCollision = collision;
+        }
+
+        void OnCollisionExit2D()
         {
             if (player)
-                player.colliding = true;
+                player.currentCollision = null;
         }
     }
 }

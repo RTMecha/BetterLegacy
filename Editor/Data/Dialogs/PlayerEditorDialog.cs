@@ -196,6 +196,14 @@ namespace BetterLegacy.Editor.Data.Dialogs
             GlobalTab.GameMode.ShowInDefault = true;
             GlobalTab.MaxHealth = SetupNumber("Global Max Health", PlayerEditor.Tab.Global, ValueType.Int, editorTab: GlobalTab);
             GlobalTab.MaxHealth.ShowInDefault = true;
+            GlobalTab.AllowJumpingToggle = SetupBool("Global Allow Jumping", PlayerEditor.Tab.Global, editorTab: GlobalTab);
+            GlobalTab.AllowJumpingToggle.ShowInDefault = true;
+            GlobalTab.AllowReversedJumpingToggle = SetupBool("Global Allow Reversed Jumping", PlayerEditor.Tab.Global, editorTab: GlobalTab);
+            GlobalTab.AllowReversedJumpingToggle.ShowInDefault = true;
+            GlobalTab.AllowWallJumpingToggle = SetupBool("Global Allow Wall Jumping", PlayerEditor.Tab.Global, editorTab: GlobalTab);
+            GlobalTab.AllowWallJumpingToggle.ShowInDefault = true;
+            GlobalTab.AllowWallStickingToggle = SetupBool("Global Allow Wall Sticking", PlayerEditor.Tab.Global, editorTab: GlobalTab);
+            GlobalTab.AllowWallStickingToggle.ShowInDefault = true;
             GlobalTab.MaxJumpCount = SetupNumber("Global Max Jump Count", PlayerEditor.Tab.Global, ValueType.Int, editorTab: GlobalTab);
             GlobalTab.MaxJumpCount.ShowInDefault = true;
             GlobalTab.MaxJumpBoostCount = SetupNumber("Global Max Jump Boost Count", PlayerEditor.Tab.Global, ValueType.Int, editorTab: GlobalTab);
@@ -1011,6 +1019,10 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public PlayerEditorDropdown GameMode { get; set; }
 
         public PlayerEditorNumber MaxHealth { get; set; }
+        public PlayerEditorToggle AllowJumpingToggle { get; set; }
+        public PlayerEditorToggle AllowReversedJumpingToggle { get; set; }
+        public PlayerEditorToggle AllowWallJumpingToggle { get; set; }
+        public PlayerEditorToggle AllowWallStickingToggle { get; set; }
         public PlayerEditorNumber MaxJumpCount { get; set; }
         public PlayerEditorNumber MaxJumpBoostCount { get; set; }
         public PlayerEditorNumber JumpGravity { get; set; }

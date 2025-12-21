@@ -174,15 +174,23 @@ namespace BetterLegacy.Core.Components.Player
         /// </summary>
         public static GameMode GameMode { get; set; }
 
+        public static bool GlobalAllowJumping { get; set; } = true;
+
+        public static bool GlobalAllowReversedJumping { get; set; } = true;
+
+        public static bool GlobalAllowWallJumping { get; set; } = true;
+
+        public static bool GlobalAllowWallSticking { get; set; } = true;
+
         /// <summary>
         /// The total gravity all players have when in platformer mode.
         /// </summary>
-        public static float JumpGravity { get; set; } = 1f;
+        public static float GlobalJumpGravity { get; set; } = 1f;
 
         /// <summary>
         /// The total amount of force all players have when they jump using platformer mode.
         /// </summary>
-        public static float JumpIntensity { get; set; } = 1f;
+        public static float GlobalJumpIntensity { get; set; } = 1f;
 
         /// <summary>
         /// If players are in platformer mode.
@@ -198,6 +206,14 @@ namespace BetterLegacy.Core.Components.Player
         /// Max amount of boosts the players have after their jumps run out.
         /// </summary>
         public static int MaxJumpBoostCount { get; set; } = 1;
+
+        public bool allowJumping = true;
+
+        public bool allowReversedJumping = true;
+
+        public bool allowWallJumping = true;
+
+        public bool allowWallSticking = true;
 
         /// <summary>
         /// Local jump gravity.
@@ -228,6 +244,16 @@ namespace BetterLegacy.Core.Components.Player
 
         int currentJumpCount = 0;
         int currentJumpBoostCount = 0;
+
+        public bool AllowJumping => allowJumping && GlobalAllowJumping;
+
+        public bool AllowReversedJumping => allowReversedJumping && GlobalAllowReversedJumping;
+
+        public bool AllowWallJumping => allowWallJumping && GlobalAllowWallJumping;
+
+        public bool AllowWallSticking => allowWallSticking && GlobalAllowWallSticking;
+
+        public float JumpGravity => jumpGravity * GlobalJumpGravity;
 
         #endregion
 
@@ -518,6 +544,7 @@ namespace BetterLegacy.Core.Components.Player
 
         #endregion
 
+        public bool castColliding;
         public bool colliding;
         public bool triggerColliding;
         public bool isColliderTrigger;
@@ -627,10 +654,14 @@ namespace BetterLegacy.Core.Components.Player
                 LockBoost = levelData.lockBoost;
                 SpeedMultiplier = levelData.speedMultiplier;
                 GameMode = (GameMode)levelData.gameMode;
-                JumpGravity = levelData.jumpGravity;
-                JumpIntensity = levelData.jumpIntensity;
+                GlobalJumpGravity = levelData.jumpGravity;
+                GlobalJumpIntensity = levelData.jumpIntensity;
                 MaxJumpCount = levelData.maxJumpCount;
                 MaxJumpBoostCount = levelData.maxJumpBoostCount;
+                GlobalAllowJumping = levelData.allowJumping;
+                GlobalAllowReversedJumping = levelData.allowReversedJumping;
+                GlobalAllowWallJumping = levelData.allowWallJumping;
+                GlobalAllowWallSticking = levelData.allowWallSticking;
                 PAPlayer.MaxHealth = levelData.maxHealth;
 
                 if (CoreHelper.InEditor && !PlayerManager.NoPlayers)
@@ -667,6 +698,9 @@ namespace BetterLegacy.Core.Components.Player
         float timeNotMovingOffset;
         Vector2 lastMovementTotal;
         RTAnimation rotateResetAnimation;
+        public Component cachedCollider;
+        public Collision2D currentCollision;
+        public Collision2D cachedCollision;
 
         #endregion
 
@@ -1448,15 +1482,7 @@ namespace BetterLegacy.Core.Components.Player
 
             UpdateTailTransform(); UpdateTailDev(); UpdateTailSizes();
 
-            // Here we handle the player's bounds to the camera. It is possible to include negative zoom in those bounds but it might not be a good idea since people have already utilized it.
-            if (!OutOfBounds && !(RTEditor.inst && RTEditor.inst.Freecam) && CoreHelper.Playing)
-            {
-                var cameraToViewportPoint = Camera.main.WorldToViewportPoint(rb.position);
-                cameraToViewportPoint.x = Mathf.Clamp(cameraToViewportPoint.x, 0f, 1f);
-                cameraToViewportPoint.y = Mathf.Clamp(cameraToViewportPoint.y, 0f, 1f);
-                if (Camera.main.orthographicSize > 0f && (!includeNegativeZoom || Camera.main.orthographicSize < 0f) && Core)
-                    rb.position = Camera.main.ViewportToWorldPoint(cameraToViewportPoint);
-            }
+            ClampToCamera();
 
             if (!Model || !Model.faceControlActive || !Core.Input)
                 return;
@@ -1472,6 +1498,30 @@ namespace BetterLegacy.Core.Components.Player
                 vector.y = -vector.y;
 
             face.gameObject.transform.localPosition = new Vector3(vector.x * 0.3f + fp.x, vector.y * 0.3f + fp.y, 0f);
+        }
+
+        void ClampToCamera()
+        {
+            // Here we handle the player's bounds to the camera. It is possible to include negative zoom in those bounds but it might not be a good idea since people have already utilized it.
+            if (!OutOfBounds && !(RTEditor.inst && RTEditor.inst.Freecam) && CoreHelper.Playing)
+            {
+                if (Camera.main.orthographicSize <= 0f && includeNegativeZoom)
+                    return;
+
+                var cameraToViewportPoint = Camera.main.WorldToViewportPoint(rb.position);
+                var clampedPos = Camera.main.ViewportToWorldPoint(new Vector3(Mathf.Clamp(cameraToViewportPoint.x, 0f, 1f), Mathf.Clamp(cameraToViewportPoint.y, 0f, 1f)));
+                //if (cameraToViewportPoint.x < 0f || cameraToViewportPoint.x > 1f || cameraToViewportPoint.y < 0f || cameraToViewportPoint.y > 1f)
+                //{
+                //    CoreHelper.Log("Player is outside the range of the camera!\n" +
+                //        $"Viewport Point: {cameraToViewportPoint}\n" +
+                //        $"Clamped Pos: {clampedPos}\n" +
+                //        $"Original Position: {rb.position}");
+                //}
+                // todo:
+                // look into a way of making the camera border support platforming
+
+                rb.position = clampedPos;
+            }
         }
 
         void UpdateSpeeds()
@@ -1646,6 +1696,18 @@ namespace BetterLegacy.Core.Components.Player
                 return;
             }
 
+            var enabled = CurrentCollider.enabled;
+            CurrentCollider.enabled = false; // disable to prevent detecting itself
+            var leftCast = Physics2D.CircleCast(rb.position, circleCollider2D.radius, new Vector2(1f, 0f), 1f);
+            var rightCast = Physics2D.CircleCast(rb.position, circleCollider2D.radius, new Vector2(-1f, 0f), 1f);
+            var upCast = Physics2D.CircleCast(rb.position, circleCollider2D.radius, new Vector2(0f, 1f), 1f);
+            var downCast = Physics2D.CircleCast(rb.position, circleCollider2D.radius, new Vector2(0f, -1f), 1f);
+            CurrentCollider.enabled = enabled;
+
+            var cast = leftCast.collider ? leftCast : rightCast.collider ? rightCast : upCast.collider ? upCast : downCast;
+            var collider = cast.collider;
+            castColliding = collider && cast.distance <= 0.1f;
+
             if (CanMove && Core.Input)
             {
                 var boostWasPressed = Core.Input.Boost.WasPressed;
@@ -1655,7 +1717,7 @@ namespace BetterLegacy.Core.Components.Player
                 if (Core.Input.Boost.WasReleased)
                     queuedBoost = false;
 
-                if ((boostWasPressed || queuedBoost) && (JumpMode || CanBoost) && !LockBoost && (!JumpMode || (jumpCount == 0 || !colliding) && (currentJumpCount == Mathf.Clamp(jumpCount, -1, MaxJumpCount) || jumpBoostCount == -1 || currentJumpBoostCount < Mathf.Clamp(jumpBoostCount, -1, MaxJumpBoostCount))))
+                if ((boostWasPressed || queuedBoost) && (JumpMode || CanBoost) && !LockBoost && (!JumpMode || (jumpCount == 0 || !colliding || !castColliding) && (currentJumpCount == Mathf.Clamp(jumpCount, -1, MaxJumpCount) || jumpBoostCount == -1 || currentJumpBoostCount < Mathf.Clamp(jumpBoostCount, -1, MaxJumpBoostCount))))
                 {
                     queuedBoost = false;
 
@@ -1683,7 +1745,7 @@ namespace BetterLegacy.Core.Components.Player
 
             if (JumpMode)
             {
-                rb.gravityScale = jumpGravity * JumpGravity;
+                rb.gravityScale = JumpGravity;
 
                 if (!Core.Input)
                     return;
@@ -1691,6 +1753,14 @@ namespace BetterLegacy.Core.Components.Player
                 var pitch = MultiplyByPitch ? CoreHelper.ForwardPitch : 1f;
                 float x = Core.Input.Move.Vector.x;
                 float y = Core.Input.Move.Vector.y;
+
+                if (!AllowWallSticking)
+                {
+                    if (x > 0f && leftCast.collider && leftCast.distance <= 0.1f)
+                        x = 0f;
+                    if (x < 0f && rightCast.collider && rightCast.distance <= 0.1f)
+                        x = 0f;
+                }
 
                 if (isBoosting)
                 {
@@ -2491,15 +2561,39 @@ namespace BetterLegacy.Core.Components.Player
             if (!JumpMode)
                 return;
 
-            var velocity = rb.velocity;
-            if ((jumpCount != 0 && colliding || jumpCount == -1 || currentJumpCount < Mathf.Clamp(jumpCount, -1, MaxJumpCount)))
+            var reversedGravity = JumpGravity < 0f;
+            var allowJumping = reversedGravity ? AllowReversedJumping : AllowJumping;
+            if (!allowJumping)
+                return;
+
+            if (cachedCollision != null) // if wall jumping is not allowed then check if the player is only on the ground
             {
-                velocity.y = jumpIntensity * JumpIntensity;
+                var onGround = false;
+                var onRoof = false;
+                for (int i = 0; i < cachedCollision.contacts.Length; i++)
+                {
+                    var contact = cachedCollision.contacts[i];
+                    if (reversedGravity ? contact.normal.y < 0f : contact.normal.y > 0f)
+                        onGround = true;
+                    if (reversedGravity ? contact.normal.y > 0f : contact.normal.y < 0f)
+                        onRoof = true;
+                }
+                if (onRoof)
+                    return;
+                if (!AllowWallJumping && !onGround)
+                    return;
+            }
+
+            
+            var velocity = rb.velocity;
+            if (jumpCount != 0 && colliding && castColliding || jumpCount == -1 || currentJumpCount < Mathf.Clamp(jumpCount, -1, MaxJumpCount))
+            {
+                velocity.y = (jumpIntensity * GlobalJumpIntensity) * (reversedGravity ? -1f : 1f);
 
                 if (PlayBoostSound)
                     SoundManager.inst.PlaySound(DefaultSounds.boost);
 
-                if (colliding)
+                if (colliding && castColliding)
                 {
                     currentJumpCount = 0;
                     currentJumpBoostCount = 0;
@@ -2812,6 +2906,7 @@ namespace BetterLegacy.Core.Components.Player
 
         internal void HandleCollision(Component other, bool stay = true)
         {
+            cachedCollider = other;
             isColliderTrigger = other.tag == Tags.PLAYER || other is Collider2D collider2D && collider2D.isTrigger || other is Collider collider && collider.isTrigger;
             triggerColliding = true;
             if (CanTakeDamage && (!stay || !isBoosting) && CollisionCheck(other))
@@ -3322,9 +3417,10 @@ namespace BetterLegacy.Core.Components.Player
                             var slices = reference.polygonShape.Slices;
                             var thicknessOffset = reference.polygonShape.ThicknessOffset;
                             var thicknessScale = reference.polygonShape.ThicknessScale;
+                            var thicknessRotation = reference.polygonShape.ThicknessRotation;
                             var angle = reference.polygonShape.Angle;
 
-                            VGShapes.RoundedRingMesh(customObj.gameObject, 0.5f, sides, roundness, thickness, slices, thicknessOffset, thicknessScale, angle);
+                            VGShapes.RoundedRingMesh(customObj.gameObject, 0.5f, sides, roundness, thickness, slices, thicknessOffset, thicknessScale, angle, thicknessRotation);
 
                             break;
                         }
@@ -3689,7 +3785,8 @@ namespace BetterLegacy.Core.Components.Player
                     playerObject.Polygon.Slices,
                     playerObject.Polygon.ThicknessOffset,
                     playerObject.Polygon.ThicknessScale,
-                    playerObject.Polygon.Angle);
+                    playerObject.Polygon.Angle,
+                    playerObject.Polygon.ThicknessRotation);
             }
             else
                 rtPlayerObject.meshFilter.mesh = GetShape(playerObject.Shape, playerObject.ShapeOption).mesh;

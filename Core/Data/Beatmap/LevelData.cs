@@ -116,6 +116,14 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public bool spawnPlayers = true;
 
+        public bool allowJumping = true;
+
+        public bool allowReversedJumping = true;
+
+        public bool allowWallJumping = true;
+
+        public bool allowWallSticking = true;
+
         #endregion
 
         #region Limit
@@ -217,8 +225,12 @@ namespace BetterLegacy.Core.Data.Beatmap
             allowCustomPlayerModels = orig.allowCustomPlayerModels;
             allowPlayerModelControls = orig.allowPlayerModelControls;
             spawnPlayers = orig.spawnPlayers;
-            limitPlayer = orig.limitPlayer;
+            allowJumping = orig.allowJumping;
+            allowReversedJumping = orig.allowReversedJumping;
+            allowWallJumping = orig.allowWallJumping;
+            allowWallSticking = orig.allowWallSticking;
 
+            limitPlayer = orig.limitPlayer;
             limitMoveSpeed = orig.limitMoveSpeed;
             limitBoostSpeed = orig.limitBoostSpeed;
             limitBoostCooldown = orig.limitBoostCooldown;
@@ -292,6 +304,18 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             if (jn["spawn_players"] != null)
                 spawnPlayers = jn["spawn_players"].AsBool;
+
+            if (jn["allow_jumping"] != null)
+                allowJumping = jn["allow_jumping"].AsBool;
+            
+            if (jn["allow_rev_jumping"] != null)
+                allowReversedJumping = jn["allow_rev_jumping"].AsBool;
+            
+            if (jn["allow_wall_jumping"] != null)
+                allowWallJumping = jn["allow_wall_jumping"].AsBool;
+            
+            if (jn["allow_wall_sticking"] != null)
+                allowWallSticking = jn["allow_wall_sticking"].AsBool;
 
             if (jn["limit_player"] != null)
                 limitPlayer = jn["limit_player"].AsBool;
@@ -377,6 +401,18 @@ namespace BetterLegacy.Core.Data.Beatmap
             
             if (!spawnPlayers)
                 jn["spawn_players"] = spawnPlayers;
+
+            if (!allowJumping)
+                jn["allow_jumping"] = allowJumping;
+
+            if (!allowReversedJumping)
+                jn["allow_rev_jumping"] = allowReversedJumping;
+            
+            if (!allowWallJumping)
+                jn["allow_wall_jumping"] = allowWallJumping;
+            
+            if (!allowWallSticking)
+                jn["allow_wall_sticking"] = allowWallSticking;
 
             jn["limit_player"] = limitPlayer;
 
