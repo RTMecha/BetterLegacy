@@ -1971,6 +1971,72 @@
 
       {
         "type": 1,
+        "name": "playerEnableJump",
+        "values": [ "False" ],
+        "const": "True",
+        "compat": "level_control"
+      }, // playerEnableJump
+      {
+        "type": 1,
+        "name": "playerEnableJumpIndex",
+        "values": [ "0", "False" ],
+        "const": "True",
+        "compat": "level_control"
+      }, // playerEnableJumpIndex
+      {
+        "type": 1,
+        "name": "playerEnableJumpAll",
+        "values": [ "False" ],
+        "const": "True",
+        "compat": "level_control"
+      }, // playerEnableJumpAll
+
+      {
+        "type": 1,
+        "name": "playerEnableReversedJump",
+        "values": [ "False" ],
+        "const": "True",
+        "compat": "level_control"
+      }, // playerEnableReversedJump
+      {
+        "type": 1,
+        "name": "playerEnableReversedJumpIndex",
+        "values": [ "0", "False" ],
+        "const": "True",
+        "compat": "level_control"
+      }, // playerEnableReversedJumpIndex
+      {
+        "type": 1,
+        "name": "playerEnableReversedJumpAll",
+        "values": [ "False" ],
+        "const": "True",
+        "compat": "level_control"
+      }, // playerEnableReversedJumpAll
+
+      {
+        "type": 1,
+        "name": "playerEnableWallJump",
+        "values": [ "False" ],
+        "const": "True",
+        "compat": "level_control"
+      }, // playerEnableWallJump
+      {
+        "type": 1,
+        "name": "playerEnableWallJumpIndex",
+        "values": [ "0", "False" ],
+        "const": "True",
+        "compat": "level_control"
+      }, // playerEnableWallJumpIndex
+      {
+        "type": 1,
+        "name": "playerEnableWallJumpAll",
+        "values": [ "False" ],
+        "const": "True",
+        "compat": "level_control"
+      }, // playerEnableWallJumpAll
+
+      {
+        "type": 1,
         "commands": [ "setGameMode" ],
         "value": "0",
         "const": "True",
@@ -2637,14 +2703,14 @@
       }, // setShape
       {
         "type": 1,
-        "commands": [ "setPolygonShape", "3", "0", "1", "3", "0", "0", "1", "1", "0" ],
+        "commands": [ "setPolygonShape", "3", "0", "1", "3", "0", "0", "1", "1", "0", "0" ],
         "value": "0.5",
         "const": "True",
         "compat": "obj"
       }, // setPolygonShape
       {
         "type": 1,
-        "commands": [ "setPolygonShapeOther", "0.5", "3", "0", "1", "3", "0", "0", "1", "1", "0" ],
+        "commands": [ "setPolygonShapeOther", "0.5", "3", "0", "1", "3", "0", "0", "1", "1", "0", "0" ],
         "value": "Object Group",
         "const": "True",
         "compat": "obj"

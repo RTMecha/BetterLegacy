@@ -3637,6 +3637,96 @@
             ]
           }, // playerEnableDamageAll
           {
+            "name": "Object Modifier - playerEnableJump (Action)",
+            "tooltips": [
+              {
+                "desc": "playerEnableJump (Action)",
+                "hint": "Allows the player closest to the object to jump.",
+                "lang": 0
+              }
+            ]
+          }, // playerEnableJump
+          {
+            "name": "Object Modifier - playerEnableJumpIndex (Action)",
+            "tooltips": [
+              {
+                "desc": "playerEnableJumpIndex (Action)",
+                "hint": "Allows the player at an index to jump.",
+                "lang": 0
+              }
+            ]
+          }, // playerEnableJumpIndex
+          {
+            "name": "Object Modifier - playerEnableJumpAll (Action)",
+            "tooltips": [
+              {
+                "desc": "playerEnableJumpAll (Action)",
+                "hint": "Allows all players to jump.",
+                "lang": 0
+              }
+            ]
+          }, // playerEnableJumpAll
+          {
+            "name": "Object Modifier - playerEnableReversedJump (Action)",
+            "tooltips": [
+              {
+                "desc": "playerEnableReversedJump (Action)",
+                "hint": "Allows the player closest to the object to jump while upside down.",
+                "lang": 0
+              }
+            ]
+          }, // playerEnableReversedJump
+          {
+            "name": "Object Modifier - playerEnableReversedJumpIndex (Action)",
+            "tooltips": [
+              {
+                "desc": "playerEnableReversedJumpIndex (Action)",
+                "hint": "Allows the player at an index to jump while upside down.",
+                "lang": 0
+              }
+            ]
+          }, // playerEnableReversedJumpIndex
+          {
+            "name": "Object Modifier - playerEnableReversedJumpAll (Action)",
+            "tooltips": [
+              {
+                "desc": "playerEnableReversedJumpAll (Action)",
+                "hint": "Allows all players to jump while upside down.",
+                "lang": 0
+              }
+            ]
+          }, // playerEnableReversedJumpAll
+          {
+            "name": "Object Modifier - playerEnableWallJump (Action)",
+            "tooltips": [
+              {
+                "desc": "playerEnableWallJump (Action)",
+                "hint": "Allows the player closest to the object to jump on walls.",
+                "lang": 0
+              }
+            ]
+          }, // playerEnableWallJump
+          {
+            "name": "Object Modifier - playerEnableWallJumpIndex (Action)",
+            "tooltips": [
+              {
+                "desc": "playerEnableWallJumpIndex (Action)",
+                "hint": "Allows the player at an index to jump on walls.",
+                "lang": 0
+              }
+            ]
+          }, // playerEnableWallJumpIndex
+          {
+            "name": "Object Modifier - playerEnableWallJumpAll (Action)",
+            "tooltips": [
+              {
+                "desc": "playerEnableWallJumpAll (Action)",
+                "hint": "Allows all players to jump on walls.",
+                "lang": 0
+              }
+            ]
+          }, // playerEnableWallJumpAll
+          {
             "name": "Object Modifier - setGameMode (Action)",
             "tooltips": [
               {

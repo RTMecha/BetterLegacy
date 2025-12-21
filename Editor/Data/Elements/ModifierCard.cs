@@ -1464,6 +1464,57 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
+                    
+                case nameof(ModifierFunctions.playerEnableJump): {
+                        BoolGenerator(modifier, reference, "Enabled", 0, true);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.playerEnableJumpIndex): {
+                        IntegerGenerator(modifier, reference, "Player Index", 0, 0);
+                        BoolGenerator(modifier, reference, "Enabled", 1, true);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.playerEnableJumpAll): {
+                        BoolGenerator(modifier, reference, "Enabled", 0, true);
+
+                        break;
+                    }
+                    
+                case nameof(ModifierFunctions.playerEnableReversedJump): {
+                        BoolGenerator(modifier, reference, "Enabled", 0, true);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.playerEnableReversedJumpIndex): {
+                        IntegerGenerator(modifier, reference, "Player Index", 0, 0);
+                        BoolGenerator(modifier, reference, "Enabled", 1, true);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.playerEnableReversedJumpAll): {
+                        BoolGenerator(modifier, reference, "Enabled", 0, true);
+
+                        break;
+                    }
+                    
+                case nameof(ModifierFunctions.playerEnableWallJump): {
+                        BoolGenerator(modifier, reference, "Enabled", 0, true);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.playerEnableWallJumpIndex): {
+                        IntegerGenerator(modifier, reference, "Player Index", 0, 0);
+                        BoolGenerator(modifier, reference, "Enabled", 1, true);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.playerEnableWallJumpAll): {
+                        BoolGenerator(modifier, reference, "Enabled", 0, true);
+
+                        break;
+                    }
 
                 case nameof(ModifierFunctions.setPlayerModel): {
                         IntegerGenerator(modifier, reference, "Player Index", 1, 0, max: 3);
@@ -2821,6 +2872,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         SingleGenerator(modifier, reference, "Thick Offset Y", 6);
                         SingleGenerator(modifier, reference, "Thick Scale X", 7);
                         SingleGenerator(modifier, reference, "Thick Scale Y", 8);
+                        SingleGenerator(modifier, reference, "Thick Angle", 10);
                         IntegerGenerator(modifier, reference, "Slices", 4, max: 32);
                         SingleGenerator(modifier, reference, "Angle", 9);
 
@@ -2839,6 +2891,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         SingleGenerator(modifier, reference, "Thick Offset Y", 7);
                         SingleGenerator(modifier, reference, "Thick Scale X", 8);
                         SingleGenerator(modifier, reference, "Thick Scale Y", 9);
+                        SingleGenerator(modifier, reference, "Thick Angle", 11);
                         IntegerGenerator(modifier, reference, "Slices", 5, max: 32);
                         SingleGenerator(modifier, reference, "Angle", 10);
 

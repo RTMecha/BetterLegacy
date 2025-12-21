@@ -953,6 +953,15 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction(nameof(ModifierFunctions.playerEnableDamage),  ModifierFunctions.playerEnableDamage, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierFunctions.playerEnableDamageIndex),  ModifierFunctions.playerEnableDamageIndex, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierFunctions.playerEnableDamageAll),  ModifierFunctions.playerEnableDamageAll, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.playerEnableJump),  ModifierFunctions.playerEnableJump, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.playerEnableJumpIndex),  ModifierFunctions.playerEnableJumpIndex, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.playerEnableJumpAll),  ModifierFunctions.playerEnableJumpAll, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.playerEnableReversedJump),  ModifierFunctions.playerEnableReversedJump, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.playerEnableReversedJumpIndex),  ModifierFunctions.playerEnableReversedJumpIndex, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.playerEnableReversedJumpAll),  ModifierFunctions.playerEnableReversedJumpAll, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.playerEnableWallJump),  ModifierFunctions.playerEnableWallJump, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.playerEnableWallJumpIndex),  ModifierFunctions.playerEnableWallJumpIndex, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.playerEnableWallJumpAll),  ModifierFunctions.playerEnableWallJumpAll, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierFunctions.setPlayerModel),  ModifierFunctions.setPlayerModel, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierFunctions.setGameMode),  ModifierFunctions.setGameMode, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierFunctions.gameMode),  ModifierFunctions.setGameMode, ModifierCompatibility.LevelControlCompatible),
@@ -2535,8 +2544,18 @@ namespace BetterLegacy.Core.Helpers
                         break;
                     }
                 case nameof(ModifierFunctions.actorFrameTexture): {
-                        if (modifier.TryGetResult(out MaskCache cache))
+                        if (modifier.TryGetResult(out ActorFrameTextureCache cache))
+                        {
                             CoreHelper.Destroy(cache.renderTexture);
+                            if (cache.obj && cache.obj.runtimeObject && cache.obj.runtimeObject.visualObject is SolidObject solidObject && solidObject.material)
+                                solidObject.UpdateRendering(
+                                    gradientType: solidObject.gradientType,
+                                    renderType: solidObject.renderType,
+                                    doubleSided: solidObject.doubleSided,
+                                    gradientScale: solidObject.gradientScale,
+                                    gradientRotation: solidObject.gradientRotation,
+                                    colorBlendMode: solidObject.colorBlendMode);
+                        }
                         break;
                     }
                 case nameof(ModifierFunctions.translateShape): {
@@ -6666,6 +6685,117 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
+        public static void playerEnableJump(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
+                return;
+
+            var enabled = modifier.GetBool(0, true, modifierLoop.variables);
+
+            // queue post tick so the position of the object is accurate.
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var pos = beatmapObject.GetFullPosition();
+                var player = PlayerManager.GetClosestPlayer(pos);
+
+                if (player && player.RuntimePlayer)
+                    player.RuntimePlayer.allowJumping = enabled;
+            });
+        }
+
+        public static void playerEnableJumpIndex(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            var enabled = modifier.GetBool(1, true, modifierLoop.variables);
+
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, modifierLoop.variables), out PAPlayer player) && player.RuntimePlayer)
+                player.RuntimePlayer.allowJumping = enabled;
+        }
+
+        public static void playerEnableJumpAll(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            var enabled = modifier.GetBool(0, true, modifierLoop.variables);
+
+            foreach (var player in PlayerManager.Players)
+            {
+                if (player.RuntimePlayer)
+                    player.RuntimePlayer.allowJumping = enabled;
+            }
+        }
+        
+        public static void playerEnableReversedJump(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
+                return;
+
+            var enabled = modifier.GetBool(0, true, modifierLoop.variables);
+
+            // queue post tick so the position of the object is accurate.
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var pos = beatmapObject.GetFullPosition();
+                var player = PlayerManager.GetClosestPlayer(pos);
+
+                if (player && player.RuntimePlayer)
+                    player.RuntimePlayer.allowReversedJumping = enabled;
+            });
+        }
+
+        public static void playerEnableReversedJumpIndex(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            var enabled = modifier.GetBool(1, true, modifierLoop.variables);
+
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, modifierLoop.variables), out PAPlayer player) && player.RuntimePlayer)
+                player.RuntimePlayer.allowReversedJumping = enabled;
+        }
+
+        public static void playerEnableReversedJumpAll(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            var enabled = modifier.GetBool(0, true, modifierLoop.variables);
+
+            foreach (var player in PlayerManager.Players)
+            {
+                if (player.RuntimePlayer)
+                    player.RuntimePlayer.allowReversedJumping = enabled;
+            }
+        }
+
+        public static void playerEnableWallJump(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
+                return;
+
+            var enabled = modifier.GetBool(0, true, modifierLoop.variables);
+
+            // queue post tick so the position of the object is accurate.
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var pos = beatmapObject.GetFullPosition();
+                var player = PlayerManager.GetClosestPlayer(pos);
+
+                if (player && player.RuntimePlayer)
+                    player.RuntimePlayer.allowWallJumping = enabled;
+            });
+        }
+
+        public static void playerEnableWallJumpIndex(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            var enabled = modifier.GetBool(1, true, modifierLoop.variables);
+
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, modifierLoop.variables), out PAPlayer player) && player.RuntimePlayer)
+                player.RuntimePlayer.allowWallJumping = enabled;
+        }
+
+        public static void playerEnableWallJumpAll(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            var enabled = modifier.GetBool(0, true, modifierLoop.variables);
+
+            foreach (var player in PlayerManager.Players)
+            {
+                if (player.RuntimePlayer)
+                    player.RuntimePlayer.allowWallJumping = enabled;
+            }
+        }
+
         public static void setPlayerModel(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (modifier.constant)
@@ -8201,6 +8331,7 @@ namespace BetterLegacy.Core.Helpers
             var slices = RTMath.Clamp(modifier.GetInt(4, 3, modifierLoop.variables), 0, sides);
             var thicknessOffset = new Vector2(modifier.GetFloat(5, 0f, modifierLoop.variables), modifier.GetFloat(6, 0f, modifierLoop.variables));
             var thicknessScale = new Vector2(modifier.GetFloat(7, 1f, modifierLoop.variables), modifier.GetFloat(8, 1f, modifierLoop.variables));
+            var thicknessRotation = modifier.GetFloat(10, 0f, modifierLoop.variables);
             var rotation = modifier.GetFloat(9, 0f, modifierLoop.variables);
 
             var meshParams = new VGShapes.MeshParams
@@ -8212,13 +8343,14 @@ namespace BetterLegacy.Core.Helpers
                 SliceCount = slices,
                 thicknessOffset = thicknessOffset,
                 thicknessScale = thicknessScale,
+                thicknessRotation = thicknessRotation,
                 rotation = rotation,
             };
 
             if (modifier.TryGetResult(out VGShapes.MeshParams cache) && meshParams.Equals(cache))
                 return;
 
-            polygonObject.UpdatePolygon(radius, sides, roundness, thickness, slices, thicknessOffset, thicknessScale, rotation);
+            polygonObject.UpdatePolygon(radius, sides, roundness, thickness, slices, thicknessOffset, thicknessScale, rotation, thicknessRotation);
             modifier.Result = meshParams;
         }
 
@@ -8234,6 +8366,7 @@ namespace BetterLegacy.Core.Helpers
             var slices = RTMath.Clamp(modifier.GetInt(5, 3, modifierLoop.variables), 0, sides);
             var thicknessOffset = new Vector2(modifier.GetFloat(6, 0f, modifierLoop.variables), modifier.GetFloat(7, 0f, modifierLoop.variables));
             var thicknessScale = new Vector2(modifier.GetFloat(8, 1f, modifierLoop.variables), modifier.GetFloat(9, 1f, modifierLoop.variables));
+            var thicknessRotation = modifier.GetFloat(11, 0f, modifierLoop.variables);
             var rotation = modifier.GetFloat(10, 0f, modifierLoop.variables);
 
             var meshParams = new VGShapes.MeshParams
@@ -8244,6 +8377,7 @@ namespace BetterLegacy.Core.Helpers
                 SliceCount = slices,
                 thicknessOffset = thicknessOffset,
                 thicknessScale = thicknessScale,
+                thicknessRotation = thicknessRotation,
                 rotation = rotation,
             };
 
@@ -8256,7 +8390,7 @@ namespace BetterLegacy.Core.Helpers
             {
                 var beatmapObject = list[i];
                 if (beatmapObject.runtimeObject && beatmapObject.runtimeObject.visualObject is PolygonObject polygonObject)
-                    polygonObject.UpdatePolygon(radius, sides, roundness, thickness, slices, thicknessOffset, thicknessScale, rotation);
+                    polygonObject.UpdatePolygon(radius, sides, roundness, thickness, slices, thicknessOffset, thicknessScale, rotation, thicknessRotation);
             }
 
             modifier.Result = meshParams;
@@ -8295,7 +8429,7 @@ namespace BetterLegacy.Core.Helpers
             // Get render texture
             var result = modifier.GetResultOrDefault(() =>
             {
-                var cache = new MaskCache()
+                var cache = new ActorFrameTextureCache()
                 {
                     width = width,
                     height = height,
@@ -8305,16 +8439,18 @@ namespace BetterLegacy.Core.Helpers
                         wrapMode = TextureWrapMode.Clamp,
                         useDynamicScale = true,
                     },
+                    obj = beatmapObject,
+                    isEditing = CoreHelper.IsEditing,
                 };
                 renderer.material.SetTexture("_MainTex", cache.renderTexture);
                 DestroyModifierResult.Init(solidObject.gameObject, modifier);
                 return cache;
             });
-            if (result.width != width || result.height != height)
+            if (result.width != width || result.height != height || result.isEditing != CoreHelper.IsEditing)
             {
                 CoreHelper.Destroy(result.renderTexture);
 
-                result = new MaskCache()
+                result = new ActorFrameTextureCache()
                 {
                     width = width,
                     height = height,
@@ -8324,6 +8460,8 @@ namespace BetterLegacy.Core.Helpers
                         wrapMode = TextureWrapMode.Clamp,
                         useDynamicScale = true,
                     },
+                    obj = beatmapObject,
+                    isEditing = CoreHelper.IsEditing,
                 };
                 renderer.material.SetTexture("_MainTex", result.renderTexture);
                 modifier.Result = result;
@@ -14608,11 +14746,13 @@ namespace BetterLegacy.Core.Helpers
         }
     }
 
-    public class MaskCache
+    public class ActorFrameTextureCache
     {
         public int width;
         public int height;
         public RenderTexture renderTexture;
+        public BeatmapObject obj;
+        public bool isEditing;
     }
 
     public class RenderingCache
