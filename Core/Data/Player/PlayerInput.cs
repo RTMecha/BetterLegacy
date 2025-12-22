@@ -17,21 +17,21 @@ namespace BetterLegacy.Core.Data.Player
         public PlayerInput(float upStateThreshold, float downStateThreshold, float leftStateThreshold, float rightStateThreshold,
             float lookUpStateThreshold, float lookDownStateThreshold, float lookLeftStateThreshold, float lookRightStateThreshold)
         {
-            Up = CreatePlayerAction("Move Up");
-            Down = CreatePlayerAction("Move Down");
-            Left = CreatePlayerAction("Move Left");
-            Right = CreatePlayerAction("Move Right");
-            Boost = CreatePlayerAction("Boost");
-            Join = CreatePlayerAction("Join");
-            Pause = CreatePlayerAction("Pause");
-            Escape = CreatePlayerAction("Escape");
-            LookUp = CreatePlayerAction("Look Up");
-            LookDown = CreatePlayerAction("Look Down");
-            LookLeft = CreatePlayerAction("Look Left");
-            LookRight = CreatePlayerAction("Look Right");
-            Shoot = CreatePlayerAction("Shoot");
-            Sneak = CreatePlayerAction("Sneak");
-            Sprint = CreatePlayerAction("Sprint");
+            Up = CreatePlayerAction(Names.MOVE_UP);
+            Down = CreatePlayerAction(Names.MOVE_DOWN);
+            Left = CreatePlayerAction(Names.MOVE_LEFT);
+            Right = CreatePlayerAction(Names.MOVE_RIGHT);
+            Boost = CreatePlayerAction(Names.BOOST);
+            Join = CreatePlayerAction(Names.JOIN);
+            Pause = CreatePlayerAction(Names.PAUSE);
+            Escape = CreatePlayerAction(Names.ESCAPE);
+            LookUp = CreatePlayerAction(Names.LOOK_UP);
+            LookDown = CreatePlayerAction(Names.LOOK_DOWN);
+            LookLeft = CreatePlayerAction(Names.LOOK_LEFT);
+            LookRight = CreatePlayerAction(Names.LOOK_RIGHT);
+            Shoot = CreatePlayerAction(Names.SHOOT);
+            Sneak = CreatePlayerAction(Names.SNEAK);
+            Sprint = CreatePlayerAction(Names.SPRINT);
 
             Move = CreateTwoAxisPlayerAction(Left, Right, Down, Up);
             Up.StateThreshold = upStateThreshold;
@@ -476,10 +476,56 @@ namespace BetterLegacy.Core.Data.Player
         /// </summary>
         /// <param name="name">Name of the action to get.</param>
         /// <returns>Returns a found player action.</returns>
-        public PlayerAction GetPlayerAction(string name) => Actions.First(x => x.Name == name);
+        public PlayerAction GetPlayerAction(string name) => Actions.FirstOrDefault(x => x.Name == name);
+
+        /// <summary>
+        /// Tries to get a player action.
+        /// </summary>
+        /// <param name="name">Name of the action to get.</param>
+        /// <param name="playerAction">Player action result.</param>
+        /// <returns>Returns true if a player action was found, otherwise returns false.</returns>
+        public bool TryGetPlayerAction(string name, out PlayerAction playerAction) => Actions.TryFind(x => x.Name == name, out playerAction);
 
         #endregion
 
         public static implicit operator bool(PlayerInput input) => input != null;
+
+        public static class Names
+        {
+            public static string[] AllNames { get; } = new string[]
+            {
+                MOVE_UP,
+                MOVE_DOWN,
+                MOVE_LEFT,
+                MOVE_RIGHT,
+                BOOST,
+                JOIN,
+                PAUSE,
+                ESCAPE,
+                LOOK_UP,
+                LOOK_DOWN,
+                LOOK_LEFT,
+                LOOK_RIGHT,
+                SHOOT,
+                SNEAK,
+                SPRINT,
+            };
+
+            public const string MOVE_UP = "Move Up";
+            public const string MOVE_DOWN = "Move Down";
+            public const string MOVE_LEFT = "Move Left";
+            public const string MOVE_RIGHT = "Move Right";
+            public const string BOOST = "Boost";
+            public const string JOIN = "Join";
+            public const string PAUSE = "Pause";
+            public const string ESCAPE = "Escape";
+            public const string LOOK_UP = "Look Up";
+            public const string LOOK_DOWN = "Look Down";
+            public const string LOOK_LEFT = "Look Left";
+            public const string LOOK_RIGHT = "Look Right";
+            public const string SHOOT = "Shoot";
+            public const string SNEAK = "Sneak";
+            public const string SPRINT = "Sprint";
+        }
     }
 }
