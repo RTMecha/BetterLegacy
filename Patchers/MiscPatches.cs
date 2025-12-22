@@ -293,6 +293,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool OnPointerEnterPrefix(HoverTooltip __instance)
         {
+            Core.Components.Player.PlayerSelector.focused = false;
             var index = (int)CoreConfig.Instance.Language.Value;
 
             var tooltip = __instance.tooltipLangauges.Find(x => (int)x.language == index);

@@ -147,6 +147,7 @@ namespace BetterLegacy.Editor.Components
         void OnMouseEnter()
         {
             hovered = true;
+            Core.Components.Player.PlayerSelector.focused = false;
 
             if (!CoreHelper.IsEditing)
                 return;
