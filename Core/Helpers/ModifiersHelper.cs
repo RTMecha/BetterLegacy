@@ -448,7 +448,14 @@ namespace BetterLegacy.Core.Helpers
             new ModifierTrigger(nameof(ModifierFunctions.playerHealthGreater), ModifierFunctions.playerHealthGreater),
             new ModifierTrigger(nameof(ModifierFunctions.playerMoving), ModifierFunctions.playerMoving),
             new ModifierTrigger(nameof(ModifierFunctions.playerBoosting), ModifierFunctions.playerBoosting, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierTrigger(nameof(ModifierFunctions.playerBoostingIndex), ModifierFunctions.playerBoostingIndex, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierTrigger(nameof(ModifierFunctions.playerJumping), ModifierFunctions.playerJumping, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierTrigger(nameof(ModifierFunctions.playerJumpingIndex), ModifierFunctions.playerJumpingIndex, ModifierCompatibility.BeatmapObjectCompatible),
             new ModifierTrigger(nameof(ModifierFunctions.playerAlive), ModifierFunctions.playerAlive),
+            new ModifierTrigger(nameof(ModifierFunctions.playerAliveIndex), ModifierFunctions.playerAliveIndex),
+            new ModifierTrigger(nameof(ModifierFunctions.playerAliveAll), ModifierFunctions.playerAliveAll),
+            new ModifierTrigger(nameof(ModifierFunctions.playerInput), ModifierFunctions.playerInput),
+            new ModifierTrigger(nameof(ModifierFunctions.playerInputIndex), ModifierFunctions.playerInputIndex),
             new ModifierTrigger(nameof(ModifierFunctions.playerDeathsEquals), ModifierFunctions.playerDeathsEquals),
             new ModifierTrigger(nameof(ModifierFunctions.playerDeathsLesserEquals), ModifierFunctions.playerDeathsLesserEquals),
             new ModifierTrigger(nameof(ModifierFunctions.playerDeathsGreaterEquals), ModifierFunctions.playerDeathsGreaterEquals),
@@ -463,6 +470,8 @@ namespace BetterLegacy.Core.Helpers
             new ModifierTrigger(nameof(ModifierFunctions.playerCountGreater), ModifierFunctions.playerCountGreater),
             new ModifierTrigger(nameof(ModifierFunctions.onPlayerHit), ModifierFunctions.onPlayerHit),
             new ModifierTrigger(nameof(ModifierFunctions.onPlayerDeath), ModifierFunctions.onPlayerDeath),
+            new ModifierTrigger(nameof(ModifierFunctions.onPlayerBoosted), ModifierFunctions.onPlayerBoosted),
+            new ModifierTrigger(nameof(ModifierFunctions.onPlayerJumped), ModifierFunctions.onPlayerJumped),
             new ModifierTrigger(nameof(ModifierFunctions.playerBoostEquals), ModifierFunctions.playerBoostEquals),
             new ModifierTrigger(nameof(ModifierFunctions.playerBoostLesserEquals), ModifierFunctions.playerBoostLesserEquals),
             new ModifierTrigger(nameof(ModifierFunctions.playerBoostGreaterEquals), ModifierFunctions.playerBoostGreaterEquals),
@@ -739,6 +748,7 @@ namespace BetterLegacy.Core.Helpers
             new ModifierTrigger(nameof(ModifierFunctions.healthLesser), ModifierFunctions.healthLesser, ModifierCompatibility.PAPlayerCompatible),
             new ModifierTrigger(nameof(ModifierFunctions.isDead), ModifierFunctions.isDead, ModifierCompatibility.PAPlayerCompatible),
             new ModifierTrigger(nameof(ModifierFunctions.isBoosting), ModifierFunctions.isBoosting, ModifierCompatibility.PAPlayerCompatible),
+            new ModifierTrigger(nameof(ModifierFunctions.isJumping), ModifierFunctions.isJumping, ModifierCompatibility.PAPlayerCompatible),
             new ModifierTrigger(nameof(ModifierFunctions.isColliding), ModifierFunctions.isColliding, ModifierCompatibility.PAPlayerCompatible),
             new ModifierTrigger(nameof(ModifierFunctions.isSolidColliding), ModifierFunctions.isSolidColliding, ModifierCompatibility.PAPlayerCompatible),
 
@@ -962,6 +972,12 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction(nameof(ModifierFunctions.playerEnableWallJump),  ModifierFunctions.playerEnableWallJump, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierFunctions.playerEnableWallJumpIndex),  ModifierFunctions.playerEnableWallJumpIndex, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierFunctions.playerEnableWallJumpAll),  ModifierFunctions.playerEnableWallJumpAll, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.setPlayerJumpGravity),  ModifierFunctions.setPlayerJumpGravity, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.setPlayerJumpGravityIndex),  ModifierFunctions.setPlayerJumpGravityIndex, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.setPlayerJumpGravityAll),  ModifierFunctions.setPlayerJumpGravityAll, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.setPlayerJumpIntensity),  ModifierFunctions.setPlayerJumpIntensity, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.setPlayerJumpIntensityIndex),  ModifierFunctions.setPlayerJumpIntensityIndex, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.setPlayerJumpIntensityAll),  ModifierFunctions.setPlayerJumpIntensityAll, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierFunctions.setPlayerModel),  ModifierFunctions.setPlayerModel, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierFunctions.setGameMode),  ModifierFunctions.setGameMode, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierFunctions.gameMode),  ModifierFunctions.setGameMode, ModifierCompatibility.LevelControlCompatible),
@@ -6793,6 +6809,80 @@ namespace BetterLegacy.Core.Helpers
             {
                 if (player.RuntimePlayer)
                     player.RuntimePlayer.allowWallJumping = enabled;
+            }
+        }
+
+        public static void setPlayerJumpGravity(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
+                return;
+
+            var gravity = modifier.GetFloat(0, 1f, modifierLoop.variables);
+
+            // queue post tick so the position of the object is accurate.
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var pos = beatmapObject.GetFullPosition();
+                var player = PlayerManager.GetClosestPlayer(pos);
+
+                if (player && player.RuntimePlayer)
+                    player.RuntimePlayer.modifiedJumpGravity = gravity;
+            });
+        }
+
+        public static void setPlayerJumpGravityIndex(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            var gravity = modifier.GetFloat(1, 1f, modifierLoop.variables);
+
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, modifierLoop.variables), out PAPlayer player) && player.RuntimePlayer)
+                player.RuntimePlayer.modifiedJumpGravity = gravity;
+        }
+
+        public static void setPlayerJumpGravityAll(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            var gravity = modifier.GetFloat(0, 1f, modifierLoop.variables);
+
+            foreach (var player in PlayerManager.Players)
+            {
+                if (player.RuntimePlayer)
+                    player.RuntimePlayer.modifiedJumpGravity = gravity;
+            }
+        }
+        
+        public static void setPlayerJumpIntensity(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
+                return;
+
+            var intensity = modifier.GetFloat(0, 1f, modifierLoop.variables);
+
+            // queue post tick so the position of the object is accurate.
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var pos = beatmapObject.GetFullPosition();
+                var player = PlayerManager.GetClosestPlayer(pos);
+
+                if (player && player.RuntimePlayer)
+                    player.RuntimePlayer.modifiedJumpIntensity = intensity;
+            });
+        }
+
+        public static void setPlayerJumpIntensityIndex(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            var intensity = modifier.GetFloat(1, 1f, modifierLoop.variables);
+
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, modifierLoop.variables), out PAPlayer player) && player.RuntimePlayer)
+                player.RuntimePlayer.modifiedJumpIntensity = intensity;
+        }
+
+        public static void setPlayerJumpIntensityAll(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            var intensity = modifier.GetFloat(0, 1f, modifierLoop.variables);
+
+            foreach (var player in PlayerManager.Players)
+            {
+                if (player.RuntimePlayer)
+                    player.RuntimePlayer.modifiedJumpIntensity = intensity;
             }
         }
 
@@ -12757,6 +12847,7 @@ namespace BetterLegacy.Core.Helpers
             if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return false;
 
+            var optimized = false; // maybe add this as a value?
             var runtimeObject = beatmapObject.runtimeObject;
             if (runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.collider)
             {
@@ -12766,10 +12857,14 @@ namespace BetterLegacy.Core.Helpers
                 for (int i = 0; i < players.Count; i++)
                 {
                     var player = players[i];
-                    if (!player.RuntimePlayer || !player.RuntimePlayer.CurrentCollider)
+                    if (!player.RuntimePlayer)
                         continue;
 
-                    if (player.RuntimePlayer.CurrentCollider.IsTouching(collider))
+                    var colliderCheck = optimized ? player.RuntimePlayer.collisionState.Collider : player.RuntimePlayer.CurrentCollider;
+                    if (!colliderCheck)
+                        continue;
+
+                    if (optimized ? collider == colliderCheck : colliderCheck.IsTouching(collider))
                         return true;
                 }
             }
@@ -12781,13 +12876,20 @@ namespace BetterLegacy.Core.Helpers
             if (modifierLoop.reference is not BeatmapObject beatmapObject)
                 return false;
 
+            var optimized = false; // maybe add this as a value?
             var runtimeObject = beatmapObject.runtimeObject;
             if (runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.collider)
             {
                 var collider = runtimeObject.visualObject.collider;
 
-                if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, modifierLoop.variables), out PAPlayer player) && player.RuntimePlayer && player.RuntimePlayer.CurrentCollider)
-                    return player.RuntimePlayer.CurrentCollider.IsTouching(collider);
+                if (!PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, modifierLoop.variables), out PAPlayer player) || !player.RuntimePlayer)
+                    return false;
+
+                var colliderCheck = optimized ? player.RuntimePlayer.collisionState.Collider : player.RuntimePlayer.CurrentCollider;
+                if (!colliderCheck)
+                    return false;
+
+                return optimized ? collider == colliderCheck : colliderCheck.IsTouching(collider);
             }
             return false;
         }
@@ -12799,6 +12901,7 @@ namespace BetterLegacy.Core.Helpers
                 return false;
 
             var tag = modifier.GetValue(0, modifierLoop.variables);
+            var optimized = false; // maybe add this as a value?
 
             var cache = modifier.GetResultOrDefault(() => new GenericGroupCache<BeatmapObject>(tag, GameData.Current.FindObjectsWithTag(modifier, prefabable, tag)));
             if (cache.tag != tag)
@@ -12816,10 +12919,14 @@ namespace BetterLegacy.Core.Helpers
                 for (int j = 0; j < players.Count; j++)
                 {
                     var player = players[j];
-                    if (!player.RuntimePlayer || !player.RuntimePlayer.CurrentCollider)
+                    if (!player.RuntimePlayer)
                         continue;
 
-                    if (player.RuntimePlayer.CurrentCollider.IsTouching(collider))
+                    var colliderCheck = optimized ? player.RuntimePlayer.collisionState.Collider : player.RuntimePlayer.CurrentCollider;
+                    if (!colliderCheck)
+                        return false;
+
+                    if (optimized ? collider == colliderCheck : colliderCheck.IsTouching(collider))
                         return true;
                 }
             }
@@ -12835,6 +12942,7 @@ namespace BetterLegacy.Core.Helpers
 
             var tag = modifier.GetValue(0, modifierLoop.variables);
             var index = modifier.GetInt(1, 0, modifierLoop.variables);
+            var optimized = false; // maybe add this as a value?
 
             var cache = modifier.GetResultOrDefault(() => new GenericGroupCache<BeatmapObject>(tag, GameData.Current.FindObjectsWithTag(modifier, prefabable, tag)));
             if (cache.tag != tag)
@@ -12848,7 +12956,14 @@ namespace BetterLegacy.Core.Helpers
 
                 var collider = runtimeObject.visualObject.collider;
 
-                if (PlayerManager.Players.TryGetAt(index, out PAPlayer player) && player.RuntimePlayer && player.RuntimePlayer.CurrentCollider && player.RuntimePlayer.CurrentCollider.IsTouching(collider))
+                if (!PlayerManager.Players.TryGetAt(index, out PAPlayer player) || !player.RuntimePlayer)
+                    continue;
+
+                var colliderCheck = optimized ? player.RuntimePlayer.collisionState.Collider : player.RuntimePlayer.CurrentCollider;
+                if (!colliderCheck)
+                    return false;
+
+                if (optimized ? collider == colliderCheck : colliderCheck.IsTouching(collider))
                     return true;
             }
 
@@ -12923,10 +13038,99 @@ namespace BetterLegacy.Core.Helpers
 
             return false;
         }
+        
+        public static bool playerBoostingIndex(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            var index = modifier.GetInt(0, 0, modifierLoop.variables);
+            return PlayerManager.Players.TryGetAt(index, out PAPlayer player) && player && player.RuntimePlayer && player.RuntimePlayer.isBoosting;
+        }
+
+        public static bool playerJumping(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
+                return false;
+
+            var runtimeObject = beatmapObject.runtimeObject;
+            if (runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject)
+            {
+                var player = PlayerManager.GetClosestPlayer(beatmapObject.GetFullPosition());
+
+                if (player && player.RuntimePlayer)
+                    return player.RuntimePlayer.Jumping;
+            }
+
+            return false;
+        }
+
+        public static bool playerJumpingIndex(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            var index = modifier.GetInt(0, 0, modifierLoop.variables);
+            return PlayerManager.Players.TryGetAt(index, out PAPlayer player) && player && player.RuntimePlayer && player.RuntimePlayer.Jumping;
+        }
 
         public static bool playerAlive(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, modifierLoop.variables), out PAPlayer player) && player.RuntimePlayer && player.RuntimePlayer.Alive;
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
+                return false;
+
+            var runtimeObject = beatmapObject.runtimeObject;
+            if (runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject)
+            {
+                var player = PlayerManager.GetClosestPlayer(beatmapObject.GetFullPosition());
+
+                if (player && player.RuntimePlayer)
+                    return player.RuntimePlayer.Alive;
+            }
+
+            return false;
+        }
+        
+        public static bool playerAliveIndex(Modifier modifier, ModifierLoop modifierLoop) => PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, modifierLoop.variables), out PAPlayer player) && player.RuntimePlayer && player.RuntimePlayer.Alive;
+
+        public static bool playerAliveAll(Modifier modifier, ModifierLoop modifierLoop) => PlayerManager.Players.All(x => x.RuntimePlayer && x.RuntimePlayer.Alive);
+
+        public static bool playerInput(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
+                return false;
+
+            var name = modifier.GetValue(0, modifierLoop.variables);
+            var type = modifier.GetInt(1, 0, modifierLoop.variables);
+            var runtimeObject = beatmapObject.runtimeObject;
+            if (runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject)
+            {
+                var player = PlayerManager.GetClosestPlayer(beatmapObject.GetFullPosition());
+                if (player && player.Input && player.Input.TryGetPlayerAction(name, out InControl.PlayerAction playerAction))
+                    return type switch
+                    {
+                        0 => playerAction.WasPressed,
+                        1 => playerAction.IsPressed,
+                        2 => playerAction.WasReleased,
+                        _ => false,
+                    };
+            }
+
+            return false;
+        }
+        
+        public static bool playerInputIndex(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            var index = modifier.GetInt(0, 0, modifierLoop);
+            var name = modifier.GetValue(1, modifierLoop.variables);
+            var type = modifier.GetInt(2, 0, modifierLoop.variables);
+            if (PlayerManager.Players.TryGetAt(index, out PAPlayer player))
+            {
+                if (player && player.Input && player.Input.TryGetPlayerAction(name, out InControl.PlayerAction playerAction))
+                    return type switch
+                    {
+                        0 => playerAction.WasPressed,
+                        1 => playerAction.IsPressed,
+                        2 => playerAction.WasReleased,
+                        _ => false,
+                    };
+            }
+
+            return false;
         }
 
         public static bool playerDeathsEquals(Modifier modifier, ModifierLoop modifierLoop)
@@ -13027,6 +13231,16 @@ namespace BetterLegacy.Core.Helpers
         public static bool onPlayerDeath(Modifier modifier, ModifierLoop modifierLoop)
         {
             return RTBeatmap.Current.playerDied;
+        }
+        
+        public static bool onPlayerBoosted(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            return RTBeatmap.Current.playerBoosted;
+        }
+        
+        public static bool onPlayerJumped(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            return RTBeatmap.Current.playerJumped;
         }
 
         public static bool playerBoostEquals(Modifier modifier, ModifierLoop modifierLoop)
@@ -14436,15 +14650,20 @@ namespace BetterLegacy.Core.Helpers
         {
             return modifierLoop.reference is PAPlayer player && player.RuntimePlayer && player.RuntimePlayer.isBoosting;
         }
+        
+        public static bool isJumping(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            return modifierLoop.reference is PAPlayer player && player.RuntimePlayer && player.RuntimePlayer.Jumping;
+        }
 
         public static bool isColliding(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return modifierLoop.reference is PAPlayer player && player.RuntimePlayer && player.RuntimePlayer.triggerColliding;
+            return modifierLoop.reference is PAPlayer player && player.RuntimePlayer && player.RuntimePlayer.collisionState.triggerColliding;
         }
 
         public static bool isSolidColliding(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return modifierLoop.reference is PAPlayer player && player.RuntimePlayer && player.RuntimePlayer.colliding;
+            return modifierLoop.reference is PAPlayer player && player.RuntimePlayer && player.RuntimePlayer.collisionState.solidColliding;
         }
 
         #endregion

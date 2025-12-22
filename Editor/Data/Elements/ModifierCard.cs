@@ -990,6 +990,48 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 #region Player
 
+                case nameof(ModifierFunctions.playerBoostingIndex): {
+                        SingleGenerator(modifier, reference, "Index", 0);
+                        break;
+                    }
+                case nameof(ModifierFunctions.playerJumpingIndex): {
+                        SingleGenerator(modifier, reference, "Index", 0);
+                        break;
+                    }
+                case nameof(ModifierFunctions.playerAliveIndex): {
+                        SingleGenerator(modifier, reference, "Index", 0);
+                        break;
+                    }
+                case nameof(ModifierFunctions.playerInput): {
+                        var str = StringGenerator(modifier, reference, "Action Name", 0);
+                        var inputField = str.transform.Find("Input").GetComponent<InputField>();
+                        var elements = new EditorElement[Core.Data.Player.PlayerInput.Names.AllNames.Length + 1];
+                        elements[0] = new LabelElement("Action Names");
+                        for (int i = 1; i < elements.Length; i++)
+                        {
+                            var n = Core.Data.Player.PlayerInput.Names.AllNames[i - 1];
+                            elements[i] = new ButtonElement(n, () => inputField.text = n);
+                        }
+                        EditorContextMenu.AddContextMenu(inputField.gameObject, elements);
+                        DropdownGenerator(modifier, reference, "Held Type", 1, CoreHelper.StringToOptionData("Was Pressed", "Is Pressed", "Was Released"));
+                        break;
+                    }
+                case nameof(ModifierFunctions.playerInputIndex): {
+                        IntegerGenerator(modifier, reference, "Index", 0);
+                        var str = StringGenerator(modifier, reference, "Action Name", 1);
+                        var inputField = str.transform.Find("Input").GetComponent<InputField>();
+                        var elements = new EditorElement[Core.Data.Player.PlayerInput.Names.AllNames.Length + 1];
+                        elements[0] = new LabelElement("Action Names");
+                        for (int i = 1; i < elements.Length; i++)
+                        {
+                            var n = Core.Data.Player.PlayerInput.Names.AllNames[i - 1];
+                            elements[i] = new ButtonElement(n, () => inputField.text = n);
+                        }
+                        EditorContextMenu.AddContextMenu(inputField.gameObject, elements);
+                        DropdownGenerator(modifier, reference, "Held Type", 2, CoreHelper.StringToOptionData("Was Pressed", "Is Pressed", "Was Released"));
+                        break;
+                    }
+
                 case nameof(ModifierFunctions.playerHit): {
                         IntegerGenerator(modifier, reference, "Hit Amount", 0, 0);
 
@@ -1512,6 +1554,40 @@ namespace BetterLegacy.Editor.Data.Elements
                     }
                 case nameof(ModifierFunctions.playerEnableWallJumpAll): {
                         BoolGenerator(modifier, reference, "Enabled", 0, true);
+
+                        break;
+                    }
+                    
+                case nameof(ModifierFunctions.setPlayerJumpGravity): {
+                        SingleGenerator(modifier, reference, "Gravity", 0, 1f);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.setPlayerJumpGravityIndex): {
+                        IntegerGenerator(modifier, reference, "Player Index", 0, 0);
+                        SingleGenerator(modifier, reference, "Gravity", 1, 1f);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.setPlayerJumpGravityAll): {
+                        SingleGenerator(modifier, reference, "Gravity", 0, 1f);
+
+                        break;
+                    }
+                    
+                case nameof(ModifierFunctions.setPlayerJumpIntensity): {
+                        SingleGenerator(modifier, reference, "Intensity", 0, 1f);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.setPlayerJumpIntensityIndex): {
+                        IntegerGenerator(modifier, reference, "Player Index", 0, 0);
+                        SingleGenerator(modifier, reference, "Intensity", 1, 1f);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.setPlayerJumpIntensityAll): {
+                        SingleGenerator(modifier, reference, "Intensity", 0, 1f);
 
                         break;
                     }

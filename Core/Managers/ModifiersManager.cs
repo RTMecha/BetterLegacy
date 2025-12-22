@@ -115,6 +115,7 @@ namespace BetterLegacy.Core.Managers
             new Modifier(ModifierCompatibility.FullPlayerCompatible, Modifier.Type.Trigger, nameof(ModifierFunctions.healthLesser), true, "0"),
             new Modifier(ModifierCompatibility.FullPlayerCompatible, Modifier.Type.Trigger, nameof(ModifierFunctions.isDead), true, "0"),
             new Modifier(ModifierCompatibility.FullPlayerCompatible, Modifier.Type.Trigger, nameof(ModifierFunctions.isBoosting), true, "0"),
+            new Modifier(ModifierCompatibility.FullPlayerCompatible, Modifier.Type.Trigger, nameof(ModifierFunctions.isJumping), true, "0"),
             new Modifier(ModifierCompatibility.FullPlayerCompatible, Modifier.Type.Trigger, nameof(ModifierFunctions.isColliding), true, "0"),
             new Modifier(ModifierCompatibility.FullPlayerCompatible, Modifier.Type.Trigger, nameof(ModifierFunctions.isSolidColliding), true, "0"),
         };

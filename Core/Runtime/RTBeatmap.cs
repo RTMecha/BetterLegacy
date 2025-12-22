@@ -591,6 +591,16 @@ namespace BetterLegacy.Core.Runtime
         /// If a player has died on a tick.
         /// </summary>
         public bool playerDied = false;
+        
+        /// <summary>
+        /// If a player has boosted on a tick.
+        /// </summary>
+        public bool playerBoosted = false;
+        
+        /// <summary>
+        /// If a player has jumped on a tick.
+        /// </summary>
+        public bool playerJumped = false;
 
         public void UpdateLives(int lives)
         {

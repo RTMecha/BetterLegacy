@@ -2965,15 +2965,85 @@
             ]
           }, // playerBoosting
           {
+            "name": "Object Modifier - playerBoostingIndex (Trigger)",
+            "tooltips": [
+              {
+                "desc": "playerBoostingIndex (Trigger)",
+                "hint": "Trigger is active if the player at an index is boosting.",
+                "lang": 0
+              }
+            ]
+          }, // playerBoostingIndex
+          {
+            "name": "Object Modifier - playerJumping (Trigger)",
+            "tooltips": [
+              {
+                "desc": "playerJumping (Trigger)",
+                "hint": "Trigger is active if the closest player to the object is jumping.",
+                "lang": 0
+              }
+            ]
+          }, // playerJumping
+          {
+            "name": "Object Modifier - playerJumpingIndex (Trigger)",
+            "tooltips": [
+              {
+                "desc": "playerJumpingIndex (Trigger)",
+                "hint": "Trigger is active if the player at an index is jumping.",
+                "lang": 0
+              }
+            ]
+          }, // playerJumpingIndex
+          {
             "name": "Object Modifier - playerAlive (Trigger)",
             "tooltips": [
               {
                 "desc": "playerAlive (Trigger)",
-                "hint": "Trigger is active if a specific player is alive.",
+                "hint": "Trigger is active if the closest player to the object is alive.",
                 "lang": 0
               }
             ]
           }, // playerAlive
+          {
+            "name": "Object Modifier - playerAliveIndex (Trigger)",
+            "tooltips": [
+              {
+                "desc": "playerAliveIndex (Trigger)",
+                "hint": "Trigger is active if the player at an index is alive.",
+                "lang": 0
+              }
+            ]
+          }, // playerAliveIndex
+          {
+            "name": "Object Modifier - playerAliveAll (Trigger)",
+            "tooltips": [
+              {
+                "desc": "playerAliveAll (Trigger)",
+                "hint": "Trigger is active if all players are alive.",
+                "lang": 0
+              }
+            ]
+          }, // playerAliveAll
+          {
+            "name": "Object Modifier - playerInput (Trigger)",
+            "tooltips": [
+              {
+                "desc": "playerInput (Trigger)",
+                "hint": "Trigger is active if the closest player to the object is activating an input.",
+                "lang": 0
+              }
+            ]
+          }, // playerInput
+          {
+            "name": "Object Modifier - playerInputIndex (Trigger)",
+            "tooltips": [
+              {
+                "desc": "playerInputIndex (Trigger)",
+                "hint": "Trigger is active if the player at an index is activating an input.",
+                "lang": 0
+              }
+            ]
+          }, // playerInputIndex
           {
             "name": "Object Modifier - playerDistanceGreater (Trigger)",
             "tooltips": [
@@ -3014,6 +3084,26 @@
               }
             ]
           }, // onPlayerDeath
+          {
+            "name": "Object Modifier - onPlayerBoosted (Trigger)",
+            "tooltips": [
+              {
+                "desc": "onPlayerBoosted (Trigger)",
+                "hint": "Trigger is active if a player boosted.",
+                "lang": 0
+              }
+            ]
+          }, // onPlayerBoosted
+          {
+            "name": "Object Modifier - onPlayerJumped (Trigger)",
+            "tooltips": [
+              {
+                "desc": "onPlayerJumped (Trigger)",
+                "hint": "Trigger is active if a player jumped.",
+                "lang": 0
+              }
+            ]
+          }, // onPlayerJumped
 
           {
             "name": "Object Modifier - playerHeal (Action)",
@@ -3726,6 +3816,66 @@
               }
             ]
           }, // playerEnableWallJumpAll
+          {
+            "name": "Object Modifier - setPlayerJumpGravity (Action)",
+            "tooltips": [
+              {
+                "desc": "setPlayerJumpGravity (Action)",
+                "hint": "Sets the jump gravity of the player closest to the object.",
+                "lang": 0
+              }
+            ]
+          }, // setPlayerJumpGravity
+          {
+            "name": "Object Modifier - setPlayerJumpGravityIndex (Action)",
+            "tooltips": [
+              {
+                "desc": "setPlayerJumpGravityIndex (Action)",
+                "hint": "Sets the jump gravity of the player at an index.",
+                "lang": 0
+              }
+            ]
+          }, // setPlayerJumpGravityIndex
+          {
+            "name": "Object Modifier - setPlayerJumpGravityAll (Action)",
+            "tooltips": [
+              {
+                "desc": "setPlayerJumpGravityAll (Action)",
+                "hint": "Sets the jump gravity of all players.",
+                "lang": 0
+              }
+            ]
+          }, // setPlayerJumpGravityAll
+          {
+            "name": "Object Modifier - setPlayerJumpIntensity (Action)",
+            "tooltips": [
+              {
+                "desc": "setPlayerJumpIntensity (Action)",
+                "hint": "Sets the jump intensity of the player closest to the object.",
+                "lang": 0
+              }
+            ]
+          }, // setPlayerJumpIntensity
+          {
+            "name": "Object Modifier - setPlayerJumpIntensityIndex (Action)",
+            "tooltips": [
+              {
+                "desc": "setPlayerJumpIntensityIndex (Action)",
+                "hint": "Sets the jump intensity of the player at an index.",
+                "lang": 0
+              }
+            ]
+          }, // setPlayerJumpIntensityIndex
+          {
+            "name": "Object Modifier - setPlayerJumpIntensityAll (Action)",
+            "tooltips": [
+              {
+                "desc": "setPlayerJumpIntensityAll (Action)",
+                "hint": "Sets the jump intensity of all players.",
+                "lang": 0
+              }
+            ]
+          }, // setPlayerJumpIntensityAll
           {
             "name": "Object Modifier - setGameMode (Action)",
             "tooltips": [

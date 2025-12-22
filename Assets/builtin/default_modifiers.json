@@ -1429,17 +1429,63 @@
       }, // playerMoving
       {
         "type": 0,
-        "commands": [ "playerBoosting" ],
-        "value": "0",
+        "name": "playerBoosting",
+        "values": [],
         "const": "True",
         "compat": "obj"
       }, // playerBoosting
       {
         "type": 0,
-        "commands": [ "playerAlive" ],
-        "value": "0",
-        "const": "True"
+        "name": "playerBoostingIndex",
+        "values": [ "0" ],
+        "const": "True",
+        "compat": "obj"
+      }, // playerBoostingIndex
+      {
+        "type": 0,
+        "name": "playerJumping",
+        "values": [],
+        "const": "True",
+        "compat": "obj"
+      }, // playerJumping
+      {
+        "type": 0,
+        "name": "playerJumpingIndex",
+        "values": [ "0" ],
+        "const": "True",
+        "compat": "obj"
+      }, // playerJumpingIndex
+      {
+        "type": 0,
+        "name": "playerAlive",
+        "values": [],
+        "const": "True",
+        "compat": "obj"
       }, // playerAlive
+      {
+        "type": 0,
+        "name": "playerAliveIndex",
+        "values": [ "0" ],
+        "const": "True"
+      }, // playerAliveIndex
+      {
+        "type": 0,
+        "name": "playerAliveAll",
+        "values": [],
+        "const": "True"
+      }, // playerAliveAll
+      {
+        "type": 0,
+        "name": "playerInput",
+        "values": [ "Boost", "0" ],
+        "const": "True"
+      }, // playerInput
+      {
+        "type": 0,
+        "name": "playerInputIndex",
+        "values": [ "0", "Boost", "0" ],
+        "const": "True"
+      }, // playerInputIndex
       {
         "type": 0,
         "commands": [ "playerDistanceLesser" ],
@@ -1464,6 +1510,18 @@
         "value": "",
         "const": "True"
       }, // onPlayerDeath
+      {
+        "type": 0,
+        "name": "onPlayerBoosted",
+        "values": [],
+        "const": "True"
+      }, // onPlayerBoosted
+      {
+        "type": 0,
+        "name": "onPlayerJumped",
+        "values": [],
+        "const": "True"
+      }, // onPlayerJumped
 
       {
         "type": 1,
@@ -2034,6 +2092,50 @@
         "const": "True",
         "compat": "level_control"
       }, // playerEnableWallJumpAll
+
+      {
+        "type": 1,
+        "name": "setPlayerJumpGravity",
+        "values": [ "1" ],
+        "const": "True",
+        "compat": "level_control"
+      }, // setPlayerJumpGravity
+      {
+        "type": 1,
+        "name": "setPlayerJumpGravityIndex",
+        "values": [ "0", "1" ],
+        "const": "True",
+        "compat": "level_control"
+      }, // setPlayerJumpGravityIndex
+      {
+        "type": 1,
+        "name": "setPlayerJumpGravityAll",
+        "values": [ "1" ],
+        "const": "True",
+        "compat": "level_control"
+      }, // setPlayerJumpGravityAll
+
+      {
+        "type": 1,
+        "name": "setPlayerJumpIntensity",
+        "values": [ "1" ],
+        "const": "True",
+        "compat": "level_control"
+      }, // setPlayerJumpIntensity
+      {
+        "type": 1,
+        "name": "setPlayerJumpIntensityIndex",
+        "values": [ "0", "1" ],
+        "const": "True",
+        "compat": "level_control"
+      }, // setPlayerJumpIntensityIndex
+      {
+        "type": 1,
+        "name": "setPlayerJumpIntensityAll",
+        "values": [ "1" ],
+        "const": "True",
+        "compat": "level_control"
+      }, // setPlayerJumpIntensityAll
 
       {
         "type": 1,
