@@ -491,6 +491,22 @@ namespace BetterLegacy.Core.Helpers
         /// <param name="spriteRenderer">Sprite Renderer to get the size from.</param>
         public static void GetColliderSize(BoxCollider2D collider, SpriteRenderer spriteRenderer) => collider.size = !spriteRenderer || !spriteRenderer.sprite || !spriteRenderer.sprite.texture ? Vector2.one : new Vector2(spriteRenderer.sprite.texture.width / 100f, spriteRenderer.sprite.texture.height / 100f);
 
+        /// <summary>
+        /// Gets an object type from a collider.
+        /// </summary>
+        /// <param name="collider">Collider to check.</param>
+        /// <returns>Returns an object type based on the collider.</returns>
+        public static BeatmapObject.ObjectType GetObjectType(Collider2D collider)
+        {
+            if (collider && !collider.isTrigger)
+                return BeatmapObject.ObjectType.Solid;
+            if (collider && collider.isTrigger && collider.tag != Tags.HELPER)
+                return BeatmapObject.ObjectType.Normal;
+            if (collider && collider.isTrigger && collider.tag == Tags.HELPER)
+                return BeatmapObject.ObjectType.Decoration;
+            return BeatmapObject.ObjectType.Empty;
+        }
+
         #endregion
 
         #region Logging
