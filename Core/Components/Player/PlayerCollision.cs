@@ -34,7 +34,6 @@ namespace BetterLegacy.Core.Components.Player
             if (!player)
                 return;
             
-            player.colliding = true;
             player.cachedCollision = collision;
             player.currentCollision = collision;
         }

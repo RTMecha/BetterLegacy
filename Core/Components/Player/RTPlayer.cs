@@ -240,6 +240,10 @@ namespace BetterLegacy.Core.Components.Player
         /// </summary>
         public int jumpBoostCount = 1;
 
+        public float modifiedJumpGravity = 1f;
+
+        public float modifiedJumpIntensity = 1f;
+
         float jumpBoostMultiplier = 0.5f; // to make sure the jump goes about the same distance as left and right boost
 
         int currentJumpCount = 0;
@@ -253,7 +257,15 @@ namespace BetterLegacy.Core.Components.Player
 
         public bool AllowWallSticking => allowWallSticking && GlobalAllowWallSticking;
 
-        public float JumpGravity => jumpGravity * GlobalJumpGravity;
+        public float JumpGravity => (jumpGravity * GlobalJumpGravity) * modifiedJumpGravity;
+
+        public float JumpIntensity => (jumpIntensity * GlobalJumpIntensity) * modifiedJumpIntensity;
+
+        public bool Jumping { get; private set; }
+
+        public bool ReversedGravity => JumpGravity < 0f;
+
+        public static bool jumped;
 
         #endregion
 
@@ -544,8 +556,11 @@ namespace BetterLegacy.Core.Components.Player
 
         #endregion
 
-        public bool castColliding;
-        public bool colliding;
+        /// <summary>
+        /// The player collision state.
+        /// </summary>
+        public CastCollision collisionState;
+
         public bool triggerColliding;
         public bool isColliderTrigger;
         public bool updated;
@@ -1698,17 +1713,19 @@ namespace BetterLegacy.Core.Components.Player
 
             var enabled = CurrentCollider.enabled;
             CurrentCollider.enabled = false; // disable to prevent detecting itself
-            var leftCast = Physics2D.CircleCast(rb.position, circleCollider2D.radius, new Vector2(1f, 0f), 1f);
-            var rightCast = Physics2D.CircleCast(rb.position, circleCollider2D.radius, new Vector2(-1f, 0f), 1f);
-            var upCast = Physics2D.CircleCast(rb.position, circleCollider2D.radius, new Vector2(0f, 1f), 1f);
-            var downCast = Physics2D.CircleCast(rb.position, circleCollider2D.radius, new Vector2(0f, -1f), 1f);
+            collisionState.leftCasts = Physics2D.CircleCastAll(rb.position, circleCollider2D.radius, new Vector2(1f, 0f), 1f);
+            collisionState.rightCasts = Physics2D.CircleCastAll(rb.position, circleCollider2D.radius, new Vector2(-1f, 0f), 1f);
+            collisionState.upCasts = Physics2D.CircleCastAll(rb.position, circleCollider2D.radius, new Vector2(0f, 1f), 1f);
+            collisionState.downCasts = Physics2D.CircleCastAll(rb.position, circleCollider2D.radius, new Vector2(0f, -1f), 1f);
             CurrentCollider.enabled = enabled;
+            collisionState.All = collisionState.GetAll();
 
-            var cast = leftCast.collider ? leftCast : rightCast.collider ? rightCast : upCast.collider ? upCast : downCast;
+            var cast = collisionState.Cast;
             var collider = cast.collider;
-            castColliding = collider && cast.distance <= 0.1f;
+            collisionState.solidColliding = collisionState.AnySolid(collisionState.All) && cast.distance <= 0.1f;
+            collisionState.triggerColliding = collisionState.AnyTrigger(collisionState.All) && cast.distance <= 0.1f;
 
-            if (CanMove && Core.Input)
+            if (CanMove && Core.Input && !CoreHelper.Paused)
             {
                 var boostWasPressed = Core.Input.Boost.WasPressed;
 
@@ -1717,7 +1734,7 @@ namespace BetterLegacy.Core.Components.Player
                 if (Core.Input.Boost.WasReleased)
                     queuedBoost = false;
 
-                if ((boostWasPressed || queuedBoost) && (JumpMode || CanBoost) && !LockBoost && (!JumpMode || (jumpCount == 0 || !colliding || !castColliding) && (currentJumpCount == Mathf.Clamp(jumpCount, -1, MaxJumpCount) || jumpBoostCount == -1 || currentJumpBoostCount < Mathf.Clamp(jumpBoostCount, -1, MaxJumpBoostCount))))
+                if ((boostWasPressed || queuedBoost) && (JumpMode || CanBoost) && !LockBoost && (!JumpMode || (jumpCount == 0 || !collisionState.solidColliding) && (currentJumpCount == Mathf.Clamp(jumpCount, -1, MaxJumpCount) || jumpBoostCount == -1 || currentJumpBoostCount < Mathf.Clamp(jumpBoostCount, -1, MaxJumpBoostCount))))
                 {
                     queuedBoost = false;
 
@@ -1745,10 +1762,19 @@ namespace BetterLegacy.Core.Components.Player
 
             if (JumpMode)
             {
-                rb.gravityScale = JumpGravity;
+                if (collisionState.AnySolid(ReversedGravity ? collisionState.upCasts : collisionState.downCasts, out RaycastHit2D groundCast) && groundCast.distance < 0.1f)
+                    Jumping = false;
+
+                rb.gravityScale = CoreHelper.Paused ? 0f : JumpGravity;
 
                 if (!Core.Input)
                     return;
+
+                if (CoreHelper.Paused)
+                {
+                    rb.velocity = Vector2.zero;
+                    return;
+                }
 
                 var pitch = MultiplyByPitch ? CoreHelper.ForwardPitch : 1f;
                 float x = Core.Input.Move.Vector.x;
@@ -1756,9 +1782,9 @@ namespace BetterLegacy.Core.Components.Player
 
                 if (!AllowWallSticking)
                 {
-                    if (x > 0f && leftCast.collider && leftCast.distance <= 0.1f)
+                    if (x > 0f && collisionState.AnySolid(collisionState.leftCasts, out RaycastHit2D leftCast) && leftCast.distance <= 0.1f)
                         x = 0f;
-                    if (x < 0f && rightCast.collider && rightCast.distance <= 0.1f)
+                    if (x < 0f && collisionState.AnySolid(collisionState.rightCasts, out RaycastHit2D rightCast) && rightCast.distance <= 0.1f)
                         x = 0f;
                 }
 
@@ -1789,7 +1815,7 @@ namespace BetterLegacy.Core.Components.Player
                 (CoreConfig.Instance.AllowControlsInputField.Value || !CoreHelper.IsUsingInputField) &&
                 movementMode == MovementMode.KeyboardController && (!CoreHelper.InEditor || !RTEditor.inst.Freecam))
             {
-                colliding = false;
+                Jumping = false;
                 var x = !LockXMovement ? Core.Input.Move.Vector.x : 0f;
                 var y = !LockYMovement ? Core.Input.Move.Vector.y : 0f;
                 var pitch = MultiplyByPitch ? CoreHelper.ForwardPitch : 1f;
@@ -2561,7 +2587,7 @@ namespace BetterLegacy.Core.Components.Player
             if (!JumpMode)
                 return;
 
-            var reversedGravity = JumpGravity < 0f;
+            var reversedGravity = ReversedGravity;
             var allowJumping = reversedGravity ? AllowReversedJumping : AllowJumping;
             if (!allowJumping)
                 return;
@@ -2573,6 +2599,9 @@ namespace BetterLegacy.Core.Components.Player
                 for (int i = 0; i < cachedCollision.contacts.Length; i++)
                 {
                     var contact = cachedCollision.contacts[i];
+                    if (!contact.collider || !IsSolidCollision(contact.collider))
+                        continue;
+
                     if (reversedGravity ? contact.normal.y < 0f : contact.normal.y > 0f)
                         onGround = true;
                     if (reversedGravity ? contact.normal.y > 0f : contact.normal.y < 0f)
@@ -2584,20 +2613,21 @@ namespace BetterLegacy.Core.Components.Player
                     return;
             }
 
-            
             var velocity = rb.velocity;
-            if (jumpCount != 0 && colliding && castColliding || jumpCount == -1 || currentJumpCount < Mathf.Clamp(jumpCount, -1, MaxJumpCount))
+            if (jumpCount != 0 && collisionState.solidColliding || jumpCount == -1 || currentJumpCount < Mathf.Clamp(jumpCount, -1, MaxJumpCount))
             {
-                velocity.y = (jumpIntensity * GlobalJumpIntensity) * (reversedGravity ? -1f : 1f);
+                if (RTBeatmap.Current)
+                    RTBeatmap.Current.playerJumped = true;
+                Jumping = true;
+                velocity.y = JumpIntensity * (reversedGravity ? -1f : 1f);
 
                 if (PlayBoostSound)
                     SoundManager.inst.PlaySound(DefaultSounds.boost);
 
-                if (colliding && castColliding)
+                if (collisionState.solidColliding)
                 {
                     currentJumpCount = 0;
                     currentJumpBoostCount = 0;
-                    colliding = false;
                 }
                 currentJumpCount++;
             }
@@ -2879,6 +2909,12 @@ namespace BetterLegacy.Core.Components.Player
         }
 
         public void InterpolateAnimation(PAAnimation animation, float t) => this.InterpolateAnimationOffset(animation, t);
+
+        public static bool IsSolidCollision(Collider2D collider) => CoreHelper.GetObjectType(collider) == BeatmapObject.ObjectType.Solid;
+
+        public static bool IsDamageCollision(Collider2D collider) => CoreHelper.GetObjectType(collider) == BeatmapObject.ObjectType.Normal;
+
+        public static bool IsHelperCollision(Collider2D collider) => CoreHelper.GetObjectType(collider) == BeatmapObject.ObjectType.Decoration;
 
         #region Particles
 
@@ -3917,7 +3953,144 @@ namespace BetterLegacy.Core.Components.Player
 
         #endregion
 
-        #region Constructors
+        #region Sub classes
+
+        /// <summary>
+        /// Stores raycast collision information.
+        /// </summary>
+        public struct CastCollision
+        {
+            /// <summary>
+            /// If the player is colliding with colliders with <see cref="Collider2D.isTrigger"/> on. (Damage)
+            /// </summary>
+            public bool triggerColliding;
+
+            /// <summary>
+            /// If the player is colliding with colliders with <see cref="Collider2D.isTrigger"/> off. (Solid)
+            /// </summary>
+            public bool solidColliding;
+
+            /// <summary>
+            /// Left raycast.
+            /// </summary>
+            public RaycastHit2D[] leftCasts;
+
+            /// <summary>
+            /// Right raycast.
+            /// </summary>
+            public RaycastHit2D[] rightCasts;
+
+            /// <summary>
+            /// Up raycast.
+            /// </summary>
+            public RaycastHit2D[] upCasts;
+
+            /// <summary>
+            /// Down raycast.
+            /// </summary>
+            public RaycastHit2D[] downCasts;
+
+            RaycastHit2D[] all;
+            public RaycastHit2D[] All
+            {
+                get => all != null ? all : GetAll();
+                set => all = value;
+            }
+
+            /// <summary>
+            /// Detected raycast.
+            /// </summary>
+            public RaycastHit2D Cast
+            {
+                get
+                {
+                    if (TryGetCast(leftCasts, out RaycastHit2D leftCast))
+                        return leftCast;
+                    if (TryGetCast(rightCasts, out RaycastHit2D rightCast))
+                        return rightCast;
+                    if (TryGetCast(upCasts, out RaycastHit2D upCast))
+                        return upCast;
+                    if (TryGetCast(downCasts, out RaycastHit2D downCast))
+                        return downCast;
+                    return default;
+                }
+            }
+
+            /// <summary>
+            /// The current collider.
+            /// </summary>
+            public Collider2D Collider => Cast.collider;
+
+            public bool TryGetCast(RaycastHit2D[] raycastHits, out RaycastHit2D cast)
+            {
+                for (int i = 0; i < raycastHits.Length; i++)
+                {
+                    cast = raycastHits[i];
+                    if (cast.collider)
+                        return true;
+                }
+                cast = default;
+                return false;
+            }
+
+            public bool AnySolid(RaycastHit2D[] raycastHits)
+            {
+                for (int i = 0; i < raycastHits.Length; i++)
+                {
+                    var cast = raycastHits[i];
+                    if (cast.collider && !cast.collider.isTrigger)
+                        return true;
+                }
+                return false;
+            }
+
+            public bool AnyTrigger(RaycastHit2D[] raycastHits)
+            {
+                for (int i = 0; i < raycastHits.Length; i++)
+                {
+                    var cast = raycastHits[i];
+                    if (cast.collider && cast.collider.isTrigger)
+                        return true;
+                }
+                return false;
+            }
+
+            public bool AnySolid(RaycastHit2D[] raycastHits, out RaycastHit2D cast)
+            {
+                for (int i = 0; i < raycastHits.Length; i++)
+                {
+                    cast = raycastHits[i];
+                    if (cast.collider && !cast.collider.isTrigger)
+                        return true;
+                }
+                cast = default;
+                return false;
+            }
+
+            public bool AnyTrigger(RaycastHit2D[] raycastHits, out RaycastHit2D cast)
+            {
+                for (int i = 0; i < raycastHits.Length; i++)
+                {
+                    cast = raycastHits[i];
+                    if (cast.collider && cast.collider.isTrigger)
+                        return true;
+                }
+                cast = default;
+                return false;
+            }
+
+            public RaycastHit2D[] GetAll()
+            {
+                var collection = leftCasts.AsEnumerable();
+                if (!rightCasts.IsEmpty())
+                    collection = collection.Union(rightCasts);
+                if (!upCasts.IsEmpty())
+                    collection = collection.Union(upCasts);
+                if (!downCasts.IsEmpty())
+                    collection = collection.Union(downCasts);
+                return collection.ToArray();
+            }
+        }
 
         /// <summary>
         /// Represents a custom object from the model.
