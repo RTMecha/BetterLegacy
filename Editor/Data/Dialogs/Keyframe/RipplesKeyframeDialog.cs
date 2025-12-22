@@ -45,8 +45,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             new LabelsElement("Height", "Width").Init(EditorElement.InitSettings.Default.Parent(GameObject.transform));
             var size = EditorPrefabHolder.Instance.Vector2InputFields.Duplicate(GameObject.transform, "size");
-            var sizeFields = size.GetComponent<Vector2InputFieldStorage>();
-            SizeFields = sizeFields;
+            SizeFields = size.GetComponent<Vector2InputFieldStorage>();
 
             new LabelsElement("Mode").Init(EditorElement.InitSettings.Default.Parent(GameObject.transform));
             ModeDropdown = EditorPrefabHolder.Instance.Dropdown.Duplicate(GameObject.transform, "mode").GetComponent<Dropdown>();
