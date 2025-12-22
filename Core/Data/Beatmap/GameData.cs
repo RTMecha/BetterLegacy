@@ -1270,7 +1270,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             var defaultEventKeyframes = EventLibrary.GetDefaultKeyframes();
 
             // here we iterate through the default event types and check if the JSON exists. This is so we don't need to have a ton of repeating code.
-            for (int i = 0; i < EventLibrary.Count; i++)
+            for (int i = 0; i < EventLibrary.EVENT_COUNT; i++)
             {
                 allEvents.Add(new List<EventKeyframe>());
                 if (jn[EventLibrary.jsonNames[i]] == null)
@@ -1298,13 +1298,11 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <param name="eventKeyframes">List of event keyframes to check.</param>
         public static void ClampEventListValues(List<List<EventKeyframe>> eventKeyframes)
         {
-            int totalTypes = EventLibrary.Count;
-
             // first, check if event keyframes count is higher than normal.
-            while (eventKeyframes.Count > totalTypes)
+            while (eventKeyframes.Count > EventLibrary.EVENT_COUNT)
                 eventKeyframes.RemoveAt(eventKeyframes.Count - 1);
 
-            for (int type = 0; type < totalTypes; type++)
+            for (int type = 0; type < EventLibrary.EVENT_COUNT; type++)
             {
                 // add to the event types if no event exists.
                 if (eventKeyframes.Count < type + 1)

@@ -199,6 +199,11 @@
       "name": "Digital Glitch",
       "index": 39,
       "complexity_path": "event/digital_glitch"
+    },
+    {
+      "name": "Shockwave",
+      "index": 40,
+      "complexity_path": "event/shockwave"
     }
   ]
 }

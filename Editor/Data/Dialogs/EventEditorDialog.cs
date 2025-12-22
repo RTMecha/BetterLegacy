@@ -79,6 +79,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     EventLibrary.Indexes.MOSAIC => new FloatKeyframeDialog(i, "Amount"),
                     EventLibrary.Indexes.ANALOG_GLITCH => new AnalogGlitchKeyframeDialog(),
                     EventLibrary.Indexes.DIGITAL_GLITCH => new FloatKeyframeDialog(i, "Intensity"),
+                    EventLibrary.Indexes.SHOCKWAVE => new ShockwaveKeyframeDialog(),
                     _ => new KeyframeDialog(i),
                 };
                 var dialog = EventEditor.inst.dialogRight.TryGetChild(i);

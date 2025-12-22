@@ -20,6 +20,7 @@ namespace BetterLegacy
         public static Material analogGlitchMaterial;
         public static Shader digitalGlitchShader;
         public static Material digitalGlitchMaterial;
+        public static Shader shockwaveShader;
 
         public static void GetKinoGlitch()
         {
@@ -28,6 +29,7 @@ namespace BetterLegacy
             digitalGlitchMaterial = assetBundle.LoadAsset<Material>("digitalglitchmaterial.mat"); // Load asset
             analogGlitchShader = assetBundle.LoadAsset<Shader>("analogglitch.shader"); // Load asset
             digitalGlitchShader = assetBundle.LoadAsset<Shader>("digitalglitch.shader"); // Load asset
+            shockwaveShader = assetBundle.LoadAsset<Shader>("shockwave.shader"); // Load asset
         }
 
         public static MaterialGroup objectMaterial;

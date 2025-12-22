@@ -16,6 +16,7 @@ namespace BetterLegacy.Arcade.Managers
         public Camera glitchCam;
         public AnalogGlitch analogGlitch;
         public DigitalGlitch digitalGlitch;
+        public Shockwave shockwave;
 
         public Camera uiCam;
 
@@ -40,13 +41,15 @@ namespace BetterLegacy.Arcade.Managers
             glitchCam.forceIntoRenderTexture = true;
             glitchCam.nearClipPlane = 9999.9f;
             glitchCam.orthographic = true;
-            glitchCam.rect = new Rect(0.001f, 0.001f, 0.999f, 0.999f);
+            glitchCam.rect = new Rect(0f, 0f, 1f, 1f);
 
             digitalGlitch = glitchCamera.AddComponent<DigitalGlitch>();
             digitalGlitch._shader = LegacyResources.digitalGlitchShader;
 
             analogGlitch = glitchCamera.AddComponent<AnalogGlitch>();
             analogGlitch._shader = LegacyResources.analogGlitchShader;
+
+            shockwave = glitchCamera.AddComponent<Shockwave>();
 
             var uiCamera = new GameObject("UI Camera");
             uiCamera.transform.SetParent(EventManager.inst.cam.transform.parent);

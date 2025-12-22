@@ -178,6 +178,11 @@ namespace BetterLegacy.Arcade.Managers
 
             if (RTEventManager.inst && RTEventManager.inst.uiCam)
                 RTEventManager.inst.uiCam.rect = rect;
+            if (RTEventManager.inst && RTEventManager.inst.glitchCam)
+            {
+                rect.xMin = -0.001f;
+                RTEventManager.inst.glitchCam.rect = rect;
+            }
         }
 
         public void UpdateTimeline()

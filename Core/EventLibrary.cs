@@ -61,6 +61,7 @@ namespace BetterLegacy.Core
             "Mosaic",
             "Analog Glitch",
             "Digital Glitch",
+            "Shockwave",
 
             #endregion
         };
@@ -117,6 +118,7 @@ namespace BetterLegacy.Core
 			"mosaic", // 37
 			"analog_glitch", // 38
 			"digital_glitch", // 39
+            "shockwave", // 40
 
             #endregion
         };
@@ -142,6 +144,8 @@ namespace BetterLegacy.Core
         /// Total amount of event keyframe types in BetterLegacy.
         /// </summary>
         public static int Count => cachedDefaultKeyframes.Count;
+
+        public const int EVENT_COUNT = 41;
 
         /// <summary>
         /// The default event keyframes in BetterLegacy.
@@ -205,6 +209,7 @@ namespace BetterLegacy.Core
 			/*[ 37 ]*/ DefaultKeyframes.Mosaic,
 			/*[ 38 ]*/ DefaultKeyframes.AnalogGlitch,
 			/*[ 39 ]*/ DefaultKeyframes.DigitalGlitch,
+			/*[ 40 ]*/ DefaultKeyframes.Shockwave,
 
             #endregion
         };
@@ -762,6 +767,25 @@ namespace BetterLegacy.Core
                     0f, // Intensity
                 },
             };
+            /// <summary>
+            /// <see cref="Indexes.SHOCKWAVE"/>
+            /// </summary>
+            public static EventKeyframe Shockwave => new EventKeyframe
+            {
+                time = 0f,
+                values = new float[]
+                {
+                    0f, // Intensity
+                    20f, // Ring
+                    0f, // Center X
+                    0f, // Center Y
+                    1f, // Scale X
+                    1f, // Scale Y
+                    0f, // Rotation
+                    0f, // Warp
+                    0f, // Elapsed
+                },
+            };
 
             #endregion
         }
@@ -826,6 +850,7 @@ namespace BetterLegacy.Core
             public const int MOSAIC = 37;
             public const int ANALOG_GLITCH = 38;
             public const int DIGITAL_GLITCH = 39;
+            public const int SHOCKWAVE = 40;
 
             #endregion
         }

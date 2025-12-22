@@ -26,7 +26,7 @@ namespace BetterLegacy.Core.Runtime.Events
     {
         public EventEngine()
         {
-            events = new KFDelegate[40][]
+            events = new KFDelegate[EventLibrary.EVENT_COUNT][]
             {
                 new KFDelegate[]
                 {
@@ -314,6 +314,18 @@ namespace BetterLegacy.Core.Runtime.Events
                 {
                     UpdateDigitalGlitchIntensity,
                 }, // Digital Glitch
+                new KFDelegate[]
+                {
+                    UpdateShockwaveIntensity,
+                    UpdateShockwaveRingAmount,
+                    UpdateShockwaveCenterX,
+                    UpdateShockwaveCenterY,
+                    UpdateShockwaveScaleX,
+                    UpdateShockwaveScaleY,
+                    UpdateShockwaveRotation,
+                    UpdateShockwaveWarp,
+                    UpdateShockwaveElapsed,
+                }, // Shockwave
             };
 
             offsets = CreateOffsets();
@@ -1844,6 +1856,73 @@ namespace BetterLegacy.Core.Runtime.Events
         {
             if (RTEventManager.inst.digitalGlitch)
                 RTEventManager.inst.digitalGlitch.intensity = x;
+        }
+
+        #endregion
+
+        #region Shockwave - 40
+
+        // 40 - 0
+        void UpdateShockwaveIntensity(float x)
+        {
+            if (RTEventManager.inst.shockwave)
+                RTEventManager.inst.shockwave.intensity = x;
+        }
+        
+        // 40 - 1
+        void UpdateShockwaveRingAmount(float x)
+        {
+            if (RTEventManager.inst.shockwave)
+                RTEventManager.inst.shockwave.ringAmount = x;
+        }
+        
+        // 40 - 2
+        void UpdateShockwaveCenterX(float x)
+        {
+            if (RTEventManager.inst.shockwave)
+                RTEventManager.inst.shockwave.center.x = x;
+        }
+        
+        // 40 - 3
+        void UpdateShockwaveCenterY(float x)
+        {
+            if (RTEventManager.inst.shockwave)
+                RTEventManager.inst.shockwave.center.y = x;
+        }
+        
+        // 40 - 4
+        void UpdateShockwaveScaleX(float x)
+        {
+            if (RTEventManager.inst.shockwave)
+                RTEventManager.inst.shockwave.scale.x = x;
+        }
+        
+        // 40 - 5
+        void UpdateShockwaveScaleY(float x)
+        {
+            if (RTEventManager.inst.shockwave)
+                RTEventManager.inst.shockwave.scale.y = x;
+        }
+        
+        // 40 - 6
+        void UpdateShockwaveRotation(float x)
+        {
+            if (RTEventManager.inst.shockwave)
+                RTEventManager.inst.shockwave.rotation = x;
+        }
+        
+        // 40 - 7
+        void UpdateShockwaveWarp(float x)
+        {
+            if (RTEventManager.inst.shockwave)
+                RTEventManager.inst.shockwave.warp = x;
+        }
+        
+        // 40 - 8
+        void UpdateShockwaveElapsed(float x)
+        {
+            if (RTEventManager.inst.shockwave)
+                RTEventManager.inst.shockwave.elapsed = x;
         }
 
         #endregion

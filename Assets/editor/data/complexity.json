@@ -378,5 +378,9 @@
   "event/digital_glitch": {
     "complexity": 2,
     "only_this": false
+  },
+  "event/shockwave": {
+    "complexity": 2,
+    "only_this": false
   }
 }
