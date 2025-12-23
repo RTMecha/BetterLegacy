@@ -139,7 +139,7 @@ namespace BetterLegacy.Core.Runtime.Objects
                 fadeColor = ThemeManager.inst.bgColorToLerp;
             fadeColor.a = 1f;
 
-            if (CoreConfig.Instance.LDM.Value && renderers.Count > 0)
+            if (!CoreConfig.Instance.ShowBackgroundFade.Value && renderers.Count > 0)
             {
                 renderers[0].material.color = mainColor;
                 if (renderers.Count > 1 && renderers[1].gameObject.activeSelf)
