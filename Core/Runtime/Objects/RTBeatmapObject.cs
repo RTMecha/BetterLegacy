@@ -62,11 +62,19 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         public Transform Parent { get; set; }
 
+        /// <summary>
+        /// If the object is active.
+        /// </summary>
+        public bool topActive = true;
+
         #region Internal
 
         bool active = false;
 
         public Vector3 CurrentScale { get; set; } // if scale is 0, 0 then disable collider and renderer
+
+        bool cachedColliderEnabled;
+        bool cachedRendererEnabled;
 
         #endregion
 
@@ -154,11 +162,6 @@ namespace BetterLegacy.Core.Runtime.Objects
         }
 
         /// <summary>
-        /// If the object is active.
-        /// </summary>
-        public bool topActive = true;
-
-        /// <summary>
         /// Sets the top object active.
         /// </summary>
         /// <param name="active">Active state to set.</param>
@@ -195,10 +198,23 @@ namespace BetterLegacy.Core.Runtime.Objects
         {
             var active = RTMath.Distance(0f, CurrentScale.x) > 0.001f && RTMath.Distance(0f, CurrentScale.y) > 0.001f && RTMath.Distance(0f, CurrentScale.z) > 0.001f;
 
+            var colliderEnabled = visualObject.HasCollision && active;
             if (visualObject.collider)
-                visualObject.collider.enabled = visualObject.colliderEnabled && active;
+            {
+                if (cachedColliderEnabled != colliderEnabled)
+                {
+                    cachedColliderEnabled = colliderEnabled;
+                    visualObject.collider.enabled = colliderEnabled;
+                }
+            }
             if (visualObject.renderer)
-                visualObject.renderer.enabled = active;
+            {
+                if (cachedRendererEnabled != active)
+                {
+                    cachedRendererEnabled = active;
+                    visualObject.renderer.enabled = active;
+                }
+            }
         }
 
         public override string ToString() => beatmapObject?.ToString() ?? string.Empty;

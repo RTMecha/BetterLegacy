@@ -12851,6 +12851,9 @@ namespace BetterLegacy.Core.Helpers
             var runtimeObject = beatmapObject.runtimeObject;
             if (runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.collider)
             {
+                if (runtimeObject.visualObject is SolidObject solidObject)
+                    solidObject.forceCollisionEnabled = true;
+
                 var collider = runtimeObject.visualObject.collider;
 
                 var players = PlayerManager.Players;
@@ -12880,6 +12883,9 @@ namespace BetterLegacy.Core.Helpers
             var runtimeObject = beatmapObject.runtimeObject;
             if (runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.collider)
             {
+                if (runtimeObject.visualObject is SolidObject solidObject)
+                    solidObject.forceCollisionEnabled = true;
+
                 var collider = runtimeObject.visualObject.collider;
 
                 if (!PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, modifierLoop.variables), out PAPlayer player) || !player.RuntimePlayer)
@@ -12912,6 +12918,9 @@ namespace BetterLegacy.Core.Helpers
                 var runtimeObject = cache.group[i]?.runtimeObject;
                 if (!runtimeObject || !runtimeObject.visualObject || !runtimeObject.visualObject.collider)
                     continue;
+
+                if (runtimeObject.visualObject is SolidObject solidObject)
+                    solidObject.forceCollisionEnabled = true;
 
                 var collider = runtimeObject.visualObject.collider;
 
@@ -12953,6 +12962,9 @@ namespace BetterLegacy.Core.Helpers
                 var runtimeObject = cache.group[i]?.runtimeObject;
                 if (!runtimeObject || !runtimeObject.visualObject || !runtimeObject.visualObject.collider)
                     continue;
+
+                if (runtimeObject.visualObject is SolidObject solidObject)
+                    solidObject.forceCollisionEnabled = true;
 
                 var collider = runtimeObject.visualObject.collider;
 
@@ -13281,6 +13293,9 @@ namespace BetterLegacy.Core.Helpers
             if (!runtimeObject || !runtimeObject.visualObject || !runtimeObject.visualObject.gameObject)
                 return false;
 
+            if (runtimeObject.visualObject is SolidObject solidObject)
+                solidObject.forceCollisionEnabled = true;
+
             if (!beatmapObject.detector)
             {
                 var op = runtimeObject.visualObject.gameObject.GetOrAddComponent<Detector>();
@@ -13299,6 +13314,9 @@ namespace BetterLegacy.Core.Helpers
             var runtimeObject = beatmapObject.runtimeObject;
             if (!runtimeObject || !runtimeObject.visualObject || !runtimeObject.visualObject.collider)
                 return false;
+
+            if (runtimeObject.visualObject is SolidObject solidObject)
+                solidObject.forceCollisionEnabled = true;
 
             var list = GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(0)).FindAll(x => x.runtimeObject.visualObject && x.runtimeObject.visualObject.collider);
             return !list.IsEmpty() && list.Any(x => x.runtimeObject.visualObject.collider.IsTouching(runtimeObject.visualObject.collider));

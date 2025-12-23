@@ -1,7 +1,9 @@
 ﻿using UnityEngine;
 
 using LSFunctions;
+using BetterLegacy.Configs;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Core.Runtime.Objects.Visual
 {
@@ -17,8 +19,14 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
 
         bool opacityCollision;
 
+        /// <summary>
+        /// Cached double sided.
+        /// </summary>
         public bool doubleSided;
 
+        /// <summary>
+        /// Cached gradient type.
+        /// </summary>
         public int gradientType;
 
         /// <summary>
@@ -31,16 +39,61 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
         /// </summary>
         public bool IsFlipped => gradientType == 1 || gradientType == 3;
 
+        /// <summary>
+        /// Cached gradient scale.
+        /// </summary>
         public float gradientScale;
+
+        /// <summary>
+        /// Cached gradient rotation.
+        /// </summary>
         public float gradientRotation;
 
+        /// <summary>
+        /// Cached color blend mode.
+        /// </summary>
         public int colorBlendMode;
 
+        /// <summary>
+        /// If the collision can't damage the player.
+        /// </summary>
+        public bool deco;
+        /// <summary>
+        /// If the collision is solid.
+        /// </summary>
+        public bool solid;
+        /// <summary>
+        /// If the opacity value is high enough to turn collision on.
+        /// </summary>
+        public bool opacityCollide = true;
+        /// <summary>
+        /// If the collision should be forced on, ignoring optimization. Specifically used for collision detection trigger modifiers.
+        /// </summary>
+        public bool forceCollisionEnabled;
+
+        public override bool HasCollision => (forceCollisionEnabled || solid || !RTBeatmap.Current.Invincible && !deco || CoreHelper.IsEditing && EditorConfig.Instance.SelectObjectsInPreview.Value) && colliderEnabled && opacityCollide;
+
+        /// <summary>
+        /// If the object is rendering an outline.
+        /// </summary>
         public bool hasOutline;
+        /// <summary>
+        /// Outline data.
+        /// </summary>
         public OutlineData outlineData;
+        /// <summary>
+        /// Type of the outline.
+        /// </summary>
         public int outlineType;
+        /// <summary>
+        /// If the object is rendering an outline for the editor.
+        /// </summary>
         public bool hasEditorOutline;
+        /// <summary>
+        /// Outline data for the editor.
+        /// </summary>
         public OutlineData editorOutlineData;
+
         Color primaryColor;
         Color secondaryColor;
 
@@ -67,12 +120,14 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
         /// <param name="opacityCollision">If opacity of the object changes collision.</param>
         public void UpdateCollider(bool deco, bool solid, bool opacityCollision)
         {
+            this.deco = deco;
+            this.solid = solid;
             this.opacityCollision = opacityCollision;
 
             if (!collider)
                 return;
 
-            collider.enabled = true;
+            collider.enabled = HasCollision;
             collider.tag = deco ? Tags.HELPER : Tags.OBJECTS;
 
             collider.isTrigger = !solid;
@@ -114,8 +169,7 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
             primaryColor = color;
             float a = color.a * opacity;
             material?.SetColor(new Color(color.r, color.g, color.b, a));
-            if (opacityCollision)
-                colliderEnabled = a > 0.99f;
+            opacityCollide = !opacityCollision || a > 0.99f;
         }
 
         /// <summary>
@@ -148,8 +202,7 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
                 material.SetColor("_ColorSecondary", new Color(color2.r, color2.g, color2.b, color2.a * opacity));
             }
 
-            if (opacityCollision)
-                colliderEnabled = color.a + color2.a > 1.99f;
+            opacityCollide = !opacityCollision || color.a + color2.a > 1.99f;
         }
 
         public override void SetPrimaryColor(Color color) => material.color = color;

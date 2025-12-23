@@ -33,6 +33,11 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
         public bool colliderEnabled = true;
 
         /// <summary>
+        /// If the collider is enabled.
+        /// </summary>
+        public virtual bool HasCollision { get; }
+
+        /// <summary>
         /// The current render layer type.
         /// </summary>
         public int renderType;

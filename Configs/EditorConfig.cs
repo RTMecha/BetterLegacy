@@ -339,6 +339,7 @@ namespace BetterLegacy.Configs
         public Setting<float> ObjectDraggerRotatorRadius { get; set; }
         public Setting<float> ObjectDraggerScalerOffset { get; set; }
         public Setting<float> ObjectDraggerScalerScale { get; set; }
+        public Setting<bool> SelectObjectsInPreview { get; set; }
         public Setting<bool> SelectTextObjectsInPreview { get; set; }
         public Setting<bool> SelectImageObjectsInPreview { get; set; }
 
@@ -830,6 +831,7 @@ namespace BetterLegacy.Configs
             ObjectDraggerScalerOffset = Bind(this, PREVIEW, "Object Dragger Scaler Offset", 6f, "The distance of the Object Draggers' scale arrows.");
             ObjectDraggerScalerScale = Bind(this, PREVIEW, "Object Dragger Scaler Scale", 1.6f, "The size of the Object Draggers' scale arrows.");
 
+            SelectObjectsInPreview = Bind(this, PREVIEW, "Select Objects", true, "If objects can be selected in the preview area.");
             SelectTextObjectsInPreview = Bind(this, PREVIEW, "Select Text Objects", false, "If text objects can be selected in the preview area.");
             SelectImageObjectsInPreview = Bind(this, PREVIEW, "Select Image Objects", true, "If image objects can be selected in the preview area.");
 

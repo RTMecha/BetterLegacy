@@ -103,6 +103,7 @@ namespace BetterLegacy.Editor.Managers
                     new KeybindFunction(nameof(UnhideHiddenObjects), UnhideHiddenObjects),
                     new KeybindFunction(nameof(ToggleHideSelection), ToggleHideSelection),
 
+                    new KeybindFunction(nameof(ToggleObjectPreviewSelection), ToggleObjectPreviewSelection),
                     new KeybindFunction(nameof(ToggleObjectDragging), ToggleObjectDragging),
                     new KeybindFunction(nameof(ToggleObjectDragHelper), ToggleObjectDragHelper),
                     new KeybindFunction(nameof(SetObjectDragHelperAxisX), SetObjectDragHelperAxisX),
@@ -1840,9 +1841,23 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.DisplayNotification($"Toggled hidden state of [{hiddenCount}] objects!", 2f, EditorManager.NotificationType.Success);
         }
 
-        public void ToggleObjectDragging(Keybind keybind) => EditorConfig.Instance.ObjectDraggerEnabled.Value = !EditorConfig.Instance.ObjectDraggerEnabled.Value;
+        public void ToggleObjectPreviewSelection(Keybind keybind)
+        {
+            EditorConfig.Instance.SelectObjectsInPreview.Value = !EditorConfig.Instance.SelectObjectsInPreview.Value;
+            NotifySettingChanged(EditorConfig.Instance.SelectObjectsInPreview);
+        }
 
-        public void ToggleObjectDragHelper(Keybind keybind) => EditorConfig.Instance.ObjectDraggerHelper.Value = !EditorConfig.Instance.ObjectDraggerHelper.Value;
+        public void ToggleObjectDragging(Keybind keybind)
+        {
+            EditorConfig.Instance.ObjectDraggerEnabled.Value = !EditorConfig.Instance.ObjectDraggerEnabled.Value;
+            NotifySettingChanged(EditorConfig.Instance.ObjectDraggerEnabled);
+        }
+
+        public void ToggleObjectDragHelper(Keybind keybind)
+        {
+            EditorConfig.Instance.ObjectDraggerHelper.Value = !EditorConfig.Instance.ObjectDraggerHelper.Value;
+            NotifySettingChanged(EditorConfig.Instance.ObjectDraggerHelper);
+        }
 
         public void SetObjectDragHelperAxisX(Keybind keybind)
         {
@@ -2524,6 +2539,12 @@ namespace BetterLegacy.Editor.Managers
                 RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                 RTPrefabEditor.inst.RenderPrefabObjectTransforms(prefabObject);
             }
+        }
+
+        void NotifySettingChanged(BaseSetting setting)
+        {
+            var value = setting.BoxedValue is bool b ? (b ? "on" : "off") : setting.BoxedValue?.ToString();
+            EditorManager.inst.DisplayNotification($"Set {setting.Key} {value}", 2f, EditorManager.NotificationType.Success);
         }
 
         #endregion
