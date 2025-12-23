@@ -356,6 +356,9 @@ namespace BetterLegacy
                 if (musicGroupIndex < 0)
                     musicClips.Add(musicGroup);
 
+                if (song["always_random"] != null)
+                    musicGroup.alwaysRandom = song["always_random"].AsBool;
+
                 for (int j = 0; j < song["clips"].Count; j++)
                 {
                     var clipIndex = j;
@@ -385,6 +388,8 @@ namespace BetterLegacy
                         musicGroup.group.TryAdd(clipIndex, origClip);
                     continue;
                 }
+
+                musicGroup.Shuffle();
             }
 
             loadedClips.Clear();

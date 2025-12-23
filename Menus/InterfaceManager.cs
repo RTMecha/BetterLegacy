@@ -890,6 +890,8 @@ namespace BetterLegacy.Menus
                             LegacyPlugin.LoadSplashText();
                             ChangeLogMenu.Seen = false;
                             inst.randomIndex = -1;
+                            for (int i = 0; i < LegacyResources.musicClips.Count; i++)
+                                LegacyResources.musicClips[i].Shuffle();
                             inst.StartupInterface();
 
                             return;
