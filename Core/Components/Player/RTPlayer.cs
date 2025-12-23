@@ -1524,7 +1524,7 @@ namespace BetterLegacy.Core.Components.Player
                     return;
 
                 var cameraToViewportPoint = Camera.main.WorldToViewportPoint(rb.position);
-                var clampedPos = Camera.main.ViewportToWorldPoint(new Vector3(Mathf.Clamp(cameraToViewportPoint.x, 0f, 1f), Mathf.Clamp(cameraToViewportPoint.y, 0f, 1f)));
+                var clampedPos = Camera.main.ViewportToWorldPoint(new Vector3(Mathf.Clamp(cameraToViewportPoint.x, 0f, 1f), Mathf.Clamp(cameraToViewportPoint.y, 0f, 1f), cameraToViewportPoint.z));
                 //if (cameraToViewportPoint.x < 0f || cameraToViewportPoint.x > 1f || cameraToViewportPoint.y < 0f || cameraToViewportPoint.y > 1f)
                 //{
                 //    CoreHelper.Log("Player is outside the range of the camera!\n" +
