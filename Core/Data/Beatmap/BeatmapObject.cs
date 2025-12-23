@@ -41,7 +41,13 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <summary>
         /// If true, object does not render when the user has the <see cref="Configs.CoreConfig.LDM"/> setting on.
         /// </summary>
-        public bool LDM { get; set; }
+        public bool LDM
+        {
+            get => detailMode == DetailMode.HighDetail;
+            set => detailMode = value ? DetailMode.HighDetail : DetailMode.Normal;
+        }
+
+        public DetailMode detailMode;
 
         /// <summary>
         /// Animation events.
@@ -639,7 +645,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             colorBlendMode = orig.colorBlendMode;
             this.CopyShapeableData(orig);
 
-            LDM = orig.LDM;
+            detailMode = orig.detailMode;
 
             this.CopyParentData(orig);
             Parent = orig.parent;
@@ -1177,6 +1183,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             if (jn["ldm"] != null)
                 LDM = jn["ldm"].AsBool;
+            if (jn["dm"] != null)
+                detailMode = (DetailMode)jn["dm"].AsInt;
 
             if (jn["st"] != null)
                 startTime = jn["st"].AsFloat;
@@ -1399,7 +1407,9 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["opcol"] = opacityCollision;
 
             if (LDM)
-                jn["ldm"] = LDM;
+                jn["ldm"] = LDM; // kept for compatability for now
+            if (detailMode != DetailMode.Normal)
+                jn["dm"] = (int)detailMode;
 
             jn["st"] = StartTime;
 

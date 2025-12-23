@@ -1266,6 +1266,7 @@ namespace BetterLegacy.Editor.Managers
         {
             EditorHelper.SetComplexity(Dialog.LDMLabel.gameObject, "beatmapobject/ldm", Complexity.Advanced);
             EditorHelper.SetComplexity(Dialog.LDMToggle.gameObject, "beatmapobject/ldm", Complexity.Advanced);
+            TooltipHelper.AssignTooltip(Dialog.LDMToggle.gameObject, "Detail Mode");
 
             Dialog.LDMToggle.SetIsOnWithoutNotify(beatmapObject.LDM);
             Dialog.LDMToggle.onValueChanged.NewListener(_val =>
@@ -1273,6 +1274,32 @@ namespace BetterLegacy.Editor.Managers
                 beatmapObject.LDM = _val;
                 RTLevel.Current?.UpdateObject(beatmapObject);
             });
+
+            EditorContextMenu.AddContextMenu(Dialog.LDMToggle.gameObject,
+                ButtonElement.SelectionButton(() => beatmapObject.detailMode == DetailMode.Normal, "Normal", () =>
+                {
+                    beatmapObject.detailMode = DetailMode.Normal;
+                    RTLevel.Current?.UpdateObject(beatmapObject);
+                    RenderLDM(beatmapObject);
+                }, "Detail Mode Normal"),
+                ButtonElement.SelectionButton(() => beatmapObject.detailMode == DetailMode.HighDetail, "High Detail Only", () =>
+                {
+                    beatmapObject.detailMode = DetailMode.HighDetail;
+                    RTLevel.Current?.UpdateObject(beatmapObject);
+                    RenderLDM(beatmapObject);
+                }, "Detail Mode High Detail Only"),
+                ButtonElement.SelectionButton(() => beatmapObject.detailMode == DetailMode.LowDetail, "Low Detail Only", () =>
+                {
+                    beatmapObject.detailMode = DetailMode.LowDetail;
+                    RTLevel.Current?.UpdateObject(beatmapObject);
+                    RenderLDM(beatmapObject);
+                }, "Detail Mode Low Detail Only"),
+                ButtonElement.SelectionButton(() => beatmapObject.detailMode == DetailMode.NoDetail, "No Spawn", () =>
+                {
+                    beatmapObject.detailMode = DetailMode.NoDetail;
+                    RTLevel.Current?.UpdateObject(beatmapObject);
+                    RenderLDM(beatmapObject);
+                }, "Detail Mode No Spawn"));
         }
 
         /// <summary>

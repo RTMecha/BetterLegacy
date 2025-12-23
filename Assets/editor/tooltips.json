@@ -6057,6 +6057,56 @@
     // Misc
     [
       {
+        "name": "Detail Mode",
+        "tooltips": [
+          {
+            "desc": "How the object should acknowledge the Low Detail Mode setting.",
+            "hint": "<b>Normal</b>: The normal spawn behavior, does not check for LDM setting.\n<b>High Detail Only</b>: Object only spawns if the LDM setting is off.\n<b>Low Detail Only</b>: Object only spawns if the LDM setting is on.\n<b>No Spawn</b>: Object doesn't spawn, regardless of LDM setting.",
+            "lang": 0
+          }
+        ]
+      }, // Detail Mode
+      {
+        "name": "Detail Mode Normal",
+        "tooltips": [
+          {
+            "desc": "The normal spawn behavior, does not check for LDM setting.",
+            "hint": "",
+            "lang": 0
+          }
+        ]
+      }, // Detail Mode Normal
+      {
+        "name": "Detail Mode High Detail Only",
+        "tooltips": [
+          {
+            "desc": "Object only spawns if the LDM setting is off.",
+            "hint": "",
+            "lang": 0
+          }
+        ]
+      }, // Detail Mode High Detail Only
+      {
+        "name": "Detail Mode Low Detail Only",
+        "tooltips": [
+          {
+            "desc": "Object only spawns if the LDM setting is on.",
+            "hint": "",
+            "lang": 0
+          }
+        ]
+      }, // Detail Mode Low Detail Only
+      {
+        "name": "Detail Mode No Spawn",
+        "tooltips": [
+          {
+            "desc": "Object doesn't spawn, regardless of LDM setting.",
+            "hint": "",
+            "lang": 0
+          }
+        ]
+      }, // Detail Mode No Spawn
+      {
         "name": "Hex Color Field",
         "tooltips": [
           {

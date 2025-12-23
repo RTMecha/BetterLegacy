@@ -38,19 +38,21 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public bool Modded => BeatmapObjectsModded || EventKeyframesModded || PrefabObjectsModded;
 
-        bool BeatmapObjectsModded => beatmapObjects.Any(x => x.modifiers.Count > 0
-                    || x.objectType == BeatmapObject.ObjectType.Solid
-                    || x.desync
-                    || x.renderLayerType != BeatmapObject.RenderLayerType.Foreground
-                    || x.LDM
-                    || x.parallaxSettings.Any(y => y != 1f)
-                    || x.parentAdditive != "000"
-                    || x.shape > UnmoddedShapeOptions.Length - 1
-                    || x.shapeOption >= UnmoddedShapeOptions[Mathf.Clamp(x.shape, 0, UnmoddedShapeOptions.Length - 1)]
-                    || x.events[0].Any(x => x.random > 4 || x.values.Length > 2 && x.values[2] != 0f || x.relative)
-                    || x.events[1].Any(x => x.relative)
-                    || x.events[2].Any(x => x.random > 4 || !x.relative)
-                    || x.events[3].Any(x => x.random > 4 || x.values[0] > 8f || x.values[2] != 0f || x.values[3] != 0f || x.values[4] != 0f));
+        bool BeatmapObjectsModded => beatmapObjects.Any(x =>
+            x.modifiers.Count > 0 ||
+            x.objectType == BeatmapObject.ObjectType.Solid ||
+            x.desync ||
+            x.renderLayerType != BeatmapObject.RenderLayerType.Foreground ||
+            x.detailMode != DetailMode.Normal ||
+            x.colorBlendMode != ColorBlendMode.Normal ||
+            x.parallaxSettings.Any(y => y != 1f) ||
+            x.parentAdditive != "000" ||
+            x.shape > UnmoddedShapeOptions.Length - 1 ||
+            x.shapeOption >= UnmoddedShapeOptions[Mathf.Clamp(x.shape, 0, UnmoddedShapeOptions.Length - 1)] ||
+            x.events[0].Any(x => x.random > 4 || x.values.Length > 2 && x.values[2] != 0f || x.relative) ||
+            x.events[1].Any(x => x.relative) ||
+            x.events[2].Any(x => x.random > 4 || !x.relative) ||
+            x.events[3].Any(x => x.random > 4 || x.values[0] > 8f || x.values[2] != 0f || x.values[3] != 0f || x.values[4] != 0f));
 
         bool EventKeyframesModded
         {
@@ -85,7 +87,15 @@ namespace BetterLegacy.Core.Data.Beatmap
             }
         }
 
-        bool PrefabObjectsModded => prefabObjects.Any(x => x.RepeatCount > 0 || x.Speed != 1f || !string.IsNullOrEmpty(x.Parent) || x.autoKillType != PrefabAutoKillType.Regular);
+        bool PrefabObjectsModded => prefabObjects.Any(x =>
+            x.RepeatCount > 0 ||
+            x.Speed != 1f ||
+            !string.IsNullOrEmpty(x.Parent) ||
+            x.autoKillType != PrefabAutoKillType.Regular ||
+            x.depth != 0f ||
+            x.desync ||
+            x.parentParallax.Any(y => y != 1f) ||
+            x.parentAdditive != "000");
 
         #endregion
 

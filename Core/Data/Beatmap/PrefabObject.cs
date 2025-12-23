@@ -49,6 +49,8 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public bool expanded;
 
+        public DetailMode detailMode;
+
         #region Prefab
 
         /// <summary>
@@ -422,6 +424,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             autoKillOffset = orig.autoKillOffset;
             autoKillType = orig.autoKillType;
 
+            detailMode = orig.detailMode;
             repeatCount = orig.repeatCount;
             repeatOffsetTime = orig.repeatOffsetTime;
             speed = orig.Speed;
@@ -548,6 +551,9 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             if (jn["exp"] != null)
                 expanded = jn["exp"].AsBool;
+
+            if (jn["dm"] != null)
+                detailMode = (DetailMode)jn["dm"].AsInt;
 
             if (jn["d"] != null)
                 depth = jn["d"].AsFloat;
@@ -677,6 +683,9 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (expanded)
                 jn["exp"] = expanded;
 
+            if (detailMode != DetailMode.Normal)
+                jn["dm"] = (int)detailMode;
+
             if (depth != 0f)
                 jn["d"] = depth;
 
@@ -755,6 +764,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             this.CopyParentData(copiedInstanceData);
             parentSelf = copiedInstanceData.parentSelf;
             offsetParentDesyncTime = copiedInstanceData.offsetParentDesyncTime;
+            detailMode = copiedInstanceData.detailMode;
             depth = copiedInstanceData.depth;
             RepeatCount = copiedInstanceData.RepeatCount;
             RepeatOffsetTime = copiedInstanceData.RepeatOffsetTime;

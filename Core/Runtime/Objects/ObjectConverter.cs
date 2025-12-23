@@ -6,6 +6,7 @@ using System.Text;
 using UnityEngine;
 
 using BetterLegacy.Configs;
+using BetterLegacy.Core;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Core.Data;
@@ -31,7 +32,7 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         #region Runtime Objects
 
-        public bool SkipRuntimeObject(BeatmapObject beatmapObject) => EditorConfig.Instance.OnlyShowDamagable.Value && beatmapObject.objectType != ObjectType.Normal || !EditorConfig.Instance.ShowEmpties.Value && beatmapObject.objectType == ObjectType.Empty || beatmapObject.LDM && CoreConfig.Instance.LDM.Value;
+        public bool SkipRuntimeObject(BeatmapObject beatmapObject) => EditorConfig.Instance.OnlyShowDamagable.Value && beatmapObject.objectType != ObjectType.Normal || !EditorConfig.Instance.ShowEmpties.Value && beatmapObject.objectType == ObjectType.Empty || !beatmapObject.detailMode.CanSpawn();
 
         public IEnumerable<IRTObject> ToRuntimeObjects() => ToRuntimeObjects(GameData.Current.beatmapObjects);
 
@@ -299,7 +300,7 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         #region Runtime Modifiers
 
-        public bool SkipRuntimeModifiers(BeatmapObject beatmapObject) => beatmapObject.modifiers.IsEmpty() || CoreConfig.Instance.LDM.Value && beatmapObject.LDM;
+        public bool SkipRuntimeModifiers(BeatmapObject beatmapObject) => beatmapObject.modifiers.IsEmpty() || !beatmapObject.detailMode.CanSpawn();
 
         public IEnumerable<IRTObject> ToRuntimeModifiers() => ToRuntimeModifiers(GameData.Current.beatmapObjects);
 
@@ -495,7 +496,7 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         #region Runtime BG Modifiers
 
-        public bool SkipRuntimeModifiers(BackgroundObject backgroundObject) => backgroundObject.modifiers.IsEmpty() || CoreConfig.Instance.LDM.Value;
+        public bool SkipRuntimeModifiers(BackgroundObject backgroundObject) => backgroundObject.modifiers.IsEmpty();
 
         public IEnumerable<IRTObject> ToRuntimeBGModifiers() => ToRuntimeBGModifiers(GameData.Current.backgroundObjects);
 
@@ -535,10 +536,20 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         #region Runtime Prefab Objects
 
+        public bool SkipRuntimePrefabObject(PrefabObject prefabObject) => !prefabObject.detailMode.CanSpawn();
+
         public IEnumerable<IRTObject> ToRuntimePrefabObjects(IEnumerable<PrefabObject> prefabObjects)
         {
             foreach (var prefabObject in prefabObjects)
             {
+                if (SkipRuntimePrefabObject(prefabObject))
+                {
+                    if (prefabObject.runtimeObject && prefabObject.runtimeObject.ParentObjects != null)
+                        prefabObject.runtimeObject.ParentObjects.Clear();
+                    prefabObject.runtimeObject = null;
+                    continue;
+                }
+
                 RTPrefabObject runtimePrefabObject = null;
 
                 try
@@ -560,7 +571,18 @@ namespace BetterLegacy.Core.Runtime.Objects
             }
         }
 
-        public IRTObject ToIRuntimePrefabObject(Prefab prefab, PrefabObject prefabObject) => ToRuntimePrefabObject(prefab, prefabObject);
+        public IRTObject ToIRuntimePrefabObject(Prefab prefab, PrefabObject prefabObject)
+        {
+            if (SkipRuntimePrefabObject(prefabObject))
+            {
+                if (prefabObject.runtimeObject && prefabObject.runtimeObject.ParentObjects != null)
+                    prefabObject.runtimeObject.ParentObjects.Clear();
+                prefabObject.runtimeObject = null;
+                return null;
+            }
+
+            return ToRuntimePrefabObject(prefab, prefabObject);
+        }
 
         RTPrefabObject ToRuntimePrefabObject(Prefab prefab, PrefabObject prefabObject)
         {
@@ -576,7 +598,7 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         #region Runtime Prefab Modifiers
 
-        public bool SkipRuntimeModifiers(PrefabObject prefabObject) => prefabObject.modifiers.IsEmpty();
+        public bool SkipRuntimeModifiers(PrefabObject prefabObject) => prefabObject.modifiers.IsEmpty() || !prefabObject.detailMode.CanSpawn();
 
         public IEnumerable<IRTObject> ToRuntimePrefabModifiers() => ToRuntimePrefabModifiers(GameData.Current.prefabObjects);
 

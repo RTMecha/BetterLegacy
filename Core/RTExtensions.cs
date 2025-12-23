@@ -2071,12 +2071,12 @@ namespace BetterLegacy.Core
         /// Checks if an object can spawn.
         /// </summary>
         /// <returns>Returns true if the LDM setting matches the detail mode, otherwise returns false.</returns>
-        public static bool CanSpawn(this LowDetailMode ldm) => ldm switch
+        public static bool CanSpawn(this DetailMode ldm) => ldm switch
         {
-            LowDetailMode.None => true,
-            LowDetailMode.OffOnly => !CoreConfig.Instance.LDM.Value,
-            LowDetailMode.OnOnly => CoreConfig.Instance.LDM.Value,
-            LowDetailMode.Never => false,
+            DetailMode.Normal => true,
+            DetailMode.HighDetail => !CoreConfig.Instance.LDM.Value,
+            DetailMode.LowDetail => CoreConfig.Instance.LDM.Value,
+            DetailMode.NoDetail => false,
             _ => true,
         };
 

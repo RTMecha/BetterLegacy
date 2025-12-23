@@ -1236,26 +1236,26 @@ namespace BetterLegacy
     }
 
     /// <summary>
-    /// Low Detail Mode value.
+    /// Detail Mode value.
     /// </summary>
-    public enum LowDetailMode
+    public enum DetailMode
     {
         /// <summary>
         /// Object will always spawn.
         /// </summary>
-        None,
+        Normal,
         /// <summary>
         /// Object will only spawn if the LDM setting is off.
         /// </summary>
-        OffOnly,
+        HighDetail,
         /// <summary>
         /// Object will only spawn if the LDM setting is on.
         /// </summary>
-        OnOnly,
+        LowDetail,
         /// <summary>
         /// Object will never spawn.
         /// </summary>
-        Never,
+        NoDetail,
     }
 
     public class CustomObjectType : Exists
