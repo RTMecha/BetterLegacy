@@ -538,6 +538,10 @@ namespace BetterLegacy.Core.Runtime
             /// User Interface layer camera.
             /// </summary>
             public static Camera UI => RTEventManager.inst ? RTEventManager.inst.uiCam : null;
+            /// <summary>
+            /// Post process camera. Not included in <see cref="GetCameras"/>.
+            /// </summary>
+            public static Camera PostProcess => RTEventManager.inst ? RTEventManager.inst.glitchCam : null;
         }
 
         #endregion
