@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net46</TargetFramework>
+    <TargetFramework>net461</TargetFramework>
     <AssemblyName>BetterLegacy</AssemblyName>
     <Description>Make Project Arrhythmia (Legacy branch) better with this all encompassing mod!</Description>
     <Version>1.8.15</Version>
@@ -32,6 +32,7 @@
     <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
     <PackageReference Include="BepInEx.Core" Version="5.*" />
     <PackageReference Include="BepInEx.PluginInfoProps" Version="1.*" />
+    <PackageReference Include="StbVorbisSharp" Version="1.16.2" />
     <PackageReference Include="UnityEngine.Modules" Version="2019.1.13" IncludeAssets="compile" />
   </ItemGroup>
   
@@ -69,9 +70,9 @@
     <Reference Include="Unity.Postprocessing.Runtime">
       <HintPath>..\lib\Unity.Postprocessing.Runtime.dll</HintPath>
     </Reference>
-    <Reference Include="System.IO.Compression">
+    <!--<Reference Include="System.IO.Compression">
       <HintPath>..\lib\System.IO.Compression.dll</HintPath>
-    </Reference>
+    </Reference>-->
     <Reference Include="Unity.TextMeshPro-publicized">
       <HintPath>..\lib\Unity.TextMeshPro-publicized.dll</HintPath>
     </Reference>
@@ -83,6 +84,12 @@
     </Reference>
     <Reference Include="UnityEngine.UI-publicized">
       <HintPath>..\lib\UnityEngine.UI-publicized.dll</HintPath>
+    </Reference>
+    <Reference Include="FFMpegCore">
+      <HintPath>..\lib\FFMpegCore.dll</HintPath>
+    </Reference>
+    <Reference Include="FFMpegCore.Extensions.Downloader">
+      <HintPath>..\lib\FFMpegCore.Extensions.Downloader.dll</HintPath>
     </Reference>
   </ItemGroup>
   
