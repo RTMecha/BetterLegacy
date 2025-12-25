@@ -192,21 +192,38 @@ namespace BetterLegacy.Editor.Data.Dialogs
                             {
                                 standardArrowFunctions = false,
                                 max = EditorTimeline.MAX_BINS,
-                                leftGreaterArrowClicked = _val => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject => timelineObject.Bin = 0),
+                                leftGreaterArrowClicked = _val => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                {
+                                    timelineObject.Bin = 0;
+                                    timelineObject.RenderPosLength();
+                                }),
+                                leftGreaterSprite = EditorSprites.UpArrow,
                                 leftArrowClicked = _val =>
                                 {
                                     if (int.TryParse(_val, out int num))
-                                        MultiObjectEditor.inst.ForEachTimelineObject(timelineObject => timelineObject.Bin -= num);
+                                        MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                        {
+                                            timelineObject.Bin -= num;
+                                            timelineObject.RenderPosLength();
+                                        });
                                 },
                                 middleClicked = _val =>
                                 {
                                     if (int.TryParse(_val, out int num))
-                                        MultiObjectEditor.inst.ForEachTimelineObject(timelineObject => timelineObject.Bin = num);
+                                        MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                        {
+                                            timelineObject.Bin = num;
+                                            timelineObject.RenderPosLength();
+                                        });
                                 },
                                 rightArrowClicked = _val =>
                                 {
                                     if (int.TryParse(_val, out int num))
-                                        MultiObjectEditor.inst.ForEachTimelineObject(timelineObject => timelineObject.Bin += num);
+                                        MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                        {
+                                            timelineObject.Bin += num;
+                                            timelineObject.RenderPosLength();
+                                        });
                                 },
                                 rightGreaterArrowClicked = _val => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject => timelineObject.Bin = EditorTimeline.inst.BinCount),
                                 rightGreaterSprite = EditorSprites.DownArrow,
