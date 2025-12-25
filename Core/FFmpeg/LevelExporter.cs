@@ -54,7 +54,7 @@ namespace BetterLegacy.Core.FFmpeg
             {
                 if (options == null)
                 {
-                    var directory = RTFile.CombinePaths(RTFile.ApplicationDirectory, RTFile.BepInExPluginsPath, "Dependencies");
+                    var directory = RTFile.CombinePaths(RTFile.ApplicationDirectory, RTFile.BepInExPluginsPath, "Dependencies/FFmpeg");
                     options = new FFOptions { BinaryFolder = directory, WorkingDirectory = directory };
                 }
                 return options;
@@ -308,7 +308,7 @@ namespace BetterLegacy.Core.FFmpeg
 
         AsyncGPUReadbackRequest RenderVideoFrame(float t)
         {
-            var renderTexture = RenderTexture.GetTemporary(Width, Height, 24);
+            var renderTexture = RenderTexture.GetTemporary(Width, Height, 24, RenderTextureFormat.ARGB32);
             var currentTime = AudioManager.inst.CurrentAudioSource.time;
             AudioManager.inst.CurrentAudioSource.time = t;
             RTLevel.Current?.Tick();
@@ -419,7 +419,7 @@ namespace BetterLegacy.Core.FFmpeg
 
             public int Width => frameData.Width;
             public int Height => frameData.Height;
-            public string Format => "rgba";
+            public string Format => "argb";
 
             public void Serialize(Stream pipe) => pipe.Write(frameData.Data, 0, frameData.Data.Length);
 
