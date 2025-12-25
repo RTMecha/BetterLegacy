@@ -1,7 +1,64 @@
-# 1.8.15 [Dec 3, 2025]
+# 1.8.16 [Dec 25, 2025]
+## Features
+### Core
+- Added getLook modifiers for player modifiers.
+- Added "Retain Modifiers" value to updateObject modifiers. If set to true and Respawn is off, the modifiers will not be removed from the runtime.
+- Added "Parent Self" to Prefab Objects. This makes Prefab Objects act like regular parented objects where the transform origin is at the parent chain instead of the base origin.
+- Added "Offset Parent Desync" to Prefab Objects. This makes prefab parenting act like it does in modern versions.
+- The player can now jump while upside down if the Allow Reversed Jumping toggle is enabled in the Global tab inside the Player Editor. This also includes a regular Allow Jumping toggle, Allow Wall Jumping toggle and Allow Wall Sticking toggle.
+- Added some playerEnableJump modifiers for modifying if the players can jump.
+- Polygon shapes now have a Thickness Angle value.
+- Added a ton of player trigger and action modifiers.
+- New event type: Shockwave.
+
+### Example Companion
+- Added a command for selecting objects with the same prefab group.
+
+### Editor
+- Added more color keyframe editor context menus.
+- Added a path field to the Project Planner.
+- Added context menus to the event keyframe editors.
+- Project Planner now supports context menus and popups.
+- The BG editor now displays the prefab name.
+- Added QOL variable rendering for modifier values.
+- The Random Types and the Relative toggles in object keyframes can now be hidden.
+- Improved editor complexity to include event bins (rows), random types and relative toggles.
+- Added more editor popups to Asset Packs.
+- Level Collections now have an editor path value. When viewing the levels of the collection, the collections' editor path will be used instead of the actual path.
+- Levels now display editing progress. If the progress is 100%, it displays as a checkmark. The level's progress can be set in the settings editor (where you edit the BPM).
+- Added OpenMultiObjectEditor keybind function. This can be used to open the Multi Object Editor even if there is only one object selected.
+- Added an "Editor Group" system for timeline objects. With this you can organize your objects into groups that can be collapsed / hidden, selected, etc.
+
 ## Changes
-- The achievement lists in the profile menu and the achievements list menu now display a shine when unlocked.
+### Core
+- Heavily improved performance of levels.
+- Color modifiers should no longer act strangely when used on helper objects.
+- Changed the LDM (Low Detail Mode) toggle for objects to have more values, currently only accessible in the context menu for the LDM toggle.
+  - Normal = object spawns regardless of LDM setting (unless the object is empty).
+  - High Detail Only = object only spawns if the LDM setting is off.
+  - Low Detail Only = object only spawns if the LDM setting is on. Good for replacement objects that should display instead of higher detail objects.
+  - No Spawn = object never spawns. Only for unused objects you don't want to remove from a level yet.
+
+### Story
+- Updated DOC.01's boss level to use the new Shockwave effect and color blend modes, plus tweaked some effects to not be as disorienting.
+
+### Editor
+- Show Modified Colors setting now applies to event colors.
+- The Character planner is no longer based on folders. Character planners made before this point will need to be remade.
+- Changed the default behavior of adding collaborators to opening the search user popup.
+- Renamed "Video BG" event to just "Video".
+- Event bins no longer display a label if there is no valid event.
+- Improved the event editor UI code.
+- Improved the workflow of Level Collection editing.
+- Optimized object spawning by recalculating the spawner once instead of per modifier.
+- Redesigned the Multi Object Editor UI.
+- The info that displays for players when a player is hovered over now automatically updates per frame.
 
 ## Fixes
-- Fixed a major issue with the level ending prematurely.
-- Some misc fixes with 1 life and 1 hit modes.
+- Fixed File Browser title scale being way bigger than it should be.
+- Fixed setting the keybind function not saving the keybind profiles.
+- Fixed some issues with Level Collection editing.
+- Fixed the delete button on marker and layer colors not displaying.
+- Fixed Prefab parenting not changing with copy + paste.
+- Fixed the player being able to jump underneath a platform in platformer game mode.
+- Fixed gravity affecting the player while the game is paused.
