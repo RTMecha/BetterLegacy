@@ -190,8 +190,11 @@ namespace BetterLegacy.Core.FFmpeg
                     .WithAudioCodec(AudioCodec))
                 .NotifyOnError(onError => LegacyPlugin.MainTick += () => CoreHelper.LogError($"HAD ERROR: {onError}"))
                 .NotifyOnProgress(p => LegacyPlugin.MainTick += () => CoreHelper.Log($"PROGRESS: {p}"), TimeSpan.FromSeconds(duration)) // this never runs...
-                .WithLogLevel(FFMpegCore.Enums.FFMpegLogLevel.Verbose)
+                //.WithLogLevel(FFMpegCore.Enums.FFMpegLogLevel.Debug)
                 .NotifyOnOutput(o => LegacyPlugin.MainTick += () => CoreHelper.Log($"OUTPUT: {o}")); // it never outputs????
+            // with both sources, it for some reason only outputs the ffmpeg.exe startup.
+            // with only the audio source, it does the same except it then logs an error "Unknown input format: s161e", "Error opening input file \\.\pipe\FFMpegCore_..." and "Error opening input files: Invalid argument"
+            // with only the video source the startup is never logged. is this issue to do with video frames being the incorrect format?
             await argumentProcessor.ProcessAsynchronously(); // why does it never end????????
             videoFrames = null;
             running = false;
