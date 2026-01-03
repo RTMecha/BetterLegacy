@@ -236,6 +236,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
         /// <param name="modifyable">Object that is modifyable.</param>
         public IEnumerator RenderModifiers(IModifyable modifyable)
         {
+            if (modifyable == null)
+                yield break;
+
             if (Label)
                 Label.gameObject.SetActive(RTEditor.ShowModdedUI);
             if (IntVariableUI)
@@ -314,12 +317,28 @@ namespace BetterLegacy.Editor.Data.Dialogs
             Content.parent.parent.AsRT().sizeDelta = new Vector2(351f, 500f);
 
             int num = 0;
+            bool inCollapsedRegion = false;
+            int subRegion = 0;
             foreach (var modifier in modifyable.Modifiers)
             {
                 int index = num;
-                var modifierCard = new ModifierCard(modifier, index, this);
+                if (modifier.Name == "endregion")
+                {
+                    if (subRegion > 0)
+                        subRegion--;
+                    if (subRegion == 0)
+                        inCollapsedRegion = false;
+                }
+
+                var modifierCard = new ModifierCard(modifier, index, inCollapsedRegion, this);
                 modifierCards.Add(modifierCard);
                 modifierCard.RenderModifier(modifyable);
+                if (modifier.Name == "region")
+                {
+                    if (modifier.collapse)
+                        inCollapsedRegion = true;
+                    subRegion++;
+                }
                 num++;
             }
 

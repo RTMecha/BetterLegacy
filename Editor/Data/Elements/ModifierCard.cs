@@ -25,31 +25,59 @@ namespace BetterLegacy.Editor.Data.Elements
     /// </summary>
     public class ModifierCard : Exists
     {
-        public ModifierCard(Modifier modifier, int index, ModifiersEditorDialog dialog)
+        public ModifierCard(Modifier modifier, int index, bool inCollapsedRegion, ModifiersEditorDialog dialog)
         {
             Modifier = modifier;
             this.index = index;
+            this.inCollapsedRegion = inCollapsedRegion;
             this.dialog = dialog;
         }
 
         #region Values
 
+        /// <summary>
+        /// Modifier reference.
+        /// </summary>
         public Modifier Modifier { get; set; }
 
+        /// <summary>
+        /// Unity Game Object of the Modifier Card.
+        /// </summary>
         public GameObject gameObject;
 
+        /// <summary>
+        /// Value layout parent.
+        /// </summary>
         public Transform layout;
 
+        /// <summary>
+        /// Index of the modifier.
+        /// </summary>
         public int index;
 
+        /// <summary>
+        /// If the modifier is in a collapsed region.
+        /// </summary>
+        public bool inCollapsedRegion;
+
+        /// <summary>
+        /// Parent dialog reference.
+        /// </summary>
         public ModifiersEditorDialog dialog;
 
+        /// <summary>
+        /// List of values to update.
+        /// </summary>
         public List<Value> values = new List<Value>();
 
         #endregion
 
-        #region Methods
+        #region Functions
 
+        /// <summary>
+        /// Updates the modifier card per-frame.
+        /// </summary>
+        /// <param name="reference">Object reference.</param>
         public void Tick(IModifierReference reference)
         {
             if (reference == default)
@@ -62,12 +90,35 @@ namespace BetterLegacy.Editor.Data.Elements
             }
         }
 
-        public void RenderModifier<T>(T reference = default)
+        /// <summary>
+        /// Renders the modifier card.
+        /// </summary>
+        /// <param name="reference">Object reference.</param>
+        public void RenderModifier(IModifierReference reference)
         {
-            if (Modifier is not Modifier modifier)
-                return;
+            if (reference is IModifyable modifyable)
+                RenderModifier(reference, modifyable);
+        }
 
-            if (reference is not IModifyable modifyable)
+        /// <summary>
+        /// Renders the modifier card.
+        /// </summary>
+        /// <param name="modifyable">Object reference.</param>
+        public void RenderModifier(IModifyable modifyable)
+        {
+            if (modifyable is IModifierReference reference)
+                RenderModifier(reference, modifyable);
+        }
+
+        /// <summary>
+        /// Renders the modifier card.
+        /// </summary>
+        /// <param name="reference">Object reference.</param>
+        /// <param name="modifyable">Object reference.</param>
+        public void RenderModifier(IModifierReference reference, IModifyable modifyable)
+        {
+            var modifier = Modifier;
+            if (!modifier || reference == default || modifyable == default)
                 return;
 
             if (!dialog)
@@ -86,6 +137,10 @@ namespace BetterLegacy.Editor.Data.Elements
 
             gameObject = ModifiersEditor.inst.modifierCardPrefab.Duplicate(content, name, index);
             this.gameObject = gameObject;
+            gameObject.SetActive(!inCollapsedRegion);
+
+            if (inCollapsedRegion)
+                return;
 
             if (!string.IsNullOrEmpty(modifier.description))
                 TooltipHelper.AddHoverTooltip(gameObject, modifier.DisplayName, modifier.description);
@@ -99,6 +154,7 @@ namespace BetterLegacy.Editor.Data.Elements
             EditorThemeManager.ApplyLightText(modifierTitle);
 
             var collapse = gameObject.transform.Find("Label/Collapse").GetComponent<Toggle>();
+            collapse.interactable = name != "endregion";
             collapse.SetIsOnWithoutNotify(modifier.collapse);
             collapse.onValueChanged.NewListener(_val => Collapse(_val, reference));
 
@@ -208,15 +264,13 @@ namespace BetterLegacy.Editor.Data.Elements
                     EditorManager.inst.DisplayNotification("Pasted Modifier!", 1.5f, EditorManager.NotificationType.Success);
                 }),
                 new SpacerElement(),
-            };
-
-            if (!modifyable.OrderModifiers)
-                buttonFunctions.Add(new ButtonElement("Sort Modifiers", () =>
+                new ButtonElement("Sort Modifiers", () =>
                 {
                     modifyable.Modifiers = modifyable.Modifiers.OrderBy(x => x.type == Modifier.Type.Action).ToList();
 
                     CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
-                }));
+                }, shouldGenerate: () => !modifyable.OrderModifiers),
+            };
 
             buttonFunctions.AddRange(EditorContextMenu.GetMoveIndexFunctions(modifyable.Modifiers, index, () => CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable))));
 
@@ -225,18 +279,24 @@ namespace BetterLegacy.Editor.Data.Elements
                 new SpacerElement(),
                 new ButtonElement("Update Modifier", () => Update(modifier, reference)),
                 new SpacerElement(),
-                new ButtonElement(modifier.collapse ? "Uncollapse" : "Collapse", () => Collapse(!modifier.collapse, reference)),
+                new ButtonElement(modifier.collapse ? "Uncollapse" : "Collapse", () => Collapse(!modifier.collapse, reference), shouldGenerate: () => name != "endregion"),
                 new ButtonElement("Collapse All", () =>
                 {
                     foreach (var mod in modifyable.Modifiers)
-                        mod.collapse = true;
+                    {
+                        if (mod.Name != "endregion")
+                            mod.collapse = true;
+                    }
 
                     CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
                 }),
                 new ButtonElement("Uncollapse All", () =>
                 {
                     foreach (var mod in modifyable.Modifiers)
-                        mod.collapse = false;
+                    {
+                        if (mod.Name != "endregion")
+                            mod.collapse = false;
+                    }
 
                     CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
                 }),
@@ -253,13 +313,9 @@ namespace BetterLegacy.Editor.Data.Elements
                     RenderModifier(reference);
                     RTEditor.inst.HideNameEditor();
                 })),
+                new SpacerElement(() => ModCompatibility.UnityExplorerInstalled),
+                new ButtonElement("Inspect", () => ModCompatibility.Inspect(modifier), shouldGenerate: () => ModCompatibility.UnityExplorerInstalled),
             });
-
-            if (ModCompatibility.UnityExplorerInstalled)
-            {
-                buttonFunctions.Add(new SpacerElement());
-                buttonFunctions.Add(new ButtonElement("Inspect", () => ModCompatibility.Inspect(modifier)));
-            }
 
             EditorContextMenu.AddContextMenu(gameObject, buttonFunctions);
 
@@ -268,9 +324,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
             layout = gameObject.transform.Find("Layout");
 
-            var isComment = name == "comment";
-
-            if (!isComment)
+            if (!ModifiersHelper.IsEditorModifier(name))
             {
                 var constant = ModifiersEditor.inst.booleanBar.Duplicate(layout, "Constant");
                 constant.transform.localScale = Vector3.one;
@@ -366,10 +420,11 @@ namespace BetterLegacy.Editor.Data.Elements
             switch (name)
             {
                 case "comment": {
-                        layout.transform.AsRT().sizeDelta = new Vector2(340f, 126f);
+                        var height = Mathf.Clamp(modifier.GetFloat(2, 126f), 20f, 512f);
+                        layout.AsRT().sizeDelta = new Vector2(340f, height);
                         var input = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(layout, "Input");
                         input.transform.localScale = Vector2.one;
-                        input.transform.AsRT().sizeDelta = new Vector2(340f, 126f);
+                        input.transform.AsRT().sizeDelta = new Vector2(340f, height);
                         input.transform.Find("Text").AsRT().sizeDelta = Vector2.zero;
                         var inputField = input.GetComponent<InputField>();
                         inputField.textComponent.alignment = TextAnchor.UpperLeft;
@@ -379,25 +434,54 @@ namespace BetterLegacy.Editor.Data.Elements
                         inputField.onValueChanged.NewListener(_val =>
                         {
                             modifier.SetValue(0, _val);
-
                             Update(modifier, reference);
                         });
 
                         EditorThemeManager.ApplyInputField(inputField);
 
                         EditorContextMenu.AddContextMenu(input,
-                            getEditorElements: () => new List<EditorElement>
+                            new ButtonElement(() => modifier.GetBool(1, false) ? "Unlock comment" : "Lock comment", () =>
                             {
-                                new ButtonElement(modifier.GetBool(1, false) ? "Unlock comment" : "Lock comment", () =>
+                                modifier.SetValue(1, (!modifier.GetBool(1, false)).ToString());
+                                Update(modifier, reference);
+
+                                if (inputField)
+                                    inputField.interactable = !modifier.GetBool(1, false);
+                            }),
+                            new LabelElement("Height"),
+                            new NumberInputElement(() => modifier.GetFloat(2, 126f).ToString(), _val =>
+                            {
+                                var height = Mathf.Clamp(Parser.TryParse(_val, 126f), 20f, 512f);
+                                modifier.SetValue(2, height.ToString());
+                                Update(modifier, reference);
+
+                                if (input)
+                                    input.transform.AsRT().sizeDelta = new Vector2(340f, height);
+                                if (layout)
                                 {
-                                    modifier.SetValue(1, (!modifier.GetBool(1, false)).ToString());
+                                    layout.AsRT().sizeDelta = new Vector2(340f, height);
+                                    LayoutRebuilder.ForceRebuildLayoutImmediate(layout.AsRT());
+                                    LayoutRebuilder.ForceRebuildLayoutImmediate(layout.parent.AsRT());
+                                }
+                            }, new NumberInputElement.ArrowHandlerFloat()
+                            {
+                                min = 20f,
+                                max = 512f,
+                            }),
+                            new ButtonElement("Reset Height", () =>
+                            {
+                                modifier.SetValue(2, "126");
+                                Update(modifier, reference);
 
-                                    Update(modifier, reference);
-
-                                    if (inputField)
-                                        inputField.interactable = !modifier.GetBool(1, false);
-                                })
-                            });
+                                if (input)
+                                    input.transform.AsRT().sizeDelta = new Vector2(340f, 126f);
+                                if (layout)
+                                {
+                                    layout.AsRT().sizeDelta = new Vector2(340f, 126f);
+                                    LayoutRebuilder.ForceRebuildLayoutImmediate(layout.AsRT());
+                                    LayoutRebuilder.ForceRebuildLayoutImmediate(layout.parent.AsRT());
+                                }
+                            }));
 
                         break;
                     }
@@ -1147,7 +1231,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         SingleGenerator(modifier, reference, "Duration", 2, 1f);
 
-                        EaseGenerator(modifier, modifier, 3);
+                        EaseGenerator(modifier, reference, 3);
 
                         BoolGenerator(modifier, reference, "Relative", 4, false);
 
@@ -1161,7 +1245,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         SingleGenerator(modifier, reference, "Duration", 3, 1f);
 
-                        EaseGenerator(modifier, modifier, 4);
+                        EaseGenerator(modifier, reference, 4);
 
                         BoolGenerator(modifier, reference, "Relative", 5, false);
 
@@ -1183,7 +1267,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         SingleGenerator(modifier, reference, "Duration", 2, 1f);
 
-                        EaseGenerator(modifier, modifier, 3);
+                        EaseGenerator(modifier, reference, 3);
 
                         BoolGenerator(modifier, reference, "Relative", 4, false);
 
@@ -1194,7 +1278,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         SingleGenerator(modifier, reference, "Duration", 1, 1f);
 
-                        EaseGenerator(modifier, modifier, 2);
+                        EaseGenerator(modifier, reference, 2);
 
                         BoolGenerator(modifier, reference, "Relative", 3, false);
 
@@ -1207,7 +1291,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         SingleGenerator(modifier, reference, "Duration", 2, 1f);
 
-                        EaseGenerator(modifier, modifier, 3);
+                        EaseGenerator(modifier, reference, 3);
 
                         BoolGenerator(modifier, reference, "Relative", 4, false);
 
@@ -1218,7 +1302,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         SingleGenerator(modifier, reference, "Duration", 1, 1f);
 
-                        EaseGenerator(modifier, modifier, 2);
+                        EaseGenerator(modifier, reference, 2);
 
                         BoolGenerator(modifier, reference, "Relative", 3, false);
 
@@ -1229,7 +1313,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         SingleGenerator(modifier, reference, "Duration", 1, 1f);
 
-                        EaseGenerator(modifier, modifier, 2);
+                        EaseGenerator(modifier, reference, 2);
 
                         BoolGenerator(modifier, reference, "Relative", 3, false);
 
@@ -1242,7 +1326,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         SingleGenerator(modifier, reference, "Duration", 2, 1f);
 
-                        EaseGenerator(modifier, modifier, 3);
+                        EaseGenerator(modifier, reference, 3);
 
                         BoolGenerator(modifier, reference, "Relative", 4, false);
 
@@ -1253,7 +1337,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         SingleGenerator(modifier, reference, "Duration", 1, 1f);
 
-                        EaseGenerator(modifier, modifier, 2);
+                        EaseGenerator(modifier, reference, 2);
 
                         BoolGenerator(modifier, reference, "Relative", 3, false);
 
@@ -1264,7 +1348,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         SingleGenerator(modifier, reference, "Duration", 1, 1f);
 
-                        EaseGenerator(modifier, modifier, 2);
+                        EaseGenerator(modifier, reference, 2);
 
                         BoolGenerator(modifier, reference, "Relative", 3, false);
 
@@ -1277,7 +1361,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         SingleGenerator(modifier, reference, "Duration", 2, 1f);
 
-                        EaseGenerator(modifier, modifier, 3);
+                        EaseGenerator(modifier, reference, 3);
 
                         BoolGenerator(modifier, reference, "Relative", 4, false);
 
@@ -1288,7 +1372,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         SingleGenerator(modifier, reference, "Duration", 1, 1f);
 
-                        EaseGenerator(modifier, modifier, 2);
+                        EaseGenerator(modifier, reference, 2);
 
                         BoolGenerator(modifier, reference, "Relative", 3, false);
 
@@ -2545,7 +2629,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         SingleGenerator(modifier, reference, "Offset Value", 0, 0f);
 
                         SingleGenerator(modifier, reference, "Time", 3, 1f);
-                        EaseGenerator(modifier, modifier, 4);
+                        EaseGenerator(modifier, reference, 4);
                         BoolGenerator(modifier, reference, "Relative", 5, false);
 
                         break;
@@ -2807,7 +2891,7 @@ namespace BetterLegacy.Editor.Data.Elements
                                 continue;
 
                             SingleGenerator(modifier, reference, "Keyframe Time", i + 1);
-                            EaseGenerator(modifier, modifier, i + 13);
+                            EaseGenerator(modifier, reference, i + 13);
 
                             BoolGenerator(modifier, reference, "Relative", i + 12, true);
 
@@ -2881,7 +2965,7 @@ namespace BetterLegacy.Editor.Data.Elements
                                 continue;
 
                             SingleGenerator(modifier, reference, "Keyframe Time", i + 1);
-                            EaseGenerator(modifier, modifier, i + 5);
+                            EaseGenerator(modifier, reference, i + 5);
 
                             BoolGenerator(modifier, reference, "Relative", i + 4, true);
 
@@ -3128,7 +3212,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         BoolGenerator(modifier, reference, "Relative", 5, true);
 
-                        EaseGenerator(modifier, modifier, 6);
+                        EaseGenerator(modifier, reference, 6);
 
                         BoolGenerator(modifier, reference, "Apply Delta Time", 7, true);
 
@@ -3149,7 +3233,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         BoolGenerator(modifier, reference, "Relative", 5, true);
 
-                        EaseGenerator(modifier, modifier, 6);
+                        EaseGenerator(modifier, reference, 6);
 
                         BoolGenerator(modifier, reference, "Apply Delta Time", 8, true);
 
@@ -3168,7 +3252,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         BoolGenerator(modifier, reference, "Relative", 5, true);
 
-                        EaseGenerator(modifier, modifier, 6);
+                        EaseGenerator(modifier, reference, 6);
 
                         StringGenerator(modifier, reference, "Signal Group", 7);
                         SingleGenerator(modifier, reference, "Signal Delay", 8, 0f);
@@ -3191,7 +3275,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         BoolGenerator(modifier, reference, "Relative", 5, true);
 
-                        EaseGenerator(modifier, modifier, 6);
+                        EaseGenerator(modifier, reference, 6);
 
                         var str = StringGenerator(modifier, reference, "Object Group", 7);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
@@ -3216,7 +3300,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         BoolGenerator(modifier, reference, "Relative", 5, true);
 
-                        EaseGenerator(modifier, modifier, 6);
+                        EaseGenerator(modifier, reference, 6);
 
                         BoolGenerator(modifier, reference, "Apply Delta Time", 7, true);
 
@@ -3237,7 +3321,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         BoolGenerator(modifier, reference, "Relative", 5, true);
 
-                        EaseGenerator(modifier, modifier, 6);
+                        EaseGenerator(modifier, reference, 6);
 
                         BoolGenerator(modifier, reference, "Apply Delta Time", 8, true);
 
@@ -3256,7 +3340,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         BoolGenerator(modifier, reference, "Relative", 5, true);
 
-                        EaseGenerator(modifier, modifier, 6);
+                        EaseGenerator(modifier, reference, 6);
 
                         StringGenerator(modifier, reference, "Signal Group", 7);
                         StringGenerator(modifier, reference, "Signal Delay", 8);
@@ -3279,7 +3363,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         BoolGenerator(modifier, reference, "Relative", 5, true);
 
-                        EaseGenerator(modifier, modifier, 6);
+                        EaseGenerator(modifier, reference, 6);
 
                         var str = StringGenerator(modifier, reference, "Object Group", 7);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
@@ -4736,14 +4820,23 @@ namespace BetterLegacy.Editor.Data.Elements
 
         #region Functions
 
-        public void Collapse<T>(bool collapse, T reference)
+        public void Collapse(bool collapse, IModifierReference reference)
         {
+            if (Modifier.Name == "endregion")
+                return;
+
             Modifier.collapse = collapse;
+            if (Modifier.Name == "region")
+            {
+                CoroutineHelper.StartCoroutine(dialog.RenderModifiers(reference as IModifyable));
+                return;
+            }
+
             RenderModifier(reference);
             CoroutineHelper.PerformAtEndOfFrame(() => LayoutRebuilder.ForceRebuildLayoutImmediate(dialog.Content.AsRT()));
         }
 
-        public void Delete<T>(T reference)
+        public void Delete(IModifierReference reference)
         {
             if (reference is not IModifyable modifyable)
                 return;
@@ -4787,7 +4880,7 @@ namespace BetterLegacy.Editor.Data.Elements
             }
         }
 
-        public void Copy<T>(T reference)
+        public void Copy(IModifierReference reference)
         {
             if (Modifier is not Modifier modifier)
                 return;
@@ -4805,9 +4898,9 @@ namespace BetterLegacy.Editor.Data.Elements
             EditorManager.inst.DisplayNotification("Copied Modifier!", 1.5f, EditorManager.NotificationType.Success);
         }
 
-        public void Update<T>(T reference) => Update(Modifier, reference);
+        public void Update(IModifierReference reference) => Update(Modifier, reference);
 
-        public void Update<T>(Modifier modifier, T reference)
+        public void Update(Modifier modifier, IModifierReference reference)
         {
             if (!modifier)
                 return;
@@ -4819,7 +4912,7 @@ namespace BetterLegacy.Editor.Data.Elements
             modifier.Result = default;
         }
 
-        public void SetValue<T>(int index, string value, T reference)
+        public void SetValue(int index, string value, IModifierReference reference)
         {
             Modifier.SetValue(index, value);
             var scrollbar = dialog.Scrollbar;
@@ -4837,7 +4930,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
         #region Generators
 
-        public void PrefabGroupOnly<T>(Modifier modifier, T reference)
+        public void PrefabGroupOnly(Modifier modifier, IModifierReference reference)
         {
             var prefabInstance = ModifiersEditor.inst.booleanBar.Duplicate(layout, "Prefab");
             prefabInstance.transform.localScale = Vector3.one;
@@ -4931,7 +5024,7 @@ namespace BetterLegacy.Editor.Data.Elements
             return single;
         }
 
-        public GameObject SingleGenerator<T>(Modifier modifier, T reference, string label, int type, float defaultValue = 0f, float amount = 0.1f, float multiply = 10f, float min = 0f, float max = 0f)
+        public GameObject SingleGenerator(Modifier modifier, IModifierReference reference, string label, int type, float defaultValue = 0f, float amount = 0.1f, float multiply = 10f, float min = 0f, float max = 0f)
         {
             var single = NumberGenerator(layout, label, modifier.GetValue(type), _val =>
             {
@@ -4964,7 +5057,7 @@ namespace BetterLegacy.Editor.Data.Elements
             return single;
         }
 
-        public GameObject IntegerGenerator<T>(Modifier modifier, T reference, string label, int type, int defaultValue = 0, int amount = 1, int min = 0, int max = 0)
+        public GameObject IntegerGenerator(Modifier modifier, IModifierReference reference, string label, int type, int defaultValue = 0, int amount = 1, int min = 0, int max = 0)
         {
             var single = NumberGenerator(layout, label, modifier.GetValue(type), _val =>
             {
@@ -5018,7 +5111,7 @@ namespace BetterLegacy.Editor.Data.Elements
             return global;
         }
 
-        public GameObject BoolGenerator<T>(Modifier modifier, T reference, string label, int type, bool defaultValue = false)
+        public GameObject BoolGenerator(Modifier modifier, IModifierReference reference, string label, int type, bool defaultValue = false)
         {
             var gameObject = BoolGenerator(label, modifier.GetBool(type, defaultValue), _val =>
             {
@@ -5076,7 +5169,7 @@ namespace BetterLegacy.Editor.Data.Elements
             };
         }
 
-        public GameObject StringGenerator<T>(Modifier modifier, T reference, string label, int type, Action<string> onEndEdit = null, bool renderVariables = true)
+        public GameObject StringGenerator(Modifier modifier, IModifierReference reference, string label, int type, Action<string> onEndEdit = null, bool renderVariables = true)
         {
             var editorElement = StringGenerator(layout, label, modifier.GetValue(type), _val =>
             {
@@ -5089,7 +5182,7 @@ namespace BetterLegacy.Editor.Data.Elements
             return editorElement.GameObject;
         }
 
-        public void SetObjectColors<T>(Toggle[] toggles, int index, int currentValue, Modifier modifier, T reference, List<Color> colors)
+        public void SetObjectColors(Toggle[] toggles, int index, int currentValue, Modifier modifier, IModifierReference reference, List<Color> colors)
         {
             int num = 0;
             foreach (var toggle in toggles)
@@ -5117,7 +5210,7 @@ namespace BetterLegacy.Editor.Data.Elements
             }
         }
 
-        public GameObject ColorGenerator<T>(Modifier modifier, T reference, string label, int type, int colorSource = 0) => ColorGenerator(modifier, reference, label, type, colorSource switch
+        public GameObject ColorGenerator(Modifier modifier, IModifierReference reference, string label, int type, int colorSource = 0) => ColorGenerator(modifier, reference, label, type, colorSource switch
         {
             0 => CoreHelper.CurrentBeatmapTheme.objectColors,
             1 => CoreHelper.CurrentBeatmapTheme.backgroundColors,
@@ -5125,7 +5218,7 @@ namespace BetterLegacy.Editor.Data.Elements
             _ => null,
         });
 
-        public GameObject ColorGenerator<T>(Modifier modifier, T reference, string label, int type, List<Color> colors)
+        public GameObject ColorGenerator(Modifier modifier, IModifierReference reference, string label, int type, List<Color> colors)
         {
             var startColorBase = ModifiersEditor.inst.numberInput.Duplicate(layout, label);
             startColorBase.transform.localScale = Vector3.one;
@@ -5202,7 +5295,7 @@ namespace BetterLegacy.Editor.Data.Elements
         //            modifier.SetValue(type, Core.Animation.Ease.EaseReferences.GetAtOrDefault(_val, Core.Animation.Ease.EaseReferences[0]).Name);
         //        });
         
-        public GameObject EaseGenerator<T>(Modifier modifier, T reference, int type)
+        public GameObject EaseGenerator(Modifier modifier, IModifierReference reference, int type)
         {
             var dd = ModifiersEditor.inst.easingBar.Duplicate(layout, "Easing");
             dd.transform.localScale = Vector3.one;
@@ -5252,11 +5345,11 @@ namespace BetterLegacy.Editor.Data.Elements
             return dd;
         }
 
-        public GameObject DropdownGenerator<T>(Modifier modifier, T reference, string label, int type, List<string> options, Action<int> onSelect = null) => DropdownGenerator(modifier, reference, label, type, options.Select(x => new Dropdown.OptionData(x)).ToList(), null, onSelect);
+        public GameObject DropdownGenerator(Modifier modifier, IModifierReference reference, string label, int type, List<string> options, Action<int> onSelect = null) => DropdownGenerator(modifier, reference, label, type, options.Select(x => new Dropdown.OptionData(x)).ToList(), null, onSelect);
 
-        public GameObject DropdownGenerator<T>(Modifier modifier, T reference, string label, int type, List<Dropdown.OptionData> options, Action<int> onSelect = null) => DropdownGenerator(modifier, reference, label, type, options, null, onSelect);
+        public GameObject DropdownGenerator(Modifier modifier, IModifierReference reference, string label, int type, List<Dropdown.OptionData> options, Action<int> onSelect = null) => DropdownGenerator(modifier, reference, label, type, options, null, onSelect);
 
-        public GameObject DropdownGenerator<T>(Modifier modifier, T reference, string label, int type, List<Dropdown.OptionData> options, List<bool> disabledOptions, Action<int> onSelect = null)
+        public GameObject DropdownGenerator(Modifier modifier, IModifierReference reference, string label, int type, List<Dropdown.OptionData> options, List<bool> disabledOptions, Action<int> onSelect = null)
         {
             var dd = ModifiersEditor.inst.dropdownBar.Duplicate(layout, label);
             dd.transform.localScale = Vector3.one;
@@ -5314,7 +5407,7 @@ namespace BetterLegacy.Editor.Data.Elements
             return dd;
         }
 
-        public GameObject DropdownGenerator<T>(Modifier modifier, T reference, string label, Func<string> getValue, Action<string> setValue, List<Dropdown.OptionData> options, List<bool> disabledOptions, Action<int> onSelect = null)
+        public GameObject DropdownGenerator(Modifier modifier, IModifierReference reference, string label, Func<string> getValue, Action<string> setValue, List<Dropdown.OptionData> options, List<bool> disabledOptions, Action<int> onSelect = null)
         {
             var dd = ModifiersEditor.inst.dropdownBar.Duplicate(layout, label);
             dd.transform.localScale = Vector3.one;
@@ -5368,7 +5461,7 @@ namespace BetterLegacy.Editor.Data.Elements
             return dd;
         }
 
-        public GameObject DeleteGenerator<T>(Modifier modifier, T reference, Transform parent, Action onDelete)
+        public GameObject DeleteGenerator(Modifier modifier, IModifierReference reference, Transform parent, Action onDelete)
         {
             var deleteGroup = gameObject.transform.Find("Label/Delete").gameObject.Duplicate(parent, "delete");
             deleteGroup.GetComponent<LayoutElement>().ignoreLayout = false;
@@ -5396,7 +5489,7 @@ namespace BetterLegacy.Editor.Data.Elements
             return deleteGroup;
         }
 
-        public GameObject AddGenerator<T>(Modifier modifier, T reference, string text, Action onAdd)
+        public GameObject AddGenerator(Modifier modifier, IModifierReference reference, string text, Action onAdd)
         {
             var add = EditorPrefabHolder.Instance.CreateAddButton(layout);
             add.Text = text;

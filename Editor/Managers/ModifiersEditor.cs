@@ -297,7 +297,11 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
-        Sprite GetSprite(Modifier modifier) => modifier.Name.StartsWith("get") ? EditorSprites.DownArrow : modifier.type == Modifier.Type.Trigger ? EditorSprites.QuestionSprite : EditorSprites.ExclaimSprite;
+        Sprite GetSprite(Modifier modifier) =>
+            ModifiersHelper.IsEditorModifier(modifier.Name) ? EditorSprites.EditSprite :
+            modifier.Name.StartsWith("get") ? EditorSprites.DownArrow :
+            modifier.type == Modifier.Type.Trigger ? EditorSprites.QuestionSprite :
+            EditorSprites.ExclaimSprite;
 
         bool SearchModifier(string searchTerm, Modifier modifier) =>
             string.IsNullOrEmpty(searchTerm) ||

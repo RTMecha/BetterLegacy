@@ -2198,6 +2198,8 @@ namespace BetterLegacy.Core.Helpers
             name.Contains("copy") && name != nameof(ModifierFunctions.copyPlayerAxis) ||
             name.Contains("applyAnimation");
 
+        public static bool IsEditorModifier(string name) => name == "comment" || name == "region" || name == "endregion";
+
         public static void SetVariables(Dictionary<string, string> variables, Dictionary<string, float> numberVariables)
         {
             if (variables == null)
