@@ -408,6 +408,8 @@ namespace BetterLegacy.Editor.Managers
             List<TimelineObject> selected = null;
             PrefabExpander.Expanded expanded = null;
             var time = RTLevel.Current.FixedTime + copy.offset;
+            if (!dup && RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsPasted.Value)
+                time = RTEditor.SnapToBPM(time);
 
             EditorManager.inst.history.Add(new History.Command("Paste Objects",
                 () =>
