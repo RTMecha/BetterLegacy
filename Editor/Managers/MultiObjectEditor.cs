@@ -249,6 +249,12 @@ namespace BetterLegacy.Editor.Managers
             }
         });
 
+        public void SetDetailMode(DetailMode detailMode) => ForEachBeatmapObject(beatmapObject =>
+        {
+            beatmapObject.detailMode = detailMode;
+            RTLevel.Current?.UpdateObject(beatmapObject);
+        });
+
         public void SetObjectType(BeatmapObject.ObjectType objectType) => ForEachBeatmapObject(timelineObject =>
         {
             var beatmapObject = timelineObject.GetData<BeatmapObject>();
