@@ -60,12 +60,28 @@
       "const": "True",
       "collapse": "True"
     }, // else
-    {
-      "type": 1,
-      "name": "comment",
-      "values": [ "Default comment.", "False" ],
-      "const": "True"
-    }, // comment
+
+    // Editor
+    [
+      {
+        "type": 1,
+        "name": "comment",
+        "values": [ "Default comment.", "False", "126" ],
+        "const": "True"
+      }, // comment
+      {
+        "type": 1,
+        "name": "region",
+        "values": [],
+        "const": "True"
+      }, // region
+      {
+        "type": 1,
+        "name": "endregion",
+        "values": [],
+        "const": "True"
+      } // region
+    ],
 
     // Variable
     [
