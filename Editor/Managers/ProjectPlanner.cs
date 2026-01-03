@@ -3122,7 +3122,7 @@ namespace BetterLegacy.Editor.Managers
             var toggle = gameObject.GetComponent<Toggle>();
             tabs.Add(gameObject.GetComponent<Toggle>());
 
-            EditorThemeManager.ApplyGraphic(image, EditorTheme.GetGroup($"Tab Color {tabs.Count}"), true);
+            EditorThemeManager.ApplyGraphic(image, EditorThemeManager.GetTabThemeGroup(tabs.Count - 1), true);
             EditorThemeManager.ApplyGraphic(toggle.graphic, ThemeGroup.Background_1);
 
             return gameObject;

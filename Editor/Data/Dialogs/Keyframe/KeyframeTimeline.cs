@@ -113,7 +113,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 eventTrigger.triggers.RemoveAll(x => x.eventID == EventTriggerType.PointerUp);
                 eventTrigger.triggers.Add(entry);
 
-                EditorThemeManager.ApplyGraphic(idRight.GetChild(type).GetComponent<Image>(), EditorTheme.GetGroup($"Object Keyframe Color {type + 1}"));
+                EditorThemeManager.ApplyGraphic(idRight.GetChild(type).GetComponent<Image>(), EditorThemeManager.GetObjectKeyframeThemeGroup(type));
             }
 
             TimelineLeft = Viewport.Find("id/left").AsRT();

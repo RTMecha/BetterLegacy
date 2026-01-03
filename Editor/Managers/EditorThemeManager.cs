@@ -41,6 +41,196 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public static bool onlyRenderActive;
 
+        /// <summary>
+        /// Lookup for theme groups that have associated <see cref="ColorBlock"/> groups.
+        /// </summary>
+        public static Dictionary<ThemeGroup, SelectableThemeGroup> selectableThemeGroups = new Dictionary<ThemeGroup, SelectableThemeGroup>
+        {
+            {
+                ThemeGroup.Scrollbar_1_Handle, new SelectableThemeGroup(
+                    ThemeGroup.Scrollbar_1_Handle_Normal,
+                    ThemeGroup.Scrollbar_1_Handle_Highlighted,
+                    ThemeGroup.Scrollbar_1_Handle_Selected,
+                    ThemeGroup.Scrollbar_1_Handle_Pressed,
+                    ThemeGroup.Scrollbar_1_Handle_Disabled)
+            }, // Scrollbar_1_Handle
+            {
+                ThemeGroup.Scrollbar_2_Handle, new SelectableThemeGroup(
+                    ThemeGroup.Scrollbar_2_Handle_Normal,
+                    ThemeGroup.Scrollbar_2_Handle_Highlighted,
+                    ThemeGroup.Scrollbar_2_Handle_Selected,
+                    ThemeGroup.Scrollbar_2_Handle_Pressed,
+                    ThemeGroup.Scrollbar_2_Handle_Disabled)
+            }, // Scrollbar_2_Handle
+            {
+                ThemeGroup.Close, new SelectableThemeGroup(
+                    ThemeGroup.Close_Normal,
+                    ThemeGroup.Close_Highlighted,
+                    ThemeGroup.Close_Selected,
+                    ThemeGroup.Close_Pressed,
+                    ThemeGroup.Close_Disabled)
+            }, // Close
+            {
+                ThemeGroup.Picker, new SelectableThemeGroup(
+                    ThemeGroup.Picker_Normal,
+                    ThemeGroup.Picker_Highlighted,
+                    ThemeGroup.Picker_Selected,
+                    ThemeGroup.Picker_Pressed,
+                    ThemeGroup.Picker_Disabled)
+            }, // Picker
+            {
+                ThemeGroup.Function_2, new SelectableThemeGroup(
+                    ThemeGroup.Function_2_Normal,
+                    ThemeGroup.Function_2_Highlighted,
+                    ThemeGroup.Function_2_Selected,
+                    ThemeGroup.Function_2_Pressed,
+                    ThemeGroup.Function_2_Disabled)
+            }, // Function_2
+            {
+                ThemeGroup.List_Button_1, new SelectableThemeGroup(
+                    ThemeGroup.List_Button_1_Normal,
+                    ThemeGroup.List_Button_1_Highlighted,
+                    ThemeGroup.List_Button_1_Selected,
+                    ThemeGroup.List_Button_1_Pressed,
+                    ThemeGroup.List_Button_1_Disabled)
+            }, // List_Button_1
+            {
+                ThemeGroup.List_Button_2, new SelectableThemeGroup(
+                    ThemeGroup.List_Button_2_Normal,
+                    ThemeGroup.List_Button_2_Highlighted,
+                    ThemeGroup.List_Button_2_Selected,
+                    ThemeGroup.List_Button_2_Pressed,
+                    ThemeGroup.List_Button_2_Disabled)
+            }, // List_Button_2
+            {
+                ThemeGroup.Delete_Keyframe_Button, new SelectableThemeGroup(
+                    ThemeGroup.Delete_Keyframe_Button_Normal,
+                    ThemeGroup.Delete_Keyframe_Button_Highlighted,
+                    ThemeGroup.Delete_Keyframe_Button_Selected,
+                    ThemeGroup.Delete_Keyframe_Button_Pressed,
+                    ThemeGroup.Delete_Keyframe_Button_Disabled)
+            }, // Delete_Keyframe_Button
+            {
+                ThemeGroup.Slider_1, new SelectableThemeGroup(
+                    ThemeGroup.Slider_1_Normal,
+                    ThemeGroup.Slider_1_Highlighted,
+                    ThemeGroup.Slider_1_Selected,
+                    ThemeGroup.Slider_1_Pressed,
+                    ThemeGroup.Slider_1_Disabled)
+            }, // Slider_1
+            {
+                ThemeGroup.Timeline_Scrollbar, new SelectableThemeGroup(
+                    ThemeGroup.Timeline_Scrollbar_Normal,
+                    ThemeGroup.Timeline_Scrollbar_Highlighted,
+                    ThemeGroup.Timeline_Scrollbar_Selected,
+                    ThemeGroup.Timeline_Scrollbar_Pressed,
+                    ThemeGroup.Timeline_Scrollbar_Disabled)
+            }, // Timeline_Scrollbar
+            {
+                ThemeGroup.Title_Bar_Button, new SelectableThemeGroup(
+                    ThemeGroup.Title_Bar_Button_Normal,
+                    ThemeGroup.Title_Bar_Button_Highlighted,
+                    ThemeGroup.Title_Bar_Button_Selected,
+                    ThemeGroup.Title_Bar_Button_Pressed,
+                    ThemeGroup.Title_Bar_Button_Disabled)
+            }, // Title_Bar_Button
+            {
+                ThemeGroup.Title_Bar_Dropdown, new SelectableThemeGroup(
+                    ThemeGroup.Title_Bar_Dropdown_Normal,
+                    ThemeGroup.Title_Bar_Dropdown_Highlighted,
+                    ThemeGroup.Title_Bar_Dropdown_Selected,
+                    ThemeGroup.Title_Bar_Dropdown_Pressed,
+                    ThemeGroup.Title_Bar_Dropdown_Disabled)
+            }, // Title_Bar_Dropdown
+            {
+                ThemeGroup.Tab_Color_1, new SelectableThemeGroup(
+                    ThemeGroup.Tab_Color_1_Normal,
+                    ThemeGroup.Tab_Color_1_Highlighted,
+                    ThemeGroup.Tab_Color_1_Selected,
+                    ThemeGroup.Tab_Color_1_Pressed,
+                    ThemeGroup.Tab_Color_1_Disabled)
+            }, // Tab_Color_1
+            {
+                ThemeGroup.Tab_Color_2, new SelectableThemeGroup(
+                    ThemeGroup.Tab_Color_2_Normal,
+                    ThemeGroup.Tab_Color_2_Highlighted,
+                    ThemeGroup.Tab_Color_2_Selected,
+                    ThemeGroup.Tab_Color_2_Pressed,
+                    ThemeGroup.Tab_Color_2_Disabled)
+            }, // Tab_Color_2
+            {
+                ThemeGroup.Tab_Color_3, new SelectableThemeGroup(
+                    ThemeGroup.Tab_Color_3_Normal,
+                    ThemeGroup.Tab_Color_3_Highlighted,
+                    ThemeGroup.Tab_Color_3_Selected,
+                    ThemeGroup.Tab_Color_3_Pressed,
+                    ThemeGroup.Tab_Color_3_Disabled)
+            }, // Tab_Color_3
+            {
+                ThemeGroup.Tab_Color_4, new SelectableThemeGroup(
+                    ThemeGroup.Tab_Color_4_Normal,
+                    ThemeGroup.Tab_Color_4_Highlighted,
+                    ThemeGroup.Tab_Color_4_Selected,
+                    ThemeGroup.Tab_Color_4_Pressed,
+                    ThemeGroup.Tab_Color_4_Disabled)
+            }, // Tab_Color_4
+            {
+                ThemeGroup.Tab_Color_5, new SelectableThemeGroup(
+                    ThemeGroup.Tab_Color_5_Normal,
+                    ThemeGroup.Tab_Color_5_Highlighted,
+                    ThemeGroup.Tab_Color_5_Selected,
+                    ThemeGroup.Tab_Color_5_Pressed,
+                    ThemeGroup.Tab_Color_5_Disabled)
+            }, // Tab_Color_5
+            {
+                ThemeGroup.Tab_Color_6, new SelectableThemeGroup(
+                    ThemeGroup.Tab_Color_6_Normal,
+                    ThemeGroup.Tab_Color_6_Highlighted,
+                    ThemeGroup.Tab_Color_6_Selected,
+                    ThemeGroup.Tab_Color_6_Pressed,
+                    ThemeGroup.Tab_Color_6_Disabled)
+            }, // Tab_Color_6
+            {
+                ThemeGroup.Tab_Color_7, new SelectableThemeGroup(
+                    ThemeGroup.Tab_Color_7_Normal,
+                    ThemeGroup.Tab_Color_7_Highlighted,
+                    ThemeGroup.Tab_Color_7_Selected,
+                    ThemeGroup.Tab_Color_7_Pressed,
+                    ThemeGroup.Tab_Color_7_Disabled)
+            }, // Tab_Color_7
+        };
+
+        /// <summary>
+        /// Lookup for theme groups that have associated <see cref="InputField"/> groups.
+        /// </summary>
+        public static Dictionary<ThemeGroup, InputFieldThemeGroup> inputFieldThemeGroups = new Dictionary<ThemeGroup, InputFieldThemeGroup>
+        {
+            {
+                ThemeGroup.Search_Field_1, new InputFieldThemeGroup(
+                    ThemeGroup.Search_Field_1,
+                    ThemeGroup.Search_Field_1_Text)
+            }, // Search_Field_1
+            {
+                ThemeGroup.Search_Field_2, new InputFieldThemeGroup(
+                    ThemeGroup.Search_Field_2,
+                    ThemeGroup.Search_Field_2_Text)
+            }, // Search_Field_2
+            {
+                ThemeGroup.Input_Field, new InputFieldThemeGroup(
+                    ThemeGroup.Input_Field,
+                    ThemeGroup.Input_Field_Text)
+            }, // Input_Field
+        };
+
+        /// <summary>
+        /// The default color block.
+        /// </summary>
+        public static ColorBlock DefaultColorBlock => new ColorBlock
+        {
+            colorMultiplier = 1f,
+            fadeDuration = 0.1f
+        };
+
         #endregion
 
         #region Functions
@@ -174,7 +364,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="canSetRounded">If the graphic can be rounded.</param>
         /// <param name="rounded">Rounded value of the graphic.</param>
         /// <param name="roundedSide">Rounded side of the graphic.</param>
-        public static void ApplyGraphic(Graphic graphic, ThemeGroup group, bool canSetRounded = false, int rounded = 1, SpriteHelper.RoundedSide roundedSide = SpriteHelper.RoundedSide.W)
+        public static void ApplyGraphic(Graphic graphic, ThemeGroup group, bool canSetRounded = false, int rounded = 1, SpriteHelper.RoundedSide roundedSide = SpriteHelper.RoundedSide.W, float opacity = 1f)
         {
             if (!graphic)
                 return;
@@ -182,7 +372,7 @@ namespace BetterLegacy.Editor.Managers
             ApplyElement(new EditorThemeElement(group, graphic.gameObject, new Component[]
             {
                 graphic,
-            }, canSetRounded, rounded, roundedSide));
+            }, canSetRounded, rounded, roundedSide, opacity: opacity));
         }
 
         /// <summary>
@@ -307,7 +497,11 @@ namespace BetterLegacy.Editor.Managers
             if (inputField.image)
                 inputField.image.fillCenter = true;
             ApplyGraphic(inputField.image, group, true, rounded, roundedSide);
-            ApplyGraphic(inputField.textComponent, EditorTheme.GetGroup($"{EditorTheme.GetString(group)} Text"));
+            if (inputFieldThemeGroups.TryGetValue(group, out InputFieldThemeGroup inputFieldThemeGroup))
+            {
+                ApplyGraphic(inputField.textComponent, inputFieldThemeGroup.text);
+                ApplyGraphic(inputField.placeholder, inputFieldThemeGroup.placeholder, opacity: 0.5f);
+            }
         }
 
         /// <summary>
@@ -328,7 +522,16 @@ namespace BetterLegacy.Editor.Managers
             if (inputField.image)
                 inputField.image.fillCenter = true;
             ApplyGraphic(inputField.image, group, true, rounded, roundedSide);
-            ApplyGraphic(inputField.textComponent, EditorTheme.GetGroup($"{EditorTheme.GetString(group)} Text"));
+            if (inputFieldThemeGroups.TryGetValue(group, out InputFieldThemeGroup inputFieldThemeGroup))
+            {
+                ApplyGraphic(inputField.textComponent, inputFieldThemeGroup.text);
+                if (inputField.placeholder)
+                    ApplyGraphic(inputField.placeholder, inputFieldThemeGroup.placeholder, opacity: 0.5f);
+                else if (inputField.transform.TryFind("Placeholder", out Transform uPlaceholder))
+                    ApplyGraphic(uPlaceholder.GetComponent<Graphic>(), inputFieldThemeGroup.placeholder, opacity: 0.5f);
+                else if (inputField.transform.TryFind("placeholder", out Transform lPlaceholder))
+                    ApplyGraphic(lPlaceholder.GetComponent<Graphic>(), inputFieldThemeGroup.placeholder, opacity: 0.5f);
+            }
         }
 
         /// <summary>
@@ -466,64 +669,6 @@ namespace BetterLegacy.Editor.Managers
         }
 
         /// <summary>
-        /// Applies a theme to an array of component.
-        /// </summary>
-        /// <param name="theme">Theme to get the color from.</param>
-        /// <param name="themeGroup">Color group to assign.</param>
-        /// <param name="isSelectable">If the components are selectable.</param>
-        /// <param name="components">Array of components.</param>
-        public static void ApplyTheme(EditorTheme theme, ThemeGroup themeGroup, bool isSelectable, params Component[] components)
-        {
-            try
-            {
-                if (themeGroup == ThemeGroup.Null)
-                    return;
-
-                if (!theme.ColorGroups.TryGetValue(themeGroup, out Color color))
-                    return;
-
-                if (!isSelectable)
-                    SetColor(color, components);
-                else
-                {
-                    var colorBlock = new ColorBlock
-                    {
-                        colorMultiplier = 1f,
-                        fadeDuration = 0.1f
-                    };
-
-                    var space = EditorTheme.GetString(themeGroup);
-                    var normalGroup = EditorTheme.GetGroup(space + " Normal");
-                    var highlightGroup = EditorTheme.GetGroup(space + " Highlight");
-                    var selectedGroup = EditorTheme.GetGroup(space + " Selected");
-                    var pressedGroup = EditorTheme.GetGroup(space + " Pressed");
-                    var disabledGroup = EditorTheme.GetGroup(space + " Disabled");
-
-                    if (theme.ColorGroups.TryGetValue(normalGroup, out Color normalColor))
-                        colorBlock.normalColor = normalColor;
-
-                    if (theme.ColorGroups.TryGetValue(highlightGroup, out Color highlightedColor))
-                        colorBlock.highlightedColor = highlightedColor;
-
-                    if (theme.ColorGroups.TryGetValue(selectedGroup, out Color selectedColor))
-                        colorBlock.selectedColor = selectedColor;
-
-                    if (theme.ColorGroups.TryGetValue(pressedGroup, out Color pressedColor))
-                        colorBlock.pressedColor = pressedColor;
-
-                    if (theme.ColorGroups.TryGetValue(disabledGroup, out Color disabledColor))
-                        colorBlock.disabledColor = disabledColor;
-
-                    SetColor(color, colorBlock, components);
-                }
-            }
-            catch
-            {
-
-            }
-        }
-
-        /// <summary>
         /// Sets the color of an array of components.
         /// </summary>
         /// <param name="color">Color to assign.</param>
@@ -602,6 +747,237 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
+        /// <summary>
+        /// Gets a layer's theme group.
+        /// </summary>
+        /// <param name="layer">Layer number.</param>
+        /// <returns>Returns a theme group based on the layer.</returns>
+        public static ThemeGroup GetLayerThemeGroup(int layer) => layer switch
+        {
+            0 => ThemeGroup.Layer_1,
+            1 => ThemeGroup.Layer_2,
+            2 => ThemeGroup.Layer_3,
+            3 => ThemeGroup.Layer_4,
+            4 => ThemeGroup.Layer_5,
+            5 => ThemeGroup.Event_Check,
+            _ => ThemeGroup.Null,
+        };
+
+        /// <summary>
+        /// Gets a theme group that represents a tab.
+        /// </summary>
+        /// <param name="tab">Tab number.</param>
+        /// <returns>Returns a theme group based on a tab.</returns>
+        public static ThemeGroup GetTabThemeGroup(int tab) => tab switch
+        {
+            0 => ThemeGroup.Tab_Color_1,
+            1 => ThemeGroup.Tab_Color_2,
+            2 => ThemeGroup.Tab_Color_3,
+            3 => ThemeGroup.Tab_Color_4,
+            4 => ThemeGroup.Tab_Color_5,
+            5 => ThemeGroup.Tab_Color_6,
+            6 => ThemeGroup.Tab_Color_7,
+            _ => ThemeGroup.Null,
+        };
+
+        /// <summary>
+        /// Gets an event's theme group.
+        /// </summary>
+        /// <param name="type">Type of the event.</param>
+        /// <returns>Returns a theme group based on an event.</returns>
+        public static ThemeGroup GetEventColorThemeGroup(int type) => type switch
+        {
+            0 => ThemeGroup.Event_Color_1,
+            1 => ThemeGroup.Event_Color_2,
+            2 => ThemeGroup.Event_Color_3,
+            3 => ThemeGroup.Event_Color_4,
+            4 => ThemeGroup.Event_Color_5,
+            5 => ThemeGroup.Event_Color_6,
+            6 => ThemeGroup.Event_Color_7,
+            7 => ThemeGroup.Event_Color_8,
+            8 => ThemeGroup.Event_Color_9,
+            9 => ThemeGroup.Event_Color_10,
+            10 => ThemeGroup.Event_Color_11,
+            11 => ThemeGroup.Event_Color_12,
+            12 => ThemeGroup.Event_Color_13,
+            13 => ThemeGroup.Event_Color_14,
+            14 => ThemeGroup.Event_Color_15,
+            _ => ThemeGroup.Null,
+        };
+
+        /// <summary>
+        /// Gets an event's theme group.
+        /// </summary>
+        /// <param name="type">Type of the event.</param>
+        /// <returns>Returns a theme group based on an event.</returns>
+        public static ThemeGroup GetEventColorKeyframeThemeGroup(int type) => type switch
+        {
+            0 => ThemeGroup.Event_Color_1_Keyframe,
+            1 => ThemeGroup.Event_Color_2_Keyframe,
+            2 => ThemeGroup.Event_Color_3_Keyframe,
+            3 => ThemeGroup.Event_Color_4_Keyframe,
+            4 => ThemeGroup.Event_Color_5_Keyframe,
+            5 => ThemeGroup.Event_Color_6_Keyframe,
+            6 => ThemeGroup.Event_Color_7_Keyframe,
+            7 => ThemeGroup.Event_Color_8_Keyframe,
+            8 => ThemeGroup.Event_Color_9_Keyframe,
+            9 => ThemeGroup.Event_Color_10_Keyframe,
+            10 => ThemeGroup.Event_Color_11_Keyframe,
+            11 => ThemeGroup.Event_Color_12_Keyframe,
+            12 => ThemeGroup.Event_Color_13_Keyframe,
+            13 => ThemeGroup.Event_Color_14_Keyframe,
+            14 => ThemeGroup.Event_Color_15_Keyframe,
+            _ => ThemeGroup.Null,
+        };
+
+        /// <summary>
+        /// Gets an event's theme group.
+        /// </summary>
+        /// <param name="type">Type of the event.</param>
+        /// <returns>Returns a theme group based on an event.</returns>
+        public static ThemeGroup GetEventColorEditorThemeGroup(int type) => type switch
+        {
+            0 => ThemeGroup.Event_Color_1_Editor,
+            1 => ThemeGroup.Event_Color_2_Editor,
+            2 => ThemeGroup.Event_Color_3_Editor,
+            3 => ThemeGroup.Event_Color_4_Editor,
+            4 => ThemeGroup.Event_Color_5_Editor,
+            5 => ThemeGroup.Event_Color_6_Editor,
+            6 => ThemeGroup.Event_Color_7_Editor,
+            7 => ThemeGroup.Event_Color_8_Editor,
+            8 => ThemeGroup.Event_Color_9_Editor,
+            9 => ThemeGroup.Event_Color_10_Editor,
+            10 => ThemeGroup.Event_Color_11_Editor,
+            11 => ThemeGroup.Event_Color_12_Editor,
+            12 => ThemeGroup.Event_Color_13_Editor,
+            13 => ThemeGroup.Event_Color_14_Editor,
+            14 => ThemeGroup.Event_Color_15_Editor,
+            _ => ThemeGroup.Null,
+        };
+
+        /// <summary>
+        /// Gets an object event's theme group.
+        /// </summary>
+        /// <param name="type">Type of the object event.</param>
+        /// <returns>Returns a theme group based on an object event.</returns>
+        public static ThemeGroup GetObjectKeyframeThemeGroup(int type) => type switch
+        {
+            0 => ThemeGroup.Object_Keyframe_Color_1,
+            1 => ThemeGroup.Object_Keyframe_Color_2,
+            2 => ThemeGroup.Object_Keyframe_Color_3,
+            3 => ThemeGroup.Object_Keyframe_Color_4,
+            _ => ThemeGroup.Null,
+        };
+
+        /// <summary>
+        /// Gets a notification types' theme group.
+        /// </summary>
+        /// <param name="type">Type of the notification.</param>
+        /// <returns>Returns a theme group based on a notification type.</returns>
+        public static ThemeGroup GetNotificationThemeGroup(EditorManager.NotificationType type) => type switch
+        {
+            EditorManager.NotificationType.Info => ThemeGroup.Notification_Info,
+            EditorManager.NotificationType.Success => ThemeGroup.Notification_Success,
+            EditorManager.NotificationType.Error => ThemeGroup.Notification_Error,
+            EditorManager.NotificationType.Warning => ThemeGroup.Notification_Warning,
+            _ => ThemeGroup.Null,
+        };
+
         #endregion
+    }
+
+    /// <summary>
+    /// Contains theme groups for <see cref="Selectable"/> elements.
+    /// </summary>
+    public class SelectableThemeGroup
+    {
+        public SelectableThemeGroup() { }
+
+        public SelectableThemeGroup(ThemeGroup normal, ThemeGroup highlighted, ThemeGroup selected, ThemeGroup pressed, ThemeGroup disabled)
+        {
+            this.normal = normal;
+            this.highlighted = highlighted;
+            this.selected = selected;
+            this.pressed = pressed;
+            this.disabled = disabled;
+        }
+
+        /// <summary>
+        /// Color for when a selectable is in a normal state.
+        /// </summary>
+        public ThemeGroup normal;
+
+        /// <summary>
+        /// Color for when a selectable is in a highlighted state.
+        /// </summary>
+        public ThemeGroup highlighted;
+
+        /// <summary>
+        /// Color for when a selectable is in a selected state.
+        /// </summary>
+        public ThemeGroup selected;
+
+        /// <summary>
+        /// Color for when a selectable is in a pressed state.
+        /// </summary>
+        public ThemeGroup pressed;
+
+        /// <summary>
+        /// Color for when a selectable is in a disabled state.
+        /// </summary>
+        public ThemeGroup disabled;
+
+        /// <summary>
+        /// Converts the <see cref="SelectableThemeGroup"/> to a <see cref="ColorBlock"/>.
+        /// </summary>
+        /// <param name="editorTheme"><see cref="EditorTheme"/> to get the colors from.</param>
+        /// <returns>Returns a <see cref="ColorBlock"/> based on the current <see cref="SelectableThemeGroup"/> and the colors from <paramref name="editorTheme"/>.</returns>
+        public ColorBlock ToColorBlock(EditorTheme editorTheme)
+        {
+            var colorBlock = EditorThemeManager.DefaultColorBlock;
+            if (editorTheme.ColorGroups.TryGetValue(normal, out Color normalColor))
+                colorBlock.normalColor = normalColor;
+            if (editorTheme.ColorGroups.TryGetValue(highlighted, out Color highlightedColor))
+                colorBlock.highlightedColor = highlightedColor;
+            if (editorTheme.ColorGroups.TryGetValue(selected, out Color selectedColor))
+                colorBlock.selectedColor = selectedColor;
+            if (editorTheme.ColorGroups.TryGetValue(pressed, out Color pressedColor))
+                colorBlock.pressedColor = pressedColor;
+            if (editorTheme.ColorGroups.TryGetValue(disabled, out Color disabledColor))
+                colorBlock.disabledColor = disabledColor;
+            return colorBlock;
+        }
+    }
+
+    /// <summary>
+    /// Contains theme groups for <see cref="InputField"/> elements.
+    /// </summary>
+    public class InputFieldThemeGroup
+    {
+        public InputFieldThemeGroup() { }
+
+        public InputFieldThemeGroup(ThemeGroup input, ThemeGroup text, ThemeGroup placeholder)
+        {
+            this.input = input;
+            this.text = text;
+            this.placeholder = placeholder;
+        }
+
+        public InputFieldThemeGroup(ThemeGroup input, ThemeGroup text) : this(input, text, text) { }
+        
+        /// <summary>
+        /// Theme group of the input area.
+        /// </summary>
+        public ThemeGroup input;
+
+        /// <summary>
+        /// Theme group of the display text.
+        /// </summary>
+        public ThemeGroup text;
+
+        /// <summary>
+        /// Theme group of the placeholder graphic.
+        /// </summary>
+        public ThemeGroup placeholder; // placeholder should be transparent.
     }
 }

@@ -130,7 +130,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     ActiveScrollView = ScrollViews[index];
                 });
 
-                EditorThemeManager.ApplySelectable(tabButton.button, EditorTheme.GetGroup($"Tab Color {index + 1}"));
+                EditorThemeManager.ApplySelectable(tabButton.button, EditorThemeManager.GetTabThemeGroup(index));
                 tab.AddComponent<ContrastColors>().Init(tabButton.label, tab.GetComponent<Image>());
 
                 var tabType = (Tab)i;
@@ -150,7 +150,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 switch (tabType)
                 {
                     case Tab.Editor: {
-
                             SelectedObjectCountLabel = new LabelElement(string.Empty);
                             SelectedObjectCountLabel.Init(EditorElement.InitSettings.Default.Parent(parent));
                             SelectedBackgroundObjectCountLabel = new LabelElement(string.Empty);
@@ -783,26 +782,28 @@ namespace BetterLegacy.Editor.Data.Dialogs
                             break;
                         }
                     case Tab.Properties: {
-                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
-                                new LabelElement("Low Detail Mode State")
-                                {
-                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
-                                },
-                                ButtonElement.Label1Button("On", () => MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
-                                {
-                                    beatmapObject.LDM = true;
-                                    RTLevel.Current?.UpdateObject(beatmapObject);
-                                })),
-                                ButtonElement.Label1Button("Off", () => MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
-                                {
-                                    beatmapObject.LDM = false;
-                                    RTLevel.Current?.UpdateObject(beatmapObject);
-                                })),
-                                ButtonElement.Label1Button("Swap", () => MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
-                                {
-                                    beatmapObject.LDM = !beatmapObject.LDM;
-                                    RTLevel.Current?.UpdateObject(beatmapObject);
-                                })));
+                            #region Detail Mode
+
+                            new LabelsElement("Detail Mode").Init(EditorElement.InitSettings.Default.Parent(parent));
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                CreateAddSubButtons(
+                                    timelineObject => timelineObject.isBeatmapObject,
+                                    timelineObject => (int)timelineObject.GetData<BeatmapObject>().detailMode,
+                                    EnumHelper.GetNames<DetailMode>().Length,
+                                    (timelineObject, num) =>
+                                    {
+                                        var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                        beatmapObject.detailMode = (DetailMode)num;
+                                        RTLevel.Current?.UpdateObject(beatmapObject);
+                                    }));
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                ButtonElement.Label1Button(nameof(DetailMode.Normal), () => MultiObjectEditor.inst.SetDetailMode(DetailMode.Normal), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button(RTString.SplitWords(nameof(DetailMode.HighDetail)), () => MultiObjectEditor.inst.SetDetailMode(DetailMode.HighDetail), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button(RTString.SplitWords(nameof(DetailMode.LowDetail)), () => MultiObjectEditor.inst.SetDetailMode(DetailMode.LowDetail), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button(RTString.SplitWords(nameof(DetailMode.NoDetail)), () => MultiObjectEditor.inst.SetDetailMode(DetailMode.NoDetail), labelAlignment: TextAnchor.MiddleCenter)
+                                );
+
+                            #endregion
 
                             new SpacerElement().Init(EditorElement.InitSettings.Default.Parent(parent));
 
@@ -1124,7 +1125,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                     }
                                     timelineObject.RenderPosLength();
                                 }), labelAlignment: TextAnchor.MiddleCenter),
-                                ButtonElement.Label1Button("Last KF Offset", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                                ButtonElement.Label1Button("Last KF Offst", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
                                 {
                                     if (timelineObject.isBeatmapObject)
                                     {
@@ -3862,46 +3863,5 @@ namespace BetterLegacy.Editor.Data.Dialogs
         }
 
         #endregion
-
-        public class ButtonFunction
-        {
-            public ButtonFunction(bool isSpacer, float spacerSize = 4f)
-            {
-                IsSpacer = isSpacer;
-                SpacerSize = spacerSize;
-            }
-
-            public ButtonFunction(string name, Action action, string tooltipGroup = null, ThemeGroup? buttonThemeGroup = null, ThemeGroup? labelThemeGroup = null)
-            {
-                Name = name;
-                Action = action;
-                TooltipGroup = tooltipGroup;
-
-                ButtonThemeGroup = buttonThemeGroup;
-                LabelThemeGroup = labelThemeGroup;
-            }
-
-            public ButtonFunction(string name, Action<PointerEventData> onClick, string tooltipGroup = null, ThemeGroup? buttonThemeGroup = null, ThemeGroup? labelThemeGroup = null)
-            {
-                Name = name;
-                OnClick = onClick;
-                TooltipGroup = tooltipGroup;
-
-                ButtonThemeGroup = buttonThemeGroup;
-                LabelThemeGroup = labelThemeGroup;
-            }
-
-            public bool IsSpacer { get; set; }
-            public float SpacerSize { get; set; } = 4f;
-            public string Name { get; set; }
-            public int FontSize { get; set; } = 20;
-            public Action Action { get; set; }
-            public Action<PointerEventData> OnClick { get; set; }
-
-            public ThemeGroup? ButtonThemeGroup { get; set; }
-            public ThemeGroup? LabelThemeGroup { get; set; }
-
-            public string TooltipGroup { get; set; }
-        }
     }
 }

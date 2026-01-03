@@ -1899,7 +1899,7 @@ namespace BetterLegacy.Editor.Managers
                 notif.transform.localScale = Vector3.one;
 
                 EditorThemeManager.ApplyGraphic(notif.GetComponent<Image>(), ThemeGroup.Notification_Background, true);
-                EditorThemeManager.ApplyGraphic(notif.transform.Find("bg/bg").GetComponent<Image>(), EditorTheme.GetGroup($"Notification {type}"), true, roundedSide: SpriteHelper.RoundedSide.Top);
+                EditorThemeManager.ApplyGraphic(notif.transform.Find("bg/bg").GetComponent<Image>(), EditorThemeManager.GetNotificationThemeGroup(type), true, roundedSide: SpriteHelper.RoundedSide.Top);
                 EditorThemeManager.ApplyGraphic(textComponent, ThemeGroup.Light_Text);
                 EditorThemeManager.ApplyGraphic(notif.transform.Find("bg/Image").GetComponent<Image>(), ThemeGroup.Light_Text);
                 EditorThemeManager.ApplyLightText(notif.transform.Find("bg/title").GetComponent<Text>());

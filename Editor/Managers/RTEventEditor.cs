@@ -960,10 +960,9 @@ namespace BetterLegacy.Editor.Managers
 
         void RenderTitle(int i)
         {
-            var theme = EditorThemeManager.CurrentTheme;
             var title = EventEditor.inst.dialogRight.GetChild(i).GetChild(0);
             var image = title.GetChild(0).GetComponent<Image>();
-            image.color = theme.ContainsGroup($"Event Color {GetEventTypeIndex(i) % EVENT_LIMIT + 1} Editor") ? theme.GetColor($"Event Color {GetEventTypeIndex(i) % EVENT_LIMIT + 1} Editor") : Color.white;
+            image.color = EditorThemeManager.CurrentTheme.ColorGroups.GetValueOrDefault(EditorThemeManager.GetEventColorEditorThemeGroup(GetEventTypeIndex(i) % EVENT_LIMIT), Color.white);
             image.color = RTColors.FadeColor(image.color, 1f);
             image.rectTransform.sizeDelta = new Vector2(17f, 0f);
             title.GetChild(1).GetComponent<Text>().text = $"- {(eventBins.TryFind(x => x.index == i, out EventBin eventBin) ? eventBin.name : EventLibrary.displayNames[i])} Editor - ";
@@ -989,7 +988,7 @@ namespace BetterLegacy.Editor.Managers
                 if (i == EVENT_LIMIT) // checkpoint
                 {
                     eventBinElement.SetActive(true);
-                    eventBinElement.Color = theme.ContainsGroup($"Event Color {i % EVENT_LIMIT + 1}") ? theme.GetColor($"Event Color {i % EVENT_LIMIT + 1}") : Color.white;
+                    eventBinElement.Color = theme.ColorGroups.GetValueOrDefault(EditorThemeManager.GetEventColorThemeGroup(i % EVENT_LIMIT), Color.white);
                     continue;
                 }
 
@@ -1008,7 +1007,7 @@ namespace BetterLegacy.Editor.Managers
 
                 eventBinElement.SetActive(enabled);
                 if (enabled)
-                    eventBinElement.Color = theme.ContainsGroup($"Event Color {i % EVENT_LIMIT + 1}") ? theme.GetColor($"Event Color {i % EVENT_LIMIT + 1}") : Color.white;
+                    eventBinElement.Color = theme.ColorGroups.GetValueOrDefault(EditorThemeManager.GetEventColorThemeGroup(i % EVENT_LIMIT), Color.white);
             }
         }
 

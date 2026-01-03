@@ -12,18 +12,7 @@ namespace BetterLegacy.Editor.Data
     /// </summary>
     public class EditorThemeElement
     {
-        public EditorThemeElement(ThemeGroup group, GameObject gameObject, List<Component> components, bool canSetRounded = false, int rounded = 0, SpriteHelper.RoundedSide roundedSide = SpriteHelper.RoundedSide.W, bool isSelectable = false)
-        {
-            themeGroup = group;
-            this.gameObject = gameObject;
-            this.components = components.ToArray(); // replaced List with Array
-            this.canSetRounded = canSetRounded;
-            this.rounded = rounded;
-            this.roundedSide = roundedSide;
-            this.isSelectable = isSelectable;
-        }
-
-        public EditorThemeElement(ThemeGroup group, GameObject gameObject, Component[] components, bool canSetRounded = false, int rounded = 0, SpriteHelper.RoundedSide roundedSide = SpriteHelper.RoundedSide.W, bool isSelectable = false)
+        public EditorThemeElement(ThemeGroup group, GameObject gameObject, Component[] components, bool canSetRounded = false, int rounded = 0, SpriteHelper.RoundedSide roundedSide = SpriteHelper.RoundedSide.W, bool isSelectable = false, float opacity = 1f)
         {
             themeGroup = group;
             this.gameObject = gameObject;
@@ -32,6 +21,7 @@ namespace BetterLegacy.Editor.Data
             this.rounded = rounded;
             this.roundedSide = roundedSide;
             this.isSelectable = isSelectable;
+            this.opacity = opacity;
         }
 
         [SerializeField]
@@ -55,6 +45,9 @@ namespace BetterLegacy.Editor.Data
         [SerializeField]
         public SpriteHelper.RoundedSide roundedSide = SpriteHelper.RoundedSide.W;
 
+        [SerializeField]
+        public float opacity = 1f;
+
         public void Clear()
         {
             gameObject = null;
@@ -63,10 +56,31 @@ namespace BetterLegacy.Editor.Data
             components = null;
         }
 
-        public void ApplyTheme(EditorTheme theme)
+        public void ApplyTheme(EditorTheme editorTheme)
         {
             SetRounded();
-            EditorThemeManager.ApplyTheme(theme, themeGroup, isSelectable, components);
+
+            try
+            {
+                if (themeGroup == ThemeGroup.Null)
+                    return;
+
+                if (!editorTheme.ColorGroups.TryGetValue(themeGroup, out Color color))
+                    return;
+
+                color.a *= opacity;
+
+                if (!isSelectable)
+                    EditorThemeManager.SetColor(color, components);
+                else if (EditorThemeManager.selectableThemeGroups.TryGetValue(themeGroup, out SelectableThemeGroup selectableThemeGroup))
+                    EditorThemeManager.SetColor(color, selectableThemeGroup.ToColorBlock(editorTheme), components);
+                else
+                    EditorThemeManager.SetColor(color, EditorThemeManager.DefaultColorBlock, components);
+            }
+            catch
+            {
+
+            }
         }
 
         public void SetRounded() => EditorThemeManager.SetRounded(canSetRounded, rounded, roundedSide, components);

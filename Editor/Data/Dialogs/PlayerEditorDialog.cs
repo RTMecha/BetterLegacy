@@ -538,7 +538,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 CoroutineHelper.StartCoroutine(PlayerEditor.inst.RefreshEditor());
             });
 
-            EditorThemeManager.ApplySelectable(tabButton.button, EditorTheme.GetGroup($"Tab Color {tabIndex + 1}"));
+            EditorThemeManager.ApplySelectable(tabButton.button, EditorThemeManager.GetTabThemeGroup(tabIndex));
             tab.AddComponent<ContrastColors>().Init(tabButton.label, tab.GetComponent<Image>());
 
             TabButtons.Add(tabButton);

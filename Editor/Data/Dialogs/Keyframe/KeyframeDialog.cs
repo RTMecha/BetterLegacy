@@ -591,7 +591,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 bg.gameObject.GetOrAddComponent<ContrastColors>().Init(title, bg);
 
                 if (isObjectKeyframe)
-                    EditorThemeManager.ApplyGraphic(bg, EditorTheme.GetGroup($"Object Keyframe Color {type + 1}"));
+                    EditorThemeManager.ApplyGraphic(bg, EditorThemeManager.GetObjectKeyframeThemeGroup(type));
             }
             catch (Exception ex)
             {
