@@ -163,7 +163,7 @@ namespace BetterLegacy.Editor.Data.Timeline
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         /// <summary>
         /// Initializes the timeline keyframes.
@@ -249,42 +249,21 @@ namespace BetterLegacy.Editor.Data.Timeline
         /// <param name="setActive">If active state should change.</param>
         public void RenderVisibleState(bool setActive = true)
         {
-            var theme = EditorThemeManager.CurrentTheme;
+            if (!GameObject || !Image)
+                return;
+
             if (isObjectKeyframe)
             {
-                var objectKeyframeColor1 = theme.GetObjectKeyframeColor(0);
-                var objectKeyframeColor2 = theme.GetObjectKeyframeColor(1);
-                var objectKeyframeColor3 = theme.GetObjectKeyframeColor(2);
-                var objectKeyframeColor4 = theme.GetObjectKeyframeColor(3);
-                var objectKeyframesRenderBinColor = EditorConfig.Instance.ObjectKeyframesRenderBinColor.Value;
-
-                if (!GameObject || !Image)
-                    return;
-
                 if (!GameObject.activeSelf)
                     GameObject.SetActive(true);
 
-                var color = Type switch
-                {
-                    0 => objectKeyframeColor1,
-                    1 => objectKeyframeColor2,
-                    2 => objectKeyframeColor3,
-                    3 => objectKeyframeColor4,
-                    _ => ObjEditor.inst.NormalColor,
-                };
-                color.a = 1f;
-                color = selected ? !objectKeyframesRenderBinColor ? ObjEditor.inst.SelectedColor : EventEditor.inst.Selected : color;
+                var color = GetColor();
 
                 if (Image.color != color)
                     Image.color = color;
             }
             else
             {
-                var eventKeyframesRenderBinColor = EditorConfig.Instance.EventKeyframesRenderBinColor.Value;
-
-                if (!GameObject || !Image)
-                    return;
-
                 bool isCurrentLayer = IsCurrentLayer;
 
                 if (setActive && GameObject.activeSelf != isCurrentLayer)
@@ -293,9 +272,7 @@ namespace BetterLegacy.Editor.Data.Timeline
                 if (!isCurrentLayer)
                     return;
 
-                var color = eventKeyframesRenderBinColor ? theme.GetEventKeyframeColor(RTEventEditor.inst.GetEventTypeIndex(Type) % RTEventEditor.EVENT_LIMIT) : ObjEditor.inst.NormalColor;
-                color.a = 1f;
-                color = selected ? !eventKeyframesRenderBinColor ? ObjEditor.inst.SelectedColor : EventEditor.inst.Selected : color;
+                var color = GetColor();
 
                 if (Image.color != color)
                     Image.color = color;
@@ -365,6 +342,32 @@ namespace BetterLegacy.Editor.Data.Timeline
             Type = keyframeCoord.type;
             Index = keyframeCoord.index;
         }
+
+        /// <summary>
+        /// Gets the color the timeline keyframe should render.
+        /// </summary>
+        /// <returns>Returns the color of the timeline keyframe.</returns>
+        public Color GetColor()
+        {
+            Color color = selected ? GetSelectedColor() : GetNormalColor();
+            color.a = 1f;
+            return color;
+        }
+
+        /// <summary>
+        /// Gets the normal color for the timeline keyframe.
+        /// </summary>
+        /// <returns>Returns the normal color for the timeline keyframe when it is selected.</returns>
+        public Color GetNormalColor() => (isObjectKeyframe ? EditorConfig.Instance.ObjectKeyframesRenderBinColor.Value : EditorConfig.Instance.EventKeyframesRenderBinColor.Value) ?
+            isObjectKeyframe ? EditorThemeManager.CurrentTheme.GetObjectKeyframeColor(Type) : EditorThemeManager.CurrentTheme.GetEventKeyframeColor(RTEventEditor.inst.GetEventTypeIndex(Type) % RTEventEditor.EVENT_LIMIT) :
+            ObjEditor.inst.NormalColor;
+
+        /// <summary>
+        /// Gets the selection color for the timeline keyframe.
+        /// </summary>
+        /// <returns>Returns the selection color for the timeline keyframe when it is selected.</returns>
+        public Color GetSelectedColor() => (isObjectKeyframe ? !EditorConfig.Instance.ObjectKeyframesRenderBinColor.Value : !EditorConfig.Instance.EventKeyframesRenderBinColor.Value) ?
+            ObjEditor.inst.SelectedColor : EventEditor.inst.Selected;
 
         #endregion
     }
