@@ -630,6 +630,8 @@ namespace BetterLegacy.Editor.Data
     {
         public SpacerElement() { }
 
+        public SpacerElement(Func<bool> shouldGenerate) : base(null, shouldGenerate) { }
+
         #region Values
 
         public Vector2 size = new Vector2(0f, 4f);
@@ -1083,6 +1085,55 @@ namespace BetterLegacy.Editor.Data
                 this.arrowHandler = arrowHandler;
         }
 
+        public NumberInputElement(Func<string> getValue, Action<string> onValueChanged)
+        {
+            this.getValue = getValue;
+            this.onValueChanged = onValueChanged;
+            onEndEdit = default;
+            placeholder = "Set value...";
+            arrowHandler = new ArrowHandlerFloat();
+        }
+
+        public NumberInputElement(Func<string> getValue, Action<string> onValueChanged, ArrowHandler arrowHandler)
+        {
+            this.getValue = getValue;
+            this.onValueChanged = onValueChanged;
+            onEndEdit = default;
+            placeholder = "Set value...";
+            if (arrowHandler)
+                this.arrowHandler = arrowHandler;
+        }
+
+        public NumberInputElement(Func<string> getValue, Action<string> onValueChanged, Action<string> onEndEdit, ArrowHandler arrowHandler)
+        {
+            this.getValue = getValue;
+            this.onValueChanged = onValueChanged;
+            this.onEndEdit = onEndEdit;
+            placeholder = "Set value...";
+            if (arrowHandler)
+                this.arrowHandler = arrowHandler;
+        }
+
+        public NumberInputElement(Func<string> getValue, Action<string> onValueChanged, string placeholder, ArrowHandler arrowHandler)
+        {
+            this.getValue = getValue;
+            this.onValueChanged = onValueChanged;
+            onEndEdit = default;
+            this.placeholder = placeholder;
+            if (arrowHandler)
+                this.arrowHandler = arrowHandler;
+        }
+
+        public NumberInputElement(Func<string> getValue, Action<string> onValueChanged, Action<string> onEndEdit, string placeholder, ArrowHandler arrowHandler)
+        {
+            this.getValue = getValue;
+            this.onValueChanged = onValueChanged;
+            this.onEndEdit = onEndEdit;
+            this.placeholder = placeholder;
+            if (arrowHandler)
+                this.arrowHandler = arrowHandler;
+        }
+
         #endregion
 
         #region Values
@@ -1156,6 +1207,8 @@ namespace BetterLegacy.Editor.Data
             if (!initSettings.applyThemes)
                 return;
 
+            if (numberInputField.inputField.image)
+                numberInputField.inputField.image.fillCenter = true;
             EditorThemeManager.ApplyGraphic(numberInputField.inputField.image, themeGroup, true);
             EditorThemeManager.ApplyGraphic(numberInputField.inputField.textComponent, textThemeGroup);
 
@@ -1179,6 +1232,8 @@ namespace BetterLegacy.Editor.Data
         }
 
         #endregion
+
+        #region Sub Classes
 
         public class ArrowHandler : Exists
         {
@@ -1247,7 +1302,7 @@ namespace BetterLegacy.Editor.Data
                     numberInputField.leftGreaterButton.onClick.NewListener(() => leftGreaterArrowClicked?.Invoke(numberInputField.Text));
                 numberInputField.leftButton.gameObject.SetActive(leftArrowClicked != null);
                 if (leftArrowClicked != null)
-                    numberInputField.leftButton.onClick.NewListener(() => rightArrowClicked?.Invoke(numberInputField.Text));
+                    numberInputField.leftButton.onClick.NewListener(() => leftArrowClicked?.Invoke(numberInputField.Text));
                 numberInputField.rightButton.gameObject.SetActive(rightArrowClicked != null);
                 if (rightArrowClicked != null)
                     numberInputField.rightButton.onClick.NewListener(() => rightArrowClicked?.Invoke(numberInputField.Text));
@@ -1296,6 +1351,8 @@ namespace BetterLegacy.Editor.Data
                     TriggerHelper.IncreaseDecreaseButtonsInt(numberInputField, amount, multiply, min, max);
             }
         }
+
+        #endregion
     }
 
     /// <summary>
