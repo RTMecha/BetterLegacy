@@ -13,6 +13,7 @@ using InControl;
 using BetterLegacy.Arcade.Interfaces;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Menus;
@@ -204,6 +205,8 @@ namespace BetterLegacy.Core.Helpers
             LevelManager.Hub = null;
             LevelManager.PreviousLevel = null;
 
+            ProjectArrhythmia.Window.ResetTitle();
+
             if (CoreHelper.InEditor)
             {
                 ArcadeManager.inst.skippedLoad = false;
@@ -236,6 +239,8 @@ namespace BetterLegacy.Core.Helpers
             LevelManager.LevelEnded = false;
             LevelManager.Hub = null;
             LevelManager.PreviousLevel = null;
+
+            ProjectArrhythmia.Window.ResetTitle();
 
             SceneHelper.LoadScene(SceneName.Main_Menu);
         }
@@ -292,23 +297,38 @@ namespace BetterLegacy.Core.Helpers
             for (int i = 0; i < LevelManager.ArcadeQueue.Count; i++)
             {
                 var queue = LevelManager.ArcadeQueue[i];
-                jn["queue"][i]["id"] = queue.id;
-
-                if (!queue.metadata)
-                    continue;
-
-                if (!string.IsNullOrEmpty(queue.metadata.serverID))
-                    jn["queue"][i]["server_id"] = queue.metadata.serverID;
-
-                if (!queue.metadata.beatmap)
-                    continue;
-
-                if (queue.metadata.beatmap.workshopID != -1)
-                    jn["queue"][i]["workhsop_id"] = queue.metadata.beatmap.workshopID;
-                jn["queue"][i]["name"] = queue.metadata.beatmap.name;
+                jn["queue"][i] = QueueLevelToJSON(queue);
             }
 
             LSText.CopyToClipboard(jn.ToString(3));
+        }
+
+        static JSONNode QueueLevelToJSON(Level queue)
+        {
+            var jn = Parser.NewJSONObject();
+
+            jn["id"] = queue.id;
+
+            if (queue.isSteamLevel)
+                jn["is_steam_item"] = queue.isSteamLevel;
+
+            if (queue.isInterface)
+                jn["is_interface"] = queue.isInterface;
+
+            if (!queue.metadata)
+                return jn;
+
+            if (!string.IsNullOrEmpty(queue.metadata.serverID))
+                jn["server_id"] = queue.metadata.serverID;
+
+            if (!queue.metadata.beatmap)
+                return jn;
+
+            if (queue.metadata.beatmap.workshopID != -1)
+                jn["workhsop_id"] = queue.metadata.beatmap.workshopID;
+            jn["name"] = queue.metadata.beatmap.name;
+
+            return jn;
         }
 
         /// <summary>
@@ -330,6 +350,7 @@ namespace BetterLegacy.Core.Helpers
 
                 LevelManager.ArcadeQueue.Clear();
 
+                bool notFound = false;
                 for (int i = 0; i < jn["queue"].Count; i++)
                 {
                     var jnQueue = jn["queue"][i];
@@ -344,19 +365,23 @@ namespace BetterLegacy.Core.Helpers
                         LevelManager.ArcadeQueue.Add(currentLevel);
                     }
                     else if (!hasLocal && !hasSteam)
+                    {
+                        notFound = true;
                         CoreHelper.LogError($"Level with ID {jnQueue["id"]} (Name: {jnQueue["name"]}) does not currently exist in your Local folder / Steam subscribed items.\n" +
                             $"Find the level on the server: {jnQueue["server_id"]}\n" +
                             $"or find the level on the Steam Workshop: {jnQueue["workhsop_id"]}");
+                    }
                 }
 
                 if (ArcadeMenu.Current)
                     ArcadeMenu.Current.RefreshQueueLevels(true);
+                if (notFound)
+                    CoreHelper.Notify("A level was not found, check the logs!", Color.red);
             }
             catch (Exception ex)
             {
                 CoreHelper.LogError($"Pasted text was probably not in the correct format.\n{ex}");
             }
-
         }
 
         /// <summary>
