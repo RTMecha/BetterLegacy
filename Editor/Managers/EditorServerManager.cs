@@ -191,15 +191,20 @@ namespace BetterLegacy.Editor.Managers
         }
 
         /// <summary>
-        ///The current search URL.
+        /// The current URL.
         /// </summary>
-        public string SearchURL => RTFile.CombinePaths(tab switch
+        public string CurrentURL => tab switch
         {
             Tab.Levels => AlephNetwork.LevelURL,
             Tab.LevelCollections => AlephNetwork.LevelCollectionURL,
             Tab.Prefabs => AlephNetwork.PrefabURL,
             _ => null,
-        }, tab != Tab.Prefabs || CurrentTabSettings.uploaded ? "uploaded" : "search");
+        };
+
+        /// <summary>
+        ///The current search URL.
+        /// </summary>
+        public string SearchURL => RTFile.CombinePaths(CurrentURL, tab != Tab.Prefabs || CurrentTabSettings.uploaded ? "uploaded" : "search");
 
         /// <summary>
         /// Cached icons.
@@ -764,6 +769,41 @@ namespace BetterLegacy.Editor.Managers
         }
 
         /// <summary>
+        /// Checks the update status of an item on the server.
+        /// </summary>
+        /// <param name="url">URL to pull from.</param>
+        /// <param name="uploadable">Uploadable object.</param>
+        /// <param name="onOutdated">Function to run if the item is outdated.</param>
+        public void CheckUpdate(string url, IUploadable uploadable, Action onOutdated = null) => Pull(
+            url: url,
+            uploadable: uploadable,
+            pull: jn =>
+            {
+                RTEditor.inst.ProgressPopup.Close();
+                var versionNumber = jn["versionNumber"].AsInt;
+                var fileVersion = jn["fileVersion"];
+                var datePublished = jn["datePublished"];
+
+                var sb = new StringBuilder();
+                if (!(versionNumber > uploadable.VersionNumber || fileVersion != uploadable.ObjectVersion))
+                    return;
+
+                if (onOutdated != null)
+                {
+                    onOutdated.Invoke();
+                    return;
+                }
+
+                sb.AppendLine("The current item is outdated because the server items' version info is not the same as the local items' version info.");
+                sb.AppendLine($"Local version: {uploadable.VersionNumber} {uploadable.ObjectVersion}");
+                sb.AppendLine($"Local date published: {uploadable.DatePublished}");
+                sb.AppendLine($"Server version: {versionNumber}{(fileVersion != null && fileVersion.IsString ? " " + fileVersion.Value : string.Empty)}");
+                if (datePublished != null && datePublished.IsString)
+                    sb.AppendLine($"Server date published: {datePublished}");
+                EditorManager.inst.DisplayNotification(sb.ToString(), 10f, EditorManager.NotificationType.Warning);
+            });
+
+        /// <summary>
         /// Renders a server section of an Editor Dialog.
         /// </summary>
         /// <param name="uploadable">Uploadable object.</param>
@@ -772,7 +812,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="pull">Pull function.</param>
         /// <param name="delete">Delete function.</param>
         /// <param name="verify">Verify function.</param>
-        public void RenderServerDialog(IUploadable uploadable, IServerDialog dialog, Action upload, Action pull, Action delete, Action verify)
+        public void RenderServerDialog(string url, IUploadable uploadable, IServerDialog dialog, Action upload, Action pull, Action delete, Action verify)
         {
             dialog.ServerVisibilityDropdown.options = CoreHelper.ToOptionData<ServerVisibility>();
             dialog.ServerVisibilityDropdown.SetValueWithoutNotify((int)uploadable.Visibility);
@@ -798,12 +838,12 @@ namespace BetterLegacy.Editor.Managers
                     {
                         uploadable.Uploaders[index] = _val;
                         dialog.Open();
-                        RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
+                        RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
                     }, () =>
                     {
                         uploadable.Uploaders[index] = oldVal;
                         dialog.Open();
-                        RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
+                        RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
                     }));
                 });
                 EditorContextMenu.AddContextMenu(input.gameObject,
@@ -813,7 +853,7 @@ namespace BetterLegacy.Editor.Managers
                             return;
 
                         uploadable.Uploaders.Add(user);
-                        RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
+                        RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
 
                         EditorManager.inst.history.Add(new History.Command("Add Collaborator",
                             () =>
@@ -821,14 +861,14 @@ namespace BetterLegacy.Editor.Managers
                                 if (uploadable.Uploaders == null)
                                     uploadable.Uploaders = new List<ServerUser>();
                                 uploadable.Uploaders.Add(user);
-                                RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
+                                RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
                             },
                             () =>
                             {
                                 if (uploadable.Uploaders == null)
                                     return;
                                 uploadable.Uploaders.RemoveAt(uploadable.Uploaders.Count - 1);
-                                RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
+                                RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
                             }));
                     })),
                     new ButtonElement("Add Empty", () =>
@@ -836,7 +876,7 @@ namespace BetterLegacy.Editor.Managers
                         if (uploadable.Uploaders == null)
                             uploadable.Uploaders = new List<ServerUser>();
                         uploadable.Uploaders.Add(string.Empty);
-                        RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
+                        RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
 
                         EditorManager.inst.history.Add(new History.Command("Add Collaborator",
                             () =>
@@ -844,14 +884,14 @@ namespace BetterLegacy.Editor.Managers
                                 if (uploadable.Uploaders == null)
                                     uploadable.Uploaders = new List<ServerUser>();
                                 uploadable.Uploaders.Add(string.Empty);
-                                RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
+                                RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
                             },
                             () =>
                             {
                                 if (uploadable.Uploaders == null)
                                     return;
                                 uploadable.Uploaders.RemoveAt(uploadable.Uploaders.Count - 1);
-                                RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
+                                RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
                             }));
                     }));
 
@@ -860,7 +900,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     var oldUploader = uploadable.Uploaders[index];
                     uploadable.Uploaders.RemoveAt(index);
-                    RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
+                    RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
 
                     EditorManager.inst.history.Add(new History.Command("Delete Uploader", () =>
                     {
@@ -868,14 +908,14 @@ namespace BetterLegacy.Editor.Managers
                             return;
                         uploadable.Uploaders.RemoveAt(index);
                         dialog.Open();
-                        RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
+                        RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
                     }, () =>
                     {
                         if (uploadable.Uploaders == null)
                             uploadable.Uploaders = new List<ServerUser>();
                         uploadable.Uploaders.Insert(index, oldUploader);
                         dialog.Open();
-                        RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
+                        RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
                     }));
                 });
 
@@ -897,7 +937,7 @@ namespace BetterLegacy.Editor.Managers
                         return;
 
                     uploadable.Uploaders.Add(user);
-                    RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
+                    RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
 
                     EditorManager.inst.history.Add(new History.Command("Add Collaborator",
                         () =>
@@ -905,14 +945,14 @@ namespace BetterLegacy.Editor.Managers
                             if (uploadable.Uploaders == null)
                                 uploadable.Uploaders = new List<ServerUser>();
                             uploadable.Uploaders.Add(user);
-                            RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
+                            RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
                         },
                         () =>
                         {
                             if (uploadable.Uploaders == null)
                                 return;
                             uploadable.Uploaders.RemoveAt(uploadable.Uploaders.Count - 1);
-                            RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
+                            RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
                         }));
                 }),
                 new ButtonElement("Search User", () => OpenUserSearchPopup(user =>
@@ -921,7 +961,7 @@ namespace BetterLegacy.Editor.Managers
                         return;
 
                     uploadable.Uploaders.Add(user);
-                    RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
+                    RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
 
                     EditorManager.inst.history.Add(new History.Command("Add Collaborator",
                         () =>
@@ -929,14 +969,14 @@ namespace BetterLegacy.Editor.Managers
                             if (uploadable.Uploaders == null)
                                 uploadable.Uploaders = new List<ServerUser>();
                             uploadable.Uploaders.Add(user);
-                            RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
+                            RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
                         },
                         () =>
                         {
                             if (uploadable.Uploaders == null)
                                 return;
                             uploadable.Uploaders.RemoveAt(uploadable.Uploaders.Count - 1);
-                            RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
+                            RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
                         }));
                 })),
                 new ButtonElement("Add Empty", () =>
@@ -944,7 +984,7 @@ namespace BetterLegacy.Editor.Managers
                     if (uploadable.Uploaders == null)
                         uploadable.Uploaders = new List<ServerUser>();
                     uploadable.Uploaders.Add(string.Empty);
-                    RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
+                    RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
 
                     EditorManager.inst.history.Add(new History.Command("Add Collaborator",
                         () =>
@@ -952,14 +992,14 @@ namespace BetterLegacy.Editor.Managers
                             if (uploadable.Uploaders == null)
                                 uploadable.Uploaders = new List<ServerUser>();
                             uploadable.Uploaders.Add(string.Empty);
-                            RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
+                            RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
                         },
                         () =>
                         {
                             if (uploadable.Uploaders == null)
                                 return;
                             uploadable.Uploaders.RemoveAt(uploadable.Uploaders.Count - 1);
-                            RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
+                            RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
                         }));
                 }));
 
@@ -1004,34 +1044,25 @@ namespace BetterLegacy.Editor.Managers
                 if (eventData.button != PointerEventData.InputButton.Right)
                     return;
 
-                var buttonFunctions = new List<EditorElement>
-                {
+                EditorContextMenu.inst.ShowContextMenu(
                     new ButtonElement(hasID ? "Update" : "Upload", () => upload?.Invoke()),
-                };
-
-                if (pull != null)
-                    buttonFunctions.Add(new ButtonElement("Pull Changes from Server", () => RTEditor.inst.ShowWarningPopup("Do you want to pull the level from the Arcade server?", () =>
+                    new ButtonElement("Pull Changes from Server", () => RTEditor.inst.ShowWarningPopup("Do you want to pull the item from the Arcade server?", () =>
                     {
-                        RTEditor.inst.HideWarningPopup();
                         EditorManager.inst.DisplayNotification("Pulling level...", 1.5f, EditorManager.NotificationType.Info);
                         pull.Invoke();
-                    }, RTEditor.inst.HideWarningPopup)));
-                
-                if (verify != null)
-                    buttonFunctions.Add(new ButtonElement("Verify item is on Server", () => RTEditor.inst.ShowWarningPopup("Do you want to verify that the item is on the Arcade server?", () =>
+                    }), shouldGenerate: () => pull != null && hasID),
+                    new ButtonElement("Verify item is on Server", () => RTEditor.inst.ShowWarningPopup("Do you want to verify that the item is on the Arcade server?", () =>
                     {
-                        RTEditor.inst.HideWarningPopup();
                         EditorManager.inst.DisplayNotification("Verifying...", 1.5f, EditorManager.NotificationType.Info);
                         verify.Invoke();
-                    }, RTEditor.inst.HideWarningPopup)));
-
-                buttonFunctions.AddRange(new List<EditorElement>
-                {
+                    }), shouldGenerate: () => verify != null && hasID),
+                    new ButtonElement("Check for update", () => CheckUpdate(url, uploadable, pull != null ? () => RTEditor.inst.ShowWarningPopup("The item may require an update. Do you want to pull the item from the Arcade server?", () =>
+                    {
+                        EditorManager.inst.DisplayNotification("Pulling level...", 1.5f, EditorManager.NotificationType.Info);
+                        pull.Invoke();
+                    }) : null), shouldGenerate: () => hasID),
                     new SpacerElement(),
-                    new ButtonElement("Guidelines", () => EditorDocumentation.inst.OpenDocument("Uploading a Level"))
-                });
-
-                EditorContextMenu.inst.ShowContextMenu(buttonFunctions);
+                    new ButtonElement("Guidelines", () => EditorDocumentation.inst.OpenDocument("Uploading a Level")));
             };
 
             if (dialog.PullButton)
@@ -1444,6 +1475,9 @@ namespace BetterLegacy.Editor.Managers
                         string creator = item["creator"];
                         string description = item["description"];
                         var difficulty = item["difficulty"].AsInt;
+                        string datePublished = item["datePublished"];
+                        string fileVersion = item["fileVersion"];
+                        string tags = item["tags"];
 
                         if (id == null || id == "0")
                             continue;
@@ -1459,6 +1493,15 @@ namespace BetterLegacy.Editor.Managers
                         RectValues.FullAnchored.AnchorMin(0.15f, 0f).SizeDelta(-32f, -8f).AssignToRectTransform(folderButtonStorage.label.rectTransform);
 
                         gameObject.transform.AsRT().sizeDelta = new Vector2(0f, 200f);
+
+                        TooltipHelper.AddHoverTooltip(gameObject, name,
+                            $"ID: {id}\n" +
+                            $"Tags: {tags}\n" +
+                            $"Creator: {creator}\n" +
+                            $"Difficulty {(DifficultyType)difficulty}\n" +
+                            $"Date Published: {datePublished}\n" +
+                            $"File Version: {fileVersion}\n" +
+                            $"Upload Version: {item["versionNumber"].AsInt}");
 
                         //folderButtonStorage.text.horizontalOverflow = horizontalOverflow;
                         //folderButtonStorage.text.verticalOverflow = verticalOverflow;
@@ -1660,6 +1703,9 @@ namespace BetterLegacy.Editor.Managers
                         string creator = item["creator"];
                         string description = item["description"];
                         var difficulty = item["difficulty"].AsInt;
+                        string datePublished = item["datePublished"];
+                        string fileVersion = item["fileVersion"];
+                        string tags = item["tags"];
 
                         if (id == null || id == "0")
                             continue;
@@ -1674,6 +1720,15 @@ namespace BetterLegacy.Editor.Managers
                         RectValues.FullAnchored.AnchorMin(0.15f, 0f).SizeDelta(-32f, -8f).AssignToRectTransform(folderButtonStorage.label.rectTransform);
 
                         gameObject.transform.AsRT().sizeDelta = new Vector2(0f, 200f);
+
+                        TooltipHelper.AddHoverTooltip(gameObject, name,
+                            $"ID: {id}\n" +
+                            $"Tags: {tags}\n" +
+                            $"Creator: {creator}\n" +
+                            $"Difficulty {(DifficultyType)difficulty}\n" +
+                            $"Date Published: {datePublished}\n" +
+                            $"File Version: {fileVersion}\n" +
+                            $"Upload Version: {item["versionNumber"].AsInt}");
 
                         //folderButtonStorage.text.horizontalOverflow = horizontalOverflow;
                         //folderButtonStorage.text.verticalOverflow = verticalOverflow;
@@ -1876,6 +1931,9 @@ namespace BetterLegacy.Editor.Managers
                         string description = item["description"];
                         string typeName = item["typeName"];
                         int typeColor = item["typeColor"].AsInt;
+                        string datePublished = item["datePublished"];
+                        string fileVersion = item["fileVersion"];
+                        string tags = item["tags"];
 
                         if (id == null || id == "0")
                             continue;
@@ -1892,6 +1950,22 @@ namespace BetterLegacy.Editor.Managers
                         RectValues.FullAnchored.AnchorMin(0.15f, 0f).SizeDelta(-32f, -8f).AssignToRectTransform(folderButtonStorage.label.rectTransform);
 
                         gameObject.transform.AsRT().sizeDelta = new Vector2(0f, 200f);
+
+                        TooltipHelper.AddHoverTooltip(gameObject, name,
+                            $"ID: {id}\n" +
+                            $"Tags: {tags}\n" +
+                            $"Creator: {creator}\n" +
+                            $"Date Published: {datePublished}\n" +
+                            $"Upload Version: {fileVersion}\n" +
+                            $"File Version: {fileVersion}\n" +
+                            $"Upload Version: {item["versionNumber"].AsInt}\n" +
+                            $"Object Count: {item["beatmapObjectCount"].AsInt}\n" +
+                            $"Background Layer Count: {item["backgroundLayerCount"].AsInt}\n" +
+                            $"Background Object Count: {item["backgroundObjectCount"].AsInt}\n" +
+                            $"Prefab Object Count: {item["prefabObjectCount"].AsInt}\n" +
+                            $"Prefab Count: {item["prefabCount"].AsInt}\n" +
+                            $"Beatmap Theme Count: {item["beatmapThemeCount"].AsInt}\n" +
+                            $"Modifier Block Count: {item["modifierBlockCount"].AsInt}");
 
                         //folderButtonStorage.text.horizontalOverflow = horizontalOverflow;
                         //folderButtonStorage.text.verticalOverflow = verticalOverflow;

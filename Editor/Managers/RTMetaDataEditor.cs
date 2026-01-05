@@ -130,6 +130,7 @@ namespace BetterLegacy.Editor.Managers
             RenderSettings(metadata);
 
             EditorServerManager.inst.RenderServerDialog(
+                url: AlephNetwork.LevelURL,
                 uploadable: metadata,
                 dialog: Dialog, 
                 upload: UploadLevel,

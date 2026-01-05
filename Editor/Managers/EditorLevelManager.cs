@@ -1753,6 +1753,7 @@ namespace BetterLegacy.Editor.Managers
             RenderLevelCollectionDifficulty(levelCollection);
             EditorServerManager.inst.RenderTagDialog(levelCollection, LevelCollectionDialog, EditorServerManager.DefaultTagRelation.Level, () => levelCollection.Save());
             EditorServerManager.inst.RenderServerDialog(
+                url: AlephNetwork.LevelCollectionURL,
                 uploadable: levelCollection,
                 dialog: LevelCollectionDialog,
                 upload: () => UploadLevelCollection(levelCollection),
@@ -2346,6 +2347,35 @@ namespace BetterLegacy.Editor.Managers
                 url: AlephNetwork.LevelCollectionURL,
                 uploadable: levelCollection,
                 pull: jn => EditorServerManager.inst.DownloadLevelCollection(jn["id"], RTFile.RemoveEndSlash(levelCollection.path), jn["name"]));
+        }
+
+        public void CheckLevelUpdate(Level level)
+        {
+            if (!level || !level.metadata)
+                return;
+
+            EditorServerManager.inst.Pull(
+                url: AlephNetwork.LevelURL,
+                uploadable: level.metadata,
+                pull: jn =>
+                {
+                    RTEditor.inst.ProgressPopup.Close();
+                    var versionNumber = jn["versionNumber"].AsInt;
+                    var fileVersion = jn["fileVersion"];
+                    var datePublished = jn["datePublished"];
+
+                    var sb = new System.Text.StringBuilder();
+                    if (versionNumber > level.metadata.VersionNumber || fileVersion != level.metadata.ObjectVersion)
+                    {
+                        sb.AppendLine("The current item is outdated because the server items' version info is not the same as the local items' version info.");
+                        sb.AppendLine($"Local version: {level.metadata.VersionNumber} {level.metadata.ObjectVersion}");
+                        sb.AppendLine($"Local date published: {level.metadata.DatePublished}");
+                        sb.AppendLine($"Server version: {versionNumber}{(fileVersion != null && fileVersion.IsString ? " " + fileVersion.Value : string.Empty)}");
+                        if (datePublished != null && datePublished.IsString)
+                            sb.AppendLine($"Server date published: {datePublished}");
+                        EditorManager.inst.DisplayNotification(sb.ToString(), 10f, EditorManager.NotificationType.Warning);
+                    }
+                });
         }
 
         #endregion

@@ -2212,6 +2212,7 @@ namespace BetterLegacy.Editor.Managers
 
             EditorServerManager.inst.RenderTagDialog(prefab, PrefabEditorDialog, EditorServerManager.DefaultTagRelation.Prefab);
             EditorServerManager.inst.RenderServerDialog(
+                url: AlephNetwork.PrefabURL,
                 uploadable: prefab,
                 dialog: PrefabEditorDialog,
                 upload: () => UploadPrefab(prefabPanel),
