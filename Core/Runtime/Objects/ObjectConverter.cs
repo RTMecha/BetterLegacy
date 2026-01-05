@@ -6,7 +6,6 @@ using System.Text;
 using UnityEngine;
 
 using BetterLegacy.Configs;
-using BetterLegacy.Core;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Core.Data;
@@ -404,7 +403,7 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         RTBackgroundObject ToRuntimeBGObject(BackgroundObject backgroundObject)
         {
-            var renderers = new List<Renderer>();
+            var visualFadeObjects = new List<VisualFadeObject>();
 
             var parent = runtimeLevel.SpawnParent;
 
@@ -416,12 +415,13 @@ namespace BetterLegacy.Core.Runtime.Objects
             }
 
             var baseObject = Creator.NewGameObject(backgroundObject.name, parent);
+            var visualParent = Creator.NewGameObject("visual", baseObject.transform);
+            visualParent.transform.localPosition = new Vector3(backgroundObject.pos.x, backgroundObject.pos.y, 32f + backgroundObject.depth * 10f);
+            visualParent.transform.localScale = new Vector3(backgroundObject.scale.x, backgroundObject.scale.y, backgroundObject.zscale);
+            visualParent.transform.localRotation = Quaternion.Euler(new Vector3(backgroundObject.rotation.x, backgroundObject.rotation.y, backgroundObject.rot));
 
-            var gameObject = BackgroundManager.inst.backgroundPrefab.Duplicate(baseObject.transform, backgroundObject.name);
+            var gameObject = BackgroundManager.inst.backgroundPrefab.Duplicate(visualParent.transform, backgroundObject.name);
             gameObject.layer = 9;
-            gameObject.transform.localPosition = new Vector3(backgroundObject.pos.x, backgroundObject.pos.y, 32f + backgroundObject.depth * 10f);
-            gameObject.transform.localScale = new Vector3(backgroundObject.scale.x, backgroundObject.scale.y, backgroundObject.zscale);
-            gameObject.transform.localRotation = Quaternion.Euler(new Vector3(backgroundObject.rotation.x, backgroundObject.rotation.y, backgroundObject.rot));
 
             var renderer = gameObject.GetComponent<Renderer>();
             renderer.material = LegacyResources.objectMaterial;
@@ -429,29 +429,27 @@ namespace BetterLegacy.Core.Runtime.Objects
             CoreHelper.Destroy(gameObject.GetComponent<SelectBackgroundInEditor>());
             CoreHelper.Destroy(gameObject.GetComponent<BoxCollider>());
 
-            renderers.Add(renderer);
+            visualFadeObjects.Add(new VisualFadeObject(gameObject, renderer, gameObject.GetComponent<MeshFilter>()));
 
             if (backgroundObject.drawFade)
             {
-                int depth = backgroundObject.iterations;
-
-                for (int i = 1; i < depth - backgroundObject.depth; i++)
+                for (int i = 1; i < backgroundObject.FadeCount; i++)
                 {
-                    var gameObject2 = BackgroundManager.inst.backgroundFadePrefab.Duplicate(gameObject.transform, $"{backgroundObject.name} Fade [{i}]");
+                    var fade = BackgroundManager.inst.backgroundFadePrefab.Duplicate(visualParent.transform, $"{backgroundObject.name} Fade [{i}]");
 
-                    gameObject2.transform.localPosition = new Vector3(0f, 0f, i);
-                    gameObject2.transform.localScale = Vector3.one;
-                    gameObject2.transform.localRotation = Quaternion.Euler(Vector3.zero);
-                    gameObject2.layer = 9;
+                    fade.transform.localPosition = new Vector3(0f, 0f, i);
+                    fade.transform.localScale = Vector3.one;
+                    fade.transform.localRotation = Quaternion.Euler(Vector3.zero);
+                    fade.layer = 9;
 
-                    var renderer2 = gameObject2.GetComponent<Renderer>();
-                    renderer2.material = LegacyResources.objectMaterial;
+                    var fadeRenderer = fade.GetComponent<Renderer>();
+                    fadeRenderer.material = LegacyResources.objectMaterial;
 
-                    renderers.Add(renderer2);
+                    visualFadeObjects.Add(new VisualFadeObject(fade, fadeRenderer, fade.GetComponent<MeshFilter>()));
                 }
             }
 
-            var runtimeObject = new RTBackgroundObject(backgroundObject, renderers, runtimeLevel);
+            var runtimeObject = new RTBackgroundObject(backgroundObject, visualFadeObjects, runtimeLevel);
 
             runtimeObject.SetActive(false);
             runtimeObject.UpdateShape(backgroundObject.Shape, backgroundObject.ShapeOption);

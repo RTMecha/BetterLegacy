@@ -864,6 +864,7 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction(nameof(ModifierFunctions.setOutlineOther),  ModifierFunctions.setOutlineOther, ModifierCompatibility.FullBeatmapCompatible),
             new ModifierAction(nameof(ModifierFunctions.setOutlineHex),  ModifierFunctions.setOutlineHex, ModifierCompatibility.BeatmapObjectCompatible),
             new ModifierAction(nameof(ModifierFunctions.setOutlineHexOther),  ModifierFunctions.setOutlineHexOther, ModifierCompatibility.FullBeatmapCompatible),
+            new ModifierAction(nameof(ModifierFunctions.setDepthOffset),  ModifierFunctions.setDepthOffset, ModifierCompatibility.BackgroundObjectCompatible),
 
             #endregion
 
@@ -1118,6 +1119,7 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction(nameof(ModifierFunctions.reactivePosChain),  ModifierFunctions.reactivePosChain, ModifierCompatibility.BeatmapObjectCompatible),
             new ModifierAction(nameof(ModifierFunctions.reactiveScaChain),  ModifierFunctions.reactiveScaChain, ModifierCompatibility.BeatmapObjectCompatible),
             new ModifierAction(nameof(ModifierFunctions.reactiveRotChain),  ModifierFunctions.reactiveRotChain, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierFunctions.reactiveIterations),  ModifierFunctions.reactiveIterations, ModifierCompatibility.BackgroundObjectCompatible),
 
             #endregion
 
@@ -1772,6 +1774,13 @@ namespace BetterLegacy.Core.Helpers
                 {
                     if (modifierLoop.reference is IReactive reactive)
                         reactive.ReactiveRotationOffset = 0f;
+                }
+            ),
+            new ModifierInactive(nameof(ModifierFunctions.reactiveIterations),
+                (modifier, modifierLoop) =>
+                {
+                    if (modifierLoop.reference is BackgroundObject backgroundObject)
+                        backgroundObject.runtimeObject?.SetDepthOffset(0);
                 }
             ),
 
@@ -5193,6 +5202,12 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
+        public static void setDepthOffset(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (modifierLoop.reference is BackgroundObject backgroundObject)
+                backgroundObject.runtimeObject?.SetDepthOffset(modifier.GetBool(1, false, modifierLoop.variables) ? -(modifier.GetInt(0, 0, modifierLoop.variables) - (backgroundObject.iterations - 1)) : modifier.GetInt(0, 0, modifierLoop.variables));
+        }
+
         #endregion
 
         #region Player
@@ -7563,6 +7578,12 @@ namespace BetterLegacy.Core.Helpers
         {
             if (modifierLoop.reference is IReactive reactive)
                 reactive.ReactiveRotationOffset = RTLevel.Current.GetSample(modifier.GetInt(1, 0, modifierLoop.variables), modifier.GetFloat(0, 0f, modifierLoop.variables));
+        }
+
+        public static void reactiveIterations(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (modifierLoop.reference is BackgroundObject backgroundObject)
+                backgroundObject.runtimeObject?.ReactiveDepth(modifier.GetInt(1, 0, modifierLoop.variables), modifier.GetFloat(0, 100f, modifierLoop.variables), modifier.GetInt(2, 0, modifierLoop.variables), modifier.GetBool(3, true, modifierLoop.variables));
         }
 
         #endregion

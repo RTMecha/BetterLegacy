@@ -1831,7 +1831,17 @@
                 "lang": 0
               }
             ]
-          } // reactiveRotChain
+          }, // reactiveRotChain
+          {
+            "name": "Object Modifier - reactiveIterations (Action)",
+            "tooltips": [
+              {
+                "desc": "reactiveIterations (Action)",
+                "hint": "Makes the background object's fade iterations react to the music.",
+                "lang": 0
+              }
+            ]
+          } // reactiveIterations
         ],
 
         // Level
@@ -2628,7 +2638,17 @@
                 "lang": 0
               }
             ]
-          } // setOutlineHexOther
+          }, // setOutlineHexOther
+          {
+            "name": "Object Modifier - setDepthOffset (Action)",
+            "tooltips": [
+              {
+                "desc": "setDepthOffset (Action)",
+                "hint": "Sets the fade iteration offset for the background object.",
+                "lang": 0
+              }
+            ]
+          } // setDepthOffset
         ],
 
         // Player

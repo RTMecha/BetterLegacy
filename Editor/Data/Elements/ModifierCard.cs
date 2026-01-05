@@ -1069,6 +1069,12 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
+                case nameof(ModifierFunctions.setDepthOffset): {
+                        IntegerGenerator(modifier, reference, "Depth Offset", 0, max: int.MaxValue);
+                        BoolGenerator(modifier, reference, "Inverse", 1);
+
+                        break;
+                    }
 
                 #endregion
 
@@ -2594,6 +2600,14 @@ namespace BetterLegacy.Editor.Data.Elements
                 case nameof(ModifierFunctions.reactiveRotChain): {
                         SingleGenerator(modifier, reference, "Intensity", 0, 1f);
                         IntegerGenerator(modifier, reference, "Sample", 1, 0, max: RTLevel.MAX_SAMPLES);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.reactiveIterations): {
+                        SingleGenerator(modifier, reference, "Intensity", 0, 1f);
+                        IntegerGenerator(modifier, reference, "Sample", 1, 0, max: RTLevel.MAX_SAMPLES);
+                        IntegerGenerator(modifier, reference, "Offset", 2);
+                        BoolGenerator(modifier, reference, "Inverse", 3);
 
                         break;
                     }

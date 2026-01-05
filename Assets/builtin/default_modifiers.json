@@ -668,7 +668,14 @@
         "value": "1",
         "const": "True",
         "compat": "obj"
-      } // reactiveRotChain
+      }, // reactiveRotChain
+      {
+        "type": 1,
+        "name": "reactiveIterations",
+        "values": [ "100", "0", "0", "True" ],
+        "const": "True",
+        "compat": "bg_obj"
+      } // reactiveIterations
     ],
 
     // Level
@@ -1239,7 +1246,14 @@
         "values": [ "Object Group", "True", "0", "0.1", "FFFFFF" ],
         "const": "True",
         "compat": "obj"
-      } // setOutlineHexOther
+      }, // setOutlineHexOther
+      {
+        "type": 1,
+        "name": "setDepthOffset",
+        "values": [ "0", "False" ],
+        "const": "True",
+        "compat": "bg_obj"
+      } // setDepthOffset
     ],
 
     // Player
