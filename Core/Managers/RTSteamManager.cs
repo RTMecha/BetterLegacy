@@ -297,6 +297,7 @@ namespace BetterLegacy.Core.Managers
 
                 level.id = publishedFileID.Value.ToString();
                 level.steamItem = item;
+                level.isSteamLevel = true;
 
                 LevelManager.AssignSaveData(level);
 
