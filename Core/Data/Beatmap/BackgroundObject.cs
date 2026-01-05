@@ -80,6 +80,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         public Vector2 rotation = Vector2.zero;
         public float zscale = 10f;
         public int iterations = 9;
+        public int FadeCount => iterations - depth;
         public float zposition;
         public int depth;
         public bool drawFade = true;
@@ -822,6 +823,9 @@ namespace BetterLegacy.Core.Data.Beatmap
             variables["otherObjectStartTime"] = StartTime;
             variables["otherObjectKillTime"] = SpawnDuration;
 
+            variables["otherDepth"] = depth;
+            variables["otherIterations"] = iterations;
+
             variables["otherPositionOffsetX"] = positionOffset.x;
             variables["otherPositionOffsetY"] = positionOffset.y;
             variables["otherPositionOffsetZ"] = positionOffset.z;
@@ -866,6 +870,9 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             variables["objectStartTime"] = StartTime;
             variables["objectKillTime"] = SpawnDuration;
+
+            variables["depth"] = depth;
+            variables["iterations"] = iterations;
 
             variables["positionOffsetX"] = positionOffset.x;
             variables["positionOffsetY"] = positionOffset.y;

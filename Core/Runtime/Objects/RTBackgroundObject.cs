@@ -7,12 +7,13 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Runtime.Objects.Visual;
 
 namespace BetterLegacy.Core.Runtime.Objects
 {
     public class RTBackgroundObject : Exists, IRTObject, ICustomActivatable
     {
-        public RTBackgroundObject(BackgroundObject backgroundObject, List<Renderer> renderers, RTLevelBase parentRuntime)
+        public RTBackgroundObject(BackgroundObject backgroundObject, List<VisualFadeObject> visualFadeObjects, RTLevelBase parentRuntime)
         {
             this.backgroundObject = backgroundObject;
 
@@ -20,11 +21,15 @@ namespace BetterLegacy.Core.Runtime.Objects
             StartTime = backgroundObject.StartTime;
             KillTime = backgroundObject.StartTime + backgroundObject.SpawnDuration;
 
-            this.renderers = renderers;
+            this.visualFadeObjects = visualFadeObjects;
+            showFade = CoreConfig.Instance.ShowBackgroundFade.Value;
 
-            var baseObject = BaseObject;
-            if (baseObject)
-                top = baseObject.transform.parent;
+            var baseObject = !visualFadeObjects.IsEmpty() && visualFadeObjects[0] ? visualFadeObjects[0].gameObject : null;
+            if (!baseObject)
+                return;
+
+            gameObject = baseObject.transform.parent.gameObject;
+            top = gameObject.transform.parent;
         }
 
         public RTLevelBase ParentRuntime { get; set; }
@@ -39,39 +44,68 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         public bool hidden;
 
+        public GameObject gameObject;
+
         public Transform top;
 
-        public List<Renderer> renderers = new List<Renderer>();
+        public List<VisualFadeObject> visualFadeObjects = new List<VisualFadeObject>();
 
-        public GameObject BaseObject => !renderers.IsEmpty() && renderers[0] ? renderers[0].gameObject : null;
+        public GameObject BaseObject => !visualFadeObjects.IsEmpty() && visualFadeObjects[0] ? visualFadeObjects[0].gameObject : null;
+
+        public int depthOffset;
+        public int Depth => backgroundObject.depth + Mathf.Clamp(depthOffset, 0, backgroundObject.iterations - 1);
+
+        Color mainColor;
+        Color fadeColor;
+        int fadeCount = -1;
+        bool showFade = true;
+
+        public void ReactiveDepth(int sample, float intensity, int offset, bool inverse)
+        {
+            var reactive = (int)RTLevel.Current.GetSample(sample, intensity) + offset;
+            depthOffset = Mathf.Clamp(inverse ? -(reactive - (backgroundObject.iterations - 1)) : reactive, 0, int.MaxValue);
+            visualFadeObjects.ForLoop((visualFadeObject, i) => visualFadeObject.SetActive(i == 0 || i < backgroundObject.iterations - Depth));
+        }
+
+        public void SetDepthOffset(int depthOffset)
+        {
+            this.depthOffset = Mathf.Clamp(depthOffset, 0, int.MaxValue);
+            visualFadeObjects.ForLoop((visualFadeObject, i) => visualFadeObject.SetActive(i == 0 || i < backgroundObject.iterations - Depth));
+        }
 
         public void UpdateShape(int shape, int shapeOption)
         {
             var paShape = ShapeManager.inst.GetShape3D(shape, shapeOption);
-            foreach (var renderer in renderers)
+            foreach (var visualFadeObject in visualFadeObjects)
             {
-                if (renderer && renderer.gameObject.TryGetComponent(out MeshFilter meshFilter) && paShape.mesh)
-                    meshFilter.mesh = paShape.mesh;
+                if (visualFadeObject && visualFadeObject.meshFilter && paShape.mesh)
+                    visualFadeObject.meshFilter.mesh = paShape.mesh;
             }
         }
 
         public void SetColor(Color mainColor, Color fadeColor)
         {
-            int layer = backgroundObject.iterations - backgroundObject.depth;
-            renderers.ForLoop((renderer, i) =>
+            int fadeCount = backgroundObject.iterations - Depth;
+
+            if (this.mainColor == mainColor && this.fadeColor == fadeColor && this.fadeCount == fadeCount)
+                return;
+
+            this.mainColor = mainColor;
+            this.fadeColor = fadeColor;
+            this.fadeCount = fadeCount;
+            visualFadeObjects.ForLoop((visualFadeObject, i) =>
             {
+                if (!visualFadeObject.Active)
+                    return;
+
                 if (i == 0)
                 {
-                    renderer.material.color = mainColor;
+                    visualFadeObject.SetColor(mainColor);
                     return;
                 }
 
-                if (!renderer.gameObject.activeSelf)
-                    renderer.gameObject.SetActive(true);
-
-                float t = 1f / layer * i;
-
-                renderer.material.color = Color.Lerp(Color.Lerp(mainColor, fadeColor, t), fadeColor, t);
+                float t = 1f / fadeCount * i;
+                visualFadeObject.SetColor(Color.Lerp(Color.Lerp(mainColor, fadeColor, t), fadeColor, t));
             });
         }
 
@@ -80,14 +114,13 @@ namespace BetterLegacy.Core.Runtime.Objects
             if (top)
                 CoreHelper.Delete(top.gameObject);
 
-            renderers.Clear();
+            visualFadeObjects.Clear();
         }
 
         public void SetActive(bool active)
         {
             Active = active;
 
-            var gameObject = BaseObject;
             if (gameObject)
                 gameObject.SetActive(active);
         }
@@ -107,8 +140,6 @@ namespace BetterLegacy.Core.Runtime.Objects
 
             if (hidden)
                 top.gameObject.SetActive(false);
-
-            var gameObject = BaseObject;
 
             if (!backgroundObject.active || !enabled || hidden || !gameObject)
                 return;
@@ -139,23 +170,23 @@ namespace BetterLegacy.Core.Runtime.Objects
                 fadeColor = ThemeManager.inst.bgColorToLerp;
             fadeColor.a = 1f;
 
-            if (!CoreConfig.Instance.ShowBackgroundFade.Value && renderers.Count > 0)
+            if (showFade != CoreConfig.Instance.ShowBackgroundFade.Value)
             {
-                renderers[0].material.color = mainColor;
-                if (renderers.Count > 1 && renderers[1].gameObject.activeSelf)
-                {
-                    for (int i = 1; i < renderers.Count; i++)
-                        renderers[i].gameObject.SetActive(false);
-                }
+                showFade = CoreConfig.Instance.ShowBackgroundFade.Value;
+                for (int i = 1; i < visualFadeObjects.Count; i++)
+                    visualFadeObjects[i].SetActive(showFade);
             }
-            else
+
+            if (showFade)
                 SetColor(mainColor, fadeColor);
+            else if (!visualFadeObjects.IsEmpty())
+                visualFadeObjects[0].SetColor(mainColor);
 
             if (!reactive)
             {
                 backgroundObject.reactiveSize = Vector2.zero;
 
-                gameObject.transform.localPosition = new Vector3(backgroundObject.pos.x, backgroundObject.pos.y, 32f + backgroundObject.depth * 10f + backgroundObject.zposition) + backgroundObject.positionOffset + backgroundObject.fullTransform.position;
+                gameObject.transform.localPosition = new Vector3(backgroundObject.pos.x, backgroundObject.pos.y, 32f + Depth * 10f + backgroundObject.zposition) + backgroundObject.positionOffset + backgroundObject.fullTransform.position;
                 gameObject.transform.localScale = RTMath.Scale(new Vector3(backgroundObject.scale.x, backgroundObject.scale.y, backgroundObject.zscale) + backgroundObject.scaleOffset, backgroundObject.fullTransform.scale);
                 gameObject.transform.localRotation = Quaternion.Euler(new Vector3(backgroundObject.rotation.x, backgroundObject.rotation.y, backgroundObject.rot) + backgroundObject.rotationOffset + backgroundObject.fullTransform.rotation);
                 return;
@@ -175,7 +206,7 @@ namespace BetterLegacy.Core.Runtime.Objects
                 gameObject.transform.localPosition =
                     new Vector3(backgroundObject.pos.x,
                     backgroundObject.pos.y,
-                    32f + backgroundObject.depth * 10f + backgroundObject.zposition) + backgroundObject.positionOffset + backgroundObject.fullTransform.position;
+                    32f + Depth * 10f + backgroundObject.zposition) + backgroundObject.positionOffset + backgroundObject.fullTransform.position;
                 gameObject.transform.localScale =
                     RTMath.Scale(new Vector3(backgroundObject.scale.x, backgroundObject.scale.y, backgroundObject.zscale) +
                     new Vector3(backgroundObject.reactiveSize.x, backgroundObject.reactiveSize.y, 0f) + backgroundObject.scaleOffset, backgroundObject.fullTransform.scale);
@@ -194,7 +225,7 @@ namespace BetterLegacy.Core.Runtime.Objects
             gameObject.transform.localPosition =
                 new Vector3(backgroundObject.pos.x + x,
                 backgroundObject.pos.y + y,
-                32f + backgroundObject.depth * 10f + z + backgroundObject.zposition) + backgroundObject.positionOffset + backgroundObject.fullTransform.position;
+                32f + Depth * 10f + z + backgroundObject.zposition) + backgroundObject.positionOffset + backgroundObject.fullTransform.position;
             gameObject.transform.localScale =
                 RTMath.Scale(new Vector3(backgroundObject.scale.x, backgroundObject.scale.y, backgroundObject.zscale) +
                 new Vector3(backgroundObject.reactiveSize.x, backgroundObject.reactiveSize.y, 0f) + backgroundObject.scaleOffset, backgroundObject.fullTransform.scale);
