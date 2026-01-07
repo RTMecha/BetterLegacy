@@ -158,6 +158,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         #endregion
 
+        public InputField AnimIDField { get; set; }
+
         public ModifiersEditorDialog ModifiersDialog { get; set; }
 
         #endregion
@@ -1829,6 +1831,17 @@ namespace BetterLegacy.Editor.Data.Dialogs
             }
 
             #endregion
+
+            var animIDLabel = EditorPrefabHolder.Instance.Labels.Duplicate(Content, "anim_label");
+            var animIDLabelText = animIDLabel.transform.GetChild(0).GetComponent<Text>();
+            animIDLabelText.text = "Animation ID";
+            EditorThemeManager.ApplyLightText(animIDLabelText);
+
+            var animID = EditorPrefabHolder.Instance.StringInputField.Duplicate(Content, "anim");
+            AnimIDField = animID.GetComponent<InputField>();
+
+            EditorThemeManager.ApplyInputField(AnimIDField);
+            AnimIDField.gameObject.GetOrAddComponent<InputFieldSwapper>().Init(AnimIDField, InputFieldSwapper.Type.String);
 
             try
             {

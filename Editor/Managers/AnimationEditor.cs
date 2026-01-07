@@ -180,6 +180,10 @@ namespace BetterLegacy.Editor.Managers
             CurrentObject.InterpolateAnimation(CurrentAnimation, CurrentTime);
         }
 
+        /// <summary>
+        /// Applies animations to the selected objects.
+        /// </summary>
+        /// <param name="animations">List of animations to apply.</param>
         public void ApplyAnimationsToSelected(List<PAAnimation> animations)
         {
             foreach (var animation in animations)
@@ -187,18 +191,55 @@ namespace BetterLegacy.Editor.Managers
             RTLevel.Current.RecacheAllSequences();
         }
 
+        /// <summary>
+        /// Applies an animation to selected objects that match the animation ID.
+        /// </summary>
+        /// <param name="animation">Animation to apply.</param>
+        /// <param name="update">If sequences should be recached.</param>
         public void ApplyAnimationToSelected(PAAnimation animation, bool update)
         {
             foreach (var timelineObject in EditorTimeline.inst.SelectedBeatmapObjects)
             {
                 var beatmapObject = timelineObject.GetData<BeatmapObject>();
                 if (beatmapObject.animID == animation.ReferenceID)
+                {
                     beatmapObject.CopyAnimatableData(animation);
+                    timelineObject.RenderPosLength();
+                }
             }
 
             if (update)
                 RTLevel.Current.RecacheAllSequences();
         }
+
+        /// <summary>
+        /// Converts the selected objects to just animations.
+        /// </summary>
+        /// <param name="animations">Animations list.</param>
+        public void ConvertSelectedToAnimations(List<PAAnimation> animations)
+        {
+            foreach (var timelineObject in EditorTimeline.inst.SelectedBeatmapObjects)
+                animations.Add(ConvertToAnimation(timelineObject.GetData<BeatmapObject>()));
+        }
+
+        /// <summary>
+        /// Converts an object to just an animation.
+        /// </summary>
+        /// <param name="beatmapObject">Beatmap Object to convert.</param>
+        /// <returns>Returns an animation based on the Beatmap Object.</returns>
+        public PAAnimation ConvertToAnimation(BeatmapObject beatmapObject)
+        {
+            var animation = new PAAnimation(beatmapObject.name, "This is the default description!");
+            animation.CopyAnimatableData(beatmapObject);
+            animation.ReferenceID = beatmapObject.animID;
+            return animation;
+        }
+
+        /// <summary>
+        /// Creates a new animation.
+        /// </summary>
+        /// <returns>Returns a newly created animation.</returns>
+        public PAAnimation CreateAnimation() => new PAAnimation("New Animation", "This is the default description!");
 
         #region Editor
 
@@ -327,6 +368,11 @@ namespace BetterLegacy.Editor.Managers
         #region List
 
         /// <summary>
+        /// Renders the animation list popup.
+        /// </summary>
+        public void RenderPopup() => Popup.SearchField.onValueChanged.Invoke(Popup.SearchTerm);
+
+        /// <summary>
         /// Opens the animation list popup.
         /// </summary>
         /// <param name="animations">List of animations to display.</param>
@@ -342,6 +388,9 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         /// <param name="animations">List of animations to display.</param>
         /// <param name="onPlay">Function to run when the user wants to play the animation.</param>
+        /// <param name="onSelect">Function to run when the animation is selected.</param>
+        /// <param name="currentObject">The current transformable object reference to play the animation onto.</param>
+        /// <param name="onReturn">Function to run when the user wants to return from the animation editor.</param>
         public void RenderPopup(List<PAAnimation> animations, Action<PAAnimation> onPlay = null, Action<PAAnimation> onSelect = null, ITransformable currentObject = null, Action onReturn = null)
         {
             CurrentObject = currentObject;
@@ -360,7 +409,7 @@ namespace BetterLegacy.Editor.Managers
                     EditorContextMenu.inst.ShowContextMenu(
                         new ButtonElement("Create New", () =>
                         {
-                            animations.Add(new PAAnimation("New Animation", "This is the default description!"));
+                            animations.Add(CreateAnimation());
                             RenderPopup(animations, onPlay, onSelect, currentObject, onReturn);
                         }),
                         new ButtonElement("Create From Object", () => EditorTimeline.inst.onSelectTimelineObject = timelineObject =>
@@ -371,11 +420,14 @@ namespace BetterLegacy.Editor.Managers
                                 return;
                             }
 
-                            var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                            var animation = new PAAnimation(beatmapObject.name, "This is the default description!");
-                            animation.CopyAnimatableData(beatmapObject);
-                            animations.Add(animation);
+                            animations.Add(ConvertToAnimation(timelineObject.GetData<BeatmapObject>()));
                             RenderPopup(animations, onPlay, onSelect, currentObject, onReturn);
+                        }),
+                        new ButtonElement("Create From Selected", () =>
+                        {
+                            ConvertSelectedToAnimations(animations);
+                            RenderPopup(animations, onPlay, onSelect, currentObject, onReturn);
+                            EditorManager.inst.DisplayNotification($"Converted all selected objects to an animation!", 2f, EditorManager.NotificationType.Success);
                         }),
                         new SpacerElement(),
                         new ButtonElement("Copy All", () =>
@@ -398,7 +450,7 @@ namespace BetterLegacy.Editor.Managers
                     return;
                 }
 
-                animations.Add(new PAAnimation("New Animation", "This is the default description!"));
+                animations.Add(CreateAnimation());
                 RenderPopup(animations, onPlay, onSelect, currentObject, onReturn);
             };
 
@@ -432,9 +484,13 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 animations.RemoveAt(index);
                                 RenderPopup(animations, onPlay, onSelect, currentObject, onReturn);
-                                RTEditor.inst.HideWarningPopup();
-                            }, RTEditor.inst.HideWarningPopup)),
+                            })),
                             new SpacerElement(),
+                            new ButtonElement("Apply To Selected", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to apply the current animations to the selected objects? This will check for matching animation IDs.", () =>
+                            {
+                                ApplyAnimationsToSelected(animations);
+                                EditorManager.inst.DisplayNotification($"Applied animations to all selected objects!", 2f, EditorManager.NotificationType.Success);
+                            })),
                             new ButtonElement("Apply To Object", () => EditorTimeline.inst.onSelectTimelineObject = timelineObject =>
                             {
                                 if (!timelineObject.isBeatmapObject)
