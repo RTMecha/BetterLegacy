@@ -15,6 +15,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
     {
         public AnimationEditorDialog() : base() { }
 
+        #region Values
+
         #region Animation Values
 
         public RectTransform Content { get; set; }
@@ -75,7 +77,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         #endregion
 
-        #region Methods
+        #endregion
+
+        #region Functions
 
         public override void Init()
         {

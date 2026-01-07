@@ -33,9 +33,6 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public ContentPopup Popup { get; set; }
 
-        public GameObject modifierCardPrefab;
-        public GameObject modifierAddPrefab;
-
         /// <summary>
         /// Dictionary of copied modifiers for each modifier reference type. Each type is already initialized with an empty list in the dictionary.
         /// </summary>
@@ -51,15 +48,44 @@ namespace BetterLegacy.Editor.Managers
             { ModifierReferenceType.ModifierBlock, new List<Modifier>() },
         };
 
+        #region Prefabs
+
+        /// <summary>
+        /// Prefab for modifier cards.
+        /// </summary>
+        public GameObject modifierCardPrefab;
+
+        /// <summary>
+        /// Prefab for the add button in a modifier list.
+        /// </summary>
+        public GameObject modifierAddPrefab;
+
+        /// <summary>
+        /// Prefab for <see langword="bool"/> values.
+        /// </summary>
         public GameObject booleanBar;
 
+        /// <summary>
+        /// Prefab for number values.
+        /// </summary>
         public GameObject numberInput;
 
+        /// <summary>
+        /// Prefab for <see langword="string"/> values.
+        /// </summary>
         public GameObject stringInput;
 
+        /// <summary>
+        /// Prefab for dropdown based values.
+        /// </summary>
         public GameObject dropdownBar;
 
+        /// <summary>
+        /// Prefab for <see cref="Easing"/> values.
+        /// </summary>
         public GameObject easingBar;
+
+        #endregion
 
         #endregion
 
@@ -311,6 +337,11 @@ namespace BetterLegacy.Editor.Managers
 
         #region UI Part Handlers
 
+        /// <summary>
+        /// Generates the paste button.
+        /// </summary>
+        /// <param name="modifyable">Modifyable object reference.</param>
+        /// <param name="dialog">Dialog reference.</param>
         public void PasteGenerator(IModifyable modifyable, ModifiersEditorDialog dialog)
         {
             var referenceType = modifyable.ReferenceType;

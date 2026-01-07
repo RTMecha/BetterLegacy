@@ -705,16 +705,14 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         new ButtonElement("Upload / Update", RTMetaDataEditor.inst.UploadLevel),
                         new ButtonElement("Verify Level is on Server", () => RTEditor.inst.ShowWarningPopup("Do you want to verify that the level is on the Arcade server?", () =>
                         {
-                            RTEditor.inst.HideWarningPopup();
                             EditorManager.inst.DisplayNotification("Verifying...", 1.5f, EditorManager.NotificationType.Info);
                             RTMetaDataEditor.inst.VerifyLevelIsOnServer();
-                        }, RTEditor.inst.HideWarningPopup)),
+                        })),
                         new ButtonElement("Pull Changes from Server", () => RTEditor.inst.ShowWarningPopup("Do you want to pull the level from the Arcade server?", () =>
                         {
-                            RTEditor.inst.HideWarningPopup();
                             EditorManager.inst.DisplayNotification("Pulling level...", 1.5f, EditorManager.NotificationType.Info);
                             RTMetaDataEditor.inst.PullLevel();
-                        }, RTEditor.inst.HideWarningPopup)),
+                        })),
                         new SpacerElement(),
                         new ButtonElement("Guidelines", () => EditorDocumentation.inst.OpenDocument("Uploading a Level"))
                         );

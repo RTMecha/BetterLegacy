@@ -170,6 +170,9 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
+        /// <summary>
+        /// Represents settings for an tab in <see cref="ServerContentDialog"/>.
+        /// </summary>
         public class TabSettings
         {
             /// <summary>
@@ -412,13 +415,7 @@ namespace BetterLegacy.Editor.Managers
                             var msg = "This item's upload version is greater than the current version number. Are you sure you want to update this?";
                             if (jn["datePublished"] != null)
                                 msg += $"\nItem was last updated on {jn["datePublished"].Value}";
-                            RTEditor.inst.ShowWarningPopup(msg,
-                                onConfirm: () =>
-                                {
-                                    DoUpload(path, exportPath, url, fileName, uploadable, transfer, saveFile, onUpload);
-                                    RTEditor.inst.HideWarningPopup();
-                                },
-                                onCancel: RTEditor.inst.HideWarningPopup);
+                            RTEditor.inst.ShowWarningPopup(msg, () => DoUpload(path, exportPath, url, fileName, uploadable, transfer, saveFile, onUpload));
                             return;
                         }
                     }
@@ -585,7 +582,6 @@ namespace BetterLegacy.Editor.Managers
 
                             EditorManager.inst.DisplayNotification($"Successfully deleted item off the Arcade server.", 2.5f, EditorManager.NotificationType.Success);
                             onDelete?.Invoke();
-                            RTEditor.inst.HideWarningPopup();
                         },
                         (string onError, long responseCode, string errorMsg) =>
                         {
@@ -619,7 +615,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     CoreHelper.LogError($"Had an exception in deleting the item.\nException: {ex}");
                 }
-            }, RTEditor.inst.HideWarningPopup);
+            });
         }
 
         /// <summary>
@@ -675,9 +671,7 @@ namespace BetterLegacy.Editor.Managers
                                     uploadable.DatePublished = string.Empty;
                                     saveFile?.Invoke();
                                     onVerify?.Invoke(false);
-
-                                    RTEditor.inst.HideWarningPopup();
-                                }, RTEditor.inst.HideWarningPopup);
+                                });
 
                                 return;
                             }
@@ -698,9 +692,7 @@ namespace BetterLegacy.Editor.Managers
                                     uploadable.DatePublished = string.Empty;
                                     saveFile?.Invoke();
                                     onVerify?.Invoke(false);
-
-                                    RTEditor.inst.HideWarningPopup();
-                                }, RTEditor.inst.HideWarningPopup);
+                                });
 
                                 break;
                             }
@@ -1523,11 +1515,7 @@ namespace BetterLegacy.Editor.Managers
                                 return;
                             }
 
-                            RTEditor.inst.ShowWarningPopup("Are you sure you want to download this Level to your editor folder?", () =>
-                            {
-                                RTEditor.inst.HideWarningPopup();
-                                DownloadLevel(item);
-                            }, RTEditor.inst.HideWarningPopup);
+                            RTEditor.inst.ShowWarningPopup("Are you sure you want to download this Level to your editor folder?", () => DownloadLevel(item));
                         };
 
                         EditorThemeManager.ApplySelectable(folderButtonStorage.button, ThemeGroup.List_Button_1);
@@ -1750,11 +1738,7 @@ namespace BetterLegacy.Editor.Managers
                                 return;
                             }
 
-                            RTEditor.inst.ShowWarningPopup("Are you sure you want to download this Level Collection to your editor folder?", () =>
-                            {
-                                RTEditor.inst.HideWarningPopup();
-                                DownloadLevelCollection(item);
-                            }, RTEditor.inst.HideWarningPopup);
+                            RTEditor.inst.ShowWarningPopup("Are you sure you want to download this Level Collection to your editor folder?", () => DownloadLevelCollection(item));
                         };
 
                         EditorThemeManager.ApplySelectable(folderButtonStorage.button, ThemeGroup.List_Button_1);
@@ -1988,11 +1972,7 @@ namespace BetterLegacy.Editor.Managers
                                 return;
                             }
 
-                            RTEditor.inst.ShowWarningPopup("Are you sure you want to download this Prefab to your editor folder?", () =>
-                            {
-                                RTEditor.inst.HideWarningPopup();
-                                DownloadPrefab(item);
-                            }, RTEditor.inst.HideWarningPopup);
+                            RTEditor.inst.ShowWarningPopup("Are you sure you want to download this Prefab to your editor folder?", () => DownloadPrefab(item));
                         };
 
                         EditorThemeManager.ApplySelectable(folderButtonStorage.button, ThemeGroup.List_Button_1);
@@ -2335,8 +2315,7 @@ namespace BetterLegacy.Editor.Managers
         {
             Application.OpenURL($"{AlephNetwork.ArcadeServerURL}api/auth/login");
             CreateLoginListener(onLogin);
-            RTEditor.inst.HideWarningPopup();
-        }, RTEditor.inst.HideWarningPopup, "Login", "Cancel");
+        }, "Login", "Cancel");
 
         /// <summary>
         /// Refreshes the users' login tokens.

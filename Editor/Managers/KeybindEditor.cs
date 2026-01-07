@@ -36,6 +36,100 @@ namespace BetterLegacy.Editor.Managers
     /// </summary>
     public class KeybindEditor : BaseManager<KeybindEditor, EditorManagerSettings>
     {
+        #region Values
+
+        /// <summary>
+        /// Dialog of the editor.
+        /// </summary>
+        public KeybindEditorDialog Dialog { get; set; }
+
+        /// <summary>
+        /// Popup list of the editor.
+        /// </summary>
+        public ContentPopup Popup { get; set; }
+
+        /// <summary>
+        /// Keybind Function popup list of the editor.
+        /// </summary>
+        public ContentPopup FunctionPopup { get; set; }
+
+        GameObject keyPrefab;
+
+        /// <summary>
+        /// Currently selected keybind profile.
+        /// </summary>
+        public KeybindProfile CurrentProfile { get; set; }
+
+        /// <summary>
+        /// List of loaded keybind profiles.
+        /// </summary>
+        public List<KeybindProfile> profiles = new List<KeybindProfile>();
+
+        /// <summary>
+        /// Currently selected keybind.
+        /// </summary>
+        public Keybind CurrentKeybind { get; set; }
+
+        /// <summary>
+        /// Folder where keybinds are stored.
+        /// </summary>
+        public string KeybindsFolder => RTFile.CombinePaths(RTFile.ApplicationDirectory, "settings/keybinds");
+
+        /// <summary>
+        /// File where main keybind settings are stored.
+        /// </summary>
+        public string KeybindEditorSettings => RTFile.CombinePaths(RTFile.ApplicationDirectory, "settings/keybind_settings" + FileFormat.LSS.Dot());
+
+        /// <summary>
+        /// ID of the currently selected profile.
+        /// </summary>
+        public string currentProfileID;
+
+        /// <summary>
+        /// If a keybind is active.
+        /// </summary>
+        public bool isPressingKey;
+
+        /// <summary>
+        /// The last activated keybind.
+        /// </summary>
+        public Keybind lastKeybind;
+
+        public Dictionary<string, List<Dropdown.OptionData>> keybindSettingEnumValues = new Dictionary<string, List<Dropdown.OptionData>>
+        {
+            { "search prefab using", CoreHelper.StringToOptionData("Index", "Name", "ID") },
+        };
+
+        #region Transform
+
+        public bool createKeyframe = true;
+        public bool useNearest = true;
+        public bool usePrevious = false;
+
+        public int currentType;
+
+        public bool dragging;
+
+        public BeatmapObject beatmapObject;
+        public PrefabObject prefabObject;
+
+        public bool setKeyframeValues;
+        public Vector2 dragKeyframeValues;
+        public EventKeyframe selectedKeyframe;
+        public float[] originalValues;
+        public Vector2 dragOffset;
+        float dragOffsetFloat;
+        float dragKeyframeValuesFloat;
+        public SelectObject.Axis firstDirection = SelectObject.Axis.Static;
+
+        public SelectionType selectionType;
+
+        #endregion
+
+        #endregion
+
+        #region Functions
+        
         #region Init
 
         public override void OnInit()
@@ -52,16 +146,16 @@ namespace BetterLegacy.Editor.Managers
                     new KeybindFunction(nameof(Redo), Redo),
                     new KeybindFunction(nameof(Cut), Cut),
                     new KeybindFunction(nameof(Copy), Copy),
-                    new KeybindFunction(nameof(Paste), Paste, new Keybind.Setting("Remove Prefab Instance ID", "False")),
-                    new KeybindFunction(nameof(Duplicate), Duplicate, new Keybind.Setting("Remove Prefab Instance ID", "False")),
+                    new KeybindFunction(nameof(Paste), Paste, new Keybind.Setting("Remove Prefab Instance ID", "False", ValueType.Bool)),
+                    new KeybindFunction(nameof(Duplicate), Duplicate, new Keybind.Setting("Remove Prefab Instance ID", "False", ValueType.Bool)),
                     new KeybindFunction(nameof(Delete), Delete),
 
                     #endregion
 
                     #region Timeline
                     
-                    new KeybindFunction(nameof(SetLayer), SetLayer, new Keybind.Setting("Layer", "0")),
-                    new KeybindFunction(nameof(AddLayer), AddLayer, new Keybind.Setting("Layer", "1")),
+                    new KeybindFunction(nameof(SetLayer), SetLayer, new Keybind.Setting("Layer", "0", ValueType.Int)),
+                    new KeybindFunction(nameof(AddLayer), AddLayer, new Keybind.Setting("Layer", "1", ValueType.Int)),
                     new KeybindFunction(nameof(ToggleEventLayer), ToggleEventLayer),
 
                     new KeybindFunction(nameof(GoToCurrentTime), GoToCurrentTime),
@@ -73,7 +167,7 @@ namespace BetterLegacy.Editor.Managers
 
                     new KeybindFunction(nameof(AddTimelineBin), AddTimelineBin),
                     new KeybindFunction(nameof(RemoveTimelineBin), RemoveTimelineBin),
-                    new KeybindFunction(nameof(SetTimelineBin), SetTimelineBin, new Keybind.Setting("Count", "60")),
+                    new KeybindFunction(nameof(SetTimelineBin), SetTimelineBin, new Keybind.Setting("Count", "60", ValueType.Int)),
 
                     #endregion
 
@@ -90,8 +184,8 @@ namespace BetterLegacy.Editor.Managers
                     new KeybindFunction(nameof(SwapCollapseSelection), SwapCollapseSelection),
                     new KeybindFunction(nameof(ToggleCollapseSelection), ToggleCollapseSelection),
 
-                    new KeybindFunction(nameof(SetObjectLayer), SetObjectLayer, new Keybind.Setting("Amount", "0")),
-                    new KeybindFunction(nameof(AddObjectLayer), AddObjectLayer, new Keybind.Setting("Amount", "1")),
+                    new KeybindFunction(nameof(SetObjectLayer), SetObjectLayer, new Keybind.Setting("Amount", "0", ValueType.Int)),
+                    new KeybindFunction(nameof(AddObjectLayer), AddObjectLayer, new Keybind.Setting("Amount", "1", ValueType.Int)),
 
                     new KeybindFunction(nameof(CycleObjectTypeUp), CycleObjectTypeUp),
                     new KeybindFunction(nameof(CycleObjectTypeDown), CycleObjectTypeDown),
@@ -109,10 +203,10 @@ namespace BetterLegacy.Editor.Managers
                     new KeybindFunction(nameof(SetObjectDragHelperAxisX), SetObjectDragHelperAxisX),
                     new KeybindFunction(nameof(SetObjectDragHelperAxisY), SetObjectDragHelperAxisY),
 
-                    new KeybindFunction(nameof(TransformPosition), TransformPosition, new Keybind.Setting("Create Keyframe", "True"), new Keybind.Setting("Use Nearest", "True"), new Keybind.Setting("Use Previous", "False")),
-                    new KeybindFunction(nameof(TransformScale), TransformScale, new Keybind.Setting("Create Keyframe", "True"), new Keybind.Setting("Use Nearest", "True"), new Keybind.Setting("Use Previous", "False")),
-                    new KeybindFunction(nameof(TransformRotation), TransformRotation, new Keybind.Setting("Create Keyframe", "True"), new Keybind.Setting("Use Nearest", "True"), new Keybind.Setting("Use Previous", "False")),
-                    new KeybindFunction(nameof(FinishTransform), FinishTransform, new Keybind.Setting("Cancel", "False")),
+                    new KeybindFunction(nameof(TransformPosition), TransformPosition, new Keybind.Setting("Create Keyframe", "True", ValueType.Bool), new Keybind.Setting("Use Nearest", "True", ValueType.Bool), new Keybind.Setting("Use Previous", "False", ValueType.Bool)),
+                    new KeybindFunction(nameof(TransformScale), TransformScale, new Keybind.Setting("Create Keyframe", "True", ValueType.Bool), new Keybind.Setting("Use Nearest", "True", ValueType.Bool), new Keybind.Setting("Use Previous", "False", ValueType.Bool)),
+                    new KeybindFunction(nameof(TransformRotation), TransformRotation, new Keybind.Setting("Create Keyframe", "True", ValueType.Bool), new Keybind.Setting("Use Nearest", "True", ValueType.Bool), new Keybind.Setting("Use Previous", "False", ValueType.Bool)),
+                    new KeybindFunction(nameof(FinishTransform), FinishTransform, new Keybind.Setting("Cancel", "False", ValueType.Bool)),
 
                     new KeybindFunction(nameof(ParentPicker), ParentPicker),
 
@@ -124,10 +218,10 @@ namespace BetterLegacy.Editor.Managers
 
                     #region Prefab
 
-                    new KeybindFunction(nameof(OpenPrefabCreator), OpenPrefabCreator, new Keybind.Setting("External", "True")),
+                    new KeybindFunction(nameof(OpenPrefabCreator), OpenPrefabCreator, new Keybind.Setting("External", "True", ValueType.Bool)),
                     new KeybindFunction(nameof(CollapsePrefab), CollapsePrefab),
                     new KeybindFunction(nameof(ExpandPrefab), ExpandPrefab),
-                    new KeybindFunction(nameof(SpawnPrefab), SpawnPrefab, new Keybind.Setting("Search Prefab Using", "0"), new Keybind.Setting("Prefab Reference", string.Empty)),
+                    new KeybindFunction(nameof(SpawnPrefab), SpawnPrefab, new Keybind.Setting("Search Prefab Using", "0", ValueType.Enum), new Keybind.Setting("Prefab Reference", string.Empty, ValueType.String)),
                     new KeybindFunction(nameof(SpawnSelectedQuickPrefab), SpawnSelectedQuickPrefab),
 
                     #endregion
@@ -155,9 +249,9 @@ namespace BetterLegacy.Editor.Managers
                     new KeybindFunction(nameof(SetLastKeyframeInType), SetLastKeyframeInType),
                     new KeybindFunction(nameof(SetNextKeyframeInType), SetNextKeyframeInType),
                     new KeybindFunction(nameof(SetPreviousKeyframeInType), SetPreviousKeyframeInType),
-                    new KeybindFunction(nameof(IncreaseKeyframeValue), IncreaseKeyframeValue, new Keybind.Setting("Type", "0"), new Keybind.Setting("Index", "0"), new Keybind.Setting("Value Index", "0"), new Keybind.Setting("Amount", "0")),
-                    new KeybindFunction(nameof(DecreaseKeyframeValue), DecreaseKeyframeValue, new Keybind.Setting("Type", "0"), new Keybind.Setting("Index", "0"), new Keybind.Setting("Value Index", "0"), new Keybind.Setting("Amount", "0")),
-                    new KeybindFunction(nameof(SetKeyframeValue), SetKeyframeValue, new Keybind.Setting("Type", "0"), new Keybind.Setting("Index", "0"), new Keybind.Setting("Value Index", "0"), new Keybind.Setting("Amount", "0")),
+                    new KeybindFunction(nameof(IncreaseKeyframeValue), IncreaseKeyframeValue, new Keybind.Setting("Type", "0", ValueType.Int), new Keybind.Setting("Index", "0", ValueType.Int), new Keybind.Setting("Value Index", "0", ValueType.Int), new Keybind.Setting("Amount", "0", ValueType.Int)),
+                    new KeybindFunction(nameof(DecreaseKeyframeValue), DecreaseKeyframeValue, new Keybind.Setting("Type", "0", ValueType.Int), new Keybind.Setting("Index", "0", ValueType.Int), new Keybind.Setting("Value Index", "0", ValueType.Int), new Keybind.Setting("Amount", "0", ValueType.Int)),
+                    new KeybindFunction(nameof(SetKeyframeValue), SetKeyframeValue, new Keybind.Setting("Type", "0", ValueType.Int), new Keybind.Setting("Index", "0", ValueType.Int), new Keybind.Setting("Value Index", "0", ValueType.Int), new Keybind.Setting("Amount", "0", ValueType.Int)),
 
                     #endregion
 
@@ -165,8 +259,8 @@ namespace BetterLegacy.Editor.Managers
                     
                     new KeybindFunction(nameof(ToggleZenMode), ToggleZenMode),
                     new KeybindFunction(nameof(CycleGameMode), CycleGameMode),
-                    new KeybindFunction(nameof(AddPitch), AddPitch, new Keybind.Setting("Pitch", "0.1")),
-                    new KeybindFunction(nameof(SetPitch), SetPitch, new Keybind.Setting("Pitch", "1")),
+                    new KeybindFunction(nameof(AddPitch), AddPitch, new Keybind.Setting("Pitch", "0.1", ValueType.Int)),
+                    new KeybindFunction(nameof(SetPitch), SetPitch, new Keybind.Setting("Pitch", "1", ValueType.Int)),
                     new KeybindFunction(nameof(UpdateSeed), UpdateSeed),
 
                     #endregion
@@ -184,7 +278,7 @@ namespace BetterLegacy.Editor.Managers
                     new KeybindFunction(nameof(TogglePlayingProjectPlannerOST), TogglePlayingProjectPlannerOST),
                     new KeybindFunction(nameof(ShuffleProjectPlannerOST), ShuffleProjectPlannerOST),
                     new KeybindFunction(nameof(StartProjectPlannerOST), StartProjectPlannerOST),
-                    new KeybindFunction(nameof(SwitchKeybindProfile), SwitchKeybindProfile, new Keybind.Setting("Profile ID", string.Empty)),
+                    new KeybindFunction(nameof(SwitchKeybindProfile), SwitchKeybindProfile, new Keybind.Setting("Profile ID", string.Empty, ValueType.String)),
                 };
 
                 Load();
@@ -384,95 +478,6 @@ namespace BetterLegacy.Editor.Managers
         }
 
         #endregion
-
-        #region Values
-
-        /// <summary>
-        /// Dialog of the editor.
-        /// </summary>
-        public KeybindEditorDialog Dialog { get; set; }
-
-        /// <summary>
-        /// Popup list of the editor.
-        /// </summary>
-        public ContentPopup Popup { get; set; }
-
-        /// <summary>
-        /// Keybind Function popup list of the editor.
-        /// </summary>
-        public ContentPopup FunctionPopup { get; set; }
-
-        GameObject keyPrefab;
-
-        /// <summary>
-        /// Currently selected keybind profile.
-        /// </summary>
-        public KeybindProfile CurrentProfile { get; set; }
-
-        /// <summary>
-        /// List of loaded keybind profiles.
-        /// </summary>
-        public List<KeybindProfile> profiles = new List<KeybindProfile>();
-
-        /// <summary>
-        /// Currently selected keybind.
-        /// </summary>
-        public Keybind CurrentKeybind { get; set; }
-
-        /// <summary>
-        /// Folder where keybinds are stored.
-        /// </summary>
-        public string KeybindsFolder => RTFile.CombinePaths(RTFile.ApplicationDirectory, "settings/keybinds");
-
-        /// <summary>
-        /// File where main keybind settings are stored.
-        /// </summary>
-        public string KeybindEditorSettings => RTFile.CombinePaths(RTFile.ApplicationDirectory, "settings/keybind_settings" + FileFormat.LSS.Dot());
-
-        /// <summary>
-        /// ID of the currently selected profile.
-        /// </summary>
-        public string currentProfileID;
-
-        /// <summary>
-        /// If a keybind is active.
-        /// </summary>
-        public bool isPressingKey;
-
-        /// <summary>
-        /// The last activated keybind.
-        /// </summary>
-        public Keybind lastKeybind;
-
-        #region Transform
-
-        public bool createKeyframe = true;
-        public bool useNearest = true;
-        public bool usePrevious = false;
-
-        public int currentType;
-
-        public bool dragging;
-
-        public BeatmapObject beatmapObject;
-        public PrefabObject prefabObject;
-
-        public bool setKeyframeValues;
-        public Vector2 dragKeyframeValues;
-        public EventKeyframe selectedKeyframe;
-        public float[] originalValues;
-        public Vector2 dragOffset;
-        float dragOffsetFloat;
-        float dragKeyframeValuesFloat;
-        public SelectObject.Axis firstDirection = SelectObject.Axis.Static;
-
-        public SelectionType selectionType;
-
-        #endregion
-
-        #endregion
-
-        #region Functions
 
         /// <summary>
         /// Creates the default profile.
@@ -678,15 +683,9 @@ namespace BetterLegacy.Editor.Managers
                 int index = num;
 
                 var key = setting.key;
-                switch (key.ToLower())
+                switch (setting.valueType)
                 {
-                    case "cancel":
-                    case "external":
-                    case "useid":
-                    case "remove prefab instance id":
-                    case "create keyframe":
-                    case "use nearest":
-                    case "use previous": {
+                    case ValueType.Bool: {
                             var bar = Creator.NewUIObject("input", Dialog.SettingsContent);
                             bar.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
 
@@ -718,10 +717,7 @@ namespace BetterLegacy.Editor.Managers
 
                             break;
                         }
-
-                    case "dialog":
-                    case "profile id":
-                    case "id": {
+                    case ValueType.String: {
                             var bar = Creator.NewUIObject("input", Dialog.SettingsContent);
                             bar.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
 
@@ -755,14 +751,7 @@ namespace BetterLegacy.Editor.Managers
 
                             break;
                         }
-
-                    case "type":
-                    case "index":
-                    case "value":
-                    case "value index":
-                    case "layer":
-                    case "amount":
-                    case "count": {
+                    case ValueType.Int: {
                             var gameObject = EditorPrefabHolder.Instance.NumberInputField.Duplicate(Dialog.SettingsContent, "input");
                             var inputFieldStorage = gameObject.GetComponent<InputFieldStorage>();
 
@@ -814,7 +803,7 @@ namespace BetterLegacy.Editor.Managers
 
                             break;
                         }
-                    case "search prefab using": {
+                    case ValueType.Enum: {
                             var bar = Creator.NewUIObject("input", Dialog.SettingsContent);
                             bar.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
 
@@ -835,7 +824,7 @@ namespace BetterLegacy.Editor.Managers
                             labels.transform.AsRT().sizeDelta = new Vector2(354f, 20f);
 
                             var dropdown = EditorPrefabHolder.Instance.Dropdown.Duplicate(bar.transform).GetComponent<Dropdown>();
-                            dropdown.options = CoreHelper.StringToOptionData("Index", "Name", "ID");
+                            dropdown.options = keybindSettingEnumValues.GetValueOrDefault(key.ToLower(), new List<Dropdown.OptionData>());
                             dropdown.SetValueWithoutNotify(Parser.TryParse(setting.value, 0));
                             dropdown.onValueChanged.NewListener(_val => setting.value = _val.ToString());
 
@@ -972,8 +961,7 @@ namespace BetterLegacy.Editor.Managers
                                 CurrentProfile.keybinds.RemoveAt(index);
                                 RenderPopup();
                                 Save();
-                                RTEditor.inst.HideWarningPopup();
-                            }, RTEditor.inst.HideWarningPopup)),
+                            })),
                             new SpacerElement(),
                         };
                         buttonFunctions.AddRange(EditorContextMenu.GetMoveIndexFunctions(CurrentProfile.keybinds, index, () =>
@@ -1001,8 +989,7 @@ namespace BetterLegacy.Editor.Managers
                     Dialog.Close();
                     RenderPopup();
                     Save();
-                    RTEditor.inst.HideWarningPopup();
-                }, RTEditor.inst.HideWarningPopup));
+                }));
 
                 EditorThemeManager.ApplySelectable(storage.button, ThemeGroup.List_Button_1);
                 EditorThemeManager.ApplyLightText(storage.label);
@@ -1131,22 +1118,18 @@ namespace BetterLegacy.Editor.Managers
                                 RTFile.DeleteFile(RTFile.CombinePaths(KeybindsFolder, profile.GetFileName()));
                                 Save();
                                 RenderPopup();
-
-                                RTEditor.inst.HideWarningPopup();
-                            }, RTEditor.inst.HideWarningPopup)),
+                            })),
                             new SpacerElement(),
                             new ButtonElement("Reset Keybinds", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to reset the keybinds in this profile? You cannot undo this.", () =>
                             {
                                 profile.keybinds = KeybindProfile.GetDefaultKeybinds();
                                 Save();
-                                RTEditor.inst.HideWarningPopup();
-                            }, RTEditor.inst.HideWarningPopup)),
+                            })),
                             new ButtonElement("Clear Keybinds", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to clear all keybinds from this profile? You cannot undo this.", () =>
                             {
                                 profile.keybinds.Clear();
                                 Save();
-                                RTEditor.inst.HideWarningPopup();
-                            }, RTEditor.inst.HideWarningPopup)),
+                            })),
                             new SpacerElement(),
                             new ButtonElement("Copy ID", () =>
                             {
@@ -1175,9 +1158,7 @@ namespace BetterLegacy.Editor.Managers
                     RTFile.DeleteFile(RTFile.CombinePaths(KeybindsFolder, profile.GetFileName()));
                     Save();
                     RenderPopup();
-
-                    RTEditor.inst.HideWarningPopup();
-                }, RTEditor.inst.HideWarningPopup));
+                }));
 
                 EditorThemeManager.ApplySelectable(storage.button, ThemeGroup.List_Button_1);
                 EditorThemeManager.ApplyLightText(storage.label);
@@ -1255,27 +1236,9 @@ namespace BetterLegacy.Editor.Managers
 
         public void TogglePreview(Keybind keybind) => RTEditor.inst.TogglePreview();
 
-        public void Undo(Keybind keybind)
-        {
-            if (!RTEditor.inst.ienumRunning)
-            {
-                EditorManager.inst.DisplayNotification("Performing task, please wait...", 1f, EditorManager.NotificationType.Success);
-                EditorManager.inst.Undo();
-            }
-            else
-                EditorManager.inst.DisplayNotification("Wait until current task is complete!", 1f, EditorManager.NotificationType.Warning);
-        }
+        public void Undo(Keybind keybind) => EditorManager.inst.Undo();
 
-        public void Redo(Keybind keybind)
-        {
-            if (!RTEditor.inst.ienumRunning)
-            {
-                EditorManager.inst.DisplayNotification("Performing task, please wait...", 1f, EditorManager.NotificationType.Success);
-                EditorManager.inst.Redo();
-            }
-            else
-                EditorManager.inst.DisplayNotification("Wait until current task is complete!", 1f, EditorManager.NotificationType.Warning);
-        }
+        public void Redo(Keybind keybind) => EditorManager.inst.Redo();
 
         public void Cut(Keybind keybind) => RTEditor.inst.Cut();
 
@@ -1396,7 +1359,7 @@ namespace BetterLegacy.Editor.Managers
                 ObjectEditor.inst.Dialog.Timeline.RenderKeyframes(bm);
             }
 
-            if (RTEditor.DraggingPlaysSound)
+            if (EditorConfig.Instance.DraggingPlaysSound.Value)
             {
                 SoundManager.inst.PlaySound(DefaultSounds.LeftRight, 0.7f, 0.6f);
                 SoundManager.inst.PlaySound(DefaultSounds.LeftRight, 0.8f, 0.1f);
@@ -2006,7 +1969,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void SaveLevel(Keybind keybind)
         {
-            if (ProjectPlanner.inst && ProjectPlanner.inst.PlannerActive)
+            if (ProjectPlanner.inst && ProjectPlanner.inst.Active)
             {
                 ProjectPlanner.inst.Save();
                 return;
@@ -2020,7 +1983,7 @@ namespace BetterLegacy.Editor.Managers
         public void SaveLevelCopy(Keybind keybind)
         {
             EditorManager.inst.ClearPopups();
-            RTEditor.inst.SaveAsPopup.Open();
+            EditorLevelManager.inst.SaveAsPopup.Open();
         }
 
         public void CreateNewLevel(Keybind keybind)

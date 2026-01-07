@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 
 using UnityEngine;
+using UnityEngine.UI;
 
 using SimpleJSON;
 
@@ -17,12 +18,13 @@ namespace BetterLegacy.Editor.Data
     {
         public EditorDocument(GameObject gameObject, string name, string description)
         {
-            PopupButton = gameObject;
+            GameObject = gameObject;
             Name = name;
             Description = description;
         }
 
-        public GameObject PopupButton { get; set; }
+        public GameObject GameObject { get; set; }
+        public Button Button { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
 

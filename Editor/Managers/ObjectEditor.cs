@@ -41,6 +41,185 @@ namespace BetterLegacy.Editor.Managers
     /// </summary>
     public class ObjectEditor : BaseEditor<ObjectEditor, ObjectEditorSettings, ObjEditor>
     {
+        #region Values
+
+        public override ObjEditor BaseInstance { get => ObjEditor.inst; set => ObjEditor.inst = value; }
+
+        /// <summary>
+        /// Dialog of the editor.
+        /// </summary>
+        public ObjectEditorDialog Dialog { get; set; }
+
+        /// <summary>
+        /// Parent search popup.
+        /// </summary>
+        public ContentPopup ParentSelectorPopup { get; set; }
+
+        /// <summary>
+        /// Object search popup.
+        /// </summary>
+        public ContentPopup ObjectSearchPopup { get; set; }
+
+        /// <summary>
+        /// Object template popup.
+        /// </summary>
+        public ContentPopup ObjectTemplatePopup { get; set; }
+
+        public static bool AllowTimeExactlyAtStart => false;
+
+        /// <summary>
+        /// Prefab for the shape buttons.
+        /// </summary>
+        public GameObject shapeButtonPrefab;
+
+        /// <summary>
+        /// Copied objects prefab.
+        /// </summary>
+        public Prefab copy;
+
+        /// <summary>
+        /// Copied value display.
+        /// </summary>
+        public CustomValueDisplay copiedValueDisplay;
+
+        /// <summary>
+        /// List of secondary color buttons.
+        /// </summary>
+        public List<Toggle> gradientColorButtons = new List<Toggle>();
+
+        /// <summary>
+        /// If the color keyframe editor dialog has shifted.
+        /// </summary>
+        public bool colorShifted;
+
+        #region Creation
+
+        /// <summary>
+        /// The default object options displayed on the object options popup.
+        /// </summary>
+        public List<ObjectOptionPanel> defaultObjectOptions = new List<ObjectOptionPanel>();
+
+        /// <summary>
+        /// List of extra options used to create objects.
+        /// </summary>
+        public List<ObjectOption> objectOptions = new List<ObjectOption>()
+        {
+            new ObjectOption("Normal", "A regular square object that hits the player.", null),
+            new ObjectOption("Helper", "A regular square object that is transparent and doesn't hit the player. This can be used to warn players of an attack.", timelineObject =>
+            {
+                var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                beatmapObject.objectType = BeatmapObject.ObjectType.Helper;
+                beatmapObject.name = nameof(BeatmapObject.ObjectType.Helper);
+            }),
+            new ObjectOption("Decoration", "A regular square object that is opaque and doesn't hit the player.", timelineObject =>
+            {
+                var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                beatmapObject.objectType = BeatmapObject.ObjectType.Decoration;
+                beatmapObject.name = nameof(BeatmapObject.ObjectType.Decoration);
+            }),
+            new ObjectOption("Solid", "A regular square object that doesn't allow the player to passh through.", timelineObject =>
+            {
+                var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                beatmapObject.objectType = BeatmapObject.ObjectType.Solid;
+                beatmapObject.name = nameof(BeatmapObject.ObjectType.Solid);
+            }),
+            new ObjectOption("Alpha Helper", "A regular square object that is transparent and doesn't hit the player. This can be used to warn players of an attack.", timelineObject =>
+            {
+                var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                beatmapObject.objectType = BeatmapObject.ObjectType.Decoration;
+                beatmapObject.name = nameof(BeatmapObject.ObjectType.Helper);
+                beatmapObject.events[3][0].values[1] = 0.65f;
+                beatmapObject.opacityCollision = true;
+            }),
+            new ObjectOption("Empty Hitbox", "A square object that is invisible but still has a collision and can hit the player.", timelineObject =>
+            {
+                var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                beatmapObject.objectType = BeatmapObject.ObjectType.Normal;
+                beatmapObject.name = "Collision";
+                beatmapObject.events[3][0].values[1] = 1f;
+            }),
+            new ObjectOption("Empty Solid", "A square object that is invisible but still has a collision and prevents the player from passing through.", timelineObject =>
+            {
+                var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                beatmapObject.objectType = BeatmapObject.ObjectType.Solid;
+                beatmapObject.name = "Collision";
+                beatmapObject.events[3][0].values[1] = 1f;
+            }),
+            new ObjectOption("Text", "A text object that can be used for dialogue.", timelineObject =>
+            {
+                var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                beatmapObject.objectType = BeatmapObject.ObjectType.Decoration;
+                beatmapObject.name = "Text";
+                beatmapObject.text = "A text object that can be used for dialogue.";
+                beatmapObject.shape = 4;
+                beatmapObject.shapeOption = 0;
+            }),
+            new ObjectOption("Text Sequence", "A text object that can be used for dialogue. Includes a textSequence modifier.", timelineObject =>
+            {
+                var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                beatmapObject.objectType = BeatmapObject.ObjectType.Decoration;
+                beatmapObject.name = "Text";
+                beatmapObject.text = "A text object that can be used for dialogue. Includes a textSequence modifier.";
+                beatmapObject.shape = 4;
+                beatmapObject.shapeOption = 0;
+                if (ModifiersManager.inst.modifiers.TryFind(x => x.Name == nameof(ModifierFunctions.textSequence), out Modifier modifier))
+                    beatmapObject.modifiers.Add(modifier.Copy());
+            }),
+            new ObjectOption("Screen Overlay", "An object that covers the screen.", timelineObject =>
+            {
+                var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                beatmapObject.objectType = BeatmapObject.ObjectType.Decoration;
+                beatmapObject.renderLayerType = BeatmapObject.RenderLayerType.UI;
+                beatmapObject.Parent = BeatmapObject.CAMERA_PARENT;
+                beatmapObject.ParentType = "111";
+                beatmapObject.events[1][0].values[0] = 1000f;
+                beatmapObject.events[1][0].values[1] = 1000f;
+                beatmapObject.editorData.selectable = false; // prevent overlay from being selectable in the preview area.
+            }),
+            new ObjectOption("Actor Frame Texture", "An object that captures an area and applies it to the objects texture..", timelineObject =>
+            {
+                var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                beatmapObject.objectType = BeatmapObject.ObjectType.Decoration;
+
+                Modifier modifier;
+                if (ModifiersManager.inst.modifiers.TryFind(x => x.Name == nameof(ModifierFunctions.actorFrameTexture), out modifier))
+                    beatmapObject.modifiers.Add(modifier.Copy());
+                if (ModifiersManager.inst.modifiers.TryFind(x => x.Name == nameof(ModifierFunctions.translateShape), out modifier))
+                {
+                    beatmapObject.origin = new Vector2(-0.5f, -0.5f);
+                    modifier = modifier.Copy();
+                    modifier.values[1] = "0.5";
+                    modifier.values[2] = "0.5";
+                    beatmapObject.modifiers.Add(modifier);
+                }
+            }),
+        };
+
+        /// <summary>
+        /// List of custom object templates.
+        /// </summary>
+        public List<ObjectOption> customObjectOptions = new List<ObjectOption>();
+
+        #endregion
+
+        #region Search
+
+        /// <summary>
+        /// Total amount of objects per page.
+        /// </summary>
+        public static int ObjectsPerPage { get; set; } = 100;
+
+        /// <summary>
+        /// Total amount of parent objects per page.
+        /// </summary>
+        public static int ParentObjectsPerPage { get; set; } = 100;
+
+        #endregion
+
+        #endregion
+
+        #region Functions
+
         #region Init
 
         public override void OnInit()
@@ -49,6 +228,51 @@ namespace BetterLegacy.Editor.Managers
             {
                 Dialog = new ObjectEditorDialog();
                 Dialog.Init();
+
+                ParentSelectorPopup = new ContentPopup(EditorPopup.PARENT_SELECTOR);
+                ParentSelectorPopup.Assign(ParentSelectorPopup.GetLegacyDialog().Dialog.gameObject);
+                ParentSelectorPopup.Dragger = ParentSelectorPopup.GameObject.AddComponent<DraggableUI>();
+                ParentSelectorPopup.Dragger.target = ParentSelectorPopup.GameObject.transform;
+                ParentSelectorPopup.Dragger.ogPos = ParentSelectorPopup.GameObject.transform.position;
+                ParentSelectorPopup.title = ParentSelectorPopup.Title.text;
+                ParentSelectorPopup.size = ParentSelectorPopup.GameObject.transform.AsRT().sizeDelta;
+                ParentSelectorPopup.refreshSearch = EditorManager.inst.UpdateParentSearch;
+                ParentSelectorPopup.InitPageField();
+                ParentSelectorPopup.getMaxPageCount = () => GameData.Current.beatmapObjects.FindAll(x => !x.FromPrefab).Count / ObjectEditor.ParentObjectsPerPage; // temp
+                ParentSelectorPopup.onRender = () =>
+                {
+                    if (AssetPack.TryReadFromFile("editor/ui/popups/parent_selector.json", out string uiFile))
+                    {
+                        var jn = JSON.Parse(uiFile);
+                        RectValues.TryParse(jn["base"]["rect"], RectValues.Default.SizeDelta(600f, 400f)).AssignToRectTransform(ParentSelectorPopup.GameObject.transform.AsRT());
+                        RectValues.TryParse(jn["top_panel"]["rect"], RectValues.FullAnchored.AnchorMin(0, 1).Pivot(0f, 0f).SizeDelta(32f, 32f)).AssignToRectTransform(ParentSelectorPopup.TopPanel);
+                        RectValues.TryParse(jn["search"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(0f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, 32f))).AssignToRectTransform(ParentSelectorPopup.GameObject.transform.Find("search-box").AsRT());
+
+                        var layoutValues = LayoutValues.Parse(jn["layout"]);
+                        if (layoutValues is GridLayoutValues gridLayoutValues)
+                            gridLayoutValues.AssignToLayout(ParentSelectorPopup.Grid ? ParentSelectorPopup.Grid : ParentSelectorPopup.GameObject.transform.Find("mask/content").GetComponent<GridLayoutGroup>());
+
+                        if (jn["title"] != null)
+                        {
+                            ParentSelectorPopup.title = jn["title"]["text"] != null ? jn["title"]["text"] : "Pick a Level to Open";
+
+                            var title = ParentSelectorPopup.Title;
+                            RectValues.TryParse(jn["title"]["rect"], RectValues.FullAnchored.AnchoredPosition(2f, 0f).SizeDelta(-12f, -8f)).AssignToRectTransform(title.rectTransform);
+                            title.alignment = jn["title"]["alignment"] != null ? (TextAnchor)jn["title"]["alignment"].AsInt : TextAnchor.MiddleLeft;
+                            title.fontSize = jn["title"]["font_size"] != null ? jn["title"]["font_size"].AsInt : 20;
+                            title.fontStyle = (FontStyle)jn["title"]["font_style"].AsInt;
+                            title.horizontalOverflow = jn["title"]["horizontal_overflow"] != null ? (HorizontalWrapMode)jn["title"]["horizontal_overflow"].AsInt : HorizontalWrapMode.Wrap;
+                            title.verticalOverflow = jn["title"]["vertical_overflow"] != null ? (VerticalWrapMode)jn["title"]["vertical_overflow"].AsInt : VerticalWrapMode.Overflow;
+                        }
+
+                        if (jn["anim"] != null)
+                            ParentSelectorPopup.ReadAnimationJSON(jn["anim"]);
+
+                        if (jn["drag_mode"] != null && ParentSelectorPopup.Dragger)
+                            ParentSelectorPopup.Dragger.mode = (DraggableUI.DragMode)jn["drag_mode"].AsInt;
+                    }
+                };
+                RTEditor.inst.editorPopups.Add(ParentSelectorPopup);
 
                 ObjectSearchPopup = RTEditor.inst.GeneratePopup(EditorPopup.OBJECT_SEARCH_POPUP, "Object Search", Vector2.zero, new Vector2(600f, 450f), placeholderText: "Search for object...");
                 ObjectSearchPopup.getMaxPageCount = () => GameData.Current.beatmapObjects.FindAll(x => !x.FromPrefab).Count / ObjectsPerPage;
@@ -161,33 +385,6 @@ namespace BetterLegacy.Editor.Managers
 
         #endregion
 
-        #region Values
-
-        public override ObjEditor BaseInstance { get => ObjEditor.inst; set => ObjEditor.inst = value; }
-
-        public ObjectEditorDialog Dialog { get; set; }
-
-        public ContentPopup ObjectSearchPopup { get; set; }
-
-        public ContentPopup ObjectTemplatePopup { get; set; }
-
-        public static bool AllowTimeExactlyAtStart => false;
-
-        public GameObject shapeButtonPrefab;
-
-        public Prefab copy;
-
-        public CustomValueDisplay copiedUIDisplay;
-
-
-        public List<Toggle> gradientColorButtons = new List<Toggle>();
-
-        public bool colorShifted;
-
-        public static float TimelineObjectHoverSize { get; set; }
-
-        #endregion
-
         #region Dragging
 
         public override void OnTick()
@@ -241,7 +438,7 @@ namespace BetterLegacy.Editor.Managers
 
                 if (RTEditor.inst.dragBinOffset != binOffset && !Input.GetKey(KeyCode.LeftAlt) && !selectedObjects.All(x => x.Locked))
                 {
-                    if (hasChanged && RTEditor.DraggingPlaysSound)
+                    if (hasChanged && EditorConfig.Instance.DraggingPlaysSound.Value)
                         SoundManager.inst.PlaySound(DefaultSounds.UpDown, 0.4f, 0.6f);
 
                     RTEditor.inst.dragBinOffset = binOffset;
@@ -257,7 +454,7 @@ namespace BetterLegacy.Editor.Managers
 
             if (RTEditor.inst.dragOffset != timeOffset && !Input.GetKey(KeyCode.LeftAlt) &&!EditorTimeline.inst.SelectedObjects.All(x => x.Locked))
             {
-                if (RTEditor.DraggingPlaysSound && (RTEditor.inst.editorInfo.bpmSnapActive || !RTEditor.DraggingPlaysSoundBPM))
+                if (EditorConfig.Instance.DraggingPlaysSound.Value && (RTEditor.inst.editorInfo.bpmSnapActive || !EditorConfig.Instance.DraggingPlaysSoundOnlyWithBPM.Value))
                     SoundManager.inst.PlaySound(DefaultSounds.LeftRight, RTEditor.inst.editorInfo.bpmSnapActive ? 0.6f : 0.1f, 0.7f);
 
                 RTEditor.inst.dragOffset = timeOffset;
@@ -368,6 +565,9 @@ namespace BetterLegacy.Editor.Managers
             } // load global copy
         }
 
+        /// <summary>
+        /// Copies all selected objects.
+        /// </summary>
         public void CopyObjects()
         {
             var selected = EditorTimeline.inst.SelectedObjects;
@@ -390,12 +590,30 @@ namespace BetterLegacy.Editor.Managers
                 RTFile.WriteToFile(RTFile.CombinePaths(Application.persistentDataPath, $"copied_objects{FileFormat.LSP.Dot()}"), copy.ToJSON().ToString());
         }
 
+        /// <summary>
+        /// Pastes the copied objects into the level.
+        /// </summary>
         public void PasteObject() => PasteObject(0f);
 
+        /// <summary>
+        /// Pastes the copied objects into the level.
+        /// </summary>
+        /// <param name="offsetTime">Time to offset.</param>
         public void PasteObject(float offsetTime) => PasteObject(offsetTime, false);
 
+        /// <summary>
+        /// Pastes the copied objects into the level.
+        /// </summary>
+        /// <param name="offsetTime">Time to offset.</param>
+        /// <param name="regen">If the prefab instance ID should be regenerated.</param>
         public void PasteObject(float offsetTime, bool regen) => PasteObject(offsetTime, false, regen);
 
+        /// <summary>
+        /// Pastes the copied objects into the level.
+        /// </summary>
+        /// <param name="offsetTime">Time to offset.</param>
+        /// <param name="dup">If the bin should be added to.</param>
+        /// <param name="regen">If the prefab instance ID should be regenerated.</param>
         public void PasteObject(float offsetTime, bool dup, bool regen)
         {
             var copy = this.copy;
@@ -423,10 +641,7 @@ namespace BetterLegacy.Editor.Managers
                         .Offset(dup ? offsetTime : time)
                         .Regen(regen)
                         .AddBin(dup)
-                        .Expand(e =>
-                        {
-                            expanded = e;
-                        });
+                        .Expand(e => expanded = e);
                 },
                 () =>
                 {
@@ -440,6 +655,10 @@ namespace BetterLegacy.Editor.Managers
                 }), true);
         }
         
+        /// <summary>
+        /// Pastes keyframes onto the currently selected object.
+        /// </summary>
+        /// <param name="setTime">If time should be set.</param>
         public void PasteKeyframes(bool setTime = true)
         {
             if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
@@ -448,110 +667,7 @@ namespace BetterLegacy.Editor.Managers
 
         #endregion
 
-        #region Create New Objects
-
-        public List<ObjectOptionPanel> defaultObjectOptions = new List<ObjectOptionPanel>();
-
-        /// <summary>
-        /// List of extra options used to create objects.
-        /// </summary>
-        public List<ObjectOption> objectOptions = new List<ObjectOption>()
-        {
-            new ObjectOption("Normal", "A regular square object that hits the player.", null),
-            new ObjectOption("Helper", "A regular square object that is transparent and doesn't hit the player. This can be used to warn players of an attack.", timelineObject =>
-            {
-                var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                beatmapObject.objectType = BeatmapObject.ObjectType.Helper;
-                beatmapObject.name = nameof(BeatmapObject.ObjectType.Helper);
-            }),
-            new ObjectOption("Decoration", "A regular square object that is opaque and doesn't hit the player.", timelineObject =>
-            {
-                var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                beatmapObject.objectType = BeatmapObject.ObjectType.Decoration;
-                beatmapObject.name = nameof(BeatmapObject.ObjectType.Decoration);
-            }),
-            new ObjectOption("Solid", "A regular square object that doesn't allow the player to passh through.", timelineObject =>
-            {
-                var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                beatmapObject.objectType = BeatmapObject.ObjectType.Solid;
-                beatmapObject.name = nameof(BeatmapObject.ObjectType.Solid);
-            }),
-            new ObjectOption("Alpha Helper", "A regular square object that is transparent and doesn't hit the player. This can be used to warn players of an attack.", timelineObject =>
-            {
-                var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                beatmapObject.objectType = BeatmapObject.ObjectType.Decoration;
-                beatmapObject.name = nameof(BeatmapObject.ObjectType.Helper);
-                beatmapObject.events[3][0].values[1] = 0.65f;
-                beatmapObject.opacityCollision = true;
-            }),
-            new ObjectOption("Empty Hitbox", "A square object that is invisible but still has a collision and can hit the player.", timelineObject =>
-            {
-                var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                beatmapObject.objectType = BeatmapObject.ObjectType.Normal;
-                beatmapObject.name = "Collision";
-                beatmapObject.events[3][0].values[1] = 1f;
-            }),
-            new ObjectOption("Empty Solid", "A square object that is invisible but still has a collision and prevents the player from passing through.", timelineObject =>
-            {
-                var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                beatmapObject.objectType = BeatmapObject.ObjectType.Solid;
-                beatmapObject.name = "Collision";
-                beatmapObject.events[3][0].values[1] = 1f;
-            }),
-            new ObjectOption("Text", "A text object that can be used for dialogue.", timelineObject =>
-            {
-                var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                beatmapObject.objectType = BeatmapObject.ObjectType.Decoration;
-                beatmapObject.name = "Text";
-                beatmapObject.text = "A text object that can be used for dialogue.";
-                beatmapObject.shape = 4;
-                beatmapObject.shapeOption = 0;
-            }),
-            new ObjectOption("Text Sequence", "A text object that can be used for dialogue. Includes a textSequence modifier.", timelineObject =>
-            {
-                var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                beatmapObject.objectType = BeatmapObject.ObjectType.Decoration;
-                beatmapObject.name = "Text";
-                beatmapObject.text = "A text object that can be used for dialogue. Includes a textSequence modifier.";
-                beatmapObject.shape = 4;
-                beatmapObject.shapeOption = 0;
-                if (ModifiersManager.inst.modifiers.TryFind(x => x.Name == nameof(ModifierFunctions.textSequence), out Modifier modifier))
-                    beatmapObject.modifiers.Add(modifier.Copy());
-            }),
-            new ObjectOption("Screen Overlay", "An object that covers the screen.", timelineObject =>
-            {
-                var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                beatmapObject.objectType = BeatmapObject.ObjectType.Decoration;
-                beatmapObject.renderLayerType = BeatmapObject.RenderLayerType.UI;
-                beatmapObject.Parent = BeatmapObject.CAMERA_PARENT;
-                beatmapObject.ParentType = "111";
-                beatmapObject.events[1][0].values[0] = 1000f;
-                beatmapObject.events[1][0].values[1] = 1000f;
-                beatmapObject.editorData.selectable = false; // prevent overlay from being selectable in the preview area.
-            }),
-            new ObjectOption("Actor Frame Texture", "An object that captures an area and applies it to the objects texture..", timelineObject =>
-            {
-                var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                beatmapObject.objectType = BeatmapObject.ObjectType.Decoration;
-
-                Modifier modifier;
-                if (ModifiersManager.inst.modifiers.TryFind(x => x.Name == nameof(ModifierFunctions.actorFrameTexture), out modifier))
-                    beatmapObject.modifiers.Add(modifier.Copy());
-                if (ModifiersManager.inst.modifiers.TryFind(x => x.Name == nameof(ModifierFunctions.translateShape), out modifier))
-                {
-                    beatmapObject.origin = new Vector2(-0.5f, -0.5f);
-                    modifier = modifier.Copy();
-                    modifier.values[1] = "0.5";
-                    modifier.values[2] = "0.5";
-                    beatmapObject.modifiers.Add(modifier);
-                }
-            }),
-        };
-
-        /// <summary>
-        /// List of custom object templates.
-        /// </summary>
-        public List<ObjectOption> customObjectOptions = new List<ObjectOption>();
+        #region Creation
 
         /// <summary>
         /// Loads the custom object templates list.
@@ -712,6 +828,10 @@ namespace BetterLegacy.Editor.Managers
             return timelineObject;
         }
 
+        /// <summary>
+        /// Applies the default object creation settings.
+        /// </summary>
+        /// <param name="beatmapObject">The new object.</param>
         public void ApplyObjectCreationSettings(BeatmapObject beatmapObject)
         {
             beatmapObject.orderModifiers = EditorConfig.Instance.CreateObjectModifierOrderDefault.Value;
@@ -783,6 +903,11 @@ namespace BetterLegacy.Editor.Managers
                 EditorManager.inst.history.Add(new History.Command("Create New Object", () => CreateNewObject(action, select, false), () => EditorTimeline.inst.DeleteObject(timelineObject)));
         }
 
+        /// <summary>
+        /// Creates a new normal object.
+        /// </summary>
+        /// <param name="select">If the object should be selected.</param>
+        /// <param name="setHistory">If history should be set.</param>
         public void CreateNewNormalObject(bool select = true, bool setHistory = true)
         {
             var timelineObject = CreateNewDefaultObject(select);
@@ -809,6 +934,11 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.history.Add(new History.Command("Create New Normal Object", () => CreateNewNormalObject(select, false), () => EditorTimeline.inst.DeleteObject(timelineObject)));
         }
 
+        /// <summary>
+        /// Creates a new circle object.
+        /// </summary>
+        /// <param name="select">If the object should be selected.</param>
+        /// <param name="setHistory">If history should be set.</param>
         public void CreateNewCircleObject(bool select = true, bool setHistory = true)
         {
             var timelineObject = CreateNewDefaultObject(select);
@@ -839,6 +969,11 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.history.Add(new History.Command("Create New Normal Circle Object", () => CreateNewCircleObject(select, false), () => EditorTimeline.inst.DeleteObject(timelineObject)));
         }
 
+        /// <summary>
+        /// Creates a new triangle object.
+        /// </summary>
+        /// <param name="select">If the object should be selected.</param>
+        /// <param name="setHistory">If history should be set.</param>
         public void CreateNewTriangleObject(bool select = true, bool setHistory = true)
         {
             var timelineObject = CreateNewDefaultObject(select);
@@ -869,6 +1004,11 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.history.Add(new History.Command("Create New Normal Triangle Object", () => CreateNewTriangleObject(select, false), () => EditorTimeline.inst.DeleteObject(timelineObject)));
         }
 
+        /// <summary>
+        /// Creates a new text object.
+        /// </summary>
+        /// <param name="select">If the object should be selected.</param>
+        /// <param name="setHistory">If history should be set.</param>
         public void CreateNewTextObject(bool select = true, bool setHistory = true)
         {
             var timelineObject = CreateNewDefaultObject(select);
@@ -910,6 +1050,11 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.history.Add(new History.Command("Create New Normal Text Object", () => CreateNewTextObject(select, false), () => EditorTimeline.inst.DeleteObject(timelineObject)));
         }
 
+        /// <summary>
+        /// Creates a new hexagon object.
+        /// </summary>
+        /// <param name="select">If the object should be selected.</param>
+        /// <param name="setHistory">If history should be set.</param>
         public void CreateNewHexagonObject(bool select = true, bool setHistory = true)
         {
             var timelineObject = CreateNewDefaultObject(select);
@@ -940,6 +1085,11 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.history.Add(new History.Command("Create New Normal Hexagon Object", () => CreateNewHexagonObject(select, false), () => EditorTimeline.inst.DeleteObject(timelineObject)));
         }
 
+        /// <summary>
+        /// Creates a new helper object.
+        /// </summary>
+        /// <param name="select">If the object should be selected.</param>
+        /// <param name="setHistory">If history should be set.</param>
         public void CreateNewHelperObject(bool select = true, bool setHistory = true)
         {
             var timelineObject = CreateNewDefaultObject(select);
@@ -971,6 +1121,11 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.history.Add(new History.Command("Create New Helper Object", () => CreateNewHelperObject(select, false), () => EditorTimeline.inst.DeleteObject(timelineObject)));
         }
 
+        /// <summary>
+        /// Creates a new decoration object.
+        /// </summary>
+        /// <param name="select">If the object should be selected.</param>
+        /// <param name="setHistory">If history should be set.</param>
         public void CreateNewDecorationObject(bool select = true, bool setHistory = true)
         {
             var timelineObject = CreateNewDefaultObject(select);
@@ -1001,6 +1156,11 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.history.Add(new History.Command("Create New Decoration Object", () => CreateNewDecorationObject(select, false), () => EditorTimeline.inst.DeleteObject(timelineObject)));
         }
 
+        /// <summary>
+        /// Creates a new empty object.
+        /// </summary>
+        /// <param name="select">If the object should be selected.</param>
+        /// <param name="setHistory">If history should be set.</param>
         public void CreateNewEmptyObject(bool select = true, bool setHistory = true)
         {
             var timelineObject = CreateNewDefaultObject(select);
@@ -1031,6 +1191,11 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.history.Add(new History.Command("Create New Empty Object", () => CreateNewEmptyObject(select, false), () => EditorTimeline.inst.DeleteObject(timelineObject)));
         }
 
+        /// <summary>
+        /// Creates a new no autokill object.
+        /// </summary>
+        /// <param name="select">If the object should be selected.</param>
+        /// <param name="setHistory">If history should be set.</param>
         public void CreateNewNoAutokillObject(bool select = true, bool setHistory = true)
         {
             var timelineObject = CreateNewDefaultObject(select);
@@ -1140,11 +1305,7 @@ namespace BetterLegacy.Editor.Managers
 
         #endregion
 
-        #region Render Dialog
-
-        public static bool UpdateObjects => true;
-
-        public static bool HideVisualElementsWhenObjectIsEmpty { get; set; }
+        #region Dialog
 
         /// <summary>
         /// Opens the Object Editor dialog.
@@ -1227,6 +1388,9 @@ namespace BetterLegacy.Editor.Managers
             Dialog.Timeline.RenderDialog(beatmapObject);
             Dialog.Timeline.RenderMarkers(beatmapObject);
 
+            Dialog.AnimIDField.SetTextWithoutNotify(beatmapObject.animID);
+            Dialog.AnimIDField.onValueChanged.NewListener(_val => beatmapObject.animID = _val);
+
             CoroutineHelper.StartCoroutine(Dialog.ModifiersDialog.RenderModifiers(beatmapObject));
         }
 
@@ -1256,8 +1420,7 @@ namespace BetterLegacy.Editor.Managers
                     EditorHelper.ShuffleID(beatmapObject);
                     RenderID(beatmapObject);
                     RenderParent(beatmapObject);
-                    RTEditor.inst.HideWarningPopup();
-                }, RTEditor.inst.HideWarningPopup)));
+                })));
         }
 
         /// <summary>
@@ -1351,8 +1514,7 @@ namespace BetterLegacy.Editor.Managers
                 RenderGameObjectInspector(beatmapObject);
                 // ObjectType affects both physical object and timeline object.
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
-                if (UpdateObjects)
-                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.OBJECT_TYPE);
+                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.OBJECT_TYPE);
 
                 RenderDialog(beatmapObject);
             });
@@ -1386,8 +1548,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // StartTime affects both physical object and timeline object.
                     EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
-                    if (UpdateObjects)
-                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.START_TIME);
+                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.START_TIME);
 
                     beatmapObject.modifiers.ForEach(modifier =>
                     {
@@ -1411,8 +1572,7 @@ namespace BetterLegacy.Editor.Managers
 
                 // StartTime affects both physical object and timeline object.
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
-                if (UpdateObjects)
-                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.START_TIME);
+                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.START_TIME);
 
                 beatmapObject.modifiers.ForEach(modifier =>
                 {
@@ -1432,8 +1592,7 @@ namespace BetterLegacy.Editor.Managers
 
                 // StartTime affects both physical object and timeline object.
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
-                if (UpdateObjects)
-                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.START_TIME);
+                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.START_TIME);
 
                 beatmapObject.modifiers.ForEach(modifier =>
                 {
@@ -1451,8 +1610,7 @@ namespace BetterLegacy.Editor.Managers
 
                 // StartTime affects both physical object and timeline object.
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
-                if (UpdateObjects)
-                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.START_TIME);
+                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.START_TIME);
 
                 beatmapObject.modifiers.ForEach(modifier =>
                 {
@@ -1472,8 +1630,7 @@ namespace BetterLegacy.Editor.Managers
 
                 // StartTime affects both physical object and timeline object.
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
-                if (UpdateObjects)
-                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.START_TIME);
+                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.START_TIME);
 
                 beatmapObject.modifiers.ForEach(modifier =>
                 {
@@ -1493,8 +1650,7 @@ namespace BetterLegacy.Editor.Managers
 
                 // StartTime affects both physical object and timeline object.
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
-                if (UpdateObjects)
-                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.START_TIME);
+                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.START_TIME);
 
                 beatmapObject.modifiers.ForEach(modifier =>
                 {
@@ -1520,8 +1676,7 @@ namespace BetterLegacy.Editor.Managers
                 beatmapObject.autoKillType = (AutoKillType)_val;
                 // AutoKillType affects both physical object and timeline object.
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
-                if (UpdateObjects)
-                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
+                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
                 Dialog.Timeline.ResizeKeyframeTimeline(beatmapObject);
                 RenderAutokill(beatmapObject);
                 Dialog.Timeline.RenderMarkers(beatmapObject);
@@ -1552,8 +1707,7 @@ namespace BetterLegacy.Editor.Managers
 
                         // AutoKillType affects both physical object and timeline object.
                         EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
-                        if (UpdateObjects)
-                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
+                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
 
                         beatmapObject.modifiers.ForEach(modifier =>
                         {
@@ -1615,7 +1769,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="beatmapObject">The Beatmap Object to set.</param>
         public void RenderOrigin(BeatmapObject beatmapObject)
         {
-            var active = !HideVisualElementsWhenObjectIsEmpty || beatmapObject.objectType != BeatmapObject.ObjectType.Empty;
+            var active = !EditorConfig.Instance.HideVisualElementsWhenObjectIsEmpty.Value || beatmapObject.objectType != BeatmapObject.ObjectType.Empty;
 
             Dialog.OriginParent.gameObject.SetActive(active);
             EditorHelper.SetComplexity(Dialog.OriginParent.parent.GetChild(Dialog.OriginParent.GetSiblingIndex() - 1).gameObject, "beatmapobject/origin_labels", Complexity.Simple, false, () => active);
@@ -1645,24 +1799,21 @@ namespace BetterLegacy.Editor.Managers
                                 beatmapObject.origin.x = -0.5f;
 
                                 // Since origin has no affect on the timeline object, we will only need to update the physical object.
-                                if (UpdateObjects)
-                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
                                 break;
                             }
                         case 2: {
                                 beatmapObject.origin.x = 0f;
 
                                 // Since origin has no affect on the timeline object, we will only need to update the physical object.
-                                if (UpdateObjects)
-                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
                                 break;
                             }
                         case 3: {
                                 beatmapObject.origin.x = 0.5f;
 
                                 // Since origin has no affect on the timeline object, we will only need to update the physical object.
-                                if (UpdateObjects)
-                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
                                 break;
                             }
                     }
@@ -1694,24 +1845,21 @@ namespace BetterLegacy.Editor.Managers
                                 beatmapObject.origin.y = -0.5f;
 
                                 // Since origin has no affect on the timeline object, we will only need to update the physical object.
-                                if (UpdateObjects)
-                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
                                 break;
                             }
                         case 2: {
                                 beatmapObject.origin.y = 0f;
 
                                 // Since origin has no affect on the timeline object, we will only need to update the physical object.
-                                if (UpdateObjects)
-                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
                                 break;
                             }
                         case 3: {
                                 beatmapObject.origin.y = 0.5f;
 
                                 // Since origin has no affect on the timeline object, we will only need to update the physical object.
-                                if (UpdateObjects)
-                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
                                 break;
                             }
                     }
@@ -1728,29 +1876,27 @@ namespace BetterLegacy.Editor.Managers
                 };
             }
 
-            Dialog.OriginXField.inputField.SetTextWithoutNotify(beatmapObject.origin.x.ToString());
-            Dialog.OriginXField.inputField.onValueChanged.NewListener(_val =>
+            Dialog.OriginXField.SetTextWithoutNotify(beatmapObject.origin.x.ToString());
+            Dialog.OriginXField.OnValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
                 {
                     beatmapObject.origin.x = num;
 
                     // Since origin has no affect on the timeline object, we will only need to update the physical object.
-                    if (UpdateObjects)
-                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
                 }
             });
 
-            Dialog.OriginYField.inputField.SetTextWithoutNotify(beatmapObject.origin.y.ToString());
-            Dialog.OriginYField.inputField.onValueChanged.NewListener(_val =>
+            Dialog.OriginYField.SetTextWithoutNotify(beatmapObject.origin.y.ToString());
+            Dialog.OriginYField.OnValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
                 {
                     beatmapObject.origin.y = num;
 
                     // Since origin has no affect on the timeline object, we will only need to update the physical object.
-                    if (UpdateObjects)
-                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
                 }
             });
 
@@ -1788,66 +1934,57 @@ namespace BetterLegacy.Editor.Managers
                 {
                     beatmapObject.origin = Vector2.zero;
                     // Since origin has no affect on the timeline object, we will only need to update the physical object.
-                    if (UpdateObjects)
-                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
                     RenderOrigin(beatmapObject);
                 }),
                 new ButtonElement("Top", () =>
                 {
                     beatmapObject.origin.y = -0.5f;
                     // Since origin has no affect on the timeline object, we will only need to update the physical object.
-                    if (UpdateObjects)
-                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
                     RenderOrigin(beatmapObject);
                 }),
                 new ButtonElement("Bottom", () =>
                 {
                     beatmapObject.origin.y = 0.5f;
-                    if (UpdateObjects)
-                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
                     RenderOrigin(beatmapObject);
                 }),
                 new ButtonElement("Left", () =>
                 {
                     beatmapObject.origin.x = -0.5f;
-                    if (UpdateObjects)
-                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
                     RenderOrigin(beatmapObject);
                 }),
                 new ButtonElement("Right", () =>
                 {
                     beatmapObject.origin.x = 0.5f;
-                    if (UpdateObjects)
-                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
                     RenderOrigin(beatmapObject);
                 }),
                 new SpacerElement(),
                 new ButtonElement("Top (Triangle)", () =>
                 {
                     beatmapObject.origin.y = BeatmapObject.TRIANGLE_TOP_OFFSET;
-                    if (UpdateObjects)
-                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
                     RenderOrigin(beatmapObject);
                 }),
                 new ButtonElement("Bottom (Triangle)", () =>
                 {
                     beatmapObject.origin.y = BeatmapObject.TRIANGLE_BOTTOM_OFFSET;
-                    if (UpdateObjects)
-                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
                     RenderOrigin(beatmapObject);
                 }),
                 new ButtonElement("Left (Triangle)", () =>
                 {
                     beatmapObject.origin.x = -BeatmapObject.TRIANGLE_HORIZONTAL_OFFSET;
-                    if (UpdateObjects)
-                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
                     RenderOrigin(beatmapObject);
                 }),
                 new ButtonElement("Right (Triangle)", () =>
                 {
                     beatmapObject.origin.x = BeatmapObject.TRIANGLE_HORIZONTAL_OFFSET;
-                    if (UpdateObjects)
-                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
                     RenderOrigin(beatmapObject);
                 })
                 );
@@ -1859,7 +1996,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="beatmapObject">The BeatmapObject to set.</param>
         public void RenderBlendMode(BeatmapObject beatmapObject)
         {
-            var active = !HideVisualElementsWhenObjectIsEmpty || beatmapObject.objectType != BeatmapObject.ObjectType.Empty;
+            var active = !EditorConfig.Instance.HideVisualElementsWhenObjectIsEmpty.Value || beatmapObject.objectType != BeatmapObject.ObjectType.Empty;
             EditorHelper.SetComplexity(Dialog.ColorBlendModeLabel.transform.parent.gameObject, "beatmapobject/colorblend", Complexity.Advanced, false, () => active);
             EditorHelper.SetComplexity(Dialog.ColorBlendModeDropdown.gameObject, "beatmapobject/colorblend", Complexity.Advanced, false, () => active);
 
@@ -1877,8 +2014,7 @@ namespace BetterLegacy.Editor.Managers
                 }
 
                 // Since shape has no affect on the timeline object, we will only need to update the physical object.
-                if (UpdateObjects)
-                    RTLevel.Current?.UpdateObject(beatmapObject, incompatibleGradient ? ObjectContext.SHAPE : ObjectContext.RENDERING);
+                RTLevel.Current?.UpdateObject(beatmapObject, incompatibleGradient ? ObjectContext.SHAPE : ObjectContext.RENDERING);
             });
         }
 
@@ -1888,7 +2024,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="beatmapObject">The BeatmapObject to set.</param>
         public void RenderGradient(BeatmapObject beatmapObject)
         {
-            var active = !HideVisualElementsWhenObjectIsEmpty || beatmapObject.objectType != BeatmapObject.ObjectType.Empty;
+            var active = !EditorConfig.Instance.HideVisualElementsWhenObjectIsEmpty.Value || beatmapObject.objectType != BeatmapObject.ObjectType.Empty;
             var gradientScaleActive = beatmapObject.gradientType != GradientType.Normal;
             var gradientRotationActive = beatmapObject.gradientType == GradientType.LeftLinear || beatmapObject.gradientType == GradientType.RightLinear;
 
@@ -1926,8 +2062,7 @@ namespace BetterLegacy.Editor.Managers
                     }
 
                     // Since shape has no affect on the timeline object, we will only need to update the physical object.
-                    if (UpdateObjects)
-                        RTLevel.Current?.UpdateObject(beatmapObject, incompatibleGradient ? ObjectContext.SHAPE : ObjectContext.RENDERING);
+                    RTLevel.Current?.UpdateObject(beatmapObject, incompatibleGradient ? ObjectContext.SHAPE : ObjectContext.RENDERING);
 
                     RenderGradient(beatmapObject);
                     Dialog.Timeline.RenderDialog(beatmapObject);
@@ -2002,7 +2137,7 @@ namespace BetterLegacy.Editor.Managers
             var shape = Dialog.ShapeTypesParent;
             var shapeSettings = Dialog.ShapeOptionsParent;
 
-            var active = !HideVisualElementsWhenObjectIsEmpty || beatmapObject.objectType != BeatmapObject.ObjectType.Empty;
+            var active = !EditorConfig.Instance.HideVisualElementsWhenObjectIsEmpty.Value || beatmapObject.objectType != BeatmapObject.ObjectType.Empty;
             Dialog.ShapeTypesParent.gameObject.SetActive(active);
             Dialog.ShapeOptionsParent.gameObject.SetActive(active);
 
@@ -2016,8 +2151,7 @@ namespace BetterLegacy.Editor.Managers
                 Debug.Log($"{ObjEditor.inst.className}Somehow, the object ended up being at a higher shape than normal.");
                 beatmapObject.Shape = shapeSettings.childCount - 1;
                 // Since shape has no affect on the timeline object, we will only need to update the physical object.
-                if (UpdateObjects)
-                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.SHAPE);
+                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.SHAPE);
 
                 RenderShape(beatmapObject);
                 return;
@@ -2048,8 +2182,7 @@ namespace BetterLegacy.Editor.Managers
                             beatmapObject.polygonShape.Radius = beatmapObject.polygonShape.GetAutoRadius();
 
                         // Since shape has no affect on the timeline object, we will only need to update the physical object.
-                        if (UpdateObjects)
-                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.SHAPE);
+                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.SHAPE);
 
                         RenderShape(beatmapObject);
                     });
@@ -2075,8 +2208,7 @@ namespace BetterLegacy.Editor.Managers
                             beatmapObject.text = _val;
 
                             // Since text has no affect on the timeline object, we will only need to update the physical object.
-                            if (UpdateObjects)
-                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.TEXT);
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.TEXT);
                         });
 
                         var textContextClickable = textIF.gameObject.GetOrAddComponent<ContextClickable>();
@@ -2088,17 +2220,13 @@ namespace BetterLegacy.Editor.Managers
                             EditorContextMenu.inst.ShowContextMenu(
                                 new ButtonElement($"Open Text Editor", () => RTTextEditor.inst.SetInputField(textIF)),
                                 new SpacerElement(),
-                                new ButtonElement($"Insert a Font", () => RTEditor.inst.ShowFontSelector(font => textIF.text = font + textIF.text)),
-                                new ButtonElement($"Add a Font", () => RTEditor.inst.ShowFontSelector(font => textIF.text += font)),
+                                new ButtonElement($"Insert a Font", () => RTEditor.inst.OpenFontSelector(font => textIF.text = font + textIF.text)),
+                                new ButtonElement($"Add a Font", () => RTEditor.inst.OpenFontSelector(font => textIF.text += font)),
                                 new SpacerElement(),
-                                new ButtonElement($"Clear Formatting", () =>
+                                new ButtonElement($"Clear Formatting", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to clear the formatting of this text? This cannot be undone!", () =>
                                 {
-                                    RTEditor.inst.ShowWarningPopup("Are you sure you want to clear the fomratting of this text? This cannot be undone!", () =>
-                                    {
-                                        textIF.text = Regex.Replace(beatmapObject.text, @"<(.*?)>", string.Empty);
-                                        RTEditor.inst.HideWarningPopup();
-                                    }, RTEditor.inst.HideWarningPopup);
-                                }),
+                                    textIF.text = Regex.Replace(beatmapObject.text, @"<(.*?)>", string.Empty);
+                                })),
                                 new ButtonElement($"Force Modded Formatting", () =>
                                 {
                                     var formatText = "formatText";
@@ -2136,26 +2264,26 @@ namespace BetterLegacy.Editor.Managers
                             if (eventData.button == PointerEventData.InputButton.Right)
                             {
                                 EditorContextMenu.inst.ShowContextMenu(
-                                    new ButtonElement($"Use {RTEditor.SYSTEM_BROWSER}", () => OpenImageSelector(beatmapObject)),
-                                    new ButtonElement($"Use {RTEditor.EDITOR_BROWSER}", () =>
+                                    new ButtonElement($"Use {RTFileBrowser.SYSTEM_BROWSER}", () => OpenImageSelector(beatmapObject)),
+                                    new ButtonElement($"Use {RTFileBrowser.EDITOR_BROWSER}", () =>
                                     {
                                         var editorPath = RTFile.RemoveEndSlash(EditorLevelManager.inst.CurrentLevel.path);
-                                        RTEditor.inst.BrowserPopup.Open();
+                                        RTFileBrowser.inst.Popup.Open();
                                         RTFileBrowser.inst.UpdateBrowserFile(new string[] { FileFormat.PNG.Dot(), FileFormat.JPG.Dot() }, file =>
                                         {
                                             SelectImage(file, beatmapObject);
-                                            RTEditor.inst.BrowserPopup.Close();
+                                            RTFileBrowser.inst.Popup.Close();
                                         });
                                     }),
-                                    new ButtonElement($"Store & Use {RTEditor.SYSTEM_BROWSER}", () => OpenImageSelector(beatmapObject, copyFile: false, storeImage: true)),
-                                    new ButtonElement($"Store & Use {RTEditor.EDITOR_BROWSER}", () =>
+                                    new ButtonElement($"Store & Use {RTFileBrowser.SYSTEM_BROWSER}", () => OpenImageSelector(beatmapObject, copyFile: false, storeImage: true)),
+                                    new ButtonElement($"Store & Use {RTFileBrowser.EDITOR_BROWSER}", () =>
                                     {
                                         var editorPath = RTFile.RemoveEndSlash(EditorLevelManager.inst.CurrentLevel.path);
-                                        RTEditor.inst.BrowserPopup.Open();
+                                        RTFileBrowser.inst.Popup.Open();
                                         RTFileBrowser.inst.UpdateBrowserFile(new string[] { FileFormat.PNG.Dot(), FileFormat.JPG.Dot() }, file =>
                                         {
                                             SelectImage(file, beatmapObject, copyFile: false, storeImage: true);
-                                            RTEditor.inst.BrowserPopup.Close();
+                                            RTFileBrowser.inst.Popup.Close();
                                         });
                                     }),
                                     new SpacerElement(),
@@ -2164,8 +2292,7 @@ namespace BetterLegacy.Editor.Managers
                                         beatmapObject.text = string.Empty;
 
                                         // Since setting image has no affect on the timeline object, we will only need to update the physical object.
-                                        if (UpdateObjects)
-                                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.SHAPE);
+                                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.SHAPE);
 
                                         RenderShape(beatmapObject);
                                     }),
@@ -2175,12 +2302,11 @@ namespace BetterLegacy.Editor.Managers
 
                                         beatmapObject.text = string.Empty;
 
-                                // Since setting image has no affect on the timeline object, we will only need to update the physical object.
-                                if (UpdateObjects)
-                                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.SHAPE);
+                                        // Since setting image has no affect on the timeline object, we will only need to update the physical object.
+                                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.SHAPE);
 
                                         RenderShape(beatmapObject);
-                                    }, RTEditor.inst.HideWarningPopup))
+                                    }))
                                     );
                                 return;
                             }
@@ -2438,8 +2564,7 @@ namespace BetterLegacy.Editor.Managers
                                     beatmapObject.ShapeOption = index;
 
                                     // Since shape has no affect on the timeline object, we will only need to update the physical object.
-                                    if (UpdateObjects)
-                                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.SHAPE);
+                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.SHAPE);
 
                                     RenderShape(beatmapObject);
                                 });
@@ -2463,8 +2588,7 @@ namespace BetterLegacy.Editor.Managers
             slider.onValueChanged.NewListener(_val => SetDepthInputField(beatmapObject, ((int)_val).ToString(), inputField, slider));
 
             // Since depth has no affect on the timeline object, we will only need to update the physical object.
-            if (UpdateObjects)
-                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
         }
 
         void SetDepthInputField(BeatmapObject beatmapObject, string value, InputField inputField, Slider slider)
@@ -2485,8 +2609,7 @@ namespace BetterLegacy.Editor.Managers
             });
 
             // Since depth has no affect on the timeline object, we will only need to update the physical object.
-            if (UpdateObjects)
-                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
         }
 
         /// <summary>
@@ -2495,7 +2618,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="beatmapObject">The BeatmapObject to set.</param>
         public void RenderDepth(BeatmapObject beatmapObject)
         {
-            var active = !HideVisualElementsWhenObjectIsEmpty || beatmapObject.objectType != BeatmapObject.ObjectType.Empty;
+            var active = !EditorConfig.Instance.HideVisualElementsWhenObjectIsEmpty.Value || beatmapObject.objectType != BeatmapObject.ObjectType.Empty;
 
             Dialog.DepthParent.gameObject.SetActive(active);
 
@@ -2906,8 +3029,7 @@ namespace BetterLegacy.Editor.Managers
                 StoreImage(beatmapObject, file);
 
             // Since setting image has no affect on the timeline object, we will only need to update the physical object.
-            if (updateObject && UpdateObjects)
-                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.IMAGE);
+            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.IMAGE);
 
             if (renderEditor)
                 RenderShape(beatmapObject);
@@ -2915,11 +3037,11 @@ namespace BetterLegacy.Editor.Managers
 
         #endregion
 
-        #region Object Search
+        #region Search
 
-        public static int ObjectsPerPage { get; set; } = 100;
-        public static int ParentObjectsPerPage { get; set; } = 100;
-
+        /// <summary>
+        /// Shows a list of <see cref="BeatmapObject"/>s in the level.
+        /// </summary>
         public void ShowObjectSearch() => ShowObjectSearch(x => EditorTimeline.inst.SetCurrentObject(EditorTimeline.inst.GetTimelineObject(x), Input.GetKey(KeyCode.LeftControl)));
 
         /// <summary>
@@ -3035,7 +3157,7 @@ namespace BetterLegacy.Editor.Managers
                 button.onClick.NewListener(() => onSelect?.Invoke(beatmapObject));
 
                 var image = buttonPrefab.transform.Find("Image").GetComponent<Image>();
-                image.color = RTEditor.GetObjectColor(beatmapObject, false);
+                image.color = beatmapObject.GetObjectColor(false);
 
                 var shape = Mathf.Clamp(beatmapObject.shape, 0, ShapeManager.inst.Shapes2D.Count - 1);
                 var shapeOption = Mathf.Clamp(beatmapObject.shapeOption, 0, ShapeManager.inst.Shapes2D[shape].Count - 1);
@@ -3092,7 +3214,7 @@ namespace BetterLegacy.Editor.Managers
                     "<br>POS: {X: " + transform.position.x + ", Y: " + transform.position.y + "}" +
                     "<br>SCA: {X: " + transform.localScale.x + ", Y: " + transform.localScale.y + "}" +
                     "<br>ROT: " + transform.eulerAngles.z +
-                    "<br>COL: " + "<#" + RTColors.ColorToHex(RTEditor.GetObjectColor(beatmapObject, false)) + ">" + "█ <b>#" + RTColors.ColorToHex(RTEditor.GetObjectColor(beatmapObject, true)) + "</b></color>" +
+                    "<br>COL: " + "<#" + RTColors.ColorToHex(beatmapObject.GetObjectColor(false)) + ">" + "█ <b>#" + RTColors.ColorToHex(beatmapObject.GetObjectColor(true)) + "</b></color>" +
                     ptr;
 
                 TooltipHelper.AddHoverTooltip(buttonPrefab, desc, hint);
@@ -3115,7 +3237,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="timelineObject">The object to parent.</param>
         public void ShowParentSearch(TimelineObject timelineObject)
         {
-            RTEditor.inst.ParentSelectorPopup.Open();
+            ParentSelectorPopup.Open();
             RefreshParentSearch(timelineObject);
         }
 
@@ -3125,11 +3247,11 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="timelineObject">The object to parent.</param>
         public void RefreshParentSearch(TimelineObject timelineObject)
         {
-            RTEditor.inst.ParentSelectorPopup.SearchField.onValueChanged.NewListener(_val => RefreshParentSearch(timelineObject));
-            RTEditor.inst.ParentSelectorPopup.ClearContent();
-            RTEditor.inst.ParentSelectorPopup.RenderPageField();
+            ParentSelectorPopup.SearchField.onValueChanged.NewListener(_val => RefreshParentSearch(timelineObject));
+            ParentSelectorPopup.ClearContent();
+            ParentSelectorPopup.RenderPageField();
 
-            var noParent = EditorManager.inst.folderButtonPrefab.Duplicate(RTEditor.inst.ParentSelectorPopup.Content, "No Parent");
+            var noParent = EditorManager.inst.folderButtonPrefab.Duplicate(ParentSelectorPopup.Content, "No Parent");
             var noParentStorage = noParent.GetComponent<FunctionButtonStorage>();
             noParentStorage.Text = "No Parent";
             noParentStorage.OnClick.NewListener(() =>
@@ -3144,7 +3266,7 @@ namespace BetterLegacy.Editor.Managers
                 }
 
                 RTLevel.Current?.RecalculateObjectStates();
-                RTEditor.inst.ParentSelectorPopup.Close();
+                ParentSelectorPopup.Close();
                 if (list.Count == 1 && timelineObject.isBeatmapObject)
                     RenderDialog(timelineObject.GetData<BeatmapObject>());
                 if (list.Count == 1 && timelineObject.isPrefabObject)
@@ -3154,9 +3276,9 @@ namespace BetterLegacy.Editor.Managers
             EditorThemeManager.ApplySelectable(noParentStorage.button, ThemeGroup.List_Button_1);
             EditorThemeManager.ApplyLightText(noParentStorage.label);
 
-            if (RTString.SearchString(RTEditor.inst.ParentSelectorPopup.SearchTerm, "camera") && RTEditor.inst.ParentSelectorPopup.Page == 0)
+            if (RTString.SearchString(ParentSelectorPopup.SearchTerm, "camera") && ParentSelectorPopup.Page == 0)
             {
-                var cam = EditorManager.inst.folderButtonPrefab.Duplicate(RTEditor.inst.ParentSelectorPopup.Content, "Camera");
+                var cam = EditorManager.inst.folderButtonPrefab.Duplicate(ParentSelectorPopup.Content, "Camera");
                 var camStorage = cam.GetComponent<FunctionButtonStorage>();
 
                 camStorage.Text = "Camera";
@@ -3172,7 +3294,7 @@ namespace BetterLegacy.Editor.Managers
                     }
 
                     RTLevel.Current?.RecalculateObjectStates();
-                    RTEditor.inst.ParentSelectorPopup.Close();
+                    ParentSelectorPopup.Close();
                     if (list.Count == 1 && timelineObject.isBeatmapObject)
                         RenderDialog(timelineObject.GetData<BeatmapObject>());
                     if (list.Count == 1 && timelineObject.isPrefabObject)
@@ -3197,13 +3319,13 @@ namespace BetterLegacy.Editor.Managers
                     continue;
                 }
 
-                if (!RTString.SearchString(RTEditor.inst.ParentSelectorPopup.SearchTerm, beatmapObject.name, index, new SearchMatcher(beatmapObject.id, SearchMatchType.Exact)))
+                if (!RTString.SearchString(ParentSelectorPopup.SearchTerm, beatmapObject.name, index, new SearchMatcher(beatmapObject.id, SearchMatchType.Exact)))
                 {
                     index++;
                     continue;
                 }
 
-                if (!RTEditor.inst.ParentSelectorPopup.InPage(pageIndex, ParentObjectsPerPage))
+                if (!ParentSelectorPopup.InPage(pageIndex, ParentObjectsPerPage))
                 {
                     index++;
                     pageIndex++;
@@ -3211,7 +3333,7 @@ namespace BetterLegacy.Editor.Managers
                 }
 
                 string s = $"{beatmapObject.name} {index:0000}";
-                var objectToParent = EditorManager.inst.folderButtonPrefab.Duplicate(RTEditor.inst.ParentSelectorPopup.Content, s);
+                var objectToParent = EditorManager.inst.folderButtonPrefab.Duplicate(ParentSelectorPopup.Content, s);
                 var storage = objectToParent.GetComponent<FunctionButtonStorage>();
 
                 storage.Text = s;
@@ -3230,7 +3352,7 @@ namespace BetterLegacy.Editor.Managers
 
                     RTLevel.Current?.RecalculateObjectStates();
 
-                    RTEditor.inst.ParentSelectorPopup.Close();
+                    ParentSelectorPopup.Close();
                     if (list.Count == 1 && timelineObject.isBeatmapObject)
                         RenderDialog(timelineObject.GetData<BeatmapObject>());
                     if (list.Count == 1 && timelineObject.isPrefabObject)
@@ -3246,6 +3368,8 @@ namespace BetterLegacy.Editor.Managers
                 pageIndex++;
             }
         }
+
+        #endregion
 
         #endregion
     }

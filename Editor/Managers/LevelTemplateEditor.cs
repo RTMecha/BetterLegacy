@@ -25,7 +25,7 @@ namespace BetterLegacy.Editor.Managers
         #region Values
 
         /// <summary>
-        /// Level Template Editor dialog.
+        /// Dialog of the editor.
         /// </summary>
         public LevelTemplateEditorDialog Dialog { get; set; }
 
@@ -154,29 +154,31 @@ namespace BetterLegacy.Editor.Managers
 
             EditorLevelManager.inst.OpenLevelPopup.Close();
 
-            RTEditor.inst.ShowWarningPopup("Are you sure you want to make a new level template?", () =>
-            {
-                choosingLevelTemplate = false;
+            RTEditor.inst.ShowWarningPopup("Are you sure you want to make a new level template?",
+                onConfirm: () =>
+                {
+                    choosingLevelTemplate = false;
 
-                var copyTo = RTFile.CombinePaths(RTFile.ApplicationDirectory, "beatmaps/templates", RTFile.ValidateDirectory(Dialog.NameField.text));
+                    var copyTo = RTFile.CombinePaths(RTFile.ApplicationDirectory, "beatmaps/templates", RTFile.ValidateDirectory(Dialog.NameField.text));
 
-                RTFile.CreateDirectory(copyTo);
-                RTFile.CopyFile(file, RTFile.CombinePaths(copyTo, Level.LEVEL_LSB));
+                    RTFile.CreateDirectory(copyTo);
+                    RTFile.CopyFile(file, RTFile.CombinePaths(copyTo, Level.LEVEL_LSB));
 
-                if (currentTemplateSprite)
-                    currentTemplateSprite.Save(RTFile.CombinePaths(copyTo, $"preview{FileFormat.PNG.Dot()}"));
+                    if (currentTemplateSprite)
+                        currentTemplateSprite.Save(RTFile.CombinePaths(copyTo, $"preview{FileFormat.PNG.Dot()}"));
 
-                var info = new LevelTemplateInfo();
-                info.name = Path.GetFileName(copyTo);
-                info.WriteToFile(RTFile.CombinePaths(copyTo, info.GetFileName()));
+                    var info = new LevelTemplateInfo();
+                    info.name = Path.GetFileName(copyTo);
+                    info.WriteToFile(RTFile.CombinePaths(copyTo, info.GetFileName()));
 
-                RenderLevelTemplates();
-                RTEditor.inst.HideWarningPopup();
-            }, () =>
-            {
-                EditorLevelManager.inst.OpenLevelPopup.Open();
-                RTEditor.inst.HideWarningPopup();
-            });
+                    RenderLevelTemplates();
+                    RTEditor.inst.HideWarningPopup();
+                },
+                onCancel: () =>
+                {
+                    EditorLevelManager.inst.OpenLevelPopup.Open();
+                    RTEditor.inst.HideWarningPopup();
+                });
         }
 
         /// <summary>

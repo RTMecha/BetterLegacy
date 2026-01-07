@@ -84,7 +84,7 @@ namespace BetterLegacy.Editor.Data.Elements
         /// <summary>
         /// Renders the marker button time.
         /// </summary>
-        public void RenderTime() => RenderTime(timelineMarker.Marker.time);
+        public void RenderTime() => RenderTime(timelineMarker.Time);
 
         /// <summary>
         /// Renders the marker button time.

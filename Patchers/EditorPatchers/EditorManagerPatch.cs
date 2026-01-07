@@ -663,7 +663,7 @@ namespace BetterLegacy.Patchers
             if (Instance.hasLoadedLevel)
             {
                 Instance.ClearPopups();
-                RTEditor.inst.SaveAsPopup.Open();
+                EditorLevelManager.inst.SaveAsPopup.Open();
                 return false;
             }
             Instance.DisplayNotification("Beatmap can't be saved as until you load a level.", 5f, EditorManager.NotificationType.Error);

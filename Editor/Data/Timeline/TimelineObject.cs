@@ -589,7 +589,7 @@ namespace BetterLegacy.Editor.Data.Timeline
             rectTransform.sizeDelta = new Vector2(length, 20f);
             rectTransform.anchoredPosition = new Vector2(time * zoom, (-20 * Mathf.Clamp(Bin, 0, EditorTimeline.inst.BinCount)));
             if (Hover)
-                Hover.size = ObjectEditor.TimelineObjectHoverSize;
+                Hover.size = EditorConfig.Instance.TimelineObjectHoverSize.Value;
         }
 
         /// <summary>

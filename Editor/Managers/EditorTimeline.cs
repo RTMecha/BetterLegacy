@@ -29,8 +29,6 @@ using BetterLegacy.Editor.Data.Popups;
 using BetterLegacy.Editor.Data.Timeline;
 using BetterLegacy.Editor.Managers.Settings;
 
-using ObjectType = BetterLegacy.Core.Data.Beatmap.BeatmapObject.ObjectType;
-
 namespace BetterLegacy.Editor.Managers
 {
     /// <summary>
@@ -38,35 +36,7 @@ namespace BetterLegacy.Editor.Managers
     /// </summary>
     public class EditorTimeline : BaseManager<EditorTimeline, RTEditorSettings>, IEditorLayerUI
     {
-        #region Init
-
-        public override void OnInit()
-        {
-            timelineScrollRects.AddRange(EditorManager.inst.timelineScrollRect.GetComponents<ScrollRect>());
-            timelineScrollRects.Add(EditorManager.inst.markerTimeline.transform.parent.GetComponent<ScrollRect>());
-            timelineScrollRects.Add(EditorManager.inst.timelineSlider.transform.parent.GetComponent<ScrollRect>());
-        }
-
-        public override void OnTick()
-        {
-            startOffsetDisplay.color = RTColors.FadeColor(startOffsetDisplay.color, offsetOpacity);
-            endOffsetDisplay.color = RTColors.FadeColor(endOffsetDisplay.color, offsetOpacity);
-
-            if (Input.GetMouseButtonUp((int)UnityEngine.EventSystems.PointerEventData.InputButton.Middle))
-                movingTimeline = false;
-
-            if (!movingTimeline)
-                return;
-
-            var vector = Input.mousePosition * CoreHelper.ScreenScaleInverse;
-            //float multiply = 12f / EditorManager.inst.Zoom;
-            //float multiply = AudioManager.inst.CurrentAudioSource.clip.length / 10f / EditorManager.inst.Zoom;
-            float multiply = (EditorManager.inst.zoomFloat * 1000f) / AudioManager.inst.CurrentAudioSource.clip.length / (EditorManager.inst.zoomFloat * 10f);
-            SetTimelinePosition(cachedTimelinePos.x + -(((vector.x - EditorManager.inst.DragStartPos.x) / Screen.width) * multiply));
-            SetBinScroll(Mathf.Clamp(cachedTimelinePos.y + ((vector.y - EditorManager.inst.DragStartPos.y) / Screen.height), 0f, 1f));
-        }
-
-        #endregion
+        #region Values
 
         #region Timeline
 
@@ -128,6 +98,253 @@ namespace BetterLegacy.Editor.Managers
         /// Opacity for <see cref="startOffsetDisplay"/> and <see cref="endOffsetDisplay"/>.
         /// </summary>
         public float offsetOpacity = 0.3f;
+
+        #endregion
+
+        #region Timeline Objects
+
+        /// <summary>
+        /// The singular currently selected object.
+        /// </summary>
+        public TimelineObject CurrentSelection { get; set; } = new TimelineObject(null);
+
+        /// <summary>
+        /// List of selected objects.
+        /// </summary>
+        public List<TimelineObject> SelectedObjects => timelineObjects.FindAll(x => x.Selected);
+
+        /// <summary>
+        /// List of selected <see cref="BeatmapObject"/>.
+        /// </summary>
+        public List<TimelineObject> SelectedBeatmapObjects => timelineObjects.FindAll(x => x.isBeatmapObject && x.Selected);
+
+        /// <summary>
+        /// List of selected <see cref="BackgroundObject"/>.
+        /// </summary>
+        public List<TimelineObject> SelectedBackgroundObjects => timelineObjects.FindAll(x => x.isBackgroundObject && x.Selected);
+
+        /// <summary>
+        /// List of selected <see cref="PrefabObject"/>.
+        /// </summary>
+        public List<TimelineObject> SelectedPrefabObjects => timelineObjects.FindAll(x => x.isPrefabObject && x.Selected);
+
+        /// <summary>
+        /// Total amount of selected objects.
+        /// </summary>
+        public int SelectedObjectCount
+        {
+            get
+            {
+                var count = 0;
+                for (int i = 0; i < timelineObjects.Count; i++)
+                {
+                    if (timelineObjects[i].Selected)
+                        count++;
+                }
+                return count;
+            }
+        }
+
+        /// <summary>
+        /// The object timeline objects are parented to.
+        /// </summary>
+        public RectTransform timelineObjectsParent;
+
+        /// <summary>
+        /// Function to run when the user selects a timeline object using the picker.
+        /// </summary>
+        public Action<TimelineObject> onSelectTimelineObject;
+
+        /// <summary>
+        /// The list of all timeline objects, excluding event keyframes.
+        /// </summary>
+        public List<TimelineObject> timelineObjects = new List<TimelineObject>();
+
+        /// <summary>
+        /// The list of timeline keyframes.
+        /// </summary>
+        public List<TimelineKeyframe> timelineKeyframes = new List<TimelineKeyframe>();
+
+        /// <summary>
+        /// All timeline objects that are <see cref="BeatmapObject"/>.
+        /// </summary>
+        public List<TimelineObject> TimelineBeatmapObjects => timelineObjects.Where(x => x.isBeatmapObject).ToList();
+
+        /// <summary>
+        /// All timeline objects that are <see cref="PrefabObject"/>.
+        /// </summary>
+        public List<TimelineObject> TimelinePrefabObjects => timelineObjects.Where(x => x.isPrefabObject).ToList();
+
+        /// <summary>
+        /// All timeline objects that are <see cref="BackgroundObject"/>.
+        /// </summary>
+        public List<TimelineObject> TimelineBackgroundObjects => timelineObjects.Where(x => x.isBackgroundObject).ToList();
+
+        /// <summary>
+        /// Popup for managing editor groups.
+        /// </summary>
+        public ContentPopup EditorGroupPopup { get; set; }
+
+        /// <summary>
+        /// Function to run on timeline object created.<br></br>
+        /// Param 0 = <see cref="TimelineObject"/> reference.<br></br>
+        /// Param 1 = index of the timeline object.<br></br>
+        /// Param 2 = total amount of editables.<br></br>
+        /// </summary>
+        public Action<TimelineObject, int, int> onTimelineObjectCreated;
+
+        #endregion
+
+        #region Timeline Textures
+
+        /// <summary>
+        /// Base waveform image.
+        /// </summary>
+        public Image timelineImage;
+
+        /// <summary>
+        /// Waveform overlay image.
+        /// </summary>
+        public Image timelineOverlayImage;
+
+        /// <summary>
+        /// Renders BPM snap grid.
+        /// </summary>
+        public GridRenderer timelineGridRenderer;
+
+        Coroutine assignTimelineTextureCoroutine;
+
+        bool stopCoroutine;
+
+        #endregion
+
+        #region Layers
+
+        public InputField EditorLayerField { get; set; }
+        public RectTransform EditorLayerTogglesParent { get; set; }
+        public Toggle[] EditorLayerToggles { get; set; }
+
+        /// <summary>
+        /// The current editor layer.
+        /// </summary>
+        public int Layer
+        {
+            get => GetLayer(EditorManager.inst.layer);
+            set => EditorManager.inst.layer = GetLayer(value);
+        }
+
+        /// <summary>
+        /// The type of layer to render.
+        /// </summary>
+        public LayerType layerType;
+
+        /// <summary>
+        /// The previous layer.
+        /// </summary>
+        public int prevLayer;
+
+        /// <summary>
+        /// The previous layer type.
+        /// </summary>
+        public LayerType prevLayerType;
+
+        /// <summary>
+        /// Represents a type of layer to render in the timeline. In the vanilla Project Arrhythmia editor, the objects and events layer are considered a part of the same layer system.
+        /// <br><br></br></br>This is used to separate them and cause less issues with objects ending up on the events layer.
+        /// </summary>
+        public enum LayerType
+        {
+            /// <summary>
+            /// Renders the <see cref="BeatmapObject"/> and <see cref="PrefabObject"/> object layers.
+            /// </summary>
+            Objects,
+            /// <summary>
+            /// Renders the <see cref="EventKeyframe"/> layers.
+            /// </summary>
+            Events,
+        }
+
+        #endregion
+
+        #region Bins
+
+        /// <summary>
+        /// Total max of possible bins.
+        /// </summary>
+        public const int MAX_BINS = 60;
+
+        /// <summary>
+        /// The default bin count.
+        /// </summary>
+        public const int DEFAULT_BIN_COUNT = 14;
+
+        /// <summary>
+        /// The object the bin images are parented to.
+        /// </summary>
+        public Transform bins;
+
+        /// <summary>
+        /// The bin prefab used for rendering a bin.
+        /// </summary>
+        public GameObject binPrefab;
+
+        /// <summary>
+        /// The slider for navigating the timeline vertically.
+        /// </summary>
+        public Slider binSlider;
+
+        int binCount = DEFAULT_BIN_COUNT;
+
+        /// <summary>
+        /// The amount of bins that should render and max objects to.
+        /// </summary>
+        public int BinCount { get => Mathf.Clamp(binCount, 0, MAX_BINS); set => binCount = Mathf.Clamp(value, 0, MAX_BINS); }
+
+        /// <summary>
+        /// The current scroll amount of the bin.
+        /// </summary>
+        public float BinScroll { get; set; }
+
+        #endregion
+
+        #endregion
+
+        #region Functions
+
+        #region Init
+
+        public override void OnInit()
+        {
+            timelineScrollRects.AddRange(EditorManager.inst.timelineScrollRect.GetComponents<ScrollRect>());
+            timelineScrollRects.Add(EditorManager.inst.markerTimeline.transform.parent.GetComponent<ScrollRect>());
+            timelineScrollRects.Add(EditorManager.inst.timelineSlider.transform.parent.GetComponent<ScrollRect>());
+        }
+
+        public override void OnTick()
+        {
+            UpdateBinControls();
+            UpdateTimeChange();
+
+            startOffsetDisplay.color = RTColors.FadeColor(startOffsetDisplay.color, offsetOpacity);
+            endOffsetDisplay.color = RTColors.FadeColor(endOffsetDisplay.color, offsetOpacity);
+
+            if (Input.GetMouseButtonUp((int)UnityEngine.EventSystems.PointerEventData.InputButton.Middle))
+                movingTimeline = false;
+
+            if (!movingTimeline)
+                return;
+
+            var vector = Input.mousePosition * CoreHelper.ScreenScaleInverse;
+            //float multiply = 12f / EditorManager.inst.Zoom;
+            //float multiply = AudioManager.inst.CurrentAudioSource.clip.length / 10f / EditorManager.inst.Zoom;
+            float multiply = (EditorManager.inst.zoomFloat * 1000f) / AudioManager.inst.CurrentAudioSource.clip.length / (EditorManager.inst.zoomFloat * 10f);
+            SetTimelinePosition(cachedTimelinePos.x + -(((vector.x - EditorManager.inst.DragStartPos.x) / Screen.width) * multiply));
+            SetBinScroll(Mathf.Clamp(cachedTimelinePos.y + ((vector.y - EditorManager.inst.DragStartPos.y) / Screen.height), 0f, 1f));
+        }
+
+        #endregion
+
+        #region Timeline
 
         /// <summary>
         /// Initializes timeline features.
@@ -258,10 +475,7 @@ namespace BetterLegacy.Editor.Managers
             timelineSliderRuler.color = EditorConfig.Instance.TimelineCursorColor.Value;
         }
 
-        /// <summary>
-        /// Updates the time cursor.
-        /// </summary>
-        public void UpdateTimeChange()
+        void UpdateTimeChange()
         {
             if (!changingTime && EditorConfig.Instance.DraggingMainCursorFix.Value)
             {
@@ -323,52 +537,6 @@ namespace BetterLegacy.Editor.Managers
         #endregion
 
         #region Timeline Objects
-
-        /// <summary>
-        /// The singular currently selected object.
-        /// </summary>
-        public TimelineObject CurrentSelection { get; set; } = new TimelineObject(null);
-
-        public List<TimelineObject> SelectedObjects => timelineObjects.FindAll(x => x.Selected);
-        public List<TimelineObject> SelectedBeatmapObjects => TimelineBeatmapObjects.FindAll(x => x.Selected);
-        public List<TimelineObject> SelectedPrefabObjects => TimelinePrefabObjects.FindAll(x => x.Selected);
-        public List<TimelineObject> SelectedBackgroundObjects => TimelineBackgroundObjects.FindAll(x => x.Selected);
-
-        public int SelectedObjectCount => SelectedObjects.Count;
-
-        public RectTransform timelineObjectsParent;
-
-        /// <summary>
-        /// Function to run when the user selects a timeline object using the picker.
-        /// </summary>
-        public Action<TimelineObject> onSelectTimelineObject;
-
-        /// <summary>
-        /// The list of all timeline objects, excluding event keyframes.
-        /// </summary>
-        public List<TimelineObject> timelineObjects = new List<TimelineObject>();
-
-        /// <summary>
-        /// The list of timeline keyframes.
-        /// </summary>
-        public List<TimelineKeyframe> timelineKeyframes = new List<TimelineKeyframe>();
-
-        /// <summary>
-        /// All timeline objects that are <see cref="BeatmapObject"/>.
-        /// </summary>
-        public List<TimelineObject> TimelineBeatmapObjects => timelineObjects.Where(x => x.isBeatmapObject).ToList();
-
-        /// <summary>
-        /// All timeline objects that are <see cref="PrefabObject"/>.
-        /// </summary>
-        public List<TimelineObject> TimelinePrefabObjects => timelineObjects.Where(x => x.isPrefabObject).ToList();
-        
-        /// <summary>
-        /// All timeline objects that are <see cref="BackgroundObject"/>.
-        /// </summary>
-        public List<TimelineObject> TimelineBackgroundObjects => timelineObjects.Where(x => x.isBackgroundObject).ToList();
-
-        public ContentPopup EditorGroupPopup { get; set; }
 
         /// <summary>
         /// Selects a group of objects based on drag selection.
@@ -684,6 +852,10 @@ namespace BetterLegacy.Editor.Managers
             return editable.TimelineObject;
         }
 
+        /// <summary>
+        /// Renders a timeline object.
+        /// </summary>
+        /// <param name="timelineObject">Timeline object reference.</param>
         public void RenderTimelineObject(TimelineObject timelineObject)
         {
             if (!timelineObject.GameObject)
@@ -695,12 +867,18 @@ namespace BetterLegacy.Editor.Managers
             timelineObject.Render();
         }
 
+        /// <summary>
+        /// Renders all timeline objects.
+        /// </summary>
         public void RenderTimelineObjects()
         {
             foreach (var timelineObject in timelineObjects)
                 RenderTimelineObject(timelineObject);
         }
 
+        /// <summary>
+        /// Renders the area for each timeline object.
+        /// </summary>
         public void RenderTimelineObjectsPositions()
         {
             for (int i = 0; i < timelineObjects.Count; i++)
@@ -711,6 +889,9 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
+        /// <summary>
+        /// Removes all timeline objects from the timeline.
+        /// </summary>
         public void ClearTimelineObjects()
         {
             if (timelineObjects.Count > 0)
@@ -718,6 +899,9 @@ namespace BetterLegacy.Editor.Managers
             timelineObjects.Clear();
         }
 
+        /// <summary>
+        /// Initializes the timeline objects.
+        /// </summary>
         public void InitTimelineObjects()
         {
             ClearTimelineObjects();
@@ -803,7 +987,10 @@ namespace BetterLegacy.Editor.Managers
             yield break;
         }
 
-        public Action<TimelineObject, int, int> onTimelineObjectCreated;
+        /// <summary>
+        /// Converts all <see cref="IEditable"/> objects to <see cref="TimelineObject"/>s.
+        /// </summary>
+        /// <returns>Returns a collection of timeline objects.</returns>
         public IEnumerable<TimelineObject> ToTimelineObjects()
         {
             if (!GameData.Current)
@@ -845,57 +1032,37 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
-        public void CreateTimelineObjects()
+        // TODO: maybe see if this can be supported in Asset Packs? Plus maybe add a solid object type sprite.
+        /// <summary>
+        /// Gets the sprite associated with an <see cref="BeatmapObject.ObjectType"/>.
+        /// </summary>
+        /// <param name="objectType">Object type.</param>
+        /// <returns>
+        /// Returns the sprite associated with the object type.<br></br>
+        /// <see cref="BeatmapObject.ObjectType.Helper"/> returns <see cref="ObjEditor.HelperSprite"/>.<br></br>
+        /// <see cref="BeatmapObject.ObjectType.Decoration"/> returns <see cref="ObjEditor.DecorationSprite"/>.<br></br>
+        /// <see cref="BeatmapObject.ObjectType.Empty"/> returns <see cref="ObjEditor.EmptySprite"/>.<br></br>
+        /// Any other object type returns null.
+        /// </returns>
+        public Sprite GetObjectTypeSprite(BeatmapObject.ObjectType objectType) => objectType switch
         {
-            if (timelineObjects.Count > 0)
-                timelineObjects.ForEach(x => Destroy(x.GameObject));
-            timelineObjects.Clear();
+            BeatmapObject.ObjectType.Helper => ObjEditor.inst.HelperSprite,
+            BeatmapObject.ObjectType.Decoration => ObjEditor.inst.DecorationSprite,
+            BeatmapObject.ObjectType.Empty => ObjEditor.inst.EmptySprite,
+            _ => null,
+        };
 
-            if (!GameData.Current)
-                return;
+        /// <summary>
+        /// Gets the image pattern type associated with an <see cref="BeatmapObject.ObjectType"/>.
+        /// </summary>
+        /// <param name="objectType">Object type.</param>
+        /// <returns>Returns <see cref="Image.Type.Tiled"/> if the associated with <paramref name="objectType"/> supports a tiled type, otherwise returns <see cref="Image.Type.Simple"/>.</returns>
+        public Image.Type GetObjectTypePattern(BeatmapObject.ObjectType objectType)
+            => objectType == BeatmapObject.ObjectType.Helper || objectType == BeatmapObject.ObjectType.Decoration || objectType == BeatmapObject.ObjectType.Empty ? Image.Type.Tiled : Image.Type.Simple;
 
-            for (int i = 0; i < GameData.Current.beatmapObjects.Count; i++)
-            {
-                var beatmapObject = GameData.Current.beatmapObjects[i];
-                if (string.IsNullOrEmpty(beatmapObject.id) || beatmapObject.fromPrefab)
-                    continue;
-
-                var timelineObject = GetTimelineObject(beatmapObject);
-                timelineObject.AddToList(true);
-                timelineObject.Init();
-            }
-
-            for (int i = 0; i < GameData.Current.backgroundObjects.Count; i++)
-            {
-                var backgroundObject = GameData.Current.backgroundObjects[i];
-                if (string.IsNullOrEmpty(backgroundObject.id) || backgroundObject.fromPrefab)
-                    continue;
-
-                var timelineObject = GetTimelineObject(backgroundObject);
-                timelineObject.AddToList(true);
-                timelineObject.Init();
-            }
-
-            for (int i = 0; i < GameData.Current.prefabObjects.Count; i++)
-            {
-                var prefabObject = GameData.Current.prefabObjects[i];
-                if (string.IsNullOrEmpty(prefabObject.id) || prefabObject.fromModifier || prefabObject.fromPrefab)
-                    continue;
-
-                var timelineObject = GetTimelineObject(prefabObject);
-                timelineObject.AddToList(true);
-                timelineObject.Init();
-            }
-        }
-
-        public Sprite GetObjectTypeSprite(ObjectType objectType)
-            => objectType == ObjectType.Helper ? ObjEditor.inst.HelperSprite :
-            objectType == ObjectType.Decoration ? ObjEditor.inst.DecorationSprite :
-            objectType == ObjectType.Empty ? ObjEditor.inst.EmptySprite : null;
-
-        public Image.Type GetObjectTypePattern(ObjectType objectType)
-            => objectType == ObjectType.Helper || objectType == ObjectType.Decoration || objectType == ObjectType.Empty ? Image.Type.Tiled : Image.Type.Simple;
-
+        /// <summary>
+        /// Updates the indexes of all timeline objects.
+        /// </summary>
         public void UpdateTransformIndex()
         {
             if (!GameData.Current)
@@ -911,9 +1078,16 @@ namespace BetterLegacy.Editor.Managers
                 if (!timelineObject || !timelineObject.GameObject)
                     continue;
                 timelineObject.GameObject.transform.SetSiblingIndex(siblingIndex);
+                try
+                {
+                    timelineObjects.Move(timelineObject, siblingIndex);
+                }
+                catch
+                {
+
+                }
                 siblingIndex++;
             }
-
             for (int i = 0; i < GameData.Current.backgroundObjects.Count; i++)
             {
                 var backgroundObject = GameData.Current.backgroundObjects[i];
@@ -923,9 +1097,16 @@ namespace BetterLegacy.Editor.Managers
                 if (!timelineObject || !timelineObject.GameObject)
                     continue;
                 timelineObject.GameObject.transform.SetSiblingIndex(siblingIndex);
+                try
+                {
+                    timelineObjects.Move(timelineObject, siblingIndex);
+                }
+                catch
+                {
+
+                }
                 siblingIndex++;
             }
-
             for (int i = 0; i < GameData.Current.prefabObjects.Count; i++)
             {
                 var prefabObject = GameData.Current.prefabObjects[i];
@@ -935,6 +1116,14 @@ namespace BetterLegacy.Editor.Managers
                 if (!timelineObject || !timelineObject.GameObject)
                     continue;
                 timelineObject.GameObject.transform.SetSiblingIndex(siblingIndex);
+                try
+                {
+                    timelineObjects.Move(timelineObject, siblingIndex);
+                }
+                catch
+                {
+
+                }
                 siblingIndex++;
             }
         }
@@ -1115,13 +1304,19 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
+        /// <summary>
+        /// Opens the editor groups popup.
+        /// </summary>
         public void OpenEditorGroupsPopup()
         {
-            RefreshEditorGroupsPopup();
+            RenderEditorGroupsPopup();
             EditorGroupPopup.Open();
         }
 
-        public void RefreshEditorGroupsPopup()
+        /// <summary>
+        /// Renders the editor groups popup.
+        /// </summary>
+        public void RenderEditorGroupsPopup()
         {
             EditorGroupPopup.ClearContent();
             for (int i = 0; i < RTEditor.inst.editorInfo.editorGroups.Count; i++)
@@ -1175,7 +1370,7 @@ namespace BetterLegacy.Editor.Managers
                                         return;
                                     }
 
-                                    RefreshEditorGroupsPopup();
+                                    RenderEditorGroupsPopup();
                                 }),
                             new LabelElement("Collapse"),
                             ButtonElement.SelectionButton(() => editorGroup.collapsedType == EditorGroup.CollapsedType.Off, "Off", () =>
@@ -1184,7 +1379,7 @@ namespace BetterLegacy.Editor.Managers
                                 if (button)
                                     button.Text = $"{editorGroup.name} [{RTString.SplitWords(editorGroup.collapsedType.ToString())}]";
                                 else
-                                    RefreshEditorGroupsPopup();
+                                    RenderEditorGroupsPopup();
                                 RenderTimelineObjects();
                             }),
                             ButtonElement.SelectionButton(() => editorGroup.collapsedType == EditorGroup.CollapsedType.Collapsed, "Individual", () =>
@@ -1193,7 +1388,7 @@ namespace BetterLegacy.Editor.Managers
                                 if (button)
                                     button.Text = $"{editorGroup.name} [{RTString.SplitWords(editorGroup.collapsedType.ToString())}]";
                                 else
-                                    RefreshEditorGroupsPopup();
+                                    RenderEditorGroupsPopup();
                                 RenderTimelineObjects();
                             }),
                             ButtonElement.SelectionButton(() => editorGroup.collapsedType == EditorGroup.CollapsedType.Hidden, "Hidden", () =>
@@ -1202,7 +1397,7 @@ namespace BetterLegacy.Editor.Managers
                                 if (button)
                                     button.Text = $"{editorGroup.name} [{RTString.SplitWords(editorGroup.collapsedType.ToString())}]";
                                 else
-                                    RefreshEditorGroupsPopup();
+                                    RenderEditorGroupsPopup();
                                 RenderTimelineObjects();
                             }),
                             new LabelElement("Layer"),
@@ -1219,11 +1414,11 @@ namespace BetterLegacy.Editor.Managers
                             new ButtonElement("Delete", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to remove this editor group?", () =>
                             {
                                 RTEditor.inst.editorInfo.editorGroups.RemoveAt(index);
-                                RefreshEditorGroupsPopup();
+                                RenderEditorGroupsPopup();
                                 RenderTimelineObjects();
                                 EditorManager.inst.DisplayNotification($"Deleted editor group!", 2f, EditorManager.NotificationType.Success);
                             }))),
-                        new EditorElementGroup(() => true, EditorContextMenu.GetMoveIndexFunctions(RTEditor.inst.editorInfo.editorGroups, index, RefreshEditorGroupsPopup)));
+                        new EditorElementGroup(() => true, EditorContextMenu.GetMoveIndexFunctions(RTEditor.inst.editorInfo.editorGroups, index, RenderEditorGroupsPopup)));
                 });
             }
 
@@ -1242,10 +1437,14 @@ namespace BetterLegacy.Editor.Managers
                 var editorGroup = new EditorGroup(name);
                 editorGroup.Layer = Layer;
                 RTEditor.inst.editorInfo.editorGroups.Add(editorGroup);
-                RefreshEditorGroupsPopup();
+                RenderEditorGroupsPopup();
             });
         }
 
+        /// <summary>
+        /// Assigns an editor group to all selected objects.
+        /// </summary>
+        /// <param name="editorGroup">Editor group to assign.</param>
         public void AssignEditorGroup(EditorGroup editorGroup)
         {
             foreach (var timelineObject in SelectedObjects)
@@ -1258,12 +1457,6 @@ namespace BetterLegacy.Editor.Managers
         #endregion
 
         #region Timeline Textures
-
-        public Image timelineImage;
-        public Image timelineOverlayImage;
-        public GridRenderer timelineGridRenderer;
-        Coroutine assignTimelineTextureCoroutine;
-        bool stopCoroutine;
 
         /// <summary>
         /// Updates the timelines' waveform texture.
@@ -1766,46 +1959,7 @@ namespace BetterLegacy.Editor.Managers
 
         #endregion
 
-        #region Bins & Layers
-
         #region Layers
-
-        public InputField EditorLayerField { get; set; }
-        public RectTransform EditorLayerTogglesParent { get; set; }
-        public Toggle[] EditorLayerToggles { get; set; }
-
-        /// <summary>
-        /// The current editor layer.
-        /// </summary>
-        public int Layer
-        {
-            get => GetLayer(EditorManager.inst.layer);
-            set => EditorManager.inst.layer = GetLayer(value);
-        }
-
-        /// <summary>
-        /// The type of layer to render.
-        /// </summary>
-        public LayerType layerType;
-
-        public int prevLayer;
-        public LayerType prevLayerType;
-
-        /// <summary>
-        /// Represents a type of layer to render in the timeline. In the vanilla Project Arrhythmia editor, the objects and events layer are considered a part of the same layer system.
-        /// <br><br></br></br>This is used to separate them and cause less issues with objects ending up on the events layer.
-        /// </summary>
-        public enum LayerType
-        {
-            /// <summary>
-            /// Renders the <see cref="BeatmapObject"/> and <see cref="PrefabObject"/> object layers.
-            /// </summary>
-            Objects,
-            /// <summary>
-            /// Renders the <see cref="EventKeyframe"/> layers.
-            /// </summary>
-            Events
-        }
 
         /// <summary>
         /// Limits the editor layer between 0 and <see cref="int.MaxValue"/>.
@@ -1945,33 +2099,7 @@ namespace BetterLegacy.Editor.Managers
 
         #region Bins
 
-        /// <summary>
-        /// Total max of possible bins.
-        /// </summary>
-        public const int MAX_BINS = 60;
-
-        /// <summary>
-        /// The default bin count.
-        /// </summary>
-        public const int DEFAULT_BIN_COUNT = 14;
-
-        public Transform bins;
-        public GameObject binPrefab;
-        public Slider binSlider;
-
-        int binCount = DEFAULT_BIN_COUNT;
-
-        /// <summary>
-        /// The amount of bins that should render and max objects to.
-        /// </summary>
-        public int BinCount { get => Mathf.Clamp(binCount, 0, MAX_BINS); set => binCount = Mathf.Clamp(value, 0, MAX_BINS); }
-
-        /// <summary>
-        /// The current scroll amount of the bin.
-        /// </summary>
-        public float BinScroll { get; set; }
-
-        public void UpdateBinControls()
+        void UpdateBinControls()
         {
             if (!binSlider)
                 return;
@@ -2157,6 +2285,9 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="scroll">Value to set.</param>
         public void SetBinScroll(float scroll) => binSlider.value = layerType == LayerType.Events ? 0f : scroll;
 
+        /// <summary>
+        /// Renders the current bin scroll position.
+        /// </summary>
         public void RenderBinPosition()
         {
             //var scroll = Mathf.Lerp(0f, Mathf.Clamp(BinCount - DEFAULT_BIN_COUNT, 0f, MAX_BINS), BinScroll) * 10f;
@@ -2167,12 +2298,19 @@ namespace BetterLegacy.Editor.Managers
             RenderBinPosition(scroll);
         }
 
+        /// <summary>
+        /// Renders a bin scroll position.
+        /// </summary>
+        /// <param name="scroll">Vertical scroll amount.</param>
         public void RenderBinPosition(float scroll)
         {
             bins.transform.AsRT().anchoredPosition = new Vector2(0f, scroll);
             timelineObjectsParent.transform.AsRT().anchoredPosition = new Vector2(0f, scroll);
         }
 
+        /// <summary>
+        /// Renders all bins.
+        /// </summary>
         public void RenderBins()
         {
             RenderBinPosition();
@@ -2184,10 +2322,20 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
+        /// <summary>
+        /// Calculates the behavior that occurs when a bin value exceeds the max bin count.
+        /// </summary>
+        /// <param name="binOffset">Bin value to set.</param>
+        /// <returns>
+        /// Returns the calculated bin value based on <see cref="EditorConfig.BinClampBehavior"/>.<br></br>
+        /// <see cref="BinClamp.Clamp"/> clamps <paramref name="binOffset"/> between 0 and <see cref="BinCount"/>.<br></br>
+        /// <see cref="BinClamp.Loop"/> repeats <paramref name="binOffset"/> from <see cref="BinCount"/> to 0.<br></br>
+        /// <see cref="BinClamp.None"/> just returns <paramref name="binOffset"/>.
+        /// </returns>
         public int CalculateMaxBin(int binOffset) => EditorConfig.Instance.BinClampBehavior.Value switch
         {
             BinClamp.Clamp => Mathf.Clamp(binOffset, 0, BinCount),
-            BinClamp.Loop => (int) Mathf.Repeat(binOffset, BinCount + 1),
+            BinClamp.Loop => (int)Mathf.Repeat(binOffset, BinCount + 1),
             _ => binOffset,
         };
 

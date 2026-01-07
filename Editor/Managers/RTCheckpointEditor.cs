@@ -24,10 +24,6 @@ namespace BetterLegacy.Editor.Managers
 {
     public class RTCheckpointEditor : BaseEditor<RTCheckpointEditor, RTCheckpointEditorSettings, CheckpointEditor>
     {
-        /* TODO:
-        - Actually implement multi-position checkpoints
-         */
-
         #region Values
 
         public override CheckpointEditor BaseInstance { get => CheckpointEditor.inst; set => CheckpointEditor.inst = value; }

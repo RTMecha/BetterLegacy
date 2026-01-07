@@ -31,13 +31,8 @@ namespace BetterLegacy.Configs
             Instance = this;
             BindSettings();
 
-            ObjectEditor.TimelineObjectHoverSize = TimelineObjectHoverSize.Value;
-            ObjectEditor.HideVisualElementsWhenObjectIsEmpty = HideVisualElementsWhenObjectIsEmpty.Value;
-            RTPrefabEditor.ImportPrefabsDirectly = ImportPrefabsDirectly.Value;
             RTThemeEditor.themesPerPage = ThemesPerPage.Value;
             RTThemeEditor.eventThemesPerPage = ThemesEventKeyframePerPage.Value;
-            RTEditor.DraggingPlaysSound = DraggingPlaysSound.Value;
-            RTEditor.DraggingPlaysSoundBPM = DraggingPlaysSoundOnlyWithBPM.Value;
             RTEditor.ShowModdedUI = EditorComplexity.Value == Complexity.Advanced;
             EditorThemeManager.currentTheme = (int)EditorTheme.Value;
 
@@ -205,6 +200,7 @@ namespace BetterLegacy.Configs
 
         public Setting<bool> ShowMarkers { get; set; }
         public Setting<bool> ShowMarkersInObjectEditor { get; set; }
+        public Setting<bool> ShowMarkersOnAllLayers { get; set; }
         public Setting<int> MarkerDefaultColor { get; set; }
         public Setting<PointerEventData.InputButton> MarkerDragButton { get; set; }
         public Setting<bool> MarkerShowContextMenu { get; set; }
@@ -611,14 +607,15 @@ namespace BetterLegacy.Configs
 
             ShowMarkers = Bind(this, MARKERS, "Show Markers", true, "If markers should show in the editor timeline.");
             ShowMarkersInObjectEditor = Bind(this, MARKERS, "Show Markers in Object Editor", false, "If markers should display in the object editor.");
-            MarkerDefaultColor = Bind(this, MARKERS, "Marker Default Color", 0, "The default color assigned to a new marker.");
-            MarkerDragButton = BindEnum(this, MARKERS, "Marker Drag Button", PointerEventData.InputButton.Middle, "The mouse button to click and hold to drag a marker.");
-            MarkerShowContextMenu = Bind(this, MARKERS, "Marker Show Context Menu", false, "If a context menu should show instead of deleting a marker when you right click a marker.");
-            MarkerLoopBehavior = Bind(this, MARKERS, "Marker Loop Behavior", BetterLegacy.MarkerLoopBehavior.Loop, "How marker looping should behave.");
-            MarkerLineColor = Bind(this, MARKERS, "Marker Line Color", new Color(1f, 1f, 1f, 0.7843f), "The color of the marker lines.");
-            MarkerLineWidth = Bind(this, MARKERS, "Marker Line Width", 2f, "The width of the marker lines.");
-            MarkerTextWidth = Bind(this, MARKERS, "Marker Text Width", 64f, "The width of the markers' text. If the text is longer than this width, then it doesn't display the symbols after the width.");
-            MarkerLineDotted = Bind(this, MARKERS, "Marker Line Dotted", false, "If the markers' line should be dotted.");
+            ShowMarkersOnAllLayers = Bind(this, MARKERS, "Show Markers On All Layers", false, "If the marker layer value should be ignored and all markers on all layers should display.");
+            MarkerDefaultColor = Bind(this, MARKERS, "Default Color", 0, "The default color assigned to a new marker.");
+            MarkerDragButton = BindEnum(this, MARKERS, "Drag Button", PointerEventData.InputButton.Middle, "The mouse button to click and hold to drag a marker.");
+            MarkerShowContextMenu = Bind(this, MARKERS, "Show Context Menu", true, "If a context menu should show instead of deleting a marker when you right click a marker.");
+            MarkerLoopBehavior = Bind(this, MARKERS, "Loop Behavior", BetterLegacy.MarkerLoopBehavior.Loop, "How marker looping should behave.");
+            MarkerLineColor = Bind(this, MARKERS, "Line Color", new Color(1f, 1f, 1f, 0.7843f), "The color of the marker lines.");
+            MarkerLineWidth = Bind(this, MARKERS, "Line Width", 2f, "The width of the marker lines.");
+            MarkerTextWidth = Bind(this, MARKERS, "Text Width", 64f, "The width of the markers' text. If the text is longer than this width, then it doesn't display the symbols after the width.");
+            MarkerLineDotted = Bind(this, MARKERS, "Line Dotted", false, "If the markers' line should be dotted.");
             ObjectMarkerLineColor = Bind(this, MARKERS, "Object Marker Line Color", new Color(1f, 1f, 1f, 0.5f), "The color of the marker lines.");
             ObjectMarkerLineWidth = Bind(this, MARKERS, "Object Marker Line Width", 4f, "The width of the marker lines.");
             ObjectMarkerTextWidth = Bind(this, MARKERS, "Object Marker Text Width", 64f, "The width of the markers' text. If the text is longer than this width, then it doesn't display the symbols after the width.");
@@ -1142,9 +1139,6 @@ namespace BetterLegacy.Configs
             WaveformTopColor.SettingChanged += TimelineWaveformChanged;
             WaveformTextureFormat.SettingChanged += TimelineWaveformChanged;
 
-            DraggingPlaysSound.SettingChanged += DraggingChanged;
-            DraggingPlaysSoundOnlyWithBPM.SettingChanged += DraggingChanged;
-
             EditorComplexity.SettingChanged += ModdedEditorChanged;
             ShowExperimental.SettingChanged += ModdedEditorChanged;
 
@@ -1175,6 +1169,7 @@ namespace BetterLegacy.Configs
             KeyframeCursorColor.SettingChanged += TimelineColorsChanged;
 
             MarkerLineDotted.SettingChanged += MarkerLineDottedChanged;
+            ShowMarkersOnAllLayers.SettingChanged += ShowMarkersOnAllLayersChanged;
         }
 
         void MarkerLineDottedChanged()
@@ -1269,12 +1264,6 @@ namespace BetterLegacy.Configs
                 RTBackgroundEditor.inst.RenderDialog(EditorTimeline.inst.CurrentSelection.GetData<BackgroundObject>());
         }
 
-        void DraggingChanged()
-        {
-            RTEditor.DraggingPlaysSound = DraggingPlaysSound.Value;
-            RTEditor.DraggingPlaysSoundBPM = DraggingPlaysSoundOnlyWithBPM.Value;
-        }
-
         void TimelineWaveformChanged()
         {
             if (!RTEditor.inst)
@@ -1291,8 +1280,6 @@ namespace BetterLegacy.Configs
 
         void ObjectEditorChanged()
         {
-            ObjectEditor.HideVisualElementsWhenObjectIsEmpty = HideVisualElementsWhenObjectIsEmpty.Value;
-
             if (!ObjEditor.inst)
                 return;
 
@@ -1324,9 +1311,6 @@ namespace BetterLegacy.Configs
         void UpdateSettings()
         {
             SetPreviewConfig();
-
-            ObjectEditor.TimelineObjectHoverSize = TimelineObjectHoverSize.Value;
-            RTPrefabEditor.ImportPrefabsDirectly = ImportPrefabsDirectly.Value;
 
             if (!CoreHelper.InEditor)
                 return;
@@ -1435,6 +1419,14 @@ namespace BetterLegacy.Configs
             {
                 CoreHelper.LogError($"{nameof(UpdateDefaultThemeValues)} had an error! \n{ex}");
             }
+        }
+
+        void ShowMarkersOnAllLayersChanged()
+        {
+            if (!RTMarkerEditor.inst)
+                return;
+            for (int i = 0; i < RTMarkerEditor.inst.timelineMarkers.Count; i++)
+                RTMarkerEditor.inst.timelineMarkers[i].Render();
         }
 
         #endregion

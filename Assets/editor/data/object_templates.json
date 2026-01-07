@@ -69,7 +69,7 @@
       "options": [
         {
           "name": "Circle",
-          "icon_ref": "shape/1",
+          "icon_ref": "core/sprites/shapes/1/group.png",
           "hint": "Circle object.",
           "obj": {
             "st": 0,
@@ -82,7 +82,7 @@
         },
         {
           "name": "Triangle",
-          "icon_ref": "shape/2",
+          "icon_ref": "core/sprites/shapes/2/group.png",
           "hint": "Triangle object.",
           "obj": {
             "st": 0,
@@ -95,7 +95,7 @@
         },
         {
           "name": "Text",
-          "icon_ref": "shape/4",
+          "icon_ref": "core/sprites/shapes/4/group.png",
           "hint": "Text object.",
           "obj": {
             "st": 0,
@@ -109,7 +109,7 @@
         },
         {
           "name": "Hexagon",
-          "icon_ref": "shape/5",
+          "icon_ref": "core/sprites/shapes/5/group.png",
           "hint": "Hexagon object.",
           "obj": {
             "st": 0,

@@ -106,7 +106,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             SearchField = search.transform.GetChild(0).GetComponent<InputField>();
 
             SearchField.SetTextWithoutNotify(string.Empty);
-            SearchField.onValueChanged.NewListener(_val => CoroutineHelper.StartCoroutine(PlayerEditor.inst.RefreshEditor()));
+            SearchField.onValueChanged.NewListener(_val => PlayerEditor.inst.RenderDialog());
             SearchField.GetPlaceholderText().text = "Search for value...";
 
             var spacer = dialog.transform.Find("spacer");
@@ -137,11 +137,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             base.InitDialog(PLAYER_EDITOR);
 
-            var playerEditor = EditorHelper.AddEditorDropdown("Player Editor", string.Empty, "Edit", EditorSprites.PlayerSprite, () =>
-            {
-                Open();
-                CoroutineHelper.StartCoroutine(PlayerEditor.inst.RefreshEditor());
-            });
+            var playerEditor = EditorHelper.AddEditorDropdown("Player Editor", string.Empty, "Edit", EditorSprites.PlayerSprite, () => PlayerEditor.inst.OpenDialog());
             EditorHelper.SetComplexity(playerEditor, Complexity.Advanced);
 
             Content = scrollView.transform.Find("Viewport/Content");
@@ -455,11 +451,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 var selectStorage = select.GetComponent<FunctionButtonStorage>();
                 selectStorage.label.fontSize = 16;
                 selectStorage.Text = "Select";
-                selectStorage.OnClick.NewListener(() =>
-                {
-                    PlayerEditor.inst.ModelsPopup.Open();
-                    CoroutineHelper.StartCoroutine(PlayerEditor.inst.RefreshModels());
-                });
+                selectStorage.OnClick.NewListener(() => PlayerEditor.inst.OpenModelsPopup());
 
                 EditorThemeManager.ApplySelectable(selectStorage.button, ThemeGroup.Function_2);
                 EditorThemeManager.ApplyGraphic(selectStorage.label, ThemeGroup.Function_2_Text);
@@ -473,8 +465,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 playerIndexDropdown.SetValueWithoutNotify(0);
                 playerIndexDropdown.onValueChanged.NewListener(_val =>
                 {
-                    PlayerEditor.inst.playerModelIndex = _val;
-                    CoroutineHelper.StartCoroutine(PlayerEditor.inst.RefreshEditor());
+                    PlayerEditor.inst.playerIndex = _val;
+                    PlayerEditor.inst.RenderDialog();
                 });
 
                 EditorThemeManager.ApplyDropdown(playerIndexDropdown);
@@ -514,13 +506,23 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 var setToGlobalStorage = setToGlobal.GetComponent<FunctionButtonStorage>();
                 setToGlobalStorage.label.fontSize = 16;
                 setToGlobalStorage.Text = "Set to Global";
-                setToGlobalStorage.OnClick.NewListener(() => PlayerManager.PlayerIndexes[PlayerEditor.inst.playerModelIndex].Value = PlayersData.Current.playerModelsIndex[PlayerEditor.inst.playerModelIndex]);
+                setToGlobalStorage.OnClick.NewListener(() => PlayerManager.PlayerIndexes[PlayerEditor.inst.playerIndex].Value = PlayersData.Current.playerModelsIndex[PlayerEditor.inst.playerIndex]);
 
                 EditorThemeManager.ApplySelectable(setToGlobalStorage.button, ThemeGroup.Function_2);
                 EditorThemeManager.ApplyGraphic(setToGlobalStorage.label, ThemeGroup.Function_2_Text);
             }
 
             LSHelpers.SetActiveChildren(Content, false);
+        }
+
+        /// <summary>
+        /// Displays a tab.
+        /// </summary>
+        /// <param name="tab">Tab to display.</param>
+        public void ShowTab(PlayerEditor.Tab tab)
+        {
+            for (int i = 0; i < Tabs.Count; i++)
+                Tabs[i].SetActive((int)tab == i);
         }
 
         #region Setup
@@ -535,7 +537,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             tabButton.OnClick.NewListener(() =>
             {
                 PlayerEditor.inst.CurrentTab = (PlayerEditor.Tab)tabIndex;
-                CoroutineHelper.StartCoroutine(PlayerEditor.inst.RefreshEditor());
+                PlayerEditor.inst.RenderDialog();
             });
 
             EditorThemeManager.ApplySelectable(tabButton.button, EditorThemeManager.GetTabThemeGroup(tabIndex));

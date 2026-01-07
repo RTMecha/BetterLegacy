@@ -467,6 +467,9 @@ namespace BetterLegacy.Editor.Managers
 
         #endregion
 
+        /// <summary>
+        /// Opens the icon selector for a level.
+        /// </summary>
         public void OpenIconSelector()
         {
             string jpgFile = FileBrowser.OpenSingleFile("jpg");

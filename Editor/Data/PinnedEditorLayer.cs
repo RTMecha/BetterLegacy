@@ -13,6 +13,8 @@ namespace BetterLegacy.Editor.Data
     /// </summary>
     public class PinnedEditorLayer : PAObject<PinnedEditorLayer>
     {
+        #region Constructors
+
         public PinnedEditorLayer() : base() { }
 
         public PinnedEditorLayer(int layer, EditorTimeline.LayerType layerType) : this()
@@ -20,6 +22,8 @@ namespace BetterLegacy.Editor.Data
             this.layer = layer;
             this.layerType = layerType;
         }
+
+        #endregion
 
         #region Values
 
@@ -41,7 +45,7 @@ namespace BetterLegacy.Editor.Data
         /// <summary>
         /// Description of the editor layer.
         /// </summary>
-        public string desc = string.Empty;
+        public string description = string.Empty;
 
         /// <summary>
         /// If <see cref="color"/> should be used instead of the global editor colors.
@@ -55,15 +59,7 @@ namespace BetterLegacy.Editor.Data
 
         #endregion
 
-        #region Methods
-
-        /// <summary>
-        /// Checks if the layer is the same as the pinned layer.
-        /// </summary>
-        /// <param name="layer">Editor layer.</param>
-        /// <param name="layerType">Editor layer type.</param>
-        /// <returns>Returns true if the layer is the same, otherwise returns false.</returns>
-        public bool IsLayer(int layer, EditorTimeline.LayerType layerType) => this.layer == layer && this.layerType == layerType;
+        #region Functions
 
         public override void CopyData(PinnedEditorLayer orig, bool newID = true)
         {
@@ -71,7 +67,7 @@ namespace BetterLegacy.Editor.Data
             layer = orig.layer;
             layerType = orig.layerType;
             name = orig.name;
-            desc = orig.desc;
+            description = orig.description;
             overrideColor = orig.overrideColor;
             color = orig.color;
         }
@@ -82,7 +78,7 @@ namespace BetterLegacy.Editor.Data
             layerType = (EditorTimeline.LayerType)jn["layer_type"].AsInt;
 
             name = jn["name"] ?? string.Empty;
-            desc = jn["desc"] ?? string.Empty;
+            description = jn["desc"] ?? string.Empty;
             overrideColor = jn["col"] != null;
             if (jn["col"] != null)
                 color = RTColors.HexToColor(jn["col"]);
@@ -98,13 +94,21 @@ namespace BetterLegacy.Editor.Data
 
             if (!string.IsNullOrEmpty(name))
                 jn["name"] = name;
-            if (!string.IsNullOrEmpty(desc))
-                jn["desc"] = desc;
+            if (!string.IsNullOrEmpty(description))
+                jn["desc"] = description;
             if (overrideColor)
                 jn["col"] = RTColors.ColorToHexOptional(color);
 
             return jn;
         }
+
+        /// <summary>
+        /// Checks if the layer is the same as the pinned layer.
+        /// </summary>
+        /// <param name="layer">Editor layer.</param>
+        /// <param name="layerType">Editor layer type.</param>
+        /// <returns>Returns true if the layer is the same, otherwise returns false.</returns>
+        public bool IsLayer(int layer, EditorTimeline.LayerType layerType) => this.layer == layer && this.layerType == layerType;
 
         #endregion
     }

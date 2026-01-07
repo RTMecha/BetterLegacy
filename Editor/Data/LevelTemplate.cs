@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 
 using UnityEngine;
@@ -16,7 +17,7 @@ using SimpleJSON;
 namespace BetterLegacy.Editor.Data
 {
     /// <summary>
-    /// Handles a level template that new levels are based on.
+    /// Represents a level template that new levels are based on.
     /// </summary>
     public class LevelTemplate : Exists
     {
@@ -76,6 +77,11 @@ namespace BetterLegacy.Editor.Data
         /// </summary>
         public LevelTemplateInfo info;
 
+        /// <summary>
+        /// Custom function to generate gamedata from.
+        /// </summary>
+        public Func<GameData> getGameData;
+
         #endregion
 
         #region Functions
@@ -105,16 +111,12 @@ namespace BetterLegacy.Editor.Data
             var isDefault = string.IsNullOrEmpty(directory);
             DeleteButton.gameObject.SetActive(!isDefault);
             if (!isDefault)
-                DeleteButton.OnClick.NewListener(() =>
+                DeleteButton.OnClick.NewListener(() => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this template? This is permanent!", () =>
                 {
-                    RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this template? This is permanent!", () =>
-                    {
-                        RTFile.DeleteDirectory(Directory);
-                        LevelTemplateEditor.inst.RenderLevelTemplates();
-                        EditorManager.inst.DisplayNotification("Successfully deleted the template.", 2f, EditorManager.NotificationType.Success);
-                        RTEditor.inst.HideWarningPopup();
-                    }, RTEditor.inst.HideWarningPopup);
-                });
+                    RTFile.DeleteDirectory(Directory);
+                    LevelTemplateEditor.inst.RenderLevelTemplates();
+                    EditorManager.inst.DisplayNotification("Successfully deleted the template.", 2f, EditorManager.NotificationType.Success);
+                }));
 
             var button = gameObject.GetComponent<Button>();
             button.onClick.NewListener(SelectTemplate);
@@ -182,7 +184,7 @@ namespace BetterLegacy.Editor.Data
         /// <returns>Returns a loaded game data from the template.</returns>
         public GameData GetGameData() =>
             !RTFile.FileExists(RTFile.CombinePaths(Directory, Level.LEVEL_LSB)) ?
-                EditorLevelManager.inst.CreateBaseBeatmap() :
+                getGameData?.Invoke() ?? EditorLevelManager.inst.CreateBaseBeatmap() :
                 GameData.ReadFromFile(RTFile.CombinePaths(Directory, Level.LEVEL_LSB), ArrhythmiaType.LS);
 
         #endregion
@@ -192,7 +194,14 @@ namespace BetterLegacy.Editor.Data
     {
         #region Values
 
+        /// <summary>
+        /// Name of the level template.
+        /// </summary>
         public string name;
+
+        /// <summary>
+        /// Description of the level template.
+        /// </summary>
         public string description;
 
         #region Server
@@ -225,10 +234,6 @@ namespace BetterLegacy.Editor.Data
 
         #region Functions
 
-        /// <summary>
-        /// Gets the name of the file.
-        /// </summary>
-        /// <returns>Returns "info.lsb".</returns>
         public string GetFileName() => "info" + FileFormat.Dot();
 
         public void ReadFromFile(string path)

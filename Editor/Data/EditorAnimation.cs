@@ -15,13 +15,19 @@ namespace BetterLegacy.Editor.Data
     {
         public EditorAnimation(string name) => this.name = name;
 
+        #region Values
+
+        /// <summary>
+        /// Name of the editor element.
+        /// </summary>
         public string name;
 
         #region Configs
 
         public Setting<bool> ActiveConfig { get; set; }
 
-        // Position
+        #region Position
+
         public Setting<bool> PosActiveConfig { get; set; }
         public Setting<Vector2> PosOpenConfig { get; set; }
         public Setting<Vector2> PosCloseConfig { get; set; }
@@ -32,7 +38,10 @@ namespace BetterLegacy.Editor.Data
         public Setting<Easing> PosYOpenEaseConfig { get; set; }
         public Setting<Easing> PosYCloseEaseConfig { get; set; }
 
-        // Scale
+        #endregion
+
+        #region Scale
+
         public Setting<bool> ScaActiveConfig { get; set; }
         public Setting<Vector2> ScaOpenConfig { get; set; }
         public Setting<Vector2> ScaCloseConfig { get; set; }
@@ -43,7 +52,10 @@ namespace BetterLegacy.Editor.Data
         public Setting<Easing> ScaYOpenEaseConfig { get; set; }
         public Setting<Easing> ScaYCloseEaseConfig { get; set; }
 
-        // Rotation
+        #endregion
+
+        #region Rotation
+
         public Setting<bool> RotActiveConfig { get; set; }
         public Setting<float> RotOpenConfig { get; set; }
         public Setting<float> RotCloseConfig { get; set; }
@@ -54,60 +66,112 @@ namespace BetterLegacy.Editor.Data
 
         #endregion
 
-        #region Values
+        #endregion
+
+        #region Wrapper Values
 
         public bool Active => ActiveConfig.Value;
+
+        #region Position
 
         public bool PosActive => PosActiveConfig.Value;
         public Vector2 PosStart => PosCloseConfig.Value;
         public Vector2 PosEnd => PosOpenConfig.Value;
         public float PosXStartDuration => PosOpenDurationConfig.Value.x;
         public float PosXEndDuration => PosCloseDurationConfig.Value.x;
-        public string PosXStartEase => PosXOpenEaseConfig.Value.ToString();
-        public string PosXEndEase => PosXCloseEaseConfig.Value.ToString();
+        public Easing PosXStartEase => PosXOpenEaseConfig.Value;
+        public Easing PosXEndEase => PosXCloseEaseConfig.Value;
         public float PosYStartDuration => PosOpenDurationConfig.Value.y;
         public float PosYEndDuration => PosCloseDurationConfig.Value.y;
-        public string PosYStartEase => PosYOpenEaseConfig.Value.ToString();
-        public string PosYEndEase => PosYCloseEaseConfig.Value.ToString();
+        public Easing PosYStartEase => PosYOpenEaseConfig.Value;
+        public Easing PosYEndEase => PosYCloseEaseConfig.Value;
+
+        #endregion
+
+        #region Scale
 
         public bool ScaActive => ScaActiveConfig.Value;
         public Vector2 ScaStart => ScaCloseConfig.Value;
         public Vector2 ScaEnd => ScaOpenConfig.Value;
         public float ScaXStartDuration => ScaOpenDurationConfig.Value.x;
         public float ScaXEndDuration => ScaCloseDurationConfig.Value.x;
-        public string ScaXStartEase => ScaXOpenEaseConfig.Value.ToString();
-        public string ScaXEndEase => ScaXCloseEaseConfig.Value.ToString();
+        public Easing ScaXStartEase => ScaXOpenEaseConfig.Value;
+        public Easing ScaXEndEase => ScaXCloseEaseConfig.Value;
         public float ScaYStartDuration => ScaOpenDurationConfig.Value.y;
         public float ScaYEndDuration => ScaCloseDurationConfig.Value.y;
-        public string ScaYStartEase => ScaYOpenEaseConfig.Value.ToString();
-        public string ScaYEndEase => ScaYCloseEaseConfig.Value.ToString();
+        public Easing ScaYStartEase => ScaYOpenEaseConfig.Value;
+        public Easing ScaYEndEase => ScaYCloseEaseConfig.Value;
+
+        #endregion
+
+        #region Rotation
 
         public bool RotActive => RotActiveConfig.Value;
         public float RotStart => RotCloseConfig.Value;
         public float RotEnd => RotOpenConfig.Value;
         public float RotStartDuration => RotOpenDurationConfig.Value;
         public float RotEndDuration => RotCloseDurationConfig.Value;
-        public string RotStartEase => RotOpenEaseConfig.Value.ToString();
-        public string RotEndEase => RotCloseEaseConfig.Value.ToString();
+        public Easing RotStartEase => RotOpenEaseConfig.Value;
+        public Easing RotEndEase => RotCloseEaseConfig.Value;
+
+        #endregion
+
+        #endregion
 
         #endregion
     }
 
+    /// <summary>
+    /// Provides a custom way of animating an editor element.
+    /// </summary>
     public class CustomEditorAnimation : Exists
     {
         public CustomEditorAnimation(string name) => this.name = name;
 
+        #region Values
+
+        /// <summary>
+        /// Name of the editor element.
+        /// </summary>
         public string name;
 
+        /// <summary>
+        /// Active config reference.
+        /// </summary>
         public Setting<bool> ActiveConfig { get; set; }
 
+        /// <summary>
+        /// If the animation is active.
+        /// </summary>
         public bool Active => ActiveConfig.Value;
 
+        /// <summary>
+        /// Open animation.
+        /// </summary>
         public PAAnimation OpenAnimation { get; set; }
+
+        /// <summary>
+        /// Close animation.
+        /// </summary>
         public PAAnimation CloseAnimation { get; set; }
 
+        #endregion
+
+        #region Functions
+
+        /// <summary>
+        /// Plays the animation based on the active state.
+        /// </summary>
+        /// <param name="active">Active state.</param>
+        /// <param name="editorPopup">Editor popup to play the animation on.</param>
+        /// <returns>Returns the generated <see cref="RTAnimation"/>.</returns>
         public RTAnimation Play(bool active, EditorPopup editorPopup) => active ? PlayOpen(editorPopup) : PlayClose(editorPopup);
 
+        /// <summary>
+        /// Plays the open animation.
+        /// </summary>
+        /// <param name="editorPopup">Editor popup to play the animation on.</param>
+        /// <returns>Returns the generated <see cref="RTAnimation"/>.</returns>
         public RTAnimation PlayOpen(EditorPopup editorPopup)
         {
             editorPopup.SetActive(true);
@@ -120,6 +184,11 @@ namespace BetterLegacy.Editor.Data
             return runtimeAnim;
         }
 
+        /// <summary>
+        /// Plays the close animation.
+        /// </summary>
+        /// <param name="editorPopup">Editor popup to play the animation on.</param>
+        /// <returns>Returns the generated <see cref="RTAnimation"/>.</returns>
         public RTAnimation PlayClose(EditorPopup editorPopup)
         {
             if (!CloseAnimation)
@@ -137,5 +206,7 @@ namespace BetterLegacy.Editor.Data
             AnimationManager.inst.Play(runtimeAnim);
             return runtimeAnim;
         }
+
+        #endregion
     }
 }

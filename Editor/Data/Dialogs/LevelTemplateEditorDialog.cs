@@ -121,46 +121,51 @@ namespace BetterLegacy.Editor.Data.Dialogs
             ChoosePreviewButton.Text = "Select a preview";
             ChoosePreviewButton.OnClick.NewListener(() =>
             {
-                RTEditor.inst.ShowWarningPopup("Select a file browser.", () =>
-                {
-                    string text = FileBrowser.OpenSingleFile("Select a preview image to use!", RTFile.ApplicationDirectory, FileFormat.PNG.ToName());
-                    if (!string.IsNullOrEmpty(text))
+                RTEditor.inst.ShowWarningPopup("Select a file browser.",
+                    onConfirm: () =>
                     {
-                        var sprite = SpriteHelper.LoadSprite(text);
-
-                        if (sprite.texture.width != 480 || sprite.texture.height != 270)
+                        string text = FileBrowser.OpenSingleFile("Select a preview image to use!", RTFile.ApplicationDirectory, FileFormat.PNG.ToName());
+                        if (!string.IsNullOrEmpty(text))
                         {
-                            EditorManager.inst.DisplayNotification("Preview image resolution must be 480p x 270p", 3f, EditorManager.NotificationType.Warning);
-                            RTEditor.inst.HideWarningPopup();
-                            return;
-                        }
+                            var sprite = SpriteHelper.LoadSprite(text);
 
-                        LevelTemplateEditor.inst.currentTemplateSprite = sprite;
-                        previewImage.sprite = LevelTemplateEditor.inst.currentTemplateSprite;
-                    }
-                    RTEditor.inst.HideWarningPopup();
-                }, () =>
-                {
-                    RTEditor.inst.BrowserPopup.Open();
-                    RTFileBrowser.inst.UpdateBrowserFile(new string[] { FileFormat.PNG.Dot() }, onSelectFile: _val =>
+                            if (sprite.texture.width != 480 || sprite.texture.height != 270)
+                            {
+                                EditorManager.inst.DisplayNotification("Preview image resolution must be 480p x 270p", 3f, EditorManager.NotificationType.Warning);
+                                RTEditor.inst.HideWarningPopup();
+                                return;
+                            }
+
+                            LevelTemplateEditor.inst.currentTemplateSprite = sprite;
+                            previewImage.sprite = LevelTemplateEditor.inst.currentTemplateSprite;
+                        }
+                        RTEditor.inst.HideWarningPopup();
+                    },
+                    onCancel: () =>
                     {
-                        if (string.IsNullOrEmpty(_val))
-                            return;
-
-                        RTEditor.inst.BrowserPopup.Close();
-                        var sprite = SpriteHelper.LoadSprite(_val);
-
-                        if (sprite.texture.width != 480 || sprite.texture.height != 270)
+                        RTFileBrowser.inst.Popup.Open();
+                        RTFileBrowser.inst.UpdateBrowserFile(new string[] { FileFormat.PNG.Dot() }, onSelectFile: _val =>
                         {
-                            EditorManager.inst.DisplayNotification("Preview image resolution must be 480p x 270p", 3f, EditorManager.NotificationType.Warning);
-                            return;
-                        }
+                            if (string.IsNullOrEmpty(_val))
+                                return;
 
-                        LevelTemplateEditor.inst.currentTemplateSprite = sprite;
-                        previewImage.sprite = LevelTemplateEditor.inst.currentTemplateSprite;
-                    });
-                    RTEditor.inst.HideWarningPopup();
-                }, "System Browser", "Editor Browser");
+                            RTFileBrowser.inst.Popup.Close();
+                            var sprite = SpriteHelper.LoadSprite(_val);
+
+                            if (sprite.texture.width != 480 || sprite.texture.height != 270)
+                            {
+                                EditorManager.inst.DisplayNotification("Preview image resolution must be 480p x 270p", 3f, EditorManager.NotificationType.Warning);
+                                return;
+                            }
+
+                            LevelTemplateEditor.inst.currentTemplateSprite = sprite;
+                            previewImage.sprite = LevelTemplateEditor.inst.currentTemplateSprite;
+                        });
+                        RTEditor.inst.HideWarningPopup();
+                    },
+                    confirm: RTFileBrowser.SYSTEM_BROWSER,
+                    cancel: RTFileBrowser.EDITOR_BROWSER,
+                    onClose: RTEditor.inst.HideWarningPopup);
             });
             EditorThemeManager.ApplySelectable(ChoosePreviewButton.button, ThemeGroup.Function_2);
             EditorThemeManager.ApplyGraphic(ChoosePreviewButton.label, ThemeGroup.Function_2_Text);

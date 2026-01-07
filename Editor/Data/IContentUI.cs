@@ -4,7 +4,7 @@ using UnityEngine.UI;
 namespace BetterLegacy.Editor.Data
 {
     /// <summary>
-    /// Represents an editor UI with content.
+    /// Indicates an editor UI with a content layout and search field.
     /// </summary>
     public interface IContentUI
     {

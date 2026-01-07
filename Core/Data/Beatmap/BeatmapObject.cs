@@ -13,6 +13,7 @@ using BetterLegacy.Configs;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data.Modifiers;
+using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Core.Runtime.Objects;
@@ -595,6 +596,11 @@ namespace BetterLegacy.Core.Data.Beatmap
         #region Constants
 
         /// <summary>
+        /// Default object cameo
+        /// </summary>
+        public const string DEFAULT_OBJECT_NAME = "\"Default object cameo\" -Viral Mecha";
+
+        /// <summary>
         /// Camera parent ID.
         /// </summary>
         public const string CAMERA_PARENT = "CAMERA_PARENT";
@@ -622,7 +628,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public override void CopyData(BeatmapObject orig, bool newID = true)
         {
@@ -2112,6 +2118,27 @@ namespace BetterLegacy.Core.Data.Beatmap
         }
 
         public void InterpolateAnimation(PAAnimation animation, float t) => this.InterpolateAnimationOffset(animation, t);
+
+        /// <summary>
+        /// Gets the color of the object.
+        /// </summary>
+        /// <param name="ignoreTransparency">If the objects' opacity should be ignored.</param>
+        /// <returns>Returns the color of the object.</returns>
+        public Color GetObjectColor(bool ignoreTransparency)
+        {
+            if (objectType == BeatmapObject.ObjectType.Empty || !runtimeObject || !runtimeObject.visualObject || !runtimeObject.visualObject.renderer)
+                return Color.white;
+
+            var color = AudioManager.inst.CurrentAudioSource.time < StartTime ? CoreHelper.CurrentBeatmapTheme.GetObjColor((int)events[3][0].values[0])
+                : AudioManager.inst.CurrentAudioSource.time > StartTime + GetObjectLifeLength() && autoKillType != AutoKillType.NoAutokill
+                ? CoreHelper.CurrentBeatmapTheme.GetObjColor((int)events[3][events[3].Count - 1].values[0])
+                : runtimeObject.visualObject.renderer.material.HasProperty("_Color") ? runtimeObject.visualObject.renderer.material.color : Color.white;
+
+            if (ignoreTransparency)
+                color.a = 1f;
+
+            return color;
+        }
 
         #endregion
 

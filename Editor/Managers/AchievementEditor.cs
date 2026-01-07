@@ -314,8 +314,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     achievement.id = PAObjectBase.GetNumberID();
                     RenderDialog(achievement);
-                    RTEditor.inst.HideWarningPopup();
-                }, RTEditor.inst.HideWarningPopup)));
+                })));
 
             Dialog.NameField.SetTextWithoutNotify(achievement.name);
             Dialog.NameField.onValueChanged.NewListener(_val =>
@@ -332,7 +331,7 @@ namespace BetterLegacy.Editor.Managers
             Dialog.SelectIconButton.OnClick.NewListener(() =>
             {
                 EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonElement($"Select Icon ({RTEditor.SYSTEM_BROWSER})", () =>
+                    new ButtonElement($"Select Icon ({RTFileBrowser.SYSTEM_BROWSER})", () =>
                     {
                         string imageFile = FileBrowser.OpenSingleFile("Select an image!", RTEditor.inst.BasePath, new string[] { "png" });
                         if (string.IsNullOrEmpty(imageFile))
@@ -341,15 +340,15 @@ namespace BetterLegacy.Editor.Managers
                         achievement.icon = SpriteHelper.LoadSprite(imageFile);
                         RenderDialog(achievement);
                     }),
-                    new ButtonElement($"Select Icon ({RTEditor.EDITOR_BROWSER})", () =>
+                    new ButtonElement($"Select Icon ({RTFileBrowser.EDITOR_BROWSER})", () =>
                     {
-                        RTEditor.inst.BrowserPopup.Open();
+                        RTFileBrowser.inst.Popup.Open();
                         RTFileBrowser.inst.UpdateBrowserFile(new string[] { FileFormat.PNG.Dot(), FileFormat.JPG.Dot() }, imageFile =>
                         {
                             if (string.IsNullOrEmpty(imageFile))
                                 return;
 
-                            RTEditor.inst.BrowserPopup.Close();
+                            RTFileBrowser.inst.Popup.Close();
                             achievement.icon = SpriteHelper.LoadSprite(imageFile);
                             RenderDialog(achievement);
                         });
@@ -359,7 +358,7 @@ namespace BetterLegacy.Editor.Managers
             Dialog.SelectLockedIconButton.OnClick.NewListener(() =>
             {
                 EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonElement($"Select Icon ({RTEditor.SYSTEM_BROWSER})", () =>
+                    new ButtonElement($"Select Icon ({RTFileBrowser.SYSTEM_BROWSER})", () =>
                     {
                         string imageFile = FileBrowser.OpenSingleFile("Select an image!", RTEditor.inst.BasePath, new string[] { "png" });
                         if (string.IsNullOrEmpty(imageFile))
@@ -368,15 +367,15 @@ namespace BetterLegacy.Editor.Managers
                         achievement.lockedIcon = SpriteHelper.LoadSprite(imageFile);
                         RenderDialog(achievement);
                     }),
-                    new ButtonElement($"Select Icon ({RTEditor.EDITOR_BROWSER})", () =>
+                    new ButtonElement($"Select Icon ({RTFileBrowser.EDITOR_BROWSER})", () =>
                     {
-                        RTEditor.inst.BrowserPopup.Open();
+                        RTFileBrowser.inst.Popup.Open();
                         RTFileBrowser.inst.UpdateBrowserFile(new string[] { FileFormat.PNG.Dot(), FileFormat.JPG.Dot() }, imageFile =>
                         {
                             if (string.IsNullOrEmpty(imageFile))
                                 return;
 
-                            RTEditor.inst.BrowserPopup.Close();
+                            RTFileBrowser.inst.Popup.Close();
                             achievement.lockedIcon = SpriteHelper.LoadSprite(imageFile);
                             RenderDialog(achievement);
                         });

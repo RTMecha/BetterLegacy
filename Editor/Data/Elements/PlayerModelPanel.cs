@@ -78,7 +78,7 @@ namespace BetterLegacy.Editor.Data.Elements
             if (gameObject)
                 CoreHelper.Destroy(gameObject);
 
-            gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(EditorLevelManager.inst.LevelCollectionPopup.Content, $"Folder [{Name}]");
+            gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(PlayerEditor.inst.ModelsPopup.Content, $"Folder [{Name}]");
             baseRect.AssignToRectTransform(gameObject.transform.AsRT());
             GameObject = gameObject;
             var folderButtonFunction = gameObject.AddComponent<FolderButtonFunction>();
@@ -180,11 +180,11 @@ namespace BetterLegacy.Editor.Data.Elements
                     EditorContextMenu.inst.ShowContextMenu(
                         new ButtonElement("Open & Use", () =>
                         {
-                            PlayersData.Current.SetPlayerModel(PlayerEditor.inst.playerModelIndex, Item.basePart.id);
+                            PlayersData.Current.SetPlayerModel(PlayerEditor.inst.playerIndex, Item.basePart.id);
                             PlayerManager.RespawnPlayers();
-                            CoroutineHelper.StartCoroutine(PlayerEditor.inst.RefreshEditor());
+                            PlayerEditor.inst.RenderDialog();
                         }),
-                        new ButtonElement("Set to Global", () => PlayerManager.PlayerIndexes[PlayerEditor.inst.playerModelIndex].Value = Item.basePart.id),
+                        new ButtonElement("Set to Global", () => PlayerManager.PlayerIndexes[PlayerEditor.inst.playerIndex].Value = Item.basePart.id),
                         new ButtonElement("Create New", PlayerEditor.inst.CreateNewModel),
                         new ButtonElement("Save", PlayerEditor.inst.Save),
                         new ButtonElement("Reload", PlayerEditor.inst.Reload),
@@ -194,7 +194,7 @@ namespace BetterLegacy.Editor.Data.Elements
                             var dup = PlayersData.Current.DuplicatePlayerModel(Item.basePart.id);
                             PlayersData.externalPlayerModels[dup.basePart.id] = dup;
                             if (dup)
-                                PlayersData.Current.SetPlayerModel(PlayerEditor.inst.playerModelIndex, dup.basePart.id);
+                                PlayersData.Current.SetPlayerModel(PlayerEditor.inst.playerIndex, dup.basePart.id);
                         }),
                         new ButtonElement("Delete", () =>
                         {
@@ -206,15 +206,13 @@ namespace BetterLegacy.Editor.Data.Elements
 
                             RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this Player Model?", () =>
                             {
-                                PlayersData.Current.SetPlayerModel(PlayerEditor.inst.playerModelIndex, PlayerModel.DEFAULT_ID);
+                                PlayersData.Current.SetPlayerModel(PlayerEditor.inst.playerIndex, PlayerModel.DEFAULT_ID);
                                 PlayersData.externalPlayerModels.Remove(Item.basePart.id);
                                 PlayersData.Current.playerModels.Remove(Item.basePart.id);
                                 PlayerManager.RespawnPlayers();
-                                CoroutineHelper.StartCoroutine(PlayerEditor.inst.RefreshEditor());
-                                CoroutineHelper.StartCoroutine(PlayerEditor.inst.RefreshModels(PlayerEditor.inst.onSelectModel));
-
-                                RTEditor.inst.HideWarningPopup();
-                            }, RTEditor.inst.HideWarningPopup);
+                                PlayerEditor.inst.RenderDialog();
+                                PlayerEditor.inst.RenderModelsPopup(PlayerEditor.inst.onSelectModel);
+                            });
                         }));
                     return;
                 }
@@ -235,18 +233,15 @@ namespace BetterLegacy.Editor.Data.Elements
         public void UpdateDeleteFunction()
         {
             if (DeleteButton)
-                DeleteButton.OnClick.NewListener(() =>
+                DeleteButton.OnClick.NewListener(() => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this Player Model?", () =>
                 {
-                    RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this Player Model?", () =>
-                    {
-                        PlayersData.Current.SetPlayerModel(PlayerEditor.inst.playerModelIndex, PlayerModel.DEFAULT_ID);
-                        PlayersData.externalPlayerModels.Remove(Item.basePart.id);
-                        PlayersData.Current.playerModels.Remove(Item.basePart.id);
-                        PlayerManager.RespawnPlayers();
-                        CoroutineHelper.StartCoroutine(PlayerEditor.inst.RefreshEditor());
-                        CoroutineHelper.StartCoroutine(PlayerEditor.inst.RefreshModels(PlayerEditor.inst.onSelectModel));
-                    });
-                });
+                    PlayersData.Current.SetPlayerModel(PlayerEditor.inst.playerIndex, PlayerModel.DEFAULT_ID);
+                    PlayersData.externalPlayerModels.Remove(Item.basePart.id);
+                    PlayersData.Current.playerModels.Remove(Item.basePart.id);
+                    PlayerManager.RespawnPlayers();
+                    PlayerEditor.inst.RenderDialog();
+                    PlayerEditor.inst.RenderModelsPopup(PlayerEditor.inst.onSelectModel);
+                }));
         }
     }
 }

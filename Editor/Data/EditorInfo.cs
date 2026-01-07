@@ -414,7 +414,7 @@ namespace BetterLegacy.Editor.Data
 
             if (!string.IsNullOrEmpty(prefabPath) && RTEditor.inst.PrefabPath != prefabPath)
             {
-                RTEditor.inst.PrefabPopups.External.PathField.text = prefabPath;
+                RTPrefabEditor.inst.Popups.External.PathField.text = prefabPath;
                 RTEditor.inst.UpdatePrefabPath(false);
             }
 

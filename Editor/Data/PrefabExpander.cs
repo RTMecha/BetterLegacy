@@ -20,6 +20,8 @@ namespace BetterLegacy.Editor.Data
     /// </summary>
     public struct PrefabExpander
     {
+        #region Constructors
+
         public PrefabExpander(PrefabObject prefabObject, Prefab prefab, bool select, float offset, bool offsetToCurrentTime, bool regen, bool retainID, bool addBin)
         {
             this.prefabObject = prefabObject;
@@ -38,51 +40,123 @@ namespace BetterLegacy.Editor.Data
 
         public PrefabExpander(Prefab prefab) : this(null, prefab) { }
 
+        #endregion
+
+        #region Values
+
+        /// <summary>
+        /// Prefab object reference.
+        /// </summary>
+        public PrefabObject prefabObject;
+
+        /// <summary>
+        /// Prefab reference.
+        /// </summary>
+        public Prefab prefab;
+
+        /// <summary>
+        /// If the expanded objects should be selected.
+        /// </summary>
+        public bool select;
+
+        /// <summary>
+        /// Time offset to add to each object.
+        /// </summary>
+        public float offset;
+
+        /// <summary>
+        /// If the time of each object should be offset from the current song time.
+        /// </summary>
+        public bool offsetToCurrentTime;
+
+        /// <summary>
+        /// If the prefab instance ID should be regenerated.
+        /// </summary>
+        public bool regen;
+
+        /// <summary>
+        /// If the ID of each object should be kept.
+        /// </summary>
+        public bool retainID;
+
+        /// <summary>
+        /// If the object bin should be added to.
+        /// </summary>
+        public bool addBin;
+
+        #endregion
+
+        #region Functions
+
+        #region Options
+
+        /// <summary>
+        /// If the expanded objects should be selected.
+        /// </summary>
+        /// <param name="select">Selection state.</param>
+        /// <returns>Returns the current <see cref="PrefabExpander"/>.</returns>
         public PrefabExpander Select(bool select = true)
         {
             this.select = select;
             return this;
         }
-        
+
+        /// <summary>
+        /// Time offset to add to each object.
+        /// </summary>
+        /// <param name="offset">Offset to set.</param>
+        /// <returns>Returns the current <see cref="PrefabExpander"/>.</returns>
         public PrefabExpander Offset(float offset = 0f)
         {
             this.offset = offset;
             return this;
         }
 
+        /// <summary>
+        /// If the time of each object should be offset from the current song time.
+        /// </summary>
+        /// <param name="offsetToCurrentTime">Offset state.</param>
+        /// <returns>Returns the current <see cref="PrefabExpander"/>.</returns>
         public PrefabExpander OffsetToCurrentTime(bool offsetToCurrentTime = true)
         {
             this.offsetToCurrentTime = offsetToCurrentTime;
             return this;
         }
 
+        /// <summary>
+        /// If the prefab instance ID should be regenerated.
+        /// </summary>
+        /// <param name="regen">Regenerate prefab instance ID state.</param>
+        /// <returns>Returns the current <see cref="PrefabExpander"/>.</returns>
         public PrefabExpander Regen(bool regen = true)
         {
             this.regen = regen;
             return this;
         }
-        
+
+        /// <summary>
+        /// If the ID of each object should be kept.
+        /// </summary>
+        /// <param name="retainID">Retain ID state.</param>
+        /// <returns>Returns the current <see cref="PrefabExpander"/>.</returns>
         public PrefabExpander RetainID(bool retainID = true)
         {
             this.retainID = retainID;
             return this;
         }
-        
+
+        /// <summary>
+        /// If the object bin should be added to.
+        /// </summary>
+        /// <param name="addBin">Add bin state.</param>
+        /// <returns>Returns the current <see cref="PrefabExpander"/>.</returns>
         public PrefabExpander AddBin(bool addBin = true)
         {
             this.addBin = addBin;
             return this;
         }
 
-        public PrefabObject prefabObject;
-        public Prefab prefab;
-
-        public bool select;
-        public float offset;
-        public bool offsetToCurrentTime;
-        public bool regen;
-        public bool retainID;
-        public bool addBin;
+        #endregion
 
         /// <summary>
         /// Expands the current <see cref="prefab"/>.
@@ -367,6 +441,11 @@ namespace BetterLegacy.Editor.Data
             yield break;
         }
 
+        #endregion
+
+        /// <summary>
+        /// Result of the <see cref="PrefabExpander"/>.
+        /// </summary>
         public class Expanded : Exists, IBeatmap
         {
             public Assets GetAssets() => null;

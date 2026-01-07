@@ -2,6 +2,9 @@
 
 namespace BetterLegacy.Editor.Data
 {
+    /// <summary>
+    /// Represents settings used for creating new levels.
+    /// </summary>
     public struct NewLevelSettings
     {
         public NewLevelSettings(string audioPath = null, string levelName = EditorLevelManager.DEFAULT_LEVEL_NAME, string songArtist = EditorLevelManager.DEFAULT_ARTIST, string songTitle = EditorLevelManager.DEFAULT_SONG_TITLE, int difficulty = EditorLevelManager.DEFAULT_DIFFICULTY)
@@ -12,6 +15,8 @@ namespace BetterLegacy.Editor.Data
             this.songTitle = songTitle;
             this.difficulty = difficulty;
         }
+
+        #region Values
 
         /// <summary>
         /// Path to the song to use for the level.
@@ -37,5 +42,7 @@ namespace BetterLegacy.Editor.Data
         /// Difficulty the level is planned to be.
         /// </summary>
         public int difficulty;
+
+        #endregion
     }
 }

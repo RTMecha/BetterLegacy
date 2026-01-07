@@ -102,8 +102,17 @@ namespace BetterLegacy.Editor.Data
         /// </summary>
         public enum LockDragMode
         {
+            /// <summary>
+            /// No lock.
+            /// </summary>
             None,
+            /// <summary>
+            /// Locks position X.
+            /// </summary>
             PositionX,
+            /// <summary>
+            /// Locks position Y.
+            /// </summary>
             PositionY,
         }
 

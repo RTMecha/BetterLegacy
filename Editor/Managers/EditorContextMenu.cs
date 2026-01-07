@@ -574,7 +574,7 @@ namespace BetterLegacy.Editor.Managers
 
         public static List<EditorElement> GetModifierSoundPathFunctions(Func<bool> getGlobal, Action<string> setPath) => new List<EditorElement>
         {
-            new ButtonElement($"Use {RTEditor.SYSTEM_BROWSER}", () =>
+            new ButtonElement($"Use {RTFileBrowser.SYSTEM_BROWSER}", () =>
             {
                 var isGlobal = getGlobal?.Invoke() ?? false;
                 var directory = isGlobal && RTFile.DirectoryExists(RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH) ?
@@ -594,15 +594,15 @@ namespace BetterLegacy.Editor.Managers
                 if (result.Contains(isGlobal ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath))))
                 {
                     setPath?.Invoke(result.Remove(isGlobal ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath))));
-                    RTEditor.inst.BrowserPopup.Close();
+                    RTFileBrowser.inst.Popup.Close();
                     return;
                 }
 
                 EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
             }),
-            new ButtonElement($"Use {RTEditor.EDITOR_BROWSER}", () =>
+            new ButtonElement($"Use {RTFileBrowser.EDITOR_BROWSER}", () =>
             {
-                RTEditor.inst.BrowserPopup.Open();
+                RTFileBrowser.inst.Popup.Open();
 
                 var isGlobal = getGlobal?.Invoke() ?? false;
                 var directory = isGlobal && RTFile.DirectoryExists(RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH) ?
@@ -620,7 +620,7 @@ namespace BetterLegacy.Editor.Managers
                     if (_val.Contains(isGlobal ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath))))
                     {
                         setPath?.Invoke(_val.Remove(isGlobal ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath))));
-                        RTEditor.inst.BrowserPopup.Close();
+                        RTFileBrowser.inst.Popup.Close();
                         return;
                     }
 
@@ -642,10 +642,9 @@ namespace BetterLegacy.Editor.Managers
                 RTFile.DeleteDirectory(editorPanel.Path);
                 onFolderUpdate?.Invoke();
                 EditorManager.inst.DisplayNotification("Deleted folder!", 2f, EditorManager.NotificationType.Success);
-                RTEditor.inst.HideWarningPopup();
-            }, RTEditor.inst.HideWarningPopup)),
+            })),
             new SpacerElement(),
-            new ButtonElement($"Select Icon ({RTEditor.SYSTEM_BROWSER})", () =>
+            new ButtonElement($"Select Icon ({RTFileBrowser.SYSTEM_BROWSER})", () =>
             {
                 string imageFile = FileBrowser.OpenSingleFile("Select an image!", RTEditor.inst.BasePath, new string[] { "png" });
                 if (string.IsNullOrEmpty(imageFile))
@@ -654,15 +653,15 @@ namespace BetterLegacy.Editor.Managers
                 RTFile.CopyFile(imageFile, RTFile.CombinePaths(editorPanel.Path, $"folder_icon{FileFormat.PNG.Dot()}"));
                 onSetIcon?.Invoke();
             }),
-            new ButtonElement($"Select Icon ({RTEditor.EDITOR_BROWSER})", () =>
+            new ButtonElement($"Select Icon ({RTFileBrowser.EDITOR_BROWSER})", () =>
             {
-                RTEditor.inst.BrowserPopup.Open();
+                RTFileBrowser.inst.Popup.Open();
                 RTFileBrowser.inst.UpdateBrowserFile(new string[] { FileFormat.PNG.Dot() }, imageFile =>
                 {
                     if (string.IsNullOrEmpty(imageFile))
                         return;
 
-                    RTEditor.inst.BrowserPopup.Close();
+                    RTFileBrowser.inst.Popup.Close();
 
                     RTFile.CopyFile(imageFile, RTFile.CombinePaths(editorPanel.Path, $"folder_icon{FileFormat.PNG.Dot()}"));
                     onSetIcon?.Invoke();
@@ -670,11 +669,10 @@ namespace BetterLegacy.Editor.Managers
             }),
             new ButtonElement("Clear Icon", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to clear the folder icon? This will delete the icon file.", () =>
             {
-                RTEditor.inst.HideWarningPopup();
                 RTFile.DeleteFile(RTFile.CombinePaths(editorPanel.Path, $"folder_icon{FileFormat.PNG.Dot()}"));
                 onSetIcon?.Invoke();
                 EditorManager.inst.DisplayNotification("Deleted icon!", 1.5f, EditorManager.NotificationType.Success);
-            }, RTEditor.inst.HideWarningPopup)),
+            })),
             new SpacerElement(),
             new ButtonElement("Create Info File", () =>
             {
@@ -725,9 +723,8 @@ namespace BetterLegacy.Editor.Managers
                 RTFile.DeleteFile(RTFile.CombinePaths(editorPanel.Path, $"folder_info{FileFormat.JSON.Dot()}"));
                 editorPanel.infoJN = null;
                 editorPanel.RenderTooltip();
-                RTEditor.inst.HideWarningPopup();
                 EditorManager.inst.DisplayNotification("Deleted info file!", 1.5f, EditorManager.NotificationType.Success);
-            }, RTEditor.inst.HideWarningPopup))
+            }))
         };
 
         public static List<EditorElement> GetObjectTimeFunctions(Func<float> getObjectTime, Action<float> setTime) => new List<EditorElement>

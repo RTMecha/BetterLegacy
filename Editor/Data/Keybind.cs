@@ -12,8 +12,13 @@ using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data
 {
+    /// <summary>
+    /// Represents a keybind in the editor that does a specific action.
+    /// </summary>
     public class Keybind : PAObject<Keybind>
     {
+        #region Constructors
+
         public Keybind() => id = GetNumberID();
 
         public Keybind(string name, params Key[] keys) : this()
@@ -24,34 +29,16 @@ namespace BetterLegacy.Editor.Data
 
         public Keybind(string name, List<Setting> settings, params Key[] keys) : this(name, keys) => this.settings = settings;
 
+        #endregion
+
         #region Values
-
-        public List<Setting> settings = new List<Setting>();
-        public KeyCode KeyCode { get; set; }
-        public KeyCode KeyCodeDown { get; set; }
-
-        public int ActionType
-        {
-            get => KeybindEditor.inst && KeybindEditor.inst.keybindFunctions.TryFindIndex(x => x.name == Name, out int index) ? index : -1;
-            set
-            {
-                if (!KeybindEditor.inst || !KeybindEditor.inst.keybindFunctions.TryGetAt(value, out KeybindFunction keybindFunction))
-                {
-                    Name = string.Empty;
-                    action = null;
-                    settings = new List<Setting>();
-                    return;
-                }
-
-                Name = keybindFunction.name;
-                action = keybindFunction.action;
-                settings = new List<Setting>(keybindFunction.settings.Select(x => x.Copy()));
-            }
-        }
 
         Action<Keybind> action;
 
         string name = string.Empty;
+        /// <summary>
+        /// Function of the keybind.
+        /// </summary>
         public string Name
         {
             get => name;
@@ -77,6 +64,11 @@ namespace BetterLegacy.Editor.Data
         /// List of keys to check.
         /// </summary>
         public List<Key> keys = new List<Key>();
+
+        /// <summary>
+        /// List of settings for the keybind function.
+        /// </summary>
+        public List<Setting> settings = new List<Setting>();
 
         #endregion
 
@@ -193,6 +185,11 @@ namespace BetterLegacy.Editor.Data
 
         #endregion
 
+        #region Sub Classes
+
+        /// <summary>
+        /// Represents a key for the keybind.
+        /// </summary>
         public class Key : PAObject<Key>
         {
             public Key() { }
@@ -203,16 +200,44 @@ namespace BetterLegacy.Editor.Data
                 KeyCode = keyCode;
             }
 
+            #region Values
+
+            /// <summary>
+            /// Key handle type.
+            /// </summary>
             public enum Type
             {
+                /// <summary>
+                /// Key should only be pressed once.
+                /// </summary>
                 Down,
+                /// <summary>
+                /// Key should be held down.
+                /// </summary>
                 Pressed,
+                /// <summary>
+                /// Key should be released.
+                /// </summary>
                 Up,
+                /// <summary>
+                /// Key should not be touched.
+                /// </summary>
                 NotPressed
             }
 
+            /// <summary>
+            /// Key handle type.
+            /// </summary>
             public Type InteractType { get; set; }
+
+            /// <summary>
+            /// The key code.
+            /// </summary>
             public KeyCode KeyCode { get; set; }
+
+            #endregion
+
+            #region Functions
 
             public override void CopyData(Key orig, bool newID = true)
             {
@@ -236,6 +261,10 @@ namespace BetterLegacy.Editor.Data
                 return jn;
             }
 
+            /// <summary>
+            /// Checks if the <see cref="KeyCode"/> is active.
+            /// </summary>
+            /// <returns>Returns true if the <see cref="KeyCode"/> is active, otherwise returns false.</returns>
             public bool Check() => InteractType switch
             {
                 Type.Down => Input.GetKeyDown(KeyCode),
@@ -244,31 +273,60 @@ namespace BetterLegacy.Editor.Data
                 Type.NotPressed => !Input.GetKey(KeyCode),
                 _ => false,
             };
+
+            #endregion
         }
 
+        /// <summary>
+        /// Represents a setting for the keybind.
+        /// </summary>
         public class Setting : PAObject<Setting>
         {
             public Setting() { }
 
-            public Setting(string key, string value)
+            public Setting(string key, string value, ValueType valueType)
             {
                 this.key = key;
                 this.value = value;
+                this.valueType = valueType;
             }
 
+            #region Values
+
+            /// <summary>
+            /// Key of the setting.
+            /// </summary>
             public string key = string.Empty;
+
+            /// <summary>
+            /// Value of the setting.
+            /// </summary>
             public string value = string.Empty;
+
+            /// <summary>
+            /// Type of the settings' value.
+            /// </summary>
+            public ValueType valueType;
+
+            #endregion
+
+            #region Functions
 
             public override void CopyData(Setting orig, bool newID = true)
             {
                 key = orig.key;
                 value = orig.value;
+                valueType = orig.valueType;
             }
 
             public override void ReadJSON(JSONNode jn)
             {
                 key = jn["type"];
                 value = jn["value"] ?? string.Empty;
+                if (jn["value_type"] != null)
+                    valueType = (ValueType)jn["value_type"].AsInt;
+                else
+                    valueType = GetValueType(key);
             }
 
             public override JSONNode ToJSON()
@@ -277,9 +335,38 @@ namespace BetterLegacy.Editor.Data
 
                 jn["type"] = key;
                 jn["value"] = value ?? string.Empty;
+                if (valueType != ValueType.Unrecognized)
+                    jn["value_type"] = (int)valueType;
 
                 return jn;
             }
+
+            static ValueType GetValueType(string key) => key.ToLower() switch
+            {
+                "cancel" => ValueType.Bool,
+                "external" => ValueType.Bool,
+                "useid" => ValueType.Bool,
+                "remove prefab instance id" => ValueType.Bool,
+                "create keyframe" => ValueType.Bool,
+                "use nearest" => ValueType.Bool,
+                "use previous" => ValueType.Bool,
+                "dialog" => ValueType.String,
+                "profile id" => ValueType.String,
+                "id" => ValueType.String,
+                "type" => ValueType.Int,
+                "index" => ValueType.Int,
+                "value" => ValueType.Int,
+                "value index" => ValueType.Int,
+                "layer" => ValueType.Int,
+                "amount" => ValueType.Int,
+                "count" => ValueType.Int,
+                "search prefab using" => ValueType.Enum,
+                _ => ValueType.Unrecognized,
+            };
+
+            #endregion
         }
+
+        #endregion
     }
 }

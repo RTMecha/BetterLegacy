@@ -27,15 +27,21 @@ namespace BetterLegacy.Editor.Managers
 
         public override SettingEditor BaseInstance { get => SettingEditor.inst; set => SettingEditor.inst = value; }
 
+        /// <summary>
+        /// Dialog of the editor.
+        /// </summary>
         public SettingEditorDialog Dialog { get; set; }
 
+        /// <summary>
+        /// BPM multi calculation.
+        /// </summary>
         public float BPMMulti => 60f / (RTEditor.inst.editorInfo?.bpm ?? 140f);
 
         GameObject colorPrefab;
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public override void OnInit()
         {
@@ -186,12 +192,18 @@ namespace BetterLegacy.Editor.Managers
             input.onEndEdit.NewListener(_val => RenderDialog());
         }
 
+        /// <summary>
+        /// Opens the dialog.
+        /// </summary>
         public void OpenDialog()
         {
             Dialog.Open();
             RenderDialog();
         }
 
+        /// <summary>
+        /// Renders the dialog.
+        /// </summary>
         public void RenderDialog()
         {
             EditorManager.inst.CancelInvoke(nameof(EditorManager.LoadingIconUpdate));
@@ -269,6 +281,9 @@ namespace BetterLegacy.Editor.Managers
             levelPanel.RenderProgress();
         }
 
+        /// <summary>
+        /// Renders the marker colors list.
+        /// </summary>
         public void RenderMarkerColors()
         {
             LSHelpers.DeleteChildren(Dialog.MarkerColorsContent);
@@ -319,6 +334,9 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
+        /// <summary>
+        /// Renders the layer colors list.
+        /// </summary>
         public void RenderLayerColors()
         {
             LSHelpers.DeleteChildren(Dialog.LayerColorsContent);

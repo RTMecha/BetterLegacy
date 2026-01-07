@@ -15,6 +15,9 @@ using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data
 {
+    /// <summary>
+    /// Represents an object that can be created.
+    /// </summary>
     public class ObjectOption : PAObject<ObjectOption>
     {
         public ObjectOption() { }
@@ -26,11 +29,34 @@ namespace BetterLegacy.Editor.Data
             this.action = action;
         }
 
+        /// <summary>
+        /// Name of the option.
+        /// </summary>
         public string name;
+
+        /// <summary>
+        /// Hint description of what the option creates.
+        /// </summary>
         public string hint;
+
+        /// <summary>
+        /// Function to run when the object is created.
+        /// </summary>
         public Action<TimelineObject> action;
+
+        /// <summary>
+        /// Object to parse.
+        /// </summary>
         public JSONNode obj;
+
+        /// <summary>
+        /// Icon to display.
+        /// </summary>
         public Sprite icon;
+
+        /// <summary>
+        /// Icon reference.
+        /// </summary>
         public string iconReference;
 
         public override void CopyData(ObjectOption orig, bool newID = true)
@@ -113,6 +139,18 @@ namespace BetterLegacy.Editor.Data
         {
             if (!string.IsNullOrEmpty(iconReference))
             {
+                if (AssetPack.TryGetFile(iconReference, out string filePath))
+                {
+                    try
+                    {
+                        return SpriteHelper.LoadSprite(filePath);
+                    }
+                    catch
+                    {
+
+                    }
+                }
+
                 var split = iconReference.Split('/');
                 switch (split[0])
                 {

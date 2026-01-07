@@ -388,7 +388,6 @@ namespace BetterLegacy.Editor.Data.Elements
                                                     RTPrefabEditor.inst.UpdatePrefabFile(prefabPanel);
                                                 EditorManager.inst.DisplayNotification($"Updated theme {Item} in the prefab.", 2f, EditorManager.NotificationType.Success);
                                             },
-                                            onCancel: RTEditor.inst.HideWarningPopup,
                                             confirm: "Overwrite",
                                             cancel: "Cancel");
                                     }

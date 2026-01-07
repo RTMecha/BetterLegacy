@@ -1564,6 +1564,9 @@ namespace BetterLegacy.Editor.Data
         #endregion
     }
 
+    /// <summary>
+    /// Represents a color toggle group in the editor.
+    /// </summary>
     public class ColorGroupElement : EditorElement
     {
         #region Constructors

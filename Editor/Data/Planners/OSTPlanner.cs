@@ -171,8 +171,7 @@ namespace BetterLegacy.Editor.Data.Planners
                     ProjectPlanner.inst.StopOST();
 
                 CoreHelper.Destroy(gameObject);
-                RTEditor.inst.HideWarningPopup();
-            }, RTEditor.inst.HideWarningPopup));
+            }));
 
             EditorThemeManager.ApplyDeleteButton(delete);
 

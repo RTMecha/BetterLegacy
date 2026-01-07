@@ -42,7 +42,7 @@ namespace BetterLegacy.Editor.Managers
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public override void OnInit()
         {

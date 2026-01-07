@@ -33,6 +33,195 @@ namespace BetterLegacy.Editor.Managers
     /// </summary>
     public class ProjectPlanner : BaseManager<ProjectPlanner, EditorManagerSettings>
     {
+        #region Values
+
+        public Transform plannerBase;
+        public Transform planner;
+        public Transform topBarBase;
+        public Transform contentBase;
+        public Transform contentScroll;
+        public Transform content;
+        public Transform notesParent;
+        public GridLayoutGroup contentLayout;
+
+        public RectTransform notificationsParent;
+
+        public Transform contextMenuParent;
+        public Transform popupsParent;
+
+        public Transform assetsParent;
+
+        public GameObject documentFullView;
+        public TMP_InputField documentInputField;
+        public OpenHyperlinks documentHyperlinks;
+        public TextMeshProUGUI documentTitle;
+        public Toggle documentInteractibleToggle;
+
+        public GameObject characterFullView;
+        public Image characterSprite;
+        public TextMeshProUGUI characterDetails;
+        public OpenHyperlinks characterDetailsHyperlinks;
+        public OpenHyperlinks characterDescriptionHyperlinks;
+        public TMP_InputField characterDescriptionInputField;
+        public Transform characterAttributesContent;
+
+        public AudioSource OSTAudioSource { get; set; }
+        public int currentOST;
+        public string currentOSTID;
+        public bool playing = false;
+        public List<OSTPlanner> recentOST = new List<OSTPlanner>();
+        public bool forceShuffleOST;
+        public bool pausedOST;
+
+        public List<Toggle> tabs = new List<Toggle>();
+
+        public PlannerBase.Type CurrentTab { get; set; }
+        public string SearchTerm { get; set; }
+
+        public string[] tabNames = new string[]
+        {
+            "Documents",
+            "TO DO",
+            "Characters",
+            "Timelines",
+            "Schedules",
+            "Notes",
+            "OST",
+        };
+
+        public Vector2[] tabCellSizes = new Vector2[]
+        {
+            new Vector2(232f, 400f),
+            new Vector2(1280f, 64f),
+            new Vector2(630f, 400f),
+            new Vector2(1280f, 250f),
+            new Vector2(1280f, 64f),
+            new Vector2(410f, 200f),
+            new Vector2(1280f, 64f),
+        };
+
+        public int[] tabConstraintCounts = new int[]
+        {
+            5,
+            1,
+            2,
+            1,
+            1,
+            3,
+            1,
+        };
+
+        public GameObject tagPrefab;
+
+        public GameObject tabPrefab;
+
+        public GameObject baseCardPrefab;
+
+        public GameObject tmpTextPrefab;
+
+        public List<GameObject> prefabs = new List<GameObject>();
+
+        public Sprite gradientSprite;
+
+        public List<DocumentPlanner> documents = new List<DocumentPlanner>();
+        public List<TODOPlanner> todos = new List<TODOPlanner>();
+        public List<CharacterPlanner> characters = new List<CharacterPlanner>();
+        public List<TimelinePlanner> timelines = new List<TimelinePlanner>();
+        public List<SchedulePlanner> schedules = new List<SchedulePlanner>();
+        public List<NotePlanner> notes = new List<NotePlanner>();
+        public List<OSTPlanner> osts = new List<OSTPlanner>();
+
+        public List<PlannerBase> copiedPlanners = new List<PlannerBase>();
+
+        public GameObject timelineButtonPrefab;
+
+        public GameObject timelineAddPrefab;
+
+        public Texture2D horizontalDrag;
+        public Texture2D verticalDrag;
+
+        public enum InterruptOSTBehaviorType
+        {
+            Continue,
+            LowerVolume,
+            Pause,
+        }
+
+        public enum LoopOSTBehaviorType
+        {
+            None,
+            LoopSingle,
+            LoopAll,
+        }
+
+        #region Editor
+
+        public GameObject textEditorPrefab;
+
+        public Image editorTitlePanel;
+
+        public InputField documentEditorName;
+        public InputField documentEditorText;
+
+        public InputField todoEditorText;
+        public Button todoEditorMoveUpButton;
+        public Button todoEditorMoveDownButton;
+
+        public InputField characterEditorName;
+        public InputField characterEditorGender;
+        public InputField characterEditorOrigin;
+        public InputField characterEditorDescription;
+        public Transform characterEditorTraitsContent;
+        public Transform characterEditorLoreContent;
+        public Transform characterEditorAbilitiesContent;
+
+        public InputField timelineEditorName;
+        public InputField eventEditorName;
+        public InputField eventEditorDescription;
+        public InputField eventEditorPath;
+        public Dropdown eventEditorType;
+
+        public InputField scheduleEditorDescription;
+        public InputField scheduleEditorYear;
+        public Dropdown scheduleEditorMonth;
+        public InputField scheduleEditorDay;
+        public InputField scheduleEditorHour;
+        public InputField scheduleEditorMinute;
+
+        public InputField noteEditorName;
+        public InputField noteEditorText;
+        public Transform noteEditorColorsParent;
+        public Transform colorBase;
+        public List<Toggle> noteEditorColors = new List<Toggle>();
+        public Button noteEditorReset;
+
+        public InputField ostEditorPath;
+        public InputField ostEditorName;
+        public Button ostEditorPlay;
+        public Button ostEditorUseGlobal;
+        public Text ostEditorUseGlobalText;
+        public Button ostEditorStop;
+        public Button ostEditorShuffle;
+        public InputField ostEditorIndex;
+
+        public List<GameObject> editors = new List<GameObject>();
+
+        List<PlannerBase> activeTabPlannerItems = new List<PlannerBase>();
+
+        DocumentPlanner currentDocumentPlanner;
+        TODOPlanner currentTODOPlanner;
+        CharacterPlanner currentCharacterPlanner;
+        TimelinePlanner currentTimelinePlanner;
+        SchedulePlanner currentSchedulePlanner;
+        NotePlanner currentNotePlanner;
+        OSTPlanner currentOSTPlanner;
+
+        #endregion
+
+        #endregion
+
+        #region Functions
+        
         #region Init
 
         public override void OnInit()
@@ -59,9 +248,28 @@ namespace BetterLegacy.Editor.Managers
             tabPrefab.GetComponent<Toggle>().group = null;
 
             for (int i = 0; i < tabNames.Length; i++)
-                GenerateTab(tabNames[i]);
+            {
+                var name = tabNames[i];
+                var tab = tabPrefab.Duplicate(topBarBase, name);
+                tab.transform.localScale = Vector3.one;
 
-            Spacer("topbar spacer", topBarBase, new Vector2(195f, 32f));
+                var background = tab.transform.Find("Background");
+                var text = background.Find("Text").GetComponent<Text>();
+                var image = background.GetComponent<Image>();
+
+                text.fontSize = 26;
+                text.fontStyle = FontStyle.Bold;
+                text.text = name;
+                tab.AddComponent<ContrastColors>().Init(text, image);
+                var toggle = tab.GetComponent<Toggle>();
+                tabs.Add(tab.GetComponent<Toggle>());
+
+                EditorThemeManager.ApplyGraphic(image, EditorThemeManager.GetTabThemeGroup(tabs.Count - 1), true);
+                EditorThemeManager.ApplyGraphic(toggle.graphic, ThemeGroup.Background_1);
+            }
+
+            var spacer = Creator.NewUIObject("topbar spacer", topBarBase);
+            spacer.transform.AsRT().sizeDelta = new Vector2(195f, 32f);
 
             var close = EditorPrefabHolder.Instance.CloseButton.Duplicate(topBarBase, "close");
             close.transform.localScale = Vector3.one;
@@ -261,7 +469,7 @@ namespace BetterLegacy.Editor.Managers
                 EditorContextMenu.AddContextMenu(path, leftClick: null,
                     new ButtonElement("Set Folder", () =>
                     {
-                        RTEditor.inst.BrowserPopup.Open();
+                        RTFileBrowser.inst.Popup.Open();
                         RTFileBrowser.inst.UpdateBrowserFolder(_val =>
                         {
                             if (!RTFile.ReplaceSlash(_val).Contains(RTFile.ApplicationDirectory + "beatmaps/"))
@@ -275,7 +483,7 @@ namespace BetterLegacy.Editor.Managers
                             RTEditor.inst.PlannersPath = str;
                             Load();
                             EditorManager.inst.DisplayNotification($"Set Planner path to {RTEditor.inst.PlannersPath}!", 2f, EditorManager.NotificationType.Success);
-                            RTEditor.inst.BrowserPopup.Close();
+                            RTFileBrowser.inst.Popup.Close();
                         });
                     }),
                     new ButtonElement("Open in File Explorer", () => RTFile.OpenInFileBrowser.Open(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlannersPath))));
@@ -1438,21 +1646,21 @@ namespace BetterLegacy.Editor.Managers
                 if (note.TitleUI)
                     note.TitleUI.color = RTColors.InvertColorHue(RTColors.InvertColorValue(note.TopColor));
 
-                if (!PlannerActive || CurrentTab != PlannerBase.Type.Note)
+                if (!Active || CurrentTab != PlannerBase.Type.Note)
                     note.GameObject?.SetActive(note.Active);
 
-                note.ActiveUI?.gameObject?.SetActive(PlannerActive && CurrentTab == PlannerBase.Type.Note);
+                note.ActiveUI?.gameObject?.SetActive(Active && CurrentTab == PlannerBase.Type.Note);
 
-                var currentParent = !PlannerActive || CurrentTab != PlannerBase.Type.Note ? notesParent : content;
+                var currentParent = !Active || CurrentTab != PlannerBase.Type.Note ? notesParent : content;
 
                 if (note.GameObject && note.GameObject.transform.parent != (currentParent))
                 {
                     note.GameObject.transform.SetParent(currentParent);
-                    if (PlannerActive && CurrentTab == PlannerBase.Type.Note)
+                    if (Active && CurrentTab == PlannerBase.Type.Note)
                         note.GameObject.transform.localScale = Vector3.one;
                 }
 
-                if (!note.Dragging && note.GameObject && (!PlannerActive || CurrentTab != PlannerBase.Type.Note))
+                if (!note.Dragging && note.GameObject && (!Active || CurrentTab != PlannerBase.Type.Note))
                 {
                     note.GameObject.transform.localPosition = note.Position;
                     note.GameObject.transform.localScale = note.Scale;
@@ -1461,19 +1669,19 @@ namespace BetterLegacy.Editor.Managers
 
                 if (note.GameObject && note.GameObject.transform.Find("panel/edit"))
                 {
-                    note.GameObject.transform.Find("panel/edit").gameObject.SetActive(!PlannerActive || CurrentTab != PlannerBase.Type.Note);
+                    note.GameObject.transform.Find("panel/edit").gameObject.SetActive(!Active || CurrentTab != PlannerBase.Type.Note);
                 }
             }
 
             // handle OST
 
-            if (!PlannerActive && EditorConfig.Instance.StopOSTOnExitPlanner.Value)
+            if (!Active && EditorConfig.Instance.StopOSTOnExitPlanner.Value)
                 return;
 
             if (!OSTAudioSource)
                 return;
 
-            if (!PlannerActive && SoundManager.inst.Playing)
+            if (!Active && SoundManager.inst.Playing)
             {
                 switch (EditorConfig.Instance.InterruptOSTBehavior.Value)
                 {
@@ -1528,197 +1736,15 @@ namespace BetterLegacy.Editor.Managers
 
         #endregion
 
-        #region Values
-
-        public Transform plannerBase;
-        public Transform planner;
-        public Transform topBarBase;
-        public Transform contentBase;
-        public Transform contentScroll;
-        public Transform content;
-        public Transform notesParent;
-        public GridLayoutGroup contentLayout;
-
-        public RectTransform notificationsParent;
-
-        public Transform contextMenuParent;
-        public Transform popupsParent;
-
-        public Transform assetsParent;
-
-        public GameObject documentFullView;
-        public TMP_InputField documentInputField;
-        public OpenHyperlinks documentHyperlinks;
-        public TextMeshProUGUI documentTitle;
-        public Toggle documentInteractibleToggle;
-
-        public GameObject characterFullView;
-        public Image characterSprite;
-        public TextMeshProUGUI characterDetails;
-        public OpenHyperlinks characterDetailsHyperlinks;
-        public OpenHyperlinks characterDescriptionHyperlinks;
-        public TMP_InputField characterDescriptionInputField;
-        public Transform characterAttributesContent;
-
-        public AudioSource OSTAudioSource { get; set; }
-        public int currentOST;
-        public string currentOSTID;
-        public bool playing = false;
-        public List<OSTPlanner> recentOST = new List<OSTPlanner>();
-        public bool forceShuffleOST;
-        public bool pausedOST;
-
-        public List<Toggle> tabs = new List<Toggle>();
-
-        public PlannerBase.Type CurrentTab { get; set; }
-        public string SearchTerm { get; set; }
-
-        public string[] tabNames = new string[]
-        {
-            "Documents",
-            "TO DO",
-            "Characters",
-            "Timelines",
-            "Schedules",
-            "Notes",
-            "OST",
-        };
-
-        public Vector2[] tabCellSizes = new Vector2[]
-        {
-            new Vector2(232f, 400f),
-            new Vector2(1280f, 64f),
-            new Vector2(630f, 400f),
-            new Vector2(1280f, 250f),
-            new Vector2(1280f, 64f),
-            new Vector2(410f, 200f),
-            new Vector2(1280f, 64f),
-        };
-
-        public int[] tabConstraintCounts = new int[]
-        {
-            5,
-            1,
-            2,
-            1,
-            1,
-            3,
-            1,
-        };
-
-        public GameObject tagPrefab;
-
-        public GameObject tabPrefab;
-
-        public GameObject baseCardPrefab;
-
-        public GameObject tmpTextPrefab;
-
-        public List<GameObject> prefabs = new List<GameObject>();
-
-        public Sprite gradientSprite;
-
-        public List<DocumentPlanner> documents = new List<DocumentPlanner>();
-        public List<TODOPlanner> todos = new List<TODOPlanner>();
-        public List<CharacterPlanner> characters = new List<CharacterPlanner>();
-        public List<TimelinePlanner> timelines = new List<TimelinePlanner>();
-        public List<SchedulePlanner> schedules = new List<SchedulePlanner>();
-        public List<NotePlanner> notes = new List<NotePlanner>();
-        public List<OSTPlanner> osts = new List<OSTPlanner>();
-
-        public List<PlannerBase> copiedPlanners = new List<PlannerBase>();
-
-        public GameObject timelineButtonPrefab;
-
-        public GameObject timelineAddPrefab;
-
-        public Texture2D horizontalDrag;
-        public Texture2D verticalDrag;
-
-        public enum InterruptOSTBehaviorType
-        {
-            Continue,
-            LowerVolume,
-            Pause,
-        }
-
-        public enum LoopOSTBehaviorType
-        {
-            None,
-            LoopSingle,
-            LoopAll,
-        }
-
-        #region Editor
-
-        public GameObject textEditorPrefab;
-
-        public Image editorTitlePanel;
-
-        public InputField documentEditorName;
-        public InputField documentEditorText;
-
-        public InputField todoEditorText;
-        public Button todoEditorMoveUpButton;
-        public Button todoEditorMoveDownButton;
-
-        public InputField characterEditorName;
-        public InputField characterEditorGender;
-        public InputField characterEditorOrigin;
-        public InputField characterEditorDescription;
-        public Transform characterEditorTraitsContent;
-        public Transform characterEditorLoreContent;
-        public Transform characterEditorAbilitiesContent;
-
-        public InputField timelineEditorName;
-        public InputField eventEditorName;
-        public InputField eventEditorDescription;
-        public InputField eventEditorPath;
-        public Dropdown eventEditorType;
-
-        public InputField scheduleEditorDescription;
-        public InputField scheduleEditorYear;
-        public Dropdown scheduleEditorMonth;
-        public InputField scheduleEditorDay;
-        public InputField scheduleEditorHour;
-        public InputField scheduleEditorMinute;
-
-        public InputField noteEditorName;
-        public InputField noteEditorText;
-        public Transform noteEditorColorsParent;
-        public Transform colorBase;
-        public List<Toggle> noteEditorColors = new List<Toggle>();
-        public Button noteEditorReset;
-
-        public InputField ostEditorPath;
-        public InputField ostEditorName;
-        public Button ostEditorPlay;
-        public Button ostEditorUseGlobal;
-        public Text ostEditorUseGlobalText;
-        public Button ostEditorStop;
-        public Button ostEditorShuffle;
-        public InputField ostEditorIndex;
-
-        public List<GameObject> editors = new List<GameObject>();
-
-        List<PlannerBase> activeTabPlannerItems = new List<PlannerBase>();
-
-        DocumentPlanner currentDocumentPlanner;
-        TODOPlanner currentTODOPlanner;
-        CharacterPlanner currentCharacterPlanner;
-        TimelinePlanner currentTimelinePlanner;
-        SchedulePlanner currentSchedulePlanner;
-        NotePlanner currentNotePlanner;
-        OSTPlanner currentOSTPlanner;
-
-        #endregion
-
-        #endregion
-
-        #region Functions
-
         #region Create
 
+        /// <summary>
+        /// Creates a new Document planner.
+        /// </summary>
+        /// <param name="name">Name of the document.</param>
+        /// <param name="text">Text of the document.</param>
+        /// <param name="save">If documents should be saved.</param>
+        /// <returns>Returns a new document.</returns>
         public DocumentPlanner CreateDocument(string name, string text, bool save = true)
         {
             var document = new DocumentPlanner();
@@ -1733,6 +1759,13 @@ namespace BetterLegacy.Editor.Managers
             return document;
         }
 
+        /// <summary>
+        /// Creates a new TODO planner.
+        /// </summary>
+        /// <param name="check">Checked state of the TODO.</param>
+        /// <param name="text">Text of the TODO</param>
+        /// <param name="save">If TODOs should be saved.</param>
+        /// <returns>Returns a new TODO.</returns>
         public TODOPlanner CreateTODO(bool check, string text, bool save = true)
         {
             var todo = new TODOPlanner();
@@ -1747,6 +1780,12 @@ namespace BetterLegacy.Editor.Managers
             return todo;
         }
 
+        /// <summary>
+        /// Creates a new Character planner.
+        /// </summary>
+        /// <param name="name">Name of the character.</param>
+        /// <param name="save">If characters should be saved.</param>
+        /// <returns>Returns a new character.</returns>
         public CharacterPlanner CreateCharacter(string name, bool save = true)
         {
             var character = new CharacterPlanner();
@@ -1771,6 +1810,13 @@ namespace BetterLegacy.Editor.Managers
             return character;
         }
 
+        /// <summary>
+        /// Creates a new Timeline planner.
+        /// </summary>
+        /// <param name="name">Name of the timeline.</param>
+        /// <param name="events">Events list of the timeline.</param>
+        /// <param name="save">If timelines should be saved.</param>
+        /// <returns>Returns a new timeline.</returns>
         public TimelinePlanner CreateTimeline(string name, List<TimelinePlanner.Event> events, bool save = true)
         {
             var timeline = new TimelinePlanner();
@@ -1785,6 +1831,13 @@ namespace BetterLegacy.Editor.Managers
             return timeline;
         }
 
+        /// <summary>
+        /// Creates a new Schedule planner.
+        /// </summary>
+        /// <param name="dateTime">Date time of the schedule.</param>
+        /// <param name="description">Description of the schedule.</param>
+        /// <param name="save">If schedules should be saved.</param>
+        /// <returns>Returns a new schedule.</returns>
         public SchedulePlanner CreateSchedule(DateTime dateTime, string description, bool save = true)
         {
             var schedule = new SchedulePlanner();
@@ -1799,6 +1852,16 @@ namespace BetterLegacy.Editor.Managers
             return schedule;
         }
 
+        /// <summary>
+        /// Creates a new Note planner.
+        /// </summary>
+        /// <param name="active">Active state of the note.</param>
+        /// <param name="name">Name of the note.</param>
+        /// <param name="color">Color of the note.</param>
+        /// <param name="position">Position of the note.</param>
+        /// <param name="text">Text of the note.</param>
+        /// <param name="save">If notes should be saved.</param>
+        /// <returns>Returns a new note.</returns>
         public NotePlanner CreateNote(bool active, string name, int color, Vector2 position, string text, bool save = true)
         {
             var note = new NotePlanner();
@@ -1816,6 +1879,14 @@ namespace BetterLegacy.Editor.Managers
             return note;
         }
 
+        /// <summary>
+        /// Creates a new OST planner.
+        /// </summary>
+        /// <param name="name">Name of the OST.</param>
+        /// <param name="path">Path to the OST file.</param>
+        /// <param name="useGlobal">If a global path should be used.</param>
+        /// <param name="save">If OSTs should be saved.</param>
+        /// <returns>Returns a new OST.</returns>
         public OSTPlanner CreateOST(string name, string path, bool useGlobal, bool save = true)
         {
             var ost = new OSTPlanner();
@@ -1840,6 +1911,10 @@ namespace BetterLegacy.Editor.Managers
 
         #region Save / Load
 
+        /// <summary>
+        /// Adds a planner to the planners.
+        /// </summary>
+        /// <param name="item">Planner to add.</param>
         public void AddPlanner(PlannerBase item)
         {
             switch (item.PlannerType)
@@ -1931,6 +2006,9 @@ namespace BetterLegacy.Editor.Managers
             RefreshList();
         }
 
+        /// <summary>
+        /// Saves the document planners.
+        /// </summary>
         public void SaveDocuments()
         {
             var path = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlannersPath);
@@ -1947,6 +2025,9 @@ namespace BetterLegacy.Editor.Managers
             RTFile.WriteToFile(RTFile.CombinePaths(path, $"documents{FileFormat.LSN.Dot()}"), jn.ToString(3));
         }
 
+        /// <summary>
+        /// Loads the document planners.
+        /// </summary>
         public void LoadDocuments()
         {
             var path = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlannersPath, $"documents{FileFormat.LSN.Dot()}");
@@ -1959,6 +2040,9 @@ namespace BetterLegacy.Editor.Managers
                 AddPlanner(DocumentPlanner.Parse(jn["documents"][i]));
         }
 
+        /// <summary>
+        /// Saves the TODO planners.
+        /// </summary>
         public void SaveTODO()
         {
             var path = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlannersPath);
@@ -1975,6 +2059,9 @@ namespace BetterLegacy.Editor.Managers
             RTFile.WriteToFile(RTFile.CombinePaths(path, $"todo{FileFormat.LSN.Dot()}"), jn.ToString(3));
         }
 
+        /// <summary>
+        /// Loads the TODO planners.
+        /// </summary>
         public void LoadTODO()
         {
             var path = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlannersPath, $"todo{FileFormat.LSN.Dot()}");
@@ -1987,6 +2074,9 @@ namespace BetterLegacy.Editor.Managers
                 AddPlanner(TODOPlanner.Parse(jn["todo"][i]));
         }
 
+        /// <summary>
+        /// Saves the character planners.
+        /// </summary>
         public void SaveCharacters()
         {
             var path = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlannersPath);
@@ -2003,6 +2093,9 @@ namespace BetterLegacy.Editor.Managers
             RTFile.WriteToFile(RTFile.CombinePaths(path, $"characters{FileFormat.LSN.Dot()}"), jn.ToString(3));
         }
 
+        /// <summary>
+        /// Loads the character planners.
+        /// </summary>
         public void LoadCharacters()
         {
             var path = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlannersPath, $"characters{FileFormat.LSN.Dot()}");
@@ -2015,6 +2108,9 @@ namespace BetterLegacy.Editor.Managers
                 AddPlanner(CharacterPlanner.Parse(jn["characters"][i]));
         }
 
+        /// <summary>
+        /// Saves the timeline planners.
+        /// </summary>
         public void SaveTimelines()
         {
             var path = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlannersPath);
@@ -2031,6 +2127,9 @@ namespace BetterLegacy.Editor.Managers
             RTFile.WriteToFile(RTFile.CombinePaths(path, $"timelines{FileFormat.LSN.Dot()}"), jn.ToString(3));
         }
 
+        /// <summary>
+        /// Loads the timeline planners.
+        /// </summary>
         public void LoadTimelines()
         {
             var path = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlannersPath, $"timelines{FileFormat.LSN.Dot()}");
@@ -2043,6 +2142,9 @@ namespace BetterLegacy.Editor.Managers
                 AddPlanner(TimelinePlanner.Parse(jn["timelines"][i]));
         }
 
+        /// <summary>
+        /// Saves the schedule planners.
+        /// </summary>
         public void SaveSchedules()
         {
             var path = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlannersPath);
@@ -2059,6 +2161,9 @@ namespace BetterLegacy.Editor.Managers
             RTFile.WriteToFile(RTFile.CombinePaths(path, $"schedules{FileFormat.LSN.Dot()}"), jn.ToString(3));
         }
 
+        /// <summary>
+        /// Loads the schedule planners.
+        /// </summary>
         public void LoadSchedules()
         {
             var path = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlannersPath, $"schedules{FileFormat.LSN.Dot()}");
@@ -2071,6 +2176,9 @@ namespace BetterLegacy.Editor.Managers
                 AddPlanner(SchedulePlanner.Parse(jn["schedules"][i]));
         }
 
+        /// <summary>
+        /// Saves the note planners.
+        /// </summary>
         public void SaveNotes()
         {
             var path = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlannersPath);
@@ -2087,6 +2195,9 @@ namespace BetterLegacy.Editor.Managers
             RTFile.WriteToFile(RTFile.CombinePaths(path, $"notes{FileFormat.LSN.Dot()}"), jn.ToString(3));
         }
 
+        /// <summary>
+        /// Loads the note planners.
+        /// </summary>
         public void LoadNotes()
         {
             var path = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlannersPath, $"notes{FileFormat.LSN.Dot()}");
@@ -2099,6 +2210,9 @@ namespace BetterLegacy.Editor.Managers
                 AddPlanner(NotePlanner.Parse(jn["notes"][i]));
         }
 
+        /// <summary>
+        /// Saves the OST planners.
+        /// </summary>
         public void SaveOST()
         {
             var path = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlannersPath);
@@ -2115,6 +2229,9 @@ namespace BetterLegacy.Editor.Managers
             RTFile.WriteToFile(RTFile.CombinePaths(path, $"ost{FileFormat.LSN.Dot()}"), jn.ToString(3));
         }
 
+        /// <summary>
+        /// Loads the OST planners.
+        /// </summary>
         public void LoadOST()
         {
             var path = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlannersPath, $"ost{FileFormat.LSN.Dot()}");
@@ -2129,7 +2246,7 @@ namespace BetterLegacy.Editor.Managers
 
         #endregion
 
-        #region Refresh GUI
+        #region Render UI
 
         /// <summary>
         /// Sets the current planner tab.
@@ -2509,6 +2626,10 @@ namespace BetterLegacy.Editor.Managers
             RenderCharacterEditorAbilities(character);
         }
 
+        /// <summary>
+        /// Renders the Character editor display area.
+        /// </summary>
+        /// <param name="character">Character planner to edit.</param>
         public void RenderCharacterEditorDisplay(CharacterPlanner character)
         {
             characterFullView.SetActive(true);
@@ -2571,6 +2692,10 @@ namespace BetterLegacy.Editor.Managers
             SetupPlannerLinks(character.Description, characterDescriptionInputField, characterDescriptionHyperlinks);
         }
 
+        /// <summary>
+        /// Renders the Character editor traits.
+        /// </summary>
+        /// <param name="character">Character planner to edit.</param>
         public void RenderCharacterEditorTraits(CharacterPlanner character)
         {
             LSHelpers.DeleteChildren(characterEditorTraitsContent);
@@ -2619,6 +2744,10 @@ namespace BetterLegacy.Editor.Managers
             });
         }
 
+        /// <summary>
+        /// Renders the Character editor lore.
+        /// </summary>
+        /// <param name="character">Character planner to edit.</param>
         public void RenderCharacterEditorLore(CharacterPlanner character)
         {
             LSHelpers.DeleteChildren(characterEditorLoreContent);
@@ -2667,6 +2796,10 @@ namespace BetterLegacy.Editor.Managers
             });
         }
 
+        /// <summary>
+        /// Renders the Character editor abilities.
+        /// </summary>
+        /// <param name="character">Character planner to edit.</param>
         public void RenderCharacterEditorAbilities(CharacterPlanner character)
         {
             LSHelpers.DeleteChildren(characterEditorAbilitiesContent);
@@ -3091,51 +3224,12 @@ namespace BetterLegacy.Editor.Managers
 
         #endregion
 
-        #region Generate UI
-
-        public GameObject Spacer(string name, Transform parent, Vector2 size)
-        {
-            var gameObject = new GameObject(name);
-            gameObject.transform.SetParent(parent);
-            gameObject.transform.localScale = Vector3.one;
-
-            var rt = gameObject.AddComponent<RectTransform>();
-
-            rt.sizeDelta = size;
-
-            return gameObject;
-        }
-
-        public GameObject GenerateTab(string name)
-        {
-            var gameObject = tabPrefab.Duplicate(topBarBase, name);
-            gameObject.transform.localScale = Vector3.one;
-
-            var background = gameObject.transform.Find("Background");
-            var text = background.Find("Text").GetComponent<Text>();
-            var image = background.GetComponent<Image>();
-
-            text.fontSize = 26;
-            text.fontStyle = FontStyle.Bold;
-            text.text = name;
-            gameObject.AddComponent<ContrastColors>().Init(text, image);
-            var toggle = gameObject.GetComponent<Toggle>();
-            tabs.Add(gameObject.GetComponent<Toggle>());
-
-            EditorThemeManager.ApplyGraphic(image, EditorThemeManager.GetTabThemeGroup(tabs.Count - 1), true);
-            EditorThemeManager.ApplyGraphic(toggle.graphic, ThemeGroup.Background_1);
-
-            return gameObject;
-        }
-
-        #endregion
-
         #region Open / Close UI
 
         /// <summary>
         /// If the planner is active.
         /// </summary>
-        public bool PlannerActive => EditorManager.inst.editorState == EditorManager.EditorState.Intro;
+        public bool Active => EditorManager.inst.editorState == EditorManager.EditorState.Intro;
 
         /// <summary>
         /// Opens the planner.
@@ -3187,10 +3281,31 @@ namespace BetterLegacy.Editor.Managers
 
         #region Misc
 
+        /// <summary>
+        /// Sets up the planner links.
+        /// </summary>
+        /// <param name="input">Text input.</param>
+        /// <param name="inputField">Input field reference.</param>
+        /// <param name="hyperlinks">Hyperlinks component.</param>
+        /// <param name="registerFunctions">If functions should be registered.</param>
         public void SetupPlannerLinks(string input, TMP_InputField inputField, OpenHyperlinks hyperlinks, bool registerFunctions = true) => SetupPlannerLinks(input, hyperlinks, registerFunctions, _val => inputField.SetTextWithoutNotify(_val));
-        
+
+        /// <summary>
+        /// Sets up the planner links.
+        /// </summary>
+        /// <param name="input">Text input.</param>
+        /// <param name="text">TextMeshPro text reference.</param>
+        /// <param name="hyperlinks">Hyperlinks component.</param>
+        /// <param name="registerFunctions">If functions should be registered.</param>
         public void SetupPlannerLinks(string input, TextMeshProUGUI text, OpenHyperlinks hyperlinks, bool registerFunctions = true) => SetupPlannerLinks(input, hyperlinks, registerFunctions, _val => text.text = _val);
 
+        /// <summary>
+        /// Sets up the planner links.
+        /// </summary>
+        /// <param name="input">Text input.</param>
+        /// <param name="hyperlinks">Hyperlinks component.</param>
+        /// <param name="registerFunctions">If functions should be registered.</param>
+        /// <param name="setText">Function to run on planner links setup.</param>
         public void SetupPlannerLinks(string input, OpenHyperlinks hyperlinks, bool registerFunctions, Action<string> setText)
         {
             if (registerFunctions && !hyperlinks)

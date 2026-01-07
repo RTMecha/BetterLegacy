@@ -238,7 +238,7 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.ApplyGraphic(image, ThemeGroup.Null, true);
                 EditorThemeManager.ApplyDeleteButton(deleteStorage);
 
-                TooltipHelper.AddHoverTooltip(gameObject, $"<#{RTColors.ColorToHexOptional(color)}>{pinnedEditorLayer.name}</color>", pinnedEditorLayer.desc, clear: true);
+                TooltipHelper.AddHoverTooltip(gameObject, $"<#{RTColors.ColorToHexOptional(color)}>{pinnedEditorLayer.name}</color>", pinnedEditorLayer.description, clear: true);
                 num++;
             }
         }
@@ -303,10 +303,10 @@ namespace BetterLegacy.Editor.Managers
                 if (Popup.IsOpen)
                     RenderPopup();
             });
-            Dialog.DescriptionField.SetTextWithoutNotify(CurrentPinnedEditorLayer.desc);
+            Dialog.DescriptionField.SetTextWithoutNotify(CurrentPinnedEditorLayer.description);
             Dialog.DescriptionField.onValueChanged.NewListener(_val =>
             {
-                CurrentPinnedEditorLayer.desc = _val;
+                CurrentPinnedEditorLayer.description = _val;
 
                 if (Popup.IsOpen)
                     RenderPopup();

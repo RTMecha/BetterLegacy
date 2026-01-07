@@ -41,35 +41,104 @@ namespace BetterLegacy.Editor.Managers
     {
         #region Values
 
-        public string modelSearchTerm;
-        public int playerModelIndex = 0;
-        public string CustomObjectID { get; set; }
-
-        public PAPlayer CurrentPlayer => PlayerManager.Players.TryGetAt(playerModelIndex, out PAPlayer player) ? player : null;
-        public PlayerModel CurrentModel => PlayersData.Current.GetPlayerModel(playerModelIndex);
-        public CustomPlayerObject CurrentCustomObject => !string.IsNullOrEmpty(CustomObjectID) ? CurrentModel.customObjects.Find(x => x.id == CustomObjectID) : null;
-
-        public bool editControls;
-
+        /// <summary>
+        /// Dialog of the editor.
+        /// </summary>
         public PlayerEditorDialog Dialog { get; set; }
+
+        /// <summary>
+        /// Player Models content popup.
+        /// </summary>
         public ContentPopup ModelsPopup { get; set; }
+
+        /// <summary>
+        /// Custom objects content popup.
+        /// </summary>
         public ContentPopup CustomObjectsPopup { get; set; }
 
+        /// <summary>
+        /// The selected player to edit.
+        /// </summary>
+        public int playerIndex = 0;
+
+        /// <summary>
+        /// The currently selected custom object ID.
+        /// </summary>
+        public string CustomObjectID { get; set; }
+
+        /// <summary>
+        /// The currently selected player.
+        /// </summary>
+        public PAPlayer CurrentPlayer => PlayerManager.Players.TryGetAt(playerIndex, out PAPlayer player) ? player : null;
+
+        /// <summary>
+        /// The currently selected player model.
+        /// </summary>
+        public PlayerModel CurrentModel => PlayersData.Current.GetPlayerModel(playerIndex);
+
+        /// <summary>
+        /// The currently selected custom object.
+        /// </summary>
+        public CustomPlayerObject CurrentCustomObject => !string.IsNullOrEmpty(CustomObjectID) ? CurrentModel.customObjects.Find(x => x.id == CustomObjectID) : null;
+
+        /// <summary>
+        /// If the player control values should be edited.
+        /// </summary>
+        public bool editControls;
+
+        /// <summary>
+        /// The current tab for the dialog.
+        /// </summary>
         public Tab CurrentTab { get; set; } = Tab.Base;
 
+        /// <summary>
+        /// The tabs for the dialog.
+        /// </summary>
         public enum Tab
         {
+            /// <summary>
+            /// Main global settings for the players.
+            /// </summary>
             Global,
+            /// <summary>
+            /// Main settings for a player and player model.
+            /// </summary>
             Base, // includes stretch
+            /// <summary>
+            /// GUI display for a player.
+            /// </summary>
             GUI,
+            /// <summary>
+            /// The head part of a player.
+            /// </summary>
             Head,
+            /// <summary>
+            /// The boost part of a player.
+            /// </summary>
             Boost,
+            /// <summary>
+            /// The spawners of a player.
+            /// </summary>
             Spawners, // Bullet and Pulse
+            /// <summary>
+            /// The tail of a player.
+            /// </summary>
             Tail, // All tail related parts go here
+            /// <summary>
+            /// The custom objects of a player.
+            /// </summary>
             Custom
         }
 
+        /// <summary>
+        /// Function to run when a player model is selected.
+        /// </summary>
         public Action<PlayerModel> onSelectModel;
+
+        /// <summary>
+        /// Copied custom object.
+        /// </summary>
+        public CustomPlayerObject copiedCustomObject;
 
         #endregion
 
@@ -96,7 +165,7 @@ namespace BetterLegacy.Editor.Managers
                 CoreHelper.LogException(ex);
             } // init dialog
 
-            ModelsPopup = RTEditor.inst.GeneratePopup(EditorPopup.PLAYER_MODELS_POPUP, "Select a Player Model", Vector2.zero, new Vector2(600f, 450f), _val => StartCoroutine(RefreshModels()));
+            ModelsPopup = RTEditor.inst.GeneratePopup(EditorPopup.PLAYER_MODELS_POPUP, "Select a Player Model", Vector2.zero, new Vector2(600f, 450f), _val => RenderModelsPopup());
             ModelsPopup.InitTopElementsParent();
             ModelsPopup.InitReload(Reload);
             ModelsPopup.onRender = () =>
@@ -134,7 +203,7 @@ namespace BetterLegacy.Editor.Managers
                 }
             };
 
-            CustomObjectsPopup = RTEditor.inst.GeneratePopup(EditorPopup.PLAYER_OBJECTS_POPUP, "Select a Custom Object", Vector2.zero, new Vector2(600f, 450f), _val => StartCoroutine(RefreshCustomObjects()));
+            CustomObjectsPopup = RTEditor.inst.GeneratePopup(EditorPopup.PLAYER_OBJECTS_POPUP, "Select a Custom Object", Vector2.zero, new Vector2(600f, 450f), _val => RenderCustomObjectsPopup());
             CustomObjectsPopup.onRender = () =>
             {
                 if (AssetPack.TryReadFromFile("editor/ui/popups/player_objects_popup.json", out string uiFile))
@@ -171,24 +240,87 @@ namespace BetterLegacy.Editor.Managers
             };
         }
 
-        public void ShowTab(Tab tab)
+        /// <summary>
+        /// Creates a new player model.
+        /// </summary>
+        public void CreateNewModel()
         {
-            for (int i = 0; i < Dialog.Tabs.Count; i++)
-                Dialog.Tabs[i].SetActive((int)tab == i);
+            var playerModel = PlayersData.Current.CreateNewPlayerModel();
+            PlayersData.Current.SetPlayerModel(playerIndex, playerModel.basePart.id);
+            PlayerManager.RespawnPlayers();
+            RenderDialog();
+            EditorManager.inst.DisplayNotification("Created a new player model!", 1.5f, EditorManager.NotificationType.Success);
         }
 
-        public PlayerEditorTab GetCurrentTab() => Dialog.Tabs[(int)CurrentTab];
+        /// <summary>
+        /// Saves the player models.
+        /// </summary>
+        public void Save()
+        {
+            try
+            {
+                if (PlayersData.Save())
+                    EditorManager.inst.DisplayNotification("Successfully saved player models!", 2f, EditorManager.NotificationType.Success);
+                else
+                    EditorManager.inst.DisplayNotification("Failed to save player models.", 2f, EditorManager.NotificationType.Error);
+            }
+            catch (Exception ex)
+            {
+                EditorManager.inst.DisplayNotification("Failed to save player models.", 2f, EditorManager.NotificationType.Error);
+                CoreHelper.LogException(ex);
+            }
+        }
 
+        /// <summary>
+        /// Reloads the player models.
+        /// </summary>
+        public void Reload()
+        {
+            if (EditorLevelManager.inst.CurrentLevel)
+                PlayersData.Load(EditorLevelManager.inst.CurrentLevel.GetFile(Level.PLAYERS_LSB));
+            PlayerManager.RespawnPlayers();
+            if (Dialog.IsCurrent)
+                RenderDialog();
+            if (ModelsPopup.IsOpen)
+                RenderModelsPopup();
+            CustomObjectsPopup.Close();
+
+            EditorManager.inst.DisplayNotification("Loaded player models", 1.5f, EditorManager.NotificationType.Success);
+        }
+
+        /// <summary>
+        /// Gets the current tab of the dialog.
+        /// </summary>
+        /// <returns>Returns the current tab.</returns>
+        public PlayerEditorTab GetCurrentTab() => GetTab(CurrentTab);
+
+        /// <summary>
+        /// Gets a tab from the dialog.
+        /// </summary>
+        /// <param name="tab">Tab to get.</param>
+        /// <returns>Returns a tab from the dialog.</returns>
         public PlayerEditorTab GetTab(Tab tab) => Dialog.Tabs[(int)tab];
 
-        public IEnumerator RefreshEditor()
+        /// <summary>
+        /// Opens the dialog.
+        /// </summary>
+        public void OpenDialog()
+        {
+            Dialog.Open();
+            RenderDialog();
+        }
+
+        /// <summary>
+        /// Renders the dialog.
+        /// </summary>
+        public void RenderDialog()
         {
             var currentModel = CurrentModel;
 
             var isDefault = currentModel.IsDefault;
             Dialog.Content.Find("handler").gameObject.SetActive(isDefault && CurrentTab != Tab.Global);
 
-            ShowTab(CurrentTab);
+            Dialog.ShowTab(CurrentTab);
             GetCurrentTab().SetActive(element => element.IsActive(isDefault));
 
             switch (CurrentTab)
@@ -226,8 +358,6 @@ namespace BetterLegacy.Editor.Managers
                         break;
                     }
             }
-
-            yield break;
         }
 
         void RenderSingle(InputFieldStorage inputFieldStorage, float value, Action<string> onValueChanged, Action<string> onEndEdit = null)
@@ -286,7 +416,7 @@ namespace BetterLegacy.Editor.Managers
         void RenderEasing(Dropdown dropdown, int value, Action<int> onValueChanged)
         {
             RTEditor.inst.SetupEaseDropdown(dropdown);
-            RenderDropdown(dropdown, RTEditor.inst.GetEaseIndex(((Easing)value).ToString()),
+            RenderDropdown(dropdown, RTEditor.inst.GetEaseIndex((Easing)value),
                 onValueChanged: _val => onValueChanged?.Invoke((int)RTEditor.inst.GetEasing(_val)));
         }
 
@@ -304,7 +434,7 @@ namespace BetterLegacy.Editor.Managers
                 var colorIndex = i;
                 var colorButton = colorButtons[i];
                 colorButton.transform.GetChild(0).gameObject.SetActive(value == i);
-                colorButton.GetComponent<Image>().color = RTColors.GetPlayerColor(playerModelIndex, i, 1f, "FFFFFF");
+                colorButton.GetComponent<Image>().color = RTColors.GetPlayerColor(playerIndex, i, 1f, "FFFFFF");
                 colorButton.onClick.NewListener(() =>
                 {
                     RenderColors(colorButtons, colorIndex, onValueChanged);
@@ -648,7 +778,445 @@ namespace BetterLegacy.Editor.Managers
                 });
             }
         }
+        
+        void RenderShape(PlayerEditorShape ui, IShapeable shapeable)
+        {
+            var shape = ui.GameObject.transform.Find("shape");
+            var shapeSettings = ui.GameObject.transform.Find("shapesettings");
 
+            shape.AsRT().sizeDelta = new Vector2(400f, 32);
+            shapeSettings.AsRT().sizeDelta = new Vector2(400f, 32);
+
+            var shapeGLG = shape.GetComponent<GridLayoutGroup>();
+            shapeGLG.constraint = GridLayoutGroup.Constraint.FixedRowCount;
+            shapeGLG.constraintCount = 1;
+            shapeGLG.spacing = new Vector2(7.6f, 0f);
+
+            LSHelpers.SetActiveChildren(shapeSettings, false);
+
+            int type = 0;
+            int option = 0;
+            if (shapeable != null)
+            {
+                type = shapeable.Shape;
+                option = shapeable.ShapeOption;
+            }
+
+            if (type >= shapeSettings.childCount)
+            {
+                CoreHelper.Log($"Somehow, the object ended up being at a higher shape than normal.");
+                if (shapeable != null)
+                {
+                    shapeable.Shape = 0;
+                    shapeable.ShapeOption = 0;
+                }
+
+                PlayerManager.UpdatePlayerModels();
+                RenderShape(ui, shapeable);
+                return;
+            }
+
+            shapeSettings.GetChild(type).gameObject.SetActive(true);
+
+            int num = 0;
+            foreach (var toggle in ui.ShapeToggles)
+            {
+                int index = num;
+                toggle.gameObject.SetActive(RTEditor.ShowModdedUI || index < Shape.unmoddedMaxShapes.Length);
+                toggle.SetIsOnWithoutNotify(type == index);
+                toggle.onValueChanged.NewListener(_val =>
+                {
+                    CoreHelper.Log($"Set shape to {index}");
+                    if (shapeable != null)
+                    {
+                        shapeable.Shape = index;
+                        shapeable.ShapeOption = 0;
+                    }
+
+                    if (shapeable.Polygon && shapeable.ShapeType == ShapeType.Polygon && EditorConfig.Instance.AutoPolygonRadius.Value)
+                        shapeable.Polygon.Radius = shapeable.Polygon.GetAutoRadius();
+
+                    PlayerManager.UpdatePlayerModels();
+                    RenderShape(ui, shapeable);
+                    LayoutRebuilder.ForceRebuildLayoutImmediate(ui.GameObject.transform.parent.AsRT());
+                });
+
+                num++;
+            }
+            
+            switch ((ShapeType)type)
+            {
+                case ShapeType.Text: {
+                        if (shapeable is not CustomPlayerObject customObject)
+                        {
+                            CoreHelper.Log($"Player shape cannot be text.");
+                            if (shapeable != null)
+                            {
+                                shapeable.Shape = 0;
+                                shapeable.ShapeOption = 0;
+                            }
+
+                            PlayerManager.UpdatePlayerModels();
+                            RenderShape(ui, shapeable);
+
+                            break;
+                        }
+
+                        ui.GameObject.transform.AsRT().sizeDelta = new Vector2(750f, 114f);
+                        shapeSettings.AsRT().anchoredPosition = new Vector2(568f, -54f);
+                        shapeSettings.AsRT().sizeDelta = new Vector2(400f, 74f);
+                        shapeSettings.GetChild(4).AsRT().sizeDelta = new Vector2(400f, 74f);
+
+                        var textIF = shapeSettings.Find("5").GetComponent<InputField>();
+                        textIF.textComponent.alignment = TextAnchor.UpperLeft;
+                        textIF.GetPlaceholderText().alignment = TextAnchor.UpperLeft;
+                        textIF.lineType = InputField.LineType.MultiLineNewline;
+                        textIF.SetTextWithoutNotify(customObject.text);
+                        textIF.onValueChanged.NewListener(_val =>
+                        {
+                            CoreHelper.Log($"Set text to {_val}");
+                            customObject.text = _val;
+
+                            PlayerManager.UpdatePlayerModels();
+                        });
+
+                        break;
+                    }
+                case ShapeType.Image: {
+                        if (shapeable is not CustomPlayerObject customObject)
+                        {
+                            CoreHelper.Log($"Player shape cannot be image.");
+                            if (shapeable != null)
+                            {
+                                shapeable.Shape = 0;
+                                shapeable.ShapeOption = 0;
+                            }
+
+                            PlayerManager.UpdatePlayerModels();
+                            RenderShape(ui, shapeable);
+
+                            break;
+                        }
+
+                        ui.GameObject.transform.AsRT().sizeDelta = new Vector2(750f, 92f);
+                        shapeSettings.AsRT().anchoredPosition = new Vector2(568f, -54f);
+                        shapeSettings.AsRT().sizeDelta = new Vector2(351f, 32f);
+
+                        var textIF = shapeSettings.Find("5").GetComponent<InputField>();
+                        textIF.onValueChanged.ClearAll();
+                        textIF.text = customObject.text;
+                        textIF.onValueChanged.AddListener(_val =>
+                        {
+                            CoreHelper.Log($"Set text to {_val}");
+                            customObject.text = _val;
+
+                            PlayerManager.UpdatePlayerModels();
+                        });
+                        var select = shapeSettings.Find("7/select").GetComponent<Button>();
+                        select.onClick.NewListener(() => OpenImageSelector(ui, shapeable));
+                        shapeSettings.Find("7/text").GetComponent<Text>().text = string.IsNullOrEmpty(customObject.text) ? "No image selected" : customObject.text;
+
+                        var currentModel = PlayersData.Current.GetPlayerModel(playerIndex);
+
+                        // Stores / Removes Image Data for transfering of Image Objects between levels.
+                        var dataText = shapeSettings.Find("7/set/Text").GetComponent<Text>();
+                        dataText.text = !currentModel.assets.sprites.Has(x => x.name == customObject.text) ? "Store Data" : "Clear Data";
+                        var set = shapeSettings.Find("7/set").GetComponent<Button>();
+                        set.onClick.NewListener(() =>
+                        {
+                            var path = RTFile.CombinePaths(RTFile.BasePath, customObject.text);
+
+                            if (!currentModel.assets.sprites.Has(x => x.name == customObject.text))
+                                StoreImage(ui, shapeable, path);
+                            else
+                            {
+                                currentModel.assets.RemoveSprite(customObject.text);
+                                if (!RTFile.FileExists(path))
+                                    customObject.text = string.Empty;
+                            }
+
+                            PlayerManager.UpdatePlayerModels();
+
+                            RenderShape(ui, shapeable);
+                        });
+
+                        break;
+                    }
+                case ShapeType.Polygon: {
+                        if (shapeable is PlayerParticles)
+                        {
+                            CoreHelper.Log($"Player shape cannot be polygon.");
+                            shapeable.Shape = 0;
+                            shapeable.ShapeOption = 0;
+
+                            PlayerManager.UpdatePlayerModels();
+                            RenderShape(ui, shapeable);
+
+                            break;
+                        }
+
+                        ui.GameObject.transform.AsRT().sizeDelta = new Vector2(750f, 332f);
+                        shapeSettings.AsRT().anchoredPosition = new Vector2(568f, -156f);
+                        shapeSettings.AsRT().sizeDelta = new Vector2(351f, 320);
+
+                        var radius = shapeSettings.Find("10/radius").gameObject.GetComponent<InputFieldStorage>();
+                        radius.OnValueChanged.ClearAll();
+                        radius.SetTextWithoutNotify(shapeable.Polygon.Radius.ToString());
+                        radius.SetInteractible(!EditorConfig.Instance.AutoPolygonRadius.Value);
+                        if (!EditorConfig.Instance.AutoPolygonRadius.Value)
+                        {
+                            radius.OnValueChanged.AddListener(_val =>
+                            {
+                                if (float.TryParse(_val, out float num))
+                                {
+                                    num = Mathf.Clamp(num, 0.1f, 10f);
+                                    shapeable.Polygon.Radius = num;
+
+                                    PlayerManager.UpdatePlayerModels();
+                                }
+                            });
+
+                            TriggerHelper.IncreaseDecreaseButtons(radius, min: 0.1f, max: 10f);
+                            TriggerHelper.AddEventTriggers(radius.inputField.gameObject, TriggerHelper.ScrollDelta(radius.inputField, min: 0.1f, max: 10f));
+                        }
+
+                        EditorContextMenu.AddContextMenu(radius.inputField.gameObject,
+                            getEditorElements: () =>
+                            {
+                                var editorElements = new List<EditorElement>()
+                                {
+                                    ButtonElement.ToggleButton("Auto Assign Radius", () => EditorConfig.Instance.AutoPolygonRadius.Value, () =>
+                                    {
+                                        EditorConfig.Instance.AutoPolygonRadius.Value = !EditorConfig.Instance.AutoPolygonRadius.Value;
+                                        RenderShape(ui, shapeable);
+                                    })
+                                };
+                                if (!EditorConfig.Instance.AutoPolygonRadius.Value)
+                                {
+                                    editorElements.Add(new ButtonElement("Set to Triangle Radius", () =>
+                                    {
+                                        shapeable.Polygon.Radius = PolygonShape.TRIANGLE_RADIUS;
+
+                                        PlayerManager.UpdatePlayerModels();
+                                    }));
+                                    editorElements.Add(new ButtonElement("Set to Square Radius", () =>
+                                    {
+                                        shapeable.Polygon.Radius = PolygonShape.SQUARE_RADIUS;
+
+                                        PlayerManager.UpdatePlayerModels();
+                                    }));
+                                    editorElements.Add(new ButtonElement("Set to Normal Radius", () =>
+                                    {
+                                        shapeable.Polygon.Radius = PolygonShape.NORMAL_RADIUS;
+
+                                        PlayerManager.UpdatePlayerModels();
+                                    }));
+                                }
+                                return editorElements;
+                            });
+
+                        var sides = shapeSettings.Find("10/sides").gameObject.GetComponent<InputFieldStorage>();
+                        sides.SetTextWithoutNotify(shapeable.Polygon.Sides.ToString());
+                        sides.OnValueChanged.NewListener(_val =>
+                        {
+                            if (int.TryParse(_val, out int num))
+                            {
+                                num = Mathf.Clamp(num, 3, 32);
+                                shapeable.Polygon.Sides = num;
+                                if (EditorConfig.Instance.AutoPolygonRadius.Value)
+                                {
+                                    shapeable.Polygon.Radius = shapeable.Polygon.GetAutoRadius();
+                                    RenderShape(ui, shapeable);
+                                }
+
+                                PlayerManager.UpdatePlayerModels();
+                            }
+                        });
+
+                        TriggerHelper.IncreaseDecreaseButtonsInt(sides, min: 3, max: 32);
+                        TriggerHelper.AddEventTriggers(sides.inputField.gameObject, TriggerHelper.ScrollDeltaInt(sides.inputField, min: 3, max: 32));
+                        
+                        var roundness = shapeSettings.Find("10/roundness").gameObject.GetComponent<InputFieldStorage>();
+                        roundness.SetTextWithoutNotify(shapeable.Polygon.Roundness.ToString());
+                        roundness.OnValueChanged.NewListener(_val =>
+                        {
+                            if (float.TryParse(_val, out float num))
+                            {
+                                num = Mathf.Clamp(num, 0f, 1f);
+                                shapeable.Polygon.Roundness = num;
+
+                                PlayerManager.UpdatePlayerModels();
+                            }
+                        });
+
+                        TriggerHelper.IncreaseDecreaseButtons(roundness, max: 1f);
+                        TriggerHelper.AddEventTriggers(roundness.inputField.gameObject, TriggerHelper.ScrollDelta(roundness.inputField, max: 1f));
+
+                        var thickness = shapeSettings.Find("10/thickness").gameObject.GetComponent<InputFieldStorage>();
+                        thickness.SetTextWithoutNotify(shapeable.Polygon.Thickness.ToString());
+                        thickness.OnValueChanged.NewListener(_val =>
+                        {
+                            if (float.TryParse(_val, out float num))
+                            {
+                                num = Mathf.Clamp(num, 0f, 1f);
+                                shapeable.Polygon.Thickness = num;
+
+                                PlayerManager.UpdatePlayerModels();
+                            }
+                        });
+
+                        TriggerHelper.IncreaseDecreaseButtons(thickness, max: 1f);
+                        TriggerHelper.AddEventTriggers(thickness.inputField.gameObject, TriggerHelper.ScrollDelta(thickness.inputField, max: 1f));
+                        
+                        var thicknessOffsetX = shapeSettings.Find("10/thickness offset/x").gameObject.GetComponent<InputFieldStorage>();
+                        thicknessOffsetX.SetTextWithoutNotify(shapeable.Polygon.ThicknessOffset.x.ToString());
+                        thicknessOffsetX.OnValueChanged.NewListener(_val =>
+                        {
+                            if (float.TryParse(_val, out float num))
+                            {
+                                shapeable.Polygon.ThicknessOffset = new Vector2(num, shapeable.Polygon.ThicknessOffset.y);
+
+                                PlayerManager.UpdatePlayerModels();
+                            }
+                        });
+
+                        TriggerHelper.IncreaseDecreaseButtons(thicknessOffsetX);
+                        TriggerHelper.AddEventTriggers(thicknessOffsetX.inputField.gameObject, TriggerHelper.ScrollDelta(thicknessOffsetX.inputField));
+                        
+                        var thicknessOffsetY = shapeSettings.Find("10/thickness offset/y").gameObject.GetComponent<InputFieldStorage>();
+                        thicknessOffsetY.SetTextWithoutNotify(shapeable.Polygon.ThicknessOffset.y.ToString());
+                        thicknessOffsetY.OnValueChanged.NewListener(_val =>
+                        {
+                            if (float.TryParse(_val, out float num))
+                            {
+                                shapeable.Polygon.ThicknessOffset = new Vector2(shapeable.Polygon.ThicknessOffset.x, num);
+
+                                PlayerManager.UpdatePlayerModels();
+                            }
+                        });
+
+                        TriggerHelper.IncreaseDecreaseButtons(thicknessOffsetY);
+                        TriggerHelper.AddEventTriggers(thicknessOffsetY.inputField.gameObject, TriggerHelper.ScrollDelta(thicknessOffsetY.inputField));
+                        
+                        var thicknessScaleX = shapeSettings.Find("10/thickness scale/x").gameObject.GetComponent<InputFieldStorage>();
+                        thicknessScaleX.SetTextWithoutNotify(shapeable.Polygon.ThicknessScale.x.ToString());
+                        thicknessScaleX.OnValueChanged.NewListener(_val =>
+                        {
+                            if (float.TryParse(_val, out float num))
+                            {
+                                shapeable.Polygon.ThicknessScale = new Vector2(num, shapeable.Polygon.ThicknessScale.y);
+
+                                PlayerManager.UpdatePlayerModels();
+                            }
+                        });
+
+                        TriggerHelper.IncreaseDecreaseButtons(thicknessScaleX);
+                        TriggerHelper.AddEventTriggers(thicknessScaleX.inputField.gameObject, TriggerHelper.ScrollDelta(thicknessScaleX.inputField));
+                        
+                        var thicknessScaleY = shapeSettings.Find("10/thickness scale/y").gameObject.GetComponent<InputFieldStorage>();
+                        thicknessScaleY.SetTextWithoutNotify(shapeable.Polygon.ThicknessScale.y.ToString());
+                        thicknessScaleY.OnValueChanged.NewListener(_val =>
+                        {
+                            if (float.TryParse(_val, out float num))
+                            {
+                                shapeable.Polygon.ThicknessScale = new Vector2(shapeable.Polygon.ThicknessScale.x, num);
+
+                                PlayerManager.UpdatePlayerModels();
+                            }
+                        });
+
+                        TriggerHelper.IncreaseDecreaseButtons(thicknessScaleY);
+                        TriggerHelper.AddEventTriggers(thicknessScaleY.inputField.gameObject, TriggerHelper.ScrollDelta(thicknessScaleY.inputField));
+
+                        var thicknessRotation = shapeSettings.Find("10/thickness angle").gameObject.GetComponent<InputFieldStorage>();
+                        thicknessRotation.SetTextWithoutNotify(shapeable.Polygon.ThicknessRotation.ToString());
+                        thicknessRotation.OnValueChanged.NewListener(_val =>
+                        {
+                            if (float.TryParse(_val, out float num))
+                            {
+                                shapeable.Polygon.ThicknessRotation = num;
+
+                                PlayerManager.UpdatePlayerModels();
+                            }
+                        });
+
+                        TriggerHelper.IncreaseDecreaseButtons(thicknessRotation, 15f, 3f);
+                        TriggerHelper.AddEventTriggers(thicknessRotation.inputField.gameObject, TriggerHelper.ScrollDelta(thicknessRotation.inputField, 15f, 3f));
+
+                        var slices = shapeSettings.Find("10/slices").gameObject.GetComponent<InputFieldStorage>();
+                        slices.SetTextWithoutNotify(shapeable.Polygon.Slices.ToString());
+                        slices.OnValueChanged.NewListener(_val =>
+                        {
+                            if (int.TryParse(_val, out int num))
+                            {
+                                num = Mathf.Clamp(num, 1, 32);
+                                shapeable.Polygon.Slices = num;
+
+                                PlayerManager.UpdatePlayerModels();
+                            }
+                        });
+
+                        TriggerHelper.IncreaseDecreaseButtonsInt(slices, min: 1, max: 32);
+                        TriggerHelper.AddEventTriggers(slices.inputField.gameObject, TriggerHelper.ScrollDeltaInt(slices.inputField, min: 1, max: 32));
+
+                        var rotation = shapeSettings.Find("10/rotation").gameObject.GetComponent<InputFieldStorage>();
+                        rotation.SetTextWithoutNotify(shapeable.Polygon.Angle.ToString());
+                        rotation.OnValueChanged.NewListener(_val =>
+                        {
+                            if (float.TryParse(_val, out float num))
+                            {
+                                shapeable.Polygon.Angle = num;
+
+                                PlayerManager.UpdatePlayerModels();
+                            }
+                        });
+
+                        TriggerHelper.IncreaseDecreaseButtons(rotation, 15f, 3f);
+                        TriggerHelper.AddEventTriggers(rotation.inputField.gameObject, TriggerHelper.ScrollDelta(rotation.inputField, 15f, 3f));
+
+                        break;
+                    }
+                default: {
+                        ui.GameObject.transform.AsRT().sizeDelta = new Vector2(750f, 92f);
+                        shapeSettings.AsRT().anchoredPosition = new Vector2(568f, -54f);
+                        shapeSettings.AsRT().sizeDelta = new Vector2(351f, 32f);
+
+                        num = 0;
+                        foreach (var toggle in ui.ShapeOptionToggles[type])
+                        {
+                            int index = num;
+                            toggle.onValueChanged.ClearAll();
+                            toggle.isOn = option == index;
+                            toggle.gameObject.SetActive(RTEditor.ShowModdedUI || index < Shape.unmoddedMaxShapes[type]);
+
+                            if (RTEditor.ShowModdedUI || index < Shape.unmoddedMaxShapes[type])
+                                toggle.onValueChanged.AddListener(_val =>
+                                {
+                                    if (_val)
+                                    {
+                                        CoreHelper.Log($"Set shape option to {index}");
+                                        if (shapeable != null)
+                                        {
+                                            shapeable.Shape = type;
+                                            shapeable.ShapeOption = index;
+                                        }
+
+                                        PlayerManager.UpdatePlayerModels();
+                                        RenderShape(ui, shapeable);
+                                    }
+                                });
+
+                            num++;
+                        }
+
+                        break;
+                    }
+            }
+        }
+
+        /// <summary>
+        /// Renders the global tab.
+        /// </summary>
         public void RenderGlobalTab()
         {
             Dialog.GlobalTab.RespawnPlayers.Button.onClick.NewListener(PlayerManager.RespawnPlayers);
@@ -893,9 +1461,12 @@ namespace BetterLegacy.Editor.Managers
                 });
         }
 
+        /// <summary>
+        /// Renders the base tab.
+        /// </summary>
         public void RenderBaseTab(PlayerModel currentModel)
         {
-            var control = PlayersData.Current.playerControls.GetAt(playerModelIndex);
+            var control = PlayersData.Current.playerControls.GetAt(playerIndex);
 
             var text = Dialog.BaseTab.ID.GameObject.transform.GetChild(0).GetComponent<Text>();
             RectValues.Default.AnchoredPosition(-32f, 0f).SizeDelta(750f, 32f).AssignToRectTransform(text.rectTransform);
@@ -951,7 +1522,7 @@ namespace BetterLegacy.Editor.Managers
                 Dialog.BaseTab.JumpCount.ShowInDefault = _val;
                 Dialog.BaseTab.JumpBoostCount.ShowInDefault = _val;
                 Dialog.BaseTab.Bounciness.ShowInDefault = _val;
-                CoroutineHelper.StartCoroutine(RefreshEditor());
+                RenderDialog();
             });
 
             RenderInteger(Dialog.BaseTab.Health.Field, editControls ? control.Health : currentModel.basePart.health,
@@ -1254,7 +1825,7 @@ namespace BetterLegacy.Editor.Managers
 
             try
             {
-                CoroutineHelper.StartCoroutine(Dialog.BaseTab.TickModifiers.Modifiers.RenderModifiers(PlayersData.Current.playerControls.GetAt(playerModelIndex).TickModifierBlock));
+                CoroutineHelper.StartCoroutine(Dialog.BaseTab.TickModifiers.Modifiers.RenderModifiers(PlayersData.Current.playerControls.GetAt(playerIndex).TickModifierBlock));
                 CoroutineHelper.StartCoroutine(Dialog.BaseTab.ModelModifiers.Modifiers.RenderModifiers(currentModel));
             }
             catch (Exception ex)
@@ -1263,6 +1834,9 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
+        /// <summary>
+        /// Renders the gui tab.
+        /// </summary>
         public void RenderGUITab(PlayerModel currentModel)
         {
             Dialog.GUITab.HealthActive.Toggle.SetIsOnWithoutNotify(currentModel.guiPart.active);
@@ -1328,10 +1902,19 @@ namespace BetterLegacy.Editor.Managers
                 });
         }
 
+        /// <summary>
+        /// Renders the head tab.
+        /// </summary>
         public void RenderHeadTab(PlayerModel currentModel) => RenderObject(Dialog.HeadTab, currentModel.headPart);
 
+        /// <summary>
+        /// Renders the boost tab.
+        /// </summary>
         public void RenderBoostTab(PlayerModel currentModel) => RenderObject(Dialog.BoostTab, currentModel.boostPart);
 
+        /// <summary>
+        /// Renders the spawner tab.
+        /// </summary>
         public void RenderSpawnersTab(PlayerModel currentModel)
         {
             #region Pulse
@@ -1867,6 +2450,9 @@ namespace BetterLegacy.Editor.Managers
             #endregion
         }
 
+        /// <summary>
+        /// Renders the tail tab.
+        /// </summary>
         public void RenderTailTab(PlayerModel currentModel)
         {
             RenderSingle(Dialog.TailTab.BaseDistance.Field, currentModel.tailBase.distance,
@@ -1944,13 +2530,12 @@ namespace BetterLegacy.Editor.Managers
             yield break;
         }
 
+        /// <summary>
+        /// Renders the custom tab.
+        /// </summary>
         public void RenderCustomTab(PlayerModel currentModel)
         {
-            Dialog.CustomObjectTab.SelectCustomObject.Button.onClick.NewListener(() =>
-            {
-                ModelsPopup.Open();
-                StartCoroutine(RefreshCustomObjects());
-            });
+            Dialog.CustomObjectTab.SelectCustomObject.Button.onClick.NewListener(OpenCustomObjectsPopup);
 
             CustomPlayerObject customObject = null;
             var customActive = Dialog.CustomObjectTab.SelectCustomObject.IsActive(currentModel.IsDefault) && !string.IsNullOrEmpty(CustomObjectID) && currentModel.customObjects.TryFind(x => x.id == CustomObjectID, out customObject);
@@ -2046,7 +2631,7 @@ namespace BetterLegacy.Editor.Managers
                 var newVisibility = new CustomPlayerObject.Visibility();
                 newVisibility.command = IntToVisibility(0);
                 customObject.visibilitySettings.Add(newVisibility);
-                StartCoroutine(RefreshEditor());
+                RenderDialog();
             });
 
             int num = 0;
@@ -2122,7 +2707,7 @@ namespace BetterLegacy.Editor.Managers
                 deleteButton.OnClick.NewListener(() =>
                 {
                     customObject.visibilitySettings.RemoveAt(index);
-                    StartCoroutine(RefreshEditor());
+                    RenderDialog();
                 });
                 EditorThemeManager.ApplyDeleteButton(deleteButton);
 
@@ -2140,18 +2725,18 @@ namespace BetterLegacy.Editor.Managers
                     transformable = player.RuntimePlayer.customObjects.Find(x => x.id == id);
             }
 
-            Dialog.CustomObjectTab.ViewAnimations.Button.onClick.NewListener(() => AnimationEditor.inst.OpenPopup(customObject.animations, PlayAnimation, currentObject: transformable, onReturn: () =>
-            {
-                Dialog.Open();
-                CoroutineHelper.StartCoroutine(RefreshEditor());
-            }));
+            Dialog.CustomObjectTab.ViewAnimations.Button.onClick.NewListener(() => AnimationEditor.inst.OpenPopup(customObject.animations, PlayAnimation, currentObject: transformable, onReturn: OpenDialog));
 
             CoroutineHelper.StartCoroutine(Dialog.CustomObjectTab.Modifiers.Modifiers.RenderModifiers(customObject));
         }
 
+        /// <summary>
+        /// Plays an animation on a player.
+        /// </summary>
+        /// <param name="animation">Animation to play.</param>
         public void PlayAnimation(PAAnimation animation)
         {
-            if (!PlayerManager.Players.TryGetAt(playerModelIndex, out PAPlayer player) || !player.RuntimePlayer || !player.RuntimePlayer.customObjects.TryFind(x => x.id == CustomObjectID, out RTPlayer.RTCustomPlayerObject customObject))
+            if (!PlayerManager.Players.TryGetAt(playerIndex, out PAPlayer player) || !player.RuntimePlayer || !player.RuntimePlayer.customObjects.TryFind(x => x.id == CustomObjectID, out RTPlayer.RTCustomPlayerObject customObject))
                 return;
 
             var runtimeAnimation = new RTAnimation("Custom Animation");
@@ -2160,11 +2745,25 @@ namespace BetterLegacy.Editor.Managers
             player.RuntimePlayer.animationController.Play(runtimeAnimation);
         }
 
-        public IEnumerator RefreshModels(Action<PlayerModel> onSelect = null)
+        /// <summary>
+        /// Opens the models popup.
+        /// </summary>
+        /// <param name="onSelect">Function to run on select.</param>
+        public void OpenModelsPopup(Action<PlayerModel> onSelect = null)
+        {
+            ModelsPopup.Open();
+            RenderModelsPopup(onSelect);
+        }
+
+        /// <summary>
+        /// Renders the models popup.
+        /// </summary>
+        /// <param name="onSelect">Function to run on select.</param>
+        public void RenderModelsPopup(Action<PlayerModel> onSelect = null)
         {
             onSelectModel = onSelect;
             ModelsPopup.ClearContent();
-            ModelsPopup.SearchField.onValueChanged.NewListener(_val => StartCoroutine(RefreshModels(onSelect)));
+            ModelsPopup.SearchField.onValueChanged.NewListener(_val => RenderModelsPopup(onSelect));
 
             int num = 0;
             foreach (var playerModel in PlayersData.externalPlayerModels)
@@ -2184,21 +2783,31 @@ namespace BetterLegacy.Editor.Managers
 
                 num++;
             }
-
-            yield break;
         }
 
-        public IEnumerator RefreshCustomObjects()
+        /// <summary>
+        /// Opens the custom objects popup.
+        /// </summary>
+        public void OpenCustomObjectsPopup()
+        {
+            CustomObjectsPopup.Open();
+            RenderCustomObjectsPopup();
+        }
+
+        /// <summary>
+        /// Renders the custom objects popup.
+        /// </summary>
+        public void RenderCustomObjectsPopup()
         {
             CustomObjectsPopup.ClearContent();
-            CustomObjectsPopup.SearchField.onValueChanged.NewListener(_val => StartCoroutine(RefreshCustomObjects()));
+            CustomObjectsPopup.SearchField.onValueChanged.NewListener(_val => RenderCustomObjectsPopup());
 
-            var currentModel = PlayersData.Current.GetPlayerModel(playerModelIndex);
+            var currentModel = PlayersData.Current.GetPlayerModel(playerIndex);
 
             var isDefault = PlayerModel.DefaultModels.Any(x => currentModel.basePart.id == x.basePart.id);
 
             if (isDefault)
-                yield break;
+                return;
 
             var add = EditorPrefabHolder.Instance.CreateAddButton(CustomObjectsPopup.Content, "Create");
             add.Text = "Create Custom Object";
@@ -2211,8 +2820,8 @@ namespace BetterLegacy.Editor.Managers
 
                 CustomObjectID = id;
 
-                StartCoroutine(RefreshCustomObjects());
-                StartCoroutine(RefreshEditor());
+                RenderCustomObjectsPopup();
+                RenderDialog();
                 PlayerManager.UpdatePlayerModels();
             });
 
@@ -2239,19 +2848,16 @@ namespace BetterLegacy.Editor.Managers
                             new ButtonElement("Open", () =>
                             {
                                 CustomObjectID = customObject.id;
-                                StartCoroutine(RefreshEditor());
+                                RenderDialog();
                             }),
-                            new ButtonElement("Delete", () =>
+                            new ButtonElement("Delete", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this custom object?", () =>
                             {
-                                RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this custom object?", () =>
-                                {
-                                    currentModel.customObjects.RemoveAt(index);
-                                    StartCoroutine(RefreshCustomObjects());
-                                    StartCoroutine(RefreshEditor());
-                                    PlayerManager.UpdatePlayerModels();
-                                    RTEditor.inst.HideWarningPopup();
-                                }, RTEditor.inst.HideWarningPopup);
-                            }),
+                                currentModel.customObjects.RemoveAt(index);
+                                RenderCustomObjectsPopup();
+                                RenderDialog();
+                                PlayerManager.UpdatePlayerModels();
+                                RTEditor.inst.HideWarningPopup();
+                            })),
                             new ButtonElement("Duplicate", () =>
                             {
                                 var duplicateObject = customObject.Copy();
@@ -2263,8 +2869,8 @@ namespace BetterLegacy.Editor.Managers
 
                                 CustomObjectID = id;
 
-                                StartCoroutine(RefreshCustomObjects());
-                                StartCoroutine(RefreshEditor());
+                                RenderCustomObjectsPopup();
+                                RenderDialog();
                                 PlayerManager.UpdatePlayerModels();
                             }),
                             new ButtonElement("Copy", () =>
@@ -2289,8 +2895,8 @@ namespace BetterLegacy.Editor.Managers
 
                                 CustomObjectID = id;
 
-                                StartCoroutine(RefreshCustomObjects());
-                                StartCoroutine(RefreshEditor());
+                                RenderCustomObjectsPopup();
+                                RenderDialog();
                                 PlayerManager.UpdatePlayerModels();
                                 EditorManager.inst.DisplayNotification("Pasted custom player object!", 2f, EditorManager.NotificationType.Success);
                             })
@@ -2299,24 +2905,20 @@ namespace BetterLegacy.Editor.Managers
                     }
 
                     CustomObjectID = customObject.id;
-                    StartCoroutine(RefreshEditor());
+                    RenderDialog();
                     CustomObjectsPopup.Close();
                 };
 
                 var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(gameObject.transform, "Delete");
                 UIManager.SetRectTransform(delete.transform.AsRT(), new Vector2(280f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(32f, 32f));
                 var deleteStorage = delete.GetComponent<DeleteButtonStorage>();
-                deleteStorage.OnClick.NewListener(() =>
+                deleteStorage.OnClick.NewListener(() => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this custom object?", () =>
                 {
-                    RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this custom object?", () =>
-                    {
-                        currentModel.customObjects.RemoveAt(index);
-                        StartCoroutine(RefreshCustomObjects());
-                        StartCoroutine(RefreshEditor());
-                        PlayerManager.UpdatePlayerModels();
-                        RTEditor.inst.HideWarningPopup();
-                    }, RTEditor.inst.HideWarningPopup);
-                });
+                    currentModel.customObjects.RemoveAt(index);
+                    RenderCustomObjectsPopup();
+                    RenderDialog();
+                    PlayerManager.UpdatePlayerModels();
+                }));
                 EditorThemeManager.ApplyDeleteButton(deleteStorage);
 
                 var duplicate = EditorPrefabHolder.Instance.Function1Button.Duplicate(gameObject.transform, "Duplicate");
@@ -2333,8 +2935,8 @@ namespace BetterLegacy.Editor.Managers
 
                     CustomObjectID = id;
 
-                    StartCoroutine(RefreshCustomObjects());
-                    StartCoroutine(RefreshEditor());
+                    RenderCustomObjectsPopup();
+                    RenderDialog();
                     PlayerManager.UpdatePlayerModels();
                 });
 
@@ -2345,469 +2947,33 @@ namespace BetterLegacy.Editor.Managers
 
                 num++;
             }
-
-            yield break;
         }
 
+        /// <summary>
+        /// Sets the current player model for the current player.
+        /// </summary>
+        /// <param name="playerModel">Player model to set.</param>
         public void SetCurrentModel(PlayerModel playerModel)
         {
             if (!playerModel)
                 return;
 
             PlayersData.Current.playerModels[playerModel.basePart.id] = playerModel;
-            PlayersData.Current.SetPlayerModel(playerModelIndex, playerModel.basePart.id);
+            PlayersData.Current.SetPlayerModel(playerIndex, playerModel.basePart.id);
             PlayerManager.RespawnPlayers();
-            StartCoroutine(RefreshEditor());
+            RenderDialog();
         }
 
-        public CustomPlayerObject copiedCustomObject;
-
-        public void RenderShape(PlayerEditorShape ui, IShapeable shapeable)
-        {
-            var shape = ui.GameObject.transform.Find("shape");
-            var shapeSettings = ui.GameObject.transform.Find("shapesettings");
-
-            shape.AsRT().sizeDelta = new Vector2(400f, 32);
-            shapeSettings.AsRT().sizeDelta = new Vector2(400f, 32);
-
-            var shapeGLG = shape.GetComponent<GridLayoutGroup>();
-            shapeGLG.constraint = GridLayoutGroup.Constraint.FixedRowCount;
-            shapeGLG.constraintCount = 1;
-            shapeGLG.spacing = new Vector2(7.6f, 0f);
-
-            LSHelpers.SetActiveChildren(shapeSettings, false);
-
-            int type = 0;
-            int option = 0;
-            if (shapeable != null)
-            {
-                type = shapeable.Shape;
-                option = shapeable.ShapeOption;
-            }
-
-            if (type >= shapeSettings.childCount)
-            {
-                CoreHelper.Log($"Somehow, the object ended up being at a higher shape than normal.");
-                if (shapeable != null)
-                {
-                    shapeable.Shape = 0;
-                    shapeable.ShapeOption = 0;
-                }
-
-                PlayerManager.UpdatePlayerModels();
-                RenderShape(ui, shapeable);
-                return;
-            }
-
-            shapeSettings.GetChild(type).gameObject.SetActive(true);
-
-            int num = 0;
-            foreach (var toggle in ui.ShapeToggles)
-            {
-                int index = num;
-                toggle.gameObject.SetActive(RTEditor.ShowModdedUI || index < Shape.unmoddedMaxShapes.Length);
-                toggle.SetIsOnWithoutNotify(type == index);
-                toggle.onValueChanged.NewListener(_val =>
-                {
-                    CoreHelper.Log($"Set shape to {index}");
-                    if (shapeable != null)
-                    {
-                        shapeable.Shape = index;
-                        shapeable.ShapeOption = 0;
-                    }
-
-                    if (shapeable.Polygon && shapeable.ShapeType == ShapeType.Polygon && EditorConfig.Instance.AutoPolygonRadius.Value)
-                        shapeable.Polygon.Radius = shapeable.Polygon.GetAutoRadius();
-
-                    PlayerManager.UpdatePlayerModels();
-                    RenderShape(ui, shapeable);
-                    LayoutRebuilder.ForceRebuildLayoutImmediate(ui.GameObject.transform.parent.AsRT());
-                });
-
-                num++;
-            }
-            
-            switch ((ShapeType)type)
-            {
-                case ShapeType.Text: {
-                        if (shapeable is not CustomPlayerObject customObject)
-                        {
-                            CoreHelper.Log($"Player shape cannot be text.");
-                            if (shapeable != null)
-                            {
-                                shapeable.Shape = 0;
-                                shapeable.ShapeOption = 0;
-                            }
-
-                            PlayerManager.UpdatePlayerModels();
-                            RenderShape(ui, shapeable);
-
-                            break;
-                        }
-
-                        ui.GameObject.transform.AsRT().sizeDelta = new Vector2(750f, 114f);
-                        shapeSettings.AsRT().anchoredPosition = new Vector2(568f, -54f);
-                        shapeSettings.AsRT().sizeDelta = new Vector2(400f, 74f);
-                        shapeSettings.GetChild(4).AsRT().sizeDelta = new Vector2(400f, 74f);
-
-                        var textIF = shapeSettings.Find("5").GetComponent<InputField>();
-                        textIF.textComponent.alignment = TextAnchor.UpperLeft;
-                        textIF.GetPlaceholderText().alignment = TextAnchor.UpperLeft;
-                        textIF.lineType = InputField.LineType.MultiLineNewline;
-                        textIF.onValueChanged.ClearAll();
-                        textIF.text = customObject.text;
-                        textIF.onValueChanged.AddListener(_val =>
-                        {
-                            CoreHelper.Log($"Set text to {_val}");
-                            customObject.text = _val;
-
-                            PlayerManager.UpdatePlayerModels();
-                        });
-
-                        break;
-                    }
-                case ShapeType.Image: {
-                        if (shapeable is not CustomPlayerObject customObject)
-                        {
-                            CoreHelper.Log($"Player shape cannot be image.");
-                            if (shapeable != null)
-                            {
-                                shapeable.Shape = 0;
-                                shapeable.ShapeOption = 0;
-                            }
-
-                            PlayerManager.UpdatePlayerModels();
-                            RenderShape(ui, shapeable);
-
-                            break;
-                        }
-
-                        ui.GameObject.transform.AsRT().sizeDelta = new Vector2(750f, 92f);
-                        shapeSettings.AsRT().anchoredPosition = new Vector2(568f, -54f);
-                        shapeSettings.AsRT().sizeDelta = new Vector2(351f, 32f);
-
-                        var textIF = shapeSettings.Find("5").GetComponent<InputField>();
-                        textIF.onValueChanged.ClearAll();
-                        textIF.text = customObject.text;
-                        textIF.onValueChanged.AddListener(_val =>
-                        {
-                            CoreHelper.Log($"Set text to {_val}");
-                            customObject.text = _val;
-
-                            PlayerManager.UpdatePlayerModels();
-                        });
-                        var select = shapeSettings.Find("7/select").GetComponent<Button>();
-                        select.onClick.NewListener(() => OpenImageSelector(ui, shapeable));
-                        shapeSettings.Find("7/text").GetComponent<Text>().text = string.IsNullOrEmpty(customObject.text) ? "No image selected" : customObject.text;
-
-                        var currentModel = PlayersData.Current.GetPlayerModel(playerModelIndex);
-
-                        // Stores / Removes Image Data for transfering of Image Objects between levels.
-                        var dataText = shapeSettings.Find("7/set/Text").GetComponent<Text>();
-                        dataText.text = !currentModel.assets.sprites.Has(x => x.name == customObject.text) ? "Store Data" : "Clear Data";
-                        var set = shapeSettings.Find("7/set").GetComponent<Button>();
-                        set.onClick.NewListener(() =>
-                        {
-                            var path = RTFile.CombinePaths(RTFile.BasePath, customObject.text);
-
-                            if (!currentModel.assets.sprites.Has(x => x.name == customObject.text))
-                                StoreImage(ui, shapeable, path);
-                            else
-                            {
-                                currentModel.assets.RemoveSprite(customObject.text);
-                                if (!RTFile.FileExists(path))
-                                    customObject.text = string.Empty;
-                            }
-
-                            PlayerManager.UpdatePlayerModels();
-
-                            RenderShape(ui, shapeable);
-                        });
-
-                        break;
-                    }
-                case ShapeType.Polygon: {
-                        if (shapeable is PlayerParticles)
-                        {
-                            CoreHelper.Log($"Player shape cannot be polygon.");
-                            shapeable.Shape = 0;
-                            shapeable.ShapeOption = 0;
-
-                            PlayerManager.UpdatePlayerModels();
-                            RenderShape(ui, shapeable);
-
-                            break;
-                        }
-
-                        ui.GameObject.transform.AsRT().sizeDelta = new Vector2(750f, 332f);
-                        shapeSettings.AsRT().anchoredPosition = new Vector2(568f, -156f);
-                        shapeSettings.AsRT().sizeDelta = new Vector2(351f, 320);
-
-                        var radius = shapeSettings.Find("10/radius").gameObject.GetComponent<InputFieldStorage>();
-                        radius.OnValueChanged.ClearAll();
-                        radius.SetTextWithoutNotify(shapeable.Polygon.Radius.ToString());
-                        radius.SetInteractible(!EditorConfig.Instance.AutoPolygonRadius.Value);
-                        if (!EditorConfig.Instance.AutoPolygonRadius.Value)
-                        {
-                            radius.OnValueChanged.AddListener(_val =>
-                            {
-                                if (float.TryParse(_val, out float num))
-                                {
-                                    num = Mathf.Clamp(num, 0.1f, 10f);
-                                    shapeable.Polygon.Radius = num;
-
-                                    PlayerManager.UpdatePlayerModels();
-                                }
-                            });
-
-                            TriggerHelper.IncreaseDecreaseButtons(radius, min: 0.1f, max: 10f);
-                            TriggerHelper.AddEventTriggers(radius.inputField.gameObject, TriggerHelper.ScrollDelta(radius.inputField, min: 0.1f, max: 10f));
-                        }
-
-                        EditorContextMenu.AddContextMenu(radius.inputField.gameObject,
-                            getEditorElements: () =>
-                            {
-                                var editorElements = new List<EditorElement>()
-                                {
-                                    ButtonElement.ToggleButton("Auto Assign Radius", () => EditorConfig.Instance.AutoPolygonRadius.Value, () =>
-                                    {
-                                        EditorConfig.Instance.AutoPolygonRadius.Value = !EditorConfig.Instance.AutoPolygonRadius.Value;
-                                        RenderShape(ui, shapeable);
-                                    })
-                                };
-                                if (!EditorConfig.Instance.AutoPolygonRadius.Value)
-                                {
-                                    editorElements.Add(new ButtonElement("Set to Triangle Radius", () =>
-                                    {
-                                        shapeable.Polygon.Radius = PolygonShape.TRIANGLE_RADIUS;
-
-                                        PlayerManager.UpdatePlayerModels();
-                                    }));
-                                    editorElements.Add(new ButtonElement("Set to Square Radius", () =>
-                                    {
-                                        shapeable.Polygon.Radius = PolygonShape.SQUARE_RADIUS;
-
-                                        PlayerManager.UpdatePlayerModels();
-                                    }));
-                                    editorElements.Add(new ButtonElement("Set to Normal Radius", () =>
-                                    {
-                                        shapeable.Polygon.Radius = PolygonShape.NORMAL_RADIUS;
-
-                                        PlayerManager.UpdatePlayerModels();
-                                    }));
-                                }
-                                return editorElements;
-                            });
-
-                        var sides = shapeSettings.Find("10/sides").gameObject.GetComponent<InputFieldStorage>();
-                        sides.SetTextWithoutNotify(shapeable.Polygon.Sides.ToString());
-                        sides.OnValueChanged.NewListener(_val =>
-                        {
-                            if (int.TryParse(_val, out int num))
-                            {
-                                num = Mathf.Clamp(num, 3, 32);
-                                shapeable.Polygon.Sides = num;
-                                if (EditorConfig.Instance.AutoPolygonRadius.Value)
-                                {
-                                    shapeable.Polygon.Radius = shapeable.Polygon.GetAutoRadius();
-                                    RenderShape(ui, shapeable);
-                                }
-
-                                PlayerManager.UpdatePlayerModels();
-                            }
-                        });
-
-                        TriggerHelper.IncreaseDecreaseButtonsInt(sides, min: 3, max: 32);
-                        TriggerHelper.AddEventTriggers(sides.inputField.gameObject, TriggerHelper.ScrollDeltaInt(sides.inputField, min: 3, max: 32));
-                        
-                        var roundness = shapeSettings.Find("10/roundness").gameObject.GetComponent<InputFieldStorage>();
-                        roundness.SetTextWithoutNotify(shapeable.Polygon.Roundness.ToString());
-                        roundness.OnValueChanged.NewListener(_val =>
-                        {
-                            if (float.TryParse(_val, out float num))
-                            {
-                                num = Mathf.Clamp(num, 0f, 1f);
-                                shapeable.Polygon.Roundness = num;
-
-                                PlayerManager.UpdatePlayerModels();
-                            }
-                        });
-
-                        TriggerHelper.IncreaseDecreaseButtons(roundness, max: 1f);
-                        TriggerHelper.AddEventTriggers(roundness.inputField.gameObject, TriggerHelper.ScrollDelta(roundness.inputField, max: 1f));
-
-                        var thickness = shapeSettings.Find("10/thickness").gameObject.GetComponent<InputFieldStorage>();
-                        thickness.SetTextWithoutNotify(shapeable.Polygon.Thickness.ToString());
-                        thickness.OnValueChanged.NewListener(_val =>
-                        {
-                            if (float.TryParse(_val, out float num))
-                            {
-                                num = Mathf.Clamp(num, 0f, 1f);
-                                shapeable.Polygon.Thickness = num;
-
-                                PlayerManager.UpdatePlayerModels();
-                            }
-                        });
-
-                        TriggerHelper.IncreaseDecreaseButtons(thickness, max: 1f);
-                        TriggerHelper.AddEventTriggers(thickness.inputField.gameObject, TriggerHelper.ScrollDelta(thickness.inputField, max: 1f));
-                        
-                        var thicknessOffsetX = shapeSettings.Find("10/thickness offset/x").gameObject.GetComponent<InputFieldStorage>();
-                        thicknessOffsetX.SetTextWithoutNotify(shapeable.Polygon.ThicknessOffset.x.ToString());
-                        thicknessOffsetX.OnValueChanged.NewListener(_val =>
-                        {
-                            if (float.TryParse(_val, out float num))
-                            {
-                                shapeable.Polygon.ThicknessOffset = new Vector2(num, shapeable.Polygon.ThicknessOffset.y);
-
-                                PlayerManager.UpdatePlayerModels();
-                            }
-                        });
-
-                        TriggerHelper.IncreaseDecreaseButtons(thicknessOffsetX);
-                        TriggerHelper.AddEventTriggers(thicknessOffsetX.inputField.gameObject, TriggerHelper.ScrollDelta(thicknessOffsetX.inputField));
-                        
-                        var thicknessOffsetY = shapeSettings.Find("10/thickness offset/y").gameObject.GetComponent<InputFieldStorage>();
-                        thicknessOffsetY.SetTextWithoutNotify(shapeable.Polygon.ThicknessOffset.y.ToString());
-                        thicknessOffsetY.OnValueChanged.NewListener(_val =>
-                        {
-                            if (float.TryParse(_val, out float num))
-                            {
-                                shapeable.Polygon.ThicknessOffset = new Vector2(shapeable.Polygon.ThicknessOffset.x, num);
-
-                                PlayerManager.UpdatePlayerModels();
-                            }
-                        });
-
-                        TriggerHelper.IncreaseDecreaseButtons(thicknessOffsetY);
-                        TriggerHelper.AddEventTriggers(thicknessOffsetY.inputField.gameObject, TriggerHelper.ScrollDelta(thicknessOffsetY.inputField));
-                        
-                        var thicknessScaleX = shapeSettings.Find("10/thickness scale/x").gameObject.GetComponent<InputFieldStorage>();
-                        thicknessScaleX.SetTextWithoutNotify(shapeable.Polygon.ThicknessScale.x.ToString());
-                        thicknessScaleX.OnValueChanged.NewListener(_val =>
-                        {
-                            if (float.TryParse(_val, out float num))
-                            {
-                                shapeable.Polygon.ThicknessScale = new Vector2(num, shapeable.Polygon.ThicknessScale.y);
-
-                                PlayerManager.UpdatePlayerModels();
-                            }
-                        });
-
-                        TriggerHelper.IncreaseDecreaseButtons(thicknessScaleX);
-                        TriggerHelper.AddEventTriggers(thicknessScaleX.inputField.gameObject, TriggerHelper.ScrollDelta(thicknessScaleX.inputField));
-                        
-                        var thicknessScaleY = shapeSettings.Find("10/thickness scale/y").gameObject.GetComponent<InputFieldStorage>();
-                        thicknessScaleY.SetTextWithoutNotify(shapeable.Polygon.ThicknessScale.y.ToString());
-                        thicknessScaleY.OnValueChanged.NewListener(_val =>
-                        {
-                            if (float.TryParse(_val, out float num))
-                            {
-                                shapeable.Polygon.ThicknessScale = new Vector2(shapeable.Polygon.ThicknessScale.x, num);
-
-                                PlayerManager.UpdatePlayerModels();
-                            }
-                        });
-
-                        TriggerHelper.IncreaseDecreaseButtons(thicknessScaleY);
-                        TriggerHelper.AddEventTriggers(thicknessScaleY.inputField.gameObject, TriggerHelper.ScrollDelta(thicknessScaleY.inputField));
-
-                        var thicknessRotation = shapeSettings.Find("10/thickness angle").gameObject.GetComponent<InputFieldStorage>();
-                        thicknessRotation.SetTextWithoutNotify(shapeable.Polygon.ThicknessRotation.ToString());
-                        thicknessRotation.OnValueChanged.NewListener(_val =>
-                        {
-                            if (float.TryParse(_val, out float num))
-                            {
-                                shapeable.Polygon.ThicknessRotation = num;
-
-                                PlayerManager.UpdatePlayerModels();
-                            }
-                        });
-
-                        TriggerHelper.IncreaseDecreaseButtons(thicknessRotation, 15f, 3f);
-                        TriggerHelper.AddEventTriggers(thicknessRotation.inputField.gameObject, TriggerHelper.ScrollDelta(thicknessRotation.inputField, 15f, 3f));
-
-                        var slices = shapeSettings.Find("10/slices").gameObject.GetComponent<InputFieldStorage>();
-                        slices.SetTextWithoutNotify(shapeable.Polygon.Slices.ToString());
-                        slices.OnValueChanged.NewListener(_val =>
-                        {
-                            if (int.TryParse(_val, out int num))
-                            {
-                                num = Mathf.Clamp(num, 1, 32);
-                                shapeable.Polygon.Slices = num;
-
-                                PlayerManager.UpdatePlayerModels();
-                            }
-                        });
-
-                        TriggerHelper.IncreaseDecreaseButtonsInt(slices, min: 1, max: 32);
-                        TriggerHelper.AddEventTriggers(slices.inputField.gameObject, TriggerHelper.ScrollDeltaInt(slices.inputField, min: 1, max: 32));
-
-                        var rotation = shapeSettings.Find("10/rotation").gameObject.GetComponent<InputFieldStorage>();
-                        rotation.SetTextWithoutNotify(shapeable.Polygon.Angle.ToString());
-                        rotation.OnValueChanged.NewListener(_val =>
-                        {
-                            if (float.TryParse(_val, out float num))
-                            {
-                                shapeable.Polygon.Angle = num;
-
-                                PlayerManager.UpdatePlayerModels();
-                            }
-                        });
-
-                        TriggerHelper.IncreaseDecreaseButtons(rotation, 15f, 3f);
-                        TriggerHelper.AddEventTriggers(rotation.inputField.gameObject, TriggerHelper.ScrollDelta(rotation.inputField, 15f, 3f));
-
-                        break;
-                    }
-                default: {
-                        ui.GameObject.transform.AsRT().sizeDelta = new Vector2(750f, 92f);
-                        shapeSettings.AsRT().anchoredPosition = new Vector2(568f, -54f);
-                        shapeSettings.AsRT().sizeDelta = new Vector2(351f, 32f);
-
-                        num = 0;
-                        foreach (var toggle in ui.ShapeOptionToggles[type])
-                        {
-                            int index = num;
-                            toggle.onValueChanged.ClearAll();
-                            toggle.isOn = option == index;
-                            toggle.gameObject.SetActive(RTEditor.ShowModdedUI || index < Shape.unmoddedMaxShapes[type]);
-
-                            if (RTEditor.ShowModdedUI || index < Shape.unmoddedMaxShapes[type])
-                                toggle.onValueChanged.AddListener(_val =>
-                                {
-                                    if (_val)
-                                    {
-                                        CoreHelper.Log($"Set shape option to {index}");
-                                        if (shapeable != null)
-                                        {
-                                            shapeable.Shape = type;
-                                            shapeable.ShapeOption = index;
-                                        }
-
-                                        PlayerManager.UpdatePlayerModels();
-                                        RenderShape(ui, shapeable);
-                                    }
-                                });
-
-                            num++;
-                        }
-
-                        break;
-                    }
-            }
-        }
-
-        public void OpenImageSelector(PlayerEditorShape ui, IShapeable shapeable, bool copyFile = true, bool storeImage = false)
+        void OpenImageSelector(PlayerEditorShape ui, IShapeable shapeable, bool copyFile = true, bool storeImage = false)
         {
             var editorPath = RTFile.RemoveEndSlash(EditorLevelManager.inst.CurrentLevel.path);
             string jpgFile = FileBrowser.OpenSingleFile("Select an image!", editorPath, new string[] { "png", "jpg" });
             SelectImage(jpgFile, ui, shapeable, copyFile: copyFile, storeImage: storeImage);
         }
 
-        public void StoreImage(PlayerEditorShape ui, IShapeable shapeable, string file)
+        void StoreImage(PlayerEditorShape ui, IShapeable shapeable, string file)
         {
-            var currentModel = PlayersData.Current.GetPlayerModel(playerModelIndex);
+            var currentModel = PlayersData.Current.GetPlayerModel(playerIndex);
 
             if (RTFile.FileExists(file))
             {
@@ -2865,7 +3031,7 @@ namespace BetterLegacy.Editor.Managers
                 RenderShape(ui, shapeable);
         }
 
-        public int VisibilityToInt(string vis) => vis switch
+        int VisibilityToInt(string vis) => vis switch
         {
             "isBoosting" => 0,
             "isTakingHit" => 1,
@@ -2878,7 +3044,7 @@ namespace BetterLegacy.Editor.Managers
             _ => 0,
         };
 
-        public string IntToVisibility(int val) => val switch
+        string IntToVisibility(int val) => val switch
         {
             0 => "isBoosting",
             1 => "isTakingHit",
@@ -2890,45 +3056,6 @@ namespace BetterLegacy.Editor.Managers
             7 => "isPressingKey",
             _ => "isBoosting",
         };
-
-        public void CreateNewModel()
-        {
-            var playerModel = PlayersData.Current.CreateNewPlayerModel();
-            PlayersData.Current.SetPlayerModel(playerModelIndex, playerModel.basePart.id);
-            PlayerManager.RespawnPlayers();
-            StartCoroutine(RefreshEditor());
-            EditorManager.inst.DisplayNotification("Created a new player model!", 1.5f, EditorManager.NotificationType.Success);
-        }
-
-        public void Save()
-        {
-            try
-            {
-                if (PlayersData.Save())
-                    EditorManager.inst.DisplayNotification("Successfully saved player models!", 2f, EditorManager.NotificationType.Success);
-                else
-                    EditorManager.inst.DisplayNotification("Failed to save player models.", 2f, EditorManager.NotificationType.Error);
-            }
-            catch (Exception ex)
-            {
-                EditorManager.inst.DisplayNotification("Failed to save player models.", 2f, EditorManager.NotificationType.Error);
-                CoreHelper.LogException(ex);
-            }
-        }
-
-        public void Reload()
-        {
-            if (EditorLevelManager.inst.CurrentLevel)
-                PlayersData.Load(EditorLevelManager.inst.CurrentLevel.GetFile(Level.PLAYERS_LSB));
-            PlayerManager.RespawnPlayers();
-            if (Dialog.IsCurrent)
-                StartCoroutine(RefreshEditor());
-            if (ModelsPopup.IsOpen)
-                StartCoroutine(RefreshModels());
-            CustomObjectsPopup.Close();
-
-            EditorManager.inst.DisplayNotification("Loaded player models", 1.5f, EditorManager.NotificationType.Success);
-        }
 
         #endregion
     }

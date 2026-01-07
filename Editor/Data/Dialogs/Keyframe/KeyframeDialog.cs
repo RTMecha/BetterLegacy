@@ -148,7 +148,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         /// <summary>
         /// Creates a new object for the keyframe dialog.
@@ -342,7 +342,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             if (isNotFirst)
             {
-                CurvesDropdown.SetValueWithoutNotify(RTEditor.inst.GetEaseIndex(currentKeyframe.curve.ToString()));
+                CurvesDropdown.SetValueWithoutNotify(RTEditor.inst.GetEaseIndex(currentKeyframe.curve));
                 CurvesDropdown.onValueChanged.NewListener(_val =>
                 {
                     var anim = RTEditor.inst.GetEasing(_val);
@@ -1088,7 +1088,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         /// <summary>
         /// Initializes the keyframe element.
@@ -1178,7 +1178,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public override void Init(KeyframeDialog dialog, Transform parent, string name, CustomValueDisplay display)
         {
@@ -1213,15 +1213,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
             Field.eventTrigger.triggers.Clear();
 
             EditorContextMenu.AddContextMenu(Field.inputField.gameObject,
-                new ButtonElement("Reset Value", () =>
+                new ButtonElement("Reset Value", () => Field.Text = getResetValue?.Invoke().ToString() ?? type switch
                 {
-                    Field.Text = getResetValue?.Invoke().ToString() ?? type switch
-                    {
-                        0 => "0",
-                        1 => "1",
-                        2 => "0",
-                        _ => string.Empty,
-                    };
+                    0 => "0",
+                    1 => "1",
+                    2 => "0",
+                    _ => string.Empty,
                 }),
                 new ButtonElement(Display.interactible ? "Lock Value" : "Unlock Value", () =>
                 {
@@ -1309,18 +1306,18 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 new SpacerElement(),
                 new ButtonElement("Copy UI", () =>
                 {
-                    ObjectEditor.inst.copiedUIDisplay = Display.Copy();
+                    ObjectEditor.inst.copiedValueDisplay = Display.Copy();
                     EditorManager.inst.DisplayNotification($"Copied UI settings.", 2f, EditorManager.NotificationType.Success);
                 }),
                 new ButtonElement("Paste UI", () =>
                 {
-                    if (!ObjectEditor.inst.copiedUIDisplay)
+                    if (!ObjectEditor.inst.copiedValueDisplay)
                     {
                         EditorManager.inst.DisplayNotification($"No copied UI yet!", 2f, EditorManager.NotificationType.Warning);
                         return;
                     }
 
-                    Display.ApplyFrom(ObjectEditor.inst.copiedUIDisplay);
+                    Display.ApplyFrom(ObjectEditor.inst.copiedValueDisplay);
                     UpdateDisplay(animatable);
                     EditorManager.inst.DisplayNotification($"Paste UI settings.", 2f, EditorManager.NotificationType.Success);
                 }));
@@ -1508,7 +1505,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public override void Init(KeyframeDialog dialog, Transform parent, string name, CustomValueDisplay display)
         {
@@ -1570,7 +1567,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 new ButtonElement("Add Entry", () => RTEditor.inst.ShowNameEditor("Add Dropdown Option", "Entry Name", "Value", "Next", () =>
                 {
                     var name = RTEditor.inst.folderCreatorName.text;
-
                     RTEditor.inst.ShowNameEditor("Add Dropdown Option", "Entry Value", "0", "Add", () =>
                     {
                         if (!float.TryParse(RTEditor.inst.folderCreatorName.text, out float value))
@@ -1608,18 +1604,18 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 new SpacerElement(),
                 new ButtonElement("Copy UI", () =>
                 {
-                    ObjectEditor.inst.copiedUIDisplay = Display.Copy();
+                    ObjectEditor.inst.copiedValueDisplay = Display.Copy();
                     EditorManager.inst.DisplayNotification($"Copied UI settings.", 2f, EditorManager.NotificationType.Success);
                 }),
                 new ButtonElement("Paste UI", () =>
                 {
-                    if (!ObjectEditor.inst.copiedUIDisplay)
+                    if (!ObjectEditor.inst.copiedValueDisplay)
                     {
                         EditorManager.inst.DisplayNotification($"No copied UI yet!", 2f, EditorManager.NotificationType.Warning);
                         return;
                     }
 
-                    Display.ApplyFrom(ObjectEditor.inst.copiedUIDisplay);
+                    Display.ApplyFrom(ObjectEditor.inst.copiedValueDisplay);
                     UpdateDisplay(animatable);
                     EditorManager.inst.DisplayNotification($"Paste UI settings.", 2f, EditorManager.NotificationType.Success);
                 }));
@@ -1689,7 +1685,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public override void Init(KeyframeDialog dialog, Transform parent, string name, CustomValueDisplay display)
         {
@@ -1738,10 +1734,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             Toggle.interactable = Display.interactible;
 
             EditorContextMenu.AddContextMenu(Toggle.gameObject,
-                new ButtonElement("Reset Value", () =>
-                {
-                    Toggle.isOn = false;
-                }),
+                new ButtonElement("Reset Value", () => Toggle.isOn = false),
                 new ButtonElement(Display.interactible ? "Lock Value" : "Unlock Value", () =>
                 {
                     Display.interactible = !Display.interactible;
@@ -1749,48 +1742,36 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     EditorManager.inst.DisplayNotification($"{(Display.interactible ? "Unlocked" : "Locked")} editor.", 2f, EditorManager.NotificationType.Success);
                 }),
                 new SpacerElement(),
-                new ButtonElement("Set Label", () =>
+                new ButtonElement("Set Label", () => RTEditor.inst.ShowNameEditor("Set label", "Label", Display.label, "Set", () =>
                 {
-                    RTEditor.inst.ShowNameEditor("Set label", "Label", Display.label, "Set", () =>
-                    {
-                        Display.label = RTEditor.inst.folderCreatorName.text;
-                        UpdateDisplay(animatable);
-                        RTEditor.inst.HideNameEditor();
-                    });
-                }),
-                new ButtonElement("Set On Value", () =>
+                    Display.label = RTEditor.inst.folderCreatorName.text;
+                    UpdateDisplay(animatable);
+                    RTEditor.inst.HideNameEditor();
+                })),
+                new ButtonElement("Set On Value", () => RTEditor.inst.ShowNameEditor("Set on value", "On", Display.onValue.ToString(), "Set", () =>
                 {
-                    RTEditor.inst.ShowNameEditor("Set on value", "On", Display.onValue.ToString(), "Set", () =>
-                    {
-                        if (!float.TryParse(RTEditor.inst.folderCreatorName.text, out float max))
-                            return;
+                    if (!float.TryParse(RTEditor.inst.folderCreatorName.text, out float max))
+                        return;
 
-                        Display.onValue = max;
-                        UpdateDisplay(animatable);
-                        RTEditor.inst.HideNameEditor();
-                    });
-                }),
-                new ButtonElement("Set Off Value", () =>
+                    Display.onValue = max;
+                    UpdateDisplay(animatable);
+                    RTEditor.inst.HideNameEditor();
+                })),
+                new ButtonElement("Set Off Value", () => RTEditor.inst.ShowNameEditor("Set off value", "Off", Display.offValue.ToString(), "Set", () =>
                 {
-                    RTEditor.inst.ShowNameEditor("Set off value", "Off", Display.offValue.ToString(), "Set", () =>
-                    {
-                        if (!float.TryParse(RTEditor.inst.folderCreatorName.text, out float max))
-                            return;
+                    if (!float.TryParse(RTEditor.inst.folderCreatorName.text, out float max))
+                        return;
 
-                        Display.offValue = max;
-                        UpdateDisplay(animatable);
-                        RTEditor.inst.HideNameEditor();
-                    });
-                }),
-                new ButtonElement("Set Toggle Label", () =>
+                    Display.offValue = max;
+                    UpdateDisplay(animatable);
+                    RTEditor.inst.HideNameEditor();
+                })),
+                new ButtonElement("Set Toggle Label", () => RTEditor.inst.ShowNameEditor("Set label", "Label", !string.IsNullOrEmpty(Display.toggleLabel) ? Display.toggleLabel : "On", "Set", () =>
                 {
-                    RTEditor.inst.ShowNameEditor("Set label", "Label", !string.IsNullOrEmpty(Display.toggleLabel) ? Display.toggleLabel : "On", "Set", () =>
-                    {
-                        Display.toggleLabel = RTEditor.inst.folderCreatorName.text;
-                        UpdateDisplay(animatable);
-                        RTEditor.inst.HideNameEditor();
-                    });
-                }),
+                    Display.toggleLabel = RTEditor.inst.folderCreatorName.text;
+                    UpdateDisplay(animatable);
+                    RTEditor.inst.HideNameEditor();
+                })),
                 new SpacerElement(),
                 new ButtonElement("Change to Input Field", () =>
                 {
@@ -1805,18 +1786,18 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 new SpacerElement(),
                 new ButtonElement("Copy UI", () =>
                 {
-                    ObjectEditor.inst.copiedUIDisplay = Display.Copy();
+                    ObjectEditor.inst.copiedValueDisplay = Display.Copy();
                     EditorManager.inst.DisplayNotification($"Copied UI settings.", 2f, EditorManager.NotificationType.Success);
                 }),
                 new ButtonElement("Paste UI", () =>
                 {
-                    if (!ObjectEditor.inst.copiedUIDisplay)
+                    if (!ObjectEditor.inst.copiedValueDisplay)
                     {
                         EditorManager.inst.DisplayNotification($"No copied UI yet!", 2f, EditorManager.NotificationType.Warning);
                         return;
                     }
 
-                    Display.ApplyFrom(ObjectEditor.inst.copiedUIDisplay);
+                    Display.ApplyFrom(ObjectEditor.inst.copiedValueDisplay);
                     UpdateDisplay(animatable);
                     EditorManager.inst.DisplayNotification($"Paste UI settings.", 2f, EditorManager.NotificationType.Success);
                 }));

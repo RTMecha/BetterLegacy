@@ -53,6 +53,10 @@ namespace BetterLegacy.Editor.Managers
         public PrefabObjectEditorDialog PrefabObjectEditor { get; set; }
         public PrefabEditorDialog PrefabEditorDialog { get; set; }
 
+        public DoubleContentPopup Popups { get; set; }
+
+        public ContentPopup PrefabTypesPopup { get; set; }
+
         public RectTransform prefabPopups;
         public Button selectQuickPrefabButton;
         public Text selectQuickPrefabText;
@@ -71,8 +75,6 @@ namespace BetterLegacy.Editor.Managers
 
         public GameObject prefabTypePrefab;
         public GameObject prefabTypeTogglePrefab;
-
-        public Button prefabTypeReloadButton;
 
         public string NewPrefabTypeID { get; set; }
         public string NewPrefabDescription { get; set; }
@@ -364,6 +366,126 @@ namespace BetterLegacy.Editor.Managers
 
             try
             {
+                Popups = new DoubleContentPopup(EditorPopup.PREFAB_POPUP);
+                var prefabDialog = Popups.GetLegacyDialog().Dialog;
+                Popups.GameObject = prefabDialog.gameObject;
+                Popups.Internal = new ContentPopup("internal prefabs");
+                Popups.Internal.Assign(prefabDialog.Find("internal prefabs").gameObject);
+                Popups.Internal.Dragger = Popups.Internal.GameObject.GetOrAddComponent<DraggableUI>();
+                Popups.Internal.Dragger.ogPos = Popups.Internal.GameObject.transform.position;
+                Popups.Internal.Dragger.target = Popups.Internal.GameObject.transform;
+                Popups.External = new ContentPopup("external prefabs");
+                Popups.External.Assign(prefabDialog.Find("external prefabs").gameObject);
+                Popups.External.Dragger = Popups.External.GameObject.GetOrAddComponent<DraggableUI>();
+                Popups.External.Dragger.ogPos = Popups.External.GameObject.transform.position;
+                Popups.External.Dragger.target = Popups.External.GameObject.transform;
+
+                Popups.Internal.SetTitle("Internal Prefabs");
+                Popups.External.SetTitle("External Prefabs");
+                Popups.onRender = () =>
+                {
+                    if (AssetPack.TryReadFromFile("editor/ui/popups/prefab_popup.json", out string uiFile))
+                    {
+                        var jn = JSON.Parse(uiFile);
+                        RectValues.TryParse(jn["base"]["rect"], RectValues.Default.SizeDelta(920f, 450f)).AssignToRectTransform(Popups.GameObject.transform.AsRT());
+
+                        RectValues.TryParse(jn["internal"]["base"]["rect"], new RectValues(new Vector2(-80f, -16f), new Vector2(0f, 1f), Vector2.zero, new Vector2(0f, 0.5f), new Vector2(500f, -32f))).AssignToRectTransform(Popups.Internal.GameObject.transform.AsRT());
+                        RectValues.TryParse(jn["external"]["base"]["rect"], new RectValues(new Vector2(60f, -16f), Vector2.one, new Vector2(1f, 0f), new Vector2(1f, 0.5f), new Vector2(500f, -32f))).AssignToRectTransform(Popups.External.GameObject.transform.AsRT());
+
+                        var internalLayoutValues = LayoutValues.Parse(jn["internal"]["layout"]);
+                        if (internalLayoutValues is GridLayoutValues internalGrid)
+                            internalGrid.AssignToLayout(Popups.Internal.GameObject.transform.Find("mask/content").GetComponent<GridLayoutGroup>());
+
+                        var externalLayoutValues = LayoutValues.Parse(jn["external"]["layout"]);
+                        if (externalLayoutValues is GridLayoutValues externalGrid)
+                            externalGrid.AssignToLayout(Popups.External.GameObject.transform.Find("mask/content").GetComponent<GridLayoutGroup>());
+
+                        Popups.Internal.GameObject.GetComponent<ScrollRect>().horizontal = jn["internal"]["scroll"]["horizontal"].AsBool;
+                        Popups.External.GameObject.GetComponent<ScrollRect>().horizontal = jn["external"]["scroll"]["horizontal"].AsBool;
+
+                        if (jn["internal"]["title"] != null)
+                        {
+                            Popups.Internal.title = jn["internal"]["title"]["text"];
+
+                            var title = Popups.Internal.Title;
+                            RectValues.TryParse(jn["internal"]["title"]["rect"], RectValues.FullAnchored.AnchoredPosition(2f, 0f).SizeDelta(-12f, -8f)).AssignToRectTransform(title.rectTransform);
+                            title.alignment = (TextAnchor)jn["internal"]["title"]["alignment"].AsInt;
+                            title.fontSize = jn["internal"]["title"]["font_size"].AsInt;
+                            title.fontStyle = (FontStyle)jn["internal"]["title"]["font_style"].AsInt;
+                            title.horizontalOverflow = (HorizontalWrapMode)jn["internal"]["title"]["horizontal_overflow"].AsInt;
+                            title.verticalOverflow = (VerticalWrapMode)jn["internal"]["title"]["vertical_overflow"].AsInt;
+                        }
+                        if (jn["external"]["title"] != null)
+                        {
+                            Popups.External.title = jn["external"]["title"]["text"];
+
+                            var title = Popups.External.Title;
+                            RectValues.TryParse(jn["external"]["title"]["rect"], RectValues.FullAnchored.AnchoredPosition(2f, 0f).SizeDelta(-12f, -8f)).AssignToRectTransform(title.rectTransform);
+                            title.alignment = (TextAnchor)jn["external"]["title"]["alignment"].AsInt;
+                            title.fontSize = jn["external"]["title"]["font_size"].AsInt;
+                            title.fontStyle = (FontStyle)jn["external"]["title"]["font_style"].AsInt;
+                            title.horizontalOverflow = (HorizontalWrapMode)jn["external"]["title"]["horizontal_overflow"].AsInt;
+                            title.verticalOverflow = (VerticalWrapMode)jn["external"]["title"]["vertical_overflow"].AsInt;
+                        }
+
+                        if (jn["anim"] != null)
+                            Popups.ReadAnimationJSON(jn["anim"]);
+
+                        if (jn["internal"]["drag_mode"] != null && Popups.Internal.Dragger)
+                            Popups.Internal.Dragger.mode = (DraggableUI.DragMode)jn["internal"]["drag_mode"].AsInt;
+                        if (jn["external"]["drag_mode"] != null && Popups.External.Dragger)
+                            Popups.External.Dragger.mode = (DraggableUI.DragMode)jn["external"]["drag_mode"].AsInt;
+                    }
+                };
+                RTEditor.inst.editorPopups.Add(Popups);
+
+                Popups.External.InitTopElementsParent();
+                Popups.External.InitReload(() =>
+                {
+                    RTEditor.inst.LoadInternalPrefabPanelUI(false);
+                    RTEditor.inst.LoadExternalPrefabPanelUI(false);
+                    RefreshInternalPrefabs();
+                    LoadPrefabs(RenderExternalPrefabs);
+                });
+                Popups.External.InitPath(
+                    getValue: () => RTEditor.inst.PrefabPath,
+                    setValue: _val => RTEditor.inst.PrefabPath = _val,
+                    onEndEdit: _val => RTEditor.inst.UpdatePrefabPath(false));
+
+                TooltipHelper.AssignTooltip(Popups.External.PathField.gameObject, "Prefab Path", 3f);
+
+                EditorContextMenu.AddContextMenu(Popups.External.PathField.gameObject,
+                    new ButtonElement("Set folder", () =>
+                    {
+                        RTFileBrowser.inst.Popup.Open();
+                        RTFileBrowser.inst.UpdateBrowserFolder(_val =>
+                        {
+                            if (!_val.Replace("\\", "/").Contains(RTFile.ApplicationDirectory + "beatmaps/"))
+                            {
+                                EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
+                                return;
+                            }
+
+                            Popups.External.PathField.text = _val.Replace("\\", "/").Remove(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/");
+                            EditorManager.inst.DisplayNotification($"Set Prefab path to {RTEditor.inst.PrefabPath}!", 2f, EditorManager.NotificationType.Success);
+                            RTFileBrowser.inst.Popup.Close();
+                            RTEditor.inst.UpdatePrefabPath(false);
+                        });
+                    }),
+                    new ButtonElement("Open in File Explorer", RTEditor.inst.OpenPrefabListFolder),
+                    new ButtonElement("Set as Default for Level", () =>
+                    {
+                        RTEditor.inst.editorInfo.prefabPath = RTEditor.inst.PrefabPath;
+                        EditorManager.inst.DisplayNotification($"Set current prefab folder [ {RTEditor.inst.PrefabPath} ] as the default for the level!", 5f, EditorManager.NotificationType.Success);
+                    }, "Prefab Default Path"),
+                    new ButtonElement("Remove Default", () =>
+                    {
+                        RTEditor.inst.editorInfo.prefabPath = null;
+                        EditorManager.inst.DisplayNotification($"Removed default prefab folder.", 5f, EditorManager.NotificationType.Success);
+                    }, "Prefab Default Path"));
+
+                EditorHelper.SetComplexity(Popups.External.PathField.gameObject, Complexity.Advanced);
+
                 PrefabCreatorDialog = new PrefabCreatorDialog();
                 PrefabCreatorDialog.Init();
                 PrefabObjectEditor = new PrefabObjectEditorDialog();
@@ -452,8 +574,8 @@ namespace BetterLegacy.Editor.Managers
 
             PrefabObjectEditor.SavePrefabButton.OnClick.NewListener(() =>
             {
-                RTEditor.inst.PrefabPopups.Open();
-                RTEditor.inst.PrefabPopups.GameObject.transform.GetChild(0).gameObject.SetActive(false);
+                Popups.Open();
+                Popups.GameObject.transform.GetChild(0).gameObject.SetActive(false);
 
                 if (PrefabEditor.inst.externalContent)
                     StartCoroutine(IRenderExternalPrefabs());
@@ -1179,12 +1301,7 @@ namespace BetterLegacy.Editor.Managers
 
             if (EditorConfig.Instance.ShowCollapsePrefabWarning.Value)
             {
-                RTEditor.inst.ShowWarningPopup("Are you sure you want to collapse this Prefab group and save the changes to the Internal Prefab?", () =>
-                {
-                    Collapse(prefabable, (prefabable as IEditable)?.EditorData, createNew);
-                    RTEditor.inst.HideWarningPopup();
-                }, RTEditor.inst.HideWarningPopup);
-
+                RTEditor.inst.ShowWarningPopup("Are you sure you want to collapse this Prefab group and save the changes to the Internal Prefab?", () => Collapse(prefabable, (prefabable as IEditable)?.EditorData, createNew));
                 return;
             }
 
@@ -1490,79 +1607,6 @@ namespace BetterLegacy.Editor.Managers
 
         void CreatePrefabTypesPopup()
         {
-            var gameObject = Creator.NewUIObject("Prefab Types Popup", RTEditor.inst.popups, 9);
-
-            var baseImage = gameObject.AddComponent<Image>();
-            EditorThemeManager.ApplyGraphic(baseImage, ThemeGroup.Background_1);
-            var baseSelectGUI = gameObject.AddComponent<DraggableUI>();
-
-            gameObject.transform.AsRT().anchoredPosition = new Vector2(340f, 0f);
-            gameObject.transform.AsRT().sizeDelta = new Vector2(400f, 600f);
-
-            baseSelectGUI.target = gameObject.transform;
-            baseSelectGUI.mode = DraggableUI.DragMode.RequiredDrag;
-
-            var panel = EditorManager.inst.GetDialog("Save As Popup").Dialog.Find("New File Popup/Panel").gameObject.Duplicate(gameObject.transform, "Panel");
-            var panelRT = (RectTransform)panel.transform;
-            panelRT.anchoredPosition = Vector2.zero;
-            panelRT.sizeDelta = new Vector2(32f, 32f);
-
-            var title = panel.transform.Find("Text").GetComponent<Text>();
-            title.text = "Prefab Type Editor / Selector";
-            var closeButton = panel.transform.Find("x").GetComponent<Button>();
-            closeButton.onClick.NewListener(() => RTEditor.inst.PrefabTypesPopup.Close());
-
-            var refresh = Creator.NewUIObject("Refresh", panel.transform);
-            UIManager.SetRectTransform(refresh.transform.AsRT(), new Vector2(-52f, 0f), new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(32f, 32f));
-
-            var refreshImage = refresh.AddComponent<Image>();
-            refreshImage.sprite = EditorSprites.ReloadSprite;
-
-            prefabTypeReloadButton = refresh.AddComponent<Button>();
-            prefabTypeReloadButton.image = refreshImage;
-            EditorThemeManager.ApplySelectable(prefabTypeReloadButton, ThemeGroup.Function_2, false);
-
-            var scrollRect = Creator.NewUIObject("ScrollRect", gameObject.transform);
-            scrollRect.transform.AsRT().anchoredPosition = new Vector2(0f, 0f);
-            scrollRect.transform.AsRT().sizeDelta = new Vector2(400f, 600f);
-            var scrollRectSR = scrollRect.AddComponent<ScrollRect>();
-            scrollRectSR.scrollSensitivity = 20f;
-
-            var mask = Creator.NewUIObject("Mask", scrollRect.transform);
-            RectValues.FullAnchored.AssignToRectTransform(mask.transform.AsRT());
-
-            var maskImage = mask.AddComponent<Image>();
-            var maskMask = mask.AddComponent<Mask>();
-            maskMask.showMaskGraphic = false;
-
-            var content = Creator.NewUIObject("Content", mask.transform);
-            RectValues.Default.AnchoredPosition(0f, -16f).AnchorMax(0f, 1f).AnchorMin(0f, 1f).Pivot(0f, 1f).SizeDelta(400f, 104f).AssignToRectTransform(content.transform.AsRT());
-
-            var contentSizeFitter = content.AddComponent<ContentSizeFitter>();
-            contentSizeFitter.horizontalFit = ContentSizeFitter.FitMode.MinSize;
-            contentSizeFitter.verticalFit = ContentSizeFitter.FitMode.MinSize;
-
-            var contentVLG = content.AddComponent<VerticalLayoutGroup>();
-            contentVLG.childControlHeight = false;
-            contentVLG.childForceExpandHeight = false;
-            contentVLG.spacing = 4f;
-
-            scrollRectSR.content = content.transform.AsRT();
-
-            var scrollbar = EditorManager.inst.GetDialog("Parent Selector").Dialog.Find("Scrollbar").gameObject.Duplicate(scrollRect.transform, "Scrollbar");
-            scrollbar.transform.AsRT().anchoredPosition = Vector2.zero;
-            scrollbar.transform.AsRT().sizeDelta = new Vector2(32f, 600f);
-            scrollRectSR.verticalScrollbar = scrollbar.GetComponent<Scrollbar>();
-
-            EditorThemeManager.ApplyGraphic(gameObject.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Bottom_Left_I);
-            EditorThemeManager.ApplyGraphic(maskImage, ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Bottom_Left_I);
-            EditorThemeManager.ApplyGraphic(panelRT.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Top);
-            EditorThemeManager.ApplySelectable(closeButton, ThemeGroup.Close);
-            EditorThemeManager.ApplyGraphic(closeButton.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
-            EditorThemeManager.ApplyLightText(title);
-
-            EditorThemeManager.ApplyScrollbar(scrollRectSR.verticalScrollbar, scrollbarRoundedSide: SpriteHelper.RoundedSide.Bottom_Right_I);
-
             // Prefab Type Prefab
             prefabTypePrefab = Creator.NewUIObject("Prefab Type", transform);
             prefabTypePrefab.transform.AsRT().sizeDelta = new Vector2(400f, 32f);
@@ -1592,10 +1636,9 @@ namespace BetterLegacy.Editor.Managers
 
             var nameGO = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(prefabTypePrefab.transform, "Name");
             nameGO.transform.localScale = Vector3.one;
-            var nameRT = nameGO.GetComponent<RectTransform>();
-            nameRT.sizeDelta = new Vector2(132f, 32f);
+            nameGO.transform.AsRT().sizeDelta = new Vector2(120f, 32f);
 
-            var nameTextRT = nameRT.Find("Text").AsRT();
+            var nameTextRT = nameGO.transform.Find("Text").AsRT();
             nameTextRT.anchoredPosition = new Vector2(0f, 0f);
             nameTextRT.sizeDelta = new Vector2(0f, 0f);
 
@@ -1603,10 +1646,9 @@ namespace BetterLegacy.Editor.Managers
 
             var colorGO = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(prefabTypePrefab.transform, "Color");
             colorGO.transform.localScale = Vector3.one;
-            var colorRT = colorGO.GetComponent<RectTransform>();
-            colorRT.sizeDelta = new Vector2(90f, 32f);
+            colorGO.transform.AsRT().sizeDelta = new Vector2(90f, 32f);
 
-            var colorTextRT = colorRT.Find("Text").AsRT();
+            var colorTextRT = colorGO.transform.Find("Text").AsRT();
             colorTextRT.anchoredPosition = new Vector2(0f, 0f);
             colorTextRT.sizeDelta = new Vector2(0f, 0f);
 
@@ -1615,16 +1657,56 @@ namespace BetterLegacy.Editor.Managers
             var setIcon = EditorPrefabHolder.Instance.Function1Button.Duplicate(prefabTypePrefab.transform, "Set Icon");
             setIcon.transform.AsRT().sizeDelta = new Vector2(95f, 32f);
 
-            Destroy(setIcon.GetComponent<LayoutElement>());
+            CoreHelper.Destroy(setIcon.GetComponent<LayoutElement>());
 
             var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(prefabTypePrefab.transform, "Delete");
             delete.transform.localScale = Vector3.one;
             delete.transform.AsRT().anchoredPosition = Vector2.zero;
 
-            Destroy(delete.GetComponent<LayoutElement>());
+            CoreHelper.Destroy(delete.GetComponent<LayoutElement>());
 
-            EditorHelper.AddEditorPopup(EditorPopup.PREFAB_TYPES_POPUP, gameObject);
-            gameObject.SetActive(false);
+            PrefabTypesPopup = RTEditor.inst.GeneratePopup(
+                name: EditorPopup.PREFAB_TYPES_POPUP,
+                title: "Prefab Type Editor / Selector",
+                defaultPosition: new Vector2(340f, -16f),
+                size: new Vector2(400f, 600f));
+            PrefabTypesPopup.Dragger.mode = DraggableUI.DragMode.RequiredDrag;
+            PrefabTypesPopup.InitTopElementsParent();
+            PrefabTypesPopup.InitReload(null);
+            PrefabTypesPopup.onRender = () =>
+            {
+                if (AssetPack.TryReadFromFile("editor/ui/popups/prefab_types_popup.json", out string uiFile))
+                {
+                    var jn = JSON.Parse(uiFile);
+                    RectValues.TryParse(jn["base"]["rect"], RectValues.Default.AnchoredPosition(340f, -16f).SizeDelta(400f, 600f)).AssignToRectTransform(PrefabTypesPopup.GameObject.transform.AsRT());
+                    RectValues.TryParse(jn["top_panel"]["rect"], RectValues.FullAnchored.AnchorMin(0, 1).Pivot(0f, 0f).SizeDelta(32f, 32f)).AssignToRectTransform(PrefabTypesPopup.TopPanel);
+                    RectValues.TryParse(jn["search"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(0f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, 32f))).AssignToRectTransform(PrefabTypesPopup.GameObject.transform.Find("search-box").AsRT());
+                    RectValues.TryParse(jn["scrollbar"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(0f, 0.5f), new Vector2(32f, 0f))).AssignToRectTransform(PrefabTypesPopup.GameObject.transform.Find("Scrollbar").AsRT());
+
+                    var layoutValues = LayoutValues.Parse(jn["layout"]);
+                    if (layoutValues is GridLayoutValues gridLayoutValues)
+                        gridLayoutValues.AssignToLayout(PrefabTypesPopup.Grid ? PrefabTypesPopup.Grid : PrefabTypesPopup.GameObject.transform.Find("mask/content").GetComponent<GridLayoutGroup>());
+
+                    if (jn["title"] != null)
+                    {
+                        PrefabTypesPopup.title = jn["title"]["text"] != null ? jn["title"]["text"] : "Prefab Type Editor / Selector";
+
+                        var title = PrefabTypesPopup.Title;
+                        RectValues.TryParse(jn["title"]["rect"], RectValues.FullAnchored.AnchoredPosition(2f, 0f).SizeDelta(-12f, -8f)).AssignToRectTransform(title.rectTransform);
+                        title.alignment = jn["title"]["alignment"] != null ? (TextAnchor)jn["title"]["alignment"].AsInt : TextAnchor.MiddleLeft;
+                        title.fontSize = jn["title"]["font_size"] != null ? jn["title"]["font_size"].AsInt : 20;
+                        title.fontStyle = (FontStyle)jn["title"]["font_style"].AsInt;
+                        title.horizontalOverflow = jn["title"]["horizontal_overflow"] != null ? (HorizontalWrapMode)jn["title"]["horizontal_overflow"].AsInt : HorizontalWrapMode.Wrap;
+                        title.verticalOverflow = jn["title"]["vertical_overflow"] != null ? (VerticalWrapMode)jn["title"]["vertical_overflow"].AsInt : VerticalWrapMode.Overflow;
+                    }
+
+                    if (jn["anim"] != null)
+                        PrefabTypesPopup.ReadAnimationJSON(jn["anim"]);
+
+                    if (jn["drag_mode"] != null && PrefabTypesPopup.Dragger)
+                        PrefabTypesPopup.Dragger.mode = (DraggableUI.DragMode)jn["drag_mode"].AsInt;
+                }
+            };
 
             EditorHelper.AddEditorDropdown("View Prefab Types", string.Empty, EditorHelper.VIEW_DROPDOWN, EditorSprites.SearchSprite, () =>
             {
@@ -1635,10 +1717,6 @@ namespace BetterLegacy.Editor.Managers
                     RenderPrefabCreatorTypeSelector(id);
                 });
             });
-
-            RTEditor.inst.PrefabTypesPopup = new ContentPopup(EditorPopup.PREFAB_TYPES_POPUP);
-            RTEditor.inst.PrefabTypesPopup.GameObject = gameObject;
-            RTEditor.inst.PrefabTypesPopup.Content = content.transform.AsRT();
         }
 
         /// <summary>
@@ -1699,7 +1777,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="onSelect">Action to occur when selecting.</param>
         public void OpenPrefabTypePopup(string current, Action<string> onSelect)
         {
-            RTEditor.inst.PrefabTypesPopup.Open();
+            PrefabTypesPopup.Open();
             RenderPrefabTypesPopup(current, onSelect);
         }
 
@@ -1712,15 +1790,16 @@ namespace BetterLegacy.Editor.Managers
 
         IEnumerator IRenderPrefabTypesPopup(string current, Action<string> onSelect)
         {
-            prefabTypeReloadButton.onClick.NewListener(() =>
+            PrefabTypesPopup.SearchField.onValueChanged.NewListener(_val => RenderPrefabTypesPopup(current, onSelect));
+            PrefabTypesPopup.ReloadButton.onClick.NewListener(() =>
             {
                 StartCoroutine(LoadPrefabTypes());
                 RenderPrefabTypesPopup(NewPrefabTypeID, onSelect);
             });
 
-            RTEditor.inst.PrefabTypesPopup.ClearContent();
+            PrefabTypesPopup.ClearContent();
 
-            var add = EditorPrefabHolder.Instance.CreateAddButton(RTEditor.inst.PrefabTypesPopup.Content);
+            var add = EditorPrefabHolder.Instance.CreateAddButton(PrefabTypesPopup.Content);
             add.Text = "Create Prefab Type";
             add.OnClick.NewListener(() =>
             {
@@ -1745,8 +1824,14 @@ namespace BetterLegacy.Editor.Managers
             int num = 0;
             foreach (var prefabType in prefabTypes)
             {
+                if (!RTString.SearchString(PrefabTypesPopup.SearchTerm, prefabType.name))
+                {
+                    num++;
+                    continue;
+                }
+
                 int index = num;
-                var gameObject = prefabTypePrefab.Duplicate(RTEditor.inst.PrefabTypesPopup.Content, prefabType.name);
+                var gameObject = prefabTypePrefab.Duplicate(PrefabTypesPopup.Content, prefabType.name);
 
                 var toggle = gameObject.transform.Find("Toggle").GetComponent<Toggle>();
                 toggle.SetIsOnWithoutNotify(current == prefabType.id);
@@ -1844,14 +1929,14 @@ namespace BetterLegacy.Editor.Managers
                 if (!prefabType.isDefault)
                     setImageStorage.OnClick.AddListener(() =>
                     {
-                        RTEditor.inst.BrowserPopup.Open();
+                        RTFileBrowser.inst.Popup.Open();
                         RTFileBrowser.inst.UpdateBrowserFile(new string[] { FileFormat.PNG.Dot() }, onSelectFile: _val =>
                         {
                             prefabType.icon = SpriteHelper.LoadSprite(_val);
                             icon.sprite = prefabType.icon;
 
                             SavePrefabTypes();
-                            RTEditor.inst.BrowserPopup.Close();
+                            RTFileBrowser.inst.Popup.Close();
                         });
                     });
 
@@ -1928,7 +2013,7 @@ namespace BetterLegacy.Editor.Managers
                         savingToPrefab = false;
                         SavePrefab(prefabToSaveFrom);
 
-                        RTEditor.inst.PrefabPopups.Close();
+                        Popups.Close();
 
                         prefabToSaveFrom = null;
 
@@ -1977,9 +2062,9 @@ namespace BetterLegacy.Editor.Managers
                         return;
                     }
 
-                    if (RTEditor.inst.PrefabPopups.External.PathField.text == RTEditor.inst.PrefabPath)
+                    if (Popups.External.PathField.text == RTEditor.inst.PrefabPath)
                     {
-                        RTEditor.inst.PrefabPopups.External.PathField.text = RTFile.GetDirectory(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath)).Remove(RTEditor.inst.BeatmapsPath + "/");
+                        Popups.External.PathField.text = RTFile.GetDirectory(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath)).Remove(RTEditor.inst.BeatmapsPath + "/");
                         RTEditor.inst.UpdatePrefabPath(false);
                     }
                 };
@@ -2394,8 +2479,7 @@ namespace BetterLegacy.Editor.Managers
                     EditorManager.inst.DisplayNotification($"Saved External Prefab [{prefab.name}]!", 2f, EditorManager.NotificationType.Success);
 
                     RTEditor.inst.EnablePrefabWatcher();
-                    RTEditor.inst.HideWarningPopup();
-                }, RTEditor.inst.HideWarningPopup);
+                });
                 return;
             }
             RTEditor.inst.DisablePrefabWatcher();
@@ -2532,7 +2616,7 @@ namespace BetterLegacy.Editor.Managers
             if (!EditorLevelManager.inst.HasLoadedLevel())
                 return;
 
-            RTEditor.inst.PrefabPopups.Open();
+            Popups.Open();
             RenderPopup();
         }
 
@@ -2582,7 +2666,7 @@ namespace BetterLegacy.Editor.Managers
             selectedModifierBlocks.Clear();
             selectedSpriteAssets.Clear();
             RenderPrefabCreator();
-            RTEditor.inst.PrefabPopups.Close();
+            Popups.Close();
         }
 
         /// <summary>
@@ -2908,15 +2992,15 @@ namespace BetterLegacy.Editor.Managers
 
             selectingQuickPrefab = updateCurrentPrefab;
 
-            EditorContextMenu.AddContextMenu(RTEditor.inst.PrefabPopups.Internal.SearchField.gameObject,
+            EditorContextMenu.AddContextMenu(Popups.Internal.SearchField.gameObject,
                 ButtonElement.ToggleButton("Filter: Used", () => filterUsed, () =>
                 {
                     filterUsed = !filterUsed;
                     StartCoroutine(RefreshInternalPrefabs());
                 }));
 
-            RTEditor.inst.PrefabPopups.Internal.ClearContent();
-            CreatePrefabButton(RTEditor.inst.PrefabPopups.Internal.Content, "New Internal Prefab", eventData =>
+            Popups.Internal.ClearContent();
+            CreatePrefabButton(Popups.Internal.Content, "New Internal Prefab", eventData =>
             {
                 if (eventData.button == PointerEventData.InputButton.Right)
                 {

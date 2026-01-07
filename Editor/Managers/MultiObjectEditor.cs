@@ -3,6 +3,7 @@ using System.Linq;
 
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Modifiers;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Managers.Settings;
@@ -16,12 +17,10 @@ namespace BetterLegacy.Editor.Managers
     {
         #region Values
 
-        public MultiObjectEditorDialog Dialog { get; set; }
-
         /// <summary>
-        /// String to format from.
+        /// Dialog of the editor.
         /// </summary>
-        public const string DEFAULT_TEXT = "You are currently editing multiple objects.\n\nObject Count: {0}/{3}\nBG Count: {5}/{6}\nPrefab Object Count: {1}/{4}\nTotal: {2}";
+        public MultiObjectEditorDialog Dialog { get; set; }
 
         #endregion
 
@@ -51,84 +50,125 @@ namespace BetterLegacy.Editor.Managers
             Dialog.SelectedTotalCountLabel?.SetText($"Selected Total Count [{EditorTimeline.inst.SelectedObjects.Count}]");
         }
 
+        /// <summary>
+        /// Performs an action for each selected object.
+        /// </summary>
+        /// <param name="action">Action to run.</param>
         public void ForEachTimelineObject(Action<TimelineObject> action)
         {
             foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
                 action?.Invoke(timelineObject);
         }
 
+        /// <summary>
+        /// Performs an action for each selected object.
+        /// </summary>
+        /// <param name="action">Action to run.</param>
         public void ForEachBeatmapObject(Action<BeatmapObject> action)
         {
             foreach (var timelineObject in EditorTimeline.inst.SelectedBeatmapObjects)
                 action?.Invoke(timelineObject.GetData<BeatmapObject>());
         }
-        
+
+        /// <summary>
+        /// Performs an action for each selected object.
+        /// </summary>
+        /// <param name="action">Action to run.</param>
         public void ForEachBeatmapObject(Action<TimelineObject> action)
         {
             foreach (var timelineObject in EditorTimeline.inst.SelectedBeatmapObjects)
                 action?.Invoke(timelineObject);
         }
 
+        /// <summary>
+        /// Performs an action for each selected object.
+        /// </summary>
+        /// <param name="action">Action to run.</param>
         public void ForEachPrefabObject(Action<PrefabObject> action)
         {
             foreach (var timelineObject in EditorTimeline.inst.SelectedPrefabObjects)
                 action?.Invoke(timelineObject.GetData<PrefabObject>());
         }
-        
+
+        /// <summary>
+        /// Performs an action for each selected object.
+        /// </summary>
+        /// <param name="action">Action to run.</param>
         public void ForEachPrefabObject(Action<TimelineObject> action)
         {
             foreach (var timelineObject in EditorTimeline.inst.SelectedPrefabObjects)
                 action?.Invoke(timelineObject);
         }
-        
+
+        /// <summary>
+        /// Performs an action for each selected object.
+        /// </summary>
+        /// <param name="action">Action to run.</param>
         public void ForEachBackgroundObject(Action<BackgroundObject> action)
         {
             foreach (var timelineObject in EditorTimeline.inst.SelectedBackgroundObjects)
                 action?.Invoke(timelineObject.GetData<BackgroundObject>());
         }
-        
+
+        /// <summary>
+        /// Performs an action for each selected object.
+        /// </summary>
+        /// <param name="action">Action to run.</param>
         public void ForEachBackgroundObject(Action<TimelineObject> action)
         {
             foreach (var timelineObject in EditorTimeline.inst.SelectedBackgroundObjects)
                 action?.Invoke(timelineObject);
         }
 
-        public void ForEachModifyable(Action<Core.Data.Modifiers.IModifyable> action)
+        /// <summary>
+        /// Performs an action for each selected object.
+        /// </summary>
+        /// <param name="action">Action to run.</param>
+        public void ForEachModifyable(Action<IModifyable> action)
         {
             foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
             {
-                if (timelineObject.TryGetData(out Core.Data.Modifiers.IModifyable modifyable))
+                if (timelineObject.TryGetData(out IModifyable modifyable))
                     action?.Invoke(modifyable);
             }
         }
 
-        public void ClearKeyframes(int type) => RTEditor.inst.ShowWarningPopup($"You are about to clear the {KeyframeTimeline.IntToTypeName(type).ToLower()} keyframes from all selected objects, this <b>CANNOT</b> be undone!", () =>
+        /// <summary>
+        /// Resets a specific keyframe type list to the default for each selected object.
+        /// </summary>
+        /// <param name="type">Type of the keyframe.</param>
+        public void ClearKeyframes(int type) => RTEditor.inst.ShowWarningPopup($"You are about to clear the {KeyframeTimeline.IntToTypeName(type).ToLower()} keyframes from all selected objects, this <b>CANNOT</b> be undone!", () => ForEachBeatmapObject(timelineObject =>
         {
-            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
+            var beatmapObject = timelineObject.GetData<BeatmapObject>();
+            beatmapObject.TimelineKeyframes.ForLoopReverse((timelineKeyframe, index) =>
             {
-                var bm = timelineObject.GetData<BeatmapObject>();
-                bm.TimelineKeyframes.ForLoopReverse((timelineKeyframe, index) =>
-                {
-                    if (timelineKeyframe.Type != type)
-                        return;
-                    CoreHelper.Delete(timelineKeyframe.GameObject);
-                    bm.TimelineKeyframes.RemoveAt(index);
-                });
-                bm.events[type].Sort((a, b) => a.time.CompareTo(b.time));
-                var firstKF = bm.events[type][0].Copy(false);
-                bm.events[type].Clear();
-                bm.events[type].Add(firstKF);
-                if (EditorTimeline.inst.SelectedObjects.Count == 1)
-                {
-                    ObjectEditor.inst.Dialog.Timeline.ResizeKeyframeTimeline(bm);
-                    ObjectEditor.inst.Dialog.Timeline.RenderKeyframes(bm);
-                }
-
-                RTLevel.Current?.UpdateObject(bm, ObjectContext.KEYFRAMES);
-                EditorTimeline.inst.RenderTimelineObject(timelineObject);
+                if (timelineKeyframe.Type != type)
+                    return;
+                CoreHelper.Delete(timelineKeyframe.GameObject);
+                beatmapObject.TimelineKeyframes.RemoveAt(index);
+            });
+            beatmapObject.events[type].Sort((a, b) => a.time.CompareTo(b.time));
+            var firstKF = beatmapObject.events[type][0].Copy(false);
+            beatmapObject.events[type].Clear();
+            beatmapObject.events[type].Add(firstKF);
+            if (EditorTimeline.inst.SelectedObjects.Count == 1)
+            {
+                ObjectEditor.inst.Dialog.Timeline.ResizeKeyframeTimeline(beatmapObject);
+                ObjectEditor.inst.Dialog.Timeline.RenderKeyframes(beatmapObject);
             }
-        });
 
+            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+            EditorTimeline.inst.RenderTimelineObject(timelineObject);
+        }));
+
+        /// <summary>
+        /// Sets the parent toggle for each selected object.
+        /// </summary>
+        /// <param name="type">Parent type to set the toggle of.</param>
+        /// <param name="operation">How the parent toggle should be changed.<br></br>
+        /// 0 = false<br></br>
+        /// 1 = true<br></br>
+        /// 2 = swap</param>
         public void SetParentToggle(int type, int operation) => ForEachTimelineObject(timelineObject =>
         {
             if (timelineObject.isBeatmapObject)
@@ -173,6 +213,12 @@ namespace BetterLegacy.Editor.Managers
             }
         });
 
+        /// <summary>
+        /// Sets the parent offset (delay) for each selected object.
+        /// </summary>
+        /// <param name="type">Parent type to set the offset of.</param>
+        /// <param name="value">Value to use.</param>
+        /// <param name="operation">Operation to apply.</param>
         public void SetParentOffset(int type, float value, MathOperation operation) => ForEachTimelineObject(timelineObject =>
         {
             if (timelineObject.isBeatmapObject)
@@ -189,6 +235,14 @@ namespace BetterLegacy.Editor.Managers
             }
         });
 
+        /// <summary>
+        /// Sets the parent additive for each selected object.
+        /// </summary>
+        /// <param name="type">Parent type to set the additive of.</param>
+        /// <param name="operation">How the parent additive should be changed.<br></br>
+        /// 0 = false<br></br>
+        /// 1 = true<br></br>
+        /// 2 = swap</param>
         public void SetParentAdditive(int type, int operation) => ForEachTimelineObject(timelineObject =>
         {
             if (timelineObject.isBeatmapObject)
@@ -233,6 +287,12 @@ namespace BetterLegacy.Editor.Managers
             }
         });
 
+        /// <summary>
+        /// Sets the parent parallax for each selected object.
+        /// </summary>
+        /// <param name="type">Parent type to set the parallax of.</param>
+        /// <param name="value">Value to use.</param>
+        /// <param name="operation">Operation to apply.</param>
         public void SetParentParallax(int type, float value, MathOperation operation) => ForEachTimelineObject(timelineObject =>
         {
             if (timelineObject.isBeatmapObject)
@@ -249,12 +309,20 @@ namespace BetterLegacy.Editor.Managers
             }
         });
 
+        /// <summary>
+        /// Sets the detail mode for each selected object.
+        /// </summary>
+        /// <param name="detailMode">Detail mode to set.</param>
         public void SetDetailMode(DetailMode detailMode) => ForEachBeatmapObject(beatmapObject =>
         {
             beatmapObject.detailMode = detailMode;
             RTLevel.Current?.UpdateObject(beatmapObject);
         });
 
+        /// <summary>
+        /// Sets the object type for each selected object.
+        /// </summary>
+        /// <param name="objectType">Object type to set.</param>
         public void SetObjectType(BeatmapObject.ObjectType objectType) => ForEachBeatmapObject(timelineObject =>
         {
             var beatmapObject = timelineObject.GetData<BeatmapObject>();
@@ -263,19 +331,31 @@ namespace BetterLegacy.Editor.Managers
             EditorTimeline.inst.RenderTimelineObject(timelineObject);
             RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.OBJECT_TYPE);
         });
-        
+
+        /// <summary>
+        /// Sets the color blend mode for each selected object.
+        /// </summary>
+        /// <param name="colorBlendMode">Color blend mode to set.</param>
         public void SetColorBlendMode(ColorBlendMode colorBlendMode) => ForEachBeatmapObject(beatmapObject =>
         {
             beatmapObject.colorBlendMode = colorBlendMode;
             RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.RENDERING);
         });
 
+        /// <summary>
+        /// Sets the gradient type for each selected object.
+        /// </summary>
+        /// <param name="gradientType">Gradient type to set.</param>
         public void SetGradientType(GradientType gradientType) => ForEachBeatmapObject(beatmapObject =>
         {
             beatmapObject.gradientType = gradientType;
             RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.RENDERING);
         });
-        
+
+        /// <summary>
+        /// Sets the render layer type for each selected object.
+        /// </summary>
+        /// <param name="renderLayerType">Render layer type to set.</param>
         public void SetRenderLayerType(BeatmapObject.RenderLayerType renderLayerType) => ForEachBeatmapObject(beatmapObject =>
         {
             beatmapObject.renderLayerType = renderLayerType;

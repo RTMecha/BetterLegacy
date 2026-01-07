@@ -408,17 +408,13 @@ namespace BetterLegacy.Editor.Managers
                                     CoroutineHelper.StartCoroutine(soundAsset.LoadAudioClip(() => EditorManager.inst.DisplayNotification($"Loaded audio clip!", 2f, EditorManager.NotificationType.Success)));
                                 }),
                                 new ButtonElement("Unload", soundAsset.UnloadAudioClip),
-                                new ButtonElement("Remove", () =>
+                                new ButtonElement("Remove", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to remove this sound from the asset list?", () =>
                                 {
-                                    RTEditor.inst.ShowWarningPopup("Are you sure you want to remove this sound from the asset list?", () =>
-                                    {
-                                        if (soundAsset.audio)
-                                            CoreHelper.Destroy(soundAsset.audio);
-                                        GameData.Current.assets.RemoveSound(soundAsset.name);
-                                        RenderPopup();
-                                        RTEditor.inst.HideWarningPopup();
-                                    }, RTEditor.inst.HideWarningPopup);
-                                }),
+                                    if (soundAsset.audio)
+                                        CoreHelper.Destroy(soundAsset.audio);
+                                    GameData.Current.assets.RemoveSound(soundAsset.name);
+                                    RenderPopup();
+                                })),
                                 new SpacerElement(),
                                 ButtonElement.ToggleButton("Autoload Sound", () => soundAsset.autoLoad, () => soundAsset.autoLoad = !soundAsset.autoLoad),
                                 new SpacerElement(),
@@ -472,16 +468,12 @@ namespace BetterLegacy.Editor.Managers
                         {
                             var buttonFunctions = new List<EditorElement>()
                             {
-                                new ButtonElement("Remove", () =>
+                                new ButtonElement("Remove", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to remove this sprite from the asset list? This will also remove the sprite from all image objects that have a reference to this sprite.", () =>
                                 {
-                                    RTEditor.inst.ShowWarningPopup("Are you sure you want to remove this sprite from the asset list? This will also remove the sprite from all image objects that have a reference to this sprite.", () =>
-                                    {
-                                        GameData.Current.assets.RemoveSprite(spriteAsset.name);
-                                        RenderPopup();
-                                        RTLevel.Reinit();
-                                        RTEditor.inst.HideWarningPopup();
-                                    }, RTEditor.inst.HideWarningPopup);
-                                }),
+                                    GameData.Current.assets.RemoveSprite(spriteAsset.name);
+                                    RenderPopup();
+                                    RTLevel.Reinit();
+                                })),
                                 new SpacerElement(),
                                 new ButtonElement("Reload Assets", () => LoadAssets(RenderPopup)),
                                 new SpacerElement(),

@@ -631,9 +631,6 @@ namespace BetterLegacy.Core.Helpers
             foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
             {
                 EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                if (!ObjectEditor.UpdateObjects)
-                    continue;
-
                 if (timelineObject.isBeatmapObject)
                 {
                     var beatmapObject = timelineObject.GetData<BeatmapObject>();

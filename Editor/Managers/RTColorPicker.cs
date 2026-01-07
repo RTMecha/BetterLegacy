@@ -23,28 +23,74 @@ namespace BetterLegacy.Editor.Managers
     {
         #region Values
 
+        /// <summary>
+        /// The base color picker.
+        /// </summary>
         public ColorPicker baseColorPicker;
 
+        /// <summary>
+        /// The close button.
+        /// </summary>
         public Button closeButton;
 
+        /// <summary>
+        /// The hue slider.
+        /// </summary>
         public Slider hueSlider;
 
+        /// <summary>
+        /// Red color channel field.
+        /// </summary>
         public InputField rField;
+
+        /// <summary>
+        /// Green color channel field.
+        /// </summary>
         public InputField gField;
+
+        /// <summary>
+        /// Blue color channel field.
+        /// </summary>
         public InputField bField;
 
+        /// <summary>
+        /// Hue field.
+        /// </summary>
         public InputField hField;
+
+        /// <summary>
+        /// Saturation field.
+        /// </summary>
         public InputField sField;
+
+        /// <summary>
+        /// Value field.
+        /// </summary>
         public InputField vField;
 
+        /// <summary>
+        /// Hex color field.
+        /// </summary>
         public InputField hexField;
 
+        /// <summary>
+        /// The preview image.
+        /// </summary>
         public Image previewImage;
 
+        /// <summary>
+        /// The save button.
+        /// </summary>
         public Button saveButton;
 
+        /// <summary>
+        /// The current hex value.
+        /// </summary>
         public string currentHex;
 
+        /// <summary>
+        /// The current color value.
+        /// </summary>
         public Color currentColor;
 
         Action<Color, string> colorChanged;
@@ -158,6 +204,13 @@ namespace BetterLegacy.Editor.Managers
 			RenderEditor(LSColors.black);
 		}
 
+        /// <summary>
+        /// Shows the color picker.
+        /// </summary>
+        /// <param name="currentColor">The current color to display.</param>
+        /// <param name="colorChanged">Function to run on color changed.</param>
+        /// <param name="colorSaved">Function to run on color saved.</param>
+        /// <param name="cancel">Function to run on cancel.</param>
 		public void Show(Color currentColor, Action<Color, string> colorChanged, Action<Color, string> colorSaved, Action cancel = null)
 		{
 			RTEditor.inst.ShowDialog(EditorPopup.COLOR_PICKER);

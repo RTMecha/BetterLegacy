@@ -115,7 +115,7 @@ namespace BetterLegacy.Editor.Data.Popups
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         /// <summary>
         /// Clears the content from the popup.
@@ -130,6 +130,11 @@ namespace BetterLegacy.Editor.Data.Popups
         {
             GameObject = popup;
             Dragger = popup.GetComponent<DraggableUI>();
+            if (!Dragger)
+            {
+                Dragger = popup.AddComponent<DraggableUI>();
+                Dragger.target = popup.transform;
+            }
             if (popup.transform.TryFind("Panel", out Transform topPanel))
             {
                 TopPanel = topPanel.AsRT();

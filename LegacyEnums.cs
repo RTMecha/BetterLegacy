@@ -1007,6 +1007,7 @@ namespace BetterLegacy
     /// </summary>
     public enum ValueType
     {
+        Unrecognized,
         Bool,
         Int,
         Float,
@@ -1020,7 +1021,6 @@ namespace BetterLegacy
         Enum,
         Color,
         Function,
-        Unrecognized
     }
 
     /// <summary>
@@ -1328,6 +1328,14 @@ namespace BetterLegacy
             public Complexity complexity;
             public bool onlySpecificComplexity;
         }
+    }
+
+    public enum ObjectKeyframeType
+    {
+        Position,
+        Scale,
+        Rotation,
+        Color,
     }
 
     #endregion

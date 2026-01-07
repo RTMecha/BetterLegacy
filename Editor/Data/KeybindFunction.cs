@@ -9,6 +9,8 @@ namespace BetterLegacy.Editor.Data
     /// </summary>
     public class KeybindFunction
     {
+        #region Constructors
+
         public KeybindFunction()
         {
             settings = new List<Keybind.Setting>();
@@ -30,6 +32,10 @@ namespace BetterLegacy.Editor.Data
 
         public KeybindFunction(string name, Action<Keybind> action, params Keybind.Setting[] settings) : this(name, action, settings.ToList()) { }
 
+        #endregion
+
+        #region Values
+
         /// <summary>
         /// Name of the keybind function.
         /// </summary>
@@ -44,5 +50,7 @@ namespace BetterLegacy.Editor.Data
         /// The default settings for the keybind.
         /// </summary>
         public List<Keybind.Setting> settings;
+
+        #endregion
     }
 }

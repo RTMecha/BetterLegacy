@@ -812,7 +812,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             if (changed && !Input.GetKey(KeyCode.LeftAlt) && !selected.All(x => x.Locked) && RTEditor.inst.dragOffset != timelineCalc + ObjEditor.inst.mouseOffsetXForDrag)
             {
-                if (RTEditor.DraggingPlaysSound && (RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsObjectKeyframes.Value || !RTEditor.DraggingPlaysSoundBPM))
+                if (EditorConfig.Instance.DraggingPlaysSound.Value && (RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsObjectKeyframes.Value || !EditorConfig.Instance.DraggingPlaysSoundOnlyWithBPM.Value))
                     SoundManager.inst.PlaySound(DefaultSounds.LeftRight, RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsObjectKeyframes.Value ? 0.6f : 0.1f, 0.8f);
 
                 RTEditor.inst.dragOffset = timelineCalc + ObjEditor.inst.mouseOffsetXForDrag;
@@ -1389,7 +1389,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             dialog.CurvesLabel.SetActive(count == 1 && firstKF.Index != 0 || count > 1);
             dialog.CurvesDropdown.gameObject.SetActive(count == 1 && firstKF.Index != 0 || count > 1);
-            dialog.CurvesDropdown.SetValueWithoutNotify(RTEditor.inst.GetEaseIndex(firstKF.eventKeyframe.curve.ToString()));
+            dialog.CurvesDropdown.SetValueWithoutNotify(RTEditor.inst.GetEaseIndex(firstKF.eventKeyframe.curve));
             dialog.CurvesDropdown.onValueChanged.NewListener(_val =>
             {
                 var anim = RTEditor.inst.GetEasing(_val);
@@ -1533,7 +1533,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         keyframe.random = buttonTmp;
 
                     // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
-                    if (animatable is BeatmapObject beatmapObject && ObjectEditor.UpdateObjects)
+                    if (animatable is BeatmapObject beatmapObject)
                         RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
 
                     KeyframeRandomHandler(type, selected, firstKF, animatable);
@@ -2499,7 +2499,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             var beatmapObject = animatable as BeatmapObject;
             for (int i = 0; i < timelineMarkers.Count; i++)
-                timelineMarkers[i].RenderPosition(timelineMarkers[i].Marker.time - (beatmapObject ? beatmapObject.StartTime : 0f), ObjEditor.inst.Zoom * 14f, 0f);
+                timelineMarkers[i].RenderPosition(timelineMarkers[i].Time - (beatmapObject ? beatmapObject.StartTime : 0f), ObjEditor.inst.Zoom * 14f, 0f);
         }
 
         public void SetCursorColor(Color color)

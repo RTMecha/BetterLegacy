@@ -1686,11 +1686,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         IntegerGenerator(modifier, reference, "Player Index", 1, 0, max: 3);
                         var modelID = StringGenerator(modifier, reference, "Model ID", 0);
                         EditorContextMenu.AddContextMenu(modelID.transform.Find("Input").gameObject,
-                            new ButtonElement("Select model", () =>
-                            {
-                                PlayerEditor.inst.ModelsPopup.Open();
-                                CoroutineHelper.StartCoroutine(PlayerEditor.inst.RefreshModels(model => SetValue(0, model.basePart.id, reference)));
-                            }));
+                            new ButtonElement("Select model", () => PlayerEditor.inst.OpenModelsPopup(model => SetValue(0, model.basePart.id, reference))));
 
                         break;
                     }

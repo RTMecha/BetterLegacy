@@ -33,8 +33,14 @@ namespace BetterLegacy.Editor.Managers
 
         #region Values
 
+        /// <summary>
+        /// Dialog of the editor.
+        /// </summary>
         public LevelPropertiesEditorDialog Dialog { get; set; }
 
+        /// <summary>
+        /// List of copied modifier blocks.
+        /// </summary>
         public List<ModifierBlock> copiedModifierBlocks = new List<ModifierBlock>();
 
         #endregion
@@ -56,6 +62,10 @@ namespace BetterLegacy.Editor.Managers
             } // init dialog
         }
 
+        /// <summary>
+        /// Copies a modifier block.
+        /// </summary>
+        /// <param name="modifierBlock">Modifier block to copy.</param>
         public void CopyModifierBlock(ModifierBlock modifierBlock)
         {
             copiedModifierBlocks.Clear();
@@ -64,6 +74,10 @@ namespace BetterLegacy.Editor.Managers
             RenderDialog();
         }
 
+        /// <summary>
+        /// Copies a list of modifier blocks.
+        /// </summary>
+        /// <param name="modifierBlocks">List of modifier blocks to copy.</param>
         public void CopyModifierBlocks(List<ModifierBlock> modifierBlocks)
         {
             copiedModifierBlocks = new List<ModifierBlock>(modifierBlocks.Select(x => x.Copy()));
@@ -71,6 +85,22 @@ namespace BetterLegacy.Editor.Managers
             RenderDialog();
         }
 
+        /// <summary>
+        /// Pastes all copied modifiers into a list of modifier blocks.
+        /// </summary>
+        public void PasteModifierBlocks() => PasteModifierBlocks(copiedModifierBlocks);
+
+        /// <summary>
+        /// Pastes all copied modifiers into a list of modifier blocks.
+        /// </summary>
+        /// <param name="copied">List of copied modifier blocks.</param>
+        public void PasteModifierBlocks(List<ModifierBlock> copied) => PasteModifierBlocks(GameData.Current.modifierBlocks, copied);
+
+        /// <summary>
+        /// Pastes all copied modifiers into a list of modifier blocks.
+        /// </summary>
+        /// <param name="modifierBlocks">Modifier blocks to copy onto.</param>
+        /// <param name="copied">List of copied modifier blocks.</param>
         public void PasteModifierBlocks(List<ModifierBlock> modifierBlocks, List<ModifierBlock> copied)
         {
             if (copied.IsEmpty())
@@ -84,6 +114,9 @@ namespace BetterLegacy.Editor.Managers
             RenderDialog();
         }
 
+        /// <summary>
+        /// Creates a new modifier block.
+        /// </summary>
         public void CreateNewModifierBlock()
         {
             var modifierBlock = new ModifierBlock("newModifierBlock", ModifierReferenceType.ModifierBlock);
@@ -91,6 +124,9 @@ namespace BetterLegacy.Editor.Managers
             RenderDialog();
         }
 
+        /// <summary>
+        /// Opens the dialog.
+        /// </summary>
         public void OpenDialog()
         {
             if (!EditorManager.inst.hasLoadedLevel)
@@ -103,10 +139,13 @@ namespace BetterLegacy.Editor.Managers
             RenderDialog();
         }
 
+        /// <summary>
+        /// Renders the dialog.
+        /// </summary>
         public void RenderDialog()
         {
-            Dialog.LevelStartOffsetField.inputField.SetTextWithoutNotify(GameData.Current.data.level.LevelStartOffset.ToString());
-            Dialog.LevelStartOffsetField.inputField.onValueChanged.NewListener(_val =>
+            Dialog.LevelStartOffsetField.SetTextWithoutNotify(GameData.Current.data.level.LevelStartOffset.ToString());
+            Dialog.LevelStartOffsetField.OnValueChanged.NewListener(_val =>
             {
                 if (!float.TryParse(_val, out float num))
                     return;
@@ -125,8 +164,8 @@ namespace BetterLegacy.Editor.Managers
             Dialog.ReverseToggle.SetIsOnWithoutNotify(GameData.Current.data.level.reverse);
             Dialog.ReverseToggle.onValueChanged.NewListener(_val => GameData.Current.data.level.reverse = _val);
 
-            Dialog.LevelEndOffsetField.inputField.SetTextWithoutNotify(GameData.Current.data.level.LevelEndOffset.ToString());
-            Dialog.LevelEndOffsetField.inputField.onValueChanged.NewListener(_val =>
+            Dialog.LevelEndOffsetField.SetTextWithoutNotify(GameData.Current.data.level.LevelEndOffset.ToString());
+            Dialog.LevelEndOffsetField.OnValueChanged.NewListener(_val =>
             {
                 if (!float.TryParse(_val, out float num))
                     return;
@@ -223,11 +262,8 @@ namespace BetterLegacy.Editor.Managers
             var pasteStorage = paste.GetComponent<FunctionButtonStorage>();
             pasteStorage.Text = "Paste Modifier Blocks";
             pasteStorage.OnClick.ClearAll();
-            EditorContextMenu.AddContextMenu(paste, leftClick: () => PasteModifierBlocks(GameData.Current.modifierBlocks, copiedModifierBlocks),
-                new ButtonElement("Paste (Additive)", () =>
-                {
-                    PasteModifierBlocks(GameData.Current.modifierBlocks, copiedModifierBlocks);
-                }),
+            EditorContextMenu.AddContextMenu(paste, leftClick: () => PasteModifierBlocks(),
+                new ButtonElement("Paste (Additive)", PasteModifierBlocks),
                 new ButtonElement("Paste (Overwrite)", () =>
                 {
                     if (copiedModifierBlocks.IsEmpty())
@@ -258,7 +294,7 @@ namespace BetterLegacy.Editor.Managers
                     }
 
                     GameData.Current.modifierBlocks.Clear();
-                    PasteModifierBlocks(GameData.Current.modifierBlocks, copiedModifierBlocks);
+                    PasteModifierBlocks();
                 }),
                 new SpacerElement(),
                 new ButtonElement("Paste from JSON (Additive)", () =>
@@ -272,7 +308,7 @@ namespace BetterLegacy.Editor.Managers
 
                     var jn = JSON.Parse(text);
                     var modifierBlocks = Parser.ParseModifierBlocks(jn, ModifierReferenceType.ModifierBlock);
-                    PasteModifierBlocks(GameData.Current.modifierBlocks, modifierBlocks);
+                    PasteModifierBlocks(modifierBlocks);
                 }),
                 new ButtonElement("Paste from JSON (Overwrite)", () =>
                 {
@@ -322,7 +358,7 @@ namespace BetterLegacy.Editor.Managers
                     }
 
                     GameData.Current.modifierBlocks.Clear();
-                    PasteModifierBlocks(GameData.Current.modifierBlocks, modifierBlocks);
+                    PasteModifierBlocks(modifierBlocks);
                 }));
 
             EditorThemeManager.ApplyGraphic(pasteStorage.button.image, ThemeGroup.Paste, true);

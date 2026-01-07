@@ -150,11 +150,7 @@ namespace BetterLegacy.Patchers
         {
             if (EditorConfig.Instance.ShowCollapsePrefabWarning.Value)
             {
-                RTEditor.inst.ShowWarningPopup("Are you sure you want to collapse this Prefab group and save the changes to the Internal Prefab?", () =>
-                {
-                    RTPrefabEditor.inst.CollapseCurrentPrefab();
-                    RTEditor.inst.HideWarningPopup();
-                }, RTEditor.inst.HideWarningPopup);
+                RTEditor.inst.ShowWarningPopup("Are you sure you want to collapse this Prefab group and save the changes to the Internal Prefab?", () => RTPrefabEditor.inst.CollapseCurrentPrefab());
 
                 return false;
             }

@@ -91,8 +91,7 @@ namespace BetterLegacy.Editor.Data.Planners
             {
                 ProjectPlanner.inst.characters.RemoveAll(x => x is CharacterPlanner && x.ID == ID);
                 CoreHelper.Destroy(gameObject);
-                RTEditor.inst.HideWarningPopup();
-            }, RTEditor.inst.HideWarningPopup));
+            }));
 
             EditorThemeManager.ApplyDeleteButton(delete);
 

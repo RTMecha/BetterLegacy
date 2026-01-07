@@ -288,23 +288,19 @@ namespace BetterLegacy.Editor.Data.Elements
                                 RTEditor.inst.HideNameEditor();
                             }), "Level Panel Rename Folder"),
                             new ButtonElement("Paste", EditorLevelManager.inst.PasteLevel, "Level Panel Paste"),
-                            new ButtonElement("Delete", () =>
+                            new ButtonElement("Delete", () => RTEditor.inst.ShowWarningPopup("Are you <b>100%</b> sure you want to delete this folder? This <b>CANNOT</b> be undone! Always make sure you have backups.", () =>
                             {
-                                RTEditor.inst.ShowWarningPopup("Are you <b>100%</b> sure you want to delete this folder? This <b>CANNOT</b> be undone! Always make sure you have backups.", () =>
-                                {
-                                    RTFile.DeleteDirectory(path);
-                                    EditorLevelManager.inst.LoadLevelCollections();
-                                    EditorManager.inst.DisplayNotification("Deleted folder!", 2f, EditorManager.NotificationType.Success);
-                                    RTEditor.inst.HideWarningPopup();
-                                }, RTEditor.inst.HideWarningPopup);
-                            }, "Level Panel Delete"),
+                                RTFile.DeleteDirectory(path);
+                                EditorLevelManager.inst.LoadLevelCollections();
+                                EditorManager.inst.DisplayNotification("Deleted folder!", 2f, EditorManager.NotificationType.Success);
+                            }), "Level Panel Delete"),
                             new SpacerElement(),
                             //new ButtonElement("ZIP Folder", () => EditorLevelManager.inst.ZipLevel(this), "Level Panel ZIP"),
                             new ButtonElement("Copy Path", () => LSText.CopyToClipboard(path), "Level Panel Copy Folder"),
                             new ButtonElement("Open in File Explorer", () => RTFile.OpenInFileBrowser.Open(path), "Level Panel Open Explorer"),
                             new ButtonElement("Open List in File Explorer", RTEditor.inst.OpenLevelListFolder, "Level List Open Explorer"),
                             new SpacerElement(),
-                            new ButtonElement($"Select Icon ({RTEditor.SYSTEM_BROWSER})", () =>
+                            new ButtonElement($"Select Icon ({RTFileBrowser.SYSTEM_BROWSER})", () =>
                             {
                                 string imageFile = FileBrowser.OpenSingleFile("Select an image!", RTEditor.inst.BasePath, new string[] { "png" });
                                 if (string.IsNullOrEmpty(imageFile))
@@ -313,30 +309,26 @@ namespace BetterLegacy.Editor.Data.Elements
                                 RTFile.CopyFile(imageFile, RTFile.CombinePaths(path, $"folder_icon{FileFormat.PNG.Dot()}"));
                                 RenderIcon();
                             }),
-                            new ButtonElement($"Select Icon ({RTEditor.EDITOR_BROWSER})", () =>
+                            new ButtonElement($"Select Icon ({RTFileBrowser.EDITOR_BROWSER})", () =>
                             {
-                                RTEditor.inst.BrowserPopup.Open();
+                                RTFileBrowser.inst.Popup.Open();
                                 RTFileBrowser.inst.UpdateBrowserFile(new string[] { FileFormat.PNG.Dot() }, imageFile =>
                                 {
                                     if (string.IsNullOrEmpty(imageFile))
                                         return;
 
-                                    RTEditor.inst.BrowserPopup.Close();
+                                    RTFileBrowser.inst.Popup.Close();
 
                                     RTFile.CopyFile(imageFile, RTFile.CombinePaths(path, $"folder_icon{FileFormat.PNG.Dot()}"));
                                     RenderIcon();
                                 });
                             }),
-                            new ButtonElement("Clear Icon", () =>
+                            new ButtonElement("Clear Icon", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to clear the folder icon? This will delete the icon file.", () =>
                             {
-                                RTEditor.inst.ShowWarningPopup("Are you sure you want to clear the folder icon? This will delete the icon file.", () =>
-                                {
-                                    RTEditor.inst.HideWarningPopup();
-                                    RTFile.DeleteFile(RTFile.CombinePaths(path, $"folder_icon{FileFormat.PNG.Dot()}"));
-                                    RenderIcon();
-                                    EditorManager.inst.DisplayNotification("Deleted icon!", 1.5f, EditorManager.NotificationType.Success);
-                                }, RTEditor.inst.HideWarningPopup);
-                            }),
+                                RTFile.DeleteFile(RTFile.CombinePaths(path, $"folder_icon{FileFormat.PNG.Dot()}"));
+                                RenderIcon();
+                                EditorManager.inst.DisplayNotification("Deleted icon!", 1.5f, EditorManager.NotificationType.Success);
+                            })),
                             new SpacerElement(),
                             new ButtonElement("Create Info File", () =>
                             {
@@ -382,17 +374,13 @@ namespace BetterLegacy.Editor.Data.Elements
                                 RenderTooltip();
                                 RenderIcon();
                             }),
-                            new ButtonElement("Clear Info File", () =>
+                            new ButtonElement("Clear Info File", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete the info file?", () =>
                             {
-                                RTEditor.inst.ShowWarningPopup("Are you sure you want to delete the info file?", () =>
-                                {
-                                    RTFile.DeleteFile(RTFile.CombinePaths(path, $"folder_info{FileFormat.JSON.Dot()}"));
-                                    infoJN = null;
-                                    RenderTooltip();
-                                    RTEditor.inst.HideWarningPopup();
-                                    EditorManager.inst.DisplayNotification("Deleted info file!", 1.5f, EditorManager.NotificationType.Success);
-                                }, RTEditor.inst.HideWarningPopup);
-                            }),
+                                RTFile.DeleteFile(RTFile.CombinePaths(path, $"folder_info{FileFormat.JSON.Dot()}"));
+                                infoJN = null;
+                                RenderTooltip();
+                                EditorManager.inst.DisplayNotification("Deleted info file!", 1.5f, EditorManager.NotificationType.Success);
+                            })),
                             new SpacerElement(),
                             new ButtonElement("Create Collection", () =>
                             {
@@ -488,16 +476,12 @@ namespace BetterLegacy.Editor.Data.Elements
                             //    CoreHelper.Log($"Copied level: {EditorLevelManager.inst.copiedLevelPath}");
                             //}, "Level Panel Copy"),
                             //new ButtonElement("Paste", EditorLevelManager.inst.PasteLevel, "Level Panel Paste"),
-                            new ButtonElement("Delete", () =>
+                            new ButtonElement("Delete", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this level? This CANNOT be undone!", () =>
                             {
-                                RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this level? This CANNOT be undone!", () =>
-                                {
-                                    RTFile.DeleteDirectory(Item.path);
-                                    EditorLevelManager.inst.LoadLevels();
-                                    EditorManager.inst.DisplayNotification("Deleted level!", 2f, EditorManager.NotificationType.Success);
-                                    RTEditor.inst.HideWarningPopup();
-                                }, RTEditor.inst.HideWarningPopup);
-                            }),
+                                RTFile.DeleteDirectory(Item.path);
+                                EditorLevelManager.inst.LoadLevels();
+                                EditorManager.inst.DisplayNotification("Deleted level!", 2f, EditorManager.NotificationType.Success);
+                            })),
                             new SpacerElement(),
                             new ButtonElement("Copy Arcade ID", () =>
                             {

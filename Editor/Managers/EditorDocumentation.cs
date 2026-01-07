@@ -1073,9 +1073,9 @@ namespace BetterLegacy.Editor.Managers
                 foreach (var document in documents)
                 {
                     var active = RTString.SearchString(documentationSearch, document.Name);
-                    document.PopupButton?.SetActive(active);
-                    if (active && document.PopupButton && document.PopupButton.TryGetComponent(out Button button))
-                        button.onClick.NewListener(() => OpenDocument(document));
+                    document.GameObject?.SetActive(active);
+                    if (active && document.Button)
+                        document.Button.onClick.NewListener(() => OpenDocument(document));
                 }
         }
 
@@ -1228,8 +1228,9 @@ namespace BetterLegacy.Editor.Managers
         {
             var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(Popup.Content, "Document");
             var documentation = new EditorDocument(gameObject, name, description);
+            documentation.Button = gameObject.GetComponent<Button>();
 
-            EditorThemeManager.ApplySelectable(gameObject.GetComponent<Button>(), ThemeGroup.List_Button_1);
+            EditorThemeManager.ApplySelectable(documentation.Button, ThemeGroup.List_Button_1);
 
             documentation.elements.AddRange(elements);
 

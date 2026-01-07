@@ -30,15 +30,20 @@ namespace BetterLegacy.Editor.Managers
 
         public override BackgroundEditor BaseInstance { get => BackgroundEditor.inst; set => BackgroundEditor.inst = value; }
 
-        public BackgroundObject CurrentSelectedBG => EditorTimeline.inst.CurrentSelection.GetData<BackgroundObject>();
+        /// <summary>
+        /// Dialog of the editor.
+        /// </summary>
+        public BackgroundEditorDialog Dialog { get; set; }
 
+        /// <summary>
+        /// List of copied background objects.
+        /// </summary>
         public List<BackgroundObject> copiedBackgroundObjects = new List<BackgroundObject>();
 
+        /// <summary>
+        /// The copied background object.
+        /// </summary>
         public BackgroundObject backgroundObjCopy;
-
-        public GameObject shapeButtonCopy;
-
-        public BackgroundEditorDialog Dialog { get; set; }
 
         #endregion
 
@@ -59,8 +64,15 @@ namespace BetterLegacy.Editor.Managers
 
         public override void OnTick() => Dialog?.ModifiersDialog?.Tick();
 
+        /// <summary>
+        /// Creates a new <see cref="BackgroundObject"/>.
+        /// </summary>
         public void CreateNewBackground() => CreateNewBackground(AudioManager.inst.CurrentAudioSource.time);
 
+        /// <summary>
+        /// Creates a new <see cref="BackgroundObject"/>.
+        /// </summary>
+        /// <param name="time">Time of the new object.</param>
         public void CreateNewBackground(float time)
         {
             if (RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsCreated.Value && EditorConfig.Instance.BPMSnapsObjects.Value)
@@ -84,8 +96,15 @@ namespace BetterLegacy.Editor.Managers
             SetCurrentBackground(backgroundObject);
         }
 
-        public void CopyBackground() => CopyBackground(CurrentSelectedBG);
+        /// <summary>
+        /// Copies the currently selected <see cref="BackgroundObject"/>.
+        /// </summary>
+        public void CopyBackground() => CopyBackground(EditorTimeline.inst.CurrentSelection.GetData<BackgroundObject>());
 
+        /// <summary>
+        /// Copies a <see cref="BackgroundObject"/>.
+        /// </summary>
+        /// <param name="backgroundObject">Background object to copy.</param>
         public void CopyBackground(BackgroundObject backgroundObject)
         {
             CoreHelper.Log($"Copied Background Object");
@@ -93,6 +112,9 @@ namespace BetterLegacy.Editor.Managers
             BackgroundEditor.inst.hasCopiedObject = true;
         }
 
+        /// <summary>
+        /// Pastes the copied <see cref="BackgroundObject"/>s.
+        /// </summary>
         public void PasteBackgrounds()
         {
             if (copiedBackgroundObjects == null || copiedBackgroundObjects.Count < 1)
@@ -124,6 +146,9 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.DisplayNotification($"Pasted all copied Background Objects into level{(overwrite ? " and cleared the original list" : string.Empty)}.", 2f, EditorManager.NotificationType.Success);
         }
 
+        /// <summary>
+        /// Pastes the copied <see cref="BackgroundObject"/>.
+        /// </summary>
         public void PasteBackground()
         {
             if (!BackgroundEditor.inst.hasCopiedObject || backgroundObjCopy == null)
@@ -141,8 +166,15 @@ namespace BetterLegacy.Editor.Managers
             SetCurrentBackground(backgroundObject);
         }
 
-        public void DeleteBackground() => DeleteBackground(CurrentSelectedBG);
+        /// <summary>
+        /// Deletes the currently selected <see cref="BackgroundObject"/>.
+        /// </summary>
+        public void DeleteBackground() => DeleteBackground(EditorTimeline.inst.CurrentSelection.GetData<BackgroundObject>());
         
+        /// <summary>
+        /// Deletes a <see cref="BackgroundObject"/>.
+        /// </summary>
+        /// <param name="backgroundObject">Background object to delete.</param>
         public void DeleteBackground(BackgroundObject backgroundObject)
         {
             if (!backgroundObject)
@@ -154,6 +186,10 @@ namespace BetterLegacy.Editor.Managers
             EditorTimeline.inst.DeleteObject(backgroundObject.timelineObject);
         }
 
+        /// <summary>
+        /// Sets the currently selected <see cref="BackgroundObject"/>.
+        /// </summary>
+        /// <param name="backgroundObject">Background object to set.</param>
         public void SetCurrentBackground(BackgroundObject backgroundObject)
         {
             if (backgroundObject)
@@ -162,6 +198,10 @@ namespace BetterLegacy.Editor.Managers
                 OpenDialog(null);
         }
 
+        /// <summary>
+        /// Creates an amount of <see cref="BackgroundObject"/>s.
+        /// </summary>
+        /// <param name="amount">Amount to create.</param>
         public void CreateBackgrounds(int amount)
         {
             amount = Mathf.Clamp(amount, 0, 1000);
@@ -207,6 +247,9 @@ namespace BetterLegacy.Editor.Managers
             UpdateBackgroundList();
         }
 
+        /// <summary>
+        /// Removes all <see cref="BackgroundObject"/>s from the level.
+        /// </summary>
         public void DeleteAllBackgrounds()
         {
             var count = GameData.Current.backgroundObjects.Count;
@@ -225,16 +268,30 @@ namespace BetterLegacy.Editor.Managers
 
         #region Dialog
 
+        /// <summary>
+        /// Opens the dialog.
+        /// </summary>
         public void OpenDialog() => OpenDialog(null);
 
+        /// <summary>
+        /// Opens the dialog.
+        /// </summary>
+        /// <param name="backgroundObject">Background object to render.</param>
         public void OpenDialog(BackgroundObject backgroundObject)
         {
             Dialog.Open();
             RenderDialog(backgroundObject);
         }
 
+        /// <summary>
+        /// Renders the dialog.
+        /// </summary>
         public void RenderDialog() => RenderDialog(null);
 
+        /// <summary>
+        /// Renders the dialog.
+        /// </summary>
+        /// <param name="backgroundObject">Background object to render.</param>
         public void RenderDialog(BackgroundObject backgroundObject)
         {
             Dialog.LeftContent.gameObject.SetActive(backgroundObject);
@@ -245,7 +302,7 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            #region  Base
+            #region Base
 
             RenderActive(backgroundObject);
             RenderName(backgroundObject);
@@ -664,7 +721,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 if (float.TryParse(_val, out float num))
                 {
-                    CurrentSelectedBG.rotation.y = num;
+                    backgroundObject.rotation.y = num;
                     RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
                 }
             });
@@ -1421,6 +1478,9 @@ namespace BetterLegacy.Editor.Managers
                     });
         }
 
+        /// <summary>
+        /// Updates the list that displays <see cref="BackgroundObject"/>s in the level.
+        /// </summary>
         public void UpdateBackgroundList()
         {
             if (!GameData.Current)

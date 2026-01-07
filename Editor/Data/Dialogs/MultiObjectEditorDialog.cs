@@ -2055,6 +2055,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                 assigner.Graphic = image;
 
                                 var selected = colorGUI.transform.GetChild(0).gameObject;
+                                EditorThemeManager.ApplyGraphic(selected.GetComponent<Image>(), ThemeGroup.Background_1);
                                 selected.SetActive(false);
 
                                 var button = colorGUI.GetComponent<Button>();
@@ -2124,6 +2125,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                 assigner.Graphic = image;
 
                                 var selected = colorGUI.transform.GetChild(0).gameObject;
+                                EditorThemeManager.ApplyGraphic(selected.GetComponent<Image>(), ThemeGroup.Background_1);
                                 selected.SetActive(false);
 
                                 var button = colorGUI.GetComponent<Button>();
@@ -3863,5 +3865,26 @@ namespace BetterLegacy.Editor.Data.Dialogs
         }
 
         #endregion
+
+        /// <summary>
+        /// Represents a color button in the keyframe tab.
+        /// </summary>
+        public class MultiColorButton
+        {
+            /// <summary>
+            /// Button of the color button.
+            /// </summary>
+            public Button Button { get; set; }
+
+            /// <summary>
+            /// Image of the color button.
+            /// </summary>
+            public Image Image { get; set; }
+
+            /// <summary>
+            /// Selected display of the color button.
+            /// </summary>
+            public GameObject Selected { get; set; }
+        }
     }
 }

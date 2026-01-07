@@ -58,8 +58,9 @@ namespace BetterLegacy.Core.Components.Player
             //        }));
             //    return;
 
-            PlayerEditor.inst.Dialog.Open();
-            StartCoroutine(PlayerEditor.inst.RefreshEditor());
+            if (player)
+                PlayerEditor.inst.playerIndex = player.playerIndex;
+            PlayerEditor.inst.OpenDialog();
             AchievementManager.inst.UnlockAchievement("select_player");
         }
 

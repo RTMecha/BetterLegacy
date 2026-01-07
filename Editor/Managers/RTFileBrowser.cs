@@ -16,6 +16,7 @@ using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Data;
+using BetterLegacy.Editor.Data.Popups;
 
 namespace BetterLegacy.Editor.Managers
 {
@@ -28,6 +29,21 @@ namespace BetterLegacy.Editor.Managers
         #region Values
 
         public static RTFileBrowser inst;
+
+        /// <summary>
+        /// Browser popup.
+        /// </summary>
+        public EditorPopup Popup { get; set; }
+
+        /// <summary>
+        /// Represents the local system browser (e.g. File Explorer)
+        /// </summary>
+        public const string SYSTEM_BROWSER = "System Browser";
+
+        /// <summary>
+        /// Represents the built-in file browser.
+        /// </summary>
+        public const string EDITOR_BROWSER = "Editor Browser";
 
         ContextClickable contentContextMenu;
 

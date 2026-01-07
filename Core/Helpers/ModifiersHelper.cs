@@ -4143,7 +4143,7 @@ namespace BetterLegacy.Core.Helpers
                     }
 
                     EditorLevelManager.inst.LoadLevel(new Level(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.EditorPath, path)));
-                }, RTEditor.inst.HideWarningPopup);
+                });
 
                 return;
             }
@@ -4196,7 +4196,7 @@ namespace BetterLegacy.Core.Helpers
                     }
 
                     EditorLevelManager.inst.LoadLevel(levelPanel.Item);
-                }, RTEditor.inst.HideWarningPopup);
+                });
             }
             else
                 SoundManager.inst.PlaySound(DefaultSounds.Block);
@@ -4234,7 +4234,7 @@ namespace BetterLegacy.Core.Helpers
                     }
 
                     EditorLevelManager.inst.LoadLevel(new Level(RTFile.CombinePaths(EditorManager.inst.currentLoadedLevel, path)));
-                }, RTEditor.inst.HideWarningPopup);
+                });
             }
         }
 
@@ -4315,7 +4315,7 @@ namespace BetterLegacy.Core.Helpers
                         }
 
                         EditorLevelManager.inst.LoadLevel(levelPanel.Item);
-                    }, RTEditor.inst.HideWarningPopup);
+                    });
                     return;
                 }
                 return;

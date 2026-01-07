@@ -473,12 +473,9 @@ namespace BetterLegacy.Core.Helpers
 
                 EditorTimeline.inst.RenderTimelineObject(timelineObject);
 
-                if (ObjectEditor.UpdateObjects)
-                {
-                    var runtime = beatmapObject.GetParentRuntime();
-                    runtime?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
-                    runtime?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
-                }
+                var runtime = beatmapObject.GetParentRuntime();
+                runtime?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                runtime?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
             }
         }
 
@@ -522,12 +519,9 @@ namespace BetterLegacy.Core.Helpers
 
                 EditorTimeline.inst.RenderTimelineObject(timelineObject);
 
-                if (ObjectEditor.UpdateObjects)
-                {
-                    var runtime = beatmapObject.GetParentRuntime();
-                    runtime?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
-                    runtime?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
-                }
+                var runtime = beatmapObject.GetParentRuntime();
+                runtime?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                runtime?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
             }
         }
 

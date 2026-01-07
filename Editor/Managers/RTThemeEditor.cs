@@ -39,41 +39,89 @@ namespace BetterLegacy.Editor.Managers
 
         public override ThemeEditor BaseInstance { get => ThemeEditor.inst; set => ThemeEditor.inst = value; }
 
+        /// <summary>
+        /// Theme to preview while the theme editor is open.
+        /// </summary>
         public BeatmapTheme PreviewTheme { get; set; }
 
+        /// <summary>
+        /// External theme content popup.
+        /// </summary>
         public ContentPopup Popup { get; set; }
 
+        /// <summary>
+        /// Theme keyframe dialog.
+        /// </summary>
         public ThemeKeyframeDialog Dialog { get; set; }
 
-        public bool loadingThemes = false;
-
+        /// <summary>
+        /// If the the current copied external theme should be cut.
+        /// </summary>
         public bool shouldCutTheme;
+
+        /// <summary>
+        /// The current copied external theme path.
+        /// </summary>
         public string copiedThemePath;
 
-        public bool themesLoading = false;
+        /// <summary>
+        /// If the external themes are loading.
+        /// </summary>
+        public bool loading;
 
+        /// <summary>
+        /// External theme prefab.
+        /// </summary>
         public GameObject themePopupPanelPrefab;
 
+        /// <summary>
+        /// External themes per page.
+        /// </summary>
         public static int themesPerPage = 10;
 
+        /// <summary>
+        /// Amount of colors to render on the small theme preview.
+        /// </summary>
         public static int ThemePreviewColorCount => 4;
 
+        /// <summary>
+        /// List of external theme panels.
+        /// </summary>
         public List<ThemePanel> ExternalThemePanels { get; set; } = new List<ThemePanel>();
+
+        /// <summary>
+        /// List of internal theme panels.
+        /// </summary>
         public List<ThemePanel> InternalThemePanels { get; set; } = new List<ThemePanel>();
 
-        public List<string> themeIDs = new List<string>();
-
+        /// <summary>
+        /// Internal themes per page.
+        /// </summary>
         public static int eventThemesPerPage = 30;
+
+        /// <summary>
+        /// External themes count.
+        /// </summary>
         public int ExternalThemesCount => ExternalThemePanels.FindAll(x => RTString.SearchString(Dialog.SearchTerm, x.DisplayName)).Count;
+
+        /// <summary>
+        /// Internal themes count.
+        /// </summary>
         public int InternalThemesCount => InternalThemePanels.FindAll(x => RTString.SearchString(Dialog.SearchTerm, x.DisplayName)).Count;
 
+        /// <summary>
+        /// If unused themes should be filtered out.
+        /// </summary>
         public bool filterUsed;
 
+        /// <summary>
+        /// Up a folder button.
+        /// </summary>
         public GameObject themeUpFolderButton;
 
         #endregion
 
-        #region Methods
+        #region Functions
         
         public override void OnInit()
         {
@@ -110,7 +158,7 @@ namespace BetterLegacy.Editor.Managers
                 EditorContextMenu.AddContextMenu(Popup.PathField.gameObject,
                     new ButtonElement("Set Theme folder", () =>
                     {
-                        RTEditor.inst.BrowserPopup.Open();
+                        RTFileBrowser.inst.Popup.Open();
                         RTFileBrowser.inst.UpdateBrowserFolder(_val =>
                         {
                             if (!_val.Replace("\\", "/").Contains(RTFile.ApplicationDirectory + "beatmaps/"))
@@ -121,7 +169,7 @@ namespace BetterLegacy.Editor.Managers
 
                             Popup.PathField.text = _val.Replace("\\", "/").Remove(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/");
                             EditorManager.inst.DisplayNotification($"Set Theme path to {RTEditor.inst.ThemePath}!", 2f, EditorManager.NotificationType.Success);
-                            RTEditor.inst.BrowserPopup.Close();
+                            RTFileBrowser.inst.Popup.Close();
                             RTEditor.inst.UpdateThemePath(false);
                         });
                     }),
@@ -445,20 +493,25 @@ namespace BetterLegacy.Editor.Managers
             CoroutineHelper.StartCoroutine(LoadThemes());
         }
 
+        /// <summary>
+        /// Dialog closed event.
+        /// </summary>
+        /// <param name="enabled">If the dialog is enabled.</param>
         public void OnDialog(bool enabled)
         {
             if (!enabled && EventEditor.inst)
                 EventEditor.inst.showTheme = false;
         }
 
+        /// <summary>
+        /// Loads the themes from the external themes folder.
+        /// </summary>
         public IEnumerator LoadThemes()
         {
-            if (themesLoading)
+            if (loading)
                 yield break;
 
-            themesLoading = true;
-
-            themeIDs.Clear();
+            loading = true;
 
             if (!ExternalThemePanels.IsEmpty())
                 ExternalThemePanels.ForEach(x => CoreHelper.Delete(x.GameObject));
@@ -548,7 +601,7 @@ namespace BetterLegacy.Editor.Managers
 
             ThemeManager.inst.UpdateAllThemes();
 
-            themesLoading = false;
+            loading = false;
 
             if (Popup.IsOpen)
                 RenderExternalThemesPopup();
@@ -556,6 +609,9 @@ namespace BetterLegacy.Editor.Managers
             yield break;
         }
 
+        /// <summary>
+        /// Updates the internal themes list.
+        /// </summary>
         public void LoadInternalThemes()
         {
             if (!InternalThemePanels.IsEmpty())
@@ -591,6 +647,9 @@ namespace BetterLegacy.Editor.Managers
                 RenderThemeList();
         }
 
+        /// <summary>
+        /// Pastes an external theme into the current theme folder.
+        /// </summary>
         public void PasteTheme()
         {
             if (string.IsNullOrEmpty(copiedThemePath))
@@ -636,12 +695,18 @@ namespace BetterLegacy.Editor.Managers
             RTEditor.inst.UpdateThemePath(true);
         }
 
+        /// <summary>
+        /// Opens the external themes popup.
+        /// </summary>
         public void OpenExternalThemesPopup()
         {
             Popup.Open();
             RenderExternalThemesPopup();
         }
 
+        /// <summary>
+        /// Renders the external themes popup.
+        /// </summary>
         public void RenderExternalThemesPopup()
         {
             int index = 0;
@@ -661,6 +726,9 @@ namespace BetterLegacy.Editor.Managers
             Popup.RenderPageField();
         }
 
+        /// <summary>
+        /// Renders the theme preview.
+        /// </summary>
         public void RenderThemePreview()
         {
             if (EventEditor.inst.currentEventType != EventLibrary.Indexes.THEME)
@@ -678,6 +746,9 @@ namespace BetterLegacy.Editor.Managers
             Dialog.BGColors.ForLoop((img, index) => img.color = beatmapTheme.GetBGColor(index));
         }
 
+        /// <summary>
+        /// Renders the internal theme list.
+        /// </summary>
         public void RenderThemeList()
         {
             if (!GameData.Current)
@@ -741,6 +812,10 @@ namespace BetterLegacy.Editor.Managers
             AchievementManager.inst.UnlockAchievement("time_machine");
         }
 
+        /// <summary>
+        /// Saves a theme to the internal theme list.
+        /// </summary>
+        /// <param name="theme">Theme to save.</param>
         public void SaveTheme(BeatmapTheme theme)
         {
             if (string.IsNullOrEmpty(theme.id))
@@ -751,6 +826,10 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.DisplayNotification($"Saved theme [{theme.name}]!", 2f, EditorManager.NotificationType.Success);
         }
 
+        /// <summary>
+        /// Exports an internal theme to the external themes folder.
+        /// </summary>
+        /// <param name="theme">Theme to export.</param>
         public void ExportTheme(BeatmapTheme theme)
         {
             Debug.Log($"{EventEditor.inst.className}Saving {theme.id} ({theme.name}) to File System!");
@@ -766,38 +845,40 @@ namespace BetterLegacy.Editor.Managers
             var file = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.ThemePath, theme.GetFileName());
             if (RTFile.FileExists(theme.filePath))
             {
-                RTEditor.inst.ShowWarningPopup("File already exists. Do you wish to overwrite it?", () =>
-                {
-                    RTEditor.inst.DisableThemeWatcher();
-
-                    theme.filePath = file;
-                    theme.WriteToFile(file);
-
-                    EditorManager.inst.DisplayNotification($"Saved theme [{theme.name}]!", 2f, EditorManager.NotificationType.Success);
-
-                    if (ExternalThemePanels.TryFind(x => x.Path == file, out ThemePanel originalThemePanel))
+                RTEditor.inst.ShowWarningPopup("File already exists. Do you wish to overwrite it?",
+                    onConfirm: () =>
                     {
-                        originalThemePanel.Item = theme;
-                        theme.themePanel = originalThemePanel;
-                        originalThemePanel.Render();
-                        RenderThemeList();
-                    }
-                    else
+                        RTEditor.inst.DisableThemeWatcher();
+
+                        theme.filePath = file;
+                        theme.WriteToFile(file);
+
+                        EditorManager.inst.DisplayNotification($"Saved theme [{theme.name}]!", 2f, EditorManager.NotificationType.Success);
+
+                        if (ExternalThemePanels.TryFind(x => x.Path == file, out ThemePanel originalThemePanel))
+                        {
+                            originalThemePanel.Item = theme;
+                            theme.themePanel = originalThemePanel;
+                            originalThemePanel.Render();
+                            RenderThemeList();
+                        }
+                        else
+                        {
+                            var themePanel = new ThemePanel(ObjectSource.External, count);
+                            themePanel.Init(theme);
+                            ExternalThemePanels.Add(themePanel);
+                        }
+
+                        CoroutineHelper.StartCoroutine(LoadThemes());
+
+                        RTEditor.inst.EnableThemeWatcher();
+                        RTEditor.inst.HideWarningPopup();
+                    },
+                    onCancel: () =>
                     {
-                        var themePanel = new ThemePanel(ObjectSource.External, count);
-                        themePanel.Init(theme);
-                        ExternalThemePanels.Add(themePanel);
-                    }
-
-                    CoroutineHelper.StartCoroutine(LoadThemes());
-
-                    RTEditor.inst.EnableThemeWatcher();
-                    RTEditor.inst.HideWarningPopup();
-                }, () =>
-                {
-                    RTEditor.inst.EnableThemeWatcher();
-                    RTEditor.inst.HideWarningPopup();
-                });
+                        RTEditor.inst.EnableThemeWatcher();
+                        RTEditor.inst.HideWarningPopup();
+                    });
                 return;
             }
 
@@ -825,6 +906,10 @@ namespace BetterLegacy.Editor.Managers
             RTEditor.inst.EnableThemeWatcher();
         }
 
+        /// <summary>
+        /// Imports an external theme to the internal theme list.
+        /// </summary>
+        /// <param name="theme">Theme to import.</param>
         public void ImportTheme(BeatmapTheme theme)
         {
             if (!GameData.Current.AddTheme(theme))
@@ -833,6 +918,10 @@ namespace BetterLegacy.Editor.Managers
                 LoadInternalThemes();
         }
 
+        /// <summary>
+        /// Deletes a theme.
+        /// </summary>
+        /// <param name="themePanel">Theme to delete.</param>
         public void DeleteTheme(ThemePanel themePanel) => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this theme?", () =>
         {
             switch (themePanel.Source)
@@ -846,10 +935,12 @@ namespace BetterLegacy.Editor.Managers
                         break;
                     }
             }
+        });
 
-            RTEditor.inst.HideWarningPopup();
-        }, RTEditor.inst.HideWarningPopup);
-
+        /// <summary>
+        /// Deletes an internal theme.
+        /// </summary>
+        /// <param name="themePanel">Theme to delete.</param>
         public void DeleteInternalTheme(ThemePanel themePanel)
         {
             var index = themePanel.GetIndex();
@@ -868,6 +959,10 @@ namespace BetterLegacy.Editor.Managers
             SetEditor(false);
         }
 
+        /// <summary>
+        /// Deletes an external theme.
+        /// </summary>
+        /// <param name="themePanel">Theme to delete.</param>
         public void DeleteExternalTheme(ThemePanel themePanel)
         {
             RTEditor.inst.DisableThemeWatcher();
@@ -885,14 +980,18 @@ namespace BetterLegacy.Editor.Managers
                 RenderExternalThemesPopup();
         }
 
+        /// <summary>
+        /// Clears internal themes.
+        /// </summary>
         public void ClearInternalThemes() => RTEditor.inst.ShowWarningPopup("Are you sure you want to remove all themes?", () =>
         {
             GameData.Current.beatmapThemes.Clear();
-
             LoadInternalThemes();
-            RTEditor.inst.HideWarningPopup();
-        }, RTEditor.inst.HideWarningPopup);
+        });
 
+        /// <summary>
+        /// Removes unused internal themes.
+        /// </summary>
         public void RemoveUnusedThemes() => RTEditor.inst.ShowWarningPopup("Are you sure you want to remove unused themes?", () =>
         {
             GameData.Current.beatmapThemes.ForLoopReverse((beatmapTheme, index) =>
@@ -902,15 +1001,20 @@ namespace BetterLegacy.Editor.Managers
             });
 
             LoadInternalThemes();
-            RTEditor.inst.HideWarningPopup();
-        }, RTEditor.inst.HideWarningPopup);
+        });
 
+        /// <summary>
+        /// Updates the internal theme indexes.
+        /// </summary>
         public void UpdateInternalThemeIndexes()
         {
             for (int i = 0; i < InternalThemePanels.Count; i++)
                 InternalThemePanels[i].index = i;
         }
         
+        /// <summary>
+        /// Updates the external theme indexes.
+        /// </summary>
         public void UpdateExternalThemeIndexes()
         {
             for (int i = 0; i < ExternalThemePanels.Count; i++)
@@ -923,10 +1027,17 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="beatmapTheme">Theme to shuffle the ID of.</param>
         public void ShuffleThemeID(BeatmapTheme beatmapTheme) => RTEditor.inst.ShowWarningPopup("Are you sure you want to shuffle the theme ID? Any levels that use this theme will need to have their theme keyframes reassigned.", () =>
         {
+            var origID = beatmapTheme.id;
             beatmapTheme.id = LSText.randomNumString(BeatmapTheme.ID_LENGTH);
-            RTEditor.inst.HideWarningPopup();
-        }, RTEditor.inst.HideWarningPopup);
+            EditorManager.inst.DisplayNotification($"Set theme ID to {beatmapTheme.id}!", 1.5f, EditorManager.NotificationType.Success);
+            if (Dialog.Editor && Dialog.Editor.activeSelf && PreviewTheme && PreviewTheme.id == origID)
+                RenderThemeEditor(beatmapTheme);
+        });
 
+        /// <summary>
+        /// Sets the theme editor active state.
+        /// </summary>
+        /// <param name="editing">The theme editor active state.</param>
         public void SetEditor(bool editing)
         {
             EventEditor.inst.showTheme = editing;

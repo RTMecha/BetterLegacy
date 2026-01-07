@@ -306,8 +306,7 @@ namespace BetterLegacy.Editor.Data.Planners
                 ProjectPlanner.inst.timelines.RemoveAll(x => x is TimelinePlanner && x.ID == ID);
                 ProjectPlanner.inst.SaveTimelines();
                 CoreHelper.Destroy(gameObject);
-                RTEditor.inst.HideWarningPopup();
-            }, RTEditor.inst.HideWarningPopup));
+            }));
 
             EditorThemeManager.ApplyDeleteButton(delete);
 

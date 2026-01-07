@@ -141,8 +141,7 @@ namespace BetterLegacy.Editor.Data.Planners
                 ProjectPlanner.inst.notes.RemoveAll(x => x is NotePlanner && x.ID == ID);
                 ProjectPlanner.inst.SaveNotes();
                 CoreHelper.Destroy(gameObject);
-                RTEditor.inst.HideWarningPopup();
-            }, RTEditor.inst.HideWarningPopup));
+            }));
 
             EditorThemeManager.ApplyDeleteButton(delete);
 

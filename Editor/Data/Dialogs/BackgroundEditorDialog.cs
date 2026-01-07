@@ -194,11 +194,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             destroyAll.transform.GetChild(0).localScale = Vector3.one;
 
             var destroyAllButtons = destroyAll.GetComponent<Button>();
-            destroyAllButtons.onClick.NewListener(() => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete all backgrounds?", () =>
-            {
-                RTBackgroundEditor.inst.DeleteAllBackgrounds();
-                RTEditor.inst.HideWarningPopup();
-            }, RTEditor.inst.HideWarningPopup));
+            destroyAllButtons.onClick.NewListener(() => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete all backgrounds?", () => RTBackgroundEditor.inst.DeleteAllBackgrounds()));
 
             var destroyAllTip = destroyAll.GetComponent<HoverTooltip>();
 

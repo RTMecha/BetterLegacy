@@ -166,7 +166,7 @@ namespace BetterLegacy.Editor.Data.Popups
             if (!cachedParent)
                 cachedParent = GameObject.transform.parent;
 
-            var a = ProjectPlanner.inst && ProjectPlanner.inst.PlannerActive;
+            var a = ProjectPlanner.inst && ProjectPlanner.inst.Active;
             if (a != inPlanner)
             {
                 inPlanner = a;
@@ -350,6 +350,11 @@ namespace BetterLegacy.Editor.Data.Popups
         {
             GameObject = popup;
             Dragger = popup.GetComponent<DraggableUI>();
+            if (!Dragger)
+            {
+                Dragger = popup.AddComponent<DraggableUI>();
+                Dragger.target = popup.transform;
+            }
             if (popup.transform.TryFind("New File Popup", out Transform n))
                 popup = n.gameObject;
 

@@ -43,7 +43,7 @@ namespace BetterLegacy.Editor.Components
         /// <summary>
         /// Gets a true value if the note is in floating mode, otherwise gets a false value if it's in the Project Planner layout.
         /// </summary>
-        public static bool Free => ProjectPlanner.inst && (!ProjectPlanner.inst.PlannerActive || ProjectPlanner.inst.CurrentTab != PlannerBase.Type.Note);
+        public static bool Free => ProjectPlanner.inst && (!ProjectPlanner.inst.Active || ProjectPlanner.inst.CurrentTab != PlannerBase.Type.Note);
 
         public void OnPointerUp(PointerEventData eventData)
         {

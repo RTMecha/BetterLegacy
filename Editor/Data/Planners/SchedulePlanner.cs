@@ -120,8 +120,7 @@ namespace BetterLegacy.Editor.Data.Planners
                 ProjectPlanner.inst.schedules.RemoveAll(x => x is SchedulePlanner && x.ID == ID);
                 ProjectPlanner.inst.SaveSchedules();
                 CoreHelper.Destroy(gameObject);
-                RTEditor.inst.HideWarningPopup();
-            }, RTEditor.inst.HideWarningPopup));
+            }));
 
             EditorThemeManager.ApplyDeleteButton(delete);
 

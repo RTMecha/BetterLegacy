@@ -11,27 +11,28 @@ using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data
 {
+    /// <summary>
+    /// Represents a theme for the editor to use.
+    /// </summary>
     public class EditorTheme : PAObject<EditorTheme>
     {
         public EditorTheme() { }
 
+        #region Values
+
+        /// <summary>
+        /// Name of the editor theme.
+        /// </summary>
         public string name;
 
+        /// <summary>
+        /// Dictionary of colors in the editor theme.
+        /// </summary>
         public Dictionary<ThemeGroup, Color> ColorGroups { get; set; }
 
-        public Color GetLayerColor(int layer) => ColorGroups.GetValueOrDefault(EditorThemeManager.GetLayerThemeGroup(layer), Color.white);
-        
-        public Color GetTabThemeColor(int layer) => ColorGroups.GetValueOrDefault(EditorThemeManager.GetTabThemeGroup(layer), Color.white);
+        #endregion
 
-        public Color GetEventColor(int type) => ColorGroups.GetValueOrDefault(EditorThemeManager.GetEventColorThemeGroup(type), Color.white);
-        
-        public Color GetEventKeyframeColor(int type) => ColorGroups.GetValueOrDefault(EditorThemeManager.GetEventColorKeyframeThemeGroup(type), Color.white);
-        
-        public Color GetEventColorEditorColor(int type) => ColorGroups.GetValueOrDefault(EditorThemeManager.GetEventColorEditorThemeGroup(type), Color.white);
-
-        public Color GetObjectKeyframeColor(int type) => ColorGroups.GetValueOrDefault(EditorThemeManager.GetObjectKeyframeThemeGroup(type), Color.white);
-
-        public Color GetNotificationColor(EditorManager.NotificationType type) => ColorGroups.GetValueOrDefault(EditorThemeManager.GetNotificationThemeGroup(type), Color.white);
+        #region Functions
 
         public override void CopyData(EditorTheme orig, bool newID = true)
         {
@@ -79,5 +80,56 @@ namespace BetterLegacy.Editor.Data
 
             return jn;
         }
+
+        /// <summary>
+        /// Gets a layer's color.
+        /// </summary>
+        /// <param name="layer">Layer number.</param>
+        /// <returns>Returns a color based on the layer.</returns>
+        public Color GetLayerColor(int layer) => ColorGroups.GetValueOrDefault(EditorThemeManager.GetLayerThemeGroup(layer), Color.white);
+
+        /// <summary>
+        /// Gets a color that represents a tab.
+        /// </summary>
+        /// <param name="tab">Tab number.</param>
+        /// <returns>Returns a color based on a tab.</returns>
+        public Color GetTabThemeColor(int layer) => ColorGroups.GetValueOrDefault(EditorThemeManager.GetTabThemeGroup(layer), Color.white);
+
+        /// <summary>
+        /// Gets an event's color.
+        /// </summary>
+        /// <param name="type">Type of the event.</param>
+        /// <returns>Returns a color based on an event.</returns>
+        public Color GetEventColor(int type) => ColorGroups.GetValueOrDefault(EditorThemeManager.GetEventColorThemeGroup(type), Color.white);
+
+        /// <summary>
+        /// Gets an event keyframe's color.
+        /// </summary>
+        /// <param name="type">Type of the event keyframe.</param>
+        /// <returns>Returns a color based on an event.</returns>
+        public Color GetEventKeyframeColor(int type) => ColorGroups.GetValueOrDefault(EditorThemeManager.GetEventColorKeyframeThemeGroup(type), Color.white);
+
+        /// <summary>
+        /// Gets an event editor's color.
+        /// </summary>
+        /// <param name="type">Type of the event editor.</param>
+        /// <returns>Returns a color based on an event editor.</returns>
+        public Color GetEventColorEditorColor(int type) => ColorGroups.GetValueOrDefault(EditorThemeManager.GetEventColorEditorThemeGroup(type), Color.white);
+
+        /// <summary>
+        /// Gets an object keyframe's color.
+        /// </summary>
+        /// <param name="type">Type of the object keyframe.</param>
+        /// <returns>Returns a color based on an object keyframe.</returns>
+        public Color GetObjectKeyframeColor(int type) => ColorGroups.GetValueOrDefault(EditorThemeManager.GetObjectKeyframeThemeGroup(type), Color.white);
+
+        /// <summary>
+        /// Gets a notification types' color.
+        /// </summary>
+        /// <param name="type">Type of the notification.</param>
+        /// <returns>Returns a color based on a notification type.</returns>
+        public Color GetNotificationColor(EditorManager.NotificationType type) => ColorGroups.GetValueOrDefault(EditorThemeManager.GetNotificationThemeGroup(type), Color.white);
+
+        #endregion
     }
 }

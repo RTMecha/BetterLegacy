@@ -113,8 +113,7 @@ namespace BetterLegacy.Editor.Data.Planners
                 ProjectPlanner.inst.todos.RemoveAll(x => x is TODOPlanner && x.ID == ID);
                 ProjectPlanner.inst.SaveTODO();
                 CoreHelper.Destroy(gameObject);
-                RTEditor.inst.HideWarningPopup();
-            }, RTEditor.inst.HideWarningPopup));
+            }));
 
             EditorThemeManager.ApplyDeleteButton(delete);
 

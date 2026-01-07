@@ -10,7 +10,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
     public interface IAnimationDialog
     {
         /// <summary>
-        /// Game object of the event keyframe editor.
+        /// Game object of the keyframe editor.
         /// </summary>
         public GameObject GameObject { get; set; }
 
@@ -20,13 +20,18 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public bool IsCurrent { get; }
 
         /// <summary>
-        /// The currently open event keyframe editor.
+        /// The currently open keyframe editor.
         /// </summary>
         public KeyframeDialog CurrentKeyframeDialog { get; set; }
 
         /// <summary>
-        /// A list containing all the event keyframe editors.
+        /// A list containing all the keyframe editors.
         /// </summary>
         public List<KeyframeDialog> KeyframeDialogs { get; set; }
+
+        /// <summary>
+        /// The keyframe timeline of the keyframe editor.
+        /// </summary>
+        public KeyframeTimeline Timeline { get; set; }
     }
 }

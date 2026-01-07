@@ -46,6 +46,458 @@ namespace BetterLegacy.Editor.Managers
     /// </summary>
     public class RTEditor : BaseManager<RTEditor, RTEditorSettings>
     {
+        #region Values
+
+        #region Misc
+
+        /// <summary>
+        /// Custom editor thread for performing larger tasks.
+        /// </summary>
+        public Core.Threading.TickRunner editorThread;
+
+        /// <summary>
+        /// If advanced features should display.
+        /// </summary>
+        public static bool ShowModdedUI { get; set; }
+
+        /// <summary>
+        /// The default time object.
+        /// </summary>
+        public GameObject timeDefault;
+
+        /// <summary>
+        /// The top panel of the editor with the dropdowns.
+        /// </summary>
+        public Transform titleBar;
+
+        /// <summary>
+        /// The undo button.
+        /// </summary>
+        public FunctionButtonStorage undoButton;
+
+        /// <summary>
+        /// The redo button.
+        /// </summary>
+        public FunctionButtonStorage redoButton;
+
+        /// <summary>
+        /// The name editor field.
+        /// </summary>
+        public InputField folderCreatorName;
+        Text folderCreatorTitle;
+        Text folderCreatorNameLabel;
+        Button folderCreatorSubmit;
+        Text folderCreatorSubmitText;
+
+        GameObject fontSelectionPrefab;
+
+        /// <summary>
+        /// List of editor dialogs.
+        /// </summary>
+        public List<EditorDialog> editorDialogs = new List<EditorDialog>();
+
+        /// <summary>
+        /// Screenshots view dialog.
+        /// </summary>
+        public EditorDialog ScreenshotsDialog { get; set; }
+
+        /// <summary>
+        /// List of all current notifications.
+        /// </summary>
+        public List<string> notifications = new List<string>();
+
+        /// <summary>
+        /// The parent for the notifications.
+        /// </summary>
+        public RectTransform notificationsParent;
+
+        /// <summary>
+        /// Info for the current level editing session.
+        /// </summary>
+        public EditorInfo editorInfo = new EditorInfo();
+
+        #endregion
+
+        #region Preview
+
+        /// <summary>
+        /// If the editor freecam is enabled.
+        /// </summary>
+        public bool Freecam { get; set; }
+
+        /// <summary>
+        /// If the mouse cursor is over the level preview.
+        /// </summary>
+        public static bool MouseOverPreview => RTLevel.Cameras.FG.rect.Contains(new Vector2(Input.mousePosition.x / Screen.width, Input.mousePosition.y / Screen.height));
+
+        /// <summary>
+        /// Hides the preview area until a level is loaded.
+        /// </summary>
+        public EditorThemeElement PreviewCover { get; set; }
+
+        /// <summary>
+        /// Helper component for object selection in preview.
+        /// </summary>
+        public SelectObjectHelper SelectObjectHelper { get; set; }
+
+        /// <summary>
+        /// Grid of the preview area.
+        /// </summary>
+        public GridRenderer previewGrid;
+
+        RectTransform cameraAreaCanvas;
+        RectTransform cameraArea;
+        bool editorCameraEnabled;
+
+        #endregion
+
+        #region Easing
+
+        /// <summary>
+        /// A list of easing dropdowns.
+        /// </summary>
+        public List<Dropdown> EasingDropdowns { get; set; } = new List<Dropdown>();
+
+        /// <summary>
+        /// List of easing options.
+        /// </summary>
+        public List<EasingOption> EasingOptions { get; set; } = new List<EasingOption>();
+
+        /// <summary>
+        /// Layout values used for the easing dropdowns.
+        /// </summary>
+        public LayoutValues EasingDropdownLayoutGroupValues { get; set; }
+
+        /// <summary>
+        /// Rect values used for the easing dropdowns.
+        /// </summary>
+        public RectValues EasingDropdownTemplateRectValues { get; set; } = new RectValues
+        {
+            anchoredPosition = new Vector2(0f, 2f),
+            anchorMax = new Vector2(1f, 0f),
+            anchorMin = Vector2.zero,
+            pivot = new Vector2(0.5f, 1f),
+            sizeDelta = new Vector2(0f, 140f),
+        };
+
+        #endregion
+
+        #region Popups
+
+        /// <summary>
+        /// Popups parent.
+        /// </summary>
+        public Transform popups;
+
+        /// <summary>
+        /// List of editor popups.
+        /// </summary>
+        public List<EditorPopup> editorPopups = new List<EditorPopup>();
+
+        /// <summary>
+        /// Info popup.
+        /// </summary>
+        public InfoPopup InfoPopup { get; set; }
+
+        /// <summary>
+        /// Object template options popup.
+        /// </summary>
+        public EditorPopup ObjectOptionsPopup { get; set; }
+
+        /// <summary>
+        /// Background Object template options.
+        /// </summary>
+        public EditorPopup BGObjectOptionsPopup { get; set; }
+
+        /// <summary>
+        /// Debugger popup.
+        /// </summary>
+        public ContentPopup DebuggerPopup { get; set; }
+
+        /// <summary>
+        /// Warning popup.
+        /// </summary>
+        public EditorPopup WarningPopup { get; set; }
+
+        /// <summary>
+        /// Text field popup.
+        /// </summary>
+        public EditorPopup NamePopup { get; set; }
+
+        /// <summary>
+        /// Font selector popup.
+        /// </summary>
+        public ContentPopup FontSelectorPopup { get; set; }
+
+        /// <summary>
+        /// Progress popup.
+        /// </summary>
+        public ProgressPopup ProgressPopup { get; set; }
+
+        #endregion
+
+        #region Dragging
+
+        public float dragOffset = -1f;
+        public int dragBinOffset = -100;
+
+        bool draggingCamera;
+        /// <summary>
+        /// Checks if the camera is being dragged around.
+        /// </summary>
+        public bool DraggingCamera => draggingCamera;
+        Vector2 startDragPos;
+        Vector2 cachePos;
+
+        #endregion
+
+        #region Loading & sorting
+
+        public bool canUpdateThemes = true;
+        public bool canUpdatePrefabs = true;
+
+        #endregion
+
+        #region Mouse Picker & Tooltip
+
+        // tootlip
+
+        public bool showTootip;
+
+        public TextMeshProUGUI tooltipText;
+
+        public bool tooltipActive;
+        public float tooltipTime;
+        public float tooltipTimeOffset;
+        public float maxTooltipTime = 2f;
+
+        public GameObject mouseTooltip;
+        public RectTransform mouseTooltipRT;
+        public TextMeshProUGUI mouseTooltipText;
+
+        // picker
+
+        public GameObject mousePicker;
+        RectTransform mousePickerRT;
+
+        public bool parentPickerEnabled;
+        public bool prefabPickerEnabled;
+        public bool selectingMultiple;
+
+        #endregion
+
+        #region Timeline Bar
+
+        /// <summary>
+        /// The main editor toolbar.
+        /// </summary>
+        public GameObject timelineBar;
+
+        /// <summary>
+        /// The modded song time field.
+        /// </summary>
+        public InputField timeField;
+
+        /// <summary>
+        /// The vanilla song time button text.
+        /// </summary>
+        public Text timelineTime;
+
+        /// <summary>
+        /// The modded audio pitch field.
+        /// </summary>
+        public InputField pitchField;
+
+        /// <summary>
+        /// The event layer toggle. If on, renders <see cref="LayerType.Events"/>, otherwise renders <see cref="LayerType.Objects"/>.
+        /// </summary>
+        public Toggle eventLayerToggle;
+
+        #endregion
+
+        #region Key selection
+
+        /// <summary>
+        /// If keyboard is currently being checked for any input.
+        /// </summary>
+        public bool selectingKey = false;
+
+        /// <summary>
+        /// Action to run when a key is selected
+        /// </summary>
+        public Action<KeyCode> setKey;
+
+        #endregion
+
+        #region Game Timeline
+
+        public Image timelinePreviewPlayer;
+        public Image timelinePreviewLine;
+        public Image timelinePreviewLeftCap;
+        public Image timelinePreviewRightCap;
+        public List<Image> checkpointImages = new List<Image>();
+
+        public Transform timelinePreview;
+        public RectTransform timelinePosition;
+
+        #endregion
+
+        #region Debugger
+
+        public List<string> debugs = new List<string>();
+        public List<GameObject> customFunctions = new List<GameObject>();
+        public string debugSearch;
+
+        #endregion
+
+        #region Screenshots
+
+        public Transform screenshotContent;
+        public InputField screenshotPageField;
+
+        public int screenshotPage;
+        public int screenshotsPerPage = 5;
+
+        public int CurrentScreenshotPage => screenshotPage + 1;
+        public int MinScreenshots => MaxScreenshots - screenshotsPerPage;
+        public int MaxScreenshots => CurrentScreenshotPage * screenshotsPerPage;
+
+        public int screenshotCount;
+
+        #endregion
+
+        #region Editor Layer
+
+        /// <summary>
+        /// List of editor layer displays.
+        /// </summary>
+        public List<EditorLayerDisplay> EditorLayerDisplays { get; set; } = new List<EditorLayerDisplay>();
+
+        #endregion
+
+        #region Paths
+
+        /// <summary>
+        /// The default exports path.
+        /// </summary>
+        public const string DEFAULT_EXPORTS_PATH = "beatmaps/exports";
+
+        /// <summary>
+        /// Base path to the game.
+        /// </summary>
+        public string BasePath { get; set; } = RTFile.ApplicationDirectory;
+
+        /// <summary>
+        /// The beatmaps folder that contains all PA directories and files.
+        /// </summary>
+        public string beatmapsFolder = "beatmaps";
+
+        /// <summary>
+        /// The beatmaps path that contains all PA directories and files.
+        /// </summary>
+        public string BeatmapsPath => RTFile.CombinePaths(BasePath, beatmapsFolder);
+
+        /// <summary>
+        /// Watches the current prefab folder for changes. If any changes are made, update the prefab list.
+        /// </summary>
+        public FileSystemWatcher PrefabWatcher { get; set; }
+
+        /// <summary>
+        /// Watches the current theme folder for changes. If any changes are made, update the theme list.
+        /// </summary>
+        public FileSystemWatcher ThemeWatcher { get; set; }
+
+        /// <summary>
+        /// The level sort.
+        /// </summary>
+        public LevelSort levelSort = 0;
+
+        /// <summary>
+        /// If the level sort should ascend.
+        /// </summary>
+        public bool levelAscend = true;
+
+        /// <summary>
+        /// Path to editor settings folder.
+        /// </summary>
+        public string EditorSettingsPath => RTFile.CombinePaths(RTFile.ApplicationDirectory, $"settings/editor{FileFormat.LSS.Dot()}");
+
+        /// <summary>
+        /// The path editor levels should load from.
+        /// </summary>
+        public string EditorPath
+        {
+            get => editorPath;
+            set => editorPath = value;
+        }
+        string editorPath = "editor";
+
+        /// <summary>
+        /// The path themes should load from.
+        /// </summary>
+        public string ThemePath
+        {
+            get => themePath;
+            set => themePath = value;
+        }
+        string themePath = "themes";
+
+        /// <summary>
+        /// The path prefabs should load from.
+        /// </summary>
+        public string PrefabPath
+        {
+            get => prefabPath;
+            set => prefabPath = value;
+        }
+        string prefabPath = "prefabs";
+
+        /// <summary>
+        /// The path prefab types should load from.
+        /// </summary>
+        public string PrefabTypePath
+        {
+            get => prefabTypePath;
+            set => prefabTypePath = value;
+        }
+        string prefabTypePath = "prefabtypes";
+
+        /// <summary>
+        /// The path player models should load from.
+        /// </summary>
+        public string PlayersPath
+        {
+            get => playersPath;
+            set => playersPath = value;
+        }
+        string playersPath = "players";
+
+        /// <summary>
+        /// The path planners should load from.
+        /// </summary>
+        public string PlannersPath
+        {
+            get => plannersPath;
+            set => plannersPath = value;
+        }
+        string plannersPath = "planners";
+
+        /// <summary>
+        /// The path level collections should load from.
+        /// </summary>
+        public string CollectionsPath
+        {
+            get => collectionsPath;
+            set => collectionsPath = value;
+        }
+        string collectionsPath = "collections";
+
+        #endregion
+
+        #endregion
+
+        #region Functions
+
         #region Init
 
         public override void OnInit()
@@ -109,7 +561,7 @@ namespace BetterLegacy.Editor.Managers
         void HandleDroppedFiles(List<FileDragAndDrop.DropInfo> dropInfos)
         {
             CoreHelper.Log($"Dropping files.\nCount: {dropInfos.Count}");
-            if (ProjectPlanner.inst && ProjectPlanner.inst.PlannerActive)
+            if (ProjectPlanner.inst && ProjectPlanner.inst.Active)
             {
                 // handle planner functions.
                 for (int i = 0; i < dropInfos.Count; i++)
@@ -136,7 +588,7 @@ namespace BetterLegacy.Editor.Managers
 
             var attributes = File.GetAttributes(dropInfo.filePath);
 
-            if (ProjectPlanner.inst && ProjectPlanner.inst.PlannerActive)
+            if (ProjectPlanner.inst && ProjectPlanner.inst.Active)
             {
                 if (RTFile.FileIsAudio(dropInfo.filePath))
                 {
@@ -607,148 +1059,34 @@ namespace BetterLegacy.Editor.Managers
                     }
                 };
 
-                ParentSelectorPopup = new ContentPopup(EditorPopup.PARENT_SELECTOR);
-                ParentSelectorPopup.Assign(ParentSelectorPopup.GetLegacyDialog().Dialog.gameObject);
-                ParentSelectorPopup.Dragger = ParentSelectorPopup.GameObject.AddComponent<DraggableUI>();
-                ParentSelectorPopup.Dragger.target = ParentSelectorPopup.GameObject.transform;
-                ParentSelectorPopup.Dragger.ogPos = ParentSelectorPopup.GameObject.transform.position;
-                ParentSelectorPopup.title = ParentSelectorPopup.Title.text;
-                ParentSelectorPopup.size = ParentSelectorPopup.GameObject.transform.AsRT().sizeDelta;
-                ParentSelectorPopup.refreshSearch = EditorManager.inst.UpdateParentSearch;
-                ParentSelectorPopup.onRender = () =>
-                {
-                    if (AssetPack.TryReadFromFile("editor/ui/popups/parent_selector.json", out string uiFile))
-                    {
-                        var jn = JSON.Parse(uiFile);
-                        RectValues.TryParse(jn["base"]["rect"], RectValues.Default.SizeDelta(600f, 400f)).AssignToRectTransform(ParentSelectorPopup.GameObject.transform.AsRT());
-                        RectValues.TryParse(jn["top_panel"]["rect"], RectValues.FullAnchored.AnchorMin(0, 1).Pivot(0f, 0f).SizeDelta(32f, 32f)).AssignToRectTransform(ParentSelectorPopup.TopPanel);
-                        RectValues.TryParse(jn["search"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(0f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, 32f))).AssignToRectTransform(ParentSelectorPopup.GameObject.transform.Find("search-box").AsRT());
-
-                        var layoutValues = LayoutValues.Parse(jn["layout"]);
-                        if (layoutValues is GridLayoutValues gridLayoutValues)
-                            gridLayoutValues.AssignToLayout(ParentSelectorPopup.Grid ? ParentSelectorPopup.Grid : ParentSelectorPopup.GameObject.transform.Find("mask/content").GetComponent<GridLayoutGroup>());
-
-                        if (jn["title"] != null)
-                        {
-                            ParentSelectorPopup.title = jn["title"]["text"] != null ? jn["title"]["text"] : "Pick a Level to Open";
-
-                            var title = ParentSelectorPopup.Title;
-                            RectValues.TryParse(jn["title"]["rect"], RectValues.FullAnchored.AnchoredPosition(2f, 0f).SizeDelta(-12f, -8f)).AssignToRectTransform(title.rectTransform);
-                            title.alignment = jn["title"]["alignment"] != null ? (TextAnchor)jn["title"]["alignment"].AsInt : TextAnchor.MiddleLeft;
-                            title.fontSize = jn["title"]["font_size"] != null ? jn["title"]["font_size"].AsInt : 20;
-                            title.fontStyle = (FontStyle)jn["title"]["font_style"].AsInt;
-                            title.horizontalOverflow = jn["title"]["horizontal_overflow"] != null ? (HorizontalWrapMode)jn["title"]["horizontal_overflow"].AsInt : HorizontalWrapMode.Wrap;
-                            title.verticalOverflow = jn["title"]["vertical_overflow"] != null ? (VerticalWrapMode)jn["title"]["vertical_overflow"].AsInt : VerticalWrapMode.Overflow;
-                        }
-
-                        if (jn["anim"] != null)
-                            ParentSelectorPopup.ReadAnimationJSON(jn["anim"]);
-
-                        if (jn["drag_mode"] != null && ParentSelectorPopup.Dragger)
-                            ParentSelectorPopup.Dragger.mode = (DraggableUI.DragMode)jn["drag_mode"].AsInt;
-                    }
-                };
-
-                SaveAsPopup = new EditorPopup(EditorPopup.SAVE_AS_POPUP);
-                SaveAsPopup.Assign(SaveAsPopup.GetLegacyDialog().Dialog.gameObject);
-                SaveAsPopup.Dragger = SaveAsPopup.GameObject.transform.GetChild(0).gameObject.AddComponent<DraggableUI>();
-                SaveAsPopup.Dragger.target = SaveAsPopup.GameObject.transform;
-                SaveAsPopup.Dragger.ogPos = SaveAsPopup.GameObject.transform.position;
-                SaveAsPopup.title = SaveAsPopup.Title.text;
-                SaveAsPopup.size = SaveAsPopup.GameObject.transform.AsRT().sizeDelta;
-                SaveAsPopup.onRender = () =>
+                EditorLevelManager.inst.SaveAsPopup = new EditorPopup(EditorPopup.SAVE_AS_POPUP);
+                EditorLevelManager.inst.SaveAsPopup.Assign(EditorLevelManager.inst.SaveAsPopup.GetLegacyDialog().Dialog.gameObject);
+                EditorLevelManager.inst.SaveAsPopup.Dragger = EditorLevelManager.inst.SaveAsPopup.GameObject.transform.GetChild(0).gameObject.AddComponent<DraggableUI>();
+                EditorLevelManager.inst.SaveAsPopup.Dragger.target = EditorLevelManager.inst.SaveAsPopup.GameObject.transform;
+                EditorLevelManager.inst.SaveAsPopup.Dragger.ogPos = EditorLevelManager.inst.SaveAsPopup.GameObject.transform.position;
+                EditorLevelManager.inst.SaveAsPopup.title = EditorLevelManager.inst.SaveAsPopup.Title.text;
+                EditorLevelManager.inst.SaveAsPopup.size = EditorLevelManager.inst.SaveAsPopup.GameObject.transform.AsRT().sizeDelta;
+                EditorLevelManager.inst.SaveAsPopup.onRender = () =>
                 {
                     if (AssetPack.TryReadFromFile("editor/ui/popups/save_as_popup.json", out string uiFile))
                     {
                         var jn = JSON.Parse(uiFile);
-                        RectValues.TryParse(jn["base"]["rect"], new RectValues(new Vector2(0f, -72f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 0.5f), new Vector2(300f, 144f))).AssignToRectTransform(SaveAsPopup.GameObject.transform.GetChild(0).AsRT());
-                        RectValues.TryParse(jn["top_panel"]["rect"], RectValues.FullAnchored.AnchoredPosition(0f, -32f).AnchorMin(0, 1).Pivot(0f, 0f).SizeDelta(0f, 32f)).AssignToRectTransform(SaveAsPopup.TopPanel);
+                        RectValues.TryParse(jn["base"]["rect"], new RectValues(new Vector2(0f, -72f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 0.5f), new Vector2(300f, 144f))).AssignToRectTransform(EditorLevelManager.inst.SaveAsPopup.GameObject.transform.GetChild(0).AsRT());
+                        RectValues.TryParse(jn["top_panel"]["rect"], RectValues.FullAnchored.AnchoredPosition(0f, -32f).AnchorMin(0, 1).Pivot(0f, 0f).SizeDelta(0f, 32f)).AssignToRectTransform(EditorLevelManager.inst.SaveAsPopup.TopPanel);
 
                         if (jn["title"] != null)
                         {
-                            SaveAsPopup.title = jn["title"]["text"] != null ? jn["title"]["text"] : "Save Level As";
+                            EditorLevelManager.inst.SaveAsPopup.title = jn["title"]["text"] != null ? jn["title"]["text"] : "Save Level As";
 
-                            var title = SaveAsPopup.Title;
+                            var title = EditorLevelManager.inst.SaveAsPopup.Title;
                             RectValues.TryParse(jn["title"]["rect"], RectValues.FullAnchored.AnchoredPosition(2f, 0f).SizeDelta(-12f, -8f)).AssignToRectTransform(title.rectTransform);
                         }
 
                         if (jn["anim"] != null)
-                            SaveAsPopup.ReadAnimationJSON(jn["anim"]);
+                            EditorLevelManager.inst.SaveAsPopup.ReadAnimationJSON(jn["anim"]);
 
-                        if (jn["drag_mode"] != null && SaveAsPopup.Dragger)
-                            SaveAsPopup.Dragger.mode = (DraggableUI.DragMode)jn["drag_mode"].AsInt;
-                    }
-                };
-
-                PrefabPopups = new DoubleContentPopup(EditorPopup.PREFAB_POPUP);
-                var prefabDialog = PrefabPopups.GetLegacyDialog().Dialog;
-                PrefabPopups.GameObject = prefabDialog.gameObject;
-                PrefabPopups.Internal = new ContentPopup("internal prefabs");
-                PrefabPopups.Internal.Assign(prefabDialog.Find("internal prefabs").gameObject);
-                PrefabPopups.Internal.Dragger = PrefabPopups.Internal.GameObject.GetOrAddComponent<DraggableUI>();
-                PrefabPopups.Internal.Dragger.ogPos = PrefabPopups.Internal.GameObject.transform.position;
-                PrefabPopups.Internal.Dragger.target = PrefabPopups.Internal.GameObject.transform;
-                PrefabPopups.External = new ContentPopup("external prefabs");
-                PrefabPopups.External.Assign(prefabDialog.Find("external prefabs").gameObject);
-                PrefabPopups.External.Dragger = PrefabPopups.External.GameObject.GetOrAddComponent<DraggableUI>();
-                PrefabPopups.External.Dragger.ogPos = PrefabPopups.External.GameObject.transform.position;
-                PrefabPopups.External.Dragger.target = PrefabPopups.External.GameObject.transform;
-
-                PrefabPopups.Internal.SetTitle("Internal Prefabs");
-                PrefabPopups.External.SetTitle("External Prefabs");
-                PrefabPopups.onRender = () =>
-                {
-                    if (AssetPack.TryReadFromFile("editor/ui/popups/prefab_popup.json", out string uiFile))
-                    {
-                        var jn = JSON.Parse(uiFile);
-                        RectValues.TryParse(jn["base"]["rect"], RectValues.Default.SizeDelta(920f, 450f)).AssignToRectTransform(PrefabPopups.GameObject.transform.AsRT());
-
-                        RectValues.TryParse(jn["internal"]["base"]["rect"], new RectValues(new Vector2(-80f, -16f), new Vector2(0f, 1f), Vector2.zero, new Vector2(0f, 0.5f), new Vector2(500f, -32f))).AssignToRectTransform(PrefabPopups.Internal.GameObject.transform.AsRT());
-                        RectValues.TryParse(jn["external"]["base"]["rect"], new RectValues(new Vector2(60f, -16f), Vector2.one, new Vector2(1f, 0f), new Vector2(1f, 0.5f), new Vector2(500f, -32f))).AssignToRectTransform(PrefabPopups.External.GameObject.transform.AsRT());
-
-                        var internalLayoutValues = LayoutValues.Parse(jn["internal"]["layout"]);
-                        if (internalLayoutValues is GridLayoutValues internalGrid)
-                            internalGrid.AssignToLayout(PrefabPopups.Internal.GameObject.transform.Find("mask/content").GetComponent<GridLayoutGroup>());
-                        
-                        var externalLayoutValues = LayoutValues.Parse(jn["external"]["layout"]);
-                        if (externalLayoutValues is GridLayoutValues externalGrid)
-                            externalGrid.AssignToLayout(PrefabPopups.External.GameObject.transform.Find("mask/content").GetComponent<GridLayoutGroup>());
-
-                        PrefabPopups.Internal.GameObject.GetComponent<ScrollRect>().horizontal = jn["internal"]["scroll"]["horizontal"].AsBool;
-                        PrefabPopups.External.GameObject.GetComponent<ScrollRect>().horizontal = jn["external"]["scroll"]["horizontal"].AsBool;
-
-                        if (jn["internal"]["title"] != null)
-                        {
-                            PrefabPopups.Internal.title = jn["internal"]["title"]["text"];
-
-                            var title = PrefabPopups.Internal.Title;
-                            RectValues.TryParse(jn["internal"]["title"]["rect"], RectValues.FullAnchored.AnchoredPosition(2f, 0f).SizeDelta(-12f, -8f)).AssignToRectTransform(title.rectTransform);
-                            title.alignment = (TextAnchor)jn["internal"]["title"]["alignment"].AsInt;
-                            title.fontSize = jn["internal"]["title"]["font_size"].AsInt;
-                            title.fontStyle = (FontStyle)jn["internal"]["title"]["font_style"].AsInt;
-                            title.horizontalOverflow = (HorizontalWrapMode)jn["internal"]["title"]["horizontal_overflow"].AsInt;
-                            title.verticalOverflow = (VerticalWrapMode)jn["internal"]["title"]["vertical_overflow"].AsInt;
-                        }
-                        if (jn["external"]["title"] != null)
-                        {
-                            PrefabPopups.External.title = jn["external"]["title"]["text"];
-
-                            var title = PrefabPopups.External.Title;
-                            RectValues.TryParse(jn["external"]["title"]["rect"], RectValues.FullAnchored.AnchoredPosition(2f, 0f).SizeDelta(-12f, -8f)).AssignToRectTransform(title.rectTransform);
-                            title.alignment = (TextAnchor)jn["external"]["title"]["alignment"].AsInt;
-                            title.fontSize = jn["external"]["title"]["font_size"].AsInt;
-                            title.fontStyle = (FontStyle)jn["external"]["title"]["font_style"].AsInt;
-                            title.horizontalOverflow = (HorizontalWrapMode)jn["external"]["title"]["horizontal_overflow"].AsInt;
-                            title.verticalOverflow = (VerticalWrapMode)jn["external"]["title"]["vertical_overflow"].AsInt;
-                        }
-
-                        if (jn["anim"] != null)
-                            PrefabPopups.ReadAnimationJSON(jn["anim"]);
-
-                        if (jn["internal"]["drag_mode"] != null && PrefabPopups.Internal.Dragger)
-                            PrefabPopups.Internal.Dragger.mode = (DraggableUI.DragMode)jn["internal"]["drag_mode"].AsInt;
-                        if (jn["external"]["drag_mode"] != null && PrefabPopups.External.Dragger)
-                            PrefabPopups.External.Dragger.mode = (DraggableUI.DragMode)jn["external"]["drag_mode"].AsInt;
+                        if (jn["drag_mode"] != null && EditorLevelManager.inst.SaveAsPopup.Dragger)
+                            EditorLevelManager.inst.SaveAsPopup.Dragger.mode = (DraggableUI.DragMode)jn["drag_mode"].AsInt;
                     }
                 };
 
@@ -761,9 +1099,7 @@ namespace BetterLegacy.Editor.Managers
                 editorPopups.Add(EditorLevelManager.inst.NewLevelPopup);
                 editorPopups.Add(EditorLevelManager.inst.OpenLevelPopup);
                 editorPopups.Add(InfoPopup);
-                editorPopups.Add(ParentSelectorPopup);
-                editorPopups.Add(SaveAsPopup);
-                editorPopups.Add(PrefabPopups);
+                editorPopups.Add(EditorLevelManager.inst.SaveAsPopup);
                 editorPopups.Add(ObjectOptionsPopup);
                 editorPopups.Add(BGObjectOptionsPopup);
             }
@@ -1031,7 +1367,6 @@ namespace BetterLegacy.Editor.Managers
             SetupNewFilePopup();
             CreatePreview();
             CreateDebug();
-            CreateAutosavePopup();
             CreateScreenshotsView();
             CreateFontSelector();
             SetupEaseDropdowns();
@@ -1092,7 +1427,16 @@ namespace BetterLegacy.Editor.Managers
             image.sprite = EditorSprites.DropperSprite;
 
             timelineTime = EditorManager.inst.timelineTime.GetComponent<Text>();
-            SetNotificationProperties();
+            var notifyRT = EditorManager.inst.notification.transform.AsRT();
+            var notifyGroup = EditorManager.inst.notification.GetComponent<VerticalLayoutGroup>();
+            notifyRT.sizeDelta = new Vector2(EditorConfig.Instance.NotificationWidth.Value, 632f);
+            EditorManager.inst.notification.transform.localScale =
+                new Vector3(EditorConfig.Instance.NotificationSize.Value, EditorConfig.Instance.NotificationSize.Value, 1f);
+
+            var direction = EditorConfig.Instance.NotificationDirection.Value;
+
+            notifyRT.anchoredPosition = new Vector2(8f, direction == VerticalDirection.Up ? 408f : 410f);
+            notifyGroup.childAlignment = direction != VerticalDirection.Up ? TextAnchor.LowerLeft : TextAnchor.UpperLeft;
 
             EditorTimeline.inst.timelineSlider = EditorManager.inst.timelineSlider.GetComponent<Slider>();
             TriggerHelper.AddEventTriggers(EditorTimeline.inst.timelineSlider.gameObject,
@@ -1140,11 +1484,8 @@ namespace BetterLegacy.Editor.Managers
 
             SetupMiscEditorThemes();
 
-            ParentSelectorPopup.InitPageField();
-            ParentSelectorPopup.getMaxPageCount = () => GameData.Current.beatmapObjects.FindAll(x => !x.FromPrefab).Count / ObjectEditor.ParentObjectsPerPage; // temp
-
             EditorTimeline.inst.EditorGroupPopup = GeneratePopup(EditorPopup.EDITOR_GROUPS_POPUP, "Editor Groups", Vector2.zero, new Vector2(600f, 400f),
-                _val => EditorTimeline.inst.RefreshEditorGroupsPopup());
+                _val => EditorTimeline.inst.RenderEditorGroupsPopup());
             EditorTimeline.inst.EditorGroupPopup.onRender = () =>
             {
                 if (AssetPack.TryReadFromFile("editor/ui/popups/editor_groups_popup.json", out string uiFile))
@@ -1194,8 +1535,6 @@ namespace BetterLegacy.Editor.Managers
 
             UpdatePicker();
             UpdateTooltip();
-            EditorTimeline.inst.UpdateBinControls();
-            EditorTimeline.inst.UpdateTimeChange();
             UpdatePreview();
             UpdateKey();
             UpdateCameraArea();
@@ -1470,296 +1809,7 @@ namespace BetterLegacy.Editor.Managers
 
         #endregion
 
-        #region Constants
-
-        /// <summary>
-        /// Default object cameo
-        /// </summary>
-        public const string DEFAULT_OBJECT_NAME = "\"Default object cameo\" -Viral Mecha";
-
-        /// <summary>
-        /// Represents the local system browser (e.g. File Explorer)
-        /// </summary>
-        public const string SYSTEM_BROWSER = "System Browser";
-
-        /// <summary>
-        /// Represents the built-in file browser.
-        /// </summary>
-        public const string EDITOR_BROWSER = "Editor Browser";
-
-        #endregion
-
-        #region Variables
-
-        #region Misc
-
-        public bool Freecam { get; set; }
-
-        /// <summary>
-        /// Custom editor thread for performing larger tasks.
-        /// </summary>
-        public Core.Threading.TickRunner editorThread;
-
-        /// <summary>
-        /// If the mouse cursor is over the level preview.
-        /// </summary>
-        public static bool MouseOverPreview => RTLevel.Cameras.FG.rect.Contains(new Vector2(Input.mousePosition.x / Screen.width, Input.mousePosition.y / Screen.height));
-
-        /// <summary>
-        /// A list of easing dropdowns.
-        /// </summary>
-        public List<Dropdown> EasingDropdowns { get; set; } = new List<Dropdown>();
-
-        public List<EasingOption> EasingOptions { get; set; } = new List<EasingOption>();
-
-        public LayoutValues EasingDropdownLayoutGroupValues { get; set; }
-
-        public RectValues EasingDropdownTemplateRectValues { get; set; } = new RectValues
-        {
-            anchoredPosition = new Vector2(0f, 2f),
-            anchorMax = new Vector2(1f, 0f),
-            anchorMin = Vector2.zero,
-            pivot = new Vector2(0.5f, 1f),
-            sizeDelta = new Vector2(0f, 140f),
-        };
-
-        /// <summary>
-        /// If advanced features should display.
-        /// </summary>
-        public static bool ShowModdedUI { get; set; }
-
-        /// <summary>
-        /// Hides the preview area until a level is loaded.
-        /// </summary>
-        public EditorThemeElement PreviewCover { get; set; }
-
-        /// <summary>
-        /// Helper component for object selection in preview.
-        /// </summary>
-        public SelectObjectHelper SelectObjectHelper { get; set; }
-
-        /// <summary>
-        /// Grid of the preview area.
-        /// </summary>
-        public GridRenderer previewGrid;
-
-        public GameObject timeDefault;
-
-        public bool ienumRunning;
-
-        /// <summary>
-        /// The top panel of the editor with the dropdowns.
-        /// </summary>
-        public Transform titleBar;
-
-        public FunctionButtonStorage undoButton;
-        public FunctionButtonStorage redoButton;
-
-        public InputField folderCreatorName;
-        Text folderCreatorTitle;
-        Text folderCreatorNameLabel;
-        Button folderCreatorSubmit;
-        Text folderCreatorSubmitText;
-
-        GameObject fontSelectionPrefab;
-
-        RectTransform cameraAreaCanvas;
-        RectTransform cameraArea;
-        bool editorCameraEnabled;
-
-        #endregion
-
-        #region Popups
-
-        public Transform popups;
-
-        public List<EditorPopup> editorPopups = new List<EditorPopup>();
-
-        public InfoPopup InfoPopup { get; set; }
-
-        public ContentPopup ParentSelectorPopup { get; set; }
-
-        public EditorPopup SaveAsPopup { get; set; }
-
-        public DoubleContentPopup PrefabPopups { get; set; }
-
-        public EditorPopup ObjectOptionsPopup { get; set; }
-        public EditorPopup BGObjectOptionsPopup { get; set; }
-
-        public ContentPopup DebuggerPopup { get; set; }
-
-        public ContentPopup AutosavePopup { get; set; }
-
-        public EditorPopup WarningPopup { get; set; }
-
-        public EditorPopup BrowserPopup { get; set; }
-
-        public EditorPopup NamePopup { get; set; }
-
-        public ContentPopup PrefabTypesPopup { get; set; }
-
-        public ContentPopup FontSelectorPopup { get; set; }
-
-        public ProgressPopup ProgressPopup { get; set; }
-
-        #endregion
-
-        #region Dragging
-
-        public float dragOffset = -1f;
-        public int dragBinOffset = -100;
-
-        public static bool DraggingPlaysSound { get; set; }
-        public static bool DraggingPlaysSoundBPM { get; set; }
-
-        bool draggingCamera;
-        Vector2 startDragPos;
-        Vector2 cachePos;
-
-        #endregion
-
-        #region Loading & sorting
-
-        public bool canUpdateThemes = true;
-        public bool canUpdatePrefabs = true;
-
-        #endregion
-
-        #region Mouse Picker & Tooltip
-
-        // tootlip
-
-        public bool showTootip;
-
-        public TextMeshProUGUI tooltipText;
-
-        public bool tooltipActive;
-        public float tooltipTime;
-        public float tooltipTimeOffset;
-        public float maxTooltipTime = 2f;
-
-        public GameObject mouseTooltip;
-        public RectTransform mouseTooltipRT;
-        public TextMeshProUGUI mouseTooltipText;
-
-        // picker
-
-        public GameObject mousePicker;
-        RectTransform mousePickerRT;
-
-        public bool parentPickerEnabled;
-        public bool prefabPickerEnabled;
-        public bool selectingMultiple;
-
-        #endregion
-
-        #region Timeline Bar
-
-        /// <summary>
-        /// The main editor toolbar.
-        /// </summary>
-        public GameObject timelineBar;
-
-        /// <summary>
-        /// The modded song time field.
-        /// </summary>
-        public InputField timeField;
-
-        /// <summary>
-        /// The vanilla song time button text.
-        /// </summary>
-        public Text timelineTime;
-
-        /// <summary>
-        /// The modded audio pitch field.
-        /// </summary>
-        public InputField pitchField;
-
-        /// <summary>
-        /// The event layer toggle. If on, renders <see cref="LayerType.Events"/>, otherwise renders <see cref="LayerType.Objects"/>.
-        /// </summary>
-        public Toggle eventLayerToggle;
-
-        #endregion
-
-        #region Key selection
-
-        /// <summary>
-        /// If keyboard is currently being checked for any input.
-        /// </summary>
-        public bool selectingKey = false;
-
-        /// <summary>
-        /// Action to run when a key is selected
-        /// </summary>
-        public Action<KeyCode> setKey;
-
-        #endregion
-
-        #region Game Timeline
-
-        public Image timelinePreviewPlayer;
-        public Image timelinePreviewLine;
-        public Image timelinePreviewLeftCap;
-        public Image timelinePreviewRightCap;
-        public List<Image> checkpointImages = new List<Image>();
-
-        public Transform timelinePreview;
-        public RectTransform timelinePosition;
-
-        #endregion
-
-        #region Debugger
-
-        public List<string> debugs = new List<string>();
-        public List<GameObject> customFunctions = new List<GameObject>();
-        public string debugSearch;
-
-        #endregion
-
-        #region Screenshots
-
-        public Transform screenshotContent;
-        public InputField screenshotPageField;
-
-        public int screenshotPage;
-        public int screenshotsPerPage = 5;
-
-        public int CurrentScreenshotPage => screenshotPage + 1;
-        public int MinScreenshots => MaxScreenshots - screenshotsPerPage;
-        public int MaxScreenshots => CurrentScreenshotPage * screenshotsPerPage;
-
-        public int screenshotCount;
-
-        #endregion
-
-        #region Editor Layer
-
-        public List<EditorLayer> EditorLayers { get; set; } = new List<EditorLayer>();
-
-        public class EditorLayer : Exists
-        {
-            public EditorLayer() { }
-
-            public EditorLayer(int layer, ThemeGroup themeGroup, string color)
-            {
-                this.layer = layer;
-                this.themeGroup = themeGroup;
-                this.color = color;
-            }
-
-            public int layer;
-            public ThemeGroup themeGroup;
-            public string color;
-        }
-
-        #endregion
-
-        #endregion
-
         #region Settings
-
-        public EditorInfo editorInfo = new EditorInfo();
 
         /// <summary>
         /// Saves the current editor settings.
@@ -1805,16 +1855,6 @@ namespace BetterLegacy.Editor.Managers
         #endregion
 
         #region Notifications
-
-        /// <summary>
-        /// List of all current notifications.
-        /// </summary>
-        public List<string> notifications = new List<string>();
-
-        /// <summary>
-        /// The parent for the notifications.
-        /// </summary>
-        public RectTransform notificationsParent;
 
         /// <summary>
         /// Displays an editor notification.
@@ -1893,7 +1933,7 @@ namespace BetterLegacy.Editor.Managers
                 else
                     ((Text)textComponent).text = text;
 
-                notif.transform.SetParent(ProjectPlanner.inst && ProjectPlanner.inst.PlannerActive ? ProjectPlanner.inst.notificationsParent : notificationsParent);
+                notif.transform.SetParent(ProjectPlanner.inst && ProjectPlanner.inst.Active ? ProjectPlanner.inst.notificationsParent : notificationsParent);
                 if (EditorConfig.Instance.NotificationDirection.Value == VerticalDirection.Down)
                     notif.transform.SetAsFirstSibling();
                 notif.transform.localScale = Vector3.one;
@@ -1922,7 +1962,7 @@ namespace BetterLegacy.Editor.Managers
                 var gameObject = Instantiate(EditorManager.inst.notificationPrefabs[0], Vector3.zero, Quaternion.identity);
                 Destroy(gameObject, time * EditorConfig.Instance.NotificationDisplayTime.Value);
                 gameObject.transform.Find("text").GetComponent<TextMeshProUGUI>().text = text;
-                gameObject.transform.SetParent(ProjectPlanner.inst && ProjectPlanner.inst.PlannerActive ? ProjectPlanner.inst.notificationsParent : notificationsParent);
+                gameObject.transform.SetParent(ProjectPlanner.inst && ProjectPlanner.inst.Active ? ProjectPlanner.inst.notificationsParent : notificationsParent);
                 if (EditorConfig.Instance.NotificationDirection.Value == VerticalDirection.Down)
                     gameObject.transform.SetAsFirstSibling();
                 gameObject.transform.localScale = Vector3.one;
@@ -1966,121 +2006,6 @@ namespace BetterLegacy.Editor.Managers
 
         #region Paths
 
-        #region Values
-
-        public const string DEFAULT_EXPORTS_PATH = "beatmaps/exports";
-
-        /// <summary>
-        /// Base path to the game.
-        /// </summary>
-        public string BasePath { get; set; } = RTFile.ApplicationDirectory;
-
-        /// <summary>
-        /// The beatmaps folder that contains all PA directories and files.
-        /// </summary>
-        public string beatmapsFolder = "beatmaps";
-
-        /// <summary>
-        /// The beatmaps path that contains all PA directories and files.
-        /// </summary>
-        public string BeatmapsPath => RTFile.CombinePaths(BasePath, beatmapsFolder);
-
-        /// <summary>
-        /// Watches the current prefab folder for changes. If any changes are made, update the prefab list.
-        /// </summary>
-        public FileSystemWatcher PrefabWatcher { get; set; }
-
-        /// <summary>
-        /// Watches the current theme folder for changes. If any changes are made, update the theme list.
-        /// </summary>
-        public FileSystemWatcher ThemeWatcher { get; set; }
-
-        /// <summary>
-        /// The level sort.
-        /// </summary>
-        public LevelSort levelSort = 0;
-
-        /// <summary>
-        /// If the level sort should ascend.
-        /// </summary>
-        public bool levelAscend = true;
-
-        public string EditorSettingsPath => RTFile.CombinePaths(RTFile.ApplicationDirectory, $"settings/editor{FileFormat.LSS.Dot()}");
-
-        /// <summary>
-        /// The path editor levels should load from.
-        /// </summary>
-        public string EditorPath
-        {
-            get => editorPath;
-            set => editorPath = value;
-        }
-        string editorPath = "editor";
-
-        /// <summary>
-        /// The path themes should load from.
-        /// </summary>
-        public string ThemePath
-        {
-            get => themePath;
-            set => themePath = value;
-        }
-        string themePath = "themes";
-
-        /// <summary>
-        /// The path prefabs should load from.
-        /// </summary>
-        public string PrefabPath
-        {
-            get => prefabPath;
-            set => prefabPath = value;
-        }
-        string prefabPath = "prefabs";
-
-        /// <summary>
-        /// The path prefab types should load from.
-        /// </summary>
-        public string PrefabTypePath
-        {
-            get => prefabTypePath;
-            set => prefabTypePath = value;
-        }
-        string prefabTypePath = "prefabtypes";
-
-        /// <summary>
-        /// The path player models should load from.
-        /// </summary>
-        public string PlayersPath
-        {
-            get => playersPath;
-            set => playersPath = value;
-        }
-        string playersPath = "players";
-
-        /// <summary>
-        /// The path planners should load from.
-        /// </summary>
-        public string PlannersPath
-        {
-            get => plannersPath;
-            set => plannersPath = value;
-        }
-        string plannersPath = "planners";
-
-        /// <summary>
-        /// The path level collections should load from.
-        /// </summary>
-        public string CollectionsPath
-        {
-            get => collectionsPath;
-            set => collectionsPath = value;
-        }
-        string collectionsPath = "collections";
-
-        #endregion
-
-        #region Functions
-
         /// <summary>
         /// Resets the base path and reloads all files.
         /// </summary>
@@ -2100,7 +2025,7 @@ namespace BetterLegacy.Editor.Managers
             UpdateEditorPath(false);
             RTThemeEditor.inst.Popup.PathField.text = "themes";
             UpdateThemePath(false);
-            PrefabPopups.External.PathField.text = "prefabs";
+            RTPrefabEditor.inst.Popups.External.PathField.text = "prefabs";
             UpdatePrefabPath(false);
 
             CoroutineHelper.StartCoroutine(RTPrefabEditor.inst.LoadPrefabTypes());
@@ -2124,22 +2049,23 @@ namespace BetterLegacy.Editor.Managers
             if (!RTFile.DirectoryExists(editorPath))
             {
                 EditorLevelManager.inst.OpenLevelPopup.PathField.interactable = false;
-                ShowWarningPopup("No directory exists for this path. Do you want to create a new folder?", () =>
-                {
-                    RTFile.CreateDirectory(editorPath);
+                ShowWarningPopup("No directory exists for this path. Do you want to create a new folder?",
+                    onConfirm: () =>
+                    {
+                        RTFile.CreateDirectory(editorPath);
 
-                    SaveGlobalSettings();
+                        SaveGlobalSettings();
 
-                    EditorLevelManager.inst.LoadLevels();
+                        EditorLevelManager.inst.LoadLevels();
 
-                    HideWarningPopup();
-                    EditorLevelManager.inst.OpenLevelPopup.PathField.interactable = true;
-                },
-                () =>
-                {
-                    HideWarningPopup();
-                    EditorLevelManager.inst.OpenLevelPopup.PathField.interactable = true;
-                });
+                        HideWarningPopup();
+                        EditorLevelManager.inst.OpenLevelPopup.PathField.interactable = true;
+                    },
+                    onCancel: () =>
+                    {
+                        HideWarningPopup();
+                        EditorLevelManager.inst.OpenLevelPopup.PathField.interactable = true;
+                    });
 
                 return;
             }
@@ -2162,22 +2088,24 @@ namespace BetterLegacy.Editor.Managers
             if (!RTFile.DirectoryExists(themePath))
             {
                 RTThemeEditor.inst.Popup.PathField.interactable = false;
-                ShowWarningPopup("No directory exists for this path. Do you want to create a new folder?", () =>
-                {
-                    RTFile.CreateDirectory(themePath);
+                ShowWarningPopup("No directory exists for this path. Do you want to create a new folder?",
+                    onConfirm: () =>
+                    {
+                        RTFile.CreateDirectory(themePath);
 
-                    SaveGlobalSettings();
+                        SaveGlobalSettings();
 
-                    CoroutineHelper.StartCoroutine(RTThemeEditor.inst.LoadThemes());
-                    EventEditor.inst.RenderEventsDialog();
+                        CoroutineHelper.StartCoroutine(RTThemeEditor.inst.LoadThemes());
+                        EventEditor.inst.RenderEventsDialog();
 
-                    HideWarningPopup();
-                    RTThemeEditor.inst.Popup.PathField.interactable = true;
-                }, () =>
-                {
-                    HideWarningPopup();
-                    RTThemeEditor.inst.Popup.PathField.interactable = true;
-                });
+                        HideWarningPopup();
+                        RTThemeEditor.inst.Popup.PathField.interactable = true;
+                    },
+                    onCancel: () =>
+                    {
+                        HideWarningPopup();
+                        RTThemeEditor.inst.Popup.PathField.interactable = true;
+                    });
 
                 return;
             }
@@ -2200,22 +2128,24 @@ namespace BetterLegacy.Editor.Managers
             var prefabPath = RTFile.CombinePaths(BeatmapsPath, PrefabPath);
             if (!RTFile.DirectoryExists(prefabPath))
             {
-                PrefabPopups.External.PathField.interactable = false;
-                ShowWarningPopup("No directory exists for this path. Do you want to create a new folder?", () =>
-                {
-                    RTFile.CreateDirectory(prefabPath);
+                RTPrefabEditor.inst.Popups.External.PathField.interactable = false;
+                ShowWarningPopup("No directory exists for this path. Do you want to create a new folder?",
+                    onConfirm: () =>
+                    {
+                        RTFile.CreateDirectory(prefabPath);
 
-                    SaveGlobalSettings();
+                        SaveGlobalSettings();
 
-                    RTPrefabEditor.inst.LoadPrefabs(RTPrefabEditor.inst.RenderExternalPrefabs);
+                        RTPrefabEditor.inst.LoadPrefabs(RTPrefabEditor.inst.RenderExternalPrefabs);
 
-                    HideWarningPopup();
-                    PrefabPopups.External.PathField.interactable = true;
-                }, () =>
-                {
-                    HideWarningPopup();
-                    PrefabPopups.External.PathField.interactable = true;
-                });
+                        HideWarningPopup();
+                        RTPrefabEditor.inst.Popups.External.PathField.interactable = true;
+                    },
+                    onCancel: () =>
+                    {
+                        HideWarningPopup();
+                        RTPrefabEditor.inst.Popups.External.PathField.interactable = true;
+                    });
 
                 return;
             }
@@ -2545,6 +2475,41 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
+        /// <summary>
+        /// Opens the level list folder in the file browser.
+        /// </summary>
+        public void OpenLevelListFolder() => RTFile.OpenInFileBrowser.Open(RTFile.CombinePaths(BeatmapsPath, EditorPath));
+
+        /// <summary>
+        /// Opens the theme list folder in the file browser.
+        /// </summary>
+        public void OpenThemeListFolder() => RTFile.OpenInFileBrowser.Open(RTFile.CombinePaths(BeatmapsPath, ThemePath));
+
+        /// <summary>
+        /// Opens the prefab list folder in the file browser.
+        /// </summary>
+        public void OpenPrefabListFolder() => RTFile.OpenInFileBrowser.Open(RTFile.CombinePaths(BeatmapsPath, PrefabPath));
+
+        /// <summary>
+        /// Opens the level collection list folder in the file browser.
+        /// </summary>
+        public void OpenLevelCollectionListFolder() => RTFile.OpenInFileBrowser.Open(RTFile.CombinePaths(BeatmapsPath, CollectionsPath));
+
+        /// <summary>
+        /// Sets the current level path.
+        /// </summary>
+        /// <param name="path">Path to set.</param>
+        public void SetCurrentPath(string path)
+        {
+            var fullPath = RTFile.RemoveEndSlash(path);
+            var name = Path.GetFileName(fullPath);
+
+            EditorManager.inst.currentLoadedLevel = name;
+            GameManager.inst.path = RTFile.CombinePaths(fullPath, Level.LEVEL_LSB);
+            RTFile.BasePath = RTFile.AppendEndSlash(fullPath);
+            GameManager.inst.levelName = name;
+        }
+
         #region Internal
 
         void InitFileWatchers()
@@ -2604,8 +2569,6 @@ namespace BetterLegacy.Editor.Managers
             RTPrefabEditor.inst.LoadPrefabs(RTPrefabEditor.inst.RenderExternalPrefabs);
             yield break;
         }
-
-        #endregion
 
         #endregion
 
@@ -2770,19 +2733,36 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
+        /// <summary>
+        /// Pastes copied objects based on mouse position and current dialog.
+        /// </summary>
         public void Paste() => Paste(0f, false);
 
+        /// <summary>
+        /// Pastes copied objects based on mouse position and current dialog.
+        /// </summary>
+        /// <param name="offsetTime">Time to offset the paste from.</param>
         public void Paste(float offsetTime) => Paste(offsetTime, false);
 
+        /// <summary>
+        /// Pastes copied objects based on mouse position and current dialog.
+        /// </summary>
+        /// <param name="regen">If the prefab instance IDs should be regenerated.</param>
         public void Paste(bool regen) => Paste(0f, regen);
 
+        /// <summary>
+        /// Pastes copied objects based on mouse position and current dialog.
+        /// </summary>
+        /// <param name="offsetTime">Time to offset the paste from.</param>
+        /// <param name="regen">If the prefab instance IDs should be regenerated.</param>
         public void Paste(float offsetTime, bool regen) => Paste(offsetTime, false, regen);
 
         /// <summary>
         /// Pastes copied objects based on mouse position and current dialog.
         /// </summary>
         /// <param name="offsetTime">Time to offset the paste from.</param>
-        /// <param name="regen">If IDs should be regenerated.</param>
+        /// <param name="dup">If the bins should be added to.</param>
+        /// <param name="regen">If the prefab instance IDs should be regenerated.</param>
         public void Paste(float offsetTime, bool dup, bool regen)
         {
             if (EditorTimeline.inst.isOverMainTimeline)
@@ -2966,7 +2946,7 @@ namespace BetterLegacy.Editor.Managers
                         break;
                     }
                 case EditorDialog.BACKGROUND_EDITOR: {
-                        var backgroundObject = RTBackgroundEditor.inst.CurrentSelectedBG;
+                        var backgroundObject = EditorTimeline.inst.CurrentSelection.GetData<BackgroundObject>();
                         if (!backgroundObject)
                         {
                             EditorManager.inst.DisplayNotification("No BG to delete.", 1f, EditorManager.NotificationType.Error);
@@ -3054,6 +3034,10 @@ namespace BetterLegacy.Editor.Managers
 
         #region Asset Packs
 
+        /// <summary>
+        /// Loads all editor Asset Pack values.
+        /// </summary>
+        /// <param name="update">If certain UI should update.</param>
         public void LoadEditorAssetPack(bool update = true)
         {
             LoadLevelPanelUI(update);
@@ -3179,11 +3163,11 @@ namespace BetterLegacy.Editor.Managers
                 return;
 
             var jn = JSON.Parse(editorLayersFile);
-            EditorLayers.Clear();
+            EditorLayerDisplays.Clear();
             for (int i = 0; i < jn["layers"].Count; i++)
             {
                 var jnLayer = jn["layers"][i];
-                EditorLayers.Add(new EditorLayer(jnLayer["layer"], Parser.TryParse(jnLayer["theme_group"], ThemeGroup.Null), jnLayer["color"]));
+                EditorLayerDisplays.Add(new EditorLayerDisplay(jnLayer["layer"], Parser.TryParse(jnLayer["theme_group"], ThemeGroup.Null), jnLayer["color"]));
             }
 
             if (!update)
@@ -3272,124 +3256,6 @@ namespace BetterLegacy.Editor.Managers
             editorPopup.Init();
             editorPopups.Add(editorPopup);
             return editorPopup;
-        }
-
-        public void SetupIndexer(IIndexDialog dialog)
-        {
-            if (dialog == null || !dialog.Edit)
-            {
-                CoreHelper.LogError($"Failed to setup indexer.");
-                return;
-            }
-
-            try
-            {
-                dialog.JumpToStartButton = dialog.Edit.Find("<<").GetComponent<Button>();
-                dialog.JumpToPrevButton = dialog.Edit.Find("<").GetComponent<Button>();
-
-                if (dialog.Edit.TryFind("|/Text", out Transform textTransform))
-                    dialog.KeyframeIndexer = textTransform.GetComponent<Text>();
-                else if (dialog.Edit.TryFind("|/text", out Transform textLowerTransform))
-                    dialog.KeyframeIndexer = textLowerTransform.GetComponent<Text>();
-
-                dialog.JumpToNextButton = dialog.Edit.Find(">").GetComponent<Button>();
-                dialog.JumpToLastButton = dialog.Edit.Find(">>").GetComponent<Button>();
-
-                if (dialog.Edit.TryFind("copy", out Transform copyTransform))
-                    dialog.CopyButton = copyTransform.GetComponent<FunctionButtonStorage>();
-                if (dialog.Edit.TryFind("paste", out Transform pasteTransform))
-                    dialog.PasteButton = pasteTransform.GetComponent<FunctionButtonStorage>();
-                dialog.DeleteButton = dialog.Edit.Find("del").gameObject.AddComponent<DeleteButtonStorage>();
-                dialog.DeleteButton.Assign(dialog.DeleteButton.gameObject);
-
-                CoreHelper.RemoveAnimator(dialog.JumpToStartButton);
-                EditorThemeManager.ApplySelectable(dialog.JumpToStartButton, ThemeGroup.Function_2, false);
-                CoreHelper.RemoveAnimator(dialog.JumpToPrevButton);
-                EditorThemeManager.ApplySelectable(dialog.JumpToPrevButton, ThemeGroup.Function_2, false);
-                CoreHelper.RemoveAnimator(dialog.JumpToNextButton);
-                EditorThemeManager.ApplySelectable(dialog.JumpToNextButton, ThemeGroup.Function_2, false);
-                CoreHelper.RemoveAnimator(dialog.JumpToLastButton);
-                EditorThemeManager.ApplySelectable(dialog.JumpToLastButton, ThemeGroup.Function_2, false);
-
-                if (dialog.Edit.TryFind("|", out Transform indexer))
-                    EditorThemeManager.ApplyGraphic(indexer.GetComponent<Image>(), ThemeGroup.Light_Text);
-                if (dialog.KeyframeIndexer)
-                    EditorThemeManager.ApplyGraphic(dialog.KeyframeIndexer, ThemeGroup.Background_1);
-
-                EditorThemeManager.ApplyGraphic(dialog.DeleteButton.image, ThemeGroup.Delete_Keyframe_BG);
-                EditorThemeManager.ApplySelectable(dialog.DeleteButton.button, ThemeGroup.Delete_Keyframe_Button, false);
-            }
-            catch (Exception ex)
-            {
-                CoreHelper.LogError($"Failed to set edit: {ex}");
-            }
-        }
-
-        public void SetupEditorLayers(IEditorLayerUI editorLayerUI, float size = 30.5f)
-        {
-            var editorLayerToggles = editorLayerUI.EditorLayerTogglesParent.gameObject.GetOrAddComponent<EditorLayerUI>();
-            editorLayerToggles.editorLayerUI = editorLayerUI;
-            editorLayerToggles.size = size;
-
-            CoreHelper.DestroyChildren(editorLayerUI.EditorLayerTogglesParent);
-            editorLayerUI.EditorLayerToggles = new Toggle[EditorLayers.Count];
-            for (int i = 0; i < EditorLayers.Count; i++)
-            {
-                var editorLayer = EditorLayers[i];
-                var gameObject = EditorPrefabHolder.Instance.EditorLayerToggle.Duplicate(editorLayerUI.EditorLayerTogglesParent, (i + 1).ToString());
-                gameObject.GetOrAddComponent<LayoutElement>().minWidth = size;
-                var toggle = gameObject.GetComponent<Toggle>();
-                editorLayerUI.EditorLayerToggles[i] = toggle;
-                if (!string.IsNullOrEmpty(editorLayer.color))
-                    toggle.image.color = RTColors.HexToColor(editorLayer.color);
-                else
-                    EditorThemeManager.ApplyGraphic(toggle.image, editorLayer.themeGroup);
-                EditorThemeManager.ApplyGraphic(toggle.graphic, ThemeGroup.Timeline_Bar);
-
-                var label = toggle.transform.Find("Background/Text").GetComponent<Text>();
-                label.text = (i + 1).ToString();
-                toggle.gameObject.AddComponent<ContrastColors>().Init(label, toggle.image);
-            }
-        }
-
-        /// <summary>
-        /// Sets up an easing dropdown.
-        /// </summary>
-        /// <param name="dropdown">Dropdown to setup.</param>
-        public void SetupEaseDropdown(Dropdown dropdown)
-        {
-            //dropdown.options.Clear();
-            //var easingNames = Enum.GetNames(typeof(Easing));
-            //for (int i = 0; i < easingNames.Length; i++)
-            //{
-            //    var easingName = easingNames[i];
-            //    var icon = SpriteHelper.LoadSprite(AssetPack.TryGetFile("core/sprites/ease/" + easingName + FileFormat.PNG.Dot(), out string iconFilePath) ? iconFilePath : AssetPack.GetFile("core/sprites/ease/Instant.png"));
-
-            //    dropdown.options.Add(icon ? new Dropdown.OptionData(easingName, icon) : new Dropdown.OptionData(easingName));
-            //}
-            dropdown.options = GetEaseOptions();
-            if (EasingDropdownLayoutGroupValues is GridLayoutValues gridLayoutValues)
-                gridLayoutValues.AssignToLayout(dropdown.template.Find("Viewport/Content").gameObject.GetOrAddComponent<GridLayoutGroup>());
-            else if (EasingDropdownLayoutGroupValues is HorizontalOrVerticalLayoutValues horizontalOrVerticalLayoutValues)
-                horizontalOrVerticalLayoutValues.AssignToLayout(dropdown.template.Find("Viewport/Content").gameObject.GetOrAddComponent<HorizontalOrVerticalLayoutGroup>());
-            EasingDropdownTemplateRectValues.AssignToRectTransform(dropdown.template);
-            var contentSizeFitter = dropdown.template.Find("Viewport/Content").gameObject.GetOrAddComponent<ContentSizeFitter>();
-            contentSizeFitter.horizontalFit = ContentSizeFitter.FitMode.MinSize;
-            contentSizeFitter.verticalFit = ContentSizeFitter.FitMode.MinSize;
-        }
-
-        public List<Dropdown.OptionData> GetEaseOptions()
-        {
-            //var options = EasingOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList();
-            //var easingNames = Enum.GetNames(typeof(Easing));
-            //for (int i = 0; i < easingNames.Length; i++)
-            //{
-            //    var easingName = easingNames[i];
-            //    var icon = SpriteHelper.LoadSprite(AssetPack.TryGetFile("core/sprites/ease/" + easingName + FileFormat.PNG.Dot(), out string iconFilePath) ? iconFilePath : AssetPack.GetFile("core/sprites/ease/Instant.png"));
-
-            //    options.Add(icon ? new Dropdown.OptionData(easingName, icon) : new Dropdown.OptionData(easingName));
-            //}
-            return EasingOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList();
         }
 
         #region Internal
@@ -3991,8 +3857,7 @@ namespace BetterLegacy.Editor.Managers
                     }
 
                     EditorManager.inst.DisplayNotification($"Successfully copied {name} to {LevelManager.Path}!", 2f, EditorManager.NotificationType.Success);
-                    HideWarningPopup();
-                }, HideWarningPopup);
+                });
             }, 7);
             EditorHelper.SetComplexity(copyLevelToArcade, Complexity.Normal);
 
@@ -4009,7 +3874,7 @@ namespace BetterLegacy.Editor.Managers
 
             var openLevelBrowser = EditorHelper.AddEditorDropdown("Open Level Browser", string.Empty, EditorHelper.FILE_DROPDOWN, titleBar.Find("File/File Dropdown/Open/Image").GetComponent<Image>().sprite, () =>
             {
-                BrowserPopup.Open();
+                RTFileBrowser.inst.Popup.Open();
                 EditorLevelManager.inst.RefreshFileBrowserLevels();
             }, 3);
             EditorHelper.SetComplexity(openLevelBrowser, Complexity.Normal);
@@ -4025,7 +3890,7 @@ namespace BetterLegacy.Editor.Managers
                     return;
                 }
 
-                BrowserPopup.Open();
+                RTFileBrowser.inst.Popup.Open();
                 RTFileBrowser.inst.UpdateBrowserFile(RTFile.DotFormats(FileFormat.OGG, FileFormat.WAV, FileFormat.PNG, FileFormat.JPG, FileFormat.MP4, FileFormat.LSP, FileFormat.VGP), onSelectFile: _val =>
                 {
                     var selectedFile = RTFile.ReplaceSlash(_val);
@@ -4095,7 +3960,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                     else
                         EditorManager.inst.DisplayNotification("Level does not exist.", 2f, EditorManager.NotificationType.Error);
-                }, HideWarningPopup);
+                });
             }, 4);
             EditorHelper.SetComplexity(reloadLevel, Complexity.Normal);
 
@@ -4109,9 +3974,10 @@ namespace BetterLegacy.Editor.Managers
             {
                 ShowWarningPopup("Are you sure you want to clear sprite data? Any Image Shapes that use a stored image will have their images cleared and you will need to set them again.", () =>
                 {
+                    int count = GameData.Current.assets.sprites.Count;
                     GameData.Current.assets.sprites.Clear();
-                    HideWarningPopup();
-                }, HideWarningPopup);
+                    EditorManager.inst.DisplayNotification($"Removed {count} from the level!", 2f, EditorManager.NotificationType.Success);
+                });
             });
             EditorHelper.SetComplexity(clearSpriteData, Complexity.Advanced);
 
@@ -4131,9 +3997,7 @@ namespace BetterLegacy.Editor.Managers
                     }
 
                     RTLevel.Current?.RecalculateObjectStates();
-
-                    HideWarningPopup();
-                }, HideWarningPopup);
+                });
             });
             EditorHelper.SetComplexity(clearModifierPrefabs, Complexity.Advanced);
 
@@ -4332,7 +4196,7 @@ namespace BetterLegacy.Editor.Managers
             EditorContextMenu.AddContextMenu(EditorLevelManager.inst.OpenLevelPopup.PathField.gameObject,
                 new ButtonElement("Set folder", () =>
                 {
-                    BrowserPopup.Open();
+                    RTFileBrowser.inst.Popup.Open();
                     RTFileBrowser.inst.UpdateBrowserFolder(_val =>
                     {
                         if (!_val.Replace("\\", "/").Contains(RTFile.ApplicationDirectory + "beatmaps/"))
@@ -4343,58 +4207,11 @@ namespace BetterLegacy.Editor.Managers
 
                         EditorLevelManager.inst.OpenLevelPopup.PathField.text = _val.Replace("\\", "/").Remove(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/");
                         EditorManager.inst.DisplayNotification($"Set Editor path to {EditorPath}!", 2f, EditorManager.NotificationType.Success);
-                        BrowserPopup.Close();
+                        RTFileBrowser.inst.Popup.Close();
                         UpdateEditorPath(false);
                     });
                 }),
                 new ButtonElement("Open in File Explorer", OpenLevelListFolder));
-
-            PrefabPopups.External.InitTopElementsParent();
-            PrefabPopups.External.InitReload(() =>
-            {
-                LoadInternalPrefabPanelUI(false);
-                LoadExternalPrefabPanelUI(false);
-                RTPrefabEditor.inst.RefreshInternalPrefabs();
-                RTPrefabEditor.inst.LoadPrefabs(RTPrefabEditor.inst.RenderExternalPrefabs);
-            });
-            PrefabPopups.External.InitPath(
-                getValue: () => PrefabPath,
-                setValue: _val => PrefabPath = _val,
-                onEndEdit: _val => UpdatePrefabPath(false));
-
-            TooltipHelper.AssignTooltip(PrefabPopups.External.PathField.gameObject, "Prefab Path", 3f);
-
-            EditorContextMenu.AddContextMenu(PrefabPopups.External.PathField.gameObject,
-                new ButtonElement("Set folder", () =>
-                {
-                    BrowserPopup.Open();
-                    RTFileBrowser.inst.UpdateBrowserFolder(_val =>
-                    {
-                        if (!_val.Replace("\\", "/").Contains(RTFile.ApplicationDirectory + "beatmaps/"))
-                        {
-                            EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
-                            return;
-                        }
-
-                        PrefabPopups.External.PathField.text = _val.Replace("\\", "/").Remove(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/");
-                        EditorManager.inst.DisplayNotification($"Set Prefab path to {PrefabPath}!", 2f, EditorManager.NotificationType.Success);
-                        BrowserPopup.Close();
-                        UpdatePrefabPath(false);
-                    });
-                }),
-                new ButtonElement("Open in File Explorer", OpenPrefabListFolder),
-                new ButtonElement("Set as Default for Level", () =>
-                {
-                    editorInfo.prefabPath = prefabPath;
-                    EditorManager.inst.DisplayNotification($"Set current prefab folder [ {prefabPath} ] as the default for the level!", 5f, EditorManager.NotificationType.Success);
-                }, "Prefab Default Path"),
-                new ButtonElement("Remove Default", () =>
-                {
-                    editorInfo.prefabPath = null;
-                    EditorManager.inst.DisplayNotification($"Removed default prefab folder.", 5f, EditorManager.NotificationType.Success);
-                }, "Prefab Default Path"));
-
-            EditorHelper.SetComplexity(PrefabPopups.External.PathField.gameObject, Complexity.Advanced);
         }
 
         void SetupFileBrowser()
@@ -4403,7 +4220,7 @@ namespace BetterLegacy.Editor.Managers
             fileBrowser.gameObject.SetActive(false);
             UIManager.SetRectTransform(fileBrowser.transform.AsRT(), Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(600f, 364f));
             var close = fileBrowser.transform.Find("Panel/x").GetComponent<Button>();
-            close.onClick.NewListener(() => BrowserPopup.Close());
+            close.onClick.NewListener(() => RTFileBrowser.inst.Popup.Close());
             fileBrowser.transform.Find("GameObject").gameObject.SetActive(false);
 
             var dragger = fileBrowser.AddComponent<DraggableUI>();
@@ -4444,49 +4261,19 @@ namespace BetterLegacy.Editor.Managers
 
             try
             {
-                BrowserPopup = new EditorPopup(EditorPopup.BROWSER_POPUP);
-                BrowserPopup.Assign(BrowserPopup.GetLegacyDialog().Dialog.gameObject);
-                BrowserPopup.size = BrowserPopup.GameObject.transform.AsRT().sizeDelta;
-                BrowserPopup.Dragger = dragger;
-                editorPopups.Add(BrowserPopup);
+                rtfb.Popup = new EditorPopup(EditorPopup.BROWSER_POPUP);
+                rtfb.Popup.Assign(RTFileBrowser.inst.Popup.GetLegacyDialog().Dialog.gameObject);
+                rtfb.Popup.size = RTFileBrowser.inst.Popup.GameObject.transform.AsRT().sizeDelta;
+                rtfb.Popup.Dragger = dragger;
+                editorPopups.Add(RTFileBrowser.inst.Popup);
 
-                if (BrowserPopup.Title)
-                    BrowserPopup.title = BrowserPopup.Title.text;
+                if (RTFileBrowser.inst.Popup.Title)
+                    RTFileBrowser.inst.Popup.title = RTFileBrowser.inst.Popup.Title.text;
             }
             catch (Exception ex)
             {
                 CoreHelper.LogException(ex);
             }
-        }
-
-        void SetupTimelinePreview()
-        {
-            if (GameManager.inst.playerGUI.transform.TryFind("Interface", out Transform ic))
-                Destroy(ic.gameObject); // Destroys the Interface so the duplicate doesn't get in the way of the editor.
-
-            var gui = GameManager.inst.playerGUI.Duplicate(EditorManager.inst.dialogs.parent);
-            gui.transform.SetSiblingIndex(0);
-
-            Destroy(gui.transform.Find("Health").gameObject);
-            if (gui.transform.TryFind("Interface", out Transform dupIC))
-                Destroy(dupIC.gameObject);
-
-            gui.transform.localPosition = new Vector3(-382.5f, 184.05f, 0f);
-            gui.transform.localScale = new Vector3(0.9f, 0.9f, 1f);
-
-            gui.SetActive(true);
-            timelinePreview = gui.transform.Find("Timeline");
-            timelinePosition = timelinePreview.Find("Base/position").GetComponent<RectTransform>();
-
-            timelinePreviewPlayer = timelinePreview.Find("Base/position").GetComponent<Image>();
-            timelinePreviewLeftCap = timelinePreview.Find("Base/Image").GetComponent<Image>();
-            timelinePreviewRightCap = timelinePreview.Find("Base/Image 1").GetComponent<Image>();
-            timelinePreviewLine = timelinePreview.Find("Base").GetComponent<Image>();
-
-            timelinePreviewPlayer.material = LegacyResources.canvasImageMask;
-            timelinePreviewLeftCap.material = LegacyResources.canvasImageMask;
-            timelinePreviewRightCap.material = LegacyResources.canvasImageMask;
-            timelinePreviewLine.material = LegacyResources.canvasImageMask;
         }
 
         void SetupTimelineElements()
@@ -4533,31 +4320,6 @@ namespace BetterLegacy.Editor.Managers
             var gridCanvasGroup = grid.AddComponent<CanvasGroup>();
             gridCanvasGroup.blocksRaycasts = false;
             gridCanvasGroup.interactable = false;
-        }
-
-        void SetupGrid()
-        {
-            try
-            {
-                LSRenderManager.inst.FrontWorldCanvas.transform.localPosition = new Vector3(0f, 0f, -10000f);
-                var grid = Creator.NewUIObject("Grid", LSRenderManager.inst.FrontWorldCanvas);
-                
-                previewGrid = grid.AddComponent<GridRenderer>();
-                previewGrid.gridCellSize = new Vector2Int(80, 80);
-                previewGrid.gridCellSpacing = new Vector2(10f, 10f);
-                previewGrid.gridSize = new Vector2(1f, 1f);
-                previewGrid.color = new Color(1f, 1f, 1f);
-                previewGrid.thickness = 0.1f;
-
-                grid.transform.AsRT().anchoredPosition = new Vector2(-40f, -40f);
-                grid.transform.AsRT().sizeDelta = Vector2.one;
-
-                UpdateGrid();
-            }
-            catch (Exception ex)
-            {
-                CoreHelper.LogError($"SetupGrid Exception {ex}");
-            }
         }
 
         void SetupNewFilePopup()
@@ -4617,7 +4379,7 @@ namespace BetterLegacy.Editor.Managers
 
             var browseLocal = browseBase.transform.Find("browse");
             var browseLocalText = browseLocal.Find("Text").GetComponent<Text>();
-            browseLocalText.text = SYSTEM_BROWSER;
+            browseLocalText.text = RTFileBrowser.SYSTEM_BROWSER;
             var browseLocalButton = browseLocal.GetComponent<Button>();
             browseLocalButton.onClick.NewListener(() =>
             {
@@ -4631,11 +4393,11 @@ namespace BetterLegacy.Editor.Managers
 
             var browseInternal = browseLocal.gameObject.Duplicate(browseBase.transform, "internal browse");
             var browseInternalText = browseInternal.transform.Find("Text").GetComponent<Text>();
-            browseInternalText.text = EDITOR_BROWSER;
+            browseInternalText.text = RTFileBrowser.EDITOR_BROWSER;
             var browseInternalButton = browseInternal.GetComponent<Button>();
             browseInternalButton.onClick.NewListener(() =>
             {
-                BrowserPopup.Open();
+                RTFileBrowser.inst.Popup.Open();
                 RTFileBrowser.inst.UpdateBrowserFile(RTFile.AudioDotFormats, onSelectFile: _val =>
                 {
                     if (string.IsNullOrEmpty(_val))
@@ -4643,7 +4405,7 @@ namespace BetterLegacy.Editor.Managers
 
                     path.text = _val;
                     Example.Current?.tutorials?.AdvanceTutorial(ExampleTutorial.CREATE_LEVEL, 1);
-                    BrowserPopup.Close();
+                    RTFileBrowser.inst.Popup.Close();
                 });
             });
 
@@ -4772,361 +4534,6 @@ namespace BetterLegacy.Editor.Managers
             LevelTemplateEditor.Init();
         }
 
-        void CreatePreview()
-        {
-            var gameObject = Creator.NewUIObject("Preview Cover", EditorManager.inst.dialogs.parent, 1);
-
-            var rectTransform = gameObject.transform.AsRT();
-            var image = gameObject.AddComponent<Image>();
-
-            rectTransform.anchoredPosition = Vector2.zero;
-            rectTransform.sizeDelta = new Vector2(10000f, 10000f);
-
-            PreviewCover = new EditorThemeElement(ThemeGroup.Preview_Cover, gameObject, new Component[] { image, });
-            EditorThemeManager.ApplyElement(PreviewCover);
-
-            gameObject.SetActive(!Seasons.IsAprilFools);
-
-            var preview = Creator.NewUIObject("Preview", EditorManager.inst.dialogs.parent, 1);
-            preview.transform.AsRT().anchoredPosition = new Vector2(577.5f, 724.05f);
-            preview.transform.AsRT().anchorMax = Vector2.zero;
-            preview.transform.AsRT().anchorMin = Vector2.zero;
-
-            var basePreviewObject = Creator.NewUIObject("Base", preview.transform);
-            var size = EditorConfig.Instance.ObjectDraggerHelperSize.Value;
-            var outlineSize = EditorConfig.Instance.ObjectDraggerHelperOutlineSize.Value;
-            basePreviewObject.transform.AsRT().sizeDelta = new Vector2(size + outlineSize, size + outlineSize);
-            var basePreviewImage = basePreviewObject.AddComponent<Image>();
-            basePreviewImage.sprite = EditorSprites.CircleSprite;
-            basePreviewImage.color = Color.black;
-
-            var previewObject = Creator.NewUIObject("Object", basePreviewObject.transform);
-            previewObject.transform.AsRT().sizeDelta = new Vector2(size, size);
-            var previewObjectImage = previewObject.AddComponent<Image>();
-            previewObjectImage.sprite = EditorSprites.CircleSprite;
-
-            SelectObjectHelper = previewObject.AddComponent<SelectObjectHelper>();
-            SelectObjectHelper.baseImage = basePreviewImage;
-            SelectObjectHelper.image = previewObjectImage;
-            previewObject.AddComponent<EventTrigger>().triggers = new List<EventTrigger.Entry>
-            {
-                TriggerHelper.CreateEntry(EventTriggerType.PointerDown, SelectObjectHelper.PointerDown),
-                TriggerHelper.CreateEntry(EventTriggerType.Scroll, SelectObjectHelper.Scroll),
-                TriggerHelper.CreateEntry(EventTriggerType.BeginDrag, SelectObjectHelper.BeginDrag),
-                TriggerHelper.CreateEntry(EventTriggerType.Drag, SelectObjectHelper.Drag),
-                TriggerHelper.CreateEntry(EventTriggerType.EndDrag, SelectObjectHelper.EndDrag),
-            };
-        }
-
-        void CreateWarningPopup()
-        {
-            var warningPopup = SaveAsPopup.GameObject.Duplicate(popups, "Warning Popup");
-            warningPopup.transform.AsRT().anchoredPosition = Vector2.zero;
-            warningPopup.transform.AsRT().sizeDelta = new Vector2(420f, 200f);
-
-            var main = warningPopup.transform.GetChild(0);
-            main.AsRT().sizeDelta = new Vector2(420f, 200f);
-
-            var mainLayout = main.GetComponent<VerticalLayoutGroup>();
-            mainLayout.padding = new RectOffset(left: 8, right: 8, top: 0, bottom: 8);
-
-            var spacer1 = Creator.NewUIObject("spacerL", main);
-            spacer1.AddComponent<LayoutElement>();
-            var horiz = spacer1.AddComponent<HorizontalLayoutGroup>();
-            horiz.spacing = 22f;
-
-            spacer1.transform.AsRT().sizeDelta = new Vector2(292f, 40f);
-
-            var submit1 = main.Find("submit");
-            submit1.SetParent(spacer1.transform);
-
-            var submit2 = Instantiate(submit1);
-            var submit2TF = submit2.transform;
-
-            submit2TF.SetParent(spacer1.transform);
-            submit2TF.localScale = Vector3.one;
-
-            submit1.name = "submit1";
-            submit2.name = "submit2";
-
-            var submit1Image = submit1.GetComponent<Image>();
-            submit1Image.color = new Color(1f, 0.2137f, 0.2745f, 1f);
-            var submit2Image = submit2.GetComponent<Image>();
-            submit2Image.color = new Color(0.302f, 0.7137f, 0.6745f, 1f);
-
-            var submit1Button = submit1.GetComponent<Button>();
-            var submit2Button = submit2.GetComponent<Button>();
-
-            submit1Button.onClick.ClearAll();
-
-            submit2Button.onClick.ClearAll();
-
-            Destroy(main.Find("level-name").gameObject);
-
-            var sizeFitter = main.GetComponent<ContentSizeFitter>();
-            sizeFitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
-            sizeFitter.verticalFit = ContentSizeFitter.FitMode.Unconstrained;
-
-            main.Find("Level Name").AsRT().sizeDelta = new Vector2(292f, 116f);
-
-            var panel = main.Find("Panel");
-
-            var close = panel.Find("x").GetComponent<Button>();
-            close.onClick.NewListener(HideWarningPopup);
-
-            var title = panel.Find("Text").GetComponent<Text>();
-            title.text = "Warning!";
-
-            EditorHelper.AddEditorPopup(EditorPopup.WARNING_POPUP, warningPopup);
-
-            EditorThemeManager.ApplyGraphic(main.GetComponent<Image>(), ThemeGroup.Background_1, true);
-            EditorThemeManager.ApplyGraphic(panel.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Top);
-
-            EditorThemeManager.ApplySelectable(close, ThemeGroup.Close, true);
-            EditorThemeManager.ApplyGraphic(close.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
-
-            EditorThemeManager.ApplyLightText(title);
-
-            EditorThemeManager.ApplyLightText(main.Find("Level Name").GetComponent<Text>());
-            EditorThemeManager.ApplyGraphic(submit1Image, ThemeGroup.Warning_Confirm, true);
-            EditorThemeManager.ApplyGraphic(submit1Button.transform.GetChild(0).GetComponent<Text>(), ThemeGroup.Add_Text);
-            EditorThemeManager.ApplyGraphic(submit2Image, ThemeGroup.Warning_Cancel, true);
-            EditorThemeManager.ApplyGraphic(submit2Image.transform.GetChild(0).GetComponent<Text>(), ThemeGroup.Add_Text);
-
-            try
-            {
-                WarningPopup = new EditorPopup(EditorPopup.WARNING_POPUP);
-                WarningPopup.Assign(warningPopup);
-                editorPopups.Add(WarningPopup);
-            }
-            catch (Exception ex)
-            {
-                CoreHelper.LogException(ex);
-            }
-        }
-
-        GameObject GenerateDebugButton(string name, string hint, Action action)
-        {
-            var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(DebuggerPopup.Content, "Function");
-            debugs.Add(name);
-
-            gameObject.AddComponent<HoverTooltip>().tooltipLangauges.Add(new HoverTooltip.Tooltip
-            {
-                desc = name,
-                hint = hint
-            });
-
-            var button = gameObject.GetComponent<Button>();
-            button.onClick.NewListener(() => action?.Invoke());
-
-            EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
-            var text = gameObject.transform.GetChild(0).GetComponent<Text>();
-            text.text = name;
-            EditorThemeManager.ApplyLightText(text);
-            return gameObject;
-        }
-
-        void CreateDebug()
-        {
-            if (!ModCompatibility.UnityExplorerInstalled)
-                return;
-
-            DebuggerPopup = GeneratePopup(EditorPopup.DEBUGGER_POPUP, "Debugger (Only use this if you know what you're doing)", Vector2.zero, new Vector2(600f, 450f), _val =>
-            {
-                debugSearch = _val;
-                RefreshDebugger();
-            }, placeholderText: "Search for function...");
-            DebuggerPopup.InitTopElementsParent();
-            DebuggerPopup.InitReload(ReloadFunctions);
-            DebuggerPopup.onRender = () =>
-            {
-                if (AssetPack.TryReadFromFile("editor/ui/popups/debugger_popup.json", out string uiFile))
-                {
-                    var jn = JSON.Parse(uiFile);
-                    RectValues.TryParse(jn["base"]["rect"], RectValues.Default.SizeDelta(600f, 400f)).AssignToRectTransform(DebuggerPopup.GameObject.transform.AsRT());
-                    RectValues.TryParse(jn["top_panel"]["rect"], RectValues.FullAnchored.AnchorMin(0, 1).Pivot(0f, 0f).SizeDelta(32f, 32f)).AssignToRectTransform(DebuggerPopup.TopPanel);
-                    RectValues.TryParse(jn["search"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(0f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, 32f))).AssignToRectTransform(DebuggerPopup.GameObject.transform.Find("search-box").AsRT());
-                    RectValues.TryParse(jn["scrollbar"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(0f, 0.5f), new Vector2(32f, 0f))).AssignToRectTransform(DebuggerPopup.GameObject.transform.Find("Scrollbar").AsRT());
-
-                    var layoutValues = LayoutValues.Parse(jn["layout"]);
-                    if (layoutValues is GridLayoutValues gridLayoutValues)
-                        gridLayoutValues.AssignToLayout(DebuggerPopup.Grid ? DebuggerPopup.Grid : DebuggerPopup.GameObject.transform.Find("mask/content").GetComponent<GridLayoutGroup>());
-
-                    if (jn["title"] != null)
-                    {
-                        DebuggerPopup.title = jn["title"]["text"] != null ? jn["title"]["text"] : "Debugger (Only use this if you know what you're doing)";
-
-                        var title = DebuggerPopup.Title;
-                        RectValues.TryParse(jn["title"]["rect"], RectValues.FullAnchored.AnchoredPosition(2f, 0f).SizeDelta(-12f, -8f)).AssignToRectTransform(title.rectTransform);
-                        title.alignment = jn["title"]["alignment"] != null ? (TextAnchor)jn["title"]["alignment"].AsInt : TextAnchor.MiddleLeft;
-                        title.fontSize = jn["title"]["font_size"] != null ? jn["title"]["font_size"].AsInt : 20;
-                        title.fontStyle = (FontStyle)jn["title"]["font_style"].AsInt;
-                        title.horizontalOverflow = jn["title"]["horizontal_overflow"] != null ? (HorizontalWrapMode)jn["title"]["horizontal_overflow"].AsInt : HorizontalWrapMode.Wrap;
-                        title.verticalOverflow = jn["title"]["vertical_overflow"] != null ? (VerticalWrapMode)jn["title"]["vertical_overflow"].AsInt : VerticalWrapMode.Overflow;
-                    }
-
-                    if (jn["anim"] != null)
-                        DebuggerPopup.ReadAnimationJSON(jn["anim"]);
-
-                    if (jn["drag_mode"] != null && DebuggerPopup.Dragger)
-                        DebuggerPopup.Dragger.mode = (DraggableUI.DragMode)jn["drag_mode"].AsInt;
-                }
-            };
-
-            EditorHelper.AddEditorDropdown("Debugger", string.Empty, EditorHelper.VIEW_DROPDOWN, SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/debugger{FileFormat.PNG.Dot()}")), () =>
-            {
-                DebuggerPopup.Open();
-                RefreshDebugger();
-            });
-
-            EditorHelper.AddEditorDropdown("Show Explorer", string.Empty, EditorHelper.VIEW_DROPDOWN, EditorSprites.SearchSprite, ModCompatibility.ShowExplorer);
-
-            GenerateDebugButton(
-                "Inspect DataManager",
-                "DataManager is a pretty important storage component of Project Arrhythmia. It contains the GameData, all the external Beatmap Themes, etc.",
-                () => ModCompatibility.Inspect(DataManager.inst));
-
-            GenerateDebugButton(
-                "Inspect EditorManager",
-                "EditorManager handles the main unmodded editor related things.",
-                () => ModCompatibility.Inspect(EditorManager.inst));
-
-            GenerateDebugButton(
-                "Inspect RTEditor",
-                "EditorManager handles the main modded editor related things.",
-                () => ModCompatibility.Inspect(inst));
-
-            GenerateDebugButton(
-                "Inspect ObjEditor",
-                "ObjEditor is the component that handles regular object editor stuff.",
-                () => ModCompatibility.Inspect(ObjEditor.inst));
-
-            GenerateDebugButton(
-                "Inspect ObjectEditor",
-                "ObjectEditor is the component that handles modded object editor stuff.",
-                () => ModCompatibility.Inspect(ObjectEditor.inst));
-
-            GenerateDebugButton(
-                "Inspect ObjectManager",
-                "ObjectManager is the component that handles regular object stuff.",
-                () => ModCompatibility.Inspect(ObjectManager.inst));
-
-            GenerateDebugButton(
-                "Inspect GameManager",
-                "GameManager normally handles all the level loading, however now it's handled by LevelManager.",
-                () => ModCompatibility.Inspect(GameManager.inst));
-
-            GenerateDebugButton(
-                "Inspect CompanionManager",
-                "CompanionManager handles everything to do with Example, your little companion.",
-                () => ModCompatibility.Inspect(CompanionManager.inst));
-            
-            GenerateDebugButton(
-                "Inspect Example",
-                "Example...",
-                () => ModCompatibility.Inspect(Example.Current));
-
-            GenerateDebugButton(
-                "Inspect Object Editor UI",
-                "Take a closer look at the Object Editor UI since the parent tree for it is pretty deep.",
-                () => ModCompatibility.Inspect(ObjEditor.inst.ObjectView));
-
-            GenerateDebugButton(
-                "Inspect LevelProcessor",
-                "LevelProcessor is the main handler for updating object animation and spawning / despawning objects.",
-                () => ModCompatibility.Inspect(RTLevel.Current));
-
-            GenerateDebugButton(
-                "Inspect Current GameData",
-                "GameData stores all the main level data.",
-                () => ModCompatibility.Inspect(GameData.Current));
-
-            GenerateDebugButton(
-                "Inspect Current MetaData",
-                "MetaData stores all the extra level info.",
-                () => ModCompatibility.Inspect(MetaData.Current));
-
-            GenerateDebugButton(
-                "Current Event Keyframe",
-                "The current selected Event Keyframe. Based on the type and index number.",
-                () => ModCompatibility.Inspect(RTEventEditor.inst.CurrentSelectedKeyframe));
-
-            ReloadFunctions();
-        }
-
-        void ReloadFunctions()
-        {
-            var functions = RTFile.ApplicationDirectory + "beatmaps/functions";
-            if (!RTFile.DirectoryExists(functions))
-                return;
-
-            customFunctions.ForEach(x => Destroy(x));
-            customFunctions.Clear();
-            debugs.RemoveAll(x => x.Contains("Custom Code Function"));
-
-            var files = Directory.GetFiles(functions, FileFormat.CS.ToPattern());
-            for (int i = 0; i < files.Length; i++)
-            {
-                var file = files[i];
-
-                customFunctions.Add(GenerateDebugButton(
-                    $"Custom Code Function: {Path.GetFileName(file)}",
-                    "A custom code file. Make sure you know what you're doing before using this.",
-                    () =>
-                    {
-                        var hadError = false;
-                        Exception exception = null;
-                        RTCode.Evaluate(RTFile.ReadFromFile(file), x => { hadError = true; exception = x; } );
-
-                        if (hadError)
-                            EditorManager.inst.DisplayNotification($"Couldn't evaluate {Path.GetFileName(file)}. Please verify your code and try again. Exception: {exception}", 2f, EditorManager.NotificationType.Error);
-                        else
-                            EditorManager.inst.DisplayNotification($"Evaluated {Path.GetFileName(file)}!", 2f, EditorManager.NotificationType.Success);
-                    }));
-            }
-
-            RefreshDebugger();
-        }
-
-        void CreateAutosavePopup()
-        {
-            AutosavePopup = GeneratePopup(EditorPopup.AUTOSAVES_POPUP, "Open / Backup an Autosave", new Vector2(572f, 0f), new Vector2(460f, 350f), placeholderText: "Search autosaves...");
-            AutosavePopup.onRender = () =>
-            {
-                if (AssetPack.TryReadFromFile("editor/ui/popups/autosaves_popup.json", out string uiFile))
-                {
-                    var jn = JSON.Parse(uiFile);
-                    RectValues.TryParse(jn["base"]["rect"], RectValues.Default.AnchoredPosition(572f, 0f).SizeDelta(460f, 350f)).AssignToRectTransform(AutosavePopup.GameObject.transform.AsRT());
-                    RectValues.TryParse(jn["top_panel"]["rect"], RectValues.FullAnchored.AnchorMin(0, 1).Pivot(0f, 0f).SizeDelta(32f, 32f)).AssignToRectTransform(AutosavePopup.TopPanel);
-                    RectValues.TryParse(jn["search"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(0f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, 32f))).AssignToRectTransform(AutosavePopup.GameObject.transform.Find("search-box").AsRT());
-                    RectValues.TryParse(jn["scrollbar"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(0f, 0.5f), new Vector2(32f, 0f))).AssignToRectTransform(AutosavePopup.GameObject.transform.Find("Scrollbar").AsRT());
-
-                    var layoutValues = LayoutValues.Parse(jn["layout"]);
-                    if (layoutValues is GridLayoutValues gridLayoutValues)
-                        gridLayoutValues.AssignToLayout(AutosavePopup.Grid ? AutosavePopup.Grid : AutosavePopup.GameObject.transform.Find("mask/content").GetComponent<GridLayoutGroup>());
-
-                    if (jn["title"] != null)
-                    {
-                        AutosavePopup.title = jn["title"]["text"] != null ? jn["title"]["text"] : "Select an Achievement";
-
-                        var title = AutosavePopup.Title;
-                        RectValues.TryParse(jn["title"]["rect"], RectValues.FullAnchored.AnchoredPosition(2f, 0f).SizeDelta(-12f, -8f)).AssignToRectTransform(title.rectTransform);
-                        title.alignment = jn["title"]["alignment"] != null ? (TextAnchor)jn["title"]["alignment"].AsInt : TextAnchor.MiddleLeft;
-                        title.fontSize = jn["title"]["font_size"] != null ? jn["title"]["font_size"].AsInt : 20;
-                        title.fontStyle = (FontStyle)jn["title"]["font_style"].AsInt;
-                        title.horizontalOverflow = jn["title"]["horizontal_overflow"] != null ? (HorizontalWrapMode)jn["title"]["horizontal_overflow"].AsInt : HorizontalWrapMode.Wrap;
-                        title.verticalOverflow = jn["title"]["vertical_overflow"] != null ? (VerticalWrapMode)jn["title"]["vertical_overflow"].AsInt : VerticalWrapMode.Overflow;
-                    }
-
-                    if (jn["anim"] != null)
-                        AutosavePopup.ReadAnimationJSON(jn["anim"]);
-
-                    if (jn["drag_mode"] != null && AutosavePopup.Dragger)
-                        AutosavePopup.Dragger.mode = (DraggableUI.DragMode)jn["drag_mode"].AsInt;
-                }
-            };
-        }
-
         void SetupMiscEditorThemes()
         {
             CoreHelper.Log($"Setting Object Options Popup");
@@ -5171,530 +4578,104 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
-        void CreateScreenshotsView()
+        #endregion
+
+        #endregion
+
+        #region Interface
+
+        /// <summary>
+        /// Sets up indexer UI.
+        /// </summary>
+        /// <param name="dialog">Indexer UI to setup.</param>
+        public void SetupIndexer(IIndexDialog dialog)
         {
-            var editorDialogObject = EditorPrefabHolder.Instance.Dialog.Duplicate(EditorManager.inst.dialogs, "ScreenshotDialog");
-            editorDialogObject.transform.AsRT().anchoredPosition = new Vector2(0f, 16f);
-            editorDialogObject.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
-            editorDialogObject.AddComponent<ActiveState>().onStateChanged = enabled => CaptureArea.inst.SetActive(enabled);
-            var dialogStorage = editorDialogObject.GetComponent<EditorDialogStorage>();
-
-            dialogStorage.topPanel.color = LSColors.HexToColor("00FF8C");
-            dialogStorage.title.text = "- Screenshots -";
-
-            var editorDialogSpacer = editorDialogObject.transform.GetChild(1);
-            editorDialogSpacer.AsRT().sizeDelta = new Vector2(765f, 54f);
-
-            Destroy(editorDialogObject.transform.GetChild(2).gameObject);
-
-            EditorHelper.AddEditorDialog(EditorDialog.SCREENSHOTS, editorDialogObject);
-
-            var page = EditorPrefabHolder.Instance.NumberInputField.Duplicate(editorDialogObject.transform.Find("spacer"));
-            var pageStorage = page.GetComponent<InputFieldStorage>();
-            screenshotPageField = pageStorage.inputField;
-
-            pageStorage.inputField.SetTextWithoutNotify(screenshotPage.ToString());
-            pageStorage.inputField.onValueChanged.NewListener(_val =>
+            if (dialog == null || !dialog.Edit)
             {
-                if (int.TryParse(_val, out int p))
-                {
-                    screenshotPage = Mathf.Clamp(p, 0, screenshotCount / screenshotsPerPage);
-                    RefreshScreenshots();
-                }
-            });
-            pageStorage.leftGreaterButton.onClick.NewListener(() =>
-            {
-                if (int.TryParse(pageStorage.inputField.text, out int p))
-                    pageStorage.inputField.text = "0";
-            });
-            pageStorage.leftButton.onClick.NewListener(() =>
-            {
-                if (int.TryParse(pageStorage.inputField.text, out int p))
-                    pageStorage.inputField.text = Mathf.Clamp(p - 1, 0, screenshotCount / screenshotsPerPage).ToString();
-            });
-            pageStorage.rightButton.onClick.NewListener(() =>
-            {
-                if (int.TryParse(pageStorage.inputField.text, out int p))
-                    pageStorage.inputField.text = Mathf.Clamp(p + 1, 0, screenshotCount / screenshotsPerPage).ToString();
-            });
-            pageStorage.rightGreaterButton.onClick.NewListener(() =>
-            {
-                if (int.TryParse(pageStorage.inputField.text, out int p))
-                    pageStorage.inputField.text = (screenshotCount / screenshotsPerPage).ToString();
-            });
-
-            Destroy(pageStorage.middleButton.gameObject);
-
-            EditorThemeManager.ApplyInputField(pageStorage.inputField);
-            EditorThemeManager.ApplySelectable(pageStorage.leftGreaterButton, ThemeGroup.Function_2, false);
-            EditorThemeManager.ApplySelectable(pageStorage.leftButton, ThemeGroup.Function_2, false);
-            EditorThemeManager.ApplySelectable(pageStorage.rightButton, ThemeGroup.Function_2, false);
-            EditorThemeManager.ApplySelectable(pageStorage.rightGreaterButton, ThemeGroup.Function_2, false);
-
-            var scrollView = EditorPrefabHolder.Instance.ScrollView.Duplicate(editorDialogObject.transform, "Scroll View");
-            screenshotContent = scrollView.transform.Find("Viewport/Content");
-            scrollView.transform.localScale = Vector3.one;
-
-            LSHelpers.DeleteChildren(screenshotContent);
-
-            var scrollViewLE = scrollView.AddComponent<LayoutElement>();
-            scrollViewLE.ignoreLayout = true;
-
-            scrollView.transform.AsRT().anchoredPosition = new Vector2(392.5f, 320f);
-            scrollView.transform.AsRT().sizeDelta = new Vector2(735f, 638f);
-
-            EditorThemeManager.ApplyGraphic(editorDialogObject.GetComponent<Image>(), ThemeGroup.Background_1);
-
-            EditorHelper.AddEditorDropdown("View Screenshots", string.Empty, EditorHelper.VIEW_DROPDOWN, EditorSprites.SearchSprite, () =>
-            {
-                ScreenshotsDialog.Open();
-                RefreshScreenshots();
-            });
+                CoreHelper.LogError($"Failed to setup indexer.");
+                return;
+            }
 
             try
             {
-                ScreenshotsDialog = new EditorDialog(EditorDialog.SCREENSHOTS);
-                ScreenshotsDialog.Init();
+                dialog.JumpToStartButton = dialog.Edit.Find("<<").GetComponent<Button>();
+                dialog.JumpToPrevButton = dialog.Edit.Find("<").GetComponent<Button>();
+
+                if (dialog.Edit.TryFind("|/Text", out Transform textTransform))
+                    dialog.KeyframeIndexer = textTransform.GetComponent<Text>();
+                else if (dialog.Edit.TryFind("|/text", out Transform textLowerTransform))
+                    dialog.KeyframeIndexer = textLowerTransform.GetComponent<Text>();
+
+                dialog.JumpToNextButton = dialog.Edit.Find(">").GetComponent<Button>();
+                dialog.JumpToLastButton = dialog.Edit.Find(">>").GetComponent<Button>();
+
+                if (dialog.Edit.TryFind("copy", out Transform copyTransform))
+                    dialog.CopyButton = copyTransform.GetComponent<FunctionButtonStorage>();
+                if (dialog.Edit.TryFind("paste", out Transform pasteTransform))
+                    dialog.PasteButton = pasteTransform.GetComponent<FunctionButtonStorage>();
+                dialog.DeleteButton = dialog.Edit.Find("del").gameObject.AddComponent<DeleteButtonStorage>();
+                dialog.DeleteButton.Assign(dialog.DeleteButton.gameObject);
+
+                CoreHelper.RemoveAnimator(dialog.JumpToStartButton);
+                EditorThemeManager.ApplySelectable(dialog.JumpToStartButton, ThemeGroup.Function_2, false);
+                CoreHelper.RemoveAnimator(dialog.JumpToPrevButton);
+                EditorThemeManager.ApplySelectable(dialog.JumpToPrevButton, ThemeGroup.Function_2, false);
+                CoreHelper.RemoveAnimator(dialog.JumpToNextButton);
+                EditorThemeManager.ApplySelectable(dialog.JumpToNextButton, ThemeGroup.Function_2, false);
+                CoreHelper.RemoveAnimator(dialog.JumpToLastButton);
+                EditorThemeManager.ApplySelectable(dialog.JumpToLastButton, ThemeGroup.Function_2, false);
+
+                if (dialog.Edit.TryFind("|", out Transform indexer))
+                    EditorThemeManager.ApplyGraphic(indexer.GetComponent<Image>(), ThemeGroup.Light_Text);
+                if (dialog.KeyframeIndexer)
+                    EditorThemeManager.ApplyGraphic(dialog.KeyframeIndexer, ThemeGroup.Background_1);
+
+                EditorThemeManager.ApplyGraphic(dialog.DeleteButton.image, ThemeGroup.Delete_Keyframe_BG);
+                EditorThemeManager.ApplySelectable(dialog.DeleteButton.button, ThemeGroup.Delete_Keyframe_Button, false);
             }
             catch (Exception ex)
             {
-                CoreHelper.LogException(ex);
-            } // init dialog
-        }
-
-        void CreateFolderCreator()
-        {
-            try
-            {
-                var folderCreator = SaveAsPopup.GameObject.Duplicate(popups, "Folder Creator Popup");
-                folderCreator.transform.localPosition = Vector3.zero;
-
-                var folderCreatorPopup = folderCreator.transform.GetChild(0);
-
-                var folderCreatorPopupPanel = folderCreatorPopup.Find("Panel");
-                folderCreatorTitle = folderCreatorPopupPanel.Find("Text").GetComponent<Text>();
-                folderCreatorTitle.text = "Folder Creator";
-
-                var close = folderCreatorPopupPanel.Find("x").GetComponent<Button>();
-                close.onClick.NewListener(HideNameEditor);
-
-                folderCreatorNameLabel = folderCreatorPopup.Find("Level Name").GetComponent<Text>();
-                folderCreatorNameLabel.text = "New folder name";
-
-                folderCreatorName = folderCreatorPopup.Find("level-name").GetComponent<InputField>();
-                folderCreatorName.onValueChanged.ClearAll();
-                folderCreatorName.text = "New Folder";
-                folderCreatorName.characterLimit = 0;
-
-                folderCreatorSubmit = folderCreatorPopup.Find("submit").GetComponent<Button>();
-                var submitImage = folderCreatorPopup.Find("submit").GetComponent<Image>();
-                folderCreatorSubmitText = folderCreatorPopup.Find("submit/text").GetComponent<Text>();
-                folderCreatorSubmitText.text = "Create Folder";
-
-                EditorThemeManager.ApplyGraphic(folderCreatorPopup.GetComponent<Image>(), ThemeGroup.Background_1, true);
-                EditorThemeManager.ApplyGraphic(folderCreatorPopupPanel.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Top);
-
-                EditorThemeManager.ApplySelectable(close, ThemeGroup.Close, true);
-                EditorThemeManager.ApplyGraphic(close.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
-
-                EditorThemeManager.ApplyLightText(folderCreatorTitle);
-                EditorThemeManager.ApplyLightText(folderCreatorNameLabel);
-                EditorThemeManager.ApplyInputField(folderCreatorName);
-
-                EditorThemeManager.ApplyGraphic(submitImage, ThemeGroup.Function_1, true);
-                EditorThemeManager.ApplyGraphic(folderCreatorSubmitText, ThemeGroup.Function_1_Text);
-
-                EditorHelper.AddEditorPopup(EditorPopup.FOLDER_CREATOR_POPUP, folderCreator);
-
-                NamePopup = new EditorPopup(EditorPopup.FOLDER_CREATOR_POPUP);
-                NamePopup.Assign(NamePopup.GetLegacyDialog().Dialog.gameObject);
-                NamePopup.size = NamePopup.GameObject.transform.AsRT().sizeDelta;
-                editorPopups.Add(NamePopup);
-
-                if (NamePopup.Title)
-                    NamePopup.title = NamePopup.Title.text;
-            }
-            catch (Exception ex)
-            {
-                CoreHelper.LogException(ex);
+                CoreHelper.LogError($"Failed to set edit: {ex}");
             }
         }
 
-        void CreateFontSelector()
+        /// <summary>
+        /// Sets up editor layers UI.
+        /// </summary>
+        /// <param name="editorLayerUI">Editor Layer UI to setup.</param>
+        /// <param name="size">Size of the layer toggles.</param>
+        public void SetupEditorLayers(IEditorLayerUI editorLayerUI, float size = 30.5f)
         {
-            FontSelectorPopup = GeneratePopup(EditorPopup.FONT_SELECTOR_POPUP, "Select a Font", Vector2.zero, new Vector2(600f, 400f), placeholderText: "Search fonts...");
-            FontSelectorPopup.onRender = () =>
+            var editorLayerToggles = editorLayerUI.EditorLayerTogglesParent.gameObject.GetOrAddComponent<EditorLayerUI>();
+            editorLayerToggles.editorLayerUI = editorLayerUI;
+            editorLayerToggles.size = size;
+
+            CoreHelper.DestroyChildren(editorLayerUI.EditorLayerTogglesParent);
+            editorLayerUI.EditorLayerToggles = new Toggle[EditorLayerDisplays.Count];
+            for (int i = 0; i < EditorLayerDisplays.Count; i++)
             {
-                if (AssetPack.TryReadFromFile("editor/ui/popups/font_selector_popup.json", out string uiFile))
-                {
-                    var jn = JSON.Parse(uiFile);
-                    RectValues.TryParse(jn["base"]["rect"], RectValues.Default.SizeDelta(600f, 400f)).AssignToRectTransform(FontSelectorPopup.GameObject.transform.AsRT());
-                    RectValues.TryParse(jn["top_panel"]["rect"], RectValues.FullAnchored.AnchorMin(0, 1).Pivot(0f, 0f).SizeDelta(32f, 32f)).AssignToRectTransform(FontSelectorPopup.TopPanel);
-                    RectValues.TryParse(jn["search"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(0f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, 32f))).AssignToRectTransform(FontSelectorPopup.GameObject.transform.Find("search-box").AsRT());
-                    RectValues.TryParse(jn["scrollbar"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(0f, 0.5f), new Vector2(32f, 0f))).AssignToRectTransform(FontSelectorPopup.GameObject.transform.Find("Scrollbar").AsRT());
-
-                    var layoutValues = LayoutValues.Parse(jn["layout"]);
-                    if (layoutValues is GridLayoutValues gridLayoutValues)
-                        gridLayoutValues.AssignToLayout(FontSelectorPopup.Grid ? FontSelectorPopup.Grid : FontSelectorPopup.GameObject.transform.Find("mask/content").GetComponent<GridLayoutGroup>());
-
-                    if (jn["title"] != null)
-                    {
-                        FontSelectorPopup.title = jn["title"]["text"] != null ? jn["title"]["text"] : "Select a Font";
-
-                        var title = FontSelectorPopup.Title;
-                        RectValues.TryParse(jn["title"]["rect"], RectValues.FullAnchored.AnchoredPosition(2f, 0f).SizeDelta(-12f, -8f)).AssignToRectTransform(title.rectTransform);
-                        title.alignment = jn["title"]["alignment"] != null ? (TextAnchor)jn["title"]["alignment"].AsInt : TextAnchor.MiddleLeft;
-                        title.fontSize = jn["title"]["font_size"] != null ? jn["title"]["font_size"].AsInt : 20;
-                        title.fontStyle = (FontStyle)jn["title"]["font_style"].AsInt;
-                        title.horizontalOverflow = jn["title"]["horizontal_overflow"] != null ? (HorizontalWrapMode)jn["title"]["horizontal_overflow"].AsInt : HorizontalWrapMode.Wrap;
-                        title.verticalOverflow = jn["title"]["vertical_overflow"] != null ? (VerticalWrapMode)jn["title"]["vertical_overflow"].AsInt : VerticalWrapMode.Overflow;
-                    }
-
-                    if (jn["anim"] != null)
-                        FontSelectorPopup.ReadAnimationJSON(jn["anim"]);
-
-                    if (jn["drag_mode"] != null && FontSelectorPopup.Dragger)
-                        FontSelectorPopup.Dragger.mode = (DraggableUI.DragMode)jn["drag_mode"].AsInt;
-                }
-            };
-
-            fontSelectionPrefab = Creator.NewUIObject("element", transform);
-            RectValues.Default.SizeDelta(0f, 32f).AssignToRectTransform(fontSelectionPrefab.transform.AsRT());
-
-            var horizontalLayoutGroup = fontSelectionPrefab.AddComponent<HorizontalLayoutGroup>();
-
-            horizontalLayoutGroup.childControlHeight = false;
-            horizontalLayoutGroup.childControlWidth = false;
-            horizontalLayoutGroup.childForceExpandWidth = false;
-            horizontalLayoutGroup.spacing = 8f;
-            fontSelectionPrefab.AddComponent<Image>();
-            fontSelectionPrefab.AddComponent<Button>();
-
-            var labels = Creator.NewUIObject("label", fontSelectionPrefab.transform);
-            RectValues.FullAnchored.Pivot(0f, 1f).SizeDelta(722f, 22f).AssignToRectTransform(labels.transform.AsRT());
-
-            var labelsHLG = labels.AddComponent<HorizontalLayoutGroup>();
-
-            labelsHLG.childControlHeight = false;
-            labelsHLG.childControlWidth = false;
-            labelsHLG.spacing = 8f;
-
-            var label = Creator.NewUIObject("text", labels.transform);
-            RectValues.FullAnchored.Pivot(0f, 1f).SizeDelta(722f, 22f).AssignToRectTransform(label.transform.AsRT());
-
-            var text = label.AddComponent<TextMeshProUGUI>();
-            text.font = FontManager.inst.allFontAssets["Inconsolata Variable"];
-            text.fontSize = 20;
-            text.enableWordWrapping = true;
-            text.text = "font";
-        }
-
-        void SetupEaseDropdowns()
-        {
-            EasingOptions.Clear();
-            if (AssetPack.TryReadFromFile("editor/data/ease.json", out string easeFile))
-            {
-                var jn = JSON.Parse(easeFile);
-
-                if (jn["layout"] != null)
-                    EasingDropdownLayoutGroupValues = LayoutValues.Parse(jn["layout"]);
-                if (jn["template_rect"] != null)
-                    EasingDropdownTemplateRectValues = RectValues.Parse(jn["template_rect"]);
-
-                for (int i = 0; i < jn["options"].Count; i++)
-                {
-                    var jnOption = jn["options"][i];
-                    var easingOption = new EasingOption();
-                    easingOption.name = jnOption["name"];
-                    easingOption.index = jnOption["index"].AsInt;
-                    easingOption.icon = SpriteHelper.LoadSprite(AssetPack.TryGetFile(jnOption["icon_ref"], out string iconPath) ? iconPath : "core/sprites/ease/Linear.png");
-                    EasingOptions.Add(easingOption);
-                }
-            }
-
-            EasingDropdowns.Clear();
-
-            var easingDropdowns = (from x in Resources.FindObjectsOfTypeAll<Dropdown>()
-                                   where x.gameObject && x.gameObject.name == "curves"
-                                   select x).ToList();
-
-            foreach (var dropdown in easingDropdowns)
-            {
-                SetupEaseDropdown(dropdown);
-                TriggerHelper.AddEventTriggers(dropdown.gameObject, TriggerHelper.ScrollDelta(dropdown));
-            }
-
-            EasingDropdowns = easingDropdowns;
-        }
-
-        void CreateCameraArea()
-        {
-            var canvas = UIManager.GenerateUICanvas("Camera Area", null);
-            canvas.SetWorldSpace(RTLevel.UI_LAYER, RTLevel.Cameras.FG);
-            cameraAreaCanvas = canvas.GameObject.transform.AsRT();
-            var gameObject = Creator.NewUIObject("Camera", cameraAreaCanvas);
-            cameraArea = gameObject.transform.AsRT();
-            var image = gameObject.AddComponent<Image>();
-            image.type = Image.Type.Tiled;
-            image.sprite = EditorManager.inst.SelectionBoxImage.sprite;
-
-            new Labels(Labels.InitSettings.Default.Parent(gameObject.transform).Rect(RectValues.BottomLeftAnchored.Pivot(0f, 1f).SizeDelta(0f, 20f)), "Camera Area");
-
-            editorCameraEnabled = false;
-            gameObject.SetActive(false);
-        }
-
-        #endregion
-
-        #endregion
-
-        #region Render UI
-
-        public List<EditorDialog> editorDialogs = new List<EditorDialog>();
-
-        public EditorDialog ScreenshotsDialog { get; set; }
-
-        #region Folder Creator / Name Editor
-
-        /// <summary>
-        /// Shows the Folder Creator Popup.
-        /// </summary>
-        /// <param name="path">Path to create a folder in.</param>
-        /// <param name="onSubmit">Function to run when Submit is clicked.</param>
-        public void ShowFolderCreator(string path, Action onSubmit)
-        {
-            NamePopup.Open();
-            RefreshFolderCreator(path, onSubmit);
-        }
-
-        /// <summary>
-        /// Renders the Folder Creator Popup.
-        /// </summary>
-        /// <param name="path">Path to create a folder in.</param>
-        /// <param name="onSubmit">Function to run when Submit is clicked.</param>
-        public void RefreshFolderCreator(string path, Action onSubmit) => RefreshNameEditor("Folder Creator", "New folder name", "Create Folder", () =>
-        {
-            var directory = RTFile.CombinePaths(path, RTFile.ValidateDirectory(folderCreatorName.text));
-
-            if (RTFile.CreateDirectory(directory))
-                onSubmit?.Invoke();
-        });
-
-        /// <summary>
-        /// Hides the name editor.
-        /// </summary>
-        public void HideNameEditor() => NamePopup.Close();
-
-        /// <summary>
-        /// Shows the Name Editor Popup.
-        /// </summary>
-        /// <param name="title">Name of the popup to render.</param>
-        /// <param name="nameLabel">Label of the name field.</param>
-        /// <param name="submitText">Submit button text.</param>
-        /// <param name="onSubmit">Function to run when submit is clicked.</param>
-        public void ShowNameEditor(string title, string nameLabel, string submitText, Action onSubmit)
-        {
-            NamePopup.Open();
-            RefreshNameEditor(title, nameLabel, submitText, onSubmit);
-        }
-
-        /// <summary>
-        /// Renders the Name Editor Popup.
-        /// </summary>
-        /// <param name="title">Name of the popup to render.</param>
-        /// <param name="nameLabel">Label of the name field.</param>
-        /// <param name="submitText">Submit button text.</param>
-        /// <param name="onSubmit">Function to run when submit is clicked.</param>
-        public void RefreshNameEditor(string title, string nameLabel, string submitText, Action onSubmit)
-        {
-            folderCreatorTitle.text = title;
-            folderCreatorNameLabel.text = nameLabel;
-            folderCreatorSubmitText.text = submitText;
-
-            folderCreatorSubmit.onClick.NewListener(() => onSubmit?.Invoke());
-        }
-
-        /// <summary>
-        /// Shows the Name Editor Popup.
-        /// </summary>
-        /// <param name="title">Name of the popup to render.</param>
-        /// <param name="nameLabel">Label of the name field.</param>
-        /// <param name="defaultText">Default text to set.</param>
-        /// <param name="submitText">Submit button text.</param>
-        /// <param name="onSubmit">Function to run when submit is clicked.</param>
-        public void ShowNameEditor(string title, string nameLabel, string defaultText, string submitText, Action onSubmit)
-        {
-            NamePopup.Open();
-            RefreshNameEditor(title, nameLabel, defaultText, submitText, onSubmit);
-        }
-
-        /// <summary>
-        /// Renders the Name Editor Popup.
-        /// </summary>
-        /// <param name="title">Name of the popup to render.</param>
-        /// <param name="nameLabel">Label of the name field.</param>
-        /// <param name="defaultText">Default text to set.</param>
-        /// <param name="submitText">Submit button text.</param>
-        /// <param name="onSubmit">Function to run when submit is clicked.</param>
-        public void RefreshNameEditor(string title, string nameLabel, string defaultText, string submitText, Action onSubmit)
-        {
-            folderCreatorTitle.text = title;
-            folderCreatorNameLabel.text = nameLabel;
-            folderCreatorSubmitText.text = submitText;
-
-            folderCreatorName.SetTextWithoutNotify(defaultText);
-            folderCreatorSubmit.onClick.NewListener(() => onSubmit?.Invoke());
-        }
-
-        #endregion
-
-        #region Warning Popup
-
-        /// <summary>
-        /// Hides the warning popup.
-        /// </summary>
-        public void HideWarningPopup() => WarningPopup.Close();
-
-        /// <summary>
-        /// Shows the warning popup.
-        /// </summary>
-        /// <param name="warning">The warning message.</param>
-        /// <param name="onConfirm">Function to run when the user confirms.</param>
-        /// <param name="onCancel">Function to run when the user cancels.</param>
-        /// <param name="confirm">Confirm button text.</param>
-        /// <param name="cancel">Cancel button text.</param>
-        /// <param name="onClose">Function to run when the user closes the popup.</param>
-        public void ShowWarningPopup(string warning, Action onConfirm, Action onCancel, string confirm = "Yes", string cancel = "No", Action onClose = null)
-        {
-            WarningPopup.Open();
-            RefreshWarningPopup(warning, onConfirm, onCancel, confirm, cancel, onClose);
-
-            Example.Current?.brain?.Notice(ExampleBrain.Notices.WARNING_POPUP);
-        }
-
-        /// <summary>
-        /// Shows the warning popup.
-        /// </summary>
-        /// <param name="warning">The warning message.</param>
-        /// <param name="onConfirm">Function to run when the user confirms.</param>
-        /// <param name="confirm">Confirm button text.</param>
-        /// <param name="cancel">Cancel button text.</param>
-        /// <param name="onClose">Function to run when the user closes the popup.</param>
-        public void ShowWarningPopup(string warning, Action onConfirm, string confirm = "Yes", string cancel = "No", Action onClose = null)
-        {
-            WarningPopup.Open();
-            RefreshWarningPopup(warning, onConfirm, confirm, cancel, onClose);
-
-            Example.Current?.brain?.Notice(ExampleBrain.Notices.WARNING_POPUP);
-        }
-
-        /// <summary>
-        /// Renders the warning popup.
-        /// </summary>
-        /// <param name="warning">The warning message.</param>
-        /// <param name="onConfirm">Function to run when the user confirms.</param>
-        /// <param name="confirm">Confirm button text.</param>
-        /// <param name="cancel">Cancel button text.</param>
-        /// <param name="onClose">Function to run when the user closes the popup.</param>
-        public void RefreshWarningPopup(string warning, Action onConfirm, string confirm = "Yes", string cancel = "No", Action onClose = null) => RefreshWarningPopup(warning, () =>
-        {
-            onConfirm?.Invoke();
-            HideWarningPopup();
-        }, HideWarningPopup, confirm, cancel, () =>
-        {
-            onClose?.Invoke();
-            HideWarningPopup();
-        });
-
-        /// <summary>
-        /// Renders the warning popup.
-        /// </summary>
-        /// <param name="warning">The warning message.</param>
-        /// <param name="onConfirm">Function to run when the user confirms.</param>
-        /// <param name="onCancel">Function to run when the user cancels.</param>
-        /// <param name="confirm">Confirm button text.</param>
-        /// <param name="cancel">Cancel button text.</param>
-        /// <param name="onClose">Function to run when the user closes the popup.</param>
-        public void RefreshWarningPopup(string warning, Action onConfirm, Action onCancel, string confirm = "Yes", string cancel = "No", Action onClose = null)
-        {
-            var warningPopup = WarningPopup.GameObject.transform.GetChild(0);
-
-            var close = warningPopup.Find("Panel/x").GetComponent<Button>();
-            close.onClick.NewListener(() =>
-            {
-                if (onClose != null)
-                {
-                    onClose();
-                    return;
-                }
-
-                onCancel?.Invoke();
-            });
-
-            warningPopup.Find("Level Name").GetComponent<Text>().text = warning;
-
-            var submit1 = warningPopup.Find("spacerL/submit1");
-            var submit2 = warningPopup.Find("spacerL/submit2");
-
-            var submit1Button = submit1.GetComponent<Button>();
-            var submit2Button = submit2.GetComponent<Button>();
-
-            submit1.Find("text").GetComponent<Text>().text = confirm;
-            submit2.Find("text").GetComponent<Text>().text = cancel;
-
-            submit1Button.onClick.NewListener(onConfirm);
-            submit2Button.onClick.NewListener(onCancel);
-        }
-
-        #endregion
-
-        #region Preview
-
-        public void UpdateGrid()
-        {
-            if (!previewGrid)
-                return;
-
-            if (!EditorConfig.Instance.PreviewGridEnabled.Value)
-                return;
-
-            var gridSize = EditorConfig.Instance.PreviewGridSize.Value;
-            previewGrid.gridSize = new Vector2(gridSize, gridSize);
-            previewGrid.color = EditorConfig.Instance.PreviewGridColor.Value;
-            previewGrid.thickness = EditorConfig.Instance.PreviewGridThickness.Value;
-            previewGrid.SetVerticesDirty();
-        }
-
-        public void UpdateTimeline()
-        {
-            if (!timelinePreview || !AudioManager.inst.CurrentAudioSource.clip || !GameData.Current || !GameData.Current.data)
-                return;
-
-            for (int i = 0; i < checkpointImages.Count; i++)
-            {
-                if (checkpointImages[i] && checkpointImages[i].gameObject)
-                    Destroy(checkpointImages[i].gameObject);
-            }
-
-            checkpointImages.Clear();
-            LSHelpers.DeleteChildren(timelinePreview.Find("elements"));
-            foreach (var checkpoint in GameData.Current.data.checkpoints)
-            {
-                if (checkpoint.time <= 0.5f)
-                    continue;
-
-                var gameObject = GameManager.inst.checkpointPrefab.Duplicate(timelinePreview.Find("elements"), $"Checkpoint [{checkpoint.name}] - [{checkpoint.time}]");
-                float num = RTBeatmap.Current.GetTimelineOffset(checkpoint.time);
-                gameObject.transform.AsRT().anchoredPosition = new Vector2(num, 0f);
-
-                var image = gameObject.GetComponent<Image>();
-                image.material = LegacyResources.canvasImageMask;
-                checkpointImages.Add(image);
+                var editorLayer = EditorLayerDisplays[i];
+                var gameObject = EditorPrefabHolder.Instance.EditorLayerToggle.Duplicate(editorLayerUI.EditorLayerTogglesParent, (i + 1).ToString());
+                gameObject.GetOrAddComponent<LayoutElement>().minWidth = size;
+                var toggle = gameObject.GetComponent<Toggle>();
+                editorLayerUI.EditorLayerToggles[i] = toggle;
+                if (!string.IsNullOrEmpty(editorLayer.color))
+                    toggle.image.color = RTColors.HexToColor(editorLayer.color);
+                else
+                    EditorThemeManager.ApplyGraphic(toggle.image, editorLayer.themeGroup);
+                EditorThemeManager.ApplyGraphic(toggle.graphic, ThemeGroup.Timeline_Bar);
+
+                var label = toggle.transform.Find("Background/Text").GetComponent<Text>();
+                label.text = (i + 1).ToString();
+                toggle.gameObject.AddComponent<ContrastColors>().Init(label, toggle.image);
             }
         }
 
-        #endregion
-
+        /// <summary>
+        /// Renders the tag dialog.
+        /// </summary>
+        /// <param name="modifyable">Modifyable object to edit.</param>
+        /// <param name="dialog">Tag dialog.</param>
         public void RenderTags(IModifyable modifyable, ITagDialog dialog)
         {
             var tagsScrollView = dialog.TagsScrollView;
@@ -5742,6 +4723,11 @@ namespace BetterLegacy.Editor.Managers
             });
         }
 
+        /// <summary>
+        /// Renders the parent dialog.
+        /// </summary>
+        /// <param name="parentable">Parentable object to edit.</param>
+        /// <param name="dialog">Parent dialog.</param>
         public void RenderParent(IParentable parentable, IParentDialog dialog)
         {
             string parent = parentable.Parent;
@@ -5936,6 +4922,11 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
+        /// <summary>
+        /// Renders the editor layer dialog.
+        /// </summary>
+        /// <param name="editable">Editable object to edit.</param>
+        /// <param name="editorLayerUI">Editor Layer dialog.</param>
         public void RenderEditorLayer(IEditable editable, IEditorLayerUI editorLayerUI)
         {
             RenderEditorLayer(
@@ -5957,6 +4948,12 @@ namespace BetterLegacy.Editor.Managers
                     }));
         }
 
+        /// <summary>
+        /// Renders the editor layer dialog.
+        /// </summary>
+        /// <param name="editorLayerUI">Editor Layer dialog.</param>
+        /// <param name="getLayer">Gets the editor layer.</param>
+        /// <param name="setLayer">Sets the editor layer.</param>
         public void RenderEditorLayer(IEditorLayerUI editorLayerUI, Func<int> getLayer, Action<int> setLayer)
         {
             var layer = getLayer?.Invoke() ?? 0;
@@ -5979,7 +4976,7 @@ namespace BetterLegacy.Editor.Managers
 
             for (int i = 0; i < editorLayerUI.EditorLayerToggles.Length; i++)
             {
-                var index = EditorLayers.TryGetAt(i, out EditorLayer editorLayer) ? editorLayer.layer : 0;
+                var index = EditorLayerDisplays.TryGetAt(i, out EditorLayerDisplay editorLayer) ? editorLayer.layer : 0;
                 var toggle = editorLayerUI.EditorLayerToggles[i];
                 toggle.SetIsOnWithoutNotify(index == layer);
                 toggle.onValueChanged.NewListener(_val => setLayer?.Invoke(index));
@@ -5997,6 +4994,11 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
+        /// <summary>
+        /// Renders the prefab reference dialog.
+        /// </summary>
+        /// <param name="prefabable">Prefabable object to edit.</param>
+        /// <param name="dialog">Prefabable dialog.</param>
         public void RenderPrefabable(IPrefabable prefabable, IPrefabableDialog dialog)
         {
             var editable = prefabable as IEditable;
@@ -6020,11 +5022,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     if (EditorConfig.Instance.ShowCollapsePrefabWarning.Value)
                     {
-                        ShowWarningPopup("Are you sure you want to collapse this Prefab group and save the changes to the Internal Prefab?", () =>
-                        {
-                            RTPrefabEditor.inst.Collapse(prefabable, editable.EditorData);
-                            HideWarningPopup();
-                        }, HideWarningPopup);
+                        ShowWarningPopup("Are you sure you want to collapse this Prefab group and save the changes to the Internal Prefab?", () => RTPrefabEditor.inst.Collapse(prefabable, editable.EditorData));
 
                         return;
                     }
@@ -6056,113 +5054,9 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
-        public void ShowFontSelector(Action<string> onFontSelected)
-        {
-            FontSelectorPopup.Open();
-            RefreshFontSelector(onFontSelected);
-        }
+        #endregion
 
-        public void RefreshFontSelector(Action<string> onFontSelected)
-        {
-            FontSelectorPopup.SearchField.onValueChanged.NewListener(_val => RefreshFontSelector(onFontSelected));
-            FontSelectorPopup.ClearContent();
-
-            foreach (var font in FontManager.inst.allFonts)
-            {
-                if (!RTString.SearchString(FontSelectorPopup.SearchTerm, font.Key))
-                    continue;
-
-                var gameObject = fontSelectionPrefab.Duplicate(FontSelectorPopup.Content, font.Key);
-                RectValues.Default.SizeDelta(0f, 32f).AssignToRectTransform(gameObject.transform.AsRT());
-
-                var image = gameObject.GetComponent<Image>();
-
-                var text = gameObject.transform.Find("label/text").GetComponent<TextMeshProUGUI>();
-                text.text = $"<font={font.Key}>ABCDEF abcdef 123</font> - {font.Key}";
-
-                var button = gameObject.GetComponent<Button>();
-                button.onClick.NewListener(() =>
-                {
-                    onFontSelected?.Invoke($"<font={font.Key}>");
-                    FontSelectorPopup.Close();
-                });
-
-                RectValues.FullAnchored.Pivot(0f, 1f).SizeDelta(722f, 22f).AssignToRectTransform(gameObject.transform.Find("label").AsRT());
-                RectValues.FullAnchored.Pivot(0f, 1f).SizeDelta(722f, 22f).AssignToRectTransform(gameObject.transform.Find("label/text").AsRT());
-
-                EditorThemeManager.ApplyGraphic(text, ThemeGroup.Light_Text);
-                EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
-            }
-        }
-
-        /// <summary>
-        /// Refreshes the debugger.
-        /// </summary>
-        public void RefreshDebugger()
-        {
-            for (int i = 0; i < debugs.Count; i++)
-                DebuggerPopup.Content.GetChild(i).gameObject.SetActive(RTString.SearchString(debugSearch, debugs[i]));
-        }
-
-        /// <summary>
-        /// Refreshes the screenshots in the screenshots folder.
-        /// </summary>
-        public void RefreshScreenshots()
-        {
-            var directory = RTFile.ApplicationDirectory + CoreConfig.Instance.ScreenshotsPath.Value;
-
-            LSHelpers.DeleteChildren(screenshotContent);
-            var files = Directory.GetFiles(directory, FileFormat.PNG.ToPattern(), SearchOption.TopDirectoryOnly);
-            screenshotCount = files.Length;
-
-            if (screenshotCount > screenshotsPerPage)
-                TriggerHelper.AddEventTriggers(screenshotPageField.gameObject, TriggerHelper.ScrollDeltaInt(screenshotPageField, max: screenshotCount / screenshotsPerPage));
-            else
-                TriggerHelper.AddEventTriggers(screenshotPageField.gameObject);
-
-            for (int i = 0; i < files.Length; i++)
-            {
-                if (!(i >= MinScreenshots && i < MaxScreenshots))
-                    continue;
-
-                var index = i;
-
-                var gameObject = Creator.NewUIObject("screenshot", screenshotContent);
-                gameObject.transform.localScale = Vector3.one;
-                gameObject.transform.AsRT().sizeDelta = new Vector2(720f, 405f);
-
-                var image = gameObject.AddComponent<Image>();
-                image.enabled = false;
-
-                var button = gameObject.AddComponent<Button>();
-                button.onClick.NewListener(() => System.Diagnostics.Process.Start(files[index]));
-                button.colors = UIManager.SetColorBlock(button.colors, Color.white, new Color(0.9f, 0.9f, 0.9f), new Color(0.7f, 0.7f, 0.7f), Color.white, Color.red);
-
-                StartCoroutine(AlephNetwork.DownloadImageTexture($"file://{files[i]}", texture2D =>
-                {
-                    if (!image)
-                        return;
-
-                    image.enabled = true;
-                    image.sprite = SpriteHelper.CreateSprite(texture2D);
-                }));
-            }
-        }
-
-        /// <summary>
-        /// Renders the undo / redo edit buttons.
-        /// </summary>
-        public void RenderEditButtons()
-        {
-            var history = EditorManager.inst.history;
-            string undoName = ((history.commands.Count > 1 && history.lastExecuted > 0) ? history.commands[history.lastExecuted].CommandName : null);
-            undoButton.Interactable = !string.IsNullOrEmpty(undoName);
-            undoButton.Text = string.IsNullOrEmpty(undoName) ? "Undo" : "Undo " + LSText.ClampString(undoName, 14);
-
-            string redoName = ((history.commands.Count - 1 > history.lastExecuted) ? history.commands[history.lastExecuted + 1].CommandName : null);
-            redoButton.Interactable = !string.IsNullOrEmpty(redoName);
-            redoButton.Text = string.IsNullOrEmpty(redoName) ? "Redo" : "Redo " + LSText.ClampString(redoName, 14);
-        }
+        #region Dialog
 
         /// <summary>
         /// Plays an editor dialogs' animation.
@@ -6290,8 +5184,16 @@ namespace BetterLegacy.Editor.Managers
                 gameObject.SetActive(active);
         }
 
+        /// <summary>
+        /// Shows a dialog.
+        /// </summary>
+        /// <param name="name">Name of the dialog to show.</param>
         public void ShowDialog(string name) => EditorManager.inst.ShowDialog(name);
 
+        /// <summary>
+        /// Hides a dialog.
+        /// </summary>
+        /// <param name="name">Name of the dialog to hide.</param>
         public void HideDialog(string name) => EditorManager.inst.HideDialog(name);
 
         /// <summary>
@@ -6339,7 +5241,847 @@ namespace BetterLegacy.Editor.Managers
 
         #endregion
 
-        #region Misc Functions
+        #region Warning Popup
+
+        /// <summary>
+        /// Hides the warning popup.
+        /// </summary>
+        public void HideWarningPopup() => WarningPopup.Close();
+
+        /// <summary>
+        /// Shows the warning popup.
+        /// </summary>
+        /// <param name="warning">The warning message.</param>
+        /// <param name="onConfirm">Function to run when the user confirms.</param>
+        /// <param name="onCancel">Function to run when the user cancels.</param>
+        /// <param name="confirm">Confirm button text.</param>
+        /// <param name="cancel">Cancel button text.</param>
+        /// <param name="onClose">Function to run when the user closes the popup.</param>
+        public void ShowWarningPopup(string warning, Action onConfirm, Action onCancel, string confirm = "Yes", string cancel = "No", Action onClose = null)
+        {
+            WarningPopup.Open();
+            RefreshWarningPopup(warning, onConfirm, onCancel, confirm, cancel, onClose);
+
+            Example.Current?.brain?.Notice(ExampleBrain.Notices.WARNING_POPUP);
+        }
+
+        /// <summary>
+        /// Shows the warning popup.
+        /// </summary>
+        /// <param name="warning">The warning message.</param>
+        /// <param name="onConfirm">Function to run when the user confirms.</param>
+        /// <param name="confirm">Confirm button text.</param>
+        /// <param name="cancel">Cancel button text.</param>
+        /// <param name="onClose">Function to run when the user closes the popup.</param>
+        public void ShowWarningPopup(string warning, Action onConfirm, string confirm = "Yes", string cancel = "No", Action onClose = null)
+        {
+            WarningPopup.Open();
+            RefreshWarningPopup(warning, onConfirm, confirm, cancel, onClose);
+
+            Example.Current?.brain?.Notice(ExampleBrain.Notices.WARNING_POPUP);
+        }
+
+        /// <summary>
+        /// Renders the warning popup.
+        /// </summary>
+        /// <param name="warning">The warning message.</param>
+        /// <param name="onConfirm">Function to run when the user confirms.</param>
+        /// <param name="confirm">Confirm button text.</param>
+        /// <param name="cancel">Cancel button text.</param>
+        /// <param name="onClose">Function to run when the user closes the popup.</param>
+        public void RefreshWarningPopup(string warning, Action onConfirm, string confirm = "Yes", string cancel = "No", Action onClose = null) => RefreshWarningPopup(
+            warning: warning,
+            onConfirm: () =>
+            {
+                onConfirm?.Invoke();
+                HideWarningPopup();
+            },
+            onCancel: HideWarningPopup,
+            confirm: confirm,
+            cancel: cancel,
+            onClose: () =>
+            {
+                onClose?.Invoke();
+                HideWarningPopup();
+            });
+
+        /// <summary>
+        /// Renders the warning popup.
+        /// </summary>
+        /// <param name="warning">The warning message.</param>
+        /// <param name="onConfirm">Function to run when the user confirms.</param>
+        /// <param name="onCancel">Function to run when the user cancels.</param>
+        /// <param name="confirm">Confirm button text.</param>
+        /// <param name="cancel">Cancel button text.</param>
+        /// <param name="onClose">Function to run when the user closes the popup.</param>
+        public void RefreshWarningPopup(string warning, Action onConfirm, Action onCancel, string confirm = "Yes", string cancel = "No", Action onClose = null)
+        {
+            var warningPopup = WarningPopup.GameObject.transform.GetChild(0);
+
+            var close = warningPopup.Find("Panel/x").GetComponent<Button>();
+            close.onClick.NewListener(() =>
+            {
+                if (onClose != null)
+                {
+                    onClose();
+                    return;
+                }
+
+                onCancel?.Invoke();
+            });
+
+            warningPopup.Find("Level Name").GetComponent<Text>().text = warning;
+
+            var submit1 = warningPopup.Find("spacerL/submit1");
+            var submit2 = warningPopup.Find("spacerL/submit2");
+
+            var submit1Button = submit1.GetComponent<Button>();
+            var submit2Button = submit2.GetComponent<Button>();
+
+            submit1.Find("text").GetComponent<Text>().text = confirm;
+            submit2.Find("text").GetComponent<Text>().text = cancel;
+
+            submit1Button.onClick.NewListener(onConfirm);
+            submit2Button.onClick.NewListener(onCancel);
+        }
+
+        void CreateWarningPopup()
+        {
+            var warningPopup = EditorLevelManager.inst.SaveAsPopup.GameObject.Duplicate(popups, "Warning Popup");
+            warningPopup.transform.AsRT().anchoredPosition = Vector2.zero;
+            warningPopup.transform.AsRT().sizeDelta = new Vector2(420f, 200f);
+
+            var main = warningPopup.transform.GetChild(0);
+            main.AsRT().sizeDelta = new Vector2(420f, 200f);
+
+            var mainLayout = main.GetComponent<VerticalLayoutGroup>();
+            mainLayout.padding = new RectOffset(left: 8, right: 8, top: 0, bottom: 8);
+
+            var spacer1 = Creator.NewUIObject("spacerL", main);
+            spacer1.AddComponent<LayoutElement>();
+            var horiz = spacer1.AddComponent<HorizontalLayoutGroup>();
+            horiz.spacing = 22f;
+
+            spacer1.transform.AsRT().sizeDelta = new Vector2(292f, 40f);
+
+            var submit1 = main.Find("submit");
+            submit1.SetParent(spacer1.transform);
+
+            var submit2 = Instantiate(submit1);
+            var submit2TF = submit2.transform;
+
+            submit2TF.SetParent(spacer1.transform);
+            submit2TF.localScale = Vector3.one;
+
+            submit1.name = "submit1";
+            submit2.name = "submit2";
+
+            var submit1Image = submit1.GetComponent<Image>();
+            submit1Image.color = new Color(1f, 0.2137f, 0.2745f, 1f);
+            var submit2Image = submit2.GetComponent<Image>();
+            submit2Image.color = new Color(0.302f, 0.7137f, 0.6745f, 1f);
+
+            var submit1Button = submit1.GetComponent<Button>();
+            var submit2Button = submit2.GetComponent<Button>();
+
+            submit1Button.onClick.ClearAll();
+
+            submit2Button.onClick.ClearAll();
+
+            Destroy(main.Find("level-name").gameObject);
+
+            var sizeFitter = main.GetComponent<ContentSizeFitter>();
+            sizeFitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+            sizeFitter.verticalFit = ContentSizeFitter.FitMode.Unconstrained;
+
+            main.Find("Level Name").AsRT().sizeDelta = new Vector2(292f, 116f);
+
+            var panel = main.Find("Panel");
+
+            var close = panel.Find("x").GetComponent<Button>();
+            close.onClick.NewListener(HideWarningPopup);
+
+            var title = panel.Find("Text").GetComponent<Text>();
+            title.text = "Warning!";
+
+            EditorHelper.AddEditorPopup(EditorPopup.WARNING_POPUP, warningPopup);
+
+            EditorThemeManager.ApplyGraphic(main.GetComponent<Image>(), ThemeGroup.Background_1, true);
+            EditorThemeManager.ApplyGraphic(panel.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Top);
+
+            EditorThemeManager.ApplySelectable(close, ThemeGroup.Close, true);
+            EditorThemeManager.ApplyGraphic(close.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
+
+            EditorThemeManager.ApplyLightText(title);
+
+            EditorThemeManager.ApplyLightText(main.Find("Level Name").GetComponent<Text>());
+            EditorThemeManager.ApplyGraphic(submit1Image, ThemeGroup.Warning_Confirm, true);
+            EditorThemeManager.ApplyGraphic(submit1Button.transform.GetChild(0).GetComponent<Text>(), ThemeGroup.Add_Text);
+            EditorThemeManager.ApplyGraphic(submit2Image, ThemeGroup.Warning_Cancel, true);
+            EditorThemeManager.ApplyGraphic(submit2Image.transform.GetChild(0).GetComponent<Text>(), ThemeGroup.Add_Text);
+
+            try
+            {
+                WarningPopup = new EditorPopup(EditorPopup.WARNING_POPUP);
+                WarningPopup.Assign(warningPopup);
+                editorPopups.Add(WarningPopup);
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            }
+        }
+
+        #endregion
+
+        #region Folder Creator / Name Editor
+
+        /// <summary>
+        /// Shows the Folder Creator Popup.
+        /// </summary>
+        /// <param name="path">Path to create a folder in.</param>
+        /// <param name="onSubmit">Function to run when Submit is clicked.</param>
+        public void ShowFolderCreator(string path, Action onSubmit)
+        {
+            NamePopup.Open();
+            RefreshFolderCreator(path, onSubmit);
+        }
+
+        /// <summary>
+        /// Renders the Folder Creator Popup.
+        /// </summary>
+        /// <param name="path">Path to create a folder in.</param>
+        /// <param name="onSubmit">Function to run when Submit is clicked.</param>
+        public void RefreshFolderCreator(string path, Action onSubmit) => RefreshNameEditor("Folder Creator", "New folder name", "Create Folder", () =>
+        {
+            var directory = RTFile.CombinePaths(path, RTFile.ValidateDirectory(folderCreatorName.text));
+
+            if (RTFile.CreateDirectory(directory))
+                onSubmit?.Invoke();
+        });
+
+        /// <summary>
+        /// Hides the name editor.
+        /// </summary>
+        public void HideNameEditor() => NamePopup.Close();
+
+        /// <summary>
+        /// Shows the Name Editor Popup.
+        /// </summary>
+        /// <param name="title">Name of the popup to render.</param>
+        /// <param name="nameLabel">Label of the name field.</param>
+        /// <param name="submitText">Submit button text.</param>
+        /// <param name="onSubmit">Function to run when submit is clicked.</param>
+        public void ShowNameEditor(string title, string nameLabel, string submitText, Action onSubmit)
+        {
+            NamePopup.Open();
+            RefreshNameEditor(title, nameLabel, submitText, onSubmit);
+        }
+
+        /// <summary>
+        /// Renders the Name Editor Popup.
+        /// </summary>
+        /// <param name="title">Name of the popup to render.</param>
+        /// <param name="nameLabel">Label of the name field.</param>
+        /// <param name="submitText">Submit button text.</param>
+        /// <param name="onSubmit">Function to run when submit is clicked.</param>
+        public void RefreshNameEditor(string title, string nameLabel, string submitText, Action onSubmit)
+        {
+            folderCreatorTitle.text = title;
+            folderCreatorNameLabel.text = nameLabel;
+            folderCreatorSubmitText.text = submitText;
+
+            folderCreatorSubmit.onClick.NewListener(() => onSubmit?.Invoke());
+        }
+
+        /// <summary>
+        /// Shows the Name Editor Popup.
+        /// </summary>
+        /// <param name="title">Name of the popup to render.</param>
+        /// <param name="nameLabel">Label of the name field.</param>
+        /// <param name="defaultText">Default text to set.</param>
+        /// <param name="submitText">Submit button text.</param>
+        /// <param name="onSubmit">Function to run when submit is clicked.</param>
+        public void ShowNameEditor(string title, string nameLabel, string defaultText, string submitText, Action onSubmit)
+        {
+            NamePopup.Open();
+            RefreshNameEditor(title, nameLabel, defaultText, submitText, onSubmit);
+        }
+
+        /// <summary>
+        /// Renders the Name Editor Popup.
+        /// </summary>
+        /// <param name="title">Name of the popup to render.</param>
+        /// <param name="nameLabel">Label of the name field.</param>
+        /// <param name="defaultText">Default text to set.</param>
+        /// <param name="submitText">Submit button text.</param>
+        /// <param name="onSubmit">Function to run when submit is clicked.</param>
+        public void RefreshNameEditor(string title, string nameLabel, string defaultText, string submitText, Action onSubmit)
+        {
+            folderCreatorTitle.text = title;
+            folderCreatorNameLabel.text = nameLabel;
+            folderCreatorSubmitText.text = submitText;
+
+            folderCreatorName.SetTextWithoutNotify(defaultText);
+            folderCreatorSubmit.onClick.NewListener(() => onSubmit?.Invoke());
+        }
+
+        void CreateFolderCreator()
+        {
+            try
+            {
+                var folderCreator = EditorLevelManager.inst.SaveAsPopup.GameObject.Duplicate(popups, "Folder Creator Popup");
+                folderCreator.transform.localPosition = Vector3.zero;
+
+                var folderCreatorPopup = folderCreator.transform.GetChild(0);
+
+                var folderCreatorPopupPanel = folderCreatorPopup.Find("Panel");
+                folderCreatorTitle = folderCreatorPopupPanel.Find("Text").GetComponent<Text>();
+                folderCreatorTitle.text = "Folder Creator";
+
+                var close = folderCreatorPopupPanel.Find("x").GetComponent<Button>();
+                close.onClick.NewListener(HideNameEditor);
+
+                folderCreatorNameLabel = folderCreatorPopup.Find("Level Name").GetComponent<Text>();
+                folderCreatorNameLabel.text = "New folder name";
+
+                folderCreatorName = folderCreatorPopup.Find("level-name").GetComponent<InputField>();
+                folderCreatorName.onValueChanged.ClearAll();
+                folderCreatorName.text = "New Folder";
+                folderCreatorName.characterLimit = 0;
+
+                folderCreatorSubmit = folderCreatorPopup.Find("submit").GetComponent<Button>();
+                var submitImage = folderCreatorPopup.Find("submit").GetComponent<Image>();
+                folderCreatorSubmitText = folderCreatorPopup.Find("submit/text").GetComponent<Text>();
+                folderCreatorSubmitText.text = "Create Folder";
+
+                EditorThemeManager.ApplyGraphic(folderCreatorPopup.GetComponent<Image>(), ThemeGroup.Background_1, true);
+                EditorThemeManager.ApplyGraphic(folderCreatorPopupPanel.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Top);
+
+                EditorThemeManager.ApplySelectable(close, ThemeGroup.Close, true);
+                EditorThemeManager.ApplyGraphic(close.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
+
+                EditorThemeManager.ApplyLightText(folderCreatorTitle);
+                EditorThemeManager.ApplyLightText(folderCreatorNameLabel);
+                EditorThemeManager.ApplyInputField(folderCreatorName);
+
+                EditorThemeManager.ApplyGraphic(submitImage, ThemeGroup.Function_1, true);
+                EditorThemeManager.ApplyGraphic(folderCreatorSubmitText, ThemeGroup.Function_1_Text);
+
+                EditorHelper.AddEditorPopup(EditorPopup.FOLDER_CREATOR_POPUP, folderCreator);
+
+                NamePopup = new EditorPopup(EditorPopup.FOLDER_CREATOR_POPUP);
+                NamePopup.Assign(NamePopup.GetLegacyDialog().Dialog.gameObject);
+                NamePopup.size = NamePopup.GameObject.transform.AsRT().sizeDelta;
+                editorPopups.Add(NamePopup);
+
+                if (NamePopup.Title)
+                    NamePopup.title = NamePopup.Title.text;
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            }
+        }
+
+        #endregion
+
+        #region Debugger
+
+        /// <summary>
+        /// Refreshes the debugger.
+        /// </summary>
+        public void RefreshDebugger()
+        {
+            for (int i = 0; i < debugs.Count; i++)
+                DebuggerPopup.Content.GetChild(i).gameObject.SetActive(RTString.SearchString(debugSearch, debugs[i]));
+        }
+
+        GameObject GenerateDebugButton(string name, string hint, Action action)
+        {
+            var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(DebuggerPopup.Content, "Function");
+            debugs.Add(name);
+
+            gameObject.AddComponent<HoverTooltip>().tooltipLangauges.Add(new HoverTooltip.Tooltip
+            {
+                desc = name,
+                hint = hint
+            });
+
+            var button = gameObject.GetComponent<Button>();
+            button.onClick.NewListener(() => action?.Invoke());
+
+            EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
+            var text = gameObject.transform.GetChild(0).GetComponent<Text>();
+            text.text = name;
+            EditorThemeManager.ApplyLightText(text);
+            return gameObject;
+        }
+
+        void ReloadFunctions()
+        {
+            var functions = RTFile.ApplicationDirectory + "beatmaps/functions";
+            if (!RTFile.DirectoryExists(functions))
+                return;
+
+            customFunctions.ForEach(x => Destroy(x));
+            customFunctions.Clear();
+            debugs.RemoveAll(x => x.Contains("Custom Code Function"));
+
+            var files = Directory.GetFiles(functions, FileFormat.CS.ToPattern());
+            for (int i = 0; i < files.Length; i++)
+            {
+                var file = files[i];
+
+                customFunctions.Add(GenerateDebugButton(
+                    $"Custom Code Function: {Path.GetFileName(file)}",
+                    "A custom code file. Make sure you know what you're doing before using this.",
+                    () =>
+                    {
+                        var hadError = false;
+                        Exception exception = null;
+                        RTCode.Evaluate(RTFile.ReadFromFile(file), x => { hadError = true; exception = x; });
+
+                        if (hadError)
+                            EditorManager.inst.DisplayNotification($"Couldn't evaluate {Path.GetFileName(file)}. Please verify your code and try again. Exception: {exception}", 2f, EditorManager.NotificationType.Error);
+                        else
+                            EditorManager.inst.DisplayNotification($"Evaluated {Path.GetFileName(file)}!", 2f, EditorManager.NotificationType.Success);
+                    }));
+            }
+
+            RefreshDebugger();
+        }
+
+        void CreateDebug()
+        {
+            if (!ModCompatibility.UnityExplorerInstalled)
+                return;
+
+            DebuggerPopup = GeneratePopup(EditorPopup.DEBUGGER_POPUP, "Debugger (Only use this if you know what you're doing)", Vector2.zero, new Vector2(600f, 450f), _val =>
+            {
+                debugSearch = _val;
+                RefreshDebugger();
+            }, placeholderText: "Search for function...");
+            DebuggerPopup.InitTopElementsParent();
+            DebuggerPopup.InitReload(ReloadFunctions);
+            DebuggerPopup.onRender = () =>
+            {
+                if (AssetPack.TryReadFromFile("editor/ui/popups/debugger_popup.json", out string uiFile))
+                {
+                    var jn = JSON.Parse(uiFile);
+                    RectValues.TryParse(jn["base"]["rect"], RectValues.Default.SizeDelta(600f, 400f)).AssignToRectTransform(DebuggerPopup.GameObject.transform.AsRT());
+                    RectValues.TryParse(jn["top_panel"]["rect"], RectValues.FullAnchored.AnchorMin(0, 1).Pivot(0f, 0f).SizeDelta(32f, 32f)).AssignToRectTransform(DebuggerPopup.TopPanel);
+                    RectValues.TryParse(jn["search"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(0f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, 32f))).AssignToRectTransform(DebuggerPopup.GameObject.transform.Find("search-box").AsRT());
+                    RectValues.TryParse(jn["scrollbar"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(0f, 0.5f), new Vector2(32f, 0f))).AssignToRectTransform(DebuggerPopup.GameObject.transform.Find("Scrollbar").AsRT());
+
+                    var layoutValues = LayoutValues.Parse(jn["layout"]);
+                    if (layoutValues is GridLayoutValues gridLayoutValues)
+                        gridLayoutValues.AssignToLayout(DebuggerPopup.Grid ? DebuggerPopup.Grid : DebuggerPopup.GameObject.transform.Find("mask/content").GetComponent<GridLayoutGroup>());
+
+                    if (jn["title"] != null)
+                    {
+                        DebuggerPopup.title = jn["title"]["text"] != null ? jn["title"]["text"] : "Debugger (Only use this if you know what you're doing)";
+
+                        var title = DebuggerPopup.Title;
+                        RectValues.TryParse(jn["title"]["rect"], RectValues.FullAnchored.AnchoredPosition(2f, 0f).SizeDelta(-12f, -8f)).AssignToRectTransform(title.rectTransform);
+                        title.alignment = jn["title"]["alignment"] != null ? (TextAnchor)jn["title"]["alignment"].AsInt : TextAnchor.MiddleLeft;
+                        title.fontSize = jn["title"]["font_size"] != null ? jn["title"]["font_size"].AsInt : 20;
+                        title.fontStyle = (FontStyle)jn["title"]["font_style"].AsInt;
+                        title.horizontalOverflow = jn["title"]["horizontal_overflow"] != null ? (HorizontalWrapMode)jn["title"]["horizontal_overflow"].AsInt : HorizontalWrapMode.Wrap;
+                        title.verticalOverflow = jn["title"]["vertical_overflow"] != null ? (VerticalWrapMode)jn["title"]["vertical_overflow"].AsInt : VerticalWrapMode.Overflow;
+                    }
+
+                    if (jn["anim"] != null)
+                        DebuggerPopup.ReadAnimationJSON(jn["anim"]);
+
+                    if (jn["drag_mode"] != null && DebuggerPopup.Dragger)
+                        DebuggerPopup.Dragger.mode = (DraggableUI.DragMode)jn["drag_mode"].AsInt;
+                }
+            };
+
+            EditorHelper.AddEditorDropdown("Debugger", string.Empty, EditorHelper.VIEW_DROPDOWN, SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/debugger{FileFormat.PNG.Dot()}")), () =>
+            {
+                DebuggerPopup.Open();
+                RefreshDebugger();
+            });
+
+            EditorHelper.AddEditorDropdown("Show Explorer", string.Empty, EditorHelper.VIEW_DROPDOWN, EditorSprites.SearchSprite, ModCompatibility.ShowExplorer);
+
+            GenerateDebugButton(
+                "Inspect DataManager",
+                "DataManager is a pretty important storage component of Project Arrhythmia. It contains the GameData, all the external Beatmap Themes, etc.",
+                () => ModCompatibility.Inspect(DataManager.inst));
+
+            GenerateDebugButton(
+                "Inspect EditorManager",
+                "EditorManager handles the main unmodded editor related things.",
+                () => ModCompatibility.Inspect(EditorManager.inst));
+
+            GenerateDebugButton(
+                "Inspect RTEditor",
+                "EditorManager handles the main modded editor related things.",
+                () => ModCompatibility.Inspect(inst));
+
+            GenerateDebugButton(
+                "Inspect ObjEditor",
+                "ObjEditor is the component that handles regular object editor stuff.",
+                () => ModCompatibility.Inspect(ObjEditor.inst));
+
+            GenerateDebugButton(
+                "Inspect ObjectEditor",
+                "ObjectEditor is the component that handles modded object editor stuff.",
+                () => ModCompatibility.Inspect(ObjectEditor.inst));
+
+            GenerateDebugButton(
+                "Inspect ObjectManager",
+                "ObjectManager is the component that handles regular object stuff.",
+                () => ModCompatibility.Inspect(ObjectManager.inst));
+
+            GenerateDebugButton(
+                "Inspect GameManager",
+                "GameManager normally handles all the level loading, however now it's handled by LevelManager.",
+                () => ModCompatibility.Inspect(GameManager.inst));
+
+            GenerateDebugButton(
+                "Inspect CompanionManager",
+                "CompanionManager handles everything to do with Example, your little companion.",
+                () => ModCompatibility.Inspect(CompanionManager.inst));
+
+            GenerateDebugButton(
+                "Inspect Example",
+                "Example...",
+                () => ModCompatibility.Inspect(Example.Current));
+
+            GenerateDebugButton(
+                "Inspect Object Editor UI",
+                "Take a closer look at the Object Editor UI since the parent tree for it is pretty deep.",
+                () => ModCompatibility.Inspect(ObjEditor.inst.ObjectView));
+
+            GenerateDebugButton(
+                "Inspect LevelProcessor",
+                "LevelProcessor is the main handler for updating object animation and spawning / despawning objects.",
+                () => ModCompatibility.Inspect(RTLevel.Current));
+
+            GenerateDebugButton(
+                "Inspect Current GameData",
+                "GameData stores all the main level data.",
+                () => ModCompatibility.Inspect(GameData.Current));
+
+            GenerateDebugButton(
+                "Inspect Current MetaData",
+                "MetaData stores all the extra level info.",
+                () => ModCompatibility.Inspect(MetaData.Current));
+
+            GenerateDebugButton(
+                "Current Event Keyframe",
+                "The current selected Event Keyframe. Based on the type and index number.",
+                () => ModCompatibility.Inspect(RTEventEditor.inst.CurrentSelectedKeyframe));
+
+            ReloadFunctions();
+        }
+
+        #endregion
+
+        #region Font Selector
+        
+        /// <summary>
+        /// Opens the font selector popup.
+        /// </summary>
+        /// <param name="onFontSelected">Function to run on font selected.</param>
+        public void OpenFontSelector(Action<string> onFontSelected)
+        {
+            FontSelectorPopup.Open();
+            RenderFontSelector(onFontSelected);
+        }
+
+        /// <summary>
+        /// Renders the font selector popup.
+        /// </summary>
+        /// <param name="onFontSelected">Function to run on font selected.</param>
+        public void RenderFontSelector(Action<string> onFontSelected)
+        {
+            FontSelectorPopup.SearchField.onValueChanged.NewListener(_val => RenderFontSelector(onFontSelected));
+            FontSelectorPopup.ClearContent();
+
+            foreach (var font in FontManager.inst.allFonts)
+            {
+                if (!RTString.SearchString(FontSelectorPopup.SearchTerm, font.Key))
+                    continue;
+
+                var gameObject = fontSelectionPrefab.Duplicate(FontSelectorPopup.Content, font.Key);
+                RectValues.Default.SizeDelta(0f, 32f).AssignToRectTransform(gameObject.transform.AsRT());
+
+                var image = gameObject.GetComponent<Image>();
+
+                var text = gameObject.transform.Find("label/text").GetComponent<TextMeshProUGUI>();
+                text.text = $"<font={font.Key}>ABCDEF abcdef 123</font> - {font.Key}";
+
+                var button = gameObject.GetComponent<Button>();
+                button.onClick.ClearAll();
+
+                RectValues.FullAnchored.Pivot(0f, 1f).SizeDelta(722f, 22f).AssignToRectTransform(gameObject.transform.Find("label").AsRT());
+                RectValues.FullAnchored.Pivot(0f, 1f).SizeDelta(722f, 22f).AssignToRectTransform(gameObject.transform.Find("label/text").AsRT());
+
+                EditorThemeManager.ApplyGraphic(text, ThemeGroup.Light_Text);
+                EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
+
+                EditorContextMenu.AddContextMenu(gameObject,
+                    leftClick: () =>
+                    {
+                        onFontSelected?.Invoke($"<font={font.Key}>");
+                        FontSelectorPopup.Close();
+                    },
+                    new ButtonElement("Use", () =>
+                    {
+                        onFontSelected?.Invoke($"<font={font.Key}>");
+                        FontSelectorPopup.Close();
+                    }),
+                    new SpacerElement(),
+                    new ButtonElement("Copy Font Name", () =>
+                    {
+                        LSText.CopyToClipboard(font.Key);
+                        EditorManager.inst.DisplayNotification($"Copied {font.Key} to the clipboard!", 2f, EditorManager.NotificationType.Success);
+                    }),
+                    new ButtonElement("Copy Font Tag", () =>
+                    {
+                        LSText.CopyToClipboard("<font=\"{font.Key}\">");
+                        EditorManager.inst.DisplayNotification($"Copied {font.Key} to the clipboard!", 2f, EditorManager.NotificationType.Success);
+                    }),
+                    new ButtonElement("Copy Font Tag Full", () =>
+                    {
+                        LSText.CopyToClipboard($"<font=\"{font.Key}\">Text</font>");
+                        EditorManager.inst.DisplayNotification($"Copied {font.Key} to the clipboard!", 2f, EditorManager.NotificationType.Success);
+                    }));
+            }
+        }
+
+        void CreateFontSelector()
+        {
+            FontSelectorPopup = GeneratePopup(EditorPopup.FONT_SELECTOR_POPUP, "Select a Font", Vector2.zero, new Vector2(600f, 400f), placeholderText: "Search fonts...");
+            FontSelectorPopup.onRender = () =>
+            {
+                if (AssetPack.TryReadFromFile("editor/ui/popups/font_selector_popup.json", out string uiFile))
+                {
+                    var jn = JSON.Parse(uiFile);
+                    RectValues.TryParse(jn["base"]["rect"], RectValues.Default.SizeDelta(600f, 400f)).AssignToRectTransform(FontSelectorPopup.GameObject.transform.AsRT());
+                    RectValues.TryParse(jn["top_panel"]["rect"], RectValues.FullAnchored.AnchorMin(0, 1).Pivot(0f, 0f).SizeDelta(32f, 32f)).AssignToRectTransform(FontSelectorPopup.TopPanel);
+                    RectValues.TryParse(jn["search"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(0f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, 32f))).AssignToRectTransform(FontSelectorPopup.GameObject.transform.Find("search-box").AsRT());
+                    RectValues.TryParse(jn["scrollbar"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(0f, 0.5f), new Vector2(32f, 0f))).AssignToRectTransform(FontSelectorPopup.GameObject.transform.Find("Scrollbar").AsRT());
+
+                    var layoutValues = LayoutValues.Parse(jn["layout"]);
+                    if (layoutValues is GridLayoutValues gridLayoutValues)
+                        gridLayoutValues.AssignToLayout(FontSelectorPopup.Grid ? FontSelectorPopup.Grid : FontSelectorPopup.GameObject.transform.Find("mask/content").GetComponent<GridLayoutGroup>());
+
+                    if (jn["title"] != null)
+                    {
+                        FontSelectorPopup.title = jn["title"]["text"] != null ? jn["title"]["text"] : "Select a Font";
+
+                        var title = FontSelectorPopup.Title;
+                        RectValues.TryParse(jn["title"]["rect"], RectValues.FullAnchored.AnchoredPosition(2f, 0f).SizeDelta(-12f, -8f)).AssignToRectTransform(title.rectTransform);
+                        title.alignment = jn["title"]["alignment"] != null ? (TextAnchor)jn["title"]["alignment"].AsInt : TextAnchor.MiddleLeft;
+                        title.fontSize = jn["title"]["font_size"] != null ? jn["title"]["font_size"].AsInt : 20;
+                        title.fontStyle = (FontStyle)jn["title"]["font_style"].AsInt;
+                        title.horizontalOverflow = jn["title"]["horizontal_overflow"] != null ? (HorizontalWrapMode)jn["title"]["horizontal_overflow"].AsInt : HorizontalWrapMode.Wrap;
+                        title.verticalOverflow = jn["title"]["vertical_overflow"] != null ? (VerticalWrapMode)jn["title"]["vertical_overflow"].AsInt : VerticalWrapMode.Overflow;
+                    }
+
+                    if (jn["anim"] != null)
+                        FontSelectorPopup.ReadAnimationJSON(jn["anim"]);
+
+                    if (jn["drag_mode"] != null && FontSelectorPopup.Dragger)
+                        FontSelectorPopup.Dragger.mode = (DraggableUI.DragMode)jn["drag_mode"].AsInt;
+                }
+            };
+
+            fontSelectionPrefab = Creator.NewUIObject("element", transform);
+            RectValues.Default.SizeDelta(0f, 32f).AssignToRectTransform(fontSelectionPrefab.transform.AsRT());
+
+            var horizontalLayoutGroup = fontSelectionPrefab.AddComponent<HorizontalLayoutGroup>();
+
+            horizontalLayoutGroup.childControlHeight = false;
+            horizontalLayoutGroup.childControlWidth = false;
+            horizontalLayoutGroup.childForceExpandWidth = false;
+            horizontalLayoutGroup.spacing = 8f;
+            fontSelectionPrefab.AddComponent<Image>();
+            fontSelectionPrefab.AddComponent<Button>();
+
+            var labels = Creator.NewUIObject("label", fontSelectionPrefab.transform);
+            RectValues.FullAnchored.Pivot(0f, 1f).SizeDelta(722f, 22f).AssignToRectTransform(labels.transform.AsRT());
+
+            var labelsHLG = labels.AddComponent<HorizontalLayoutGroup>();
+
+            labelsHLG.childControlHeight = false;
+            labelsHLG.childControlWidth = false;
+            labelsHLG.spacing = 8f;
+
+            var label = Creator.NewUIObject("text", labels.transform);
+            RectValues.FullAnchored.Pivot(0f, 1f).SizeDelta(722f, 22f).AssignToRectTransform(label.transform.AsRT());
+
+            var text = label.AddComponent<TextMeshProUGUI>();
+            text.font = FontManager.inst.allFontAssets["Inconsolata Variable"];
+            text.fontSize = 20;
+            text.enableWordWrapping = true;
+            text.text = "font";
+        }
+
+        #endregion
+
+        #region Screenshots
+
+        /// <summary>
+        /// Refreshes the screenshots in the screenshots folder.
+        /// </summary>
+        public void RefreshScreenshots()
+        {
+            var directory = RTFile.ApplicationDirectory + CoreConfig.Instance.ScreenshotsPath.Value;
+
+            LSHelpers.DeleteChildren(screenshotContent);
+            var files = Directory.GetFiles(directory, FileFormat.PNG.ToPattern(), SearchOption.TopDirectoryOnly);
+            screenshotCount = files.Length;
+
+            if (screenshotCount > screenshotsPerPage)
+                TriggerHelper.AddEventTriggers(screenshotPageField.gameObject, TriggerHelper.ScrollDeltaInt(screenshotPageField, max: screenshotCount / screenshotsPerPage));
+            else
+                TriggerHelper.AddEventTriggers(screenshotPageField.gameObject);
+
+            for (int i = 0; i < files.Length; i++)
+            {
+                if (!(i >= MinScreenshots && i < MaxScreenshots))
+                    continue;
+
+                var index = i;
+
+                var gameObject = Creator.NewUIObject("screenshot", screenshotContent);
+                gameObject.transform.localScale = Vector3.one;
+                gameObject.transform.AsRT().sizeDelta = new Vector2(720f, 405f);
+
+                var image = gameObject.AddComponent<Image>();
+                image.enabled = false;
+
+                var button = gameObject.AddComponent<Button>();
+                button.onClick.NewListener(() => System.Diagnostics.Process.Start(files[index]));
+                button.colors = UIManager.SetColorBlock(button.colors, Color.white, new Color(0.9f, 0.9f, 0.9f), new Color(0.7f, 0.7f, 0.7f), Color.white, Color.red);
+
+                StartCoroutine(AlephNetwork.DownloadImageTexture($"file://{files[i]}", texture2D =>
+                {
+                    if (!image)
+                        return;
+
+                    image.enabled = true;
+                    image.sprite = SpriteHelper.CreateSprite(texture2D);
+                }));
+            }
+        }
+
+        void CreateScreenshotsView()
+        {
+            var editorDialogObject = EditorPrefabHolder.Instance.Dialog.Duplicate(EditorManager.inst.dialogs, "ScreenshotDialog");
+            editorDialogObject.transform.AsRT().anchoredPosition = new Vector2(0f, 16f);
+            editorDialogObject.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
+            editorDialogObject.AddComponent<ActiveState>().onStateChanged = enabled => CaptureArea.inst.SetActive(enabled);
+            var dialogStorage = editorDialogObject.GetComponent<EditorDialogStorage>();
+
+            dialogStorage.topPanel.color = LSColors.HexToColor("00FF8C");
+            dialogStorage.title.text = "- Screenshots -";
+
+            var editorDialogSpacer = editorDialogObject.transform.GetChild(1);
+            editorDialogSpacer.AsRT().sizeDelta = new Vector2(765f, 54f);
+
+            Destroy(editorDialogObject.transform.GetChild(2).gameObject);
+
+            EditorHelper.AddEditorDialog(EditorDialog.SCREENSHOTS, editorDialogObject);
+
+            var page = EditorPrefabHolder.Instance.NumberInputField.Duplicate(editorDialogObject.transform.Find("spacer"));
+            var pageStorage = page.GetComponent<InputFieldStorage>();
+            screenshotPageField = pageStorage.inputField;
+
+            pageStorage.inputField.SetTextWithoutNotify(screenshotPage.ToString());
+            pageStorage.inputField.onValueChanged.NewListener(_val =>
+            {
+                if (int.TryParse(_val, out int p))
+                {
+                    screenshotPage = Mathf.Clamp(p, 0, screenshotCount / screenshotsPerPage);
+                    RefreshScreenshots();
+                }
+            });
+            pageStorage.leftGreaterButton.onClick.NewListener(() =>
+            {
+                if (int.TryParse(pageStorage.inputField.text, out int p))
+                    pageStorage.inputField.text = "0";
+            });
+            pageStorage.leftButton.onClick.NewListener(() =>
+            {
+                if (int.TryParse(pageStorage.inputField.text, out int p))
+                    pageStorage.inputField.text = Mathf.Clamp(p - 1, 0, screenshotCount / screenshotsPerPage).ToString();
+            });
+            pageStorage.rightButton.onClick.NewListener(() =>
+            {
+                if (int.TryParse(pageStorage.inputField.text, out int p))
+                    pageStorage.inputField.text = Mathf.Clamp(p + 1, 0, screenshotCount / screenshotsPerPage).ToString();
+            });
+            pageStorage.rightGreaterButton.onClick.NewListener(() =>
+            {
+                if (int.TryParse(pageStorage.inputField.text, out int p))
+                    pageStorage.inputField.text = (screenshotCount / screenshotsPerPage).ToString();
+            });
+
+            Destroy(pageStorage.middleButton.gameObject);
+
+            EditorThemeManager.ApplyInputField(pageStorage.inputField);
+            EditorThemeManager.ApplySelectable(pageStorage.leftGreaterButton, ThemeGroup.Function_2, false);
+            EditorThemeManager.ApplySelectable(pageStorage.leftButton, ThemeGroup.Function_2, false);
+            EditorThemeManager.ApplySelectable(pageStorage.rightButton, ThemeGroup.Function_2, false);
+            EditorThemeManager.ApplySelectable(pageStorage.rightGreaterButton, ThemeGroup.Function_2, false);
+
+            var scrollView = EditorPrefabHolder.Instance.ScrollView.Duplicate(editorDialogObject.transform, "Scroll View");
+            screenshotContent = scrollView.transform.Find("Viewport/Content");
+            scrollView.transform.localScale = Vector3.one;
+
+            LSHelpers.DeleteChildren(screenshotContent);
+
+            var scrollViewLE = scrollView.AddComponent<LayoutElement>();
+            scrollViewLE.ignoreLayout = true;
+
+            scrollView.transform.AsRT().anchoredPosition = new Vector2(392.5f, 320f);
+            scrollView.transform.AsRT().sizeDelta = new Vector2(735f, 638f);
+
+            EditorThemeManager.ApplyGraphic(editorDialogObject.GetComponent<Image>(), ThemeGroup.Background_1);
+
+            EditorHelper.AddEditorDropdown("View Screenshots", string.Empty, EditorHelper.VIEW_DROPDOWN, EditorSprites.SearchSprite, () =>
+            {
+                ScreenshotsDialog.Open();
+                RefreshScreenshots();
+            });
+
+            try
+            {
+                ScreenshotsDialog = new EditorDialog(EditorDialog.SCREENSHOTS);
+                ScreenshotsDialog.Init();
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            } // init dialog
+        }
+
+        #endregion
+
+        #region Undo / Redo
+
+        /// <summary>
+        /// Renders the undo / redo edit buttons.
+        /// </summary>
+        public void RenderEditButtons()
+        {
+            var history = EditorManager.inst.history;
+            string undoName = ((history.commands.Count > 1 && history.lastExecuted > 0) ? history.commands[history.lastExecuted].CommandName : null);
+            undoButton.Interactable = !string.IsNullOrEmpty(undoName);
+            undoButton.Text = string.IsNullOrEmpty(undoName) ? "Undo" : "Undo " + LSText.ClampString(undoName, 14);
+
+            string redoName = ((history.commands.Count - 1 > history.lastExecuted) ? history.commands[history.lastExecuted + 1].CommandName : null);
+            redoButton.Interactable = !string.IsNullOrEmpty(redoName);
+            redoButton.Text = string.IsNullOrEmpty(redoName) ? "Redo" : "Redo " + LSText.ClampString(redoName, 14);
+        }
 
         /// <summary>
         /// Resets the editor undo / redo history.
@@ -6349,6 +6091,108 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.history.Clear();
             EditorManager.inst.history.Add(new History.Command("Base", () => { }, () => { }));
         }
+
+        #endregion
+
+        #region Easing
+        
+        /// <summary>
+        /// Sets up an easing dropdown.
+        /// </summary>
+        /// <param name="dropdown">Dropdown to setup.</param>
+        public void SetupEaseDropdown(Dropdown dropdown)
+        {
+            dropdown.options = GetEaseOptions();
+            if (EasingDropdownLayoutGroupValues is GridLayoutValues gridLayoutValues)
+                gridLayoutValues.AssignToLayout(dropdown.template.Find("Viewport/Content").gameObject.GetOrAddComponent<GridLayoutGroup>());
+            else if (EasingDropdownLayoutGroupValues is HorizontalOrVerticalLayoutValues horizontalOrVerticalLayoutValues)
+                horizontalOrVerticalLayoutValues.AssignToLayout(dropdown.template.Find("Viewport/Content").gameObject.GetOrAddComponent<HorizontalOrVerticalLayoutGroup>());
+            EasingDropdownTemplateRectValues.AssignToRectTransform(dropdown.template);
+            var contentSizeFitter = dropdown.template.Find("Viewport/Content").gameObject.GetOrAddComponent<ContentSizeFitter>();
+            contentSizeFitter.horizontalFit = ContentSizeFitter.FitMode.MinSize;
+            contentSizeFitter.verticalFit = ContentSizeFitter.FitMode.MinSize;
+        }
+
+        /// <summary>
+        /// Gets the list of options for easing dropdowns.
+        /// </summary>
+        /// <returns>Returns the list of options for easing dropdowns based on <see cref="EasingOptions"/>.</returns>
+        public List<Dropdown.OptionData> GetEaseOptions() => EasingOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList();
+
+        /// <summary>
+        /// Gets the index of an easing option.
+        /// </summary>
+        /// <param name="easing">The easing value.</param>
+        /// <returns>Returns the index of the easing option.</returns>
+        public int GetEaseIndex(Easing easing) => GetEaseIndex(easing.ToString());
+
+        /// <summary>
+        /// Gets the index of an easing option.
+        /// </summary>
+        /// <param name="name">Name of the easing.</param>
+        /// <returns>Returns the index of the easing option.</returns>
+        public int GetEaseIndex(string name)
+        {
+            int index = -1;
+
+            if (int.TryParse(name, out int easeIndex))
+            {
+                index = EasingOptions.FindIndex(x => x.index == easeIndex);
+                return index < 0 ? 0 : index;
+            }
+
+            index = EasingOptions.FindIndex(x => x.name == name);
+            return index < 0 ? 0 : index;
+        }
+
+        /// <summary>
+        /// Gets the easing from an easing option.
+        /// </summary>
+        /// <param name="index">Index of the easing option.</param>
+        /// <returns>Returns the easing value of an easing option.</returns>
+        public Easing GetEasing(int index) => EasingOptions.TryGetAt(index, out EasingOption easingOption) ? easingOption.EasingValue : Easing.Linear;
+
+        void SetupEaseDropdowns()
+        {
+            EasingOptions.Clear();
+            if (AssetPack.TryReadFromFile("editor/data/ease.json", out string easeFile))
+            {
+                var jn = JSON.Parse(easeFile);
+
+                if (jn["layout"] != null)
+                    EasingDropdownLayoutGroupValues = LayoutValues.Parse(jn["layout"]);
+                if (jn["template_rect"] != null)
+                    EasingDropdownTemplateRectValues = RectValues.Parse(jn["template_rect"]);
+
+                for (int i = 0; i < jn["options"].Count; i++)
+                {
+                    var jnOption = jn["options"][i];
+                    var easingOption = new EasingOption();
+                    easingOption.name = jnOption["name"];
+                    easingOption.index = jnOption["index"].AsInt;
+                    easingOption.icon = SpriteHelper.LoadSprite(AssetPack.TryGetFile(jnOption["icon_ref"], out string iconPath) ? iconPath : "core/sprites/ease/Linear.png");
+                    EasingOptions.Add(easingOption);
+                }
+            }
+
+            EasingDropdowns.Clear();
+
+            var easingDropdowns = (from x in Resources.FindObjectsOfTypeAll<Dropdown>()
+                                   where x.gameObject && x.gameObject.name == "curves"
+                                   select x).ToList();
+
+            foreach (var dropdown in easingDropdowns)
+            {
+                SetupEaseDropdown(dropdown);
+                TriggerHelper.AddEventTriggers(dropdown.gameObject, TriggerHelper.ScrollDelta(dropdown));
+            }
+
+            EasingDropdowns = easingDropdowns;
+        }
+
+        #endregion
+
+        #region Preview
 
         /// <summary>
         /// Toggles the editor preview.
@@ -6458,6 +6302,174 @@ namespace BetterLegacy.Editor.Managers
         }
 
         /// <summary>
+        /// Updates the preview grid.
+        /// </summary>
+        public void UpdateGrid()
+        {
+            if (!previewGrid)
+                return;
+
+            if (!EditorConfig.Instance.PreviewGridEnabled.Value)
+                return;
+
+            var gridSize = EditorConfig.Instance.PreviewGridSize.Value;
+            previewGrid.gridSize = new Vector2(gridSize, gridSize);
+            previewGrid.color = EditorConfig.Instance.PreviewGridColor.Value;
+            previewGrid.thickness = EditorConfig.Instance.PreviewGridThickness.Value;
+            previewGrid.SetVerticesDirty();
+        }
+
+        /// <summary>
+        /// Updates the preview timeline.
+        /// </summary>
+        public void UpdateTimeline()
+        {
+            if (!timelinePreview || !AudioManager.inst.CurrentAudioSource.clip || !GameData.Current || !GameData.Current.data)
+                return;
+
+            for (int i = 0; i < checkpointImages.Count; i++)
+                CoreHelper.Delete(checkpointImages[i]);
+
+            checkpointImages.Clear();
+            LSHelpers.DeleteChildren(timelinePreview.Find("elements"));
+            foreach (var checkpoint in GameData.Current.data.checkpoints)
+            {
+                if (checkpoint.time <= 0.5f)
+                    continue;
+
+                var gameObject = GameManager.inst.checkpointPrefab.Duplicate(timelinePreview.Find("elements"), $"Checkpoint [{checkpoint.name}] - [{checkpoint.time}]");
+                float num = RTBeatmap.Current.GetTimelineOffset(checkpoint.time);
+                gameObject.transform.AsRT().anchoredPosition = new Vector2(num, 0f);
+
+                var image = gameObject.GetComponent<Image>();
+                image.material = LegacyResources.canvasImageMask;
+                checkpointImages.Add(image);
+            }
+        }
+
+        void SetupTimelinePreview()
+        {
+            if (GameManager.inst.playerGUI.transform.TryFind("Interface", out Transform ic))
+                Destroy(ic.gameObject); // Destroys the Interface so the duplicate doesn't get in the way of the editor.
+
+            var gui = GameManager.inst.playerGUI.Duplicate(EditorManager.inst.dialogs.parent);
+            gui.transform.SetSiblingIndex(0);
+
+            Destroy(gui.transform.Find("Health").gameObject);
+            if (gui.transform.TryFind("Interface", out Transform dupIC))
+                Destroy(dupIC.gameObject);
+
+            gui.transform.localPosition = new Vector3(-382.5f, 184.05f, 0f);
+            gui.transform.localScale = new Vector3(0.9f, 0.9f, 1f);
+
+            gui.SetActive(true);
+            timelinePreview = gui.transform.Find("Timeline");
+            timelinePosition = timelinePreview.Find("Base/position").GetComponent<RectTransform>();
+
+            timelinePreviewPlayer = timelinePreview.Find("Base/position").GetComponent<Image>();
+            timelinePreviewLeftCap = timelinePreview.Find("Base/Image").GetComponent<Image>();
+            timelinePreviewRightCap = timelinePreview.Find("Base/Image 1").GetComponent<Image>();
+            timelinePreviewLine = timelinePreview.Find("Base").GetComponent<Image>();
+
+            timelinePreviewPlayer.material = LegacyResources.canvasImageMask;
+            timelinePreviewLeftCap.material = LegacyResources.canvasImageMask;
+            timelinePreviewRightCap.material = LegacyResources.canvasImageMask;
+            timelinePreviewLine.material = LegacyResources.canvasImageMask;
+        }
+
+        void CreatePreview()
+        {
+            var gameObject = Creator.NewUIObject("Preview Cover", EditorManager.inst.dialogs.parent, 1);
+
+            var rectTransform = gameObject.transform.AsRT();
+            var image = gameObject.AddComponent<Image>();
+
+            rectTransform.anchoredPosition = Vector2.zero;
+            rectTransform.sizeDelta = new Vector2(10000f, 10000f);
+
+            PreviewCover = new EditorThemeElement(ThemeGroup.Preview_Cover, gameObject, new Component[] { image, });
+            EditorThemeManager.ApplyElement(PreviewCover);
+
+            gameObject.SetActive(!Seasons.IsAprilFools);
+
+            var preview = Creator.NewUIObject("Preview", EditorManager.inst.dialogs.parent, 1);
+            preview.transform.AsRT().anchoredPosition = new Vector2(577.5f, 724.05f);
+            preview.transform.AsRT().anchorMax = Vector2.zero;
+            preview.transform.AsRT().anchorMin = Vector2.zero;
+
+            var basePreviewObject = Creator.NewUIObject("Base", preview.transform);
+            var size = EditorConfig.Instance.ObjectDraggerHelperSize.Value;
+            var outlineSize = EditorConfig.Instance.ObjectDraggerHelperOutlineSize.Value;
+            basePreviewObject.transform.AsRT().sizeDelta = new Vector2(size + outlineSize, size + outlineSize);
+            var basePreviewImage = basePreviewObject.AddComponent<Image>();
+            basePreviewImage.sprite = EditorSprites.CircleSprite;
+            basePreviewImage.color = Color.black;
+
+            var previewObject = Creator.NewUIObject("Object", basePreviewObject.transform);
+            previewObject.transform.AsRT().sizeDelta = new Vector2(size, size);
+            var previewObjectImage = previewObject.AddComponent<Image>();
+            previewObjectImage.sprite = EditorSprites.CircleSprite;
+
+            SelectObjectHelper = previewObject.AddComponent<SelectObjectHelper>();
+            SelectObjectHelper.baseImage = basePreviewImage;
+            SelectObjectHelper.image = previewObjectImage;
+            previewObject.AddComponent<EventTrigger>().triggers = new List<EventTrigger.Entry>
+            {
+                TriggerHelper.CreateEntry(EventTriggerType.PointerDown, SelectObjectHelper.PointerDown),
+                TriggerHelper.CreateEntry(EventTriggerType.Scroll, SelectObjectHelper.Scroll),
+                TriggerHelper.CreateEntry(EventTriggerType.BeginDrag, SelectObjectHelper.BeginDrag),
+                TriggerHelper.CreateEntry(EventTriggerType.Drag, SelectObjectHelper.Drag),
+                TriggerHelper.CreateEntry(EventTriggerType.EndDrag, SelectObjectHelper.EndDrag),
+            };
+        }
+
+        void CreateCameraArea()
+        {
+            var canvas = UIManager.GenerateUICanvas("Camera Area", null);
+            canvas.SetWorldSpace(RTLevel.UI_LAYER, RTLevel.Cameras.FG);
+            cameraAreaCanvas = canvas.GameObject.transform.AsRT();
+            var gameObject = Creator.NewUIObject("Camera", cameraAreaCanvas);
+            cameraArea = gameObject.transform.AsRT();
+            var image = gameObject.AddComponent<Image>();
+            image.type = Image.Type.Tiled;
+            image.sprite = EditorManager.inst.SelectionBoxImage.sprite;
+
+            new Labels(Labels.InitSettings.Default.Parent(gameObject.transform).Rect(RectValues.BottomLeftAnchored.Pivot(0f, 1f).SizeDelta(0f, 20f)), "Camera Area");
+
+            editorCameraEnabled = false;
+            gameObject.SetActive(false);
+        }
+
+        void SetupGrid()
+        {
+            try
+            {
+                LSRenderManager.inst.FrontWorldCanvas.transform.localPosition = new Vector3(0f, 0f, -10000f);
+                var grid = Creator.NewUIObject("Grid", LSRenderManager.inst.FrontWorldCanvas);
+
+                previewGrid = grid.AddComponent<GridRenderer>();
+                previewGrid.gridCellSize = new Vector2Int(80, 80);
+                previewGrid.gridCellSpacing = new Vector2(10f, 10f);
+                previewGrid.gridSize = new Vector2(1f, 1f);
+                previewGrid.color = new Color(1f, 1f, 1f);
+                previewGrid.thickness = 0.1f;
+
+                grid.transform.AsRT().anchoredPosition = new Vector2(-40f, -40f);
+                grid.transform.AsRT().sizeDelta = Vector2.one;
+
+                UpdateGrid();
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"SetupGrid Exception {ex}");
+            }
+        }
+
+        #endregion
+
+        #region Time
+
+        /// <summary>
         /// Sets the playing state of the current audio source.
         /// </summary>
         /// <param name="playing">If the audio should play.</param>
@@ -6474,53 +6486,30 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.UpdatePlayButton();
         }
 
-        public void OpenLevelListFolder() => RTFile.OpenInFileBrowser.Open(RTFile.CombinePaths(BeatmapsPath, EditorPath));
-
-        public void OpenThemeListFolder() => RTFile.OpenInFileBrowser.Open(RTFile.CombinePaths(BeatmapsPath, ThemePath));
-
-        public void OpenPrefabListFolder() => RTFile.OpenInFileBrowser.Open(RTFile.CombinePaths(BeatmapsPath, PrefabPath));
-
-        public void OpenLevelCollectionListFolder() => RTFile.OpenInFileBrowser.Open(RTFile.CombinePaths(BeatmapsPath, CollectionsPath));
-
-        public static void SetNotificationProperties()
-        {
-            CoreHelper.Log($"Setting Notification values");
-            var notifyRT = EditorManager.inst.notification.transform.AsRT();
-            var notifyGroup = EditorManager.inst.notification.GetComponent<VerticalLayoutGroup>();
-            notifyRT.sizeDelta = new Vector2(EditorConfig.Instance.NotificationWidth.Value, 632f);
-            EditorManager.inst.notification.transform.localScale =
-                new Vector3(EditorConfig.Instance.NotificationSize.Value, EditorConfig.Instance.NotificationSize.Value, 1f);
-
-            var direction = EditorConfig.Instance.NotificationDirection.Value;
-
-            notifyRT.anchoredPosition = new Vector2(8f, direction == VerticalDirection.Up ? 408f : 410f);
-            notifyGroup.childAlignment = direction != VerticalDirection.Up ? TextAnchor.LowerLeft : TextAnchor.UpperLeft;
-        }
-
-        public static Color GetObjectColor(BeatmapObject beatmapObject, bool ignoreTransparency)
-        {
-            var levelObject = beatmapObject.runtimeObject;
-            if (beatmapObject.objectType == BeatmapObject.ObjectType.Empty || !levelObject || !levelObject.visualObject || !levelObject.visualObject.renderer)
-                return Color.white;
-
-            var color = AudioManager.inst.CurrentAudioSource.time < beatmapObject.StartTime ? CoreHelper.CurrentBeatmapTheme.GetObjColor((int)beatmapObject.events[3][0].values[0])
-                : AudioManager.inst.CurrentAudioSource.time > beatmapObject.StartTime + beatmapObject.GetObjectLifeLength() && beatmapObject.autoKillType != AutoKillType.NoAutokill
-                ? CoreHelper.CurrentBeatmapTheme.GetObjColor((int)beatmapObject.events[3][beatmapObject.events[3].Count - 1].values[0])
-                : levelObject.visualObject.renderer.material.HasProperty("_Color") ? levelObject.visualObject.renderer.material.color : Color.white;
-
-            if (ignoreTransparency)
-                color.a = 1f;
-
-            return color;
-        }
-
+        /// <summary>
+        /// Snaps a provided time to the set BPM.
+        /// </summary>
+        /// <param name="time">Time to snap.</param>
+        /// <returns>Returns the time snapped to the BPM.</returns>
         public static float SnapToBPM(float time)
         {
             var signature = RTSettingEditor.inst.BPMMulti / inst.editorInfo.timeSignature;
             return (Mathf.RoundToInt((time - inst.editorInfo.bpmOffset) / signature) * signature) + inst.editorInfo.bpmOffset;
         }
 
+        /// <summary>
+        /// Snaps a provided time to a BPM.
+        /// </summary>
+        /// <param name="time">Time to snap.</param>
+        /// <param name="offset">BPM offset.</param>
+        /// <param name="divisions">BPM time signature.</param>
+        /// <param name="bpm">BPM.</param>
+        /// <returns>Returns the time snapped to the BPM.</returns>
         public static float SnapToBPM(float time, float offset, float divisions, float bpm) => Mathf.RoundToInt((time + offset) / (60f / bpm / divisions)) * (60f / bpm / divisions) - offset;
+
+        #endregion
+
+        #region Beatmap
 
         /// <summary>
         /// Removes a package of objects from the level.
@@ -6576,29 +6565,12 @@ namespace BetterLegacy.Editor.Managers
                 }
         }
 
-        public int GetEaseIndex(string name)
-        {
-            int index = -1;
-
-            if (int.TryParse(name, out int easeIndex))
-            {
-                index = EasingOptions.FindIndex(x => x.index == easeIndex);
-                return index < 0 ? 0 : index;
-            }
-
-            index = EasingOptions.FindIndex(x => x.name == name);
-            return index < 0 ? 0 : index;
-        }
-
-        public string GetEaseName(int index) => EasingOptions.TryFind(x => x.index == index, out EasingOption easingOption) ? easingOption.name : "Linear";
-
-        public Easing GetEasing(int index) => EasingOptions.TryGetAt(index, out EasingOption easingOption) ? (Easing)easingOption.index : Easing.Linear;
-
-        public int GetEditorLayer(int index) => EditorLayers.TryGetAt(index, out EditorLayer editorLayer) ? editorLayer.layer : 0;
-
+        /// <summary>
+        /// Converts a VG file to an LS file.
+        /// </summary>
         public void ConvertVGToLS()
         {
-            BrowserPopup.Open();
+            RTFileBrowser.inst.Popup.Open();
             RTFileBrowser.inst.UpdateBrowserFile(RTFile.DotFormats(FileFormat.LSP, FileFormat.VGP, FileFormat.LST, FileFormat.VGT, FileFormat.LSB, FileFormat.VGD), onSelectFile: _val =>
             {
                 bool failed = false;
@@ -6709,34 +6681,36 @@ namespace BetterLegacy.Editor.Managers
                                 break;
                             }
 
-                            ShowWarningPopup("Warning! Selecting a level will copy all of its contents to your editor, are you sure you want to do this?", () =>
-                            {
-                                var path = selectedFile.Remove("/" + Level.LEVEL_LSB);
-
-                                var files = Directory.GetFiles(path, "*", SearchOption.AllDirectories);
-
-                                bool copied = false;
-                                foreach (var file in files)
+                            ShowWarningPopup("Warning! Selecting a level will copy all of its contents to your editor, are you sure you want to do this?",
+                                onConfirm: () =>
                                 {
-                                    var copyTo = file.Replace("\\", "/").Replace(Path.GetDirectoryName(path), RTFile.CombinePaths(BeatmapsPath, EditorPath));
-                                    if (RTFile.CopyFile(file, copyTo))
-                                        copied = true;
-                                }
+                                    var path = selectedFile.Remove("/" + Level.LEVEL_LSB);
 
-                                if (copied)
+                                    var files = Directory.GetFiles(path, "*", SearchOption.AllDirectories);
+
+                                    bool copied = false;
+                                    foreach (var file in files)
+                                    {
+                                        var copyTo = file.Replace("\\", "/").Replace(Path.GetDirectoryName(path), RTFile.CombinePaths(BeatmapsPath, EditorPath));
+                                        if (RTFile.CopyFile(file, copyTo))
+                                            copied = true;
+                                    }
+
+                                    if (copied)
+                                    {
+                                        EditorManager.inst.DisplayNotification($"Copied {Path.GetFileName(path)} to level ({EditorPath}) folder.", 2f, EditorManager.NotificationType.Success);
+                                        EditorLevelManager.inst.LoadLevels();
+                                    }
+                                    else
+                                        EditorManager.inst.DisplayNotification($"Could not copy {Path.GetFileName(path)}.", 3f, EditorManager.NotificationType.Error);
+
+                                    HideWarningPopup();
+                                },
+                                onCancel: () =>
                                 {
-                                    EditorManager.inst.DisplayNotification($"Copied {Path.GetFileName(path)} to level ({EditorPath}) folder.", 2f, EditorManager.NotificationType.Success);
-                                    EditorLevelManager.inst.LoadLevels();
-                                }
-                                else
-                                    EditorManager.inst.DisplayNotification($"Could not copy {Path.GetFileName(path)}.", 3f, EditorManager.NotificationType.Error);
-
-                                HideWarningPopup();
-                            }, () =>
-                            {
-                                HideWarningPopup();
-                                BrowserPopup.Open();
-                            });
+                                    HideWarningPopup();
+                                    RTFileBrowser.inst.Popup.Open();
+                                });
 
                             break;
                         }
@@ -6864,20 +6838,11 @@ namespace BetterLegacy.Editor.Managers
                 }
 
                 if (!failed)
-                    BrowserPopup.Close();
+                    RTFileBrowser.inst.Popup.Close();
             });
         }
         
-        public void SetCurrentPath(string path)
-        {
-            var fullPath = RTFile.RemoveEndSlash(path);
-            var name = Path.GetFileName(fullPath);
-
-            EditorManager.inst.currentLoadedLevel = name;
-            GameManager.inst.path = RTFile.CombinePaths(fullPath, Level.LEVEL_LSB);
-            RTFile.BasePath = RTFile.AppendEndSlash(fullPath);
-            GameManager.inst.levelName = name;
-        }
+        #endregion
 
         #endregion
     }

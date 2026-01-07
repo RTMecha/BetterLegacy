@@ -182,7 +182,7 @@ namespace BetterLegacy.Editor.Data.Elements
                     EditorContextMenu.inst.ShowContextMenu(EditorContextMenu.GetFolderPanelFunctions(this, RenderIcon,
                         onOpenFolder: () =>
                         {
-                            RTEditor.inst.PrefabPopups.External.PathField.text = path.Remove(RTEditor.inst.BeatmapsPath + "/");
+                            RTPrefabEditor.inst.Popups.External.PathField.text = path.Remove(RTEditor.inst.BeatmapsPath + "/");
                             RTEditor.inst.UpdatePrefabPath(false);
                         },
                         onFolderUpdate: () => RTPrefabEditor.inst.LoadPrefabs(RTPrefabEditor.inst.RenderExternalPrefabs),
@@ -190,7 +190,7 @@ namespace BetterLegacy.Editor.Data.Elements
                     return;
                 }
 
-                RTEditor.inst.PrefabPopups.External.PathField.text = path.Remove(RTEditor.inst.BeatmapsPath + "/");
+                RTPrefabEditor.inst.Popups.External.PathField.text = path.Remove(RTEditor.inst.BeatmapsPath + "/");
                 RTEditor.inst.UpdatePrefabPath(false);
             };
 
@@ -218,7 +218,7 @@ namespace BetterLegacy.Editor.Data.Elements
             Item.prefabPanel = this;
             var source = Source;
 
-            gameObject = PrefabEditor.inst.AddPrefab.Duplicate(RTEditor.inst.PrefabPopups.GetPopup(source).Content);
+            gameObject = PrefabEditor.inst.AddPrefab.Duplicate(RTPrefabEditor.inst.Popups.GetPopup(source).Content);
 
             var hover = gameObject.AddComponent<HoverUI>();
             hover.animateSca = true;
@@ -434,7 +434,7 @@ namespace BetterLegacy.Editor.Data.Elements
                                     new ButtonElement("Add to Level", () =>
                                     {
                                         RTPrefabEditor.inst.AddPrefabObjectToLevel(prefab);
-                                        RTEditor.inst.PrefabPopups.Close();
+                                        RTPrefabEditor.inst.Popups.Close();
                                     }),
                                     new ButtonElement("Create Prefab", () =>
                                     {
@@ -448,11 +448,7 @@ namespace BetterLegacy.Editor.Data.Elements
                                     }),
                                     new SpacerElement(),
                                     new ButtonElement("Edit", () => RTPrefabEditor.inst.OpenPrefabEditorDialog(this)),
-                                    new ButtonElement("Delete", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this prefab? (This is permanent!)", () =>
-                                    {
-                                        RTPrefabEditor.inst.DeleteInternalPrefab(Item);
-                                        RTEditor.inst.HideWarningPopup();
-                                    }, RTEditor.inst.HideWarningPopup)),
+                                    new ButtonElement("Delete", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this prefab? (This is permanent!)", () => RTPrefabEditor.inst.DeleteInternalPrefab(Item))),
                                     new ButtonElement("Export", () => RTPrefabEditor.inst.SavePrefab(Item.Copy(false)), "Internal Prefab Export"),
                                     new SpacerElement(),
                                 };
@@ -466,7 +462,7 @@ namespace BetterLegacy.Editor.Data.Elements
                             }
 
                             RTPrefabEditor.inst.AddPrefabObjectToLevel(prefab);
-                            RTEditor.inst.PrefabPopups.Close();
+                            RTPrefabEditor.inst.Popups.Close();
                         };
                         break;
                     }
@@ -509,7 +505,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                                 prefabToSaveTo.WriteToFile(prefabToSaveTo.filePath);
 
-                                RTEditor.inst.PrefabPopups.Close();
+                                RTPrefabEditor.inst.Popups.Close();
 
                                 RTPrefabEditor.inst.prefabToSaveFrom = null;
 
@@ -554,17 +550,13 @@ namespace BetterLegacy.Editor.Data.Elements
                                         CoreHelper.Log($"Copied prefab: {RTPrefabEditor.inst.copiedPrefabPath}");
                                     }),
                                     new ButtonElement("Paste", RTPrefabEditor.inst.PastePrefab),
-                                    new ButtonElement("Delete", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this prefab? (This is permanent!)", () =>
-                                    {
-                                        RTPrefabEditor.inst.DeleteExternalPrefab(this);
-                                        RTEditor.inst.HideWarningPopup();
-                                    }, RTEditor.inst.HideWarningPopup))
+                                    new ButtonElement("Delete", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this prefab? (This is permanent!)", () => RTPrefabEditor.inst.DeleteExternalPrefab(this)))
                                     );
 
                                 return;
                             }
 
-                            if (!RTPrefabEditor.ImportPrefabsDirectly)
+                            if (!EditorConfig.Instance.ImportPrefabsDirectly.Value)
                                 RTPrefabEditor.inst.OpenPrefabEditorDialog(this);
                             else
                                 RTPrefabEditor.inst.ImportPrefabIntoLevel(Item);
@@ -597,8 +589,7 @@ namespace BetterLegacy.Editor.Data.Elements
                             break;
                         }
                 }
-                RTEditor.inst.HideWarningPopup();
-            }, RTEditor.inst.HideWarningPopup));
+            }));
         }
 
         #endregion

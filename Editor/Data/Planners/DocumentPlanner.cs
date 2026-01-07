@@ -93,8 +93,7 @@ namespace BetterLegacy.Editor.Data.Planners
                 ProjectPlanner.inst.documents.RemoveAll(x => x is DocumentPlanner && x.ID == ID);
                 ProjectPlanner.inst.SaveDocuments();
                 CoreHelper.Destroy(gameObject);
-                RTEditor.inst.HideWarningPopup();
-            }, RTEditor.inst.HideWarningPopup));
+            }));
 
             EditorThemeManager.ApplyDeleteButton(delete);
             EditorThemeManager.ApplyGraphic(gameObject.transform.Find("gradient").GetComponent<Image>(), ThemeGroup.Background_1);

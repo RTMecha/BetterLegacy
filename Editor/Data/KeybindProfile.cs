@@ -62,7 +62,7 @@ namespace BetterLegacy.Editor.Data
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public string GetFileName() => RTFile.FormatLegacyFileName(name) + FileFormat.Dot();
 
@@ -132,15 +132,15 @@ namespace BetterLegacy.Editor.Data
             new Keybind(nameof(KeybindEditor.SaveLevel), new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.S)),
             new Keybind(nameof(KeybindEditor.OpenLevelPopup), new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.O)),
 
-            new Keybind(nameof(KeybindEditor.SetLayer), new List<Setting> { new Setting("Layer", "0") },
+            new Keybind(nameof(KeybindEditor.SetLayer), new List<Setting> { new Setting("Layer", "0", ValueType.Int) },
                 new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Alpha1)),
-            new Keybind(nameof(KeybindEditor.SetLayer), new List<Setting> { new Setting("Layer", "1") },
+            new Keybind(nameof(KeybindEditor.SetLayer), new List<Setting> { new Setting("Layer", "1", ValueType.Int) },
                 new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Alpha2)),
-            new Keybind(nameof(KeybindEditor.SetLayer), new List<Setting> { new Setting("Layer", "2") },
+            new Keybind(nameof(KeybindEditor.SetLayer), new List<Setting> { new Setting("Layer", "2", ValueType.Int) },
                 new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Alpha3)),
-            new Keybind(nameof(KeybindEditor.SetLayer), new List<Setting> { new Setting("Layer", "3") },
+            new Keybind(nameof(KeybindEditor.SetLayer), new List<Setting> { new Setting("Layer", "3", ValueType.Int) },
                 new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Alpha4)),
-            new Keybind(nameof(KeybindEditor.SetLayer), new List<Setting> { new Setting("Layer", "4") },
+            new Keybind(nameof(KeybindEditor.SetLayer), new List<Setting> { new Setting("Layer", "4", ValueType.Int) },
                 new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Alpha5)),
 
             new Keybind(nameof(KeybindEditor.ToggleEventLayer), new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftShift), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.E)),
@@ -155,8 +155,8 @@ namespace BetterLegacy.Editor.Data
             new Keybind(nameof(KeybindEditor.SetNextKeyframeInType), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Period)),
             new Keybind(nameof(KeybindEditor.JumpToPreviousMarker), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.LeftBracket)),
             new Keybind(nameof(KeybindEditor.JumpToNextMarker), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.RightBracket)),
-            new Keybind(nameof(KeybindEditor.AddPitch), new List<Setting> { new Setting("Pitch", "0.1") }, new Keybind.Key(Keybind.Key.Type.Down, KeyCode.UpArrow)),
-            new Keybind(nameof(KeybindEditor.AddPitch), new List<Setting> { new Setting("Pitch", "-0.1") }, new Keybind.Key(Keybind.Key.Type.Down, KeyCode.DownArrow)),
+            new Keybind(nameof(KeybindEditor.AddPitch), new List<Setting> { new Setting("Pitch", "0.1", ValueType.Int) }, new Keybind.Key(Keybind.Key.Type.Down, KeyCode.UpArrow)),
+            new Keybind(nameof(KeybindEditor.AddPitch), new List<Setting> { new Setting("Pitch", "-0.1", ValueType.Int) }, new Keybind.Key(Keybind.Key.Type.Down, KeyCode.DownArrow)),
             new Keybind(nameof(KeybindEditor.ToggleShowHelp), new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.H)),
             new Keybind(nameof(KeybindEditor.GoToCurrentTime), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Insert)),
             new Keybind(nameof(KeybindEditor.GoToStart), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Home)),
@@ -165,25 +165,25 @@ namespace BetterLegacy.Editor.Data
             new Keybind(nameof(KeybindEditor.SpawnSelectedQuickPrefab), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Slash)),
             new Keybind(nameof(KeybindEditor.Cut), new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.X)),
             new Keybind(nameof(KeybindEditor.Copy), new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.C)),
-            new Keybind(nameof(KeybindEditor.Paste), new List<Setting> { new Setting("Remove Prefab Instance ID", "False") }, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.V)),
-            new Keybind(nameof(KeybindEditor.Duplicate), new List<Setting> { new Setting("Remove Prefab Instance ID", "False") }, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.D)),
+            new Keybind(nameof(KeybindEditor.Paste), new List<Setting> { new Setting("Remove Prefab Instance ID", "False", ValueType.Bool) }, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.V)),
+            new Keybind(nameof(KeybindEditor.Duplicate), new List<Setting> { new Setting("Remove Prefab Instance ID", "False", ValueType.Bool) }, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.D)),
             new Keybind(nameof(KeybindEditor.Delete), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Backspace)),
             new Keybind(nameof(KeybindEditor.Delete), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Delete)),
             new Keybind(nameof(KeybindEditor.ToggleZenMode), new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftAlt), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Z)),
             new Keybind(nameof(KeybindEditor.TransformPosition),
-                new List<Setting> { new Setting("Create Keyframe", "True"), new Setting("Use Nearest", "True"), new Setting("Use Previous", "False") },
+                new List<Setting> { new Setting("Create Keyframe", "True", ValueType.Bool), new Setting("Use Nearest", "True", ValueType.Bool), new Setting("Use Previous", "False", ValueType.Bool) },
                 new Keybind.Key(Keybind.Key.Type.Down, KeyCode.G)),
             new Keybind(nameof(KeybindEditor.TransformScale),
-                new List<Setting> { new Setting("Create Keyframe", "True"), new Setting("Use Nearest", "True"), new Setting("Use Previous", "False") },
+                new List<Setting> { new Setting("Create Keyframe", "True", ValueType.Bool), new Setting("Use Nearest", "True", ValueType.Bool), new Setting("Use Previous", "False", ValueType.Bool) },
                 new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Y)),
             new Keybind(nameof(KeybindEditor.TransformRotation),
-                new List<Setting> { new Setting("Create Keyframe", "True"), new Setting("Use Nearest", "True"), new Setting("Use Previous", "False") },
+                new List<Setting> { new Setting("Create Keyframe", "True", ValueType.Bool), new Setting("Use Nearest", "True", ValueType.Bool), new Setting("Use Previous", "False", ValueType.Bool) },
                 new Keybind.Key(Keybind.Key.Type.Down, KeyCode.R), new Keybind.Key(Keybind.Key.Type.NotPressed, KeyCode.LeftControl)),
             new Keybind(nameof(KeybindEditor.FinishTransform),
-                new List<Setting> { new Setting("Cancel", "False") },
+                new List<Setting> { new Setting("Cancel", "False", ValueType.Bool) },
                 new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Return)),
             new Keybind(nameof(KeybindEditor.FinishTransform),
-                new List<Setting> { new Setting("Cancel", "True") },
+                new List<Setting> { new Setting("Cancel", "True", ValueType.Bool) },
                 new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Escape)),
             new Keybind(nameof(KeybindEditor.ToggleProjectPlanner), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.F10)),
             new Keybind(nameof(KeybindEditor.ParentPicker), new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.P)),
@@ -193,8 +193,8 @@ namespace BetterLegacy.Editor.Data
             new Keybind(nameof(KeybindEditor.RemoveTimelineBin), new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.Tab), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.KeypadMinus)),
             new Keybind(nameof(KeybindEditor.RemoveTimelineBin), new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.Tab), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Minus)),
 
-            new Keybind(nameof(KeybindEditor.AddLayer), new List<Setting> { new Setting("Layer", "1") }, new Keybind.Key(Keybind.Key.Type.Down, KeyCode.PageUp)),
-            new Keybind(nameof(KeybindEditor.AddLayer), new List<Setting> { new Setting("Layer", "-1") }, new Keybind.Key(Keybind.Key.Type.Down, KeyCode.PageDown)),
+            new Keybind(nameof(KeybindEditor.AddLayer), new List<Setting> { new Setting("Layer", "1", ValueType.Int) }, new Keybind.Key(Keybind.Key.Type.Down, KeyCode.PageUp)),
+            new Keybind(nameof(KeybindEditor.AddLayer), new List<Setting> { new Setting("Layer", "-1", ValueType.Int) }, new Keybind.Key(Keybind.Key.Type.Down, KeyCode.PageDown)),
 
             new Keybind(nameof(KeybindEditor.SetSongTimeAutokill), new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftAlt), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.K)),
             new Keybind(nameof(KeybindEditor.HideSelection), new Keybind.Key(Keybind.Key.Type.NotPressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.NotPressed, KeyCode.LeftAlt), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.H)),

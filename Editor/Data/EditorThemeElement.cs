@@ -24,30 +24,57 @@ namespace BetterLegacy.Editor.Data
             this.opacity = opacity;
         }
 
+        /// <summary>
+        /// Game object reference.
+        /// </summary>
         [SerializeField]
         public GameObject gameObject;
 
+        /// <summary>
+        /// Array of components.
+        /// </summary>
         [SerializeField]
         public Component[] components;
 
+        /// <summary>
+        /// Theme group that should be applied to the components.
+        /// </summary>
         [SerializeField]
         public ThemeGroup themeGroup = ThemeGroup.Null;
 
+        /// <summary>
+        /// If the element is a selectable.
+        /// </summary>
         [SerializeField]
         public bool isSelectable = false;
 
+        /// <summary>
+        /// If the element can be rounded.
+        /// </summary>
         [SerializeField]
         public bool canSetRounded = false;
 
+        /// <summary>
+        /// Rounded amount to set if <see cref="canSetRounded"/> is set to true.
+        /// </summary>
         [SerializeField]
         public int rounded;
 
+        /// <summary>
+        /// Rounded side to set if <see cref="canSetRounded"/> is set to true.
+        /// </summary>
         [SerializeField]
         public SpriteHelper.RoundedSide roundedSide = SpriteHelper.RoundedSide.W;
 
+        /// <summary>
+        /// Opacity of the element.
+        /// </summary>
         [SerializeField]
         public float opacity = 1f;
 
+        /// <summary>
+        /// Clears the element.
+        /// </summary>
         public void Clear()
         {
             gameObject = null;
@@ -56,6 +83,10 @@ namespace BetterLegacy.Editor.Data
             components = null;
         }
 
+        /// <summary>
+        /// Applies an editor theme to the element.
+        /// </summary>
+        /// <param name="editorTheme">Editor theme to apply.</param>
         public void ApplyTheme(EditorTheme editorTheme)
         {
             SetRounded();
@@ -83,6 +114,9 @@ namespace BetterLegacy.Editor.Data
             }
         }
 
+        /// <summary>
+        /// Updates the rounded state of the element.
+        /// </summary>
         public void SetRounded() => EditorThemeManager.SetRounded(canSetRounded, rounded, roundedSide, components);
 
         public override string ToString() => gameObject ? gameObject.name : "null";
