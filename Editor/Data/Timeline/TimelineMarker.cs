@@ -100,6 +100,24 @@ namespace BetterLegacy.Editor.Data.Timeline
         }
 
         /// <summary>
+        /// Time of the marker.
+        /// </summary>
+        public float Time
+        {
+            get => Marker.time;
+            set => Marker.time = value;
+        }
+
+        /// <summary>
+        /// Description of the marker.
+        /// </summary>
+        public string Description
+        {
+            get => Marker.desc;
+            set => Marker.desc = value;
+        }
+
+        /// <summary>
         /// Color slot of the marker.
         /// </summary>
         public int ColorSlot
@@ -123,15 +141,22 @@ namespace BetterLegacy.Editor.Data.Timeline
         public bool dragging;
 
         /// <summary>
+        /// If the timeline marker is selected.
+        /// </summary>
+        public bool Selected { get; set; }
+
+        /// <summary>
         /// Marker panel reference.
         /// </summary>
         public MarkerPanel panel;
 
-        #endregion
+        public float timeOffset;
 
         #endregion
 
-        #region Methods
+        #endregion
+
+        #region Functions
 
         /// <summary>
         /// Initializes the timeline marker.
@@ -145,7 +170,7 @@ namespace BetterLegacy.Editor.Data.Timeline
 
             var marker = Marker;
             gameObject = MarkerEditor.inst.markerPrefab.Duplicate(EditorManager.inst.markerTimeline.transform, $"Marker {index + 1}");
-            gameObject.SetActive(marker.VisibleOnLayer(EditorTimeline.inst.Layer));
+            gameObject.SetActive(EditorConfig.Instance.ShowMarkersOnAllLayers.Value || marker.VisibleOnLayer(EditorTimeline.inst.Layer));
             gameObject.transform.localScale = Vector3.one;
             var markerStorage = gameObject.GetComponent<MarkerStorage>();
 
@@ -171,7 +196,7 @@ namespace BetterLegacy.Editor.Data.Timeline
                 {
                     case PointerEventData.InputButton.Left: {
                             RTMarkerEditor.inst.SetCurrentMarker(this);
-                            AudioManager.inst.SetMusicTimeWithDelay(Mathf.Clamp(Marker.time, 0f, AudioManager.inst.CurrentAudioSource.clip.length), 0.05f);
+                            AudioManager.inst.SetMusicTimeWithDelay(Mathf.Clamp(Time, 0f, AudioManager.inst.CurrentAudioSource.clip.length), 0.05f);
                             break;
                         }
                     case PointerEventData.InputButton.Right: {
@@ -191,7 +216,6 @@ namespace BetterLegacy.Editor.Data.Timeline
                             break;
                         }
                 }
-
             }),
             TriggerHelper.CreateEntry(EventTriggerType.BeginDrag, eventData =>
             {
@@ -199,9 +223,17 @@ namespace BetterLegacy.Editor.Data.Timeline
 
                 if (pointerEventData.button == EditorConfig.Instance.MarkerDragButton.Value)
                 {
+                    // if this marker wasn't selected then set it as the current marker.
+                    if (!Selected)
+                    {
+                        RTMarkerEditor.inst.DeselectMarkers();
+                        RTMarkerEditor.inst.SetCurrentMarker(this);
+                    }
+
                     CoreHelper.Log($"Started dragging marker {index}");
+                    RTMarkerEditor.inst.dragTimeOffset = Time - EditorTimeline.inst.GetTimelineTime(RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsObjects.Value);
+                    RTMarkerEditor.inst.SetDragging(true, Time);
                     dragging = true;
-                    RTMarkerEditor.inst.dragging = true;
                 }
             }));
         }
@@ -213,7 +245,7 @@ namespace BetterLegacy.Editor.Data.Timeline
         {
             var markerColor = Color;
 
-            GameObject.SetActive(Marker.VisibleOnLayer(EditorTimeline.inst.Layer));
+            GameObject.SetActive(EditorConfig.Instance.ShowMarkersOnAllLayers.Value || Marker.VisibleOnLayer(EditorTimeline.inst.Layer));
             RenderPosition();
             RenderTooltip(markerColor);
             RenderName();
@@ -244,7 +276,7 @@ namespace BetterLegacy.Editor.Data.Timeline
         /// <summary>
         /// Renders the timeline marker position.
         /// </summary>
-        public void RenderPosition() => RenderPosition(Marker.time, EditorManager.inst.Zoom);
+        public void RenderPosition() => RenderPosition(Time, EditorManager.inst.Zoom);
 
         /// <summary>
         /// Renders the timeline marker position.
@@ -379,10 +411,10 @@ namespace BetterLegacy.Editor.Data.Timeline
             ProjectPlanner.inst.AddPlanner(new Planners.NotePlanner
             {
                 Active = true,
-                Name = Marker.name,
-                Color = Marker.color,
+                Name = Name,
+                Color = ColorSlot,
                 Position = new Vector2(Screen.width / 2, Screen.height / 2),
-                Text = Marker.desc,
+                Text = Description,
             });
             ProjectPlanner.inst.SaveNotes();
         }

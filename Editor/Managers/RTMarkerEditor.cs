@@ -32,6 +32,9 @@ namespace BetterLegacy.Editor.Managers
 
         public override MarkerEditor BaseInstance { get => MarkerEditor.inst; set => MarkerEditor.inst = value; }
 
+        /// <summary>
+        /// Dialog of the editor.
+        /// </summary>
         public MarkerEditorDialog Dialog { get; set; }
 
         /// <summary>
@@ -54,6 +57,14 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public bool dragging;
 
+        /// <summary>
+        /// Time to offset from the markers.
+        /// </summary>
+        public float dragTimeOffset;
+
+        /// <summary>
+        /// Copied list of markers.
+        /// </summary>
         public List<Marker> copiedMarkers = new List<Marker>();
 
         #region Looping
@@ -136,7 +147,7 @@ namespace BetterLegacy.Editor.Managers
 
         #endregion
 
-        #region Methods
+        #region Functions
         
         public override void OnInit()
         {
@@ -156,13 +167,16 @@ namespace BetterLegacy.Editor.Managers
             if (dragging && Input.GetMouseButtonUp((int)EditorConfig.Instance.MarkerDragButton.Value))
                 StopDragging();
 
+            var timelineTime = EditorTimeline.inst.GetTimelineTime(RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsMarkers.Value);
+
             for (int i = 0; i < timelineMarkers.Count; i++)
             {
-                if (!timelineMarkers[i].dragging)
+                var timelineMarker = timelineMarkers[i];
+                if (!timelineMarker.dragging)
                     continue;
 
-                timelineMarkers[i].Marker.time = Mathf.Round(Mathf.Clamp(EditorTimeline.inst.GetTimelineTime(RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsMarkers.Value), 0f, AudioManager.inst.CurrentAudioSource.clip.length) * 1000f) / 1000f;
-                timelineMarkers[i].RenderPosition();
+                timelineMarker.Time = Mathf.Round(Mathf.Clamp(timelineTime, 0f, AudioManager.inst.CurrentAudioSource.clip.length) * 1000f) / 1000f + (dragTimeOffset + timelineMarker.timeOffset);
+                timelineMarker.RenderPosition();
             }
 
             if (dragging && CurrentMarker && Dialog.IsCurrent)
@@ -171,16 +185,16 @@ namespace BetterLegacy.Editor.Managers
             if (EditorManager.inst.loading || !markerLooping || GameData.Current.data.markers.Count <= 0 || !markerLoopBegin || !markerLoopEnd)
                 return;
 
-            if (AudioManager.inst.CurrentAudioSource.time > markerLoopEnd.Marker.time)
+            if (AudioManager.inst.CurrentAudioSource.time > markerLoopEnd.Time)
             {
                 switch (EditorConfig.Instance.MarkerLoopBehavior.Value)
                 {
                     case MarkerLoopBehavior.Loop: {
-                            AudioManager.inst.SetMusicTime(markerLoopBegin.Marker.time);
+                            AudioManager.inst.SetMusicTime(markerLoopBegin.Time);
                             break;
                         }
                     case MarkerLoopBehavior.StopAtStart: {
-                            AudioManager.inst.SetMusicTime(markerLoopBegin.Marker.time);
+                            AudioManager.inst.SetMusicTime(markerLoopBegin.Time);
                             RTEditor.inst.SetPlaying(false);
                             break;
                         }
@@ -229,7 +243,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="marker">Marker to edit.</param>
         public void RenderNameEditor(Marker marker)
         {
-            Dialog.NameField.SetTextWithoutNotify(marker.name);
+            Dialog.NameField.SetTextWithoutNotify(timelineMarkers.Count(x => x.Selected) > 1 ? string.Empty : marker.name);
             Dialog.NameField.onValueChanged.NewListener(SetName);
         }
 
@@ -239,7 +253,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="marker">Marker to edit.</param>
         public void RenderDescriptionEditor(Marker marker)
         {
-            Dialog.DescriptionField.SetTextWithoutNotify(marker.desc);
+            Dialog.DescriptionField.SetTextWithoutNotify(timelineMarkers.Count(x => x.Selected) > 1 ? string.Empty : marker.desc);
             Dialog.DescriptionField.onValueChanged.NewListener(SetDescription);
         }
 
@@ -501,7 +515,7 @@ namespace BetterLegacy.Editor.Managers
         public void CreateNewMarker(float time)
         {
             Marker marker;
-            if (GameData.Current.data.markers.TryFind(x => time > x.time - 0.01f && time < x.time + 0.01f && (x.VisibleOnLayer(EditorTimeline.inst.Layer)), out Marker baseMarker))
+            if (GameData.Current.data.markers.TryFind(x => time > x.time - 0.01f && time < x.time + 0.01f && (EditorConfig.Instance.ShowMarkersOnAllLayers.Value || x.VisibleOnLayer(EditorTimeline.inst.Layer)), out Marker baseMarker))
                 marker = baseMarker;
             else
             {
@@ -550,6 +564,19 @@ namespace BetterLegacy.Editor.Managers
             MarkerEditor.inst.currentMarker = timelineMarker.Index;
             CoreHelper.Log($"Set marker to {timelineMarker.Index}");
 
+            if (InputDataManager.inst.editorActions.MultiSelect.IsPressed)
+            {
+                timelineMarker.Selected = !timelineMarker.Selected;
+                if (timelineMarkers.Count(x => x.Selected) < 1)
+                    timelineMarker.Selected = true;
+            }
+            else
+            {
+                for (int i = 0; i < timelineMarkers.Count; i++)
+                    timelineMarkers[i].Selected = false;
+                timelineMarker.Selected = true;
+            }
+
             CurrentMarker = timelineMarker;
 
             if (showDialog)
@@ -558,8 +585,7 @@ namespace BetterLegacy.Editor.Managers
             if (!bringTo)
                 return;
 
-            float time = CurrentMarker.Marker.time;
-            AudioManager.inst.SetMusicTime(Mathf.Clamp(time, 0f, AudioManager.inst.CurrentAudioSource.clip.length));
+            AudioManager.inst.SetMusicTime(Mathf.Clamp(CurrentMarker.Time, 0f, AudioManager.inst.CurrentAudioSource.clip.length));
             AudioManager.inst.CurrentAudioSource.Pause();
             EditorManager.inst.UpdatePlayButton();
 
@@ -574,6 +600,14 @@ namespace BetterLegacy.Editor.Managers
         public void ShowMarkerContextMenu(TimelineMarker timelineMarker) => EditorContextMenu.inst.ShowContextMenu(
             new ButtonElement("Open", () => SetCurrentMarker(timelineMarker)),
             new ButtonElement("Open & Bring To", () => SetCurrentMarker(timelineMarker, true)),
+            new ButtonElement("Select All Markers", () =>
+            {
+                for (int i = 0; i < timelineMarkers.Count; i++)
+                {
+                    var timelineMarker = timelineMarkers[i];
+                    timelineMarker.Selected = true;
+                }
+            }),
             new SpacerElement(),
             new ButtonElement("Copy", () =>
             {
@@ -583,6 +617,7 @@ namespace BetterLegacy.Editor.Managers
                 markerCopy = timelineMarker.Marker.Copy();
                 EditorManager.inst.DisplayNotification("Copied Marker", 1.5f, EditorManager.NotificationType.Success);
             }),
+            new ButtonElement("Copy Selected", CopySelectedMarkers),
             new ButtonElement("Copy All", CopyAllMarkers),
             new ButtonElement("Paste", () =>
             {
@@ -601,6 +636,26 @@ namespace BetterLegacy.Editor.Managers
             }),
             new ButtonElement("Paste All", PasteMarkers),
             new ButtonElement("Delete", () => DeleteMarker(timelineMarker.Index)),
+            new ButtonElement("Delete Selected", () =>
+            {
+                OrderMarkers();
+                var time = AudioManager.inst.CurrentAudioSource.clip.length;
+                for (int i = timelineMarkers.Count - 1; i >= 0; i--)
+                {
+                    var timelineMarker = timelineMarkers[i];
+                    if (timelineMarker.Selected)
+                    {
+                        time = timelineMarker.Time;
+                        GameData.Current.data.markers.RemoveAt(timelineMarker.Index);
+                    }
+                }
+                var index = timelineMarkers.FindIndex(x => x.Time < time);
+                if (index >= 0)
+                    SetCurrentMarker(index);
+                else
+                    RTCheckpointEditor.inst.SetCurrentCheckpoint(0);
+                CreateMarkers();
+            }),
             new SpacerElement(),
             new ButtonElement("Start Marker Looping", () =>
             {
@@ -679,6 +734,18 @@ namespace BetterLegacy.Editor.Managers
                 EditorManager.inst.DisplayNotification("Stopped and cleared Marker loop.", 3f, EditorManager.NotificationType.Success);
             }),
             new SpacerElement(),
+            new ButtonElement("Set to Current Layer", () => ForSelectedMarkers(timelineMarker, timelineMarker =>
+            {
+                timelineMarker.Marker.layers.Clear();
+                timelineMarker.Marker.layers.Add(EditorTimeline.inst.Layer);
+            })),
+            new ButtonElement("Add Current Layer", () => ForSelectedMarkers(timelineMarker, timelineMarker =>
+            {
+                if (!timelineMarker.Marker.layers.Contains(EditorTimeline.inst.Layer))
+                    timelineMarker.Marker.layers.Add(EditorTimeline.inst.Layer);
+            })),
+            new ButtonElement("Remove Layers", () => ForSelectedMarkers(timelineMarker, timelineMarker => timelineMarker.Marker.layers.Clear())),
+            new SpacerElement(),
             new ButtonElement("Run Functions", () => RunMarkerFunctions(timelineMarker.Marker)),
             new SpacerElement(),
             new ButtonElement("Convert to Planner Note", timelineMarker.ToPlannerNote)
@@ -749,14 +816,35 @@ namespace BetterLegacy.Editor.Managers
         }
 
         /// <summary>
+        /// Deselects all markers.
+        /// </summary>
+        public void DeselectMarkers()
+        {
+            for (int i = 0; i < timelineMarkers.Count; i++)
+                timelineMarkers[i].Selected = false;
+        }
+
+        /// <summary>
+        /// Sets the state of dragging timeline markers.
+        /// </summary>
+        /// <param name="dragging">Dragging state to set.</param>
+        public void SetDragging(bool dragging, float timeOffset = 0f)
+        {
+            this.dragging = dragging;
+            for (int i = 0; i < timelineMarkers.Count; i++)
+            {
+                var timelineMarker = timelineMarkers[i];
+                timelineMarker.timeOffset = timelineMarker.Marker.time - timeOffset;
+                timelineMarker.dragging = dragging && timelineMarker.Selected;
+            }
+        }
+
+        /// <summary>
         /// Stops dragging all markers.
         /// </summary>
         public void StopDragging()
         {
-            for (int i = 0; i < timelineMarkers.Count; i++)
-                timelineMarkers[i].dragging = false;
-            dragging = false;
-
+            SetDragging(false);
             OrderMarkers();
 
             if (Dialog.IsCurrent && CurrentMarker)
@@ -788,10 +876,9 @@ namespace BetterLegacy.Editor.Managers
             GameData.Current.data.markers.Clear();
             UpdateMarkerList();
             CreateMarkers();
-            RTEditor.inst.HideWarningPopup();
             Dialog.Close();
             RTCheckpointEditor.inst.SetCurrentCheckpoint(0);
-        }, RTEditor.inst.HideWarningPopup);
+        });
 
         /// <summary>
         /// Copies all Markers to the copied Markers list.
@@ -800,6 +887,16 @@ namespace BetterLegacy.Editor.Managers
         {
             copiedMarkers.Clear();
             copiedMarkers.AddRange(GameData.Current.data.markers.Select(x => x.Copy()));
+            EditorManager.inst.DisplayNotification("Copied Markers", 1.5f, EditorManager.NotificationType.Success);
+        }
+
+        /// <summary>
+        /// Copies selected Markers onto the copied Markers list.
+        /// </summary>
+        public void CopySelectedMarkers()
+        {
+            copiedMarkers.Clear();
+            copiedMarkers.AddRange(timelineMarkers.Where(x => x.Selected && x.Marker).Select(x => x.Marker.Copy()));
             EditorManager.inst.DisplayNotification("Copied Markers", 1.5f, EditorManager.NotificationType.Success);
         }
 
@@ -839,21 +936,24 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="name">Name to set to the marker.</param>
         public void SetName(string name)
         {
-            CurrentMarker.Marker.name = name;
+            ForSelectedMarkers(timelineMarker =>
+            {
+                timelineMarker.Name = name;
+                timelineMarker.RenderName();
+                timelineMarker.RenderTooltip();
+            });
             UpdateMarkerList();
-            CurrentMarker.RenderName();
-            CurrentMarker.RenderTooltip();
         }
 
         /// <summary>
         /// Sets the current selected markers' description and updates it.
         /// </summary>
         /// <param name="desc">Description to set to the marker.</param>
-        public void SetDescription(string desc)
+        public void SetDescription(string desc) => ForSelectedMarkers(timelineMarker =>
         {
-            CurrentMarker.Marker.desc = desc;
-            CurrentMarker.RenderTooltip();
-        }
+            timelineMarker.Description = desc;
+            timelineMarker.RenderTooltip();
+        });
 
         /// <summary>
         /// Sets the current selected markers' time and updates it.
@@ -861,7 +961,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="time">Time to set to the marker.</param>
         public void SetTime(float time)
         {
-            CurrentMarker.Marker.time = time;
+            CurrentMarker.Time = time;
             if (CurrentMarker.panel && CurrentMarker.panel.Time)
                 CurrentMarker.panel.RenderTime();
             OrderMarkers();
@@ -873,11 +973,34 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="color">Color slot to set to the marker.</param>
         public void SetColor(int color)
         {
-            CurrentMarker.Marker.color = color;
+            ForSelectedMarkers(timelineMarker =>
+            {
+                timelineMarker.ColorSlot = color;
+                timelineMarker.RenderTooltip();
+                timelineMarker.RenderColor();
+            });
             UpdateMarkerList();
+        }
 
-            CurrentMarker.RenderTooltip();
-            CurrentMarker.RenderColor();
+        /// <summary>
+        /// Runs an action for each selected marker.
+        /// </summary>
+        /// <param name="action">Function to run per selected marker.</param>
+        public void ForSelectedMarkers(Action<TimelineMarker> action) => ForSelectedMarkers(CurrentMarker, action);
+
+        /// <summary>
+        /// Runs an action for each selected marker.
+        /// </summary>
+        /// <param name="timelineMarker">The single current marker..</param>
+        /// <param name="action">Function to run per selected marker.</param>
+        public void ForSelectedMarkers(TimelineMarker timelineMarker, Action<TimelineMarker> action)
+        {
+            var selectedMarkers = timelineMarkers.FindAll(x => x.Selected);
+            if (selectedMarkers.Count > 1)
+                for (int i = 0; i < selectedMarkers.Count; i++)
+                    action?.Invoke(selectedMarkers[i]);
+            else if (timelineMarker)
+                action?.Invoke(timelineMarker);
         }
 
         #endregion
