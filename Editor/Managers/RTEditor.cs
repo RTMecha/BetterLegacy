@@ -1459,7 +1459,7 @@ namespace BetterLegacy.Editor.Managers
                     EditorTimeline.inst.changingTime = false;
                 }));
 
-            DestroyImmediate(EditorManager.inst.mouseTooltip);
+            CoreHelper.Delete(EditorManager.inst.mouseTooltip);
             mouseTooltip = EditorManager.inst.notificationPrefabs[0].Duplicate(EditorManager.inst.dialogs.parent.parent, "tooltip");
             EditorManager.inst.mouseTooltip = mouseTooltip;
             mouseTooltipRT = mouseTooltip.transform.AsRT();
