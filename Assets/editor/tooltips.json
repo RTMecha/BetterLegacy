@@ -6074,6 +6074,150 @@
       ]
     ],
 
+    // Planner
+    [
+      {
+        "name": "Document Planner Tab",
+        "tooltips": [
+          {
+            "desc": "Shows document planners.",
+            "hint": "Documents are used for planning out a story, writing out extended notes, etc.",
+            "lang": 0
+          }
+        ]
+      }, // Document Planner Tab
+      {
+        "name": "TODO Planner Tab",
+        "tooltips": [
+          {
+            "desc": "Shows TODO planners.",
+            "hint": "TODO planners are used for keeping track of what needs to be done and what has been done.",
+            "lang": 0
+          }
+        ]
+      }, // TODO Planner Tab
+      {
+        "name": "Character Planner Tab",
+        "tooltips": [
+          {
+            "desc": "Shows character planners.",
+            "hint": "Character planners are used for planning out how a character is in your story / series.",
+            "lang": 0
+          }
+        ]
+      }, // Character Planner Tab
+      {
+        "name": "Timeline Planner Tab",
+        "tooltips": [
+          {
+            "desc": "Shows timeline planners.",
+            "hint": "Timeline planners are used for planning out the exact events in a series. The events can be linked to a level in your editor.",
+            "lang": 0
+          }
+        ]
+      }, // Timeline Planner Tab
+      {
+        "name": "Schedule Planner Tab",
+        "tooltips": [
+          {
+            "desc": "Shows schedule planners.",
+            "hint": "Schedule planners are used for planning around a specific date time.",
+            "lang": 0
+          }
+        ]
+      }, // Schedule Planner Tab
+      {
+        "name": "Note Planner Tab",
+        "tooltips": [
+          {
+            "desc": "Shows note planners.",
+            "hint": "Notes are used for noting down ideas, current projects, etc.",
+            "lang": 0
+          }
+        ]
+      }, // Note Planner Tab
+      {
+        "name": "OST Planner Tab",
+        "tooltips": [
+          {
+            "desc": "Shows OST planners.",
+            "hint": "OST planners are used for planning out a soundtrack.",
+            "lang": 0
+          }
+        ]
+      }, // OST Planner Tab
+      {
+        "name": "Planner Add New Item",
+        "tooltips": [
+          {
+            "desc": "Adds a new item to the planner list.",
+            "hint": "Based on the current tab, a new planner item will be added. e.g. if you're looking at the document tab, a document planner will be added.",
+            "lang": 0
+          }
+        ]
+      }, // Planner Add New Item
+      {
+        "name": "Planner Reload",
+        "tooltips": [
+          {
+            "desc": "Reloads the planner list.",
+            "hint": "",
+            "lang": 0
+          }
+        ]
+      }, // Planner Reload
+      {
+        "name": "Planner Paste",
+        "tooltips": [
+          {
+            "desc": "Pasted all copied planner items to the planner list.",
+            "hint": "Based on the current tab, the copied planner items will be pasted. e.g. if you're looking at the document tab, copied document planners will be pasted.",
+            "lang": 0
+          }
+        ]
+      }, // Planner Paste
+      {
+        "name": "Planner Path",
+        "tooltips": [
+          {
+            "desc": "Project planner folder path.",
+            "hint": "The folder that the planners should be loaded from. Can be right clicked to change the folder, or just typed in regularly.",
+            "lang": 0
+          }
+        ]
+      }, // Planner Path
+      {
+        "name": "Character Planner Origin",
+        "tooltips": [
+          {
+            "desc": "Origin of the character.",
+            "hint": "The place the character comes from or currently resides.",
+            "lang": 0
+          }
+        ]
+      }, // Character Planner Origin
+      {
+        "name": "Timeline Planner Event Path",
+        "tooltips": [
+          {
+            "desc": "Path to the level that represents the event.",
+            "hint": "The level at this path will be opened when the event is clicked.\n<b>DISCLAIMER</b>: The path will not change if the level is moved to a different folder.",
+            "lang": 0
+          }
+        ]
+      }, // Timeline Planner Event Path
+      {
+        "name": "Timeline Planner Event Type",
+        "tooltips": [
+          {
+            "desc": "Type of the event.",
+            "hint": "<b>Level</b>: A gameplay oriented level.\n<b>Cutscene</b>: An animation oriented level.\n<b>Story</b>: An event with no associated level.",
+            "lang": 0
+          }
+        ]
+      } // Timeline Planner Event Type
+    ],
+
     // Misc
     [
       {
