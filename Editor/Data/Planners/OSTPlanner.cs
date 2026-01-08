@@ -17,75 +17,68 @@ using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Planners
 {
+    /// <summary>
+    /// Used for planning out a soundtrack.
+    /// </summary>
     public class OSTPlanner : PlannerBase<OSTPlanner>
     {
         public OSTPlanner() : base() { }
 
-        public string Path { get; set; }
-        public bool UseGlobal { get; set; }
-        public string Name { get; set; }
+        #region Values
 
-        public int Index { get; set; }
-
-        public TextMeshProUGUI TextUI { get; set; }
-        public OpenHyperlinks Hyperlinks { get; set; }
-
-        public bool playing;
-
-        public bool Valid => RTFile.FileExists(UseGlobal ? Path : $"{RTFile.ApplicationDirectory}{Path}") && (Path.Contains(".ogg") || Path.Contains(".wav") || Path.Contains(".mp3"));
+        #region Data
 
         public override Type PlannerType => Type.OST;
 
-        public void Play()
-        {
-            var filePath = UseGlobal ? Path : $"{RTFile.ApplicationDirectory}{Path}";
+        /// <summary>
+        /// Path to the OST file.
+        /// </summary>
+        public string Path { get; set; }
 
-            if (!RTFile.FileExists(filePath))
-                return;
+        /// <summary>
+        /// If <see cref="Path"/> is a global path.
+        /// </summary>
+        public bool UseGlobal { get; set; }
 
-            var audioType = RTFile.GetAudioType(Path);
+        /// <summary>
+        /// Name of the OST.
+        /// </summary>
+        public string Name { get; set; }
 
-            if (audioType == AudioType.UNKNOWN)
-                return;
+        /// <summary>
+        /// Index of the OST.
+        /// </summary>
+        public int Index { get; set; }
 
-            ProjectPlanner.inst.StopOST(); // stops the currently playing OST
+        /// <summary>
+        /// Playing state of the OST.
+        /// </summary>
+        public bool playing;
 
-            if (audioType == AudioType.MPEG)
-            {
-                PlayAudio(LSAudio.CreateAudioClipUsingMP3File(filePath));
-                return;
-            }
+        /// <summary>
+        /// If the OST file is valid.
+        /// </summary>
+        public bool Valid => RTFile.FileExists(UseGlobal ? Path : $"{RTFile.ApplicationDirectory}{Path}") && (Path.Contains(".ogg") || Path.Contains(".wav") || Path.Contains(".mp3"));
 
-            CoroutineHelper.StartCoroutineAsync(AlephNetwork.DownloadAudioClip(filePath, audioType, audioClip => LegacyPlugin.MainTick += () => PlayAudio(audioClip)));
-        }
+        #endregion
 
-        void PlayAudio(AudioClip audioClip)
-        {
-            CoreHelper.Log($"Started playing OST {Name}");
+        #region UI
 
-            var audioSource = Camera.main.gameObject.AddComponent<AudioSource>();
+        /// <summary>
+        /// Text display.
+        /// </summary>
+        public TextMeshProUGUI TextUI { get; set; }
 
-            ProjectPlanner.inst.OSTAudioSource = audioSource;
-            ProjectPlanner.inst.currentOSTID = ID;
-            ProjectPlanner.inst.currentOST = Index;
-            ProjectPlanner.inst.playing = true;
+        /// <summary>
+        /// Text hyperlinks.
+        /// </summary>
+        public OpenHyperlinks Hyperlinks { get; set; }
 
-            audioSource.clip = audioClip;
-            audioSource.playOnAwake = true;
-            audioSource.loop = false;
-            audioSource.volume = SoundManager.inst.MusicVolume * AudioManager.inst.masterVol;
-            audioSource.Play();
+        #endregion
 
-            playing = true;
-            Notify();
-        }
+        #endregion
 
-        void Notify()
-        {
-            var name = Name;
-            ProjectPlanner.inst.SetupPlannerLinks(name, null, false, _val => name = _val);
-            CoreHelper.Notify($"Now playing: {name}", EditorThemeManager.CurrentTheme.ColorGroups.GetOrDefault(ThemeGroup.Light_Text, Color.white));
-        }
+        #region Functions
 
         public override void Init()
         {
@@ -212,5 +205,61 @@ namespace BetterLegacy.Editor.Data.Planners
         };
 
         public override bool SamePlanner(PlannerBase other) => other is OSTPlanner ost && ost.Name == Name;
+        
+        /// <summary>
+        /// Loads the OST file and starts playing it.
+        /// </summary>
+        public void Play()
+        {
+            var filePath = UseGlobal ? Path : $"{RTFile.ApplicationDirectory}{Path}";
+
+            if (!RTFile.FileExists(filePath))
+                return;
+
+            var audioType = RTFile.GetAudioType(Path);
+
+            if (audioType == AudioType.UNKNOWN)
+                return;
+
+            ProjectPlanner.inst.StopOST(); // stops the currently playing OST
+
+            if (audioType == AudioType.MPEG)
+            {
+                PlayAudio(LSAudio.CreateAudioClipUsingMP3File(filePath));
+                return;
+            }
+
+            CoroutineHelper.StartCoroutineAsync(AlephNetwork.DownloadAudioClip(filePath, audioType, audioClip => LegacyPlugin.MainTick += () => PlayAudio(audioClip)));
+        }
+
+        void PlayAudio(AudioClip audioClip)
+        {
+            CoreHelper.Log($"Started playing OST {Name}");
+
+            var audioSource = Camera.main.gameObject.AddComponent<AudioSource>();
+
+            ProjectPlanner.inst.OSTAudioSource = audioSource;
+            ProjectPlanner.inst.currentOSTID = ID;
+            ProjectPlanner.inst.currentOSTIndex = Index;
+            ProjectPlanner.inst.playing = true;
+
+            audioSource.clip = audioClip;
+            audioSource.playOnAwake = true;
+            audioSource.loop = false;
+            audioSource.volume = SoundManager.inst.MusicVolume * AudioManager.inst.masterVol;
+            audioSource.Play();
+
+            playing = true;
+            Notify();
+        }
+
+        void Notify()
+        {
+            var name = Name;
+            ProjectPlanner.inst.SetupPlannerLinks(name, null, false, _val => name = _val);
+            CoreHelper.Notify($"Now playing: {name}", EditorThemeManager.CurrentTheme.ColorGroups.GetOrDefault(ThemeGroup.Light_Text, Color.white));
+        }
+
+        #endregion
     }
 }

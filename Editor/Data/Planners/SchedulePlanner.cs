@@ -15,34 +15,78 @@ using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Planners
 {
+    /// <summary>
+    /// Used for planning out a schedule.
+    /// </summary>
     public class SchedulePlanner : PlannerBase<SchedulePlanner>
     {
         public SchedulePlanner() : base() { }
 
-        public TextMeshProUGUI TextUI { get; set; }
-        public OpenHyperlinks Hyperlinks { get; set; }
-        public string Text => $"{Date} - {Description}";
-        public string Date { get; set; } = DateTime.Now.AddDays(1).ToString("g");
+        #region Values
 
-        public string FormatDateFull(int day, int month, int year, int hour, int minute) => $"{day}/{(month < 10 ? "0" + month.ToString() : month.ToString())}/{year} {(hour > 12 ? hour - 12 : hour)}:{minute} {(hour > 12 ? "PM" : "AM")}";
-
-        public string FormatDate(int day, int month, int year, int hour, int minute, string apm) => $"{day}/{(month < 10 ? "0" + month.ToString() : month.ToString())}/{year} {(hour)}:{minute} {apm}";
-
-        public string DateFormat => $"{DateTime.Day}/{(DateTime.Month < 10 ? "0" + DateTime.Month.ToString() : DateTime.Month.ToString())}/{DateTime.Year} {(DateTime.Hour > 12 ? DateTime.Hour - 12 : DateTime.Hour)}:{DateTime.Minute} {(DateTime.Hour > 12 ? "PM" : "AM")}";
-        public DateTime DateTime { get; set; } = DateTime.Now.AddDays(1);
-        public string Description { get; set; }
-
-        public bool IsActive => CompareDates(DateTime.Now);
-
-        public bool IsTomorrow => CompareDates(DateTime.Now.AddDays(1));
-
-        public bool IsNextWeek => CompareDates(DateTime.Now.AddDays(7));
-
-        bool CompareDates(DateTime date) => DateTime.Day == date.Day && DateTime.Month == date.Month && DateTime.Year == date.Year;
-
-        public bool hasBeenChecked;
+        #region Data
 
         public override Type PlannerType => Type.Schedule;
+
+        /// <summary>
+        /// Text of the schedule.
+        /// </summary>
+        public string Text => $"{Date} - {Description}";
+
+        /// <summary>
+        /// Date string of the schedule.
+        /// </summary>
+        public string Date { get; set; } = DateTime.Now.AddDays(1).ToString("g");
+
+        /// <summary>
+        /// Date time of the schedule.
+        /// </summary>
+        public DateTime DateTime { get; set; } = DateTime.Now.AddDays(1);
+
+        /// <summary>
+        /// Description of the schedule.
+        /// </summary>
+        public string Description { get; set; }
+
+        /// <summary>
+        /// Checks if the schedule is now.
+        /// </summary>
+        public bool IsActive => CompareDates(DateTime.Now);
+
+        /// <summary>
+        /// Checks if the schedule is tomorrow.
+        /// </summary>
+        public bool IsTomorrow => CompareDates(DateTime.Now.AddDays(1));
+
+        /// <summary>
+        /// Checks if the schedule is tomorrow.
+        /// </summary>
+        public bool IsNextWeek => CompareDates(DateTime.Now.AddDays(7));
+
+        /// <summary>
+        /// If the schedule has been checked by Example.
+        /// </summary>
+        public bool hasBeenChecked;
+
+        #endregion
+
+        #region UI
+
+        /// <summary>
+        /// Text display.
+        /// </summary>
+        public TextMeshProUGUI TextUI { get; set; }
+
+        /// <summary>
+        /// Text hyperlinks.
+        /// </summary>
+        public OpenHyperlinks Hyperlinks { get; set; }
+
+        #endregion
+
+        #endregion
+
+        #region Functions
 
         public override void Init()
         {
@@ -163,5 +207,21 @@ namespace BetterLegacy.Editor.Data.Planners
         };
 
         public override bool SamePlanner(PlannerBase other) => other is SchedulePlanner schedule && schedule.Date == Date;
+
+        /// <summary>
+        /// Formats <see cref="Date"/> into a <see cref="System.DateTime"/> compatible string.
+        /// </summary>
+        /// <param name="day">Day of the date time.</param>
+        /// <param name="month">Month of the date time.</param>
+        /// <param name="year">Year of the date time.</param>
+        /// <param name="hour">Hour of the date time.</param>
+        /// <param name="minute">Minute of the date time.</param>
+        /// <param name="apm">AM or PM value.</param>
+        /// <returns>Returns a formatted date time string.</returns>
+        public string FormatDate(int day, int month, int year, int hour, int minute, string apm) => $"{day}/{(month < 10 ? "0" + month.ToString() : month.ToString())}/{year} {(hour)}:{minute} {apm}";
+
+        bool CompareDates(DateTime date) => DateTime.Day == date.Day && DateTime.Month == date.Month && DateTime.Year == date.Year;
+
+        #endregion
     }
 }

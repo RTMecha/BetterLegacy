@@ -17,31 +17,98 @@ using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Planners
 {
+    /// <summary>
+    /// Used for planning out a character.
+    /// </summary>
     public class CharacterPlanner : PlannerBase<CharacterPlanner>
     {
         public CharacterPlanner() : base() { }
 
-        public string Name { get; set; }
-        public string Gender { get; set; }
-        public List<string> Traits { get; set; } = new List<string>();
-        public List<string> Lore { get; set; } = new List<string>();
-        public List<string> Abilities { get; set; } = new List<string>();
-        public string Description { get; set; }
-        public Sprite Sprite { get; set; }
-        public string Origin { get; set; }
+        #region Values
 
-        public TextMeshProUGUI DetailsUI { get; set; }
-        public TextMeshProUGUI DescriptionUI { get; set; }
-        public OpenHyperlinks DetailsHyperlinks { get; set; }
-        public OpenHyperlinks DescriptionHyperlinks { get; set; }
-        public Image ProfileUI { get; set; }
-
-        public string FormatDetails => "<b>Name</b>: " + RTString.ClampString(Name, 252, false, string.Empty) + "<br><b>Gender</b>: " + RTString.ClampString(Gender, 252, false, string.Empty) + "<br><b>Origin</b>: " + RTString.ClampString(Origin, 252, false, string.Empty);
-
-        public static string DefaultCharacterDescription => "<b>Name</b>: Viral Mecha" + Environment.NewLine +
-                                    "<b>Gender</b>: He";
+        #region Data
 
         public override Type PlannerType => Type.Character;
+
+        /// <summary>
+        /// Name of the character.
+        /// </summary>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gender of the character.
+        /// </summary>
+        public string Gender { get; set; }
+
+        /// <summary>
+        /// Traits of the character.
+        /// </summary>
+        public List<string> Traits { get; set; } = new List<string>();
+
+        /// <summary>
+        /// Lore of the character.
+        /// </summary>
+        public List<string> Lore { get; set; } = new List<string>();
+
+        /// <summary>
+        /// Abilities of the character.
+        /// </summary>
+        public List<string> Abilities { get; set; } = new List<string>();
+
+        /// <summary>
+        /// Description of the character.
+        /// </summary>
+        public string Description { get; set; }
+
+        /// <summary>
+        /// Avatar of the character.
+        /// </summary>
+        public Sprite Sprite { get; set; }
+
+        /// <summary>
+        /// Origin (place) of the character.
+        /// </summary>
+        public string Origin { get; set; }
+
+        /// <summary>
+        /// Formatted details.
+        /// </summary>
+        public string FormatDetails => "<b>Name</b>: " + RTString.ClampString(Name, 252, false, string.Empty) + "<br><b>Gender</b>: " + RTString.ClampString(Gender, 252, false, string.Empty) + "<br><b>Origin</b>: " + RTString.ClampString(Origin, 252, false, string.Empty);
+
+        #endregion
+
+        #region UI
+
+        /// <summary>
+        /// Details text display.
+        /// </summary>
+        public TextMeshProUGUI DetailsUI { get; set; }
+
+        /// <summary>
+        /// Description text display.
+        /// </summary>
+        public TextMeshProUGUI DescriptionUI { get; set; }
+
+        /// <summary>
+        /// Details hyperlinks.
+        /// </summary>
+        public OpenHyperlinks DetailsHyperlinks { get; set; }
+
+        /// <summary>
+        /// Description hyperlinks.
+        /// </summary>
+        public OpenHyperlinks DescriptionHyperlinks { get; set; }
+
+        /// <summary>
+        /// Avatar UI display.
+        /// </summary>
+        public Image ProfileUI { get; set; }
+
+        #endregion
+
+        #endregion
+
+        #region Functions
 
         public override void Init()
         {
@@ -212,5 +279,7 @@ namespace BetterLegacy.Editor.Data.Planners
 
             EditorContextMenu.inst.ShowContextMenu(buttonFunctions);
         }
+
+        #endregion
     }
 }

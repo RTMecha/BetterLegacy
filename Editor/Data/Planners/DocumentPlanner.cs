@@ -13,16 +13,48 @@ using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Planners
 {
+    /// <summary>
+    /// Used for planning out a story, extended notes, etc.
+    /// </summary>
     public class DocumentPlanner : PlannerBase<DocumentPlanner>
     {
         public DocumentPlanner() : base() { }
 
-        public string Name { get; set; }
-        public TextMeshProUGUI NameUI { get; set; }
-        public string Text { get; set; }
-        public TextMeshProUGUI TextUI { get; set; }
+        #region Values
+
+        #region Data
 
         public override Type PlannerType => Type.Document;
+
+        /// <summary>
+        /// Name of the document.
+        /// </summary>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Text of the document.
+        /// </summary>
+        public string Text { get; set; }
+
+        #endregion
+
+        #region UI
+
+        /// <summary>
+        /// Name text display.
+        /// </summary>
+        public TextMeshProUGUI NameUI { get; set; }
+
+        /// <summary>
+        /// Text display.
+        /// </summary>
+        public TextMeshProUGUI TextUI { get; set; }
+
+        #endregion
+
+        #endregion
+
+        #region Functions
 
         public override void Init()
         {
@@ -130,5 +162,7 @@ namespace BetterLegacy.Editor.Data.Planners
         };
 
         public override bool SamePlanner(PlannerBase other) => other is DocumentPlanner document && document.Name == Name;
+
+        #endregion
     }
 }

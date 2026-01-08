@@ -16,31 +16,103 @@ using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Planners
 {
+    /// <summary>
+    /// Used for noting down ideas, current projects, etc.
+    /// </summary>
     public class NotePlanner : PlannerBase<NotePlanner>
     {
         public NotePlanner() : base() { }
 
-        public bool Dragging { get; set; }
+        #region Values
 
-        public bool Active { get; set; }
-        public string Name { get; set; }
-        public Vector2 Position { get; set; } = Vector2.zero;
-        public Vector2 Scale { get; set; } = new Vector2(1f, 1f);
-        public Vector2 Size { get; set; } = new Vector2(300f, 150f);
-        public int Color { get; set; }
-        public string Text { get; set; }
-
-        public Toggle ActiveUI { get; set; }
-        public Image TopBar { get; set; }
-        public TextMeshProUGUI TitleUI { get; set; }
-        public TextMeshProUGUI TextUI { get; set; }
-        public OpenHyperlinks Hyperlinks { get; set; }
-
-        public Color TopColor => Color >= 0 && Color < MarkerEditor.inst.markerColors.Count ? MarkerEditor.inst.markerColors[Color] : LSColors.red700;
-
-        public static bool DisplayEdges { get; set; }
+        #region Data
 
         public override Type PlannerType => Type.Note;
+
+        /// <summary>
+        /// If the edges of the note should display.
+        /// </summary>
+        public static bool DisplayEdges { get; set; }
+
+        /// <summary>
+        /// If the note is being dragged.
+        /// </summary>
+        public bool Dragging { get; set; }
+
+        /// <summary>
+        /// If the note is active outside of the note planner tab.
+        /// </summary>
+        public bool Active { get; set; }
+
+        /// <summary>
+        /// Name of the note.
+        /// </summary>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Position of the note.
+        /// </summary>
+        public Vector2 Position { get; set; } = Vector2.zero;
+
+        /// <summary>
+        /// Scale of the note.
+        /// </summary>
+        public Vector2 Scale { get; set; } = new Vector2(1f, 1f);
+
+        /// <summary>
+        /// Rect size of the note.
+        /// </summary>
+        public Vector2 Size { get; set; } = new Vector2(300f, 150f);
+
+        /// <summary>
+        /// Color of the note.
+        /// </summary>
+        public int Color { get; set; }
+
+        /// <summary>
+        /// Text of the note.
+        /// </summary>
+        public string Text { get; set; }
+
+        #endregion
+
+        #region UI
+
+        /// <summary>
+        /// Active toggle.
+        /// </summary>
+        public Toggle ActiveUI { get; set; }
+
+        /// <summary>
+        /// Top bar color display.
+        /// </summary>
+        public Image TopBar { get; set; }
+
+        /// <summary>
+        /// Title text display.
+        /// </summary>
+        public TextMeshProUGUI TitleUI { get; set; }
+
+        /// <summary>
+        /// Text display.
+        /// </summary>
+        public TextMeshProUGUI TextUI { get; set; }
+
+        /// <summary>
+        /// Text hyperlinks.
+        /// </summary>
+        public OpenHyperlinks Hyperlinks { get; set; }
+
+        /// <summary>
+        /// Color <see cref="TopBar"/> should render.
+        /// </summary>
+        public Color TopColor => Color >= 0 && Color < MarkerEditor.inst.markerColors.Count ? MarkerEditor.inst.markerColors[Color] : LSColors.red700;
+
+        #endregion
+
+        #endregion
+
+        #region Functions
 
         public override void Init()
         {
@@ -204,6 +276,9 @@ namespace BetterLegacy.Editor.Data.Planners
 
         public override bool SamePlanner(PlannerBase other) => other is NotePlanner note && note.Name == Name;
 
+        /// <summary>
+        /// Resets all transform values to the default.
+        /// </summary>
         public void ResetTransform()
         {
             ResetPosition();
@@ -211,10 +286,21 @@ namespace BetterLegacy.Editor.Data.Planners
             ResetSize();
         }
 
+        /// <summary>
+        /// Resets the position.
+        /// </summary>
         public void ResetPosition() => Position = Vector2.zero;
 
+        /// <summary>
+        /// Resets the scale.
+        /// </summary>
         public void ResetScale() => Scale = Vector2.one;
 
+        /// <summary>
+        /// Resets the size.
+        /// </summary>
         public void ResetSize() => new Vector2(300f, 150f);
+
+        #endregion
     }
 }

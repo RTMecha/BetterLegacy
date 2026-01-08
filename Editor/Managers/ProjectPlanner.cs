@@ -35,175 +35,523 @@ namespace BetterLegacy.Editor.Managers
     {
         #region Values
 
+        #region Parents
+
+        /// <summary>
+        /// The base planner parent.
+        /// </summary>
         public Transform plannerBase;
+
+        /// <summary>
+        /// The planner parent.
+        /// </summary>
         public Transform planner;
+
+        /// <summary>
+        /// The parent for the planner tabs.
+        /// </summary>
         public Transform topBarBase;
-        public Transform contentBase;
-        public Transform contentScroll;
+
+        /// <summary>
+        /// The parent for planner items.
+        /// </summary>
         public Transform content;
+
+        /// <summary>
+        /// The parent for floating notes while the current tab is not the notes tab or the planner isn't active.
+        /// </summary>
         public Transform notesParent;
+
+        /// <summary>
+        /// The content layout group.
+        /// </summary>
         public GridLayoutGroup contentLayout;
 
+        /// <summary>
+        /// The parent for notifications that display in the planner.
+        /// </summary>
         public RectTransform notificationsParent;
 
+        /// <summary>
+        /// The parent for the context menu in the planner.
+        /// </summary>
         public Transform contextMenuParent;
+
+        /// <summary>
+        /// The parent for popups in the planner.
+        /// </summary>
         public Transform popupsParent;
 
+        /// <summary>
+        /// The parent for prefabs used by the planner.
+        /// </summary>
         public Transform assetsParent;
 
+        #endregion
+
+        #region Document Full View
+
+        /// <summary>
+        /// Full view for document planners.
+        /// </summary>
         public GameObject documentFullView;
+
+        /// <summary>
+        /// Full view document text editor.
+        /// </summary>
         public TMP_InputField documentInputField;
+
+        /// <summary>
+        /// Full view document hyperlinks.
+        /// </summary>
         public OpenHyperlinks documentHyperlinks;
+
+        /// <summary>
+        /// Full view document title.
+        /// </summary>
         public TextMeshProUGUI documentTitle;
+
+        /// <summary>
+        /// Full view document interactible toggle.
+        /// </summary>
         public Toggle documentInteractibleToggle;
 
+        #endregion
+
+        #region Character Full View
+
+        /// <summary>
+        /// Full view for character planners.
+        /// </summary>
         public GameObject characterFullView;
+
+        /// <summary>
+        /// Full view character icon.
+        /// </summary>
         public Image characterSprite;
+
+        /// <summary>
+        /// Full view character details text.
+        /// </summary>
         public TextMeshProUGUI characterDetails;
+
+        /// <summary>
+        /// Full view character details hyperlinks.
+        /// </summary>
         public OpenHyperlinks characterDetailsHyperlinks;
-        public OpenHyperlinks characterDescriptionHyperlinks;
+
+        /// <summary>
+        /// Full view character description input.
+        /// </summary>
         public TMP_InputField characterDescriptionInputField;
+
+        /// <summary>
+        /// Full view character description hyperlinks.
+        /// </summary>
+        public OpenHyperlinks characterDescriptionHyperlinks;
+
+        /// <summary>
+        /// Full view characters attributes parent.
+        /// </summary>
         public Transform characterAttributesContent;
 
+        #endregion
+
+        #region OST
+
+        /// <summary>
+        /// Audio source that plays OST.
+        /// </summary>
         public AudioSource OSTAudioSource { get; set; }
-        public int currentOST;
+
+        /// <summary>
+        /// The current OST index.
+        /// </summary>
+        public int currentOSTIndex;
+
+        /// <summary>
+        /// The current OST ID.
+        /// </summary>
         public string currentOSTID;
+
+        /// <summary>
+        /// If the OST is playing.
+        /// </summary>
         public bool playing = false;
+
+        /// <summary>
+        /// List of recent OST that played.
+        /// </summary>
         public List<OSTPlanner> recentOST = new List<OSTPlanner>();
+
+        /// <summary>
+        /// If OST should be force shuffled.
+        /// </summary>
         public bool forceShuffleOST;
+
+        /// <summary>
+        /// If the OST is paused.
+        /// </summary>
         public bool pausedOST;
 
-        public List<Toggle> tabs = new List<Toggle>();
+        #endregion
 
+        #region Tabs
+
+        /// <summary>
+        /// The current tab that should display in the planner.
+        /// </summary>
         public PlannerBase.Type CurrentTab { get; set; }
-        public string SearchTerm { get; set; }
 
-        public string[] tabNames = new string[]
+        /// <summary>
+        /// List of tabs in the planner.
+        /// </summary>
+        public List<TabInfo> tabs = new List<TabInfo>
         {
-            "Documents",
-            "TO DO",
-            "Characters",
-            "Timelines",
-            "Schedules",
-            "Notes",
-            "OST",
+            new TabInfo("Documents", new Vector2(232f, 400f), 5, "Document Planner Tab"),
+            new TabInfo("TO DO", new Vector2(1280f, 64f), 1, "TODO Planner Tab"),
+            new TabInfo("Characters", new Vector2(630f, 400f), 2, "Character Planner Tab"),
+            new TabInfo("Timelines", new Vector2(1280f, 250f), 1, "Timeline Planner Tab"),
+            new TabInfo("Schedules", new Vector2(1280f, 64f), 1, "Schedule Planner Tab"),
+            new TabInfo("Notes", new Vector2(410f, 200f), 3, "Note Planner Tab"),
+            new TabInfo("OST", new Vector2(1280f, 64f), 1, "OST Planner Tab"),
         };
 
-        public Vector2[] tabCellSizes = new Vector2[]
-        {
-            new Vector2(232f, 400f),
-            new Vector2(1280f, 64f),
-            new Vector2(630f, 400f),
-            new Vector2(1280f, 250f),
-            new Vector2(1280f, 64f),
-            new Vector2(410f, 200f),
-            new Vector2(1280f, 64f),
-        };
+        #endregion
 
-        public int[] tabConstraintCounts = new int[]
-        {
-            5,
-            1,
-            2,
-            1,
-            1,
-            3,
-            1,
-        };
+        #region Prefabs
 
+        /// <summary>
+        /// Prefab for tag fields.
+        /// </summary>
         public GameObject tagPrefab;
 
+        /// <summary>
+        /// Prefab for tabs.
+        /// </summary>
         public GameObject tabPrefab;
 
+        /// <summary>
+        /// The base card prefab from the original UI.
+        /// </summary>
         public GameObject baseCardPrefab;
 
+        /// <summary>
+        /// Text Mesh Pro text prefab.
+        /// </summary>
         public GameObject tmpTextPrefab;
 
+        /// <summary>
+        /// List of prefabs.
+        /// </summary>
         public List<GameObject> prefabs = new List<GameObject>();
 
+        /// <summary>
+        /// Gradient sprite to render on document planners.
+        /// </summary>
         public Sprite gradientSprite;
 
-        public List<DocumentPlanner> documents = new List<DocumentPlanner>();
-        public List<TODOPlanner> todos = new List<TODOPlanner>();
-        public List<CharacterPlanner> characters = new List<CharacterPlanner>();
-        public List<TimelinePlanner> timelines = new List<TimelinePlanner>();
-        public List<SchedulePlanner> schedules = new List<SchedulePlanner>();
-        public List<NotePlanner> notes = new List<NotePlanner>();
-        public List<OSTPlanner> osts = new List<OSTPlanner>();
-
-        public List<PlannerBase> copiedPlanners = new List<PlannerBase>();
-
+        /// <summary>
+        /// Prefab for event buttons.
+        /// </summary>
         public GameObject timelineButtonPrefab;
 
+        /// <summary>
+        /// Prefab for adding events.
+        /// </summary>
         public GameObject timelineAddPrefab;
 
+        /// <summary>
+        /// Texture for horizontally dragging notes.
+        /// </summary>
         public Texture2D horizontalDrag;
+
+        /// <summary>
+        /// Texture for vertically dragging notes.
+        /// </summary>
         public Texture2D verticalDrag;
 
-        public enum InterruptOSTBehaviorType
-        {
-            Continue,
-            LowerVolume,
-            Pause,
-        }
+        #endregion
 
-        public enum LoopOSTBehaviorType
-        {
-            None,
-            LoopSingle,
-            LoopAll,
-        }
+        #region Planners
+
+        /// <summary>
+        /// Search term for planners.
+        /// </summary>
+        public string SearchTerm { get; set; }
+
+        /// <summary>
+        /// List of document planners.
+        /// </summary>
+        public List<DocumentPlanner> documents = new List<DocumentPlanner>();
+
+        /// <summary>
+        /// List of todo planners.
+        /// </summary>
+        public List<TODOPlanner> todos = new List<TODOPlanner>();
+
+        /// <summary>
+        /// List of character planners.
+        /// </summary>
+        public List<CharacterPlanner> characters = new List<CharacterPlanner>();
+
+        /// <summary>
+        /// List of timeline planners.
+        /// </summary>
+        public List<TimelinePlanner> timelines = new List<TimelinePlanner>();
+
+        /// <summary>
+        /// List of schedule planners.
+        /// </summary>
+        public List<SchedulePlanner> schedules = new List<SchedulePlanner>();
+
+        /// <summary>
+        /// List of note planners.
+        /// </summary>
+        public List<NotePlanner> notes = new List<NotePlanner>();
+
+        /// <summary>
+        /// List of OST planners.
+        /// </summary>
+        public List<OSTPlanner> osts = new List<OSTPlanner>();
+
+        /// <summary>
+        /// List of copied planners.
+        /// </summary>
+        public List<PlannerBase> copiedPlanners = new List<PlannerBase>();
+
+        #endregion
 
         #region Editor
 
+        /// <summary>
+        /// Prefab for text editors.
+        /// </summary>
         public GameObject textEditorPrefab;
 
+        /// <summary>
+        /// Editor title panel.
+        /// </summary>
         public Image editorTitlePanel;
 
+        #region Document
+
+        /// <summary>
+        /// Document editor name field.
+        /// </summary>
         public InputField documentEditorName;
+
+        /// <summary>
+        /// Document editor text field.
+        /// </summary>
         public InputField documentEditorText;
 
+        #endregion
+
+        #region TODO
+
+        /// <summary>
+        /// TODO editor text field.
+        /// </summary>
         public InputField todoEditorText;
+
+        /// <summary>
+        /// TODO editor move up button.
+        /// </summary>
         public Button todoEditorMoveUpButton;
+
+        /// <summary>
+        /// TODO editor move down button.
+        /// </summary>
         public Button todoEditorMoveDownButton;
 
+        #endregion
+
+        #region Character
+
+        /// <summary>
+        /// Character editor name field.
+        /// </summary>
         public InputField characterEditorName;
+
+        /// <summary>
+        /// Character editor gender field.
+        /// </summary>
         public InputField characterEditorGender;
+
+        /// <summary>
+        /// Character editor origin field.
+        /// </summary>
         public InputField characterEditorOrigin;
+
+        /// <summary>
+        /// Character editor description field.
+        /// </summary>
         public InputField characterEditorDescription;
+
+        /// <summary>
+        /// Character editor traits content parent.
+        /// </summary>
         public Transform characterEditorTraitsContent;
+
+        /// <summary>
+        /// Character editor lore content parent.
+        /// </summary>
         public Transform characterEditorLoreContent;
+
+        /// <summary>
+        /// Character editor abilities content parent.
+        /// </summary>
         public Transform characterEditorAbilitiesContent;
 
+        #endregion
+
+        #region Timeline / Event
+
+        /// <summary>
+        /// Timeline editor name field.
+        /// </summary>
         public InputField timelineEditorName;
+
+        /// <summary>
+        /// Event editor name field.
+        /// </summary>
         public InputField eventEditorName;
+
+        /// <summary>
+        /// Event editor description field.
+        /// </summary>
         public InputField eventEditorDescription;
+
+        /// <summary>
+        /// Event editor path field.
+        /// </summary>
         public InputField eventEditorPath;
+
+        /// <summary>
+        /// Event editor type dropdown.
+        /// </summary>
         public Dropdown eventEditorType;
 
+        #endregion
+
+        #region Schedule
+
+        /// <summary>
+        /// Schedule editor description field.
+        /// </summary>
         public InputField scheduleEditorDescription;
+
+        /// <summary>
+        /// Schedule editor year field.
+        /// </summary>
         public InputField scheduleEditorYear;
+
+        /// <summary>
+        /// Schedule editor month dropdown.
+        /// </summary>
         public Dropdown scheduleEditorMonth;
+
+        /// <summary>
+        /// Schedule editor day field.
+        /// </summary>
         public InputField scheduleEditorDay;
+
+        /// <summary>
+        /// Schedule editor hour field.
+        /// </summary>
         public InputField scheduleEditorHour;
+
+        /// <summary>
+        /// Schedule editor minute field.
+        /// </summary>
         public InputField scheduleEditorMinute;
 
+        #endregion
+
+        #region Note
+
+        /// <summary>
+        /// Note editor name field.
+        /// </summary>
         public InputField noteEditorName;
+
+        /// <summary>
+        /// Note editor text field.
+        /// </summary>
         public InputField noteEditorText;
+
+        /// <summary>
+        /// Note editor colors parent.
+        /// </summary>
         public Transform noteEditorColorsParent;
-        public Transform colorBase;
+
+        Transform colorBase;
+
+        /// <summary>
+        /// Note editor color toggles.
+        /// </summary>
         public List<Toggle> noteEditorColors = new List<Toggle>();
+
+        /// <summary>
+        /// Note editor reset button.
+        /// </summary>
         public Button noteEditorReset;
 
+        #endregion
+
+        #region OST
+
+        /// <summary>
+        /// OST editor path field.
+        /// </summary>
         public InputField ostEditorPath;
+
+        /// <summary>
+        /// OST editor name field.
+        /// </summary>
         public InputField ostEditorName;
+
+        /// <summary>
+        /// OST editor play button.
+        /// </summary>
         public Button ostEditorPlay;
+
+        /// <summary>
+        /// OST editor use global toggle.
+        /// </summary>
         public Button ostEditorUseGlobal;
+
+        /// <summary>
+        /// OST editor use global toggle text.
+        /// </summary>
         public Text ostEditorUseGlobalText;
+
+        /// <summary>
+        /// OST editor stop button.
+        /// </summary>
         public Button ostEditorStop;
+
+        /// <summary>
+        /// OST editor next button.
+        /// </summary>
+        public Button ostEditorNext;
+
+        /// <summary>
+        /// OST editor shuffle button.
+        /// </summary>
         public Button ostEditorShuffle;
+
+        /// <summary>
+        /// OST editor index field.
+        /// </summary>
         public InputField ostEditorIndex;
 
+        #endregion
+
+        /// <summary>
+        /// List of editor objects.
+        /// </summary>
         public List<GameObject> editors = new List<GameObject>();
 
         List<PlannerBase> activeTabPlannerItems = new List<PlannerBase>();
@@ -247,25 +595,28 @@ namespace BetterLegacy.Editor.Managers
             Destroy(topBarBase.GetComponent<ToggleGroup>());
             tabPrefab.GetComponent<Toggle>().group = null;
 
-            for (int i = 0; i < tabNames.Length; i++)
+            for (int i = 0; i < tabs.Count; i++)
             {
-                var name = tabNames[i];
-                var tab = tabPrefab.Duplicate(topBarBase, name);
-                tab.transform.localScale = Vector3.one;
+                var tabInfo = tabs[i];
+                var tabObject = tabPrefab.Duplicate(topBarBase, tabInfo.Name);
+                tabObject.transform.localScale = Vector3.one;
 
-                var background = tab.transform.Find("Background");
+                var background = tabObject.transform.Find("Background");
                 var text = background.Find("Text").GetComponent<Text>();
                 var image = background.GetComponent<Image>();
 
                 text.fontSize = 26;
                 text.fontStyle = FontStyle.Bold;
-                text.text = name;
-                tab.AddComponent<ContrastColors>().Init(text, image);
-                var toggle = tab.GetComponent<Toggle>();
-                tabs.Add(tab.GetComponent<Toggle>());
+                text.text = tabInfo.Name;
+                tabObject.AddComponent<ContrastColors>().Init(text, image);
+                var toggle = tabObject.GetComponent<Toggle>();
+                tabInfo.toggle = toggle;
+                tabInfo.text = text;
 
-                EditorThemeManager.ApplyGraphic(image, EditorThemeManager.GetTabThemeGroup(tabs.Count - 1), true);
+                EditorThemeManager.ApplyGraphic(image, EditorThemeManager.GetTabThemeGroup(i), true);
                 EditorThemeManager.ApplyGraphic(toggle.graphic, ThemeGroup.Background_1);
+
+                TooltipHelper.AssignTooltip(tabObject, tabInfo.tooltipGroup);
             }
 
             var spacer = Creator.NewUIObject("topbar spacer", topBarBase);
@@ -290,11 +641,11 @@ namespace BetterLegacy.Editor.Managers
                 EditorManager.inst.HideAllDropdowns();
             });
 
-            contentBase = planner.Find("content/recent");
-            Destroy(contentBase.GetComponent<VerticalLayoutGroup>());
+            var contentBase = planner.Find("content/recent");
+            CoreHelper.Destroy(contentBase.GetComponent<VerticalLayoutGroup>());
             contentBase.gameObject.name = "content base";
 
-            contentScroll = contentBase.Find("recent scroll");
+            var contentScroll = contentBase.Find("recent scroll");
             contentScroll.gameObject.name = "content scroll";
             contentScroll.AsRT().anchoredPosition = new Vector2(690f, -572f);
             contentScroll.AsRT().sizeDelta = new Vector2(1384f, 892f);
@@ -353,7 +704,7 @@ namespace BetterLegacy.Editor.Managers
                 addNewItemStorage.Text = "Add New Item";
                 addNewItemStorage.OnClick.NewListener(() =>
                 {
-                    CoreHelper.Log($"Create new {tabNames[(int)CurrentTab]}");
+                    CoreHelper.Log($"Create new {tabs[(int)CurrentTab].Name}");
                     var path = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlannersPath);
                     switch (CurrentTab)
                     {
@@ -430,6 +781,8 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.ApplySelectable(addNewItemStorage.button, ThemeGroup.Function_2);
                 EditorThemeManager.ApplyGraphic(addNewItemStorage.label, ThemeGroup.Function_2_Text);
 
+                TooltipHelper.AssignTooltip(addNewItem, "Planner Add New Item");
+
                 var reload = EditorPrefabHolder.Instance.Function2Button.Duplicate(contentBase, "reload", 2);
                 reload.transform.AsRT().anchoredPosition = new Vector2(370f, 970f);
                 reload.transform.AsRT().sizeDelta = new Vector2(200f, 32f);
@@ -440,6 +793,8 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.ApplySelectable(reloadStorage.button, ThemeGroup.Function_2);
                 EditorThemeManager.ApplyGraphic(reloadStorage.label, ThemeGroup.Function_2_Text);
 
+                TooltipHelper.AssignTooltip(reload, "Planner Reload");
+
                 var paste = EditorPrefabHolder.Instance.Function1Button.Duplicate(contentBase, "paste", 3);
                 RectValues.Default.AnchoredPosition(-340f, 462f).SizeDelta(200f, 32f).AssignToRectTransform(paste.transform.AsRT());
                 var pasteStorage = paste.GetComponent<FunctionButtonStorage>();
@@ -448,6 +803,8 @@ namespace BetterLegacy.Editor.Managers
 
                 EditorThemeManager.ApplyGraphic(pasteStorage.button.image, ThemeGroup.Paste);
                 EditorThemeManager.ApplyGraphic(pasteStorage.label, ThemeGroup.Paste_Text);
+
+                TooltipHelper.AssignTooltip(paste, "Planner Paste");
 
                 var path = EditorPrefabHolder.Instance.StringInputField.Duplicate(contentBase, "path", 4);
                 new RectValues(new Vector2(1750f, 970f), Vector2.zero, Vector2.zero, RectValues.CenterPivot, new Vector2(300f, 32f)).AssignToRectTransform(path.transform.AsRT());
@@ -487,6 +844,8 @@ namespace BetterLegacy.Editor.Managers
                         });
                     }),
                     new ButtonElement("Open in File Explorer", () => RTFile.OpenInFileBrowser.Open(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlannersPath))));
+
+                TooltipHelper.AssignTooltip(path, "Planner Path");
             }
 
             gradientSprite = SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/linear_gradient{FileFormat.PNG.Dot()}"));
@@ -596,7 +955,7 @@ namespace BetterLegacy.Editor.Managers
                     tmpTitle.fontStyle = FontStyles.Normal;
                     tmpTitle.alignment = TextAlignmentOptions.TopLeft;
                     tmpTitle.enableWordWrapping = true;
-                    tmpTitle.text = CharacterPlanner.DefaultCharacterDescription;
+                    tmpTitle.text = "null";
 
                     var tmpArtist = artist.GetComponent<TextMeshProUGUI>();
                     tmpArtist.alignment = TextAlignmentOptions.Top;
@@ -1155,6 +1514,7 @@ namespace BetterLegacy.Editor.Managers
 
                     characterEditorOrigin = text3.GetComponent<InputField>();
                     EditorThemeManager.ApplyInputField(characterEditorOrigin);
+                    TooltipHelper.AssignTooltip(text3, "Character Planner Origin");
 
                     new LabelsElement("Edit Description").Init(labelInitSettings);
 
@@ -1376,13 +1736,15 @@ namespace BetterLegacy.Editor.Managers
 
                     eventEditorPath = text3.GetComponent<InputField>();
                     EditorThemeManager.ApplyInputField(eventEditorPath);
+                    TooltipHelper.AssignTooltip(text3, "Timeline Planner Event Path");
 
                     new LabelsElement("Edit Type").Init(labelInitSettings);
 
-                    var renderType = EditorPrefabHolder.Instance.Dropdown.Duplicate(g1.transform, "type");
-                    eventEditorType = renderType.GetComponent<Dropdown>();
-                    eventEditorType.options = CoreHelper.StringToOptionData("Level", "Cutscene", "Story");
+                    var eventType = EditorPrefabHolder.Instance.Dropdown.Duplicate(g1.transform, "type");
+                    eventEditorType = eventType.GetComponent<Dropdown>();
+                    eventEditorType.options = CoreHelper.ToOptionData<TimelinePlanner.Event.Type>();
                     EditorThemeManager.ApplyDropdown(eventEditorType);
+                    TooltipHelper.AssignTooltip(eventType, "Timeline Planner Event Type");
 
                     g1.SetActive(false);
                     editors.Add(g1);
@@ -1608,6 +1970,19 @@ namespace BetterLegacy.Editor.Managers
                     ostEditorStop = stopStorage.button;
                     EditorThemeManager.ApplySelectable(ostEditorStop, ThemeGroup.Function_2);
                     EditorThemeManager.ApplyGraphic(stopStorage.label, ThemeGroup.Function_2_Text);
+
+                    new LabelsElement("Next OST").Init(labelInitSettings);
+
+                    var next = EditorPrefabHolder.Instance.Function2Button.Duplicate(g1.transform);
+                    var nextStorage = next.GetComponent<FunctionButtonStorage>();
+                    next.SetActive(true);
+                    next.name = "next";
+                    next.transform.AsRT().anchoredPosition = new Vector2(370f, 970f);
+                    next.transform.AsRT().sizeDelta = new Vector2(200f, 32f);
+                    nextStorage.Text = "Next";
+                    ostEditorNext = nextStorage.button;
+                    EditorThemeManager.ApplySelectable(ostEditorNext, ThemeGroup.Function_2);
+                    EditorThemeManager.ApplyGraphic(nextStorage.label, ThemeGroup.Function_2_Text);
 
                     new LabelsElement("Shuffle All OST").Init(labelInitSettings);
 
@@ -2265,8 +2640,8 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void RenderTabs()
         {
-            contentLayout.cellSize = tabCellSizes[(int)CurrentTab];
-            contentLayout.constraintCount = tabConstraintCounts[(int)CurrentTab];
+            contentLayout.cellSize = tabs[(int)CurrentTab].cellSize;
+            contentLayout.constraintCount = tabs[(int)CurrentTab].constraintCount;
             documentFullView.SetActive(false);
             characterFullView.SetActive(false);
             int num = 0;
@@ -2275,7 +2650,7 @@ namespace BetterLegacy.Editor.Managers
                 int index = num;
 
                 tab.SetIsOnWithoutNotify(index == (int)CurrentTab);
-                tab.onValueChanged.NewListener(_val =>
+                tab.OnValueChanged.NewListener(_val =>
                 {
                     CurrentTab = (PlannerBase.Type)index;
                     RenderTabs();
@@ -3198,6 +3573,7 @@ namespace BetterLegacy.Editor.Managers
             });
             ostEditorPlay.onClick.NewListener(ost.Play);
             ostEditorStop.onClick.NewListener(StopOST);
+            ostEditorNext.onClick.NewListener(NextOST);
             ostEditorShuffle.onClick.NewListener(ShuffleOST);
             ostEditorUseGlobal.onClick.NewListener(() =>
             {
@@ -4023,7 +4399,7 @@ namespace BetterLegacy.Editor.Managers
             forceShuffleOST = false;
             pausedOST = false;
 
-            Destroy(OSTAudioSource);
+            CoreHelper.Destroy(OSTAudioSource);
 
             for (int i = 0; i < osts.Count; i++)
                 osts[i].playing = false;
@@ -4075,22 +4451,22 @@ namespace BetterLegacy.Editor.Managers
             {
                 int num = 1;
                 // Here we skip any OST where a song file does not exist.
-                while (currentOST + num < list.Count && !list[num].Valid)
+                while (currentOSTIndex + num < list.Count && !list[num].Valid)
                     num++;
 
-                list[currentOST].playing = false;
+                list[currentOSTIndex].playing = false;
                 playing = false;
 
-                if (currentOST + num >= list.Count)
+                if (currentOSTIndex + num >= list.Count)
                 {
                     if (EditorConfig.Instance.OSTLoop.Value != LoopOSTBehaviorType.LoopAll)
                         return;
 
-                    currentOST = 0;
+                    currentOSTIndex = 0;
                     num = 0;
                 }
 
-                list[currentOST + num].Play();
+                list[currentOSTIndex + num].Play();
             }
         }
 
@@ -4130,6 +4506,118 @@ namespace BetterLegacy.Editor.Managers
         }
 
         #endregion
+
+        #endregion
+
+        #region Sub Classes
+
+        /// <summary>
+        /// Behavior that should occur while the level is playing.
+        /// </summary>
+        public enum InterruptOSTBehaviorType
+        {
+            /// <summary>
+            /// While the level is playing, the current song continues playing and does not change.
+            /// </summary>
+            Continue,
+            /// <summary>
+            /// While the level is playing, the current song continues playing in the background but lowers volume to <see cref="EditorConfig.LowerOSTVol"/>.
+            /// </summary>
+            LowerVolume,
+            /// <summary>
+            /// While the level is playing, the current song pauses.
+            /// </summary>
+            Pause,
+        }
+
+        /// <summary>
+        /// Behavior for looping OST songs.
+        /// </summary>
+        public enum LoopOSTBehaviorType
+        {
+            /// <summary>
+            /// Does not loop.
+            /// </summary>
+            None,
+            /// <summary>
+            /// Loops the same song.
+            /// </summary>
+            LoopSingle,
+            /// <summary>
+            /// Loops back to the start when the final song ends.
+            /// </summary>
+            LoopAll,
+        }
+
+        /// <summary>
+        /// Represents a tab in the Project Planner UI.
+        /// </summary>
+        public class TabInfo : Exists
+        {
+            public TabInfo(string name, Vector2 cellSize, int constraintCount, string tooltipGroup)
+            {
+                this.name = name;
+                this.cellSize = cellSize;
+                this.constraintCount = constraintCount;
+                this.tooltipGroup = tooltipGroup;
+            }
+
+            string name;
+            /// <summary>
+            /// Name of the tab.
+            /// </summary>
+            public string Name
+            {
+                get => name;
+                set
+                {
+                    name = value;
+                    if (text)
+                        text.text = value;
+                }
+            }
+
+            /// <summary>
+            /// Cell size of the layout of this tab page.
+            /// </summary>
+            public Vector2 cellSize;
+
+            /// <summary>
+            /// Constraint count for the layout of this tab page.
+            /// </summary>
+            public int constraintCount;
+
+            /// <summary>
+            /// Tooltip group of the tab button.
+            /// </summary>
+            public string tooltipGroup;
+
+            /// <summary>
+            /// Toggle component reference.
+            /// </summary>
+            public Toggle toggle;
+
+            /// <summary>
+            /// Text component reference.
+            /// </summary>
+            public Text text;
+
+            /// <summary>
+            /// <see cref="Toggle"/> wrapper function.
+            /// </summary>
+            public Toggle.ToggleEvent OnValueChanged
+            {
+                get => toggle.onValueChanged;
+                set => toggle.onValueChanged = value;
+            }
+
+            /// <summary>
+            /// <see cref="Toggle"/> wrapper function.
+            /// </summary>
+            public void SetIsOnWithoutNotify(bool value) => toggle.SetIsOnWithoutNotify(value);
+
+            public override string ToString() => Name;
+        }
 
         #endregion
     }

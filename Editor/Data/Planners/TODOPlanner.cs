@@ -14,17 +14,53 @@ using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Planners
 {
+    /// <summary>
+    /// Used for keeping track of what needs to be done and what has been done.
+    /// </summary>
     public class TODOPlanner : PlannerBase<TODOPlanner>
     {
         public TODOPlanner() : base() { }
 
-        public string Text { get; set; }
-        public TextMeshProUGUI TextUI { get; set; }
-        public OpenHyperlinks Hyperlinks { get; set; }
-        public bool Checked { get; set; }
-        public Toggle CheckedUI { get; set; }
+        #region Values
+
+        #region Data
 
         public override Type PlannerType => Type.TODO;
+
+        /// <summary>
+        /// Text of the TODO item.
+        /// </summary>
+        public string Text { get; set; }
+
+        /// <summary>
+        /// If the TODO is checked.
+        /// </summary>
+        public bool Checked { get; set; }
+
+        #endregion
+
+        #region UI
+
+        /// <summary>
+        /// Text display.
+        /// </summary>
+        public TextMeshProUGUI TextUI { get; set; }
+
+        /// <summary>
+        /// Text hyperlinks.
+        /// </summary>
+        public OpenHyperlinks Hyperlinks { get; set; }
+
+        /// <summary>
+        /// Check toggle.
+        /// </summary>
+        public Toggle CheckedUI { get; set; }
+
+        #endregion
+
+        #endregion
+
+        #region Functions
 
         public override void Init()
         {
@@ -147,5 +183,7 @@ namespace BetterLegacy.Editor.Data.Planners
         };
 
         public override bool SamePlanner(PlannerBase other) => other is TODOPlanner todo && todo.Text == Text;
+
+        #endregion
     }
 }
