@@ -12,11 +12,49 @@ namespace BetterLegacy.Editor.Data.Dialogs
     /// </summary>
     public class EditorDialog : Exists
     {
+        #region Constructors
+
         public EditorDialog() { }
 
         public EditorDialog(string name) => InitDialog(name);
 
-        #region Properties
+        #endregion
+
+        #region Values
+
+        #region Constants
+
+        public const string MULTI_OBJECT_EDITOR = "Multi Object Editor";
+        public const string OBJECT_EDITOR = "Object Editor";
+        public const string EVENT_EDITOR = "Event Editor";
+        public const string CHECKPOINT_EDITOR = "Checkpoint Editor";
+        public const string BACKGROUND_EDITOR = "Background Editor";
+        public const string METADATA_EDITOR = "Metadata Editor";
+        public const string PREFAB_EDITOR = "Prefab Editor";
+        public const string SETTINGS_EDITOR = "Settings Editor";
+        public const string MULTI_KEYFRAME_EDITOR = "Multi Keyframe Editor";
+        public const string MARKER_EDITOR = "Marker Editor";
+        public const string PREFAB_SELECTOR = "Prefab Selector";
+        public const string LEVEL_TEMPLATE_SELECTOR = "New Level Template Dialog";
+        public const string SCREENSHOTS = "Screenshot Dialog";
+        public const string KEYBIND_EDITOR = "Keybind Editor";
+        public const string PLAYER_EDITOR = "Player Editor";
+        public const string SERVER_CONTENT = "Server Content Dialog";
+        public const string DOCUMENTATION = "Documentation Dialog";
+        public const string PREFAB_EXTERNAL_EDITOR = "Prefab External Dialog";
+        public const string PINNED_EDITOR_LAYER_DIALOG = "Pinned Editor Layer Dialog";
+        public const string ACHIEVEMENT_EDITOR_DIALOG = "Achievement Editor Dialog";
+        public const string LEVEL_COLLECTION_EDITOR = "Level Collection Editor";
+        public const string LEVEL_INFO_EDITOR = "Level Info Editor";
+        public const string LEVEL_PROPERTIES_EDITOR = "Level Properties Editor";
+        public const string ANIMATION_EDITOR_DIALOG = "Animation Editor Dialog";
+
+        #endregion
+
+        /// <summary>
+        /// Unique ID of the dialog.
+        /// </summary>
+        public string id = LSFunctions.LSText.randomNumString(16);
 
         /// <summary>
         /// The editor dialog that is currently being viewed.
@@ -53,40 +91,14 @@ namespace BetterLegacy.Editor.Data.Dialogs
         /// </summary>
         public Text Title { get; set; }
 
-        #endregion
-
+        /// <summary>
+        /// If the dialog UI has been initialized.
+        /// </summary>
         public bool init;
 
-        #region Constants
-
-        public const string MULTI_OBJECT_EDITOR = "Multi Object Editor";
-        public const string OBJECT_EDITOR = "Object Editor";
-        public const string EVENT_EDITOR = "Event Editor";
-        public const string CHECKPOINT_EDITOR = "Checkpoint Editor";
-        public const string BACKGROUND_EDITOR = "Background Editor";
-        public const string METADATA_EDITOR = "Metadata Editor";
-        public const string PREFAB_EDITOR = "Prefab Editor";
-        public const string SETTINGS_EDITOR = "Settings Editor";
-        public const string MULTI_KEYFRAME_EDITOR = "Multi Keyframe Editor";
-        public const string MARKER_EDITOR = "Marker Editor";
-        public const string PREFAB_SELECTOR = "Prefab Selector";
-        public const string LEVEL_TEMPLATE_SELECTOR = "New Level Template Dialog";
-        public const string SCREENSHOTS = "Screenshot Dialog";
-        public const string KEYBIND_EDITOR = "Keybind Editor";
-        public const string PLAYER_EDITOR = "Player Editor";
-        public const string SERVER_CONTENT = "Server Content Dialog";
-        public const string DOCUMENTATION = "Documentation Dialog";
-        public const string PREFAB_EXTERNAL_EDITOR = "Prefab External Dialog";
-        public const string PINNED_EDITOR_LAYER_DIALOG = "Pinned Editor Layer Dialog";
-        public const string ACHIEVEMENT_EDITOR_DIALOG = "Achievement Editor Dialog";
-        public const string LEVEL_COLLECTION_EDITOR = "Level Collection Editor";
-        public const string LEVEL_INFO_EDITOR = "Level Info Editor";
-        public const string LEVEL_PROPERTIES_EDITOR = "Level Properties Editor";
-        public const string ANIMATION_EDITOR_DIALOG = "Animation Editor Dialog";
-
         #endregion
 
-        #region Methods
+        #region Functions
 
         /// <summary>
         /// Initializes the editor dialog UI.
@@ -105,7 +117,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
         /// </summary>
         public virtual void Open()
         {
-            CurrentDialog?.Close();
+            if (CurrentDialog && CurrentDialog.id != id)
+                CurrentDialog.Close();
             CurrentDialog = this;
             SetActive(true);
         }
