@@ -78,6 +78,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public ToggleButtonStorage FadeToggle { get; set; }
 
+        public ToggleButtonStorage FlatToggle { get; set; }
+
         #region Editor Settings
 
         public RectTransform EditorSettingsParent { get; set; }
@@ -914,6 +916,11 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 EditorThemeManager.ApplySelectable(RemovePrefabButton.button, ThemeGroup.Function_2);
                 EditorThemeManager.ApplyGraphic(RemovePrefabButton.label, ThemeGroup.Function_2_Text);
             }
+
+            var flat = EditorPrefabHolder.Instance.ToggleButton.Duplicate(LeftContent, "flat", shapeSettings.GetSiblingIndex() + 1);
+            FlatToggle = flat.GetComponent<ToggleButtonStorage>();
+            FlatToggle.Text = "Flat";
+            EditorThemeManager.ApplyToggle(FlatToggle);
 
             //// Depth
             //{

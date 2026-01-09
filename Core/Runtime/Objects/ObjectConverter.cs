@@ -421,6 +421,7 @@ namespace BetterLegacy.Core.Runtime.Objects
             visualParent.transform.localRotation = Quaternion.Euler(new Vector3(backgroundObject.rotation.x, backgroundObject.rotation.y, backgroundObject.rot));
 
             var gameObject = BackgroundManager.inst.backgroundPrefab.Duplicate(visualParent.transform, backgroundObject.name);
+            gameObject.transform.localRotation = Quaternion.identity;
             gameObject.layer = 9;
 
             var renderer = gameObject.GetComponent<Renderer>();
@@ -452,7 +453,7 @@ namespace BetterLegacy.Core.Runtime.Objects
             var runtimeObject = new RTBackgroundObject(backgroundObject, visualFadeObjects, runtimeLevel);
 
             runtimeObject.SetActive(false);
-            runtimeObject.UpdateShape(backgroundObject.Shape, backgroundObject.ShapeOption);
+            runtimeObject.UpdateShape(backgroundObject.Shape, backgroundObject.ShapeOption, backgroundObject.flat);
 
             if (CoreHelper.InEditor)
                 runtimeObject.hidden = backgroundObject.editorData.hidden;

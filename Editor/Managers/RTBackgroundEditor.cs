@@ -320,6 +320,7 @@ namespace BetterLegacy.Editor.Managers
             RenderRotation(backgroundObject);
             Render3DRotation(backgroundObject);
             RenderShape(backgroundObject);
+            RenderFlat(backgroundObject);
             RenderFade(backgroundObject);
             RenderLayers(backgroundObject);
             RenderBin(backgroundObject);
@@ -843,7 +844,7 @@ namespace BetterLegacy.Editor.Managers
                 Debug.Log($"{BackgroundEditor.inst.className}Somehow, the object ended up being at a higher shape than normal.");
                 backgroundObject.Shape = shapeSettings.childCount - 1;
                 backgroundObject.ShapeOption = 0;
-                backgroundObject.runtimeObject?.UpdateShape(backgroundObject.Shape, backgroundObject.ShapeOption);
+                backgroundObject.runtimeObject?.UpdateShape(backgroundObject.Shape, backgroundObject.ShapeOption, backgroundObject.flat);
 
                 RenderDialog(backgroundObject);
                 return;
@@ -881,7 +882,7 @@ namespace BetterLegacy.Editor.Managers
 
                         backgroundObject.Shape = buttonTmp;
                         backgroundObject.ShapeOption = 0;
-                        backgroundObject.runtimeObject?.UpdateShape(backgroundObject.Shape, backgroundObject.ShapeOption);
+                        backgroundObject.runtimeObject?.UpdateShape(backgroundObject.Shape, backgroundObject.ShapeOption, backgroundObject.flat);
 
                         RenderDialog(backgroundObject);
                     });
@@ -901,7 +902,7 @@ namespace BetterLegacy.Editor.Managers
                 EditorManager.inst.DisplayNotification($"Shape not supported on background objects yet.", 2f, EditorManager.NotificationType.Error);
                 backgroundObject.Shape = 0;
                 backgroundObject.ShapeOption = 0;
-                backgroundObject.runtimeObject?.UpdateShape(backgroundObject.Shape, backgroundObject.ShapeOption);
+                backgroundObject.runtimeObject?.UpdateShape(backgroundObject.Shape, backgroundObject.ShapeOption, backgroundObject.flat);
                 return;
             }
 
@@ -917,11 +918,21 @@ namespace BetterLegacy.Editor.Managers
                         return;
 
                     backgroundObject.ShapeOption = buttonTmp;
-                    backgroundObject.runtimeObject?.UpdateShape(backgroundObject.Shape, backgroundObject.ShapeOption);
+                    backgroundObject.runtimeObject?.UpdateShape(backgroundObject.Shape, backgroundObject.ShapeOption, backgroundObject.flat);
 
                     RenderDialog(backgroundObject);
                 });
             }
+        }
+
+        public void RenderFlat(BackgroundObject backgroundObject)
+        {
+            Dialog.FlatToggle.SetIsOnWithoutNotify(backgroundObject.flat);
+            Dialog.FlatToggle.OnValueChanged.NewListener(_val =>
+            {
+                backgroundObject.flat = _val;
+                RTLevel.Current.UpdateBackgroundObject(backgroundObject);
+            });
         }
 
         public void RenderFade(BackgroundObject backgroundObject)

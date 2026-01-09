@@ -73,9 +73,9 @@ namespace BetterLegacy.Core.Runtime.Objects
             visualFadeObjects.ForLoop((visualFadeObject, i) => visualFadeObject.SetActive(i == 0 || i < backgroundObject.iterations - Depth));
         }
 
-        public void UpdateShape(int shape, int shapeOption)
+        public void UpdateShape(int shape, int shapeOption, bool flat = false)
         {
-            var paShape = ShapeManager.inst.GetShape3D(shape, shapeOption);
+            var paShape = flat ? ShapeManager.inst.GetShape(shape, shapeOption) : ShapeManager.inst.GetShape3D(shape, shapeOption);
             foreach (var visualFadeObject in visualFadeObjects)
             {
                 if (visualFadeObject && visualFadeObject.meshFilter && paShape.mesh)

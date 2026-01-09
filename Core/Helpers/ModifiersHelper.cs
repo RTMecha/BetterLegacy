@@ -8429,7 +8429,7 @@ namespace BetterLegacy.Core.Helpers
             if (shapeable is BeatmapObject beatmapObject)
                 modifierLoop.reference.GetParentRuntime()?.UpdateObject(beatmapObject, ObjectContext.SHAPE);
             else if (shapeable is BackgroundObject backgroundObject)
-                backgroundObject.runtimeObject?.UpdateShape(backgroundObject.Shape, backgroundObject.ShapeOption);
+                backgroundObject.runtimeObject?.UpdateShape(backgroundObject.Shape, backgroundObject.ShapeOption, backgroundObject.flat);
         }
 
         public static void setPolygonShape(Modifier modifier, ModifierLoop modifierLoop)
