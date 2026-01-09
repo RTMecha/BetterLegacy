@@ -1,3 +1,11 @@
 ﻿{
-  "splash.dictionaries": "Me book!"
+  "splash.dictionaries": "Me book!",
+
+  // editor
+  "editor.titlebar.file": "File",
+  "editor.titlebar.edit": "Hook",
+  "editor.titlebar.view": "Spyglass",
+  "editor.titlebar.settings": "Patch Ship",
+  "editor.titlebar.upload": "Fire!",
+  "editor.titlebar.help": "Help"
 }

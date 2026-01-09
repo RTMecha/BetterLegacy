@@ -487,6 +487,8 @@ namespace BetterLegacy.Configs
 
             Seed.SettingChanged += SeedChanged;
             UseSeedBasedRandom.SettingChanged += SeedChanged;
+
+            Language.SettingChanged += LanguageChanged;
         }
 
         void SeedChanged()
@@ -563,15 +565,21 @@ namespace BetterLegacy.Configs
 
         void SFXVolumeChanged() => SoundManager.inst.PlaySound(DefaultSounds.UpDown);
 
-        static void UpdateSettings()
+        void UpdateSettings()
         {
-            Debug.unityLogger.logEnabled = Instance.DebugsOn.Value;
+            Debug.unityLogger.logEnabled = DebugsOn.Value;
 
             CoreHelper.SetCameraRenderDistance();
             CoreHelper.SetAntiAliasing();
 
-            if (RTVideoManager.inst && RTVideoManager.inst.didntPlay && Instance.EnableVideoBackground.Value)
+            if (RTVideoManager.inst && RTVideoManager.inst.didntPlay && EnableVideoBackground.Value)
                 RTVideoManager.inst.Play(RTVideoManager.inst.currentURL, RTVideoManager.inst.currentAlpha);
+        }
+
+        void LanguageChanged()
+        {
+            if (CoreHelper.InEditor)
+                Editor.Components.LangObject.RenderLangObjects();
         }
 
         #endregion

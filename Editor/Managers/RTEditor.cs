@@ -4117,6 +4117,13 @@ namespace BetterLegacy.Editor.Managers
             undoButton.Assign();
             redoButton = EditorManager.inst.redoButton.AddComponent<FunctionButtonStorage>();
             redoButton.Assign();
+
+            for (int i = 0; i < EditorHelper.dropdownNames.Length; i++)
+            {
+                var dropdownName = EditorHelper.dropdownNames[i];
+                var text = titleBar.Find($"{dropdownName}/Text").GetComponent<Text>();
+                LangObject.Init(text, "editor.titlebar." + EditorHelper.dropdownDisplayNames[i].ToLower(), EditorHelper.dropdownDisplayNames[i]);
+            }
         }
 
         void SetupDoggo()

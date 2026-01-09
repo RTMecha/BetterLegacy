@@ -257,7 +257,7 @@ namespace BetterLegacy.Core.Data
                 return jn;
             }
 
-            public string GetOrDefault(string key, string defaultValue) => strings.TryGetValue(key, out string value) ? value : defaultValue;
+            public string GetOrDefault(string key, string defaultValue) => !string.IsNullOrEmpty(key) && strings.TryGetValue(key, out string value) ? value : defaultValue;
 
             public void AddDictionary(LangDictionary langDictionary)
             {

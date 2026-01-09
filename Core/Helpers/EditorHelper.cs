@@ -34,8 +34,40 @@ namespace BetterLegacy.Core.Helpers
         public const string UPLOAD_DROPDOWN = "Steam";
         public const string HELP_DROPDOWN = "Help";
 
+        public static string[] dropdownNames = new string[]
+        {
+            FILE_DROPDOWN,
+            EDIT_DROPDOWN,
+            VIEW_DROPDOWN,
+            SETTINGS_DROPDOWN,
+            UPLOAD_DROPDOWN,
+            HELP_DROPDOWN,
+        };
+        
+        public static string[] dropdownDisplayNames = new string[]
+        {
+            FILE_DROPDOWN,
+            EDIT_DROPDOWN,
+            VIEW_DROPDOWN,
+            SETTINGS_DROPDOWN,
+            "Upload",
+            HELP_DROPDOWN,
+        };
+
+        /// <summary>
+        /// complexity.json file that stores complexity values.
+        /// </summary>
         public static JSONNode complexityJSON;
 
+        /// <summary>
+        /// Applies a complexity value to an object.
+        /// </summary>
+        /// <param name="gameObject">Unity Game Object to apply the complexity to.</param>
+        /// <param name="complexity">Complexity to set.</param>
+        /// <param name="onlySpecificComplexity">If only the specific complexity should be used.</param>
+        /// <param name="visible">Additional visible check function.</param>
+        /// <param name="onUpdate">Function to run per complexity update.</param>
+        /// <param name="autoSpecify">If <paramref name="onlySpecificComplexity"/> is automatically specified as simple.</param>
         public static void SetComplexity(GameObject gameObject, Complexity complexity, bool onlySpecificComplexity = false, Func<bool> visible = null, Action<ComplexityObject> onUpdate = null, bool autoSpecify = true)
         {
             if (!gameObject)
@@ -49,6 +81,15 @@ namespace BetterLegacy.Core.Helpers
             obj.UpdateActiveState();
         }
 
+        /// <summary>
+        /// Applies a complexity value from a path in the complexity.json file to an object.
+        /// </summary>
+        /// <param name="gameObject">Unity Game Object to apply the complexity to.</param>
+        /// <param name="path">Path of the complexity.</param>
+        /// <param name="defaultComplexity">The default complexity to use if the path doesn't exist.</param>
+        /// <param name="defaultOnlySpecificComplexity">The default specific complexity check if the path doesn't exist.</param>
+        /// <param name="visible">Additional visible check function.</param>
+        /// <param name="onUpdate">Function to run per complexity update.</param>
         public static void SetComplexity(GameObject gameObject, string path, Complexity defaultComplexity, bool defaultOnlySpecificComplexity = false, Func<bool> visible = null, Action<ComplexityObject> onUpdate = null)
         {
             if (!gameObject)
@@ -79,10 +120,22 @@ namespace BetterLegacy.Core.Helpers
             obj.UpdateActiveState();
         }
 
+        /// <summary>
+        /// Checks if a complexity is active.
+        /// </summary>
+        /// <param name="complexity">Complexity to check.</param>
+        /// <param name="onlySpecificComplexity">If only the specific complexity should be used.</param>
+        /// <returns>Returns <see langword="true"/> if the <see cref="EditorConfig.EditorComplexity"/> setting matches <paramref name="complexity"/>, otherwise returns <see langword="false"/>.</returns>
         public static bool CheckComplexity(Complexity complexity, bool onlySpecificComplexity = false) => onlySpecificComplexity ?
                     complexity == EditorConfig.Instance.EditorComplexity.Value :
                     complexity <= EditorConfig.Instance.EditorComplexity.Value;
 
+        /// <summary>
+        /// Gets a complexity value from the complexity.json file.
+        /// </summary>
+        /// <param name="path">Path to the complexity value.</param>
+        /// <param name="defaultComplexity">The default complexity.</param>
+        /// <returns>Returns the complexity value found in the complexity.json file if the path exists, otherwise returns <paramref name="defaultComplexity"/>.</returns>
         public static Complexity GetComplexity(string path, Complexity defaultComplexity)
         {
             if (complexityJSON == null)

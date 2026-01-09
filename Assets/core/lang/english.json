@@ -1,3 +1,11 @@
 ﻿{
-  "splash.dictionaries": "Dictionaries!"
+  "splash.dictionaries": "Dictionaries!",
+
+  // editor
+  "editor.titlebar.file": "File",
+  "editor.titlebar.edit": "Edit",
+  "editor.titlebar.view": "View",
+  "editor.titlebar.settings": "Settings",
+  "editor.titlebar.upload": "Upload",
+  "editor.titlebar.help": "Help"
 }
