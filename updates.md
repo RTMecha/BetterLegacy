@@ -1,4 +1,34 @@
-﻿# 1.8.16 [Dec 25, 2025]
+﻿# 1.8.17 [Jan 9, 2025]
+## Features
+### Core
+- Added reactiveIterations and setDepthOffset background object modifiers. These modify the fade iteration of BG objects.
+- Background objects now have a "Flat" toggle.
+
+### Editor
+- Added region modifiers. These allow you to group specific parts of the modifier list.
+- Added a height value to comment modifiers.
+- The animation reference ID of objects can now be edited in the editor. These allow animations to have specific objects that they should be applied to. This is good for character models and things you usually want to transfer animations between.
+- Multiple markers can now be selected. This comes with some new settings in Config Manager > Editor > Markers.
+- Added "Show Markers On All Layers" to Config Manager > Editor > Markers.
+
+## Changes
+### Core
+- Optimized background object fade iterations by setting the color for each fade iteration only when the color changed.
+
+### Editor
+- Editor modifiers now display an edit icon instead of the action icon.
+- The placeholder text input fields now have their theme colors applied correctly.
+- Tweaked some editor UI to be more consistent.
+- The "Show Context Menu" setting in Config Manager > Editor > Markers is now set to true by default. This is to be consistent with the rest of the editor, though if you wish for it to be how it normally is you can disable it.
+- Prefab Types are now searchable.
+
+## Fixes
+- Fixed one of the arrow buttons on a number input field having the incorrect function assigned to it.
+- Fixed keyframe bin color settings not being consistent across event and object keyframes.
+
+------------------------------------------------------------------------------------------
+
+# 1.8.16 [Dec 25, 2025]
 ## Features
 ### Core
 - Added getLook modifiers for player modifiers.
