@@ -12,6 +12,7 @@ using LSFunctions;
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Prefabs;
@@ -155,6 +156,40 @@ namespace BetterLegacy.Editor.Managers
             {
                 Dialog = new MarkerEditorDialog();
                 Dialog.Init();
+                var activeState = Dialog.GameObject.AddComponent<ActiveState>();
+                activeState.onStateChanged = state =>
+                {
+                    if (state || !EditorConfig.Instance.DeselectMarkersOnDialogClosed.Value)
+                        return;
+
+                    dragging = false;
+                    for (int i = 0; i < timelineMarkers.Count; i++)
+                    {
+                        var timelineMarker = timelineMarkers[i];
+                        timelineMarker.Selected = false;
+                        timelineMarker.dragging = false;
+                    }
+                };
+
+                var prefab = MarkerEditor.inst.markerPrefab;
+                var prefabCopy = prefab.Duplicate(transform, prefab.name);
+                var markerStorage = prefabCopy.AddComponent<MarkerStorage>();
+                CoreHelper.Destroy(prefabCopy.GetComponent<MarkerHelper>());
+                var flagStart = Creator.NewUIObject("flag start", prefabCopy.transform, 0);
+                markerStorage.flagStart = flagStart.AddComponent<Image>();
+                markerStorage.flagStart.sprite = EditorSprites.FlagStartSprite;
+                RectValues.Default.AnchoredPosition(36f, 0f).SizeDelta(60f, 60f).AssignToRectTransform(markerStorage.flagStart.rectTransform);
+                flagStart.SetActive(false);
+                var flagEnd = Creator.NewUIObject("flag end", prefabCopy.transform, 1);
+                markerStorage.flagEnd = flagEnd.AddComponent<Image>();
+                markerStorage.flagEnd.sprite = EditorSprites.FlagEndSprite;
+                RectValues.Default.AnchoredPosition(-36f, 0f).SizeDelta(60f, 60f).AssignToRectTransform(markerStorage.flagEnd.rectTransform);
+                flagEnd.SetActive(false);
+                markerStorage.handle = prefabCopy.GetComponent<Image>();
+                markerStorage.line = prefabCopy.transform.Find("line").GetComponent<Image>();
+                markerStorage.label = prefabCopy.transform.Find("Text").GetComponent<Text>();
+                markerStorage.hoverTooltip = prefabCopy.GetComponent<HoverTooltip>();
+                MarkerEditor.inst.markerPrefab = prefabCopy;
             }
             catch (Exception ex)
             {

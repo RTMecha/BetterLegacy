@@ -201,6 +201,9 @@ namespace BetterLegacy.Configs
         public Setting<bool> ShowMarkers { get; set; }
         public Setting<bool> ShowMarkersInObjectEditor { get; set; }
         public Setting<bool> ShowMarkersOnAllLayers { get; set; }
+        public Setting<bool> ChangeSelectedMarkerColor { get; set; }
+        public Setting<Color> MarkerSelectionColor { get; set; }
+        public Setting<bool> DeselectMarkersOnDialogClosed { get; set; }
         public Setting<int> MarkerDefaultColor { get; set; }
         public Setting<PointerEventData.InputButton> MarkerDragButton { get; set; }
         public Setting<bool> MarkerShowContextMenu { get; set; }
@@ -608,6 +611,9 @@ namespace BetterLegacy.Configs
             ShowMarkers = Bind(this, MARKERS, "Show Markers", true, "If markers should show in the editor timeline.");
             ShowMarkersInObjectEditor = Bind(this, MARKERS, "Show Markers in Object Editor", false, "If markers should display in the object editor.");
             ShowMarkersOnAllLayers = Bind(this, MARKERS, "Show Markers On All Layers", false, "If the marker layer value should be ignored and all markers on all layers should display.");
+            ChangeSelectedMarkerColor = Bind(this, MARKERS, "Change Selected Marker Color", true, "If selected markers should change to the selection color.");
+            MarkerSelectionColor = Bind(this, MARKERS, "Selection Color", new Color(0.251f, 0.4627f, 0.8745f, 1f), "Color of selected markers.");
+            DeselectMarkersOnDialogClosed = Bind(this, MARKERS, "Deselect Markers On Dialog Closed", false, "If markers should be deselected when the Marker Editor dialog closes.");
             MarkerDefaultColor = Bind(this, MARKERS, "Default Color", 0, "The default color assigned to a new marker.");
             MarkerDragButton = BindEnum(this, MARKERS, "Drag Button", PointerEventData.InputButton.Middle, "The mouse button to click and hold to drag a marker.");
             MarkerShowContextMenu = Bind(this, MARKERS, "Show Context Menu", true, "If a context menu should show instead of deleting a marker when you right click a marker.");

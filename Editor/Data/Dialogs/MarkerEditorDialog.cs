@@ -149,26 +149,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
             buttonStorage.OnClick.NewListener(() => RTTextEditor.inst.SetInputField(DescriptionField));
             RectValues.Default.AnchoredPosition(171f, 112f).SizeDelta(22f, 22f).AssignToRectTransform(buttonStorage.baseImage.rectTransform);
             EditorHelper.SetComplexity(button, "marker/layers", Complexity.Advanced);
-
-            var prefab = MarkerEditor.inst.markerPrefab;
-            var prefabCopy = prefab.Duplicate(RTMarkerEditor.inst.transform, prefab.name);
-            var markerStorage = prefabCopy.AddComponent<MarkerStorage>();
-            CoreHelper.Destroy(prefabCopy.GetComponent<MarkerHelper>());
-            var flagStart = Creator.NewUIObject("flag start", prefabCopy.transform, 0);
-            markerStorage.flagStart = flagStart.AddComponent<Image>();
-            markerStorage.flagStart.sprite = EditorSprites.FlagStartSprite;
-            RectValues.Default.AnchoredPosition(36f, 0f).SizeDelta(60f, 60f).AssignToRectTransform(markerStorage.flagStart.rectTransform);
-            flagStart.SetActive(false);
-            var flagEnd = Creator.NewUIObject("flag end", prefabCopy.transform, 1);
-            markerStorage.flagEnd = flagEnd.AddComponent<Image>();
-            markerStorage.flagEnd.sprite = EditorSprites.FlagEndSprite;
-            RectValues.Default.AnchoredPosition(-36f, 0f).SizeDelta(60f, 60f).AssignToRectTransform(markerStorage.flagEnd.rectTransform);
-            flagEnd.SetActive(false);
-            markerStorage.handle = prefabCopy.GetComponent<Image>();
-            markerStorage.line = prefabCopy.transform.Find("line").GetComponent<Image>();
-            markerStorage.label = prefabCopy.transform.Find("Text").GetComponent<Text>();
-            markerStorage.hoverTooltip = prefabCopy.GetComponent<HoverTooltip>();
-            MarkerEditor.inst.markerPrefab = prefabCopy;
         }
     }
 }

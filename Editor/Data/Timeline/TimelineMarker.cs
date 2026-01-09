@@ -140,10 +140,19 @@ namespace BetterLegacy.Editor.Data.Timeline
         /// </summary>
         public bool dragging;
 
+        bool selected;
         /// <summary>
         /// If the timeline marker is selected.
         /// </summary>
-        public bool Selected { get; set; }
+        public bool Selected
+        {
+            get => selected;
+            set
+            {
+                selected = value;
+                RenderColor(EditorConfig.Instance.ChangeSelectedMarkerColor.Value && value ? EditorConfig.Instance.MarkerSelectionColor.Value : Color);
+            }
+        }
 
         /// <summary>
         /// Marker panel reference.
@@ -243,7 +252,7 @@ namespace BetterLegacy.Editor.Data.Timeline
         /// </summary>
         public void Render()
         {
-            var markerColor = Color;
+            var markerColor = EditorConfig.Instance.ChangeSelectedMarkerColor.Value && selected ? EditorConfig.Instance.MarkerSelectionColor.Value : Color;
 
             GameObject.SetActive(EditorConfig.Instance.ShowMarkersOnAllLayers.Value || Marker.VisibleOnLayer(EditorTimeline.inst.Layer));
             RenderPosition();
@@ -342,7 +351,7 @@ namespace BetterLegacy.Editor.Data.Timeline
         /// <summary>
         /// Renders the timeline markers' colors.
         /// </summary>
-        public void RenderColor() => RenderColor(Color);
+        public void RenderColor() => RenderColor(EditorConfig.Instance.ChangeSelectedMarkerColor.Value && selected ? EditorConfig.Instance.MarkerSelectionColor.Value : Color);
 
         /// <summary>
         /// Renders the timeline markers' colors.
