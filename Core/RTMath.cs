@@ -594,6 +594,22 @@ namespace BetterLegacy.Core
         public static Vector3 Rotate(Vector3 rot, float rotate) => Quaternion.Euler(0, 0, rotate) * rot;
 
         /// <summary>
+        /// Rotates a provided rotation.
+        /// </summary>
+        /// <param name="rot">Original rotation.</param>
+        /// <param name="rotate">Rotation to rotate to.</param>
+        /// <returns>Returns a rotated vector.</returns>
+        public static Vector3 Rotate(Vector2 rot, Vector3 rotate) => Quaternion.Euler(rotate) * rot;
+
+        /// <summary>
+        /// Rotates a provided rotation.
+        /// </summary>
+        /// <param name="rot">Original rotation.</param>
+        /// <param name="rotate">Rotation to rotate to.</param>
+        /// <returns>Returns a rotated vector.</returns>
+        public static Vector3 Rotate(Vector3 rot, Vector3 rotate) => Quaternion.Euler(rotate) * rot;
+
+        /// <summary>
         /// Calculates the angle from the one vector to another vector.
         /// </summary>
         /// <param name="from">Vector that will look at the target..</param>

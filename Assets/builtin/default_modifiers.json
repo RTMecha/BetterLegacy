@@ -2818,11 +2818,18 @@
     [
       {
         "type": 1,
-        "commands": [ "translateShape", "0", "0", "1", "1", "0" ],
-        "value": "0",
+        "name": "translateShape",
+        "values": [ "0", "0", "0", "1", "1", "0" ],
         "const": "True",
         "compat": "obj"
       }, // translateShape
+      {
+        "type": 1,
+        "name": "translateShape3D",
+        "values": [ "0", "0", "0", "0", "1", "1", "1", "0", "0", "0" ],
+        "const": "True",
+        "compat": "obj"
+      }, // translateShape3D
       {
         "type": 1,
         "commands": [ "setShape", "0" ],
@@ -2985,6 +2992,18 @@
         "values": [ "AXIS_VAR", "0", "0", "0", "False", "Object Group", "axis + 0" ],
         "const": "True"
       }, // getAxisMath
+      {
+        "type": 1,
+        "name": "getAnimateVariable",
+        "values": [ "1", "ANIMATE_VAR", "0", "True", "0", "True" ],
+        "const": "False"
+      }, // getAnimateVariable
+      {
+        "type": 1,
+        "name": "getAnimateVariableMath",
+        "values": [ "1", "ANIMATE_VAR", "0", "True", "0", "True" ],
+        "const": "False"
+      }, // getAnimateVariableMath
 
       {
         "type": 1,

@@ -1918,6 +1918,36 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
+                case nameof(ModifierFunctions.getAnimateVariable): {
+                        StringGenerator(modifier, reference, "Variable Name", 1, renderVariables: false);
+
+                        SingleGenerator(modifier, reference, "Time", 0, 1f);
+
+                        SingleGenerator(modifier, reference, "Value", 2, 0f);
+
+                        BoolGenerator(modifier, reference, "Relative", 3, true);
+
+                        EaseGenerator(modifier, reference, 4);
+
+                        BoolGenerator(modifier, reference, "Apply Delta Time", 5, true);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.getAnimateVariableMath): {
+                        StringGenerator(modifier, reference, "Variable Name", 1, renderVariables: false);
+
+                        StringGenerator(modifier, reference, "Time", 0);
+
+                        StringGenerator(modifier, reference, "Value", 2);
+
+                        BoolGenerator(modifier, reference, "Relative", 3, true);
+
+                        EaseGenerator(modifier, reference, 4);
+
+                        BoolGenerator(modifier, reference, "Apply Delta Time", 5, true);
+
+                        break;
+                    }
                 case nameof(ModifierFunctions.getPitch): {
                         StringGenerator(modifier, reference, "Variable Name", 0, renderVariables: false);
 
@@ -3203,6 +3233,19 @@ namespace BetterLegacy.Editor.Data.Elements
                         SingleGenerator(modifier, reference, "Sca X", 3, 0f);
                         SingleGenerator(modifier, reference, "Sca Y", 4, 0f);
                         SingleGenerator(modifier, reference, "Rot", 5, 0f, 15f, 3f);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.translateShape3D): {
+                        SingleGenerator(modifier, reference, "Pos X", 1, 0f);
+                        SingleGenerator(modifier, reference, "Pos Y", 2, 0f);
+                        SingleGenerator(modifier, reference, "Pos Z", 3, 0f);
+                        SingleGenerator(modifier, reference, "Sca X", 4, 0f);
+                        SingleGenerator(modifier, reference, "Sca Y", 5, 0f);
+                        SingleGenerator(modifier, reference, "Sca Z", 6, 0f);
+                        SingleGenerator(modifier, reference, "Rot X", 7, 0f, 15f, 3f);
+                        SingleGenerator(modifier, reference, "Rot Y", 8, 0f, 15f, 3f);
+                        SingleGenerator(modifier, reference, "Rot Z", 9, 0f, 15f, 3f);
 
                         break;
                     }

@@ -169,7 +169,10 @@ namespace BetterLegacy.Core.Helpers
                     }
                 });
             }
-
+            if (!loop.state)
+                loop.state = new ModifierLoop.State();
+            else
+                loop.state.Reset();
             if (!triggers.IsEmpty())
             {
                 // If all triggers are active
@@ -210,7 +213,6 @@ namespace BetterLegacy.Core.Helpers
                 });
                 return new ModifierLoopResult(false, false, Modifier.Type.Action, modifiers.Count);
             }
-
             actions.ForLoop(act =>
             {
                 if (!act.enabled || act.compatibility.StoryOnly && !CoreHelper.InStory || act.active || act.triggerCount > 0 && act.runCount >= act.triggerCount)
@@ -309,9 +311,9 @@ namespace BetterLegacy.Core.Helpers
                         //    result = false;
 
                         modifier.triggered = innerResult;
-                        loop.state.previousType = modifier.type;
                     }
 
+                    loop.state.previousType = modifier.type;
                     loop.state.triggerIndex++;
                 }
 
@@ -1016,6 +1018,8 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction(nameof(ModifierFunctions.getMusicTime),  ModifierFunctions.getMusicTime),
             new ModifierAction(nameof(ModifierFunctions.getAxis),  ModifierFunctions.getAxis),
             new ModifierAction(nameof(ModifierFunctions.getAxisMath),  ModifierFunctions.getAxisMath),
+            new ModifierAction(nameof(ModifierFunctions.getAnimateVariable),  ModifierFunctions.getAnimateVariable),
+            new ModifierAction(nameof(ModifierFunctions.getAnimateVariableMath),  ModifierFunctions.getAnimateVariableMath),
             new ModifierAction(nameof(ModifierFunctions.getMath),  ModifierFunctions.getMath),
             new ModifierAction(nameof(ModifierFunctions.getNearestPlayer),  ModifierFunctions.getNearestPlayer, ModifierCompatibility.BeatmapObjectCompatible),
             new ModifierAction(nameof(ModifierFunctions.getCollidingPlayers),  ModifierFunctions.getCollidingPlayers, ModifierCompatibility.BeatmapObjectCompatible),
@@ -1178,6 +1182,7 @@ namespace BetterLegacy.Core.Helpers
             #region Shape
             
             new ModifierAction(nameof(ModifierFunctions.translateShape),  ModifierFunctions.translateShape, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierFunctions.translateShape3D),  ModifierFunctions.translateShape3D, ModifierCompatibility.BeatmapObjectCompatible),
             new ModifierAction(nameof(ModifierFunctions.setShape),  ModifierFunctions.setShape, ModifierCompatibility.BeatmapObjectCompatible.WithBackgroundObject()),
             new ModifierAction(nameof(ModifierFunctions.setPolygonShape),  ModifierFunctions.setPolygonShape, ModifierCompatibility.BeatmapObjectCompatible),
             new ModifierAction(nameof(ModifierFunctions.setPolygonShapeOther),  ModifierFunctions.setPolygonShapeOther, ModifierCompatibility.BeatmapObjectCompatible),
@@ -2595,6 +2600,16 @@ namespace BetterLegacy.Core.Helpers
                         }
                         break;
                     }
+                case nameof(ModifierFunctions.translateShape3D): {
+                        if (modifier.TryGetResult(out TranslateShape3DCache cache))
+                        {
+                            if (cache.meshFilter && cache.vertices != null)
+                                cache.meshFilter.mesh.vertices = cache.vertices;
+                            if (cache.collider2D && cache.points != null)
+                                cache.collider2D.points = cache.points;
+                        }
+                        break;
+                    }
                 case nameof(ModifierFunctions.spawnClone): {
                         if (modifier.enabled && modifier.TryGetResult(out SpawnCloneCache cache))
                             RTLevel.Current.postTick.Enqueue(() =>
@@ -2629,6 +2644,11 @@ namespace BetterLegacy.Core.Helpers
                                 cache.spawned.Clear();
                                 RTLevel.Current.RecalculateObjectStates();
                             });
+                        break;
+                    }
+                case nameof(ModifierFunctions.getAnimateVariable): {
+                        if (modifier.TryGetResult(out RTAnimation animation))
+                            animation.Stop();
                         break;
                     }
             }
@@ -2746,7 +2766,7 @@ namespace BetterLegacy.Core.Helpers
             var allowed = increment != 0 && endCount > startIndex && (distance < 0 ? increment < 0 : increment > 0);
 
             var endIndex = modifiers.FindLastIndex(x => x.Name == "return"); // return is treated as a break of the for loop
-            endIndex = endIndex < 0 ? modifiers.Count : endIndex + 1;
+            endIndex = endIndex < 0 ? modifiers.Count : endIndex;
 
             try
             {
@@ -2948,6 +2968,118 @@ namespace BetterLegacy.Core.Helpers
             float value = RTMath.Parse(evaluation, RTLevel.Current?.evaluationContext, numberVariables);
 
             modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = value.ToString();
+        }
+
+        public static void getAnimateVariable(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            var transformable = modifierLoop.reference.AsTransformable();
+            if (transformable == null)
+                return;
+
+            var time = modifier.GetFloat(0, 0f, modifierLoop.variables);
+            var name = ModifiersHelper.FormatStringVariables(modifier.GetValue(1), modifierLoop.variables);
+            var value = modifier.GetFloat(2, 0f, modifierLoop.variables);
+            var relative = modifier.GetBool(3, true, modifierLoop.variables);
+
+            if (string.IsNullOrEmpty(name))
+                return;
+
+            string easing = modifier.GetValue(4, modifierLoop.variables);
+            if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
+                easing = Ease.EaseReferences[e].Name;
+
+            var applyDeltaTime = modifier.GetBool(5, true, modifierLoop.variables);
+
+            var prevValue = modifierLoop.variables.TryGetValue(name, out string v) ? Parser.TryParse(v, 0f) : 0f;
+
+            if (relative)
+            {
+                if (modifier.constant && applyDeltaTime)
+                    value *= CoreHelper.TimeFrame;
+
+                value += prevValue;
+            }
+
+            if (!modifier.constant)
+            {
+                var animation = new RTAnimation("Animate Variable");
+
+                animation.animationHandlers = new List<AnimationHandlerBase>
+                {
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, prevValue, Ease.Linear),
+                        new FloatKeyframe(Mathf.Clamp(time, 0f, 9999f), value, Ease.GetEaseFunction(easing, Ease.Linear)),
+                    }, x => modifierLoop.variables[name] = x.ToString(), interpolateOnComplete: true),
+                };
+                animation.SetDefaultOnComplete();
+                animation.onComplete += () => modifier.Result = default;
+                AnimationManager.inst.Play(animation);
+                modifier.Result = animation;
+                return;
+            }
+
+            modifierLoop.variables[name] = value.ToString();
+        }
+
+        public static void getAnimateVariableMath(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            var transformable = modifierLoop.reference.AsTransformable();
+            if (transformable == null)
+                return;
+
+            if (modifierLoop.reference is not IEvaluatable evaluatable)
+                return;
+
+            var numberVariables = evaluatable.GetObjectVariables();
+            ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
+
+            var functions = evaluatable.GetObjectFunctions();
+            var evaluationContext = RTLevel.Current.evaluationContext;
+            evaluationContext.RegisterVariables(numberVariables);
+            evaluationContext.RegisterFunctions(functions);
+
+            float time = (float)RTMath.Evaluate(modifier.GetValue(0, modifierLoop.variables), RTLevel.Current?.evaluationContext);
+            var name = ModifiersHelper.FormatStringVariables(modifier.GetValue(1), modifierLoop.variables);
+            float value = (float)RTMath.Evaluate(modifier.GetValue(2, modifierLoop.variables), RTLevel.Current?.evaluationContext);
+            var relative = modifier.GetBool(3, true, modifierLoop.variables);
+
+            string easing = modifier.GetValue(4, modifierLoop.variables);
+            if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
+                easing = Ease.EaseReferences[e].Name;
+
+            var applyDeltaTime = modifier.GetBool(5, true, modifierLoop.variables);
+
+            var prevValue = modifierLoop.variables.TryGetValue(name, out string v) ? Parser.TryParse(v, 0f) : 0f;
+
+            if (relative)
+            {
+                if (modifier.constant && applyDeltaTime)
+                    value *= CoreHelper.TimeFrame;
+
+                value += prevValue;
+            }
+
+            if (!modifier.constant)
+            {
+                var animation = new RTAnimation("Animate Object Offset");
+
+                animation.animationHandlers = new List<AnimationHandlerBase>
+                {
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, prevValue, Ease.Linear),
+                        new FloatKeyframe(Mathf.Clamp(time, 0f, 9999f), value, Ease.GetEaseFunction(easing, Ease.Linear)),
+                    }, x => modifierLoop.variables[name] = x.ToString(), interpolateOnComplete: true),
+                };
+                animation.SetDefaultOnComplete();
+                animation.onComplete += () => modifier.Result = default;
+                AnimationManager.inst.Play(animation);
+                modifier.Result = animation;
+                return;
+            }
+
+            modifierLoop.variables[name] = value.ToString();
         }
 
         public static void getMath(Modifier modifier, ModifierLoop modifierLoop)
@@ -8420,6 +8552,48 @@ namespace BetterLegacy.Core.Helpers
                 shapeCache.Translate(pos, sca, rot);
         }
 
+        public static void translateShape3D(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
+                return;
+
+            var runtimeObject = beatmapObject.runtimeObject;
+            if (!runtimeObject || !runtimeObject.visualObject.gameObject)
+                return;
+
+            var pos = new Vector3(modifier.GetFloat(1, 0f, modifierLoop.variables), modifier.GetFloat(2, 0f, modifierLoop.variables), modifier.GetFloat(3, 0f, modifierLoop.variables));
+            var sca = new Vector3(modifier.GetFloat(4, 0f, modifierLoop.variables), modifier.GetFloat(5, 0f, modifierLoop.variables), modifier.GetFloat(6, 0f, modifierLoop.variables));
+            var rot = new Vector3(modifier.GetFloat(7, 0f, modifierLoop.variables), modifier.GetFloat(8, 0f, modifierLoop.variables), modifier.GetFloat(9, 0f, modifierLoop.variables));
+
+            if (!modifier.HasResult())
+            {
+                var meshFilter = runtimeObject.visualObject.gameObject.GetComponent<MeshFilter>();
+                var collider2D = runtimeObject.visualObject.collider as PolygonCollider2D;
+                var mesh = meshFilter.mesh;
+
+                var translateShapeCache = new TranslateShape3DCache
+                {
+                    meshFilter = meshFilter,
+                    collider2D = collider2D,
+                    vertices = mesh?.vertices ?? null,
+                    points = collider2D?.points ?? null,
+
+                    pos = pos,
+                    sca = sca,
+                    rot = rot,
+                };
+                modifier.Result = translateShapeCache;
+                // force translate for first frame
+                translateShapeCache.Translate(pos, sca, rot, true);
+
+                runtimeObject.visualObject.gameObject.AddComponent<DestroyModifierResult>().Modifier = modifier;
+                return;
+            }
+
+            if (modifier.TryGetResult(out TranslateShape3DCache shapeCache))
+                shapeCache.Translate(pos, sca, rot);
+        }
+
         public static void setShape(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (modifierLoop.reference is not IShapeable shapeable)
@@ -12529,14 +12703,25 @@ namespace BetterLegacy.Core.Helpers
         public static void callModifiers(Modifier modifier, ModifierLoop modifierLoop)
         {
             var prefabable = modifierLoop.reference.AsPrefabable();
-            if (prefabable == null || !GameData.Current.TryFindModifyableWithTag(modifier, prefabable, modifier.GetValue(0, modifierLoop.variables), out IModifyable modifyable))
+            if (prefabable == null)
                 return;
 
-            var cache = modifier.GetResultOrDefault(() => new ModifierBlock(modifierLoop.reference.ReferenceType)
+            var tag = modifier.GetValue(0, modifierLoop.variables);
+            if (string.IsNullOrEmpty(tag) || !GameData.Current.TryFindModifyableWithTag(modifier, prefabable, tag, out IModifyable modifyable) || modifyable.Modifiers.IsEmpty())
+                return;
+
+            var cache = modifier.GetResultOrDefault(() =>
             {
-                Modifiers = modifyable.Modifiers,
-                OrderModifiers = modifyable.OrderModifiers,
-                Tags = modifyable.Tags,
+                var cache = new ModifierBlock(modifierLoop.reference.ReferenceType)
+                {
+                    Modifiers = new List<Modifier>(modifyable.Modifiers.Select(x => x.Copy(false))),
+                    OrderModifiers = modifyable.OrderModifiers,
+                    Tags = modifyable.Tags,
+                };
+                // prevent recursion.
+                if (cache.Modifiers.TryFind(x => x.id == modifier.id, out Modifier otherModifier))
+                    otherModifier.enabled = false;
+                return cache;
             });
             cache.Run(new ModifierLoop(modifierLoop.reference, modifierLoop.variables));
         }
@@ -12544,14 +12729,25 @@ namespace BetterLegacy.Core.Helpers
         public static bool callModifiersTrigger(Modifier modifier, ModifierLoop modifierLoop)
         {
             var prefabable = modifierLoop.reference.AsPrefabable();
-            if (prefabable == null || !GameData.Current.TryFindModifyableWithTag(modifier, prefabable, modifier.GetValue(0, modifierLoop.variables), out IModifyable modifyable))
+            if (prefabable == null)
                 return false;
 
-            var cache = modifier.GetResultOrDefault(() => new ModifierBlock(modifierLoop.reference.ReferenceType)
+            var tag = modifier.GetValue(0, modifierLoop.variables);
+            if (string.IsNullOrEmpty(tag) || !GameData.Current.TryFindModifyableWithTag(modifier, prefabable, tag, out IModifyable modifyable) || modifyable.Modifiers.IsEmpty())
+                return false;
+
+            var cache = modifier.GetResultOrDefault(() =>
             {
-                Modifiers = modifyable.Modifiers,
-                OrderModifiers = modifyable.OrderModifiers,
-                Tags = modifyable.Tags,
+                var cache = new ModifierBlock(modifierLoop.reference.ReferenceType)
+                {
+                    Modifiers = new List<Modifier>(modifyable.Modifiers.Select(x => x.Copy(false))),
+                    OrderModifiers = modifyable.OrderModifiers,
+                    Tags = modifyable.Tags,
+                };
+                // prevent recursion.
+                if (cache.Modifiers.TryFind(x => x.id == modifier.id, out Modifier otherModifier))
+                    otherModifier.enabled = false;
+                return cache;
             });
             return cache.Run(new ModifierLoop(modifierLoop.reference, modifierLoop.variables)).result;
         }
@@ -14754,7 +14950,7 @@ namespace BetterLegacy.Core.Helpers
     }
 
     /// <summary>
-    /// Cache for <see cref="ModifierFunctions.translateShape(Modifier, IModifierReference, Dictionary{string, string})"/>.
+    /// Cache for <see cref="ModifierFunctions.translateShape(Modifier, ModifierLoop)"/>.
     /// </summary>
     public class TranslateShapeCache
     {
@@ -14844,7 +15040,97 @@ namespace BetterLegacy.Core.Helpers
     }
 
     /// <summary>
-    /// Cache for <see cref="ModifierFunctions.enableObjectGroup(Modifier, IModifierReference, Dictionary{string, string})"/>.
+    /// Cache for <see cref="ModifierFunctions.translate3DShape(Modifier, ModifierLoop)"/>.
+    /// </summary>
+    public class TranslateShape3DCache
+    {
+        /// <summary>
+        /// Translates the mesh.
+        /// </summary>
+        /// <param name="pos">Position to translate to.</param>
+        /// <param name="sca">Scale to translate to.</param>
+        /// <param name="rot">Rotation to tranlsate to.</param>
+        public void Translate(Vector3 pos, Vector3 sca, Vector3 rot, bool forceTranslate = false)
+        {
+            // don't translate if the cached values are the same as the parameters.
+            if (Is(pos, sca, rot) && !forceTranslate)
+            {
+                Cache(pos, sca, rot);
+                return;
+            }
+
+            Cache(pos, sca, rot);
+
+            if (meshFilter && vertices != null)
+                meshFilter.mesh.vertices = vertices.Select(x => RTMath.Move(RTMath.Rotate(RTMath.Scale(x, sca), rot), pos)).ToArray();
+            if (collider2D && points != null)
+                collider2D.points = points.Select(x => (Vector2)RTMath.Move(RTMath.Rotate(RTMath.Scale(x, sca), rot), pos)).ToArray();
+        }
+
+        #region Cache
+
+        void Cache(Vector3 pos, Vector3 sca, Vector3 rot)
+        {
+            this.pos = pos;
+            this.sca = sca;
+            this.rot = rot;
+        }
+
+        /// <summary>
+        /// Cached mesh filter.
+        /// </summary>
+        public MeshFilter meshFilter;
+        /// <summary>
+        /// Cached polygon collider.
+        /// </summary>
+        public PolygonCollider2D collider2D;
+        /// <summary>
+        /// Original vertices to translate.
+        /// </summary>
+        public Vector3[] vertices;
+        /// <summary>
+        /// Original collider points.
+        /// </summary>
+        public Vector2[] points;
+
+        /// <summary>
+        /// Cached position.
+        /// </summary>
+        public Vector3 pos;
+        /// <summary>
+        /// Cached scale.
+        /// </summary>
+        public Vector3 sca;
+        /// <summary>
+        /// Cached rotation.
+        /// </summary>
+        public Vector3 rot;
+
+        #endregion
+
+        #region Operators
+
+        public override int GetHashCode() => CoreHelper.CombineHashCodes(pos.x, pos.y, pos.z, sca.x, sca.y, sca.z, rot.x, rot.y, rot.z);
+
+        public override bool Equals(object obj) => obj is TranslateShape3DCache shapeCache && Is(shapeCache.pos, shapeCache.sca, shapeCache.rot);
+
+        /// <summary>
+        /// Checks if the cached values are equal to the parameters.
+        /// </summary>
+        /// <param name="pos">Position.</param>
+        /// <param name="sca">Scale.</param>
+        /// <param name="rot">Rotation.</param>
+        /// <returns>Returns true if the cached values are approximately the same as the passed parameters, otherwise returns false.</returns>
+        public bool Is(Vector3 pos, Vector3 sca, Vector3 rot) =>
+            Mathf.Approximately(pos.x, this.pos.x) && Mathf.Approximately(pos.y, this.pos.y) && Mathf.Approximately(pos.z, this.pos.z) &&
+            Mathf.Approximately(sca.x, this.sca.x) && Mathf.Approximately(sca.y, this.sca.y) && Mathf.Approximately(sca.z, this.sca.z) &&
+            Mathf.Approximately(rot.x, this.rot.x) && Mathf.Approximately(rot.y, this.rot.y) && Mathf.Approximately(rot.z, this.rot.z);
+
+        #endregion
+    }
+
+    /// <summary>
+    /// Cache for <see cref="ModifierFunctions.enableObjectGroup(Modifier, ModifierLoop)"/>.
     /// </summary>
     public class EnableObjectGroupCache
     {

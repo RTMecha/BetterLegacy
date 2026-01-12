@@ -4790,6 +4790,16 @@
             ]
           }, // translateShape
           {
+            "name": "Object Modifier - translateShape3D (Action)",
+            "tooltips": [
+              {
+                "desc": "translateShape3D (Action)",
+                "hint": "Moves, scales and rotates the mesh (shape) of the object around. Allows for custom gradient positioning.",
+                "lang": 0
+              }
+            ]
+          }, // translateShape3D
+          {
             "name": "Object Modifier - setShape (Action)",
             "tooltips": [
               {
@@ -4983,6 +4993,26 @@
               }
             ]
           }, // getAxisMath
+          {
+            "name": "Object Modifier - getAnimateVariable (Action)",
+            "tooltips": [
+              {
+                "desc": "getAnimateVariable (Action)",
+                "hint": "Animates a local modifier variable at real-time.",
+                "lang": 0
+              }
+            ]
+          }, // getAnimateVariable
+          {
+            "name": "Object Modifier - getAnimateVariableMath (Action)",
+            "tooltips": [
+              {
+                "desc": "getAnimateVariableMath (Action)",
+                "hint": "Animates a local modifier variable at real-time.",
+                "lang": 0
+              }
+            ]
+          }, // getAnimateVariableMath
 
           {
             "name": "Object Modifier - animateObject (Action)",
