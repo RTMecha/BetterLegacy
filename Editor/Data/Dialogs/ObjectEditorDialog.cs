@@ -24,7 +24,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
     /// <summary>
     /// Represents the object editor dialog for editing a <see cref="BeatmapObject"/>.
     /// </summary>
-    public class ObjectEditorDialog : EditorDialog, ITagDialog, IParentDialog, IAnimationDialog, IEditorLayerUI, IPrefabableDialog
+    public class ObjectEditorDialog : EditorDialog, ITagDialog, IParentDialog, IAnimationDialog, IEditorLayerUI, IPrefabableDialog, IShapeableDialog
     {
         public ObjectEditorDialog() : base(OBJECT_EDITOR) { }
 
@@ -92,7 +92,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public Text ColorBlendModeLabel { get; set; }
         public Dropdown ColorBlendModeDropdown { get; set; }
 
-        public Text GradientShapesLabel { get; set; }
+        public Text ShapesLabel { get; set; }
 
         public RectTransform GradientParent { get; set; }
         public List<Toggle> GradientToggles { get; set; } = new List<Toggle>();
@@ -104,6 +104,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public List<Toggle> ShapeToggles { get; set; } = new List<Toggle>();
         public List<List<Toggle>> ShapeOptionToggles { get; set; } = new List<List<Toggle>>();
+
+        public List<int> UnsupportedShapes { get; set; }
 
         #endregion
 
@@ -1669,7 +1671,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             }
 
             GradientParent = Content.Find("gradienttype").AsRT();
-            GradientShapesLabel = Content.GetChild(GradientParent.GetSiblingIndex() - 1).GetChild(0).GetComponent<Text>();
+            ShapesLabel = Content.GetChild(GradientParent.GetSiblingIndex() - 1).GetChild(0).GetComponent<Text>();
             for (int i = 0; i < GradientParent.childCount; i++)
                 GradientToggles.Add(GradientParent.GetChild(i).GetComponent<Toggle>());
             GradientScale = Content.Find("gradientscale").GetComponent<InputFieldStorage>();

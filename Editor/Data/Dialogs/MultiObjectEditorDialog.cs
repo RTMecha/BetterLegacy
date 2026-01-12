@@ -1769,7 +1769,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                                     var path = match.Success ? RTFile.CombinePaths(RTFile.BasePath, match.Groups[1].ToString()) : RTFile.CombinePaths(RTFile.BasePath, beatmapObject.text);
 
-                                    ObjectEditor.inst.StoreImage(beatmapObject, path);
+                                    RTEditor.inst.StoreImage(beatmapObject, ObjectEditor.inst.Dialog, context => RTLevel.Current.UpdateObject(beatmapObject, context), path);
                                     RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.IMAGE);
                                 })),
                                 ButtonElement.Label1Button("Clear Images", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to clear the images of all selected objects?", () => MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -4251,7 +4252,7 @@ namespace BetterLegacy.Editor.Managers
             filePrefabStorage.button = rtfb.filePrefab.GetComponent<Button>();
             filePrefabStorage.label = rtfb.filePrefab.transform.GetChild(0).GetComponent<Text>();
 
-            Destroy(fileBrowserBase);
+            CoreHelper.Destroy(fileBrowserBase);
 
             EditorHelper.AddEditorPopup(EditorPopup.BROWSER_POPUP, fileBrowser);
 
@@ -4270,13 +4271,13 @@ namespace BetterLegacy.Editor.Managers
             try
             {
                 rtfb.Popup = new EditorPopup(EditorPopup.BROWSER_POPUP);
-                rtfb.Popup.Assign(RTFileBrowser.inst.Popup.GetLegacyDialog().Dialog.gameObject);
-                rtfb.Popup.size = RTFileBrowser.inst.Popup.GameObject.transform.AsRT().sizeDelta;
+                rtfb.Popup.Assign(rtfb.Popup.GetLegacyDialog().Dialog.gameObject);
+                rtfb.Popup.size = rtfb.Popup.GameObject.transform.AsRT().sizeDelta;
                 rtfb.Popup.Dragger = dragger;
-                editorPopups.Add(RTFileBrowser.inst.Popup);
+                editorPopups.Add(rtfb.Popup);
 
-                if (RTFileBrowser.inst.Popup.Title)
-                    RTFileBrowser.inst.Popup.title = RTFileBrowser.inst.Popup.Title.text;
+                if (rtfb.Popup.Title)
+                    rtfb.Popup.title = rtfb.Popup.Title.text;
             }
             catch (Exception ex)
             {
@@ -5060,6 +5061,531 @@ namespace BetterLegacy.Editor.Managers
                     RenderPrefabable(prefabable, dialog);
                 });
             }
+        }
+
+        /// <summary>
+        /// Renders the shape dialog.
+        /// </summary>
+        /// <param name="shapeable">Shapeable object to edit.</param>
+        /// <param name="dialog">Shapeable dialog.</param>
+        /// <param name="onUpdate">Function to run when the object is updated.</param>
+        public void RenderShapeable(IShapeable shapeable, IShapeableDialog dialog, Action<string> onUpdate)
+        {
+            var shapeSettings = dialog.ShapeOptionsParent;
+
+            LSHelpers.SetActiveChildren(shapeSettings, false);
+
+            if (shapeable.Shape >= shapeSettings.childCount)
+            {
+                Debug.Log($"{ObjEditor.inst.className}Somehow, the object ended up being at a higher shape than normal.");
+                shapeable.Shape = shapeSettings.childCount - 1;
+                // Since shape has no affect on the timeline object, we will only need to update the physical object.
+                onUpdate?.Invoke(ObjectContext.SHAPE);
+
+                RenderShapeable(shapeable, dialog, onUpdate);
+                return;
+            }
+
+            if (!dialog.IsSupportedShapeType(shapeable.Shape))
+            {
+                shapeable.Shape = 0;
+                // Since shape has no affect on the timeline object, we will only need to update the physical object.
+                onUpdate?.Invoke(ObjectContext.SHAPE);
+
+                RenderShapeable(shapeable, dialog, onUpdate);
+                return;
+            }
+
+            shapeSettings.AsRT().sizeDelta = new Vector2(351f, shapeable.ShapeType == ShapeType.Text ? 74f : 32f);
+            shapeSettings.GetChild(4).AsRT().sizeDelta = new Vector2(351f, shapeable.ShapeType == ShapeType.Text ? 74f : 32f);
+            // 351 164 = polygon
+            shapeSettings.GetChild(shapeable.Shape).gameObject.SetActive(true);
+
+            int num = 0;
+            foreach (var toggle in dialog.ShapeToggles)
+            {
+                int index = num;
+                toggle.interactable = dialog.IsSupportedShapeType(index);
+                toggle.SetIsOnWithoutNotify(shapeable.Shape == index);
+                toggle.gameObject.SetActive(ShowModdedUI || index < Shape.unmoddedMaxShapes.Length);
+
+                if (ShowModdedUI || index < Shape.unmoddedMaxShapes.Length)
+                    toggle.onValueChanged.NewListener(_val =>
+                    {
+                        shapeable.Shape = index;
+                        shapeable.ShapeOption = 0;
+
+                        if (shapeable is BeatmapObject beatmapObject && beatmapObject.gradientType != GradientType.Normal && (index == 4 || index == 6))
+                            shapeable.Shape = 0;
+
+                        if (shapeable.ShapeType == ShapeType.Polygon && EditorConfig.Instance.AutoPolygonRadius.Value)
+                            shapeable.Polygon.Radius = shapeable.Polygon.GetAutoRadius();
+
+                        // Since shape has no affect on the timeline object, we will only need to update the physical object.
+                        onUpdate?.Invoke(ObjectContext.SHAPE);
+
+                        RenderShapeable(shapeable, dialog, onUpdate);
+                    });
+
+                num++;
+            }
+
+            switch (shapeable.ShapeType)
+            {
+                case ShapeType.Text: {
+                        shapeSettings.AsRT().sizeDelta = new Vector2(351f, 74f);
+                        shapeSettings.GetChild(4).AsRT().sizeDelta = new Vector2(351f, 74f);
+
+                        var textIF = shapeSettings.Find("5").GetComponent<InputField>();
+                        textIF.textComponent.alignment = TextAnchor.UpperLeft;
+                        textIF.GetPlaceholderText().alignment = TextAnchor.UpperLeft;
+                        textIF.GetPlaceholderText().text = "Enter text...";
+                        textIF.lineType = InputField.LineType.MultiLineNewline;
+
+                        textIF.SetTextWithoutNotify(shapeable.Text);
+                        textIF.onValueChanged.NewListener(_val =>
+                        {
+                            shapeable.Text = _val;
+
+                            // Since text has no affect on the timeline object, we will only need to update the physical object.
+                            onUpdate?.Invoke(ObjectContext.TEXT);
+                        });
+
+                        var textContextClickable = textIF.gameObject.GetOrAddComponent<ContextClickable>();
+                        textContextClickable.onClick = eventData =>
+                        {
+                            if (eventData.button != PointerEventData.InputButton.Right)
+                                return;
+
+                            EditorContextMenu.inst.ShowContextMenu(
+                                new ButtonElement($"Open Text Editor", () => RTTextEditor.inst.SetInputField(textIF)),
+                                new SpacerElement(),
+                                new ButtonElement($"Insert a Font", () => OpenFontSelector(font => textIF.text = font + textIF.text)),
+                                new ButtonElement($"Add a Font", () => OpenFontSelector(font => textIF.text += font)),
+                                new SpacerElement(),
+                                new ButtonElement($"Clear Formatting", () => ShowWarningPopup("Are you sure you want to clear the formatting of this text? This cannot be undone!", () =>
+                                {
+                                    textIF.text = Regex.Replace(shapeable.Text, @"<(.*?)>", string.Empty);
+                                })),
+                                new ButtonElement($"Force Modded Formatting", () =>
+                                {
+                                    var formatText = "formatText";
+                                    if (shapeable is not IModifyable modifyable || modifyable.Modifiers.Has(x => x.Name == formatText))
+                                        return;
+
+                                    if (ModifiersManager.inst.modifiers.TryFind(x => x.Name == formatText, out Modifier modifier))
+                                    {
+                                        modifyable.Modifiers.Add(modifier.Copy());
+                                        if (shapeable is BeatmapObject beatmapObject)
+                                            CoroutineHelper.StartCoroutine(ObjectEditor.inst.Dialog.ModifiersDialog.RenderModifiers(beatmapObject));
+                                        if (shapeable is BackgroundObject backgroundObject)
+                                            CoroutineHelper.StartCoroutine(RTBackgroundEditor.inst.Dialog.ModifiersDialog.RenderModifiers(backgroundObject));
+                                        if (shapeable is PrefabObject prefabObject)
+                                            CoroutineHelper.StartCoroutine(RTPrefabEditor.inst.PrefabObjectEditor.ModifiersDialog.RenderModifiers(prefabObject));
+                                    }
+                                }),
+                                new SpacerElement(),
+                                new ButtonElement($"Auto Align: [{shapeable.AutoTextAlign}]", () =>
+                                {
+                                    shapeable.AutoTextAlign = !shapeable.AutoTextAlign;
+                                    onUpdate?.Invoke(ObjectContext.SHAPE);
+                                }),
+                                new ButtonElement("Align Left", () => textIF.text = "<align=left>" + textIF.text),
+                                new ButtonElement("Align Center", () => textIF.text = "<align=center>" + textIF.text),
+                                new ButtonElement("Align Right", () => textIF.text = "<align=right>" + textIF.text)
+                                );
+                        };
+
+                        break;
+                    }
+                case ShapeType.Image: {
+                        shapeSettings.AsRT().sizeDelta = new Vector2(351f, 32f);
+
+                        var select = shapeSettings.Find("7/select").GetComponent<Button>();
+                        select.onClick.ClearAll();
+                        var selectContextClickable = select.gameObject.GetOrAddComponent<ContextClickable>();
+                        selectContextClickable.onClick = eventData =>
+                        {
+                            if (eventData.button == PointerEventData.InputButton.Right)
+                            {
+                                EditorContextMenu.inst.ShowContextMenu(
+                                    new ButtonElement($"Use {RTFileBrowser.SYSTEM_BROWSER}", () => OpenImageSelector(shapeable, dialog, onUpdate)),
+                                    new ButtonElement($"Use {RTFileBrowser.EDITOR_BROWSER}", () =>
+                                    {
+                                        var editorPath = RTFile.RemoveEndSlash(EditorLevelManager.inst.CurrentLevel.path);
+                                        RTFileBrowser.inst.Popup.Open();
+                                        RTFileBrowser.inst.UpdateBrowserFile(new string[] { FileFormat.PNG.Dot(), FileFormat.JPG.Dot() }, file =>
+                                        {
+                                            SelectImage(shapeable, dialog, onUpdate, file);
+                                            RTFileBrowser.inst.Popup.Close();
+                                        });
+                                    }),
+                                    new ButtonElement($"Store & Use {RTFileBrowser.SYSTEM_BROWSER}", () => OpenImageSelector(shapeable, dialog, onUpdate, copyFile: false, storeImage: true)),
+                                    new ButtonElement($"Store & Use {RTFileBrowser.EDITOR_BROWSER}", () =>
+                                    {
+                                        var editorPath = RTFile.RemoveEndSlash(EditorLevelManager.inst.CurrentLevel.path);
+                                        RTFileBrowser.inst.Popup.Open();
+                                        RTFileBrowser.inst.UpdateBrowserFile(new string[] { FileFormat.PNG.Dot(), FileFormat.JPG.Dot() }, file =>
+                                        {
+                                            SelectImage(shapeable, dialog, onUpdate, file, copyFile: false, storeImage: true);
+                                            RTFileBrowser.inst.Popup.Close();
+                                        });
+                                    }),
+                                    new SpacerElement(),
+                                    new ButtonElement("Remove Image", () =>
+                                    {
+                                        shapeable.Text = string.Empty;
+
+                                        // Since setting image has no affect on the timeline object, we will only need to update the physical object.
+                                        onUpdate?.Invoke(ObjectContext.SHAPE);
+
+                                        RenderShapeable(shapeable, dialog, onUpdate);
+                                    }),
+                                    new ButtonElement("Delete Image", () => ShowWarningPopup("Are you sure you want to delete the image and remove it from the image object?", () =>
+                                    {
+                                        RTFile.DeleteFile(RTFile.CombinePaths(EditorLevelManager.inst.CurrentLevel.path, shapeable.Text));
+
+                                        shapeable.Text = string.Empty;
+
+                                        // Since setting image has no affect on the timeline object, we will only need to update the physical object.
+                                        onUpdate?.Invoke(ObjectContext.SHAPE);
+
+                                        RenderShapeable(shapeable, dialog, onUpdate);
+                                    }))
+                                    );
+                                return;
+                            }
+                            OpenImageSelector(shapeable, dialog, onUpdate);
+                        };
+                        shapeSettings.Find("7/text").GetComponent<Text>().text = string.IsNullOrEmpty(shapeable.Text) ? "No image selected" : shapeable.Text;
+
+                        // Stores / Removes Image Data for transfering of Image Objects between levels.
+                        var dataText = shapeSettings.Find("7/set/Text").GetComponent<Text>();
+                        dataText.text = !GameData.Current.assets.sprites.Has(x => x.name == shapeable.Text) ? "Store Data" : "Clear Data";
+                        var set = shapeSettings.Find("7/set").GetComponent<Button>();
+                        set.onClick.NewListener(() =>
+                        {
+                            var regex = new Regex(@"img\((.*?)\)");
+                            var match = regex.Match(shapeable.Text);
+
+                            var path = match.Success ? RTFile.CombinePaths(RTFile.BasePath, match.Groups[1].ToString()) : RTFile.CombinePaths(RTFile.BasePath, shapeable.Text);
+
+                            if (!GameData.Current.assets.sprites.Has(x => x.name == shapeable.Text))
+                                StoreImage(shapeable, dialog, onUpdate, path);
+                            else
+                            {
+                                GameData.Current.assets.RemoveSprite(shapeable.Text);
+                                if (!RTFile.FileExists(path))
+                                    shapeable.Text = string.Empty;
+                            }
+
+                            onUpdate?.Invoke(ObjectContext.IMAGE);
+
+                            RenderShapeable(shapeable, dialog, onUpdate);
+                        });
+
+                        break;
+                    }
+                case ShapeType.Polygon: {
+                        shapeSettings.AsRT().sizeDelta = new Vector2(351f, 320f);
+
+                        var radius = shapeSettings.Find("10/radius").gameObject.GetComponent<InputFieldStorage>();
+                        radius.OnValueChanged.ClearAll();
+                        radius.SetTextWithoutNotify(shapeable.Polygon.Radius.ToString());
+                        radius.SetInteractible(!EditorConfig.Instance.AutoPolygonRadius.Value);
+                        if (!EditorConfig.Instance.AutoPolygonRadius.Value)
+                        {
+                            radius.OnValueChanged.AddListener(_val =>
+                            {
+                                if (float.TryParse(_val, out float num))
+                                {
+                                    num = Mathf.Clamp(num, 0.1f, 10f);
+                                    shapeable.Polygon.Radius = num;
+                                    onUpdate?.Invoke(ObjectContext.POLYGONS);
+                                }
+                            });
+
+                            TriggerHelper.IncreaseDecreaseButtons(radius, min: 0.1f, max: 10f);
+                            TriggerHelper.AddEventTriggers(radius.inputField.gameObject, TriggerHelper.ScrollDelta(radius.inputField, min: 0.1f, max: 10f));
+                        }
+
+                        EditorContextMenu.AddContextMenu(radius.inputField.gameObject,
+                            getEditorElements: () =>
+                            {
+                                var editorElements = new List<EditorElement>()
+                                {
+                                    ButtonElement.ToggleButton("Auto Assign Radius", () => EditorConfig.Instance.AutoPolygonRadius.Value, () =>
+                                    {
+                                        EditorConfig.Instance.AutoPolygonRadius.Value = !EditorConfig.Instance.AutoPolygonRadius.Value;
+                                        RenderShapeable(shapeable, dialog, onUpdate);
+                                    })
+                                };
+                                if (!EditorConfig.Instance.AutoPolygonRadius.Value)
+                                {
+                                    editorElements.Add(new ButtonElement("Set to Triangle Radius", () =>
+                                    {
+                                        shapeable.Polygon.Radius = PolygonShape.TRIANGLE_RADIUS;
+                                        onUpdate?.Invoke(ObjectContext.POLYGONS);
+                                    }));
+                                    editorElements.Add(new ButtonElement("Set to Square Radius", () =>
+                                    {
+                                        shapeable.Polygon.Radius = PolygonShape.SQUARE_RADIUS;
+                                        onUpdate?.Invoke(ObjectContext.POLYGONS);
+                                    }));
+                                    editorElements.Add(new ButtonElement("Set to Normal Radius", () =>
+                                    {
+                                        shapeable.Polygon.Radius = PolygonShape.NORMAL_RADIUS;
+                                        onUpdate?.Invoke(ObjectContext.POLYGONS);
+                                    }));
+                                }
+                                return editorElements;
+                            });
+
+                        var sides = shapeSettings.Find("10/sides").gameObject.GetComponent<InputFieldStorage>();
+                        sides.SetTextWithoutNotify(shapeable.Polygon.Sides.ToString());
+                        sides.OnValueChanged.NewListener(_val =>
+                        {
+                            if (int.TryParse(_val, out int num))
+                            {
+                                num = Mathf.Clamp(num, 3, 32);
+                                shapeable.Polygon.Sides = num;
+                                if (EditorConfig.Instance.AutoPolygonRadius.Value)
+                                {
+                                    shapeable.Polygon.Radius = shapeable.Polygon.GetAutoRadius();
+                                    radius.inputField.SetTextWithoutNotify(shapeable.Polygon.Radius.ToString());
+                                }
+                                onUpdate?.Invoke(ObjectContext.POLYGONS);
+                            }
+                        });
+
+                        TriggerHelper.IncreaseDecreaseButtonsInt(sides, min: 3, max: 32);
+                        TriggerHelper.AddEventTriggers(sides.inputField.gameObject, TriggerHelper.ScrollDeltaInt(sides.inputField, min: 3, max: 32));
+                        
+                        var roundness = shapeSettings.Find("10/roundness").gameObject.GetComponent<InputFieldStorage>();
+                        roundness.SetTextWithoutNotify(shapeable.Polygon.Roundness.ToString());
+                        roundness.OnValueChanged.NewListener(_val =>
+                        {
+                            if (float.TryParse(_val, out float num))
+                            {
+                                num = Mathf.Clamp(num, 0f, 1f);
+                                shapeable.Polygon.Roundness = num;
+                                onUpdate?.Invoke(ObjectContext.POLYGONS);
+                            }
+                        });
+
+                        TriggerHelper.IncreaseDecreaseButtons(roundness, max: 1f);
+                        TriggerHelper.AddEventTriggers(roundness.inputField.gameObject, TriggerHelper.ScrollDelta(roundness.inputField, max: 1f));
+
+                        var thickness = shapeSettings.Find("10/thickness").gameObject.GetComponent<InputFieldStorage>();
+                        thickness.SetTextWithoutNotify(shapeable.Polygon.Thickness.ToString());
+                        thickness.OnValueChanged.NewListener(_val =>
+                        {
+                            if (float.TryParse(_val, out float num))
+                            {
+                                num = Mathf.Clamp(num, 0f, 1f);
+                                shapeable.Polygon.Thickness = num;
+                                onUpdate?.Invoke(ObjectContext.POLYGONS);
+                            }
+                        });
+
+                        TriggerHelper.IncreaseDecreaseButtons(thickness, max: 1f);
+                        TriggerHelper.AddEventTriggers(thickness.inputField.gameObject, TriggerHelper.ScrollDelta(thickness.inputField, max: 1f));
+                        
+                        var thicknessOffsetX = shapeSettings.Find("10/thickness offset/x").gameObject.GetComponent<InputFieldStorage>();
+                        thicknessOffsetX.SetTextWithoutNotify(shapeable.Polygon.ThicknessOffset.x.ToString());
+                        thicknessOffsetX.OnValueChanged.NewListener(_val =>
+                        {
+                            if (float.TryParse(_val, out float num))
+                            {
+                                shapeable.Polygon.ThicknessOffset = new Vector2(num, shapeable.Polygon.ThicknessOffset.y);
+                                onUpdate?.Invoke(ObjectContext.POLYGONS);
+                            }
+                        });
+
+                        TriggerHelper.IncreaseDecreaseButtons(thicknessOffsetX);
+                        TriggerHelper.AddEventTriggers(thicknessOffsetX.inputField.gameObject, TriggerHelper.ScrollDelta(thicknessOffsetX.inputField));
+                        
+                        var thicknessOffsetY = shapeSettings.Find("10/thickness offset/y").gameObject.GetComponent<InputFieldStorage>();
+                        thicknessOffsetY.SetTextWithoutNotify(shapeable.Polygon.ThicknessOffset.y.ToString());
+                        thicknessOffsetY.OnValueChanged.NewListener(_val =>
+                        {
+                            if (float.TryParse(_val, out float num))
+                            {
+                                shapeable.Polygon.ThicknessOffset = new Vector2(shapeable.Polygon.ThicknessOffset.x, num);
+                                onUpdate?.Invoke(ObjectContext.POLYGONS);
+                            }
+                        });
+
+                        TriggerHelper.IncreaseDecreaseButtons(thicknessOffsetY);
+                        TriggerHelper.AddEventTriggers(thicknessOffsetY.inputField.gameObject, TriggerHelper.ScrollDelta(thicknessOffsetY.inputField));
+                        
+                        var thicknessScaleX = shapeSettings.Find("10/thickness scale/x").gameObject.GetComponent<InputFieldStorage>();
+                        thicknessScaleX.SetTextWithoutNotify(shapeable.Polygon.ThicknessScale.x.ToString());
+                        thicknessScaleX.OnValueChanged.NewListener(_val =>
+                        {
+                            if (float.TryParse(_val, out float num))
+                            {
+                                shapeable.Polygon.ThicknessScale = new Vector2(num, shapeable.Polygon.ThicknessScale.y);
+                                onUpdate?.Invoke(ObjectContext.POLYGONS);
+                            }
+                        });
+
+                        TriggerHelper.IncreaseDecreaseButtons(thicknessScaleX);
+                        TriggerHelper.AddEventTriggers(thicknessScaleX.inputField.gameObject, TriggerHelper.ScrollDelta(thicknessScaleX.inputField));
+                        
+                        var thicknessScaleY = shapeSettings.Find("10/thickness scale/y").gameObject.GetComponent<InputFieldStorage>();
+                        thicknessScaleY.SetTextWithoutNotify(shapeable.Polygon.ThicknessScale.y.ToString());
+                        thicknessScaleY.OnValueChanged.NewListener(_val =>
+                        {
+                            if (float.TryParse(_val, out float num))
+                            {
+                                shapeable.Polygon.ThicknessScale = new Vector2(shapeable.Polygon.ThicknessScale.x, num);
+                                onUpdate?.Invoke(ObjectContext.POLYGONS);
+                            }
+                        });
+
+                        TriggerHelper.IncreaseDecreaseButtons(thicknessScaleY);
+                        TriggerHelper.AddEventTriggers(thicknessScaleY.inputField.gameObject, TriggerHelper.ScrollDelta(thicknessScaleY.inputField));
+
+                        var thicknessRotation = shapeSettings.Find("10/thickness angle").gameObject.GetComponent<InputFieldStorage>();
+                        thicknessRotation.SetTextWithoutNotify(shapeable.Polygon.ThicknessRotation.ToString());
+                        thicknessRotation.OnValueChanged.NewListener(_val =>
+                        {
+                            if (float.TryParse(_val, out float num))
+                            {
+                                shapeable.Polygon.ThicknessRotation = num;
+                                onUpdate?.Invoke(ObjectContext.POLYGONS);
+                            }
+                        });
+
+                        TriggerHelper.IncreaseDecreaseButtons(thicknessRotation, 15f, 3f);
+                        TriggerHelper.AddEventTriggers(thicknessRotation.inputField.gameObject, TriggerHelper.ScrollDelta(thicknessRotation.inputField, 15f, 3f));
+
+                        var slices = shapeSettings.Find("10/slices").gameObject.GetComponent<InputFieldStorage>();
+                        slices.SetTextWithoutNotify(shapeable.Polygon.Slices.ToString());
+                        slices.OnValueChanged.NewListener(_val =>
+                        {
+                            if (int.TryParse(_val, out int num))
+                            {
+                                num = Mathf.Clamp(num, 1, 32);
+                                shapeable.Polygon.Slices = num;
+                                onUpdate?.Invoke(ObjectContext.POLYGONS);
+                            }
+                        });
+
+                        TriggerHelper.IncreaseDecreaseButtonsInt(slices, min: 1, max: 32);
+                        TriggerHelper.AddEventTriggers(slices.inputField.gameObject, TriggerHelper.ScrollDeltaInt(slices.inputField, min: 1, max: 32));
+                        
+                        var rotation = shapeSettings.Find("10/rotation").gameObject.GetComponent<InputFieldStorage>();
+                        rotation.SetTextWithoutNotify(shapeable.Polygon.Angle.ToString());
+                        rotation.OnValueChanged.NewListener(_val =>
+                        {
+                            if (float.TryParse(_val, out float num))
+                            {
+                                shapeable.Polygon.Angle = num;
+                                onUpdate?.Invoke(ObjectContext.POLYGONS);
+                            }
+                        });
+
+                        TriggerHelper.IncreaseDecreaseButtons(rotation, 15f, 3f);
+                        TriggerHelper.AddEventTriggers(rotation.inputField.gameObject, TriggerHelper.ScrollDelta(rotation.inputField, 15f, 3f));
+
+                        break;
+                    }
+                default: {
+                        shapeSettings.AsRT().sizeDelta = new Vector2(351f, 32f);
+                        shapeSettings.GetChild(4).AsRT().sizeDelta = new Vector2(351f, 32f);
+
+                        num = 0;
+                        foreach (var toggle in dialog.ShapeOptionToggles[shapeable.Shape])
+                        {
+                            int index = num;
+                            toggle.SetIsOnWithoutNotify(shapeable.ShapeOption == index);
+                            toggle.gameObject.SetActive(RTEditor.ShowModdedUI || index < Shape.unmoddedMaxShapes[shapeable.Shape]);
+
+                            if (RTEditor.ShowModdedUI || index < Shape.unmoddedMaxShapes[shapeable.Shape])
+                                toggle.onValueChanged.NewListener(_val =>
+                                {
+                                    shapeable.ShapeOption = index;
+
+                                    // Since shape has no affect on the timeline object, we will only need to update the physical object.
+                                    onUpdate?.Invoke(ObjectContext.SHAPE);
+
+                                    RenderShapeable(shapeable, dialog, onUpdate);
+                                });
+
+                            num++;
+                        }
+
+                        break;
+                    }
+            }
+        }
+
+        public void OpenImageSelector(IShapeable shapeable, IShapeableDialog dialog, Action<string> onUpdate, bool copyFile = true, bool storeImage = false)
+        {
+            var editorPath = RTFile.RemoveEndSlash(EditorLevelManager.inst.CurrentLevel.path);
+            string jpgFile = FileBrowser.OpenSingleFile("Select an image!", editorPath, new string[] { "png", "jpg" });
+            SelectImage(shapeable, dialog, onUpdate, jpgFile, copyFile: copyFile, storeImage: storeImage);
+        }
+
+        public void StoreImage(IShapeable shapeable, IShapeableDialog dialog, Action<string> onUpdate, string file)
+        {
+            if (RTFile.FileExists(file))
+            {
+                var imageData = File.ReadAllBytes(file);
+
+                var texture2d = new Texture2D(2, 2, TextureFormat.ARGB32, false);
+                texture2d.LoadImage(imageData);
+
+                texture2d.wrapMode = TextureWrapMode.Clamp;
+                texture2d.filterMode = FilterMode.Point;
+                texture2d.Apply();
+
+                GameData.Current.assets.AddSprite(shapeable.Text, SpriteHelper.CreateSprite(texture2d));
+            }
+            else
+            {
+                var imageData = LegacyPlugin.PALogoSprite.texture.EncodeToPNG();
+
+                var texture2d = new Texture2D(2, 2, TextureFormat.ARGB32, false);
+                texture2d.LoadImage(imageData);
+
+                texture2d.wrapMode = TextureWrapMode.Clamp;
+                texture2d.filterMode = FilterMode.Point;
+                texture2d.Apply();
+
+                GameData.Current.assets.AddSprite(shapeable.Text, SpriteHelper.CreateSprite(texture2d));
+            }
+        }
+
+        public void SelectImage(IShapeable shapeable, IShapeableDialog dialog, Action<string> onUpdate, string file, bool renderEditor = true, bool updateObject = true, bool copyFile = true, bool storeImage = false)
+        {
+            var editorPath = RTFile.RemoveEndSlash(EditorLevelManager.inst.CurrentLevel.path);
+            RTFile.CreateDirectory(RTFile.CombinePaths(editorPath, "images"));
+
+            file = RTFile.ReplaceSlash(file);
+            CoreHelper.Log($"Selected file: {file}");
+            if (!RTFile.FileExists(file))
+                return;
+
+            string jpgFileLocation = RTFile.CombinePaths(editorPath, "images", Path.GetFileName(file));
+            if (RTFile.FileExists(RTFile.CombinePaths(editorPath, Path.GetFileName(file))))
+                jpgFileLocation = RTFile.CombinePaths(editorPath, Path.GetFileName(file));
+
+            if (copyFile && (EditorConfig.Instance.OverwriteImportedImages.Value || !RTFile.FileExists(jpgFileLocation)) && !file.Contains(editorPath))
+                RTFile.CopyFile(file, jpgFileLocation);
+
+            shapeable.Text = jpgFileLocation.Remove(editorPath + "/");
+
+            if (storeImage)
+                StoreImage(shapeable, dialog, onUpdate, file);
+
+            // Since setting image has no affect on the timeline object, we will only need to update the physical object.
+            onUpdate?.Invoke(ObjectContext.IMAGE);
+
+            if (renderEditor)
+                RenderShapeable(shapeable, dialog, onUpdate);
         }
 
         #endregion

@@ -17,7 +17,7 @@ using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Dialogs
 {
-    public class BackgroundEditorDialog : EditorDialog, IContentUI, ITagDialog, IEditorLayerUI, IPrefabableDialog
+    public class BackgroundEditorDialog : EditorDialog, IContentUI, ITagDialog, IEditorLayerUI, IPrefabableDialog, IShapeableDialog
     {
         public BackgroundEditorDialog() : base(BACKGROUND_EDITOR) { }
 
@@ -78,7 +78,27 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public ToggleButtonStorage FadeToggle { get; set; }
 
+        #region Gradient / Shape
+
+        public Text ShapesLabel { get; set; }
+
+        public RectTransform ShapeTypesParent { get; set; }
+        public RectTransform ShapeOptionsParent { get; set; }
+
+        public List<Toggle> ShapeToggles { get; set; } = new List<Toggle>();
+        public List<List<Toggle>> ShapeOptionToggles { get; set; } = new List<List<Toggle>>();
+
+        public List<int> UnsupportedShapes { get; set; } = new List<int>
+        {
+            (int)ShapeType.Text,
+            (int)ShapeType.Image,
+            (int)ShapeType.Polygon,
+            (int)ShapeType.Particles,
+        };
+
         public ToggleButtonStorage FlatToggle { get; set; }
+
+        #endregion
 
         #region Editor Settings
 
@@ -379,12 +399,34 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var shapeOption = ObjectEditor.inst.Dialog.ShapeOptionsParent.gameObject;
 
             var labelShape = EditorPrefabHolder.Instance.Labels.Duplicate(LeftContent, "label", 12);
-            labelShape.transform.GetChild(0).GetComponent<Text>().text = "Shape";
+            ShapesLabel = labelShape.transform.GetChild(0).GetComponent<Text>();
+            ShapesLabel.text = "Shape";
 
             var shapeBG = shape.Duplicate(LeftContent, "shape", 13);
+            ShapeTypesParent = shapeBG.transform.AsRT();
+            foreach (Transform child in ShapeTypesParent)
+                ShapeToggles.Add(child.GetComponent<Toggle>());
 
             var shapeOptionBG = shapeOption.Duplicate(LeftContent, "shapesettings", 14);
-            var shapeSettings = shapeOptionBG.transform;
+            ShapeOptionsParent = shapeOptionBG.transform.AsRT();
+            int shapeType = 0;
+            foreach (Transform category in ShapeOptionsParent)
+            {
+                var list = new List<Toggle>();
+                if (!UnsupportedShapes.Contains(shapeType))
+                {
+                    foreach (Transform child in category)
+                    {
+                        var toggle = child.GetComponent<Toggle>();
+                        if (toggle)
+                            list.Add(toggle);
+                    }
+                }
+
+
+                ShapeOptionToggles.Add(list);
+                shapeType++;
+            }
 
             // Depth
             {
@@ -917,7 +959,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 EditorThemeManager.ApplyGraphic(RemovePrefabButton.label, ThemeGroup.Function_2_Text);
             }
 
-            var flat = EditorPrefabHolder.Instance.ToggleButton.Duplicate(LeftContent, "flat", shapeSettings.GetSiblingIndex() + 1);
+            var flat = EditorPrefabHolder.Instance.ToggleButton.Duplicate(LeftContent, "flat", ShapeOptionsParent.GetSiblingIndex() + 1);
             FlatToggle = flat.GetComponent<ToggleButtonStorage>();
             FlatToggle.Text = "Flat";
             EditorThemeManager.ApplyToggle(FlatToggle);
