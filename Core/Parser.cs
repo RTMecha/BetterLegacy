@@ -105,12 +105,7 @@ namespace BetterLegacy.Core
         /// <param name="input">String to parse.</param>
         /// <param name="defaultValue">Default value.</param>
         /// <returns>If parse was successful, return the parsed time number. Otherwise, return assigned default value.</returns>
-        public static float TryParseTimeCode(string str, float defaultValue)
-        {
-            if (TryParseTimeCode(str, out float result))
-                return result;
-            return defaultValue;
-        }
+        public static float TryParseTimeCode(string str, float defaultValue) => TryParseTimeCode(str, out float result) ? result : defaultValue;
 
         public static bool TryParseTimeCode(string str, out float result)
         {
@@ -136,26 +131,7 @@ namespace BetterLegacy.Core
             return false;
         }
 
-        public static float ParseTimeCode(string str)
-        {
-            if (RTString.RegexMatch(str, new Regex(@"([0-9]+):([0-9]+):([0-9.]+)"), out Match match1))
-            {
-                var hours = float.Parse(match1.Groups[1].ToString()) * 3600f;
-                var minutes = float.Parse(match1.Groups[2].ToString()) * 60f;
-                var seconds = float.Parse(match1.Groups[3].ToString());
-
-                return hours + minutes + seconds;
-            }
-            else if (RTString.RegexMatch(str, new Regex(@"([0-9]+):([0-9.]+)"), out Match match2))
-            {
-                var minutes = float.Parse(match2.Groups[1].ToString()) * 60f;
-                var seconds = float.Parse(match2.Groups[2].ToString());
-
-                return minutes + seconds;
-            }
-
-            return 0f;
-        }
+        public static float ParseTimeCode(string str) => TryParseTimeCode(str, 0f);
 
         public static Vector2 TryParse(JSONNode jn, Vector2 defaultValue)
             => jn == null ? defaultValue :
@@ -206,6 +182,19 @@ namespace BetterLegacy.Core
             return jn;
         }
 
+        public static T Parse<T>(JSONNode jn) where T : IJSON, new()
+        {
+            var obj = new T();
+            obj.ReadJSON(jn);
+            return obj;
+        }
+
+        /// <summary>
+        /// Parses an object list from a JSON Array.
+        /// </summary>
+        /// <typeparam name="T">Type of the object.</typeparam>
+        /// <param name="jn">JSON to parse.</param>
+        /// <returns>Returns a list parsed from <paramref name="jn"/>.</returns>
         public static List<T> ParseObjectList<T>(JSONNode jn) where T : PAObject<T>, new()
         {
             var list = new List<T>();
@@ -214,9 +203,45 @@ namespace BetterLegacy.Core
             return list;
         }
 
+        /// <summary>
+        /// Converts an <see cref="IJSON"/> object list to a JSON Array.
+        /// </summary>
+        /// <typeparam name="T">Type of the object. Must be <see cref="IJSON"/>.</typeparam>
+        /// <param name="objs">List of objects to convert.</param>
+        /// <returns>Returns a JSON Array based on the object list.</returns>
+        public static JSONNode ObjectListToJSON<T>(List<T> objs) where T : IJSON
+        {
+            var jn = NewJSONArray();
+            var index = 0;
+            for (int i = 0; i < objs.Count; i++)
+            {
+                var obj = objs[i];
+                if (!obj.ShouldSerialize)
+                    continue;
+
+                jn[index] = obj.ToJSON();
+                index++;
+            }
+            return jn;
+        }
+
+        /// <summary>
+        /// Checks if a JSON Node is a string.
+        /// </summary>
+        /// <param name="jn">JSON to check.</param>
+        /// <returns>Returns <see langword="true"/> if <paramref name="jn"/> is a string, otherwise returns <see langword="false"/>.</returns>
         public static bool IsCompatibleString(JSONNode jn) => jn != null && jn.IsString && !string.IsNullOrEmpty(jn);
 
+        /// <summary>
+        /// Creates a new JSON Object.
+        /// </summary>
+        /// <returns>Returns new {} (JSON Object).</returns>
         public static JSONNode NewJSONObject() => JSON.Parse("{}");
+
+        /// <summary>
+        /// Creates a new JSON Array.
+        /// </summary>
+        /// <returns>Returns new [] (JSON Array).</returns>
         public static JSONNode NewJSONArray() => JSON.Parse("[]");
     }
 }
