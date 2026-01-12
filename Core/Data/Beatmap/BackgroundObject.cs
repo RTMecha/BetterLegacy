@@ -35,6 +35,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public string ID { get => id; set => id = value; }
 
+        public DetailMode detailMode;
+
         #region Timing
 
         float startTime;
@@ -313,7 +315,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public override void CopyData(BackgroundObject orig, bool newID = true)
         {
@@ -323,6 +325,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             autoKillType = orig.autoKillType;
             autoKillOffset = orig.autoKillOffset;
             active = orig.active;
+            detailMode = orig.detailMode;
             drawFade = orig.drawFade;
             depth = orig.depth;
             layer = orig.layer;
@@ -409,6 +412,9 @@ namespace BetterLegacy.Core.Data.Beatmap
             scale = new Vector2(jn["size"]["x"].AsFloat, jn["size"]["y"].AsFloat);
 
             rot = jn["rot"].AsFloat;
+
+            if (jn["dm"] != null)
+                detailMode = (DetailMode)jn["dm"].AsInt;
 
             if (jn["layer"] != null)
                 depth = jn["layer"].AsInt;
@@ -625,6 +631,9 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["fade_col"]["sat"] = fadeSaturation;
             if (fadeValue != 0f)
                 jn["fade_col"]["val"] = fadeValue;
+
+            if (detailMode != DetailMode.Normal)
+                jn["dm"] = (int)detailMode;
 
             if (depth != 0)
                 jn["d"] = depth;

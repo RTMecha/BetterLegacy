@@ -339,7 +339,7 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         #region Runtime BG Objects
 
-        public bool SkipRuntimeBGObject(BackgroundObject backgroundObject) => !CoreConfig.Instance.ShowBackgroundObjects.Value || !backgroundObject.active;
+        public bool SkipRuntimeBGObject(BackgroundObject backgroundObject) => !CoreConfig.Instance.ShowBackgroundObjects.Value || !backgroundObject.active || !backgroundObject.detailMode.CanSpawn();
 
         public IEnumerable<IRTObject> ToRuntimeBGObjects() => ToRuntimeBGObjects(GameData.Current.BackgroundObjects);
 
@@ -495,7 +495,7 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         #region Runtime BG Modifiers
 
-        public bool SkipRuntimeModifiers(BackgroundObject backgroundObject) => backgroundObject.modifiers.IsEmpty();
+        public bool SkipRuntimeModifiers(BackgroundObject backgroundObject) => backgroundObject.modifiers.IsEmpty() || !backgroundObject.detailMode.CanSpawn();
 
         public IEnumerable<IRTObject> ToRuntimeBGModifiers() => ToRuntimeBGModifiers(GameData.Current.backgroundObjects);
 
