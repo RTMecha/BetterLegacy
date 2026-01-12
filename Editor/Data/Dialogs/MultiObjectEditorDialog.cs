@@ -161,6 +161,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                             new SpacerElement().Init(EditorElement.InitSettings.Default.Parent(parent));
 
+                            #region Properties
+
                             new LabelsElement("Editor Layer").Init(EditorElement.InitSettings.Default.Parent(parent));
                             new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerInt()
                             {
@@ -281,7 +283,11 @@ namespace BetterLegacy.Editor.Data.Dialogs
                             }).Init(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced));
                             ButtonElement.Label1Button("Reverse Indexes", EditorHelper.ReverseSelectedObjectIndexes).Init(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced).Rect(RectValues.Default.SizeDelta(0f, 32f)));
 
+                            #endregion
+
                             new SpacerElement().Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                            #region Colors
 
                             var baseColorInput = new StringInputElement("FFFFFF", null)
                             {
@@ -371,7 +377,11 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                     });
                                 }, labelAlignment: TextAnchor.MiddleCenter));
 
+                            #endregion
+
                             new SpacerElement().Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                            #region Editing States
 
                             new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
                                 new LabelElement("Hidden State")
@@ -493,7 +503,11 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                     }
                                 }), labelAlignment: TextAnchor.MiddleCenter));
 
+                            #endregion
+
                             new SpacerElement().Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                            #region Groups
 
                             new LabelsElement("Editor Groups").Init(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced));
                             new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
@@ -503,10 +517,39 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                     timelineObject.Group = string.Empty;
                                     timelineObject.Render();
                                 }), buttonThemeGroup: ThemeGroup.Delete, graphicThemeGroup: ThemeGroup.Delete_Text));
+                            // validates all the objects editor groups.
+                            ButtonElement.Label1Button("Validate Editor Groups", () => MultiObjectEditor.inst.ForEachTimelineObject(timelineObject =>
+                            {
+                                if (!RTEditor.inst.editorInfo.editorGroups.Has(x => x.name == timelineObject.Group))
+                                    RTEditor.inst.editorInfo.editorGroups.Add(new EditorGroup(timelineObject.Group));
+                            }));
+                            new NumberInputElement("editor group", null, new NumberInputElement.ArrowHandler()
+                            {
+                                standardArrowFunctions = false,
+                                middleClicked = _val =>
+                                {
+                                    MultiObjectEditor.inst.ForEachTimelineObject(timelineObject => timelineObject.Group = _val);
+                                    EditorManager.inst.DisplayNotification($"Set the editor group \"{_val}\" to all selected objects.", 4f, EditorManager.NotificationType.Success);
+                                },
+                                subClicked = _val =>
+                                {
+                                    MultiObjectEditor.inst.ForEachTimelineObject(timelineObject => timelineObject.Group = timelineObject.Group.Remove(_val));
+                                    EditorManager.inst.DisplayNotification($"Removed \"{_val}\" from the editor group of all selected objects.", 4f, EditorManager.NotificationType.Success);
+                                },
+                                addClicked = _val =>
+                                {
+                                    MultiObjectEditor.inst.ForEachTimelineObject(timelineObject => timelineObject.Group += _val);
+                                    EditorManager.inst.DisplayNotification($"Added \"{_val}\" to the editor group of all selected objects.", 4f, EditorManager.NotificationType.Success);
+                                },
+                            }).Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                            #endregion
 
                             break;
                         }
                     case Tab.Prefab: {
+                            #region Prefab Instance
+
                             new LabelsElement(HorizontalOrVerticalLayoutValues.Horizontal.ChildControlHeight(false), "Assign Objects to Prefab").Init(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Normal));
 
                             new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Normal), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
@@ -558,7 +601,11 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                 ButtonElement.Label1Button("Collapse", () => RTPrefabEditor.inst.CollapseCurrentPrefab()),
                                 ButtonElement.Label1Button("Collapse New", () => RTPrefabEditor.inst.CollapseCurrentPrefab(true)));
 
+                            #endregion
+
                             new SpacerElement().Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                            #region Transform
 
                             new LabelsElement("Move Prefabs X", "Move Prefabs Y").Init(EditorElement.InitSettings.Default.Parent(parent));
 
@@ -760,6 +807,10 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                 },
                             }).Init(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Normal));
 
+                            #endregion
+
+                            #region Instance Data
+
                             new SpacerElement().Init(EditorElement.InitSettings.Default.Parent(parent));
 
                             new LabelsElement("Instance Data").Init(EditorElement.InitSettings.Default.Parent(parent));
@@ -779,6 +830,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                 if (!timelineObjects.IsEmpty())
                                     EditorManager.inst.DisplayNotification($"Pasted Prefab instance data.", 2f, EditorManager.NotificationType.Success);
                             }, buttonThemeGroup: ThemeGroup.Paste, graphicThemeGroup: ThemeGroup.Paste_Text).Init(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Normal).Rect(RectValues.Default.SizeDelta(0f, 32f)));
+                            
+                            #endregion
+
                             break;
                         }
                     case Tab.Properties: {
@@ -787,14 +841,32 @@ namespace BetterLegacy.Editor.Data.Dialogs
                             new LabelsElement("Detail Mode").Init(EditorElement.InitSettings.Default.Parent(parent));
                             new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
                                 CreateAddSubButtons(
-                                    timelineObject => timelineObject.isBeatmapObject,
-                                    timelineObject => (int)timelineObject.GetData<BeatmapObject>().detailMode,
+                                    timelineObject => true,
+                                    timelineObject => timelineObject.isBeatmapObject ? (int)timelineObject.GetData<BeatmapObject>().detailMode : timelineObject.isBackgroundObject ? (int)timelineObject.GetData<BackgroundObject>().detailMode : (int)timelineObject.GetData<PrefabObject>().detailMode,
                                     EnumHelper.GetNames<DetailMode>().Length,
                                     (timelineObject, num) =>
                                     {
-                                        var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                                        beatmapObject.detailMode = (DetailMode)num;
-                                        RTLevel.Current?.UpdateObject(beatmapObject);
+                                        switch (timelineObject.TimelineReference)
+                                        {
+                                            case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                                                    var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                                    beatmapObject.detailMode = (DetailMode)num;
+                                                    RTLevel.Current?.UpdateObject(beatmapObject);
+                                                    break;
+                                                }
+                                            case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                                                    var backgroundObject = timelineObject.GetData<BackgroundObject>();
+                                                    backgroundObject.detailMode = (DetailMode)num;
+                                                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
+                                                    break;
+                                                }
+                                            case TimelineObject.TimelineReferenceType.PrefabObject: {
+                                                    var prefabObject = timelineObject.GetData<PrefabObject>();
+                                                    prefabObject.detailMode = (DetailMode)num;
+                                                    RTLevel.Current?.UpdatePrefab(prefabObject);
+                                                    break;
+                                                }
+                                        }
                                     }));
                             new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
                                 ButtonElement.Label1Button(nameof(DetailMode.Normal), () => MultiObjectEditor.inst.SetDetailMode(DetailMode.Normal), labelAlignment: TextAnchor.MiddleCenter),
@@ -1674,6 +1746,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                             new SpacerElement().Init(EditorElement.InitSettings.Default.Parent(parent));
 
+                            #region Shape
+
                             new LabelsElement("Shape").Init(EditorElement.InitSettings.Default.Parent(parent));
                             InitShape(parent);
                             RenderShape();
@@ -1706,6 +1780,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                     beatmapObject.text = string.Empty;
                                     RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.IMAGE);
                                 }))));
+
+                            #endregion
 
                             new SpacerElement().Init(EditorElement.InitSettings.Default.Parent(parent));
 
@@ -1785,6 +1861,10 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                     beatmapObject.opacityCollision = !beatmapObject.opacityCollision;
                                     RTLevel.Current?.UpdateObject(beatmapObject);
                                 }), labelAlignment: TextAnchor.MiddleCenter));
+
+                            #region Background Objects
+
+                            #endregion
 
                             break;
                         }
@@ -2013,7 +2093,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         }
                     case Tab.Keyframes: {
                             // todo: add creating keyframes for other types
-                                
+
                             #region Assign Colors
 
                             var checkmarkRect = RectValues.Default.SizeDelta(32f, 32f);
@@ -2554,6 +2634,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                             new SpacerElement().Init(EditorElement.InitSettings.Default.Parent(parent));
 
+                            MultiKeyframeRelativeEdit(parent, "Position Relative", 0);
+                            MultiKeyframeRelativeEdit(parent, "Scale Relative", 1);
+                            MultiKeyframeRelativeEdit(parent, "Rotation Relative", 2);
+
+                            new SpacerElement().Init(EditorElement.InitSettings.Default.Parent(parent));
+
                             #region Clear
 
                             new LabelsElement(new LabelElement("Clear") { fontSize = 22, fontStyle = FontStyle.Bold }).Init(EditorElement.InitSettings.Default.Parent(parent));
@@ -2596,10 +2682,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
                             var oldNameInput = new StringInputElement("name", null)
                             {
                                 layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
+                                swapType = InputFieldSwapper.Type.String,
                             };
                             var newNameInput = new StringInputElement("name", null)
                             {
                                 layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
+                                swapType = InputFieldSwapper.Type.String,
                             };
                             new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
                                 new LabelElement("Old Name")
@@ -2630,10 +2718,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
                             var oldTextInput = new StringInputElement("text", null)
                             {
                                 layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
+                                swapType = InputFieldSwapper.Type.String,
                             };
                             var newTextInput = new StringInputElement("text", null)
                             {
                                 layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
+                                swapType = InputFieldSwapper.Type.String,
                             };
                             new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
                                 new LabelElement("Old Text")
@@ -2664,10 +2754,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
                             var oldTagInput = new StringInputElement("object group", null)
                             {
                                 layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
+                                swapType = InputFieldSwapper.Type.String,
                             };
                             var newTagInput = new StringInputElement("object group", null)
                             {
                                 layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
+                                swapType = InputFieldSwapper.Type.String,
                             };
                             new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
                                 new LabelElement("Old Tag")
@@ -2698,10 +2790,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
                             var oldModifierValueInput = new StringInputElement("value", null)
                             {
                                 layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
+                                swapType = InputFieldSwapper.Type.String,
                             };
                             var newModifierValueInput = new StringInputElement("value", null)
                             {
                                 layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
+                                swapType = InputFieldSwapper.Type.String,
                             };
                             new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
                                 new LabelElement("Old Modifier Value")
@@ -2888,6 +2982,33 @@ namespace BetterLegacy.Editor.Data.Dialogs
             #endregion
         }
 
+        void MultiKeyframeRelativeEdit(Transform parent, string label, int type)
+        {
+            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                new LabelElement(label)
+                {
+                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                },
+                ButtonElement.Label1Button("On", () => MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                {
+                    for (int i = 0; i < beatmapObject.events[type].Count; i++)
+                        beatmapObject.events[type][i].relative = true;
+                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                }), labelAlignment: TextAnchor.MiddleCenter),
+                ButtonElement.Label1Button("Off", () => MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                {
+                    for (int i = 0; i < beatmapObject.events[type].Count; i++)
+                        beatmapObject.events[type][i].relative = false;
+                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                }), labelAlignment: TextAnchor.MiddleCenter),
+                ButtonElement.Label1Button("Swap", () => MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                {
+                    for (int i = 0; i < beatmapObject.events[type].Count; i++)
+                        beatmapObject.events[type][i].relative = !beatmapObject.events[type][i].relative;
+                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                }), labelAlignment: TextAnchor.MiddleCenter));
+        }
+
         void GenerateSyncButtons(Transform parent, string name, Action<BeatmapObject, BeatmapObject> action)
         {
             new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
@@ -2987,7 +3108,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 ButtonElement.Label1Button("Paste to Indexes", () => pasteToIndexes?.Invoke(indexField.inputField.text), buttonThemeGroup: ThemeGroup.Paste, graphicThemeGroup: ThemeGroup.Paste_Text));
         }
 
-        public void InitShape(Transform parent)
+        void InitShape(Transform parent)
         {
             if (!multiShapes)
             {
