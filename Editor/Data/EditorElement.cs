@@ -990,6 +990,8 @@ namespace BetterLegacy.Editor.Data
 
         public ThemeGroup textThemeGroup = ThemeGroup.Input_Field_Text;
 
+        public InputFieldSwapper.Type? swapType;
+
         public override string DefaultName => "input element";
 
         #endregion
@@ -1009,6 +1011,9 @@ namespace BetterLegacy.Editor.Data
 
             ApplyRect(initSettings);
             ApplyLayoutElement();
+
+            if (swapType is InputFieldSwapper.Type type)
+                inputField.gameObject.GetOrAddComponent<InputFieldSwapper>().Init(inputField, type);
 
             if (!initSettings.applyThemes)
                 return;
