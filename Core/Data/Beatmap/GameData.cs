@@ -1529,7 +1529,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             var beatmap = GetBeatmap(modifier, prefabable);
             var prefabInstanceOnly = modifier.prefabInstanceOnly && !string.IsNullOrEmpty(prefabable.PrefabInstanceID);
-            return beatmap.GetPrefabables().First(x => (!modifier.groupAlive || x is ILifetime akt && akt.Alive) && x is IModifyable modifyable && modifyable.Tags.Contains(tag) && (!prefabInstanceOnly || x.SamePrefabInstance(prefabable)));
+            return beatmap.GetPrefabables().FirstOrDefault(x => (!modifier.groupAlive || x is ILifetime akt && akt.Alive) && x is IModifyable modifyable && modifyable.Tags.Contains(tag) && (!prefabInstanceOnly || x.SamePrefabInstance(prefabable)));
         }
 
         /// <summary>
@@ -1698,7 +1698,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             var prefabInstanceOnly = modifier.prefabInstanceOnly && !string.IsNullOrEmpty(prefabable.PrefabInstanceID);
 
             var transformables = beatmap.GetTransformables();
-            return string.IsNullOrEmpty(tag) ? prefabable as ITransformable : transformables.First(x => (!modifier.groupAlive || x is ILifetime akt && akt.Alive) &&
+            return string.IsNullOrEmpty(tag) ? prefabable as ITransformable : transformables.FirstOrDefault(x => (!modifier.groupAlive || x is ILifetime akt && akt.Alive) &&
                     x is IModifyable modifyable && modifyable.Tags.Contains(tag) && (!prefabInstanceOnly || x is IPrefabable p && p.SamePrefabInstance(prefabable)));
         }
 
@@ -1736,7 +1736,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             var prefabInstanceOnly = modifier.prefabInstanceOnly && !string.IsNullOrEmpty(prefabable.PrefabInstanceID);
 
             var modifyables = beatmap.GetModifyables();
-            return string.IsNullOrEmpty(tag) ? prefabable as IModifyable : modifyables.First(x => (!modifier.groupAlive || x is ILifetime akt && akt.Alive) &&
+            return string.IsNullOrEmpty(tag) ? prefabable as IModifyable : modifyables.FirstOrDefault(x => (!modifier.groupAlive || x is ILifetime akt && akt.Alive) &&
                     x.Tags.Contains(tag) && (!prefabInstanceOnly || x is IPrefabable p && p.SamePrefabInstance(prefabable)));
         }
 
@@ -1774,7 +1774,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             var prefabInstanceOnly = modifier.prefabInstanceOnly && !string.IsNullOrEmpty(prefabable.PrefabInstanceID);
 
             var modifyables = beatmap.GetParentables();
-            return string.IsNullOrEmpty(tag) ? prefabable as IParentable : modifyables.First(x => (!modifier.groupAlive || x is ILifetime akt && akt.Alive) &&
+            return string.IsNullOrEmpty(tag) ? prefabable as IParentable : modifyables.FirstOrDefault(x => (!modifier.groupAlive || x is ILifetime akt && akt.Alive) &&
                     x is IModifyable modifyable && modifyable.Tags.Contains(tag) && (!prefabInstanceOnly || x is IPrefabable p && p.SamePrefabInstance(prefabable)));
         }
 
