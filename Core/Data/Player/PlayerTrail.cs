@@ -10,7 +10,7 @@ namespace BetterLegacy.Core.Data.Player
 
         #region Values
 
-        public bool ShouldSerialize =>
+        public override bool ShouldSerialize =>
             emitting ||
             time != 1f ||
             startWidth != 1f ||

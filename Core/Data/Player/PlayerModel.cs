@@ -811,7 +811,7 @@ namespace BetterLegacy.Core.Data.Player
 
             #region Values
 
-            public bool ShouldSerialize =>
+            public override bool ShouldSerialize =>
                 active ||
                 amount != 0.4f ||
                 easing != 6;
@@ -869,7 +869,7 @@ namespace BetterLegacy.Core.Data.Player
 
             #region Values
 
-            public bool ShouldSerialize =>
+            public override bool ShouldSerialize =>
                 active ||
                 mode != GUIHealthMode.Images ||
                 topColor != 23 ||
@@ -1533,7 +1533,7 @@ namespace BetterLegacy.Core.Data.Player
 
             #region Values
 
-            public bool ShouldSerialize =>
+            public override bool ShouldSerialize =>
                 distance != 2f ||
                 mode != TailMode.Legacy ||
                 grows ||

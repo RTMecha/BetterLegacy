@@ -23,7 +23,7 @@ namespace BetterLegacy.Core.Data.Level
         /// <summary>
         /// If the saved data should write to JSON.
         /// </summary>
-        public bool ShouldSerialize => !string.IsNullOrEmpty(ID) && ID != "0" && !ID.Contains("-") && (Completed || UnlockedAchievements != null && !UnlockedAchievements.IsEmpty() || Variables != null && !Variables.IsEmpty());
+        public override bool ShouldSerialize => !string.IsNullOrEmpty(ID) && ID != "0" && !ID.Contains("-") && (Completed || UnlockedAchievements != null && !UnlockedAchievements.IsEmpty() || Variables != null && !Variables.IsEmpty());
 
         /// <summary>
         /// Level collection name for readable display.

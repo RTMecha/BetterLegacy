@@ -12,6 +12,8 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// </summary>
     public class ObjectEditorData : PAObject<ObjectEditorData>
     {
+        #region Constructors
+
         public ObjectEditorData() {  }
 
         public ObjectEditorData(int bin, int layer, bool collapse, bool locked)
@@ -36,7 +38,25 @@ namespace BetterLegacy.Core.Data.Beatmap
             this.markColor = markColor;
         }
 
+        #endregion
+
         #region Values
+
+        #region Constants
+
+        public const string RED_GREEN = "FFE904";
+
+        public const string RED_BLUE = "952BFF";
+
+        public const string GREEN_BLUE = "34E7FF";
+
+        public const string RED = "EE153F";
+
+        public const string GREEN = "00D36E";
+
+        public const string BLUE = "265AEE";
+
+        #endregion
 
         int bin;
         /// <summary>
@@ -83,22 +103,40 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public string editorGroup;
 
+        /// <summary>
+        /// Color of the timeline object.
+        /// </summary>
         public string color;
 
+        /// <summary>
+        /// Selected color of the timeline object.
+        /// </summary>
         public string selectedColor;
 
+        /// <summary>
+        /// Text color of the timeline object.
+        /// </summary>
         public string textColor;
 
+        /// <summary>
+        /// Mark color of the timeline object.
+        /// </summary>
         public string markColor;
 
+        /// <summary>
+        /// List of custom value displays.
+        /// </summary>
         public List<CustomValueDisplay> displays = new List<CustomValueDisplay>();
 
+        /// <summary>
+        /// List of misc display values.
+        /// </summary>
         public Dictionary<string, float> miscDisplayValues = new Dictionary<string, float>();
 
         /// <summary>
         /// If the editor data should serialize to JSON.
         /// </summary>
-        public bool ShouldSerialize =>
+        public override bool ShouldSerialize =>
             Bin != 0 || Layer != 0 ||
             collapse || locked || !selectable || hidden || !string.IsNullOrEmpty(editorGroup) ||
             !string.IsNullOrEmpty(color) || !string.IsNullOrEmpty(selectedColor) || !string.IsNullOrEmpty(textColor) || !string.IsNullOrEmpty(markColor) ||
@@ -106,23 +144,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #endregion
 
-        #region Constants
-
-        public const string RED_GREEN = "FFE904";
-
-        public const string RED_BLUE = "952BFF";
-
-        public const string GREEN_BLUE = "34E7FF";
-
-        public const string RED = "EE153F";
-
-        public const string GREEN = "00D36E";
-
-        public const string BLUE = "265AEE";
-
-        #endregion
-
-        #region Methods
+        #region Functions
 
         public override void CopyData(ObjectEditorData orig, bool newID = true)
         {

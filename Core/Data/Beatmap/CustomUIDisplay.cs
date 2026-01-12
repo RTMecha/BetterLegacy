@@ -17,7 +17,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <summary>
         /// If the UI data should serialize to JSON.
         /// </summary>
-        public bool ShouldSerialize =>
+        public override bool ShouldSerialize =>
             !string.IsNullOrEmpty(path) || type != UIType.InputField || !string.IsNullOrEmpty(label) || multiValue != "1" || !interactible || // base
             overrideScroll && (scrollAmount != 0.1f || scrollMultiply != 10.0f) || min != 0.0f || max != 0.0f || resetValue != 0.0f || // input field
             !options.IsEmpty() || // dropdown

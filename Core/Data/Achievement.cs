@@ -14,6 +14,8 @@ namespace BetterLegacy.Core.Data
     /// </summary>
     public class Achievement : PAObject<Achievement>
     {
+        #region Constructors
+
         public Achievement()
         {
             id = GetNumberID();
@@ -34,6 +36,19 @@ namespace BetterLegacy.Core.Data
         {
             this.hint = hint;
         }
+
+        #endregion
+
+        #region Values
+
+        #region Constants
+
+        /// <summary>
+        /// The default hint.
+        /// </summary>
+        public const string DEFAULT_HINT = "Unlock this achievement to unhide it.";
+
+        #endregion
 
         /// <summary>
         /// Name of the achievement.
@@ -85,34 +100,9 @@ namespace BetterLegacy.Core.Data
         /// </summary>
         public bool shared;
 
-        public void Unlock()
-        {
-            if (unlocked)
-                return;
+        #endregion
 
-            unlocked = true;
-            CoreHelper.Log($"{name} achieved!");
-        }
-
-        public void Lock()
-        {
-            if (!unlocked)
-                return;
-
-            unlocked = false;
-        }
-
-        public void CheckIconPath(string file)
-        {
-            if (RTFile.FileExists(file))
-                icon = SpriteHelper.LoadSprite(file);
-        }
-
-        public void CheckLockedIconPath(string file)
-        {
-            if (RTFile.FileExists(file))
-                lockedIcon = SpriteHelper.LoadSprite(file);
-        }
+        #region Functions
 
         public override void CopyData(Achievement orig, bool newID = true)
         {
@@ -168,10 +158,34 @@ namespace BetterLegacy.Core.Data
             return jn;
         }
 
-        public string GetHint() => !string.IsNullOrEmpty(hint) ? hint : "Unlock this achievement to unhide it.";
+        /// <summary>
+        /// Checks for the achievement's icon.
+        /// </summary>
+        /// <param name="file">File path to the icon.</param>
+        public void CheckIconPath(string file)
+        {
+            if (RTFile.FileExists(file))
+                icon = SpriteHelper.LoadSprite(file);
+        }
 
-        public static Achievement TestAchievement => new Achievement("265265", "Test", "Test this achievement!", 3, LegacyPlugin.AtanPlaceholder);
+        /// <summary>
+        /// Checks for the achievement's locked icon.
+        /// </summary>
+        /// <param name="file">File path to the icon.</param>
+        public void CheckLockedIconPath(string file)
+        {
+            if (RTFile.FileExists(file))
+                lockedIcon = SpriteHelper.LoadSprite(file);
+        }
+
+        /// <summary>
+        /// Gets the hint for how to unlock the achievement.
+        /// </summary>
+        /// <returns>Returns <see cref="hint"/> if it's not null or empty, otherwise returns <see cref="DEFAULT_HINT"/>.</returns>
+        public string GetHint() => !string.IsNullOrEmpty(hint) ? hint : DEFAULT_HINT;
 
         public override string ToString() => $"{id} - {name} = {unlocked}";
+
+        #endregion
     }
 }

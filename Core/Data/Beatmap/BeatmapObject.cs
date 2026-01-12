@@ -34,6 +34,41 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Values
 
+        #region Constants
+
+        /// <summary>
+        /// Default object cameo
+        /// </summary>
+        public const string DEFAULT_OBJECT_NAME = "\"Default object cameo\" -Viral Mecha";
+
+        /// <summary>
+        /// Camera parent ID.
+        /// </summary>
+        public const string CAMERA_PARENT = "CAMERA_PARENT";
+        public const string DEFAULT_PARENT_TYPE = "101";
+        public const string DEFAULT_PARENT_ADDITIVE = "000";
+
+        public const float TRIANGLE_TOP_OFFSET = -0.575f;
+        public const float TRIANGLE_BOTTOM_OFFSET = 0.2875f;
+        public const float TRIANGLE_HORIZONTAL_OFFSET = 0.497964993f;
+
+        /// <summary>
+        /// Helper opacity.
+        /// </summary>
+        public const float HELPER_OPACITY = 0.35f;
+
+        /// <summary>
+        /// <see cref="Depth"/> is multiplied by this value for the visual object.
+        /// </summary>
+        public const float DEPTH_VISUAL_MULTIPLY = 0.1f;
+
+        /// <summary>
+        /// <see cref="Depth"/> is multiplied by this value for each parent object in the parent chain.
+        /// </summary>
+        public const float DEPTH_MULTIPLY = 0.0005f;
+
+        #endregion
+
         /// <summary>
         /// Name of the object.
         /// </summary>
@@ -590,41 +625,6 @@ namespace BetterLegacy.Core.Data.Beatmap
         public bool CanRenderInTimeline => !string.IsNullOrEmpty(id) && !FromPrefab;
 
         #endregion
-
-        #endregion
-
-        #region Constants
-
-        /// <summary>
-        /// Default object cameo
-        /// </summary>
-        public const string DEFAULT_OBJECT_NAME = "\"Default object cameo\" -Viral Mecha";
-
-        /// <summary>
-        /// Camera parent ID.
-        /// </summary>
-        public const string CAMERA_PARENT = "CAMERA_PARENT";
-        public const string DEFAULT_PARENT_TYPE = "101";
-        public const string DEFAULT_PARENT_ADDITIVE = "000";
-
-        public const float TRIANGLE_TOP_OFFSET = -0.575f;
-        public const float TRIANGLE_BOTTOM_OFFSET = 0.2875f;
-        public const float TRIANGLE_HORIZONTAL_OFFSET = 0.497964993f;
-
-        /// <summary>
-        /// Helper opacity.
-        /// </summary>
-        public const float HELPER_OPACITY = 0.35f;
-
-        /// <summary>
-        /// <see cref="Depth"/> is multiplied by this value for the visual object.
-        /// </summary>
-        public const float DEPTH_VISUAL_MULTIPLY = 0.1f;
-
-        /// <summary>
-        /// <see cref="Depth"/> is multiplied by this value for each parent object in the parent chain.
-        /// </summary>
-        public const float DEPTH_MULTIPLY = 0.0005f;
 
         #endregion
 

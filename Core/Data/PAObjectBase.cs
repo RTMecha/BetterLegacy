@@ -11,7 +11,7 @@ namespace BetterLegacy.Core.Data
     /// <summary>
     /// Base PA object with ID.
     /// </summary>
-    public class PAObjectBase : Exists
+    public class PAObjectBase : Exists, IJSON
     {
         public PAObjectBase() => id = LSText.randomString(16);
 
@@ -19,6 +19,8 @@ namespace BetterLegacy.Core.Data
         /// Identification of the object.
         /// </summary>
         public string id;
+
+        public virtual bool ShouldSerialize => true;
 
         /// <summary>
         /// Creates a 16 length string ID.

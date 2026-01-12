@@ -32,7 +32,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public override void CopyData(BeatmapData orig, bool newID = true)
         {

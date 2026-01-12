@@ -16,6 +16,8 @@ namespace BetterLegacy.Core.Data.Beatmap
     {
         public Assets() { }
 
+        #region Values
+
         /// <summary>
         /// Stored sprite assets.
         /// </summary>
@@ -26,11 +28,9 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public List<SoundAsset> sounds = new List<SoundAsset>();
 
-        /// <summary>
-        /// Checks if the assets are empty.
-        /// </summary>
-        /// <returns>Returns true if <see cref="sprites"/> and <see cref="sounds"/> are empty, otherwise returns false.</returns>
-        public bool IsEmpty() => sprites.IsEmpty() && sounds.IsEmpty();
+        #endregion
+
+        #region Functions
 
         public override void CopyData(Assets orig, bool newID = true)
         {
@@ -83,6 +83,12 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             return jn;
         }
+
+        /// <summary>
+        /// Checks if the assets are empty.
+        /// </summary>
+        /// <returns>Returns true if <see cref="sprites"/> and <see cref="sounds"/> are empty, otherwise returns false.</returns>
+        public bool IsEmpty() => sprites.IsEmpty() && sounds.IsEmpty();
 
         /// <summary>
         /// Clears all assets.
@@ -140,5 +146,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <param name="name">Name of the sound to remove.</param>
         /// <returns>Returns true if a sound asset was successfully removed, otherwise returns false.</returns>
         public bool RemoveSound(string name) => sounds.Remove(x => x.name == name);
+
+        #endregion
     }
 }

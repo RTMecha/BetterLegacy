@@ -12,7 +12,7 @@ namespace BetterLegacy.Core.Data.Player
 
         #region Values
 
-        public bool ShouldSerialize =>
+        public override bool ShouldSerialize =>
             emitting ||
             this.ShouldSerializeShape() ||
             color != 23 ||

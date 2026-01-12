@@ -412,7 +412,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public override void CopyData(PrefabObject orig, bool newID = true)
         {

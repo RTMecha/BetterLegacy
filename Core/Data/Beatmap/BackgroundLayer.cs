@@ -6,6 +6,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 {
     public class BackgroundLayer : PAObject<BackgroundLayer>, IPrefabable
     {
+        #region Constructors
+
         public BackgroundLayer() : base() { }
 
         public BackgroundLayer(int depth, int color) : this()
@@ -13,6 +15,10 @@ namespace BetterLegacy.Core.Data.Beatmap
             this.depth = depth;
             this.color = color;
         }
+
+        #endregion
+
+        #region Values
 
         /// <summary>
         /// Depth offset of the layer.
@@ -37,16 +43,14 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public float StartTime { get; set; }
 
-        public IRTObject GetRuntimeObject() => null;
-
-        public float GetObjectLifeLength(float offset = 0f, bool noAutokill = false, bool collapse = false) => 0f;
-
         /// <summary>
         /// Runtime object reference.
         /// </summary>
         public BackgroundLayerObject runtimeObject;
 
-        #region Methods
+        #endregion
+
+        #region Functions
 
         public override void CopyData(BackgroundLayer orig, bool newID = true)
         {
@@ -95,7 +99,16 @@ namespace BetterLegacy.Core.Data.Beatmap
             return jn;
         }
 
+        /// <summary>
+        /// Gets the default background layer.
+        /// </summary>
+        /// <param name="i">Background layer index.</param>
+        /// <returns>Returns the default background layer.</returns>
         public static BackgroundLayer GetDefault(int i) => new BackgroundLayer(100 * (i + 1), 1 * (i + 1));
+
+        public IRTObject GetRuntimeObject() => null;
+
+        public float GetObjectLifeLength(float offset = 0f, bool noAutokill = false, bool collapse = false) => 0f;
 
         #endregion
     }
