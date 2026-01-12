@@ -181,15 +181,11 @@ namespace BetterLegacy.Editor.Managers
                 var beatmapObject = timelineObject.GetData<BeatmapObject>();
                 beatmapObject.objectType = BeatmapObject.ObjectType.Decoration;
 
-                Modifier modifier;
-                if (ModifiersManager.inst.modifiers.TryFind(x => x.Name == nameof(ModifierFunctions.actorFrameTexture), out modifier))
-                    beatmapObject.modifiers.Add(modifier.Copy());
-                if (ModifiersManager.inst.modifiers.TryFind(x => x.Name == nameof(ModifierFunctions.translateShape), out modifier))
+                if (ModifiersManager.inst.modifiers.TryFind(x => x.Name == nameof(ModifierFunctions.actorFrameTexture), out Modifier modifier))
                 {
-                    beatmapObject.origin = new Vector2(-0.5f, -0.5f);
                     modifier = modifier.Copy();
-                    modifier.values[1] = "0.5";
-                    modifier.values[2] = "0.5";
+                    modifier.SetValue(11, "0.5");
+                    modifier.SetValue(12, "0.5");
                     beatmapObject.modifiers.Add(modifier);
                 }
             }),
