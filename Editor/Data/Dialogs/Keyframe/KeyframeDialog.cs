@@ -1577,6 +1577,45 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         RTEditor.inst.HideNameEditor();
                     });
                 })),
+                new ButtonElement("Insert Entry", () => RTEditor.inst.ShowNameEditor("Add Dropdown Option", "Entry Index", "Index", "Next", () =>
+                {
+                    if (!int.TryParse(RTEditor.inst.folderCreatorName.text, out int index) || index < 0 || index > Display.options.Count)
+                        return;
+
+                    RTEditor.inst.ShowNameEditor("Add Dropdown Option", "Entry Name", "Value", "Next", () =>
+                    {
+                        var name = RTEditor.inst.folderCreatorName.text;
+                        RTEditor.inst.ShowNameEditor("Add Dropdown Option", "Entry Value", "0", "Add", () =>
+                        {
+                            if (!float.TryParse(RTEditor.inst.folderCreatorName.text, out float value))
+                                return;
+
+                            Display.options.Insert(index, new CustomValueDisplay.Option(name, value));
+                            UpdateDisplay(animatable);
+                            RTEditor.inst.HideNameEditor();
+                        });
+                    });
+                })),
+                new ButtonElement("Edit Entry", () => RTEditor.inst.ShowNameEditor("Add Dropdown Option", "Entry Index", "Index", "Next", () =>
+                {
+                    if (!int.TryParse(RTEditor.inst.folderCreatorName.text, out int index) || !Display.options.TryGetAt(index, out CustomValueDisplay.Option option))
+                        return;
+
+                    RTEditor.inst.ShowNameEditor("Add Dropdown Option", "Entry Name", option.name, "Next", () =>
+                    {
+                        var name = RTEditor.inst.folderCreatorName.text;
+                        RTEditor.inst.ShowNameEditor("Add Dropdown Option", "Entry Value", option.value.ToString(), "Add", () =>
+                        {
+                            if (!float.TryParse(RTEditor.inst.folderCreatorName.text, out float value))
+                                return;
+
+                            option.name = name;
+                            option.value = value;
+                            UpdateDisplay(animatable);
+                            RTEditor.inst.HideNameEditor();
+                        });
+                    });
+                })),
                 new ButtonElement("Remove Entry", () =>
                 {
                     if (Display.options.IsEmpty())
@@ -1584,6 +1623,21 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                     Display.options.RemoveAt(Display.options.Count - 1);
                     UpdateDisplay(animatable);
+                }),
+                new ButtonElement("Remove Entry At", () =>
+                {
+                    if (Display.options.IsEmpty())
+                        return;
+
+                    RTEditor.inst.ShowNameEditor("Add Dropdown Option", "Entry Index", "Index", "Next", () =>
+                    {
+                        if (!int.TryParse(RTEditor.inst.folderCreatorName.text, out int index) || !Display.options.InRange(index))
+                            return;
+
+                        Display.options.RemoveAt(index);
+                        UpdateDisplay(animatable);
+                        RTEditor.inst.HideNameEditor();
+                    });
                 }),
                 new ButtonElement("Clear Entries", () =>
                 {
