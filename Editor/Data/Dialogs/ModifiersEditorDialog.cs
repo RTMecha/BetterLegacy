@@ -322,6 +322,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
             foreach (var modifier in modifyable.Modifiers)
             {
                 int index = num;
+                var modifierCard = new ModifierCard(modifier, index, inCollapsedRegion, this);
+                modifierCards.Add(modifierCard);
+                modifierCard.RenderModifier(modifyable);
                 if (modifier.Name == "endregion")
                 {
                     if (subRegion > 0)
@@ -330,9 +333,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         inCollapsedRegion = false;
                 }
 
-                var modifierCard = new ModifierCard(modifier, index, inCollapsedRegion, this);
-                modifierCards.Add(modifierCard);
-                modifierCard.RenderModifier(modifyable);
                 if (modifier.Name == "region")
                 {
                     if (modifier.collapse)
