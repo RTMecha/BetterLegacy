@@ -15375,22 +15375,6 @@ namespace BetterLegacy.Core.Helpers
 
     #endregion
 
-    public struct ModifierLoopResult
-    {
-        public ModifierLoopResult(bool returned, bool result, Modifier.Type previousType, int index)
-        {
-            this.returned = returned;
-            this.result = result;
-            this.previousType = previousType;
-            this.index = index;
-        }
-
-        public bool returned;
-        public bool result;
-        public Modifier.Type previousType;
-        public int index;
-    }
-
     public class ModifierTrigger
     {
         public ModifierTrigger(string name, Func<Modifier, ModifierLoop, bool> function)

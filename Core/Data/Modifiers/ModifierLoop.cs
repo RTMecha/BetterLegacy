@@ -9,6 +9,8 @@ namespace BetterLegacy.Core.Data.Modifiers
     /// </summary>
     public class ModifierLoop : Exists
     {
+        #region Constructors
+
         public ModifierLoop() { }
 
         public ModifierLoop(IModifierReference reference, Dictionary<string, string> variables)
@@ -16,6 +18,10 @@ namespace BetterLegacy.Core.Data.Modifiers
             this.reference = reference;
             this.variables = variables;
         }
+
+        #endregion
+
+        #region Values
 
         /// <summary>
         /// The current state of the modifier loop.
@@ -37,6 +43,10 @@ namespace BetterLegacy.Core.Data.Modifiers
             get => variables[key];
             set => variables[key] = value;
         }
+
+        #endregion
+
+        #region Functions
 
         /// <summary>
         /// Gets a formatted value.
@@ -60,11 +70,15 @@ namespace BetterLegacy.Core.Data.Modifiers
 
         public static implicit operator Dictionary<string, string>(ModifierLoop modifierLoop) => modifierLoop.variables;
 
+        #endregion
+
         /// <summary>
         /// Represets the current state of the modifier loop.
         /// </summary>
         public class State : Exists
         {
+            #region Values
+
             /// <summary>
             /// If the current state has continued.
             /// </summary>
@@ -101,6 +115,8 @@ namespace BetterLegacy.Core.Data.Modifiers
             /// The end of a forLoop sequence.
             /// </summary>
             public int end = 0;
+
+            #endregion
 
             /// <summary>
             /// Resets the modifier loop state.
