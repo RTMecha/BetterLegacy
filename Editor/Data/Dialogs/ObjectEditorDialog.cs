@@ -948,7 +948,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         toggleLabelText.text = "Value Additive";
                         var toggle = EditorPrefabHolder.Instance.ToggleButton.Duplicate(parent, "relative");
                         var toggleButtonStorage = toggle.GetComponent<ToggleButtonStorage>();
-                        toggleButtonStorage.label.text = "Relative";
+                        toggleButtonStorage.Text = "Relative";
 
                         EditorThemeManager.ApplyLightText(toggleLabelText);
                         EditorThemeManager.ApplyLightText(toggleButtonStorage.label);
@@ -958,19 +958,17 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         {
                             var fleeToggle = EditorPrefabHolder.Instance.ToggleButton.Duplicate(parent, "flee");
                             var fleeToggleStorage = fleeToggle.GetComponent<ToggleButtonStorage>();
-                            fleeToggleStorage.label.text = "Flee";
+                            fleeToggleStorage.Text = "Flee";
 
                             EditorThemeManager.ApplyLightText(fleeToggleStorage.label);
                             EditorThemeManager.ApplyToggle(fleeToggleStorage.toggle, graphic: fleeToggleStorage.label);
                         }
 
                         var flipX = EditorPrefabHolder.Instance.Function1Button.Duplicate(parent, "flipx");
-                        var flipXText = flipX.transform.GetChild(0).GetComponent<Text>();
-                        flipXText.text = "Flip X";
-                        ((RectTransform)flipX.transform).sizeDelta = new Vector2(366f, 32f);
-                        var flipXButton = flipX.GetComponent<Button>();
-
-                        flipXButton.onClick.NewListener(() =>
+                        flipX.transform.AsRT().sizeDelta = new Vector2(366f, 32f);
+                        var flipXStorage = flipX.GetComponent<FunctionButtonStorage>();
+                        flipXStorage.Text = "Flip X";
+                        flipXStorage.OnClick.NewListener(() =>
                         {
                             foreach (var timelineObject in EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>().TimelineKeyframes.Where(x => x.Selected))
                             {
@@ -983,20 +981,17 @@ namespace BetterLegacy.Editor.Data.Dialogs
                             Timeline.RenderDialog(beatmapObject);
                         });
 
-                        EditorThemeManager.ApplyGraphic(flipXButton.image, ThemeGroup.Function_1, true);
-                        EditorThemeManager.ApplyGraphic(flipXText, ThemeGroup.Function_1_Text);
-
+                        EditorThemeManager.ApplyGraphic(flipXStorage.button.image, ThemeGroup.Function_1, true);
+                        EditorThemeManager.ApplyGraphic(flipXStorage.label, ThemeGroup.Function_1_Text);
                         EditorHelper.SetComplexity(flipX, Complexity.Normal);
 
                         if (i != 2)
                         {
                             var flipY = EditorPrefabHolder.Instance.Function1Button.Duplicate(parent, "flipy");
-                            var flipYText = flipY.transform.GetChild(0).GetComponent<Text>();
-                            flipYText.text = "Flip Y";
-                            ((RectTransform)flipY.transform).sizeDelta = new Vector2(366f, 32f);
-                            var flipYButton = flipY.GetComponent<Button>();
-
-                            flipYButton.onClick.NewListener(() =>
+                            flipY.transform.AsRT().sizeDelta = new Vector2(366f, 32f);
+                            var flipYStorage = flipY.GetComponent<FunctionButtonStorage>();
+                            flipYStorage.Text = "Flip Y";
+                            flipYStorage.OnClick.NewListener(() =>
                             {
                                 foreach (var timelineObject in EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>().TimelineKeyframes.Where(x => x.Selected))
                                 {
@@ -1009,10 +1004,32 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                 Timeline.RenderDialog(beatmapObject);
                             });
 
-                            EditorThemeManager.ApplyGraphic(flipYButton.image, ThemeGroup.Function_1, true);
-                            EditorThemeManager.ApplyGraphic(flipYText, ThemeGroup.Function_1_Text);
-
+                            EditorThemeManager.ApplyGraphic(flipYStorage.button.image, ThemeGroup.Function_1, true);
+                            EditorThemeManager.ApplyGraphic(flipYStorage.label, ThemeGroup.Function_1_Text);
                             EditorHelper.SetComplexity(flipY, Complexity.Normal);
+                        }
+                        if (i == 0)
+                        {
+                            var flipZ = EditorPrefabHolder.Instance.Function1Button.Duplicate(parent, "flipz");
+                            flipZ.transform.AsRT().sizeDelta = new Vector2(366f, 32f);
+                            var flipZStorage = flipZ.GetComponent<FunctionButtonStorage>();
+                            flipZStorage.Text = "Flip Z";
+                            flipZStorage.OnClick.NewListener(() =>
+                            {
+                                foreach (var timelineObject in EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>().TimelineKeyframes.Where(x => x.Selected))
+                                {
+                                    var eventKeyframe = timelineObject.eventKeyframe;
+                                    eventKeyframe.values[2] = -eventKeyframe.values[2];
+                                }
+
+                                var beatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
+                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                                Timeline.RenderDialog(beatmapObject);
+                            });
+
+                            EditorThemeManager.ApplyGraphic(flipZStorage.button.image, ThemeGroup.Function_1, true);
+                            EditorThemeManager.ApplyGraphic(flipZStorage.label, ThemeGroup.Function_1_Text);
+                            EditorHelper.SetComplexity(flipZ, Complexity.Advanced);
                         }
                     }
 
@@ -1024,18 +1041,17 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     copyText.text = "Copy";
                     copy.transform.AsRT().sizeDelta = new Vector2(70f, 32f);
 
+                    EditorThemeManager.ApplyGraphic(copy.GetComponent<Image>(), ThemeGroup.Copy, true);
+                    EditorThemeManager.ApplyGraphic(copyText, ThemeGroup.Copy_Text);
+                    EditorHelper.SetComplexity(copy, Complexity.Normal);
+
                     var paste = EditorPrefabHolder.Instance.Function1Button.Duplicate(edit, "paste", 6);
                     var pasteText = paste.transform.GetChild(0).GetComponent<Text>();
                     pasteText.text = "Paste";
                     paste.transform.AsRT().sizeDelta = new Vector2(70f, 32f);
 
-                    EditorThemeManager.ApplyGraphic(copy.GetComponent<Image>(), ThemeGroup.Copy, true);
-                    EditorThemeManager.ApplyGraphic(copyText, ThemeGroup.Copy_Text);
-
                     EditorThemeManager.ApplyGraphic(paste.GetComponent<Image>(), ThemeGroup.Paste, true);
                     EditorThemeManager.ApplyGraphic(pasteText, ThemeGroup.Paste_Text);
-
-                    EditorHelper.SetComplexity(copy, Complexity.Normal);
                     EditorHelper.SetComplexity(paste, Complexity.Normal);
                 }
             }
