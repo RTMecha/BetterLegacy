@@ -313,10 +313,29 @@ namespace BetterLegacy.Editor.Managers
         /// Sets the detail mode for each selected object.
         /// </summary>
         /// <param name="detailMode">Detail mode to set.</param>
-        public void SetDetailMode(DetailMode detailMode) => ForEachBeatmapObject(beatmapObject =>
+        public void SetDetailMode(DetailMode detailMode) => ForEachTimelineObject(timelineObject =>
         {
-            beatmapObject.detailMode = detailMode;
-            RTLevel.Current?.UpdateObject(beatmapObject);
+            switch (timelineObject.TimelineReference)
+            {
+                case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                        var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                        beatmapObject.detailMode = detailMode;
+                        RTLevel.Current?.UpdateObject(beatmapObject);
+                        break;
+                    }
+                case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                        var backgroundObject = timelineObject.GetData<BackgroundObject>();
+                        backgroundObject.detailMode = detailMode;
+                        RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
+                        break;
+                    }
+                case TimelineObject.TimelineReferenceType.PrefabObject: {
+                        var prefabObject = timelineObject.GetData<PrefabObject>();
+                        prefabObject.detailMode = detailMode;
+                        RTLevel.Current?.UpdatePrefab(prefabObject);
+                        break;
+                    }
+            }
         });
 
         /// <summary>
