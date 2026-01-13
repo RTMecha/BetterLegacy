@@ -3650,13 +3650,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                     {
                                         var beatmapObject = timelineObject.GetData<BeatmapObject>();
                                         beatmapObject.text = _val;
-                                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.TEXT);
+                                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.IMAGE);
                                     }
                                     if (timelineObject.isBackgroundObject)
                                     {
                                         var backgroundObject = timelineObject.GetData<BackgroundObject>();
                                         backgroundObject.text = _val;
-
                                         RTLevel.Current?.UpdateBackgroundObject(backgroundObject, recalculate: false);
                                     }
                                 }
