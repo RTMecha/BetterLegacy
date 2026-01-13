@@ -355,7 +355,7 @@ namespace BetterLegacy.Core.Data.Player
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public override void CopyData(PlayerModel orig, bool newID = true)
         {
@@ -590,6 +590,8 @@ namespace BetterLegacy.Core.Data.Player
             return icon;
         }
 
+        public override string ToString() => basePart ? basePart.name : base.ToString();
+
         #endregion
 
         #region Sub classes
@@ -660,7 +662,7 @@ namespace BetterLegacy.Core.Data.Player
 
             #endregion
 
-            #region Methods
+            #region Functions
 
             public override void CopyData(Base orig, bool newID = true)
             {
@@ -824,7 +826,7 @@ namespace BetterLegacy.Core.Data.Player
 
             #endregion
 
-            #region Methods
+            #region Functions
 
             public override void CopyData(Stretch orig, bool newID = true)
             {
@@ -905,7 +907,7 @@ namespace BetterLegacy.Core.Data.Player
 
             #endregion
 
-            #region Methods
+            #region Functions
 
             public override void CopyData(GUI orig, bool newID = true)
             {
@@ -1061,7 +1063,7 @@ namespace BetterLegacy.Core.Data.Player
 
             #endregion
 
-            #region Methods
+            #region Functions
 
             public override void CopyData(Pulse orig, bool newID = true)
             {
@@ -1320,7 +1322,7 @@ namespace BetterLegacy.Core.Data.Player
 
             #endregion
 
-            #region Methods
+            #region Functions
 
             public override void CopyData(Bullet orig, bool newID = true)
             {
@@ -1555,7 +1557,7 @@ namespace BetterLegacy.Core.Data.Player
 
             #endregion
 
-            #region Methods
+            #region Functions
 
             public override void CopyData(TailBase orig, bool newID = true)
             {

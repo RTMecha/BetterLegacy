@@ -248,6 +248,8 @@ namespace BetterLegacy.Editor.Data.Elements
                 }));
         }
 
+        public override string ToString() => isFolder ? Name : Item?.ToString();
+
         #endregion
     }
 }

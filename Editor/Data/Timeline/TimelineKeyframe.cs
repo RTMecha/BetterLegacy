@@ -19,6 +19,8 @@ namespace BetterLegacy.Editor.Data.Timeline
     /// </summary>
     public class TimelineKeyframe : Exists, ISelectable
     {
+        #region Constructors
+
         public TimelineKeyframe(EventKeyframe eventKeyframe)
         {
             this.eventKeyframe = eventKeyframe;
@@ -31,6 +33,8 @@ namespace BetterLegacy.Editor.Data.Timeline
             this.animatable = animatable;
             isObjectKeyframe = true;
         }
+
+        #endregion
 
         #region Values
 
@@ -368,6 +372,8 @@ namespace BetterLegacy.Editor.Data.Timeline
         /// <returns>Returns the selection color for the timeline keyframe when it is selected.</returns>
         public Color GetSelectedColor() => (isObjectKeyframe ? !EditorConfig.Instance.ObjectKeyframesRenderBinColor.Value : !EditorConfig.Instance.EventKeyframesRenderBinColor.Value) ?
             ObjEditor.inst.SelectedColor : EventEditor.inst.Selected;
+
+        public override string ToString() => eventKeyframe ? eventKeyframe.ToString() : base.ToString();
 
         #endregion
     }

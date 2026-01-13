@@ -140,6 +140,11 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public CustomPlayerObject copiedCustomObject;
 
+        /// <summary>
+        /// List of player models.
+        /// </summary>
+        public List<PlayerModelPanel> ModelPanels { get; set; } = new List<PlayerModelPanel>();
+
         #endregion
 
         #region Functions
@@ -2765,6 +2770,8 @@ namespace BetterLegacy.Editor.Managers
             ModelsPopup.ClearContent();
             ModelsPopup.SearchField.onValueChanged.NewListener(_val => RenderModelsPopup(onSelect));
 
+            ModelPanels.Clear();
+
             int num = 0;
             foreach (var playerModel in PlayersData.externalPlayerModels)
             {
@@ -2780,7 +2787,7 @@ namespace BetterLegacy.Editor.Managers
                 playerModelPanel.Init(playerModel.Value);
                 if (onSelect != null)
                     playerModelPanel.onClick = pointerEventData => onSelect.Invoke(playerModel.Value);
-
+                ModelPanels.Add(playerModelPanel);
                 num++;
             }
         }

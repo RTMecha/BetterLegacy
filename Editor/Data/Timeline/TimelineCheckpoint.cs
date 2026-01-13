@@ -15,6 +15,8 @@ namespace BetterLegacy.Editor.Data.Timeline
     /// </summary>
     public class TimelineCheckpoint : Exists, ISelectable
     {
+        #region Constructors
+
         public TimelineCheckpoint() { }
 
         public TimelineCheckpoint(Checkpoint checkpoint)
@@ -22,6 +24,8 @@ namespace BetterLegacy.Editor.Data.Timeline
             Checkpoint = checkpoint;
             Checkpoint.timelineCheckpoint = this;
         }
+
+        #endregion
 
         #region Values
 
@@ -111,7 +115,7 @@ namespace BetterLegacy.Editor.Data.Timeline
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         /// <summary>
         /// Initializes the timeline checkpoint.
@@ -217,6 +221,8 @@ namespace BetterLegacy.Editor.Data.Timeline
             if (!ghost && Image)
                 Image.color = selected ? CheckpointEditor.inst.selectedColor : CheckpointEditor.inst.deselectedColor;
         }
+
+        public override string ToString() => Checkpoint ? Checkpoint.ToString() : base.ToString();
 
         #endregion
     }

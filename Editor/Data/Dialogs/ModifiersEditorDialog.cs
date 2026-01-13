@@ -30,6 +30,16 @@ namespace BetterLegacy.Editor.Data.Dialogs
         #region Values
 
         /// <summary>
+        /// The currently active modifiers editor dialog.
+        /// </summary>
+        public static ModifiersEditorDialog Current { get; set; }
+
+        /// <summary>
+        /// The current object that is being edited.
+        /// </summary>
+        public IModifyable CurrentObject { get; set; }
+
+        /// <summary>
         /// Label of the modifiers editor.
         /// </summary>
         public Text Label { get; set; }
@@ -239,6 +249,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
             if (modifyable == null)
                 yield break;
 
+            Current = this;
+            CurrentObject = modifyable;
+
             if (Label)
                 Label.gameObject.SetActive(RTEditor.ShowModdedUI);
             if (IntVariableUI)
@@ -322,7 +335,10 @@ namespace BetterLegacy.Editor.Data.Dialogs
             foreach (var modifier in modifyable.Modifiers)
             {
                 int index = num;
-                var modifierCard = new ModifierCard(modifier, index, inCollapsedRegion, this);
+                var modifierCard = modifier.card ?? new ModifierCard(modifier);
+                modifierCard.index = index;
+                modifierCard.inCollapsedRegion = inCollapsedRegion;
+                modifierCard.dialog = this;
                 modifierCards.Add(modifierCard);
                 modifierCard.RenderModifier(modifyable);
                 if (modifier.Name == "endregion")

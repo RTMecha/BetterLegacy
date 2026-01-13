@@ -652,6 +652,26 @@ namespace BetterLegacy.Core
         #region Operations
 
         /// <summary>
+        /// Gets a <see cref="MathOperation"/> based on an input word / symbol.
+        /// </summary>
+        /// <param name="name">Input word or symbol.</param>
+        /// <param name="defaultValue">Default value.</param>
+        /// <returns>Returns the parsed <see cref="MathOperation"/> value if parse was successful, otherwise returns <paramref name="defaultValue"/>.</returns>
+        public static MathOperation GetOperation(string name, MathOperation defaultValue) => string.IsNullOrEmpty(name) ? defaultValue : name.ToLower() switch
+        {
+            "add" => MathOperation.Addition,
+            "sub" => MathOperation.Subtract,
+            "times" => MathOperation.Multiply,
+            "+" => MathOperation.Addition,
+            "-" => MathOperation.Subtract,
+            "*" => MathOperation.Multiply,
+            "/" => MathOperation.Divide,
+            "%" => MathOperation.Modulo,
+            "=" => MathOperation.Set,
+            _ => Parser.TryParse(name, true, defaultValue),
+        };
+
+        /// <summary>
         /// Performs any specified math operations, such as addition, subtraction, etc.
         /// </summary>
         /// <param name="num">Reference number to apply the operation to.</param>

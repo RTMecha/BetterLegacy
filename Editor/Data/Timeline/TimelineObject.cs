@@ -288,7 +288,7 @@ namespace BetterLegacy.Editor.Data.Timeline
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         /// <summary>
         /// Casts the object data of the timeline object into a type.
@@ -1022,6 +1022,8 @@ namespace BetterLegacy.Editor.Data.Timeline
             }
             return RTEditor.inst.editorInfo.TryGetGroup(Group, out editorGroup);
         }
+
+        public override string ToString() => data != null ? data.ToString() : base.ToString();
 
         #endregion
 

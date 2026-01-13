@@ -3090,17 +3090,26 @@ namespace BetterLegacy.Editor.Managers
         public Prefab ImportPrefabIntoLevel(Prefab prefab)
         {
             Debug.Log($"{PrefabEditor.inst.className}Adding Prefab: [{prefab.name}]");
-            var tmpPrefab = prefab.Copy();
-            int num = GameData.Current.prefabs.FindAll(x => Regex.Replace(x.name, "( +\\[\\d+])", string.Empty) == tmpPrefab.name).Count;
+            var newPrefab = prefab.Copy();
+            ValidateDuplicateName(newPrefab);
+
+            GameData.Current.prefabs.Add(newPrefab);
+            CoroutineHelper.StartCoroutine(RefreshInternalPrefabs());
+
+            Example.Current?.brain?.Notice(ExampleBrain.Notices.IMPORT_PREFAB, new PrefabNoticeParameters(newPrefab));
+
+            return newPrefab;
+        }
+
+        /// <summary>
+        /// Checks for prefabs with the same name and changes the name if necessary.
+        /// </summary>
+        /// <param name="prefab">Prefab to check and validate.</param>
+        public void ValidateDuplicateName(Prefab prefab)
+        {
+            int num = GameData.Current.prefabs.FindAll(x => Regex.Replace(x.name, "( +\\[\\d+])", string.Empty) == prefab.name).Count;
             if (num > 0)
-                tmpPrefab.name = $"{tmpPrefab.name} [{num}]";
-
-            GameData.Current.prefabs.Add(tmpPrefab);
-            StartCoroutine(RefreshInternalPrefabs());
-
-            Example.Current?.brain?.Notice(ExampleBrain.Notices.IMPORT_PREFAB, new PrefabNoticeParameters(tmpPrefab));
-
-            return tmpPrefab;
+                prefab.name = $"{prefab.name} [{num}]";
         }
 
         public bool UpdateLevelPrefab(Prefab prefab)

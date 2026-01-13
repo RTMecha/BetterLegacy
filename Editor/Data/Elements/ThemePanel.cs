@@ -22,6 +22,8 @@ namespace BetterLegacy.Editor.Data.Elements
     /// </summary>
     public class ThemePanel : EditorPanel<BeatmapTheme>, ISelectable
     {
+        #region Constructors
+
         public ThemePanel() { }
 
         public ThemePanel(ObjectSource source, int index, bool isDuplicate = false)
@@ -36,6 +38,8 @@ namespace BetterLegacy.Editor.Data.Elements
             this.index = index;
             this.isDuplicate = isDuplicate;
         }
+
+        #endregion
 
         #region Values
 
@@ -596,7 +600,7 @@ namespace BetterLegacy.Editor.Data.Elements
             _ => -1,
         };
 
-        public override string ToString() => isFolder ? System.IO.Path.GetFileName(Path) : Item?.ToString();
+        public override string ToString() => isFolder ? Name : Item?.ToString();
 
         #endregion
     }

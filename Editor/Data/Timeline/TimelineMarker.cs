@@ -22,6 +22,8 @@ namespace BetterLegacy.Editor.Data.Timeline
     /// </summary>
     public class TimelineMarker : Exists, ISelectable
     {
+        #region Constructors
+
         public TimelineMarker() { }
 
         public TimelineMarker(Marker marker)
@@ -30,6 +32,8 @@ namespace BetterLegacy.Editor.Data.Timeline
             marker.timelineMarker = this;
             panel = new MarkerPanel(this);
         }
+
+        #endregion
 
         #region Values
 
@@ -427,6 +431,8 @@ namespace BetterLegacy.Editor.Data.Timeline
             });
             ProjectPlanner.inst.SaveNotes();
         }
+
+        public override string ToString() => Marker ? Marker.ToString() : base.ToString();
 
         #endregion
     }

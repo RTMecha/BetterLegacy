@@ -23,11 +23,15 @@ namespace BetterLegacy.Editor.Data.Elements
     /// </summary>
     public class PrefabPanel : EditorPanel<Prefab>, ISelectable
     {
+        #region Constructors
+
         public PrefabPanel() { }
 
         public PrefabPanel(int index) => this.index = index;
 
         public PrefabPanel(ObjectSource source, int index) : this(index) => Source = source;
+
+        #endregion
 
         #region Values
 
@@ -593,6 +597,8 @@ namespace BetterLegacy.Editor.Data.Elements
                 }
             }));
         }
+
+        public override string ToString() => isFolder ? Name : Item?.ToString();
 
         #endregion
     }

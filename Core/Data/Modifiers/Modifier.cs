@@ -4,11 +4,14 @@ using System.Collections.Generic;
 using SimpleJSON;
 
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Editor.Data.Elements;
 
 namespace BetterLegacy.Core.Data.Modifiers
 {
     public class Modifier : PAObject<Modifier>
     {
+        #region Constructors
+
         public Modifier() { }
 
         public Modifier(string name) : this() => this.name = name;
@@ -76,6 +79,8 @@ namespace BetterLegacy.Core.Data.Modifiers
         public Modifier(ModifierCompatibility compatibility, Type type, string name, bool constant,
             Func<Modifier, ModifierLoop, bool> trigger,
             params string[] values) : this(type, name, constant, null, trigger, null, values) => this.compatibility = compatibility;
+
+        #endregion
 
         #region Values
 
@@ -234,6 +239,11 @@ namespace BetterLegacy.Core.Data.Modifiers
         /// </summary>
         public string description = string.Empty;
 
+        /// <summary>
+        /// Modifier card reference.
+        /// </summary>
+        public ModifierCard card;
+
         #endregion
 
         #region Debug
@@ -244,7 +254,7 @@ namespace BetterLegacy.Core.Data.Modifiers
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public override void CopyData(Modifier orig, bool newID = true)
         {

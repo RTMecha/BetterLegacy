@@ -23,15 +23,26 @@ namespace BetterLegacy.Editor.Data.Elements
     /// <summary>
     /// Represents a modifier in the editor.
     /// </summary>
-    public class ModifierCard : Exists
+    public class ModifierCard : Exists, ISelectable
     {
+        #region Constructors
+
+        public ModifierCard(Modifier modifier)
+        {
+            Modifier = modifier;
+            Modifier.card = this;
+        }
+
         public ModifierCard(Modifier modifier, int index, bool inCollapsedRegion, ModifiersEditorDialog dialog)
         {
             Modifier = modifier;
+            Modifier.card = this;
             this.index = index;
             this.inCollapsedRegion = inCollapsedRegion;
             this.dialog = dialog;
         }
+
+        #endregion
 
         #region Values
 
@@ -69,6 +80,8 @@ namespace BetterLegacy.Editor.Data.Elements
         /// List of values to update.
         /// </summary>
         public List<Value> values = new List<Value>();
+
+        public bool Selected { get; set; }
 
         #endregion
 
@@ -4905,10 +4918,15 @@ namespace BetterLegacy.Editor.Data.Elements
             }
 
             modifyable.Modifiers.RemoveAt(index);
-            CoreHelper.Delete(gameObject);
-            dialog.modifierCards.RemoveAt(index);
-            for (int i = 0; i < dialog.modifierCards.Count; i++)
-                dialog.modifierCards[i].index = i;
+            if (Modifier.Name == "region" || Modifier.Name == "endregion")
+                CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
+            else
+            {
+                CoreHelper.Delete(gameObject);
+                dialog.modifierCards.RemoveAt(index);
+                for (int i = 0; i < dialog.modifierCards.Count; i++)
+                    dialog.modifierCards[i].index = i;
+            }
 
             switch (modifyable.ReferenceType)
             {
@@ -5570,7 +5588,11 @@ namespace BetterLegacy.Editor.Data.Elements
 
         #endregion
 
+        public override string ToString() => Modifier ? Modifier.ToString() : base.ToString();
+
         #endregion
+
+        #region Sub Classes
 
         public abstract class Value : Exists
         {
@@ -5741,5 +5763,7 @@ namespace BetterLegacy.Editor.Data.Elements
                     toggles[i].SetIsOnWithoutNotify(i == slot);
             }
         }
+
+        #endregion
     }
 }
