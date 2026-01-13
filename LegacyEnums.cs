@@ -2427,6 +2427,12 @@ namespace BetterLegacy
 
     #region Misc
 
+    public enum Direction
+    {
+        Horizontal,
+        Vertical,
+    }
+
     public enum VerticalDirection
     {
         Up,
