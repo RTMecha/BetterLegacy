@@ -275,11 +275,11 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Transforms
 
-        int depth = 15;
+        float depth = 15f;
         /// <summary>
         /// The depth the visual object is rendered on.
         /// </summary>
-        public int Depth
+        public float Depth
         {
             get => depth;
             set => depth = value;
@@ -880,7 +880,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 name = jn["n"];
 
             if (jn["d"] != null)
-                Depth = jn["d"].AsInt;
+                Depth = jn["d"].AsFloat;
             else
                 Depth = version == new Version(ProjectArrhythmia.Versions.DEPTH_DEFAULT_CHANGED) ? 0 : 20; // fixes default depth not being correct
 
@@ -1172,7 +1172,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             this.ReadParentJSON(jn);
 
             if (jn["d"] != null)
-                Depth = jn["d"].AsInt;
+                Depth = jn["d"].AsFloat;
 
             if (jn["rdt"] != null)
                 renderLayerType = (RenderLayerType)jn["rdt"].AsInt;

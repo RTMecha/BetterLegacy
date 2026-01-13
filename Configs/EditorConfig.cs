@@ -178,7 +178,7 @@ namespace BetterLegacy.Configs
         public Setting<bool> NotificationsDisplay { get; set; }
         public Setting<bool> ShowDropdownOnHover { get; set; }
         public Setting<bool> HideVisualElementsWhenObjectIsEmpty { get; set; }
-        public Setting<Vector2Int> RenderDepthRange { get; set; }
+        public Setting<Vector2> RenderDepthRange { get; set; }
         public Setting<bool> OpenNewLevelCreatorIfNoLevels { get; set; }
         public Setting<bool> ShowModifiersDefault { get; set; }
 
@@ -589,7 +589,7 @@ namespace BetterLegacy.Configs
             NotificationsDisplay = Bind(this, EDITOR_GUI, "Notifications Display", true, "If the notifications should display. Does not include the help box.");
             ShowDropdownOnHover = Bind(this, EDITOR_GUI, "Show Dropdowns on Hover", false, "If your mouse enters a dropdown bar, it will automatically show the dropdown list.");
             HideVisualElementsWhenObjectIsEmpty = Bind(this, EDITOR_GUI, "Hide Visual Elements When Object Is Empty", true, "If the Beatmap Object is empty, anything related to the visuals of the object doesn't show.");
-            RenderDepthRange = Bind(this, EDITOR_GUI, "Render Depth Range", new Vector2Int(219, -98), "The range the Render Depth slider will show. Vanilla Legacy range is 30 and 0.");
+            RenderDepthRange = Bind(this, EDITOR_GUI, "Render Depth Range", new Vector2(219, -98), "The range the Render Depth slider will show. Vanilla Legacy range is 30 and 0.");
             OpenNewLevelCreatorIfNoLevels = Bind(this, EDITOR_GUI, "Open New Level Creator If No Levels", false, "If the New Level Creator popup should open when there are no levels in a level folder.");
             ShowModifiersDefault = Bind(this, EDITOR_GUI, "Show Modifiers Default", false, "If the modifier lists should be uncollapsed by default.");
 

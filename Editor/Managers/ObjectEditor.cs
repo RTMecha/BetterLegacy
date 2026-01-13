@@ -2141,7 +2141,7 @@ namespace BetterLegacy.Editor.Managers
             RTEditor.inst.RenderShapeable(beatmapObject, Dialog, context => RTLevel.Current.UpdateObject(beatmapObject, context));
         }
 
-        void SetDepthSlider(BeatmapObject beatmapObject, int value, InputField inputField, Slider slider)
+        void SetDepthSlider(BeatmapObject beatmapObject, float value, InputField inputField, Slider slider)
         {
             if (!RTEditor.ShowModdedUI)
                 value = Mathf.Clamp(value, EditorConfig.Instance.RenderDepthRange.Value.y, EditorConfig.Instance.RenderDepthRange.Value.x);
@@ -2157,7 +2157,7 @@ namespace BetterLegacy.Editor.Managers
 
         void SetDepthInputField(BeatmapObject beatmapObject, string value, InputField inputField, Slider slider)
         {
-            if (!int.TryParse(value, out int num))
+            if (!float.TryParse(value, out float num))
                 return;
 
             if (!RTEditor.ShowModdedUI)
@@ -2168,8 +2168,8 @@ namespace BetterLegacy.Editor.Managers
             inputField.SetTextWithoutNotify(num.ToString());
             inputField.onValueChanged.NewListener(_val =>
             {
-                if (int.TryParse(_val, out int numb))
-                    SetDepthSlider(beatmapObject, numb, inputField, slider);
+                if (float.TryParse(_val, out float num))
+                    SetDepthSlider(beatmapObject, num, inputField, slider);
             });
 
             // Since depth has no affect on the timeline object, we will only need to update the physical object.
@@ -2200,10 +2200,10 @@ namespace BetterLegacy.Editor.Managers
             if (!active)
                 return;
 
-            Dialog.DepthField.inputField.SetTextWithoutNotify(beatmapObject.Depth.ToString());
-            Dialog.DepthField.inputField.onValueChanged.NewListener(_val =>
+            Dialog.DepthField.SetTextWithoutNotify(beatmapObject.Depth.ToString());
+            Dialog.DepthField.OnValueChanged.NewListener(_val =>
             {
-                if (int.TryParse(_val, out int num))
+                if (float.TryParse(_val, out float num))
                     SetDepthSlider(beatmapObject, num, Dialog.DepthField.inputField, Dialog.DepthSlider);
             });
 
@@ -2223,9 +2223,9 @@ namespace BetterLegacy.Editor.Managers
                 min = 0;
             }
 
-            TriggerHelper.IncreaseDecreaseButtonsInt(Dialog.DepthField, -1, min, max);
-            TriggerHelper.AddEventTriggers(Dialog.DepthField.inputField.gameObject, TriggerHelper.ScrollDeltaInt(Dialog.DepthField.inputField, 1, min, max));
-            TriggerHelper.IncreaseDecreaseButtonsInt(Dialog.DepthField.inputField, -1, min, max, Dialog.DepthParent);
+            TriggerHelper.IncreaseDecreaseButtons(Dialog.DepthField, -1, min: min, max: max);
+            TriggerHelper.AddEventTriggers(Dialog.DepthField.inputField.gameObject, TriggerHelper.ScrollDelta(Dialog.DepthField.inputField, 1, min: min, max: max));
+            TriggerHelper.IncreaseDecreaseButtons(Dialog.DepthField.inputField, -1, min: min, max: max, t: Dialog.DepthParent);
 
             // allow negative flipping
             if (min < 0)
