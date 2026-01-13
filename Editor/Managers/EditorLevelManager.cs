@@ -164,6 +164,11 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public bool CollapseBanner { get; set; } = true;
 
+        /// <summary>
+        /// Name of a new level collection.
+        /// </summary>
+        public const string NEW_LEVEL_COLLECTION_NAME = "New Level Collection";
+
         #endregion
 
         #region New Level
@@ -1907,15 +1912,39 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         /// <param name="levels">Levels to create from.</param>
         /// <returns>Returns a created level collection.</returns>
-        public LevelCollection CreateNewLevelCollection(List<Level> levels = null)
+        public LevelCollection CreateNewLevelCollection(List<Level> levels = null) => CreateNewLevelCollection(NEW_LEVEL_COLLECTION_NAME, levels);
+
+        /// <summary>
+        /// Creates a new level collection.
+        /// </summary>
+        /// <param name="name">Name to set to the level collection.</param>
+        /// <param name="levels">Levels to create from.</param>
+        /// <returns>Returns a created level collection.</returns>
+        public LevelCollection CreateNewLevelCollection(string name, List<Level> levels = null)
         {
             var levelCollection = levels == null || levels.IsEmpty() ? new LevelCollection() : new LevelCollection(levels);
-            levelCollection.name = "New Level Collection";
+            levelCollection.name = name;
             levelCollection.dateCreated = DateTime.Now.ToString(LegacyPlugin.DATE_TIME_FORMAT);
-            levelCollection.path = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.CollectionsPath, "New Level Collection");
+            levelCollection.path = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.CollectionsPath, name);
             return levelCollection;
         }
-        
+
+        /// <summary>
+        /// Creates a new level collection.
+        /// </summary>
+        /// <param name="name">Name to set to the level collection.</param>
+        /// <param name="path">Path to set to the level collection.</param>
+        /// <param name="levels">Levels to create from.</param>
+        /// <returns>Returns a created level collection.</returns>
+        public LevelCollection CreateNewLevelCollection(string name, string path, List<Level> levels = null)
+        {
+            var levelCollection = levels == null || levels.IsEmpty() ? new LevelCollection() : new LevelCollection(levels);
+            levelCollection.name = name;
+            levelCollection.dateCreated = DateTime.Now.ToString(LegacyPlugin.DATE_TIME_FORMAT);
+            levelCollection.path = path;
+            return levelCollection;
+        }
+
         /// <summary>
         /// Opens the level collection editor.
         /// </summary>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -565,9 +566,14 @@ namespace BetterLegacy.Editor.Data.Elements
                             new SpacerElement(),
                             new ButtonElement("Create Collection", () =>
                             {
-                                EditorManager.inst.DisplayNotification($"todo", 2f, EditorManager.NotificationType.Error);
+                                var levels = new List<Level>();
+                                var directories = System.IO.Directory.GetDirectories(path);
+                                for (int i = 0; i < directories.Length; i++)
+                                    if (Level.TryVerify(directories[i], true, out Level level))
+                                        levels.Add(level);
+                                if (!levels.IsEmpty())
+                                    EditorLevelManager.inst.CreateNewLevelCollection(EditorLevelManager.NEW_LEVEL_COLLECTION_NAME, path, levels);
                             }));
-
                         return;
                     }
 
@@ -609,11 +615,43 @@ namespace BetterLegacy.Editor.Data.Elements
                             new SpacerElement(),
                             new ButtonElement("Create Collection", () =>
                             {
-                                EditorManager.inst.DisplayNotification($"Not implemented yet.", 2f, EditorManager.NotificationType.Warning);
+                                var collection = EditorLevelManager.inst.CreateNewLevelCollection(selectedLevels.SelectWhere(x => x.Item, x => x.Item).ToList());
+                                collection.Save();
+                                EditorLevelManager.inst.LoadLevelCollections();
                             }),
-                            new ButtonElement("Add to Collection", () =>
+                            new ButtonElement("Add File to Collection", () =>
                             {
-                                EditorManager.inst.DisplayNotification($"Not implemented yet.", 2f, EditorManager.NotificationType.Warning);
+                                EditorLevelManager.inst.LevelCollectionPopup.Open();
+                                EditorLevelManager.inst.RenderLevelCollections();
+                                EditorLevelManager.inst.onLevelCollectionSelected = (levelCollectionPanel, pointerEventData) =>
+                                {
+                                    if (!levelCollectionPanel || !levelCollectionPanel.Item)
+                                        return;
+
+                                    foreach (var level in selectedLevels)
+                                        if (level.Item)
+                                            levelCollectionPanel.Item.AddLevelToFolder(level.Item);
+                                    levelCollectionPanel.Item.Save();
+                                    EditorLevelManager.inst.LoadLevels();
+                                    EditorManager.inst.DisplayNotification($"Added the selected levels to the level collection [ {levelCollectionPanel.Item.name} ]", 3f, EditorManager.NotificationType.Success);
+                                };
+                            }),
+                            new ButtonElement("Add Ref to Collection", () =>
+                            {
+                                EditorLevelManager.inst.LevelCollectionPopup.Open();
+                                EditorLevelManager.inst.RenderLevelCollections();
+                                EditorLevelManager.inst.onLevelCollectionSelected = (levelCollectionPanel, pointerEventData) =>
+                                {
+                                    if (!levelCollectionPanel || !levelCollectionPanel.Item)
+                                        return;
+
+                                    foreach (var level in selectedLevels)
+                                        if (level.Item)
+                                            levelCollectionPanel.Item.AddLevel(level.Item);
+                                    levelCollectionPanel.Item.Save();
+                                    EditorLevelManager.inst.LoadLevels();
+                                    EditorManager.inst.DisplayNotification($"Added the selected levels to the level collection [ {levelCollectionPanel.Item.name} ]", 3f, EditorManager.NotificationType.Success);
+                                };
                             }),
                         };
 
