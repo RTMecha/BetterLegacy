@@ -201,20 +201,21 @@ namespace BetterLegacy.Editor.Managers
         /// <summary>
         /// The current tab that should display in the planner.
         /// </summary>
-        public PlannerBase.Type CurrentTab { get; set; }
+        public PlannerBase.Type CurrentTab { get; set; } = PlannerBase.Type.Document;
 
         /// <summary>
         /// List of tabs in the planner.
         /// </summary>
         public List<TabInfo> tabs = new List<TabInfo>
         {
-            new TabInfo("Documents", new Vector2(232f, 400f), 5, "Document Planner Tab"),
-            new TabInfo("TO DO", new Vector2(1280f, 64f), 1, "TODO Planner Tab"),
-            new TabInfo("Characters", new Vector2(630f, 400f), 2, "Character Planner Tab"),
-            new TabInfo("Timelines", new Vector2(1280f, 250f), 1, "Timeline Planner Tab"),
-            new TabInfo("Schedules", new Vector2(1280f, 64f), 1, "Schedule Planner Tab"),
-            new TabInfo("Notes", new Vector2(410f, 200f), 3, "Note Planner Tab"),
-            new TabInfo("OST", new Vector2(1280f, 64f), 1, "OST Planner Tab"),
+            new TabInfo("Folders", new Vector2(1280f, 64f), 1, "Folder Planner Tab", ThemeGroup.Folder_Button),
+            new TabInfo("Documents", new Vector2(232f, 400f), 5, "Document Planner Tab", ThemeGroup.Tab_Color_1),
+            new TabInfo("TO DO", new Vector2(1280f, 64f), 1, "TODO Planner Tab", ThemeGroup.Tab_Color_2),
+            new TabInfo("Characters", new Vector2(630f, 400f), 2, "Character Planner Tab", ThemeGroup.Tab_Color_3),
+            new TabInfo("Timelines", new Vector2(1280f, 250f), 1, "Timeline Planner Tab", ThemeGroup.Tab_Color_4),
+            new TabInfo("Schedules", new Vector2(1280f, 64f), 1, "Schedule Planner Tab", ThemeGroup.Tab_Color_5),
+            new TabInfo("Notes", new Vector2(410f, 200f), 3, "Note Planner Tab", ThemeGroup.Tab_Color_6),
+            new TabInfo("OST", new Vector2(1280f, 64f), 1, "OST Planner Tab", ThemeGroup.Tab_Color_7),
         };
 
         #endregion
@@ -281,6 +282,11 @@ namespace BetterLegacy.Editor.Managers
         public string SearchTerm { get; set; }
 
         /// <summary>
+        /// List of folder planners.
+        /// </summary>
+        public List<FolderPlanner> folders = new List<FolderPlanner>();
+
+        /// <summary>
         /// List of document planners.
         /// </summary>
         public List<DocumentPlanner> documents = new List<DocumentPlanner>();
@@ -324,6 +330,8 @@ namespace BetterLegacy.Editor.Managers
 
         #region Editor
 
+        public InputField pathField;
+
         /// <summary>
         /// Prefab for text editors.
         /// </summary>
@@ -333,6 +341,20 @@ namespace BetterLegacy.Editor.Managers
         /// Editor title panel.
         /// </summary>
         public Image editorTitlePanel;
+
+        #region Folder
+
+        /// <summary>
+        /// Folder editor name field.
+        /// </summary>
+        public InputField folderEditorName;
+
+        /// <summary>
+        /// Folder editor open button.
+        /// </summary>
+        public Button folderEditorOpen;
+
+        #endregion
 
         #region Document
 
@@ -554,8 +576,27 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public List<GameObject> editors = new List<GameObject>();
 
+        public GameObject folderEditor;
+
+        public GameObject documentEditor;
+
+        public GameObject todoEditor;
+
+        public GameObject characterEditor;
+
+        public GameObject timelineEditor;
+
+        public GameObject eventEditor;
+
+        public GameObject scheduleEditor;
+
+        public GameObject noteEditor;
+
+        public GameObject ostEditor;
+
         List<PlannerBase> activeTabPlannerItems = new List<PlannerBase>();
 
+        FolderPlanner currentFolderPlanner;
         DocumentPlanner currentDocumentPlanner;
         TODOPlanner currentTODOPlanner;
         CharacterPlanner currentCharacterPlanner;
@@ -594,6 +635,7 @@ namespace BetterLegacy.Editor.Managers
 
             Destroy(topBarBase.GetComponent<ToggleGroup>());
             tabPrefab.GetComponent<Toggle>().group = null;
+            topBarBase.GetComponent<HorizontalLayoutGroup>().spacing = 16f;
 
             for (int i = 0; i < tabs.Count; i++)
             {
@@ -613,14 +655,14 @@ namespace BetterLegacy.Editor.Managers
                 tabInfo.toggle = toggle;
                 tabInfo.text = text;
 
-                EditorThemeManager.ApplyGraphic(image, EditorThemeManager.GetTabThemeGroup(i), true);
+                EditorThemeManager.ApplyGraphic(image, tabInfo.themeGroup, true);
                 EditorThemeManager.ApplyGraphic(toggle.graphic, ThemeGroup.Background_1);
 
                 TooltipHelper.AssignTooltip(tabObject, tabInfo.tooltipGroup);
             }
 
             var spacer = Creator.NewUIObject("topbar spacer", topBarBase);
-            spacer.transform.AsRT().sizeDelta = new Vector2(195f, 32f);
+            spacer.transform.AsRT().sizeDelta = new Vector2(100f, 32f);
 
             var close = EditorPrefabHolder.Instance.CloseButton.Duplicate(topBarBase, "close");
             close.transform.localScale = Vector3.one;
@@ -708,6 +750,19 @@ namespace BetterLegacy.Editor.Managers
                     var path = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlannersPath);
                     switch (CurrentTab)
                     {
+                        case PlannerBase.Type.Folder: {
+                                var folderName = "New Folder";
+                                int attempt = 0;
+                                while (RTFile.DirectoryExists(RTFile.CombinePaths(path, folderName)))
+                                {
+                                    attempt++;
+                                    folderName = $"New Folder {attempt}";
+                                    if (attempt > 100)
+                                        return;
+                                }
+                                CreateFolder(folderName);
+                                break;
+                            }
                         case PlannerBase.Type.Document: {
                                 CreateDocument(
                                     name: $"New Story {documents.Count + 1}",
@@ -808,15 +863,11 @@ namespace BetterLegacy.Editor.Managers
 
                 var path = EditorPrefabHolder.Instance.StringInputField.Duplicate(contentBase, "path", 4);
                 new RectValues(new Vector2(1750f, 970f), Vector2.zero, Vector2.zero, RectValues.CenterPivot, new Vector2(300f, 32f)).AssignToRectTransform(path.transform.AsRT());
-                var pathField = path.GetComponent<InputField>();
+                pathField = path.GetComponent<InputField>();
 
                 pathField.SetTextWithoutNotify(RTEditor.inst.PlannersPath);
                 pathField.onValueChanged.ClearAll();
-                pathField.onEndEdit.NewListener(_val =>
-                {
-                    RTEditor.inst.PlannersPath = _val;
-                    Load();
-                });
+                pathField.onEndEdit.NewListener(SetFolder);
                 pathField.textComponent.alignment = TextAnchor.MiddleLeft;
                 pathField.GetPlaceholderText().alignment = TextAnchor.MiddleLeft;
                 pathField.GetPlaceholderText().text = "Set a folder...";
@@ -835,10 +886,7 @@ namespace BetterLegacy.Editor.Managers
                                 return;
                             }
 
-                            var str = RTFile.ReplaceSlash(_val).Remove(RTFile.ApplicationDirectory + "beatmaps/");
-                            pathField.SetTextWithoutNotify(str);
-                            RTEditor.inst.PlannersPath = str;
-                            Load();
+                            SetFolder(RTFile.ReplaceSlash(_val).Remove(RTFile.ApplicationDirectory + "beatmaps/"));
                             EditorManager.inst.DisplayNotification($"Set Planner path to {RTEditor.inst.PlannersPath}!", 2f, EditorManager.NotificationType.Success);
                             RTFileBrowser.inst.Popup.Close();
                         });
@@ -846,6 +894,17 @@ namespace BetterLegacy.Editor.Managers
                     new ButtonElement("Open in File Explorer", () => RTFile.OpenInFileBrowser.Open(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlannersPath))));
 
                 TooltipHelper.AssignTooltip(path, "Planner Path");
+
+                new ButtonElement(ButtonElement.Type.Icon, "Up a Folder", () =>
+                {
+                    if (RTFile.GetDirectory(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlannersPath)) == RTEditor.inst.BeatmapsPath)
+                        return;
+
+                    SetFolder(RTFile.GetDirectory(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlannersPath)).Remove(RTEditor.inst.BeatmapsPath + "/"));
+                })
+                {
+                    sprite = EditorSprites.LeftArrow,
+                }.Init(EditorElement.InitSettings.Default.Parent(contentBase).SiblingIndex(5).Rect(RectValues.Default.AnchoredPosition(1580f, 970f).AnchorMax(0f, 0f).AnchorMin(0f, 0f).SizeDelta(32f, 32f)));
             }
 
             gradientSprite = SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/linear_gradient{FileFormat.PNG.Dot()}"));
@@ -854,6 +913,34 @@ namespace BetterLegacy.Editor.Managers
             {
                 textEditorPrefab = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(assetsParent, "text editor");
                 CoreHelper.Delete(textEditorPrefab.transform.Find("edit"));
+
+                // Folder
+                {
+                    var prefab = baseCardPrefab.Duplicate(assetsParent, "folder prefab");
+                    var albumArt = prefab.transform.GetChild(0);
+                    var title = prefab.transform.GetChild(1);
+                    var artist = prefab.transform.GetChild(2);
+
+                    Destroy(albumArt.gameObject);
+                    Destroy(artist.gameObject);
+
+                    prefab.GetComponent<Image>().sprite = null;
+
+                    title.name = "name";
+
+                    title.AsRT().anchoredPosition = Vector2.zero;
+                    title.AsRT().sizeDelta = new Vector2(-120f, 64f);
+
+                    var tmp = title.GetComponent<TextMeshProUGUI>();
+                    tmp.alignment = TextAlignmentOptions.Left;
+                    tmp.enableWordWrapping = false;
+                    tmp.text = "Folder";
+
+                    var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(prefab.transform, "delete");
+                    RectValues.Default.AnchoredPosition(605f, 0f).SizeDelta(38f, 38f).AssignToRectTransform(delete.transform.AsRT());
+
+                    prefabs.Add(prefab);
+                }
 
                 // Document
                 {
@@ -1394,6 +1481,45 @@ namespace BetterLegacy.Editor.Managers
                 panel.AddComponent<ContrastColors>().Init(tmpEditorTitle, editorTitlePanel);
                 panel.SetActive(false);
 
+                // Folder
+                {
+                    var g1 = Creator.NewUIObject("Folder", editor.transform);
+                    UIManager.SetRectTransform(g1.transform.AsRT(), new Vector2(0f, -32f), Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0f, -64f));
+
+                    var vlg = g1.AddComponent<VerticalLayoutGroup>();
+                    vlg.childControlHeight = false;
+                    vlg.childForceExpandHeight = false;
+                    vlg.spacing = 4f;
+
+                    var labelInitSettings = EditorElement.InitSettings.Default.Parent(g1.transform).Rect(RectValues.Default.SizeDelta(524f, 32f));
+
+                    new LabelsElement("Edit Name").Init(labelInitSettings);
+
+                    var text1 = textEditorPrefab.Duplicate(g1.transform, "text");
+                    text1.transform.AsRT().sizeDelta = new Vector2(537f, 64f);
+                    text1.gameObject.SetActive(true);
+
+                    folderEditorName = text1.GetComponent<InputField>();
+                    EditorThemeManager.ApplyInputField(folderEditorName);
+
+                    new LabelsElement("Open Folder").Init(labelInitSettings);
+
+                    var open = EditorPrefabHolder.Instance.Function2Button.Duplicate(g1.transform);
+                    var openStorage = open.GetComponent<FunctionButtonStorage>();
+                    open.SetActive(true);
+                    open.name = "open";
+                    open.transform.AsRT().anchoredPosition = new Vector2(370f, 970f);
+                    open.transform.AsRT().sizeDelta = new Vector2(200f, 32f);
+                    openStorage.Text = "Open";
+                    folderEditorOpen = openStorage.button;
+                    EditorThemeManager.ApplySelectable(folderEditorOpen, ThemeGroup.Function_2);
+                    EditorThemeManager.ApplyGraphic(openStorage.label, ThemeGroup.Function_2_Text);
+
+                    g1.SetActive(false);
+                    editors.Add(g1);
+                    folderEditor = g1;
+                }
+
                 // Document
                 {
                     var g1 = Creator.NewUIObject("Document", editor.transform);
@@ -1429,6 +1555,7 @@ namespace BetterLegacy.Editor.Managers
 
                     g1.SetActive(false);
                     editors.Add(g1);
+                    documentEditor = g1;
                 }
 
                 // TODO
@@ -1478,6 +1605,7 @@ namespace BetterLegacy.Editor.Managers
 
                     g1.SetActive(false);
                     editors.Add(g1);
+                    todoEditor = g1;
                 }
 
                 // Character
@@ -1668,6 +1796,7 @@ namespace BetterLegacy.Editor.Managers
 
                     scrollViewElement.SetActive(false);
                     editors.Add(scrollViewElement.GameObject);
+                    characterEditor = scrollViewElement.GameObject;
                 }
 
                 // Timeline
@@ -1693,6 +1822,7 @@ namespace BetterLegacy.Editor.Managers
 
                     g1.SetActive(false);
                     editors.Add(g1);
+                    timelineEditor = g1;
                 }
 
                 // Event
@@ -1748,6 +1878,7 @@ namespace BetterLegacy.Editor.Managers
 
                     g1.SetActive(false);
                     editors.Add(g1);
+                    eventEditor = g1;
                 }
 
                 // Schedule
@@ -1816,6 +1947,7 @@ namespace BetterLegacy.Editor.Managers
 
                     g1.SetActive(false);
                     editors.Add(g1);
+                    scheduleEditor = g1;
                 }
 
                 // Note
@@ -1887,6 +2019,7 @@ namespace BetterLegacy.Editor.Managers
 
                     g1.SetActive(false);
                     editors.Add(g1);
+                    noteEditor = g1;
                 }
 
                 // OST
@@ -1999,6 +2132,7 @@ namespace BetterLegacy.Editor.Managers
 
                     g1.SetActive(false);
                     editors.Add(g1);
+                    ostEditor = g1;
                 }
             }
 
@@ -2112,6 +2246,23 @@ namespace BetterLegacy.Editor.Managers
         #endregion
 
         #region Create
+
+        /// <summary>
+        /// Creates a new Folder planner.
+        /// </summary>
+        /// <param name="name">Name of the folder.</param>
+        /// <returns>Returns a new folder.</returns>
+        public FolderPlanner CreateFolder(string name)
+        {
+            var folder = new FolderPlanner();
+            folder.Name = name;
+
+            AddPlanner(folder);
+            RTFile.CreateDirectory(folder.FullPath);
+            if (EditorConfig.Instance.OpenNewPlanner.Value)
+                OpenFolderEditor(folder);
+            return folder;
+        }
 
         /// <summary>
         /// Creates a new Document planner.
@@ -2294,6 +2445,10 @@ namespace BetterLegacy.Editor.Managers
         {
             switch (item.PlannerType)
             {
+                case PlannerBase.Type.Folder: {
+                        folders.Add(item as FolderPlanner);
+                        break;
+                    }
                 case PlannerBase.Type.Document: {
                         documents.Add(item as DocumentPlanner);
                         break;
@@ -2331,6 +2486,7 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void ClearPlanners()
         {
+            folders.Clear();
             documents.Clear();
             todos.Clear();
             characters.Clear();
@@ -2363,6 +2519,7 @@ namespace BetterLegacy.Editor.Managers
         {
             ClearPlanners();
             LSHelpers.DeleteChildren(content);
+            LSHelpers.DeleteChildren(notesParent);
 
             var path = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlannersPath);
             if (string.IsNullOrEmpty(Path.GetFileName(path)))
@@ -2370,6 +2527,7 @@ namespace BetterLegacy.Editor.Managers
 
             RTFile.CreateDirectory(path);
 
+            LoadFolders();
             LoadDocuments();
             LoadTODO();
             LoadCharacters();
@@ -2379,6 +2537,25 @@ namespace BetterLegacy.Editor.Managers
             LoadOST();
 
             RefreshList();
+        }
+
+        /// <summary>
+        /// Loads the folder planners.
+        /// </summary>
+        public void LoadFolders()
+        {
+            var path = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlannersPath);
+            if (!RTFile.DirectoryExists(path))
+                return;
+
+            var directories = Directory.GetDirectories(path);
+            for (int i = 0; i < directories.Length; i++)
+            {
+                AddPlanner(new FolderPlanner()
+                {
+                    Name = Path.GetFileName(directories[i]),
+                });
+            }
         }
 
         /// <summary>
@@ -2676,6 +2853,18 @@ namespace BetterLegacy.Editor.Managers
             activeTabPlannerItems.Clear();
             switch (CurrentTab)
             {
+                case PlannerBase.Type.Folder: {
+                        for (int i = 0; i < folders.Count; i++)
+                        {
+                            var planner = folders[i];
+                            if (!planner)
+                                continue;
+                            activeTabPlannerItems.Add(planner);
+                            if (planner.GameObject)
+                                planner.GameObject.SetActive(planner.PlannerType == CurrentTab && RTString.SearchString(SearchTerm, planner.Name));
+                        }
+                        break;
+                    }
                 case PlannerBase.Type.Document: {
                         for (int i = 0; i < documents.Count; i++)
                         {
@@ -2774,9 +2963,62 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void SetEditorsInactive()
         {
+            currentFolderPlanner = null;
+            currentDocumentPlanner = null;
+            currentTODOPlanner = null;
+            currentCharacterPlanner = null;
+            currentTimelinePlanner = null;
+            currentSchedulePlanner = null;
+            currentNotePlanner = null;
+            currentOSTPlanner = null;
             for (int i = 0; i < editors.Count; i++)
                 editors[i].SetActive(false);
             editorTitlePanel.gameObject.SetActive(false);
+        }
+
+        /// <summary>
+        /// Opens the Folder editor.
+        /// </summary>
+        /// <param name="folder">Folder planner to edit.</param>
+        public void OpenFolderEditor(FolderPlanner folder)
+        {
+            currentFolderPlanner = folder;
+            folderEditor.SetActive(true); editorTitlePanel.gameObject.SetActive(true);
+            editorTitlePanel.color = EditorThemeManager.CurrentTheme.ColorGroups[ThemeGroup.Folder_Button];
+
+            RenderFolderEditor(folder);
+        }
+
+        /// <summary>
+        /// Renders the Folder editor.
+        /// </summary>
+        /// <param name="folder">Folder planner to edit.</param>
+        public void RenderFolderEditor(FolderPlanner folder)
+        {
+            var origName = folder.Name;
+            folderEditorName.SetTextWithoutNotify(folder.Name);
+            folderEditorName.onValueChanged.NewListener(_val =>
+            {
+                folder.Name = _val;
+                folder.NameUI.text = _val;
+            });
+            folderEditorName.onEndEdit.NewListener(_val =>
+            {
+                var newPath = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlannersPath, _val);
+                if (RTFile.DirectoryExists(newPath))
+                {
+                    folder.Name = origName;
+                    folder.NameUI.text = origName;
+                    return;
+                }
+
+                var directoryInfo = new DirectoryInfo(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlannersPath, origName));
+                if (!directoryInfo.Exists)
+                    return;
+
+                directoryInfo.MoveTo(newPath);
+            });
+            folderEditorOpen.onClick.NewListener(() => SetFolder(RTFile.CombinePaths(RTEditor.inst.PlannersPath, folder.Name)));
         }
 
         /// <summary>
@@ -2786,7 +3028,7 @@ namespace BetterLegacy.Editor.Managers
         public void OpenDocumentEditor(DocumentPlanner document)
         {
             currentDocumentPlanner = document;
-            editors[0].SetActive(true); editorTitlePanel.gameObject.SetActive(true);
+            documentEditor.SetActive(true); editorTitlePanel.gameObject.SetActive(true);
             editorTitlePanel.color = EditorThemeManager.CurrentTheme.ColorGroups[ThemeGroup.Tab_Color_1];
 
             RenderDocumentEditorName(document);
@@ -2811,7 +3053,7 @@ namespace BetterLegacy.Editor.Managers
             });
             documentEditorName.onEndEdit.NewListener(_val =>
             {
-                if (!documents.Has(x => x.Name == _val))
+                if (!documents.Has(x => x.Name == _val && x.ID != document.ID))
                 {
                     SaveDocuments();
                     return;
@@ -2866,7 +3108,7 @@ namespace BetterLegacy.Editor.Managers
         public void OpenTODOEditor(TODOPlanner todo)
         {
             currentTODOPlanner = todo;
-            editors[1].SetActive(true); editorTitlePanel.gameObject.SetActive(true);
+            todoEditor.SetActive(true); editorTitlePanel.gameObject.SetActive(true);
             editorTitlePanel.color = EditorThemeManager.CurrentTheme.ColorGroups[ThemeGroup.Tab_Color_2];
 
             RenderTODOEditor(todo);
@@ -2888,7 +3130,7 @@ namespace BetterLegacy.Editor.Managers
             });
             todoEditorText.onEndEdit.NewListener(_val =>
             {
-                if (!todos.Has(x => x.Text == _val))
+                if (!todos.Has(x => x.Text == _val && x.ID != todo.ID))
                 {
                     SaveTODO();
                     return;
@@ -2938,7 +3180,7 @@ namespace BetterLegacy.Editor.Managers
         public void OpenCharacterEditor(CharacterPlanner character)
         {
             currentCharacterPlanner = character;
-            editors[2].SetActive(true); editorTitlePanel.gameObject.SetActive(true);
+            characterEditor.SetActive(true); editorTitlePanel.gameObject.SetActive(true);
             editorTitlePanel.color = EditorThemeManager.CurrentTheme.ColorGroups[ThemeGroup.Tab_Color_3];
 
             RenderCharacterEditor(character);
@@ -3231,7 +3473,7 @@ namespace BetterLegacy.Editor.Managers
         {
             currentTimelinePlanner = timeline;
             SetEditorsInactive();
-            editors[3].SetActive(true); editorTitlePanel.gameObject.SetActive(true);
+            timelineEditor.SetActive(true); editorTitlePanel.gameObject.SetActive(true);
             editorTitlePanel.color = EditorThemeManager.CurrentTheme.ColorGroups[ThemeGroup.Tab_Color_4];
 
             RenderTimelineEditor(timeline);
@@ -3252,7 +3494,7 @@ namespace BetterLegacy.Editor.Managers
             });
             timelineEditorName.onEndEdit.NewListener(_val =>
             {
-                if (!timelines.Has(x => x.Name == _val))
+                if (!timelines.Has(x => x.Name == _val && x.ID != timeline.ID))
                 {
                     SaveTimelines();
                     return;
@@ -3271,7 +3513,7 @@ namespace BetterLegacy.Editor.Managers
         public void OpenEventEditor(TimelinePlanner.Event _event)
         {
             SetEditorsInactive();
-            editors[4].SetActive(true); editorTitlePanel.gameObject.SetActive(true);
+            eventEditor.SetActive(true); editorTitlePanel.gameObject.SetActive(true);
             editorTitlePanel.color = EditorThemeManager.CurrentTheme.ColorGroups[ThemeGroup.Tab_Color_4];
 
             RenderEventEditor(_event);
@@ -3320,7 +3562,7 @@ namespace BetterLegacy.Editor.Managers
         public void OpenScheduleEditor(SchedulePlanner schedule)
         {
             currentSchedulePlanner = schedule;
-            editors[5].SetActive(true); editorTitlePanel.gameObject.SetActive(true);
+            scheduleEditor.SetActive(true); editorTitlePanel.gameObject.SetActive(true);
             editorTitlePanel.color = EditorThemeManager.CurrentTheme.ColorGroups[ThemeGroup.Tab_Color_5];
 
             RenderScheduleEditor(schedule);
@@ -3434,7 +3676,7 @@ namespace BetterLegacy.Editor.Managers
         public void OpenNoteEditor(NotePlanner note)
         {
             currentNotePlanner = note;
-            editors[6].SetActive(true); editorTitlePanel.gameObject.SetActive(true);
+            noteEditor.SetActive(true); editorTitlePanel.gameObject.SetActive(true);
             editorTitlePanel.color = EditorThemeManager.CurrentTheme.ColorGroups[ThemeGroup.Tab_Color_6];
 
             RenderNoteEditor(note);
@@ -3455,7 +3697,7 @@ namespace BetterLegacy.Editor.Managers
             });
             noteEditorName.onEndEdit.NewListener(_val =>
             {
-                if (!notes.Has(x => x.Name == _val))
+                if (!notes.Has(x => x.Name == _val && x.ID != note.ID))
                 {
                     SaveNotes();
                     return;
@@ -3534,7 +3776,7 @@ namespace BetterLegacy.Editor.Managers
         public void OpenOSTEditor(OSTPlanner ost)
         {
             currentOSTPlanner = ost;
-            editors[7].SetActive(true); editorTitlePanel.gameObject.SetActive(true);
+            ostEditor.SetActive(true); editorTitlePanel.gameObject.SetActive(true);
             editorTitlePanel.color = EditorThemeManager.CurrentTheme.ColorGroups[ThemeGroup.Tab_Color_7];
 
             RenderOSTEditor(ost);
@@ -3560,7 +3802,7 @@ namespace BetterLegacy.Editor.Managers
             });
             ostEditorName.onEndEdit.NewListener(_val =>
             {
-                if (!osts.Has(x => x.Name == _val))
+                if (!osts.Has(x => x.Name == _val && x.ID != ost.ID))
                 {
                     SaveOST();
                     return;
@@ -3656,6 +3898,19 @@ namespace BetterLegacy.Editor.Managers
         #endregion
 
         #region Misc
+
+        /// <summary>
+        /// Sets the planner folder path.
+        /// </summary>
+        /// <param name="folder">Folder to set.</param>
+        public void SetFolder(string folder)
+        {
+            pathField.SetTextWithoutNotify(folder);
+            RTEditor.inst.PlannersPath = folder;
+            RTEditor.inst.SaveGlobalSettings();
+            Load();
+            SetEditorsInactive();
+        }
 
         /// <summary>
         /// Sets up the planner links.
@@ -4221,6 +4476,7 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void CopySelectedPlanners()
         {
+            copiedPlanners.AddRange(folders.Where(x => x.Selected));
             copiedPlanners.AddRange(documents.Where(x => x.Selected));
             copiedPlanners.AddRange(todos.Where(x => x.Selected));
             copiedPlanners.AddRange(characters.Where(x => x.Selected));
@@ -4238,6 +4494,10 @@ namespace BetterLegacy.Editor.Managers
         {
             switch (CurrentTab)
             {
+                case PlannerBase.Type.Folder: {
+                        copiedPlanners.AddRange(folders);
+                        break;
+                    }
                 case PlannerBase.Type.Document: {
                         copiedPlanners.AddRange(documents);
                         break;
@@ -4284,6 +4544,16 @@ namespace BetterLegacy.Editor.Managers
 
                 switch (plannerItem.PlannerType)
                 {
+                    case PlannerBase.Type.Folder: {
+                            if (plannerItem is not FolderPlanner folder)
+                                break;
+
+                            var copy = folder.CreateCopy();
+                            folders.Add(copy);
+                            copy.Init();
+                            pastedCount++;
+                            break;
+                        }
                     case PlannerBase.Type.Document: {
                             if (plannerItem is not DocumentPlanner document)
                                 break;
@@ -4371,6 +4641,7 @@ namespace BetterLegacy.Editor.Managers
         /// <returns>Returns true if the planner already exists in the planner lists, otherwise returns false.</returns>
         public bool HasPlanner(PlannerBase planner) => planner.PlannerType switch
         {
+            PlannerBase.Type.Folder => folders.Has(x => x.SamePlanner(planner)),
             PlannerBase.Type.Document => documents.Has(x => x.SamePlanner(planner)),
             PlannerBase.Type.TODO => todos.Has(x => x.SamePlanner(planner)),
             PlannerBase.Type.Character => characters.Has(x => x.SamePlanner(planner)),
@@ -4554,13 +4825,16 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public class TabInfo : Exists
         {
-            public TabInfo(string name, Vector2 cellSize, int constraintCount, string tooltipGroup)
+            public TabInfo(string name, Vector2 cellSize, int constraintCount, string tooltipGroup, ThemeGroup themeGroup)
             {
                 this.name = name;
                 this.cellSize = cellSize;
                 this.constraintCount = constraintCount;
                 this.tooltipGroup = tooltipGroup;
+                this.themeGroup = themeGroup;
             }
+
+            #region Values
 
             string name;
             /// <summary>
@@ -4593,6 +4867,11 @@ namespace BetterLegacy.Editor.Managers
             public string tooltipGroup;
 
             /// <summary>
+            /// Theme group of the element.
+            /// </summary>
+            public ThemeGroup themeGroup;
+
+            /// <summary>
             /// Toggle component reference.
             /// </summary>
             public Toggle toggle;
@@ -4611,12 +4890,18 @@ namespace BetterLegacy.Editor.Managers
                 set => toggle.onValueChanged = value;
             }
 
+            #endregion
+
+            #region Functions
+
             /// <summary>
             /// <see cref="Toggle"/> wrapper function.
             /// </summary>
             public void SetIsOnWithoutNotify(bool value) => toggle.SetIsOnWithoutNotify(value);
 
             public override string ToString() => Name;
+
+            #endregion
         }
 
         #endregion

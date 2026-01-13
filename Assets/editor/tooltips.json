@@ -6107,6 +6107,16 @@
     // Planner
     [
       {
+        "name": "Folder Planner Tab",
+        "tooltips": [
+          {
+            "desc": "Shows sub-folders in the planner.",
+            "hint": "Used for organizing planners.",
+            "lang": 0
+          }
+        ]
+      }, // Folder Planner Tab
+      {
         "name": "Document Planner Tab",
         "tooltips": [
           {

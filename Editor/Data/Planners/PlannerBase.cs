@@ -13,7 +13,7 @@ namespace BetterLegacy.Editor.Data.Planners
     /// <summary>
     /// Base Planner class.
     /// </summary>
-    public abstract class PlannerBase : Exists
+    public abstract class PlannerBase : Exists, ISelectable
     {
         public PlannerBase() { }
 
@@ -60,6 +60,10 @@ namespace BetterLegacy.Editor.Data.Planners
         public enum Type
         {
             /// <summary>
+            /// Folder that contains planners.
+            /// </summary>
+            Folder,
+            /// <summary>
             /// Document planner.
             /// </summary>
             Document,
@@ -97,6 +101,11 @@ namespace BetterLegacy.Editor.Data.Planners
         /// Initializes the planner item.
         /// </summary>
         public abstract void Init();
+
+        /// <summary>
+        /// Renders the planner item.
+        /// </summary>
+        public abstract void Render();
 
         /// <summary>
         /// Initializes the selected UI.

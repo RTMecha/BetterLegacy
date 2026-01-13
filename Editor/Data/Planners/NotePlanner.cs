@@ -120,7 +120,7 @@ namespace BetterLegacy.Editor.Data.Planners
             if (gameObject)
                 CoreHelper.Destroy(gameObject);
 
-            gameObject = ProjectPlanner.inst.prefabs[5].Duplicate(ProjectPlanner.inst.content, "note");
+            gameObject = ProjectPlanner.inst.prefabs[(int)PlannerType].Duplicate(ProjectPlanner.inst.content, "note");
             gameObject.transform.localScale = Vector3.one;
             GameObject = gameObject;
 
@@ -230,6 +230,13 @@ namespace BetterLegacy.Editor.Data.Planners
             InitSelectedUI();
 
             gameObject.SetActive(false);
+        }
+
+        public override void Render()
+        {
+            TitleUI.text = $"Note - {Name}";
+            TextUI.text = Text;
+            ProjectPlanner.inst.SetupPlannerLinks(Text, TextUI, Hyperlinks);
         }
 
         public override void ReadJSON(JSONNode jn)

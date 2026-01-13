@@ -13,28 +13,22 @@ using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Planners
 {
-    /// <summary>
-    /// Used for planning out a story, extended notes, etc.
-    /// </summary>
-    public class DocumentPlanner : PlannerBase<DocumentPlanner>
+    public class FolderPlanner : PlannerBase<FolderPlanner>
     {
-        public DocumentPlanner() : base() { }
+        public FolderPlanner() : base() { }
 
         #region Values
 
         #region Data
 
-        public override Type PlannerType => Type.Document;
+        public override Type PlannerType => Type.Folder;
 
         /// <summary>
         /// Name of the document.
         /// </summary>
         public string Name { get; set; }
 
-        /// <summary>
-        /// Text of the document.
-        /// </summary>
-        public string Text { get; set; }
+        public string FullPath => RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlannersPath, Name);
 
         #endregion
 
@@ -44,11 +38,6 @@ namespace BetterLegacy.Editor.Data.Planners
         /// Name text display.
         /// </summary>
         public TextMeshProUGUI NameUI { get; set; }
-
-        /// <summary>
-        /// Text display.
-        /// </summary>
-        public TextMeshProUGUI TextUI { get; set; }
 
         #endregion
 
@@ -62,7 +51,7 @@ namespace BetterLegacy.Editor.Data.Planners
             if (gameObject)
                 CoreHelper.Destroy(gameObject);
 
-            gameObject = ProjectPlanner.inst.prefabs[(int)PlannerType].Duplicate(ProjectPlanner.inst.content, "document");
+            gameObject = ProjectPlanner.inst.prefabs[(int)PlannerType].Duplicate(ProjectPlanner.inst.content, "folder");
             gameObject.transform.localScale = Vector3.one;
             GameObject = gameObject;
 
@@ -73,11 +62,11 @@ namespace BetterLegacy.Editor.Data.Planners
 
             var buttonFunctions = new List<EditorElement>
             {
-                new ButtonElement("Edit", () => ProjectPlanner.inst.OpenDocumentEditor(this)),
+                new ButtonElement("Edit", () => ProjectPlanner.inst.OpenFolderEditor(this)),
                 new ButtonElement("Delete", () =>
                 {
-                    ProjectPlanner.inst.documents.RemoveAll(x => x is DocumentPlanner && x.ID == ID);
-                    ProjectPlanner.inst.SaveDocuments();
+                    ProjectPlanner.inst.folders.RemoveAll(x => x is FolderPlanner && x.ID == ID);
+                    RTFile.DeleteDirectory(FullPath);
                     CoreHelper.Destroy(gameObject);
                 }),
                 new SpacerElement(),
@@ -85,7 +74,7 @@ namespace BetterLegacy.Editor.Data.Planners
                 {
                     ProjectPlanner.inst.copiedPlanners.Clear();
                     ProjectPlanner.inst.copiedPlanners.Add(this);
-                    EditorManager.inst.DisplayNotification("Copied document!", 2f, EditorManager.NotificationType.Success);
+                    EditorManager.inst.DisplayNotification("Copied folder!", 2f, EditorManager.NotificationType.Success);
                 }),
                 new ButtonElement("Copy Selected", ProjectPlanner.inst.CopySelectedPlanners),
                 new ButtonElement("Copy Current Tab", ProjectPlanner.inst.CopyCurrentTabPlanners),
@@ -93,10 +82,10 @@ namespace BetterLegacy.Editor.Data.Planners
                 new SpacerElement(),
             };
 
-            buttonFunctions.AddRange(EditorContextMenu.GetMoveIndexFunctions(ProjectPlanner.inst.documents, () => ProjectPlanner.inst.documents.IndexOf(this), () =>
+            buttonFunctions.AddRange(EditorContextMenu.GetMoveIndexFunctions(ProjectPlanner.inst.folders, () => ProjectPlanner.inst.folders.IndexOf(this), () =>
             {
-                for (int i = 0; i < ProjectPlanner.inst.documents.Count; i++)
-                    ProjectPlanner.inst.documents[i].Init();
+                for (int i = 0; i < ProjectPlanner.inst.folders.Count; i++)
+                    ProjectPlanner.inst.folders[i].Init();
                 ProjectPlanner.inst.RefreshList();
             }));
 
@@ -108,67 +97,40 @@ namespace BetterLegacy.Editor.Data.Planners
                     return;
                 }
 
-                ProjectPlanner.inst.OpenDocumentEditor(this);
+                ProjectPlanner.inst.SetFolder(RTFile.CombinePaths(RTEditor.inst.PlannersPath, Name));
             }, buttonFunctions);
 
             NameUI = gameObject.transform.Find("name").GetComponent<TextMeshProUGUI>();
             NameUI.text = Name;
             EditorThemeManager.ApplyLightText(NameUI);
 
-            TextUI = gameObject.transform.Find("words").GetComponent<TextMeshProUGUI>();
-            TextUI.text = Text;
-            EditorThemeManager.ApplyLightText(TextUI);
-
             var delete = gameObject.transform.Find("delete").GetComponent<DeleteButtonStorage>();
-            delete.OnClick.NewListener(() => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this document?", () =>
+            delete.OnClick.NewListener(() => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this folder?", () =>
             {
-                ProjectPlanner.inst.documents.RemoveAll(x => x is DocumentPlanner && x.ID == ID);
-                ProjectPlanner.inst.SaveDocuments();
+                ProjectPlanner.inst.folders.RemoveAll(x => x is FolderPlanner && x.ID == ID);
+                RTFile.DeleteDirectory(FullPath);
                 CoreHelper.Destroy(gameObject);
             }));
 
             EditorThemeManager.ApplyDeleteButton(delete);
-            EditorThemeManager.ApplyGraphic(gameObject.transform.Find("gradient").GetComponent<Image>(), ThemeGroup.Background_1);
-
-            ProjectPlanner.inst.SetupPlannerLinks(Text, TextUI, null, false);
 
             InitSelectedUI();
 
             gameObject.SetActive(false);
         }
 
-        public override void Render()
-        {
-            NameUI.text = Name;
-            TextUI.text = Text;
-            ProjectPlanner.inst.SetupPlannerLinks(Text, TextUI, null, false);
-        }
+        public override void Render() => NameUI.text = Name;
 
-        public override void ReadJSON(JSONNode jn)
-        {
-            Name = jn["name"];
-            if (jn["text"] != null)
-                Text = jn["text"];
-        }
+        public override void ReadJSON(JSONNode jn) { }
 
-        public override JSONNode ToJSON()
-        {
-            var jn = Parser.NewJSONObject();
+        public override JSONNode ToJSON() => Parser.NewJSONObject();
 
-            jn["name"] = Name;
-            if (!string.IsNullOrEmpty(Text))
-                jn["text"] = Text;
-
-            return jn;
-        }
-
-        public override DocumentPlanner CreateCopy() => new DocumentPlanner
+        public override FolderPlanner CreateCopy() => new FolderPlanner
         {
             Name = Name,
-            Text = Text,
         };
 
-        public override bool SamePlanner(PlannerBase other) => other is DocumentPlanner document && document.Name == Name;
+        public override bool SamePlanner(PlannerBase other) => other is FolderPlanner folder && folder.Name == Name;
 
         #endregion
     }

@@ -73,7 +73,7 @@ namespace BetterLegacy.Editor.Data.Planners
             if (gameObject)
                 CoreHelper.Destroy(gameObject);
 
-            gameObject = ProjectPlanner.inst.prefabs[3].Duplicate(ProjectPlanner.inst.content, "timeline");
+            gameObject = ProjectPlanner.inst.prefabs[(int)PlannerType].Duplicate(ProjectPlanner.inst.content, "timeline");
             gameObject.transform.localScale = Vector3.one;
             GameObject = gameObject;
 
@@ -149,6 +149,13 @@ namespace BetterLegacy.Editor.Data.Planners
             InitSelectedUI();
 
             gameObject.SetActive(false);
+        }
+
+        public override void Render()
+        {
+            NameUI.text = Name;
+            for (int i = 0; i < Events.Count; i++)
+                Events[i].Render();
         }
 
         public override void ReadJSON(JSONNode jn)
@@ -425,6 +432,19 @@ namespace BetterLegacy.Editor.Data.Planners
                 EditorThemeManager.ApplySelectable(moveForward, ThemeGroup.Function_2, false);
 
                 ProjectPlanner.inst.SetupPlannerLinks(Description, DescriptionUI, Hyperlinks);
+            }
+
+            /// <summary>
+            /// Renders the event.
+            /// </summary>
+            public void Render()
+            {
+                if (NameUI)
+                    NameUI.text = $"{EventType}: {Name}";
+                if (DescriptionUI)
+                    DescriptionUI.text = Description;
+                if (DescriptionUI && Hyperlinks)
+                    ProjectPlanner.inst.SetupPlannerLinks(Description, DescriptionUI, Hyperlinks);
             }
 
             /// <summary>

@@ -116,7 +116,7 @@ namespace BetterLegacy.Editor.Data.Planners
             if (gameObject)
                 CoreHelper.Destroy(gameObject);
 
-            gameObject = ProjectPlanner.inst.prefabs[2].Duplicate(ProjectPlanner.inst.content, "character");
+            gameObject = ProjectPlanner.inst.prefabs[(int)PlannerType].Duplicate(ProjectPlanner.inst.content, "character");
             gameObject.transform.localScale = Vector3.one;
             GameObject = gameObject;
 
@@ -168,6 +168,16 @@ namespace BetterLegacy.Editor.Data.Planners
             InitSelectedUI();
 
             gameObject.SetActive(false);
+        }
+
+        public override void Render()
+        {
+            ProfileUI.sprite = Sprite;
+            DetailsUI.text = FormatDetails;
+            DescriptionUI.text = Description;
+
+            ProjectPlanner.inst.SetupPlannerLinks(DetailsUI.text, DetailsUI, DetailsHyperlinks);
+            ProjectPlanner.inst.SetupPlannerLinks(Description, DescriptionUI, DescriptionHyperlinks);
         }
 
         public override void ReadJSON(JSONNode jn)
