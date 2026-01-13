@@ -940,9 +940,6 @@ namespace BetterLegacy.Editor.Managers
 
                 EditorLevelManager.inst.NewLevelPopup = new NewLevelPopup();
                 EditorLevelManager.inst.NewLevelPopup.Assign(EditorLevelManager.inst.NewLevelPopup.GetLegacyDialog().Dialog.gameObject);
-                EditorLevelManager.inst.NewLevelPopup.Dragger = EditorLevelManager.inst.NewLevelPopup.GameObject.AddComponent<DraggableUI>();
-                EditorLevelManager.inst.NewLevelPopup.Dragger.target = EditorLevelManager.inst.NewLevelPopup.GameObject.transform;
-                EditorLevelManager.inst.NewLevelPopup.Dragger.ogPos = EditorLevelManager.inst.NewLevelPopup.GameObject.transform.position;
                 EditorLevelManager.inst.NewLevelPopup.title = EditorLevelManager.inst.NewLevelPopup.TMPTitle.text;
                 EditorLevelManager.inst.NewLevelPopup.size = EditorLevelManager.inst.NewLevelPopup.GameObject.transform.GetChild(0).AsRT().sizeDelta;
                 EditorLevelManager.inst.NewLevelPopup.onRender = () =>
@@ -971,9 +968,6 @@ namespace BetterLegacy.Editor.Managers
 
                 EditorLevelManager.inst.OpenLevelPopup = new ContentPopup(EditorPopup.OPEN_FILE_POPUP);
                 EditorLevelManager.inst.OpenLevelPopup.Assign(EditorLevelManager.inst.OpenLevelPopup.GetLegacyDialog().Dialog.gameObject);
-                EditorLevelManager.inst.OpenLevelPopup.Dragger = EditorLevelManager.inst.OpenLevelPopup.GameObject.AddComponent<DraggableUI>();
-                EditorLevelManager.inst.OpenLevelPopup.Dragger.target = EditorLevelManager.inst.OpenLevelPopup.GameObject.transform;
-                EditorLevelManager.inst.OpenLevelPopup.Dragger.ogPos = EditorLevelManager.inst.OpenLevelPopup.GameObject.transform.position;
                 EditorLevelManager.inst.OpenLevelPopup.title = EditorLevelManager.inst.OpenLevelPopup.Title.text;
                 EditorLevelManager.inst.OpenLevelPopup.size = EditorLevelManager.inst.OpenLevelPopup.GameObject.transform.AsRT().sizeDelta;
                 EditorLevelManager.inst.OpenLevelPopup.refreshSearch = EditorManager.inst.UpdateOpenBeatmapSearch;
@@ -1063,7 +1057,7 @@ namespace BetterLegacy.Editor.Managers
 
                 EditorLevelManager.inst.SaveAsPopup = new EditorPopup(EditorPopup.SAVE_AS_POPUP);
                 EditorLevelManager.inst.SaveAsPopup.Assign(EditorLevelManager.inst.SaveAsPopup.GetLegacyDialog().Dialog.gameObject);
-                EditorLevelManager.inst.SaveAsPopup.Dragger = EditorLevelManager.inst.SaveAsPopup.GameObject.transform.GetChild(0).gameObject.AddComponent<DraggableUI>();
+                EditorLevelManager.inst.SaveAsPopup.Dragger = EditorLevelManager.inst.SaveAsPopup.GameObject.transform.GetChild(0).gameObject.GetOrAddComponent<DraggableUI>();
                 EditorLevelManager.inst.SaveAsPopup.Dragger.target = EditorLevelManager.inst.SaveAsPopup.GameObject.transform;
                 EditorLevelManager.inst.SaveAsPopup.Dragger.ogPos = EditorLevelManager.inst.SaveAsPopup.GameObject.transform.position;
                 EditorLevelManager.inst.SaveAsPopup.title = EditorLevelManager.inst.SaveAsPopup.Title.text;
@@ -4232,7 +4226,7 @@ namespace BetterLegacy.Editor.Managers
             close.onClick.NewListener(() => RTFileBrowser.inst.Popup.Close());
             fileBrowser.transform.Find("GameObject").gameObject.SetActive(false);
 
-            var dragger = fileBrowser.AddComponent<DraggableUI>();
+            var dragger = fileBrowser.GetOrAddComponent<DraggableUI>();
             dragger.target = fileBrowser.transform;
 
             var rtfb = fileBrowser.AddComponent<RTFileBrowser>();
@@ -4365,7 +4359,7 @@ namespace BetterLegacy.Editor.Managers
             var newFilePopupTitle = newFilePopupPanel.transform.Find("Title").gameObject;
             EditorThemeManager.ApplyLightText(newFilePopupPanel.transform.Find("Title").GetComponent<TextMeshProUGUI>());
 
-            var openFilePopupSelect = newFilePopup.gameObject.AddComponent<DraggableUI>();
+            var openFilePopupSelect = newFilePopup.gameObject.GetOrAddComponent<DraggableUI>();
             openFilePopupSelect.target = newFilePopup;
             openFilePopupSelect.ogPos = newFilePopup.position;
 

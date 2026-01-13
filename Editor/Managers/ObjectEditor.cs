@@ -227,20 +227,18 @@ namespace BetterLegacy.Editor.Managers
 
                 ParentSelectorPopup = new ContentPopup(EditorPopup.PARENT_SELECTOR);
                 ParentSelectorPopup.Assign(ParentSelectorPopup.GetLegacyDialog().Dialog.gameObject);
-                ParentSelectorPopup.Dragger = ParentSelectorPopup.GameObject.AddComponent<DraggableUI>();
-                ParentSelectorPopup.Dragger.target = ParentSelectorPopup.GameObject.transform;
-                ParentSelectorPopup.Dragger.ogPos = ParentSelectorPopup.GameObject.transform.position;
                 ParentSelectorPopup.title = ParentSelectorPopup.Title.text;
-                ParentSelectorPopup.size = ParentSelectorPopup.GameObject.transform.AsRT().sizeDelta;
+                var parentSelectorSize = ParentSelectorPopup.GameObject.transform.AsRT().sizeDelta;
+                ParentSelectorPopup.size = parentSelectorSize;
                 ParentSelectorPopup.refreshSearch = EditorManager.inst.UpdateParentSearch;
                 ParentSelectorPopup.InitPageField();
-                ParentSelectorPopup.getMaxPageCount = () => GameData.Current.beatmapObjects.FindAll(x => !x.FromPrefab).Count / ObjectEditor.ParentObjectsPerPage; // temp
+                ParentSelectorPopup.getMaxPageCount = () => GameData.Current.beatmapObjects.FindAll(x => !x.FromPrefab).Count / ParentObjectsPerPage; // temp
                 ParentSelectorPopup.onRender = () =>
                 {
                     if (AssetPack.TryReadFromFile("editor/ui/popups/parent_selector.json", out string uiFile))
                     {
                         var jn = JSON.Parse(uiFile);
-                        RectValues.TryParse(jn["base"]["rect"], RectValues.Default.SizeDelta(600f, 400f)).AssignToRectTransform(ParentSelectorPopup.GameObject.transform.AsRT());
+                        RectValues.TryParse(jn["base"]["rect"], RectValues.Default.SizeDelta(300f, 450f)).AssignToRectTransform(ParentSelectorPopup.GameObject.transform.AsRT());
                         RectValues.TryParse(jn["top_panel"]["rect"], RectValues.FullAnchored.AnchorMin(0, 1).Pivot(0f, 0f).SizeDelta(32f, 32f)).AssignToRectTransform(ParentSelectorPopup.TopPanel);
                         RectValues.TryParse(jn["search"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(0f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, 32f))).AssignToRectTransform(ParentSelectorPopup.GameObject.transform.Find("search-box").AsRT());
 
