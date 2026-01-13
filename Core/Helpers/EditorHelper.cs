@@ -899,5 +899,21 @@ namespace BetterLegacy.Core.Helpers
             }
             return p / count;
         }
+
+        public static void CreateMarkers(int count, float distance)
+        {
+            if (count <= 0 || distance <= 0f)
+                return;
+
+            var time = AudioManager.inst.CurrentAudioSource.time;
+            for (int i = 0; i < count; i++)
+            {
+                var marker = new Marker();
+                marker.time = time;
+                GameData.Current.data.markers.Add(marker);
+                time += distance;
+            }
+            RTMarkerEditor.inst?.CreateMarkers();
+        }
     }
 }

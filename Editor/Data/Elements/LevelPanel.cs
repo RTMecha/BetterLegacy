@@ -25,7 +25,7 @@ namespace BetterLegacy.Editor.Data.Elements
     /// <summary>
     /// Object for storing level panel data.
     /// </summary>
-    public class LevelPanel : EditorPanel<Level>
+    public class LevelPanel : EditorPanel<Level>, ISelectable
     {
         public LevelPanel() { }
 
@@ -155,7 +155,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public override void Init(string directory)
         {

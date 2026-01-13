@@ -23,7 +23,7 @@ using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Elements
 {
-    public class LevelCollectionPanel : EditorPanel<LevelCollection>
+    public class LevelCollectionPanel : EditorPanel<LevelCollection>, ISelectable
     {
         #region Values
 
@@ -102,7 +102,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public override void Init(string directory)
         {

@@ -1369,6 +1369,17 @@ namespace BetterLegacy.Core
             }
         }
 
+        public static IEnumerable<TSource> Range<TSource>(this IEnumerable<TSource> collection, int startIndex, int endIndex)
+        {
+            int index = 0;
+            foreach (var item in collection)
+            {
+                if (index >= startIndex && index <= endIndex)
+                    yield return item;
+                index++;
+            }
+        }
+
         #endregion
 
         #region JSON
@@ -1782,6 +1793,54 @@ namespace BetterLegacy.Core
         /// <param name="referenceType">Reference Type.</param>
         /// <returns>Returns the associated reference type.</returns>
         public static ModifierCompatibility ToCompatibility(this ModifierReferenceType referenceType) => ModifierCompatibility.FromType(referenceType);
+
+        /// <summary>
+        /// Comparse two numbers based on <see cref="NumberComparison"/>.
+        /// </summary>
+        /// <param name="a">First number to compare.</param>
+        /// <param name="b">Second number to compare.</param>
+        /// <returns>Returns true if the number comparison matches, otherwise returns false.</returns>
+        public static bool Compare(this NumberComparison comparison, int a, int b) => comparison switch
+        {
+            NumberComparison.Equals => a == b,
+            NumberComparison.LesserEquals => a <= b,
+            NumberComparison.GreaterEquals => a >= b,
+            NumberComparison.Lesser => a < b,
+            NumberComparison.Greater => a > b,
+            _ => false,
+        };
+
+        /// <summary>
+        /// Comparse two numbers based on <see cref="NumberComparison"/>.
+        /// </summary>
+        /// <param name="a">First number to compare.</param>
+        /// <param name="b">Second number to compare.</param>
+        /// <returns>Returns true if the number comparison matches, otherwise returns false.</returns>
+        public static bool Compare(this NumberComparison comparison, float a, float b) => comparison switch
+        {
+            NumberComparison.Equals => a == b,
+            NumberComparison.LesserEquals => a <= b,
+            NumberComparison.GreaterEquals => a >= b,
+            NumberComparison.Lesser => a < b,
+            NumberComparison.Greater => a > b,
+            _ => false,
+        };
+
+        /// <summary>
+        /// Comparse two numbers based on <see cref="NumberComparison"/>.
+        /// </summary>
+        /// <param name="a">First number to compare.</param>
+        /// <param name="b">Second number to compare.</param>
+        /// <returns>Returns true if the number comparison matches, otherwise returns false.</returns>
+        public static bool Compare(this NumberComparison comparison, double a, double b) => comparison switch
+        {
+            NumberComparison.Equals => a == b,
+            NumberComparison.LesserEquals => a <= b,
+            NumberComparison.GreaterEquals => a >= b,
+            NumberComparison.Lesser => a < b,
+            NumberComparison.Greater => a > b,
+            _ => false,
+        };
 
         #endregion
 

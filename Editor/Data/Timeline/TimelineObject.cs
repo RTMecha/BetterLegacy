@@ -21,7 +21,7 @@ namespace BetterLegacy.Editor.Data.Timeline
     /// <summary>
     /// Represents an object in the editor timeline.
     /// </summary>
-    public class TimelineObject : Exists
+    public class TimelineObject : Exists, ISelectable
     {
         public TimelineObject(IEditable data)
         {

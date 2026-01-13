@@ -17,7 +17,7 @@ namespace BetterLegacy.Editor.Data.Timeline
     /// <summary>
     /// Represents a keyframe in an editor timeline.
     /// </summary>
-    public class TimelineKeyframe : Exists
+    public class TimelineKeyframe : Exists, ISelectable
     {
         public TimelineKeyframe(EventKeyframe eventKeyframe)
         {

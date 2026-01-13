@@ -21,7 +21,7 @@ namespace BetterLegacy.Editor.Data.Elements
     /// <summary>
     /// Object for storing prefab panel data.
     /// </summary>
-    public class PrefabPanel : EditorPanel<Prefab>
+    public class PrefabPanel : EditorPanel<Prefab>, ISelectable
     {
         public PrefabPanel() { }
 
@@ -73,6 +73,8 @@ namespace BetterLegacy.Editor.Data.Elements
         /// The icon of the prefab panel.
         /// </summary>
         public Image IconImage { get; set; }
+
+        public bool Selected { get; set; }
 
         public override string DisplayName => isFolder ? System.IO.Path.GetFileName(Path) : Item.name;
 
@@ -152,7 +154,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public override void Init(string directory)
         {

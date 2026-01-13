@@ -13,7 +13,7 @@ namespace BetterLegacy.Editor.Data.Timeline
     /// <summary>
     /// Represents a checkpoint in the editor.
     /// </summary>
-    public class TimelineCheckpoint : Exists
+    public class TimelineCheckpoint : Exists, ISelectable
     {
         public TimelineCheckpoint() { }
 

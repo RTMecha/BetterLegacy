@@ -20,7 +20,7 @@ namespace BetterLegacy.Editor.Data.Timeline
     /// <summary>
     /// Represents a marker in the editor.
     /// </summary>
-    public class TimelineMarker : Exists
+    public class TimelineMarker : Exists, ISelectable
     {
         public TimelineMarker() { }
 

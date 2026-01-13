@@ -20,7 +20,7 @@ namespace BetterLegacy.Editor.Data.Elements
     /// <summary>
     /// Object for storing theme panel data. Used for the themes in the theme keyframe.
     /// </summary>
-    public class ThemePanel : EditorPanel<BeatmapTheme>
+    public class ThemePanel : EditorPanel<BeatmapTheme>, ISelectable
     {
         public ThemePanel() { }
 
@@ -106,11 +106,13 @@ namespace BetterLegacy.Editor.Data.Elements
         /// </summary>
         public bool isDuplicate;
 
-        #endregion
+        public bool Selected { get; set; }
 
         #endregion
 
-        #region Methods
+        #endregion
+
+        #region Functions
 
         public override void Init(string directory)
         {

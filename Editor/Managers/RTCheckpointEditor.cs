@@ -244,6 +244,11 @@ namespace BetterLegacy.Editor.Managers
         /// <summary>
         /// Renders the checkpoint editor.
         /// </summary>
+        public void RenderDialog() => RenderDialog(CurrentCheckpoint.Checkpoint);
+
+        /// <summary>
+        /// Renders the checkpoint editor.
+        /// </summary>
         /// <param name="checkpoint">Checkpoint to edit.</param>
         public void RenderDialog(Checkpoint checkpoint)
         {

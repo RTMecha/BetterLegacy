@@ -250,7 +250,20 @@ namespace BetterLegacy.Editor.Managers
         public void OpenDialog(TimelineMarker timelineMarker)
         {
             Dialog.Open();
+            RenderDialog(timelineMarker);
+        }
 
+        /// <summary>
+        /// Renders the Marker editor.
+        /// </summary>
+        public void RenderDialog() => RenderDialog(CurrentMarker);
+
+        /// <summary>
+        /// Renders the Marker editor.
+        /// </summary>
+        /// <param name="timelineMarker">The marker to edit.</param>
+        public void RenderDialog(TimelineMarker timelineMarker)
+        {
             UpdateMarkerList();
             RenderMarkers();
 

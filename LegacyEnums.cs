@@ -1037,6 +1037,18 @@ namespace BetterLegacy
     }
 
     /// <summary>
+    /// Represents a comparison type.
+    /// </summary>
+    public enum NumberComparison
+    {
+        Equals,
+        LesserEquals,
+        GreaterEquals,
+        Lesser,
+        Greater,
+    }
+
+    /// <summary>
     /// Represents the type of transform value.
     /// </summary>
     public enum TransformType

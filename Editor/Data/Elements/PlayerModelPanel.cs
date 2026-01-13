@@ -16,7 +16,7 @@ using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Elements
 {
-    public class PlayerModelPanel : EditorPanel<PlayerModel>
+    public class PlayerModelPanel : EditorPanel<PlayerModel>, ISelectable
     {
         public PlayerModelPanel(int index) : base() => this.index = index;
 
@@ -39,6 +39,8 @@ namespace BetterLegacy.Editor.Data.Elements
         #region Data
 
         public override string DisplayName => Item.basePart.name;
+
+        public bool Selected { get; set; }
 
         #endregion
 
@@ -67,6 +69,8 @@ namespace BetterLegacy.Editor.Data.Elements
         #endregion
 
         #endregion
+
+        #region Functions
 
         public override void Init(PlayerModel item)
         {
@@ -243,5 +247,7 @@ namespace BetterLegacy.Editor.Data.Elements
                     PlayerEditor.inst.RenderModelsPopup(PlayerEditor.inst.onSelectModel);
                 }));
         }
+
+        #endregion
     }
 }

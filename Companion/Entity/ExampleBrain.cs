@@ -552,6 +552,21 @@ namespace BetterLegacy.Companion.Entity
         public ExampleAction GetAction(string key) => actions.Find(x => x.key == key);
 
         /// <summary>
+        /// Forces an action to run.
+        /// </summary>
+        /// <param name="action">Action to run.</param>
+        public void ForceRunAction(ExampleAction action)
+        {
+            if (!action)
+                return;
+
+            if (!CurrentAction && action.Run())
+                CurrentAction = action;
+            else if (CurrentAction && action.uniqueID == CurrentAction.uniqueID && action.Interrupt())
+                CurrentAction = null;
+        }
+
+        /// <summary>
         /// Stops the current action.
         /// </summary>
         public void StopCurrentAction()
