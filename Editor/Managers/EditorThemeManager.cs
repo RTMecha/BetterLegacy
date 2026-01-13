@@ -735,6 +735,8 @@ namespace BetterLegacy.Editor.Managers
                     if (component is not Image image)
                         continue;
 
+                    image.fillCenter = true;
+
                     if (rounded != 0 && canSet)
                         SpriteHelper.SetRoundedSprite(image, rounded, roundedSide);
                     else
