@@ -195,11 +195,11 @@ namespace BetterLegacy.Core
         /// <typeparam name="T">Type of the object.</typeparam>
         /// <param name="jn">JSON to parse.</param>
         /// <returns>Returns a list parsed from <paramref name="jn"/>.</returns>
-        public static List<T> ParseObjectList<T>(JSONNode jn) where T : PAObject<T>, new()
+        public static List<T> ParseObjectList<T>(JSONNode jn) where T : IJSON, new()
         {
             var list = new List<T>();
             for (int i = 0; i < jn.Count; i++)
-                list.Add(PAObject<T>.Parse(jn[i]));
+                list.Add(Parse<T>(jn[i]));
             return list;
         }
 
@@ -216,6 +216,27 @@ namespace BetterLegacy.Core
             for (int i = 0; i < objs.Count; i++)
             {
                 var obj = objs[i];
+                if (!obj.ShouldSerialize)
+                    continue;
+
+                jn[index] = obj.ToJSON();
+                index++;
+            }
+            return jn;
+        }
+
+        /// <summary>
+        /// Converts an <see cref="IJSON"/> object collection to a JSON Array.
+        /// </summary>
+        /// <typeparam name="T">Type of the object. Must be <see cref="IJSON"/>.</typeparam>
+        /// <param name="objs">Collection of objects to convert.</param>
+        /// <returns>Returns a JSON Array based on the object collection.</returns>
+        public static JSONNode ObjectListToJSON<T>(IEnumerable<T> objs) where T : IJSON
+        {
+            var jn = NewJSONArray();
+            var index = 0;
+            foreach (var obj in objs)
+            {
                 if (!obj.ShouldSerialize)
                     continue;
 
