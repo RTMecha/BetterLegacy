@@ -2038,6 +2038,8 @@ namespace BetterLegacy.Companion.Data
 
                 new EventTypeComparisonParameter(),
                 new EventCoordParameter(),
+                new EventValueComparisonParameter(),
+                new EaseTypeEqualsParameter(),
 
                 #endregion
 
@@ -2125,6 +2127,14 @@ namespace BetterLegacy.Companion.Data
                 new SwapPrefabGroupOnlyParameter(),
 
                 #endregion
+            };
+
+            /// <summary>
+            /// List of orderby parameters.
+            /// </summary>
+            public List<GetSelectableParameter> orderByParameters = new List<GetSelectableParameter>
+            {
+                new OrderByParameter<string>("name", "Orders by object name.", selectable => GetName(selectable)),
             };
 
             #endregion
@@ -2229,6 +2239,14 @@ namespace BetterLegacy.Companion.Data
                         new EditCommand().ConsumeInput(input, split.Range(i + 1, split.Length - 1).ToArray(), CurrentType, selectables);
                         selectables = null;
                         return selectables;
+                    }
+
+                    if (s == "orderby")
+                    {
+                        i++;
+                        if (i < split.Length && orderByParameters.TryFind(x => x.Name == split[i], out GetSelectableParameter parameter))
+                            selectables = parameter.GetSelectables(selectables, parameter.GetParameters(split, ref i));
+                        continue;
                     }
 
                     //if (!actionMode && s == "or" && previousSelectables != null && !previousSelectables.IsEmpty())
@@ -2511,6 +2529,42 @@ namespace BetterLegacy.Companion.Data
                 public virtual SelectableType RequiredSelectionType => SelectableType.Null;
 
                 public abstract void Run(IEnumerable<ISelectable> selectables, string[] parameters);
+            }
+
+            public class OrderByParameter<TKey> : GetSelectableParameter
+            {
+                public OrderByParameter() { }
+
+                public OrderByParameter(string name, string description, Func<ISelectable, TKey> keySelector)
+                {
+                    this.name = name;
+                    this.description = description;
+                    this.keySelector = keySelector;
+                }
+                
+                public OrderByParameter(string name, string description, string addToAutocomplete, Func<ISelectable, TKey> keySelector)
+                {
+                    this.name = name;
+                    this.description = description;
+                    this.addToAutocomplete = addToAutocomplete;
+                    this.keySelector = keySelector;
+                }
+
+                public override string Name => name;
+
+                public override string Description => description;
+
+                public override string AddToAutocomplete => addToAutocomplete ?? base.AddToAutocomplete;
+
+                public string name;
+
+                public string description;
+
+                public string addToAutocomplete;
+
+                public Func<ISelectable, TKey> keySelector;
+
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters) => Parser.TryParse(parameters[0], true) ? selectables.OrderBy(keySelector) : selectables.OrderByDescending(keySelector);
             }
 
             #region Get
@@ -2934,6 +2988,50 @@ namespace BetterLegacy.Companion.Data
                     foreach (var selectable in selectables)
                     {
                         if (selectable is TimelineKeyframe timelineKeyframe && timelineKeyframe.Type == type && timelineKeyframe.Index == index)
+                            yield return selectable;
+                    }
+                }
+            }
+
+            public class EventValueComparisonParameter : GetSelectableParameter
+            {
+                public override string Name => "event_value";
+
+                public override int ParameterCount => 3;
+
+                public override string Description => "Checks the value of a keyframe.";
+
+                public override string AddToAutocomplete => "event_value 0 equals 10";
+
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
+                {
+                    var valueIndex = Parser.TryParse(parameters[0], 0);
+                    var comparison = Parser.TryParse(parameters[1].Remove("_"), true, NumberComparison.Equals);
+                    var value = Parser.TryParse(parameters[2], 0f);
+                    foreach (var selectable in selectables)
+                    {
+                        if (selectable is TimelineKeyframe timelineKeyframe && timelineKeyframe.eventKeyframe && comparison.Compare(timelineKeyframe.eventKeyframe.GetValue(valueIndex), value))
+                            yield return selectable;
+                    }
+                }
+            }
+
+            public class EaseTypeEqualsParameter : GetSelectableParameter
+            {
+                public override string Name => "easing";
+
+                public override int ParameterCount => 2;
+
+                public override string Description => "Checks the easing of a keyframe.";
+
+                public override string AddToAutocomplete => "easing linear";
+
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
+                {
+                    var easing = Parser.TryParse(parameters[0], true, Easing.Linear);
+                    foreach (var selectable in selectables)
+                    {
+                        if (selectable is TimelineKeyframe timelineKeyframe && timelineKeyframe.eventKeyframe && timelineKeyframe.eventKeyframe.curve == easing)
                             yield return selectable;
                     }
                 }
