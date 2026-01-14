@@ -15,8 +15,10 @@ using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Data.Modifiers;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
@@ -24,177 +26,15 @@ using BetterLegacy.Editor.Data.Elements;
 using BetterLegacy.Editor.Data.Planners;
 using BetterLegacy.Editor.Data.Timeline;
 using BetterLegacy.Editor.Managers;
+using BetterLegacy.Menus;
+using BetterLegacy.Story;
 
 namespace BetterLegacy.Companion.Data
 {
     /// <summary>
-    /// Represents a way to communicate with Example.
+    /// Represents a way of communicating with Example.
     /// </summary>
-    public class ExampleCommand
-    {
-        #region Constructors
-
-        public ExampleCommand() { }
-
-        public ExampleCommand(string name, string desc, bool autocomplete, Action<string> response)
-        {
-            this.name = name;
-            this.desc = desc;
-            this.autocomplete = autocomplete;
-            this.response = response;
-        }
-        
-        public ExampleCommand(string name, string desc, bool autocomplete, Action<string> response, List<Phrase> phrases) : this(name, desc, autocomplete, response)
-        {
-            this.phrases = phrases;
-        }
-        
-        public ExampleCommand(string name, string desc, bool autocomplete, Action<string> response, bool requirePhrase, List<Phrase> phrases) : this(name, desc, autocomplete, response, phrases)
-        {
-            this.requirePhrase = requirePhrase;
-        }
-
-        #endregion
-
-        #region Values
-
-        /// <summary>
-        /// Name of the command to display.
-        /// </summary>
-        public string name;
-
-        /// <summary>
-        /// Description of the command to display.
-        /// </summary>
-        public string desc;
-
-        /// <summary>
-        /// Function to respond to the input with.
-        /// </summary>
-        public Action<string> response;
-
-        /// <summary>
-        /// If the command should show up in autocomplete.
-        /// </summary>
-        public bool autocomplete = true;
-
-        /// <summary>
-        /// If phrases are required.
-        /// </summary>
-        public bool requirePhrase;
-
-        /// <summary>
-        /// List of things to say to prompt the response.
-        /// </summary>
-        public List<Phrase> phrases;
-
-        #endregion
-
-        #region Functions
-
-        /// <summary>
-        /// Checks the input for a response.
-        /// </summary>
-        /// <param name="input">Input text.</param>
-        public void CheckResponse(string input)
-        {
-            if (!requirePhrase && input == name)
-                response?.Invoke(input);
-            else if (phrases != null && phrases.TryFind(x => x.CheckPhrase(input), out Phrase phrase))
-            {
-                if (phrase.isRegex)
-                    response?.Invoke(input.Replace(phrase.match.Groups[0].ToString(), phrase.match.Groups[1].ToString()));
-                else
-                    response?.Invoke(phrase.text);
-            }
-        }
-
-        /// <summary>
-        /// Parses a command.
-        /// </summary>
-        /// <param name="jn">JSON to parse.</param>
-        /// <returns>Returns a parsed command.</returns>
-        public static ExampleCommand Parse(JSONNode jn)
-        {
-            var command = new ExampleCommand();
-
-            if (jn["phrases"] != null)
-            {
-                command.phrases = new List<Phrase>();
-                for (int i = 0; i < jn["phrases"].Count; i++)
-                {
-                    var phrase = new Phrase(jn["phrases"][i]["text"]);
-                    phrase.isRegex = jn["phrases"][i]["regex"].AsBool;
-                    command.phrases.Add(phrase);
-                }
-            }
-
-            command.response = _val =>
-            {
-                if (jn["response"] != null)
-                    RTCode.Evaluate($"var input = \"{_val}\";" + jn["response"]);
-            };
-
-            command.name = jn["name"];
-            command.desc = jn["desc"];
-
-            if (jn["autocomplete"] != null)
-                command.autocomplete = jn["autocomplete"].AsBool;
-
-            command.requirePhrase = jn["require_phrase"].AsBool;
-
-            return command;
-        }
-
-        public override string ToString() => name;
-
-        #endregion
-
-        /// <summary>
-        /// Represents a phrase prompt.
-        /// </summary>
-        public class Phrase
-        {
-            public Phrase(string text) => this.text = text;
-
-            public Phrase(string text, bool isRegex) : this(text) => this.isRegex = isRegex;
-
-            /// <summary>
-            /// Text of the phrase.
-            /// </summary>
-            public string text;
-
-            /// <summary>
-            /// Does the phrase contain regex?
-            /// </summary>
-            public bool isRegex;
-
-            /// <summary>
-            /// Match of the phrase.
-            /// </summary>
-            public Match match;
-
-            /// <summary>
-            /// Checks if the phrase matches the input.
-            /// </summary>
-            /// <param name="input">Input text to check.</param>
-            /// <returns>Returns true if the match was successful, otherwise returns false.</returns>
-            public bool CheckPhrase(string input)
-            {
-                if (!isRegex)
-                    return text.ToLower() == input.ToLower();
-
-                var regex = new Regex(text);
-                match = regex.Match(input);
-                return match.Success;
-            }
-        }
-    }
-
-    /// <summary>
-    /// Represents a new and upcoming way of communicating with Example.
-    /// </summary>
-    public abstract class ExampleCommandBase : Exists
+    public abstract class ExampleCommand : Exists
     {
         /*
          examples include:
@@ -204,8 +44,13 @@ namespace BetterLegacy.Companion.Data
         - i love you
         - evaluate 1 + 1
         - select objects layer current_layer time lesser_equals 1 name "Object Name"
-        - select external_prefabs name_regex \"RT (.*?)Mecha(.*?)\" -> log import
-        - select levels name \"commands\" union name \"Shockwave\" -> log notify_count combine \"TEST COMBINE COMMAND\"
+        - select external_prefabs name_regex "RT (.*?)Mecha(.*?)" -> log import
+        - select levels name "commands" union name \"Shockwave\" -> log notify_count combine "TEST COMBINE COMMAND"
+        - select objects name "NAME" select modifiers -> log notify_count edit prefab_group_only true
+        - select objects name "NAME" -> mirror horizontal
+        - select objects name "keyframer" select object_keyframes event_coord 0 0 -> log edit value 0 set 10 select objects name "keyframer" -> update keyframes
+        - load_level story chapter 0 level 0
+        - load_level arcade_id 523682385
          */
 
         #region Values
@@ -230,20 +75,23 @@ namespace BetterLegacy.Companion.Data
         /// </summary>
         public virtual string Pattern => Name;
 
+        /// <summary>
+        /// Description of the command.
+        /// </summary>
+        public abstract string Description { get; }
+
+        /// <summary>
+        /// List of global variables.
+        /// </summary>
         public static List<VariableParameter> variables = new List<VariableParameter>
         {
             new EvaluateParameter(),
         };
 
-        #endregion
-
-        #region Functions
-
         /// <summary>
-        /// Gets the list of registered commands.
+        /// List of registered commands.
         /// </summary>
-        /// <returns>Returns the list of registered commands.</returns>
-        public static List<ExampleCommandBase> GetComands() => new List<ExampleCommandBase>
+        public static List<ExampleCommand> commands = new List<ExampleCommand>
         {
             #region Example Interaction Commands
             
@@ -259,6 +107,11 @@ namespace BetterLegacy.Companion.Data
             #region Core Commands
             
             new SetSceneCommand(),
+            new PlayerCommand(),
+            new LoadLevelCommand(),
+            new HideInterfaceCommand(),
+            new ShowPlayerGUICommand(),
+            new HideTimelineCommand(),
 
             #endregion
 
@@ -269,6 +122,26 @@ namespace BetterLegacy.Companion.Data
 
             #endregion
         };
+
+        #endregion
+
+        #region Functions
+
+        /// <summary>
+        /// Gets a collection of currently available parameters.
+        /// </summary>
+        /// <returns>Returns a collection of currently available parameters.</returns>
+        public virtual IEnumerable<ParameterBase> GetParameters() => null;
+
+        /// <summary>
+        /// Parses multiple lines into commands and runs the commands.
+        /// </summary>
+        /// <param name="inputs">Inputs to parse.</param>
+        public static void Run(params string[] inputs)
+        {
+            foreach (var line in inputs)
+                Run(line);
+        }
 
         /// <summary>
         /// Parses an input into a command and runs the command.
@@ -284,10 +157,13 @@ namespace BetterLegacy.Companion.Data
 
             var split = input.Split(' ');
             var name = split[0];
-            if (GetComands().TryFind(x => x.Name == name, out ExampleCommandBase command))
+            if (commands.TryFind(x => x.Name == name, out ExampleCommand command))
             {
                 if (command.Usable)
+                {
                     command.ConsumeInput(input, split);
+                    command.Response(input);
+                }
                 else
                     CoreHelper.LogError($"Could not run command {name} since it is not currently usable.");
             }
@@ -300,20 +176,28 @@ namespace BetterLegacy.Companion.Data
         /// <param name="split">Array of split words.</param>
         public abstract void ConsumeInput(string input, string[] split);
 
+        /// <summary>
+        /// How Example should respond to the command.
+        /// </summary>
+        /// <param name="input">Input of the command.</param>
+        public virtual void Response(string input) => Example.Current?.chatBubble?.Say($"Ran {Name} function!");
+
         #endregion
 
         #region Sub Classes
 
         #region Example Interaction Commands
-        
+
         /// <summary>
         /// Represents a command for saying hello.
         /// </summary>
-        public class HelloCommand : ExampleCommandBase
+        public class HelloCommand : ExampleCommand
         {
             public override string Name => "hello";
 
             public override bool Autocomplete => false;
+
+            public override string Description => "Say hello to Example!";
 
             public override void ConsumeInput(string input, string[] split)
             {
@@ -333,6 +217,8 @@ namespace BetterLegacy.Companion.Data
                     }
                 }
             }
+
+            public override void Response(string input) => Example.Current?.chatBubble?.SayDialogue(ExampleChatBubble.Dialogues.GREETING);
         }
         
         /// <summary>
@@ -354,11 +240,13 @@ namespace BetterLegacy.Companion.Data
         /// <summary>
         /// Represents a command for saying something about yourself.
         /// </summary>
-        public class MyselfCommand : ExampleCommandBase
+        public class MyselfCommand : ExampleCommand
         {
             public override string Name => "i";
 
             public override bool Autocomplete => false;
+
+            public override string Description => "Say something about yourself";
 
             public List<Phrase> modifiers = new List<Phrase>
             {
@@ -381,6 +269,8 @@ namespace BetterLegacy.Companion.Data
                     Example.Current?.brain?.SetAttribute("HAPPINESS", modifierPhrase.score * contextPhrase.score, MathOperation.Addition);
             }
 
+            public override void Response(string input) { }
+
             public class Phrase
             {
                 public Phrase(string name, double score)
@@ -397,11 +287,13 @@ namespace BetterLegacy.Companion.Data
         /// <summary>
         /// Represents a command for evaluating math.
         /// </summary>
-        public class EvaluateCommand : ExampleCommandBase
+        public class EvaluateCommand : ExampleCommand
         {
             public override string Name => "evaluate";
 
             public override string Pattern => "evaluate 1 + 1";
+
+            public override string Description => "Evaluate a math function";
 
             public override void ConsumeInput(string input, string[] split)
             {
@@ -425,44 +317,458 @@ namespace BetterLegacy.Companion.Data
                     Example.Current?.chatBubble?.Say("Couldn't calculate that, sorry...");
                 }
             }
+
+            public override void Response(string input) { }
         }
 
         /// <summary>
         /// Represents a command for dancing.
         /// </summary>
-        public class DanceCommand : ExampleCommandBase
+        public class DanceCommand : ExampleCommand
         {
             public override string Name => "dance";
 
             public override bool Autocomplete => false;
 
+            public override string Description => "Dance!";
+
             public override void ConsumeInput(string input, string[] split) => Example.Current?.brain?.ForceRunAction(Example.Current?.brain?.GetAction(ExampleBrain.Actions.DANCING));
+
+            public override void Response(string input) { }
         }
 
         #endregion
 
         #region Core Commands
 
-        public class SetSceneCommand : ExampleCommandBase
+        /// <summary>
+        /// Represents a command capable of setting the current Unity scene.
+        /// </summary>
+        public class SetSceneCommand : ExampleCommand
         {
             public override string Name => "setscene";
 
             public override string Pattern => "setscene Scene_Name";
 
+            public override string Description => "Loads a Unity scene.";
+
             public override void ConsumeInput(string input, string[] split) => SceneHelper.LoadScene(Parser.TryParse(split[1], true, SceneName.Main_Menu));
+
+            public override IEnumerable<ParameterBase> GetParameters()
+            {
+                var values = EnumHelper.GetValues<SceneName>();
+                foreach (var value in values)
+                    yield return new TypeEnumParameter<SceneName>(value, value switch
+                    {
+                        SceneName.Main_Menu => "Main menu interface scene.",
+                        SceneName.Editor => "Editor scene.",
+                        SceneName.Arcade_Select => "Arcade menu scene.",
+                        SceneName.Game => "Playing a level scene.",
+                        SceneName.Input_Select => "Input select interface scene.",
+                        SceneName.Interface => "Story interface scene.",
+                        SceneName.post_level => "Unused story scene.",
+                        _ => "Scene to load.",
+                    });
+            }
+        }
+
+        /// <summary>
+        /// Represents a command capable of controlling players.
+        /// </summary>
+        public class PlayerCommand : ExampleCommand
+        {
+            #region Values
+
+            public override string Name => "player";
+
+            public override bool Usable => CoreHelper.InEditor;
+
+            public override string Pattern => "player action";
+
+            public override string Description => "Makes a player do something. Only available in the editor.";
+
+            public static List<PlayerActionParameter> playerActionParameters = new List<PlayerActionParameter>
+            {
+                new MoveParameter(),
+                new BoostParameter(),
+            };
+
+            #endregion
+
+            #region Functions
+
+            public override void ConsumeInput(string input, string[] split)
+            {
+                for (int i = 1; i < split.Length; i++)
+                {
+                    var s = split[i];
+                    if (playerActionParameters.TryFind(x => x.Name == s, out PlayerActionParameter parameter))
+                        parameter.Run(parameter.GetParameters(split, ref i));
+                }
+            }
+
+            public override IEnumerable<ParameterBase> GetParameters() => playerActionParameters;
+
+            #endregion
+
+            #region Sub Classes
+
+            public abstract class PlayerActionParameter : ParameterBase
+            {
+                public abstract void Run(string[] parameters);
+            }
+
+            public class MoveParameter : PlayerActionParameter
+            {
+                public override string Name => "move";
+
+                public override int ParameterCount => 2;
+
+                public override string Description => "Moves all players to an area.";
+
+                public override string AddToAutocomplete => "move 0 0";
+
+                public override void Run(string[] parameters)
+                {
+                    var pos = new Vector2(Parser.TryParse(parameters[0], 0f), Parser.TryParse(parameters[1], 0f));
+                    foreach (var player in PlayerManager.Players)
+                    {
+                        if (player.RuntimePlayer && player.RuntimePlayer.rb)
+                            player.RuntimePlayer.rb.position = pos;
+                    }
+                }
+            }
+
+            public class BoostParameter : PlayerActionParameter
+            {
+                public override string Name => "boost";
+
+                public override string Description => "Forces all players to boost.";
+
+                public override void Run(string[] parameters)
+                {
+                    foreach (var player in PlayerManager.Players)
+                        player.RuntimePlayer?.Boost();
+                }
+            }
+
+            #endregion
+        }
+
+        /// <summary>
+        /// Represents a command capable of loading a level.
+        /// </summary>
+        public class LoadLevelCommand : ExampleCommand
+        {
+            #region Values
+
+            public override string Name => "load_level";
+
+            public override string Pattern => "load_level type [path or selection]";
+
+            public override string Description => "Loads a level from the arcade, editor, path or story.";
+
+            public static SelectType CurrentType { get; set; }
+
+            public List<StorySelectParameter> storySelectParameters = new List<StorySelectParameter>
+            {
+                new ChapterSelectParameter(),
+                new LevelSelectParameter(),
+                new CutsceneSelectParameter(),
+                new BonusSelectParameter(),
+                new SkipCutscenesParameter(),
+            };
+
+            #endregion
+
+            #region Functions
+
+            public override void ConsumeInput(string input, string[] split)
+            {
+                CurrentType = Parser.TryParse(split[1].Remove("_"), true, SelectType.RelativePath);
+                switch (CurrentType)
+                {
+                    case SelectType.RelativePath: {
+                            var path = split[2];
+                            if (path.StartsWith("\""))
+                            {
+                                path = path.TrimStart('"');
+                                for (int i = 3; i < split.Length; i++)
+                                    path += " " + split[i];
+                                path = path.TrimEnd('"');
+                            }
+                            LoadLevel(new Level(RTFile.CombinePaths(RTFile.ApplicationDirectory, path)));
+                            break;
+                        }
+                    case SelectType.FullPath: {
+                            var path = split[2];
+                            if (path.StartsWith("\""))
+                            {
+                                path = path.TrimStart('"');
+                                for (int i = 3; i < split.Length; i++)
+                                    path += " " + split[i];
+                                path = path.TrimEnd('"');
+                            }
+                            LoadLevel(new Level(path));
+                            break;
+                        }
+                    case SelectType.ArcadeID: {
+                            if (CoreHelper.InEditor)
+                            {
+                                if (EditorLevelManager.inst.LevelPanels.TryFind(x => x && x.Item && x.Item.id == split[2], out LevelPanel levelPanel))
+                                    LoadLevel(levelPanel.Item);
+                            }
+                            else
+                            {
+                                if (LevelManager.Levels.TryFind(x => x && x.id == split[2], out Level level))
+                                    LoadLevel(level);
+                            }
+                            break;
+                        }
+                    case SelectType.Story: {
+                            var storySelection = new StorySelection();
+                            for (int i = 2; i < split.Length; i++)
+                            {
+                                var s = split[i];
+                                if (storySelectParameters.TryFind(x => x.Name == s, out StorySelectParameter parameter))
+                                    storySelection = parameter.Select(storySelection, parameter.GetParameters(split, ref i));
+                            }
+                            StoryManager.inst.Play(storySelection);
+                            break;
+                        }
+                }
+            }
+
+            public override IEnumerable<ParameterBase> GetParameters()
+            {
+                foreach (var parameter in storySelectParameters)
+                    yield return parameter;
+                var values = EnumHelper.GetValues<SelectType>();
+                foreach (var value in values)
+                    yield return new TypeEnumParameter<SelectType>(value, "Location type of the level to load.", value switch
+                    {
+                        SelectType.RelativePath => "relative_path \"beatmaps/arcade/Level Name\"",
+                        SelectType.FullPath => $"full_path {RTFile.ApplicationDirectory}\"beatmaps/arcade/Level Name\"",
+                        SelectType.ArcadeID => "arcade_id 0",
+                        _ => null,
+                    });
+            }
+
+            void LoadLevel(Level level)
+            {
+                if (CoreHelper.InEditor)
+                    EditorLevelManager.inst.LoadLevel(level);
+                else
+                    LevelManager.Play(level);
+            }
+
+            #endregion
+
+            #region Sub Classes
+
+            public enum SelectType
+            {
+                RelativePath,
+                FullPath,
+                ArcadeID,
+                Story,
+            }
+
+            public abstract class StorySelectParameter : ParameterBase
+            {
+                public abstract StorySelection Select(StorySelection storySelection, string[] parameters);
+            }
+
+            public class ChapterSelectParameter : StorySelectParameter
+            {
+                public override string Name => "chapter";
+
+                public override int ParameterCount => 1;
+
+                public override string Description => "Chapter of the story mode.";
+
+                public override string AddToAutocomplete => "chapter 0";
+
+                public override StorySelection Select(StorySelection storySelection, string[] parameters)
+                {
+                    var chapter = parameters[0];
+                    if (int.TryParse(chapter, out int num))
+                        storySelection.chapter = num;
+                    else if (StoryMode.Instance.chapters.TryFindIndex(x => x.name == chapter, out int chapterIndex))
+                        storySelection.chapter = chapterIndex;
+                    return storySelection;
+                }
+            }
+
+            public class LevelSelectParameter : StorySelectParameter
+            {
+                public override string Name => "level";
+
+                public override int ParameterCount => 1;
+
+                public override string Description => "A levels index within a chapter of the story mode.";
+
+                public override string AddToAutocomplete => "level 0";
+
+                public override StorySelection Select(StorySelection storySelection, string[] parameters)
+                {
+                    var level = parameters[0];
+                    if (int.TryParse(level, out int num))
+                        storySelection.level = num;
+                    else if (StoryMode.Instance.chapters[storySelection.chapter].levels.TryFindIndex(x => x.name == level || System.IO.Path.GetFileName(x.filePath) == level, out int levelIndex))
+                        storySelection.level = levelIndex;
+                    return storySelection;
+                }
+            }
+
+            public class CutsceneSelectParameter : StorySelectParameter
+            {
+                public override string Name => "cutscene";
+
+                public override int ParameterCount => 1;
+
+                public override string Description => "The index of a cutscene in a level in the story mode.";
+
+                public override string AddToAutocomplete => "cutscene 0";
+
+                public override StorySelection Select(StorySelection storySelection, string[] parameters)
+                {
+                    var cutscene = parameters[0];
+                    if (int.TryParse(cutscene, out int num))
+                        storySelection.cutsceneIndex = num;
+                    return storySelection;
+                }
+            }
+
+            public class BonusSelectParameter : StorySelectParameter
+            {
+                public override string Name => "bonus";
+
+                public override string Description => "If bonus chapters should be selected.";
+
+                public override StorySelection Select(StorySelection storySelection, string[] parameters)
+                {
+                    storySelection.bonus = true;
+                    return storySelection;
+                }
+            }
+
+            public class SkipCutscenesParameter : StorySelectParameter
+            {
+                public override string Name => "skip_cutscenes";
+
+                public override string Description => "If cutscenes should be skipped.";
+
+                public override StorySelection Select(StorySelection storySelection, string[] parameters)
+                {
+                    storySelection.skipCutscenes = true;
+                    return storySelection;
+                }
+            }
+
+            #endregion
+        }
+
+        /// <summary>
+        /// Represents a command capable of setting the state of the current interface.
+        /// </summary>
+        public class HideInterfaceCommand : ExampleCommand
+        {
+            public override string Name => "hide_interface";
+
+            public override bool Usable => CoreHelper.InGame;
+
+            public override string Pattern => "hide_interface [true/false]";
+
+            public override string Description => "Hides the interface.";
+
+            public override void ConsumeInput(string input, string[] split)
+            {
+                if (!InterfaceManager.inst || !InterfaceManager.inst.CurrentInterface)
+                    return;
+
+                var value = split[1];
+                if (value == "swap")
+                {
+                    InterfaceManager.inst.CurrentInterface.SetActive(!InterfaceManager.inst.CurrentInterface.UIActive);
+                    return;
+                }
+
+                InterfaceManager.inst.CurrentInterface.SetActive(!Parser.TryParse(split[1], false));
+            }
+
+            public override IEnumerable<ParameterBase> GetParameters()
+            {
+                yield return new GenericParameter("true", "Hides the interface.");
+                yield return new GenericParameter("false", "Shows the interface.");
+                yield return new GenericParameter("swap", "Toggles the interface.");
+            }
+        }
+
+        /// <summary>
+        /// Represents a command capable of setting the state of <see cref="EventsConfig.ShowGUI"/>.
+        /// </summary>
+        public class ShowPlayerGUICommand : ExampleCommand
+        {
+            public override string Name => "show_player_gui";
+
+            public override bool Usable => CoreHelper.InGame;
+
+            public override string Pattern => "show_player_gui [true/false]";
+
+            public override string Description => "Sets the active state of players and the player GUI.";
+
+            public override void ConsumeInput(string input, string[] split) => EventsConfig.Instance.ShowGUI.Value = split[1] == "swap" ? !EventsConfig.Instance.ShowGUI.Value : Parser.TryParse(split[1], true);
+
+            public override IEnumerable<ParameterBase> GetParameters()
+            {
+                yield return new GenericParameter("true", "Shows the players and GUI.");
+                yield return new GenericParameter("false", "Hides the players and GUI.");
+                yield return new GenericParameter("swap", "Toggles the players and GUI.");
+            }
+        }
+
+        /// <summary>
+        /// Represents a command capable of setting the state of <see cref="EventsConfig.HideTimeline"/>.
+        /// </summary>
+        public class HideTimelineCommand : ExampleCommand
+        {
+            public override string Name => "hide_timeline";
+
+            public override bool Usable => CoreHelper.InGame;
+
+            public override string Pattern => "hide_timeline [true/false]";
+
+            public override string Description => "Hides the timeline.";
+
+            public override void ConsumeInput(string input, string[] split) => EventsConfig.Instance.HideTimeline.Value = split[1] == "swap" ? !EventsConfig.Instance.HideTimeline.Value : Parser.TryParse(split[1], true);
+
+            public override IEnumerable<ParameterBase> GetParameters()
+            {
+                yield return new GenericParameter("true", "Hides the timeline.");
+                yield return new GenericParameter("false", "Shows the timeline.");
+                yield return new GenericParameter("swap", "Toggles the timeline.");
+            }
         }
 
         #endregion
 
         #region Editor Commands
 
-        public class EditCommand : ExampleCommandBase
+        /// <summary>
+        /// Represents a command capable of editing objects.
+        /// </summary>
+        public class EditCommand : ExampleCommand
         {
+            #region Values
+
             public override string Name => "edit";
 
             public override bool Usable => false;
 
             public override string Pattern => "create category [values]";
+
+            public override string Description => "Edits an objects' values. Only available in the editor.";
 
             public static int index;
 
@@ -551,9 +857,13 @@ namespace BetterLegacy.Companion.Data
                 new ModifierElseIfParameter(),
             };
 
+            #endregion
+
+            #region Functions
+
             public override void ConsumeInput(string input, string[] split) => throw new NotImplementedException();
 
-            public void ConsumeInput(string[] parameters, SelectCommand.SelectableType selectableType, IEnumerable<ISelectable> selectables)
+            public void ConsumeInput(string input, string[] parameters, SelectCommand.SelectableType selectableType, IEnumerable<ISelectable> selectables)
             {
                 switch (selectableType)
                 {
@@ -576,19 +886,19 @@ namespace BetterLegacy.Companion.Data
                                 {
                                     case TimelineObject.TimelineReferenceType.BeatmapObject: {
                                             var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                                            Apply(1, beatmapObject, parameters, beatmapObjectParameters);
+                                            Apply(input, 1, beatmapObject, parameters, beatmapObjectParameters);
                                             RTLevel.Current?.UpdateObject(beatmapObject);
                                             break;
                                         }
                                     case TimelineObject.TimelineReferenceType.BackgroundObject: {
                                             var backgroundObject = timelineObject.GetData<BackgroundObject>();
-                                            Apply(1, backgroundObject, parameters, backgroundObjectParameters);
+                                            Apply(input, 1, backgroundObject, parameters, backgroundObjectParameters);
                                             RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
                                             break;
                                         }
                                     case TimelineObject.TimelineReferenceType.PrefabObject: {
                                             var prefabObject = timelineObject.GetData<PrefabObject>();
-                                            Apply(1, prefabObject, parameters, prefabObjectParameters);
+                                            Apply(input, 1, prefabObject, parameters, prefabObjectParameters);
                                             RTLevel.Current?.UpdatePrefab(prefabObject);
                                             break;
                                         }
@@ -605,7 +915,7 @@ namespace BetterLegacy.Companion.Data
                             {
                                 if (selectable is not TimelineKeyframe timelineKeyframe)
                                     continue;
-                                Apply(0, timelineKeyframe.eventKeyframe, parameters, eventKeyframeParameters);
+                                Apply(input, 0, timelineKeyframe.eventKeyframe, parameters, eventKeyframeParameters);
                                 timelineKeyframe.Render();
                                 index++;
                             }
@@ -618,12 +928,13 @@ namespace BetterLegacy.Companion.Data
                             {
                                 if (selectable is not TimelineKeyframe timelineKeyframe)
                                     continue;
-                                Apply(0, timelineKeyframe.eventKeyframe, parameters, eventKeyframeParameters);
+                                Apply(input, 0, timelineKeyframe.eventKeyframe, parameters, eventKeyframeParameters);
                                 timelineKeyframe.Render();
                                 index++;
                             }
                             EditorTimeline.inst.CurrentSelection?.Render();
-                            ObjectEditor.inst.Dialog.Timeline.ResizeKeyframeTimeline(ObjectEditor.inst.Dialog.Timeline.CurrentObject);
+                            if (ObjectEditor.inst.Dialog.IsCurrent)
+                                ObjectEditor.inst.Dialog.Timeline.ResizeKeyframeTimeline(ObjectEditor.inst.Dialog.Timeline.CurrentObject);
                             break;
                         }
                     case SelectCommand.SelectableType.Markers: {
@@ -633,7 +944,7 @@ namespace BetterLegacy.Companion.Data
                             {
                                 if (selectable is not TimelineMarker timelineMarker)
                                     continue;
-                                Apply(0, timelineMarker.Marker, parameters, markerParameters);
+                                Apply(input, 0, timelineMarker.Marker, parameters, markerParameters);
                                 timelineMarker.Render();
                                 index++;
                             }
@@ -646,7 +957,7 @@ namespace BetterLegacy.Companion.Data
                             {
                                 if (selectable is not TimelineCheckpoint timelineCheckpoint)
                                     continue;
-                                Apply(0, timelineCheckpoint.Checkpoint, parameters, checkpointParameters);
+                                Apply(input, 0, timelineCheckpoint.Checkpoint, parameters, checkpointParameters);
                                 timelineCheckpoint.Render();
                                 index++;
                             }
@@ -659,7 +970,7 @@ namespace BetterLegacy.Companion.Data
                             {
                                 if (selectable is not ModifierCard modifierCard)
                                     continue;
-                                Apply(0, modifierCard.Modifier, parameters, modifierParameters);
+                                Apply(input, 0, modifierCard.Modifier, parameters, modifierParameters);
                                 index++;
                             }
                             if (ModifiersEditorDialog.Current)
@@ -669,15 +980,49 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
-            public void Apply<T>(int startIndex, T obj, string[] split, List<EditParameter<T>> parameters)
+            public void Apply<T>(string input, int startIndex, T obj, string[] split, List<EditParameter<T>> parameters)
             {
                 for (int i = startIndex; i < split.Length; i++)
                 {
                     var s = split[i];
+                    if (s == "select")
+                    {
+                        new SelectCommand().ConsumeInput(input, split.Range(i, split.Length - 1).ToArray());
+                        return;
+                    }
+
                     if (parameters.TryFind(x => x.Name == s, out EditParameter<T> parameter))
                         parameter.Apply(obj, parameter.GetParameters(split, ref i));
                 }
             }
+
+            public override IEnumerable<ParameterBase> GetParameters()
+            {
+                foreach (var parameter in beatmapObjectParameters)
+                    yield return parameter;
+                foreach (var parameter in backgroundObjectParameters)
+                    yield return parameter;
+                foreach (var parameter in prefabObjectParameters)
+                    yield return parameter;
+                foreach (var parameter in markerParameters)
+                    yield return parameter;
+                foreach (var parameter in checkpointParameters)
+                    yield return parameter;
+                foreach (var parameter in eventKeyframeParameters)
+                    yield return parameter;
+                foreach (var parameter in modifierParameters)
+                    yield return parameter;
+                var values = EnumHelper.GetValues<CategoryType>();
+                foreach (var value in values)
+                {
+                    if (value != CategoryType.Null)
+                        yield return new TypeEnumParameter<CategoryType>(value, "Type of the object to edit.");
+                }
+            }
+
+            #endregion
+
+            #region Sub Classes
 
             public abstract class EditParameter<T> : ParameterBase
             {
@@ -718,6 +1063,10 @@ namespace BetterLegacy.Companion.Data
 
                 public override int ParameterCount => 1;
 
+                public override string Description => "Editor layer of the object.";
+
+                public override string AddToAutocomplete => "editor_layer 0";
+
                 public override void Apply(T obj, string[] parameters) => obj.EditorData.Layer = Parser.TryParse(parameters[0], 0);
             }
 
@@ -726,6 +1075,10 @@ namespace BetterLegacy.Companion.Data
                 public override string Name => "editor_bin";
 
                 public override int ParameterCount => 1;
+
+                public override string Description => "Editor bin of the object.";
+
+                public override string AddToAutocomplete => "editor_bin max_bin";
 
                 public override void Apply(T obj, string[] parameters) => obj.EditorData.Bin = Parser.TryParse(parameters[0], 0);
             }
@@ -736,6 +1089,10 @@ namespace BetterLegacy.Companion.Data
 
                 public override int ParameterCount => 1;
 
+                public override string Description => "Editor bin of the object.";
+
+                public override string AddToAutocomplete => "add_editor_bin max_bin";
+
                 public override void Apply(T obj, string[] parameters) => obj.EditorData.Bin = Parser.TryParse(parameters[0], 0) + index;
             }
 
@@ -744,6 +1101,10 @@ namespace BetterLegacy.Companion.Data
                 public override string Name => "start_time";
 
                 public override int ParameterCount => 1;
+
+                public override string Description => "Start time of the object.";
+
+                public override string AddToAutocomplete => "start_time 0";
 
                 public override void Apply(T obj, string[] parameters) => obj.StartTime = Parser.TryParse(parameters[0], 0f);
             }
@@ -754,6 +1115,10 @@ namespace BetterLegacy.Companion.Data
 
                 public override int ParameterCount => 1;
 
+                public override string Description => "Start time of the object.";
+
+                public override string AddToAutocomplete => "add_start_time 0.1";
+
                 public override void Apply(T obj, string[] parameters) => obj.StartTime = AudioManager.inst.CurrentAudioSource.time + (Parser.TryParse(parameters[0], 0f) * index);
             }
 
@@ -763,9 +1128,16 @@ namespace BetterLegacy.Companion.Data
 
                 public override int ParameterCount => 2;
 
+                public override string Description => "Shape of the object.";
+
+                public override string AddToAutocomplete => "shape 0 0";
+
                 public override void Apply(T obj, string[] parameters)
                 {
-                    obj.Shape = Parser.TryParse(parameters[0], 0);
+                    if (Enum.TryParse(parameters[0].Remove("_"), true, out ShapeType shapeType))
+                        obj.ShapeType = shapeType;
+                    else
+                        obj.Shape = Parser.TryParse(parameters[0], 0);
                     obj.ShapeOption = Parser.TryParse(parameters[1], 0);
                 }
             }
@@ -775,6 +1147,10 @@ namespace BetterLegacy.Companion.Data
                 public override string Name => "text";
 
                 public override int ParameterCount => 1;
+
+                public override string Description => "Text of the object.";
+
+                public override string AddToAutocomplete => "text \"Some text\"";
 
                 public override void Apply(T obj, string[] parameters) => obj.Text = parameters[0];
             }
@@ -787,7 +1163,11 @@ namespace BetterLegacy.Companion.Data
             {
                 public override string Name => "name";
 
-                public override bool RequireQuotes => true;
+                public override int ParameterCount => 1;
+
+                public override string Description => "Name of the object.";
+
+                public override string AddToAutocomplete => "name \"Object Name\"";
 
                 public override void Apply(BeatmapObject obj, string[] parameters) => obj.name = parameters[0];
             }
@@ -798,7 +1178,20 @@ namespace BetterLegacy.Companion.Data
 
                 public override int ParameterCount => 1;
 
-                public override void Apply(BeatmapObject obj, string[] parameters) => obj.gradientType = Parser.TryParse(parameters[0], true, GradientType.Normal);
+                public override string Description => "Gradient type of the object.";
+
+                public override string AddToAutocomplete => "gradient_type linear";
+
+                public override void Apply(BeatmapObject obj, string[] parameters)
+                {
+                    if (obj.IsSpecialShape)
+                        return;
+
+                    if (Enum.TryParse(parameters[0].Remove("_"), true, out GradientType gradientType))
+                        obj.gradientType = gradientType;
+                    else
+                        obj.gradientType = (GradientType)Parser.TryParse(parameters[0], 0);
+                }
             }
 
             public class BeatmapObjectRenderDepthParameter : EditParameter<BeatmapObject>
@@ -806,6 +1199,10 @@ namespace BetterLegacy.Companion.Data
                 public override string Name => "depth";
 
                 public override int ParameterCount => 1;
+
+                public override string Description => "Render depth of the object.";
+
+                public override string AddToAutocomplete => "depth 15";
 
                 public override void Apply(BeatmapObject obj, string[] parameters) => obj.Depth = Parser.TryParse(parameters[0], 0f);
             }
@@ -815,6 +1212,10 @@ namespace BetterLegacy.Companion.Data
                 public override string Name => "pos_kf";
 
                 public override int BracketsType => 2;
+
+                public override string Description => "Position keyframe of the object. Creates a new keyframe if no keyframe is found with the same keyframe time.";
+
+                public override string AddToAutocomplete => "pos_kf [time 0 value 0 set 10]";
 
                 public override void Apply(BeatmapObject obj, string[] parameters)
                 {
@@ -842,6 +1243,10 @@ namespace BetterLegacy.Companion.Data
 
                 public override int BracketsType => 2;
 
+                public override string Description => "Scale keyframe of the object. Creates a new keyframe if no keyframe is found with the same keyframe time.";
+
+                public override string AddToAutocomplete => "sca_kf [time 0 value 0 set 10]";
+
                 public override void Apply(BeatmapObject obj, string[] parameters)
                 {
                     var eventKeyframe = EventKeyframe.DefaultScaleKeyframe;
@@ -868,6 +1273,10 @@ namespace BetterLegacy.Companion.Data
 
                 public override int BracketsType => 2;
 
+                public override string Description => "Rotation keyframe of the object. Creates a new keyframe if no keyframe is found with the same keyframe time.";
+
+                public override string AddToAutocomplete => "rot_kf [time 0 value 0 set 10]";
+
                 public override void Apply(BeatmapObject obj, string[] parameters)
                 {
                     var eventKeyframe = EventKeyframe.DefaultRotationKeyframe;
@@ -893,6 +1302,10 @@ namespace BetterLegacy.Companion.Data
                 public override string Name => "col_kf";
 
                 public override int BracketsType => 2;
+
+                public override string Description => "Color keyframe of the object. Creates a new keyframe if no keyframe is found with the same keyframe time.";
+
+                public override string AddToAutocomplete => "col_kf [time 0 value 0 set 5]";
 
                 public override void Apply(BeatmapObject obj, string[] parameters)
                 {
@@ -923,7 +1336,11 @@ namespace BetterLegacy.Companion.Data
             {
                 public override string Name => "name";
 
-                public override bool RequireQuotes => true;
+                public override int ParameterCount => 1;
+
+                public override string Description => "Name of the object.";
+
+                public override string AddToAutocomplete => "name \"Object Name\"";
 
                 public override void Apply(BackgroundObject obj, string[] parameters) => obj.name = parameters[0];
             }
@@ -934,6 +1351,10 @@ namespace BetterLegacy.Companion.Data
 
                 public override int ParameterCount => 2;
 
+                public override string Description => "Position of the object.";
+
+                public override string AddToAutocomplete => "pos 0 0";
+
                 public override void Apply(BackgroundObject obj, string[] parameters) => obj.pos = new Vector2(Parser.TryParse(parameters[0], 0f), Parser.TryParse(parameters[1], 0f));
             }
 
@@ -942,6 +1363,10 @@ namespace BetterLegacy.Companion.Data
                 public override string Name => "sca";
 
                 public override int ParameterCount => 2;
+
+                public override string Description => "Scale of the object.";
+
+                public override string AddToAutocomplete => "sca 0 0";
 
                 public override void Apply(BackgroundObject obj, string[] parameters) => obj.scale = new Vector2(Parser.TryParse(parameters[0], 0f), Parser.TryParse(parameters[1], 0f));
             }
@@ -952,6 +1377,10 @@ namespace BetterLegacy.Companion.Data
 
                 public override int ParameterCount => 1;
 
+                public override string Description => "Rotation of the object.";
+
+                public override string AddToAutocomplete => "rot 0";
+
                 public override void Apply(BackgroundObject obj, string[] parameters) => obj.rot = Parser.TryParse(parameters[0], 0f);
             }
 
@@ -961,6 +1390,10 @@ namespace BetterLegacy.Companion.Data
 
                 public override int ParameterCount => 1;
 
+                public override string Description => "Color of the object.";
+
+                public override string AddToAutocomplete => "color 0";
+
                 public override void Apply(BackgroundObject obj, string[] parameters) => obj.color = Parser.TryParse(parameters[0], 0);
             }
 
@@ -969,6 +1402,10 @@ namespace BetterLegacy.Companion.Data
                 public override string Name => "fade_color";
 
                 public override int ParameterCount => 1;
+
+                public override string Description => "Fade color of the object.";
+
+                public override string AddToAutocomplete => "fade_color 0";
 
                 public override void Apply(BackgroundObject obj, string[] parameters) => obj.fadeColor = Parser.TryParse(parameters[0], 0);
             }
@@ -983,6 +1420,10 @@ namespace BetterLegacy.Companion.Data
 
                 public override int ParameterCount => 2;
 
+                public override string Description => "Position of the object.";
+
+                public override string AddToAutocomplete => "pos 0 0";
+
                 public override void Apply(PrefabObject obj, string[] parameters) => obj.events[0].SetValues(Parser.TryParse(parameters[0], 0f), Parser.TryParse(parameters[1], 0f));
             }
 
@@ -991,6 +1432,10 @@ namespace BetterLegacy.Companion.Data
                 public override string Name => "sca";
 
                 public override int ParameterCount => 2;
+
+                public override string Description => "Scale of the object.";
+
+                public override string AddToAutocomplete => "sca 0 0";
 
                 public override void Apply(PrefabObject obj, string[] parameters) => obj.events[1].SetValues(Parser.TryParse(parameters[0], 0f), Parser.TryParse(parameters[1], 0f));
             }
@@ -1001,7 +1446,24 @@ namespace BetterLegacy.Companion.Data
 
                 public override int ParameterCount => 1;
 
+                public override string Description => "Rotation of the object.";
+
+                public override string AddToAutocomplete => "rot 0";
+
                 public override void Apply(PrefabObject obj, string[] parameters) => obj.events[2].SetValues(Parser.TryParse(parameters[0], 0f));
+            }
+
+            public class PrefabObjectDepthParameter : EditParameter<PrefabObject>
+            {
+                public override string Name => "depth";
+
+                public override int ParameterCount => 1;
+
+                public override string Description => "Render depth of the object.";
+
+                public override string AddToAutocomplete => "depth 0";
+
+                public override void Apply(PrefabObject obj, string[] parameters) => obj.depth = Parser.TryParse(parameters[0], 0f);
             }
 
             #endregion
@@ -1012,18 +1474,42 @@ namespace BetterLegacy.Companion.Data
             {
                 public override string Name => "time";
 
-                public override int ParameterCount => 1;
+                public override int ParameterCount => 2;
 
-                public override void Apply(EventKeyframe obj, string[] parameters) => obj.time = Parser.TryParse(parameters[0], 0f);
+                public override string Description => "Time of the keyframe.";
+
+                public override string AddToAutocomplete => "time set 10";
+
+                // set 10
+                public override void Apply(EventKeyframe obj, string[] parameters)
+                {
+                    if (obj.time == 0f)
+                        return;
+
+                    var operation = RTMath.GetOperation(parameters[0], MathOperation.Set);
+                    var value = Parser.TryParse(parameters[1], 0f);
+                    RTMath.Operation(ref obj.time, value, operation);
+                }
             }
 
             public class EventKeyframeValueParameter : EditParameter<EventKeyframe>
             {
                 public override string Name => "value";
 
-                public override int ParameterCount => 2;
+                public override int ParameterCount => 3;
 
-                public override void Apply(EventKeyframe obj, string[] parameters) => obj.SetValue(Mathf.Clamp(Parser.TryParse(parameters[0], 0), 0, obj.values.Length - 1), Parser.TryParse(parameters[1], 0f));
+                public override string Description => "A value of the keyframe.";
+
+                public override string AddToAutocomplete => "value 0 set 10";
+
+                // 0 set 10
+                public override void Apply(EventKeyframe obj, string[] parameters)
+                {
+                    var valueIndex = Mathf.Clamp(Parser.TryParse(parameters[0], 0), 0, obj.values.Length - 1);
+                    var operation = RTMath.GetOperation(parameters[1], MathOperation.Set);
+                    var value = Parser.TryParse(parameters[2], 0f);
+                    RTMath.Operation(ref obj.values[valueIndex], value, operation);
+                }
             }
 
             public class EventKeyframeEasingParameter : EditParameter<EventKeyframe>
@@ -1032,7 +1518,11 @@ namespace BetterLegacy.Companion.Data
 
                 public override int ParameterCount => 1;
 
-                public override void Apply(EventKeyframe obj, string[] parameters) => obj.curve = Parser.TryParse(parameters[0], Easing.Linear);
+                public override string Description => "Ease / Curve Type of the keyframe.";
+
+                public override string AddToAutocomplete => "easing linear";
+
+                public override void Apply(EventKeyframe obj, string[] parameters) => obj.curve = Parser.TryParse(parameters[0], true, Easing.Linear);
             }
 
             public class EventKeyframeRelativeParameter : EditParameter<EventKeyframe>
@@ -1040,6 +1530,10 @@ namespace BetterLegacy.Companion.Data
                 public override string Name => "relative";
 
                 public override int ParameterCount => 1;
+
+                public override string Description => "Relative / additive value of the keyframe.";
+
+                public override string AddToAutocomplete => "relative true";
 
                 public override void Apply(EventKeyframe obj, string[] parameters) => obj.relative = Parser.TryParse(parameters[0], false);
             }
@@ -1052,7 +1546,11 @@ namespace BetterLegacy.Companion.Data
             {
                 public override string Name => "name";
 
-                public override bool RequireQuotes => true;
+                public override int ParameterCount => 1;
+
+                public override string Description => "Name of the marker.";
+
+                public override string AddToAutocomplete => "name \"Marker Name\"";
 
                 public override void Apply(Marker obj, string[] parameters) => obj.name = parameters[0];
             }
@@ -1063,6 +1561,10 @@ namespace BetterLegacy.Companion.Data
 
                 public override int ParameterCount => 1;
 
+                public override string Description => "Time of the marker.";
+
+                public override string AddToAutocomplete => "time 10";
+
                 public override void Apply(Marker obj, string[] parameters) => obj.time = Parser.TryParse(parameters[0], 0f);
             }
 
@@ -1072,6 +1574,10 @@ namespace BetterLegacy.Companion.Data
 
                 public override int ParameterCount => 1;
 
+                public override string Description => "Time of the marker.";
+
+                public override string AddToAutocomplete => "add_time 0.5";
+
                 public override void Apply(Marker obj, string[] parameters) => obj.time = AudioManager.inst.CurrentAudioSource.time + (Parser.TryParse(parameters[0], 0f) * index);
             }
 
@@ -1079,7 +1585,11 @@ namespace BetterLegacy.Companion.Data
             {
                 public override string Name => "desc";
 
-                public override bool RequireQuotes => true;
+                public override int ParameterCount => 1;
+
+                public override string Description => "Description of the marker.";
+
+                public override string AddToAutocomplete => "desc \"This is the default description!\"";
 
                 public override void Apply(Marker obj, string[] parameters) => obj.desc = parameters[0];
             }
@@ -1089,6 +1599,10 @@ namespace BetterLegacy.Companion.Data
                 public override string Name => "color";
 
                 public override int ParameterCount => 1;
+
+                public override string Description => "Color of the marker.";
+
+                public override string AddToAutocomplete => "color 0";
 
                 public override void Apply(Marker obj, string[] parameters) => obj.color = Parser.TryParse(parameters[0], 0);
             }
@@ -1101,7 +1615,11 @@ namespace BetterLegacy.Companion.Data
             {
                 public override string Name => "name";
 
-                public override bool RequireQuotes => true;
+                public override int ParameterCount => 1;
+
+                public override string Description => "Name of the checkpoint.";
+
+                public override string AddToAutocomplete => "name \"Checkpoint Name\"";
 
                 public override void Apply(Checkpoint obj, string[] parameters) => obj.name = parameters[0];
             }
@@ -1112,6 +1630,10 @@ namespace BetterLegacy.Companion.Data
 
                 public override int ParameterCount => 1;
 
+                public override string Description => "Time of the checkpoint.";
+
+                public override string AddToAutocomplete => "time 10";
+
                 public override void Apply(Checkpoint obj, string[] parameters) => obj.time = Parser.TryParse(parameters[0], 0f);
             }
 
@@ -1120,6 +1642,10 @@ namespace BetterLegacy.Companion.Data
                 public override string Name => "add_time";
 
                 public override int ParameterCount => 1;
+
+                public override string Description => "Time of the checkpoint.";
+
+                public override string AddToAutocomplete => "add_time 10";
 
                 public override void Apply(Checkpoint obj, string[] parameters) => obj.time = AudioManager.inst.CurrentAudioSource.time + (Parser.TryParse(parameters[0], 0f) * index);
             }
@@ -1134,6 +1660,10 @@ namespace BetterLegacy.Companion.Data
 
                 public override int ParameterCount => 2;
 
+                public override string Description => "A value of the modifier.";
+
+                public override string AddToAutocomplete => "value 0 test";
+
                 public override void Apply(Modifier obj, string[] parameters) => obj.SetValue(Parser.TryParse(parameters[0], 0), parameters[1]);
             }
 
@@ -1143,6 +1673,10 @@ namespace BetterLegacy.Companion.Data
 
                 public override int ParameterCount => 1;
 
+                public override string Description => "Constant state of the modifier.";
+
+                public override string AddToAutocomplete => "constant true";
+
                 public override void Apply(Modifier obj, string[] parameters) => obj.constant = Parser.TryParse(parameters[0], false);
             }
 
@@ -1151,6 +1685,10 @@ namespace BetterLegacy.Companion.Data
                 public override string Name => "run_count";
 
                 public override int ParameterCount => 2;
+
+                public override string Description => "Amount of times the modifier should run.";
+
+                public override string AddToAutocomplete => "run_count set 0";
 
                 // run_count set 0
                 // run_count add 1
@@ -1162,6 +1700,10 @@ namespace BetterLegacy.Companion.Data
                 public override string Name => "prefab_group_only";
 
                 public override int ParameterCount => 1;
+
+                public override string Description => "If the modifier should only check for objects with the same prefab instance.";
+
+                public override string AddToAutocomplete => "prefab_group_only true";
 
                 public override void Apply(Modifier obj, string[] parameters)
                 {
@@ -1176,6 +1718,10 @@ namespace BetterLegacy.Companion.Data
 
                 public override int ParameterCount => 1;
 
+                public override string Description => "If the modifier should only check for alive objects.";
+
+                public override string AddToAutocomplete => "group_alive true";
+
                 public override void Apply(Modifier obj, string[] parameters)
                 {
                     if (ModifiersHelper.IsGroupModifier(obj.Name))
@@ -1188,6 +1734,10 @@ namespace BetterLegacy.Companion.Data
                 public override string Name => "not";
 
                 public override int ParameterCount => 1;
+
+                public override string Description => "If the trigger check is inverted.";
+
+                public override string AddToAutocomplete => "not true";
 
                 public override void Apply(Modifier obj, string[] parameters)
                 {
@@ -1202,12 +1752,18 @@ namespace BetterLegacy.Companion.Data
 
                 public override int ParameterCount => 1;
 
+                public override string Description => "If the trigger check can run if the previous triggers weren't active.";
+
+                public override string AddToAutocomplete => "else_if true";
+
                 public override void Apply(Modifier obj, string[] parameters)
                 {
                     if (obj.type == Modifier.Type.Trigger)
                         obj.elseIf = Parser.TryParse(parameters[0], false);
                 }
             }
+
+            #endregion
 
             #endregion
         }
@@ -1224,6 +1780,8 @@ namespace BetterLegacy.Companion.Data
             public override bool Usable => CoreHelper.InEditor;
 
             public override string Pattern => "create category [values]";
+
+            public override string Description => "Creates an object. Only available in the editor.";
 
             #endregion
 
@@ -1242,7 +1800,7 @@ namespace BetterLegacy.Companion.Data
                             {
                                 var beatmapObject = new BeatmapObject();
                                 beatmapObject.InitDefaultEvents();
-                                Apply(3, beatmapObject, split, beatmapObjectParameters);
+                                Apply(input, 3, beatmapObject, split, beatmapObjectParameters);
                                 GameData.Current.beatmapObjects.Add(beatmapObject);
                                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
                                 RTLevel.Current?.UpdateObject(beatmapObject);
@@ -1253,7 +1811,7 @@ namespace BetterLegacy.Companion.Data
                             for (index = 0; index < count; index++)
                             {
                                 var backgroundObject = new BackgroundObject();
-                                Apply(3, backgroundObject, split, backgroundObjectParameters);
+                                Apply(input, 3, backgroundObject, split, backgroundObjectParameters);
                                 GameData.Current.backgroundObjects.Add(backgroundObject);
                                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(backgroundObject));
                             }
@@ -1269,7 +1827,7 @@ namespace BetterLegacy.Companion.Data
                                 var prefabObject = new PrefabObject();
                                 prefabObject.SetDefaultTransformOffsets();
                                 prefabObject.prefabID = prefab.id;
-                                Apply(4, prefabObject, split, prefabObjectParameters);
+                                Apply(input, 4, prefabObject, split, prefabObjectParameters);
                                 GameData.Current.prefabObjects.Add(prefabObject);
                                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(prefabObject));
                                 RTLevel.Current?.UpdatePrefab(prefabObject);
@@ -1280,7 +1838,7 @@ namespace BetterLegacy.Companion.Data
                             for (index = 0; index < count; index++)
                             {
                                 var marker = new Marker();
-                                Apply(3, marker, split, markerParameters);
+                                Apply(input, 3, marker, split, markerParameters);
                                 GameData.Current.data.markers.Add(marker);
                             }
                             RTMarkerEditor.inst.CreateMarkers();
@@ -1290,7 +1848,7 @@ namespace BetterLegacy.Companion.Data
                             for (index = 0; index < count; index++)
                             {
                                 var checkpoint = new Checkpoint();
-                                Apply(3, checkpoint, split, checkpointParameters);
+                                Apply(input, 3, checkpoint, split, checkpointParameters);
                                 if (checkpoint.time > 0f)
                                     GameData.Current.data.checkpoints.Add(checkpoint);
                             }
@@ -1306,7 +1864,7 @@ namespace BetterLegacy.Companion.Data
         /// <summary>
         /// Represents a command for selecting objects.
         /// </summary>
-        public class SelectCommand : ExampleCommandBase
+        public class SelectCommand : ExampleCommand
         {
             #region Values
 
@@ -1316,10 +1874,19 @@ namespace BetterLegacy.Companion.Data
 
             public override string Pattern => "select type [predicates]";
 
+            public override string Description => "Provides selecting of many different types of objects. Only available in the editor.";
+
             /// <summary>
             /// The current selectable type.
             /// </summary>
             public static SelectableType CurrentType { get; set; }
+
+            /// <summary>
+            /// Collection of current selectables.
+            /// </summary>
+            public static IEnumerable<ISelectable> selectables;
+
+            public static bool actionMode;
 
             /// <summary>
             /// List of get parameters.
@@ -1363,6 +1930,29 @@ namespace BetterLegacy.Companion.Data
                 #region Timeline Keyframe
 
                 new EventTypeComparisonParameter(),
+                new EventCoordParameter(),
+
+                #endregion
+
+                #region Timeline Checkpoint
+
+                new CheckpointRespawnParameter(),
+                new CheckpointHealParameter(),
+                new CheckpointSetTimeParameter(),
+                new CheckpointReverseParameter(),
+                new CheckpointAutoTriggerableParameter(),
+
+                #endregion
+
+                #region Level
+
+                new MetaDataValueEquals(),
+
+                #endregion
+
+                #region Modifier
+
+                new ContainsModifierValue(),
 
                 #endregion
             };
@@ -1378,6 +1968,7 @@ namespace BetterLegacy.Companion.Data
                 new NotifyCountParameter(),
                 new SetNameParameter(),
                 new ReplaceNameParameter(),
+                new UpdateParameter(),
 
                 #endregion
 
@@ -1403,6 +1994,8 @@ namespace BetterLegacy.Companion.Data
 
                 #region Level
 
+                new OpenFirstParameter(),
+                new OpenLastParameter(),
                 new CombineLevelParameter(),
                 new CreateLevelCollectionParameter(),
 
@@ -1411,6 +2004,8 @@ namespace BetterLegacy.Companion.Data
                 #region Prefab
 
                 new ImportPrefabParameter(),
+                new ImportPrefabOnceParameter(),
+                new ImportPrefabUpdateParameter(),
                 new CreatePrefabParameter(),
 
                 #endregion
@@ -1430,10 +2025,11 @@ namespace BetterLegacy.Companion.Data
             public override void ConsumeInput(string input, string[] split)
             {
                 CurrentType = Parser.TryParse(split[1].ToLower().Remove("_"), true, SelectableType.Null);
-                IEnumerable<ISelectable> selectables = GetSelectables(CurrentType);
+                if (CurrentType != SelectableType.Null)
+                    selectables = GetSelectables(CurrentType);
                 if (selectables == null)
                     return;
-                bool actionMode = false;
+                actionMode = false;
                 for (int i = 2; i < split.Length; i++)
                 {
                     var s = split[i];
@@ -1459,6 +2055,8 @@ namespace BetterLegacy.Companion.Data
                             CurrentType = Parser.TryParse(split[i].ToLower().Remove("_"), true, SelectableType.Null);
                             if (CurrentType == SelectableType.Modifiers)
                                 selectables = GetModifiers(selectables);
+                            else if (CurrentType == SelectableType.ObjectKeyframes)
+                                selectables = GetObjectKeyframes(selectables);
                             else
                                 selectables = GetSelectables(CurrentType);
                         }
@@ -1481,7 +2079,8 @@ namespace BetterLegacy.Companion.Data
 
                     if (s == "edit")
                     {
-                        new EditCommand().ConsumeInput(split.Range(i + 1, split.Length - 1).ToArray(), CurrentType, selectables);
+                        new EditCommand().ConsumeInput(input, split.Range(i + 1, split.Length - 1).ToArray(), CurrentType, selectables);
+                        selectables = null;
                         return;
                     }
 
@@ -1537,6 +2136,18 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            public override IEnumerable<ParameterBase> GetParameters()
+            {
+                foreach (var parameter in parameters)
+                    yield return parameter;
+                var values = EnumHelper.GetValues<SelectableType>();
+                foreach (var value in values)
+                {
+                    if (value != SelectableType.Null)
+                        yield return new TypeEnumParameter<SelectableType>(value, "Selection type to filter.");
+                }
+            }
+
             public static IEnumerable<ISelectable> GetSelectables(SelectableType type) => type switch
             {
                 SelectableType.Objects => EditorTimeline.inst.timelineObjects,
@@ -1573,6 +2184,29 @@ namespace BetterLegacy.Companion.Data
                                 modifier.card = new ModifierCard(modifier);
                             yield return modifier.card;
                         }
+                }
+            }
+
+            public static IEnumerable<ISelectable> GetObjectKeyframes(IEnumerable<ISelectable> selectables)
+            {
+                foreach (var selectable in selectables)
+                {
+                    if (selectable is not TimelineObject timelineObject || !timelineObject.TryGetData(out BeatmapObject beatmapObject))
+                        continue;
+
+                    for (int type = 0; type < beatmapObject.events.Count; type++)
+                    {
+                        for (int index = 0; index < beatmapObject.events[type].Count; index++)
+                        {
+                            var eventKeyframe = beatmapObject.events[type][index];
+                            if (!eventKeyframe.timelineKeyframe)
+                            {
+                                eventKeyframe.timelineKeyframe = new TimelineKeyframe(eventKeyframe);
+                                eventKeyframe.timelineKeyframe.SetCoord(new KeyframeCoord(type, index));
+                            }
+                            yield return eventKeyframe.timelineKeyframe;
+                        }
+                    }
                 }
             }
 
@@ -1702,6 +2336,8 @@ namespace BetterLegacy.Companion.Data
 
             #endregion
 
+            #region Sub Classes
+
             public enum SelectableType
             {
                 Null,
@@ -1752,6 +2388,10 @@ namespace BetterLegacy.Companion.Data
 
                 public override int ParameterCount => 1;
 
+                public override string Description => "Resets to the default selectables.";
+
+                public override string AddToAutocomplete => "select objects";
+
                 public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters) => SelectCommand.GetSelectables(Parser.TryParse(parameters[0].ToLower().Remove("_"), true, SelectableType.Null));
             }
 
@@ -1759,12 +2399,16 @@ namespace BetterLegacy.Companion.Data
             {
                 public override string Name => "selected";
 
+                public override string Description => "Selects already selected objects.";
+
                 public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters) => selectables.Where(x => x.Selected);
             }
             
             public class UnselectedParameter : GetSelectableParameter
             {
                 public override string Name => "unselected";
+
+                public override string Description => "Selects unselected objects.";
 
                 public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters) => selectables.Where(x => !x.Selected);
             }
@@ -1774,6 +2418,10 @@ namespace BetterLegacy.Companion.Data
                 public override string Name => "time";
 
                 public override int ParameterCount => 2;
+
+                public override string Description => "Compares the time of the object.";
+
+                public override string AddToAutocomplete => "time equals 0";
 
                 public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
                 {
@@ -1800,6 +2448,10 @@ namespace BetterLegacy.Companion.Data
 
                 public override int ParameterCount => 1;
 
+                public override string Description => "Compares the index of the object.";
+
+                public override string AddToAutocomplete => "index 0";
+
                 public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
                 {
                     var comparison = Parser.TryParse(parameters[0].Remove("_"), true, NumberComparison.Equals);
@@ -1823,6 +2475,8 @@ namespace BetterLegacy.Companion.Data
             {
                 public override string Name => "locked";
 
+                public override string Description => "Checks if the object is locked.";
+
                 public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
                 {
                     foreach (var selectable in selectables)
@@ -1838,6 +2492,8 @@ namespace BetterLegacy.Companion.Data
             public class UnlockedParameter : GetSelectableParameter
             {
                 public override string Name => "unlocked";
+
+                public override string Description => "Checks if the object is unlocked.";
 
                 public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
                 {
@@ -1855,7 +2511,11 @@ namespace BetterLegacy.Companion.Data
             {
                 public override string Name => "name";
 
-                public override bool RequireQuotes => true;
+                public override int ParameterCount => 1;
+
+                public override string Description => "Checks the objects name.";
+
+                public override string AddToAutocomplete => "name \"Object Name\"";
 
                 public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
                 {
@@ -1874,6 +2534,10 @@ namespace BetterLegacy.Companion.Data
 
                 public override bool RequireQuotes => true;
 
+                public override string Description => "Checks an objects name using Regular Expression. Some knowledge of regex is required for this.";
+
+                public override string AddToAutocomplete => "name_regex match";
+
                 public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
                 {
                     var name = parameters[0];
@@ -1891,6 +2555,10 @@ namespace BetterLegacy.Companion.Data
 
                 public override bool RequireQuotes => true;
 
+                public override string Description => "Checks an objects description.";
+
+                public override string AddToAutocomplete => "desc_regex match";
+
                 public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
                 {
                     var name = parameters[0];
@@ -1906,13 +2574,17 @@ namespace BetterLegacy.Companion.Data
             {
                 public override string Name => "tag";
 
-                public override bool RequireQuotes => true;
+                public override int ParameterCount => 1;
+
+                public override string Description => "Checks if a modifyable object contains a tag.";
+
+                public override string AddToAutocomplete => "tag \"Object Group\"";
 
                 public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
                 {
                     var tag = parameters[0];
                     foreach (var selectable in selectables)
-                        if (selectable is TimelineObject timelineObject && timelineObject.TryGetData(out Core.Data.Modifiers.IModifyable modifyable) && modifyable.Tags != null && modifyable.Tags.Contains(tag))
+                        if (selectable is TimelineObject timelineObject && timelineObject.TryGetData(out IModifyable modifyable) && modifyable.Tags != null && modifyable.Tags.Contains(tag))
                             yield return selectable;
                 }
             }
@@ -1925,12 +2597,16 @@ namespace BetterLegacy.Companion.Data
             {
                 public override string Name => "current_layer";
 
+                public override string Description => "Gets objects on the current editor layer.";
+
                 public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters) => selectables.Where(x => x is TimelineObject timelineObject && timelineObject.IsCurrentLayer);
             }
 
             public class SamePrefabGroupParameter : GetSelectableParameter
             {
                 public override string Name => "same_prefab_group";
+
+                public override string Description => "Gets objects with the same prefab instance.";
 
                 public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
                 {
@@ -1952,9 +2628,13 @@ namespace BetterLegacy.Companion.Data
 
                 public override int ParameterCount => 1;
 
+                public override string Description => "Gets objects with the same timeline reference type (BeatmapObject, BackgroundObject, PrefabObject).";
+
+                public override string AddToAutocomplete => "reference_type beatmap_object";
+
                 public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
                 {
-                    var type = Parser.TryParse(parameters[0], TimelineObject.TimelineReferenceType.Null);
+                    var type = Parser.TryParse(parameters[0].ToLower().Remove("_"), true, TimelineObject.TimelineReferenceType.Null);
                     foreach (var selectable in selectables)
                         if (selectable is TimelineObject timelineObject && timelineObject.TimelineReference == type)
                             yield return selectable;
@@ -1966,6 +2646,10 @@ namespace BetterLegacy.Companion.Data
                 public override string Name => "layer";
 
                 public override int ParameterCount => 2;
+
+                public override string Description => "Compares the objects layer.";
+
+                public override string AddToAutocomplete => "layer equals current_layer";
 
                 public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
                 {
@@ -1988,6 +2672,10 @@ namespace BetterLegacy.Companion.Data
 
                 public override int ParameterCount => 2;
 
+                public override string Description => "Compares the objects bin (row).";
+
+                public override string AddToAutocomplete => "bin equals max_bin";
+
                 public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
                 {
                     var comparison = Parser.TryParse(parameters[0].Remove("_"), true, NumberComparison.Equals);
@@ -2003,12 +2691,16 @@ namespace BetterLegacy.Companion.Data
             {
                 public override string Name => "collapsed";
 
+                public override string Description => "Checks if the object is collapsed.";
+
                 public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters) => selectables.Where(x => x is TimelineObject timelineObject && timelineObject.Collapse);
             }
 
             public class UncollapsedParameter : GetSelectableParameter
             {
                 public override string Name => "uncollapsed";
+
+                public override string Description => "Checks if the object is uncollapsed.";
 
                 public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters) => selectables.Where(x => x is TimelineObject timelineObject && !timelineObject.Collapse);
             }
@@ -2022,6 +2714,10 @@ namespace BetterLegacy.Companion.Data
                 public override string Name => "event_type";
 
                 public override int ParameterCount => 2;
+
+                public override string Description => "Compares a keyframes event type.";
+
+                public override string AddToAutocomplete => "event_type equals 0";
 
                 public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
                 {
@@ -2047,6 +2743,28 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            public class EventCoordParameter : GetSelectableParameter
+            {
+                public override string Name => "event_coord";
+
+                public override int ParameterCount => 2;
+
+                public override string Description => "Checks if a keyframe matches the keyframe coordinate.";
+
+                public override string AddToAutocomplete => "event_coord 0 0";
+
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
+                {
+                    var type = Parser.TryParse(parameters[0], 0);
+                    var index = Parser.TryParse(parameters[1], 0);
+                    foreach (var selectable in selectables)
+                    {
+                        if (selectable is TimelineKeyframe timelineKeyframe && timelineKeyframe.Type == type && timelineKeyframe.Index == index)
+                            yield return selectable;
+                    }
+                }
+            }
+
             #endregion
 
             #region Timeline Marker
@@ -2056,6 +2774,10 @@ namespace BetterLegacy.Companion.Data
                 public override string Name => "color";
 
                 public override int ParameterCount => 2;
+
+                public override string Description => "Compares a markers color slot.";
+
+                public override string AddToAutocomplete => "color equals 0";
 
                 public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
                 {
@@ -2071,13 +2793,197 @@ namespace BetterLegacy.Companion.Data
 
             #region Timeline Checkpoint
 
+            public class CheckpointRespawnParameter : GetSelectableParameter
+            {
+                public override string Name => "respawn";
+
+                public override int ParameterCount => 1;
+
+                public override string Description => "Checks a checkpoints respawn value.";
+
+                public override string AddToAutocomplete => "respawn true";
+
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
+                {
+                    var respawn = Parser.TryParse(parameters[0], false);
+                    foreach (var selectable in selectables)
+                    {
+                        if (selectable is TimelineCheckpoint timelineCheckpoint && timelineCheckpoint.Checkpoint && timelineCheckpoint.Checkpoint.respawn == respawn)
+                            yield return selectable;
+                    }
+                }
+            }
+            
+            public class CheckpointHealParameter : GetSelectableParameter
+            {
+                public override string Name => "heal";
+
+                public override int ParameterCount => 1;
+
+                public override string Description => "Checks a checkpoints heal value.";
+
+                public override string AddToAutocomplete => "heal true";
+
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
+                {
+                    var heal = Parser.TryParse(parameters[0], false);
+                    foreach (var selectable in selectables)
+                    {
+                        if (selectable is TimelineCheckpoint timelineCheckpoint && timelineCheckpoint.Checkpoint && timelineCheckpoint.Checkpoint.heal == heal)
+                            yield return selectable;
+                    }
+                }
+            }
+            
+            public class CheckpointSetTimeParameter : GetSelectableParameter
+            {
+                public override string Name => "set_time";
+
+                public override int ParameterCount => 1;
+
+                public override string Description => "Checks a checkpoints set time value.";
+
+                public override string AddToAutocomplete => "set_time true";
+
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
+                {
+                    var setTime = Parser.TryParse(parameters[0], false);
+                    foreach (var selectable in selectables)
+                    {
+                        if (selectable is TimelineCheckpoint timelineCheckpoint && timelineCheckpoint.Checkpoint && timelineCheckpoint.Checkpoint.setTime == setTime)
+                            yield return selectable;
+                    }
+                }
+            }
+            
+            public class CheckpointReverseParameter : GetSelectableParameter
+            {
+                public override string Name => "reverse";
+
+                public override int ParameterCount => 1;
+
+                public override string Description => "Checks a checkpoints reverse value.";
+
+                public override string AddToAutocomplete => "reverse true";
+
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
+                {
+                    var reverse = Parser.TryParse(parameters[0], false);
+                    foreach (var selectable in selectables)
+                    {
+                        if (selectable is TimelineCheckpoint timelineCheckpoint && timelineCheckpoint.Checkpoint && timelineCheckpoint.Checkpoint.reverse == reverse)
+                            yield return selectable;
+                    }
+                }
+            }
+            
+            public class CheckpointAutoTriggerableParameter : GetSelectableParameter
+            {
+                public override string Name => "auto_triggerable";
+
+                public override int ParameterCount => 1;
+
+                public override string Description => "Checks a checkpoints auto triggerable value.";
+
+                public override string AddToAutocomplete => "auto_triggerable true";
+
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
+                {
+                    var autoTriggerable = Parser.TryParse(parameters[0], false);
+                    foreach (var selectable in selectables)
+                    {
+                        if (selectable is TimelineCheckpoint timelineCheckpoint && timelineCheckpoint.Checkpoint && timelineCheckpoint.Checkpoint.autoTriggerable == autoTriggerable)
+                            yield return selectable;
+                    }
+                }
+            }
+
             #endregion
 
             #region Level
 
+            public class MetaDataValueEquals : GetSelectableParameter
+            {
+                public override string Name => "metadata";
+
+                public override int ParameterCount => 2;
+
+                public override string Description => "Checks a levels metadata for its values.";
+
+                public override string AddToAutocomplete => "metadata artist_name Kaixo";
+
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
+                {
+                    var type = parameters[0];
+                    var value = parameters[1];
+
+                    foreach (var selectable in selectables)
+                    {
+                        if (selectable is not LevelPanel levelPanel || !levelPanel.Item || !levelPanel.Item.metadata)
+                            continue;
+
+                        var metadata = levelPanel.Item.metadata;
+                        switch (type)
+                        {
+                            case "arcade_id": {
+                                    if (metadata.arcadeID == value)
+                                        yield return selectable;
+                                    break;
+                                }
+                            case "artist_name": {
+                                    if (metadata.artist.name == value)
+                                        yield return selectable;
+                                    break;
+                                }
+                            case "creator_name": {
+                                    if (metadata.creator.name == value)
+                                        yield return selectable;
+                                    break;
+                                }
+                            case "level_name": {
+                                    if (metadata.beatmap.name == value)
+                                        yield return selectable;
+                                    break;
+                                }
+                            case "song_title": {
+                                    if (metadata.song.title == value)
+                                        yield return selectable;
+                                    break;
+                                }
+                            case "difficulty": {
+                                    if (int.TryParse(value, out int num) ? metadata.song.difficulty == num : metadata.song.Difficulty == value)
+                                        yield return selectable;
+                                    break;
+                                }
+                        }
+                    }
+                }
+            }
+
             #endregion
 
             #region Modifier
+
+            public class ContainsModifierValue : GetSelectableParameter
+            {
+                public override string Name => "contains_value";
+
+                public override int ParameterCount => 1;
+
+                public override string Description => "Checks if a modifier contains a value.";
+
+                public override string AddToAutocomplete => "contains_value value";
+
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
+                {
+                    var value = parameters[0];
+                    foreach (var selectable in selectables)
+                    {
+                        if (selectable is ModifierCard modifierCard && modifierCard.Modifier && modifierCard.Modifier.values.Contains(value))
+                            yield return selectable;
+                    }
+                }
+            }
 
             #endregion
 
@@ -2090,6 +2996,8 @@ namespace BetterLegacy.Companion.Data
             public class LogSelectedParameter : ActionParameter
             {
                 public override string Name => "log";
+
+                public override string Description => "Logs all selected objects to the console.";
 
                 public override void Run(IEnumerable<ISelectable> selectables, string[] parameters)
                 {
@@ -2110,6 +3018,8 @@ namespace BetterLegacy.Companion.Data
             {
                 public override string Name => "notify_count";
 
+                public override string Description => "Notifies the amount of objects that are selected.";
+
                 public override void Run(IEnumerable<ISelectable> selectables, string[] parameters) => EditorManager.inst.DisplayNotification($"Selected items: {selectables.Count()}", 2f, EditorManager.NotificationType.Success);
             }
 
@@ -2117,7 +3027,11 @@ namespace BetterLegacy.Companion.Data
             {
                 public override string Name => "set_name";
 
-                public override bool RequireQuotes => true;
+                public override int ParameterCount => 1;
+
+                public override string Description => "Sets the name of all selected objects.";
+
+                public override string AddToAutocomplete => "set_name \"New Name\"";
 
                 public override void Run(IEnumerable<ISelectable> selectables, string[] parameters)
                 {
@@ -2133,7 +3047,9 @@ namespace BetterLegacy.Companion.Data
 
                 public override int ParameterCount => 2;
 
-                public override bool RequireQuotes => true;
+                public override string Description => "Sets the name of all selected objects.";
+
+                public override string AddToAutocomplete => "replace_name \"old name\" new_name";
 
                 public override void Run(IEnumerable<ISelectable> selectables, string[] parameters)
                 {
@@ -2141,6 +3057,27 @@ namespace BetterLegacy.Companion.Data
                     var newValue = parameters[1];
                     foreach (var selectable in selectables)
                         SetName(selectable, GetName(selectable).Replace(oldValue, newValue));
+                }
+            }
+
+            public class UpdateParameter : ActionParameter
+            {
+                public override string Name => "update";
+
+                public override int ParameterCount => 1;
+
+                public override string Description => "Updates all objects with a specific context.";
+
+                public override string AddToAutocomplete => "update keyframes";
+
+                public override void Run(IEnumerable<ISelectable> selectables, string[] parameters)
+                {
+                    var context = parameters[0];
+                    foreach (var selectable in selectables)
+                    {
+                        if (selectable is TimelineObject timelineObject)
+                            timelineObject.UpdateObject(context);
+                    }
                 }
             }
 
@@ -2155,6 +3092,10 @@ namespace BetterLegacy.Companion.Data
                 public override int ParameterCount => 1;
 
                 public override SelectableType RequiredSelectionType => SelectableType.Objects;
+
+                public override string Description => "Mirrors all selected objects in a specified direction.";
+
+                public override string AddToAutocomplete => "mirror horizontal";
 
                 public override void Run(IEnumerable<ISelectable> selectables, string[] parameters)
                 {
@@ -2219,6 +3160,10 @@ namespace BetterLegacy.Companion.Data
 
                 public override int ParameterCount => 1;
 
+                public override string Description => "Sets the collapse state of all selected objects.";
+
+                public override string AddToAutocomplete => "collapse true";
+
                 public override void Run(IEnumerable<ISelectable> selectables, string[] parameters)
                 {
                     var collapse = Parser.TryParse(parameters[0], false);
@@ -2231,6 +3176,8 @@ namespace BetterLegacy.Companion.Data
             public class SwapCollapseParameter : ActionParameter
             {
                 public override string Name => "swap_collapse";
+
+                public override string Description => "Swaps the collapse state of all selected objects.";
 
                 public override void Run(IEnumerable<ISelectable> selectables, string[] parameters)
                 {
@@ -2251,6 +3198,10 @@ namespace BetterLegacy.Companion.Data
                 public override int ParameterCount => 1;
 
                 public override SelectableType RequiredSelectionType => SelectableType.Markers;
+
+                public override string Description => "Sets the color of all selected markers.";
+
+                public override string AddToAutocomplete => "set_color 0";
 
                 public override void Run(IEnumerable<ISelectable> selectables, string[] parameters)
                 {
@@ -2273,6 +3224,8 @@ namespace BetterLegacy.Companion.Data
 
                 public override SelectableType RequiredSelectionType => SelectableType.Objects;
 
+                public override string Description => "Opens the object search popup and displays all selected objects in the list.";
+
                 public override void Run(IEnumerable<ISelectable> selectables, string[] parameters)
                 {
                     if (CurrentType == SelectableType.Objects)
@@ -2285,11 +3238,51 @@ namespace BetterLegacy.Companion.Data
 
             #region Level
 
+            public class OpenFirstParameter : ActionParameter
+            {
+                public override string Name => "open_first";
+
+                public override string Description => "Opens the first selected level.";
+
+                public override void Run(IEnumerable<ISelectable> selectables, string[] parameters)
+                {
+                    foreach (var selectable in selectables)
+                    {
+                        if (selectable is LevelPanel levelPanel && levelPanel.Item)
+                        {
+                            EditorLevelManager.inst.LoadLevel(levelPanel);
+                            return;
+                        }
+                    }
+                }
+            }
+
+            public class OpenLastParameter : ActionParameter
+            {
+                public override string Name => "open_last";
+
+                public override string Description => "Opens the last selected level.";
+
+                public override void Run(IEnumerable<ISelectable> selectables, string[] parameters)
+                {
+                    LevelPanel toOpen = null;
+                    foreach (var selectable in selectables)
+                    {
+                        if (selectable is LevelPanel levelPanel && levelPanel.Item)
+                            toOpen = levelPanel;
+                    }
+                    if (toOpen)
+                        EditorLevelManager.inst.LoadLevel(toOpen);
+                }
+            }
+
             public class CombineLevelParameter : ActionParameter
             {
                 public override string Name => "combine";
 
-                public override bool RequireQuotes => true;
+                public override int ParameterCount => 1;
+
+                public override string Description => "Combines all selected levels.";
 
                 public override void Run(IEnumerable<ISelectable> selectables, string[] parameters)
                 {
@@ -2303,7 +3296,9 @@ namespace BetterLegacy.Companion.Data
             {
                 public override string Name => "create_level_collection";
 
-                public override bool RequireQuotes => true;
+                public override int ParameterCount => 1;
+
+                public override string Description => "Creates a level collection based on all selected levels.";
 
                 public override void Run(IEnumerable<ISelectable> selectables, string[] parameters)
                 {
@@ -2331,6 +3326,8 @@ namespace BetterLegacy.Companion.Data
 
                 public override SelectableType RequiredSelectionType => SelectableType.ExternalPrefabs;
 
+                public override string Description => "Imports all selected prefabs into the level.";
+
                 public override void Run(IEnumerable<ISelectable> selectables, string[] parameters)
                 {
                     int count = 0;
@@ -2349,6 +3346,57 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            public class ImportPrefabOnceParameter : ActionParameter
+            {
+                public override string Name => "import_once";
+
+                public override SelectableType RequiredSelectionType => SelectableType.ExternalPrefabs;
+
+                public override string Description => "Imports all selected prefabs into the level, but doesn't allow for duplicates.";
+
+                public override void Run(IEnumerable<ISelectable> selectables, string[] parameters)
+                {
+                    int count = 0;
+                    foreach (var selectable in selectables)
+                    {
+                        if (selectable is PrefabPanel prefabPanel && prefabPanel.Item && prefabPanel.IsExternal)
+                        {
+                            var newPrefab = prefabPanel.Item.Copy();
+                            if (GameData.Current.prefabs.Has(x => x.name == newPrefab.name))
+                                continue;
+                            GameData.Current.prefabs.Add(newPrefab);
+                            count++;
+                        }
+                    }
+                    if (count > 0)
+                        CoroutineHelper.StartCoroutine(RTPrefabEditor.inst.RefreshInternalPrefabs());
+                }
+            }
+
+            public class ImportPrefabUpdateParameter : ActionParameter
+            {
+                public override string Name => "import_update";
+
+                public override SelectableType RequiredSelectionType => SelectableType.ExternalPrefabs;
+
+                public override string Description => "Updates all associated prefabs.";
+
+                public override void Run(IEnumerable<ISelectable> selectables, string[] parameters)
+                {
+                    int count = 0;
+                    foreach (var selectable in selectables)
+                    {
+                        if (selectable is PrefabPanel prefabPanel && prefabPanel.Item && prefabPanel.IsExternal)
+                        {
+                            RTPrefabEditor.inst.UpdateLevelPrefab(prefabPanel.Item.Copy());
+                            count++;
+                        }
+                    }
+                    if (count > 0)
+                        CoroutineHelper.StartCoroutine(RTPrefabEditor.inst.RefreshInternalPrefabs());
+                }
+            }
+
             public class CreatePrefabParameter : ActionParameter
             {
                 public override string Name => "create_prefab";
@@ -2356,6 +3404,10 @@ namespace BetterLegacy.Companion.Data
                 public override int ParameterCount => 4;
 
                 public override SelectableType RequiredSelectionType => SelectableType.Objects;
+
+                public override string Description => "Creates a new prefab based on all selected objects.";
+
+                public override string AddToAutocomplete => "create_prefab internal \"New Prefab\" \"Bombs\" 0";
 
                 // select objects name \"prefab me\" -> log notify_count create_prefab internal \"New Prefab\" \"Bombs\" 0
                 public override void Run(IEnumerable<ISelectable> selectables, string[] parameters)
@@ -2450,6 +3502,8 @@ namespace BetterLegacy.Companion.Data
 
                 public override int ParameterCount => 1;
 
+                public override string Description => "Sets the prefab group only state of all modifiers in all selected objects.";
+
                 public override void Run(IEnumerable<ISelectable> selectables, string[] parameters)
                 {
                     var prefabGroupOnly = Parser.TryParse(parameters[0], false);
@@ -2467,6 +3521,8 @@ namespace BetterLegacy.Companion.Data
             {
                 public override string Name => "swap_prefab_group_only";
 
+                public override string Description => "Swaps the prefab group only state of all modifiers in all selected objects.";
+
                 public override void Run(IEnumerable<ISelectable> selectables, string[] parameters)
                 {
                     foreach (var selectable in selectables)
@@ -2478,6 +3534,8 @@ namespace BetterLegacy.Companion.Data
                             });
                 }
             }
+
+            #endregion
 
             #endregion
 
@@ -2512,6 +3570,16 @@ namespace BetterLegacy.Companion.Data
             /// If brackets are required around the parameters.
             /// </summary>
             public virtual int BracketsType => 0;
+
+            /// <summary>
+            /// Description of the parameter.
+            /// </summary>
+            public abstract string Description { get; }
+
+            /// <summary>
+            /// Text to add to the autocomplete when selected.
+            /// </summary>
+            public virtual string AddToAutocomplete => Name;
 
             #endregion
 
@@ -2638,7 +3706,7 @@ namespace BetterLegacy.Companion.Data
             public virtual string GetVariable(string name) => name switch
             {
                 "current_time" => AudioManager.inst.CurrentAudioSource.time.ToString(),
-                "current_layer" => EditorTimeline.inst.Layer.ToString(),
+                "current_layer" => EditorTimeline.inst?.Layer.ToString(),
                 "max_bin" => EditorTimeline.MAX_BINS.ToString(),
                 "default_bin" => EditorTimeline.DEFAULT_BIN_COUNT.ToString(),
                 "default_object_name" => BeatmapObject.DEFAULT_OBJECT_NAME,
@@ -2656,15 +3724,25 @@ namespace BetterLegacy.Companion.Data
             /// Gets the array of global variables.
             /// </summary>
             /// <returns>Returns the array of global variables.</returns>
-            public virtual IEnumerable<(string, string)> GetVariables() => new (string, string)[]
+            //public virtual IEnumerable<(string, string)> GetVariables() => new (string, string)[]
+            //{
+            //    ("current_time", AudioManager.inst.CurrentAudioSource.time.ToString()),
+            //    ("current_layer", EditorTimeline.inst.Layer.ToString()),
+            //    ("max_bin", EditorTimeline.MAX_BINS.ToString()),
+            //    ("default_bin", EditorTimeline.DEFAULT_BIN_COUNT.ToString()),
+            //    ("default_object_name", BeatmapObject.DEFAULT_OBJECT_NAME),
+            //};
+            public virtual IEnumerable<(string, string)> GetVariables()
             {
-                ("current_time", AudioManager.inst.CurrentAudioSource.time.ToString()),
-                ("current_layer", EditorTimeline.inst.Layer.ToString()),
-                ("max_bin", EditorTimeline.MAX_BINS.ToString()),
-                ("default_bin", EditorTimeline.DEFAULT_BIN_COUNT.ToString()),
-                ("default_object_name", BeatmapObject.DEFAULT_OBJECT_NAME),
-            };
-
+                yield return ("current_time", AudioManager.inst.CurrentAudioSource.time.ToString());
+                if (CoreHelper.InEditor)
+                {
+                    yield return ("current_layer", EditorTimeline.inst.Layer.ToString());
+                    yield return ("max_bin", EditorTimeline.MAX_BINS.ToString());
+                    yield return ("default_bin", EditorTimeline.DEFAULT_BIN_COUNT.ToString());
+                    yield return ("default_object_name", BeatmapObject.DEFAULT_OBJECT_NAME);
+                }
+            }
             #endregion
         }
 
@@ -2689,6 +3767,8 @@ namespace BetterLegacy.Companion.Data
 
             public override int BracketsType => 1;
 
+            public override string Description => "Evaluates a math function.";
+
             public override string Get(string[] parameters)
             {
                 var numberVariables = new Dictionary<string, float>();
@@ -2703,6 +3783,48 @@ namespace BetterLegacy.Companion.Data
                     { "snapBPM", parameters => parameters.Length > 3 ? RTEditor.SnapToBPM((float)parameters[0], (float)parameters[1], (float)parameters[2], (float)parameters[3]) : RTEditor.SnapToBPM((float)parameters[0]) },
                 }).ToString();
             }
+        }
+
+        public class TypeEnumParameter<T> : ParameterBase where T : Enum
+        {
+            public TypeEnumParameter(T type, string description, string addToAutocomplete = null)
+            {
+                this.type = type;
+                this.description = description;
+                this.addToAutocomplete = addToAutocomplete;
+            }
+
+            public override string Name => RTString.SplitWords(type.ToString()).ToLower().Replace(" ", "_");
+
+            public override string Description => description;
+
+            public override string AddToAutocomplete => addToAutocomplete ?? base.AddToAutocomplete;
+
+            public T type;
+            public string description;
+            public string addToAutocomplete;
+        }
+
+        public class GenericParameter : ParameterBase
+        {
+            public GenericParameter(string name, string description, string addToAutocomplete = null)
+            {
+                this.name = name;
+                this.description = description;
+                this.addToAutocomplete = addToAutocomplete;
+            }
+
+            public override string Name => name;
+
+            public override string Description => description;
+
+            public override string AddToAutocomplete => addToAutocomplete ?? base.AddToAutocomplete;
+
+            public string name;
+
+            public string description;
+
+            public string addToAutocomplete;
         }
 
         #endregion

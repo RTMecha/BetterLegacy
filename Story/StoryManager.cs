@@ -651,6 +651,12 @@ namespace BetterLegacy.Story
         #endregion
 
         /// <summary>
+        /// Gets a story level from the <see cref="StoryMode"/> and plays it.
+        /// </summary>
+        /// <param name="storySelection">Location of the story level.</param>
+        public void Play(StorySelection storySelection) => Play(storySelection.chapter, storySelection.level, storySelection.cutsceneIndex, storySelection.bonus, storySelection.skipCutscenes);
+
+        /// <summary>
         /// Plays a story level directly from a path.
         /// </summary>
         /// <param name="path">Path to a story level.</param>

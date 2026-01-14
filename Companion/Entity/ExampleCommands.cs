@@ -11,9 +11,10 @@ using LSFunctions;
 using SimpleJSON;
 
 using BetterLegacy.Companion.Data;
-using BetterLegacy.Companion.Data.Parameters;
+using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Editor.Managers;
@@ -69,22 +70,45 @@ namespace BetterLegacy.Companion.Entity
             titleText.rectTransform.sizeDelta = new Vector2(800f, 100f);
 
             chatter = UIManager.GenerateInputField("Discussion", chatterBase);
-
-            var chatterField = chatter.image.rectTransform;
-            chatterField.AsRT().anchoredPosition = new Vector2(0f, -32);
-            chatterField.AsRT().sizeDelta = new Vector2(800f, 64f);
+            RectValues.Default.AnchoredPosition(-32f, -32f).SizeDelta(736f, 64f).AssignToRectTransform(chatter.image.rectTransform);
 
             chatter.textComponent.alignment = TextAnchor.MiddleLeft;
-            chatter.textComponent.fontSize = 40;
+            chatter.textComponent.fontSize = 20;
 
             chatter.onValueChanged.AddListener(SearchCommandAutocomplete);
-
-            chatter.onEndEdit.AddListener(HandleChatting);
+            chatter.onEndEdit.AddListener(_val => CompanionManager.Log($"Typing: {_val}"));
 
             EditorThemeManager.ApplyInputField(chatter);
 
+            var submit = Creator.NewUIObject("Submit", chatterBase);
+            RectValues.Default.AnchoredPosition(368f, -32f).SizeDelta(64f, 64f).AssignToRectTransform(submit.transform.AsRT());
+            var submitImage = submit.AddComponent<Image>();
+            submitButton = submit.AddComponent<Button>();
+            submitButton.image = submitImage;
+            submitButton.onClick.NewListener(() =>
+            {
+                try
+                {
+                    HandleChatting(chatter.text);
+                }
+                catch (Exception ex)
+                {
+                    reference?.chatBubble?.Say("Uh oh, something went wrong!");
+                    CoreHelper.LogException(ex);
+                }
+            });
+
+            EditorThemeManager.ApplyGraphic(submitImage, ThemeGroup.Function_1, true);
+
+            var submitIcon = Creator.NewUIObject("Icon", submit.transform.AsRT());
+            RectValues.FullAnchored.AssignToRectTransform(submitIcon.transform.AsRT());
+            var submitIconImage = submitIcon.AddComponent<Image>();
+            submitIconImage.sprite = SpriteHelper.LoadSprite(AssetPack.GetFile("core/sprites/icons/operations/play.png"));
+
+            EditorThemeManager.ApplyGraphic(submitIconImage, ThemeGroup.Function_1_Text);
+
             autocomplete = Creator.NewUIObject("Autocomplete", chatterBase);
-            UIManager.SetRectTransform(autocomplete.transform.AsRT(), new Vector2(-16f, -64f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 1f), new Vector2(768f, 300f));
+            RectValues.Default.AnchoredPosition(-16f, -64f).Pivot(0.5f, 1f).SizeDelta(768f, 300f).AssignToRectTransform(autocomplete.transform.AsRT());
 
             EditorThemeManager.ApplyGraphic(autocomplete.AddComponent<Image>(), ThemeGroup.Background_2, true, roundedSide: SpriteHelper.RoundedSide.Bottom);
 
@@ -168,38 +192,39 @@ namespace BetterLegacy.Companion.Entity
         IEnumerator SetupCommandsAutocomplete()
         {
             LSHelpers.DeleteChildren(autocompleteContent);
-
-            foreach (var command in commands.Where(x => x.autocomplete))
+            autocompletes.Clear();
+            foreach (var command in ExampleCommand.commands.Where(x => x.Autocomplete))
             {
-                var autocomplete = commandAutocompletePrefab.Duplicate(autocompleteContent, "Autocomplete");
-                autocomplete.SetActive(true);
+                var autocomplete = new CommandAutocomplete();
+                autocomplete.command = command;
+                autocomplete.gameObject = commandAutocompletePrefab.Duplicate(autocompleteContent, "Autocomplete");
+                autocomplete.gameObject.SetActive(true);
 
-                var autocompleteButton = autocomplete.GetComponent<Button>();
+                var autocompleteButton = autocomplete.gameObject.GetComponent<Button>();
                 autocompleteButton.onClick.NewListener(() =>
                 {
-                    chatter.text = command.name;
-                    command.CheckResponse(command.name);
-
-                    SearchCommandAutocomplete(command.name);
+                    chatter.text += string.IsNullOrEmpty(chatter.text) ? command.Pattern : chatter.text.EndsWith(' ') ? command.Pattern : " " + command.Pattern;
                 });
 
                 EditorThemeManager.ApplySelectable(autocompleteButton, ThemeGroup.List_Button_1);
 
-                var autocompleteName = autocomplete.transform.Find("Name").GetComponent<Text>();
-                autocompleteName.text = command.name.ToUpper();
+                var autocompleteName = autocomplete.gameObject.transform.Find("Name").GetComponent<Text>();
+                autocompleteName.text = command.Name;
                 EditorThemeManager.ApplyLightText(autocompleteName);
-                var autocompleteDesc = autocomplete.transform.Find("Desc").GetComponent<Text>();
-                autocompleteDesc.text = command.desc;
+                var autocompleteDesc = autocomplete.gameObject.transform.Find("Desc").GetComponent<Text>();
+                autocompleteDesc.text = command.Description;
                 EditorThemeManager.ApplyLightText(autocompleteDesc);
-            }
 
+                autocompletes.Add(autocomplete);
+            }
+            SearchCommandAutocomplete(string.Empty);
             yield break;
         }
 
         public override void Tick()
         {
             if (autocomplete && chatter)
-                autocomplete.SetActive(!string.IsNullOrEmpty(chatter.text));
+                autocomplete.SetActive(ExampleConfig.Instance.ShowAutocompleteWithEmptyInput.Value || !string.IsNullOrEmpty(chatter.text));
 
             try
             {
@@ -215,7 +240,7 @@ namespace BetterLegacy.Companion.Entity
         public override void Clear()
         {
             base.Clear();
-            commands.Clear();
+            autocompletes.Clear();
             commandAutocompletePrefab = null;
             autocomplete = null;
             chatter = null;
@@ -228,148 +253,9 @@ namespace BetterLegacy.Companion.Entity
         #region Commands
 
         /// <summary>
-        /// List of commands with responses.
-        /// </summary>
-        public List<ExampleCommand> commands = new List<ExampleCommand>();
-
-        /// <summary>
         /// Registers commands.
         /// </summary>
-        public virtual void RegisterCommands()
-        {
-            commands.Clear();
-            RegisterChat("Greet Example", ExampleChatBubble.Dialogues.GREETING,
-                new List<ExampleCommand.Phrase>
-                {
-                    new ExampleCommand.Phrase("hello example"),
-                    new ExampleCommand.Phrase("hello buddy"),
-                    new ExampleCommand.Phrase("hello friend"),
-                    new ExampleCommand.Phrase("hello"),
-                    new ExampleCommand.Phrase("hey example"),
-                    new ExampleCommand.Phrase("hey buddy"),
-                    new ExampleCommand.Phrase("hey friend"),
-                    new ExampleCommand.Phrase("hey"),
-                    new ExampleCommand.Phrase("hi example"),
-                    new ExampleCommand.Phrase("hi buddy"),
-                    new ExampleCommand.Phrase("hi friend"),
-                    new ExampleCommand.Phrase("hi"),
-                });
-            RegisterChat("Love Example", ExampleChatBubble.Dialogues.LOVE,
-                new List<ExampleCommand.Phrase>
-                {
-                    new ExampleCommand.Phrase("i love example"),
-                    new ExampleCommand.Phrase("i love you"),
-                    new ExampleCommand.Phrase("i like example"),
-                    new ExampleCommand.Phrase("i like you"),
-                });
-            RegisterChat("Hate Example", ExampleChatBubble.Dialogues.HATE,
-                new List<ExampleCommand.Phrase>
-                {
-                    new ExampleCommand.Phrase("i hate example"),
-                    new ExampleCommand.Phrase("i hate you"),
-                    new ExampleCommand.Phrase("i dislike example"),
-                    new ExampleCommand.Phrase("i dislike you"),
-                });
-
-            commands.Add(new ExampleCommand("evaluate (1 + 1)", "Evaluates a math expression", true,
-                response =>
-                {
-                    try
-                    {
-                        CompanionManager.Log($"Response: {response}");
-                        var r = RTMath.Parse(response).ToString();
-                        reference.chatBubble.Say(r);
-                        LSText.CopyToClipboard(r);
-                    }
-                    catch
-                    {
-                        reference.chatBubble.Say("Couldn't calculate that, sorry...");
-                    }
-                }, true,
-                new List<ExampleCommand.Phrase>
-                {
-                    new ExampleCommand.Phrase("Evaluate \\((.*?)\\)", true),
-                    new ExampleCommand.Phrase("evaluate \\((.*?)\\)", true),
-                }));
-
-            commands.Add(new ExampleCommand("Select all objects", "Selects every Beatmap Object and Prefab Object in the current level.", true,
-                response =>
-                {
-                    EditorHelper.SelectAllObjects();
-                    reference?.chatBubble?.Say($"Selected all objects!");
-                }));
-            commands.Add(new ExampleCommand("Select all objects on current layer", "Selects every Beatmap Object and Prefab Object in the current level's currently viewed editor layer.", true,
-                response =>
-                {
-                    EditorHelper.SelectAllObjectsOnCurrentLayer();
-                    reference?.chatBubble?.Say($"Selected all objects on the current editor layer!");
-                }));
-            commands.Add(new ExampleCommand("Mirror Selection", "Horizontally mirrors selected objects.", true,
-                response =>
-                {
-                    EditorHelper.MirrorSelectedObjects();
-                    reference?.chatBubble?.Say($"Mirrored objects horizontally!");
-                }));
-            commands.Add(new ExampleCommand("Flip Selection", "Vertically flips selected objects.", true,
-                response =>
-                {
-                    EditorHelper.FlipSelectedObjects();
-                    reference?.chatBubble?.Say($"Flipped objects vertically!");
-                }));
-            commands.Add(new ExampleCommand("Refresh selected objects animations", "Updates just the animation of all selected objects.", true,
-                response =>
-                {
-                    EditorHelper.RefreshKeyframesFromSelection();
-                    reference?.chatBubble?.Say($"Refreshed the selected objects animations.");
-                }));
-            commands.Add(new ExampleCommand("Give a random idea", "Example outputs a random idea.", true,
-                response =>
-                {
-                    var ideaContext = IdeaDialogueParameters.IdeaContext.Random;
-                    if (!string.IsNullOrEmpty(response) && System.Enum.TryParse(response, true, out IdeaDialogueParameters.IdeaContext a))
-                        ideaContext = a;
-
-                    reference?.chatBubble?.SayDialogue(ExampleChatBubble.Dialogues.RANDOM_IDEA, new IdeaDialogueParameters(ideaContext));
-                },
-                new List<ExampleCommand.Phrase>
-                {
-                    new ExampleCommand.Phrase("Give a (.*?) idea", true),
-                    new ExampleCommand.Phrase("give a (.*?) idea", true),
-                }));
-            commands.Add(new ExampleCommand("Toggle Modifiers Prefab Group Only", "Turns all selected objects' modifiers Prefab Group Only value on / off.", true,
-                response =>
-                {
-                    var attribute = GetAttribute("PREFAB_GROUP_ONLY", 0.0, 0.0, 1.0);
-                    var value = attribute.Value == 1.0;
-                    attribute.Value = value ? 0.0 : 1.0;
-                    EditorHelper.SetSelectedObjectPrefabGroupOnly(!value);
-
-                    reference?.chatBubble?.Say($"Set all selected objects' modiifers Prefab Group Only {(!value ? "on" : "off")}");
-                }));
-            commands.Add(new ExampleCommand("Select All In Prefab Group", "Selects all objects in the same prefab group as the earliest object.", true,
-                response =>
-                {
-                    var timelineObject = EditorTimeline.inst?.SelectedObjects?.GetAt(0);
-                    if (!timelineObject || !timelineObject.TryGetPrefabable(out Core.Data.Beatmap.IPrefabable prefabable))
-                        return;
-
-                    EditorHelper.SelectAllObjectsFromPrefabInstance(prefabable);
-
-                    reference?.chatBubble?.Say($"Set all selected objects' related to the prefab.");
-                }));
-        }
-
-        /// <summary>
-        /// Registers a command that acts as a chat message to Example.
-        /// </summary>
-        /// <param name="key">Key of the message.</param>
-        /// <param name="dialogue">Dialogue key to respond with.</param>
-        /// <param name="phrases">Phrases to match.</param>
-        public void RegisterChat(string key, string dialogue, List<ExampleCommand.Phrase> phrases)
-        {
-            commands.Add(new ExampleCommand(key, key, false,
-                response => reference.brain.Interact(ExampleBrain.Interactions.CHAT, new ChatInteractParameters(dialogue, response)), phrases));
-        }
+        public virtual void RegisterCommands() { }
 
         /// <summary>
         /// Searches for a command.
@@ -377,36 +263,111 @@ namespace BetterLegacy.Companion.Entity
         /// <param name="searchTerm">Search term.</param>
         public void SearchCommandAutocomplete(string searchTerm)
         {
-            CoreHelper.Log($"Typing: {searchTerm}");
-            int num = 0;
-            for (int i = 0; i < commands.Count; i++)
+            var origSearch = searchTerm;
+            string firstWord = null;
+            string[] split = null;
+            string mode = null;
+            if (!string.IsNullOrEmpty(searchTerm))
             {
-                if (!commands[i].autocomplete)
+                split = searchTerm.Split(' ');
+                if (!split.IsEmpty())
+                {
+                    firstWord = split[0];
+                    searchTerm = split[split.Length - 1];
+                    for (int i = 0; i < split.Length; i++)
+                    {
+                        var s = split[i];
+                        if (s == "->")
+                            mode = "action";
+                        if (s == "edit")
+                            mode = "edit";
+                        if (s == "select")
+                        {
+                            mode = "select";
+                            firstWord = mode;
+                        }
+                    }
+                }
+            }
+            for (int i = 0; i < parameterAutocompletes.Count; i++)
+                CoreHelper.Delete(parameterAutocompletes[i].gameObject);
+            parameterAutocompletes.Clear();
+            CompanionManager.Log($"Command: {searchTerm}\nTyping: {origSearch}");
+            for (int i = 0; i < autocompletes.Count; i++)
+            {
+                var autocomplete = autocompletes[i];
+                if (!autocomplete.gameObject)
                     continue;
 
-                try
+                if (string.IsNullOrEmpty(firstWord) || split == null || split.Length <= 1)
                 {
-                    autocompleteContent.GetChild(num).gameObject.SetActive(RTString.SearchString(searchTerm, commands[i].name));
+                    autocomplete.gameObject.SetActive(autocomplete.command.Usable && RTString.SearchString(searchTerm, autocomplete.command.Name));
+                    continue;
                 }
-                catch
-                {
 
+                // search extra autocompletes here
+                autocomplete.gameObject.SetActive(false);
+                if (firstWord.ToLower() != autocomplete.command.Name)
+                    continue;
+
+                var parameters = autocomplete.command.GetParameters();
+                if (autocomplete.command is ExampleCommand.SelectCommand selectCommand)
+                {
+                    if (mode == "action")
+                        parameters = selectCommand.actionParameters;
+                    if (mode == "edit")
+                        parameters = new ExampleCommand.EditCommand().GetParameters();
                 }
-                num++;
+                if (parameters == null)
+                    continue;
+
+                foreach (var parameter in parameters)
+                {
+                    if (!RTString.SearchString(searchTerm, parameter.Name) || !string.IsNullOrEmpty(searchTerm) && searchTerm.ToLower() == parameter.Name.ToLower())
+                        continue;
+
+                    var parameterAutocomplete = new ParameterAutocomplete();
+                    parameterAutocomplete.parameter = parameter;
+                    parameterAutocomplete.gameObject = commandAutocompletePrefab.Duplicate(autocompleteContent, "Autocomplete");
+                    parameterAutocomplete.gameObject.SetActive(true);
+
+                    var autocompleteButton = parameterAutocomplete.gameObject.GetComponent<Button>();
+                    autocompleteButton.onClick.NewListener(() =>
+                    {
+                        var text = chatter.text;
+                        text = text.Substring(0, text.LastIndexOf(' ')) + " " + parameter.AddToAutocomplete;
+                        chatter.text = text;
+                    });
+
+                    EditorThemeManager.ApplySelectable(autocompleteButton, ThemeGroup.List_Button_1);
+
+                    var autocompleteName = parameterAutocomplete.gameObject.transform.Find("Name").GetComponent<Text>();
+                    autocompleteName.text = parameter.Name;
+                    EditorThemeManager.ApplyLightText(autocompleteName);
+                    var autocompleteDesc = parameterAutocomplete.gameObject.transform.Find("Desc").GetComponent<Text>();
+                    autocompleteDesc.text = parameter.Description;
+                    EditorThemeManager.ApplyLightText(autocompleteDesc);
+
+                    parameterAutocompletes.Add(parameterAutocomplete);
+                }
             }
         }
 
         void HandleChatting(string chat)
         {
-            if (chatter == null)
+            if (chatter == null || string.IsNullOrEmpty(chat))
                 return;
 
-            reference?.brain?.Interact(ExampleBrain.Interactions.CHAT);
-
-            for (int i = 0; i < commands.Count; i++)
-                commands[i].CheckResponse(chat);
-
-            AchievementManager.inst.UnlockAchievement("example_chat");
+            try
+            {
+                ExampleCommand.Run(chat);
+                reference?.brain?.Interact(ExampleBrain.Interactions.CHAT);
+                AchievementManager.inst.UnlockAchievement("example_chat");
+            }
+            catch (Exception ex)
+            {
+                CompanionManager.LogError($"Command line failed to parse due to the exception: {ex}");
+            }
         }
 
         #endregion
@@ -459,6 +420,7 @@ namespace BetterLegacy.Companion.Entity
         GameObject autocomplete;
         InputField chatter;
         RectTransform chatterBase;
+        Button submitButton;
         RectTransform autocompleteContent;
 
         #endregion
@@ -524,6 +486,50 @@ namespace BetterLegacy.Companion.Entity
             {
                 return base.VarFunction(jn, name, parameters, thisElement, customVariables);
             }
+        }
+
+        #endregion
+
+        #region Autocomplete
+
+        /// <summary>
+        /// List of regular commands that should appear in the autocomplete.
+        /// </summary>
+        public List<CommandAutocomplete> autocompletes = new List<CommandAutocomplete>();
+
+        /// <summary>
+        /// List of command parameters that should appear in the autocomplete.
+        /// </summary>
+        public List<ParameterAutocomplete> parameterAutocompletes = new List<ParameterAutocomplete>();
+
+        /// <summary>
+        /// Represents a command in the autocomplete.
+        /// </summary>
+        public class CommandAutocomplete
+        {
+            /// <summary>
+            /// The command reference.
+            /// </summary>
+            public ExampleCommand command;
+            /// <summary>
+            /// The Unity Game Object reference.
+            /// </summary>
+            public GameObject gameObject;
+        }
+
+        /// <summary>
+        /// Represents a parameter in the autocomplete.
+        /// </summary>
+        public class ParameterAutocomplete
+        {
+            /// <summary>
+            /// The parameter reference.
+            /// </summary>
+            public ExampleCommand.ParameterBase parameter;
+            /// <summary>
+            /// The Unity Game Object reference.
+            /// </summary>
+            public GameObject gameObject;
         }
 
         #endregion

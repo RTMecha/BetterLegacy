@@ -943,8 +943,24 @@ namespace BetterLegacy.Core.Runtime.Events
 
             #endregion
 
-            GameManager.inst.timeline.SetActive(!EventsConfig.Instance.HideTimeline.Value && timelineActive && EventsConfig.Instance.ShowGUI.Value);
+            RenderPlayersAndGUI();
             EventManager.inst.prevCamZoom = EventManager.inst.camZoom;
+        }
+
+        /// <summary>
+        /// Renders the players and GUI active states.
+        /// </summary>
+        public void RenderPlayersAndGUI()
+        {
+            if (!GameManager.inst || !GameManager.inst.players || !GameManager.inst.timeline || !RTBeatmap.Current)
+                return;
+
+            var a = playersActive && (!RTBeatmap.Current.Invincible || EventsConfig.Instance.ShowGUI.Value);
+            if (GameManager.inst.gameState == (GameManager.State.Paused | GameManager.State.Finish) && LevelManager.LevelEnded)
+                a = false;
+
+            GameManager.inst.players.SetActive(a);
+            GameManager.inst.timeline.SetActive(!EventsConfig.Instance.HideTimeline.Value && timelineActive && EventsConfig.Instance.ShowGUI.Value);
         }
 
         public Vector2 GetCameraPosition() => EventManager.inst.camParentTop.transform.localPosition;
@@ -1582,20 +1598,7 @@ namespace BetterLegacy.Core.Runtime.Events
         #region Player - 23
 
         // 23 - 0
-        void UpdatePlayerActive(float x)
-        {
-            var active = (int)x == 0;
-
-            var zen = !CoreHelper.InStory && (!RTBeatmap.Current.challengeMode.Damageable || CoreHelper.InEditor);
-
-            var a = active && !zen || active && EventsConfig.Instance.ShowGUI.Value;
-
-            if (GameManager.inst.gameState == (GameManager.State.Paused | GameManager.State.Finish) && LevelManager.LevelEnded)
-                a = false;
-
-            GameManager.inst.players.SetActive(a);
-            playersActive = a;
-        }
+        void UpdatePlayerActive(float x) => playersActive = (int)x == 0;
 
         // 23 - 1
         void UpdatePlayerMoveable(float x) => playersCanMove = (int)x == 0;

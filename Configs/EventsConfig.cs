@@ -101,9 +101,12 @@ namespace BetterLegacy.Configs
         public override void SetupSettingChanged()
         {
             SettingChanged += UpdateSettings;
+            ShowGUI.SettingChanged += ShowGUIChanged;
         }
 
         void UpdateSettings() => RTLevel.Current?.UpdateEvents();
+
+        void ShowGUIChanged() => RTLevel.Current?.eventEngine?.RenderPlayersAndGUI();
 
         #endregion
 

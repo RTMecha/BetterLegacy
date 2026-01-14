@@ -211,7 +211,7 @@ namespace BetterLegacy.Arcade.Managers
             }
         }
 
-        public bool ShowPauseSlider => CoreHelper.Paused && RTBeatmap.Current.Invincible && PauseMenu.Current && !PauseMenu.Current.unpausing && !PauseMenu.Current.generating && CoreConfig.Instance.ShowPauseTimeSlider.Value;
+        public bool ShowPauseSlider => CoreHelper.Paused && RTBeatmap.Current.Invincible && PauseMenu.Current && PauseMenu.Current.UIActive && !PauseMenu.Current.unpausing && !PauseMenu.Current.generating && CoreConfig.Instance.ShowPauseTimeSlider.Value;
         bool cachedShowPauseSlider;
         public UICanvas pauseSliderCanvas;
         public Slider pauseSlider;

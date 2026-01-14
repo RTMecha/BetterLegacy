@@ -69,6 +69,11 @@ namespace BetterLegacy.Menus.UI.Interfaces
         public bool isOpen;
 
         /// <summary>
+        /// If the menu is active.
+        /// </summary>
+        public bool UIActive => canvas && canvas.GameObject && canvas.GameObject.activeInHierarchy;
+
+        /// <summary>
         /// If the menu should regenerate when <see cref="GenerateUI"/> is run.
         /// </summary>
         public bool regenerate = true;

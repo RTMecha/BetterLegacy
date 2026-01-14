@@ -84,6 +84,11 @@ namespace BetterLegacy.Configs
         /// </summary>
         public Setting<bool> EnabledInMenus { get; set; }
 
+        /// <summary>
+        /// If the command autocomplete should display regardless of input emptiness.
+        /// </summary>
+        public Setting<bool> ShowAutocompleteWithEmptyInput { get; set; }
+
         #endregion
 
         #region Behavior
@@ -145,6 +150,8 @@ namespace BetterLegacy.Configs
             EnabledInGame = Bind(this, VISIBILITY, "In Game", false, "If Example is enabled in game. Includes Editor Preview.");
             EnabledInEditor = Bind(this, VISIBILITY, "In Editor", true, "If Example is enabled in editor.");
             EnabledInMenus = Bind(this, VISIBILITY, "In Menus", false, "If Example is enabled in menus.");
+
+            ShowAutocompleteWithEmptyInput = Bind(this, VISIBILITY, "Show Autocomplete With Empty Input", true, "If the command autocomplete should display regardless of input emptiness.");
 
             #endregion
 
