@@ -400,6 +400,9 @@ namespace BetterLegacy.Editor.Data.Timeline
         /// </summary>
         public void Render()
         {
+            if (!GameObject)
+                return;
+
             string name = "object name";
             float startTime = 0f;
             float length = Length;
@@ -1021,6 +1024,60 @@ namespace BetterLegacy.Editor.Data.Timeline
                 return false;
             }
             return RTEditor.inst.editorInfo.TryGetGroup(Group, out editorGroup);
+        }
+
+        /// <summary>
+        /// Updates the runtime object.
+        /// </summary>
+        public void UpdateObject()
+        {
+            switch (TimelineReference)
+            {
+                case TimelineReferenceType.BeatmapObject: {
+                        if (TryGetData(out BeatmapObject beatmapObject))
+                            beatmapObject.GetParentRuntime()?.UpdateObject(beatmapObject);
+                        break;
+                    }
+                case TimelineReferenceType.BackgroundObject: {
+                        if (TryGetData(out BackgroundObject backgroundObject))
+                            backgroundObject.GetParentRuntime()?.UpdateBackgroundObject(backgroundObject);
+                        break;
+                    }
+                case TimelineReferenceType.PrefabObject: {
+                        if (TryGetData(out PrefabObject prefabObject))
+                            prefabObject.GetParentRuntime()?.UpdatePrefab(prefabObject);
+                        break;
+                    }
+            }
+        }
+
+        /// <summary>
+        /// Updates a specific value of the runtime object.
+        /// </summary>
+        /// <param name="context">Context of the value to update.</param>
+        public void UpdateObject(string context)
+        {
+            if (string.IsNullOrEmpty(context))
+                UpdateObject();
+
+            switch (TimelineReference)
+            {
+                case TimelineReferenceType.BeatmapObject: {
+                        if (TryGetData(out BeatmapObject beatmapObject))
+                            beatmapObject.GetParentRuntime()?.UpdateObject(beatmapObject, context);
+                        break;
+                    }
+                case TimelineReferenceType.BackgroundObject: {
+                        if (TryGetData(out BackgroundObject backgroundObject))
+                            backgroundObject.GetParentRuntime()?.UpdateBackgroundObject(backgroundObject, context);
+                        break;
+                    }
+                case TimelineReferenceType.PrefabObject: {
+                        if (TryGetData(out PrefabObject prefabObject))
+                            prefabObject.GetParentRuntime()?.UpdatePrefab(prefabObject, context);
+                        break;
+                    }
+            }
         }
 
         public override string ToString() => data != null ? data.ToString() : base.ToString();

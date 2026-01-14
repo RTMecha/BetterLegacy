@@ -336,10 +336,9 @@ namespace BetterLegacy.Editor.Managers
                         for (int j = 0; j < jn["events"][EventLibrary.jsonNames[i]].Count; j++)
                         {
                             var d = EventLibrary.cachedDefaultKeyframes[i];
-                            var timelineObject = new TimelineKeyframe(EventKeyframe.Parse(jn["events"][EventLibrary.jsonNames[i]][j], i, d.values.Length, d.randomValues.Length, d.values, d.randomValues));
-                            timelineObject.Type = i;
-                            timelineObject.Index = j;
-                            copiedEventKeyframes.Add(timelineObject);
+                            var timelineKeyframe = new TimelineKeyframe(EventKeyframe.Parse(jn["events"][EventLibrary.jsonNames[i]][j], i, d.values.Length, d.randomValues.Length, d.values, d.randomValues));
+                            timelineKeyframe.SetCoord(new KeyframeCoord(i, j));
+                            copiedEventKeyframes.Add(timelineKeyframe);
                         }
                     }
                 }

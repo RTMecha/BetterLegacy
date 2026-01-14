@@ -220,6 +220,9 @@ namespace BetterLegacy.Editor.Data.Timeline
         /// </summary>
         public void Render()
         {
+            if (!GameObject)
+                return;
+
             if (isObjectKeyframe)
             {
                 var events = animatable.GetEventKeyframes(Type);

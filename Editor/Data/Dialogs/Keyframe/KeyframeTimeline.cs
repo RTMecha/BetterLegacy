@@ -470,7 +470,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 for (int j = 0; j < events[i].Count; j++)
                 {
                     var eventKeyframe = events[i][j];
-                    copiedObjectKeyframes.Add(new TimelineKeyframe(eventKeyframe) { Type = i, Index = j, isObjectKeyframe = true });
+                    var timelineKeyframe = new TimelineKeyframe(eventKeyframe) { isObjectKeyframe = true };
+                    timelineKeyframe.SetCoord(new KeyframeCoord(i, j));
+                    copiedObjectKeyframes.Add(timelineKeyframe);
                 }
             }
         }
@@ -2519,6 +2521,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public static bool AllowTimeExactlyAtStart => false;
         public void ResizeKeyframeTimeline(IAnimatable animatable)
         {
+            if (animatable == null)
+                return;
+
             CurrentTimeline = this;
             CurrentObject = animatable;
 
@@ -2606,16 +2611,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public TimelineKeyframe CreateKeyframe(IAnimatable animatable, int type, int index)
         {
             var eventKeyframe = animatable.GetEventKeyframes(type)[index];
-
-            var timelineKeyframe = new TimelineKeyframe(eventKeyframe, animatable, this)
-            {
-                Type = type,
-                Index = index,
-            };
-
-            eventKeyframe.timelineKeyframe = timelineKeyframe;
+            var timelineKeyframe = new TimelineKeyframe(eventKeyframe, animatable, this);
+            timelineKeyframe.SetCoord(new KeyframeCoord(type, index));
             timelineKeyframe.Init();
-
             return timelineKeyframe;
         }
 
