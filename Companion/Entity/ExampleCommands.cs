@@ -152,7 +152,7 @@ namespace BetterLegacy.Companion.Entity
             contentSizeFitter.verticalFit = ContentSizeFitter.FitMode.MinSize;
 
             var gridLayoutGroup = content.AddComponent<GridLayoutGroup>();
-            gridLayoutGroup.cellSize = new Vector2(768f, 86f);
+            gridLayoutGroup.cellSize = new Vector2(768f, 140f);
             gridLayoutGroup.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
             gridLayoutGroup.constraintCount = 1;
             gridLayoutGroup.spacing = new Vector2(0f, 8f);
@@ -167,7 +167,8 @@ namespace BetterLegacy.Companion.Entity
             commandAutocompletePrefab.SetActive(false);
             var commandAutocompletePrefabImage = commandAutocompletePrefab.AddComponent<Image>();
 
-            commandAutocompletePrefab.AddComponent<Button>().image = commandAutocompletePrefabImage;
+            var commandAutocompletePrefabButton = commandAutocompletePrefab.AddComponent<Button>();
+            commandAutocompletePrefabButton.image = commandAutocompletePrefabImage;
 
             var commandAutocompletePrefabName = Creator.NewUIObject("Name", commandAutocompletePrefab.transform);
             var commandAutocompletePrefabNameText = commandAutocompletePrefabName.AddComponent<Text>();
@@ -180,16 +181,22 @@ namespace BetterLegacy.Companion.Entity
             var commandAutocompletePrefabDescText = commandAutocompletePrefabDesc.AddComponent<Text>();
             commandAutocompletePrefabDescText.font = Font.GetDefault();
             commandAutocompletePrefabDescText.fontSize = 20;
-            UIManager.SetRectTransform(commandAutocompletePrefabDesc.transform.AsRT(), new Vector2(0f, -16f), Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0f, -32f));
+            UIManager.SetRectTransform(commandAutocompletePrefabDesc.transform.AsRT(), new Vector2(0f, -48f), Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0f, -32f));
 
-            CoroutineHelper.StartCoroutine(SetupCommandsAutocomplete());
+            EditorThemeManager.ApplySelectable(commandAutocompletePrefabButton, ThemeGroup.List_Button_1);
+            EditorThemeManager.ApplyLightText(commandAutocompletePrefabNameText);
+            EditorThemeManager.ApplyLightText(commandAutocompletePrefabDescText);
+
+            CoroutineHelper.StartCoroutine(ISetupCommandsAutocomplete());
 
             chatterBase.gameObject.SetActive(false);
 
             yield break;
         }
 
-        IEnumerator SetupCommandsAutocomplete()
+        public void SetupCommandsAutocomplete() => CoroutineHelper.StartCoroutine(ISetupCommandsAutocomplete());
+
+        public IEnumerator ISetupCommandsAutocomplete()
         {
             LSHelpers.DeleteChildren(autocompleteContent);
             autocompletes.Clear();
@@ -201,15 +208,14 @@ namespace BetterLegacy.Companion.Entity
                 autocomplete.gameObject.SetActive(true);
 
                 var autocompleteButton = autocomplete.gameObject.GetComponent<Button>();
-                autocompleteButton.onClick.NewListener(() =>
-                {
-                    chatter.text += string.IsNullOrEmpty(chatter.text) ? command.Pattern : chatter.text.EndsWith(' ') ? command.Pattern : " " + command.Pattern;
-                });
+                autocompleteButton.onClick.NewListener(() => chatter.text = command.AddToAutocomplete);
 
                 EditorThemeManager.ApplySelectable(autocompleteButton, ThemeGroup.List_Button_1);
 
                 var autocompleteName = autocomplete.gameObject.transform.Find("Name").GetComponent<Text>();
                 autocompleteName.text = command.Name;
+                if (command.Pattern != command.Name)
+                    autocompleteName.text += $" ({command.Pattern})";
                 EditorThemeManager.ApplyLightText(autocompleteName);
                 var autocompleteDesc = autocomplete.gameObject.transform.Find("Desc").GetComponent<Text>();
                 autocompleteDesc.text = command.Description;
@@ -217,7 +223,7 @@ namespace BetterLegacy.Companion.Entity
 
                 autocompletes.Add(autocomplete);
             }
-            SearchCommandAutocomplete(string.Empty);
+            SearchCommandAutocomplete(chatter.text);
             yield break;
         }
 

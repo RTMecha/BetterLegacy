@@ -766,6 +766,15 @@ namespace BetterLegacy.Companion.Entity
                 GetAttribute(jnAttribute["id"], value, jnAttribute["min"].AsDouble, jnAttribute["max"].AsDouble).Value = value;
             }
 
+            // don't remove default custom commands if there were no commands registered
+            if (jn["commands"] != null)
+            {
+                ExampleCommand.commands.RemoveAll(x => x is ExampleCommand.CustomCommand);
+                ExampleCommand.commands.AddRange(Parser.ParseObjectList<ExampleCommand.CustomCommand>(jn["commands"]));
+            }
+            if (reference && reference.commands && !reference.commands.autocompletes.IsEmpty())
+                reference.commands.SetupCommandsAutocomplete();
+
             memory.Clear();
             for (int i = 0; i < jn["memory"].Count; i++)
             {
@@ -798,10 +807,12 @@ namespace BetterLegacy.Companion.Entity
         /// <returns>Returns a JSON object representing Example's memories.</returns>
         public JSONNode ToJSON()
         {
-            var jn = JSON.Parse("{}");
+            var jn = Parser.NewJSONObject();
 
             for (int i = 0; i < attributes.Count; i++)
                 jn["attributes"][i] = attributes[i].ToJSON();
+
+            jn["commands"] = Parser.ObjectListToJSON(ExampleCommand.commands.SelectWhere(x => x is ExampleCommand.CustomCommand, x => x as ExampleCommand.CustomCommand));
 
             try
             {
