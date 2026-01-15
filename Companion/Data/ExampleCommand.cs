@@ -38,7 +38,7 @@ namespace BetterLegacy.Companion.Data
     {
         /*
          examples include:
-        - create marker 10 add_time 0.1 name "test"
+        - create marker 10 add_time current_time 0.1 name "test"
         - create background_object 10 start_time current_time add_editor_bin 0
         - hello buddy
         - i love you
@@ -49,9 +49,10 @@ namespace BetterLegacy.Companion.Data
         - select objects name "NAME" select modifiers -> log notify_count edit prefab_group_only true
         - select objects name "NAME" -> mirror horizontal
         - select objects name "keyframer" select object_keyframes event_coord 0 0 -> log edit value 0 set 10 select objects name "keyframer" -> update keyframes
-        - create beatmap_object 24 start_time current_time add_editor_bin 0 pos_kf [time set 5 value 0 set evaluate (cos((index*15)/radToDeg)*50) value 1 set evaluate (sin((index*15)/radToDeg)*50) value 2 set 0 relative false] rot_kf [time set 0 value 0 set evaluate ((index*15)) relative false]
-        - create prefab_object 8 "Mouth Controller" start_time current_time add_editor_bin 0 pos evaluate (cos((index*45)/radToDeg)*20) evaluate (sin((index*45)/radToDeg)*20) rot evaluate((index*45))
+        - create beatmap_object 24 start_time current_time add_editor_bin 0 1 pos_kf [time set 5 value 0 set evaluate (cos((index*15)/radToDeg)*50) value 1 set evaluate (sin((index*15)/radToDeg)*50) value 2 set 0 relative false] rot_kf [time set 0 value 0 set evaluate ((index*15)) relative false]
+        - create prefab_object 8 "Mouth Controller" start_time current_time add_editor_bin 0 1 pos evaluate (cos((index*45)/radToDeg)*20) evaluate (sin((index*45)/radToDeg)*20) rot evaluate((index*45))
         - select objects selected edit beatmap_object parent [select objects name "TESTPARENT"]
+        - select objects selected -> set_name value_list [0 test1 test2]
         - load_level story chapter 0 level 0
         - load_level arcade_id 523682385
          */
@@ -94,6 +95,7 @@ namespace BetterLegacy.Companion.Data
         public static List<VariableParameter> variables = new List<VariableParameter>
         {
             new EvaluateParameter(),
+            new ValueListParameter(),
         };
 
         /// <summary>
@@ -930,6 +932,32 @@ namespace BetterLegacy.Companion.Data
                 new ModifierElseIfParameter(),
             };
 
+            #region Current
+
+            public static class CurrentEdit
+            {
+                public static BeatmapObject beatmapObject;
+                public static BackgroundObject backgroundObject;
+                public static PrefabObject prefabObject;
+                public static Marker marker;
+                public static Checkpoint checkpoint;
+                public static Modifier modifier;
+                public static EventKeyframe eventKeyframe;
+
+                public static void Reset()
+                {
+                    beatmapObject = null;
+                    backgroundObject = null;
+                    prefabObject = null;
+                    marker = null;
+                    checkpoint = null;
+                    modifier = null;
+                    eventKeyframe = null;
+                }
+            }
+
+            #endregion
+
             #endregion
 
             #region Functions
@@ -959,18 +987,21 @@ namespace BetterLegacy.Companion.Data
                                 {
                                     case TimelineObject.TimelineReferenceType.BeatmapObject: {
                                             var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                            CurrentEdit.beatmapObject = beatmapObject;
                                             Apply(input, 1, beatmapObject, parameters, beatmapObjectParameters);
                                             RTLevel.Current?.UpdateObject(beatmapObject);
                                             break;
                                         }
                                     case TimelineObject.TimelineReferenceType.BackgroundObject: {
                                             var backgroundObject = timelineObject.GetData<BackgroundObject>();
+                                            CurrentEdit.backgroundObject = backgroundObject;
                                             Apply(input, 1, backgroundObject, parameters, backgroundObjectParameters);
                                             RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
                                             break;
                                         }
                                     case TimelineObject.TimelineReferenceType.PrefabObject: {
                                             var prefabObject = timelineObject.GetData<PrefabObject>();
+                                            CurrentEdit.prefabObject = prefabObject;
                                             Apply(input, 1, prefabObject, parameters, prefabObjectParameters);
                                             RTLevel.Current?.UpdatePrefab(prefabObject);
                                             break;
@@ -988,6 +1019,7 @@ namespace BetterLegacy.Companion.Data
                             {
                                 if (selectable is not TimelineKeyframe timelineKeyframe)
                                     continue;
+                                CurrentEdit.eventKeyframe = timelineKeyframe.eventKeyframe;
                                 Apply(input, 0, timelineKeyframe.eventKeyframe, parameters, eventKeyframeParameters);
                                 timelineKeyframe.Render();
                                 index++;
@@ -1001,6 +1033,7 @@ namespace BetterLegacy.Companion.Data
                             {
                                 if (selectable is not TimelineKeyframe timelineKeyframe)
                                     continue;
+                                CurrentEdit.eventKeyframe = timelineKeyframe.eventKeyframe;
                                 Apply(input, 0, timelineKeyframe.eventKeyframe, parameters, eventKeyframeParameters);
                                 timelineKeyframe.Render();
                                 index++;
@@ -1017,6 +1050,7 @@ namespace BetterLegacy.Companion.Data
                             {
                                 if (selectable is not TimelineMarker timelineMarker)
                                     continue;
+                                CurrentEdit.marker = timelineMarker.Marker;
                                 Apply(input, 0, timelineMarker.Marker, parameters, markerParameters);
                                 timelineMarker.Render();
                                 index++;
@@ -1030,6 +1064,7 @@ namespace BetterLegacy.Companion.Data
                             {
                                 if (selectable is not TimelineCheckpoint timelineCheckpoint)
                                     continue;
+                                CurrentEdit.checkpoint = timelineCheckpoint.Checkpoint;
                                 Apply(input, 0, timelineCheckpoint.Checkpoint, parameters, checkpointParameters);
                                 timelineCheckpoint.Render();
                                 index++;
@@ -1043,6 +1078,7 @@ namespace BetterLegacy.Companion.Data
                             {
                                 if (selectable is not ModifierCard modifierCard)
                                     continue;
+                                CurrentEdit.modifier = modifierCard.Modifier;
                                 Apply(input, 0, modifierCard.Modifier, parameters, modifierParameters);
                                 index++;
                             }
@@ -1051,6 +1087,7 @@ namespace BetterLegacy.Companion.Data
                             break;
                         }
                 }
+                CurrentEdit.Reset();
             }
 
             public void Apply<T>(string input, int startIndex, T obj, string[] split, List<EditParameter<T>> parameters)
@@ -1164,9 +1201,9 @@ namespace BetterLegacy.Companion.Data
 
                 public override string Description => "Editor bin of the object.";
 
-                public override string AddToAutocomplete => "add_editor_bin max_bin";
+                public override string AddToAutocomplete => "add_editor_bin max_bin 1";
 
-                public override void Apply(T obj, string[] parameters) => obj.EditorData.Bin = Parser.TryParse(parameters[0], 0) + index;
+                public override void Apply(T obj, string[] parameters) => obj.EditorData.Bin = Parser.TryParse(parameters[0], 0) + (Parser.TryParse(parameters[1], 0) * index);
             }
 
             public class ObjectStartTimeParameter<T> : EditParameter<T> where T : ILifetime
@@ -1192,7 +1229,7 @@ namespace BetterLegacy.Companion.Data
 
                 public override string AddToAutocomplete => "add_start_time 0.1";
 
-                public override void Apply(T obj, string[] parameters) => obj.StartTime = AudioManager.inst.CurrentAudioSource.time + (Parser.TryParse(parameters[0], 0f) * index);
+                public override void Apply(T obj, string[] parameters) => obj.StartTime = Parser.TryParse(parameters[0], 0f) + (Parser.TryParse(parameters[1], 0f) * index);
             }
 
             public class ShapeParameter<T> : EditParameter<T> where T : IShapeable
@@ -1681,9 +1718,9 @@ namespace BetterLegacy.Companion.Data
 
                 public override string Description => "Time of the marker.";
 
-                public override string AddToAutocomplete => "add_time 0.5";
+                public override string AddToAutocomplete => "add_time current_time 0.5";
 
-                public override void Apply(Marker obj, string[] parameters) => obj.time = AudioManager.inst.CurrentAudioSource.time + (Parser.TryParse(parameters[0], 0f) * index);
+                public override void Apply(Marker obj, string[] parameters) => obj.time = Parser.TryParse(parameters[0], 0f) + (Parser.TryParse(parameters[1], 0f) * index);
             }
 
             public class MarkerDescriptionParameter : EditParameter<Marker>
@@ -1750,9 +1787,9 @@ namespace BetterLegacy.Companion.Data
 
                 public override string Description => "Time of the checkpoint.";
 
-                public override string AddToAutocomplete => "add_time 10";
+                public override string AddToAutocomplete => "add_time current_time 10";
 
-                public override void Apply(Checkpoint obj, string[] parameters) => obj.time = AudioManager.inst.CurrentAudioSource.time + (Parser.TryParse(parameters[0], 0f) * index);
+                public override void Apply(Checkpoint obj, string[] parameters) => obj.time = Parser.TryParse(parameters[0], 0f) + (Parser.TryParse(parameters[1], 0f) * index);
             }
 
             #endregion
@@ -4143,9 +4180,25 @@ namespace BetterLegacy.Companion.Data
                     i++;
                     while (i < split.Length)
                     {
-                        list.Add(split[i]);
-                        if (split[i].EndsWith(BracketsType == 1 ? ')' : ']'))
-                            break;
+                        var s = split[i];
+                        var varName = s.TrimStart('[').TrimEnd(']');
+                        if (variables.TryFind(x => x.Name == varName, out VariableParameter parameter))
+                        {
+                            parameter.variables = GetDictionary();
+                            list.Add(parameter.Get(parameter.GetParameters(split, ref i)));
+                        }
+                        else
+                        {
+                            var v = GetVariable(varName);
+                            if (s.StartsWith("["))
+                                v = "[" + v;
+                            if (s.EndsWith(']'))
+                                v += "]";
+
+                            list.Add(v);
+                            if (s.EndsWith(BracketsType == 1 ? ')' : ']'))
+                                break;
+                        }
                         i++;
                     }
                     parameters = list.ToArray();
@@ -4184,7 +4237,7 @@ namespace BetterLegacy.Companion.Data
 
                         if (variables.TryFind(x => x.Name == s, out VariableParameter parameter))
                         {
-                            parameter.variables = new Dictionary<string, string>(GetVariables().Select(x => new KeyValuePair<string, string>(x.Item1, x.Item2)));
+                            parameter.variables = GetDictionary();
                             list.Add(parameter.Get(parameter.GetParameters(split, ref i)));
                         }
                         else
@@ -4257,6 +4310,18 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Converts <see cref="GetVariables"/> to a dictionary.
+            /// </summary>
+            /// <returns>Dictionary of variables.</returns>
+            public Dictionary<string, string> GetDictionary()
+            {
+                var dictionary = new Dictionary<string, string>();
+                foreach (var variable in GetVariables())
+                    dictionary.TryAdd(variable.Item1, variable.Item2);
+                return dictionary;
+            }
+
             #endregion
         }
 
@@ -4296,6 +4361,27 @@ namespace BetterLegacy.Companion.Data
                 {
                     { "snapBPM", parameters => parameters.Length > 3 ? RTEditor.SnapToBPM((float)parameters[0], (float)parameters[1], (float)parameters[2], (float)parameters[3]) : RTEditor.SnapToBPM((float)parameters[0]) },
                 }).ToString();
+            }
+        }
+
+        public class ValueListParameter : VariableParameter
+        {
+            public override string Name => "value_list";
+
+            public override int BracketsType => 2;
+
+            public override string Description => "Gets a value from a list.";
+
+            public override string AddToAutocomplete => "value_list [0 value1 value2]";
+
+            public override string Get(string[] parameters)
+            {
+                var index = Parser.TryParse(parameters[0].TrimStart('['), 0);
+                if (!parameters.TryGetAt(index + 1, out string value))
+                    return string.Empty;
+                if (index + 1 == parameters.Length - 1)
+                    value = value.TrimEnd(']');
+                return value;
             }
         }
 
