@@ -1932,7 +1932,7 @@ namespace BetterLegacy.Companion.Data
 
                 // run_count set 0
                 // run_count add 1
-                public override void Apply(Modifier obj, string[] parameters) => RTMath.Operation(ref obj.runCount, Parser.TryParse(parameters[1], 0), RTMath.GetOperation(parameters[0], MathOperation.Set));
+                public override void Apply(Modifier obj, string[] parameters) => RTMath.Operation(ref obj.triggerCount, Parser.TryParse(parameters[1], 0), RTMath.GetOperation(parameters[0], MathOperation.Set));
             }
 
             public class ModifierPrefabGroupOnlyParameter : EditParameter<Modifier>
