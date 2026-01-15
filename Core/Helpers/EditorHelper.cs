@@ -264,7 +264,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static IEnumerator ILoadLevel(string fullPath, float delay = 2f)
         {
-            if (!CoreHelper.InEditor)
+            if (!ProjectArrhythmia.State.InEditor)
                 yield return SceneHelper.ILoadScene(SceneName.Editor);
 
             if (delay != 0.0)
@@ -275,7 +275,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static bool SelectAllObjects()
         {
-            if (!GameData.Current || !CoreHelper.InEditor || !EditorManager.inst.hasLoadedLevel)
+            if (!GameData.Current || !ProjectArrhythmia.State.InEditor || !EditorManager.inst.hasLoadedLevel)
                 return false;
 
             if (EditorTimeline.inst.timelineObjects.Count == 1)
@@ -298,7 +298,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static bool SelectAllObjectsOnCurrentLayer()
         {
-            if (!GameData.Current || !CoreHelper.InEditor || !EditorManager.inst.hasLoadedLevel)
+            if (!GameData.Current || !ProjectArrhythmia.State.InEditor || !EditorManager.inst.hasLoadedLevel)
                 return false;
 
             var layer = EditorTimeline.inst.Layer;
@@ -327,7 +327,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static bool SelectAllObjectsFromGroup(string editorGroup)
         {
-            if (!GameData.Current || !CoreHelper.InEditor || !EditorManager.inst.hasLoadedLevel)
+            if (!GameData.Current || !ProjectArrhythmia.State.InEditor || !EditorManager.inst.hasLoadedLevel)
                 return false;
 
             int selectedCount = 0;
@@ -347,7 +347,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static bool SelectAllObjectsFromPrefab(Prefab prefab)
         {
-            if (!GameData.Current || !CoreHelper.InEditor || !EditorManager.inst.hasLoadedLevel)
+            if (!GameData.Current || !ProjectArrhythmia.State.InEditor || !EditorManager.inst.hasLoadedLevel)
                 return false;
 
             int selectedCount = 0;
@@ -367,7 +367,7 @@ namespace BetterLegacy.Core.Helpers
         
         public static bool SelectAllObjectsFromPrefabInstance(IPrefabable main)
         {
-            if (!GameData.Current || !CoreHelper.InEditor || !EditorManager.inst.hasLoadedLevel)
+            if (!GameData.Current || !ProjectArrhythmia.State.InEditor || !EditorManager.inst.hasLoadedLevel)
                 return false;
 
             int selectedCount = 0;
@@ -387,7 +387,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static bool MirrorSelectedObjects()
         {
-            if (!GameData.Current || !CoreHelper.InEditor || !EditorManager.inst.hasLoadedLevel)
+            if (!GameData.Current || !ProjectArrhythmia.State.InEditor || !EditorManager.inst.hasLoadedLevel)
                 return false;
 
             foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
@@ -431,7 +431,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static bool FlipSelectedObjects()
         {
-            if (!GameData.Current || !CoreHelper.InEditor || !EditorManager.inst.hasLoadedLevel)
+            if (!GameData.Current || !ProjectArrhythmia.State.InEditor || !EditorManager.inst.hasLoadedLevel)
                 return false;
 
             foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
@@ -473,7 +473,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static bool RefreshKeyframesFromSelection()
         {
-            if (!GameData.Current || !CoreHelper.InEditor || !EditorManager.inst.hasLoadedLevel)
+            if (!GameData.Current || !ProjectArrhythmia.State.InEditor || !EditorManager.inst.hasLoadedLevel)
                 return false;
 
             foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
@@ -484,7 +484,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static bool FixSmoothShakeKeyframes()
         {
-            if (!GameData.Current || !CoreHelper.InEditor || !EditorManager.inst.hasLoadedLevel)
+            if (!GameData.Current || !ProjectArrhythmia.State.InEditor || !EditorManager.inst.hasLoadedLevel)
                 return false;
 
             var gameData = GameData.Current;
@@ -712,7 +712,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static bool SetSelectedObjectPrefabGroupOnly(bool enabled)
         {
-            if (!GameData.Current || !CoreHelper.InEditor || !EditorManager.inst.hasLoadedLevel)
+            if (!GameData.Current || !ProjectArrhythmia.State.InEditor || !EditorManager.inst.hasLoadedLevel)
                 return false;
 
             foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)

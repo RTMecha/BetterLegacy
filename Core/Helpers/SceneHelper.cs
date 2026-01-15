@@ -256,7 +256,7 @@ namespace BetterLegacy.Core.Helpers
                 yield return null;
             }
 
-            if (!CoreHelper.InGame)
+            if (!ProjectArrhythmia.State.InGame)
             {
                 SetActive(false);
                 Loading = false;
@@ -265,7 +265,7 @@ namespace BetterLegacy.Core.Helpers
             }
 
             yield return CoroutineHelper.SecondsRealtime(0.1f);
-            while (CoreHelper.InEditor && EditorManager.inst.loading || CoreHelper.Loading || CoreHelper.Parsing)
+            while (ProjectArrhythmia.State.InEditor && EditorManager.inst.loading || ProjectArrhythmia.State.Loading || ProjectArrhythmia.State.Parsing)
             {
                 SetActive(true);
                 yield return CoroutineHelper.EndOfFrame;

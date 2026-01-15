@@ -592,9 +592,9 @@ namespace BetterLegacy.Core.Data.Beatmap
             }
             catch (Exception ex)
             {
-                if (CoreHelper.InEditor)
+                if (ProjectArrhythmia.State.InEditor)
                     EditorManager.inst.DisplayNotification($"There was an error in parsing VG Event Keyframes. Parsing got caught at {breakContext}", 4f, EditorManager.NotificationType.Error);
-                if (!CoreHelper.InEditor)
+                if (!ProjectArrhythmia.State.InEditor)
                     Debug.LogError($"There was an error in parsing VG Event Keyframes. Parsing got caught at {breakContext}.\n {ex}");
                 else
                     Debug.LogError($"{ex}");

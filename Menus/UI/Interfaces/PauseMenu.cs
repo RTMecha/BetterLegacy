@@ -25,7 +25,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
         public PauseMenu() : base()
         {
-            if (!CoreHelper.InGame || CoreHelper.InEditor)
+            if (!ProjectArrhythmia.State.InGame || ProjectArrhythmia.State.InEditor)
             {
                 CoreHelper.LogError($"Cannot pause outside of the game!");
                 return;
@@ -235,7 +235,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// </summary>
         public static void Pause()
         {
-            if (!CoreHelper.Playing)
+            if (!ProjectArrhythmia.State.Playing)
                 return;
 
             RTBeatmap.Current?.Pause();
@@ -254,7 +254,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// <param name="onCooldownEnd">Action to run when the game is fully unpaused.</param>
         public static void UnPause(Action onCooldownEnd)
         {
-            if (!CoreHelper.Paused || !Current)
+            if (!ProjectArrhythmia.State.Paused || !Current)
                 return;
 
             Current.unpausing = true;
@@ -310,7 +310,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             },
             new ButtonElement
             {
-                check = () => CoreHelper.InStory,
+                check = () => ProjectArrhythmia.State.InStory,
                 name = "Return Button",
                 text = "<b> [ RETURN TO INTERFACE ]",
                 func = SceneHelper.LoadInterfaceScene,
@@ -318,7 +318,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             new ButtonElement
             {
                 name = "Arcade Button",
-                text = CoreHelper.InStory ? "<b> [ QUIT TO MAIN MENU ]" : "<b> [ RETURN TO ARCADE ]",
+                text = ProjectArrhythmia.State.InStory ? "<b> [ QUIT TO MAIN MENU ]" : "<b> [ RETURN TO ARCADE ]",
                 func = ArcadeHelper.QuitToArcade,
             },
             new ButtonElement
@@ -387,12 +387,12 @@ namespace BetterLegacy.Menus.UI.Interfaces
             },
             new InfoElement
             {
-                check = () => !CoreHelper.InStory || LevelManager.CurrentLevel.saveData && LevelManager.CurrentLevel.saveData.Completed,
+                check = () => !ProjectArrhythmia.State.InStory || LevelManager.CurrentLevel.saveData && LevelManager.CurrentLevel.saveData.Completed,
                 text = () => $"<align=right>Game Speed: {RTBeatmap.Current.gameSpeed.DisplayName}",
             },
             new InfoElement
             {
-                check = () => !CoreHelper.InStory || LevelManager.CurrentLevel.saveData && LevelManager.CurrentLevel.saveData.Completed,
+                check = () => !ProjectArrhythmia.State.InStory || LevelManager.CurrentLevel.saveData && LevelManager.CurrentLevel.saveData.Completed,
                 text = () => $"<align=right>Challenge mode: {RTBeatmap.Current.challengeMode.DisplayName}",
             },
             new InfoElement

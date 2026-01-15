@@ -5,7 +5,11 @@ using UnityEngine;
 
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
+using BetterLegacy.Editor.Managers;
+using BetterLegacy.Menus;
 
 using Version = BetterLegacy.Core.Data.Version;
 
@@ -317,6 +321,77 @@ namespace BetterLegacy.Core
             /// Prefab Objecs now have "parenting".
             /// </summary>
             public const string PREFAB_PARENTING = "25.6.1";
+        }
+
+        /// <summary>
+        /// Library of states of the game.
+        /// </summary>
+        public static class State
+        {
+            /// <summary>
+            /// For checking if the user is in the editor preview or in game.
+            /// </summary>
+            public static bool InEditorPreview => !EditorManager.inst || !EditorManager.inst.isEditing;
+
+            /// <summary>
+            /// For checking if the user is just in the editor.
+            /// </summary>
+            public static bool IsEditing => EditorManager.inst && EditorManager.inst.isEditing;
+
+            /// <summary>
+            /// If the user is in the editor.
+            /// </summary>
+            public static bool InEditor => EditorManager.inst;
+
+            /// <summary>
+            /// If the user is in game. Can include editor or arcade.
+            /// </summary>
+            public static bool InGame => GameManager.inst;
+
+            /// <summary>
+            /// If InterfaceController exists.
+            /// </summary>
+            public static bool InMenu => InterfaceManager.inst.CurrentInterface;
+
+            /// <summary>
+            /// If the player is in the Classic Arrhythmia story mode.
+            /// </summary>
+            public static bool InStory { get; set; }
+
+            /// <summary>
+            /// If the runtime is sequencing.
+            /// </summary>
+            public static bool Sequencing => Playing || Reversing;
+
+            /// <summary>
+            /// If the game is loading.
+            /// </summary>
+            public static bool Loading => GameManager.inst && GameManager.inst.gameState == GameManager.State.Loading;
+
+            /// <summary>
+            /// If the game is parsing.
+            /// </summary>
+            public static bool Parsing => GameManager.inst && GameManager.inst.gameState == GameManager.State.Parsing;
+
+            /// <summary>
+            /// If the game is playing.
+            /// </summary>
+            public static bool Playing => GameManager.inst && GameManager.inst.gameState == GameManager.State.Playing;
+
+            /// <summary>
+            /// If the game is reversing to checkpoint.
+            /// </summary>
+            public static bool Reversing => GameManager.inst && GameManager.inst.gameState == GameManager.State.Reversing;
+
+            /// <summary>
+            /// If the game is paused.
+            /// </summary>
+            public static bool Paused => GameManager.inst && GameManager.inst.gameState == GameManager.State.Paused;
+
+            /// <summary>
+            /// If the game is finished.
+            /// </summary>
+            public static bool Finished => GameManager.inst && GameManager.inst.gameState == GameManager.State.Finish;
         }
     }
 }

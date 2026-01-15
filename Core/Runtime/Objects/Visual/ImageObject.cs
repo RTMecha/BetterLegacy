@@ -41,7 +41,7 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
         /// </summary>
         public void UpdateCollider()
         {
-            if (CoreHelper.InEditor && EditorConfig.Instance.SelectImageObjectsInPreview.Value)
+            if (ProjectArrhythmia.State.InEditor && EditorConfig.Instance.SelectImageObjectsInPreview.Value)
             {
                 var collider = gameObject.AddComponent<BoxCollider2D>();
                 gameObject.tag = Tags.HELPER;

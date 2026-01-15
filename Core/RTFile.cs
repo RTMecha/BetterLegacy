@@ -41,7 +41,7 @@ namespace BetterLegacy.Core
             get => GameManager.inst?.basePath;
             set
             {
-                if (CoreHelper.InGame)
+                if (ProjectArrhythmia.State.InGame)
                     GameManager.inst.basePath = value;
             }
         }

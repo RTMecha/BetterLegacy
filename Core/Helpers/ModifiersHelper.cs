@@ -68,7 +68,7 @@ namespace BetterLegacy.Core.Helpers
             bool result = true;
             triggers.ForLoop(trigger =>
             {
-                if (trigger.compatibility.StoryOnly && !CoreHelper.InStory || trigger.active || trigger.triggerCount > 0 && trigger.runCount >= trigger.triggerCount)
+                if (trigger.compatibility.StoryOnly && !ProjectArrhythmia.State.InStory || trigger.active || trigger.triggerCount > 0 && trigger.runCount >= trigger.triggerCount)
                 {
                     trigger.triggered = false;
                     result = false;
@@ -181,7 +181,7 @@ namespace BetterLegacy.Core.Helpers
                     bool returned = false;
                     actions.ForLoop(act =>
                     {
-                        if (!act.enabled || act.compatibility.StoryOnly && !CoreHelper.InStory || returned || act.active || act.triggerCount > 0 && act.runCount >= act.triggerCount) // Continue if modifier is not constant and was already activated
+                        if (!act.enabled || act.compatibility.StoryOnly && !ProjectArrhythmia.State.InStory || returned || act.active || act.triggerCount > 0 && act.runCount >= act.triggerCount) // Continue if modifier is not constant and was already activated
                             return;
 
                         if (!act.running)
@@ -202,7 +202,7 @@ namespace BetterLegacy.Core.Helpers
                 // Deactivate both action and trigger modifiers
                 modifiers.ForLoop(modifier =>
                 {
-                    if (!modifier.enabled || modifier.compatibility.StoryOnly && !CoreHelper.InStory || !modifier.active && !modifier.running)
+                    if (!modifier.enabled || modifier.compatibility.StoryOnly && !ProjectArrhythmia.State.InStory || !modifier.active && !modifier.running)
                         return;
 
                     modifier.active = false;
@@ -215,7 +215,7 @@ namespace BetterLegacy.Core.Helpers
             }
             actions.ForLoop(act =>
             {
-                if (!act.enabled || act.compatibility.StoryOnly && !CoreHelper.InStory || act.active || act.triggerCount > 0 && act.runCount >= act.triggerCount)
+                if (!act.enabled || act.compatibility.StoryOnly && !ProjectArrhythmia.State.InStory || act.active || act.triggerCount > 0 && act.runCount >= act.triggerCount)
                     return;
 
                 if (!act.running)
@@ -248,7 +248,7 @@ namespace BetterLegacy.Core.Helpers
             while (loop.state.index < modifiers.Count)
             {
                 var modifier = modifiers[loop.state.index];
-                if (!modifier.enabled || modifier.compatibility.StoryOnly && !CoreHelper.InStory)
+                if (!modifier.enabled || modifier.compatibility.StoryOnly && !ProjectArrhythmia.State.InStory)
                 {
                     loop.state.index++;
                     continue;
@@ -2806,7 +2806,7 @@ namespace BetterLegacy.Core.Helpers
             if (!(modifier.active || !modifierLoop.state.result || modifier.triggerCount > 0 && runCount >= modifier.triggerCount))
                 modifyable.Modifiers.ForLoop(modifier =>
                 {
-                    if (modifier.compatibility.StoryOnly && !CoreHelper.InStory || !modifier.active && !modifier.running)
+                    if (modifier.compatibility.StoryOnly && !ProjectArrhythmia.State.InStory || !modifier.active && !modifier.running)
                         return;
 
                     modifier.active = false;
@@ -4258,7 +4258,7 @@ namespace BetterLegacy.Core.Helpers
         {
             var path = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables);
 
-            if (CoreHelper.IsEditing)
+            if (ProjectArrhythmia.State.IsEditing)
             {
                 if (!EditorConfig.Instance.ModifiersCanLoadLevels.Value)
                     return;
@@ -4280,7 +4280,7 @@ namespace BetterLegacy.Core.Helpers
                 return;
             }
 
-            if (CoreHelper.InEditor)
+            if (ProjectArrhythmia.State.InEditor)
                 return;
 
             var levelPath = RTFile.CombinePaths(RTFile.ApplicationDirectory, LevelManager.ListSlash, $"{path}");
@@ -4296,7 +4296,7 @@ namespace BetterLegacy.Core.Helpers
             if (string.IsNullOrEmpty(id) || id == "0" || id == "-1")
                 return;
 
-            if (!CoreHelper.InEditor)
+            if (!ProjectArrhythmia.State.InEditor)
             {
                 if (LevelManager.Levels.TryFind(x => x.id == id, out Level level))
                     LevelManager.Play(level);
@@ -4306,7 +4306,7 @@ namespace BetterLegacy.Core.Helpers
                 return;
             }
 
-            if (!CoreHelper.IsEditing)
+            if (!ProjectArrhythmia.State.IsEditing)
                 return;
 
             if (EditorLevelManager.inst.LevelPanels.TryFind(x => x.Item && x.Item.metadata is MetaData metaData && metaData.ID == id, out LevelPanel levelPanel))
@@ -4338,10 +4338,10 @@ namespace BetterLegacy.Core.Helpers
         {
             var path = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables);
 
-            if (!CoreHelper.InEditor)
+            if (!ProjectArrhythmia.State.InEditor)
             {
                 var filePath = RTFile.CombinePaths(RTFile.BasePath, path);
-                if (!CoreHelper.InEditor && (RTFile.FileExists(RTFile.CombinePaths(filePath, Level.LEVEL_LSB)) || RTFile.FileIsFormat(RTFile.CombinePaths(filePath, Level.LEVEL_VGD)) || RTFile.FileExists(filePath + FileFormat.ASSET.Dot())))
+                if (!ProjectArrhythmia.State.InEditor && (RTFile.FileExists(RTFile.CombinePaths(filePath, Level.LEVEL_LSB)) || RTFile.FileIsFormat(RTFile.CombinePaths(filePath, Level.LEVEL_VGD)) || RTFile.FileExists(filePath + FileFormat.ASSET.Dot())))
                     LevelManager.Load(filePath);
                 else
                     SoundManager.inst.PlaySound(DefaultSounds.Block);
@@ -4349,7 +4349,7 @@ namespace BetterLegacy.Core.Helpers
                 return;
             }
 
-            if (CoreHelper.IsEditing && RTFile.FileExists(RTFile.CombinePaths(RTFile.BasePath, EditorManager.inst.currentLoadedLevel, path, Level.LEVEL_LSB)))
+            if (ProjectArrhythmia.State.IsEditing && RTFile.FileExists(RTFile.CombinePaths(RTFile.BasePath, EditorManager.inst.currentLoadedLevel, path, Level.LEVEL_LSB)))
             {
                 if (!EditorConfig.Instance.ModifiersCanLoadLevels.Value)
                     return;
@@ -4372,7 +4372,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static void loadLevelPrevious(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (CoreHelper.InEditor)
+            if (ProjectArrhythmia.State.InEditor)
                 return;
 
             LevelManager.Play(LevelManager.PreviousLevel);
@@ -4380,7 +4380,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static void loadLevelHub(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (CoreHelper.InEditor)
+            if (ProjectArrhythmia.State.InEditor)
                 return;
 
             LevelManager.Play(LevelManager.Hub);
@@ -4389,14 +4389,14 @@ namespace BetterLegacy.Core.Helpers
         public static void loadLevelInCollection(Modifier modifier, ModifierLoop modifierLoop)
         {
             var id = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables);
-            if (!CoreHelper.InEditor && LevelManager.CurrentLevelCollection && LevelManager.CurrentLevelCollection.levels.TryFind(x => x.id == id, out Level level))
+            if (!ProjectArrhythmia.State.InEditor && LevelManager.CurrentLevelCollection && LevelManager.CurrentLevelCollection.levels.TryFind(x => x.id == id, out Level level))
                 LevelManager.Play(level);
         }
 
         public static void loadLevelCollection(Modifier modifier, ModifierLoop modifierLoop)
         {
             var id = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables);
-            if (CoreHelper.InEditor || !LevelManager.LevelCollections.TryFind(x => x.id == id, out LevelCollection levelCollection))
+            if (ProjectArrhythmia.State.InEditor || !LevelManager.LevelCollections.TryFind(x => x.id == id, out LevelCollection levelCollection))
                 return;
 
             var levelID = ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables);
@@ -4417,7 +4417,7 @@ namespace BetterLegacy.Core.Helpers
         {
             var levelInfo = new LevelInfo(ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables), ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables), ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables), ModifiersHelper.FormatStringVariables(modifier.GetValue(2, modifierLoop.variables), modifierLoop.variables), ModifiersHelper.FormatStringVariables(modifier.GetValue(3, modifierLoop.variables), modifierLoop.variables), ModifiersHelper.FormatStringVariables(modifier.GetValue(4, modifierLoop.variables), modifierLoop.variables));
 
-            if (!CoreHelper.InEditor)
+            if (!ProjectArrhythmia.State.InEditor)
             {
                 if (LevelManager.Levels.TryFind(x => x.id == levelInfo.arcadeID, out Level level))
                 {
@@ -4426,7 +4426,7 @@ namespace BetterLegacy.Core.Helpers
                 }
             }
 
-            if (CoreHelper.IsEditing)
+            if (ProjectArrhythmia.State.IsEditing)
             {
                 if (EditorLevelManager.inst.LevelPanels.TryFind(x => x.Item && x.Item.metadata is MetaData metaData && metaData.ID == levelInfo.arcadeID, out LevelPanel levelPanel))
                 {
@@ -4464,7 +4464,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static void endLevel(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (CoreHelper.InEditor)
+            if (ProjectArrhythmia.State.InEditor)
             {
                 if (!EditorManager.inst.isEditing && EditorConfig.Instance.ExitPreviewOnEnd.Value)
                     RTEditor.inst.ExitPreview();
@@ -4491,7 +4491,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static void setLevelEndFunc(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (CoreHelper.InEditor)
+            if (ProjectArrhythmia.State.InEditor)
                 return;
 
             var endLevelFunc = modifier.GetInt(0, 0, modifierLoop.variables);
@@ -4508,7 +4508,7 @@ namespace BetterLegacy.Core.Helpers
         {
             if (LevelManager.CurrentLevel)
                 modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = LevelManager.CurrentLevel.id;
-            if (CoreHelper.InEditor && EditorLevelManager.inst.CurrentLevel)
+            if (ProjectArrhythmia.State.InEditor && EditorLevelManager.inst.CurrentLevel)
                 modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = EditorLevelManager.inst.CurrentLevel.id;
         }
         
@@ -4516,7 +4516,7 @@ namespace BetterLegacy.Core.Helpers
         {
             if (LevelManager.CurrentLevel && LevelManager.CurrentLevel.metadata)
                 modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = LevelManager.CurrentLevel.metadata.beatmap.name;
-            if (CoreHelper.InEditor && EditorLevelManager.inst.CurrentLevel && EditorLevelManager.inst.CurrentLevel.metadata)
+            if (ProjectArrhythmia.State.InEditor && EditorLevelManager.inst.CurrentLevel && EditorLevelManager.inst.CurrentLevel.metadata)
                 modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = EditorLevelManager.inst.CurrentLevel.metadata.beatmap.name;
         }
 
@@ -4582,7 +4582,7 @@ namespace BetterLegacy.Core.Helpers
                 return;
 
             var level = LevelManager.CurrentLevel;
-            if (CoreHelper.InEditor && EditorLevelManager.inst)
+            if (ProjectArrhythmia.State.InEditor && EditorLevelManager.inst)
                 level = EditorLevelManager.inst.CurrentLevel;
 
             var val = level && level.saveData && level.saveData.Variables != null && level.saveData.Variables.TryGetValue(levelVariableName, out string value) ? value : defaultValue;
@@ -4593,7 +4593,7 @@ namespace BetterLegacy.Core.Helpers
         public static void setCurrentLevelVariable(Modifier modifier, ModifierLoop modifierLoop)
         {
             var level = LevelManager.CurrentLevel;
-            if (CoreHelper.InEditor && EditorLevelManager.inst)
+            if (ProjectArrhythmia.State.InEditor && EditorLevelManager.inst)
                 level = EditorLevelManager.inst.CurrentLevel;
             if (!level || !level.saveData || level.saveData.Variables == null)
                 return;
@@ -4608,7 +4608,7 @@ namespace BetterLegacy.Core.Helpers
         public static void removeCurrentLevelVariable(Modifier modifier, ModifierLoop modifierLoop)
         {
             var level = LevelManager.CurrentLevel;
-            if (CoreHelper.InEditor && EditorLevelManager.inst)
+            if (ProjectArrhythmia.State.InEditor && EditorLevelManager.inst)
                 level = EditorLevelManager.inst.CurrentLevel;
             if (!level || !level.saveData || level.saveData.Variables == null)
                 return;
@@ -4620,7 +4620,7 @@ namespace BetterLegacy.Core.Helpers
         public static void clearCurrentLevelVariables(Modifier modifier, ModifierLoop modifierLoop)
         {
             var level = LevelManager.CurrentLevel;
-            if (CoreHelper.InEditor && EditorLevelManager.inst)
+            if (ProjectArrhythmia.State.InEditor && EditorLevelManager.inst)
                 level = EditorLevelManager.inst.CurrentLevel;
             level?.saveData?.Variables?.Clear();
         }
@@ -7282,19 +7282,19 @@ namespace BetterLegacy.Core.Helpers
 
             if (enabled)
                 CursorManager.inst.ShowCursor();
-            else if (CoreHelper.InEditorPreview)
+            else if (ProjectArrhythmia.State.InEditorPreview)
                 CursorManager.inst.HideCursor();
         }
 
         public static void hideMouse(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (CoreHelper.InEditorPreview)
+            if (ProjectArrhythmia.State.InEditorPreview)
                 CursorManager.inst.HideCursor();
         }
 
         public static void setMousePosition(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (CoreHelper.IsEditing)
+            if (ProjectArrhythmia.State.IsEditing)
                 return;
 
             var screenScale = Display.main.systemWidth / 1920f;
@@ -8727,13 +8727,13 @@ namespace BetterLegacy.Core.Helpers
                         useDynamicScale = true,
                     },
                     obj = beatmapObject,
-                    isEditing = CoreHelper.IsEditing,
+                    isEditing = ProjectArrhythmia.State.IsEditing,
                 };
                 renderer.material.SetTexture("_MainTex", cache.renderTexture);
                 DestroyModifierResult.Init(solidObject.gameObject, modifier);
                 return cache;
             });
-            if (result.width != width || result.height != height || result.isEditing != CoreHelper.IsEditing)
+            if (result.width != width || result.height != height || result.isEditing != ProjectArrhythmia.State.IsEditing)
             {
                 CoreHelper.Destroy(result.renderTexture);
 
@@ -8748,7 +8748,7 @@ namespace BetterLegacy.Core.Helpers
                         useDynamicScale = true,
                     },
                     obj = beatmapObject,
-                    isEditing = CoreHelper.IsEditing,
+                    isEditing = ProjectArrhythmia.State.IsEditing,
                 };
                 renderer.material.SetTexture("_MainTex", result.renderTexture);
                 modifier.Result = result;
@@ -11985,7 +11985,7 @@ namespace BetterLegacy.Core.Helpers
         public static void unlockAchievement(Modifier modifier, ModifierLoop modifierLoop)
         {
             var id = modifier.GetValue(0, modifierLoop.variables);
-            if (CoreHelper.InEditor)
+            if (ProjectArrhythmia.State.InEditor)
             {
                 if (!EditorConfig.Instance.ModifiersDisplayAchievements.Value)
                     return;
@@ -12030,7 +12030,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static void saveLevelRank(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (CoreHelper.InEditor || modifier.constant || !LevelManager.CurrentLevel)
+            if (ProjectArrhythmia.State.InEditor || modifier.constant || !LevelManager.CurrentLevel)
                 return;
 
             LevelManager.UpdateCurrentLevelProgress();
@@ -12495,7 +12495,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static void loadInterface(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (CoreHelper.IsEditing) // don't want interfaces to load in editor
+            if (ProjectArrhythmia.State.IsEditing) // don't want interfaces to load in editor
             {
                 EditorManager.inst.DisplayNotification($"Cannot load interface in the editor!", 1f, EditorManager.NotificationType.Warning);
                 return;
@@ -12530,13 +12530,13 @@ namespace BetterLegacy.Core.Helpers
         public static void exitInterface(Modifier modifier, ModifierLoop modifierLoop)
         {
             InterfaceManager.inst.CloseMenus();
-            if (CoreHelper.Paused)
+            if (ProjectArrhythmia.State.Paused)
                 RTBeatmap.Current.Resume();
         }
 
         public static void pauseLevel(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (CoreHelper.InEditor)
+            if (ProjectArrhythmia.State.InEditor)
             {
                 EditorManager.inst.DisplayNotification("Cannot pause in the editor. This modifier only works in the Arcade.", 3f, EditorManager.NotificationType.Warning);
                 return;
@@ -12547,7 +12547,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static void quitToMenu(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (CoreHelper.InEditor && !EditorManager.inst.isEditing && EditorConfig.Instance.ModifiersCanLoadLevels.Value)
+            if (ProjectArrhythmia.State.InEditor && !EditorManager.inst.isEditing && EditorConfig.Instance.ModifiersCanLoadLevels.Value)
             {
                 string str = RTFile.BasePath;
                 if (EditorConfig.Instance.ModifiersSavesBackup.Value)
@@ -12561,13 +12561,13 @@ namespace BetterLegacy.Core.Helpers
                 EditorManager.inst.QuitToMenu();
             }
 
-            if (!CoreHelper.InEditor)
+            if (!ProjectArrhythmia.State.InEditor)
                 ArcadeHelper.QuitToMainMenu();
         }
 
         public static void quitToArcade(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (CoreHelper.InEditor && !EditorManager.inst.isEditing && EditorConfig.Instance.ModifiersCanLoadLevels.Value)
+            if (ProjectArrhythmia.State.InEditor && !EditorManager.inst.isEditing && EditorConfig.Instance.ModifiersCanLoadLevels.Value)
             {
                 string str = RTFile.BasePath;
                 if (EditorConfig.Instance.ModifiersSavesBackup.Value)
@@ -12583,7 +12583,7 @@ namespace BetterLegacy.Core.Helpers
                 return;
             }
 
-            if (!CoreHelper.InEditor)
+            if (!ProjectArrhythmia.State.InEditor)
                 ArcadeHelper.QuitToArcade();
         }
 
@@ -12654,7 +12654,7 @@ namespace BetterLegacy.Core.Helpers
         {
             var text = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables);
 
-            if (CoreHelper.InEditor)
+            if (ProjectArrhythmia.State.InEditor)
                 EditorManager.inst.DisplayNotification(
                     /*text: */ text,
                     /*time: */ modifier.GetFloat(1, 0.5f, modifierLoop.variables),
@@ -12676,13 +12676,13 @@ namespace BetterLegacy.Core.Helpers
             try
             {
                 CoreHelper.UpdateDiscordStatus(
-                    string.Format(state, MetaData.Current.song.title, $"{(!CoreHelper.InEditor ? "Game" : "Editor")}", $"{(!CoreHelper.InEditor ? "Level" : "Editing")}", $"{(!CoreHelper.InEditor ? "Arcade" : "Editor")}"),
-                    string.Format(details, MetaData.Current.song.title, $"{(!CoreHelper.InEditor ? "Game" : "Editor")}", $"{(!CoreHelper.InEditor ? "Level" : "Editing")}", $"{(!CoreHelper.InEditor ? "Arcade" : "Editor")}"),
+                    string.Format(state, MetaData.Current.song.title, $"{(!ProjectArrhythmia.State.InEditor ? "Game" : "Editor")}", $"{(!ProjectArrhythmia.State.InEditor ? "Level" : "Editing")}", $"{(!ProjectArrhythmia.State.InEditor ? "Arcade" : "Editor")}"),
+                    string.Format(details, MetaData.Current.song.title, $"{(!ProjectArrhythmia.State.InEditor ? "Game" : "Editor")}", $"{(!ProjectArrhythmia.State.InEditor ? "Level" : "Editing")}", $"{(!ProjectArrhythmia.State.InEditor ? "Arcade" : "Editor")}"),
                     discordSubIcons[Mathf.Clamp(discordSubIcon, 0, discordSubIcons.Length - 1)], discordIcons[Mathf.Clamp(discordIcon, 0, discordIcons.Length - 1)]);
             }
             catch
             {
-                CoreHelper.UpdateDiscordStatus((CoreHelper.InEditor ? "Editing: " : "Level: ") + MetaData.Current.beatmap.name, CoreHelper.InEditor ? "In Editor" : "In Arcade", CoreHelper.InEditor ? "editor" : "arcade");
+                CoreHelper.UpdateDiscordStatus((ProjectArrhythmia.State.InEditor ? "Editing: " : "Level: ") + MetaData.Current.beatmap.name, ProjectArrhythmia.State.InEditor ? "In Editor" : "In Arcade", ProjectArrhythmia.State.InEditor ? "editor" : "arcade");
             }
         }
 
@@ -12985,64 +12985,64 @@ namespace BetterLegacy.Core.Helpers
 
         public static void loadSceneDEVONLY(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (CoreHelper.InStory)
+            if (ProjectArrhythmia.State.InStory)
                 SceneManager.inst.LoadScene(modifier.GetValue(0, modifierLoop.variables), modifier.values.Count > 1 && modifier.GetBool(1, true, modifierLoop.variables));
         }
 
         public static void loadStoryLevelDEVONLY(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (CoreHelper.InStory)
+            if (ProjectArrhythmia.State.InStory)
                 Story.StoryManager.inst.Play(modifier.GetInt(1, 0, modifierLoop.variables), modifier.GetInt(2, 0, modifierLoop.variables), modifier.GetInt(4, 0, modifierLoop.variables), modifier.GetBool(0, false, modifierLoop.variables), modifier.GetBool(3, false, modifierLoop.variables));
         }
 
         public static void storySaveBoolDEVONLY(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (CoreHelper.InStory)
+            if (ProjectArrhythmia.State.InStory)
                 Story.StoryManager.inst.CurrentSave.SaveBool(modifier.GetValue(0, modifierLoop.variables), modifier.GetBool(1, false, modifierLoop.variables));
         }
 
         public static void storySaveIntDEVONLY(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (CoreHelper.InStory)
+            if (ProjectArrhythmia.State.InStory)
                 Story.StoryManager.inst.CurrentSave.SaveInt(modifier.GetValue(0, modifierLoop.variables), modifier.GetInt(1, 0, modifierLoop.variables));
         }
 
         public static void storySaveFloatDEVONLY(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (CoreHelper.InStory)
+            if (ProjectArrhythmia.State.InStory)
                 Story.StoryManager.inst.CurrentSave.SaveFloat(modifier.GetValue(0, modifierLoop.variables), modifier.GetFloat(1, 0f, modifierLoop.variables));
         }
 
         public static void storySaveStringDEVONLY(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (CoreHelper.InStory)
+            if (ProjectArrhythmia.State.InStory)
                 Story.StoryManager.inst.CurrentSave.SaveString(modifier.GetValue(0, modifierLoop.variables), modifier.GetValue(1, modifierLoop.variables));
         }
 
         public static void storySaveIntVariableDEVONLY(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (CoreHelper.InStory && modifierLoop.reference is IModifyable modifyable)
+            if (ProjectArrhythmia.State.InStory && modifierLoop.reference is IModifyable modifyable)
                 Story.StoryManager.inst.CurrentSave.SaveInt(modifier.GetValue(0, modifierLoop.variables), modifyable.IntVariable);
         }
 
         public static void getStorySaveBoolDEVONLY(Modifier modifier, ModifierLoop modifierLoop)
         {
-            modifierLoop.variables[modifier.GetValue(0)] = !CoreHelper.InStory ? modifier.GetBool(2, false, modifierLoop.variables).ToString() : Story.StoryManager.inst.CurrentSave.LoadBool(modifier.GetValue(1, modifierLoop.variables), modifier.GetBool(2, false, modifierLoop.variables)).ToString();
+            modifierLoop.variables[modifier.GetValue(0)] = !ProjectArrhythmia.State.InStory ? modifier.GetBool(2, false, modifierLoop.variables).ToString() : Story.StoryManager.inst.CurrentSave.LoadBool(modifier.GetValue(1, modifierLoop.variables), modifier.GetBool(2, false, modifierLoop.variables)).ToString();
         }
 
         public static void getStorySaveIntDEVONLY(Modifier modifier, ModifierLoop modifierLoop)
         {
-            modifierLoop.variables[modifier.GetValue(0)] = !CoreHelper.InStory ? modifier.GetInt(2, 0, modifierLoop.variables).ToString() : Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(1, modifierLoop.variables), modifier.GetInt(2, 0, modifierLoop.variables)).ToString();
+            modifierLoop.variables[modifier.GetValue(0)] = !ProjectArrhythmia.State.InStory ? modifier.GetInt(2, 0, modifierLoop.variables).ToString() : Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(1, modifierLoop.variables), modifier.GetInt(2, 0, modifierLoop.variables)).ToString();
         }
 
         public static void getStorySaveFloatDEVONLY(Modifier modifier, ModifierLoop modifierLoop)
         {
-            modifierLoop.variables[modifier.GetValue(0)] = !CoreHelper.InStory ? modifier.GetFloat(2, 0f, modifierLoop.variables).ToString() : Story.StoryManager.inst.CurrentSave.LoadFloat(modifier.GetValue(1, modifierLoop.variables), modifier.GetFloat(2, 0f, modifierLoop.variables)).ToString();
+            modifierLoop.variables[modifier.GetValue(0)] = !ProjectArrhythmia.State.InStory ? modifier.GetFloat(2, 0f, modifierLoop.variables).ToString() : Story.StoryManager.inst.CurrentSave.LoadFloat(modifier.GetValue(1, modifierLoop.variables), modifier.GetFloat(2, 0f, modifierLoop.variables)).ToString();
         }
 
         public static void getStorySaveStringDEVONLY(Modifier modifier, ModifierLoop modifierLoop)
         {
-            modifierLoop.variables[modifier.GetValue(0)] = !CoreHelper.InStory ? modifier.GetValue(2, modifierLoop.variables) : Story.StoryManager.inst.CurrentSave.LoadString(modifier.GetValue(1, modifierLoop.variables), modifier.GetValue(2, modifierLoop.variables)).ToString();
+            modifierLoop.variables[modifier.GetValue(0)] = !ProjectArrhythmia.State.InStory ? modifier.GetValue(2, modifierLoop.variables) : Story.StoryManager.inst.CurrentSave.LoadString(modifier.GetValue(1, modifierLoop.variables), modifier.GetValue(2, modifierLoop.variables)).ToString();
         }
 
         public static void exampleEnableDEVONLY(Modifier modifier, ModifierLoop modifierLoop)
@@ -14390,7 +14390,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static bool onLevelRestart(Modifier modifier, ModifierLoop modifierLoop) => false;
 
-        public static bool onLevelRewind(Modifier modifier, ModifierLoop modifierLoop) => CoreHelper.Reversing;
+        public static bool onLevelRewind(Modifier modifier, ModifierLoop modifierLoop) => ProjectArrhythmia.State.Reversing;
 
         public static bool levelUnlocked(Modifier modifier, ModifierLoop modifierLoop)
         {
@@ -14400,13 +14400,13 @@ namespace BetterLegacy.Core.Helpers
 
         public static bool levelCompleted(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return CoreHelper.InEditor || LevelManager.CurrentLevel && LevelManager.CurrentLevel.saveData && LevelManager.CurrentLevel.saveData.Completed;
+            return ProjectArrhythmia.State.InEditor || LevelManager.CurrentLevel && LevelManager.CurrentLevel.saveData && LevelManager.CurrentLevel.saveData.Completed;
         }
 
         public static bool levelCompletedOther(Modifier modifier, ModifierLoop modifierLoop)
         {
             var id = modifier.GetValue(0, modifierLoop.variables);
-            return CoreHelper.InEditor || LevelManager.Levels.TryFind(x => x.id == id, out Level level) && level.saveData && level.saveData.Completed;
+            return ProjectArrhythmia.State.InEditor || LevelManager.Levels.TryFind(x => x.id == id, out Level level) && level.saveData && level.saveData.Completed;
         }
 
         public static bool levelExists(Modifier modifier, ModifierLoop modifierLoop)
@@ -14731,7 +14731,7 @@ namespace BetterLegacy.Core.Helpers
         {
             if (!modifier.constant)
             {
-                if (CoreHelper.InEditor)
+                if (ProjectArrhythmia.State.InEditor)
                     EditorManager.inst.DisplayNotification($"Constant has to be on in order for await modifiers to work!", 4f, EditorManager.NotificationType.Error);
                 return false;
             }
@@ -14773,9 +14773,9 @@ namespace BetterLegacy.Core.Helpers
                 prefabObject.Tags.Contains(modifier.GetValue(0, modifierLoop.variables)) || modifierLoop.reference is IModifyable modifyable && modifyable.Tags.Contains(modifier.GetValue(0, modifierLoop.variables));
         }
 
-        public static bool inEditor(Modifier modifier, ModifierLoop modifierLoop) => CoreHelper.InEditor;
+        public static bool inEditor(Modifier modifier, ModifierLoop modifierLoop) => ProjectArrhythmia.State.InEditor;
 
-        public static bool isEditing(Modifier modifier, ModifierLoop modifierLoop) => CoreHelper.IsEditing;
+        public static bool isEditing(Modifier modifier, ModifierLoop modifierLoop) => ProjectArrhythmia.State.IsEditing;
 
         public static bool requireSignal(Modifier modifier, ModifierLoop modifierLoop)
         {

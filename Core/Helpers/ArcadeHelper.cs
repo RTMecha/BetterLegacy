@@ -40,7 +40,7 @@ namespace BetterLegacy.Core.Helpers
         /// <summary>
         /// If the song has reached the end.
         /// </summary>
-        public static bool SongEnded => CoreHelper.InGame && AudioManager.inst.CurrentAudioSource.time >= GameManager.inst.songLength - (GameData.Current?.data?.level?.LevelEndOffset ?? 0.1f) && (!GameData.Current || !GameData.Current.data || !GameData.Current.data.level || GameData.Current.data.level.autoEndLevel);
+        public static bool SongEnded => ProjectArrhythmia.State.InGame && AudioManager.inst.CurrentAudioSource.time >= GameManager.inst.songLength - (GameData.Current?.data?.level?.LevelEndOffset ?? 0.1f) && (!GameData.Current || !GameData.Current.data || !GameData.Current.data.level || GameData.Current.data.level.autoEndLevel);
 
         /// <summary>
         /// Replays the level during the End Level Menu.
@@ -170,7 +170,7 @@ namespace BetterLegacy.Core.Helpers
         /// </summary>
         public static void RestartLevel()
         {
-            if (CoreHelper.InEditor || !CoreHelper.InGame)
+            if (ProjectArrhythmia.State.InEditor || !ProjectArrhythmia.State.InGame)
                 return;
 
             if (endedLevel)
@@ -207,7 +207,7 @@ namespace BetterLegacy.Core.Helpers
 
             ProjectArrhythmia.Window.ResetTitle();
 
-            if (CoreHelper.InEditor)
+            if (ProjectArrhythmia.State.InEditor)
             {
                 ArcadeManager.inst.skippedLoad = false;
                 ArcadeManager.inst.forcedSkip = false;

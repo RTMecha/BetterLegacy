@@ -394,7 +394,7 @@ namespace BetterLegacy.Configs
 
         #region Camera
 
-        public bool EditorCameraEnabled => CoreHelper.InEditor && EditorCamEnabled.Value;
+        public bool EditorCameraEnabled => ProjectArrhythmia.State.InEditor && EditorCamEnabled.Value;
 
         /// <summary>
         /// Enabling this will disable all regular Camera events (move, zoom, etc) and allow you to move the camera around freely. WASD to move, + and - to zoom and numpad 4 / numpad 6 to rotate.
@@ -1180,7 +1180,7 @@ namespace BetterLegacy.Configs
 
         void MarkerLineDottedChanged()
         {
-            if (!CoreHelper.InEditor)
+            if (!ProjectArrhythmia.State.InEditor)
                 return;
 
             for (int i = 0; i < RTMarkerEditor.inst.timelineMarkers.Count; i++)
@@ -1189,7 +1189,7 @@ namespace BetterLegacy.Configs
 
         void NotificationChanged()
         {
-            if (CoreHelper.InEditor)
+            if (ProjectArrhythmia.State.InEditor)
                 RTEditor.inst.UpdateNotificationConfig();
         }
 
@@ -1217,7 +1217,7 @@ namespace BetterLegacy.Configs
         {
             RTThemeEditor.eventThemesPerPage = ThemesEventKeyframePerPage.Value;
 
-            if (!CoreHelper.InEditor)
+            if (!ProjectArrhythmia.State.InEditor)
                 return;
 
             var p = Mathf.Clamp(RTThemeEditor.inst.Dialog.Page, 0, ThemeManager.inst.ThemeCount / RTThemeEditor.eventThemesPerPage).ToString();
@@ -1235,7 +1235,7 @@ namespace BetterLegacy.Configs
 
         void AutosaveChanged()
         {
-            if (CoreHelper.InEditor && EditorManager.inst.hasLoadedLevel)
+            if (ProjectArrhythmia.State.InEditor && EditorManager.inst.hasLoadedLevel)
                 EditorLevelManager.inst.SetAutosave();
         }
 
@@ -1318,7 +1318,7 @@ namespace BetterLegacy.Configs
         {
             SetPreviewConfig();
 
-            if (!CoreHelper.InEditor)
+            if (!ProjectArrhythmia.State.InEditor)
                 return;
 
             EditorManager.inst.zoomBounds = MainZoomBounds.Value;
@@ -1341,7 +1341,7 @@ namespace BetterLegacy.Configs
             SelectObjectScaler.ScalerOffset = ObjectDraggerScalerOffset.Value;
             SelectObjectScaler.ScalerScale = ObjectDraggerScalerScale.Value;
 
-            if ((showEmpties != ShowEmpties.Value || OnlyShowDamagable.Value != OnlyShowDamagable.Value) && CoreHelper.InEditor)
+            if ((showEmpties != ShowEmpties.Value || OnlyShowDamagable.Value != OnlyShowDamagable.Value) && ProjectArrhythmia.State.InEditor)
                 RTLevel.Reinit();
 
             showEmpties = ShowEmpties.Value;
@@ -1351,7 +1351,7 @@ namespace BetterLegacy.Configs
 
         void TimelineColorsChanged()
         {
-            if (!CoreHelper.InEditor)
+            if (!ProjectArrhythmia.State.InEditor)
                 return;
 
             EditorTimeline.inst.UpdateTimelineColors();

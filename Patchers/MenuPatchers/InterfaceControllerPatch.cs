@@ -23,7 +23,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool StartPrefix(InterfaceController __instance)
         {
-            if (CoreHelper.InEditor)
+            if (ProjectArrhythmia.State.InEditor)
                 __instance.gameObject.SetActive(false);
 
             try

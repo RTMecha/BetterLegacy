@@ -4,6 +4,7 @@ using UnityEngine;
 
 using LSFunctions;
 
+using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
@@ -25,7 +26,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
         public ControllerDisconnectedMenu(int index)
         {
-            if (!CoreHelper.InGame || CoreHelper.InEditor)
+            if (!ProjectArrhythmia.State.InGame || ProjectArrhythmia.State.InEditor)
             {
                 CoreHelper.LogError($"Cannot pause outside of the game!");
                 return;

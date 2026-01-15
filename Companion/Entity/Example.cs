@@ -377,7 +377,7 @@ namespace BetterLegacy.Companion.Entity
         /// </summary>
         public virtual void Enter()
         {
-            if (CoreHelper.InEditor)
+            if (ProjectArrhythmia.State.InEditor)
                 chatBubble?.SayDialogue(ExampleChatBubble.Dialogues.SPAWN);
             else
                 chatBubble?.SayDialogue(ExampleChatBubble.Dialogues.GREETING);

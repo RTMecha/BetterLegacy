@@ -53,7 +53,7 @@ namespace BetterLegacy.Core.Managers
 
         public override void OnTick()
         {
-            if (!CoreHelper.Playing && !CoreHelper.Reversing && !GameData.Current)
+            if (!ProjectArrhythmia.State.Sequencing || !GameData.Current)
                 return;
 
             if (!AudioManager.inst.CurrentAudioSource.clip || !CoreConfig.Instance.AllowCustomTextFormatting.Value)

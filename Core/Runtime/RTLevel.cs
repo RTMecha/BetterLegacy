@@ -311,7 +311,7 @@ namespace BetterLegacy.Core.Runtime
             try
             {
                 var level = LevelManager.CurrentLevel;
-                if (CoreHelper.InEditor)
+                if (ProjectArrhythmia.State.InEditor)
                     level = Editor.Managers.EditorLevelManager.inst?.CurrentLevel;
                 level?.saveData?.UpdateState();
                 LevelManager.CurrentLevelCollection?.saveData?.UpdateState();
@@ -476,7 +476,7 @@ namespace BetterLegacy.Core.Runtime
             GameData.Current.events[currentEvent] = GameData.Current.events[currentEvent].OrderBy(x => x.time).ToList();
             //GameData.Current.events[currentEvent].Sort((a, b) => a.time.CompareTo(b.time));
 
-            if (CoreHelper.InEditor)
+            if (ProjectArrhythmia.State.InEditor)
                 GameData.Current.events[currentEvent].ForLoop((eventKeyframe, index) => eventKeyframe.timelineKeyframe.Index = index);
         }
 
@@ -505,7 +505,7 @@ namespace BetterLegacy.Core.Runtime
                 GameData.Current.events[i] = GameData.Current.events[i].OrderBy(x => x.time).ToList();
                 //GameData.Current.events[i].Sort((a, b) => a.time.CompareTo(b.time));
 
-                if (CoreHelper.InEditor)
+                if (ProjectArrhythmia.State.InEditor)
                     GameData.Current.events[i].ForLoop((eventKeyframe, index) => eventKeyframe.timelineKeyframe.Index = index);
             }
         }

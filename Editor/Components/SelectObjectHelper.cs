@@ -426,7 +426,7 @@ namespace BetterLegacy.Editor.Components
 
         public void BeginDrag(BaseEventData eventData)
         {
-            if (!CoreHelper.IsEditing)
+            if (!ProjectArrhythmia.State.IsEditing)
                 return;
 
             var vector = new Vector3(Input.mousePosition.x, Input.mousePosition.y, transform.localPosition.z);
@@ -447,7 +447,7 @@ namespace BetterLegacy.Editor.Components
         public void Drag(BaseEventData eventData)
         {
             dragTime -= Time.deltaTime;
-            if (!CoreHelper.IsEditing || dragTime > 0f)
+            if (!ProjectArrhythmia.State.IsEditing || dragTime > 0f)
                 return;
 
             var vector = new Vector3(Input.mousePosition.x, Input.mousePosition.y, transform.localPosition.z);
@@ -579,7 +579,7 @@ namespace BetterLegacy.Editor.Components
             }
         }
 
-        public bool Active => CoreHelper.IsEditing && EditorConfig.Instance.ObjectDraggerHelper.Value &&
+        public bool Active => ProjectArrhythmia.State.IsEditing && EditorConfig.Instance.ObjectDraggerHelper.Value &&
             (ObjectEditor.inst && ObjectEditor.inst.Dialog && ObjectEditor.inst.Dialog.IsCurrent ||
             RTPrefabEditor.inst && RTPrefabEditor.inst.PrefabObjectEditor && RTPrefabEditor.inst.PrefabObjectEditor.IsCurrent ||
             RTBackgroundEditor.inst && RTBackgroundEditor.inst.Dialog && RTBackgroundEditor.inst.Dialog.IsCurrent);

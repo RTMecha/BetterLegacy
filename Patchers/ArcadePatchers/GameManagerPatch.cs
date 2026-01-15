@@ -99,9 +99,9 @@ namespace BetterLegacy.Patchers
         static bool FixedUpdatePrefix()
         {
             if (DataManager.inst && GameData.Current && GameData.Current.data && GameData.Current.data.checkpoints != null &&
-                !GameData.Current.data.checkpoints.IsEmpty() && (CoreHelper.Playing || CoreHelper.Reversing))
+                !GameData.Current.data.checkpoints.IsEmpty() && ProjectArrhythmia.State.Sequencing)
             {
-                if (!CoreHelper.Reversing)
+                if (!ProjectArrhythmia.State.Reversing)
                     Instance.UpcomingCheckpointIndex = GameData.Current.data.checkpoints.FindLastIndex(x => x.time < AudioManager.inst.CurrentAudioSource.time);
 
                 if (Instance.timeline && AudioManager.inst.CurrentAudioSource.clip)
@@ -113,7 +113,7 @@ namespace BetterLegacy.Patchers
                         Instance.UpdateTimeline();
                 }
             }
-            Instance.playerGUI.SetActive(CoreHelper.InEditorPreview);
+            Instance.playerGUI.SetActive(ProjectArrhythmia.State.InEditorPreview);
             return false;
         }
 
@@ -167,7 +167,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool PausePrefix()
         {
-            if (!CoreHelper.Playing)
+            if (!ProjectArrhythmia.State.Playing)
                 return false;
 
             Instance.menuUI.GetComponentInChildren<Image>().enabled = true;
@@ -181,7 +181,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool UnPausePrefix()
         {
-            if (!CoreHelper.Paused)
+            if (!ProjectArrhythmia.State.Paused)
                 return false;
             CursorManager.inst.HideCursor();
 

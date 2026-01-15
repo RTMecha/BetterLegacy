@@ -184,7 +184,7 @@ namespace BetterLegacy.Editor.Data
 
             float audioTime = AudioManager.inst.CurrentAudioSource.time;
 
-            if (CoreHelper.InEditor)
+            if (ProjectArrhythmia.State.InEditor)
             {
                 if (EditorConfig.Instance.BPMSnapsPasted.Value && RTEditor.inst.editorInfo.bpmSnapActive)
                     audioTime = RTEditor.SnapToBPM(audioTime);
@@ -259,7 +259,7 @@ namespace BetterLegacy.Editor.Data
                     unparentedPastedObjects.Add(beatmapObjectCopy);
                 expanded.BeatmapObjects.Add(beatmapObjectCopy);
 
-                if (!CoreHelper.InEditor)
+                if (!ProjectArrhythmia.State.InEditor)
                     continue;
 
                 var timelineObject = new TimelineObject(beatmapObjectCopy);
@@ -322,7 +322,7 @@ namespace BetterLegacy.Editor.Data
 
                 RTLevel.Current?.UpdateBackgroundObject(backgroundObjectCopy, recalculate: false);
 
-                if (!CoreHelper.InEditor)
+                if (!ProjectArrhythmia.State.InEditor)
                     continue;
 
                 var timelineObject = new TimelineObject(backgroundObjectCopy);
@@ -375,7 +375,7 @@ namespace BetterLegacy.Editor.Data
 
                 RTLevel.Current?.UpdatePrefab(prefabObjectCopy, recalculate: false);
 
-                if (!CoreHelper.InEditor)
+                if (!ProjectArrhythmia.State.InEditor)
                     continue;
 
                 var timelineObject = new TimelineObject(prefabObjectCopy);
@@ -398,7 +398,7 @@ namespace BetterLegacy.Editor.Data
 
             CoreHelper.StopAndLogStopwatch(sw);
 
-            if (!CoreHelper.InEditor)
+            if (!ProjectArrhythmia.State.InEditor)
             {
                 sw = null;
                 result?.Invoke(expanded);

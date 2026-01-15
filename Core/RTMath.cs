@@ -142,7 +142,7 @@ namespace BetterLegacy.Core
         public static void RegisterVariableFunctions(EvaluationContext context)
         {
             // In-game only variables and functions
-            if (CoreHelper.InGame)
+            if (ProjectArrhythmia.State.InGame)
             {
                 if (RTBeatmap.Current)
                 {

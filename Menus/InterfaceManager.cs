@@ -118,10 +118,10 @@ namespace BetterLegacy.Menus
         /// <param name="loop">If the song should loop.</param>
         public void PlayMusic(AudioClip music, bool allowSame = false, float fadeDuration = 1f, bool loop = true)
         {
-            if (CoreHelper.InEditor)
+            if (ProjectArrhythmia.State.InEditor)
                 return;
 
-            if (!CoreHelper.InGame)
+            if (!ProjectArrhythmia.State.InGame)
             {
                 try
                 {
@@ -164,7 +164,7 @@ namespace BetterLegacy.Menus
         /// </summary>
         public void StopMusic()
         {
-            if (!CoreHelper.InGame)
+            if (!ProjectArrhythmia.State.InGame)
                 AudioManager.inst.StopMusic();
 
             if (!CurrentAudioSource.clip)
@@ -184,7 +184,7 @@ namespace BetterLegacy.Menus
         /// </summary>
         public void PlayMusic()
         {
-            if (CoreHelper.InEditor)
+            if (ProjectArrhythmia.State.InEditor)
                 return;
 
             if (!MenuConfig.Instance.PlayCustomMusic.Value)
@@ -243,7 +243,7 @@ namespace BetterLegacy.Menus
             var name = Path.GetFileName(songFileCurrent);
             var audioType = RTFile.GetAudioType(songFileCurrent);
 
-            if (CoreHelper.InGame ? (CurrentAudioSource.clip && name == CurrentAudioSource.clip.name) : (AudioManager.inst.CurrentAudioSource.clip && name == AudioManager.inst.CurrentAudioSource.clip.name))
+            if (ProjectArrhythmia.State.InGame ? (CurrentAudioSource.clip && name == CurrentAudioSource.clip.name) : (AudioManager.inst.CurrentAudioSource.clip && name == AudioManager.inst.CurrentAudioSource.clip.name))
             {
                 CoreHelper.LogWarning($"Audio \"{name}\" is the same as the current.");
                 return;
@@ -257,7 +257,7 @@ namespace BetterLegacy.Menus
 
             CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip($"file://{songFileCurrent}", audioType, audioClip =>
             {
-                if (CoreHelper.InEditor)
+                if (ProjectArrhythmia.State.InEditor)
                     return;
 
                 SetMusic(audioClip, name);
@@ -408,7 +408,7 @@ namespace BetterLegacy.Menus
         public void StartupStoryInterface(int chapterIndex, int levelIndex)
         {
             Clear(false, false);
-            CoreHelper.InStory = true;
+            ProjectArrhythmia.State.InStory = true;
 
             if (Companion.Entity.Example.Current && Companion.Entity.Example.Current.model)
                 Companion.Entity.Example.Current.model.SetActive(true); // if Example was disabled
@@ -475,7 +475,7 @@ namespace BetterLegacy.Menus
         public void StartupInterface()
         {
             Clear(false, false);
-            CoreHelper.InStory = false;
+            ProjectArrhythmia.State.InStory = false;
 
             Companion.Entity.Example.Current?.model?.SetActive(true); // if Example was disabled
 
@@ -834,7 +834,7 @@ namespace BetterLegacy.Menus
 
                             RTBeatmap.Current?.Resume();
 
-                            if (CoreHelper.InGame)
+                            if (ProjectArrhythmia.State.InGame)
                                 inst.interfaces.RemoveAll(x => x.id == id);
 
                             return;
@@ -881,7 +881,7 @@ namespace BetterLegacy.Menus
                     // Reloads the interface and sets it to the main menu. Only recommended if you want to return to the main menu and unload every other interface.
                     // Function has no parameters.
                     case "Reload": {
-                            if (CoreHelper.InGame) // don't allow reload in game
+                            if (ProjectArrhythmia.State.InGame) // don't allow reload in game
                                 return;
 
                             LegacyPlugin.ParseProfile();
@@ -1333,7 +1333,7 @@ namespace BetterLegacy.Menus
 
                     // Pauses the current music if it's currently playing.
                     case "PauseMusic": {
-                            if (CoreHelper.InGame && parameters != null && (parameters.IsArray && !parameters[0].AsBool || parameters.IsObject && !parameters["game_audio"].AsBool))
+                            if (ProjectArrhythmia.State.InGame && parameters != null && (parameters.IsArray && !parameters[0].AsBool || parameters.IsObject && !parameters["game_audio"].AsBool))
                                 inst.CurrentAudioSource.Pause();
                             else
                                 AudioManager.inst.CurrentAudioSource.Pause();
@@ -1347,7 +1347,7 @@ namespace BetterLegacy.Menus
 
                     // Resumes the current music if it was paused.
                     case "ResumeMusic": {
-                            if (CoreHelper.InGame && parameters != null && (parameters.IsArray && !parameters[0].AsBool || parameters.IsObject && !parameters["game_audio"].AsBool))
+                            if (ProjectArrhythmia.State.InGame && parameters != null && (parameters.IsArray && !parameters[0].AsBool || parameters.IsObject && !parameters["game_audio"].AsBool))
                                 inst.CurrentAudioSource.UnPause();
                             else
                                 AudioManager.inst.CurrentAudioSource.UnPause();
@@ -2207,7 +2207,7 @@ namespace BetterLegacy.Menus
                     #region SetDefaultEvents
 
                     case "SetDefaultEvents": {
-                            if (CoreHelper.InGame || !MenuEffectsManager.inst)
+                            if (ProjectArrhythmia.State.InGame || !MenuEffectsManager.inst)
                                 return;
 
                             MenuEffectsManager.inst.SetDefaultEffects();

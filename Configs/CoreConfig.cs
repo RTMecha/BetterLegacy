@@ -493,7 +493,7 @@ namespace BetterLegacy.Configs
 
         void SeedChanged()
         {
-            if (CoreHelper.InEditor)
+            if (ProjectArrhythmia.State.InEditor)
                 RTLevel.Current.InitSeed();
         }
 
@@ -520,7 +520,7 @@ namespace BetterLegacy.Configs
 
         void LDMChanged()
         {
-            if (!CoreHelper.InEditor || !GameData.Current)
+            if (!ProjectArrhythmia.State.InEditor || !GameData.Current)
                 return;
 
             var list = GameData.Current.beatmapObjects.FindAll(x => x.detailMode != DetailMode.Normal);
@@ -530,7 +530,7 @@ namespace BetterLegacy.Configs
 
         void ChallengeModeChanged()
         {
-            if (!CoreHelper.InEditor)
+            if (!ProjectArrhythmia.State.InEditor)
                 return;
 
             RTBeatmap.Current?.Reset(EditorConfig.Instance.ApplyGameSettingsInPreviewMode.Value);
@@ -555,7 +555,7 @@ namespace BetterLegacy.Configs
             if (SteamWrapper.inst)
                 SteamWrapper.inst.user.displayName = DisplayName.Value;
 
-            if (CoreHelper.InEditor)
+            if (ProjectArrhythmia.State.InEditor)
                 EditorManager.inst.SetCreatorName(DisplayName.Value);
 
             LegacyPlugin.SaveProfile();
@@ -578,7 +578,7 @@ namespace BetterLegacy.Configs
 
         void LanguageChanged()
         {
-            if (CoreHelper.InEditor)
+            if (ProjectArrhythmia.State.InEditor)
                 Editor.Components.LangObject.RenderLangObjects();
         }
 

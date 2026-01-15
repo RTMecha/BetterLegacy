@@ -443,7 +443,7 @@ namespace BetterLegacy.Companion.Data
 
             public override string Name => "player";
 
-            public override bool Usable => CoreHelper.InEditor;
+            public override bool Usable => ProjectArrhythmia.State.InEditor;
 
             public override string Pattern => "player action";
 
@@ -561,7 +561,7 @@ namespace BetterLegacy.Companion.Data
                             break;
                         }
                     case SelectType.ArcadeID: {
-                            if (CoreHelper.InEditor)
+                            if (ProjectArrhythmia.State.InEditor)
                             {
                                 if (EditorLevelManager.inst.LevelPanels.TryFind(x => x && x.Item && x.Item.id == split[2], out LevelPanel levelPanel))
                                     LoadLevel(levelPanel.Item);
@@ -604,7 +604,7 @@ namespace BetterLegacy.Companion.Data
 
             void LoadLevel(Level level)
             {
-                if (CoreHelper.InEditor)
+                if (ProjectArrhythmia.State.InEditor)
                     EditorLevelManager.inst.LoadLevel(level);
                 else
                     LevelManager.Play(level);
@@ -726,7 +726,7 @@ namespace BetterLegacy.Companion.Data
 
             public override string Name => "hide_interface";
 
-            public override bool Usable => CoreHelper.InGame;
+            public override bool Usable => ProjectArrhythmia.State.InGame;
 
             public override string Pattern => "hide_interface [true/false]";
 
@@ -770,7 +770,7 @@ namespace BetterLegacy.Companion.Data
 
             public override string Name => "show_player_gui";
 
-            public override bool Usable => CoreHelper.InGame;
+            public override bool Usable => ProjectArrhythmia.State.InGame;
 
             public override string Pattern => "show_player_gui [true/false]";
 
@@ -801,7 +801,7 @@ namespace BetterLegacy.Companion.Data
 
             public override string Name => "hide_timeline";
 
-            public override bool Usable => CoreHelper.InGame;
+            public override bool Usable => ProjectArrhythmia.State.InGame;
 
             public override string Pattern => "hide_timeline [true/false]";
 
@@ -2017,7 +2017,7 @@ namespace BetterLegacy.Companion.Data
 
             public override string Name => "create";
 
-            public override bool Usable => CoreHelper.InEditor;
+            public override bool Usable => ProjectArrhythmia.State.InEditor;
 
             public override string Pattern => "create category [values]";
 
@@ -2111,7 +2111,7 @@ namespace BetterLegacy.Companion.Data
 
             public override string Name => "select";
 
-            public override bool Usable => CoreHelper.InEditor;
+            public override bool Usable => ProjectArrhythmia.State.InEditor;
 
             public override string Pattern => "select type [predicates]";
 
@@ -4399,7 +4399,7 @@ namespace BetterLegacy.Companion.Data
             public virtual IEnumerable<(string, string)> GetVariables()
             {
                 yield return ("current_time", AudioManager.inst.CurrentAudioSource.time.ToString());
-                if (CoreHelper.InEditor)
+                if (ProjectArrhythmia.State.InEditor)
                 {
                     yield return ("current_layer", EditorTimeline.inst.Layer.ToString());
                     yield return ("max_bin", EditorTimeline.MAX_BINS.ToString());

@@ -45,7 +45,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
         public override void UpdateTheme()
         {
-            if (useGameTheme && CoreHelper.InGame)
+            if (useGameTheme && ProjectArrhythmia.State.InGame)
                 Theme = CoreHelper.CurrentBeatmapTheme;
             else if (loadedTheme != null)
                 Theme = loadedTheme;
@@ -557,7 +557,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
             customMenu.exitFuncJSON = InterfaceManager.inst.ParseVarFunction(jn["exit_func"], customVariables: customVariables);
 
-            if (CoreHelper.InGame && customMenu.exitFuncJSON == null)
+            if (ProjectArrhythmia.State.InGame && customMenu.exitFuncJSON == null)
                 customMenu.exitFunc = InterfaceManager.inst.CloseMenus;
 
             return customMenu;

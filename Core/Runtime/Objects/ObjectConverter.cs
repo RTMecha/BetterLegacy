@@ -153,7 +153,7 @@ namespace BetterLegacy.Core.Runtime.Objects
                 _ => new SolidObject(visualObject, opacity, deco, isSolid, (int)beatmapObject.renderLayerType, beatmapObject.opacityCollision, (int)beatmapObject.gradientType, beatmapObject.gradientScale, beatmapObject.gradientRotation, (int)beatmapObject.colorBlendMode),
             };
 
-            if (CoreHelper.InEditor)
+            if (ProjectArrhythmia.State.InEditor)
             {
                 visualObject.SetActive(!beatmapObject.editorData.hidden);
 
@@ -455,7 +455,7 @@ namespace BetterLegacy.Core.Runtime.Objects
             runtimeObject.SetActive(false);
             runtimeObject.UpdateShape(backgroundObject.Shape, backgroundObject.ShapeOption, backgroundObject.flat);
 
-            if (CoreHelper.InEditor)
+            if (ProjectArrhythmia.State.InEditor)
                 runtimeObject.hidden = backgroundObject.editorData.hidden;
 
             backgroundObject.ParentRuntime = runtimeLevel;

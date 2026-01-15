@@ -176,7 +176,7 @@ namespace BetterLegacy.Core
             if (!CoreConfig.Instance.NotifyREPL.Value)
                 return;
 
-            if (Helpers.CoreHelper.InEditor && EditorManager.inst.isEditing)
+            if (ProjectArrhythmia.State.InEditor && EditorManager.inst.isEditing)
             {
                 EditorManager.inst.DisplayNotification(rep, 1f, notificationType);
             }
@@ -185,18 +185,15 @@ namespace BetterLegacy.Core
                 switch (notificationType)
                 {
                     case EditorManager.NotificationType.Info:
-                    case EditorManager.NotificationType.Success:
-                        {
+                    case EditorManager.NotificationType.Success: {
                             UnityEngine.Debug.Log(rep);
                             break;
                         }
-                    case EditorManager.NotificationType.Warning:
-                        {
+                    case EditorManager.NotificationType.Warning: {
                             UnityEngine.Debug.LogWarning(rep);
                             break;
                         }
-                    case EditorManager.NotificationType.Error:
-                        {
+                    case EditorManager.NotificationType.Error: {
                             UnityEngine.Debug.LogError(rep);
                             break;
                         }

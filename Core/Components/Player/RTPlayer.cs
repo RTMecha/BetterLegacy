@@ -586,7 +586,7 @@ namespace BetterLegacy.Core.Components.Player
         /// </summary>
         public bool CanTakeDamage
         {
-            get => RTBeatmap.Current.challengeMode.Damageable && !CoreHelper.Paused && !CoreHelper.IsEditing && canTakeDamage && canTakeDamageModified;
+            get => RTBeatmap.Current.challengeMode.Damageable && !ProjectArrhythmia.State.Paused && !ProjectArrhythmia.State.IsEditing && canTakeDamage && canTakeDamageModified;
             set => canTakeDamage = value;
         }
 
@@ -623,7 +623,7 @@ namespace BetterLegacy.Core.Components.Player
         /// </summary>
         public bool CanBoost
         {
-            get => CoreHelper.InEditorPreview && canBoost && !isBoosting && (!Core || Core.GetControl().canBoost) && !CoreHelper.Paused && !CoreHelper.IsUsingInputField;
+            get => ProjectArrhythmia.State.InEditorPreview && canBoost && !isBoosting && (!Core || Core.GetControl().canBoost) && !ProjectArrhythmia.State.Paused && !CoreHelper.IsUsingInputField;
             set => canBoost = value;
         }
 
@@ -679,7 +679,7 @@ namespace BetterLegacy.Core.Components.Player
                 GlobalAllowWallSticking = levelData.allowWallSticking;
                 PAPlayer.MaxHealth = levelData.maxHealth;
 
-                if (CoreHelper.InEditor && !PlayerManager.NoPlayers)
+                if (ProjectArrhythmia.State.InEditor && !PlayerManager.NoPlayers)
                 {
                     foreach (var player in PlayerManager.Players)
                         player.ResetHealth();
@@ -1154,7 +1154,7 @@ namespace BetterLegacy.Core.Components.Player
             circleCollider2D = circleCollider;
             polygonCollider2D = polygonCollider;
 
-            if (CoreHelper.InEditor)
+            if (ProjectArrhythmia.State.InEditor)
                 rb.AddComponent<PlayerSelector>().player = this;
 
             var head = transform.Find("Player/Player").gameObject;
@@ -1164,11 +1164,11 @@ namespace BetterLegacy.Core.Components.Player
 
             polygonCollider.CreateCollider(headMesh);
 
-            polygonCollider.isTrigger = CoreHelper.InEditor && ZenEditorIncludesSolid;
+            polygonCollider.isTrigger = ProjectArrhythmia.State.InEditor && ZenEditorIncludesSolid;
             polygonCollider.enabled = false;
             circleCollider.enabled = true;
 
-            circleCollider.isTrigger = CoreHelper.InEditor && ZenEditorIncludesSolid;
+            circleCollider.isTrigger = ProjectArrhythmia.State.InEditor && ZenEditorIncludesSolid;
             rb.GetComponent<Rigidbody2D>().collisionDetectionMode = CollisionDetectionMode2D.Continuous;
 
             DestroyImmediate(rb.GetComponent<OnTriggerEnterPass>());
@@ -1518,7 +1518,7 @@ namespace BetterLegacy.Core.Components.Player
         void ClampToCamera()
         {
             // Here we handle the player's bounds to the camera. It is possible to include negative zoom in those bounds but it might not be a good idea since people have already utilized it.
-            if (!OutOfBounds && !(RTEditor.inst && RTEditor.inst.Freecam) && CoreHelper.Playing)
+            if (!OutOfBounds && !(RTEditor.inst && RTEditor.inst.Freecam) && ProjectArrhythmia.State.Playing)
             {
                 if (Camera.main.orthographicSize <= 0f && includeNegativeZoom)
                     return;
@@ -1543,7 +1543,7 @@ namespace BetterLegacy.Core.Components.Player
         {
             float pitch = MultiplyByPitch ? CoreHelper.ForwardPitch : 1f;
 
-            if (CoreHelper.Paused)
+            if (ProjectArrhythmia.State.Paused)
                 pitch = 0f;
 
             animationController.speed = pitch;
@@ -1590,7 +1590,7 @@ namespace BetterLegacy.Core.Components.Player
         {
             path[0].pos = rb.transform.position;
             path[0].rot = rb.transform.rotation;
-            if (tailMode == 1 || CoreHelper.Paused)
+            if (tailMode == 1 || ProjectArrhythmia.State.Paused)
                 return;
 
             for (int i = 1; i < path.Count; i++)
@@ -1610,7 +1610,7 @@ namespace BetterLegacy.Core.Components.Player
 
         void UpdateTailTransform()
         {
-            if (tailMode == 1 || CoreHelper.Paused)
+            if (tailMode == 1 || ProjectArrhythmia.State.Paused)
                 return;
 
             var tailBaseTime = Model.tailBase.time;
@@ -1637,7 +1637,7 @@ namespace BetterLegacy.Core.Components.Player
 
         void UpdateTailDev()
         {
-            if (tailMode != 1 || CoreHelper.Paused)
+            if (tailMode != 1 || ProjectArrhythmia.State.Paused)
                 return;
 
             int num = 1;
@@ -1725,7 +1725,7 @@ namespace BetterLegacy.Core.Components.Player
             collisionState.solidColliding = collisionState.AnySolid(collisionState.All) && cast.distance <= 0.1f;
             collisionState.triggerColliding = collisionState.AnyTrigger(collisionState.All) && cast.distance <= 0.1f;
 
-            if (CanMove && Core.Input && !CoreHelper.Paused)
+            if (CanMove && Core.Input && !ProjectArrhythmia.State.Paused)
             {
                 var boostWasPressed = Core.Input.Boost.WasPressed;
 
@@ -1765,12 +1765,12 @@ namespace BetterLegacy.Core.Components.Player
                 if (collisionState.AnySolid(ReversedGravity ? collisionState.upCasts : collisionState.downCasts, out RaycastHit2D groundCast) && groundCast.distance < 0.1f)
                     Jumping = false;
 
-                rb.gravityScale = CoreHelper.Paused ? 0f : JumpGravity;
+                rb.gravityScale = ProjectArrhythmia.State.Paused ? 0f : JumpGravity;
 
                 if (!Core.Input)
                     return;
 
-                if (CoreHelper.Paused)
+                if (ProjectArrhythmia.State.Paused)
                 {
                     rb.velocity = Vector2.zero;
                     return;
@@ -1811,9 +1811,9 @@ namespace BetterLegacy.Core.Components.Player
 
             rb.gravityScale = 0f;
 
-            if (Alive && Core.Input && Core.active && CanMove && !CoreHelper.Paused &&
+            if (Alive && Core.Input && Core.active && CanMove && !ProjectArrhythmia.State.Paused &&
                 (CoreConfig.Instance.AllowControlsInputField.Value || !CoreHelper.IsUsingInputField) &&
-                movementMode == MovementMode.KeyboardController && (!CoreHelper.InEditor || !RTEditor.inst.Freecam))
+                movementMode == MovementMode.KeyboardController && (!ProjectArrhythmia.State.InEditor || !RTEditor.inst.Freecam))
             {
                 Jumping = false;
                 var x = !LockXMovement ? Core.Input.Move.Vector.x : 0f;
@@ -2305,7 +2305,7 @@ namespace BetterLegacy.Core.Components.Player
                     if (string.IsNullOrEmpty(animation.ReferenceID) || animation.ReferenceID.ToLower().Remove(" ") != customObject.currentIdleAnimation)
                         return;
 
-                    if (CoreHelper.InEditor && AnimationEditor.inst && AnimationEditor.inst.CurrentAnimation && AnimationEditor.inst.CurrentAnimation.id == animation.id)
+                    if (ProjectArrhythmia.State.InEditor && AnimationEditor.inst && AnimationEditor.inst.CurrentAnimation && AnimationEditor.inst.CurrentAnimation.id == animation.id)
                         return;
 
                     var length = animation.GetLength();
@@ -3274,7 +3274,7 @@ namespace BetterLegacy.Core.Components.Player
             if (colAcc)
                 polygonCollider2D.CreateCollider(head.meshFilter);
 
-            if (CoreHelper.InEditor)
+            if (ProjectArrhythmia.State.InEditor)
                 Core?.ResetHealth();
 
             var healthSprite = RTFile.FileExists(RTFile.CombinePaths(RTFile.BasePath, $"health{FileFormat.PNG.Dot()}")) && !AssetsGlobal ? SpriteHelper.LoadSprite(RTFile.CombinePaths(RTFile.BasePath, $"health{FileFormat.PNG.Dot()}")) :

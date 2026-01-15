@@ -46,7 +46,7 @@ namespace BetterLegacy.Editor.Components
 
         void OnMouseDrag()
         {
-            if (CoreHelper.InEditorPreview)
+            if (ProjectArrhythmia.State.InEditorPreview)
                 return;
 
             var vector = new Vector3(Input.mousePosition.x, Input.mousePosition.y, transform.localPosition.z);

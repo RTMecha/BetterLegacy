@@ -81,7 +81,7 @@ namespace BetterLegacy.Companion
         /// <summary>
         /// If the music is playing, if true then Example has a chance to start dancing.
         /// </summary>
-        public static bool MusicPlaying => (CoreHelper.InEditor ? EditorManager.inst.hasLoadedLevel : CoreHelper.InGame) && AudioManager.inst.CurrentAudioSource.isPlaying;
+        public static bool MusicPlaying => (ProjectArrhythmia.State.InEditor ? EditorManager.inst.hasLoadedLevel : ProjectArrhythmia.State.InGame) && AudioManager.inst.CurrentAudioSource.isPlaying;
         /// <summary>
         /// How far the face should go when facing something.
         /// </summary>

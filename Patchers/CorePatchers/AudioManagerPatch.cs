@@ -2,7 +2,7 @@
 
 using HarmonyLib;
 
-using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
 
@@ -22,7 +22,7 @@ namespace BetterLegacy.Patchers
             if (!__instance.isFading)
                 __instance.CurrentAudioSource.volume = __instance.musicVol;
             __instance.CurrentAudioSource.pitch = __instance.pitch;
-            __instance.CurrentAudioSource.panStereo = CoreHelper.InGame && RTLevel.Current && RTLevel.Current.eventEngine ? RTLevel.Current.eventEngine.panStereo : 0f;
+            __instance.CurrentAudioSource.panStereo = ProjectArrhythmia.State.InGame && RTLevel.Current && RTLevel.Current.eventEngine ? RTLevel.Current.eventEngine.panStereo : 0f;
 
             if (__instance.pitch != prevPitch)
             {

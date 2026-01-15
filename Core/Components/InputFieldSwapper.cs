@@ -2,8 +2,6 @@
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-using BetterLegacy.Core.Helpers;
-
 namespace BetterLegacy.Core.Components
 {
     /// <summary>
@@ -47,7 +45,7 @@ namespace BetterLegacy.Core.Components
                     num = -num;
                     inputField.text = num.ToString();
                 }
-                else if (CoreHelper.InEditor)
+                else if (ProjectArrhythmia.State.InEditor)
                     EditorManager.inst.DisplayNotification("Could not invert number!", 1f, EditorManager.NotificationType.Error);
             }
 

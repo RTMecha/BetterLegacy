@@ -247,22 +247,22 @@ namespace BetterLegacy.Core.Managers
 
             Log($"Updating scene.");
 
-            bool inGame = CoreHelper.InGame;
-            if (!inGame || CoreHelper.InEditor)
+            bool inGame = ProjectArrhythmia.State.InGame;
+            if (!inGame || ProjectArrhythmia.State.InEditor)
             {
                 Log($"Switching to Game scene.");
                 SceneHelper.LoadGameWithProgress();
             }
 
             bool logged = false;
-            while (CoreHelper.InEditor || !CoreHelper.InGame || !ShapeManager.inst.loadedShapes)
+            while (ProjectArrhythmia.State.InEditor || !ProjectArrhythmia.State.InGame || !ShapeManager.inst.loadedShapes)
             {
                 if (!logged)
                 {
                     logged = true;
-                    if (CoreHelper.InEditor)
+                    if (ProjectArrhythmia.State.InEditor)
                         Log($"Have to switch to the game scene from the editor.");
-                    if (!CoreHelper.InGame)
+                    if (!ProjectArrhythmia.State.InGame)
                         Log($"Have to switch to the game scene.");
                     if (!ShapeManager.inst.loadedShapes)
                         Log($"Shapes haven't initialized yet.");
@@ -308,7 +308,7 @@ namespace BetterLegacy.Core.Managers
 
             var storyLevel = level as StoryLevel;
 
-            CoreHelper.InStory = level.isStory;
+            ProjectArrhythmia.State.InStory = level.isStory;
 
             MetaData.Current = level.metadata;
             if (level.isInterface)
@@ -340,7 +340,7 @@ namespace BetterLegacy.Core.Managers
 
             Log($"Updating states...");
 
-            if (IsArcade || !CoreHelper.InStory)
+            if (IsArcade || !ProjectArrhythmia.State.InStory)
                 CoreHelper.UpdateDiscordStatus($"Level: {level.metadata.beatmap.name}",
                     "In Arcade",
                     "arcade");
@@ -1008,10 +1008,10 @@ namespace BetterLegacy.Core.Managers
         /// <returns>A calculated rank from hits.</returns>
         public static Rank GetLevelRank(List<PlayerDataPoint> hits)
         {
-            if (CoreHelper.InEditor)
+            if (ProjectArrhythmia.State.InEditor)
                 return Rank.EditorRank;
 
-            if (!CoreHelper.InStory && RTBeatmap.Current.challengeMode.Invincible)
+            if (!ProjectArrhythmia.State.InStory && RTBeatmap.Current.challengeMode.Invincible)
                 return Rank.Null;
 
             var hitsNormalized = GetHitsNormalized(hits);
@@ -1025,7 +1025,7 @@ namespace BetterLegacy.Core.Managers
         /// <param name="hits">Hit count.</param>
         /// <returns>A calculated rank from the amount of hits.</returns>
         public static Rank GetLevelRank(int hits)
-            => CoreHelper.InEditor ? Rank.EditorRank : Rank.Null.TryGetValue(x => hits >= x.MinHits && hits <= x.MaxHits, out Rank rankType) ? rankType : Rank.Null;
+            => ProjectArrhythmia.State.InEditor ? Rank.EditorRank : Rank.Null.TryGetValue(x => hits >= x.MinHits && hits <= x.MaxHits, out Rank rankType) ? rankType : Rank.Null;
 
         /// <summary>
         /// Gets a levels' rank.

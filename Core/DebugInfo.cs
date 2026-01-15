@@ -101,15 +101,15 @@ namespace BetterLegacy.Core.Managers
             if (!init)
                 return;
 
-            Info.gameObject.SetActive(CoreConfig.Instance.DebugInfo.Value && CoreHelper.InGame);
+            Info.gameObject.SetActive(CoreConfig.Instance.DebugInfo.Value && ProjectArrhythmia.State.InGame);
 
-            if (!CoreConfig.Instance.DebugInfo.Value && !CoreHelper.InGame && !CoreHelper.Playing && !CoreHelper.Reversing)
+            if (!CoreConfig.Instance.DebugInfo.Value && !ProjectArrhythmia.State.InGame)
                 return;
 
             if (!InfoSelection.dragging)
                 Info.transform.position = CoreConfig.Instance.DebugPosition.Value;
 
-            if (CoreHelper.InGame && !CoreConfig.Instance.DebugShowOnlyFPS.Value)
+            if (ProjectArrhythmia.State.InGame && !CoreConfig.Instance.DebugShowOnlyFPS.Value)
             {
                 Info.text = $"<b>FPS:</b> {LegacyPlugin.FPSCounter.Text}<br>" +
                             $"<b>Beatmap Objects Alive:</b> {BeatmapObjectAliveCount()} / {(!GameData.Current ? 0 : GameData.Current.beatmapObjects.Count)}<br>" +

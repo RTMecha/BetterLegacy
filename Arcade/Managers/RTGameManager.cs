@@ -55,7 +55,7 @@ namespace BetterLegacy.Arcade.Managers
 
             InitCheckpointAnimation();
 
-            if (!CoreHelper.InEditor)
+            if (!ProjectArrhythmia.State.InEditor)
             {
                 pauseSliderCanvas = UIManager.GenerateUICanvas("Pause Slider Canvas", null);
                 var sliderBase = Creator.NewUIObject("Base", pauseSliderCanvas.GameObject.transform);
@@ -126,7 +126,7 @@ namespace BetterLegacy.Arcade.Managers
             if (GameManager.inst && GameManager.inst.introMain && GameManager.inst.introMain.transform.TryFind("blur", out Transform blur))
                 blur.gameObject.SetActive(false);
 
-            if (!CoreHelper.InEditor)
+            if (!ProjectArrhythmia.State.InEditor)
             {
                 var active = ShowPauseSlider;
                 if (active != cachedShowPauseSlider)
@@ -140,7 +140,7 @@ namespace BetterLegacy.Arcade.Managers
                 return;
             }
 
-            objectDragger.gameObject.SetActive(SelectObject.Enabled && CoreHelper.InEditor && EditorManager.inst.isEditing &&
+            objectDragger.gameObject.SetActive(SelectObject.Enabled && ProjectArrhythmia.State.InEditor && EditorManager.inst.isEditing &&
                 EditorTimeline.inst.SelectedObjectCount == 1 &&
                 (EditorTimeline.inst.CurrentSelection.isBeatmapObject && EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>().objectType != BeatmapObject.ObjectType.Empty || EditorTimeline.inst.CurrentSelection.isPrefabObject));
         }
@@ -211,7 +211,7 @@ namespace BetterLegacy.Arcade.Managers
             }
         }
 
-        public bool ShowPauseSlider => CoreHelper.Paused && RTBeatmap.Current.Invincible && PauseMenu.Current && PauseMenu.Current.UIActive && !PauseMenu.Current.unpausing && !PauseMenu.Current.generating && CoreConfig.Instance.ShowPauseTimeSlider.Value;
+        public bool ShowPauseSlider => ProjectArrhythmia.State.Paused && RTBeatmap.Current.Invincible && PauseMenu.Current && PauseMenu.Current.UIActive && !PauseMenu.Current.unpausing && !PauseMenu.Current.generating && CoreConfig.Instance.ShowPauseTimeSlider.Value;
         bool cachedShowPauseSlider;
         public UICanvas pauseSliderCanvas;
         public Slider pauseSlider;

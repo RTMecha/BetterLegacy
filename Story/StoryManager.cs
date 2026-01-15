@@ -782,7 +782,7 @@ namespace BetterLegacy.Story
                 CoreHelper.LogError($"File \'{path}\' does not exist.");
                 SoundManager.inst.PlaySound(DefaultSounds.Block);
                 Loaded = false;
-                CoreHelper.InStory = false;
+                ProjectArrhythmia.State.InStory = false;
                 LevelManager.OnLevelEnd = null;
                 SceneHelper.LoadScene(SceneName.Main_Menu);
                 yield break;
@@ -801,7 +801,7 @@ namespace BetterLegacy.Story
             {
                 Loaded = true;
 
-                CoreHelper.InStory = true;
+                ProjectArrhythmia.State.InStory = true;
 
                 if (storyLevel == null)
                 {
@@ -836,7 +836,7 @@ namespace BetterLegacy.Story
                 CoreHelper.LogError($"File \'{path}\' does not exist.");
                 SoundManager.inst.PlaySound(DefaultSounds.Block);
                 Loaded = false;
-                CoreHelper.InStory = false;
+                ProjectArrhythmia.State.InStory = false;
                 LevelManager.OnLevelEnd = null;
                 SceneHelper.LoadScene(SceneName.Main_Menu);
                 yield break;
@@ -865,7 +865,7 @@ namespace BetterLegacy.Story
             {
                 Loaded = true;
 
-                CoreHelper.InStory = true;
+                ProjectArrhythmia.State.InStory = true;
 
                 if (storyLevel == null)
                 {
@@ -915,7 +915,7 @@ namespace BetterLegacy.Story
                 CoreHelper.LogError($"File \'{path}\' does not exist.");
                 SoundManager.inst.PlaySound(DefaultSounds.Block);
                 Loaded = false;
-                CoreHelper.InStory = false;
+                ProjectArrhythmia.State.InStory = false;
                 LevelManager.OnLevelEnd = null;
                 SceneHelper.LoadScene(SceneName.Main_Menu);
                 yield break;
@@ -938,7 +938,7 @@ namespace BetterLegacy.Story
             {
                 Loaded = true;
 
-                CoreHelper.InStory = true;
+                ProjectArrhythmia.State.InStory = true;
 
                 if (storyLevel == null)
                 {
@@ -998,7 +998,7 @@ namespace BetterLegacy.Story
 
             CurrentSave.SaveProgress(chapter, level);
 
-            CoreHelper.InStory = true;
+            ProjectArrhythmia.State.InStory = true;
             LevelManager.OnLevelEnd = null;
             SceneHelper.LoadInterfaceScene();
         }
@@ -1050,7 +1050,7 @@ namespace BetterLegacy.Story
                 return;
             }
 
-            CoreHelper.InStory = true;
+            ProjectArrhythmia.State.InStory = true;
             LevelManager.OnLevelEnd = null;
             InterfaceManager.inst.onReturnToStoryInterface = () => InterfaceManager.inst.ParseInterface(level.returnInterface);
             SceneHelper.LoadInterfaceScene();
@@ -1058,7 +1058,7 @@ namespace BetterLegacy.Story
 
         void Return()
         {
-            CoreHelper.InStory = true;
+            ProjectArrhythmia.State.InStory = true;
             LevelManager.OnLevelEnd = null;
             ContinueStory = true;
             SceneHelper.LoadInterfaceScene();
@@ -1068,7 +1068,7 @@ namespace BetterLegacy.Story
         void StoryCompletion()
         {
             SoundManager.inst.PlaySound(DefaultSounds.loadsound);
-            CoreHelper.InStory = false;
+            ProjectArrhythmia.State.InStory = false;
             LevelManager.OnLevelEnd = null;
             SceneHelper.LoadScene(SceneName.Main_Menu);
         }

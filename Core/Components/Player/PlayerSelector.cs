@@ -22,7 +22,7 @@ namespace BetterLegacy.Core.Components.Player
 
         void Awake()
         {
-            if (!CoreHelper.InEditor)
+            if (!ProjectArrhythmia.State.InEditor)
                 Destroy(this);
         }
 
@@ -42,7 +42,7 @@ namespace BetterLegacy.Core.Components.Player
 
         void OnMouseDown()
         {
-            if (!CoreHelper.IsEditing || EventSystem.current.IsPointerOverGameObject() || dragging)
+            if (!ProjectArrhythmia.State.IsEditing || EventSystem.current.IsPointerOverGameObject() || dragging)
                 return;
 
             //    EditorContextMenu.inst.ShowContextMenu(

@@ -474,7 +474,7 @@ namespace BetterLegacy.Companion.Entity
                     parameters => reference.brain.Check(ExampleBrain.Checks.APRIL_FOOLS)),
                 new ExampleDialogue((companion, parameters) =>
                 {
-                    if (CoreHelper.InEditor)
+                    if (ProjectArrhythmia.State.InEditor)
                         EditorManager.inst.DisplayNotification("the cursed day is here", 3f, EditorManager.NotificationType.Error);
                     return "the cursed day is here";
                 }, parameters => reference.brain.Check(ExampleBrain.Checks.APRIL_FOOLS)),
@@ -531,7 +531,7 @@ namespace BetterLegacy.Companion.Entity
                     parameters => reference.brain.Check(ExampleBrain.Checks.OBJECTS_ALIVE_COUNT_HIGH)),
                 new ExampleDialogue((companion, parameters) =>
                 {
-                    if (CoreHelper.InEditor && EditorManager.inst.hasLoadedLevel)
+                    if (ProjectArrhythmia.State.InEditor && EditorManager.inst.hasLoadedLevel)
                         ObjectEditor.inst.CreateNewObject(timelineObject => timelineObject.GetData<BeatmapObject>().name = "Object");
 
                     return "OLORD GIVE OBJECT.";

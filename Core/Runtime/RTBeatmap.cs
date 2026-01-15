@@ -52,15 +52,15 @@ namespace BetterLegacy.Core.Runtime
             if (!LevelManager.LevelEnded)
                 levelTimer.Update();
 
-            if (CoreHelper.Paused)
+            if (ProjectArrhythmia.State.Paused)
                 pausedTimer.Update();
 
-            if (!CoreHelper.IsUsingInputField && InputDataManager.inst.menuActions.Cancel.WasPressed && CoreHelper.Paused && !LevelManager.LevelEnded && PauseMenu.Current && !PauseMenu.Current.generating)
+            if (!CoreHelper.IsUsingInputField && InputDataManager.inst.menuActions.Cancel.WasPressed && ProjectArrhythmia.State.Paused && !LevelManager.LevelEnded && PauseMenu.Current && !PauseMenu.Current.generating)
                 PauseMenu.UnPause();
 
-            if (CoreHelper.Playing)
+            if (ProjectArrhythmia.State.Playing)
             {
-                if (!CoreHelper.IsUsingInputField && !CoreHelper.InEditor)
+                if (!CoreHelper.IsUsingInputField && !ProjectArrhythmia.State.InEditor)
                 {
                     bool shouldPause = false;
                     foreach (var player in PlayerManager.Players)
@@ -82,7 +82,7 @@ namespace BetterLegacy.Core.Runtime
                         break;
                     }
                 case GameManager.State.Playing: {
-                        if (AudioManager.inst.CurrentAudioSource.clip && !CoreHelper.InEditor && ArcadeHelper.SongEnded && !LevelManager.LevelEnded)
+                        if (AudioManager.inst.CurrentAudioSource.clip && !ProjectArrhythmia.State.InEditor && ArcadeHelper.SongEnded && !LevelManager.LevelEnded)
                         {
                             CoreHelper.Log($"Level has ended!\n" +
                                 $"Game State: {GameManager.inst.gameState}\n" +
@@ -97,13 +97,13 @@ namespace BetterLegacy.Core.Runtime
                         break;
                     }
                 case GameManager.State.Finish: {
-                        if (AudioManager.inst.CurrentAudioSource.clip && !CoreHelper.InEditor && ArcadeHelper.SongEnded && ArcadeHelper.ReplayLevel && LevelManager.LevelEnded)
+                        if (AudioManager.inst.CurrentAudioSource.clip && !ProjectArrhythmia.State.InEditor && ArcadeHelper.SongEnded && ArcadeHelper.ReplayLevel && LevelManager.LevelEnded)
                             AudioManager.inst.SetMusicTime(GameData.Current.data.level.LevelStartOffset);
                         break;
                     }
             }
 
-            if (CoreHelper.Playing || CoreHelper.Reversing)
+            if (ProjectArrhythmia.State.Sequencing)
                 GameManager.inst.UpdateEventSequenceTime();
 
             GameManager.inst.prevAudioTime = AudioManager.inst.CurrentAudioSource.time;
@@ -153,7 +153,7 @@ namespace BetterLegacy.Core.Runtime
         /// </summary>
         public void Pause()
         {
-            if (!CoreHelper.InGame)
+            if (!ProjectArrhythmia.State.InGame)
                 return;
 
             AudioManager.inst.CurrentAudioSource.Pause();
@@ -168,7 +168,7 @@ namespace BetterLegacy.Core.Runtime
         /// </summary>
         public void Resume()
         {
-            if (!CoreHelper.InGame)
+            if (!ProjectArrhythmia.State.InGame)
                 return;
 
             AudioManager.inst.CurrentAudioSource.UnPause();
@@ -288,7 +288,7 @@ namespace BetterLegacy.Core.Runtime
                             break;
                         }
                     case EndLevelFunction.ParseInterface: {
-                            if (CoreHelper.IsEditing) // don't want interfaces to load in editor
+                            if (ProjectArrhythmia.State.IsEditing) // don't want interfaces to load in editor
                             {
                                 EditorManager.inst.DisplayNotification($"Cannot load interface in the editor!", 1f, EditorManager.NotificationType.Warning);
                                 return;
@@ -368,7 +368,7 @@ namespace BetterLegacy.Core.Runtime
         public void UpdateCheckpoints()
         {
             var checkpoints = GameData.Current?.data?.checkpoints;
-            if (checkpoints != null && checkpoints.InRange(nextCheckpointIndex) && AudioManager.inst.CurrentAudioSource.time > (double)checkpoints[nextCheckpointIndex].time && CoreHelper.InEditorPreview)
+            if (checkpoints != null && checkpoints.InRange(nextCheckpointIndex) && AudioManager.inst.CurrentAudioSource.time > (double)checkpoints[nextCheckpointIndex].time && ProjectArrhythmia.State.InEditorPreview)
                 SetCheckpoint(nextCheckpointIndex, false);
         }
 
@@ -425,7 +425,7 @@ namespace BetterLegacy.Core.Runtime
         public void ResetCheckpoint(bool baseOnTime = false)
         {
             var checkpoints = GameData.Current?.data?.checkpoints;
-            if (checkpoints == null || (CoreHelper.InEditor && !EditorManager.inst.hasLoadedLevel))
+            if (checkpoints == null || (ProjectArrhythmia.State.InEditor && !EditorManager.inst.hasLoadedLevel))
                 return;
 
             CoreHelper.Log($"Reset Checkpoints | Based on time: {baseOnTime}");
@@ -481,7 +481,7 @@ namespace BetterLegacy.Core.Runtime
                 yield return CoroutineHelper.Seconds(1f);
 
             float time = Mathf.Clamp(checkpoint.time + 0.01f, 0.1f, AudioManager.inst.CurrentAudioSource.clip.length);
-            if (!CoreHelper.InEditor && challengeMode.Lives > 0)
+            if (!ProjectArrhythmia.State.InEditor && challengeMode.Lives > 0)
             {
                 time = GameData.Current.data.level.LevelStartOffset;
                 if (OutOfLives)
@@ -541,12 +541,12 @@ namespace BetterLegacy.Core.Runtime
         /// <summary>
         /// If the player is invincible.
         /// </summary>
-        public bool Invincible => CoreHelper.IsEditing || (!challengeMode.Damageable && challengeMode.Invincible);
+        public bool Invincible => ProjectArrhythmia.State.IsEditing || (!challengeMode.Damageable && challengeMode.Invincible);
 
         /// <summary>
         /// The current pitch setting.
         /// </summary>
-        public float Pitch => CoreHelper.InEditor || CoreHelper.InStory ? 1f : gameSpeed.Pitch;
+        public float Pitch => ProjectArrhythmia.State.InEditor || ProjectArrhythmia.State.InStory ? 1f : gameSpeed.Pitch;
 
         #endregion
 

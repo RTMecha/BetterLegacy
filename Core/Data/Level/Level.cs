@@ -299,7 +299,7 @@ namespace BetterLegacy.Core.Data.Level
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         /// <summary>
         /// Combines the file name with the levels' path.
@@ -321,7 +321,7 @@ namespace BetterLegacy.Core.Data.Level
                     id = metadata.beatmap.workshopID.ToString();
             }
 
-            var defaultFile = (!CoreHelper.InEditor || !RTFile.FileExists(GetFile(LEVEL_LSB))) && CoreConfig.Instance.PrioritizeVG.Value && RTFile.FileExists(GetFile(LEVEL_VGD)) ? LEVEL_VGD : LEVEL_LSB;
+            var defaultFile = (!ProjectArrhythmia.State.InEditor || !RTFile.FileExists(GetFile(LEVEL_LSB))) && CoreConfig.Instance.PrioritizeVG.Value && RTFile.FileExists(GetFile(LEVEL_VGD)) ? LEVEL_VGD : LEVEL_LSB;
 
             if (RTFile.FileExists(GetFile(FILES_LSF)))
             {

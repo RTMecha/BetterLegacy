@@ -175,7 +175,7 @@ namespace BetterLegacy.Core.Data.Player
         /// </summary>
         public string CurrentModel
         {
-            get => !CoreHelper.InEditor && PlayersData.AllowCustomModels && PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value ? PlayerManager.PlayerIndexes[index].Value : currentPlayerModel;
+            get => !ProjectArrhythmia.State.InEditor && PlayersData.AllowCustomModels && PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value ? PlayerManager.PlayerIndexes[index].Value : currentPlayerModel;
             set
             {
                 currentPlayerModel = value;
@@ -340,7 +340,7 @@ namespace BetterLegacy.Core.Data.Player
         /// Gets the default health for this player.
         /// </summary>
         /// <returns>Returns the challenge mode default health if the user is not editing and the challenge mode default health is greater than 0, otherwise returns the players' local health.</returns>
-        public int GetDefaultHealth() => !CoreHelper.IsEditing && RTBeatmap.Current.challengeMode.DefaultHealth > 0 ? RTBeatmap.Current.challengeMode.DefaultHealth : GetControl()?.Health ?? 3;
+        public int GetDefaultHealth() => !ProjectArrhythmia.State.IsEditing && RTBeatmap.Current.challengeMode.DefaultHealth > 0 ? RTBeatmap.Current.challengeMode.DefaultHealth : GetControl()?.Health ?? 3;
 
         /// <summary>
         /// Initializes the player input.
@@ -349,7 +349,7 @@ namespace BetterLegacy.Core.Data.Player
         {
             if (device == null)
             {
-                Input = (CoreHelper.InEditor || PlayerConfig.Instance.AllowControllerIfSinglePlayer.Value) && PlayerManager.IsSingleplayer ?
+                Input = (ProjectArrhythmia.State.InEditor || PlayerConfig.Instance.AllowControllerIfSinglePlayer.Value) && PlayerManager.IsSingleplayer ?
                     PlayerInput.ControllerAndKeyboard :
                     PlayerInput.Keyboard;
                 return;

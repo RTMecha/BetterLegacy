@@ -132,7 +132,7 @@ namespace BetterLegacy.Editor.Components
 
         void OnMouseDown()
         {
-            if (!CoreHelper.IsEditing || CoreHelper.IsUsingInputField || EventSystem.current.IsPointerOverGameObject())
+            if (!ProjectArrhythmia.State.IsEditing || CoreHelper.IsUsingInputField || EventSystem.current.IsPointerOverGameObject())
                 return;
 
             // don't drag object if Example is being dragged.
@@ -149,7 +149,7 @@ namespace BetterLegacy.Editor.Components
             hovered = true;
             Core.Components.Player.PlayerSelector.focused = false;
 
-            if (!CoreHelper.IsEditing)
+            if (!ProjectArrhythmia.State.IsEditing)
                 return;
 
             SetTooltip();
@@ -173,7 +173,7 @@ namespace BetterLegacy.Editor.Components
         void OnMouseDrag()
         {
             dragTime = Time.time;
-            if (!CoreHelper.IsEditing || dragTime <= startDragTime + 0.15f || EditorTimeline.inst.SelectedObjectCount >= 2 || EventSystem.current.IsPointerOverGameObject())
+            if (!ProjectArrhythmia.State.IsEditing || dragTime <= startDragTime + 0.15f || EditorTimeline.inst.SelectedObjectCount >= 2 || EventSystem.current.IsPointerOverGameObject())
                 return;
 
             var vector = new Vector3(Input.mousePosition.x, Input.mousePosition.y, transform.localPosition.z);
@@ -273,7 +273,7 @@ namespace BetterLegacy.Editor.Components
 
         void Update()
         {
-            if (!CoreHelper.IsEditing)
+            if (!ProjectArrhythmia.State.IsEditing)
             {
                 hovered = false;
                 if (this.selected)

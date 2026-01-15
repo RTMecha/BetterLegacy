@@ -14,7 +14,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             musicName = InterfaceManager.RANDOM_MUSIC_NAME;
             name = "Progress";
 
-            if (!CoreHelper.InGame)
+            if (!ProjectArrhythmia.State.InGame)
                 elements.Add(new MenuEvent
                 {
                     id = "09",
@@ -24,7 +24,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     wait = false,
                 });
 
-            if (CoreHelper.InGame)
+            if (ProjectArrhythmia.State.InGame)
                 elements.Add(new MenuImage
                 {
                     id = "35255236785",
@@ -47,9 +47,9 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 hideBG = true,
                 color = 0,
                 opacity = 1f,
-                val = CoreHelper.InGame ? 40f : 0f,
-                textColor = CoreHelper.InGame ? 0 : 6,
-                textVal = CoreHelper.InGame ? 40f : 0f,
+                val = ProjectArrhythmia.State.InGame ? 40f : 0f,
+                textColor = ProjectArrhythmia.State.InGame ? 0 : 6,
+                textVal = ProjectArrhythmia.State.InGame ? 40f : 0f,
             });
 
             elements.Add(new MenuImage
@@ -57,9 +57,9 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 id = "1",
                 name = "progress base",
                 rect = RectValues.Default.AnchoredPosition(0f, -100f).SizeDelta(900f, 64f),
-                color = CoreHelper.InGame ? 0 : 6,
+                color = ProjectArrhythmia.State.InGame ? 0 : 6,
                 opacity = 0.1f,
-                val = CoreHelper.InGame ? 40f : 0f,
+                val = ProjectArrhythmia.State.InGame ? 40f : 0f,
                 length = 0f,
                 wait = false,
             });
@@ -69,9 +69,9 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 name = "progress",
                 parent = "1",
                 rect = RectValues.Default.AnchorMax(0f, 0.5f).AnchorMin(0f, 0.5f).Pivot(0f, 0.5f).SizeDelta(0f, 64f),
-                color = CoreHelper.InGame ? 0 : 6,
+                color = ProjectArrhythmia.State.InGame ? 0 : 6,
                 opacity = 1f,
-                val = CoreHelper.InGame ? 40f : 0f,
+                val = ProjectArrhythmia.State.InGame ? 40f : 0f,
                 length = 0f,
                 wait = false,
             };
@@ -92,7 +92,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
         public override void UpdateTheme()
         {
-            if (CoreHelper.InGame)
+            if (ProjectArrhythmia.State.InGame)
                 Theme = CoreHelper.CurrentBeatmapTheme;
 
             base.UpdateTheme();

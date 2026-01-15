@@ -932,7 +932,7 @@ namespace BetterLegacy.Core.Runtime
                 _ => new SolidObject(visualObject, opacity, hasCollider, isSolid, (int)beatmapObject.renderLayerType, beatmapObject.opacityCollision, (int)beatmapObject.gradientType, beatmapObject.gradientScale, beatmapObject.gradientRotation, (int)beatmapObject.colorBlendMode),
             };
 
-            if (CoreHelper.InEditor)
+            if (ProjectArrhythmia.State.InEditor)
             {
                 visualObject.SetActive(!beatmapObject.editorData.hidden);
 
@@ -1044,7 +1044,7 @@ namespace BetterLegacy.Core.Runtime
 
         public virtual void OnBackgroundObjectsTick()
         {
-            if (CoreConfig.Instance.ShowBackgroundObjects.Value && (CoreHelper.Playing || LevelManager.LevelEnded && ArcadeHelper.ReplayLevel))
+            if (CoreConfig.Instance.ShowBackgroundObjects.Value && (ProjectArrhythmia.State.Playing || LevelManager.LevelEnded && ArcadeHelper.ReplayLevel))
                 backgroundEngine?.Update(CurrentTime);
         }
 

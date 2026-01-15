@@ -249,7 +249,7 @@ namespace ILMath
                 switch (split[0])
                 {
                     case "findAxis": {
-                            if (!CoreHelper.InGame)
+                            if (!ProjectArrhythmia.State.InGame)
                             {
                                 result = 0;
                                 return false;
@@ -293,7 +293,7 @@ namespace ILMath
                             return true;
                         }
                     case "findOffset": {
-                            if (!CoreHelper.InGame)
+                            if (!ProjectArrhythmia.State.InGame)
                             {
                                 result = 0;
                                 return false;
@@ -328,7 +328,7 @@ namespace ILMath
                             return true;
                         }
                     case "findObject": {
-                            if (!CoreHelper.InGame)
+                            if (!ProjectArrhythmia.State.InGame)
                             {
                                 result = 0;
                                 return false;
@@ -355,7 +355,7 @@ namespace ILMath
                             return true;
                         }
                     case "findInterpolateChain": {
-                            if (!CoreHelper.InGame)
+                            if (!ProjectArrhythmia.State.InGame)
                             {
                                 result = 0;
                                 return false;

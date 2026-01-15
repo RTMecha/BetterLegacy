@@ -589,8 +589,8 @@ namespace BetterLegacy.Core
             if (str.Contains("<levelRank>"))
             {
                 var rank =
-                    !CoreHelper.InEditor && LevelManager.CurrentLevel != null ?
-                        LevelManager.GetLevelRank(LevelManager.CurrentLevel) : CoreHelper.InEditor ? Rank.EditorRank :
+                    !ProjectArrhythmia.State.InEditor && LevelManager.CurrentLevel != null ?
+                        LevelManager.GetLevelRank(LevelManager.CurrentLevel) : ProjectArrhythmia.State.InEditor ? Rank.EditorRank :
                         Rank.Null;
 
                 str = str.Replace("<levelRank>", rank.Format());
@@ -599,7 +599,7 @@ namespace BetterLegacy.Core
             if (str.Contains("<levelRankName>"))
             {
                 var rank =
-                    !CoreHelper.InEditor && LevelManager.CurrentLevel != null ?
+                    !ProjectArrhythmia.State.InEditor && LevelManager.CurrentLevel != null ?
                         LevelManager.GetLevelRank(LevelManager.CurrentLevel) :
                         Rank.Null;
 
@@ -609,8 +609,8 @@ namespace BetterLegacy.Core
             if (str.Contains("<levelRankColor>"))
             {
                 var rank =
-                    !CoreHelper.InEditor && LevelManager.CurrentLevel != null ?
-                        LevelManager.GetLevelRank(LevelManager.CurrentLevel) : CoreHelper.InEditor ? Rank.EditorRank :
+                    !ProjectArrhythmia.State.InEditor && LevelManager.CurrentLevel != null ?
+                        LevelManager.GetLevelRank(LevelManager.CurrentLevel) : ProjectArrhythmia.State.InEditor ? Rank.EditorRank :
                         Rank.Null;
 
                 str = str.Replace("<levelRankColor>", $"<color=#{LSColors.ColorToHex(rank.Color)}>");
@@ -618,21 +618,21 @@ namespace BetterLegacy.Core
 
             if (str.Contains("<levelRankCurrent>"))
             {
-                var rank = !CoreHelper.InEditor ? LevelManager.GetLevelRank(RTBeatmap.Current.hits) : Rank.EditorRank;
+                var rank = !ProjectArrhythmia.State.InEditor ? LevelManager.GetLevelRank(RTBeatmap.Current.hits) : Rank.EditorRank;
 
                 str = str.Replace("<levelRankCurrent>", rank.Format());
             }
 
             if (str.Contains("<levelRankCurrentName>"))
             {
-                var rank = !CoreHelper.InEditor ? LevelManager.GetLevelRank(RTBeatmap.Current.hits) : Rank.EditorRank;
+                var rank = !ProjectArrhythmia.State.InEditor ? LevelManager.GetLevelRank(RTBeatmap.Current.hits) : Rank.EditorRank;
 
                 str = str.Replace("<levelRankCurrentName>", rank.DisplayName);
             }
 
             if (str.Contains("<levelRankCurrentColor>"))
             {
-                var rank = !CoreHelper.InEditor ? LevelManager.GetLevelRank(RTBeatmap.Current.hits) : Rank.EditorRank;
+                var rank = !ProjectArrhythmia.State.InEditor ? LevelManager.GetLevelRank(RTBeatmap.Current.hits) : Rank.EditorRank;
 
                 str = str.Replace("<levelRankCurrentColor>", $"<color=#{LSColors.ColorToHex(rank.Color)}>");
             }
@@ -646,7 +646,7 @@ namespace BetterLegacy.Core
                         if (LevelManager.Levels.TryFind(x => x.id == match.Groups[1].ToString(), out Level level))
                             rank = LevelManager.GetLevelRank(level);
                         else
-                            rank = CoreHelper.InEditor ? Rank.EditorRank : Rank.Null;
+                            rank = ProjectArrhythmia.State.InEditor ? Rank.EditorRank : Rank.Null;
 
                         str = str.Replace(match.Groups[0].ToString(), rank.Format());
                     });
@@ -658,7 +658,7 @@ namespace BetterLegacy.Core
                         if (LevelManager.Levels.TryFind(x => x.id == match.Groups[1].ToString(), out Level level))
                             rank = LevelManager.GetLevelRank(level);
                         else
-                            rank = CoreHelper.InEditor ? Rank.EditorRank : Rank.Null;
+                            rank = ProjectArrhythmia.State.InEditor ? Rank.EditorRank : Rank.Null;
 
                         str = str.Replace(match.Groups[0].ToString(), rank.DisplayName);
                     });
@@ -670,7 +670,7 @@ namespace BetterLegacy.Core
                         if (LevelManager.Levels.TryFind(x => x.id == match.Groups[1].ToString(), out Level level))
                             rank = LevelManager.GetLevelRank(level);
                         else
-                            rank = CoreHelper.InEditor ? Rank.EditorRank : Rank.Null;
+                            rank = ProjectArrhythmia.State.InEditor ? Rank.EditorRank : Rank.Null;
 
                         str = str.Replace(match.Groups[0].ToString(), $"<color=#{LSColors.ColorToHex(rank.Color)}>");
                     });
@@ -723,7 +723,7 @@ namespace BetterLegacy.Core
             {
                 Rank rank =
                     LevelManager.Levels.TryFind(x => x.id == match.Groups[1].ToString(), out Level level) ? LevelManager.GetLevelRank(level) :
-                    CoreHelper.InEditor ?
+                    ProjectArrhythmia.State.InEditor ?
                         Rank.EditorRank :
                         Rank.Null;
 
@@ -734,7 +734,7 @@ namespace BetterLegacy.Core
             {
                 Rank rank =
                     StoryManager.inst.CurrentSave.Saves.TryFind(x => x.ID == match.Groups[1].ToString(), out SaveData playerData) ? LevelManager.GetLevelRank(playerData) :
-                    CoreHelper.InEditor ?
+                    ProjectArrhythmia.State.InEditor ?
                         Rank.EditorRank :
                         Rank.Null;
 
@@ -764,7 +764,7 @@ namespace BetterLegacy.Core
 
             input = RTFile.ParsePaths(input);
 
-            if (InterfaceManager.inst.CurrentInterface || CoreHelper.InStory)
+            if (InterfaceManager.inst.CurrentInterface || ProjectArrhythmia.State.InStory)
             {
                 RegexMatches(input, new Regex(@"{{LoadStoryString=(.*?),(.*?)}}"), match =>
                 {

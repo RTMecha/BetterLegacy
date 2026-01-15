@@ -341,7 +341,7 @@ namespace BetterLegacy.Core.Data.Level
         public void LoadLevel(LevelInfo levelInfo)
         {
             var basePath = this.path;
-            var path =/* CoreHelper.InEditor ? levelInfo.editorPath : */levelInfo.path;
+            var path =/* ProjectArrhythmia.State.InEditor ? levelInfo.editorPath : */levelInfo.path;
 
             // load via path
             if (path != null && (RTFile.FileExists(RTFile.CombinePaths(basePath, path, Level.LEVEL_LSB)) || RTFile.FileExists(RTFile.CombinePaths(basePath, path, Level.LEVEL_VGD))))
@@ -436,7 +436,7 @@ namespace BetterLegacy.Core.Data.Level
                         var jn = JSON.Parse(json);
                         if (jn is JSONObject jsonObject)
                         {
-                            if (CoreHelper.InGame)
+                            if (ProjectArrhythmia.State.InGame)
                             {
                                 AlephNetwork.DownloadLevel(jsonObject, level =>
                                 {
@@ -507,7 +507,7 @@ namespace BetterLegacy.Core.Data.Level
             if (workshopID.Value == 0)
             {
                 InterfaceManager.inst.CloseMenus();
-                if (CoreHelper.InGame)
+                if (ProjectArrhythmia.State.InGame)
                 {
                     ArcadeHelper.QuitToArcade();
                     yield break;
@@ -544,7 +544,7 @@ namespace BetterLegacy.Core.Data.Level
         static void InitSteamItem(LevelCollection collection, LevelInfo levelInfo, Action<Level> onDownload, Item item)
         {
             CoreHelper.Log($"Init Steam Item: {item}");
-            if (CoreHelper.InGame)
+            if (ProjectArrhythmia.State.InGame)
             {
                 CoroutineHelper.StartCoroutine(RTSteamManager.inst.ToggleSubscribedState(item, level =>
                 {

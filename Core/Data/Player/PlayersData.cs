@@ -31,7 +31,7 @@ namespace BetterLegacy.Core.Data.Player
         /// <summary>
         /// If custom models should be used instead of the loaded ones.
         /// </summary>
-        public static bool UseGlobal => CoreHelper.InEditor || AllowCustomModels && PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value;
+        public static bool UseGlobal => ProjectArrhythmia.State.InEditor || AllowCustomModels && PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value;
 
         /// <summary>
         /// The current <see cref="PlayersData"/>.
@@ -114,7 +114,7 @@ namespace BetterLegacy.Core.Data.Player
             foreach (var playerModel in PlayerModel.DefaultModels)
                 externalPlayerModels[playerModel.basePart.id] = playerModel;
 
-            var fullPath = CoreHelper.InEditor ? RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlayersPath) : RTFile.CombinePaths(RTFile.ApplicationDirectory, PlayerManager.PLAYERS_PATH);
+            var fullPath = ProjectArrhythmia.State.InEditor ? RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlayersPath) : RTFile.CombinePaths(RTFile.ApplicationDirectory, PlayerManager.PLAYERS_PATH);
             RTFile.CreateDirectory(fullPath);
 
             var files = Directory.GetFiles(fullPath, FileFormat.LSPL.ToPattern());
@@ -133,7 +133,7 @@ namespace BetterLegacy.Core.Data.Player
 
                 externalPlayerModels[id] = model;
 
-                if (Current && CoreHelper.InEditor)
+                if (Current && ProjectArrhythmia.State.InEditor)
                     Current.playerModels[id] = model;
             }
         }

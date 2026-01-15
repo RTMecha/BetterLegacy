@@ -8,6 +8,7 @@ using LSFunctions;
 
 using TMPro;
 
+using BetterLegacy.Core;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
@@ -44,7 +45,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool UpdatePrefix()
         {
-            if (!CoreHelper.Paused && !CoreHelper.Parsing && !CoreHelper.Loading)
+            if (!ProjectArrhythmia.State.Paused && !ProjectArrhythmia.State.Parsing && !ProjectArrhythmia.State.Loading)
                 RTLevel.Current?.Tick();
 
             return false;

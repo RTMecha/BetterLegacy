@@ -480,13 +480,13 @@ namespace BetterLegacy.Core.Managers
             {
                 runtimePlayer.playerDeathEvent += _val =>
                 {
-                    if (!CoreHelper.InEditor)
+                    if (!ProjectArrhythmia.State.InEditor)
                         RTBeatmap.Current.deaths.Add(new PlayerDataPoint(_val));
                     else
                         AchievementManager.inst.UnlockAchievement("death_hd");
                 };
 
-                if (!CoreHelper.InEditor)
+                if (!ProjectArrhythmia.State.InEditor)
                     runtimePlayer.playerHitEvent += (int _health, Vector3 _val) =>
                     {
                         RTBeatmap.Current.hits.Add(new PlayerDataPoint(_val));

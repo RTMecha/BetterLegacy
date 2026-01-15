@@ -1,6 +1,7 @@
 ﻿
 using UnityEngine;
 
+using BetterLegacy.Core;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Menus;
@@ -131,7 +132,7 @@ namespace BetterLegacy.Configs
 
         void MusicChanged()
         {
-            if (!CoreHelper.InGame)
+            if (!ProjectArrhythmia.State.InGame)
                 InterfaceManager.inst.PlayMusic();
         }
 
@@ -140,7 +141,7 @@ namespace BetterLegacy.Configs
             if (SceneHelper.CurrentScene != "Input Select")
                 return;
 
-            if (!CoreHelper.InGame && !PlayInputSelectMusic.Value)
+            if (!ProjectArrhythmia.State.InGame && !PlayInputSelectMusic.Value)
                 InterfaceManager.inst.PlayMusic();
             else if (PlayInputSelectMusic.Value)
                 SoundManager.inst.PlayMusic(DefaultMusic.loading);

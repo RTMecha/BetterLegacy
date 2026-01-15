@@ -258,7 +258,7 @@ namespace BetterLegacy
             if (CoreHelper.IsUsingInputField)
                 return;
 
-            if (CoreHelper.InEditor && Input.GetKeyDown(EditorConfig.Instance.EditorCamToggle.Value))
+            if (ProjectArrhythmia.State.InEditor && Input.GetKeyDown(EditorConfig.Instance.EditorCamToggle.Value))
             {
                 RTEditor.inst.Freecam = !RTEditor.inst.Freecam; // Enables / disables editor camera via the custom keybind.
                 EditorManager.inst.DisplayNotification($"{(RTEditor.inst.Freecam ? "Enabled" : "Disabled")} editor freecam.", 2f);
@@ -267,7 +267,7 @@ namespace BetterLegacy
             if (Input.GetKeyDown(EventsConfig.Instance.ShowGUIToggle.Value))
             {
                 EventsConfig.Instance.ShowGUI.Value = !EventsConfig.Instance.ShowGUI.Value; // Enabled / disables the Players / GUI via the custom keybind.
-                if (CoreHelper.InEditor)
+                if (ProjectArrhythmia.State.InEditor)
                     EditorManager.inst.DisplayNotification($"{(EventsConfig.Instance.ShowGUI.Value ? "Show" : "Hide")} GUI & Players", 2f);
             }
 
@@ -315,7 +315,7 @@ namespace BetterLegacy
 
         public static void QuitGame()
         {
-            if (CoreHelper.InEditor && EditorManager.inst.hasLoadedLevel)
+            if (ProjectArrhythmia.State.InEditor && EditorManager.inst.hasLoadedLevel)
             {
                 GameData.Current.SaveData(RTFile.CombinePaths(EditorLevelManager.inst.CurrentLevel.path, "quit-game-backup.lsb"), Application.Quit);
                 return;

@@ -39,74 +39,9 @@ namespace BetterLegacy.Core.Helpers
         public static float ScreenScaleInverse => 1f / ScreenScale;
 
         /// <summary>
-        /// For checking if the user is in the editor preview or in game.
-        /// </summary>
-        public static bool InEditorPreview => !EditorManager.inst || !EditorManager.inst.isEditing;
-
-        /// <summary>
-        /// For checking if the user is just in the editor.
-        /// </summary>
-        public static bool IsEditing => EditorManager.inst && EditorManager.inst.isEditing;
-
-        /// <summary>
-        /// If the user is in the editor.
-        /// </summary>
-        public static bool InEditor => EditorManager.inst;
-
-        /// <summary>
-        /// If the user is in game. Can include editor or arcade.
-        /// </summary>
-        public static bool InGame => GameManager.inst;
-
-        /// <summary>
-        /// If InterfaceController exists.
-        /// </summary>
-        public static bool InMenu => InterfaceManager.inst.CurrentInterface;
-
-        /// <summary>
-        /// If the player is in the Classic Arrhythmia story mode.
-        /// </summary>
-        public static bool InStory { get; set; }
-
-        /// <summary>
         /// The currently open level.
         /// </summary>
-        public static Level CurrentLevel => InEditor ? EditorLevelManager.inst.CurrentLevel : LevelManager.CurrentLevel;
-
-        /// <summary>
-        /// If the runtime is sequencing.
-        /// </summary>
-        public static bool Sequencing => (Playing || Reversing);
-
-        /// <summary>
-        /// If the game is loading.
-        /// </summary>
-        public static bool Loading => GameManager.inst && GameManager.inst.gameState == GameManager.State.Loading;
-
-        /// <summary>
-        /// If the game is parsing.
-        /// </summary>
-        public static bool Parsing => GameManager.inst && GameManager.inst.gameState == GameManager.State.Parsing;
-
-        /// <summary>
-        /// If the game is playing.
-        /// </summary>
-        public static bool Playing => GameManager.inst && GameManager.inst.gameState == GameManager.State.Playing;
-
-        /// <summary>
-        /// If the game is reversing to checkpoint.
-        /// </summary>
-        public static bool Reversing => GameManager.inst && GameManager.inst.gameState == GameManager.State.Reversing;
-
-        /// <summary>
-        /// If the game is paused.
-        /// </summary>
-        public static bool Paused => GameManager.inst && GameManager.inst.gameState == GameManager.State.Paused;
-
-        /// <summary>
-        /// If the game is finished.
-        /// </summary>
-        public static bool Finished => GameManager.inst && GameManager.inst.gameState == GameManager.State.Finish;
+        public static Level CurrentLevel => ProjectArrhythmia.State.InEditor ? EditorLevelManager.inst.CurrentLevel : LevelManager.CurrentLevel;
 
         /// <summary>
         /// The normalized time for relative animation consistency.
@@ -134,7 +69,7 @@ namespace BetterLegacy.Core.Helpers
         /// <summary>
         /// Gets the current interpolated theme or if the user is in the theme editor, the preview theme.
         /// </summary>
-        public static BeatmapTheme CurrentBeatmapTheme => InEditor && EventEditor.inst.showTheme ? RTThemeEditor.inst.PreviewTheme : ThemeManager.inst.Current;
+        public static BeatmapTheme CurrentBeatmapTheme => ProjectArrhythmia.State.InEditor && EventEditor.inst.showTheme ? RTThemeEditor.inst.PreviewTheme : ThemeManager.inst.Current;
 
         /// <summary>
         /// Gets the current resolution as a Vector2Int based on Core Config's resolution value.
@@ -1099,7 +1034,7 @@ namespace BetterLegacy.Core.Helpers
         /// </summary>
         public static void SetCameraRenderDistance()
         {
-            if (!InGame)
+            if (!ProjectArrhythmia.State.InGame)
                 return;
 
             var camera = Camera.main;

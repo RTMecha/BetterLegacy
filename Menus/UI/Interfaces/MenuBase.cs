@@ -397,7 +397,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 canvas.Canvas.scaleFactor = 1f;
                 canvas.CanvasScaler.referenceResolution = new Vector2(1920f, 1080f);
 
-                if (!CoreHelper.InGame && allowEffects)
+                if (!ProjectArrhythmia.State.InGame && allowEffects)
                 {
                     canvas.GameObject.layer = 5;
                     canvas.GameObject.AddComponent<MenuEffectsManager>();
@@ -412,11 +412,11 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     MenuEffectsManager.inst.RotateCamera(0f);
                 }
 
-                if (CoreHelper.InGame && pauseGame)
+                if (ProjectArrhythmia.State.InGame && pauseGame)
                     AudioManager.inst.CurrentAudioSource.Pause();
             }
 
-            if (!CoreHelper.InGame)
+            if (!ProjectArrhythmia.State.InGame)
                 CoreHelper.UpdateDiscordStatus($"Navigating {name}", "In Menu", "menu");
 
             // reset to default settings when menus open
@@ -1256,7 +1256,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             if (!Theme)
                 Theme = InterfaceManager.inst.CurrentTheme;
 
-            if (!CoreHelper.InGame)
+            if (!ProjectArrhythmia.State.InGame)
                 Camera.main.backgroundColor = Theme.backgroundColor;
 
             if (canvas != null)

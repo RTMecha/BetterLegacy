@@ -73,13 +73,13 @@ namespace BetterLegacy.Core.Managers
             CursorVelocity = cursorPosition - prevCursorVelocityPos;
             prevCursorVelocityPos = cursorPosition;
 
-            if (CoreHelper.IsEditing && CoreConfig.Instance.EditorCursorAlwaysVisible.Value) // cursor should always be visible in the editor
+            if (ProjectArrhythmia.State.IsEditing && CoreConfig.Instance.EditorCursorAlwaysVisible.Value) // cursor should always be visible in the editor
             {
                 Cursor.visible = true;
                 return;
             }
 
-            if (CoreHelper.InEditorPreview && !ConfigManager.inst.Active && !InterfaceManager.inst.CurrentInterface && !CoreConfig.Instance.GameCursorCanShow.Value) // cursor should never be visible in the game / editor preview
+            if (ProjectArrhythmia.State.InEditorPreview && !ConfigManager.inst.Active && !InterfaceManager.inst.CurrentInterface && !CoreConfig.Instance.GameCursorCanShow.Value) // cursor should never be visible in the game / editor preview
             {
                 Cursor.visible = false;
                 return;
@@ -167,7 +167,7 @@ namespace BetterLegacy.Core.Managers
         /// <param name="pos">Position to set.</param>
         public void SetCursorPosition(Vector2 pos)
         {
-            if (Application.isFocused && !CoreHelper.IsEditing)
+            if (Application.isFocused && !ProjectArrhythmia.State.IsEditing)
                 System.Windows.Forms.Cursor.Position = new System.Drawing.Point((int)pos.x, (int)pos.y);
         }
 

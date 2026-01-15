@@ -118,7 +118,7 @@ namespace BetterLegacy.Core.Managers
                 RTGameManager.inst.timelineLine.color = timelineColorToLerp;
             }
 
-            if (!CoreHelper.InEditor && AudioManager.inst.CurrentAudioSource.time < 15f)
+            if (!ProjectArrhythmia.State.InEditor && AudioManager.inst.CurrentAudioSource.time < 15f)
             {
                 bool introActive = GameData.Current && GameData.Current.data && GameData.Current.data.level && !GameData.Current.data.level.hideIntro;
 

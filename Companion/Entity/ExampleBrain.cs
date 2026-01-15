@@ -732,7 +732,7 @@ namespace BetterLegacy.Companion.Entity
         public void SelectObject(Image image)
         {
             var rect = EditorManager.RectTransformToScreenSpace(image.rectTransform);
-            if (CoreHelper.InEditor && rect.Overlaps(EditorManager.RectTransformToScreenSpace(EditorLevelManager.inst.OpenLevelPopup.GameObject.transform.Find("mask").AsRT())))
+            if (ProjectArrhythmia.State.InEditor && rect.Overlaps(EditorManager.RectTransformToScreenSpace(EditorLevelManager.inst.OpenLevelPopup.GameObject.transform.Find("mask").AsRT())))
                 foreach (var levelItem in EditorLevelManager.inst.LevelPanels)
                 {
                     if (levelItem.GameObject.activeInHierarchy && rect.Overlaps(EditorManager.RectTransformToScreenSpace(levelItem.GameObject.transform.AsRT())))
@@ -907,8 +907,8 @@ namespace BetterLegacy.Companion.Entity
             checks.Add(new ExampleCheck(Checks.APPLICATION_FOCUSED, () => Application.isFocused));
             checks.Add(new ExampleCheck(Checks.APRIL_FOOLS, () => Seasons.IsAprilFools));
             checks.Add(new ExampleCheck(Checks.NO_ASSETS, () => !RTFile.DirectoryExists(RTFile.GetAsset("companion"))));
-            checks.Add(new ExampleCheck(Checks.HAS_NOT_LOADED_LEVEL, () => CoreHelper.InEditor && !EditorManager.inst.hasLoadedLevel && !EditorLevelManager.inst.LevelPanels.IsEmpty()));
-            checks.Add(new ExampleCheck(Checks.HAS_LOADED_LEVEL, () => CoreHelper.InEditor && EditorManager.inst.hasLoadedLevel));
+            checks.Add(new ExampleCheck(Checks.HAS_NOT_LOADED_LEVEL, () => ProjectArrhythmia.State.InEditor && !EditorManager.inst.hasLoadedLevel && !EditorLevelManager.inst.LevelPanels.IsEmpty()));
+            checks.Add(new ExampleCheck(Checks.HAS_LOADED_LEVEL, () => ProjectArrhythmia.State.InEditor && EditorManager.inst.hasLoadedLevel));
             checks.Add(new ExampleCheck(Checks.BEING_DRAGGED, () => reference && reference.dragging));
             checks.Add(new ExampleCheck(Checks.USER_IS_SLEEPYZ, () => CoreHelper.Equals(CoreConfig.Instance.DisplayName.Value.ToLower(), "sleepyz", "sleepyzgamer")));
             checks.Add(new ExampleCheck(Checks.USER_IS_RTMECHA, () => CoreConfig.Instance.DisplayName.Value == "RTMecha"));
@@ -921,7 +921,7 @@ namespace BetterLegacy.Companion.Entity
             checks.Add(new ExampleCheck(Checks.USER_IS_DEFAULT, () => CoreConfig.Instance.DisplayName.Value == CoreConfig.Instance.DisplayName.Default));
             checks.Add(new ExampleCheck(Checks.TIME_LONGER_THAN_10_HOURS, () => Time.time > 36000f));
             checks.Add(new ExampleCheck(Checks.OBJECTS_ALIVE_COUNT_HIGH, () => RTLevel.Current && RTLevel.Current.objectEngine && RTLevel.Current.objectEngine.spawner && RTLevel.Current.objectEngine.spawner.activateList.Count > 900));
-            checks.Add(new ExampleCheck(Checks.NO_EDITOR_LEVELS, () => CoreHelper.InEditor && EditorLevelManager.inst.LevelPanels.IsEmpty()));
+            checks.Add(new ExampleCheck(Checks.NO_EDITOR_LEVELS, () => ProjectArrhythmia.State.InEditor && EditorLevelManager.inst.LevelPanels.IsEmpty()));
             checks.Add(new ExampleCheck(Checks.IS_HAPPY, () => reference && reference.brain && reference.brain.GetAttribute("HAPPINESS").Value > 100.0));
             checks.Add(new ExampleCheck(Checks.IS_SAD, () => reference && reference.brain && reference.brain.GetAttribute("HAPPINESS").Value < 100.0));
         }

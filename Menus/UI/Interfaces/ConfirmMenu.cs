@@ -1,5 +1,6 @@
 ﻿using System;
 
+using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Runtime;
@@ -24,7 +25,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 childForceExpandWidth = true,
             });
 
-            if (CoreHelper.InGame)
+            if (ProjectArrhythmia.State.InGame)
                 elements.Add(new MenuImage
                 {
                     id = "35255236785",
@@ -47,9 +48,9 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 hideBG = true,
                 color = 0,
                 opacity = 1f,
-                val = CoreHelper.InGame ? 40f : 0f,
-                textColor = CoreHelper.InGame ? 0 : 6,
-                textVal = CoreHelper.InGame ? 40f : 0f,
+                val = ProjectArrhythmia.State.InGame ? 40f : 0f,
+                textColor = ProjectArrhythmia.State.InGame ? 0 : 6,
+                textVal = ProjectArrhythmia.State.InGame ? 40f : 0f,
             });
 
             elements.Add(new MenuButton
@@ -62,14 +63,14 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
                 color = 6,
                 opacity = 0.1f,
-                val = CoreHelper.InGame ? -40f : 0f,
+                val = ProjectArrhythmia.State.InGame ? -40f : 0f,
                 textColor = 6,
-                textVal = CoreHelper.InGame ? 40f : 0f,
+                textVal = ProjectArrhythmia.State.InGame ? 40f : 0f,
                 selectedColor = 6,
                 selectedOpacity = 1f,
-                selectedVal = CoreHelper.InGame ? 40f : 0f,
+                selectedVal = ProjectArrhythmia.State.InGame ? 40f : 0f,
                 selectedTextColor = 7,
-                selectedTextVal = CoreHelper.InGame ? -40f : 0f,
+                selectedTextVal = ProjectArrhythmia.State.InGame ? -40f : 0f,
 
                 length = 0.3f,
                 playBlipSound = true,
@@ -87,14 +88,14 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
                 color = 6,
                 opacity = 0.1f,
-                val = CoreHelper.InGame ? -40f : 0f,
+                val = ProjectArrhythmia.State.InGame ? -40f : 0f,
                 textColor = 6,
-                textVal = CoreHelper.InGame ? 40f : 0f,
+                textVal = ProjectArrhythmia.State.InGame ? 40f : 0f,
                 selectedColor = 6,
                 selectedOpacity = 1f,
-                selectedVal = CoreHelper.InGame ? 40f : 0f,
+                selectedVal = ProjectArrhythmia.State.InGame ? 40f : 0f,
                 selectedTextColor = 7,
-                selectedTextVal = CoreHelper.InGame ? -40f : 0f,
+                selectedTextVal = ProjectArrhythmia.State.InGame ? -40f : 0f,
 
                 length = 0.3f,
                 playBlipSound = true,
@@ -109,14 +110,14 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
         public static void Init(string currentMessage, Action confirm, Action cancel)
         {
-            if (CoreHelper.InGame)
+            if (ProjectArrhythmia.State.InGame)
                 RTBeatmap.Current?.Pause();
             new ConfirmMenu(currentMessage, confirm, cancel);
         }
 
         public override void UpdateTheme()
         {
-            if (CoreHelper.InGame)
+            if (ProjectArrhythmia.State.InGame)
                 Theme = CoreHelper.CurrentBeatmapTheme;
 
             base.UpdateTheme();

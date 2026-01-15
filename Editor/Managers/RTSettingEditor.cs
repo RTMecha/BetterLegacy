@@ -75,7 +75,7 @@ namespace BetterLegacy.Editor.Managers
 
         public override void OnTick()
         {
-            if (CoreHelper.InEditor && EditorManager.inst.isEditing && EditorManager.inst.hasLoadedLevel &&
+            if (ProjectArrhythmia.State.InEditor && EditorManager.inst.isEditing && EditorManager.inst.hasLoadedLevel &&
                 GameData.Current && GameData.Current.events != null &&
                 RTPrefabEditor.inst && Dialog && Dialog.GameObject)
             {

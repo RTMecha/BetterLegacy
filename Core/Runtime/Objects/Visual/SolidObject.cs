@@ -71,7 +71,7 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
         /// </summary>
         public bool forceCollisionEnabled;
 
-        public override bool HasCollision => (forceCollisionEnabled || solid || !RTBeatmap.Current.Invincible && !deco || CoreHelper.IsEditing && EditorConfig.Instance.SelectObjectsInPreview.Value) && colliderEnabled && opacityCollide;
+        public override bool HasCollision => (forceCollisionEnabled || solid || !RTBeatmap.Current.Invincible && !deco || ProjectArrhythmia.State.IsEditing && EditorConfig.Instance.SelectObjectsInPreview.Value) && colliderEnabled && opacityCollide;
 
         /// <summary>
         /// If the object is rendering an outline.

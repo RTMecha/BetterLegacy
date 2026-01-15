@@ -1718,7 +1718,7 @@ namespace BetterLegacy.Editor.Managers
             if (GameManager.inst.timeline && timelinePreview)
                 timelinePreview.gameObject.SetActive(GameManager.inst.timeline.activeSelf);
 
-            if (CoreHelper.Playing && timelinePreview && AudioManager.inst.CurrentAudioSource.clip != null && GameManager.inst.timeline && GameManager.inst.timeline.activeSelf)
+            if (ProjectArrhythmia.State.Playing && timelinePreview && AudioManager.inst.CurrentAudioSource.clip != null && GameManager.inst.timeline && GameManager.inst.timeline.activeSelf)
             {
                 float num = RTBeatmap.Current.GetTimelineOffset(AudioManager.inst.CurrentAudioSource.time);
                 if (timelinePosition)

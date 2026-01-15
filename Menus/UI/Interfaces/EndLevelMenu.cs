@@ -20,7 +20,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
         public EndLevelMenu() : base()
         {
-            if (!CoreHelper.InGame || CoreHelper.InEditor)
+            if (!ProjectArrhythmia.State.InGame || ProjectArrhythmia.State.InEditor)
             {
                 CoreHelper.LogError($"End of level cannot occur outside of a level.");
                 return;

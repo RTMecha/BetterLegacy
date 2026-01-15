@@ -81,7 +81,7 @@ namespace BetterLegacy.Patchers
             InterfaceManager.inst.StopMusic();
             InterfaceManager.inst.CloseMenus();
             InterfaceManager.inst.Clear();
-            CoreHelper.InStory = false;
+            ProjectArrhythmia.State.InStory = false;
 
             #region Editor Theme Setup
 
@@ -343,7 +343,7 @@ namespace BetterLegacy.Patchers
             Instance.ScreenScale = Screen.width / 1920f;
             Instance.ScreenScaleInverse = 1f / Instance.ScreenScale;
 
-            if (CoreHelper.Playing)
+            if (ProjectArrhythmia.State.Playing)
             {
                 if (InputDataManager.inst.editorActions.ToggleEditor.WasPressed && !CoreHelper.IsUsingInputField || Input.GetKeyDown(KeyCode.Escape) && !Instance.isEditing)
                     RTEditor.inst.TogglePreview();

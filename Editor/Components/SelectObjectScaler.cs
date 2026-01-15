@@ -75,7 +75,7 @@ namespace BetterLegacy.Editor.Components
 
         void OnMouseDrag()
         {
-            if (CoreHelper.InEditorPreview)
+            if (ProjectArrhythmia.State.InEditorPreview)
                 return;
 
             var vector = new Vector3(Input.mousePosition.x, Input.mousePosition.y, transform.localPosition.z);
@@ -84,7 +84,7 @@ namespace BetterLegacy.Editor.Components
 
             if (EditorTimeline.inst.CurrentSelection.isPrefabObject)
             {
-                selectedKeyframe = (EventKeyframe)EditorTimeline.inst.CurrentSelection.GetData<PrefabObject>().events[1];
+                selectedKeyframe = EditorTimeline.inst.CurrentSelection.GetData<PrefabObject>().events[1];
 
                 dragging = true;
 
