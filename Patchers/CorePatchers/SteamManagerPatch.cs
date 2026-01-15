@@ -11,6 +11,11 @@ namespace BetterLegacy.Patchers
     {
         [HarmonyPatch(nameof(SteamManager.Awake))]
         [HarmonyPostfix]
-        static void AwakePostfix() => RTSteamManager.Init();
+        static void AwakePostfix()
+        {
+            RTSteamManager.Init();
+            NetworkManager.Init();
+            SteamLobbyManager.Init();
+        }
     }
 }

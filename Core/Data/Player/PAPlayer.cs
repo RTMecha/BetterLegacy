@@ -2,12 +2,13 @@
 
 using XInputDotNetPure;
 using InControl;
+using SteamworksFacepunch;
 
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Components.Player;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Modifiers;
-using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Core.Runtime.Objects;
@@ -18,7 +19,7 @@ namespace BetterLegacy.Core.Data.Player
     /// <summary>
     /// Represents a player in a Project Arrhythmia level.
     /// </summary>
-    public class PAPlayer : Exists, IModifierReference, ICustomActivatable
+    public class PAPlayer : Exists, IModifierReference, ICustomActivatable, IPacket
     {
         public PAPlayer(bool active, int index, InputDevice device)
         {
@@ -42,6 +43,7 @@ namespace BetterLegacy.Core.Data.Player
             InputManager.OnDeviceAttached += ControllerConnected;
             InputManager.OnDeviceDetached += ControllerDisconnected;
             SetupInput();
+            IsLocalPlayer = true;
             Debug.Log($"{InputDataManager.className}Created new Custom Player [{this.index}]");
         }
 
@@ -54,6 +56,7 @@ namespace BetterLegacy.Core.Data.Player
             deviceName = "keyboard";
             deviceType = GetDeviceType(deviceName);
             deviceModel = GetDeviceModel(deviceName);
+            IsLocalPlayer = true;
         }
 
         #region Values
@@ -190,6 +193,16 @@ namespace BetterLegacy.Core.Data.Player
 
         public PlayerInput Input { get; set; }
 
+        /// <summary>
+        /// If the player is a local player.
+        /// </summary>
+        public bool IsLocalPlayer { get; set; }
+
+        /// <summary>
+        /// Steam ID of the player.
+        /// </summary>
+        public SteamId? ID { get; set; }
+
         // might not go with this?
         public PlayerInventory inventory = new PlayerInventory();
 
@@ -202,6 +215,24 @@ namespace BetterLegacy.Core.Data.Player
         #endregion
 
         #region Functions
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            id = reader.ReadString();
+            active = reader.ReadBoolean();
+            lives = reader.ReadInt32();
+            Health = reader.ReadInt32();
+            index = reader.ReadInt32();
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(id);
+            writer.Write(active);
+            writer.Write(lives);
+            writer.Write(Health);
+            writer.Write(index);
+        }
 
         public void SetCustomActive(bool active)
         {

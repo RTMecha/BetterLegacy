@@ -3,12 +3,13 @@ using System.Collections.Generic;
 
 using SimpleJSON;
 
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Editor.Data.Elements;
 
 namespace BetterLegacy.Core.Data.Modifiers
 {
-    public class Modifier : PAObject<Modifier>
+    public class Modifier : PAObject<Modifier>, IPacket
     {
         #region Constructors
 
@@ -361,6 +362,65 @@ namespace BetterLegacy.Core.Data.Modifiers
                 jn["desc"] = description;
 
             return jn;
+        }
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            id = reader.ReadString();
+            type = (Type)reader.ReadUInt16();
+            if (type == Type.Trigger)
+            {
+                not = reader.ReadBoolean();
+                elseIf = reader.ReadBoolean();
+            }
+            triggerCount = reader.ReadInt32();
+            constant = reader.ReadBoolean();
+            prefabInstanceOnly = reader.ReadBoolean();
+            groupAlive = reader.ReadBoolean();
+            subPrefab = reader.ReadBoolean();
+            enabled = reader.ReadBoolean();
+
+            if (ProjectArrhythmia.State.InEditor)
+            {
+                collapse = reader.ReadBoolean();
+                customName = reader.ReadString();
+                description = reader.ReadString();
+            }
+
+            name = reader.ReadString();
+            var count = reader.ReadInt32();
+            values.Clear();
+            for (int i = 0; i < count; i++)
+                values.Add(reader.ReadString());
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(id ?? string.Empty);
+            writer.Write((ushort)type);
+            if (type == Type.Trigger)
+            {
+                writer.Write(not);
+                writer.Write(elseIf);
+            }
+            writer.Write(triggerCount);
+            writer.Write(constant);
+            writer.Write(prefabInstanceOnly);
+            writer.Write(groupAlive);
+            writer.Write(subPrefab);
+            writer.Write(enabled);
+
+            if (ProjectArrhythmia.State.InEditor)
+            {
+                writer.Write(collapse);
+                writer.Write(customName ?? string.Empty);
+                writer.Write(description ?? string.Empty);
+            }
+
+            writer.Write(name ?? string.Empty);
+            writer.Write(values.Count);
+            for (int i = 0; i < values.Count; i++)
+                writer.Write(values[i] ?? string.Empty);
         }
 
         public void VerifyModifier(List<Modifier> modifiers)
