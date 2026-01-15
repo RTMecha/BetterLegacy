@@ -1,4 +1,30 @@
-﻿# 1.8.17 [Jan 9, 2025]
+﻿# 1.8.18 [Jan 15, 2025]
+## Features
+### Core
+- Added getAnimateVariable and getAnimateVariableMath modifiers. These act like the animateObject modifiers, except it animates a local modifier variable.
+- Added translateShape3D modifier.
+
+### Editor
+- Added some extra settings for custom dropdown keyframe values that make it easier to edit specific dropdown entries.
+- Added Flip Z button to Position keyframe.
+- Added folder viewing to Project Planner.
+- Finally implemented the multi level selection collection context menu buttons.
+
+## Changes
+### Core
+- Background Objects and Prefab Objects now support detail mode.
+- The region modifier now include the endregion modifier when collapsed.
+- Changed Render Depth to a float value to support the change in alpha branch.
+
+### Example Companion
+- Completely overhauled Example's commands to be more modular and support a variety of functions. Basically think of it as the in-game command-line.
+
+## Fixes
+- Fixed some issues with callModifiers and forLoop modifiers.
+
+------------------------------------------------------------------------------------------
+
+# 1.8.17 [Jan 9, 2025]
 ## Features
 ### Core
 - Added reactiveIterations and setDepthOffset background object modifiers. These modify the fade iteration of BG objects.
