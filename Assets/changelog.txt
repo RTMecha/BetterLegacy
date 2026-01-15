@@ -1,27 +1,23 @@
-# 1.8.17 [Jan 9, 2025]
+# 1.8.18 [Jan 15, 2025]
 ## Features
 ### Core
-- Added reactiveIterations and setDepthOffset background object modifiers. These modify the fade iteration of BG objects.
-- Background objects now have a "Flat" toggle.
+- Added getAnimateVariable and getAnimateVariableMath modifiers. These act like the animateObject modifiers, except it animates a local modifier variable.
+- Added translateShape3D modifier.
 
 ### Editor
-- Added region modifiers. These allow you to group specific parts of the modifier list.
-- Added a height value to comment modifiers.
-- The animation reference ID of objects can now be edited in the editor. These allow animations to have specific objects that they should be applied to. This is good for character models and things you usually want to transfer animations between.
-- Multiple markers can now be selected. This comes with some new settings in Config Manager > Editor > Markers.
-- Added "Show Markers On All Layers" to Config Manager > Editor > Markers.
+- Added some extra settings for custom dropdown keyframe values that make it easier to edit specific dropdown entries.
+- Added Flip Z button to Position keyframe.
+- Added folder viewing to Project Planner.
+- Finally implemented the multi level selection collection context menu buttons.
 
 ## Changes
 ### Core
-- Optimized background object fade iterations by setting the color for each fade iteration only when the color changed.
+- Background Objects and Prefab Objects now support detail mode.
+- The region modifier now include the endregion modifier when collapsed.
+- Changed Render Depth to a float value to support the change in alpha branch.
 
-### Editor
-- Editor modifiers now display an edit icon instead of the action icon.
-- The placeholder text input fields now have their theme colors applied correctly.
-- Tweaked some editor UI to be more consistent.
-- The "Show Context Menu" setting in Config Manager > Editor > Markers is now set to true by default. This is to be consistent with the rest of the editor, though if you wish for it to be how it normally is you can disable it.
-- Prefab Types are now searchable.
+### Example Companion
+- Completely overhauled Example's commands to be more modular and support a variety of functions. Basically think of it as the in-game command-line.
 
 ## Fixes
-- Fixed one of the arrow buttons on a number input field having the incorrect function assigned to it.
-- Fixed keyframe bin color settings not being consistent across event and object keyframes.
+- Fixed some issues with callModifiers and forLoop modifiers.
