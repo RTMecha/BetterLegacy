@@ -32,7 +32,7 @@ namespace BetterLegacy
     /// <summary>
     /// Core plugin class.
     /// </summary>
-    [BepInPlugin("com.mecha.betterlegacy", "Better Legacy", "1.8.17")]
+    [BepInPlugin("com.mecha.betterlegacy", "Better Legacy", "1.8.18")]
     [BepInProcess("Project Arrhythmia.exe")]
     public class LegacyPlugin : BaseUnityPlugin
     {
