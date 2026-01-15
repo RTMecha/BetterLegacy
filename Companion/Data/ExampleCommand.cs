@@ -853,6 +853,8 @@ namespace BetterLegacy.Companion.Data
                 new BeatmapObjectNameParameter(),
                 new ObjectStartTimeParameter<BeatmapObject>(),
                 new ObjectAddStartTimeParameter<BeatmapObject>(),
+                new BeatmapObjectAutoKillTypeParameter(),
+                new BeatmapObjectAutoKillOffsetParameter(),
                 new LayerParameter<BeatmapObject>(),
                 new BinParameter<BeatmapObject>(),
                 new AddBinParameter<BeatmapObject>(),
@@ -872,6 +874,8 @@ namespace BetterLegacy.Companion.Data
                 new BackgroundObjectNameParameter(),
                 new ObjectStartTimeParameter<BackgroundObject>(),
                 new ObjectAddStartTimeParameter<BackgroundObject>(),
+                new BackgroundObjectAutoKillTypeParameter(),
+                new BackgroundObjectAutoKillOffsetParameter(),
                 new LayerParameter<BackgroundObject>(),
                 new BinParameter<BackgroundObject>(),
                 new AddBinParameter<BackgroundObject>(),
@@ -887,6 +891,8 @@ namespace BetterLegacy.Companion.Data
             {
                 new ObjectStartTimeParameter<PrefabObject>(),
                 new ObjectAddStartTimeParameter<PrefabObject>(),
+                new PrefabObjectAutoKillTypeParameter(),
+                new PrefabObjectAutoKillOffsetParameter(),
                 new LayerParameter<PrefabObject>(),
                 new BinParameter<PrefabObject>(),
                 new AddBinParameter<PrefabObject>(),
@@ -931,32 +937,6 @@ namespace BetterLegacy.Companion.Data
                 new ModifierNotParameter(),
                 new ModifierElseIfParameter(),
             };
-
-            #region Current
-
-            public static class CurrentEdit
-            {
-                public static BeatmapObject beatmapObject;
-                public static BackgroundObject backgroundObject;
-                public static PrefabObject prefabObject;
-                public static Marker marker;
-                public static Checkpoint checkpoint;
-                public static Modifier modifier;
-                public static EventKeyframe eventKeyframe;
-
-                public static void Reset()
-                {
-                    beatmapObject = null;
-                    backgroundObject = null;
-                    prefabObject = null;
-                    marker = null;
-                    checkpoint = null;
-                    modifier = null;
-                    eventKeyframe = null;
-                }
-            }
-
-            #endregion
 
             #endregion
 
@@ -1165,6 +1145,28 @@ namespace BetterLegacy.Companion.Data
                 Modifier,
             }
 
+            public static class CurrentEdit
+            {
+                public static BeatmapObject beatmapObject;
+                public static BackgroundObject backgroundObject;
+                public static PrefabObject prefabObject;
+                public static Marker marker;
+                public static Checkpoint checkpoint;
+                public static Modifier modifier;
+                public static EventKeyframe eventKeyframe;
+
+                public static void Reset()
+                {
+                    beatmapObject = null;
+                    backgroundObject = null;
+                    prefabObject = null;
+                    marker = null;
+                    checkpoint = null;
+                    modifier = null;
+                    eventKeyframe = null;
+                }
+            }
+
             #region General
 
             public class LayerParameter<T> : EditParameter<T> where T : IEditable
@@ -1304,6 +1306,38 @@ namespace BetterLegacy.Companion.Data
                 public override string AddToAutocomplete => "name \"Object Name\"";
 
                 public override void Apply(BeatmapObject obj, string[] parameters) => obj.name = parameters[0];
+            }
+
+            public class BeatmapObjectAutoKillTypeParameter : EditParameter<BeatmapObject>
+            {
+                public override string Name => "autokill_type";
+
+                public override int ParameterCount => 1;
+
+                public override string Description => "Despawn type of the object.";
+
+                public override string AddToAutocomplete => "autokill_type no_autokill";
+
+                public override void Apply(BeatmapObject obj, string[] parameters)
+                {
+                    if (Enum.TryParse(parameters[0].Remove("_"), true, out AutoKillType autoKillType))
+                        obj.autoKillType = autoKillType;
+                    else
+                        obj.autoKillType = (AutoKillType)Parser.TryParse(parameters[0], 0);
+                }
+            }
+
+            public class BeatmapObjectAutoKillOffsetParameter : EditParameter<BeatmapObject>
+            {
+                public override string Name => "autokill_offset";
+
+                public override int ParameterCount => 1;
+
+                public override string Description => "Despawn time of the object.";
+
+                public override string AddToAutocomplete => "autokill_offset 0";
+
+                public override void Apply(BeatmapObject obj, string[] parameters) => obj.autoKillOffset = Parser.TryParse(parameters[0], 0f);
             }
 
             public class BeatmapObjectGradientTypeParameter : EditParameter<BeatmapObject>
@@ -1487,6 +1521,38 @@ namespace BetterLegacy.Companion.Data
                 public override void Apply(BackgroundObject obj, string[] parameters) => obj.name = parameters[0];
             }
 
+            public class BackgroundObjectAutoKillTypeParameter : EditParameter<BackgroundObject>
+            {
+                public override string Name => "autokill_type";
+
+                public override int ParameterCount => 1;
+
+                public override string Description => "Despawn type of the object.";
+
+                public override string AddToAutocomplete => "autokill_type no_autokill";
+
+                public override void Apply(BackgroundObject obj, string[] parameters)
+                {
+                    if (Enum.TryParse(parameters[0].Remove("_"), true, out AutoKillType autoKillType))
+                        obj.autoKillType = autoKillType;
+                    else
+                        obj.autoKillType = (AutoKillType)Parser.TryParse(parameters[0], 0);
+                }
+            }
+
+            public class BackgroundObjectAutoKillOffsetParameter : EditParameter<BackgroundObject>
+            {
+                public override string Name => "autokill_offset";
+
+                public override int ParameterCount => 1;
+
+                public override string Description => "Despawn time of the object.";
+
+                public override string AddToAutocomplete => "autokill_offset 0";
+
+                public override void Apply(BackgroundObject obj, string[] parameters) => obj.autoKillOffset = Parser.TryParse(parameters[0], 0f);
+            }
+
             public class BackgroundObjectPositionParameter : EditParameter<BackgroundObject>
             {
                 public override string Name => "pos";
@@ -1555,6 +1621,38 @@ namespace BetterLegacy.Companion.Data
             #endregion
 
             #region Prefab Object
+
+            public class PrefabObjectAutoKillTypeParameter : EditParameter<PrefabObject>
+            {
+                public override string Name => "autokill_type";
+
+                public override int ParameterCount => 1;
+
+                public override string Description => "Despawn type of the object.";
+
+                public override string AddToAutocomplete => "autokill_type no_autokill";
+
+                public override void Apply(PrefabObject obj, string[] parameters)
+                {
+                    if (Enum.TryParse(parameters[0].Remove("_"), true, out PrefabAutoKillType autoKillType))
+                        obj.autoKillType = autoKillType;
+                    else
+                        obj.autoKillType = (PrefabAutoKillType)Parser.TryParse(parameters[0], 0);
+                }
+            }
+
+            public class PrefabObjectAutoKillOffsetParameter : EditParameter<PrefabObject>
+            {
+                public override string Name => "autokill_offset";
+
+                public override int ParameterCount => 1;
+
+                public override string Description => "Despawn time of the object.";
+
+                public override string AddToAutocomplete => "autokill_offset 0";
+
+                public override void Apply(PrefabObject obj, string[] parameters) => obj.autoKillOffset = Parser.TryParse(parameters[0], 0f);
+            }
 
             public class PrefabObjectPositionParameter : EditParameter<PrefabObject>
             {
