@@ -23,6 +23,7 @@ namespace BetterLegacy.Core.Managers
 
         public override void OnInit()
         {
+            CoreHelper.Log($"Setting lobby events");
             SteamMatchmaking.OnLobbyCreated += OnLobbyCreated;
             SteamMatchmaking.OnLobbyEntered += OnLobbyEntered;
 
@@ -40,7 +41,10 @@ namespace BetterLegacy.Core.Managers
         {
             ProjectArrhythmia.State.IsHosting = true;
             RTSteamManager.inst.StartServer();
-            SteamMatchmaking.CreateLobbyAsync(LobbySettings.PlayerCount);
+            //SteamMatchmaking.CreateLobbyAsync(LobbySettings.PlayerCount);
+
+            SteamMatchmaking.Internal.CreateLobby(LobbyType.FriendsOnly, LobbySettings.PlayerCount);
+            CurrentLobby.Join();
         }
 
         void OnChatMessage(Lobby lobby, Friend friend, string message)

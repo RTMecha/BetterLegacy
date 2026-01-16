@@ -43,7 +43,7 @@ namespace BetterLegacy.Core.Managers
 
         public override void OnTick()
         {
-            if (!ProjectArrhythmia.State.InGame || !ProjectArrhythmia.State.IsOnlineMultiplayer)
+            if (!Transport.Instance)
                 return;
 
             foreach (var player in PlayerManager.Players)
@@ -54,7 +54,7 @@ namespace BetterLegacy.Core.Managers
                 // send player update
             }
 
-            Transport.Instance?.Receive();
+            Transport.Instance.Receive();
         }
 
         public override void OnManagerDestroyed() => RemoveEvents();
@@ -160,10 +160,7 @@ namespace BetterLegacy.Core.Managers
 
         public void OnServerClientConnected(ClientNetworkConnection connection) => clientConnections.Add(connection.connectionID, connection);
 
-        public void OnServerStarted()
-        {
-
-        }
+        public void OnServerStarted() => CoreHelper.Log($"Server started!");
 
         public void SendToClient(ClientNetworkConnection connection, ArraySegment<byte> data, SendType sendType)
         {
