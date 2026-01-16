@@ -125,7 +125,7 @@ namespace BetterLegacy.Core.Managers
             eventsSet = false;
         }
 
-        public void ConnectToServer(string addess) => Transport.Instance.ConnectClient(addess);
+        public void ConnectToServer(string address) => Transport.Instance.ConnectClient(address);
 
         public void Disconnect() => Transport.Instance.StopClient();
 
