@@ -162,7 +162,7 @@ namespace BetterLegacy.Core.Managers
         {
             try
             {
-                SteamClient.Init(ProjectArrhythmia.STEAM_APP_ID);
+                SteamClient.Init(ProjectArrhythmia.STEAM_APP_ID, false);
                 steamUser = new SteamUser(SteamClient.SteamId, SteamClient.SteamId.Value, SteamClient.Name);
                 Log($"Init Steam User: {SteamClient.Name}");
                 Initialized = true;
