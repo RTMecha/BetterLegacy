@@ -14,7 +14,7 @@ using BetterLegacy.Core.Managers;
 namespace BetterLegacy.Core.Data.Network
 {
     // class based on https://github.com/Aiden-ytarame/AttributeNetworkWrapper
-    public class Transport : Exists
+    public class Transport : Exists, ISocketManager, IConnectionManager
     {
         /// <summary>
         /// The current transport instance.
@@ -53,7 +53,7 @@ namespace BetterLegacy.Core.Data.Network
             steamIDToNetID.Clear();
             if (ulong.TryParse(address, out ulong id))
             {
-                client = SteamNetworkingSockets.ConnectRelay<RTConnectionManager>(id, 0);
+                client = SteamNetworkingSockets.ConnectRelay(id, 0, this);
                 return;
             }
 
@@ -75,7 +75,7 @@ namespace BetterLegacy.Core.Data.Network
         {
             idToConnection.Clear();
             steamIDToNetID.Clear();
-            server = SteamNetworkingSockets.CreateRelaySocket<RTSocketManager>(0);
+            server = SteamNetworkingSockets.CreateRelaySocket(0, this);
             IsActive = true;
         }
 
@@ -139,44 +139,39 @@ namespace BetterLegacy.Core.Data.Network
 
             buffer = newBuffer;
         }
-    }
 
-    public class RTSocketManager : SocketManager
-    {
-        public override void OnConnecting(Connection connection, ConnectionInfo info)
+        public void OnConnecting(Connection connection, ConnectionInfo info)
         {
-            base.OnConnecting(connection, info);
             connection.Accept();
             CoreHelper.Log($"Player {info.Identity.SteamId} is connecting to the game server.");
         }
 
-        public override void OnConnected(Connection connection, ConnectionInfo info)
+        public void OnConnected(Connection connection, ConnectionInfo info)
         {
-            base.OnConnected(connection, info);
+            CoreHelper.Log($"Client connected!");
             var id = GetNextConnectionID();
 
-            Transport.Instance.idToConnection.Add(id, connection);
-            Transport.Instance.steamIDToNetID.Add(info.Identity.SteamId, id);
+            idToConnection.Add(id, connection);
+            steamIDToNetID.Add(info.Identity.SteamId, id);
 
-            Transport.onServerClientConnected?.Invoke(new ClientNetworkConnection(id, info.Identity.SteamId.ToString()));
+            onServerClientConnected?.Invoke(new ClientNetworkConnection(id, info.Identity.SteamId.ToString()));
         }
 
-        public override void OnDisconnected(Connection connection, ConnectionInfo info)
+        public void OnDisconnected(Connection connection, ConnectionInfo info)
         {
-            base.OnDisconnected(connection, info);
+            CoreHelper.Log($"Client disconnected!");
             connection.Close();
 
-            if (!Transport.Instance.steamIDToNetID.TryGetValue(info.Identity.SteamId, out int id))
+            if (!steamIDToNetID.TryGetValue(info.Identity.SteamId, out int id))
                 return;
 
-            Transport.Instance.idToConnection.Remove(id);
-            Transport.Instance.steamIDToNetID.Remove(info.Identity.SteamId);
-            Transport.onServerClientDisconnected?.Invoke(new ClientNetworkConnection(id, info.Identity.SteamId.ToString()));
+            idToConnection.Remove(id);
+            steamIDToNetID.Remove(info.Identity.SteamId);
+            onServerClientDisconnected?.Invoke(new ClientNetworkConnection(id, info.Identity.SteamId.ToString()));
         }
 
-        public override void OnMessage(Connection connection, NetIdentity identity, IntPtr data, int size, long messageNum, long recvTime, int channel)
+        public void OnMessage(Connection connection, NetIdentity identity, IntPtr data, int size, long messageNum, long recvTime, int channel)
         {
-            base.OnMessage(connection, identity, data, size, messageNum, recvTime, channel);
             var id = GetIDFromSteamConnection(connection);
             if (id == -1)
             {
@@ -198,17 +193,14 @@ namespace BetterLegacy.Core.Data.Network
                 return;
             }
 
-            Transport.AssureBufferSpace(size);
-            Marshal.Copy(data, Transport.buffer, 0, size);
-            Transport.onServerDataReceived?.Invoke(new ClientNetworkConnection(id, identity.SteamId.ToString()), new ArraySegment<byte>(Transport.buffer, 0, size));
+            AssureBufferSpace(size);
+            Marshal.Copy(data, buffer, 0, size);
+            onServerDataReceived?.Invoke(new ClientNetworkConnection(id, identity.SteamId.ToString()), new ArraySegment<byte>(buffer, 0, size));
         }
 
         int GetIDFromSteamConnection(Connection connection)
         {
-            if (Transport.Instance == null)
-                return -1;
-
-            foreach (var keyValuePair in Transport.Instance.idToConnection)
+            foreach (var keyValuePair in idToConnection)
             {
                 if (keyValuePair.Value == connection)
                     return keyValuePair.Key;
@@ -218,35 +210,28 @@ namespace BetterLegacy.Core.Data.Network
 
         int GetNextConnectionID()
         {
-            if (Transport.Instance == null)
-                return -1;
-
             int id = 0;
-            while (Transport.Instance.idToConnection.ContainsKey(id))
+            while (idToConnection.ContainsKey(id))
                 id++;
             return id;
         }
-    }
 
-    public class RTConnectionManager : ConnectionManager
-    {
-        public override void OnConnected(ConnectionInfo info)
+        public void OnConnecting(ConnectionInfo info) { }
+
+        public void OnConnected(ConnectionInfo info)
         {
-            base.OnConnected(info);
-            Transport.Instance.IsActive = true;
-            Transport.onClientConnected?.Invoke(new ServerNetworkConnection(info.Identity.SteamId.ToString()));
+            IsActive = true;
+            onClientConnected?.Invoke(new ServerNetworkConnection(info.Identity.SteamId.ToString()));
         }
 
-        public override void OnDisconnected(ConnectionInfo info)
+        public void OnDisconnected(ConnectionInfo info)
         {
-            base.OnDisconnected(info);
-            Transport.Instance.IsActive = false;
-            Transport.onClientDisconnected?.Invoke();
+            IsActive = false;
+            onClientDisconnected?.Invoke();
         }
 
-        public override void OnMessage(IntPtr data, int size, long messageNum, long recvTime, int channel)
+        public void OnMessage(IntPtr data, int size, long messageNum, long recvTime, int channel)
         {
-            base.OnMessage(data, size, messageNum, recvTime, channel);
             if (size < 2)
             {
                 CoreHelper.LogError("Received too little data.");
@@ -259,9 +244,9 @@ namespace BetterLegacy.Core.Data.Network
                 return;
             }
 
-            Transport.AssureBufferSpace(size);
-            Marshal.Copy(data, Transport.buffer, 0, size);
-            Transport.onClientDataReceived?.Invoke(new ArraySegment<byte>(Transport.buffer, 0, size));
+            AssureBufferSpace(size);
+            Marshal.Copy(data, buffer, 0, size);
+            onClientDataReceived?.Invoke(new ArraySegment<byte>(buffer, 0, size));
         }
     }
 }
