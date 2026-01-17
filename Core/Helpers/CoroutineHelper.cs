@@ -39,6 +39,20 @@ namespace BetterLegacy.Core.Helpers
         /// <param name="coroutine">Generated coroutine.</param>
         public static void StopCoroutine(Coroutine coroutine) => LegacyPlugin.inst.StopCoroutine(coroutine);
 
+        /// <summary>
+        /// Starts a coroutine based on a threaded task.
+        /// </summary>
+        /// <param name="task">Task to run as a coroutine.</param>
+        /// <returns>Returns a generated coroutine.</returns>
+        public static Coroutine StartCoroutine(Task task) => StartCoroutine(task.AsIEnumerator());
+
+        /// <summary>
+        /// Starts a coroutine based on a threaded task asynchronously.
+        /// </summary>
+        /// <param name="task">Task to run as a coroutine.</param>
+        /// <returns>Returns a generated coroutine.</returns>
+        public static Coroutine StartCoroutineAsync(Task task) => StartCoroutineAsync(task.AsIEnumerator());
+
         #endregion
 
         #region Awaiters
@@ -287,13 +301,17 @@ namespace BetterLegacy.Core.Helpers
         public static IEnumerator TestTaskToCoroutine()
         {
             LegacyPlugin.MainTick.Enqueue(() => CoreHelper.Log($"Started"));
-            yield return StartCoroutine(TestAsync().AsIEnumerator());
-            LegacyPlugin.MainTick.Enqueue(() => CoreHelper.Log($"Done"));
+            yield return StartCoroutine(TestAsync());
+            LegacyPlugin.MainTick.Enqueue(() => CoreHelper.Log($"Done {number}"));
         }
 
+        public static int number;
         static async Task TestAsync()
         {
             await Task.Delay(1000);
+            number = 10;
+            await Task.Delay(1000);
+            number = 20;
         }
 
         #endregion
