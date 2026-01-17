@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
@@ -18,15 +19,19 @@ namespace BetterLegacy.Core.Data.Network
         #region Values
 
         static MemoryStream memoryStream = new MemoryStream(1024);
-        public readonly BinaryWriter writer = new BinaryWriter(memoryStream, Encoding.UTF8, true);
+        readonly BinaryWriter writer = new BinaryWriter(memoryStream, Encoding.UTF8, true);
 
         #endregion
 
         #region Functions
 
+        /// <summary>
+        /// Gets the byte data of the current writer.
+        /// </summary>
+        /// <returns>Returns a byte array.</returns>
         public ArraySegment<byte> GetData() => new ArraySegment<byte>(memoryStream.GetBuffer(), 0, (int)memoryStream.Position);
 
-        public void Write(string value) => writer.Write(value);
+        public void Write(string value) => writer.Write(value ?? string.Empty);
         public void Write(float value) => writer.Write(value);
         public void Write(ulong value) => writer.Write(value);
         public void Write(long value) => writer.Write(value);
@@ -79,6 +84,105 @@ namespace BetterLegacy.Core.Data.Network
             Write(value.g);
             Write(value.b);
             Write(value.a);
+        }
+        public void Write(bool[] array)
+        {
+            Write(array.Length);
+            for (int i = 0; i < array.Length; i++)
+                Write(array[i]);
+        }
+        public void Write(string[] array)
+        {
+            Write(array.Length);
+            for (int i = 0; i < array.Length; i++)
+                Write(array[i]);
+        }
+        public void Write(short[] array)
+        {
+            Write(array.Length);
+            for (int i = 0; i < array.Length; i++)
+                Write(array[i]);
+        }
+        public void Write(int[] array)
+        {
+            Write(array.Length);
+            for (int i = 0; i < array.Length; i++)
+                Write(array[i]);
+        }
+        public void Write(long[] array)
+        {
+            Write(array.Length);
+            for (int i = 0; i < array.Length; i++)
+                Write(array[i]);
+        }
+        public void Write(ushort[] array)
+        {
+            Write(array.Length);
+            for (int i = 0; i < array.Length; i++)
+                Write(array[i]);
+        }
+        public void Write(uint[] array)
+        {
+            Write(array.Length);
+            for (int i = 0; i < array.Length; i++)
+                Write(array[i]);
+        }
+        public void Write(ulong[] array)
+        {
+            Write(array.Length);
+            for (int i = 0; i < array.Length; i++)
+                Write(array[i]);
+        }
+        public void Write(float[] array)
+        {
+            Write(array.Length);
+            for (int i = 0; i < array.Length; i++)
+                Write(array[i]);
+        }
+        public void Write(double[] array)
+        {
+            Write(array.Length);
+            for (int i = 0; i < array.Length; i++)
+                Write(array[i]);
+        }
+        public void Write<T>(List<T> list, Action<T> write)
+        {
+            Write(list.Count);
+            for (int i = 0; i < list.Count; i++)
+                write.Invoke(list[i]);
+        }
+        public void Write<TKey, TValue>(Dictionary<TKey, TValue> dictionary, Action<TKey> writeKey, Action<TValue> writeValue)
+        {
+            Write(dictionary.Count);
+            foreach (var keyValuePair in dictionary)
+            {
+                writeKey.Invoke(keyValuePair.Key);
+                writeValue.Invoke(keyValuePair.Value);
+            }
+        }
+        public void Write(Sprite sprite)
+        {
+            bool hasIcon = sprite && sprite.texture;
+            writer.Write(hasIcon);
+            if (hasIcon)
+            {
+                var data = sprite.texture.EncodeToPNG();
+                writer.Write(data.Length);
+                for (int i = 0; i < data.Length; i++)
+                    writer.Write(data[i]);
+            }
+        }
+        public void Write(Texture2D texture2D)
+        {
+            bool hasIcon = texture2D;
+            writer.Write(hasIcon);
+            if (hasIcon)
+            {
+                var data = texture2D.EncodeToPNG();
+                writer.Write(data.Length);
+                for (int i = 0; i < data.Length; i++)
+                    writer.Write(data[i]);
+            }
         }
 
         public void Dispose()

@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 
 using UnityEngine;
+
+using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Core.Data.Network
 {
@@ -18,7 +21,7 @@ namespace BetterLegacy.Core.Data.Network
 
         #region Values
 
-        public readonly BinaryReader reader;
+        readonly BinaryReader reader;
 
         #endregion
 
@@ -46,6 +49,132 @@ namespace BetterLegacy.Core.Data.Network
         public Vector2Int ReadVector2Int() => new Vector2Int(ReadInt32(), ReadInt32());
         public Vector3Int ReadVector3Int() => new Vector3Int(ReadInt32(), ReadInt32(), ReadInt32());
         public Color ReadColor() => new Color(ReadSingle(), ReadSingle(), ReadSingle());
+        public bool[] ReadBooleanArray()
+        {
+            var count = ReadInt32();
+            var array = new bool[count];
+            for (int i = 0; i < count; i++)
+                array[i] = ReadBoolean();
+            return array;
+        }
+        public string[] ReadStringArray()
+        {
+            var count = ReadInt32();
+            var array = new string[count];
+            for (int i = 0; i < count; i++)
+                array[i] = ReadString();
+            return array;
+        }
+        public short[] ReadInt16Array()
+        {
+            var count = ReadInt32();
+            var array = new short[count];
+            for (int i = 0; i < count; i++)
+                array[i] = ReadInt16();
+            return array;
+        }
+        public int[] ReadInt32Array()
+        {
+            var count = ReadInt32();
+            var array = new int[count];
+            for (int i = 0; i < count; i++)
+                array[i] = ReadInt32();
+            return array;
+        }
+        public long[] ReadInt64Array()
+        {
+            var count = ReadInt32();
+            var array = new long[count];
+            for (int i = 0; i < count; i++)
+                array[i] = ReadInt64();
+            return array;
+        }
+        public ushort[] ReadUInt16Array()
+        {
+            var count = ReadInt32();
+            var array = new ushort[count];
+            for (int i = 0; i < count; i++)
+                array[i] = ReadUInt16();
+            return array;
+        }
+        public uint[] ReadUInt32Array()
+        {
+            var count = ReadInt32();
+            var array = new uint[count];
+            for (int i = 0; i < count; i++)
+                array[i] = ReadUInt32();
+            return array;
+        }
+        public ulong[] ReadUInt64Array()
+        {
+            var count = ReadInt32();
+            var array = new ulong[count];
+            for (int i = 0; i < count; i++)
+                array[i] = ReadUInt64();
+            return array;
+        }
+        public float[] ReadSingleArray()
+        {
+            var count = ReadInt32();
+            var array = new float[count];
+            for (int i = 0; i < count; i++)
+                array[i] = ReadUInt64();
+            return array;
+        }
+        public double[] ReadDoubleArray()
+        {
+            var count = ReadInt32();
+            var array = new double[count];
+            for (int i = 0; i < count; i++)
+                array[i] = ReadUInt64();
+            return array;
+        }
+        public List<T> ReadList<T>(Func<T> read)
+        {
+            var count = ReadInt32();
+            var list = new List<T>();
+            for (int i = 0; i < count; i++)
+                list.Add(read.Invoke());
+            return list;
+        }
+        public Dictionary<TKey, TValue> ReadDictionary<TKey, TValue>(Func<TKey> readKey, Func<TValue> readValue)
+        {
+            var count = ReadInt32();
+            var dictionary = new Dictionary<TKey, TValue>();
+            for (int i = 0; i < count; i++)
+            {
+                var key = readKey.Invoke();
+                var value = readValue.Invoke();
+                dictionary[key] = value;
+            }
+            return dictionary;
+        }
+        public Sprite ReadSprite()
+        {
+            var hasIcon = ReadBoolean();
+            if (hasIcon)
+            {
+                var byteCount = ReadInt32();
+                var data = new byte[byteCount];
+                for (int i = 0; i < byteCount; i++)
+                    data[i] = ReadByte();
+                return SpriteHelper.LoadSprite(data);
+            }
+            return null;
+        }
+        public Texture2D ReadTexture2D()
+        {
+            var exists = ReadBoolean();
+            if (exists)
+            {
+                var byteCount = ReadInt32();
+                var data = new byte[byteCount];
+                for (int i = 0; i < byteCount; i++)
+                    data[i] = ReadByte();
+                return SpriteHelper.LoadTexture(data);
+            }
+            return null;
+        }
 
         public void Dispose()
         {

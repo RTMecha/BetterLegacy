@@ -39,7 +39,7 @@ namespace BetterLegacy.Core.Data.Network
         public void ReadPacket(NetworkReader reader)
         {
             // reads a basic number
-            number = reader.reader.ReadInt32();
+            number = reader.ReadInt32();
             // reads a vector2 value
             position = reader.ReadVector2();
             // reads a simple list
@@ -151,10 +151,39 @@ namespace BetterLegacy.Core.Data.Network
         }
 
         /// <summary>
+        /// Creates a list from packet data.
+        /// </summary>
+        /// <typeparam name="T">Type of the object list to create. Type must be <see cref="IPacket"/>.</typeparam>
+        /// <param name="reader">The current network reader.</param>
+        /// <returns>Returns a new list based on the packet data.</returns>
+        public static List<T> CreateListFromPacket<T>(NetworkReader reader) where T : IPacket, new()
+        {
+            var list = new List<T>();
+            ReadPacketList(list, reader);
+            return list;
+        }
+
+        /// <summary>
+        /// Creates a dictionary from packet data.
+        /// </summary>
+        /// <typeparam name="TKey">Type of the dictionary key.</typeparam>
+        /// <typeparam name="TValue">Type of the dictionary value.</typeparam>
+        /// <param name="dictionary">Dictionary to read to.</param>
+        /// <param name="reader">The current network reader.</param>
+        /// <param name="getKey">Get key function.</param>
+        /// <returns>Returns a new dictionary based on the packet data.</returns>
+        public static Dictionary<TKey, TValue> CreateDictionaryFromPacket<TKey, TValue>(NetworkReader reader, Func<TKey> getKey) where TValue : IPacket, new()
+        {
+            var dictionary = new Dictionary<TKey, TValue>();
+            ReadPacketDictionary(dictionary, reader, getKey);
+            return dictionary;
+        }
+
+        /// <summary>
         /// Reads list data from packet data.
         /// </summary>
         /// <typeparam name="T">Type of the object in the list to read. Type must be <see cref="IPacket"/>.</typeparam>
-        /// <param name="list">List to read.</param>
+        /// <param name="list">List to read to.</param>
         /// <param name="reader">The current network reader.</param>
         public static void ReadPacketList<T>(List<T> list, NetworkReader reader) where T : IPacket, new()
         {
@@ -165,16 +194,55 @@ namespace BetterLegacy.Core.Data.Network
         }
 
         /// <summary>
+        /// Reads dictionary data from packet data.
+        /// </summary>
+        /// <typeparam name="TKey">Type of the dictionary key.</typeparam>
+        /// <typeparam name="TValue">Type of the dictionary value.</typeparam>
+        /// <param name="dictionary">Dictionary to read to.</param>
+        /// <param name="reader">The current network reader.</param>
+        /// <param name="getKey">Get key function.</param>
+        public static void ReadPacketDictionary<TKey, TValue>(Dictionary<TKey, TValue> dictionary, NetworkReader reader, Func<TKey> getKey) where TValue : IPacket, new()
+        {
+            var count = reader.ReadInt32();
+            dictionary.Clear();
+            for (int i = 0; i < count; i++)
+            {
+                var key = getKey.Invoke();
+                var value = CreateFromPacket<TValue>(reader);
+                dictionary[key] = value;
+            }
+        }
+
+        /// <summary>
         /// Writes a list of <see cref="IPacket"/> objects.
         /// </summary>
         /// <typeparam name="T">Type of the object in the list to write. Type must be <see cref="IPacket"/>.</typeparam>
-        /// <param name="list">List to write.</param>
+        /// <param name="list">List to write from.</param>
         /// <param name="writer">The current network writer.</param>
         public static void WritePacketList<T>(List<T> list, NetworkWriter writer) where T : IPacket
         {
             writer.Write(list.Count);
             for (int i = 0; i < list.Count; i++)
                 list[i].WritePacket(writer);
+        }
+
+        /// <summary>
+        /// Writes a dictionary of <see cref="IPacket"/> objects.
+        /// </summary>
+        /// <typeparam name="TKey">Type of the dictionary key.</typeparam>
+        /// <typeparam name="TValue">Type of the dictionary value.</typeparam>
+        /// <param name="dictionary">Dictionary to write from.</param>
+        /// <param name="writer">The current network writer.</param>
+        /// <param name="writeKey">Write key function.</param>
+        /// <param name="writeValue">Write value function.</param>
+        public static void WritePacketDictionary<TKey, TValue>(Dictionary<TKey, TValue> dictionary, NetworkWriter writer, Action<TKey> writeKey, Action<TValue> writeValue)
+        {
+            writer.Write(dictionary.Count);
+            foreach (var keyValuePair in dictionary)
+            {
+                writeKey.Invoke(keyValuePair.Key);
+                writeValue.Invoke(keyValuePair.Value);
+            }
         }
     }
 }
