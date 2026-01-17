@@ -65,6 +65,9 @@ namespace BetterLegacy.Core.Data.Network
         public const int LOG_SERVER = 53295835;
         public const int LOG_MULTI = 43292487;
 
+        public const int SET_SERVER_GAME_DATA = 2585775;
+        public const int SET_CLIENT_GAME_DATA = 9432119;
+
         #endregion
 
         /// <summary>
@@ -172,7 +175,7 @@ namespace BetterLegacy.Core.Data.Network
 
             public override void ReadPacket(NetworkReader reader) => value = reader.ReadString();
 
-            public override void WritePacket(NetworkWriter writer) => writer.Write(value ?? string.Empty);
+            public override void WritePacket(NetworkWriter writer) => writer.Write(value);
         }
 
         #endregion

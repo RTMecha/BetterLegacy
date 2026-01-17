@@ -7,9 +7,13 @@ using System.Threading.Tasks;
 using SteamworksFacepunch;
 using SteamworksFacepunch.Data;
 
+using BetterLegacy.Core.Components.Player;
+using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers.Settings;
+using BetterLegacy.Core.Runtime;
+using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Core.Managers
 {
@@ -37,6 +41,60 @@ namespace BetterLegacy.Core.Managers
             new NetworkFunction(Side.Client, NetworkFunction.LOG_CLIENT, 1, reader => CoreHelper.Log(reader.ReadString())),
             new NetworkFunction(Side.Server, NetworkFunction.LOG_SERVER, 1, reader => CoreHelper.Log(reader.ReadString())),
             new NetworkFunction(NetworkFunction.LOG_MULTI, 1, reader => CoreHelper.Log(reader.ReadString())),
+            new NetworkFunction(Side.Client, NetworkFunction.SET_CLIENT_GAME_DATA, 1, reader =>
+            {
+                try
+                {
+                    if (ProjectArrhythmia.State.InEditor)
+                        EditorLevelManager.inst.ClearObjects();
+                    else
+                        LevelManager.ClearObjects();
+
+                    GameData.Current = null;
+                    GameData.Current = Packet.CreateFromPacket<GameData>(reader);
+                    RTLevel.Reinit();
+                    RTPlayer.SetGameDataProperties();
+                    CoroutineHelper.StartCoroutine(GameData.Current.assets.LoadSounds());
+
+                    if (ProjectArrhythmia.State.InEditor)
+                    {
+                        EditorLevelManager.inst.PostInitLevel();
+                        EditorTimeline.inst.RenderTimeline();
+                        EditorTimeline.inst.RenderBins();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogError($"Failed to read game data due to the exception: {ex}");
+                }
+            }),
+            new NetworkFunction(Side.Server, NetworkFunction.SET_SERVER_GAME_DATA, 1, reader =>
+            {
+                try
+                {
+                    if (ProjectArrhythmia.State.InEditor)
+                        EditorLevelManager.inst.ClearObjects();
+                    else
+                        LevelManager.ClearObjects();
+
+                    GameData.Current = null;
+                    GameData.Current = Packet.CreateFromPacket<GameData>(reader);
+                    RTLevel.Reinit();
+                    RTPlayer.SetGameDataProperties();
+                    CoroutineHelper.StartCoroutine(GameData.Current.assets.LoadSounds());
+
+                    if (ProjectArrhythmia.State.InEditor)
+                    {
+                        EditorLevelManager.inst.PostInitLevel();
+                        EditorTimeline.inst.RenderTimeline();
+                        EditorTimeline.inst.RenderBins();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogError($"Failed to read game data due to the exception: {ex}");
+                }
+            }),
         };
 
         public override void OnInit() => SetEvents();
@@ -59,7 +117,7 @@ namespace BetterLegacy.Core.Managers
 
         public override void OnManagerDestroyed() => RemoveEvents();
 
-        // BetterLegacy.Core.Managers.NetworkManager.inst.RunFunction(43292487, new NetworkFunction.StringParameter("test"));
+        // BetterLegacy.Core.Managers.NetworkManager.inst.RunFunction(NetworkFunction.LOG_MULTI, new NetworkFunction.StringParameter("test"));
         public void RunFunction(int id, params IPacket[] packets)
         {
             if (!functions.TryFind(x => x.id == id && x.parameterCount == packets.Length, out NetworkFunction function))
