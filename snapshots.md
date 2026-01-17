@@ -1,4 +1,13 @@
-﻿# 1.8.0 [Sep 19, 2025]
+﻿# ???
+## Features
+### Core
+- Added online multiplayer.
+
+## Fixes
+- Fixed run count value in Example commands being assigned the wrong variable.
+- Fixed some level property values not saving.
+
+# 1.8.0 [Sep 19, 2025]
 ## Features
 ### Core
 - Added getCurrentLevelName modifier. This passed the current levels' name to other modifiers.
