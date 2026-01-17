@@ -15,12 +15,18 @@ namespace BetterLegacy.Core.Data
     {
         public PAObjectBase() => id = LSText.randomString(16);
 
+        #region Values
+
         /// <summary>
         /// Identification of the object.
         /// </summary>
         public string id;
 
         public virtual bool ShouldSerialize => true;
+
+        #endregion
+
+        #region Functions
 
         /// <summary>
         /// Creates a 16 length string ID.
@@ -91,12 +97,12 @@ namespace BetterLegacy.Core.Data
                 return PAObjectType.ModifierBlock;
             if (obj is PlayerModel)
                 return PAObjectType.PlayerModel;
-            if (obj is PlayerItem)
-                return PAObjectType.PlayerItem;
             if (obj is PAAnimation)
                 return PAObjectType.PAAnimation;
 
             return PAObjectType.Null;
         }
+
+        #endregion
     }
 }

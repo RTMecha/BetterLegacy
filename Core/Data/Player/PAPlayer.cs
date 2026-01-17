@@ -203,9 +203,6 @@ namespace BetterLegacy.Core.Data.Player
         /// </summary>
         public SteamId? ID { get; set; }
 
-        // might not go with this?
-        public PlayerInventory inventory = new PlayerInventory();
-
         public RTLevelBase ParentRuntime { get; set; }
 
         public ModifierReferenceType ReferenceType => ModifierReferenceType.PAPlayer;

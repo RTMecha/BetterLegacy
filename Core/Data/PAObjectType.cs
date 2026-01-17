@@ -13,7 +13,6 @@
         Modifier,
         ModifierBlock,
         PlayerModel,
-        PlayerItem,
         PAAnimation,
     }
 }
