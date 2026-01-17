@@ -28,6 +28,8 @@ namespace BetterLegacy
     /// </summary>
     public class AssetPack : Exists, IFile, IUploadable
     {
+        #region Constructors
+
         public AssetPack() { }
 
         public AssetPack(string path) => this.path = path;
@@ -37,6 +39,8 @@ namespace BetterLegacy
         public AssetPack(string path, Sprite icon, string name) : this(path, icon) => this.name = name;
 
         public AssetPack(string path, Sprite icon, string name, string description) : this(path, icon, name) => this.description = description;
+
+        #endregion
 
         #region Global
 
@@ -69,7 +73,7 @@ namespace BetterLegacy
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         /// <summary>
         /// Gets an asset file.
@@ -345,7 +349,7 @@ namespace BetterLegacy
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         /// <summary>
         /// Gets the associated user settings for the asset pack.
