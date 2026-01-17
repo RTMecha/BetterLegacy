@@ -9,18 +9,20 @@ using SimpleJSON;
 
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Runtime.Objects;
 using BetterLegacy.Editor.Data.Timeline;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Core.Data
 {
-    public class PAAnimation : PAObject<PAAnimation>, IAnimatable
+    public class PAAnimation : PAObject<PAAnimation>, IPacket, IAnimatable
     {
+        #region Constructors
+
         public PAAnimation()
         {
             id = LSText.randomNumString(16);
-            markers = new List<Marker>();
 
             positionKeyframes.Add(EventKeyframe.DefaultPositionKeyframe);
             scaleKeyframes.Add(EventKeyframe.DefaultScaleKeyframe);
@@ -34,7 +36,6 @@ namespace BetterLegacy.Core.Data
             this.name = name;
             this.description = description;
             StartTime = 0f;
-            markers = new List<Marker>();
 
             positionKeyframes.Add(EventKeyframe.DefaultPositionKeyframe);
             scaleKeyframes.Add(EventKeyframe.DefaultScaleKeyframe);
@@ -48,7 +49,6 @@ namespace BetterLegacy.Core.Data
             this.name = name;
             this.description = description;
             StartTime = startTime;
-            markers = new List<Marker>();
 
             positionKeyframes.Add(EventKeyframe.DefaultPositionKeyframe);
             scaleKeyframes.Add(EventKeyframe.DefaultScaleKeyframe);
@@ -56,9 +56,9 @@ namespace BetterLegacy.Core.Data
             colorKeyframes.Add(EventKeyframe.DefaultColorKeyframe);
         }
 
-        #region Values
+        #endregion
 
-        public string ID { get => id; set => id = value; }
+        #region Values
 
         /// <summary>
         /// Name of the animation.
@@ -79,7 +79,7 @@ namespace BetterLegacy.Core.Data
         /// <summary>
         /// Markers to render in the <see cref="AnimationEditor"/>
         /// </summary>
-        public List<Marker> markers;
+        public List<Marker> markers = new List<Marker>();
 
         /// <summary>
         /// ID used for comparing objects with their associated animations.
@@ -121,7 +121,7 @@ namespace BetterLegacy.Core.Data
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public float GetLength(bool markers = false)
         {
@@ -247,6 +247,9 @@ namespace BetterLegacy.Core.Data
             if (!string.IsNullOrEmpty(ReferenceID))
                 jn["ref_id"] = ReferenceID;
 
+            if (transition)
+                jn["tr"] = transition;
+
             if (!animatePosition)
                 jn["anim"]["pos"] = animatePosition;
             if (!animateScale)
@@ -269,6 +272,54 @@ namespace BetterLegacy.Core.Data
                 jn["ed"] = EditorData.ToJSON();
 
             return jn;
+        }
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            id = reader.ReadString();
+            name = reader.ReadString();
+            description = reader.ReadString();
+            StartTime = reader.ReadSingle();
+            if (markers == null)
+                markers = new List<Marker>();
+            Packet.ReadPacketList(markers, reader);
+            ReferenceID = reader.ReadString();
+
+            transition = reader.ReadBoolean();
+            animatePosition = reader.ReadBoolean();
+            Packet.ReadPacketList(positionKeyframes, reader);
+            animateScale = reader.ReadBoolean();
+            Packet.ReadPacketList(scaleKeyframes, reader);
+            animateRotation = reader.ReadBoolean();
+            Packet.ReadPacketList(rotationKeyframes, reader);
+            animateColor = reader.ReadBoolean();
+            Packet.ReadPacketList(colorKeyframes, reader);
+
+            if (ProjectArrhythmia.State.InEditor)
+                EditorData = Packet.CreateFromPacket<ObjectEditorData>(reader);
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(id);
+            writer.Write(name);
+            writer.Write(description);
+            writer.Write(StartTime);
+            Packet.WritePacketList(markers, writer);
+            writer.Write(ReferenceID);
+
+            writer.Write(transition);
+            writer.Write(animatePosition);
+            Packet.WritePacketList(positionKeyframes, writer);
+            writer.Write(animateScale);
+            Packet.WritePacketList(scaleKeyframes, writer);
+            writer.Write(animateRotation);
+            Packet.WritePacketList(rotationKeyframes, writer);
+            writer.Write(animateColor);
+            Packet.WritePacketList(colorKeyframes, writer);
+
+            if (ProjectArrhythmia.State.InEditor)
+                EditorData.WritePacket(writer);
         }
 
         public RTAnimation ToRTAnimation(Transform transform) => ToRTAnimation(transform, Vector3.zero, Vector2.one, 0f);

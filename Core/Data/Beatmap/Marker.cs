@@ -4,12 +4,18 @@ using LSFunctions;
 
 using SimpleJSON;
 
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Editor.Data.Timeline;
 
 namespace BetterLegacy.Core.Data.Beatmap
 {
-    public class Marker : PAObject<Marker>
+    /// <summary>
+    /// Markers are used for organizing a level, noting down an idea at a particular song time or aligning to a song time.
+    /// </summary>
+    public class Marker : PAObject<Marker>, IPacket
     {
+        #region Constructors
+
         public Marker() : base() { }
 
         public Marker(string name, string desc, int color, float time) : this(GetStringID(), name, desc, color, time) { }
@@ -22,6 +28,10 @@ namespace BetterLegacy.Core.Data.Beatmap
             this.color = color;
             this.time = time;
         }
+
+        #endregion
+
+        #region Values
 
         /// <summary>
         /// Name of the marker.
@@ -53,7 +63,9 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public TimelineMarker timelineMarker;
 
-        #region Methods
+        #endregion
+
+        #region Functions
 
         public override void CopyData(Marker orig, bool newID = true)
         {
@@ -121,6 +133,24 @@ namespace BetterLegacy.Core.Data.Beatmap
             return jn;
         }
 
+        public void ReadPacket(NetworkReader reader)
+        {
+            name = reader.ReadString();
+            desc = reader.ReadString();
+            color = reader.ReadInt32();
+            time = reader.ReadSingle();
+            layers = reader.ReadList(() => reader.ReadInt32());
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(name);
+            writer.Write(desc);
+            writer.Write(color);
+            writer.Write(time);
+            writer.Write(layers, layer => writer.Write(layer));
+        }
+
         /// <summary>
         /// Checks if the marker is visible on a layer.
         /// </summary>
@@ -136,10 +166,6 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <param name="layer">Layer to check. Can be left at -1.</param>
         /// <returns>Returns true if the marker matches, otherwise returns false.</returns>
         public bool Matches(string name = null, int color = -1, int layer = -1) => (string.IsNullOrEmpty(name) || this.name == name) && (color == -1 || this.color == color) && (layer == -1 || VisibleOnLayer(layer));
-
-        #endregion
-
-        #region Operators
 
         public override bool Equals(object obj) => obj is Marker paObj && id == paObj.id;
 

@@ -2,9 +2,11 @@
 
 using SimpleJSON;
 
+using BetterLegacy.Core.Data.Network;
+
 namespace BetterLegacy.Core.Data.Player
 {
-    public class PlayerTrail : PAObject<PlayerTrail>
+    public class PlayerTrail : PAObject<PlayerTrail>, IPacket
     {
         public PlayerTrail() { }
 
@@ -23,45 +25,90 @@ namespace BetterLegacy.Core.Data.Player
             endOpacity != 0f ||
             positionOffset != Vector2.zero;
 
+        /// <summary>
+        /// If the trail is emitting.
+        /// </summary>
         public bool emitting;
 
+        /// <summary>
+        /// Delay time of the trail.
+        /// </summary>
         public float time = 1f;
 
+        /// <summary>
+        /// Position offset of the trail.
+        /// </summary>
+        public Vector2 positionOffset = Vector2.zero;
+
+        #region Start
+
+        /// <summary>
+        /// Width the trail starts at.
+        /// </summary>
         public float startWidth = 1f;
 
-        public float endWidth = 1f;
-
+        /// <summary>
+        /// Color the trail starts at.
+        /// </summary>
         public int startColor = 23;
 
+        /// <summary>
+        /// Custom color the trail starts at.
+        /// </summary>
         public string startCustomColor = RTColors.WHITE_HEX_CODE;
 
+        /// <summary>
+        /// Opacity the trail starts at.
+        /// </summary>
         public float startOpacity = 1f;
-
-        public int endColor = 23;
-
-        public string endCustomColor = RTColors.WHITE_HEX_CODE;
-
-        public float endOpacity = 0f;
-
-        public Vector2 positionOffset = Vector2.zero;
 
         #endregion
 
-        #region Methods
+        #region End
+
+        /// <summary>
+        /// Width the trail ends at.
+        /// </summary>
+        public float endWidth = 1f;
+
+        /// <summary>
+        /// Color the trail ends at.
+        /// </summary>
+        public int endColor = 23;
+
+        /// <summary>
+        /// Custom color the trail ends at.
+        /// </summary>
+        public string endCustomColor = RTColors.WHITE_HEX_CODE;
+
+        /// <summary>
+        /// Opacity the trail ends at.
+        /// </summary>
+        public float endOpacity = 0f;
+
+        #endregion
+
+        #endregion
+
+        #region Functions
 
         public override void CopyData(PlayerTrail orig, bool newID = true)
         {
             emitting = orig.emitting;
             time = orig.time;
-            startWidth = orig.startWidth;
-            endWidth = orig.endWidth;
-            startColor = orig.startColor;
-            endColor = orig.endColor;
-            startCustomColor = orig.startCustomColor;
-            endCustomColor = orig.endCustomColor;
-            startOpacity = orig.startOpacity;
-            endOpacity = orig.endOpacity;
             positionOffset = orig.positionOffset;
+
+            // start
+            startWidth = orig.startWidth;
+            startColor = orig.startColor;
+            startCustomColor = orig.startCustomColor;
+            startOpacity = orig.startOpacity;
+
+            // end
+            endWidth = orig.endWidth;
+            endColor = orig.endColor;
+            endCustomColor = orig.endCustomColor;
+            endOpacity = orig.endOpacity;
         }
 
         public override void ReadJSON(JSONNode jn)
@@ -136,6 +183,44 @@ namespace BetterLegacy.Core.Data.Player
             }
 
             return jn;
+        }
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            emitting = reader.ReadBoolean();
+            time = reader.ReadSingle();
+            positionOffset = reader.ReadVector2();
+
+            // start
+            startWidth = reader.ReadSingle();
+            startColor = reader.ReadInt32();
+            startCustomColor = reader.ReadString();
+            startOpacity = reader.ReadSingle();
+
+            // end
+            endWidth = reader.ReadSingle();
+            endColor = reader.ReadInt32();
+            endCustomColor = reader.ReadString();
+            endOpacity = reader.ReadSingle();
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(emitting);
+            writer.Write(time);
+            writer.Write(positionOffset);
+
+            // start
+            writer.Write(startWidth);
+            writer.Write(startColor);
+            writer.Write(startCustomColor);
+            writer.Write(startOpacity);
+
+            // end
+            writer.Write(endWidth);
+            writer.Write(endColor);
+            writer.Write(endCustomColor);
+            writer.Write(endOpacity);
         }
 
         #endregion

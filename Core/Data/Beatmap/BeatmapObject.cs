@@ -13,6 +13,7 @@ using BetterLegacy.Configs;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data.Modifiers;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
@@ -26,7 +27,7 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// <summary>
     /// Represents an object PA levels are made of.
     /// </summary>
-    public class BeatmapObject : PAObject<BeatmapObject>, IPrefabable, ILifetime, IShapeable, ITransformable, IParentable, IEvaluatable, IModifyable, IModifierReference, IEditable, IReactive, IAnimatable
+    public class BeatmapObject : PAObject<BeatmapObject>, IPacket, IPrefabable, ILifetime, IShapeable, ITransformable, IParentable, IEvaluatable, IModifyable, IModifierReference, IEditable, IReactive, IAnimatable
     {
         public BeatmapObject() : base() { }
 
@@ -1477,6 +1478,141 @@ namespace BetterLegacy.Core.Data.Beatmap
             return jn;
         }
 
+        public void ReadPacket(NetworkReader reader)
+        {
+            id = reader.ReadString();
+
+            #region Interface
+
+            this.ReadPrefabPacket(reader);
+            this.ReadParentPacket(reader);
+            this.ReadShapePacket(reader);
+            this.ReadModifiersPacket(reader);
+
+            #endregion
+
+            #region Base
+
+            name = reader.ReadString();
+            detailMode = (DetailMode)reader.ReadByte();
+            StartTime = reader.ReadSingle();
+            autoKillType = (AutoKillType)reader.ReadByte();
+            autoKillOffset = reader.ReadSingle();
+
+            #endregion
+
+            #region Transform
+
+            origin = reader.ReadVector2();
+            fullTransform.ReadPacket(reader);
+            fullTransformOffset.ReadPacket(reader);
+            Depth = reader.ReadSingle();
+
+            #endregion
+
+            #region Behavior
+
+            objectType = (ObjectType)reader.ReadByte();
+            opacityCollision = reader.ReadBoolean();
+
+            #endregion
+
+            #region Visual
+
+            renderLayerType = (RenderLayerType)reader.ReadByte();
+            gradientType = (GradientType)reader.ReadByte();
+            if (gradientType != GradientType.Normal)
+            {
+                gradientScale = reader.ReadSingle();
+                gradientRotation = reader.ReadSingle();
+            }
+            colorBlendMode = (ColorBlendMode)reader.ReadUInt16();
+
+            #endregion
+
+            #region Animation
+
+            animID = reader.ReadString();
+            events = new List<List<EventKeyframe>>()
+            {
+                new List<EventKeyframe>(),
+                new List<EventKeyframe>(),
+                new List<EventKeyframe>(),
+                new List<EventKeyframe>(),
+            };
+            for (int i = 0; i < 4; i++)
+                Packet.ReadPacketList(events[i], reader);
+
+            #endregion
+
+            if (ProjectArrhythmia.State.InEditor)
+                editorData = Packet.CreateFromPacket<ObjectEditorData>(reader);
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(id);
+
+            #region Interface
+
+            this.WritePrefabPacket(writer);
+            this.WriteParentPacket(writer);
+            this.WriteShapePacket(writer);
+            this.WriteModifiersPacket(writer);
+
+            #endregion
+
+            #region Base
+
+            writer.Write(name);
+            writer.Write((byte)detailMode);
+            writer.Write(StartTime);
+            writer.Write((byte)autoKillType);
+            writer.Write(autoKillOffset);
+
+            #endregion
+
+            #region Transform
+
+            writer.Write(origin);
+            fullTransform.WritePacket(writer);
+            fullTransformOffset.WritePacket(writer);
+            writer.Write(Depth);
+
+            #endregion
+
+            #region Behavior
+
+            writer.Write((byte)objectType);
+            writer.Write(opacityCollision);
+
+            #endregion
+
+            #region Visual
+
+            writer.Write((byte)renderLayerType);
+            writer.Write((byte)gradientType);
+            if (gradientType != GradientType.Normal)
+            {
+                writer.Write(gradientScale);
+                writer.Write(gradientRotation);
+            }
+            writer.Write((ushort)colorBlendMode);
+
+            #endregion
+
+            #region Animation
+
+            writer.Write(animID);
+            for (int i = 0; i < 4; i++)
+                Packet.WritePacketList(events[i], writer);
+
+            #endregion
+
+            if (ProjectArrhythmia.State.InEditor)
+                editorData.WritePacket(writer);
+        }
+
         public Sprite GetSprite() => GetSprite(text);
 
         public Sprite GetSprite(string value)
@@ -2423,10 +2559,6 @@ namespace BetterLegacy.Core.Data.Beatmap
         public void UpdateParentChain() => this.GetParentRuntime()?.UpdateObject(this, ObjectContext.PARENT_CHAIN);
 
         #endregion
-
-        #endregion
-
-        #region Operators
 
         public override bool Equals(object obj) => obj is BeatmapObject paObj && id == paObj.id;
 

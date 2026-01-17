@@ -2,6 +2,7 @@
 
 using SimpleJSON;
 
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 
@@ -10,8 +11,10 @@ namespace BetterLegacy.Core.Data.Level
     /// <summary>
     /// Class used for obtaining info about a level even if the player doesn't have the level loaded in their arcade.
     /// </summary>
-    public class LevelInfo : Exists
+    public class LevelInfo : Exists, IPacket
     {
+        #region Constructors
+
         public LevelInfo() { }
 
         public LevelInfo(string id, string arcadeID, string serverID, string workshopID, string songTitle, string name)
@@ -24,7 +27,9 @@ namespace BetterLegacy.Core.Data.Level
             this.name = name;
         }
 
-        #region Fields
+        #endregion
+
+        #region Values
 
         #region Reference
 
@@ -146,7 +151,69 @@ namespace BetterLegacy.Core.Data.Level
 
         #endregion
 
-        #region Methods
+        #region Functions
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            index = reader.ReadInt32();
+            id = reader.ReadString();
+
+            path = reader.ReadString();
+            editorPath = reader.ReadString();
+
+            name = reader.ReadString();
+            creator = reader.ReadString();
+            songArtist = reader.ReadString();
+            songTitle = reader.ReadString();
+            difficulty = reader.ReadInt32();
+
+            arcadeID = reader.ReadString();
+            serverID = reader.ReadString();
+            workshopID = reader.ReadString();
+
+            hidden = reader.ReadBoolean();
+            showAfterUnlock = reader.ReadBoolean();
+            skip = reader.ReadBoolean();
+
+            overwriteRequireUnlock = reader.ReadBoolean();
+            requireUnlock = reader.ReadBoolean();
+            overwriteUnlockAfterCompletion = reader.ReadBoolean();
+            unlockAfterCompletion = reader.ReadBoolean();
+
+            icon = reader.ReadSprite();
+            lockedIcon = reader.ReadSprite();
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(index);
+            writer.Write(id);
+
+            writer.Write(path);
+            writer.Write(editorPath);
+
+            writer.Write(name);
+            writer.Write(creator);
+            writer.Write(songArtist);
+            writer.Write(songTitle);
+            writer.Write(difficulty);
+
+            writer.Write(arcadeID);
+            writer.Write(serverID);
+            writer.Write(workshopID);
+
+            writer.Write(hidden);
+            writer.Write(showAfterUnlock);
+            writer.Write(skip);
+
+            writer.Write(overwriteRequireUnlock);
+            writer.Write(requireUnlock);
+            writer.Write(overwriteUnlockAfterCompletion);
+            writer.Write(unlockAfterCompletion);
+
+            writer.Write(icon);
+            writer.Write(lockedIcon);
+        }
 
         /// <summary>
         /// Overwrites some values of the level.

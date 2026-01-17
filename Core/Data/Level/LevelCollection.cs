@@ -10,6 +10,7 @@ using SimpleJSON;
 using SteamworksFacepunch.Ugc;
 
 using BetterLegacy.Arcade.Interfaces;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Editor.Data.Elements;
@@ -23,6 +24,8 @@ namespace BetterLegacy.Core.Data.Level
     /// </summary>
     public class LevelCollection : Exists, IUploadable
     {
+        #region Constructors
+
         public LevelCollection() => id = PAObjectBase.GetNumberID();
 
         /// <summary>
@@ -40,7 +43,40 @@ namespace BetterLegacy.Core.Data.Level
             }
         }
 
+        #endregion
+
         #region Values
+
+        #region Constants
+
+        /// <summary>
+        /// The collection icon file.
+        /// </summary>
+        public const string ICON_PNG = "icon.png";
+        /// <summary>
+        /// The collection icon file.
+        /// </summary>
+        public const string ICON_JPG = "icon.jpg";
+
+        /// <summary>
+        /// The collection banner file.
+        /// </summary>
+        public const string BANNER_PNG = "banner.png";
+        /// <summary>
+        /// The collection banner file.
+        /// </summary>
+        public const string BANNER_JPG = "banner.jpg";
+
+        /// <summary>
+        /// The collection file.
+        /// </summary>
+        public const string COLLECTION_LSCO = "collection.lsco";
+        /// <summary>
+        /// The collection preview audio file.
+        /// </summary>
+        public const string PREVIEW_OGG = "preview.ogg";
+
+        #endregion
 
         public DifficultyType Difficulty { get => difficulty; set => difficulty = value; }
 
@@ -213,37 +249,6 @@ namespace BetterLegacy.Core.Data.Level
 
         #endregion
 
-        #region Constants
-
-        /// <summary>
-        /// The collection icon file.
-        /// </summary>
-        public const string ICON_PNG = "icon.png";
-        /// <summary>
-        /// The collection icon file.
-        /// </summary>
-        public const string ICON_JPG = "icon.jpg";
-
-        /// <summary>
-        /// The collection banner file.
-        /// </summary>
-        public const string BANNER_PNG = "banner.png";
-        /// <summary>
-        /// The collection banner file.
-        /// </summary>
-        public const string BANNER_JPG = "banner.jpg";
-
-        /// <summary>
-        /// The collection file.
-        /// </summary>
-        public const string COLLECTION_LSCO = "collection.lsco";
-        /// <summary>
-        /// The collection preview audio file.
-        /// </summary>
-        public const string PREVIEW_OGG = "preview.ogg";
-
-        #endregion
-
         #region Indexers
 
         public Level this[int index]
@@ -269,7 +274,61 @@ namespace BetterLegacy.Core.Data.Level
 
         #endregion
 
-        #region Methods
+        #region Functions
+
+        #region Packet
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            #region Interface
+
+            this.ReadUploadablePacket(reader);
+
+            #endregion
+
+            id = reader.ReadString();
+            name = reader.ReadString();
+            creator = reader.ReadString();
+            description = reader.ReadString();
+            difficulty = reader.ReadInt32();
+            entryLevelIndex = reader.ReadInt32();
+            allowZenProgression = reader.ReadBoolean();
+
+            dateEdited = reader.ReadString();
+            dateCreated = reader.ReadString();
+
+            editorPath = reader.ReadString();
+            Packet.ReadPacketList(levelInformation, reader);
+            icon = reader.ReadSprite();
+            banner = reader.ReadSprite();
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            #region Interface
+
+            this.WriteUploadablePacket(writer);
+
+            #endregion
+
+            writer.Write(id);
+            writer.Write(name);
+            writer.Write(creator);
+            writer.Write(description);
+            writer.Write(difficulty);
+            writer.Write(entryLevelIndex);
+            writer.Write(allowZenProgression);
+
+            writer.Write(dateEdited);
+            writer.Write(dateCreated);
+
+            writer.Write(editorPath);
+            Packet.WritePacketList(levelInformation, writer);
+            writer.Write(icon);
+            writer.Write(banner);
+        }
+
+        #endregion
 
         /// <summary>
         /// Parses a level collection. Levels can be loaded either via path, arcade ID or workshop ID. Ensure this runs after Arcade and/or Steam levels have loaded.

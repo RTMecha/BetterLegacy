@@ -1,10 +1,11 @@
 ﻿using SimpleJSON;
 
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Runtime.Objects;
 
 namespace BetterLegacy.Core.Data.Beatmap
 {
-    public class BackgroundLayer : PAObject<BackgroundLayer>, IPrefabable
+    public class BackgroundLayer : PAObject<BackgroundLayer>, IPacket, IPrefabable
     {
         #region Constructors
 
@@ -97,6 +98,26 @@ namespace BetterLegacy.Core.Data.Beatmap
             this.WritePrefabJSON(jn);
 
             return jn;
+        }
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            id = reader.ReadString();
+
+            this.ReadPrefabPacket(reader);
+
+            depth = reader.ReadInt32();
+            color = reader.ReadInt32();
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(id);
+
+            this.WritePrefabPacket(writer);
+
+            writer.Write(depth);
+            writer.Write(color);
         }
 
         /// <summary>

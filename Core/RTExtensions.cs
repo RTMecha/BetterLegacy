@@ -22,6 +22,7 @@ using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Modifiers;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
@@ -2900,6 +2901,154 @@ namespace BetterLegacy.Core
 
             if (!string.IsNullOrEmpty(uploadable.ObjectVersion))
                 jn["file_version"] = uploadable.ObjectVersion;
+        }
+
+        #endregion
+
+        #region Packet
+
+        /// <summary>
+        /// Reads <see cref="IShapeable"/> data from a packet.
+        /// </summary>
+        /// <param name="shapeable">Shapeable object reference.</param>
+        /// <param name="reader">Packet data to read from.</param>
+        public static void ReadShapePacket(this IShapeable shapeable, NetworkReader reader)
+        {
+            shapeable.Shape = reader.ReadInt32();
+            shapeable.ShapeOption = reader.ReadInt32();
+            shapeable.Polygon = Packet.CreateFromPacket<PolygonShape>(reader);
+            shapeable.Text = reader.ReadString();
+            shapeable.AutoTextAlign = reader.ReadBoolean();
+        }
+
+        /// <summary>
+        /// Writes <see cref="IShapeable"/> data to a packet.
+        /// </summary>
+        /// <param name="shapeable">Shapeable object reference.</param>
+        /// <param name="writer">Packet data to write to.</param>
+        public static void WriteShapePacket(this IShapeable shapeable, NetworkWriter writer)
+        {
+            writer.Write(shapeable.Shape);
+            writer.Write(shapeable.ShapeOption);
+            shapeable.Polygon.WritePacket(writer);
+            writer.Write(shapeable.Text);
+            writer.Write(shapeable.AutoTextAlign);
+        }
+
+        /// <summary>
+        /// Reads <see cref="IParentable"/> data from a packet.
+        /// </summary>
+        /// <param name="parentable">Parentable object reference.</param>
+        /// <param name="reader">Packet data to read from.</param>
+        public static void ReadParentPacket(this IParentable parentable, NetworkReader reader)
+        {
+            parentable.Parent = reader.ReadString();
+            parentable.ParentDesync = reader.ReadBoolean();
+            parentable.ParentType = reader.ReadString();
+            parentable.ParentOffsets = reader.ReadSingleArray();
+            parentable.ParentAdditive = reader.ReadString();
+            parentable.ParentParallax = reader.ReadSingleArray();
+        }
+
+        /// <summary>
+        /// Writes <see cref="IParentable"/> data to a packet.
+        /// </summary>
+        /// <param name="parentable">Parentable object reference.</param>
+        /// <param name="writer">Packet data to write to.</param>
+        public static void WriteParentPacket(this IParentable parentable, NetworkWriter writer)
+        {
+            writer.Write(parentable.Parent);
+            writer.Write(parentable.ParentDesync);
+            writer.Write(parentable.ParentType);
+            writer.Write(parentable.ParentOffsets);
+            writer.Write(parentable.ParentAdditive);
+            writer.Write(parentable.ParentParallax);
+        }
+
+        /// <summary>
+        /// Reads <see cref="IPrefabable"/> data from a packet.
+        /// </summary>
+        /// <param name="prefabable">Prefabable object reference.</param>
+        /// <param name="reader">Packet data to read from.</param>
+        public static void ReadPrefabPacket(this IPrefabable prefabable, NetworkReader reader)
+        {
+            prefabable.PrefabID = reader.ReadString();
+            prefabable.PrefabInstanceID = reader.ReadString();
+        }
+
+        /// <summary>
+        /// Writes <see cref="IPrefabable"/> data to a packet.
+        /// </summary>
+        /// <param name="prefabable">Prefabable object reference.</param>
+        /// <param name="writer">Packet data to write to.</param>
+        public static void WritePrefabPacket(this IPrefabable prefabable, NetworkWriter writer)
+        {
+            writer.Write(prefabable.PrefabID);
+            writer.Write(prefabable.PrefabInstanceID);
+        }
+
+        /// <summary>
+        /// Reads <see cref="IModifyable"/> data from a packet.
+        /// </summary>
+        /// <param name="modifyable">Modifyable object reference.</param>
+        /// <param name="reader">Packet data to read from.</param>
+        public static void ReadModifiersPacket(this IModifyable modifyable, NetworkReader reader)
+        {
+            modifyable.Tags = reader.ReadList(() => reader.ReadString());
+            modifyable.IgnoreLifespan = reader.ReadBoolean();
+            modifyable.OrderModifiers = reader.ReadBoolean();
+            Packet.ReadPacketList(modifyable.Modifiers, reader);
+        }
+
+        /// <summary>
+        /// Writes <see cref="IModifyable"/> data to a packet.
+        /// </summary>
+        /// <param name="modifyable">Modifyable object reference.</param>
+        /// <param name="writer">Packet data to write to.</param>
+        public static void WriteModifiersPacket(this IModifyable modifyable, NetworkWriter writer)
+        {
+            writer.Write(modifyable.Tags ?? new List<string>(), tag => writer.Write(tag));
+            writer.Write(modifyable.IgnoreLifespan);
+            writer.Write(modifyable.OrderModifiers);
+            Packet.WritePacketList(modifyable.Modifiers, writer);
+        }
+
+        /// <summary>
+        /// Reads <see cref="IUploadable"/> data from a packet.
+        /// </summary>
+        /// <param name="uploadable">Uploadable object reference.</param>
+        /// <param name="reader">Packet data to read from.</param>
+        public static void ReadUploadablePacket(this IUploadable uploadable, NetworkReader reader)
+        {
+            uploadable.ServerID = reader.ReadString();
+            uploadable.UploaderName = reader.ReadString();
+            uploadable.UploaderID = reader.ReadString();
+            Packet.ReadPacketList(uploadable.Uploaders, reader);
+            uploadable.Visibility = (ServerVisibility)reader.ReadByte();
+            uploadable.Changelog = reader.ReadString();
+            uploadable.ArcadeTags = reader.ReadList(() => reader.ReadString());
+            uploadable.ObjectVersion = reader.ReadString();
+            uploadable.VersionNumber = reader.ReadInt32();
+            uploadable.DatePublished = reader.ReadString();
+        }
+
+        /// <summary>
+        /// Writes <see cref="IUploadable"/> data to a packet.
+        /// </summary>
+        /// <param name="uploadable">Uploadable object reference.</param>
+        /// <param name="writer">Packet data to write to.</param>
+        public static void WriteUploadablePacket(this IUploadable uploadable, NetworkWriter writer)
+        {
+            writer.Write(uploadable.ServerID);
+            writer.Write(uploadable.UploaderName);
+            writer.Write(uploadable.UploaderID);
+            Packet.WritePacketList(uploadable.Uploaders, writer);
+            writer.Write((byte)uploadable.Visibility);
+            writer.Write(uploadable.Changelog);
+            writer.Write(uploadable.ArcadeTags, tag => writer.Write(tag));
+            writer.Write(uploadable.ObjectVersion);
+            writer.Write(uploadable.VersionNumber);
+            writer.Write(uploadable.DatePublished);
         }
 
         #endregion

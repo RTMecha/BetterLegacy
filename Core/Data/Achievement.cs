@@ -3,6 +3,7 @@ using UnityEngine;
 
 using SimpleJSON;
 
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Core.Data
@@ -12,7 +13,7 @@ namespace BetterLegacy.Core.Data
     /// <summary>
     /// Custom achievement class to be used for levels and the game.
     /// </summary>
-    public class Achievement : PAObject<Achievement>
+    public class Achievement : PAObject<Achievement>, IPacket
     {
         #region Constructors
 
@@ -156,6 +157,32 @@ namespace BetterLegacy.Core.Data
                 jn["shared"] = shared;
 
             return jn;
+        }
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            id = reader.ReadString();
+            name = reader.ReadString();
+            description = reader.ReadString();
+            difficulty = reader.ReadByte();
+            icon = reader.ReadSprite();
+            lockedIcon = reader.ReadSprite();
+            hidden = reader.ReadBoolean();
+            hint = reader.ReadString();
+            shared = reader.ReadBoolean();
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(id);
+            writer.Write(name);
+            writer.Write(description);
+            writer.Write(difficulty);
+            writer.Write(icon);
+            writer.Write(lockedIcon);
+            writer.Write(hidden);
+            writer.Write(hint);
+            writer.Write(shared);
         }
 
         /// <summary>

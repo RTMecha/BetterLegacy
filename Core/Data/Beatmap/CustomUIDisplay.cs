@@ -3,16 +3,60 @@ using System.Linq;
 
 using SimpleJSON;
 
+using BetterLegacy.Core.Data.Network;
+
 namespace BetterLegacy.Core.Data.Beatmap
 {
     /// <summary>
     /// Allows specific editor UI to be customized per-object.
     /// </summary>
-    public class CustomValueDisplay : PAObject<CustomValueDisplay>
+    public class CustomValueDisplay : PAObject<CustomValueDisplay>, IPacket
     {
         public CustomValueDisplay() { }
 
         #region Values
+
+        #region Defaults
+
+        public static CustomValueDisplay DefaultPositionXDisplay => new CustomValueDisplay()
+        {
+            path = "position/x",
+            type = UIType.InputField,
+        };
+
+        public static CustomValueDisplay DefaultPositionYDisplay => new CustomValueDisplay()
+        {
+            path = "position/y",
+            type = UIType.InputField,
+        };
+
+        public static CustomValueDisplay DefaultPositionZDisplay => new CustomValueDisplay()
+        {
+            path = "position/z",
+            type = UIType.InputField,
+        };
+
+        public static CustomValueDisplay DefaultScaleXDisplay => new CustomValueDisplay()
+        {
+            path = "scale/x",
+            type = UIType.InputField,
+            resetValue = 1.0f,
+        };
+
+        public static CustomValueDisplay DefaultScaleYDisplay => new CustomValueDisplay()
+        {
+            path = "scale/y",
+            type = UIType.InputField,
+            resetValue = 1.0f,
+        };
+
+        public static CustomValueDisplay DefaultRotationDisplay => new CustomValueDisplay()
+        {
+            path = "rotation/x",
+            type = UIType.InputField,
+        };
+
+        #endregion
 
         /// <summary>
         /// If the UI data should serialize to JSON.
@@ -131,49 +175,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #endregion
 
-        #region Global
-
-        public static CustomValueDisplay DefaultPositionXDisplay => new CustomValueDisplay()
-        {
-            path = "position/x",
-            type = UIType.InputField,
-        };
-        
-        public static CustomValueDisplay DefaultPositionYDisplay => new CustomValueDisplay()
-        {
-            path = "position/y",
-            type = UIType.InputField,
-        };
-        
-        public static CustomValueDisplay DefaultPositionZDisplay => new CustomValueDisplay()
-        {
-            path = "position/z",
-            type = UIType.InputField,
-        };
-        
-        public static CustomValueDisplay DefaultScaleXDisplay => new CustomValueDisplay()
-        {
-            path = "scale/x",
-            type = UIType.InputField,
-            resetValue = 1.0f,
-        };
-        
-        public static CustomValueDisplay DefaultScaleYDisplay => new CustomValueDisplay()
-        {
-            path = "scale/y",
-            type = UIType.InputField,
-            resetValue = 1.0f,
-        };
-
-        public static CustomValueDisplay DefaultRotationDisplay => new CustomValueDisplay()
-        {
-            path = "rotation/x",
-            type = UIType.InputField,
-        };
-
-        #endregion
-
-        #region Methods
+        #region Functions
 
         public override void CopyData(CustomValueDisplay orig, bool newID = true)
         {
@@ -290,6 +292,68 @@ namespace BetterLegacy.Core.Data.Beatmap
             return jn;
         }
 
+        public void ReadPacket(NetworkReader reader)
+        {
+            path = reader.ReadString();
+            type = (UIType)reader.ReadByte();
+            label = reader.ReadString();
+            multiValue = reader.ReadString();
+            interactible = reader.ReadBoolean();
+            switch (type)
+            {
+                case UIType.InputField: {
+                        overrideScroll = reader.ReadBoolean();
+                        scrollAmount = reader.ReadSingle();
+                        scrollMultiply = reader.ReadSingle();
+                        min = reader.ReadSingle();
+                        max = reader.ReadSingle();
+                        resetValue = reader.ReadSingle();
+                        break;
+                    }
+                case UIType.Dropdown: {
+                        Packet.ReadPacketList(options, reader);
+                        break;
+                    }
+                case UIType.Toggle: {
+                        toggleLabel = reader.ReadString();
+                        offValue = reader.ReadSingle();
+                        onValue = reader.ReadSingle();
+                        break;
+                    }
+            }
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(path);
+            writer.Write((byte)type);
+            writer.Write(label);
+            writer.Write(multiValue);
+            writer.Write(interactible);
+            switch (type)
+            {
+                case UIType.InputField: {
+                        writer.Write(overrideScroll);
+                        writer.Write(scrollAmount);
+                        writer.Write(scrollMultiply);
+                        writer.Write(min);
+                        writer.Write(max);
+                        writer.Write(resetValue);
+                        break;
+                    }
+                case UIType.Dropdown: {
+                        Packet.WritePacketList(options, writer);
+                        break;
+                    }
+                case UIType.Toggle: {
+                        writer.Write(toggleLabel);
+                        writer.Write(offValue);
+                        writer.Write(onValue);
+                        break;
+                    }
+            }
+        }
+
         /// <summary>
         /// Applies custom UI settings from another display element.
         /// </summary>
@@ -318,10 +382,12 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #endregion
 
+        #region Sub Classes
+
         /// <summary>
         /// Represents an option in a dropdown.
         /// </summary>
-        public class Option : PAObject<Option>
+        public class Option : PAObject<Option>, IPacket
         {
             public Option() { }
 
@@ -345,7 +411,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             #endregion
 
-            #region Methods
+            #region Functions
 
             public override void CopyData(Option orig, bool newID = true)
             {
@@ -369,7 +435,21 @@ namespace BetterLegacy.Core.Data.Beatmap
                 return jn;
             }
 
+            public void ReadPacket(NetworkReader reader)
+            {
+                name = reader.ReadString();
+                value = reader.ReadSingle();
+            }
+
+            public void WritePacket(NetworkWriter writer)
+            {
+                writer.Write(name);
+                writer.Write(value);
+            }
+
             #endregion
         }
+
+        #endregion
     }
 }

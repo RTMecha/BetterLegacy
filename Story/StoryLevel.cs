@@ -10,6 +10,7 @@ using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Level;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Story
@@ -17,9 +18,11 @@ namespace BetterLegacy.Story
     /// <summary>
     /// Stores data to be used for playing levels in the story mode. Level does not need to have a full path, it can be purely an asset.
     /// </summary>
-    public class StoryLevel : Level
+    public class StoryLevel : Level, IPacket
     {
         public StoryLevel() : base() => isStory = true;
+
+        #region Values
 
         /// <summary>
         /// Name of the story level.
@@ -45,6 +48,26 @@ namespace BetterLegacy.Story
         /// If the level is from the game files.
         /// </summary>
         public bool isResourcesBeatmap;
+
+        #endregion
+
+        #region Functions
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            name = reader.ReadString();
+            json = reader.ReadString();
+            jsonPlayers = reader.ReadString();
+            isResourcesBeatmap = reader.ReadBoolean();
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(name);
+            writer.Write(json);
+            writer.Write(jsonPlayers);
+            writer.Write(isResourcesBeatmap);
+        }
 
         /// <summary>
         /// Loads a story level from an <see cref="AssetBundle"/>.
@@ -119,6 +142,18 @@ namespace BetterLegacy.Story
         /// Loads the story levels' game data.
         /// </summary>
         /// <returns>Returns the loaded game data.</returns>
-        public override GameData LoadGameData() => GameData.Parse(JSON.Parse(json));
+        public override GameData LoadGameData()
+        {
+            try
+            {
+                return GameData.Parse(JSON.Parse(json));
+            }
+            catch
+            {
+                throw new GameDataException("Failed to load story game data.");
+            }
+        }
+
+        #endregion
     }
 }

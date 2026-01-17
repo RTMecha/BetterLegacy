@@ -11,6 +11,7 @@ using SimpleJSON;
 
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Data.Modifiers;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
@@ -23,7 +24,7 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// <summary>
     /// An instance of a <see cref="Prefab"/> that spawns all objects contained in the Prefab.
     /// </summary>
-    public class PrefabObject : PAObject<PrefabObject>, ILifetime, ITransformable, IParentable, IModifyable, IModifierReference, IEditable, IPrefabable, IEvaluatable
+    public class PrefabObject : PAObject<PrefabObject>, IPacket, ILifetime, ITransformable, IParentable, IModifyable, IModifierReference, IEditable, IPrefabable, IEvaluatable
     {
         public PrefabObject() : base()
         {
@@ -736,6 +737,148 @@ namespace BetterLegacy.Core.Data.Beatmap
             return jn;
         }
 
+        public void ReadPacket(NetworkReader reader)
+        {
+            id = reader.ReadString();
+
+            #region Interface
+
+            this.ReadPrefabPacket(reader);
+            this.ReadParentPacket(reader);
+            this.ReadModifiersPacket(reader);
+
+            #endregion
+
+            #region Base
+
+            StartTime = reader.ReadSingle();
+            detailMode = (DetailMode)reader.ReadByte();
+            expanded = reader.ReadBoolean();
+
+            #endregion
+
+            #region Modify Spawning
+
+            parentSelf = reader.ReadBoolean();
+            offsetParentDesyncTime = reader.ReadBoolean();
+
+            Speed = reader.ReadSingle();
+            RepeatCount = reader.ReadInt32();
+            RepeatOffsetTime = reader.ReadSingle();
+
+            autoKillType = (PrefabAutoKillType)reader.ReadByte();
+            autoKillOffset = reader.ReadSingle();
+
+            #endregion
+
+            #region Transform
+
+            ReadOffsetPacket(events[0], false, reader);
+            ReadOffsetPacket(events[1], false, reader);
+            ReadOffsetPacket(events[2], true, reader);
+
+            depth = reader.ReadSingle();
+
+            fullTransform.ReadPacket(reader);
+            fullTransformOffset.ReadPacket(reader);
+
+            #endregion
+
+            if (ProjectArrhythmia.State.InEditor)
+                editorData = Packet.CreateFromPacket<ObjectEditorData>(reader);
+        }
+
+        void ReadOffsetPacket(EventKeyframe eventKeyframe, bool isSingle, NetworkReader reader)
+        {
+            if (isSingle)
+                eventKeyframe.values[0] = reader.ReadSingle();
+            else
+            {
+                var value = reader.ReadVector2();
+                eventKeyframe.values[0] = value.x;
+                eventKeyframe.values[1] = value.y;
+            }
+            var random = reader.ReadByte();
+            eventKeyframe.random = random;
+            if (eventKeyframe.RandomType != RandomType.None)
+            {
+                var randomValue = reader.ReadVector2();
+                var randomInterval = reader.ReadSingle();
+                eventKeyframe.randomValues[0] = randomValue.x;
+                eventKeyframe.randomValues[1] = randomValue.y;
+                eventKeyframe.randomValues[2] = randomInterval;
+            }
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(id);
+
+            #region Interface
+
+            this.WritePrefabPacket(writer);
+            this.WriteParentPacket(writer);
+            this.WriteModifiersPacket(writer);
+
+            #endregion
+
+            #region Base
+
+            writer.Write(StartTime);
+            writer.Write((byte)detailMode);
+            writer.Write(expanded);
+
+            #endregion
+
+            #region Modify Spawning
+
+            writer.Write(parentSelf);
+            writer.Write(offsetParentDesyncTime);
+
+            writer.Write(Speed);
+            writer.Write(RepeatCount);
+            writer.Write(RepeatOffsetTime);
+
+            writer.Write((byte)autoKillType);
+            writer.Write(autoKillOffset);
+
+            #endregion
+
+            #region Transform
+
+            WriteOffsetPacket(events[0], false, writer);
+            WriteOffsetPacket(events[1], false, writer);
+            WriteOffsetPacket(events[2], true, writer);
+
+            writer.Write(depth);
+
+            fullTransform.WritePacket(writer);
+            fullTransformOffset.WritePacket(writer);
+
+            #endregion
+
+            if (ProjectArrhythmia.State.InEditor)
+                editorData.WritePacket(writer);
+        }
+
+        void WriteOffsetPacket(EventKeyframe eventKeyframe, bool isSingle, NetworkWriter writer)
+        {
+            if (isSingle)
+                writer.Write(eventKeyframe.values[0]);
+            else
+                writer.Write(new Vector2(eventKeyframe.values[0], eventKeyframe.values[1]));
+            writer.Write((byte)eventKeyframe.random);
+            if (eventKeyframe.RandomType != RandomType.None)
+            {
+                writer.Write(new Vector2(eventKeyframe.randomValues[0], eventKeyframe.randomValues[1]));
+                writer.Write(eventKeyframe.randomValues[2]);
+            }
+        }
+
+        /// <summary>
+        /// Pastes instance data onto the prefab object.
+        /// </summary>
+        /// <param name="copiedInstanceData">Copied instance data to paste.</param>
         public void PasteInstanceData(PrefabObject copiedInstanceData)
         {
             autoKillOffset = copiedInstanceData.autoKillOffset;

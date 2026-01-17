@@ -3,10 +3,11 @@
 using SimpleJSON;
 
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Network;
 
 namespace BetterLegacy.Core.Data.Player
 {
-    public class PlayerParticles : PAObject<PlayerParticles>, IShapeable
+    public class PlayerParticles : PAObject<PlayerParticles>, IPacket, IShapeable
     {
         public PlayerParticles() { }
 
@@ -90,7 +91,7 @@ namespace BetterLegacy.Core.Data.Player
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public override void CopyData(PlayerParticles orig, bool newID = true)
         {
@@ -201,6 +202,62 @@ namespace BetterLegacy.Core.Data.Player
                 jn["trem"] = trailEmitting;
 
             return jn;
+        }
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            #region Interface
+
+            this.ReadShapePacket(reader);
+
+            #endregion
+
+            emitting = reader.ReadBoolean();
+            color = reader.ReadInt32();
+            customColor = reader.ReadString();
+
+            // start
+            startOpacity = reader.ReadSingle();
+            startScale = reader.ReadSingle();
+
+            // end
+            endOpacity = reader.ReadSingle();
+            endScale = reader.ReadSingle();
+
+            rotation = reader.ReadSingle();
+            lifeTime = reader.ReadSingle();
+            speed = reader.ReadSingle();
+            amount = reader.ReadSingle();
+            force = reader.ReadVector2();
+            trailEmitting = reader.ReadBoolean();
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            #region Interface
+
+            this.WriteShapePacket(writer);
+
+            #endregion
+
+            writer.Write(emitting);
+            writer.Write(color);
+            writer.Write(customColor);
+
+            // start
+            writer.Write(startOpacity);
+            writer.Write(startScale);
+
+            // end
+            writer.Write(endOpacity);
+            writer.Write(endScale);
+
+            writer.Write(rotation);
+            writer.Write(lifeTime);
+            writer.Write(speed);
+            writer.Write(amount);
+            writer.Write(force);
+            writer.Write(trailEmitting);
         }
 
         public void SetCustomShape(int shape, int shapeOption) { }

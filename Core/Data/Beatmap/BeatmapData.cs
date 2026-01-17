@@ -4,12 +4,14 @@ using System.Linq;
 
 using SimpleJSON;
 
+using BetterLegacy.Core.Data.Network;
+
 namespace BetterLegacy.Core.Data.Beatmap
 {
     /// <summary>
     /// Represents the levels' beatmap data. Contains checkpoints, etc.
     /// </summary>
-    public class BeatmapData : PAObject<BeatmapData>
+    public class BeatmapData : PAObject<BeatmapData>, IPacket
     {
         public BeatmapData() { }
 
@@ -76,7 +78,20 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             markers = markers.OrderBy(x => x.time).ToList();
             checkpoints = checkpoints.OrderBy(x => x.time).ToList();
+        }
 
+        public void ReadPacket(NetworkReader reader)
+        {
+            level = Packet.CreateFromPacket<LevelData>(reader);
+            Packet.ReadPacketList(markers, reader);
+            Packet.ReadPacketList(checkpoints, reader);
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            level.WritePacket(writer);
+            Packet.WritePacketList(markers, writer);
+            Packet.WritePacketList(checkpoints, writer);
         }
 
         /// <summary>

@@ -9,45 +9,219 @@ using LSFunctions;
 using SimpleJSON;
 
 using BetterLegacy.Configs;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Editor.Data.Elements;
 
 namespace BetterLegacy.Core.Data.Beatmap
 {
-    public class BeatmapTheme : PAObject<BeatmapTheme>, IUploadable, IFile
+    public class BeatmapTheme : PAObject<BeatmapTheme>, IPacket, IUploadable, IFile
     {
         public BeatmapTheme() => id = string.Empty;
 
         #region Values
 
+        #region Default Values
+
+        /// <summary>
+        /// The default name.
+        /// </summary>
+        public static string DefaultName { get; set; } = "New Theme";
+
+        /// <summary>
+        /// The default background color.
+        /// </summary>
+        public static Color DefaultBGColor { get; set; } = LSColors.gray900;
+
+        /// <summary>
+        /// The default GUI color.
+        /// </summary>
+        public static Color DefaultGUIColor { get; set; } = LSColors.white;
+
+        /// <summary>
+        /// The default tail color.
+        /// </summary>
+        public static Color DefaultTailColor { get; set; } = LSColors.white;
+
+        /// <summary>
+        /// The default player colors.
+        /// </summary>
+        public static List<Color> DefaultPlayerColors { get; set; } = new List<Color>
+        {
+            LSColors.HexToColor("E57373"),
+            LSColors.HexToColor("64B5F6"),
+            LSColors.HexToColor("81C784"),
+            LSColors.HexToColor("FFB74D"),
+        };
+
+        /// <summary>
+        /// The default object colors.
+        /// </summary>
+        public static List<Color> DefaultObjectColors { get; set; } = new List<Color>
+        {
+            LSColors.gray100,
+            LSColors.gray200,
+            LSColors.gray300,
+            LSColors.gray400,
+            LSColors.gray500,
+            LSColors.gray600,
+            LSColors.gray700,
+            LSColors.gray800,
+            LSColors.gray900,
+            LSColors.gray100,
+            LSColors.gray200,
+            LSColors.gray300,
+            LSColors.gray400,
+            LSColors.gray500,
+            LSColors.gray600,
+            LSColors.gray700,
+            LSColors.gray800,
+            LSColors.gray900,
+        };
+
+        /// <summary>
+        /// The default background object colors.
+        /// </summary>
+        public static List<Color> DefaulBackgroundColors { get; set; } = new List<Color>
+        {
+            LSColors.pink100,
+            LSColors.pink200,
+            LSColors.pink300,
+            LSColors.pink400,
+            LSColors.pink500,
+            LSColors.pink600,
+            LSColors.pink700,
+            LSColors.pink800,
+            LSColors.pink900,
+            LSColors.pink100,
+            LSColors.pink200,
+            LSColors.pink300,
+            LSColors.pink400,
+            LSColors.pink500,
+            LSColors.pink600,
+            LSColors.pink700,
+            LSColors.pink800,
+            LSColors.pink900,
+        };
+
+        /// <summary>
+        /// The default effect colors.
+        /// </summary>
+        public static List<Color> DefaultEffectColors { get; set; } = new List<Color>
+        {
+            LSColors.gray100,
+            LSColors.gray200,
+            LSColors.gray300,
+            LSColors.gray400,
+            LSColors.gray500,
+            LSColors.gray600,
+            LSColors.gray700,
+            LSColors.gray800,
+            LSColors.gray900,
+            LSColors.gray100,
+            LSColors.gray200,
+            LSColors.gray300,
+            LSColors.gray400,
+            LSColors.gray500,
+            LSColors.gray600,
+            LSColors.gray700,
+            LSColors.gray800,
+            LSColors.gray900,
+        };
+
+        #endregion
+
+        #region Constants
+
+        public const int ID_LENGTH = 7;
+        public const string PLAYER_1_COLOR = "E57373";
+        public const string PLAYER_2_COLOR = "64B5F6";
+        public const string PLAYER_3_COLOR = "81C784";
+        public const string PLAYER_4_COLOR = "FFB74D";
+
+        public const int PLAYER_COLORS_COUNT = 4;
+        public const int OBJECT_COLORS_COUNT = 18;
+        public const int BACKGROUND_COLORS_COUNT = 9;
+        public const int EFFECT_COLORS_COUNT = 18;
+
+        #endregion
+
+        #region Base
+
+        /// <summary>
+        /// VG format ID.
+        /// </summary>
         public string VGID { get; set; }
 
+        /// <summary>
+        /// Name of the theme.
+        /// </summary>
         public string name = string.Empty;
-
-        public bool isDefault;
-
-        public string filePath;
-
-        public Color backgroundColor = LSColors.gray100;
-
-        public Color guiColor = LSColors.gray900;
-
-        public Color guiAccentColor = Color.white;
-
-        public List<Color> effectColors = new List<Color>();
-
-        public List<Color> playerColors = new List<Color>();
-
-        public List<Color> objectColors = new List<Color>();
-
-        public List<Color> backgroundColors = new List<Color>();
-
-        public ThemePanel themePanel;
 
         /// <summary>
         /// Creator of the theme.
         /// </summary>
         public string creator;
+
+        /// <summary>
+        /// If the theme is a default theme.
+        /// </summary>
+        public bool isDefault;
+
+        #endregion
+
+        #region Colors
+
+        /// <summary>
+        /// Color for the background to use.
+        /// </summary>
+        public Color backgroundColor = LSColors.gray100;
+
+        /// <summary>
+        /// Color for the GUI to use.
+        /// </summary>
+        public Color guiColor = LSColors.gray900;
+
+        /// <summary>
+        /// Color for the player GUI to use.
+        /// </summary>
+        public Color guiAccentColor = Color.white;
+
+        /// <summary>
+        /// List of player colors.
+        /// </summary>
+        public List<Color> playerColors = new List<Color>();
+
+        /// <summary>
+        /// List of object colors.
+        /// </summary>
+        public List<Color> objectColors = new List<Color>();
+
+        /// <summary>
+        /// List of background object colors.
+        /// </summary>
+        public List<Color> backgroundColors = new List<Color>();
+
+        /// <summary>
+        /// List of effect colors.
+        /// </summary>
+        public List<Color> effectColors = new List<Color>();
+
+        #endregion
+
+        #region Editor
+
+        /// <summary>
+        /// File path to the theme if it's an external theme in the themes folder.
+        /// </summary>
+        public string filePath;
+
+        /// <summary>
+        /// Theme panel reference for the editor.
+        /// </summary>
+        public ThemePanel themePanel;
+
+        #endregion
 
         public FileFormat FileFormat => RTFile.GetFileFormat(filePath);
 
@@ -82,103 +256,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #endregion
 
-        #region Consts
-
-        public const int ID_LENGTH = 7;
-        public const string PLAYER_1_COLOR = "E57373";
-        public const string PLAYER_2_COLOR = "64B5F6";
-        public const string PLAYER_3_COLOR = "81C784";
-        public const string PLAYER_4_COLOR = "FFB74D";
-
-        public const int PLAYER_COLORS_COUNT = 4;
-        public const int OBJECT_COLORS_COUNT = 18;
-        public const int BACKGROUND_COLORS_COUNT = 9;
-        public const int EFFECT_COLORS_COUNT = 18;
-
-        #endregion
-
-        #region Default Properties
-
-        public static string DefaultName { get; set; } = "New Theme";
-
-        public static Color DefaultBGColor { get; set; } = LSColors.gray900;
-        public static Color DefaultGUIColor { get; set; } = LSColors.white;
-        public static Color DefaultTailColor { get; set; } = LSColors.white;
-
-        public static List<Color> DefaultPlayerColors { get; set; } = new List<Color>
-        {
-            LSColors.HexToColor("E57373"),
-            LSColors.HexToColor("64B5F6"),
-            LSColors.HexToColor("81C784"),
-            LSColors.HexToColor("FFB74D"),
-        };
-        public static List<Color> DefaultObjectColors { get; set; } = new List<Color>
-        {
-            LSColors.gray100,
-            LSColors.gray200,
-            LSColors.gray300,
-            LSColors.gray400,
-            LSColors.gray500,
-            LSColors.gray600,
-            LSColors.gray700,
-            LSColors.gray800,
-            LSColors.gray900,
-            LSColors.gray100,
-            LSColors.gray200,
-            LSColors.gray300,
-            LSColors.gray400,
-            LSColors.gray500,
-            LSColors.gray600,
-            LSColors.gray700,
-            LSColors.gray800,
-            LSColors.gray900,
-        };
-        public static List<Color> DefaulBackgroundColors { get; set; } = new List<Color>
-        {
-            LSColors.pink100,
-            LSColors.pink200,
-            LSColors.pink300,
-            LSColors.pink400,
-            LSColors.pink500,
-            LSColors.pink600,
-            LSColors.pink700,
-            LSColors.pink800,
-            LSColors.pink900,
-            LSColors.pink100,
-            LSColors.pink200,
-            LSColors.pink300,
-            LSColors.pink400,
-            LSColors.pink500,
-            LSColors.pink600,
-            LSColors.pink700,
-            LSColors.pink800,
-            LSColors.pink900,
-        };
-        public static List<Color> DefaultEffectColors { get; set; } = new List<Color>
-        {
-            LSColors.gray100,
-            LSColors.gray200,
-            LSColors.gray300,
-            LSColors.gray400,
-            LSColors.gray500,
-            LSColors.gray600,
-            LSColors.gray700,
-            LSColors.gray800,
-            LSColors.gray900,
-            LSColors.gray100,
-            LSColors.gray200,
-            LSColors.gray300,
-            LSColors.gray400,
-            LSColors.gray500,
-            LSColors.gray600,
-            LSColors.gray700,
-            LSColors.gray800,
-            LSColors.gray900,
-        };
-
-        #endregion
-
-        #region Methods
+        #region Functions
 
         public override void CopyData(BeatmapTheme orig, bool newID = true)
         {
@@ -409,6 +487,70 @@ namespace BetterLegacy.Core.Data.Beatmap
             return jn;
         }
 
+        public void ReadPacket(NetworkReader reader)
+        {
+            id = reader.ReadString();
+
+            #region Interface
+
+            this.ReadUploadablePacket(reader);
+
+            #endregion
+
+            #region Base
+
+            name = reader.ReadString();
+            creator = reader.ReadString();
+            dateCreated = reader.ReadString();
+            dateEdited = reader.ReadString();
+
+            #endregion
+
+            #region Colors
+
+            guiColor = reader.ReadColor();
+            guiAccentColor = reader.ReadColor();
+            backgroundColor = reader.ReadColor();
+            playerColors = reader.ReadList(() => reader.ReadColor());
+            objectColors = reader.ReadList(() => reader.ReadColor());
+            backgroundColors = reader.ReadList(() => reader.ReadColor());
+            effectColors = reader.ReadList(() => reader.ReadColor());
+
+            #endregion
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(id);
+
+            #region Interface
+
+            this.WriteUploadablePacket(writer);
+
+            #endregion
+
+            #region Base
+
+            writer.Write(name);
+            writer.Write(creator);
+            writer.Write(dateCreated);
+            writer.Write(dateEdited);
+
+            #endregion
+
+            #region Colors
+
+            writer.Write(guiColor);
+            writer.Write(guiAccentColor);
+            writer.Write(backgroundColor);
+            writer.Write(playerColors, color => writer.Write(color));
+            writer.Write(objectColors, color => writer.Write(color));
+            writer.Write(backgroundColors, color => writer.Write(color));
+            writer.Write(effectColors, color => writer.Write(color));
+
+            #endregion
+        }
+
         static List<Color> SetColors(JSONNode jn, int count, string errorMsg = "", bool alpha = true)
         {
             var colors = new List<Color>();
@@ -578,10 +720,6 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (jn != null)
                 RTFile.WriteToFile(path, EditorConfig.Instance.ThemeSavesIndents.Value ? jn.ToString(3) : jn.ToString());
         }
-
-        #endregion
-
-        #region Operators
 
         public override bool Equals(object obj) => obj is BeatmapTheme beatmapTheme && id == beatmapTheme.id;
 

@@ -9,6 +9,7 @@ using LSFunctions;
 using SimpleJSON;
 
 using BetterLegacy.Core.Data.Modifiers;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Runtime.Objects;
 using BetterLegacy.Editor.Data.Elements;
@@ -19,8 +20,10 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// <summary>
     /// Contains a package of <see cref="IPrefabable"/> objects.
     /// </summary>
-    public class Prefab : PAObject<Prefab>, IBeatmap, IPrefabable, IUploadable, IFile
+    public class Prefab : PAObject<Prefab>, IPacket, IBeatmap, IPrefabable, IUploadable, IFile
     {
+        #region Constructors
+
         public Prefab() : base() { }
 
         public Prefab(string name, int type, float offset, List<BeatmapObject> beatmapObjects, List<PrefabObject> prefabObjects, List<BackgroundLayer> backgroundLayers = null, List<BackgroundObject> backgroundObjects = null, List<Prefab> prefabs = null) : this()
@@ -42,6 +45,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             CopyObjects(beatmap);
         }
+
+        #endregion
 
         #region Values
 
@@ -214,7 +219,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public override void CopyData(Prefab orig, bool newID = true)
         {
@@ -459,6 +464,89 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["icon"] = iconData;
 
             return jn;
+        }
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            id = reader.ReadString();
+
+            #region Interface
+
+            this.ReadPrefabPacket(reader);
+            this.ReadUploadablePacket(reader);
+
+            #endregion
+
+            #region Base
+
+            name = reader.ReadString();
+            typeID = reader.ReadString();
+            offset = reader.ReadSingle();
+            creator = reader.ReadString();
+            description = reader.ReadString();
+            dateCreated = reader.ReadString();
+            dateEdited = reader.ReadString();
+            icon = reader.ReadSprite();
+
+            #endregion
+
+            #region Contents
+
+            Packet.ReadPacketList(modifierBlocks, reader);
+            Packet.ReadPacketList(beatmapThemes, reader);
+            Packet.ReadPacketList(prefabs, reader);
+            Packet.ReadPacketList(beatmapObjects, reader);
+            Packet.ReadPacketList(prefabObjects, reader);
+            Packet.ReadPacketList(backgroundLayers, reader);
+            Packet.ReadPacketList(backgroundObjects, reader);
+            var hasDefaultInstanceData = reader.ReadBoolean();
+            if (hasDefaultInstanceData)
+                defaultInstanceData = Packet.CreateFromPacket<PrefabObject>(reader);
+            assets = Packet.CreateFromPacket<Assets>(reader);
+
+            #endregion
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(id);
+
+            #region Interface
+
+            this.WritePrefabPacket(writer);
+            this.WriteUploadablePacket(writer);
+
+            #endregion
+
+            #region Base
+
+            writer.Write(name);
+            writer.Write(typeID);
+            writer.Write(offset);
+            writer.Write(creator);
+            writer.Write(description);
+            writer.Write(dateCreated);
+            writer.Write(dateEdited);
+            writer.Write(icon);
+
+            #endregion
+
+            #region Contents
+
+            Packet.WritePacketList(modifierBlocks, writer);
+            Packet.WritePacketList(beatmapThemes, writer);
+            Packet.WritePacketList(prefabs, writer);
+            Packet.WritePacketList(beatmapObjects, writer);
+            Packet.WritePacketList(prefabObjects, writer);
+            Packet.WritePacketList(backgroundLayers, writer);
+            Packet.WritePacketList(backgroundObjects, writer);
+            bool hasDefaultInstanceData = defaultInstanceData;
+            writer.Write(hasDefaultInstanceData);
+            if (hasDefaultInstanceData)
+                defaultInstanceData.WritePacket(writer);
+            assets.WritePacket(writer);
+
+            #endregion
         }
 
         /// <summary>

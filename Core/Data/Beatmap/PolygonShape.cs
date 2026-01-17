@@ -2,13 +2,17 @@
 
 using SimpleJSON;
 
+using BetterLegacy.Core.Data.Network;
+
 namespace BetterLegacy.Core.Data.Beatmap
 {
     /// <summary>
     /// Represents a custom polygon shape used for objects.
     /// </summary>
-    public class PolygonShape : PAObject<PolygonShape>
+    public class PolygonShape : PAObject<PolygonShape>, IPacket
     {
+        #region Constructors
+
         public PolygonShape() { }
 
         public PolygonShape(int sides, float roundness, float thickness, int slices, Vector2 thicknessOffset = default, Vector2 thicknessScale = default)
@@ -21,7 +25,9 @@ namespace BetterLegacy.Core.Data.Beatmap
             this.thicknessScale = thicknessScale;
         }
 
-        #region Properties
+        #endregion
+
+        #region Values
 
         /// <summary>
         /// Radius of the shape.
@@ -126,7 +132,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public override void CopyData(PolygonShape orig, bool newID = true)
         {
@@ -200,6 +206,32 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (Angle != 0f)
                 jn["ang"] = Angle;
             return jn;
+        }
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            radius = reader.ReadSingle();
+            sides = reader.ReadInt32();
+            roundness = reader.ReadSingle();
+            thickness = reader.ReadSingle();
+            slices = reader.ReadInt32();
+            thicknessOffset = reader.ReadVector2();
+            thicknessScale = reader.ReadVector2();
+            thicknessRotation = reader.ReadSingle();
+            Angle = reader.ReadSingle();
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(radius);
+            writer.Write(sides);
+            writer.Write(roundness);
+            writer.Write(thickness);
+            writer.Write(slices);
+            writer.Write(thicknessOffset);
+            writer.Write(thicknessScale);
+            writer.Write(thicknessRotation);
+            writer.Write(Angle);
         }
 
         /// <summary>

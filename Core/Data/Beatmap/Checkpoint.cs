@@ -4,13 +4,19 @@ using UnityEngine;
 
 using SimpleJSON;
 
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Editor.Data.Timeline;
 
 namespace BetterLegacy.Core.Data.Beatmap
 {
-    public class Checkpoint : PAObject<Checkpoint>
+    /// <summary>
+    /// Checkpoints are used to manage player spawning / respawning.
+    /// </summary>
+    public class Checkpoint : PAObject<Checkpoint>, IPacket
 	{
-		public Checkpoint() => id = GetShortNumberID();
+        #region Constructors
+
+        public Checkpoint() => id = GetShortNumberID();
 
         public Checkpoint(string name, float time, Vector2 pos) : this()
 		{
@@ -19,12 +25,60 @@ namespace BetterLegacy.Core.Data.Beatmap
 			this.pos = pos;
 		}
 
+        #endregion
+
         #region Values
 
-		/// <summary>
-		/// Name of the checkpoint.
-		/// </summary>
-		public string name = DEFAULT_CHECKPOINT_NAME;
+        #region Global
+
+        /// <summary>
+        /// The name of the first checkpoint.
+        /// </summary>
+        public const string BASE_CHECKPOINT_NAME = "Base Checkpoint";
+
+        /// <summary>
+        /// The default name of a checkpoint.
+        /// </summary>
+        public const string DEFAULT_CHECKPOINT_NAME = "Checkpoint";
+
+        /// <summary>
+        /// The default checkpoint.
+        /// </summary>
+        public static Checkpoint Default => new Checkpoint(BASE_CHECKPOINT_NAME, 0f, Vector2.zero);
+
+        /// <summary>
+        /// Represents what checkpoint a player spawns at.
+        /// </summary>
+        public enum SpawnPositionType
+        {
+            /// <summary>
+            /// The default checkpoint position. All players spawn here.
+            /// </summary>
+            Single,
+            /// <summary>
+            /// Fills all checkpoint positions with a player individually up until the last, then it loops over.
+            /// </summary>
+            FillAll,
+            /// <summary>
+            /// All players end up at the same checkpoint, but randomly.
+            /// </summary>
+            RandomSingle,
+            /// <summary>
+            /// Fills all checkpoint positions with a player individually up until the last, then it loops over. Each player is assigned to a random checkpoint, instead of from 0.
+            /// </summary>
+            RandomFillAll,
+            /// <summary>
+            /// All players end up at random checkpoints.
+            /// </summary>
+            Random,
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Name of the checkpoint.
+        /// </summary>
+        public string name = DEFAULT_CHECKPOINT_NAME;
 
 		/// <summary>
 		/// Time to reverse to when all players are dead.
@@ -72,59 +126,13 @@ namespace BetterLegacy.Core.Data.Beatmap
         public bool autoTriggerable = true;
 
         /// <summary>
-        /// Timeline Checkpoint reference.
+        /// Timeline Checkpoint reference for the editor.
         /// </summary>
         public TimelineCheckpoint timelineCheckpoint;
 
-		#region Global
-
-		/// <summary>
-		/// The name of the first checkpoint.
-		/// </summary>
-		public const string BASE_CHECKPOINT_NAME = "Base Checkpoint";
-
-		/// <summary>
-		/// The default name of a checkpoint.
-		/// </summary>
-		public const string DEFAULT_CHECKPOINT_NAME = "Checkpoint";
-
-		/// <summary>
-		/// The default checkpoint.
-		/// </summary>
-		public static Checkpoint Default => new Checkpoint(BASE_CHECKPOINT_NAME, 0f, Vector2.zero);
-
-		/// <summary>
-		/// Represents what checkpoint a player spawns at.
-		/// </summary>
-		public enum SpawnPositionType
-		{
-			/// <summary>
-			/// The default checkpoint position. All players spawn here.
-			/// </summary>
-			Single,
-			/// <summary>
-			/// Fills all checkpoint positions with a player individually up until the last, then it loops over.
-			/// </summary>
-			FillAll,
-			/// <summary>
-			/// All players end up at the same checkpoint, but randomly.
-			/// </summary>
-			RandomSingle,
-			/// <summary>
-			/// Fills all checkpoint positions with a player individually up until the last, then it loops over. Each player is assigned to a random checkpoint, instead of from 0.
-			/// </summary>
-			RandomFillAll,
-			/// <summary>
-			/// All players end up at random checkpoints.
-			/// </summary>
-			Random,
-		}
-
 		#endregion
 
-		#endregion
-
-		#region Methods
+		#region Functions
 
         public override void CopyData(Checkpoint orig, bool newID = true)
         {
@@ -212,6 +220,36 @@ namespace BetterLegacy.Core.Data.Beatmap
             return jn;
 		}
 
+        public void ReadPacket(NetworkReader reader)
+        {
+            id = reader.ReadString();
+            name = reader.ReadString();
+            time = reader.ReadSingle();
+            pos = reader.ReadVector2();
+            spawnType = (SpawnPositionType)reader.ReadByte();
+            positions = reader.ReadList(() => reader.ReadVector2());
+            respawn = reader.ReadBoolean();
+            heal = reader.ReadBoolean();
+            setTime = reader.ReadBoolean();
+            reverse = reader.ReadBoolean();
+            autoTriggerable = reader.ReadBoolean();
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(id);
+            writer.Write(name);
+            writer.Write(time);
+            writer.Write(pos);
+            writer.Write((byte)spawnType);
+            writer.Write(positions, position => writer.Write(position));
+            writer.Write(respawn);
+            writer.Write(heal);
+            writer.Write(setTime);
+            writer.Write(reverse);
+            writer.Write(autoTriggerable);
+        }
+
         /// <summary>
         /// Gets the position at an index.
         /// </summary>
@@ -219,16 +257,12 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <returns>Returns a multi position at an index if the index is in the range of <see cref="positions"/>, otherwise returns <see cref="pos"/>.</returns>
         public Vector2 GetPosition(int index) => index == -1 ? pos : positions[index % positions.Count];
 
-		#endregion
+        public override bool Equals(object obj) => obj is Checkpoint paObj && id == paObj.id;
 
-		#region Operators
+        public override int GetHashCode() => base.GetHashCode();
 
-		public override bool Equals(object obj) => obj is Checkpoint paObj && id == paObj.id;
+        public override string ToString() => $"{id} - {name}";
 
-		public override int GetHashCode() => base.GetHashCode();
-
-		public override string ToString() => $"{id} - {name}";
-
-		#endregion
-	}
+        #endregion
+    }
 }

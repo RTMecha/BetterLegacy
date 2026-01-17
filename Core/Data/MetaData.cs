@@ -6,6 +6,7 @@ using UnityEngine;
 
 using SimpleJSON;
 
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Core.Data
@@ -13,7 +14,7 @@ namespace BetterLegacy.Core.Data
     /// <summary>
     /// User readable information of the level.
     /// </summary>
-    public class MetaData : PAObject<MetaData>, IUploadable
+    public class MetaData : PAObject<MetaData>, IPacket, IUploadable
     {
         public MetaData()
         {
@@ -114,7 +115,7 @@ namespace BetterLegacy.Core.Data
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public override void CopyData(MetaData orig, bool newID = true)
         {
@@ -166,6 +167,11 @@ namespace BetterLegacy.Core.Data
                 song.ReadJSON(jn);
                 beatmap.ReadJSON(jn);
 
+                if (jn["artists"] != null)
+                    artists = Parser.ParseObjectList<ArtistMetaData>(jn["artists"]);
+                if (jn["creators"] != null)
+                    creators = Parser.ParseObjectList<CreatorMetaData>(jn["creators"]);
+
                 if (jn["asset_packs"] != null)
                     requiredAssetPacks = Parser.ParseObjectList<RequiredAssetPackData>(jn["asset_packs"]);
 
@@ -179,9 +185,6 @@ namespace BetterLegacy.Core.Data
                     nextID = jn["storyline"]["next_level"];
 
                 this.ReadUploadableJSON(jn);
-
-                if (string.IsNullOrEmpty(jn["uploader_name"]))
-                    uploaderName = creator.name;
 
                 if (!string.IsNullOrEmpty(jn["is_hub_level"]))
                     isHubLevel = jn["is_hub_level"].AsBool;
@@ -249,6 +252,10 @@ namespace BetterLegacy.Core.Data
             jn["creator"] = creator.ToJSON();
             jn["song"] = song.ToJSON();
             jn["beatmap"] = beatmap.ToJSON();
+            for (int i = 0; i < artists.Count; i++)
+                jn["artists"][i] = artists[i].ToJSON();
+            for (int i = 0; i < creators.Count; i++)
+                jn["creators"][i] = creators[i].ToJSON();
 
             for (int i = 0; i < requiredAssetPacks.Count; i++)
                 jn["asset_packs"][i] = requiredAssetPacks[i].ToJSON();
@@ -289,6 +296,66 @@ namespace BetterLegacy.Core.Data
             }
 
             return jn;
+        }
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            #region Interface
+
+            this.ReadUploadablePacket(reader);
+
+            #endregion
+
+            artist = Packet.CreateFromPacket<ArtistMetaData>(reader);
+            creator = Packet.CreateFromPacket<CreatorMetaData>(reader);
+            song = Packet.CreateFromPacket<SongMetaData>(reader);
+            beatmap = Packet.CreateFromPacket<BeatmapMetaData>(reader);
+
+            Packet.ReadPacketList(artists, reader);
+            Packet.ReadPacketList(creators, reader);
+            Packet.ReadPacketList(requiredAssetPacks, reader);
+
+            arcadeID = reader.ReadString();
+            prevID = reader.ReadString();
+            nextID = reader.ReadString();
+
+            isHubLevel = reader.ReadBoolean();
+            requireUnlock = reader.ReadBoolean();
+            unlockAfterCompletion = reader.ReadBoolean();
+            requireVersion = reader.ReadBoolean();
+            versionRange = (DataManager.VersionComparison)reader.ReadByte();
+            customSayings = reader.ReadDictionary(() => (Rank)reader.ReadByte(), () => reader.ReadStringArray());
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            #region Interface
+
+            this.WriteUploadablePacket(writer);
+
+            #endregion
+
+            artist.WritePacket(writer);
+            creator.WritePacket(writer);
+            song.WritePacket(writer);
+            beatmap.WritePacket(writer);
+
+            Packet.WritePacketList(artists, writer);
+            Packet.WritePacketList(creators, writer);
+            Packet.WritePacketList(requiredAssetPacks, writer);
+
+            writer.Write(arcadeID);
+            writer.Write(prevID);
+            writer.Write(nextID);
+
+            writer.Write(isHubLevel);
+            writer.Write(requireUnlock);
+            writer.Write(unlockAfterCompletion);
+            writer.Write(requireVersion);
+            writer.Write((byte)versionRange);
+            writer.Write(customSayings,
+                writeKey: key => writer.Write((byte)key.Ordinal),
+                writeValue: value => writer.Write(value));
         }
 
         /// <summary>
@@ -352,8 +419,10 @@ namespace BetterLegacy.Core.Data
     /// <summary>
     /// Artist section of <see cref="MetaData"/>.
     /// </summary>
-    public class ArtistMetaData : PAObject<ArtistMetaData>
+    public class ArtistMetaData : PAObject<ArtistMetaData>, IPacket
     {
+        #region Constructors
+
         public ArtistMetaData() : this(string.Empty, 2, string.Empty) { }
 
         public ArtistMetaData(string name, int linkType, string link)
@@ -362,6 +431,8 @@ namespace BetterLegacy.Core.Data
             this.linkType = linkType;
             this.link = link;
         }
+
+        #endregion
 
         #region Values
 
@@ -376,7 +447,7 @@ namespace BetterLegacy.Core.Data
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public override void CopyData(ArtistMetaData orig, bool newID = true)
         {
@@ -429,6 +500,20 @@ namespace BetterLegacy.Core.Data
             return jn;
         }
 
+        public void ReadPacket(NetworkReader reader)
+        {
+            name = reader.ReadString();
+            linkType = reader.ReadInt32();
+            link = reader.ReadString();
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(name);
+            writer.Write(linkType);
+            writer.Write(link);
+        }
+
         public override string ToString() => name;
 
         #endregion
@@ -437,8 +522,10 @@ namespace BetterLegacy.Core.Data
     /// <summary>
     /// Creator section of <see cref="MetaData"/>.
     /// </summary>
-    public class CreatorMetaData : PAObject<CreatorMetaData>
+    public class CreatorMetaData : PAObject<CreatorMetaData>, IPacket
     {
+        #region Constructors
+
         public CreatorMetaData() => name = "Unknown User";
 
         public CreatorMetaData(string name, int steamID, string link, int linkType)
@@ -448,6 +535,8 @@ namespace BetterLegacy.Core.Data
             this.linkType = linkType;
             this.link = link;
         }
+
+        #endregion
 
         #region Values
 
@@ -463,7 +552,7 @@ namespace BetterLegacy.Core.Data
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public override void CopyData(CreatorMetaData orig, bool newID = true)
         {
@@ -515,11 +604,27 @@ namespace BetterLegacy.Core.Data
 
             if (!string.IsNullOrEmpty(link))
             {
-                jn["link"] = link;
                 jn["link_type"] = linkType;
+                jn["link"] = link;
             }
 
             return jn;
+        }
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            name = reader.ReadString();
+            steamID = reader.ReadInt64();
+            linkType = reader.ReadInt32();
+            link = reader.ReadString();
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(name);
+            writer.Write(steamID);
+            writer.Write(linkType);
+            writer.Write(link);
         }
 
         public override string ToString() => name;
@@ -530,8 +635,10 @@ namespace BetterLegacy.Core.Data
     /// <summary>
     /// Song section of <see cref="MetaData"/>.
     /// </summary>
-    public class SongMetaData : PAObject<SongMetaData>
+    public class SongMetaData : PAObject<SongMetaData>, IPacket
     {
+        #region Constructors
+
         public SongMetaData() { }
 
         public SongMetaData(string title, int difficulty, string description, float bpm, float time, float previewStart, float previewLength, int linkType, string link)
@@ -547,6 +654,8 @@ namespace BetterLegacy.Core.Data
             this.linkType = linkType;
             this.link = link;
         }
+
+        #endregion
 
         #region Values
 
@@ -572,7 +681,7 @@ namespace BetterLegacy.Core.Data
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public override void CopyData(SongMetaData orig, bool newID = true)
         {
@@ -655,8 +764,8 @@ namespace BetterLegacy.Core.Data
 
             if (!string.IsNullOrEmpty(link))
             {
-                jn["link"] = link;
                 jn["link_type"] = linkType;
+                jn["link"] = link;
             }
 
             jn["bpm"] = bpm;
@@ -667,6 +776,36 @@ namespace BetterLegacy.Core.Data
             return jn;
         }
 
+        public void ReadPacket(NetworkReader reader)
+        {
+            title = reader.ReadString();
+            difficulty = reader.ReadInt32();
+            description = reader.ReadString();
+
+            linkType = reader.ReadInt32();
+            link = reader.ReadString();
+
+            bpm = reader.ReadSingle();
+            time = reader.ReadSingle();
+            previewStart = reader.ReadSingle();
+            previewLength = reader.ReadSingle();
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(title);
+            writer.Write(difficulty);
+            writer.Write(description);
+
+            writer.Write(linkType);
+            writer.Write(link);
+
+            writer.Write(bpm);
+            writer.Write(time);
+            writer.Write(previewStart);
+            writer.Write(previewLength);
+        }
+
         public override string ToString() => title;
 
         #endregion
@@ -675,8 +814,10 @@ namespace BetterLegacy.Core.Data
     /// <summary>
     /// Beatmap section of <see cref="MetaData"/>.
     /// </summary>
-    public class BeatmapMetaData : PAObject<BeatmapMetaData>
+    public class BeatmapMetaData : PAObject<BeatmapMetaData>, IPacket
     {
+        #region Constructors
+
         public BeatmapMetaData()
         {
             name = "Level Name";
@@ -698,6 +839,8 @@ namespace BetterLegacy.Core.Data
             this.gameVersion = gameVersion;
             this.modVersion = modVersion;
         }
+
+        #endregion
 
         #region Values
 
@@ -747,7 +890,7 @@ namespace BetterLegacy.Core.Data
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public override void CopyData(BeatmapMetaData orig, bool newID = true)
         {
@@ -851,11 +994,47 @@ namespace BetterLegacy.Core.Data
 
             if (!string.IsNullOrEmpty(videoLink))
             {
-                jn["video_link"] = videoLink;
                 jn["video_link_type"] = videoLinkType;
+                jn["video_link"] = videoLink;
             }
 
             return jn;
+        }
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            name = reader.ReadString();
+            workshopID = reader.ReadInt64();
+
+            dateCreated = reader.ReadString();
+            dateEdited = reader.ReadString();
+
+            gameVersion = reader.ReadString();
+            modVersion = reader.ReadString();
+
+            preferredPlayerCount = (PreferredPlayerCount)reader.ReadByte();
+            preferredControlType = (PreferredControlType)reader.ReadByte();
+
+            videoLinkType = reader.ReadInt32();
+            videoLink = reader.ReadString();
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(name);
+            writer.Write(workshopID);
+
+            writer.Write(dateCreated);
+            writer.Write(dateEdited);
+
+            writer.Write(gameVersion);
+            writer.Write(modVersion);
+
+            writer.Write((byte)preferredPlayerCount);
+            writer.Write((byte)preferredControlType);
+
+            writer.Write(videoLinkType);
+            writer.Write(videoLink);
         }
 
         public bool PlayersCanjoin(int count) => preferredPlayerCount switch
@@ -876,9 +1055,11 @@ namespace BetterLegacy.Core.Data
     /// <summary>
     /// Indicates an asset pack that is required to play the level. Useful for fully custom functions.
     /// </summary>
-    public class RequiredAssetPackData : PAObject<RequiredAssetPackData>
+    public class RequiredAssetPackData : PAObject<RequiredAssetPackData>, IPacket
     {
         public RequiredAssetPackData() { }
+
+        #region Values
 
         /// <summary>
         /// Asset Pack ID reference.
@@ -892,6 +1073,10 @@ namespace BetterLegacy.Core.Data
         /// ID of the Asset Pack on the server.
         /// </summary>
         public string serverID;
+
+        #endregion
+
+        #region Functions
 
         public override void CopyData(RequiredAssetPackData orig, bool newID = true)
         {
@@ -923,5 +1108,21 @@ namespace BetterLegacy.Core.Data
 
             return jn;
         }
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            packID = reader.ReadString();
+            packName = reader.ReadString();
+            serverID = reader.ReadString();
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(packID);
+            writer.Write(packName);
+            writer.Write(serverID);
+        }
+
+        #endregion
     }
 }

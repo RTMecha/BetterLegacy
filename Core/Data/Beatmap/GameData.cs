@@ -13,6 +13,7 @@ using SimpleJSON;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Data.Modifiers;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
@@ -23,7 +24,7 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// <summary>
     /// Represents a Project Arrhythmia level.
     /// </summary>
-    public class GameData : PAObject<GameData>, IModifyable, IModifierReference, IBeatmap, IFile
+    public class GameData : PAObject<GameData>, IPacket, IModifyable, IModifierReference, IBeatmap, IFile
     {
         public GameData() { }
 
@@ -1086,14 +1087,6 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             this.WriteModifiersJSON(jn);
 
-            for (int i = 0; i < modifierBlocks.Count; i++)
-            {
-                var modifierBlock = modifierBlocks[i];
-                var jnModifierBlock = modifierBlock.ToJSON();
-                jnModifierBlock["name"] = modifierBlock.Name;
-                jn["modifier_blocks"][i] = jnModifierBlock;
-            }
-
             if (!modifierBlocks.IsEmpty())
                 jn["modifier_blocks"] = Parser.ModifierBlocksToJSON(modifierBlocks);
 
@@ -1161,7 +1154,71 @@ namespace BetterLegacy.Core.Data.Beatmap
             return jn;
         }
 
-        FileFormat fileFormat;
+        public void ReadPacket(NetworkReader reader)
+        {
+            #region Interface
+
+            this.ReadModifiersPacket(reader);
+
+            #endregion
+
+            #region Contents
+
+            assets = Packet.CreateFromPacket<Assets>(reader);
+            data = Packet.CreateFromPacket<BeatmapData>(reader);
+            Packet.ReadPacketList(modifierBlocks, reader);
+            Packet.ReadPacketList(prefabs, reader);
+            Packet.ReadPacketList(beatmapThemes, reader);
+            Packet.ReadPacketList(beatmapObjects, reader);
+            Packet.ReadPacketList(backgroundLayers, reader);
+            Packet.ReadPacketList(backgroundObjects, reader);
+            Packet.ReadPacketList(animations, reader);
+            Packet.ReadPacketList(variables, reader);
+
+            mainBackgroundLayer = reader.ReadInt32();
+
+            events = new List<List<EventKeyframe>>();
+            var eventCount = reader.ReadInt32();
+            for (int i = 0; i < eventCount; i++)
+            {
+                events.Add(new List<EventKeyframe>());
+                Packet.ReadPacketList(events[i], reader);
+            }
+
+            #endregion
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            #region Interface
+
+            this.WriteModifiersPacket(writer);
+
+            #endregion
+
+            #region Contents
+
+            assets.WritePacket(writer);
+            data.WritePacket(writer);
+            Packet.WritePacketList(modifierBlocks, writer);
+            Packet.WritePacketList(prefabs.FindAll(x => !x.FromPrefab), writer);
+            Packet.WritePacketList(beatmapThemes, writer);
+            Packet.WritePacketList(beatmapObjects.FindAll(x => !x.FromPrefab), writer);
+            Packet.WritePacketList(backgroundLayers.FindAll(x => !x.FromPrefab), writer);
+            Packet.WritePacketList(backgroundObjects.FindAll(x => !x.FromPrefab), writer);
+            Packet.WritePacketList(animations, writer);
+            Packet.WritePacketList(variables, writer);
+
+            writer.Write(mainBackgroundLayer);
+
+            writer.Write(events.Count);
+            for (int i = 0; i < events.Count; i++)
+                Packet.WritePacketList(events[i], writer);
+
+            #endregion
+        }
+
+        FileFormat fileFormat = FileFormat.LSB;
         public FileFormat FileFormat => fileFormat;
 
         public string GetFileName() => $"level{FileFormat.Dot()}";
@@ -1210,7 +1267,6 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         /// <param name="path">The file to save to.</param>
         /// <param name="onSave">Function to run when saving is complete.</param>
-        /// <param name="saveGameDataThemes">If the levels' themes should be written to the JSON.</param>
         public void SaveData(string path, Action onSave = null)
         {
             if (EditorConfig.Instance.SaveAsync.Value)
@@ -1237,7 +1293,6 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         /// <param name="path">The file to save to.</param>
         /// <param name="onSave">Function to run when saving is complete.</param>
-        /// <paramref name="saveGameDataThemes">If the levels' themes should be written to the JSON or not.</paramref>
         public IEnumerator ISaveData(string path, Action onSave = null)
         {
             var jn = ToJSON();

@@ -9,17 +9,20 @@ using SimpleJSON;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Modifiers;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Editor.Data.Elements;
 
 namespace BetterLegacy.Core.Data.Player
 {
-    public class PlayerModel : PAObject<PlayerModel>, IModifyable, IUploadable
+    /// <summary>
+    /// Represents the player a player displays in-game.
+    /// </summary>
+    public class PlayerModel : PAObject<PlayerModel>, IPacket, IModifyable, IUploadable
     {
         public PlayerModel()
         {
             basePart = new Base();
-            stretchPart = new Stretch();
             guiPart = new GUI();
             headPart = new PlayerObject();
             boostPart = new PlayerObject();
@@ -34,6 +37,8 @@ namespace BetterLegacy.Core.Data.Player
             tailParts = GetDefaultTail();
         }
 
+        #region Values
+        
         #region Default Models
 
         public const string DEFAULT_ID = "0";
@@ -256,8 +261,6 @@ namespace BetterLegacy.Core.Data.Player
 
         #endregion
 
-        #region Values
-
         public Version Version { get; set; } = LegacyPlugin.ModVersion;
         public bool needsUpdate;
 
@@ -268,8 +271,6 @@ namespace BetterLegacy.Core.Data.Player
         public Assets assets = new Assets();
 
         public Base basePart;
-
-        public Stretch stretchPart;
 
         public GUI guiPart;
 
@@ -371,7 +372,6 @@ namespace BetterLegacy.Core.Data.Player
 
             assets.CopyData(orig.assets);
             basePart.CopyData(orig.basePart, newID);
-            stretchPart.CopyData(orig.stretchPart);
             guiPart.CopyData(orig.guiPart);
             headPart.CopyData(orig.headPart);
             boostPart.CopyData(orig.boostPart);
@@ -419,7 +419,15 @@ namespace BetterLegacy.Core.Data.Player
                 assets.ReadJSON(jn["assets"]);
             
             basePart.ReadJSON(jn["base"]);
-            stretchPart.ReadJSON(jn["stretch"]);
+            if (jn["stretch"] != null)
+            {
+                if (jn["stretch"]["active"] != null)
+                    basePart.stretchActive = jn["active"].AsBool;
+                if (jn["stretch"]["amount"] != null)
+                    basePart.stretchAmount = jn["amount"].AsFloat;
+                if (jn["stretch"]["easing"] != null)
+                    basePart.stretchEasing = jn["easing"].AsInt;
+            }
             guiPart.ReadJSON(jn["gui"]);
             headPart.ReadJSON(jn["head"]);
             if (jn["face"] != null)
@@ -486,8 +494,6 @@ namespace BetterLegacy.Core.Data.Player
 
             if (basePart)
                 jn["base"] = basePart.ToJSON();
-            if (stretchPart && stretchPart.ShouldSerialize)
-                jn["stretch"] = stretchPart.ToJSON();
             if (guiPart && guiPart.ShouldSerialize)
                 jn["gui"] = guiPart.ToJSON();
             if (facePosition.x != 0.3f || facePosition.y != 0f)
@@ -523,6 +529,70 @@ namespace BetterLegacy.Core.Data.Player
                 jn["icon"] = iconData;
 
             return jn;
+        }
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            #region Interface
+
+            this.ReadUploadablePacket(reader);
+            this.ReadModifiersPacket(reader);
+
+            #endregion
+
+            Version = new Version(reader.ReadString());
+            creator = reader.ReadString();
+
+            dateCreated = reader.ReadString();
+            dateEdited = reader.ReadString();
+
+            facePosition = reader.ReadVector2();
+            faceControlActive = reader.ReadBoolean();
+
+            assets = Packet.CreateFromPacket<Assets>(reader);
+            basePart = Packet.CreateFromPacket<Base>(reader);
+            guiPart = Packet.CreateFromPacket<GUI>(reader);
+            headPart = Packet.CreateFromPacket<PlayerObject>(reader);
+            boostPart = Packet.CreateFromPacket<PlayerObject>(reader);
+            pulsePart = Packet.CreateFromPacket<Pulse>(reader);
+            bulletPart = Packet.CreateFromPacket<Bullet>(reader);
+            tailBase = Packet.CreateFromPacket<TailBase>(reader);
+            boostTailPart = Packet.CreateFromPacket<PlayerObject>(reader);
+            Packet.ReadPacketList(tailParts, reader);
+            Packet.ReadPacketList(customObjects, reader);
+            icon = reader.ReadSprite();
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            #region Interface
+
+            this.WriteUploadablePacket(writer);
+            this.WriteModifiersPacket(writer);
+
+            #endregion
+
+            writer.Write(Version.ToString());
+            writer.Write(creator);
+
+            writer.Write(dateCreated);
+            writer.Write(dateEdited);
+
+            writer.Write(facePosition);
+            writer.Write(faceControlActive);
+
+            assets.WritePacket(writer);
+            basePart.WritePacket(writer);
+            guiPart.WritePacket(writer);
+            headPart.WritePacket(writer);
+            boostPart.WritePacket(writer);
+            pulsePart.WritePacket(writer);
+            bulletPart.WritePacket(writer);
+            tailBase.WritePacket(writer);
+            boostTailPart.WritePacket(writer);
+            Packet.WritePacketList(tailParts, writer);
+            Packet.WritePacketList(customObjects, writer);
+            writer.Write(icon);
         }
 
         /// <summary>
@@ -596,7 +666,7 @@ namespace BetterLegacy.Core.Data.Player
 
         #region Sub classes
 
-        public class Base : PAObject<Base>
+        public class Base : PAObject<Base>, IPacket
         {
             public Base() { }
 
@@ -604,9 +674,42 @@ namespace BetterLegacy.Core.Data.Player
 
             public string name;
 
+            #region Visual
+
+            public Easing rotationCurveType = Easing.OutCirc;
+
+            public float rotationSpeed = 0.2f;
+
+            public BaseRotateMode rotateMode = BaseRotateMode.RotateToDirection;
+
+            public bool stretchActive = false;
+
+            public float stretchAmount = 0.4f;
+
+            public int stretchEasing = 6;
+
+            public PAAnimation boostAnimation;
+            public PAAnimation hitAnimation;
+
+            #endregion
+
+            #region Control
+
+            #region Main
+
             public int health = 3;
 
             public int lives = -1;
+
+            public float hitCooldown = 2.5f;
+
+            public bool canBoost = true;
+
+            public bool collisionAccurate = false;
+
+            #endregion
+
+            #region Move
 
             public float moveSpeed = 20f;
 
@@ -618,6 +721,16 @@ namespace BetterLegacy.Core.Data.Player
 
             public float maxBoostTime = 0.18f;
 
+            public bool sprintSneakActive = false;
+
+            public float sprintSpeed = 1.3f;
+
+            public float sneakSpeed = 0.1f;
+
+            #endregion
+
+            #region Jump
+
             public float jumpGravity = 10f;
 
             public float jumpIntensity = 40f;
@@ -628,23 +741,10 @@ namespace BetterLegacy.Core.Data.Player
             public int jumpBoostCount = 1;
 
             public bool airBoostOnly = false;
-            public bool canBoost = true;
 
-            public float hitCooldown = 2.5f;
+            #endregion
 
-            public Easing rotationCurveType = Easing.OutCirc;
-
-            public float rotationSpeed = 0.2f;
-
-            public BaseRotateMode rotateMode = BaseRotateMode.RotateToDirection;
-
-            public bool collisionAccurate = false;
-
-            public bool sprintSneakActive = false;
-
-            public float sprintSpeed = 1.3f;
-
-            public float sneakSpeed = 0.1f;
+            #endregion
 
             public enum BaseRotateMode
             {
@@ -656,9 +756,6 @@ namespace BetterLegacy.Core.Data.Player
                 RotateFlipX,
                 RotateFlipY
             }
-
-            public PAAnimation boostAnimation;
-            public PAAnimation hitAnimation;
 
             #endregion
 
@@ -689,6 +786,7 @@ namespace BetterLegacy.Core.Data.Player
                 jumpBoostCount = orig.jumpBoostCount;
                 bounciness = orig.bounciness;
                 canBoost = orig.canBoost;
+                airBoostOnly = orig.airBoostOnly;
             }
 
             public override void ReadJSON(JSONNode jn)
@@ -745,6 +843,8 @@ namespace BetterLegacy.Core.Data.Player
                     jumpBoostCount = jn["jump_boost_count"].AsInt;
                 if (jn["can_boost"] != null)
                     canBoost = jn["can_boost"].AsBool;
+                if (jn["air_boost_only"] != null)
+                    airBoostOnly = jn["air_boost_only"].AsBool;
             }
 
             public override JSONNode ToJSON()
@@ -757,10 +857,37 @@ namespace BetterLegacy.Core.Data.Player
                     id = GetNumberID();
                 jn["id"] = id;
 
+                #region Visual
+
+                if (rotateMode != BaseRotateMode.RotateToDirection)
+                    jn["rotate_mode"] = (int)rotateMode;
+                if (rotationSpeed != 0.2f)
+                    jn["rotate_s"] = rotationSpeed;
+                if (rotationCurveType != Easing.OutCirc)
+                    jn["rotate_ct"] = (int)rotationCurveType;
+
+                #endregion
+
+                #region Control
+
+                #region Main
+
                 if (health != 3)
                     jn["health"] = health;
                 if (lives != -1)
                     jn["lives"] = lives;
+
+                if (hitCooldown != 2.5f)
+                    jn["hit_cooldown"] = hitCooldown;
+                if (canBoost)
+                    jn["can_boost"] = canBoost;
+                if (collisionAccurate)
+                    jn["collision_acc"] = collisionAccurate;
+
+                #endregion
+
+                #region Move
+
                 if (moveSpeed != 20f)
                     jn["move_speed"] = moveSpeed;
                 if (boostSpeed != 85f)
@@ -771,22 +898,16 @@ namespace BetterLegacy.Core.Data.Player
                     jn["boost_min_time"] = minBoostTime;
                 if (maxBoostTime != 0.18f)
                     jn["boost_max_time"] = maxBoostTime;
-                if (hitCooldown != 2.5f)
-                    jn["hit_cooldown"] = hitCooldown;
-                if (rotateMode != BaseRotateMode.RotateToDirection)
-                    jn["rotate_mode"] = (int)rotateMode;
-                if (rotationCurveType != Easing.OutCirc)
-                    jn["rotate_ct"] = (int)rotationCurveType;
-                if (rotationSpeed != 0.2f)
-                    jn["rotate_s"] = rotationSpeed;
-                if (collisionAccurate)
-                    jn["collision_acc"] = collisionAccurate;
                 if (sprintSneakActive)
                     jn["spr_sneak"] = sprintSneakActive;
                 if (sprintSpeed != 1.3f)
                     jn["sprint_speed"] = sprintSpeed;
                 if (sneakSpeed != 0.1f)
                     jn["sneak_speed"] = sneakSpeed;
+
+                #endregion
+
+                #region Jump
 
                 if (jumpGravity != 40f)
                     jn["jump_gravity"] = jumpGravity;
@@ -798,74 +919,124 @@ namespace BetterLegacy.Core.Data.Player
                     jn["jump_count"] = jumpCount;
                 if (jumpBoostCount != 1)
                     jn["jump_boost_count"] = jumpBoostCount;
-                if (canBoost)
-                    jn["can_boost"] = canBoost;
+                if (airBoostOnly)
+                    jn["air_boost_only"] = airBoostOnly;
+
+                #endregion
+
+                #endregion
 
                 return jn;
+            }
+
+            public void ReadPacket(NetworkReader reader)
+            {
+                id = reader.ReadString();
+                name = reader.ReadString();
+
+                #region Visual
+
+                rotateMode = (BaseRotateMode)reader.ReadByte();
+                rotationSpeed = reader.ReadSingle();
+                rotationCurveType = (Easing)reader.ReadByte();
+
+                #endregion
+
+                #region Control
+
+                #region Main
+
+                health = reader.ReadInt32();
+                lives = reader.ReadInt32();
+                hitCooldown = reader.ReadSingle();
+                canBoost = reader.ReadBoolean();
+                collisionAccurate = reader.ReadBoolean();
+
+                #endregion
+
+                #region Move
+
+                moveSpeed = reader.ReadSingle();
+                boostSpeed = reader.ReadSingle();
+                boostCooldown = reader.ReadSingle();
+                minBoostTime = reader.ReadSingle();
+                maxBoostTime = reader.ReadSingle();
+                sprintSneakActive = reader.ReadBoolean();
+                sprintSpeed = reader.ReadSingle();
+                sneakSpeed = reader.ReadSingle();
+
+                #endregion
+
+                #region Jump
+
+                jumpGravity = reader.ReadSingle();
+                jumpIntensity = reader.ReadSingle();
+                bounciness = reader.ReadSingle();
+                jumpCount = reader.ReadInt32();
+                jumpBoostCount = reader.ReadInt32();
+                airBoostOnly = reader.ReadBoolean();
+
+                #endregion
+
+                #endregion
+            }
+
+            public void WritePacket(NetworkWriter writer)
+            {
+                writer.Write(id);
+                writer.Write(name);
+
+                #region Visual
+
+                writer.Write((byte)rotateMode);
+                writer.Write(rotationSpeed);
+                writer.Write((byte)rotationCurveType);
+
+                #endregion
+
+                #region Control
+
+                #region Main
+
+                writer.Write(health);
+                writer.Write(lives);
+                writer.Write(hitCooldown);
+                writer.Write(canBoost);
+                writer.Write(collisionAccurate);
+
+                #endregion
+
+                #region Move
+
+                writer.Write(moveSpeed);
+                writer.Write(boostSpeed);
+                writer.Write(boostCooldown);
+                writer.Write(minBoostTime);
+                writer.Write(maxBoostTime);
+                writer.Write(sprintSneakActive);
+                writer.Write(sprintSpeed);
+                writer.Write(sneakSpeed);
+
+                #endregion
+
+                #region Jump
+
+                writer.Write(jumpGravity);
+                writer.Write(jumpIntensity);
+                writer.Write(bounciness);
+                writer.Write(jumpCount);
+                writer.Write(jumpBoostCount);
+                writer.Write(airBoostOnly);
+
+                #endregion
+
+                #endregion
             }
 
             #endregion
         }
 
-        public class Stretch : PAObject<Stretch>
-        {
-            public Stretch() { }
-
-            #region Values
-
-            public override bool ShouldSerialize =>
-                active ||
-                amount != 0.4f ||
-                easing != 6;
-
-            public bool active = false;
-
-            public float amount = 0.4f;
-
-            public int easing = 6;
-
-            #endregion
-
-            #region Functions
-
-            public override void CopyData(Stretch orig, bool newID = true)
-            {
-                active = orig.active;
-                amount = orig.amount;
-                easing = orig.easing;
-            }
-
-            public override void ReadJSON(JSONNode jn)
-            {
-                if (jn == null)
-                    return;
-
-                if (jn["active"] != null)
-                    active = jn["active"].AsBool;
-                if (jn["amount"] != null)
-                    amount = jn["amount"].AsFloat;
-                if (jn["easing"] != null)
-                    easing = jn["easing"].AsInt;
-            }
-
-            public override JSONNode ToJSON()
-            {
-                var jn = Parser.NewJSONObject();
-
-                if (active)
-                    jn["active"] = active;
-                if (amount != 0.4f)
-                    jn["amount"] = amount;
-                if (easing != 6)
-                    jn["easing"] = easing;
-
-                return jn;
-            }
-
-            #endregion
-        }
-
-        public class GUI : PAObject<GUI>
+        public class GUI : PAObject<GUI>, IPacket
         {
             public GUI() { }
 
@@ -965,21 +1136,50 @@ namespace BetterLegacy.Core.Data.Player
                 if (topCustomColor != RTColors.WHITE_HEX_CODE)
                     jn["top_custom_color"] = topCustomColor;
                 if (topOpacity != 1f)
-                    jn["top_opacity"] = baseOpacity;
+                    jn["top_opacity"] = topOpacity;
+
                 if (baseColor != 4)
                     jn["base_color"] = baseColor;
                 if (baseCustomColor != RTColors.WHITE_HEX_CODE)
                     jn["base_custom_color"] = baseCustomColor;
-                if (topOpacity != 1f)
+                if (baseOpacity != 1f)
                     jn["base_opacity"] = baseOpacity;
 
                 return jn;
             }
 
+            public void ReadPacket(NetworkReader reader)
+            {
+                active = reader.ReadBoolean();
+                mode = (GUIHealthMode)reader.ReadByte();
+
+                topColor = reader.ReadInt32();
+                topCustomColor = reader.ReadString();
+                topOpacity = reader.ReadSingle();
+
+                baseColor = reader.ReadInt32();
+                baseCustomColor = reader.ReadString();
+                baseOpacity = reader.ReadSingle();
+            }
+
+            public void WritePacket(NetworkWriter writer)
+            {
+                writer.Write(active);
+                writer.Write((byte)mode);
+
+                writer.Write(topColor);
+                writer.Write(topCustomColor);
+                writer.Write(topOpacity);
+
+                writer.Write(baseColor);
+                writer.Write(baseCustomColor);
+                writer.Write(baseOpacity);
+            }
+
             #endregion
         }
 
-        public class Pulse : PAObject<Pulse>, IShapeable
+        public class Pulse : PAObject<Pulse>, IPacket, IShapeable
         {
             public Pulse() { }
 
@@ -1180,6 +1380,34 @@ namespace BetterLegacy.Core.Data.Player
 
                 jn["rothead"] = rotateToHead;
 
+                jn["d"] = depth;
+
+                #region Position
+
+                jn["pos"]["start"] = startPosition.ToJSON();
+                jn["pos"]["end"] = endPosition.ToJSON();
+                jn["pos"]["easing"] = easingPosition;
+
+                #endregion
+
+                #region Scale
+
+                jn["sca"]["start"] = startScale.ToJSON();
+                jn["sca"]["end"] = endScale.ToJSON();
+                jn["sca"]["easing"] = easingScale;
+
+                #endregion
+
+                #region Rotation
+
+                jn["rot"]["start"] = startRotation;
+                jn["rot"]["end"] = endRotation;
+                jn["rot"]["easing"] = easingRotation;
+
+                #endregion
+
+                #region Color
+
                 jn["col"]["start"] = startColor;
                 if (!string.IsNullOrEmpty(startCustomColor))
                     jn["col"]["starthex"] = startCustomColor;
@@ -1192,23 +1420,119 @@ namespace BetterLegacy.Core.Data.Player
                 jn["opa"]["end"] = endOpacity;
                 jn["opa"]["easing"] = easingOpacity;
 
-                jn["d"] = depth;
-
-                jn["pos"]["start"] = startPosition.ToJSON();
-                jn["pos"]["end"] = endPosition.ToJSON();
-                jn["pos"]["easing"] = easingPosition;
-                
-                jn["sca"]["start"] = startScale.ToJSON();
-                jn["sca"]["end"] = endScale.ToJSON();
-                jn["sca"]["easing"] = easingScale;
-
-                jn["rot"]["start"] = startRotation;
-                jn["rot"]["end"] = endRotation;
-                jn["rot"]["easing"] = easingRotation;
+                #endregion
 
                 jn["lt"] = duration;
 
                 return jn;
+            }
+
+            public void ReadPacket(NetworkReader reader)
+            {
+                #region Interface
+
+                this.ReadShapePacket(reader);
+
+                #endregion
+
+                active = reader.ReadBoolean();
+                rotateToHead = reader.ReadBoolean();
+
+                depth = reader.ReadSingle();
+
+                #region Position
+
+                startPosition = reader.ReadVector2();
+                endPosition = reader.ReadVector2();
+                easingPosition = reader.ReadByte();
+
+                #endregion
+
+                #region Scale
+
+                startScale = reader.ReadVector2();
+                endScale = reader.ReadVector2();
+                easingScale = reader.ReadByte();
+
+                #endregion
+
+                #region Rotation
+
+                startRotation = reader.ReadSingle();
+                endRotation = reader.ReadSingle();
+                easingRotation = reader.ReadByte();
+
+                #endregion
+
+                #region Color
+
+                startColor = reader.ReadInt32();
+                startCustomColor = reader.ReadString();
+                endColor = reader.ReadInt32();
+                endCustomColor = reader.ReadString();
+                easingColor = reader.ReadByte();
+
+                startOpacity = reader.ReadSingle();
+                endOpacity = reader.ReadSingle();
+                easingOpacity = reader.ReadByte();
+
+                #endregion
+
+                duration = reader.ReadSingle();
+            }
+
+            public void WritePacket(NetworkWriter writer)
+            {
+                #region Interface
+
+                this.WriteShapePacket(writer);
+
+                #endregion
+
+                writer.Write(active);
+                writer.Write(rotateToHead);
+
+                writer.Write(depth);
+
+                #region Position
+
+                writer.Write(startPosition);
+                writer.Write(endPosition);
+                writer.Write(easingPosition);
+
+                #endregion
+
+                #region Scale
+
+                writer.Write(startScale);
+                writer.Write(endScale);
+                writer.Write(easingScale);
+
+                #endregion
+
+                #region Rotation
+
+                writer.Write(startRotation);
+                writer.Write(endRotation);
+                writer.Write(easingRotation);
+
+                #endregion
+
+                #region Color
+
+                writer.Write(startColor);
+                writer.Write(startCustomColor);
+                writer.Write(endColor);
+                writer.Write(endCustomColor);
+                writer.Write(easingColor);
+
+                writer.Write(startOpacity);
+                writer.Write(endOpacity);
+                writer.Write(easingOpacity);
+
+                #endregion
+
+                writer.Write(duration);
             }
 
             public void SetCustomShape(int shape, int shapeOption) { }
@@ -1216,7 +1540,7 @@ namespace BetterLegacy.Core.Data.Player
             #endregion
         }
 
-        public class Bullet : PAObject<Bullet>, IShapeable
+        public class Bullet : PAObject<Bullet>, IPacket, IShapeable
         {
             public Bullet() { }
 
@@ -1472,19 +1796,50 @@ namespace BetterLegacy.Core.Data.Player
                 this.WriteShapeJSON(jn);
 
                 jn["ak"] = autoKill;
-
                 jn["speed"] = speed;
-
                 jn["lt"] = lifeTime;
-
                 jn["cooldown"] = cooldown;
-
                 jn["constant"] = constant;
 
                 jn["hit"] = hurtPlayers;
 
                 jn["o"]["x"] = origin.x;
                 jn["o"]["y"] = origin.y;
+
+                jn["d"] = depth;
+
+                #region Position
+
+                jn["pos"]["start"]["x"] = startPosition.x;
+                jn["pos"]["start"]["y"] = startPosition.y;
+                jn["pos"]["end"]["x"] = endPosition.x;
+                jn["pos"]["end"]["y"] = endPosition.y;
+                jn["pos"]["easing"] = easingPosition;
+                jn["pos"]["dur"] = durationPosition;
+
+                #endregion
+
+                #region Scale
+
+                jn["sca"]["start"]["x"] = startScale.x;
+                jn["sca"]["start"]["y"] = startScale.y;
+                jn["sca"]["end"]["x"] = endScale.x;
+                jn["sca"]["end"]["y"] = endScale.y;
+                jn["sca"]["easing"] = easingScale;
+                jn["sca"]["dur"] = durationScale;
+
+                #endregion
+
+                #region Rotation
+
+                jn["rot"]["start"] = startRotation;
+                jn["rot"]["end"] = endRotation;
+                jn["rot"]["easing"] = easingRotation;
+                jn["rot"]["dur"] = durationRotation;
+
+                #endregion
+
+                #region Color
 
                 jn["col"]["start"] = startColor;
                 if (!string.IsNullOrEmpty(startCustomColor))
@@ -1500,28 +1855,137 @@ namespace BetterLegacy.Core.Data.Player
                 jn["opa"]["easing"] = easingOpacity;
                 jn["opa"]["dur"] = durationOpacity;
 
-                jn["d"] = depth;
-
-                jn["pos"]["start"]["x"] = startPosition.x;
-                jn["pos"]["start"]["y"] = startPosition.y;
-                jn["pos"]["end"]["x"] = endPosition.x;
-                jn["pos"]["end"]["y"] = endPosition.y;
-                jn["pos"]["easing"] = easingPosition;
-                jn["pos"]["dur"] = durationPosition;
-
-                jn["sca"]["start"]["x"] = startScale.x;
-                jn["sca"]["start"]["y"] = startScale.y;
-                jn["sca"]["end"]["x"] = endScale.x;
-                jn["sca"]["end"]["y"] = endScale.y;
-                jn["sca"]["easing"] = easingScale;
-                jn["sca"]["dur"] = durationScale;
-
-                jn["rot"]["start"] = startRotation;
-                jn["rot"]["end"] = endRotation;
-                jn["rot"]["easing"] = easingRotation;
-                jn["rot"]["dur"] = durationRotation;
+                #endregion
 
                 return jn;
+            }
+
+            public void ReadPacket(NetworkReader reader)
+            {
+                #region Interface
+
+                this.ReadShapePacket(reader);
+
+                #endregion
+
+                active = reader.ReadBoolean();
+                autoKill = reader.ReadBoolean();
+                speed = reader.ReadSingle();
+                lifeTime = reader.ReadSingle();
+                cooldown = reader.ReadSingle();
+                constant = reader.ReadBoolean();
+
+                hurtPlayers = reader.ReadBoolean();
+
+                origin = reader.ReadVector2();
+                depth = reader.ReadSingle();
+
+                #region Position
+
+                startPosition = reader.ReadVector2();
+                endPosition = reader.ReadVector2();
+                easingPosition = reader.ReadByte();
+                durationPosition = reader.ReadSingle();
+
+                #endregion
+
+                #region Scale
+
+                startScale = reader.ReadVector2();
+                endScale = reader.ReadVector2();
+                easingScale = reader.ReadByte();
+                durationScale = reader.ReadSingle();
+
+                #endregion
+
+                #region Rotation
+
+                startRotation = reader.ReadSingle();
+                endRotation = reader.ReadSingle();
+                easingRotation = reader.ReadByte();
+                durationRotation = reader.ReadSingle();
+
+                #endregion
+
+                #region Color
+
+                startColor = reader.ReadInt32();
+                startCustomColor = reader.ReadString();
+                endColor = reader.ReadInt32();
+                endCustomColor = reader.ReadString();
+                easingColor = reader.ReadByte();
+                durationColor = reader.ReadSingle();
+
+                startOpacity = reader.ReadSingle();
+                endOpacity = reader.ReadSingle();
+                easingOpacity = reader.ReadByte();
+                durationOpacity = reader.ReadSingle();
+
+                #endregion
+            }
+
+            public void WritePacket(NetworkWriter writer)
+            {
+                #region Interface
+
+                this.WriteShapePacket(writer);
+
+                #endregion
+
+                writer.Write(active);
+                writer.Write(autoKill);
+                writer.Write(speed);
+                writer.Write(lifeTime);
+                writer.Write(cooldown);
+                writer.Write(constant);
+
+                writer.Write(hurtPlayers);
+
+                writer.Write(origin);
+                writer.Write(depth);
+
+                #region Position
+
+                writer.Write(startPosition);
+                writer.Write(endPosition);
+                writer.Write(easingPosition);
+                writer.Write(durationPosition);
+
+                #endregion
+
+                #region Scale
+
+                writer.Write(startScale);
+                writer.Write(endScale);
+                writer.Write(easingScale);
+                writer.Write(durationScale);
+
+                #endregion
+
+                #region Rotation
+
+                writer.Write(startRotation);
+                writer.Write(endRotation);
+                writer.Write(easingRotation);
+                writer.Write(durationRotation);
+
+                #endregion
+
+                #region Color
+
+                writer.Write(startColor);
+                writer.Write(startCustomColor);
+                writer.Write(endColor);
+                writer.Write(endCustomColor);
+                writer.Write(easingColor);
+                writer.Write(durationColor);
+
+                writer.Write(startOpacity);
+                writer.Write(endOpacity);
+                writer.Write(easingOpacity);
+                writer.Write(durationOpacity);
+
+                #endregion
             }
 
             public void SetCustomShape(int shape, int shapeOption) { }
@@ -1529,7 +1993,7 @@ namespace BetterLegacy.Core.Data.Player
             #endregion
         }
 
-        public class TailBase : PAObject<TailBase>
+        public class TailBase : PAObject<TailBase>, IPacket
         {
             public TailBase() { }
 
@@ -1541,18 +2005,40 @@ namespace BetterLegacy.Core.Data.Player
                 grows ||
                 time != 200f;
 
+            /// <summary>
+            /// The distance between each tail element.
+            /// </summary>
             public float distance = 2f;
 
+            /// <summary>
+            /// Tail behavior.
+            /// </summary>
             public TailMode mode;
 
+            /// <summary>
+            /// If the tail should grow when more health is given than the default.
+            /// </summary>
             public bool grows;
 
+            /// <summary>
+            /// Delta time of all tail elements.
+            /// </summary>
             public float time = 200f;
 
+            /// <summary>
+            /// Player tail (yes, tail, not trail) behavior.
+            /// </summary>
             public enum TailMode
             {
+                /// <summary>
+                /// Legacy tail behavior, where each element follows the next and is not fixed to the back of the player.
+                /// </summary>
                 Legacy,
-                DevPlus
+                /// <summary>
+                /// Modern tail behavior, where each element strictly follows behind the player.
+                /// </summary>
+                DevPlus,
+                // Beta, // i'd like to add this one if I knew how the beta player was coded
             }
 
             #endregion
@@ -1601,6 +2087,22 @@ namespace BetterLegacy.Core.Data.Player
                     jn["time"] = time;
 
                 return jn;
+            }
+
+            public void ReadPacket(NetworkReader reader)
+            {
+                distance = reader.ReadSingle();
+                mode = (TailMode)reader.ReadByte();
+                grows = reader.ReadBoolean();
+                time = reader.ReadSingle();
+            }
+
+            public void WritePacket(NetworkWriter writer)
+            {
+                writer.Write(distance);
+                writer.Write((byte)mode);
+                writer.Write(grows);
+                writer.Write(time);
             }
 
             #endregion

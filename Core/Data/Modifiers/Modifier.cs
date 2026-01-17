@@ -396,7 +396,7 @@ namespace BetterLegacy.Core.Data.Modifiers
 
         public void WritePacket(NetworkWriter writer)
         {
-            writer.Write(id ?? string.Empty);
+            writer.Write(id);
             writer.Write((ushort)type);
             if (type == Type.Trigger)
             {
@@ -413,14 +413,14 @@ namespace BetterLegacy.Core.Data.Modifiers
             if (ProjectArrhythmia.State.InEditor)
             {
                 writer.Write(collapse);
-                writer.Write(customName ?? string.Empty);
-                writer.Write(description ?? string.Empty);
+                writer.Write(customName);
+                writer.Write(description);
             }
 
-            writer.Write(name ?? string.Empty);
+            writer.Write(name);
             writer.Write(values.Count);
             for (int i = 0; i < values.Count; i++)
-                writer.Write(values[i] ?? string.Empty);
+                writer.Write(values[i]);
         }
 
         public void VerifyModifier(List<Modifier> modifiers)

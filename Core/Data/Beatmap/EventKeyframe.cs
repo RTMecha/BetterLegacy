@@ -6,12 +6,15 @@ using LSFunctions;
 
 using SimpleJSON;
 
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Editor.Data.Timeline;
 
 namespace BetterLegacy.Core.Data.Beatmap
 {
-    public class EventKeyframe : PAObject<EventKeyframe>
+    public class EventKeyframe : PAObject<EventKeyframe>, IPacket
     {
+        #region Constructors
+
         public EventKeyframe()
         {
             id = LSText.randomNumString(8);
@@ -45,57 +48,171 @@ namespace BetterLegacy.Core.Data.Beatmap
         public EventKeyframe(float time, Vector2 value, string curve) : this(time, new float[2] { value.x, value.y }, curve) { }
         public EventKeyframe(float time, Vector3 value, string curve) : this(time, new float[3] { value.x, value.y, value.z }, curve) { }
 
-        public static EventKeyframe DefaultPositionKeyframe => new EventKeyframe(0f, new float[3], new float[4]);
-        public static EventKeyframe DefaultScaleKeyframe => new EventKeyframe(0f, new float[2] { 1f, 1f }, new float[4]);
-        public static EventKeyframe DefaultRotationKeyframe => new EventKeyframe(0f, new float[1], new float[4]) { relative = true };
-        public static EventKeyframe DefaultColorKeyframe => new EventKeyframe(0f, new float[10], new float[3]);
+        #endregion
 
         #region Values
 
+        #region Defaults
+
+        /// <summary>
+        /// The default position keyframe.
+        /// </summary>
+        public static EventKeyframe DefaultPositionKeyframe => new EventKeyframe(0f, new float[3], new float[4]);
+
+        /// <summary>
+        /// The default scale keyframe.
+        /// </summary>
+        public static EventKeyframe DefaultScaleKeyframe => new EventKeyframe(0f, new float[2] { 1f, 1f }, new float[4]);
+
+        /// <summary>
+        /// The default rotation keyframe.
+        /// </summary>
+        public static EventKeyframe DefaultRotationKeyframe => new EventKeyframe(0f, new float[1], new float[4]) { relative = true };
+
+        /// <summary>
+        /// The default color keyframe.
+        /// </summary>
+        public static EventKeyframe DefaultColorKeyframe => new EventKeyframe(0f, new float[10], new float[3]);
+
+        #endregion
+
+        #region JSON Names
+
+        static readonly string[] axis = new string[]
+        {
+            "x",
+            "y",
+            "z",
+            "x2",
+            "y2",
+            "z2",
+            "x3",
+            "y3",
+            "z3",
+            "x4",
+            "y4",
+            "z4",
+            "x5",
+            "y5",
+            "z5",
+        };
+
+        static readonly string[] raxis = new string[]
+        {
+            "rx",
+            "ry",
+            "rz",
+            "rx2",
+            "ry2",
+            "rz2",
+            "rx3",
+            "ry3",
+            "rz3",
+            "rx4",
+            "ry4",
+            "rz4",
+            "rx5",
+            "ry5",
+            "rz5",
+        };
+
+        #endregion
+
+        #region Value Arrays
+
+        /// <summary>
+        /// Values of the event keyframe.
+        /// </summary>
         public float[] values = new float[2];
 
+        /// <summary>
+        /// Random values of the event keyframe if <see cref="RandomType"/> is not <see cref="RandomType.None"/>
+        /// </summary>
         public float[] randomValues = new float[3];
 
+        /// <summary>
+        /// String values of the event keyframe.
+        /// </summary>
         public string[] stringValues;
 
+        #endregion
+
+        #region Settings
+
+        /// <summary>
+        /// Random type.
+        /// </summary>
         public int random;
 
+        /// <summary>
+        /// Randomization type.
+        /// </summary>
         public RandomType RandomType => (RandomType)random;
 
+        /// <summary>
+        /// If the event keyframe is relative / additive. With this on, the previous keyframe values are added onto the current one.
+        /// </summary>
         public bool relative;
 
+        /// <summary>
+        /// If the object should flee from the player rather than follow, only if <see cref="RandomType"/> is <see cref="RandomType.HomingStatic"/> or <see cref="RandomType.HomingDynamic"/>.
+        /// </summary>
         public bool flee;
 
+        /// <summary>
+        /// Target priority of the event keyframe if <see cref="RandomType"/> is <see cref="RandomType.HomingStatic"/> or <see cref="RandomType.HomingDynamic"/>.
+        /// </summary>
         public HomingPriority homingPriority;
 
+        /// <summary>
+        /// Player index to target if <see cref="RandomType"/> is <see cref="RandomType.HomingStatic"/> or <see cref="RandomType.HomingDynamic"/> and <see cref="homingPriority"/> is <see cref="HomingPriority.Index"/>.
+        /// </summary>
         public int playerIndex;
 
+        /// <summary>
+        /// If the event keyframe time is locked and cannot be changed in the editor.
+        /// </summary>
         public bool locked;
+
+        #endregion
 
         #region Timing
 
+        /// <summary>
+        /// Event keyframe time.
+        /// </summary>
         public float time;
 
+        /// <summary>
+        /// Ease / curve type.
+        /// </summary>
         public Easing curve = Easing.Linear;
 
         #endregion
 
         #region Reference
 
+        /// <summary>
+        /// Type of the event keyframe.
+        /// </summary>
         public int type;
+
+        /// <summary>
+        /// Index of the event keyframe.
+        /// </summary>
         public int index;
+
+        /// <summary>
+        /// Timeline keyframe reference for the editor.
+        /// </summary>
         public TimelineKeyframe timelineKeyframe;
 
         #endregion
 
         #endregion
 
-        #region Methods
+        #region Functions
 
-        /// <summary>
-        /// Copies data from another EventKeyframe.
-        /// </summary>
-        /// <param name="orig">Original object to copy data from.</param>
         public override void CopyData(EventKeyframe orig, bool newID = true)
         {
             id = newID ? LSText.randomNumString(8) : orig.id;
@@ -204,6 +321,53 @@ namespace BetterLegacy.Core.Data.Beatmap
             return jn;
         }
 
+        public void ReadPacket(NetworkReader reader)
+        {
+            type = reader.ReadInt32();
+            index = reader.ReadInt32();
+
+            time = reader.ReadSingle();
+            values = reader.ReadSingleArray();
+            curve = (Easing)reader.ReadUInt16();
+            random = reader.ReadByte();
+            if (RandomType != RandomType.None)
+                randomValues = reader.ReadSingleArray();
+            if (IsHoming())
+            {
+                flee = reader.ReadBoolean();
+                homingPriority = (HomingPriority)reader.ReadByte();
+                if (homingPriority == HomingPriority.Index)
+                    playerIndex = reader.ReadInt32();
+            }
+            stringValues = reader.ReadStringArray();
+            relative = reader.ReadBoolean();
+            if (ProjectArrhythmia.State.InEditor)
+                locked = reader.ReadBoolean();
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(type);
+            writer.Write(index);
+            writer.Write(time);
+            writer.Write(values);
+            writer.Write((ushort)curve);
+            writer.Write((byte)random);
+            if (RandomType != RandomType.None)
+                writer.Write(randomValues);
+            if (IsHoming())
+            {
+                writer.Write(flee);
+                writer.Write((byte)homingPriority);
+                if (homingPriority == HomingPriority.Index)
+                    writer.Write(index);
+            }
+            writer.Write(stringValues);
+            writer.Write(relative);
+            if (ProjectArrhythmia.State.InEditor)
+                writer.Write(locked);
+        }
+
         /// <summary>
         /// Set an EventKeyframe's easing via an integer. If the number is within the range of the list, then the ease is set.
         /// </summary>
@@ -212,12 +376,15 @@ namespace BetterLegacy.Core.Data.Beatmap
         public void SetCurve(int ease) => curve = (Easing)Mathf.Clamp(ease, 0, System.Enum.GetNames(typeof(Easing)).Length - 1);
 
         /// <summary>
-        /// Set an EventKeyframe's easing via a string. If the AnimationList contains the specified string, then the ease is set.
+        /// Set the keyframes's easing via a string.
         /// </summary>
-        /// <param name="eventKeyframe">The EventKeyframe instance</param>
-        /// <param name="ease">The ease to set to the keyframe</param>
+        /// <param name="ease">The ease to set to the keyframe.</param>
         public void SetCurve(string ease) => curve = Parser.TryParse(ease, Easing.Linear);
 
+        /// <summary>
+        /// Sets the keyframes' values.
+        /// </summary>
+        /// <param name="vals">Values to set.</param>
         public void SetValues(params float[] vals)
         {
             if (vals == null)
@@ -228,6 +395,10 @@ namespace BetterLegacy.Core.Data.Beatmap
                 values[i] = vals[i];
         }
 
+        /// <summary>
+        /// Sets the keyframes' random values.
+        /// </summary>
+        /// <param name="vals">Random values to set.</param>
         public void SetRandomValues(params float[] vals)
         {
             if (vals == null)
@@ -238,6 +409,10 @@ namespace BetterLegacy.Core.Data.Beatmap
                 randomValues[i] = vals[i];
         }
 
+        /// <summary>
+        /// Sets the keyframes' string values.
+        /// </summary>
+        /// <param name="vals">String values to set.</param>
         public void SetStringValues(params string[] vals)
         {
             if (vals == null)
@@ -248,48 +423,92 @@ namespace BetterLegacy.Core.Data.Beatmap
                 stringValues[i] = vals[i];
         }
 
+        /// <summary>
+        /// Sets a value of the keyframe.
+        /// </summary>
+        /// <param name="index">Index of the value to set.</param>
+        /// <param name="val">Value to set.</param>
         public void SetValue(int index, float val)
         {
             if (values.InRange(index))
                 values[index] = val;
         }
-        
+
+        /// <summary>
+        /// Sets a random value of the keyframe.
+        /// </summary>
+        /// <param name="index">Index of the random value to set.</param>
+        /// <param name="val">Random value to set.</param>
         public void SetRandomValue(int index, float val)
         {
             if (randomValues.InRange(index))
                 randomValues[index] = val;
         }
 
+        /// <summary>
+        /// Sets a string value of the keyframe.
+        /// </summary>
+        /// <param name="index">Index of the string value to set.</param>
+        /// <param name="val">String value to set.</param>
         public void SetStringValue(int index, string val)
         {
             if (stringValues.InRange(index))
                 stringValues[index] = val;
         }
 
+        /// <summary>
+        /// Gets a value from the keyframe.
+        /// </summary>
+        /// <param name="index">Index of the value to get.</param>
+        /// <param name="defaultValue">Default value to return if no value exists at the <paramref name="index"/>.</param>
+        /// <returns>Returns the value if <paramref name="index"/> is in the range of the <see cref="values"/> array, otherwise returns <paramref name="defaultValue"/>.</returns>
         public float GetValue(int index, float defaultValue = 0f) => values.TryGetAt(index, out float result) ? result : defaultValue;
 
+        /// <summary>
+        /// Gets a random value from the keyframe.
+        /// </summary>
+        /// <param name="index">Index of the random value to get.</param>
+        /// <param name="defaultValue">Default value to return if no value exists at the <paramref name="index"/>.</param>
+        /// <returns>Returns the value if <paramref name="index"/> is in the range of the <see cref="randomValues"/> array, otherwise returns <paramref name="defaultValue"/>.</returns>
         public float GetRandomValue(int index, float defaultValue = 0f) => randomValues.TryGetAt(index, out float result) ? result : defaultValue;
 
+        /// <summary>
+        /// Gets a string value from the keyframe.
+        /// </summary>
+        /// <param name="index">Index of the string value to get.</param>
+        /// <param name="defaultValue">Default value to return if no value exists at the <paramref name="index"/>.</param>
+        /// <returns>Returns the value if <paramref name="index"/> is in the range of the <see cref="stringValues"/> array, otherwise returns <paramref name="defaultValue"/>.</returns>
         public string GetStringValue(int index, string defaultValue = null) => stringValues.TryGetAt(index, out string result) ? result : defaultValue;
 
-        public bool IsHoming() => random == 5 || random == 6;
+        /// <summary>
+        /// Checks if the event keyframe is a homing type.
+        /// </summary>
+        /// <returns>Returns <see langword="true"/> if <see cref="RandomType"/> is <see cref="RandomType.HomingStatic"/> or <see cref="RandomType.HomingDynamic"/>, otherwise returns <see langword="false"/>.</returns>
+        public bool IsHoming() => RandomType == RandomType.HomingStatic || RandomType == RandomType.HomingDynamic;
 
+        /// <summary>
+        /// Gets keyframe variables for math evaluation.
+        /// </summary>
+        /// <param name="index">Index of the value.</param>
+        /// <returns>Returns a dictionary containing event keyframe variables.</returns>
         public Dictionary<string, float> GetKeyframeVariables(int index) => new Dictionary<string, float>
         {
             { "eventTime", time },
             { "currentValue", values[index] }
         };
-        
+
+        /// <summary>
+        /// Gets keyframe variables for math evaluation.
+        /// </summary>
+        /// <param name="xindex">Index of the X value.</param>
+        /// <param name="yindex">Index of the Y value.</param>
+        /// <returns>Returns a dictionary containing event keyframe variables.</returns>
         public Dictionary<string, float> GetKeyframeVariables(int xindex, int yindex) => new Dictionary<string, float>
         {
             { "eventTime", time },
             { "currentValueX", values[xindex] },
             { "currentValueY", values[yindex] }
         };
-
-        #endregion
-
-        #region Operators
 
         public override string ToString()
         {
@@ -309,43 +528,5 @@ namespace BetterLegacy.Core.Data.Beatmap
         public override int GetHashCode() => base.GetHashCode();
 
         #endregion
-
-        static readonly string[] axis = new string[]
-        {
-            "x",
-            "y",
-            "z",
-            "x2",
-            "y2",
-            "z2",
-            "x3",
-            "y3",
-            "z3",
-            "x4",
-            "y4",
-            "z4",
-            "x5",
-            "y5",
-            "z5",
-        };
-
-        static readonly string[] raxis = new string[]
-        {
-            "rx",
-            "ry",
-            "rz",
-            "rx2",
-            "ry2",
-            "rz2",
-            "rx3",
-            "ry3",
-            "rz3",
-            "rx4",
-            "ry4",
-            "rz4",
-            "rx5",
-            "ry5",
-            "rz5",
-        };
     }
 }

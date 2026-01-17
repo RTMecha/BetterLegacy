@@ -5,12 +5,14 @@ using UnityEngine;
 
 using SimpleJSON;
 
+using BetterLegacy.Core.Data.Network;
+
 namespace BetterLegacy.Core.Data.Beatmap
 {
     /// <summary>
     /// Contains info about a PA objects' layer, bin, etc.
     /// </summary>
-    public class ObjectEditorData : PAObject<ObjectEditorData>
+    public class ObjectEditorData : PAObject<ObjectEditorData>, IPacket
     {
         #region Constructors
 
@@ -268,6 +270,44 @@ namespace BetterLegacy.Core.Data.Beatmap
             }
 
             return jn;
+        }
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            Bin = reader.ReadInt32();
+            Layer = reader.ReadInt32();
+            collapse = reader.ReadBoolean();
+            locked = reader.ReadBoolean();
+            selectable = reader.ReadBoolean();
+            hidden = reader.ReadBoolean();
+            editorGroup = reader.ReadString();
+            color = reader.ReadString();
+            selectedColor = reader.ReadString();
+            textColor = reader.ReadString();
+            markColor = reader.ReadString();
+            Packet.ReadPacketList(displays, reader);
+            miscDisplayValues = reader.ReadDictionary(
+                readKey: () => reader.ReadString(),
+                readValue: () => reader.ReadSingle());
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(Bin);
+            writer.Write(Layer);
+            writer.Write(collapse);
+            writer.Write(locked);
+            writer.Write(selectable);
+            writer.Write(hidden);
+            writer.Write(editorGroup);
+            writer.Write(color);
+            writer.Write(selectedColor);
+            writer.Write(textColor);
+            writer.Write(markColor);
+            Packet.WritePacketList(displays, writer);
+            writer.Write(miscDisplayValues,
+                writeKey: key => writer.Write(key),
+                writeValue: value => writer.Write(value));
         }
 
         static string GetDefaultColorVG(bool r, bool g, bool b) => r && g && b ? RTColors.WHITE_HEX_CODE : r && g ? RED_GREEN : r && b ? RED_BLUE : g && b ? GREEN_BLUE : r ? RED : g ? GREEN : b ? BLUE : RTColors.WHITE_HEX_CODE;

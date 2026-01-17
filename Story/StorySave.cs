@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using SimpleJSON;
 
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Level;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
@@ -15,13 +17,17 @@ namespace BetterLegacy.Story
     /// <summary>
     /// Represents a story save slot.
     /// </summary>
-    public class StorySave : Exists
+    public class StorySave : Exists, IPacket
     {
+        #region Constructors
+
         public StorySave() { }
 
         public StorySave(int slot) => Slot = slot;
 
-        #region Data
+        #endregion
+
+        #region Values
 
         /// <summary>
         /// The name of the save.
@@ -32,12 +38,6 @@ namespace BetterLegacy.Story
         /// The currently saved chapter.
         /// </summary>
         public int ChapterIndex => LoadInt("Chapter", 0);
-
-        /// <summary>
-        /// Gets the currently saved level index of a chapter.
-        /// </summary>
-        /// <param name="chapterIndex">The chapter progress.</param>
-        public int GetLevelSequenceIndex(int chapterIndex) => LoadInt($"DOC{RTString.ToStoryNumber(chapterIndex)}Progress", 0);
 
         /// <summary>
         /// Path to the current save slot file.
@@ -66,6 +66,88 @@ namespace BetterLegacy.Story
         public List<SaveData> Saves { get; set; } = new List<SaveData>();
 
         #endregion
+
+        #region Functions
+
+        #region Packet
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            slot = reader.ReadInt32();
+            Packet.ReadPacketList(Saves, reader);
+            var hasData = reader.ReadBoolean();
+            if (!hasData)
+                return;
+
+            var storySaveVariablesCount = reader.ReadInt32();
+            for (int i = 0; i < storySaveVariablesCount; i++)
+            {
+                var key = reader.ReadString();
+                var value = Parser.NewJSONObject();
+                var boolValue = reader.ReadString();
+                if (!string.IsNullOrEmpty(boolValue))
+                    value["bool"] = Parser.TryParse(boolValue, false);
+                var intValue = reader.ReadString();
+                if (!string.IsNullOrEmpty(intValue))
+                    value["int"] = Parser.TryParse(intValue, 0);
+                var floatValue = reader.ReadString();
+                if (!string.IsNullOrEmpty(floatValue))
+                    value["float"] = Parser.TryParse(floatValue, 0);
+                var stringValue = reader.ReadString();
+                if (!string.IsNullOrEmpty(stringValue))
+                    value["string"] = Parser.TryParse(stringValue, 0);
+                var arrayValue = reader.ReadString();
+                if (!string.IsNullOrEmpty(arrayValue))
+                    value["array"] = JSON.Parse(arrayValue);
+                var objectValue = reader.ReadString();
+                if (!string.IsNullOrEmpty(objectValue))
+                    value["object"] = JSON.Parse(objectValue);
+                storySavesJSON[key] = value;
+            }
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(slot);
+            Packet.WritePacketList(Saves, writer);
+            var hasData = storySavesJSON != null;
+            writer.Write(hasData);
+            if (!hasData)
+                return;
+
+            if (storySavesJSON["saves"] == null)
+            {
+                writer.Write(0);
+                return;
+            }
+            var storySaveVariables = storySavesJSON["saves"].Linq;
+            writer.Write(storySaveVariables.Count());
+            foreach (var keyValuePair in storySaveVariables)
+            {
+                writer.Write(keyValuePair.Key);
+                var value = keyValuePair.Value;
+                writer.Write(value.GetValueOrDefault("bool", string.Empty).Value);
+                writer.Write(value.GetValueOrDefault("int", string.Empty).Value);
+                writer.Write(value.GetValueOrDefault("float", string.Empty).Value);
+                writer.Write(value.GetValueOrDefault("string", string.Empty).Value);
+                if (value["array"] != null)
+                    writer.Write(value["array"].ToString());
+                else
+                    writer.Write(string.Empty);
+                if (value["object"] != null)
+                    writer.Write(value["object"].ToString());
+                else
+                    writer.Write(string.Empty);
+            }
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Gets the currently saved level index of a chapter.
+        /// </summary>
+        /// <param name="chapterIndex">The chapter progress.</param>
+        public int GetLevelSequenceIndex(int chapterIndex) => LoadInt($"DOC{RTString.ToStoryNumber(chapterIndex)}Progress", 0);
 
         #region Saving
 
@@ -292,6 +374,8 @@ namespace BetterLegacy.Story
         /// <param name="name">Name of the value to check.</param>
         /// <returns>Returns true if the value exists, otherwise returns false.</returns>
         public bool HasSave(string name) => storySavesJSON != null && storySavesJSON["saves"][name] != null;
+
+        #endregion
 
         #endregion
     }

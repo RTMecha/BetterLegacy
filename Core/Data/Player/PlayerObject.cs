@@ -3,10 +3,11 @@
 using SimpleJSON;
 
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Network;
 
 namespace BetterLegacy.Core.Data.Player
 {
-    public class PlayerObject : PAObject<PlayerObject>, IPlayerObject, IShapeable
+    public class PlayerObject : PAObject<PlayerObject>, IPacket, IPlayerObject, IShapeable
     {
         public PlayerObject()
         {
@@ -79,7 +80,7 @@ namespace BetterLegacy.Core.Data.Player
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public override void CopyData(PlayerObject orig, bool newID = true)
         {
@@ -176,6 +177,60 @@ namespace BetterLegacy.Core.Data.Player
                 jn["particles"] = Particles.ToJSON();
 
             return jn;
+        }
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            #region Interface
+
+            this.ReadShapePacket(reader);
+
+            #endregion
+
+            active = reader.ReadBoolean();
+            position = reader.ReadVector2();
+            scale = reader.ReadVector2();
+            rotation = reader.ReadSingle();
+            depth = reader.ReadSingle();
+
+            color = reader.ReadInt32();
+            customColor = reader.ReadString();
+            opacity = reader.ReadSingle();
+
+            var hasTrail = reader.ReadBoolean();
+            if (hasTrail)
+                Trail = Packet.CreateFromPacket<PlayerTrail>(reader);
+            var hasParticles = reader.ReadBoolean();
+            if (hasParticles)
+                Particles = Packet.CreateFromPacket<PlayerParticles>(reader);
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            #region Interface
+
+            this.WriteShapePacket(writer);
+
+            #endregion
+
+            writer.Write(active);
+            writer.Write(position);
+            writer.Write(scale);
+            writer.Write(rotation);
+            writer.Write(depth);
+
+            writer.Write(color);
+            writer.Write(customColor);
+            writer.Write(opacity);
+
+            bool hasTrail = Trail;
+            writer.Write(hasTrail);
+            if (hasTrail)
+                Trail.WritePacket(writer);
+            bool hasParticles = Particles;
+            writer.Write(hasParticles);
+            if (hasParticles)
+                Particles.WritePacket(writer);
         }
 
         public void SetCustomShape(int shape, int shapeOption) { }

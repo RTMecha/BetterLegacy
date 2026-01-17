@@ -1,9 +1,12 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 using SimpleJSON;
 
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
+using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Story
@@ -11,34 +14,24 @@ namespace BetterLegacy.Story
     /// <summary>
     /// The main story data class.
     /// </summary>
-    public class StoryMode
+    public class StoryMode : PAObject<StoryMode>, IPacket
     {
-        #region Init
+        #region Values
 
         /// <summary>
-        /// Where the story is located.
+        /// The current story mode instance.
         /// </summary>
         public static StoryMode Instance { get; set; }
-
-        /// <summary>
-        /// Inits the Story Mode data.
-        /// </summary>
-        public static void Init()
-        {
-            CoreHelper.Log($"Init {nameof(StoryMode)}");
-            var path = AssetPack.GetFile($"story/{CoreConfig.Instance.StoryFile.Value}");
-            if (RTFile.FileExists(path))
-                Instance = Parse(JSON.Parse(RTFile.ReadFromFile(path)));
-        }
-
-        #endregion
-
-        #region Values
 
         /// <summary>
         /// Where the story begins.
         /// </summary>
         public string entryInterfacePath;
+        
+        /// <summary>
+        /// Where the story begins.
+        /// </summary>
+        public string entryInterfacePathNoParse;
 
         /// <summary>
         /// All main story chapters.
@@ -52,32 +45,76 @@ namespace BetterLegacy.Story
 
         #endregion
 
+        #region Functions
+
         /// <summary>
-        /// Parses the Story Mode from JSON.
+        /// Inits the Story Mode data.
         /// </summary>
-        /// <param name="jn">JSON to parse.</param>
-        /// <returns>Returns a parsed <see cref="StoryMode"/>.</returns>
-        public static StoryMode Parse(JSONNode jn)
+        public static void Init()
         {
-            var story = new StoryMode()
-            {
-                entryInterfacePath = RTFile.ParsePaths(jn["entry_interface"]),
-            };
+            CoreHelper.Log($"Init {nameof(StoryMode)}");
+            var path = AssetPack.GetFile($"story/{CoreConfig.Instance.StoryFile.Value}");
+            if (RTFile.FileExists(path))
+                Instance = Parse(JSON.Parse(RTFile.ReadFromFile(path)));
+        }
+
+        public override void CopyData(StoryMode orig, bool newID = true)
+        {
+            entryInterfacePathNoParse = orig.entryInterfacePathNoParse;
+            entryInterfacePath = orig.entryInterfacePath;
+            chapters = new List<Chapter>(orig.chapters.Select(x => x.Copy(false)));
+            bonusChapters = new List<Chapter>(orig.bonusChapters.Select(x => x.Copy(false)));
+        }
+
+        public override void ReadJSON(JSONNode jn)
+        {
+            entryInterfacePathNoParse = jn["entry_interface"];
+            entryInterfacePath = RTFile.ParsePaths(entryInterfacePathNoParse);
 
             for (int i = 0; i < jn["chapters"].Count; i++)
-                story.chapters.Add(Chapter.Parse(jn["chapters"][i]));
+                chapters.Add(Chapter.Parse(jn["chapters"][i]));
 
             if (jn["bonus_chapters"] != null)
                 for (int i = 0; i < jn["bonus_chapters"].Count; i++)
-                    story.bonusChapters.Add(Chapter.Parse(jn["bonus_chapters"][i]));
-
-            return story;
+                    bonusChapters.Add(Chapter.Parse(jn["bonus_chapters"][i]));
         }
+
+        public override JSONNode ToJSON()
+        {
+            var jn = Parser.NewJSONObject();
+
+            jn["entry_interface"] = entryInterfacePathNoParse;
+            for (int i = 0; i < chapters.Count; i++)
+                jn["chapters"][i] = chapters[i].ToJSON();
+            for (int i = 0; i < bonusChapters.Count; i++)
+                jn["bonus_chapters"][i] = bonusChapters[i].ToJSON();
+
+            return jn;
+        }
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            entryInterfacePathNoParse = reader.ReadString();
+            entryInterfacePath = RTFile.ParsePaths(entryInterfacePath);
+            Packet.ReadPacketList(chapters, reader);
+            Packet.ReadPacketList(bonusChapters, reader);
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(entryInterfacePathNoParse);
+            Packet.WritePacketList(chapters, writer);
+            Packet.WritePacketList(bonusChapters, writer);
+        }
+
+        #endregion
+
+        #region Sub Classes
 
         /// <summary>
         /// Represents a chapter in the BetterLegacy story mode.
         /// </summary>
-        public class Chapter
+        public class Chapter : PAObject<Chapter>, IPacket
         {
             #region Values
 
@@ -90,6 +127,11 @@ namespace BetterLegacy.Story
             /// Path to the interface that represents the chapter.
             /// </summary>
             public string interfacePath;
+            
+            /// <summary>
+            /// Path to the interface that represents the chapter.
+            /// </summary>
+            public string interfacePathNoParse;
 
             /// <summary>
             /// All story levels within the chapter.
@@ -114,6 +156,66 @@ namespace BetterLegacy.Story
 
             #endregion
 
+            #region Functions
+
+            public override void CopyData(Chapter orig, bool newID = true)
+            {
+                name = orig.name;
+                interfacePath = orig.interfacePath;
+                interfacePathNoParse = orig.interfacePathNoParse;
+                levels = new List<LevelSequence>(orig.levels.Select(x => x.Copy(false)));
+                transition = orig.transition ? orig.transition.Copy(false) : null;
+            }
+
+            public override void ReadJSON(JSONNode jn)
+            {
+                name = jn["name"];
+                interfacePathNoParse = jn["interface"];
+                interfacePath = RTFile.ParsePaths(interfacePathNoParse);
+
+                for (int i = 0; i < jn["levels"].Count; i++)
+                    levels.Add(LevelSequence.Parse(jn["levels"][i]));
+
+                if (jn["transition"] != null)
+                    transition = ChapterTransition.Parse(jn["transition"]);
+            }
+
+            public override JSONNode ToJSON()
+            {
+                var jn = Parser.NewJSONObject();
+
+                jn["name"] = name ?? string.Empty;
+                jn["interface"] = interfacePathNoParse;
+                for (int i = 0; i < levels.Count; i++)
+                    jn["levels"][i] = levels[i].ToJSON();
+                if (transition)
+                    jn["transition"] = transition.ToJSON();
+
+                return jn;
+            }
+
+            public void ReadPacket(NetworkReader reader)
+            {
+                name = reader.ReadString();
+                interfacePathNoParse = reader.ReadString();
+                interfacePath = RTFile.ParsePaths(interfacePathNoParse);
+                Packet.ReadPacketList(levels, reader);
+                var hasTransition = reader.ReadBoolean();
+                if (hasTransition)
+                    transition = Packet.CreateFromPacket<ChapterTransition>(reader);
+            }
+
+            public void WritePacket(NetworkWriter writer)
+            {
+                writer.Write(name);
+                writer.Write(interfacePathNoParse);
+                Packet.WritePacketList(levels, writer);
+                bool hasTransition = transition;
+                writer.Write(hasTransition);
+                if (hasTransition)
+                    transition.WritePacket(writer);
+            }
+
             /// <summary>
             /// Gets a story level at an index.
             /// </summary>
@@ -121,42 +223,17 @@ namespace BetterLegacy.Story
             /// <returns>Returns the level sequence that represents the story level.</returns>
             public LevelSequence GetLevel(int level) => level < Count ? levels[level] : transition.levelSequence;
 
-            /// <summary>
-            /// Parses a <see cref="Chapter"/> from JSON.
-            /// </summary>
-            /// <param name="jn">JSON to parse.</param>
-            /// <returns>Returns a parsed <see cref="Chapter"/> for the story mode.</returns>
-            public static Chapter Parse(JSONNode jn)
-            {
-                var chapter = new Chapter
-                {
-                    name = jn["name"],
-                    interfacePath = RTFile.ParsePaths(jn["interface"])
-                };
-
-                for (int i = 0; i < jn["levels"].Count; i++)
-                    chapter.levels.Add(LevelSequence.Parse(jn["levels"][i]));
-
-                if (jn["transition"] != null)
-                    chapter.transition = ChapterTransition.Parse(jn["transition"]);
-
-                return chapter;
-            }
-
             public override string ToString() => $"{name} - {Count}";
+
+            #endregion
         }
 
         /// <summary>
         /// Represents a level with cutscenes in the BetterLegacy story mode.
         /// </summary>
-        public class LevelSequence
+        public class LevelSequence : PAObject<LevelSequence>, IPacket
         {
             #region Values
-
-            /// <summary>
-            /// Identification number of the level.
-            /// </summary>
-            public string id;
 
             /// <summary>
             /// The title of the song the level uses.
@@ -211,6 +288,11 @@ namespace BetterLegacy.Story
             public string returnInterface;
 
             /// <summary>
+            /// Interface to return to when the level is completed.
+            /// </summary>
+            public string returnInterfaceNoParse;
+
+            /// <summary>
             /// If the return interface is replayable after completion.
             /// </summary>
             public bool returnReplayable;
@@ -227,6 +309,101 @@ namespace BetterLegacy.Story
 
             #endregion
 
+            #region Functions
+
+            public override void CopyData(LevelSequence orig, bool newID = true)
+            {
+                id = newID ? GetNumberID() : orig.id;
+                songTitle = orig.songTitle;
+                name = orig.name;
+                filePath = orig.filePath.Copy(false);
+                bonus = orig.bonus;
+                preCutscenes = new List<LevelPath>(orig.preCutscenes.Select(x => x.Copy(false)));
+                postCutscenes = new List<LevelPath>(orig.postCutscenes.Select(x => x.Copy(false)));
+                returnInterfaceNoParse = orig.returnInterfaceNoParse;
+                returnInterface = orig.returnInterface;
+                returnReplayable = orig.returnReplayable;
+                returnLevel = orig.returnLevel;
+                isChapterTransition = orig.isChapterTransition;
+            }
+
+            public override void ReadJSON(JSONNode jn)
+            {
+                id = jn["id"];
+                songTitle = jn["song_title"];
+                name = jn["name"];
+                filePath = LevelPath.Parse(jn["file"]);
+                bonus = jn["bonus"].AsBool;
+
+                if (jn["pre_cutscenes"] != null)
+                    for (int i = 0; i < jn["pre_cutscenes"].Count; i++)
+                        preCutscenes.Add(LevelPath.Parse(jn["pre_cutscenes"][i]));
+
+                if (jn["post_cutscenes"] != null)
+                    for (int i = 0; i < jn["post_cutscenes"].Count; i++)
+                        postCutscenes.Add(LevelPath.Parse(jn["post_cutscenes"][i]));
+
+                returnInterfaceNoParse = jn["return_interface"];
+                returnInterface = RTFile.ParsePaths(returnInterfaceNoParse);
+                returnReplayable = jn["return_replayable"].AsBool;
+                returnLevel = jn["return_level"];
+            }
+
+            public override JSONNode ToJSON()
+            {
+                var jn = Parser.NewJSONObject();
+
+                jn["id"] = id;
+                jn["song_title"] = songTitle ?? string.Empty;
+                jn["name"] = name ?? string.Empty;
+                jn["file"] = filePath.ToJSON();
+                jn["bonus"] = bonus;
+
+                for (int i = 0; i < preCutscenes.Count; i++)
+                    jn["pre_cutscenes"][i] = preCutscenes[i].ToJSON();
+                for (int i = 0; i < postCutscenes.Count; i++)
+                    jn["post_cutscenes"][i] = postCutscenes[i].ToJSON();
+
+                jn["return_interface"] = returnInterfaceNoParse ?? string.Empty;
+                jn["return_replayable"] = returnReplayable;
+                jn["return_level"] = returnLevel ?? string.Empty;
+
+                return jn;
+            }
+
+            public void ReadPacket(NetworkReader reader)
+            {
+                id = reader.ReadString();
+                songTitle = reader.ReadString();
+                name = reader.ReadString();
+                filePath = Packet.CreateFromPacket<LevelPath>(reader);
+                bonus = reader.ReadBoolean();
+
+                Packet.ReadPacketList(preCutscenes, reader);
+                Packet.ReadPacketList(postCutscenes, reader);
+
+                returnInterfaceNoParse = reader.ReadString();
+                returnInterface = RTFile.ParsePaths(returnInterfaceNoParse);
+                returnReplayable = reader.ReadBoolean();
+                returnLevel = reader.ReadString();
+            }
+
+            public void WritePacket(NetworkWriter writer)
+            {
+                writer.Write(id);
+                writer.Write(songTitle);
+                writer.Write(name);
+                filePath.WritePacket(writer);
+                writer.Write(bonus);
+
+                Packet.WritePacketList(preCutscenes, writer);
+                Packet.WritePacketList(postCutscenes, writer);
+
+                writer.Write(returnInterfaceNoParse);
+                writer.Write(returnReplayable);
+                writer.Write(returnLevel);
+            }
+
             /// <summary>
             /// Gets the levels based on their destination in a level sequence.
             /// </summary>
@@ -239,49 +416,28 @@ namespace BetterLegacy.Story
                 _ => new List<LevelPath>() { filePath }
             };
 
-            /// <summary>
-            /// Parses a <see cref="LevelSequence"/> from JSON.
-            /// </summary>
-            /// <param name="jn">JSON to parse.</param>
-            /// <returns>Returns a parsed <see cref="LevelSequence"/> for the story mode.</returns>
-            public static LevelSequence Parse(JSONNode jn)
-            {
-                var level = new LevelSequence
-                {
-                    id = jn["id"],
-                    songTitle = jn["song_title"],
-                    name = jn["name"],
-                    filePath = LevelPath.Parse(jn["file"]),
-                    bonus = jn["bonus"].AsBool,
-                };
-
-                if (jn["pre_cutscenes"] != null)
-                    for (int i = 0; i < jn["pre_cutscenes"].Count; i++)
-                        level.preCutscenes.Add(LevelPath.Parse(jn["pre_cutscenes"][i]));
-
-                if (jn["post_cutscenes"] != null)
-                    for (int i = 0; i < jn["post_cutscenes"].Count; i++)
-                        level.postCutscenes.Add(LevelPath.Parse(jn["post_cutscenes"][i]));
-
-                level.returnInterface = RTFile.ParsePaths(jn["return_interface"]);
-                level.returnReplayable = jn["return_replayable"].AsBool;
-                level.returnLevel = jn["return_level"];
-
-                return level;
-            }
-
             public override string ToString() => $"{name} | {songTitle} - {Count}";
+
+            #endregion
         }
 
         /// <summary>
         /// Represents a path to a story level.
         /// </summary>
-        public class LevelPath
+        public class LevelPath : PAObject<LevelPath>, IPacket
         {
+            #region Constructors
+
+            public LevelPath() { }
+
             public LevelPath(string filePath) => this.filePath = filePath;
 
             public LevelPath(string filePath, string songName) : this(filePath) => this.songName = songName;
             public LevelPath(string filePath, string editorFilePath, string songName) : this(filePath, songName) => this.editorFilePath = editorFilePath;
+
+            #endregion
+
+            #region Values
 
             /// <summary>
             /// Path to the level file.
@@ -289,27 +445,105 @@ namespace BetterLegacy.Story
             public string filePath;
 
             /// <summary>
+            /// Path to the level file.
+            /// </summary>
+            public string filePathNoParse;
+
+            /// <summary>
             /// Path to the level file in the editor. Good for quickly editing the level.
             /// </summary>
             public string editorFilePath;
+
+            /// <summary>
+            /// Path to the level file in the editor. Good for quickly editing the level.
+            /// </summary>
+            public string editorFilePathNoParse;
 
             /// <summary>
             /// Song to override to save on space.
             /// </summary>
             public string songName;
 
-            public static LevelPath Parse(JSONNode jn) => jn.IsString ? new LevelPath(RTFile.ParsePaths(jn)) : new LevelPath(RTFile.ParsePaths(jn["path"]), RTFile.ParsePaths(jn["editor_path"]), jn["song"]);
+            #endregion
+
+            #region Functions
+
+            public override void CopyData(LevelPath orig, bool newID = true)
+            {
+                filePathNoParse = orig.filePathNoParse;
+                filePath = orig.filePath;
+                editorFilePathNoParse = orig.editorFilePathNoParse;
+                editorFilePath = orig.editorFilePath;
+                songName = orig.songName;
+            }
+
+            public override void ReadJSON(JSONNode jn)
+            {
+                if (jn.IsString)
+                {
+                    filePathNoParse = jn;
+                    filePath = RTFile.ParsePaths(filePathNoParse);
+                    return;
+                }
+
+                filePathNoParse = jn["path"];
+                filePath = RTFile.ParsePaths(filePathNoParse);
+                editorFilePathNoParse = jn["editor_path"];
+                editorFilePath = RTFile.ParsePaths(editorFilePathNoParse);
+                songName = jn["song"];
+            }
+
+            public override JSONNode ToJSON()
+            {
+                if (string.IsNullOrEmpty(editorFilePath) && string.IsNullOrEmpty(songName))
+                    return filePath ?? string.Empty;
+
+                var jn = Parser.NewJSONObject();
+
+                if (!string.IsNullOrEmpty(filePathNoParse))
+                    jn["path"] = filePathNoParse;
+                if (!string.IsNullOrEmpty(editorFilePathNoParse))
+                    jn["editor_path"] = editorFilePathNoParse;
+                if (!string.IsNullOrEmpty(songName))
+                    jn["song"] = songName;
+
+                return jn;
+            }
+
+            public void ReadPacket(NetworkReader reader)
+            {
+                filePathNoParse = reader.ReadString();
+                filePath = RTFile.ParsePaths(filePathNoParse);
+                editorFilePathNoParse = reader.ReadString();
+                editorFilePath = RTFile.ParsePaths(editorFilePathNoParse);
+                songName = reader.ReadString();
+            }
+
+            public void WritePacket(NetworkWriter writer)
+            {
+                writer.Write(filePathNoParse);
+                writer.Write(editorFilePathNoParse);
+                writer.Write(songName);
+            }
+
+            public override string ToString() => System.IO.Path.GetFileName(filePath);
+
+            #endregion
+
+            #region Operators
 
             public static implicit operator string(LevelPath levelPath) => CoreConfig.Instance.StoryEditorMode.Value && RTFile.FileExists(levelPath.editorFilePath) ? levelPath.editorFilePath : levelPath.filePath;
 
-            public override string ToString() => System.IO.Path.GetFileName(filePath);
+            #endregion
         }
 
         /// <summary>
         /// Represents the transition from one chapter to the next.
         /// </summary>
-        public class ChapterTransition
+        public class ChapterTransition : PAObject<ChapterTransition>, IPacket
         {
+            #region Values
+
             /// <summary>
             /// Path to the interface to load when moving onto the next chapter. If left empty, load the level sequence.
             /// </summary>
@@ -320,25 +554,61 @@ namespace BetterLegacy.Story
             /// </summary>
             public LevelSequence levelSequence;
 
-            /// <summary>
-            /// Parses a Chapters' transition from JSON.
-            /// </summary>
-            /// <param name="jn">JSON to parse.</param>
-            /// <returns>Returns a parsed <see cref="ChapterTransition"/> for the story mode.</returns>
-            public static ChapterTransition Parse(JSONNode jn)
+            #endregion
+
+            #region Functions
+
+            public override void CopyData(ChapterTransition orig, bool newID = true)
             {
-                var transition = new ChapterTransition();
+                interfacePath = orig.interfacePath;
+                levelSequence = orig.levelSequence.Copy(false);
+            }
+
+            public override void ReadJSON(JSONNode jn)
+            {
                 if (!string.IsNullOrEmpty(jn["interface"]))
-                    transition.interfacePath = jn["interface"];
+                    interfacePath = jn["interface"];
                 if (jn["level"] != null)
                 {
-                    transition.levelSequence = LevelSequence.Parse(jn["level"]);
-                    transition.levelSequence.isChapterTransition = true;
+                    levelSequence = LevelSequence.Parse(jn["level"]);
+                    levelSequence.isChapterTransition = true;
                 }
-                return transition;
+            }
+
+            public override JSONNode ToJSON()
+            {
+                var jn = Parser.NewJSONObject();
+
+                if (!string.IsNullOrEmpty(interfacePath))
+                    jn["interface"] = interfacePath;
+                if (levelSequence)
+                    jn["level"] = levelSequence.ToJSON();
+
+                return jn;
+            }
+
+            public void ReadPacket(NetworkReader reader)
+            {
+                interfacePath = reader.ReadString();
+                var hasLevelSequence = reader.ReadBoolean();
+                if (hasLevelSequence)
+                    levelSequence = Packet.CreateFromPacket<LevelSequence>(reader);
+            }
+
+            public void WritePacket(NetworkWriter writer)
+            {
+                writer.Write(interfacePath);
+                bool hasLevelSequence = levelSequence;
+                writer.Write(hasLevelSequence);
+                if (hasLevelSequence)
+                    levelSequence.WritePacket(writer);
             }
 
             public override string ToString() => levelSequence?.ToString();
+
+            #endregion
         }
+
+        #endregion
     }
 }

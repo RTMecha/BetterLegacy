@@ -1,17 +1,20 @@
 ﻿using SimpleJSON;
 
 using BetterLegacy.Core.Data.Modifiers;
+using BetterLegacy.Core.Data.Network;
 
 namespace BetterLegacy.Core.Data.Player
 {
     /// <summary>
     /// Controls how a player behaves in a level.
     /// </summary>
-    public class PlayerControl : PAObject<PlayerControl>
+    public class PlayerControl : PAObject<PlayerControl>, IPacket
     {
         public PlayerControl() : base() { }
 
         #region Values
+
+        #region Main
 
         /// <summary>
         /// Players' local game mode, separate from the global game mode.
@@ -28,6 +31,25 @@ namespace BetterLegacy.Core.Data.Player
         /// Amount of lives the player has until the level requires a restart.
         /// </summary>
         public int lives = -1;
+
+        /// <summary>
+        /// Cooldown between each hit.
+        /// </summary>
+        public float hitCooldown = 2.5f;
+
+        /// <summary>
+        /// If the player can boost. Managed by both the model and the control.
+        /// </summary>
+        public bool canBoost = true;
+
+        /// <summary>
+        /// If the collision of the player is accurate.
+        /// </summary>
+        public bool collisionAccurate = false;
+
+        #endregion
+
+        #region Move
 
         /// <summary>
         /// Default speed of the player.
@@ -53,6 +75,25 @@ namespace BetterLegacy.Core.Data.Player
         /// Maximum time the player can boost.
         /// </summary>
         public float maxBoostTime = 0.18f;
+
+        /// <summary>
+        /// If the player can sprint and sneak.
+        /// </summary>
+        public bool sprintSneakActive = false;
+
+        /// <summary>
+        /// Speed multipier if the player is sprinting.
+        /// </summary>
+        public float sprintSpeed = 1.3f;
+
+        /// <summary>
+        /// Speed multiplier if the player is sneaking.
+        /// </summary>
+        public float sneakSpeed = 0.1f;
+
+        #endregion
+
+        #region Jump
 
         /// <summary>
         /// Gravity of <see cref="GameMode.Platformer"/>.
@@ -84,29 +125,7 @@ namespace BetterLegacy.Core.Data.Player
         /// </summary>
         public bool airBoostOnly;
 
-        /// <summary>
-        /// Cooldown between each hit.
-        /// </summary>
-        public float hitCooldown = 2.5f;
-
-        /// <summary>
-        /// If the collision of the player is accurate.
-        /// </summary>
-        public bool collisionAccurate = false;
-
-        /// <summary>
-        /// If the player can sprint and sneak.
-        /// </summary>
-        public bool sprintSneakActive = false;
-
-        public float sprintSpeed = 1.3f;
-
-        public float sneakSpeed = 0.1f;
-
-        /// <summary>
-        /// If the player can boost. Managed by both the model and the control.
-        /// </summary>
-        public bool canBoost = true;
+        #endregion
 
         /// <summary>
         /// Modifier block to run per player tick.
@@ -130,7 +149,7 @@ namespace BetterLegacy.Core.Data.Player
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public override void CopyData(PlayerControl orig, bool newID = true)
         {
@@ -278,6 +297,96 @@ namespace BetterLegacy.Core.Data.Player
                 jn["death_modifier_block"] = DeathModifierBlock.ToJSON();
 
             return jn;
+        }
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            id = reader.ReadString();
+
+            #region Main
+
+            gameMode = reader.ReadByte();
+            health = reader.ReadInt32();
+            lives = reader.ReadInt32();
+            hitCooldown = reader.ReadSingle();
+            canBoost = reader.ReadBoolean();
+            collisionAccurate = reader.ReadBoolean();
+
+            #endregion
+
+            #region Move
+
+            moveSpeed = reader.ReadSingle();
+            boostSpeed = reader.ReadSingle();
+            boostCooldown = reader.ReadSingle();
+            minBoostTime = reader.ReadSingle();
+            maxBoostTime = reader.ReadSingle();
+            sprintSneakActive = reader.ReadBoolean();
+            sprintSpeed = reader.ReadSingle();
+            sneakSpeed = reader.ReadSingle();
+
+            #endregion
+
+            #region Jump
+
+            jumpGravity = reader.ReadSingle();
+            jumpIntensity = reader.ReadSingle();
+            bounciness = reader.ReadSingle();
+            jumpCount = reader.ReadInt32();
+            jumpBoostCount = reader.ReadInt32();
+            airBoostOnly = reader.ReadBoolean();
+
+            #endregion
+
+            TickModifierBlock.ReadPacket(reader);
+            BoostModifierBlock.ReadPacket(reader);
+            CollideModifierBlock.ReadPacket(reader);
+            DeathModifierBlock.ReadPacket(reader);
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(id);
+
+            #region Main
+
+            writer.Write((byte)gameMode);
+            writer.Write(health);
+            writer.Write(lives);
+            writer.Write(hitCooldown);
+            writer.Write(canBoost);
+            writer.Write(collisionAccurate);
+
+            #endregion
+
+            #region Move
+
+            writer.Write(moveSpeed);
+            writer.Write(boostSpeed);
+            writer.Write(boostCooldown);
+            writer.Write(minBoostTime);
+            writer.Write(maxBoostTime);
+            writer.Write(sprintSneakActive);
+            writer.Write(sprintSpeed);
+            writer.Write(sneakSpeed);
+
+            #endregion
+
+            #region Jump
+
+            writer.Write(jumpGravity);
+            writer.Write(jumpIntensity);
+            writer.Write(bounciness);
+            writer.Write(jumpCount);
+            writer.Write(jumpBoostCount);
+            writer.Write(airBoostOnly);
+
+            #endregion
+
+            TickModifierBlock.WritePacket(writer);
+            BoostModifierBlock.WritePacket(writer);
+            CollideModifierBlock.WritePacket(writer);
+            DeathModifierBlock.WritePacket(writer);
         }
 
         #endregion

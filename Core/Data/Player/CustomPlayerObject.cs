@@ -9,10 +9,11 @@ using SimpleJSON;
 
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Modifiers;
+using BetterLegacy.Core.Data.Network;
 
 namespace BetterLegacy.Core.Data.Player
 {
-    public class CustomPlayerObject : PAObject<CustomPlayerObject>, IPlayerObject, IShapeable, IModifyable
+    public class CustomPlayerObject : PAObject<CustomPlayerObject>, IPacket, IPlayerObject, IShapeable, IModifyable
     {
         public CustomPlayerObject()
         {
@@ -104,7 +105,7 @@ namespace BetterLegacy.Core.Data.Player
 
         public List<Visibility> visibilitySettings = new List<Visibility>();
 
-        public class Visibility : PAObject<Visibility>
+        public class Visibility : PAObject<Visibility>, IPacket
         {
             public Visibility() { }
 
@@ -116,7 +117,7 @@ namespace BetterLegacy.Core.Data.Player
 
             #endregion
 
-            #region Methods
+            #region Functions
 
             public override void CopyData(Visibility orig, bool newID = true)
             {
@@ -146,6 +147,20 @@ namespace BetterLegacy.Core.Data.Player
                 return jn;
             }
 
+            public void ReadPacket(NetworkReader reader)
+            {
+                not = reader.ReadBoolean();
+                command = reader.ReadString();
+                value = reader.ReadSingle();
+            }
+
+            public void WritePacket(NetworkWriter writer)
+            {
+                writer.Write(not);
+                writer.Write(command);
+                writer.Write(value);
+            }
+
             #endregion
         }
 
@@ -169,7 +184,7 @@ namespace BetterLegacy.Core.Data.Player
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public override void CopyData(CustomPlayerObject orig, bool newID = true)
         {
@@ -443,6 +458,94 @@ namespace BetterLegacy.Core.Data.Player
             this.WriteModifiersJSON(jn);
 
             return jn;
+        }
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            #region Interface
+
+            this.ReadShapePacket(reader);
+            this.ReadModifiersPacket(reader);
+
+            #endregion
+
+            id = reader.ReadString();
+            name = reader.ReadString();
+            active = reader.ReadBoolean();
+
+            parent = reader.ReadInt32();
+            customParent = reader.ReadString();
+            positionOffset = reader.ReadSingle();
+            scaleParent = reader.ReadBoolean();
+            scaleOffset = reader.ReadSingle();
+            rotationParent = reader.ReadBoolean();
+            rotationOffset = reader.ReadSingle();
+
+            position = reader.ReadVector2();
+            scale = reader.ReadVector2();
+            rotation = reader.ReadSingle();
+            depth = reader.ReadSingle();
+
+            color = reader.ReadInt32();
+            customColor = reader.ReadString();
+            opacity = reader.ReadSingle();
+
+            requireAll = reader.ReadBoolean();
+            Packet.ReadPacketList(visibilitySettings, reader);
+
+            Packet.ReadPacketList(animations, reader);
+
+            var hasTrail = reader.ReadBoolean();
+            if (hasTrail)
+                Trail = Packet.CreateFromPacket<PlayerTrail>(reader);
+            var hasParticles = reader.ReadBoolean();
+            if (hasParticles)
+                Particles = Packet.CreateFromPacket<PlayerParticles>(reader);
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            #region Interface
+
+            this.WriteShapePacket(writer);
+            this.WriteModifiersPacket(writer);
+
+            #endregion
+
+            writer.Write(id);
+            writer.Write(name);
+            writer.Write(active);
+
+            writer.Write(parent);
+            writer.Write(customParent);
+            writer.Write(positionOffset);
+            writer.Write(scaleParent);
+            writer.Write(scaleOffset);
+            writer.Write(rotationParent);
+            writer.Write(rotationOffset);
+
+            writer.Write(position);
+            writer.Write(scale);
+            writer.Write(rotation);
+            writer.Write(depth);
+
+            writer.Write(color);
+            writer.Write(customColor);
+            writer.Write(opacity);
+
+            writer.Write(requireAll);
+            Packet.WritePacketList(visibilitySettings, writer);
+
+            Packet.WritePacketList(animations, writer);
+
+            bool hasTrail = Trail;
+            writer.Write(hasTrail);
+            if (hasTrail)
+                Trail.WritePacket(writer);
+            bool hasParticles = Particles;
+            writer.Write(hasParticles);
+            if (hasParticles)
+                Particles.WritePacket(writer);
         }
 
         public void SetCustomShape(int shape, int shapeOption) { }

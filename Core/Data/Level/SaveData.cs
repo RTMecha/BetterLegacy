@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 using SimpleJSON;
 
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
@@ -12,8 +13,10 @@ namespace BetterLegacy.Core.Data.Level
     /// <summary>
     /// Represents the saved data of a played level.
     /// </summary>
-    public class SaveData : PAObject<SaveData>, IAchievementData
+    public class SaveData : PAObject<SaveData>, IPacket, IAchievementData
     {
+        #region Constructors
+
         public SaveData() { }
 
         public SaveData(Level level)
@@ -21,6 +24,8 @@ namespace BetterLegacy.Core.Data.Level
             ID = level.id;
             LevelName = level.metadata?.beatmap?.name;
         }
+
+        #endregion
 
         #region Values
 
@@ -101,7 +106,7 @@ namespace BetterLegacy.Core.Data.Level
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public override void CopyData(SaveData orig, bool newID = true)
         {
@@ -120,6 +125,55 @@ namespace BetterLegacy.Core.Data.Level
             Variables = new Dictionary<string, string>(orig.Variables);
             LastPlayed = orig.LastPlayed;
         }
+
+        #region Packet
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            ID = reader.ReadString();
+            LevelName = reader.ReadString();
+            Completed = reader.ReadBoolean();
+            PlayedTimes = reader.ReadInt32();
+            TimeInLevel = reader.ReadSingle();
+            Percentage = reader.ReadSingle();
+            LevelLength = reader.ReadSingle();
+            Unlocked = reader.ReadBoolean();
+            Hits = reader.ReadInt32();
+            Deaths = reader.ReadInt32();
+            Boosts = reader.ReadInt32();
+            UnlockedAchievements = reader.ReadDictionary(() => reader.ReadString(), () => reader.ReadBoolean());
+            Variables = reader.ReadDictionary(() => reader.ReadString(), () => reader.ReadString());
+            var hasLastPlayed = reader.ReadBoolean();
+            if (hasLastPlayed)
+                LastPlayed = new DateTime(reader.ReadInt64());
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(ID);
+            writer.Write(LevelName);
+            writer.Write(Completed);
+            writer.Write(PlayedTimes);
+            writer.Write(TimeInLevel);
+            writer.Write(Percentage);
+            writer.Write(LevelLength);
+            writer.Write(Unlocked);
+            writer.Write(Hits);
+            writer.Write(Deaths);
+            writer.Write(Boosts);
+            writer.Write(UnlockedAchievements,
+                writeKey: key => writer.Write(key),
+                writeValue: value => writer.Write(value));
+            writer.Write(Variables,
+                writeKey: key => writer.Write(key),
+                writeValue: value => writer.Write(value));
+            var hasLastPlayed = LastPlayed.HasValue;
+            writer.Write(hasLastPlayed);
+            if (LastPlayed.HasValue)
+                writer.Write(LastPlayed.Value.Ticks);
+        }
+
+        #endregion
 
         #region Updating
 
@@ -358,7 +412,6 @@ namespace BetterLegacy.Core.Data.Level
 
             if (jn["lp"] != null)
                 LastPlayed = DateTime.ParseExact(jn["lp"], LegacyPlugin.DATE_TIME_FORMAT, null);
-
         }
 
         /// <summary>

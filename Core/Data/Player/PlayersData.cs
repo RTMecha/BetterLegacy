@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.IO;
 
 using UnityEngine;
@@ -10,6 +11,7 @@ using SimpleJSON;
 
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Editor.Managers;
@@ -19,9 +21,11 @@ namespace BetterLegacy.Core.Data.Player
     /// <summary>
     /// Represents the player model data.
     /// </summary>
-    public class PlayersData : Exists
+    public class PlayersData : PAObject<PlayersData>, IPacket
     {
         public PlayersData() => AssignDefaultModels();
+
+        #region Values
 
         /// <summary>
         /// If custom player models are allowed.
@@ -74,7 +78,9 @@ namespace BetterLegacy.Core.Data.Player
             new PlayerControl(),
         };
 
-        #region Methods
+        #endregion
+
+        #region Functions
 
         /// <summary>
         /// Gets a player model.
@@ -176,39 +182,38 @@ namespace BetterLegacy.Core.Data.Player
                 playerModels[playerModel.basePart.id] = playerModel;
         }
 
-        /// <summary>
-        /// Parses a player model data from JSON.
-        /// </summary>
-        /// <param name="jn">JSON to parse.</param>
-        /// <returns>Returns a parsed <see cref="PlayersData"/>.</returns>
-        public static PlayersData Parse(JSONNode jn)
+        public override void CopyData(PlayersData orig, bool newID = true)
         {
-            var playerModelData = new PlayersData();
-            playerModelData.maxBehavior = (MaxBehavior)jn["max"].AsInt;
+            maxBehavior = orig.maxBehavior;
+            playerModelsIndex = new List<string>(orig.playerModelsIndex);
+            playerControls = new List<PlayerControl>(orig.playerControls.Select(x => x.Copy(false)));
+            playerModels.Clear();
+            foreach (var keyValuePair in orig.playerModels)
+                playerModels[keyValuePair.Key] = keyValuePair.Value;
+        }
+
+        public override void ReadJSON(JSONNode jn)
+        {
+            maxBehavior = (MaxBehavior)jn["max"].AsInt;
             for (int i = 0; i < jn["models"].Count; i++)
             {
                 var playerModel = PlayerModel.Parse(jn["models"][i]);
-                playerModelData.playerModels[playerModel.basePart.id] = playerModel;
+                playerModels[playerModel.basePart.id] = playerModel;
             }
-            playerModelData.AssignDefaultModels();
+            AssignDefaultModels();
             for (int i = 0; i < jn["indexes"].Count; i++)
-                playerModelData.SetPlayerModel(i, jn["indexes"][i]);
+                SetPlayerModel(i, jn["indexes"][i]);
             for (int i = 0; i < jn["controls"].Count; i++)
             {
                 var control = PlayerControl.Parse(jn["controls"][i]);
-                if (i < playerModelData.playerControls.Count)
-                    playerModelData.playerControls[i] = control;
+                if (i < playerControls.Count)
+                    playerControls[i] = control;
                 else
-                    playerModelData.playerControls.Add(control);
+                    playerControls.Add(control);
             }
-            return playerModelData;
         }
 
-        /// <summary>
-        /// Writes the <see cref="PlayersData"/> to a JSON.
-        /// </summary>
-        /// <returns>Returns a JSON object representing the <see cref="PlayersData"/>.</returns>
-        public JSONNode ToJSON()
+        public override JSONNode ToJSON()
         {
             var jn = Parser.NewJSONObject();
             if (maxBehavior != MaxBehavior.Loop)
@@ -228,6 +233,24 @@ namespace BetterLegacy.Core.Data.Player
                 index++;
             }
             return jn;
+        }
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            maxBehavior = (MaxBehavior)reader.ReadByte();
+            playerModelsIndex = reader.ReadList(() => reader.ReadString());
+            Packet.ReadPacketList(playerControls, reader);
+            Packet.ReadPacketDictionary(playerModels, reader, () => reader.ReadString());
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write((byte)maxBehavior);
+            writer.Write(playerModelsIndex, index => writer.Write(index));
+            Packet.WritePacketList(playerControls, writer);
+            Packet.WritePacketDictionary(playerModels, writer,
+                writeKey: key => writer.Write(key),
+                writeValue: value => value.WritePacket(writer));
         }
 
         /// <summary>

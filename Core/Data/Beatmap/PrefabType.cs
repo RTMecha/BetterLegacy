@@ -6,6 +6,7 @@ using LSFunctions;
 
 using SimpleJSON;
 
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Core.Data.Beatmap
@@ -13,8 +14,10 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// <summary>
     /// A <see cref="Prefab"/> group. Displays an icon and color for the Prefab references.
     /// </summary>
-    public class PrefabType : PAObject<PrefabType>
+    public class PrefabType : PAObject<PrefabType>, IPacket
     {
+        #region Constructors
+
         public PrefabType() => id = GetNumberID();
 
         public PrefabType(string name, Color color) : this()
@@ -23,29 +26,9 @@ namespace BetterLegacy.Core.Data.Beatmap
             this.color = color;
         }
 
-        #region Values
-
-        /// <summary>
-        /// Name of the prefab type.
-        /// </summary>
-        public string name;
-
-        /// <summary>
-        /// Color to apply to prefabs using this type.
-        /// </summary>
-        public Color color;
-
-        /// <summary>
-        /// Icon to apply to prefabs using this type.
-        /// </summary>
-        public Sprite icon;
-
-        /// <summary>
-        /// Path to the prefab type's file.
-        /// </summary>
-        public string filePath;
-
         #endregion
+
+        #region Values
 
         #region Defaults
 
@@ -156,6 +139,28 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #endregion
 
+        /// <summary>
+        /// Name of the prefab type.
+        /// </summary>
+        public string name;
+
+        /// <summary>
+        /// Color to apply to prefabs using this type.
+        /// </summary>
+        public Color color;
+
+        /// <summary>
+        /// Icon to apply to prefabs using this type.
+        /// </summary>
+        public Sprite icon;
+
+        /// <summary>
+        /// Path to the prefab type's file.
+        /// </summary>
+        public string filePath;
+
+        #endregion
+
         #region Methods
 
         /// <summary>
@@ -190,9 +195,9 @@ namespace BetterLegacy.Core.Data.Beatmap
         public override JSONNode ToJSON()
         {
             var jn = Parser.NewJSONObject();
+            jn["id"] = id;
             jn["name"] = name;
             jn["color"] = RTColors.ColorToHex(color);
-            jn["id"] = id;
 
             try
             {
@@ -207,9 +212,21 @@ namespace BetterLegacy.Core.Data.Beatmap
             return jn;
         }
 
-        #endregion
+        public void ReadPacket(NetworkReader reader)
+        {
+            id = reader.ReadString();
+            name = reader.ReadString();
+            color = reader.ReadColor();
+            icon = reader.ReadSprite();
+        }
 
-        #region Operators
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(id);
+            writer.Write(name);
+            writer.Write(color);
+            writer.Write(icon);
+        }
 
         public override string ToString() => name;
 

@@ -11,6 +11,7 @@ using SimpleJSON;
 
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Data.Modifiers;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
@@ -22,7 +23,7 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// <summary>
     /// Represents an object that appears in the background and can fade. Looks like the towers from the PS2 startup.
     /// </summary>
-    public class BackgroundObject : PAObject<BackgroundObject>, IPrefabable, ILifetime, IShapeable, ITransformable, IEvaluatable, IModifyable, IModifierReference, IEditable
+    public class BackgroundObject : PAObject<BackgroundObject>, IPacket, IPrefabable, ILifetime, IShapeable, ITransformable, IEvaluatable, IModifyable, IModifierReference, IEditable
     {
         public BackgroundObject() : base() { }
 
@@ -736,6 +737,176 @@ namespace BetterLegacy.Core.Data.Beatmap
             return jn;
         }
 
+        public void ReadPacket(NetworkReader reader)
+        {
+            id = reader.ReadString();
+
+            #region Interface
+
+            this.ReadPrefabPacket(reader);
+            this.ReadShapePacket(reader);
+            this.ReadModifiersPacket(reader);
+
+            #endregion
+
+            #region Base
+
+            active = reader.ReadBoolean();
+            name = reader.ReadString();
+            detailMode = (DetailMode)reader.ReadByte();
+            StartTime = reader.ReadSingle();
+            autoKillType = (AutoKillType)reader.ReadByte();
+            autoKillOffset = reader.ReadSingle();
+
+            flat = reader.ReadBoolean();
+
+            #endregion
+
+            #region Transform
+
+            pos = reader.ReadVector2();
+            scale = reader.ReadVector2();
+            rot = reader.ReadSingle();
+            depth = reader.ReadInt32();
+            iterations = reader.ReadInt32();
+            layer = reader.ReadString();
+            drawFade = reader.ReadBoolean();
+            zposition = reader.ReadSingle();
+            zscale = reader.ReadSingle();
+            rotation = reader.ReadVector2();
+
+            fullTransform.ReadPacket(reader);
+            fullTransformOffset.ReadPacket(reader);
+
+            #endregion
+
+            #region Color
+
+            color = reader.ReadInt32();
+            hue = reader.ReadSingle();
+            saturation = reader.ReadSingle();
+            value = reader.ReadSingle();
+
+            fadeColor = reader.ReadInt32();
+            fadeHue = reader.ReadSingle();
+            fadeSaturation = reader.ReadSingle();
+            fadeValue = reader.ReadSingle();
+
+            #endregion
+
+            #region Reactive
+
+            reactiveType = (ReactiveType)reader.ReadByte();
+            if (IsReactive)
+            {
+                reactiveScale = reader.ReadSingle();
+                if (reactiveType == ReactiveType.Custom)
+                {
+                    reactivePosIntensity = reader.ReadVector2();
+                    reactivePosSamples = reader.ReadVector2Int();
+                    reactiveZIntensity = reader.ReadSingle();
+                    reactiveZSample = reader.ReadInt32();
+                    reactiveScaIntensity = reader.ReadVector2();
+                    reactiveScaSamples = reader.ReadVector2Int();
+                    reactiveRotIntensity = reader.ReadSingle();
+                    reactiveRotSample = reader.ReadInt32();
+                    reactiveColIntensity = reader.ReadSingle();
+                    reactiveColSample = reader.ReadInt32();
+                    reactiveCol = reader.ReadInt32();
+                }
+            }
+
+            #endregion
+
+            if (ProjectArrhythmia.State.InEditor)
+                editorData = Packet.CreateFromPacket<ObjectEditorData>(reader);
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(id);
+
+            #region Interface
+
+            this.WritePrefabPacket(writer);
+            this.WriteShapePacket(writer);
+            this.WriteModifiersPacket(writer);
+
+            #endregion
+
+            #region Base
+
+            writer.Write(active);
+            writer.Write(name);
+            writer.Write((byte)detailMode);
+            writer.Write(StartTime);
+            writer.Write((byte)autoKillType);
+            writer.Write(autoKillOffset);
+
+            writer.Write(flat);
+
+            #endregion
+
+            #region Transform
+
+            writer.Write(pos);
+            writer.Write(scale);
+            writer.Write(rot);
+            writer.Write(depth);
+            writer.Write(iterations);
+            writer.Write(layer);
+            writer.Write(drawFade);
+            writer.Write(zposition);
+            writer.Write(zscale);
+            writer.Write(rotation);
+
+            fullTransform.WritePacket(writer);
+            fullTransformOffset.WritePacket(writer);
+
+            #endregion
+
+            #region Color
+
+            writer.Write(color);
+            writer.Write(hue);
+            writer.Write(saturation);
+            writer.Write(value);
+
+            writer.Write(fadeColor);
+            writer.Write(fadeHue);
+            writer.Write(fadeSaturation);
+            writer.Write(fadeValue);
+
+            #endregion
+
+            #region Reactive
+
+            writer.Write((byte)reactiveType);
+            if (IsReactive)
+            {
+                writer.Write(reactiveScale);
+                if (reactiveType == ReactiveType.Custom)
+                {
+                    writer.Write(reactivePosIntensity);
+                    writer.Write(reactivePosSamples);
+                    writer.Write(reactiveZIntensity);
+                    writer.Write(reactiveZSample);
+                    writer.Write(reactiveScaIntensity);
+                    writer.Write(reactiveScaSamples);
+                    writer.Write(reactiveRotIntensity);
+                    writer.Write(reactiveRotSample);
+                    writer.Write(reactiveColIntensity);
+                    writer.Write(reactiveColSample);
+                    writer.Write(reactiveCol);
+                }
+            }
+
+            #endregion
+
+            if (ProjectArrhythmia.State.InEditor)
+                editorData.WritePacket(writer);
+        }
+
         public float GetObjectLifeLength(float offset = 0f, bool noAutokill = false, bool collapse = false) => collapse && editorData.collapse ? EditorConfig.Instance.TimelineObjectCollapseLength.Value : autoKillType switch
         {
             AutoKillType.NoAutokill => noAutokill ? AudioManager.inst.CurrentAudioSource.clip.length - startTime : Length + offset,
@@ -745,6 +916,8 @@ namespace BetterLegacy.Core.Data.Beatmap
             AutoKillType.SongTime => (startTime >= autoKillOffset) ? 0.1f : (autoKillOffset - startTime),
             _ => 0f,
         };
+
+        #region Transform
 
         public void UpdateDefaultTransform()
         {
@@ -811,14 +984,16 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public Vector3 GetFullRotation(bool includeSelf) => runtimeObject && runtimeObject.BaseObject is GameObject gameObject ? gameObject.transform.eulerAngles : new Vector3(rotation.x, rotation.y, rot);
 
+        public void InterpolateAnimation(PAAnimation animation, float t) => this.InterpolateAnimationOffset(animation, t);
+
+        #endregion
+
         public IRTObject GetRuntimeObject() => runtimeObject;
 
         public IPrefabable AsPrefabable() => this;
         public ITransformable AsTransformable() => this;
 
         public ModifierLoop GetModifierLoop() => runtimeModifiers?.loop;
-
-        public void InterpolateAnimation(PAAnimation animation, float t) => this.InterpolateAnimationOffset(animation, t);
 
         #region Evaluation
 
@@ -921,10 +1096,6 @@ namespace BetterLegacy.Core.Data.Beatmap
         public void SetObjectFunctions(Dictionary<string, MathFunction> functions) { }
 
         #endregion
-
-        #endregion
-
-        #region Operators
 
         public override bool Equals(object obj) => obj is BackgroundObject paObj && id == paObj.id;
 
