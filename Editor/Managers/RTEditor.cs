@@ -665,25 +665,9 @@ namespace BetterLegacy.Editor.Managers
                         level.music = null;
                         CoroutineHelper.StartCoroutine(level.LoadAudioClipRoutine(() =>
                         {
-                            EditorLevelManager.inst.SetCurrentAudio(level.music);
                             AudioManager.inst.SetMusicTime(previousTime);
                             SoundManager.inst.SetPlaying(previousPlayState);
-
-                            if (EditorConfig.Instance.WaveformGenerate.Value)
-                            {
-                                CoreHelper.Log("Assigning waveform textures...");
-                                StartCoroutine(EditorTimeline.inst.AssignTimelineTexture(level.music));
-                            }
-                            else
-                            {
-                                CoreHelper.Log("Skipping waveform textures...");
-                                EditorTimeline.inst.SetTimelineSprite(null);
-                            }
-
-                            EditorTimeline.inst.UpdateTimelineSizes();
-                            GameManager.inst.UpdateTimeline();
-
-                            TriggerHelper.AddEventTriggers(timeField.gameObject, TriggerHelper.ScrollDelta(timeField, max: AudioManager.inst.CurrentAudioSource.clip.length));
+                            EditorLevelManager.inst.SetCurrentAudio(level.music);
                             CoreHelper.Destroy(previousAudio);
                         }));
                     }),

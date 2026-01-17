@@ -720,6 +720,35 @@ namespace BetterLegacy.Editor.Managers
         public void LoadLevel(Level level) => CoroutineHelper.StartCoroutine(ILoadLevel(level));
 
         /// <summary>
+        /// Clears all objects before loading a level.
+        /// </summary>
+        public void ClearObjects()
+        {
+            for (int i = 0; i < EditorTimeline.inst.timelineObjects.Count; i++)
+            {
+                var timelineObject = EditorTimeline.inst.timelineObjects[i];
+                if (timelineObject.GameObject)
+                    Destroy(timelineObject.GameObject);
+                EditorTimeline.inst.timelineObjects[i] = null;
+            }
+            EditorTimeline.inst.timelineObjects.Clear();
+
+            for (int i = 0; i < EditorTimeline.inst.timelineKeyframes.Count; i++)
+            {
+                var timelineObject = EditorTimeline.inst.timelineKeyframes[i];
+                if (timelineObject.GameObject)
+                    Destroy(timelineObject.GameObject);
+                EditorTimeline.inst.timelineKeyframes[i] = null;
+            }
+            EditorTimeline.inst.timelineKeyframes.Clear();
+
+            for (int i = 0; i < ObjEditor.inst.TimelineParents.Count; i++)
+                LSHelpers.DeleteChildren(ObjEditor.inst.TimelineParents[i]);
+
+            LevelManager.ClearObjects();
+        }
+
+        /// <summary>
         /// Loads a level in the editor.
         /// </summary>
         /// <param name="level">Level to load and edit.</param>
@@ -747,46 +776,7 @@ namespace BetterLegacy.Editor.Managers
             RTEditor.inst.ResetHistory();
 
             CoreHelper.Log("Clearing data...");
-
-            for (int i = 0; i < EditorTimeline.inst.timelineObjects.Count; i++)
-            {
-                var timelineObject = EditorTimeline.inst.timelineObjects[i];
-                if (timelineObject.GameObject)
-                    Destroy(timelineObject.GameObject);
-                EditorTimeline.inst.timelineObjects[i] = null;
-            }
-            EditorTimeline.inst.timelineObjects.Clear();
-
-            for (int i = 0; i < EditorTimeline.inst.timelineKeyframes.Count; i++)
-            {
-                var timelineObject = EditorTimeline.inst.timelineKeyframes[i];
-                if (timelineObject.GameObject)
-                    Destroy(timelineObject.GameObject);
-                EditorTimeline.inst.timelineKeyframes[i] = null;
-            }
-            EditorTimeline.inst.timelineKeyframes.Clear();
-
-            for (int i = 0; i < ObjEditor.inst.TimelineParents.Count; i++)
-                LSHelpers.DeleteChildren(ObjEditor.inst.TimelineParents[i]);
-
-            if (GameData.Current)
-            {
-                try
-                {
-                    for (int i = 0; i < GameData.Current.assets.sounds.Count; i++)
-                    {
-                        CoreHelper.Destroy(GameData.Current.assets.sounds[i].audio);
-                        GameData.Current.assets.sounds[i].audio = null;
-                    }
-                    GameData.Current.assets.sounds.Clear();
-                }
-                catch (Exception ex)
-                {
-                    CoreHelper.LogError($"Failed to clear sound assets due to the exception: {ex}");
-                }
-            }
-
-            RTLevel.Reinit(false);
+            ClearObjects();
 
             // We stop and play the doggo bop animation in case the user has looked at the settings dialog.
             EditorManager.inst.CancelInvoke("LoadingIconUpdate");
@@ -850,19 +840,28 @@ namespace BetterLegacy.Editor.Managers
 
             try
             {
-                MetaData.Current = null;
-                MetaData.Current = level.metadata;
+                LevelManager.SetCurrentMetaData(level.metadata);
+                LevelManager.SetCurrentGameData(level);
+            }
+            catch (MetaDataException ex)
+            {
+                RTEditor.inst.InfoPopup.SetInfo($"Something went wrong when parsing the meta data. Press the open log folder key ({CoreConfig.Instance.OpenPAPersistentFolder.Value}) and send the Player.log file to Mecha.");
 
-                if (MetaData.Current.arcadeID == null || MetaData.Current.arcadeID == "0" || MetaData.Current.arcadeID == "-1")
-                    MetaData.Current.arcadeID = LSText.randomNumString(16);
+                EditorManager.inst.DisplayNotification("Level could not load.", 3f, EditorManager.NotificationType.Error);
 
-                if (ProjectArrhythmia.RequireUpdate(MetaData.Current.beatmap.gameVersion))
-                    rawJSON = LevelManager.UpdateBeatmap(rawJSON, MetaData.Current.beatmap.gameVersion);
+                CoreHelper.LogError($"Level loading caught an error: {ex}");
+                onLoadLevel = null;
+                yield break;
+            }
+            catch (GameDataException ex)
+            {
+                RTEditor.inst.InfoPopup.SetInfo($"Something went wrong when parsing the game data. Press the open log folder key ({CoreConfig.Instance.OpenPAPersistentFolder.Value}) and send the Player.log file to Mecha.");
 
-                GameData.Current = null;
-                GameData.Current = level.IsVG ?
-                    GameData.ParseVG(JSON.Parse(rawJSON), MetaData.Current.Version) :
-                    GameData.Parse(JSON.Parse(rawJSON));
+                EditorManager.inst.DisplayNotification("Level could not load.", 3f, EditorManager.NotificationType.Error);
+
+                CoreHelper.LogError($"Level loading caught an error: {ex}");
+                onLoadLevel = null;
+                yield break;
             }
             catch (Exception ex)
             {
@@ -877,13 +876,7 @@ namespace BetterLegacy.Editor.Managers
 
             // preload audio clips
             if (GameData.Current && GameData.Current.assets)
-                for (int i = 0; i < GameData.Current.assets.sounds.Count; i++)
-                {
-                    var soundAsset = GameData.Current.assets.sounds[i];
-                    if (!soundAsset.audio && soundAsset.autoLoad)
-                        yield return CoroutineHelper.StartCoroutine(soundAsset.LoadAudioClip());
-                }
-
+                yield return CoroutineHelper.StartCoroutine(GameData.Current.assets.LoadSounds());
             yield return CoroutineHelper.StartCoroutine(AssetEditor.inst.ILoadAssets());
 
             CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
@@ -898,34 +891,10 @@ namespace BetterLegacy.Editor.Managers
             SetCurrentAudio(level.music);
             CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
 
-            if (EditorConfig.Instance.WaveformGenerate.Value)
-            {
-                CoreHelper.Log("Assigning waveform textures...");
-                RTEditor.inst.InfoPopup.SetInfo($"Assigning Waveform Textures for [ {name} ]");
-                StartCoroutine(EditorTimeline.inst.AssignTimelineTexture(level.music));
-                CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
-            }
-            else
-            {
-                CoreHelper.Log("Skipping waveform textures...");
-                RTEditor.inst.InfoPopup.SetInfo($"Skipping Waveform Textures for [ {name} ]");
-                EditorTimeline.inst.SetTimelineSprite(null);
-                CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
-            }
-
-            CoreHelper.Log("Updating timeline...");
-            RTEditor.inst.InfoPopup.SetInfo($"Updating Timeline for [ {name} ]");
-            EditorTimeline.inst.UpdateTimelineSizes();
-            GameManager.inst.UpdateTimeline();
-            RTMetaDataEditor.inst.RenderDialog();
-            CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
-
-            RTCheckpointEditor.inst.CreateGhostCheckpoints();
-
             RTEditor.inst.InfoPopup.SetInfo($"Updating states for [ {name} ]");
             if (CoreConfig.Instance.DiscordTimestampUpdatesPerLevel.Value)
                 DiscordController.inst.presence.startTimestamp = SteamworksFacepunch.Epoch.Current;
-            CoreHelper.UpdateDiscordStatus($"Editing: {MetaData.Current.beatmap.name}", "In Editor", "editor");
+            DiscordHelper.UpdateDiscordStatus($"Editing: {MetaData.Current.beatmap.name}", "In Editor", "editor");
 
             CoreHelper.Log("Spawning players...");
             try
@@ -947,40 +916,17 @@ namespace BetterLegacy.Editor.Managers
             CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
 
             CoreHelper.Log("Updating timeline...");
-            RTEventEditor.inst.CreateTimelineKeyframes();
-
-            RTMarkerEditor.inst.CreateMarkers();
-            RTMarkerEditor.inst.markerLooping = false;
-            RTMarkerEditor.inst.markerLoopBegin = null;
-            RTMarkerEditor.inst.markerLoopEnd = null;
-
-            RTThemeEditor.inst.LoadInternalThemes();
-
-            CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
-
-            CoreHelper.Log("Creating timeline objects...");
-            RTEditor.inst.InfoPopup.SetInfo($"Creating timeline objects for [ {name} ]");
-            EditorTimeline.inst.InitTimelineObjects();
-            CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
-
-            RTCheckpointEditor.inst.SetCurrentCheckpoint(0);
-
-            RTPrefabEditor.inst.currentQuickPrefab = null; // remove selected quick prefab as it probably doesn't exist anymore.
-
+            PostInitLevel();
             RTEditor.inst.InfoPopup.SetInfo("Done!");
             RTEditor.inst.InfoPopup.Close();
             EditorManager.inst.CancelInvoke("LoadingIconUpdate");
 
-            RTBeatmap.Current.ResetCheckpoint();
             GameManager.inst.gameState = GameManager.State.Playing;
 
             EditorManager.inst.DisplayNotification($"{name} Level loaded", 2f, EditorManager.NotificationType.Success);
-            EditorManager.inst.UpdatePlayButton();
             EditorManager.inst.hasLoadedLevel = true;
 
             SetAutosave();
-
-            TriggerHelper.AddEventTriggers(RTEditor.inst.timeField.gameObject, TriggerHelper.ScrollDelta(RTEditor.inst.timeField, max: AudioManager.inst.CurrentAudioSource.clip.length));
 
             // Load Settings like timeline position, editor layer, bpm active, etc
             RTEditor.inst.LoadSettings();
@@ -989,7 +935,6 @@ namespace BetterLegacy.Editor.Managers
                 RTPrefabEditor.inst.copiedInstanceData = null;
 
             if (EditorConfig.Instance.AnalyzeBPMOnLevelLoad.Value && !RTEditor.inst.editorInfo.analyzedBPM)
-            {
                 yield return CoroutineHelper.StartCoroutineAsync(UniBpmAnalyzer.IAnalyzeBPM(AudioManager.inst.CurrentAudioSource.clip, bpm =>
                 {
                     RTEditor.inst.editorInfo.analyzedBPM = true;
@@ -997,16 +942,13 @@ namespace BetterLegacy.Editor.Managers
                     RTEditor.inst.editorInfo.bpm = bpm;
                     EditorTimeline.inst.SetTimelineGridSize();
                 }));
-            }
 
             EditorTimeline.inst.RenderTimeline();
             EditorTimeline.inst.RenderBins();
 
             if (EditorConfig.Instance.LevelPausesOnStart.Value)
-            {
                 AudioManager.inst.CurrentAudioSource.Pause();
-                EditorManager.inst.UpdatePlayButton();
-            }
+            EditorManager.inst.UpdatePlayButton();
 
             Example.Current?.brain?.Notice(ExampleBrain.Notices.LOADED_LEVEL);
 
@@ -1025,7 +967,32 @@ namespace BetterLegacy.Editor.Managers
 
             yield break;
         }
-        
+
+        /// <summary>
+        /// Should run after a level has initialized.
+        /// </summary>
+        public void PostInitLevel()
+        {
+            CoreHelper.Log("Updating timeline...");
+            RTEventEditor.inst.CreateTimelineKeyframes();
+
+            RTCheckpointEditor.inst.UpdateCheckpointTimeline();
+
+            RTMarkerEditor.inst.CreateMarkers();
+            RTMarkerEditor.inst.markerLooping = false;
+            RTMarkerEditor.inst.markerLoopBegin = null;
+            RTMarkerEditor.inst.markerLoopEnd = null;
+
+            RTThemeEditor.inst.LoadInternalThemes();
+
+            if (RTEditor.inst.InfoPopup.IsOpen)
+                RTEditor.inst.InfoPopup.SetInfo($"Creating timeline objects for [ {name} ]");
+            EditorTimeline.inst.InitTimelineObjects();
+            RTCheckpointEditor.inst.SetCurrentCheckpoint(0);
+            RTBeatmap.Current.ResetCheckpoint();
+            RTPrefabEditor.inst.currentQuickPrefab = null; // remove selected quick prefab as it probably doesn't exist anymore.
+        }
+
         /// <summary>
         /// Saves the current level.
         /// </summary>
@@ -1113,7 +1080,29 @@ namespace BetterLegacy.Editor.Managers
         /// Sets the current audio the editor should use.
         /// </summary>
         /// <param name="audioClip">Audio to set.</param>
-        public void SetCurrentAudio(AudioClip audioClip) => AudioManager.inst.PlayMusic(null, audioClip, true, 0f, false);
+        public void SetCurrentAudio(AudioClip audioClip)
+        {
+            LevelManager.SetCurrentAudio(audioClip);
+            if (EditorConfig.Instance.WaveformGenerate.Value)
+            {
+                CoreHelper.Log("Assigning waveform textures...");
+                if (RTEditor.inst.InfoPopup.IsOpen)
+                    RTEditor.inst.InfoPopup.SetInfo($"Assigning Waveform Textures for [ {name} ]");
+                StartCoroutine(EditorTimeline.inst.AssignTimelineTexture(audioClip));
+            }
+            else
+            {
+                CoreHelper.Log("Skipping waveform textures...");
+                if (RTEditor.inst.InfoPopup.IsOpen)
+                    RTEditor.inst.InfoPopup.SetInfo($"Skipping Waveform Textures for [ {name} ]");
+                EditorTimeline.inst.SetTimelineSprite(null);
+            }
+
+            EditorTimeline.inst.UpdateTimelineSizes();
+            GameManager.inst.UpdateTimeline();
+
+            TriggerHelper.AddEventTriggers(RTEditor.inst.timeField.gameObject, TriggerHelper.ScrollDelta(RTEditor.inst.timeField, max: AudioManager.inst.CurrentAudioSource.clip.length));
+        }
 
         /// <summary>
         /// Restarts the autosave loop.

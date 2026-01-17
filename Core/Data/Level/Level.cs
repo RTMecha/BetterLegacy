@@ -392,15 +392,22 @@ namespace BetterLegacy.Core.Data.Level
         /// <returns>Returns a parsed game data from the level folder.</returns>
         public virtual GameData LoadGameData()
         {
-            var path = GetFile(CurrentFile);
-            var rawJSON = RTFile.ReadFromFile(path);
-            var version = metadata.Version;
+            try
+            {
+                var path = GetFile(CurrentFile);
+                var rawJSON = RTFile.ReadFromFile(path);
+                var version = metadata.Version;
 
-            if (ProjectArrhythmia.RequireUpdate(version))
-                rawJSON = LevelManager.UpdateBeatmap(rawJSON, version);
+                if (ProjectArrhythmia.RequireUpdate(version))
+                    rawJSON = LevelManager.UpdateBeatmap(rawJSON, version);
 
-            var jn = JSON.Parse(rawJSON);
-            return IsVG ? GameData.ParseVG(jn, version) : GameData.Parse(jn);
+                var jn = JSON.Parse(rawJSON);
+                return IsVG ? GameData.ParseVG(jn, version) : GameData.Parse(jn);
+            }
+            catch
+            {
+                throw new GameDataException("Failed to load game data.");
+            }
         }
 
         /// <summary>

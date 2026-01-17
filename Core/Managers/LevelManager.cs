@@ -320,7 +320,7 @@ namespace BetterLegacy.Core.Managers
             }
             else
             {
-                GameData.Current = level.LoadGameData();
+                SetCurrentGameData(level);
                 if (GameData.Current && GameData.Current.data && GameData.Current.data.level)
                     RTBeatmap.Current.respawnImmediately = GameData.Current.data.level.respawnImmediately;
             }
@@ -341,11 +341,11 @@ namespace BetterLegacy.Core.Managers
             Log($"Updating states...");
 
             if (IsArcade || !ProjectArrhythmia.State.InStory)
-                CoreHelper.UpdateDiscordStatus($"Level: {level.metadata.beatmap.name}",
+                DiscordHelper.UpdateDiscordStatus($"Level: {level.metadata.beatmap.name}",
                     "In Arcade",
                     "arcade");
             else
-                CoreHelper.UpdateDiscordStatus(
+                DiscordHelper.UpdateDiscordStatus(
                     $"DOC{RTString.ToStoryNumber(StoryManager.inst.currentPlayingChapterIndex)}-{RTString.ToStoryNumber(StoryManager.inst.currentPlayingLevelSequenceIndex)}: {level.metadata.beatmap.name}",
                     "In Story",
                     "arcade");
@@ -375,17 +375,12 @@ namespace BetterLegacy.Core.Managers
             while (!level.music)
                 yield return null;
 
-            AudioManager.inst.PlayMusic(null, level.music, true, songFadeTransition, false);
+            SetCurrentAudio(level.music);
             GameManager.inst.songLength = level.music.length;
 
             // preload audio clips
             if (GameData.Current && GameData.Current.assets)
-                for (int i = 0; i < GameData.Current.assets.sounds.Count; i++)
-                {
-                    var soundAsset = GameData.Current.assets.sounds[i];
-                    if (!soundAsset.audio && soundAsset.autoLoad)
-                        yield return CoroutineHelper.StartCoroutine(soundAsset.LoadAudioClip());
-                }
+                yield return CoroutineHelper.StartCoroutine(GameData.Current.assets.LoadSounds());
 
             #endregion
 
@@ -484,6 +479,67 @@ namespace BetterLegacy.Core.Managers
             }
 
             Play(new Level(path.Remove(Level.LEVEL_LSB).Remove(Level.LEVEL_VGD)));
+        }
+
+        /// <summary>
+        /// Sets the current <see cref="MetaData"/>.
+        /// </summary>
+        /// <param name="metaData">Meta data to set.</param>
+        public static void SetCurrentMetaData(MetaData metaData)
+        {
+            try
+            {
+                MetaData.Current = null;
+                MetaData.Current = metaData;
+
+                if (MetaData.Current.arcadeID == null || MetaData.Current.arcadeID == "0" || MetaData.Current.arcadeID == "-1")
+                    MetaData.Current.arcadeID = LSText.randomNumString(16);
+            }
+            catch
+            {
+                throw new MetaDataException("Failed to set meta data.");
+            }
+        }
+
+        /// <summary>
+        /// Sets the current <see cref="GameData"/>.
+        /// </summary>
+        /// <param name="level">Level to load the game data from.</param>
+        public static void SetCurrentGameData(Level level)
+        {
+            GameData.Current = null;
+            GameData.Current = level.LoadGameData();
+        }
+
+        /// <summary>
+        /// Sets the current audio the game should use.
+        /// </summary>
+        /// <param name="audioClip">Audio to set.</param>
+        public static void SetCurrentAudio(AudioClip audioClip) => AudioManager.inst.PlayMusic(null, audioClip, true, ProjectArrhythmia.State.InEditor ? 0f : songFadeTransition, false);
+        
+        /// <summary>
+        /// Clears all objects before loading a level.
+        /// </summary>
+        public static void ClearObjects()
+        {
+            if (GameData.Current)
+            {
+                try
+                {
+                    for (int i = 0; i < GameData.Current.assets.sounds.Count; i++)
+                    {
+                        CoreHelper.Destroy(GameData.Current.assets.sounds[i].audio);
+                        GameData.Current.assets.sounds[i].audio = null;
+                    }
+                    GameData.Current.assets.sounds.Clear();
+                }
+                catch (Exception ex)
+                {
+                    CoreHelper.LogError($"Failed to clear sound assets due to the exception: {ex}");
+                }
+            }
+
+            RTLevel.Reinit(false);
         }
 
         /// <summary>
