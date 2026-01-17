@@ -117,6 +117,31 @@ namespace BetterLegacy.Core.Data.Network
         }
 
         /// <summary>
+        /// Creates an audio clip from packet data.
+        /// </summary>
+        /// <param name="data">Packet data to read.</param>
+        /// <returns>Returns a new <see cref="AudioClip"/>.</returns>
+        public static AudioClip AudioClipFromPacket(ArraySegment<byte> data)
+        {
+            using var reader = new NetworkReader(data);
+            var audioClip = AudioClip.Create(reader.ReadString(), reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32(), false);
+            audioClip.ReadPacket(reader, true);
+            return audioClip;
+        }
+
+        /// <summary>
+        /// Creates an audio clip from packet data.
+        /// </summary>
+        /// <param name="reader">The current network reader.</param>
+        /// <returns>Returns a new <see cref="AudioClip"/>.</returns>
+        public static AudioClip AudioClipFromPacket(NetworkReader reader)
+        {
+            var audioClip = AudioClip.Create(reader.ReadString(), reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32(), false);
+            audioClip.ReadPacket(reader, true);
+            return audioClip;
+        }
+
+        /// <summary>
         /// Reads the packet data.
         /// </summary>
         /// <param name="data">Packet data to read.</param>
@@ -124,6 +149,38 @@ namespace BetterLegacy.Core.Data.Network
         {
             using var reader = new NetworkReader(data);
             obj.ReadPacket(reader);
+        }
+
+        /// <summary>
+        /// Reads packet data.
+        /// </summary>
+        /// <param name="reader">The current network reader.</param>
+        public static void ReadPacket(this AudioClip clip, NetworkReader reader, bool read = false)
+        {
+            if (!read)
+            {
+                reader.ReadString();
+                reader.ReadInt32();
+                reader.ReadInt32();
+                reader.ReadInt32();
+            }
+
+            clip.SetData(reader.ReadSingleArray(), 0);
+        }
+
+        /// <summary>
+        /// Writes object values to packet data.
+        /// </summary>
+        /// <param name="writer">The current network writer.</param>
+        public static void WritePacket(this AudioClip clip, NetworkWriter writer)
+        {
+            writer.Write(clip.name);
+            writer.Write(clip.samples);
+            writer.Write(clip.channels);
+            writer.Write(clip.frequency);
+            float[] data = new float[clip.frequency * clip.channels];
+            clip.GetData(data, 0);
+            writer.Write(data);
         }
 
         /// <summary>
@@ -138,45 +195,14 @@ namespace BetterLegacy.Core.Data.Network
         }
 
         /// <summary>
-        /// Reads list data from packet data.
+        /// Converts to packet data.
         /// </summary>
-        /// <typeparam name="T">Type of the object list to create. Type must be <see cref="IPacket"/>.</typeparam>
-        /// <param name="data">Packet data to read.</param>
-        public static List<T> CreateListFromPacket<T>(ArraySegment<byte> data) where T : IPacket, new()
+        /// <returns>Returns packet data.</returns>
+        public static ArraySegment<byte> ToPacket(this AudioClip clip)
         {
-            var list = new List<T>();
-            using var reader = new NetworkReader(data);
-            ReadPacketList(list, reader);
-            return list;
-        }
-
-        /// <summary>
-        /// Creates a list from packet data.
-        /// </summary>
-        /// <typeparam name="T">Type of the object list to create. Type must be <see cref="IPacket"/>.</typeparam>
-        /// <param name="reader">The current network reader.</param>
-        /// <returns>Returns a new list based on the packet data.</returns>
-        public static List<T> CreateListFromPacket<T>(NetworkReader reader) where T : IPacket, new()
-        {
-            var list = new List<T>();
-            ReadPacketList(list, reader);
-            return list;
-        }
-
-        /// <summary>
-        /// Creates a dictionary from packet data.
-        /// </summary>
-        /// <typeparam name="TKey">Type of the dictionary key.</typeparam>
-        /// <typeparam name="TValue">Type of the dictionary value.</typeparam>
-        /// <param name="dictionary">Dictionary to read to.</param>
-        /// <param name="reader">The current network reader.</param>
-        /// <param name="getKey">Get key function.</param>
-        /// <returns>Returns a new dictionary based on the packet data.</returns>
-        public static Dictionary<TKey, TValue> CreateDictionaryFromPacket<TKey, TValue>(NetworkReader reader, Func<TKey> getKey) where TValue : IPacket, new()
-        {
-            var dictionary = new Dictionary<TKey, TValue>();
-            ReadPacketDictionary(dictionary, reader, getKey);
-            return dictionary;
+            using var writer = new NetworkWriter();
+            clip.WritePacket(writer);
+            return writer.GetData();
         }
 
         /// <summary>
