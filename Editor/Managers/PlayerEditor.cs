@@ -1244,10 +1244,10 @@ namespace BetterLegacy.Editor.Managers
                 RTPlayer.SetGameDataProperties();
             });
 
-            Dialog.GlobalTab.GameMode.Dropdown.SetValueWithoutNotify(GameData.Current.data.level.gameMode);
+            Dialog.GlobalTab.GameMode.Dropdown.SetValueWithoutNotify((int)GameData.Current.data.level.gameMode);
             Dialog.GlobalTab.GameMode.Dropdown.onValueChanged.NewListener(_val =>
             {
-                GameData.Current.data.level.gameMode = _val;
+                GameData.Current.data.level.gameMode = (GameMode)_val;
                 RTPlayer.SetGameDataProperties();
             });
             TriggerHelper.AddEventTriggers(Dialog.GlobalTab.GameMode.Dropdown.gameObject, TriggerHelper.ScrollDelta(Dialog.GlobalTab.GameMode.Dropdown));
@@ -1779,27 +1779,27 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-            Dialog.BaseTab.StretchActive.Toggle.SetIsOnWithoutNotify(currentModel.stretchPart.active);
+            Dialog.BaseTab.StretchActive.Toggle.SetIsOnWithoutNotify(currentModel.basePart.stretchActive);
             Dialog.BaseTab.StretchActive.Toggle.onValueChanged.NewListener(_val =>
             {
-                currentModel.stretchPart.active = _val;
+                currentModel.basePart.stretchActive = _val;
                 PlayerManager.UpdatePlayerModels();
             });
 
-            RenderSingle(Dialog.BaseTab.StretchAmount.Field, currentModel.stretchPart.amount,
+            RenderSingle(Dialog.BaseTab.StretchAmount.Field, currentModel.basePart.stretchAmount,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
-                        currentModel.stretchPart.amount = num;
+                        currentModel.basePart.stretchAmount = num;
                         PlayerManager.UpdatePlayerModels();
                     }
                 });
 
-            RenderEasing(Dialog.BaseTab.StretchEasing.Dropdown, currentModel.stretchPart.easing,
+            RenderEasing(Dialog.BaseTab.StretchEasing.Dropdown, currentModel.basePart.stretchEasing,
                 onValueChanged: _val =>
                 {
-                    currentModel.stretchPart.easing = _val;
+                    currentModel.basePart.stretchEasing = _val;
                     PlayerManager.UpdatePlayerModels();
                 });
 

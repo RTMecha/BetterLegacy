@@ -668,7 +668,7 @@ namespace BetterLegacy.Core.Components.Player
                 var levelData = GameData.Current.data.level;
                 LockBoost = levelData.lockBoost;
                 SpeedMultiplier = levelData.speedMultiplier;
-                GameMode = (GameMode)levelData.gameMode;
+                GameMode = levelData.gameMode;
                 GlobalJumpGravity = levelData.jumpGravity;
                 GlobalJumpIntensity = levelData.jumpIntensity;
                 MaxJumpCount = levelData.maxJumpCount;
@@ -3234,9 +3234,9 @@ namespace BetterLegacy.Core.Components.Player
             jumpBoostCount = control.jumpBoostCount;
             bounciness = control.bounciness;
 
-            stretch = currentModel.stretchPart.active;
-            stretchAmount = currentModel.stretchPart.amount;
-            stretchEasing = currentModel.stretchPart.easing;
+            stretch = currentModel.basePart.stretchActive;
+            stretchAmount = currentModel.basePart.stretchAmount;
+            stretchEasing = currentModel.basePart.stretchEasing;
 
             rotateMode = (RotateMode)(int)currentModel.basePart.rotateMode;
 
