@@ -1,9 +1,6 @@
-﻿using System;
-
-using UnityEngine;
+﻿using UnityEngine;
 
 using HarmonyLib;
-using Steamworks;
 
 using BetterLegacy.Core.Managers;
 
