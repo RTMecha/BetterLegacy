@@ -1274,7 +1274,7 @@ namespace BetterLegacy.Core
                         if (parameters == null)
                             break;
 
-                        CoreHelper.UpdateDiscordStatus(
+                        DiscordHelper.UpdateDiscordStatus(
                             parameters.Get(0, "state"),
                             parameters.Get(1, "details"),
                             parameters.Get(2, "icon"),

@@ -417,7 +417,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             }
 
             if (!ProjectArrhythmia.State.InGame)
-                CoreHelper.UpdateDiscordStatus($"Navigating {name}", "In Menu", "menu");
+                DiscordHelper.UpdateDiscordStatus($"Navigating {name}", "In Menu", "menu");
 
             // reset to default settings when menus open
             ProjectArrhythmia.Window.ResetPosition();

@@ -74,7 +74,7 @@ namespace BetterLegacy.Patchers
             __instance.callbackCalls++;
             __instance.Initialized = true;
             Debug.Log($"{__instance.className}Discord: ready");
-            CoreHelper.UpdateDiscordStatus(CoreHelper.discordLevel, CoreHelper.discordDetails, CoreHelper.discordIcon, CoreHelper.discordArt);
+            DiscordHelper.UpdateDiscordStatus(DiscordHelper.discordLevel, DiscordHelper.discordDetails, DiscordHelper.discordIcon, DiscordHelper.discordArt);
             __instance.onConnect.Invoke();
             return false;
         }

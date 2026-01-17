@@ -252,8 +252,8 @@ namespace BetterLegacy.Patchers
             CoreHelper.Log($"EDITOR START -> {nameof(EditorLevelManager.LoadLevels)}");
             EditorLevelManager.inst.LoadLevels();
 
-            CoreHelper.Log($"EDITOR START -> {nameof(CoreHelper.UpdateDiscordStatus)}");
-            CoreHelper.UpdateDiscordStatus(string.Empty, "In Editor (Selecting level)", "editor");
+            CoreHelper.Log($"EDITOR START -> {nameof(DiscordHelper.UpdateDiscordStatus)}");
+            DiscordHelper.UpdateDiscordStatus(string.Empty, "In Editor (Selecting level)", "editor");
 
             CoreHelper.Log($"EDITOR START -> {nameof(EditorManager.SetDialogStatus)} (Timeline)");
             Instance.SetDialogStatus("Timeline", true, true);
@@ -472,7 +472,7 @@ namespace BetterLegacy.Patchers
 
                 CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip("https://drive.google.com/uc?export=download&id=1BDrRqX1IDk7bKo2hhYDqDqWLncMy7FkP", AudioType.OGGVORBIS, audioClip =>
                 {
-                    EditorLevelManager.inst.SetCurrentAudio(audioClip);
+                    LevelManager.SetCurrentAudio(audioClip);
                     GameManager.inst.gameState = GameManager.State.Playing;
 
                     CoroutineHelper.StartCoroutine(RTLevel.IReinit());
@@ -485,7 +485,7 @@ namespace BetterLegacy.Patchers
         static void AssignGameData()
         {
             GameData.Current = EditorLevelManager.inst.CreateBaseBeatmap();
-            EditorLevelManager.inst.SetCurrentAudio(Instance.baseSong);
+            LevelManager.SetCurrentAudio(Instance.baseSong);
             GameManager.inst.gameState = GameManager.State.Playing;
         }
 
@@ -782,7 +782,7 @@ namespace BetterLegacy.Patchers
                 if (EditorLevelManager.inst)
                     EditorLevelManager.inst.LevelPanels.Clear();
                 GameData.Current = null;
-                CoreHelper.UpdateDiscordStatus(string.Empty, string.Empty, CoreHelper.discordIcon);
+                DiscordHelper.UpdateDiscordStatus(string.Empty, string.Empty, DiscordHelper.discordIcon);
                 Debug.Log($"{Instance.className}Quit to Main Menu");
                 SceneHelper.LoadScene(SceneName.Main_Menu);
             }, RTEditor.inst.HideWarningPopup);
@@ -811,13 +811,13 @@ namespace BetterLegacy.Patchers
                 if (EditorManager.inst.hasLoadedLevel && !EditorManager.inst.loading)
                     GameData.Current?.SaveData(RTFile.CombinePaths(RTFile.BasePath, "level-quit-backup.lsb"), () =>
                     {
-                        CoreHelper.UpdateDiscordStatus(string.Empty, string.Empty, CoreHelper.discordIcon);
+                        DiscordHelper.UpdateDiscordStatus(string.Empty, string.Empty, DiscordHelper.discordIcon);
                         Debug.Log($"{Instance.className}Quit Game");
                         LegacyPlugin.QuitGame();
                     });
                 else
                 {
-                    CoreHelper.UpdateDiscordStatus(string.Empty, string.Empty, CoreHelper.discordIcon);
+                    DiscordHelper.UpdateDiscordStatus(string.Empty, string.Empty, DiscordHelper.discordIcon);
                     Debug.Log($"{Instance.className}Quit Game");
                     LegacyPlugin.QuitGame();
                 }
