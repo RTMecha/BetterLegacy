@@ -1169,6 +1169,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             Packet.ReadPacketList(modifierBlocks, reader);
             Packet.ReadPacketList(prefabs, reader);
             Packet.ReadPacketList(beatmapThemes, reader);
+            Packet.ReadPacketList(prefabObjects, reader);
             Packet.ReadPacketList(beatmapObjects, reader);
             Packet.ReadPacketList(backgroundLayers, reader);
             Packet.ReadPacketList(backgroundObjects, reader);
@@ -1203,6 +1204,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             Packet.WritePacketList(modifierBlocks, writer);
             Packet.WritePacketList(prefabs.FindAll(x => !x.FromPrefab), writer);
             Packet.WritePacketList(beatmapThemes, writer);
+            Packet.WritePacketList(prefabObjects.FindAll(x => !x.FromPrefab), writer);
             Packet.WritePacketList(beatmapObjects.FindAll(x => !x.FromPrefab), writer);
             Packet.WritePacketList(backgroundLayers.FindAll(x => !x.FromPrefab), writer);
             Packet.WritePacketList(backgroundObjects.FindAll(x => !x.FromPrefab), writer);

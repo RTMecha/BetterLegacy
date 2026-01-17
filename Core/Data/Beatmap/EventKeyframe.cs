@@ -339,7 +339,9 @@ namespace BetterLegacy.Core.Data.Beatmap
                 if (homingPriority == HomingPriority.Index)
                     playerIndex = reader.ReadInt32();
             }
-            stringValues = reader.ReadStringArray();
+            var hasStringValues = reader.ReadBoolean();
+            if (hasStringValues)
+                stringValues = reader.ReadStringArray();
             relative = reader.ReadBoolean();
             if (ProjectArrhythmia.State.InEditor)
                 locked = reader.ReadBoolean();
@@ -362,7 +364,10 @@ namespace BetterLegacy.Core.Data.Beatmap
                 if (homingPriority == HomingPriority.Index)
                     writer.Write(index);
             }
-            writer.Write(stringValues);
+            var hasStringValues = stringValues != null;
+            writer.Write(hasStringValues);
+            if (hasStringValues)
+                writer.Write(stringValues);
             writer.Write(relative);
             if (ProjectArrhythmia.State.InEditor)
                 writer.Write(locked);

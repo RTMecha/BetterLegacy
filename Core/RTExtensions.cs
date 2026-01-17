@@ -548,6 +548,17 @@ namespace BetterLegacy.Core
             return null;
         }
 
+        public static bool TryGetValue<T>(this T? Qobj, out T value) where T : struct
+        {
+            if (Qobj.HasValue)
+            {
+                value = Qobj.Value;
+                return true;
+            }
+            value = default;
+            return false;
+        }
+
         #endregion
 
         #region Collection
@@ -2916,7 +2927,9 @@ namespace BetterLegacy.Core
         {
             shapeable.Shape = reader.ReadInt32();
             shapeable.ShapeOption = reader.ReadInt32();
-            shapeable.Polygon = Packet.CreateFromPacket<PolygonShape>(reader);
+            var hasPolygon = reader.ReadBoolean();
+            if (hasPolygon)
+                shapeable.Polygon = Packet.CreateFromPacket<PolygonShape>(reader);
             shapeable.Text = reader.ReadString();
             shapeable.AutoTextAlign = reader.ReadBoolean();
         }
@@ -2930,7 +2943,10 @@ namespace BetterLegacy.Core
         {
             writer.Write(shapeable.Shape);
             writer.Write(shapeable.ShapeOption);
-            shapeable.Polygon.WritePacket(writer);
+            bool hasPolygon = shapeable.Polygon;
+            writer.Write(hasPolygon);
+            if (hasPolygon)
+                shapeable.Polygon.WritePacket(writer);
             writer.Write(shapeable.Text);
             writer.Write(shapeable.AutoTextAlign);
         }
