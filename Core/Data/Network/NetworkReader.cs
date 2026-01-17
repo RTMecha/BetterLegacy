@@ -48,7 +48,7 @@ namespace BetterLegacy.Core.Data.Network
         public Vector4 ReadVector4() => new Vector4(ReadSingle(), ReadSingle(), ReadSingle(), ReadSingle());
         public Vector2Int ReadVector2Int() => new Vector2Int(ReadInt32(), ReadInt32());
         public Vector3Int ReadVector3Int() => new Vector3Int(ReadInt32(), ReadInt32(), ReadInt32());
-        public Color ReadColor() => new Color(ReadSingle(), ReadSingle(), ReadSingle());
+        public Color ReadColor() => new Color(ReadSingle(), ReadSingle(), ReadSingle(), ReadSingle());
         public bool[] ReadBooleanArray()
         {
             var count = ReadInt32();
@@ -118,7 +118,7 @@ namespace BetterLegacy.Core.Data.Network
             var count = ReadInt32();
             var array = new float[count];
             for (int i = 0; i < count; i++)
-                array[i] = ReadUInt64();
+                array[i] = ReadSingle();
             return array;
         }
         public double[] ReadDoubleArray()
@@ -126,7 +126,7 @@ namespace BetterLegacy.Core.Data.Network
             var count = ReadInt32();
             var array = new double[count];
             for (int i = 0; i < count; i++)
-                array[i] = ReadUInt64();
+                array[i] = ReadDouble();
             return array;
         }
         public List<T> ReadList<T>(Func<T> read)
