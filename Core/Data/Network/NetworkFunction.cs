@@ -2,6 +2,9 @@
 
 using UnityEngine;
 
+using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Managers;
+
 namespace BetterLegacy.Core.Data.Network
 {
     /// <summary>
@@ -65,8 +68,13 @@ namespace BetterLegacy.Core.Data.Network
         public const int LOG_SERVER = 53295835;
         public const int LOG_MULTI = 43292487;
 
-        public const int SET_SERVER_GAME_DATA = 2585775;
         public const int SET_CLIENT_GAME_DATA = 9432119;
+
+        public const int SET_CLIENT_MUSIC_TIME = 352633265;
+        public const int SET_SERVER_MUSIC_TIME = 75842873;
+
+        public const int SET_CLIENT_PITCH = 266775874;
+        public const int SET_SERVER_PITCH = 378545366;
 
         #endregion
 
@@ -112,6 +120,18 @@ namespace BetterLegacy.Core.Data.Network
         #endregion
 
         #region Functions
+
+        #region Global
+
+        public static void LogClientSide(string message) => NetworkManager.inst.RunFunction(LOG_CLIENT, new StringParameter(message));
+
+        public static void LogServerSide(string message) => NetworkManager.inst.RunFunction(LOG_SERVER, new StringParameter(message));
+
+        public static void LogMultiSide(string message) => NetworkManager.inst.RunFunction(LOG_MULTI, new StringParameter(message));
+
+        public static void SetClientGameData(GameData gameData) => NetworkManager.inst.RunFunction(SET_CLIENT_GAME_DATA, gameData);
+
+        #endregion
 
         /// <summary>
         /// Runs the function.

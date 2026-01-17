@@ -1,8 +1,6 @@
-﻿using System;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using SteamworksFacepunch;
 using SteamworksFacepunch.Data;
@@ -14,7 +12,7 @@ using BetterLegacy.Core.Managers.Settings;
 
 namespace BetterLegacy.Core.Managers
 {
-    public class SteamLobbyManager : BaseManager<SteamLobbyManager, ManagerSettings>
+    public class SteamLobbyManager : BaseManager<SteamLobbyManager, SteamLobbyManagerSettings>
     {
         public Lobby CurrentLobby { get; set; }
         public LobbySettings LobbySettings { get; set; } = new LobbySettings();
@@ -23,7 +21,7 @@ namespace BetterLegacy.Core.Managers
 
         public override void OnInit()
         {
-            CoreHelper.Log($"Setting lobby events");
+            Log($"Setting lobby events");
             SteamMatchmaking.OnLobbyCreated += OnLobbyCreated;
             SteamMatchmaking.OnLobbyEntered += OnLobbyEntered;
 
@@ -39,36 +37,89 @@ namespace BetterLegacy.Core.Managers
 
         public void CreateLobby()
         {
+            Log($"Creating a lobby");
             ProjectArrhythmia.State.IsHosting = true;
             RTSteamManager.inst.StartServer();
-            //SteamMatchmaking.CreateLobbyAsync(LobbySettings.PlayerCount);
-
-            SteamMatchmaking.Internal.CreateLobby(LobbyType.FriendsOnly, LobbySettings.PlayerCount);
-            CurrentLobby.Join();
+            SteamMatchmaking.CreateLobbyAsync(LobbySettings.PlayerCount);
         }
+
+        public async void JoinRandomLobby()
+        {
+            var query = new LobbyQuery();
+            var lobbies = await query.WithMaxResults(10).RequestAsync();
+            LegacyPlugin.MainTick += () =>
+            {
+                if (lobbies == null)
+                    return;
+                Log($"Found lobbies: {lobbies.Length}");
+                if (lobbies.IsEmpty())
+                    return;
+                for (int i = 0; i < lobbies.Length; i++)
+                {
+                    var lobby = lobbies[i];
+                    Log($"Lobby 0: Owner {lobby.Owner.Name}");
+
+                    var collection = lobby.Data.ToDictionary(x => x.Key, x => x.Value);
+                    if (collection.ContainsKey("ModVersion"))
+                    {
+                        JoinLobby(lobby);
+                        return;
+                    }
+
+                    Log($"Could not join lobby as it does not contain mod version data.");
+                }
+            };
+        }
+
+        public async void JoinLobby(SteamId id)
+        {
+            var Qlobby = await SteamMatchmaking.JoinLobbyAsync(id);
+            if (!Qlobby.TryGetValue(out Lobby lobby))
+                return;
+
+            CurrentLobby = lobby;
+            RTSteamManager.inst.StartClient(lobby.Owner.Id);
+        }
+
+        public void JoinLobby(Lobby lobby) => CoroutineHelper.StartCoroutine(IJoinLobby(lobby));
+
+        IEnumerator IJoinLobby(Lobby lobby)
+        {
+            CurrentLobby = lobby;
+            yield return CoroutineHelper.StartCoroutine(lobby.Join());
+            RTSteamManager.inst.StartClient(lobby.Owner.Id);
+        }
+
+        public void LeaveLobby()
+        {
+            ProjectArrhythmia.State.IsInLobby = false;
+            CurrentLobby.Leave();
+        }
+
+        public void SendChat(string message) => CurrentLobby.SendChatString(message);
 
         void OnChatMessage(Lobby lobby, Friend friend, string message)
         {
             // handle chat message through chat bubble
-            CoreHelper.Log($"{friend.Name} says {message}");
+            Log($"{friend.Name} says {message}");
         }
 
         void OnLobbyDataChanged(Lobby lobby)
         {
-
+            // handle lobby data
         }
 
         void OnLobbyMemberDataChanged(Lobby lobby, Friend friend)
         {
-            //if (lobby.GetMemberData(friend, "IsLoaded") != null)
-            //    return;
+            if (lobby.GetMemberData(friend, "IsLoaded") != "1")
+                return;
 
-            //SetLoaded(friend.Id);
+            SetLoaded(friend.Id);
         }
 
         void OnLobbyMemberDisconnected(Lobby lobby, Friend friend)
         {
-            CoreHelper.Log($"Member left: [{friend.Name}]");
+            Log($"Member left: [{friend.Name}]");
 
             SoundManager.inst.PlaySound(DefaultSounds.Block); // maybe add a new sound?
 
@@ -87,7 +138,7 @@ namespace BetterLegacy.Core.Managers
 
         void OnLobbyMemberJoined(Lobby lobby, Friend friend)
         {
-            CoreHelper.Log($"Member joined: [{friend.Name}]");
+            Log($"Member joined: [{friend.Name}]");
 
             SoundManager.inst.PlaySound(DefaultSounds.SpawnPlayer);
 
@@ -96,7 +147,7 @@ namespace BetterLegacy.Core.Managers
 
         void OnLobbyEntered(Lobby lobby)
         {
-            CoreHelper.Log($"Joined Lobby hosted by [{lobby.Owner.Name}]");
+            Log($"Joined Lobby hosted by [{lobby.Owner.Name}]");
             CurrentLobby = lobby;
             ProjectArrhythmia.State.IsInLobby = true;
 
@@ -106,13 +157,17 @@ namespace BetterLegacy.Core.Managers
                 return;
             }
 
+            if (!Transport.Instance)
+                RTSteamManager.inst.StartClient(lobby.Owner.Id);
             foreach (var lobbyMember in lobby.Members)
             {
                 var player = new PAPlayer(true, 0);
                 player.IsLocalPlayer = false;
                 player.ID = lobbyMember.Id;
                 PlayerManager.Players.Add(player);
-                AddPlayerToLoadList(lobby.Owner.Id);
+                AddPlayerToLoadList(lobbyMember.Id);
+                if (lobby.GetMemberData(lobbyMember, "IsLoaded") == "1")
+                    SetLoaded(lobbyMember.Id);
             }
         }
 
@@ -120,11 +175,11 @@ namespace BetterLegacy.Core.Managers
         {
             if (result != Result.OK)
             {
-                CoreHelper.Log($"Failed to create lobby. Result: {result}");
+                Log($"Failed to create lobby. Result: {result}");
                 lobby.Leave();
                 return;
             }
-            CoreHelper.Log($"Lobby created!");
+            Log($"Lobby created!");
             CurrentLobby = lobby;
             ProjectArrhythmia.State.IsInLobby = true;
 
@@ -134,6 +189,9 @@ namespace BetterLegacy.Core.Managers
                 lobby.SetPublic();
 
             lobby.SetJoinable(true);
+
+            lobby.SetData("ModVersion", LegacyPlugin.ModVersion.ToString());
+            lobby.SetData("GameVersion", ProjectArrhythmia.VANILLA_VERSION);
         }
 
         void AddPlayerToLoadList(SteamId id) => loadedPlayers.TryAdd(id, false);
@@ -141,12 +199,6 @@ namespace BetterLegacy.Core.Managers
         void RemovePlayerFromLoadList(SteamId id) => loadedPlayers?.Remove(id);
 
         void SetLoaded(SteamId id) => loadedPlayers[id] = true;
-
-        public void LeaveLobby()
-        {
-            ProjectArrhythmia.State.IsInLobby = false;
-            CurrentLobby.Leave();
-        }
 
         public void UnloadAll()
         {

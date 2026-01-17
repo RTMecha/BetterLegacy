@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-using SteamworksFacepunch;
 using SteamworksFacepunch.Data;
 
 using BetterLegacy.Core.Components.Player;
@@ -22,6 +18,8 @@ namespace BetterLegacy.Core.Managers
     {
         protected ServerNetworkConnection serverConnection;
         protected Dictionary<int, ClientNetworkConnection> clientConnections = new Dictionary<int, ClientNetworkConnection>();
+
+        public ClientNetworkConnection ServerSelfPeerConnection { get; protected set; }
 
         bool eventsSet;
 
@@ -68,33 +66,10 @@ namespace BetterLegacy.Core.Managers
                     LogError($"Failed to read game data due to the exception: {ex}");
                 }
             }),
-            new NetworkFunction(Side.Server, NetworkFunction.SET_SERVER_GAME_DATA, 1, reader =>
-            {
-                try
-                {
-                    if (ProjectArrhythmia.State.InEditor)
-                        EditorLevelManager.inst.ClearObjects();
-                    else
-                        LevelManager.ClearObjects();
-
-                    GameData.Current = null;
-                    GameData.Current = Packet.CreateFromPacket<GameData>(reader);
-                    RTLevel.Reinit();
-                    RTPlayer.SetGameDataProperties();
-                    CoroutineHelper.StartCoroutine(GameData.Current.assets.LoadSounds());
-
-                    if (ProjectArrhythmia.State.InEditor)
-                    {
-                        EditorLevelManager.inst.PostInitLevel();
-                        EditorTimeline.inst.RenderTimeline();
-                        EditorTimeline.inst.RenderBins();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    LogError($"Failed to read game data due to the exception: {ex}");
-                }
-            }),
+            new NetworkFunction(Side.Client, NetworkFunction.SET_CLIENT_MUSIC_TIME, 1, reader => AudioManager.inst.SetMusicTime(reader.ReadSingle())),
+            new NetworkFunction(Side.Server, NetworkFunction.SET_SERVER_MUSIC_TIME, 1, reader => AudioManager.inst.SetMusicTime(reader.ReadSingle())),
+            new NetworkFunction(Side.Client, NetworkFunction.SET_CLIENT_PITCH, 1, reader => AudioManager.inst.SetPitch(reader.ReadSingle())),
+            new NetworkFunction(Side.Server, NetworkFunction.SET_SERVER_PITCH, 1, reader => AudioManager.inst.SetPitch(reader.ReadSingle())),
         };
 
         public override void OnInit() => SetEvents();
@@ -120,11 +95,14 @@ namespace BetterLegacy.Core.Managers
         // BetterLegacy.Core.Managers.NetworkManager.inst.RunFunction(NetworkFunction.LOG_MULTI, new NetworkFunction.StringParameter("test"));
         public void RunFunction(int id, params IPacket[] packets)
         {
-            if (!functions.TryFind(x => x.id == id && x.parameterCount == packets.Length, out NetworkFunction function))
-                return;
+            if (functions.TryFind(x => x.id == id && x.parameterCount == packets.Length, out NetworkFunction function))
+                RunFunction(function, packets);
+        }
 
+        public void RunFunction(NetworkFunction function, params IPacket[] packets)
+        {
             var writer = new NetworkWriter();
-            writer.Write(id);
+            writer.Write(function.id);
             for (int i = 0; i < packets.Length; i++)
                 packets[i].WritePacket(writer);
 
@@ -135,13 +113,16 @@ namespace BetterLegacy.Core.Managers
                         break;
                     }
                 case NetworkFunction.Side.Server: {
-                        SendToServer(writer.GetData(), SendType.Reliable);
+                        if (ProjectArrhythmia.State.IsHosting)
+                            Transport.onServerDataReceived?.Invoke(ServerSelfPeerConnection, writer.GetData());
+                        else
+                            SendToServer(writer.GetData(), SendType.Reliable);
                         break;
                     }
                 case NetworkFunction.Side.Multi: {
-                        // idk if this is how it works
+                        if (ProjectArrhythmia.State.IsHosting)
+                            Transport.onServerDataReceived?.Invoke(ServerSelfPeerConnection, writer.GetData());
                         SendToAllClients(writer.GetData(), SendType.Reliable);
-                        SendToServer(writer.GetData(), SendType.Reliable);
                         break;
                     }
             }
@@ -191,7 +172,15 @@ namespace BetterLegacy.Core.Managers
 
         public void OnClientConnected(ServerNetworkConnection connection) => serverConnection = connection;
 
-        public void OnClientDisconnected() => serverConnection = null;
+        public void OnClientDisconnected()
+        {
+            serverConnection = null;
+
+            if (!ProjectArrhythmia.State.IsOnlineMultiplayer)
+                return;
+
+            RTSteamManager.inst.EndClient();
+        }
 
         public void SendToServer(ArraySegment<byte> data, SendType sendType)
         {
@@ -214,6 +203,25 @@ namespace BetterLegacy.Core.Managers
                 function.Run(reader);
         }
 
+        public void StartServer()
+        {
+            Transport.Instance = new Transport();
+            clientConnections.Clear();
+            ServerSelfPeerConnection = new ClientNetworkConnection(0, RTSteamManager.inst.steamUser.steamID.ToString());
+            Transport.Instance.StartServer();
+            Transport.Instance.steamIDToNetID.Add(RTSteamManager.inst.steamUser.steamID, ServerSelfPeerConnection.connectionID);
+            Transport.Instance.idToConnection.Add(ServerSelfPeerConnection.connectionID, null);
+            clientConnections.Add(0, ServerSelfPeerConnection);
+        }
+
+        public void StopServer()
+        {
+            clientConnections.Clear();
+            ServerSelfPeerConnection = null;
+            Transport.Instance?.StopServer();
+            Transport.Instance = null;
+        }
+
         public void OnServerClientDisconnected(ClientNetworkConnection connection) => clientConnections.Remove(connection.connectionID);
 
         public void OnServerClientConnected(ClientNetworkConnection connection) => clientConnections.Add(connection.connectionID, connection);
@@ -234,7 +242,12 @@ namespace BetterLegacy.Core.Managers
             if (Transport.Instance == null || !Transport.Instance.IsActive)
                 throw new Exception("Tried calling a client rpc while transport is null!");
             foreach (var connection in clientConnections)
+            {
+                if (ServerSelfPeerConnection == connection.Value)
+                    continue;
+
                 connection.Value.SendRpcToTransport(data, sendType);
+            }
         }
 
         internal void OnServerTransportDataReceived(ClientNetworkConnection connection, ArraySegment<byte> data)

@@ -158,10 +158,13 @@ namespace BetterLegacy.Core.Managers
 
         #region Functions
 
-        public override void OnManagerStart()
+        public override void OnInit()
         {
             try
             {
+                SteamMatchmaking.OnLobbyInvite += OnLobbyInvite;
+                SteamFriends.OnGameLobbyJoinRequested += OnGameLobbyJoinRequested;
+
                 SteamClient.Init(ProjectArrhythmia.STEAM_APP_ID, false);
                 steamUser = new SteamUser(SteamClient.SteamId, SteamClient.SteamId.Value, SteamClient.Name);
                 Log($"Init Steam User: {SteamClient.Name}");
@@ -176,9 +179,6 @@ namespace BetterLegacy.Core.Managers
                 {
                     LogError($"Had an error setting the default config: {ex}");
                 }
-
-                SteamMatchmaking.OnLobbyInvite += OnLobbyInvite;
-                SteamFriends.OnGameLobbyJoinRequested += OnGameLobbyJoinRequested;
 
                 SteamNetworkingUtils.InitRelayNetworkAccess();
                 SteamNetworkingUtils.ConnectionTimeout = 5000;
@@ -239,6 +239,7 @@ namespace BetterLegacy.Core.Managers
 
         public void EndClient()
         {
+            Log($"Ending client.");
             ProjectArrhythmia.State.IsOnlineMultiplayer = false;
             ProjectArrhythmia.State.IsHosting = false;
 
@@ -249,22 +250,17 @@ namespace BetterLegacy.Core.Managers
         public void StartServer()
         {
             Log($"Starting server.");
-
-            if (Transport.Instance)
-                return;
-
-            Transport.Instance = new Transport();
-            Transport.Instance.StartServer();
+            NetworkManager.inst.StartServer();
         }
 
         public void EndServer()
         {
+            Log($"Ending server.");
             ProjectArrhythmia.State.IsOnlineMultiplayer = false;
             ProjectArrhythmia.State.IsHosting = false;
 
             SteamLobbyManager.inst.LeaveLobby();
-            Transport.Instance?.StopServer();
-            Transport.Instance = null;
+            NetworkManager.inst.StopServer();
         }
 
         #endregion

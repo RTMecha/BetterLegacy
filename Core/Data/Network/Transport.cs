@@ -1,15 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 using SteamworksFacepunch;
 using SteamworksFacepunch.Data;
 
 using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Managers;
 
 namespace BetterLegacy.Core.Data.Network
 {
@@ -140,6 +136,8 @@ namespace BetterLegacy.Core.Data.Network
             buffer = newBuffer;
         }
 
+        #region ISocketManager (Server)
+
         public void OnConnecting(Connection connection, ConnectionInfo info)
         {
             connection.Accept();
@@ -216,18 +214,27 @@ namespace BetterLegacy.Core.Data.Network
             return id;
         }
 
-        public void OnConnecting(ConnectionInfo info) { }
+        #endregion
+
+        #region IConnectionManager (Client)
+
+        public void OnConnecting(ConnectionInfo info)
+        {
+            CoreHelper.Log($"Connecting");
+        }
 
         public void OnConnected(ConnectionInfo info)
         {
             IsActive = true;
             onClientConnected?.Invoke(new ServerNetworkConnection(info.Identity.SteamId.ToString()));
+            CoreHelper.Log($"Connected");
         }
 
         public void OnDisconnected(ConnectionInfo info)
         {
             IsActive = false;
             onClientDisconnected?.Invoke();
+            CoreHelper.Log($"Disconnected");
         }
 
         public void OnMessage(IntPtr data, int size, long messageNum, long recvTime, int channel)
@@ -248,5 +255,7 @@ namespace BetterLegacy.Core.Data.Network
             Marshal.Copy(data, buffer, 0, size);
             onClientDataReceived?.Invoke(new ArraySegment<byte>(buffer, 0, size));
         }
+
+        #endregion
     }
 }
