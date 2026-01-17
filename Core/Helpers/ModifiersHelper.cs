@@ -12665,8 +12665,8 @@ namespace BetterLegacy.Core.Helpers
 
         public static void setDiscordStatus(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var discordSubIcons = CoreHelper.discordSubIcons;
-            var discordIcons = CoreHelper.discordIcons;
+            var discordSubIcons = DiscordHelper.discordSubIcons;
+            var discordIcons = DiscordHelper.discordIcons;
 
             var state = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables);
             var details = ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables);
@@ -12675,14 +12675,14 @@ namespace BetterLegacy.Core.Helpers
 
             try
             {
-                CoreHelper.UpdateDiscordStatus(
+                DiscordHelper.UpdateDiscordStatus(
                     string.Format(state, MetaData.Current.song.title, $"{(!ProjectArrhythmia.State.InEditor ? "Game" : "Editor")}", $"{(!ProjectArrhythmia.State.InEditor ? "Level" : "Editing")}", $"{(!ProjectArrhythmia.State.InEditor ? "Arcade" : "Editor")}"),
                     string.Format(details, MetaData.Current.song.title, $"{(!ProjectArrhythmia.State.InEditor ? "Game" : "Editor")}", $"{(!ProjectArrhythmia.State.InEditor ? "Level" : "Editing")}", $"{(!ProjectArrhythmia.State.InEditor ? "Arcade" : "Editor")}"),
                     discordSubIcons[Mathf.Clamp(discordSubIcon, 0, discordSubIcons.Length - 1)], discordIcons[Mathf.Clamp(discordIcon, 0, discordIcons.Length - 1)]);
             }
             catch
             {
-                CoreHelper.UpdateDiscordStatus((ProjectArrhythmia.State.InEditor ? "Editing: " : "Level: ") + MetaData.Current.beatmap.name, ProjectArrhythmia.State.InEditor ? "In Editor" : "In Arcade", ProjectArrhythmia.State.InEditor ? "editor" : "arcade");
+                DiscordHelper.UpdateDiscordStatus((ProjectArrhythmia.State.InEditor ? "Editing: " : "Level: ") + MetaData.Current.beatmap.name, ProjectArrhythmia.State.InEditor ? "In Editor" : "In Arcade", ProjectArrhythmia.State.InEditor ? "editor" : "arcade");
             }
         }
 
@@ -15371,6 +15371,29 @@ namespace BetterLegacy.Core.Helpers
     public class CopyAxisGroupCache : MathCache
     {
         public List<BeatmapObject> objs = new List<BeatmapObject>();
+    }
+
+    public class LegacyTracker
+    {
+        public LegacyTracker(BeatmapObject beatmapObject, Vector3 pos, Vector3 lastPos, Quaternion rot, float distance, float time)
+        {
+            this.beatmapObject = beatmapObject;
+            this.pos = pos;
+            this.lastPos = lastPos;
+            this.rot = rot;
+            this.distance = distance;
+            this.time = time;
+        }
+
+        public float distance;
+        public float time;
+
+        public Vector3 lastPos;
+        public Vector3 pos;
+
+        public Quaternion rot;
+
+        public BeatmapObject beatmapObject;
     }
 
     #endregion
