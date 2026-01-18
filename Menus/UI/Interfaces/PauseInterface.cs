@@ -19,11 +19,11 @@ namespace BetterLegacy.Menus.UI.Interfaces
     /// <summary>
     /// Menu used for pausing in-game.
     /// </summary>
-    public class PauseMenu : MenuBase
+    public class PauseInterface : InterfaceBase
     {
-        public static PauseMenu Current { get; set; }
+        public static PauseInterface Current { get; set; }
 
-        public PauseMenu() : base()
+        public PauseInterface() : base()
         {
             if (!ProjectArrhythmia.State.InGame || ProjectArrhythmia.State.InEditor)
             {
@@ -240,7 +240,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
             RTBeatmap.Current?.Pause();
             ArcadeHelper.endedLevel = false;
-            Current = new PauseMenu();
+            Current = new PauseInterface();
         }
 
         /// <summary>

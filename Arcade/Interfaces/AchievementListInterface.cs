@@ -24,11 +24,11 @@ namespace BetterLegacy.Arcade.Interfaces
     /// <summary>
     /// Interface for achievements.
     /// </summary>
-    public class AchievementListMenu : MenuBase
+    public class AchievementListInterface : InterfaceBase
     {
         #region Constructors
 
-        public AchievementListMenu(List<Achievement> achievements, Action onReturn)
+        public AchievementListInterface(List<Achievement> achievements, Action onReturn)
         {
             Achievements = achievements;
 
@@ -224,9 +224,9 @@ namespace BetterLegacy.Arcade.Interfaces
             InterfaceManager.inst.SetCurrentInterface(this);
         }
 
-        public AchievementListMenu(Level level, Action onReturn) : this(level.GetAchievements(), onReturn) => CurrentLevel = level;
+        public AchievementListInterface(Level level, Action onReturn) : this(level.GetAchievements(), onReturn) => CurrentLevel = level;
 
-        public AchievementListMenu(LevelCollection levelCollection, Action onReturn) : this(levelCollection.achievements, onReturn) => CurrentLevelCollection = levelCollection;
+        public AchievementListInterface(LevelCollection levelCollection, Action onReturn) : this(levelCollection.achievements, onReturn) => CurrentLevelCollection = levelCollection;
 
         #endregion
 
@@ -235,7 +235,7 @@ namespace BetterLegacy.Arcade.Interfaces
         /// <summary>
         /// The current achievement list interface.
         /// </summary>
-        public static AchievementListMenu Current { get; set; }
+        public static AchievementListInterface Current { get; set; }
 
         /// <summary>
         /// The current page.
@@ -279,7 +279,7 @@ namespace BetterLegacy.Arcade.Interfaces
         public static void Init(Level level, Action onReturn)
         {
             Current?.Clear();
-            Current = new AchievementListMenu(level, onReturn);
+            Current = new AchievementListInterface(level, onReturn);
         }
 
         /// <summary>
@@ -290,7 +290,7 @@ namespace BetterLegacy.Arcade.Interfaces
         public static void Init(LevelCollection levelCollection, Action onReturn)
         {
             Current?.Clear();
-            Current = new AchievementListMenu(levelCollection, onReturn);
+            Current = new AchievementListInterface(levelCollection, onReturn);
         }
 
         /// <summary>

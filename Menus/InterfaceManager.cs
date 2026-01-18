@@ -280,7 +280,7 @@ namespace BetterLegacy.Menus
         /// <summary>
         /// The currently open interface.
         /// </summary>
-        public MenuBase CurrentInterface { get; set; }
+        public InterfaceBase CurrentInterface { get; set; }
 
         /// <summary>
         /// The current interface generation sequence.
@@ -290,12 +290,12 @@ namespace BetterLegacy.Menus
         /// <summary>
         /// The currently open interface list.
         /// </summary>
-        public CustomMenuList CurrentInterfaceList { get; set; }
+        public CustomInterfaceList CurrentInterfaceList { get; set; }
 
         /// <summary>
         /// All loaded interfaces.
         /// </summary>
-        public List<MenuBase> interfaces = new List<MenuBase>();
+        public List<InterfaceBase> interfaces = new List<InterfaceBase>();
 
         /// <summary>
         /// If the interfaces should speed up.
@@ -311,7 +311,7 @@ namespace BetterLegacy.Menus
         /// Closes all interfaces and opens an interface.
         /// </summary>
         /// <param name="menu">Interface to open.</param>
-        public void SetCurrentInterface(MenuBase menu)
+        public void SetCurrentInterface(InterfaceBase menu)
         {
             CloseMenus();
             CurrentInterface = menu;
@@ -324,7 +324,7 @@ namespace BetterLegacy.Menus
         /// <param name="id">Interface ID to find. If no interface is found, do nothing.</param>
         public void SetCurrentInterface(string id)
         {
-            if (interfaces.TryFind(x => x.id == id, out MenuBase menu))
+            if (interfaces.TryFind(x => x.id == id, out InterfaceBase menu))
                 SetCurrentInterface(menu);
         }
 
@@ -335,20 +335,20 @@ namespace BetterLegacy.Menus
         {
             CurrentInterface?.Clear();
             CurrentInterface = null;
-            PauseMenu.Current = null;
-            EndLevelMenu.Current = null;
-            ArcadeMenu.Current = null;
-            PlayLevelMenu.Current = null;
-            AchievementListMenu.Current = null;
-            DownloadLevelMenu.Current = null;
-            SteamLevelMenu.Current = null;
-            ProgressMenu.Current = null;
-            LevelCollectionMenu.Current = null;
-            LevelListMenu.Current = null;
-            InputSelectMenu.Current = null;
-            LoadLevelsMenu.Current = null;
-            ControllerDisconnectedMenu.Current = null;
-            ProfileMenu.Current = null;
+            PauseInterface.Current = null;
+            EndLevelInterface.Current = null;
+            ArcadeInterface.Current = null;
+            PlayLevelInterface.Current = null;
+            AchievementListInterface.Current = null;
+            DownloadLevelInterface.Current = null;
+            SteamLevelInterface.Current = null;
+            ProgressInterface.Current = null;
+            LevelCollectionInterface.Current = null;
+            LevelListInterface.Current = null;
+            InputSelectInterface.Current = null;
+            LoadLevelsInterface.Current = null;
+            ControllerDisconnectedInterface.Current = null;
+            ProfileInterface.Current = null;
 
             StopGenerating();
 
@@ -441,13 +441,13 @@ namespace BetterLegacy.Menus
                 if (!load)
                     return;
 
-                CurrentInterfaceList = CustomMenuList.Parse(jn, openInterfaceID: openInterfaceID, branchChain: branchChain, customVariables: customVariables);
+                CurrentInterfaceList = CustomInterfaceList.Parse(jn, openInterfaceID: openInterfaceID, branchChain: branchChain, customVariables: customVariables);
                 return;
             }
 
-            MenuBase menu = CustomMenu.Parse(jn, customVariables);
+            InterfaceBase menu = CustomInterface.Parse(jn, customVariables);
             menu.filePath = path;
-            if (interfaces.TryFind(x => x.id == menu.id, out MenuBase otherMenu))
+            if (interfaces.TryFind(x => x.id == menu.id, out InterfaceBase otherMenu))
                 menu = otherMenu;
             else
                 interfaces.Add(menu);
@@ -481,13 +481,13 @@ namespace BetterLegacy.Menus
 
             ParseInterface(AssetPack.GetFile($"core/interfaces/main_menu{FileFormat.LSI.Dot()}"));
 
-            interfaces.Add(new StoryMenu());
+            interfaces.Add(new StoryInterface());
 
-            if (!MenuConfig.Instance.ShowChangelog.Value || ChangeLogMenu.Seen || (!SceneHelper.LoadedGame && ModCompatibility.EditorOnStartupInstalled))
+            if (!MenuConfig.Instance.ShowChangelog.Value || ChangelogInterface.Seen || (!SceneHelper.LoadedGame && ModCompatibility.EditorOnStartupInstalled))
             {
                 CoreHelper.Log($"Going to main menu.\n" +
                     $"ShowChangelog: {MenuConfig.Instance.ShowChangelog.Value}\n" +
-                    $"Seen: {ChangeLogMenu.Seen}\n" +
+                    $"Seen: {ChangelogInterface.Seen}\n" +
                     $"Editor On Startup: {ModCompatibility.EditorOnStartupInstalled}");
 
                 SetCurrentInterface(MAIN_MENU_ID);
@@ -508,7 +508,7 @@ namespace BetterLegacy.Menus
             {
                 CoreHelper.Log($"Loading changelog...\nIs loading scene: {SceneHelper.Loading}");
                 if (RTFile.TryReadFromFile(RTFile.GetAsset($"changelog{FileFormat.TXT.Dot()}"), out string file))
-                    new ChangeLogMenu(RTString.GetLines(file));
+                    new ChangelogInterface(RTString.GetLines(file));
                 else
                 {
                     CoreHelper.LogError($"Couldn't read changelog file, continuing...");
@@ -865,7 +865,7 @@ namespace BetterLegacy.Menus
                                 return;
 
                             var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables);
-                            if (id == null || !inst.interfaces.TryFind(x => x.id == id, out MenuBase menu))
+                            if (id == null || !inst.interfaces.TryFind(x => x.id == id, out InterfaceBase menu))
                                 return;
 
                             inst.SetCurrentInterface(menu);
@@ -888,7 +888,7 @@ namespace BetterLegacy.Menus
                             AssetPack.LoadAssetPacks();
                             Lang.LoadGlobal();
                             LegacyPlugin.LoadSplashText();
-                            ChangeLogMenu.Seen = false;
+                            ChangelogInterface.Seen = false;
                             inst.randomIndex = -1;
                             for (int i = 0; i < LegacyResources.musicClips.Count; i++)
                                 LegacyResources.musicClips[i].Shuffle();
@@ -1085,7 +1085,7 @@ namespace BetterLegacy.Menus
                             if (cancelFunc == null)
                                 return;
 
-                            ConfirmMenu.Init(currentMessage, () => ParseFunction(confirmFunc, thisElement, customVariables), () => ParseFunction(cancelFunc, thisElement, customVariables));
+                            ConfirmInterface.Init(currentMessage, () => ParseFunction(confirmFunc, thisElement, customVariables), () => ParseFunction(cancelFunc, thisElement, customVariables));
 
                             return;
                         }
@@ -1117,7 +1117,7 @@ namespace BetterLegacy.Menus
                             if (parameters == null)
                                 return;
 
-                            if (inst.CurrentInterface is not CustomMenu customMenu)
+                            if (inst.CurrentInterface is not CustomInterface customMenu)
                                 return;
 
                             customMenu.useGameTheme = parameters.Get(1, "game_theme");
@@ -2034,7 +2034,7 @@ namespace BetterLegacy.Menus
                                 return;
 
                             var customMenu = inst.CurrentInterface;
-                            customMenu.elements.AddRange(CustomMenu.ParseElements(parameters.IsArray ? parameters[0] : parameters["elements"], customMenu.prefabs, customMenu.spriteAssets));
+                            customMenu.elements.AddRange(CustomInterface.ParseElements(parameters.IsArray ? parameters[0] : parameters["elements"], customMenu.prefabs, customMenu.spriteAssets));
 
                             customMenu.StartGeneration();
 
@@ -2934,7 +2934,7 @@ namespace BetterLegacy.Menus
                             if (string.IsNullOrEmpty(directory))
                                 directory = inst.MainDirectory;
 
-                            LevelListMenu.Init(Directory.GetDirectories(directory).Where(x => Level.Verify(x)).Select(x => new Level(RTFile.ReplaceSlash(x))).ToList());
+                            LevelListInterface.Init(Directory.GetDirectories(directory).Where(x => Level.Verify(x)).Select(x => new Level(RTFile.ReplaceSlash(x))).ToList());
                             return;
                         }
 
@@ -2984,7 +2984,7 @@ namespace BetterLegacy.Menus
                     #region LoadLevels
 
                     case "LoadLevels": {
-                            LoadLevelsMenu.Init(() =>
+                            LoadLevelsInterface.Init(() =>
                             {
                                 if (parameters["on_loading_end"] != null)
                                     ParseFunction(parameters["on_loading_end"], thisElement, customVariables);
@@ -2997,7 +2997,7 @@ namespace BetterLegacy.Menus
                     #region OnInputsSelected
 
                     case "OnInputsSelected": {
-                            InputSelectMenu.OnInputsSelected = () =>
+                            InputSelectInterface.OnInputsSelected = () =>
                             {
                                 if (parameters["continue"] != null)
                                     ParseFunction(parameters["continue"], thisElement, customVariables);
@@ -3010,7 +3010,7 @@ namespace BetterLegacy.Menus
                     #region Profile
 
                     case "Profile": {
-                            ProfileMenu.Init();
+                            ProfileInterface.Init();
 
                             return;
                         }

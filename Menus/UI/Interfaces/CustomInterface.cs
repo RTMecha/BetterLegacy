@@ -18,9 +18,9 @@ namespace BetterLegacy.Menus.UI.Interfaces
     /// <summary>
     /// Custom interface read from JSON.
     /// </summary>
-    public class CustomMenu : MenuBase
+    public class CustomInterface : InterfaceBase
     {
-        public CustomMenu() : base() { }
+        public CustomInterface() : base() { }
         
         #region Values
 
@@ -41,7 +41,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public override void UpdateTheme()
         {
@@ -60,9 +60,9 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// </summary>
         /// <param name="jn">JSON to parse.</param>
         /// <returns>Returns a parsed Custom Menu.</returns>
-        public static CustomMenu Parse(JSONNode jn, Dictionary<string, JSONNode> customVariables = null)
+        public static CustomInterface Parse(JSONNode jn, Dictionary<string, JSONNode> customVariables = null)
         {
-            var customMenu = new CustomMenu();
+            var customMenu = new CustomInterface();
 
             customMenu.id = jn["id"];
             var variables = InterfaceManager.inst.ParseVarFunction(jn["variables"]);

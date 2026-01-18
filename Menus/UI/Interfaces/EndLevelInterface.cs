@@ -14,11 +14,11 @@ using BetterLegacy.Menus.UI.Layouts;
 
 namespace BetterLegacy.Menus.UI.Interfaces
 {
-    public class EndLevelMenu : MenuBase
+    public class EndLevelInterface : InterfaceBase
     {
-        public static EndLevelMenu Current { get; set; }
+        public static EndLevelInterface Current { get; set; }
 
-        public EndLevelMenu() : base()
+        public EndLevelInterface() : base()
         {
             if (!ProjectArrhythmia.State.InGame || ProjectArrhythmia.State.InEditor)
             {
@@ -301,7 +301,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// <summary>
         /// Initializes the end level menu.
         /// </summary>
-        public static void Init() => Current = new EndLevelMenu();
+        public static void Init() => Current = new EndLevelInterface();
 
         public static void Close()
         {

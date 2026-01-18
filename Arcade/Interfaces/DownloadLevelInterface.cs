@@ -19,9 +19,9 @@ using BetterLegacy.Menus.UI.Interfaces;
 
 namespace BetterLegacy.Arcade.Interfaces
 {
-    public class DownloadLevelMenu : MenuBase
+    public class DownloadLevelInterface : InterfaceBase
     {
-        public static DownloadLevelMenu Current { get; set; }
+        public static DownloadLevelInterface Current { get; set; }
 
         public static JSONObject CurrentOnlineLevel { get; set; }
         public static int Type { get; set; }
@@ -30,7 +30,7 @@ namespace BetterLegacy.Arcade.Interfaces
 
         public Action<LevelCollection> onDownloadCollectionComplete;
 
-        public DownloadLevelMenu() : base()
+        public DownloadLevelInterface() : base()
         {
             this.name = "Arcade";
 
@@ -109,7 +109,7 @@ namespace BetterLegacy.Arcade.Interfaces
                 id = "84682758635",
                 name = "Cover",
                 rect = RectValues.Default.AnchoredPosition(-500f, 100f).SizeDelta(600f, 600f),
-                icon = ArcadeMenu.OnlineLevelIcons.TryGetValue(jn["id"], out Sprite sprite) ? sprite : LegacyPlugin.AtanPlaceholder,
+                icon = ArcadeInterface.OnlineLevelIcons.TryGetValue(jn["id"], out Sprite sprite) ? sprite : LegacyPlugin.AtanPlaceholder,
                 opacity = 1f,
                 val = 40f,
                 length = 0f,
@@ -277,7 +277,7 @@ namespace BetterLegacy.Arcade.Interfaces
                     selectedTextColor = 7,
                     length = 0.5f,
                     playBlipSound = true,
-                    func = () => PlayLevelMenu.Init(level),
+                    func = () => PlayLevelInterface.Init(level),
                 });
             }
             else if (LevelManager.LevelCollections.TryFind(x => x.serverID == jn["id"], out LevelCollection levelCollection))
@@ -314,7 +314,7 @@ namespace BetterLegacy.Arcade.Interfaces
                     selectedTextColor = 7,
                     length = 0.5f,
                     playBlipSound = true,
-                    func = () => LevelCollectionMenu.Init(levelCollection),
+                    func = () => LevelCollectionInterface.Init(levelCollection),
                 });
             }
             else
@@ -366,7 +366,7 @@ namespace BetterLegacy.Arcade.Interfaces
                             }
 
                             if (ArcadeConfig.Instance.OpenOnlineLevelAfterDownload.Value)
-                                PlayLevelMenu.Init(level);
+                                PlayLevelInterface.Init(level);
                         }, onError =>
                         {
                             Close();
@@ -389,7 +389,7 @@ namespace BetterLegacy.Arcade.Interfaces
                             }
 
                             if (ArcadeConfig.Instance.OpenOnlineLevelAfterDownload.Value)
-                                LevelCollectionMenu.Init(levelCollection);
+                                LevelCollectionInterface.Init(levelCollection);
                         }, onError =>
                         {
                             Close();
@@ -405,7 +405,7 @@ namespace BetterLegacy.Arcade.Interfaces
             RTBeatmap.Current?.Pause();
             CurrentOnlineLevel = level;
             Type = type;
-            Current = new DownloadLevelMenu();
+            Current = new DownloadLevelInterface();
         }
 
         public static void Close()
@@ -415,7 +415,7 @@ namespace BetterLegacy.Arcade.Interfaces
             Type = 0;
             InterfaceManager.inst.CloseMenus();
 
-            ArcadeMenu.Init();
+            ArcadeInterface.Init();
         }
 
         public override void Clear()

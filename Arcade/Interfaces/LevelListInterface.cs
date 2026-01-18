@@ -25,16 +25,16 @@ using BetterLegacy.Menus.UI.Interfaces;
 
 namespace BetterLegacy.Arcade.Interfaces
 {
-    public class LevelListMenu : MenuBase
+    public class LevelListInterface : InterfaceBase
     {
-        public static LevelListMenu Current { get; set; }
+        public static LevelListInterface Current { get; set; }
 
         public static bool ViewOnline { get; set; }
 
         public static int Page { get; set; }
         public static string Search { get; set; }
 
-        public LevelListMenu() : base()
+        public LevelListInterface() : base()
         {
             name = "Level List";
 
@@ -342,7 +342,7 @@ namespace BetterLegacy.Arcade.Interfaces
         #region Local
 
         public static List<Level> Levels { get; set; }
-        public static int LocalLevelPageCount => LocalLevels.Count / ArcadeMenu.MAX_LEVELS_PER_PAGE;
+        public static int LocalLevelPageCount => LocalLevels.Count / ArcadeInterface.MAX_LEVELS_PER_PAGE;
         public static List<Level> LocalLevels => Levels.FindAll(level => !level ||
             RTString.SearchString(Search,
                 new SearchMatcher(level.id, SearchMatchType.Exact),
@@ -377,18 +377,18 @@ namespace BetterLegacy.Arcade.Interfaces
                 ClearLocalLevelButtons();
 
             var currentPage = Page + 1;
-            int max = currentPage * ArcadeMenu.MAX_LEVELS_PER_PAGE;
+            int max = currentPage * ArcadeInterface.MAX_LEVELS_PER_PAGE;
             var currentSearch = Search;
 
             var levels = LocalLevels;
             for (int i = 0; i < levels.Count; i++)
             {
                 int index = i;
-                if (index < max - ArcadeMenu.MAX_LEVELS_PER_PAGE || index >= max)
+                if (index < max - ArcadeInterface.MAX_LEVELS_PER_PAGE || index >= max)
                     continue;
 
-                int column = (index % ArcadeMenu.MAX_LEVELS_PER_PAGE) % 5;
-                int row = (int)((index % ArcadeMenu.MAX_LEVELS_PER_PAGE) / 5) + 2;
+                int column = (index % ArcadeInterface.MAX_LEVELS_PER_PAGE) % 5;
+                int row = (int)((index % ArcadeInterface.MAX_LEVELS_PER_PAGE) / 5) + 2;
 
                 var level = levels[index];
                 var levelInfo = level?.collectionInfo ?? LevelManager.CurrentLevelCollection?.levelInformation.Find(x => x.index == index);
@@ -591,12 +591,12 @@ namespace BetterLegacy.Arcade.Interfaces
                     SoundManager.inst.PlaySound(DefaultSounds.blip);
                     LevelManager.currentLevelIndex = index;
                     var levels = Levels;
-                    PlayLevelMenu.close = () =>
+                    PlayLevelInterface.close = () =>
                     {
                         Init(levels);
                         levels = null;
                     };
-                    PlayLevelMenu.Init(level);
+                    PlayLevelInterface.Init(level);
                 };
                 elements.Add(button);
                 if (levelIsLocked)
@@ -757,8 +757,8 @@ namespace BetterLegacy.Arcade.Interfaces
                                 continue;
 
                             int index = i;
-                            int column = (num % ArcadeMenu.MAX_LEVELS_PER_PAGE) % 5;
-                            int row = (int)((num % ArcadeMenu.MAX_LEVELS_PER_PAGE) / 5) + 2;
+                            int column = (num % ArcadeInterface.MAX_LEVELS_PER_PAGE) % 5;
+                            int row = (int)((num % ArcadeInterface.MAX_LEVELS_PER_PAGE) / 5) + 2;
 
                             var button = new MenuButton
                             {
@@ -838,7 +838,7 @@ namespace BetterLegacy.Arcade.Interfaces
 
         public bool loadingOnlineLevels;
 
-        public void SelectOnlineLevel(JSONObject onlineLevel) => DownloadLevelMenu.Init(onlineLevel);
+        public void SelectOnlineLevel(JSONObject onlineLevel) => DownloadLevelInterface.Init(onlineLevel);
 
         #endregion
 
@@ -847,7 +847,7 @@ namespace BetterLegacy.Arcade.Interfaces
             InterfaceManager.inst.CloseMenus();
             ViewOnline = false;
             Levels = levels;
-            Current = new LevelListMenu();
+            Current = new LevelListInterface();
         }
 
         public static void Init(string url)
@@ -855,7 +855,7 @@ namespace BetterLegacy.Arcade.Interfaces
             InterfaceManager.inst.CloseMenus();
             ViewOnline = true;
             SearchURL = url;
-            Current = new LevelListMenu();
+            Current = new LevelListInterface();
         }
 
         public static void Close()
@@ -864,7 +864,7 @@ namespace BetterLegacy.Arcade.Interfaces
             InterfaceManager.inst.CloseMenus();
 
             if (close == null)
-                ArcadeMenu.Init();
+                ArcadeInterface.Init();
             else
             {
                 close();

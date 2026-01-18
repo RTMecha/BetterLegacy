@@ -13,13 +13,17 @@ namespace BetterLegacy.Menus.UI.Interfaces
     /// <summary>
     /// Custom list of interfaces that contain branches of interfaces.
     /// </summary>
-    public class CustomMenuList : Exists
+    public class CustomInterfaceList : Exists
     {
-        public CustomMenuList() { }
+        #region Constructors
 
-        public CustomMenuList(string name) => this.name = name;
+        public CustomInterfaceList() { }
 
-        public CustomMenuList(List<MenuBase> interfaces) => this.interfaces = interfaces;
+        public CustomInterfaceList(string name) => this.name = name;
+
+        public CustomInterfaceList(List<InterfaceBase> interfaces) => this.interfaces = interfaces;
+
+        #endregion
 
         #region Values
 
@@ -36,12 +40,12 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// <summary>
         /// Action to run when the interface list is being cleared.
         /// </summary>
-        public Action<CustomMenuList> onClear;
+        public Action<CustomInterfaceList> onClear;
 
         /// <summary>
         /// All loaded interfaces.
         /// </summary>
-        public List<MenuBase> interfaces = new List<MenuBase>();
+        public List<InterfaceBase> interfaces = new List<InterfaceBase>();
 
         /// <summary>
         /// The default interface to load.
@@ -53,13 +57,13 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// </summary>
         public int Count => interfaces.Count;
 
-        public MenuBase this[int index]
+        public InterfaceBase this[int index]
         {
             get => interfaces[index];
             set => interfaces[index] = value;
         }
 
-        public MenuBase this[string id]
+        public InterfaceBase this[string id]
         {
             get => interfaces.Find(x => x.id == id);
             set
@@ -79,7 +83,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// <summary>
         /// Interfaces that have been opened.
         /// </summary>
-        public List<MenuBase> interfaceChain = new List<MenuBase>();
+        public List<InterfaceBase> interfaceChain = new List<InterfaceBase>();
 
         /// <summary>
         /// Checks if there are any interfaces that are opened.
@@ -88,7 +92,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         /// <summary>
         /// Opens the default interface.
@@ -99,7 +103,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// Closes all interfaces and opens an interface.
         /// </summary>
         /// <param name="menu">Interface to open.</param>
-        public void SetCurrentInterface(MenuBase menu, bool addToChain = true)
+        public void SetCurrentInterface(InterfaceBase menu, bool addToChain = true)
         {
             InterfaceManager.inst.CloseMenus();
             InterfaceManager.inst.CurrentInterface = menu;
@@ -114,7 +118,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// <param name="id">Interface ID to find. If no interface is found, do nothing.</param>
         public void SetCurrentInterface(string id)
         {
-            if (TryFind(id, out MenuBase menu))
+            if (TryFind(id, out InterfaceBase menu))
                 SetCurrentInterface(menu);
         }
 
@@ -191,7 +195,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// <param name="close">If the interface should close if it is the currently opened interface.</param>
         public void Remove(string id, bool close = true)
         {
-            if (TryFind(id, out MenuBase menu))
+            if (TryFind(id, out InterfaceBase menu))
                 Remove(menu, close);
         }
 
@@ -200,7 +204,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// </summary>
         /// <param name="menu">Interface to remove.</param>
         /// <param name="close">If the interface should close if it is the currently opened interface.</param>
-        public void Remove(MenuBase menu, bool close = true)
+        public void Remove(InterfaceBase menu, bool close = true)
         {
             interfaces.Remove(menu);
             if (close && menu.id == InterfaceManager.inst.CurrentInterface.id)
@@ -212,7 +216,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// </summary>
         /// <param name="menu">Interface to add.</param>
         /// <param name="open">If the interface should be opened.</param>
-        public void Add(MenuBase menu, bool open = false)
+        public void Add(InterfaceBase menu, bool open = false)
         {
             interfaces.Add(menu);
             if (open)
@@ -225,7 +229,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// <param name="id">ID to match.</param>
         /// <param name="menu">Output interface.</param>
         /// <returns>Returns true if an interface was found, otherwise returns false.</returns>
-        public bool TryFind(string id, out MenuBase menu)
+        public bool TryFind(string id, out InterfaceBase menu)
         {
             menu = this[id];
             return menu;
@@ -243,7 +247,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// </summary>
         /// <param name="menu">Interface to match.</param>
         /// <returns>Returns true if an interface was found, otherwise returns false.</returns>
-        public bool Contains(MenuBase menu) => interfaces.Contains(menu);
+        public bool Contains(InterfaceBase menu) => interfaces.Contains(menu);
 
         /// <summary>
         /// Parses a Custom Menu List.
@@ -251,9 +255,9 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// <param name="jn">JSON to parse.</param>
         /// <param name="open">If the default interface should open.</param>
         /// <returns>Returns a parsed custom menu list.</returns>
-        public static CustomMenuList Parse(JSONNode jn, bool open = true, string openInterfaceID = null, List<string> branchChain = null, Dictionary<string, JSONNode> customVariables = null)
+        public static CustomInterfaceList Parse(JSONNode jn, bool open = true, string openInterfaceID = null, List<string> branchChain = null, Dictionary<string, JSONNode> customVariables = null)
         {
-            var customMenuList = new CustomMenuList(jn["name"]);
+            var customMenuList = new CustomInterfaceList(jn["name"]);
 
             var variables = InterfaceManager.inst.ParseVarFunction(jn["variables"]);
             if (jn["variables"] != null)
@@ -311,7 +315,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     {
                         foreach (var id in branchChain)
                         {
-                            if (customMenuList.TryFind(id, out MenuBase menu))
+                            if (customMenuList.TryFind(id, out InterfaceBase menu))
                                 customMenuList.interfaceChain.Add(menu);
                         }
                     }
@@ -334,8 +338,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// Parses a collection of interfaces from JSON. JSON can be an object or an array. If the JSON is an object, the key of each interface will replace the ID of the interface.
         /// </summary>
         /// <param name="jn">JSON to parse.</param>
-        /// <returns>Returns a parsed collection of <see cref="MenuBase"/>.</returns>
-        public static IEnumerable<MenuBase> ParseInterfaces(JSONNode jn, Dictionary<string, JSONNode> customVariables = null)
+        /// <returns>Returns a parsed collection of <see cref="InterfaceBase"/>.</returns>
+        public static IEnumerable<InterfaceBase> ParseInterfaces(JSONNode jn, Dictionary<string, JSONNode> customVariables = null)
         {
             if (jn == null)
                 yield break;
@@ -390,12 +394,12 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// Parses an interface from JSON.
         /// </summary>
         /// <param name="jn">JSON to parse.</param>
-        /// <returns>Returns a parsed <see cref="MenuBase"/>.</returns>
-        public static MenuBase ParseInterface(JSONNode jn, Dictionary<string, JSONNode> customVariables = null)
+        /// <returns>Returns a parsed <see cref="InterfaceBase"/>.</returns>
+        public static InterfaceBase ParseInterface(JSONNode jn, Dictionary<string, JSONNode> customVariables = null)
         {
             var file = InterfaceManager.inst.ParseVarFunction(jn["file"], customVariables: customVariables);
             if (file == null)
-                return CustomMenu.Parse(jn, customVariables);
+                return CustomInterface.Parse(jn, customVariables);
 
             var jnPath = InterfaceManager.inst.ParseVarFunction(jn["path"], customVariables: customVariables);
             if (jnPath != null)
@@ -413,7 +417,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 return null;
             }
 
-            var menu = CustomMenu.Parse(JSON.Parse(RTFile.ReadFromFile(path)), customVariables);
+            var menu = CustomInterface.Parse(JSON.Parse(RTFile.ReadFromFile(path)), customVariables);
             menu.filePath = path;
 
             return menu;

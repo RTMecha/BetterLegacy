@@ -9,6 +9,7 @@ using LSFunctions;
 
 using SimpleJSON;
 
+using BetterLegacy.Arcade.Interfaces;
 using BetterLegacy.Arcade.Managers;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Components.Player;
@@ -644,8 +645,8 @@ namespace BetterLegacy.Core.Managers
                 OnLevelStart = null;
                 OnLevelEnd = null;
 
-                Arcade.Interfaces.ArcadeMenu.OnlineLevelIcons.Clear();
-                Arcade.Interfaces.ArcadeMenu.OnlineSteamLevelIcons.Clear();
+                ArcadeInterface.OnlineLevelIcons.Clear();
+                ArcadeInterface.OnlineSteamLevelIcons.Clear();
             }
             catch (Exception ex)
             {

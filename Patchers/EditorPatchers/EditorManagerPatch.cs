@@ -66,8 +66,8 @@ namespace BetterLegacy.Patchers
 
             LevelManager.Clear();
             LevelManager.ClearData();
-            ArcadeMenu.OnlineLevelIcons.Clear();
-            ArcadeMenu.OnlineSteamLevelIcons.Clear();
+            ArcadeInterface.OnlineLevelIcons.Clear();
+            ArcadeInterface.OnlineSteamLevelIcons.Clear();
 
             InputDataManager.inst.BindMenuKeys();
             InputDataManager.inst.BindEditorKeys();

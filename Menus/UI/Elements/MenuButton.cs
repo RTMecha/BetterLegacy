@@ -26,7 +26,7 @@ namespace BetterLegacy.Menus.UI.Elements
         public bool isHovered;
 
         /// <summary>
-        /// To be used for where the current selection is. If it's at 0, 0 then it's the default selection. This is compared against <see cref="MenuBase.selected"/> to see if it is selected.
+        /// To be used for where the current selection is. If it's at 0, 0 then it's the default selection. This is compared against <see cref="InterfaceBase.selected"/> to see if it is selected.
         /// </summary>
         public Vector2Int selectionPosition;
 
@@ -310,7 +310,7 @@ namespace BetterLegacy.Menus.UI.Elements
 
             var jnSelect = InterfaceManager.inst.ParseVarFunction(jnElement["select"], this, customVariables);
             if (jnSelect != null)
-                selectionPosition = CustomMenu.ParseVector2Int(jnSelect, Vector2Int.zero, this, customVariables);
+                selectionPosition = CustomInterface.ParseVector2Int(jnSelect, Vector2Int.zero, this, customVariables);
             var jnAlignSelect = InterfaceManager.inst.ParseVarFunction(jnElement["align_select"], this, customVariables);
             if (jnElement["align_select"] != null)
                 autoAlignSelectionPosition = jnAlignSelect.AsBool;

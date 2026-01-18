@@ -67,7 +67,7 @@ namespace BetterLegacy.Patchers
                 InterfaceManager.inst.StartupStoryInterface();
             
             if (scene.name == SceneName.Input_Select.ToName())
-                InputSelectMenu.Init();
+                InputSelectInterface.Init();
 
             Destroy(__instance.gameObject);
 

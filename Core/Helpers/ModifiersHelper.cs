@@ -12542,7 +12542,7 @@ namespace BetterLegacy.Core.Helpers
                 return;
             }
 
-            PauseMenu.Pause();
+            PauseInterface.Pause();
         }
 
         public static void quitToMenu(Modifier modifier, ModifierLoop modifierLoop)

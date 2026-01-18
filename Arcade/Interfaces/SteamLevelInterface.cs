@@ -19,15 +19,15 @@ using BetterLegacy.Menus.UI.Interfaces;
 
 namespace BetterLegacy.Arcade.Interfaces
 {
-    public class SteamLevelMenu : MenuBase
+    public class SteamLevelInterface : InterfaceBase
     {
-        public static SteamLevelMenu Current { get; set; }
+        public static SteamLevelInterface Current { get; set; }
 
         public static Item CurrentSteamItem { get; set; }
 
         public Action<Level> onSubscribedLevel;
 
-        public SteamLevelMenu() : base()
+        public SteamLevelInterface() : base()
         {
             this.name = "Arcade";
 
@@ -103,7 +103,7 @@ namespace BetterLegacy.Arcade.Interfaces
                 id = "84682758635",
                 name = "Cover",
                 rect = RectValues.Default.AnchoredPosition(-500f, 100f).SizeDelta(600f, 600f),
-                icon = ArcadeMenu.OnlineSteamLevelIcons.TryGetValue(CurrentSteamItem.Id.ToString(), out Sprite sprite) ? sprite : LegacyPlugin.AtanPlaceholder,
+                icon = ArcadeInterface.OnlineSteamLevelIcons.TryGetValue(CurrentSteamItem.Id.ToString(), out Sprite sprite) ? sprite : LegacyPlugin.AtanPlaceholder,
                 opacity = 1f,
                 val = 40f,
                 wait = false,
@@ -210,7 +210,7 @@ namespace BetterLegacy.Arcade.Interfaces
                     selectedTextColor = 7,
                     length = 0.5f,
                     playBlipSound = true,
-                    func = () => PlayLevelMenu.Init(level),
+                    func = () => PlayLevelInterface.Init(level),
                 });
             }
             elements.Add(new MenuButton
@@ -252,7 +252,7 @@ namespace BetterLegacy.Arcade.Interfaces
         public static void Init(Item item)
         {
             CurrentSteamItem = item;
-            Current = new SteamLevelMenu();
+            Current = new SteamLevelInterface();
         }
 
         public static void Close()
@@ -260,7 +260,7 @@ namespace BetterLegacy.Arcade.Interfaces
             CurrentSteamItem = default;
             InterfaceManager.inst.CloseMenus();
 
-            ArcadeMenu.Init();
+            ArcadeInterface.Init();
         }
 
         public override void Clear()

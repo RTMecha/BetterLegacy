@@ -79,7 +79,7 @@ namespace BetterLegacy.Core.Helpers
         /// <param name="onInputsSelected">Function to run when the user wants to continue past the Input Select menu.</param>
         public static void LoadInputSelect(Action onInputsSelected)
         {
-            InputSelectMenu.OnInputsSelected = onInputsSelected;
+            InputSelectInterface.OnInputsSelected = onInputsSelected;
             LoadInputSelect();
         }
 

@@ -12,11 +12,11 @@ using BetterLegacy.Menus.UI.Layouts;
 
 namespace BetterLegacy.Story
 {
-    public class StoryMenu : MenuBase
+    public class StoryInterface : InterfaceBase
     {
         public const int MAX_SAVE_SLOTS = 9;
 
-        public StoryMenu() : base()
+        public StoryInterface() : base()
         {
             id = InterfaceManager.STORY_SAVES_MENU_ID;
             name = "Story";
@@ -160,7 +160,7 @@ namespace BetterLegacy.Story
                     selectedTextColor = 6,
                     length = 1f,
                     playBlipSound = true,
-                    func = () => new ConfirmMenu("Are you sure you want to delete this save slot?", () =>
+                    func = () => new ConfirmInterface("Are you sure you want to delete this save slot?", () =>
                     {
                         InterfaceManager.inst.CloseMenus();
                         RTFile.DeleteFile(saveSlot.StorySavesPath);

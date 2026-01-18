@@ -5,11 +5,11 @@ using BetterLegacy.Menus.UI.Elements;
 
 namespace BetterLegacy.Menus.UI.Interfaces
 {
-    public class ProgressMenu : MenuBase
+    public class ProgressInterface : InterfaceBase
     {
-        public static ProgressMenu Current { get; set; }
+        public static ProgressInterface Current { get; set; }
 
-        public ProgressMenu(string currentMessage) : base()
+        public ProgressInterface(string currentMessage) : base()
         {
             musicName = InterfaceManager.RANDOM_MUSIC_NAME;
             name = "Progress";
@@ -88,7 +88,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
         public MenuImage progressBar;
 
-        public static void Init(string currentMessage) => Current = new ProgressMenu(currentMessage);
+        public static void Init(string currentMessage) => Current = new ProgressInterface(currentMessage);
 
         public override void UpdateTheme()
         {

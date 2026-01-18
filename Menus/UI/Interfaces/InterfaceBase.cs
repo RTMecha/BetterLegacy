@@ -23,13 +23,13 @@ using BetterLegacy.Menus.UI.Layouts;
 namespace BetterLegacy.Menus.UI.Interfaces
 {
     /// <summary>
-    /// Base menu class to be used for interfaces. Includes a custom selection system and UI system.
+    /// Base interface menu class. Includes a custom selection system and UI system.
     /// </summary>
-    public abstract class MenuBase : Exists
+    public abstract class InterfaceBase : Exists
     {
-        public MenuBase() { }
+        public InterfaceBase() { }
 
-        #region Variables
+        #region Values
 
         public Dictionary<string, Sprite> spriteAssets = new Dictionary<string, Sprite>();
 
@@ -157,9 +157,14 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// </summary>
         public bool pauseGame = false;
 
+        /// <summary>
+        /// The current theme to use for the menu colors.
+        /// </summary>
+        public BeatmapTheme Theme { get; set; }
+
         #endregion
 
-        #region Methods
+        #region Functions
 
         /// <summary>
         /// For cases where the UI only needs to be set active / inactive instead of destroyed.
@@ -380,20 +385,19 @@ namespace BetterLegacy.Menus.UI.Interfaces
         {
             generating = true;
 
-            if (regenerate || this.canvas == null || !this.canvas.GameObject)
+            if (regenerate || canvas == null || !canvas.GameObject)
             {
-                if (this.canvas != null && this.canvas.GameObject)
+                if (canvas != null && canvas.GameObject)
                 {
-                    CoreHelper.Destroy(this.canvas.GameObject);
-                    this.canvas = null;
+                    CoreHelper.Destroy(canvas.GameObject);
+                    canvas = null;
                 }
 
                 selected = defaultSelection;
 
                 InterfaceManager.inst.LoadThemes();
 
-                var canvas = UIManager.GenerateUICanvas(nameof(CustomMenu), null, sortingOrder: layer);
-                this.canvas = canvas;
+                canvas = UIManager.GenerateUICanvas(nameof(CustomInterface), null, sortingOrder: layer);
                 canvas.Canvas.scaleFactor = 1f;
                 canvas.CanvasScaler.referenceResolution = new Vector2(1920f, 1080f);
 
@@ -1347,15 +1351,6 @@ namespace BetterLegacy.Menus.UI.Interfaces
         }
 
         public override string ToString() => $"{id} - {name}";
-
-        #endregion
-
-        #region Properties
-
-        /// <summary>
-        /// The current theme to use for the menu colors.
-        /// </summary>
-        public BeatmapTheme Theme { get; set; }
 
         #endregion
     }

@@ -29,9 +29,9 @@ using BetterLegacy.Menus.UI.Interfaces;
 
 namespace BetterLegacy.Arcade.Interfaces
 {
-    public class ArcadeMenu : MenuBase
+    public class ArcadeInterface : InterfaceBase
     {
-        public static ArcadeMenu Current { get; set; }
+        public static ArcadeInterface Current { get; set; }
 
         public enum Tab
         {
@@ -74,7 +74,7 @@ namespace BetterLegacy.Arcade.Interfaces
 
         MenuInputField pageField;
 
-        public ArcadeMenu() : base()
+        public ArcadeInterface() : base()
         {
             InterfaceManager.inst.CurrentInterface = this;
             name = "Arcade";
@@ -188,7 +188,7 @@ namespace BetterLegacy.Arcade.Interfaces
                             parentLayout = "local settings",
                             selectionPosition = new Vector2Int(0, 1),
                             rect = RectValues.Default.SizeDelta(200f, 64f),
-                            func = LoadLevelsMenu.Init,
+                            func = LoadLevelsInterface.Init,
                             color = 6,
                             opacity = 0.1f,
                             textColor = 6,
@@ -1164,7 +1164,7 @@ namespace BetterLegacy.Arcade.Interfaces
                                 parentLayout = "steam settings",
                                 selectionPosition = new Vector2Int(0, 1),
                                 rect = RectValues.Default.SizeDelta(200f, 64f),
-                                func = LoadLevelsMenu.Init,
+                                func = LoadLevelsInterface.Init,
                                 color = 6,
                                 opacity = 0.1f,
                                 textColor = 6,
@@ -1422,7 +1422,7 @@ namespace BetterLegacy.Arcade.Interfaces
                                 level.metadata.VerifyID(level.path);
                                 level.UpdateDefaults();
                                 SoundManager.inst.PlaySound(DefaultSounds.blip);
-                                PlayLevelMenu.Init(level);
+                                PlayLevelInterface.Init(level);
                             }
                             break;
                         }
@@ -1434,7 +1434,7 @@ namespace BetterLegacy.Arcade.Interfaces
                                 level.metadata.VerifyID(level.path);
                                 level.UpdateDefaults();
                                 SoundManager.inst.PlaySound(DefaultSounds.blip);
-                                PlayLevelMenu.Init(level);
+                                PlayLevelInterface.Init(level);
                             }
                             break;
                         }
@@ -1528,13 +1528,13 @@ namespace BetterLegacy.Arcade.Interfaces
                         if (collection.isFolder)
                         {
                             CoreHelper.Log($"Set path to: {collection.path}");
-                            LoadLevelsMenu.Init(collection.path);
+                            LoadLevelsInterface.Init(collection.path);
                             return;
                         }
 
                         LevelManager.currentQueueIndex = 0;
                         LevelManager.CurrentLevelCollection = collection;
-                        LevelCollectionMenu.Init(collection);
+                        LevelCollectionInterface.Init(collection);
                     },
                     icon = collection.icon ?? LegacyPlugin.AtanPlaceholder,
                     iconRect = RectValues.Default.AnchoredPosition(-90, 30f),
@@ -1800,7 +1800,7 @@ namespace BetterLegacy.Arcade.Interfaces
                     }
 
                     SoundManager.inst.PlaySound(DefaultSounds.blip);
-                    PlayLevelMenu.Init(level);
+                    PlayLevelInterface.Init(level);
                 };
                 elements.Add(button);
                 if (levelIsLocked)
@@ -2058,7 +2058,7 @@ namespace BetterLegacy.Arcade.Interfaces
 
         public bool loadingOnlineLevels;
 
-        public void SelectOnlineLevel(JSONObject onlineLevel, int type) => DownloadLevelMenu.Init(onlineLevel.AsObject, type);
+        public void SelectOnlineLevel(JSONObject onlineLevel, int type) => DownloadLevelInterface.Init(onlineLevel.AsObject, type);
 
         #endregion
 
@@ -2161,7 +2161,7 @@ namespace BetterLegacy.Arcade.Interfaces
                         name = "Level Button",
                         parentLayout = "levels",
                         selectionPosition = new Vector2Int(column, row),
-                        func = () => PlayLevelMenu.Init(level),
+                        func = () => PlayLevelInterface.Init(level),
                         icon = level.icon,
                         iconRect = RectValues.Default.AnchoredPosition(-90, 30f),
                         text = "<size=24>" + level.metadata?.beatmap?.name,
@@ -2373,7 +2373,7 @@ namespace BetterLegacy.Arcade.Interfaces
                     parentLayout = "levels",
                     rect = RectValues.Default.SizeDelta(800f, 120f),
                     selectionPosition = new Vector2Int(0, index + 2),
-                    func = () => PlayLevelMenu.Init(level),
+                    func = () => PlayLevelInterface.Init(level),
                     icon = level.icon,
                     iconRect = RectValues.Default.AnchoredPosition(-320f, 0f).SizeDelta(100f, 100f),
                     text = "<size=32>" + i.ToString() + " - " + level.metadata?.beatmap?.name,
@@ -2646,7 +2646,7 @@ namespace BetterLegacy.Arcade.Interfaces
                     name = "Level Button",
                     parentLayout = "levels",
                     selectionPosition = new Vector2Int(column, row),
-                    func = () => PlayLevelMenu.Init(level),
+                    func = () => PlayLevelInterface.Init(level),
                     icon = level.icon,
                     iconRect = RectValues.Default.AnchoredPosition(-90, 30f),
                     text = "<size=24>" + level.metadata?.beatmap?.name,
@@ -2855,7 +2855,7 @@ namespace BetterLegacy.Arcade.Interfaces
             StartGeneration();
         }
 
-        public void SelectOnlineSteamLevel(Item item) => SteamLevelMenu.Init(item);
+        public void SelectOnlineSteamLevel(Item item) => SteamLevelInterface.Init(item);
 
         #endregion
 
@@ -2888,7 +2888,7 @@ namespace BetterLegacy.Arcade.Interfaces
             LevelManager.CurrentLevelCollection = null;
             LevelManager.currentLevelIndex = 0;
             LevelManager.currentQueueIndex = 0;
-            Current = new ArcadeMenu();
+            Current = new ArcadeInterface();
         }
     }
 }

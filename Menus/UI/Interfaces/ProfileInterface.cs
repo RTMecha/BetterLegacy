@@ -18,14 +18,14 @@ using BetterLegacy.Menus.UI.Layouts;
 
 namespace BetterLegacy.Menus.UI.Interfaces
 {
-    public class ProfileMenu : MenuBase
+    public class ProfileInterface : InterfaceBase
     {
-        public static ProfileMenu Current { get; set; }
+        public static ProfileInterface Current { get; set; }
 
         public static void Init()
         {
             InterfaceManager.inst.CloseMenus();
-            Current = new ProfileMenu();
+            Current = new ProfileInterface();
         }
 
         public enum Tab
@@ -47,7 +47,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             set => Pages[(int)CurrentTab] = value;
         }
 
-        public ProfileMenu() : base()
+        public ProfileInterface() : base()
         {
             InterfaceManager.inst.CurrentInterface = this;
             id = InterfaceManager.PROFILE_MENU_ID;
@@ -368,7 +368,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     selectedTextColor = 0,
                     func = () =>
                     {
-                        ConfirmMenu.Init("Are you sure you want to remove this save data from your profile? This is permanent!",
+                        ConfirmInterface.Init("Are you sure you want to remove this save data from your profile? This is permanent!",
                             confirm: () =>
                             {
                                 if (LevelManager.Levels.TryFind(x => x && x.id == save.ID, out Level level))

@@ -9,9 +9,9 @@ using BetterLegacy.Menus.UI.Layouts;
 
 namespace BetterLegacy.Menus.UI.Interfaces
 {
-    public class ConfirmMenu : MenuBase
+    public class ConfirmInterface : InterfaceBase
     {
-        public ConfirmMenu(string currentMessage, Action confirm, Action cancel) : base()
+        public ConfirmInterface(string currentMessage, Action confirm, Action cancel) : base()
         {
             musicName = InterfaceManager.RANDOM_MUSIC_NAME;
             name = "Confirm";
@@ -112,7 +112,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
         {
             if (ProjectArrhythmia.State.InGame)
                 RTBeatmap.Current?.Pause();
-            new ConfirmMenu(currentMessage, confirm, cancel);
+            new ConfirmInterface(currentMessage, confirm, cancel);
         }
 
         public override void UpdateTheme()

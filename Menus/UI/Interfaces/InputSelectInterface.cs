@@ -16,9 +16,9 @@ using BetterLegacy.Menus.UI.Layouts;
 
 namespace BetterLegacy.Menus.UI.Interfaces
 {
-    public class InputSelectMenu : MenuBase
+    public class InputSelectInterface : InterfaceBase
     {
-        public static InputSelectMenu Current { get; set; }
+        public static InputSelectInterface Current { get; set; }
 
         public static void Init()
         {
@@ -33,11 +33,11 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 CoreHelper.Notify($"Now playing: Creo - Staring Down the Barrels", InterfaceManager.inst.CurrentTheme.guiColor);
             }
 
-            Current = new InputSelectMenu();
+            Current = new InputSelectInterface();
             InterfaceManager.inst.CurrentInterface = Current;
         }
 
-        public InputSelectMenu()
+        public InputSelectInterface()
         {
             name = "Input Select";
             regenerate = false;

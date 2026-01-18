@@ -272,16 +272,16 @@ namespace BetterLegacy.Configs
         {
             RTSteamManager.inst.Levels = LevelManager.SortLevels(RTSteamManager.inst.Levels, SteamLevelOrderby.Value, SteamLevelAscend.Value);
 
-            if (ArcadeMenu.Current && ArcadeMenu.CurrentTab == ArcadeMenu.Tab.Steam)
+            if (ArcadeInterface.Current && ArcadeInterface.CurrentTab == ArcadeInterface.Tab.Steam)
             {
-                if (ArcadeMenu.ViewOnline)
+                if (ArcadeInterface.ViewOnline)
                 {
-                    ArcadeMenu.Current.SetOnlineSteamLevelsPage(0);
+                    ArcadeInterface.Current.SetOnlineSteamLevelsPage(0);
                     return;
                 }
 
-                ArcadeMenu.Pages[(int)ArcadeMenu.Tab.Steam] = 0;
-                ArcadeMenu.Current.RefreshSubscribedSteamLevels(true, true);
+                ArcadeInterface.Pages[(int)ArcadeInterface.Tab.Steam] = 0;
+                ArcadeInterface.Current.RefreshSubscribedSteamLevels(true, true);
             }
         }
 
@@ -289,10 +289,10 @@ namespace BetterLegacy.Configs
         {
             LevelManager.Sort(LocalLevelOrderby.Value, LocalLevelAscend.Value);
 
-            if (ArcadeMenu.Current && ArcadeMenu.CurrentTab == ArcadeMenu.Tab.Local)
+            if (ArcadeInterface.Current && ArcadeInterface.CurrentTab == ArcadeInterface.Tab.Local)
             {
-                ArcadeMenu.Pages[(int)ArcadeMenu.Tab.Local] = 0;
-                ArcadeMenu.Current.RefreshLocalLevels(true);
+                ArcadeInterface.Pages[(int)ArcadeInterface.Tab.Local] = 0;
+                ArcadeInterface.Current.RefreshLocalLevels(true);
             }
         }
 
