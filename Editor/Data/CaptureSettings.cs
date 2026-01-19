@@ -4,14 +4,17 @@ using SimpleJSON;
 
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Network;
 
 namespace BetterLegacy.Editor.Data
 {
     /// <summary>
     /// Represents settings for the Capture Area.
     /// </summary>
-    public class CaptureSettings : PAObject<CaptureSettings>
+    public class CaptureSettings : PAObject<CaptureSettings>, IPacket
     {
+        #region Constructors
+
         public CaptureSettings() : base() { }
 
         public CaptureSettings(Vector2Int resolution, Vector2 pos, float rot) : this()
@@ -20,6 +23,8 @@ namespace BetterLegacy.Editor.Data
             this.pos = pos;
             this.rot = rot;
         }
+
+        #endregion
 
         #region Values
 
@@ -118,7 +123,7 @@ namespace BetterLegacy.Editor.Data
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public override void CopyData(CaptureSettings orig, bool newID = true)
         {
@@ -128,6 +133,7 @@ namespace BetterLegacy.Editor.Data
             zoom = orig.zoom;
             rot = orig.rot;
             matchSize = orig.matchSize;
+
             hidePlayers = orig.hidePlayers;
             showEditor = orig.showEditor;
             captureAllLayers = orig.captureAllLayers;
@@ -148,6 +154,7 @@ namespace BetterLegacy.Editor.Data
                 move = jn["move"].AsBool;
             pos = Parser.TryParse(jn["pos"], Vector2.zero);
             rot = jn["rot"].AsFloat;
+
             if (jn["hide_players"] != null)
                 hidePlayers = jn["hide_players"].AsBool;
             showEditor = jn["show_editor"].AsBool;
@@ -172,20 +179,61 @@ namespace BetterLegacy.Editor.Data
                 jn["pos"] = pos.ToJSON();
             if (rot != 0f)
                 jn["rot"] = rot;
+
             if (hidePlayers)
                 jn["hide_players"] = hidePlayers;
             if (showEditor)
                 jn["show_editor"] = showEditor;
+            if (captureAllLayers)
+                jn["capture_all_layers"] = captureAllLayers;
+
             if (useCustomBGColor)
                 jn["use_custom_bg_color"] = useCustomBGColor;
             if (customBGColor != Color.white)
                 jn["custom_bg_color"] = RTColors.ColorToHex(customBGColor);
+
             if (lockDragMode != LockDragMode.None)
                 jn["lock_drag_mode"] = (int)lockDragMode;
-            if (captureAllLayers)
-                jn["capture_all_layers"] = captureAllLayers;
 
             return jn;
+        }
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            resolution = reader.ReadVector2Int();
+            move = reader.ReadBoolean();
+            pos = reader.ReadVector2();
+            zoom = reader.ReadSingle();
+            rot = reader.ReadSingle();
+            matchSize = reader.ReadBoolean();
+
+            hidePlayers = reader.ReadBoolean();
+            showEditor = reader.ReadBoolean();
+            captureAllLayers = reader.ReadBoolean();
+
+            useCustomBGColor = reader.ReadBoolean();
+            customBGColor = reader.ReadColor();
+
+            lockDragMode = (LockDragMode)reader.ReadByte();
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(resolution);
+            writer.Write(move);
+            writer.Write(pos);
+            writer.Write(zoom);
+            writer.Write(rot);
+            writer.Write(matchSize);
+
+            writer.Write(hidePlayers);
+            writer.Write(showEditor);
+            writer.Write(captureAllLayers);
+
+            writer.Write(useCustomBGColor);
+            writer.Write(customBGColor);
+
+            writer.Write((byte)lockDragMode);
         }
 
         /// <summary>

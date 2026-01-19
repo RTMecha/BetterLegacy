@@ -9,13 +9,17 @@ using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Editor.Data.Timeline;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data
 {
-    public class EditorInfo : PAObject<EditorInfo>, IFile
+    /// <summary>
+    /// Represents the editing states of the current editor level.
+    /// </summary>
+    public class EditorInfo : PAObject<EditorInfo>, IPacket, IFile
     {
         #region Values
 
@@ -147,6 +151,9 @@ namespace BetterLegacy.Editor.Data
         /// </summary>
         public CaptureSettings captureSettings = new CaptureSettings();
 
+        /// <summary>
+        /// List of editor groups.
+        /// </summary>
         public List<EditorGroup> editorGroups = new List<EditorGroup>();
 
         public FileFormat FileFormat => FileFormat.LSE;
@@ -154,31 +161,6 @@ namespace BetterLegacy.Editor.Data
         #endregion
 
         #region Functions
-
-        public string GetFileName() => $"editor{FileFormat.Dot()}";
-
-        public void ReadFromFile(string path)
-        {
-            if (string.IsNullOrEmpty(path))
-                return;
-
-            if (!path.EndsWith(FileFormat.Dot()))
-                path = path += FileFormat.Dot();
-
-            var file = RTFile.ReadFromFile(path);
-            if (!string.IsNullOrEmpty(file))
-                ReadJSON(JSON.Parse(file));
-        }
-
-        public void WriteToFile(string path)
-        {
-            if (string.IsNullOrEmpty(path))
-                return;
-
-            var jn = ToJSON();
-            if (jn != null)
-                RTFile.WriteToFile(path, jn.ToString(3));
-        }
 
         public override void CopyData(EditorInfo orig, bool newID = true)
         {
@@ -299,7 +281,7 @@ namespace BetterLegacy.Editor.Data
                     if (jn["story"]["cutscene"] != null)
                         cutscene = jn["story"]["cutscene"].AsInt;
                     if (jn["story"]["cutscene_destination"] != null && System.Enum.TryParse(jn["story"]["cutscene_destination"], true, out Story.CutsceneDestination cutsceneDestination))
-                        cutsceneDestination = cutsceneDestination;
+                        this.cutsceneDestination = cutsceneDestination;
                 }
             }
             catch (System.Exception ex)
@@ -394,6 +376,125 @@ namespace BetterLegacy.Editor.Data
                 jn["misc"]["prefab_object_data"] = RTPrefabEditor.inst.copiedInstanceData.ToJSON();
 
             return jn;
+        }
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            // default paths
+            prefabPath = reader.ReadString();
+            themePath = reader.ReadString();
+
+            // timeline
+            mainZoom = reader.ReadSingle();
+            mainPosition = reader.ReadSingle();
+
+            layer = reader.ReadInt32();
+            layerType = (EditorTimeline.LayerType)reader.ReadByte();
+
+            binCount = reader.ReadInt32();
+            binPosition = reader.ReadSingle();
+
+            Packet.ReadPacketList(pinnedEditorLayers, reader);
+            Packet.ReadPacketList(editorGroups, reader);
+
+            // editor
+            Progress = reader.ReadSingle();
+            // update time
+            reader.ReadSingle();
+            openAmount = reader.ReadInt32();
+
+            // story
+            isStory = reader.ReadBoolean();
+            if (isStory)
+            {
+                storyChapter = reader.ReadInt32();
+                storyLevel = reader.ReadInt32();
+                cutscene = reader.ReadInt32();
+                cutsceneDestination = (Story.CutsceneDestination)reader.ReadByte();
+            }
+
+            captureSettings.ReadPacket(reader);
+            analyzedBPM = reader.ReadBoolean();
+            bpmSnapActive = reader.ReadBoolean();
+            bpm = reader.ReadSingle();
+            bpmOffset = reader.ReadSingle();
+            timeSignature = reader.ReadSingle();
+            time = reader.ReadSingle();
+            var hasCopiedInstanceData = reader.ReadBoolean();
+            if (hasCopiedInstanceData)
+                RTPrefabEditor.inst.copiedInstanceData = Packet.CreateFromPacket<PrefabObject>(reader);
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            // default paths
+            writer.Write(prefabPath);
+            writer.Write(themePath);
+
+            // timeline
+            writer.Write(mainZoom);
+            writer.Write(mainPosition);
+
+            writer.Write(layer);
+            writer.Write((byte)layerType);
+
+            writer.Write(binCount);
+            writer.Write(binPosition);
+
+            Packet.WritePacketList(pinnedEditorLayers, writer);
+            Packet.WritePacketList(editorGroups, writer);
+
+            // editor
+            writer.Write(Progress);
+            writer.Write(timer.time);
+            writer.Write(openAmount);
+
+            // story
+            writer.Write(isStory);
+            if (isStory)
+            {
+                writer.Write(storyChapter);
+                writer.Write(storyLevel);
+                writer.Write(cutscene);
+                writer.Write((byte)cutsceneDestination);
+            }
+
+            captureSettings.WritePacket(writer);
+            writer.Write(analyzedBPM);
+            writer.Write(bpmSnapActive);
+            writer.Write(bpm);
+            writer.Write(bpmOffset);
+            writer.Write(timeSignature);
+            writer.Write(time);
+            bool hasCopiedInstanceData = RTPrefabEditor.inst.copiedInstanceData;
+            writer.Write(hasCopiedInstanceData);
+            if (hasCopiedInstanceData)
+                RTPrefabEditor.inst.copiedInstanceData.WritePacket(writer);
+        }
+
+        public string GetFileName() => $"editor{FileFormat.Dot()}";
+
+        public void ReadFromFile(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+                return;
+
+            if (!path.EndsWith(FileFormat.Dot()))
+                path = path += FileFormat.Dot();
+
+            var file = RTFile.ReadFromFile(path);
+            if (!string.IsNullOrEmpty(file))
+                ReadJSON(JSON.Parse(file));
+        }
+
+        public void WriteToFile(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+                return;
+
+            var jn = ToJSON();
+            if (jn != null)
+                RTFile.WriteToFile(path, jn.ToString(3));
         }
 
         /// <summary>

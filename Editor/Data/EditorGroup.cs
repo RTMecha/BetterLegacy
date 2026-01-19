@@ -4,17 +4,24 @@ using SimpleJSON;
 
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Network;
 
 namespace BetterLegacy.Editor.Data
 {
     /// <summary>
     /// Represents a group of timeline objects in the editor.
     /// </summary>
-    public class EditorGroup : PAObject<EditorGroup>
+    public class EditorGroup : PAObject<EditorGroup>, IPacket
     {
+        #region Constructors
+
         public EditorGroup() { }
 
         public EditorGroup(string name) => this.name = name;
+
+        #endregion
+
+        #region Values
 
         /// <summary>
         /// Name of the group.
@@ -65,6 +72,10 @@ namespace BetterLegacy.Editor.Data
             Hidden,
         }
 
+        #endregion
+
+        #region Functions
+
         public override void CopyData(EditorGroup orig, bool newID = true)
         {
             name = orig.name;
@@ -98,5 +109,23 @@ namespace BetterLegacy.Editor.Data
 
             return jn;
         }
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            name = reader.ReadString();
+            collapsedType = (CollapsedType)reader.ReadByte();
+            Bin = reader.ReadInt32();
+            Layer = reader.ReadInt32();
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(name);
+            writer.Write((byte)collapsedType);
+            writer.Write(Bin);
+            writer.Write(Layer);
+        }
+
+        #endregion
     }
 }

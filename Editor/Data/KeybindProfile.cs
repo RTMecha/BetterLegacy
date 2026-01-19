@@ -17,6 +17,8 @@ namespace BetterLegacy.Editor.Data
     /// </summary>
     public class KeybindProfile : PAObject<KeybindProfile>, IFile
     {
+        #region Constructors
+
         public KeybindProfile() => id = GetNumberID();
 
         public KeybindProfile(string name) : this(CURRENT_VERSION, name) { }
@@ -30,6 +32,8 @@ namespace BetterLegacy.Editor.Data
         public KeybindProfile(string name, List<Keybind> keybinds) : this(name) => this.keybinds = keybinds;
 
         public KeybindProfile(int version, string name, List<Keybind> keybinds) : this(version, name) => this.keybinds = keybinds;
+
+        #endregion
 
         #region Values
 
