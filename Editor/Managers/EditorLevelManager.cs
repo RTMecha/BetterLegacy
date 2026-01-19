@@ -22,6 +22,7 @@ using BetterLegacy.Core.Components.Player;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Level;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
@@ -754,6 +755,9 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="level">Level to load and edit.</param>
         public IEnumerator ILoadLevel(Level level)
         {
+            if (ProjectArrhythmia.State.IsInLobby && !ProjectArrhythmia.State.IsHosting)
+                yield break;
+
             loadingLevel = true;
 
             CurrentLevel = level;
@@ -842,6 +846,8 @@ namespace BetterLegacy.Editor.Managers
             {
                 LevelManager.SetCurrentMetaData(level.metadata);
                 LevelManager.SetCurrentGameData(level);
+                if (ProjectArrhythmia.State.IsInLobby && ProjectArrhythmia.State.IsHosting)
+                    NetworkFunction.SetClientGameData(GameData.Current);
             }
             catch (MetaDataException ex)
             {
