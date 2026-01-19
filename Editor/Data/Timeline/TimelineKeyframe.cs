@@ -67,12 +67,22 @@ namespace BetterLegacy.Editor.Data.Timeline
         /// <summary>
         /// The type of keyframe. Only used for keyframes.
         /// </summary>
-        public int Type { get; set; }
+        public int Type
+        {
+            get => coord.type;
+            set => coord.type = value;
+        }
 
         /// <summary>
         /// Gets the index of the object.
         /// </summary>
-        public int Index { get; set; }
+        public int Index
+        {
+            get => coord.index;
+            set => coord.index = value;
+        }
+
+        KeyframeCoord coord;
 
         /// <summary>
         /// Gets and sets the time of the object.
@@ -338,17 +348,13 @@ namespace BetterLegacy.Editor.Data.Timeline
         /// Gets the index coordinates of the timeline keyframe.
         /// </summary>
         /// <returns>Returns a <see cref="KeyframeCoord"/>.</returns>
-        public KeyframeCoord GetCoord() => new KeyframeCoord(Type, Index);
+        public KeyframeCoord GetCoord() => coord;
 
         /// <summary>
         /// Sets the index coordinates of the timeline keyframe.
         /// </summary>
-        /// <param name="keyframeCoord">Coordinates of the keyframe to set.</param>
-        public void SetCoord(KeyframeCoord keyframeCoord)
-        {
-            Type = keyframeCoord.type;
-            Index = keyframeCoord.index;
-        }
+        /// <param name="coord">Coordinates of the keyframe to set.</param>
+        public void SetCoord(KeyframeCoord coord) => this.coord = coord;
 
         /// <summary>
         /// Gets the color the timeline keyframe should render.
