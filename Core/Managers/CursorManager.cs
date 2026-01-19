@@ -8,6 +8,7 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers.Settings;
 using BetterLegacy.Menus;
+using BetterLegacy.Menus.UI.Popups;
 
 namespace BetterLegacy.Core.Managers
 {
@@ -79,7 +80,7 @@ namespace BetterLegacy.Core.Managers
                 return;
             }
 
-            if (ProjectArrhythmia.State.InEditorPreview && !ConfigManager.inst.Active && !InterfaceManager.inst.CurrentInterface && !CoreConfig.Instance.GameCursorCanShow.Value) // cursor should never be visible in the game / editor preview
+            if (ProjectArrhythmia.State.InEditorPreview && !PopupBase.AnyPopupActive && !InterfaceManager.inst.CurrentInterface && !CoreConfig.Instance.GameCursorCanShow.Value) // cursor should never be visible in the game / editor preview
             {
                 Cursor.visible = false;
                 return;

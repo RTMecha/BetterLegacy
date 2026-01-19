@@ -13,6 +13,7 @@ using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Menus.UI.Elements;
 using BetterLegacy.Menus.UI.Layouts;
+using BetterLegacy.Menus.UI.Popups;
 
 namespace BetterLegacy.Menus.UI.Interfaces
 {
@@ -299,7 +300,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             {
                 name = "Config Button",
                 text = "<b> [ CONFIG ]",
-                func = ConfigManager.inst.Show,
+                func = ConfigPopup.Instance.Open,
             },
             new ButtonElement
             {

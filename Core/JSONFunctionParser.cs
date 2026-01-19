@@ -12,6 +12,7 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Menus.UI.Popups;
 using BetterLegacy.Story;
 
 namespace BetterLegacy.Core
@@ -1100,7 +1101,18 @@ namespace BetterLegacy.Core
                 // Opens the Config Manager UI.
                 // Function has no parameters.
                 case "Config": {
-                        ConfigManager.inst.Show();
+                        ConfigPopup.Instance.Open();
+                        break;
+                    }
+
+                #endregion
+
+                #region OpenLobbyPopup
+
+                // Opens the Lobby Manager UI.
+                // Function has no parameters.
+                case "OpenLobbyPopup": {
+                        LobbyPopup.Instance.Open();
                         break;
                     }
 

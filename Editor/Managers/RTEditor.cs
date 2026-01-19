@@ -40,6 +40,7 @@ using BetterLegacy.Editor.Data.Elements;
 using BetterLegacy.Editor.Data.Popups;
 using BetterLegacy.Editor.Data.Timeline;
 using BetterLegacy.Editor.Managers.Settings;
+using BetterLegacy.Menus.UI.Popups;
 
 namespace BetterLegacy.Editor.Managers
 {
@@ -3946,8 +3947,8 @@ namespace BetterLegacy.Editor.Managers
 
             EditorHelper.AddEditorDropdown("Editor Config", string.Empty, EditorHelper.SETTINGS_DROPDOWN, SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/preferences{FileFormat.PNG.Dot()}")), () =>
             {
-                ConfigManager.inst.SetTab(2);
-                ConfigManager.inst.Show();
+                ConfigPopup.Instance.SetTab(2);
+                ConfigPopup.Instance.Open();
             });
 
             var clearSpriteData = EditorHelper.AddEditorDropdown("Clear Sprite Data", string.Empty, EditorHelper.EDIT_DROPDOWN, titleBar.Find("File/File Dropdown/Quit to Main Menu/Image").GetComponent<Image>().sprite, () =>
@@ -4057,7 +4058,9 @@ namespace BetterLegacy.Editor.Managers
                     Example.Current.brain?.Notice(ExampleBrain.Notices.ALREADY_SPAWNED);
             });
             
-            EditorHelper.AddEditorDropdown("Show Config Manager", string.Empty, EditorHelper.VIEW_DROPDOWN, SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/preferences{FileFormat.PNG.Dot()}")), ConfigManager.inst.Show);
+            EditorHelper.AddEditorDropdown("Show Config Manager", string.Empty, EditorHelper.VIEW_DROPDOWN, SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/preferences{FileFormat.PNG.Dot()}")), ConfigPopup.Instance.Open);
+
+            EditorHelper.AddEditorDropdown("Show Lobbies Manager", string.Empty, EditorHelper.VIEW_DROPDOWN, SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/player{FileFormat.PNG.Dot()}")), LobbyPopup.Instance.Open);
 
             EditorHelper.AddEditorDropdown("Open Color Picker", string.Empty, EditorHelper.VIEW_DROPDOWN, EditorSprites.DropperSprite, () =>
             {

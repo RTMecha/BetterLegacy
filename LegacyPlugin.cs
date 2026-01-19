@@ -24,6 +24,7 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Managers;
+using BetterLegacy.Menus.UI.Popups;
 
 using Version = BetterLegacy.Core.Data.Version;
 
@@ -170,9 +171,10 @@ namespace BetterLegacy
 
             try
             {
-                CoreHelper.Log("Init ConfigManager...");
-
-                ConfigManager.Init();
+                CoreHelper.Log("Init Popups...");
+                PopupBase.InitPopupsCanvas();
+                PopupBase.RegisterPopup<ConfigPopup>();
+                PopupBase.RegisterPopup<LobbyPopup>();
             }
             catch (Exception ex)
             {
@@ -254,6 +256,7 @@ namespace BetterLegacy
             }
 
             MainTick?.OnTick();
+            PopupBase.TickPopups();
 
             if (CoreHelper.IsUsingInputField)
                 return;
