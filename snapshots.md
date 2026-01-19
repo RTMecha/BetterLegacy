@@ -1,7 +1,7 @@
 ﻿# ???
 ## Features
 ### Core
-- Added online multiplayer.
+- Added online lobbies. This allows you to play multiplayer online.
 
 ## Fixes
 - Fixed run count value in Example commands being assigned the wrong variable.
