@@ -1,6 +1,10 @@
 ﻿{
   "splash.dictionaries": "Dictionaries!",
 
+  // popups
+  "popups.config.title": "Config Manager",
+  "popups.lobby.title": "Lobbies",
+
   // editor
   "editor.titlebar.file": "File",
   "editor.titlebar.edit": "Edit",

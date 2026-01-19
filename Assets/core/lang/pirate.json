@@ -1,6 +1,10 @@
 ﻿{
   "splash.dictionaries": "Me book!",
 
+  // popups
+  "popups.config.title": "Ship Wheel",
+  "popups.lobby.title": "The 7 Seas",
+
   // editor
   "editor.titlebar.file": "File",
   "editor.titlebar.edit": "Hook",
