@@ -15,6 +15,7 @@ using LSFunctions;
 using ILMath;
 
 using SimpleJSON;
+using SteamworksFacepunch.Data;
 using SteamworksFacepunch.Ugc;
 
 using BetterLegacy.Configs;
@@ -29,6 +30,10 @@ using BetterLegacy.Core.Runtime;
 using BetterLegacy.Core.Runtime.Objects;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
+
+using Color = UnityEngine.Color;
+using Image = UnityEngine.UI.Image;
+using Text = UnityEngine.UI.Text;
 
 namespace BetterLegacy.Core
 {
@@ -327,14 +332,14 @@ namespace BetterLegacy.Core
             sca.x = x;
             transform.localScale = sca;
         }
-        
+
         public static void SetLocalScaleY(this Transform transform, float y)
         {
             var sca = transform.localScale;
             sca.y = y;
             transform.localScale = sca;
         }
-        
+
         public static void SetLocalScaleZ(this Transform transform, float z)
         {
             var sca = transform.localScale;
@@ -358,14 +363,14 @@ namespace BetterLegacy.Core
             rot.x = x;
             transform.localRotation = Quaternion.Euler(rot);
         }
-        
+
         public static void SetLocalRotationEulerY(this Transform transform, float y)
         {
             var rot = transform.localRotation.eulerAngles;
             rot.y = y;
             transform.localRotation = Quaternion.Euler(rot);
         }
-        
+
         public static void SetLocalRotationEulerZ(this Transform transform, float z)
         {
             var rot = transform.localRotation.eulerAngles;
@@ -393,7 +398,7 @@ namespace BetterLegacy.Core
             size.x = x;
             transform.sizeDelta = size;
         }
-        
+
         public static void SetSizeDeltaY(this RectTransform transform, float y)
         {
             var size = transform.sizeDelta;
@@ -531,7 +536,7 @@ namespace BetterLegacy.Core
                 return player.RuntimePlayer.transform.Find("Player");
             return null;
         }
-        
+
         public static Transform GetPlayer(this Animation.Keyframe.IHomingKeyframe homingKeyframe, float time)
         {
             var player = PlayerManager.GetClosestPlayer(homingKeyframe.GetPosition(time));
@@ -539,7 +544,7 @@ namespace BetterLegacy.Core
                 return player.RuntimePlayer.transform.Find("Player");
             return null;
         }
-        
+
         public static Transform GetPlayer(this Animation.Keyframe.IHomingKeyframe homingKeyframe, float time, HomingPriority priority, int index = 0)
         {
             var player = PlayerManager.GetPlayer(priority, priority == HomingPriority.Closest || priority == HomingPriority.Furthest ? homingKeyframe.GetPosition(time) : Vector2.zero, index);
@@ -1392,6 +1397,36 @@ namespace BetterLegacy.Core
             }
         }
 
+        // split functions from https://stackoverflow.com/questions/1841246/c-sharp-splitting-an-array
+
+        public static IEnumerable<IEnumerable<T>> Split<T>(this ICollection<T> self, int chunkSize)
+        {
+            var splitList = new List<List<T>>();
+            var chunkCount = (int)Math.Ceiling((double)self.Count / (double)chunkSize);
+
+            for (int c = 0; c < chunkCount; c++)
+            {
+                var skip = c * chunkSize;
+                var take = skip + chunkSize;
+                var chunk = new List<T>(chunkSize);
+
+                for (int e = skip; e < take && e < self.Count; e++)
+                    chunk.Add(self.ElementAt(e));
+                splitList.Add(chunk);
+            }
+
+            return splitList;
+        }
+
+        public static void Split<T>(T[] source, int index, out T[] first, out T[] last)
+        {
+            int len2 = source.Length - index;
+            first = new T[index];
+            last = new T[len2];
+            Array.Copy(source, 0, first, 0, index);
+            Array.Copy(source, index, last, 0, len2);
+        }
+
         #endregion
 
         #region JSON
@@ -1442,7 +1477,7 @@ namespace BetterLegacy.Core
             jn[1] = vector2.y;
             return jn;
         }
-        
+
         public static JSONNode ToJSONArray(this Vector2 vector2)
         {
             var jn = Parser.NewJSONArray();
@@ -1450,7 +1485,7 @@ namespace BetterLegacy.Core
             jn[1] = vector2.y;
             return jn;
         }
-        
+
         public static JSONNode ToJSONArray(this Vector3Int vector3)
         {
             var jn = Parser.NewJSONArray();
@@ -1459,7 +1494,7 @@ namespace BetterLegacy.Core
             jn[2] = vector3.z;
             return jn;
         }
-        
+
         public static JSONNode ToJSONArray(this Vector3 vector3)
         {
             var jn = Parser.NewJSONArray();
@@ -1468,7 +1503,7 @@ namespace BetterLegacy.Core
             jn[2] = vector3.z;
             return jn;
         }
-        
+
         public static JSONNode ToJSONArray(this Vector4 vector4)
         {
             var jn = Parser.NewJSONArray();
@@ -1486,7 +1521,7 @@ namespace BetterLegacy.Core
             jn["y"] = vector2.y;
             return jn;
         }
-        
+
         public static JSONNode ToJSON(this Vector2 vector2)
         {
             var jn = Parser.NewJSONObject();
@@ -1503,7 +1538,7 @@ namespace BetterLegacy.Core
             jn["z"] = vector3.z;
             return jn;
         }
-        
+
         public static JSONNode ToJSON(this Vector3 vector3)
         {
             var jn = Parser.NewJSONObject();
@@ -2212,7 +2247,7 @@ namespace BetterLegacy.Core
             foreach (var prefabObject in beatmap.PrefabObjects)
                 yield return prefabObject;
         }
-        
+
         /// <summary>
         /// Gets all modifyables from a package.
         /// </summary>
@@ -3399,6 +3434,8 @@ namespace BetterLegacy.Core
 
         public static Vector2 X(this Vector2 vector3) => new Vector2(vector3.x, 0f);
         public static Vector2 Y(this Vector2 vector3) => new Vector2(0f, vector3.y);
+
+        public static string GetName(this Lobby lobby) => lobby.GetData("LobbyName");
 
         #endregion
     }

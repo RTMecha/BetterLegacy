@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 
+using LSFunctions;
+
 using SteamworksFacepunch.Data;
 
 using BetterLegacy.Core.Components.Player;
@@ -103,26 +105,36 @@ namespace BetterLegacy.Core.Managers
         {
             var writer = new NetworkWriter();
             writer.Write(function.id);
+            writer.Write(LSText.randomNumString(16));
             for (int i = 0; i < packets.Length; i++)
                 packets[i].WritePacket(writer);
+            var position = writer.Position;
+            writer.Position = 1;
+            var greaterData = position > 9000000;
+            writer.Write(greaterData); // means the data has been split up
+            writer.Position = position + 1;
+
+            var data = writer.GetData();
+            // handle data chunk splitting
+            //var chunks = data.Split(9000000);
 
             switch (function.side)
             {
                 case NetworkFunction.Side.Client: {
-                        SendToAllClients(writer.GetData(), SendType.Reliable);
+                        SendToAllClients(data, SendType.Reliable);
                         break;
                     }
                 case NetworkFunction.Side.Server: {
                         if (ProjectArrhythmia.State.IsHosting)
-                            Transport.onServerDataReceived?.Invoke(ServerSelfPeerConnection, writer.GetData());
+                            Transport.onServerDataReceived?.Invoke(ServerSelfPeerConnection, data);
                         else
-                            SendToServer(writer.GetData(), SendType.Reliable);
+                            SendToServer(data, SendType.Reliable);
                         break;
                     }
                 case NetworkFunction.Side.Multi: {
                         if (ProjectArrhythmia.State.IsHosting)
-                            Transport.onServerDataReceived?.Invoke(ServerSelfPeerConnection, writer.GetData());
-                        SendToAllClients(writer.GetData(), SendType.Reliable);
+                            Transport.onServerDataReceived?.Invoke(ServerSelfPeerConnection, data);
+                        SendToAllClients(data, SendType.Reliable);
                         break;
                     }
             }
@@ -166,7 +178,13 @@ namespace BetterLegacy.Core.Managers
 
         public void ConnectToServer(string address) => Transport.Instance.ConnectClient(address);
 
-        public void Disconnect() => Transport.Instance.StopClient();
+        public void Disconnect()
+        {
+            clientConnections.Clear();
+            serverConnection = null;
+            Transport.Instance?.StopClient();
+            Transport.Instance = null;
+        }
 
         public void KickClient(int clientID) => Transport.Instance.KickConnection(clientID);
 
@@ -260,6 +278,8 @@ namespace BetterLegacy.Core.Managers
 
             using var reader = new NetworkReader(data);
             var id = reader.ReadInt32();
+            var uniqueID = reader.ReadString();
+            var greaterData = reader.ReadBoolean();
             if (functions.TryFind(x => x.id == id && x.side != NetworkFunction.Side.Client, out NetworkFunction function))
                 function.Run(reader);
         }

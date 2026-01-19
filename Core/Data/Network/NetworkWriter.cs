@@ -18,6 +18,7 @@ namespace BetterLegacy.Core.Data.Network
 
         #region Values
 
+        public long Position { get => memoryStream.Position; set => memoryStream.Position = value; }
         static MemoryStream memoryStream = new MemoryStream(1024);
         readonly BinaryWriter writer = new BinaryWriter(memoryStream, Encoding.UTF8, true);
 

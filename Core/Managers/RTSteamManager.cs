@@ -18,6 +18,7 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers.Settings;
 using BetterLegacy.Menus;
 using BetterLegacy.Menus.UI.Interfaces;
+using BetterLegacy.Menus.UI.Popups;
 
 namespace BetterLegacy.Core.Managers
 {
@@ -242,9 +243,18 @@ namespace BetterLegacy.Core.Managers
             Log($"Ending client.");
             ProjectArrhythmia.State.IsOnlineMultiplayer = false;
             ProjectArrhythmia.State.IsHosting = false;
+            ProjectArrhythmia.State.IsInLobby = false;
 
             SteamLobbyManager.inst.LeaveLobby();
             NetworkManager.inst.Disconnect();
+            try
+            {
+                LobbyPopup.Instance.Render();
+            }
+            catch
+            {
+
+            }
         }
 
         public void StartServer()
@@ -261,6 +271,14 @@ namespace BetterLegacy.Core.Managers
 
             SteamLobbyManager.inst.LeaveLobby();
             NetworkManager.inst.StopServer();
+            try
+            {
+                LobbyPopup.Instance.Render();
+            }
+            catch
+            {
+
+            }
         }
 
         #endregion
