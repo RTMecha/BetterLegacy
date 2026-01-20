@@ -6,6 +6,10 @@
 ## Fixes
 - Fixed run count value in Example commands being assigned the wrong variable.
 - Fixed some level property values not saving.
+- Fixed the User Search popup list not being the right size.
+- Fixed player model panels scaling down when hovered.
+
+-------------------------------------------------------------------
 
 # 1.8.0 [Sep 19, 2025]
 ## Features
