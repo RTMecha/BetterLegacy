@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
+using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
@@ -39,6 +40,8 @@ namespace BetterLegacy.Editor.Data.Elements
         #region Data
 
         public override string DisplayName => Item.basePart.name;
+
+        public override float FocusSize => EditorConfig.Instance.PlayerModelPanelButtonHoverSize.Value;
 
         public bool Selected { get; set; }
 
@@ -88,6 +91,7 @@ namespace BetterLegacy.Editor.Data.Elements
             var folderButtonFunction = gameObject.AddComponent<FolderButtonFunction>();
 
             HoverFocus = gameObject.AddComponent<HoverUI>();
+            HoverFocus.size = EditorConfig.Instance.PlayerModelPanelButtonHoverSize.Value;
             HoverFocus.animatePos = false;
             HoverFocus.animateSca = true;
 

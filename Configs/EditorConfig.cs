@@ -182,11 +182,11 @@ namespace BetterLegacy.Configs
         public Setting<bool> OpenNewLevelCreatorIfNoLevels { get; set; }
         public Setting<bool> ShowModifiersDefault { get; set; }
 
-        public Setting<float> OpenLevelButtonHoverSize { get; set; }
-
         public Setting<bool> ChangesRefreshLevelList { get; set; }
         public Setting<bool> OpenLevelShowDeleteButton { get; set; }
 
+        public Setting<float> OpenLevelButtonHoverSize { get; set; }
+        public Setting<float> PlayerModelPanelButtonHoverSize { get; set; }
         public Setting<float> TimelineObjectHoverSize { get; set; }
         public Setting<float> KeyframeHoverSize { get; set; }
         public Setting<float> TimelineBarButtonsHoverSize { get; set; }
@@ -597,6 +597,7 @@ namespace BetterLegacy.Configs
             OpenLevelShowDeleteButton = Bind(this, EDITOR_GUI, "Open Level Show Delete Button", false, "Shows a delete button that can be used to move levels to a recycling folder.");
 
             OpenLevelButtonHoverSize = Bind(this, EDITOR_GUI, "Level Panel Focus Size", 1.05f, "How big the button gets when hovered.", 0.7f, 1.4f);
+            PlayerModelPanelButtonHoverSize = Bind(this, EDITOR_GUI, "Player Model Panel Focus Size", 1.05f, "How big the button gets when hovered.", 0.7f, 1.4f);
             TimelineObjectHoverSize = Bind(this, EDITOR_GUI, "Timeline Object Focus Size", 1f, "How big the button gets when hovered.", 0.7f, 1.4f);
             KeyframeHoverSize = Bind(this, EDITOR_GUI, "Keyframe Focus Size", 1f, "How big the button gets when hovered.", 0.7f, 1.4f);
             TimelineBarButtonsHoverSize = Bind(this, EDITOR_GUI, "Timeline Bar Buttons Focus Size", 1.05f, "How big the button gets when hovered.", 0.7f, 1.4f);
