@@ -93,11 +93,11 @@ namespace BetterLegacy.Patchers
             {
                 var activeDevice = InputManager.ActiveDevice;
                 if (PlayerManager.DeviceNotConnected(activeDevice))
-                    PlayerManager.Players.Add(new PAPlayer(true, PlayerManager.Players.Count, activeDevice));
+                    PlayerManager.AddPlayer(new PAPlayer(PlayerManager.Players.Count, activeDevice));
             }
 
             if (PlayerInput.keyboardListener && PlayerInput.keyboardListener.Join.WasPressed && PlayerManager.KeyboardNotConnected())
-                PlayerManager.Players.Add(new PAPlayer(true, PlayerManager.Players.Count, null));
+                PlayerManager.AddPlayer(new PAPlayer(PlayerManager.Players.Count, null));
 
             return false;
         }
@@ -109,7 +109,7 @@ namespace BetterLegacy.Patchers
             Instance.ResetPlayers();
             PlayerManager.Players.Clear();
             if (__0)
-                PlayerManager.Players.Add(PlayerManager.CreateDefaultPlayer());
+                PlayerManager.AddPlayer(PlayerManager.CreateDefaultPlayer());
             return false;
         }
 

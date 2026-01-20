@@ -552,12 +552,33 @@ namespace BetterLegacy.Core.Data.Player
             assets = Packet.CreateFromPacket<Assets>(reader);
             basePart = Packet.CreateFromPacket<Base>(reader);
             guiPart = Packet.CreateFromPacket<GUI>(reader);
-            headPart = Packet.CreateFromPacket<PlayerObject>(reader);
-            boostPart = Packet.CreateFromPacket<PlayerObject>(reader);
+            try
+            {
+                headPart = Packet.CreateFromPacket<PlayerObject>(reader);
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Failed to create the head from a packet due to the exception: {ex}");
+            }
+            try
+            {
+                boostPart = Packet.CreateFromPacket<PlayerObject>(reader);
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Failed to create the boost from a packet due to the exception: {ex}");
+            }
             pulsePart = Packet.CreateFromPacket<Pulse>(reader);
             bulletPart = Packet.CreateFromPacket<Bullet>(reader);
             tailBase = Packet.CreateFromPacket<TailBase>(reader);
-            boostTailPart = Packet.CreateFromPacket<PlayerObject>(reader);
+            try
+            {
+                boostTailPart = Packet.CreateFromPacket<PlayerObject>(reader);
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Failed to create the boost tail from a packet due to the exception: {ex}");
+            }
             Packet.ReadPacketList(tailParts, reader);
             Packet.ReadPacketList(customObjects, reader);
             icon = reader.ReadSprite();

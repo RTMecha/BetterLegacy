@@ -60,9 +60,25 @@ namespace BetterLegacy.Core.Data.Network
 
         public const int MULTI_TEST = 984885;
 
-        public const int SEND_PLAYER_DATA = 5932573;
+        public const int SEND_CLIENT_PLAYER_DATA = 5932573;
+        public const int SEND_SERVER_PLAYER_DATA = 74362567;
+        public const int SEND_MULTI_PLAYER_DATA = 476256437;
 
         public const int UPDATE_PLAYER_DATA = 83553876;
+
+        public const int SET_PLAYER_POSITION = 326462532;
+
+        public const int DESTROY_PLAYERS = 532264743;
+        public const int RESPAWN_PLAYERS = 857453345;
+        public const int RESPAWN_PLAYERS_POS = 236326525;
+        public const int SPAWN_PLAYERS_CHECKPOINT = 359827539;
+        public const int SPAWN_PLAYERS_POS = 532264288;
+        public const int PLAYER_BOOST = 23582865;
+        public const int PLAYER_BOOST_STOP = 2149812;
+        public const int PLAYER_HEAL = 236236743;
+        public const int PLAYER_HIT = 643698467;
+        public const int PLAYER_KILL = 593762876;
+        public const int PLAYER_JUMP = 8538582;
 
         public const int LOG_CLIENT = 842754988;
         public const int LOG_SERVER = 53295835;
@@ -75,6 +91,8 @@ namespace BetterLegacy.Core.Data.Network
 
         public const int SET_CLIENT_PITCH = 266775874;
         public const int SET_SERVER_PITCH = 378545366;
+
+        public const int SEND_CHUNK_DATA = 326243667;
 
         #endregion
 
@@ -129,7 +147,7 @@ namespace BetterLegacy.Core.Data.Network
 
         public static void LogMultiSide(string message) => NetworkManager.inst.RunFunction(LOG_MULTI, new StringParameter(message));
 
-        public static void SetClientGameData(GameData gameData) => NetworkManager.inst.RunFunction(SET_CLIENT_GAME_DATA, gameData);
+        public static void SetClientGameData(GameData gameData, string id = null) => NetworkManager.inst.RunFunction(SET_CLIENT_GAME_DATA, gameData, new StringParameter(id));
 
         #endregion
 
@@ -151,6 +169,8 @@ namespace BetterLegacy.Core.Data.Network
 
         public class IntParameter : Parameter
         {
+            public IntParameter(int value) => this.value = value;
+
             public int value;
 
             public override void ReadPacket(NetworkReader reader) => value = reader.ReadInt32();
@@ -158,8 +178,43 @@ namespace BetterLegacy.Core.Data.Network
             public override void WritePacket(NetworkWriter writer) => writer.Write(value);
         }
 
+        public class LongParameter : Parameter
+        {
+            public LongParameter(long value) => this.value = value;
+
+            public long value;
+
+            public override void ReadPacket(NetworkReader reader) => value = reader.ReadInt64();
+
+            public override void WritePacket(NetworkWriter writer) => writer.Write(value);
+        }
+
+        public class UIntParameter : Parameter
+        {
+            public UIntParameter(uint value) => this.value = value;
+
+            public uint value;
+
+            public override void ReadPacket(NetworkReader reader) => value = reader.ReadUInt32();
+
+            public override void WritePacket(NetworkWriter writer) => writer.Write(value);
+        }
+
+        public class ULongParameter : Parameter
+        {
+            public ULongParameter(ulong value) => this.value = value;
+
+            public ulong value;
+
+            public override void ReadPacket(NetworkReader reader) => value = reader.ReadUInt64();
+
+            public override void WritePacket(NetworkWriter writer) => writer.Write(value);
+        }
+
         public class FloatParameter : Parameter
         {
+            public FloatParameter(float value) => this.value = value;
+
             public float value;
 
             public override void ReadPacket(NetworkReader reader) => value = reader.ReadSingle();
@@ -169,6 +224,8 @@ namespace BetterLegacy.Core.Data.Network
 
         public class Vector2Parameter : Parameter
         {
+            public Vector2Parameter(Vector2 value) => this.value = value;
+
             public Vector2 value;
 
             public override void ReadPacket(NetworkReader reader) => value = reader.ReadVector2();
@@ -178,6 +235,8 @@ namespace BetterLegacy.Core.Data.Network
 
         public class Vector3Parameter : Parameter
         {
+            public Vector3Parameter(Vector3 value) => this.value = value;
+
             public Vector3 value;
 
             public override void ReadPacket(NetworkReader reader) => value = reader.ReadVector3();

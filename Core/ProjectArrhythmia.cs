@@ -407,6 +407,11 @@ namespace BetterLegacy.Core
             /// If the user is in an online multiplayer session.
             /// </summary>
             public static bool IsOnlineMultiplayer { get; set; }
+
+            /// <summary>
+            /// If the user is a client and not the host.
+            /// </summary>
+            public static bool IsClient => IsInLobby && !IsHosting;
         }
     }
 }

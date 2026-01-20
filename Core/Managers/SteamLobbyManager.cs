@@ -6,6 +6,7 @@ using SteamworksFacepunch;
 using SteamworksFacepunch.Data;
 
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
@@ -31,7 +32,14 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         public LobbySettings LobbySettings { get; set; } = new LobbySettings();
 
+        /// <summary>
+        /// The current lobby channel.
+        /// </summary>
+        public string LobbyChannel { get; set; } = string.Empty;
+
         Dictionary<SteamId, bool> loadedPlayers = new Dictionary<SteamId, bool>();
+
+        public List<PAPlayer> localPlayers = new List<PAPlayer>();
 
         #endregion
 
@@ -68,6 +76,17 @@ namespace BetterLegacy.Core.Managers
             LobbyPopup.Instance.visibilityDropdown?.SetValueWithoutNotify((int)LobbySettings.Visibility);
         }
 
+        public void SyncPlayersToServer()
+        {
+            localPlayers = new List<PAPlayer>(PlayerManager.Players);
+            NetworkManager.inst.RunFunction(NetworkFunction.SEND_SERVER_PLAYER_DATA, new PacketList<PAPlayer>(PlayerManager.Players));
+        }
+
+        public void SyncPlayersToClients()
+        {
+            NetworkManager.inst.RunFunction(NetworkFunction.SEND_CLIENT_PLAYER_DATA, new PacketList<PAPlayer>(PlayerManager.Players));
+        }
+
         #region Lobby
 
         /// <summary>
@@ -95,44 +114,41 @@ namespace BetterLegacy.Core.Managers
         /// <summary>
         /// Finds a random lobby and joins it.
         /// </summary>
-        public void JoinRandomLobby() => CoroutineHelper.StartCoroutine(IJoinRandomLobby());
-
-        IEnumerator IJoinRandomLobby()
+        public async void JoinRandomLobby()
         {
             if (ProjectArrhythmia.State.IsInLobby)
             {
                 LogError($"Cannot join a lobby because you're already in a lobby.");
-                yield break;
+                return;
             }
 
-            var task = new LobbyQuery().WithMaxResults(10).RequestAsync();
-            while (!task.IsCompleted)
-                yield return null;
-            yield return CoroutineHelper.EndOfFrame;
-            var lobbies = task.Result;
-            if (lobbies == null)
+            var lobbies = await new LobbyQuery().WithMaxResults(10).RequestAsync();
+            LegacyPlugin.MainTick += () =>
             {
-                LogError($"No lobbies available.");
-                yield break;
-            }
-            Log($"Found lobbies: {lobbies.Length}");
-            if (lobbies.IsEmpty())
-                yield break;
-            var lobbyQueue = new List<Lobby>();
-            for (int i = 0; i < lobbies.Length; i++)
-            {
-                var lobby = lobbies[i];
-                Log($"Lobby {i}\n" +
-                    $"ID: {lobby.Id}\n" +
-                    $"Owner: {lobby.Owner.Name} - {lobby.Owner.Id}");
-                if (IsValidLobby(lobby))
-                    lobbyQueue.Add(lobby);
-            }
+                if (lobbies == null)
+                {
+                    LogError($"No lobbies available.");
+                    return;
+                }
+                Log($"Found lobbies: {lobbies.Length}");
+                if (lobbies.IsEmpty())
+                    return;
+                var lobbyQueue = new List<Lobby>();
+                for (int i = 0; i < lobbies.Length; i++)
+                {
+                    var lobby = lobbies[i];
+                    Log($"Lobby {i}\n" +
+                        $"ID: {lobby.Id}\n" +
+                        $"Owner: {lobby.Owner.Name} - {lobby.Owner.Id}");
+                    if (IsValidLobby(lobby))
+                        lobbyQueue.Add(lobby);
+                }
 
-            if (!lobbyQueue.IsEmpty())
-                JoinLobby(lobbyQueue[UnityRandom.Range(0, lobbyQueue.Count)]);
-            else
-                LogError($"No lobbies available.");
+                if (!lobbyQueue.IsEmpty())
+                    JoinLobby(lobbyQueue[UnityRandom.Range(0, lobbyQueue.Count)]);
+                else
+                    LogError($"No lobbies available.");
+            };
         }
 
         /// <summary>
@@ -199,7 +215,8 @@ namespace BetterLegacy.Core.Managers
         public bool IsValidLobby(Lobby lobby)
         {
             var collection = lobby.Data.ToDictionary(x => x.Key, x => x.Value);
-            return collection.ContainsKey("BetterLegacy") && collection.TryGetValue("ModVersion", out string modVersion) && new Version(modVersion) == LegacyPlugin.ModVersion;
+            return collection.ContainsKey("BetterLegacy") && collection.TryGetValue("ModVersion", out string modVersion) && new Version(modVersion) == LegacyPlugin.ModVersion
+                && (!collection.TryGetValue("LobbyChannel", out string channel) || channel == LobbyChannel);
         }
 
         #endregion
@@ -322,6 +339,9 @@ namespace BetterLegacy.Core.Managers
             {
 
             }
+
+            if (ProjectArrhythmia.State.IsHosting)
+                NetworkFunction.SetClientGameData(GameData.Current, friend.Id.ToString());
         }
 
         void OnLobbyEntered(Lobby lobby)
@@ -345,13 +365,16 @@ namespace BetterLegacy.Core.Managers
             }
 
             if (!Transport.Instance)
+            {
+                NetworkManager.inst.onClientConnectedTemp += connection => SyncPlayersToServer();
                 RTSteamManager.inst.StartClient(lobby.Owner.Id);
+            }
+            else
+                SyncPlayersToServer();
             foreach (var lobbyMember in lobby.Members)
             {
-                var player = new PAPlayer(true, 0);
-                player.IsLocalPlayer = false;
-                player.ID = lobbyMember.Id;
-                PlayerManager.Players.Add(player);
+                //if (lobbyMember.Id != RTSteamManager.inst.steamUser.steamID)
+                //    PlayerManager.Players.Add(new PAPlayer(PlayerManager.Players.Count, lobbyMember.Id));
                 AddPlayerToLoadList(lobbyMember.Id);
                 if (lobby.GetMemberData(lobbyMember, "IsLoaded") == "1")
                     SetLoaded(lobbyMember.Id);
@@ -396,6 +419,8 @@ namespace BetterLegacy.Core.Managers
             lobby.SetData("GameVersion", ProjectArrhythmia.VANILLA_VERSION);
             lobby.SetData("BetterLegacy", "true");
             lobby.SetData("LobbyName", LobbySettings.Name);
+            if (!string.IsNullOrEmpty(LobbySettings.Channel))
+                lobby.SetData("LobbyChannel", LobbySettings.Channel);
         }
 
         #endregion

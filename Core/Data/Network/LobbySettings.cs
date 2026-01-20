@@ -42,6 +42,11 @@ namespace BetterLegacy.Core.Data.Network
         /// </summary>
         public LobbyState State { get; set; } = LobbyState.Joinable;
 
+        /// <summary>
+        /// Channel ID of the lobby.
+        /// </summary>
+        public string Channel { get; set; } = string.Empty;
+
         #region Editor
 
         /// <summary>
@@ -92,6 +97,7 @@ namespace BetterLegacy.Core.Data.Network
             PlayerCount = orig.PlayerCount;
             Visibility = orig.Visibility;
             State = orig.State;
+            Channel = orig.Channel;
             CanEdit = orig.CanEdit;
             CanImportPrefabs = orig.CanImportPrefabs;
         }
@@ -102,6 +108,7 @@ namespace BetterLegacy.Core.Data.Network
             PlayerCount = jn["player_count"].AsInt;
             Visibility = Parser.TryParse(jn["visibility"], true, LobbyVisibility.Public);
             State = Parser.TryParse(jn["state"], true, LobbyState.Joinable);
+            Channel = jn["channel"];
             CanEdit = jn["can_edit"].AsBool;
             CanImportPrefabs = jn["can_import_prefabs"].AsBool;
         }
@@ -114,6 +121,7 @@ namespace BetterLegacy.Core.Data.Network
             jn["player_count"] = PlayerCount;
             jn["visibility"] = Visibility.ToString();
             jn["state"] = State.ToString();
+            jn["channel"] = Channel ?? string.Empty;
             jn["can_edit"] = CanEdit;
             jn["can_import_prefabs"] = CanImportPrefabs;
 
@@ -126,6 +134,7 @@ namespace BetterLegacy.Core.Data.Network
             PlayerCount = reader.ReadInt32();
             Visibility = (LobbyVisibility)reader.ReadByte();
             State = (LobbyState)reader.ReadByte();
+            Channel = reader.ReadString();
             CanEdit = reader.ReadBoolean();
             CanImportPrefabs = reader.ReadBoolean();
         }
@@ -136,6 +145,7 @@ namespace BetterLegacy.Core.Data.Network
             writer.Write(PlayerCount);
             writer.Write((byte)Visibility);
             writer.Write((byte)State);
+            writer.Write(Channel);
             writer.Write(CanEdit);
             writer.Write(CanImportPrefabs);
         }

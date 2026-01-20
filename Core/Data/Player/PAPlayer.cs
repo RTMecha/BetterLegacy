@@ -21,9 +21,17 @@ namespace BetterLegacy.Core.Data.Player
     /// </summary>
     public class PAPlayer : Exists, IModifierReference, ICustomActivatable, IPacket
     {
-        public PAPlayer(bool active, int index, InputDevice device)
+        #region Constructors
+
+        public PAPlayer()
         {
-            this.active = active;
+            active = true;
+            IsLocalPlayer = false;
+        }
+
+        public PAPlayer(int index, InputDevice device)
+        {
+            active = true;
             this.index = index;
             this.device = device;
 
@@ -44,20 +52,19 @@ namespace BetterLegacy.Core.Data.Player
             InputManager.OnDeviceDetached += ControllerDisconnected;
             SetupInput();
             IsLocalPlayer = true;
+            ID = RTSteamManager.inst.steamUser.steamID;
             Debug.Log($"{InputDataManager.className}Created new Custom Player [{this.index}]");
         }
 
-        public PAPlayer(bool active, int index)
+        public PAPlayer(int index, SteamId id)
         {
-            this.active = active;
+            active = true;
             this.index = index;
-            playerIndex = GetPlayerIndex(index);
-            device = InputDevice.Null;
-            deviceName = "keyboard";
-            deviceType = GetDeviceType(deviceName);
-            deviceModel = GetDeviceModel(deviceName);
-            IsLocalPlayer = true;
+            ID = id;
+            IsLocalPlayer = false;
         }
+
+        #endregion
 
         #region Values
 
@@ -220,6 +227,10 @@ namespace BetterLegacy.Core.Data.Player
             lives = reader.ReadInt32();
             Health = reader.ReadInt32();
             index = reader.ReadInt32();
+            var hasSteamID = reader.ReadBoolean();
+            if (hasSteamID)
+                ID = reader.ReadUInt64();
+            //PlayerModel = Packet.CreateFromPacket<PlayerModel>(reader);
         }
 
         public void WritePacket(NetworkWriter writer)
@@ -229,6 +240,14 @@ namespace BetterLegacy.Core.Data.Player
             writer.Write(lives);
             writer.Write(Health);
             writer.Write(index);
+            if (ID.TryGetValue(out SteamId steamID))
+            {
+                writer.Write(true);
+                writer.Write(steamID);
+            }
+            else
+                writer.Write(false);
+            //PlayerModel.WritePacket(writer);
         }
 
         public void SetCustomActive(bool active)
@@ -375,6 +394,9 @@ namespace BetterLegacy.Core.Data.Player
         /// </summary>
         public void SetupInput()
         {
+            if (!IsLocalPlayer)
+                return;
+
             if (device == null)
             {
                 Input = (ProjectArrhythmia.State.InEditor || PlayerConfig.Instance.AllowControllerIfSinglePlayer.Value) && PlayerManager.IsSingleplayer ?

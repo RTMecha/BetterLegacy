@@ -271,4 +271,27 @@ namespace BetterLegacy.Core.Data.Network
             }
         }
     }
+
+    /// <summary>
+    /// Represents a list of objects that can read from / write to a packet..
+    /// </summary>
+    /// <typeparam name="T">Type of the items in the list.</typeparam>
+    public class PacketList<T> : IPacket where T : IPacket, new()
+    {
+        public PacketList(List<T> list) => this.list = list;
+
+        public List<T> list;
+
+        public int Count => list.Count;
+
+        public T this[int index]
+        {
+            get => list[index];
+            set => list[index] = value;
+        }
+
+        public void ReadPacket(NetworkReader reader) => Packet.ReadPacketList(list, reader);
+
+        public void WritePacket(NetworkWriter writer) => Packet.WritePacketList(list, writer);
+    }
 }

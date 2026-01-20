@@ -1399,7 +1399,7 @@ namespace BetterLegacy.Core
 
         // split functions from https://stackoverflow.com/questions/1841246/c-sharp-splitting-an-array
 
-        public static IEnumerable<IEnumerable<T>> Split<T>(this ICollection<T> self, int chunkSize)
+        public static List<List<T>> Split<T>(this ICollection<T> self, int chunkSize)
         {
             var splitList = new List<List<T>>();
             var chunkCount = (int)Math.Ceiling((double)self.Count / (double)chunkSize);

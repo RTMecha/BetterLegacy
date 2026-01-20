@@ -9,6 +9,7 @@ using InControl;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Components.Player;
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers.Settings;
@@ -314,14 +315,14 @@ namespace BetterLegacy.Core.Managers
                 return;
 
             Players.Clear();
-            Players.Add(CreateDefaultPlayer());
+            AddPlayer(CreateDefaultPlayer());
         }
 
         /// <summary>
         /// Creates the default player that uses a keyboard.
         /// </summary>
         /// <returns>Returns a <see cref="PAPlayer"/> with the default values.</returns>
-        public static PAPlayer CreateDefaultPlayer() => new PAPlayer(true, 0, null);
+        public static PAPlayer CreateDefaultPlayer() => new PAPlayer(0, null);
 
         public static PAPlayer FindPlayerUsingDevice(InputDevice inputDevice) => Players.Find(x => x.device == inputDevice);
 
@@ -330,6 +331,11 @@ namespace BetterLegacy.Core.Managers
         public static PAPlayer FindPlayerUsingKeyboard() => Players.Find(x => x.deviceName == "keyboard" || x.deviceType == ControllerType.Keyboard);
 
         public static bool KeyboardNotConnected() => !Players.Has(x => x.deviceName == "keyboard" || x.deviceType == ControllerType.Keyboard);
+
+        public static void AddPlayer(PAPlayer player)
+        {
+            Players.Add(player);
+        }
 
         public static void RemovePlayer(PAPlayer player)
         {
@@ -348,8 +354,13 @@ namespace BetterLegacy.Core.Managers
         /// Spawns all players at a checkpoint.
         /// </summary>
         /// <param name="checkpoint">Checkpoint to spawn at.</param>
-        public static void SpawnPlayers(Checkpoint checkpoint)
+        public static void SpawnPlayers(Checkpoint checkpoint, bool forceOnlineSpawn = false)
         {
+            if (!forceOnlineSpawn && ProjectArrhythmia.State.IsOnlineMultiplayer && !ProjectArrhythmia.State.IsHosting)
+                return;
+
+            if (ProjectArrhythmia.State.IsHosting)
+                NetworkManager.inst.RunFunction(NetworkFunction.SPAWN_PLAYERS_CHECKPOINT, checkpoint);
             AssignPlayerModels();
             var positions = GetSpawnPositions(checkpoint);
             bool spawned = false;
@@ -380,8 +391,13 @@ namespace BetterLegacy.Core.Managers
         /// Spawns all players at a position.
         /// </summary>
         /// <param name="pos">Position to spawn at.</param>
-        public static void SpawnPlayers(Vector2 pos)
+        public static void SpawnPlayers(Vector2 pos, bool forceOnlineSpawn = false)
         {
+            if (!forceOnlineSpawn && ProjectArrhythmia.State.IsOnlineMultiplayer && !ProjectArrhythmia.State.IsHosting)
+                return;
+
+            if (ProjectArrhythmia.State.IsHosting)
+                NetworkManager.inst.RunFunction(NetworkFunction.SPAWN_PLAYERS_POS, new NetworkFunction.Vector2Parameter(pos));
             AssignPlayerModels();
 
             bool spawned = false;
@@ -557,8 +573,14 @@ namespace BetterLegacy.Core.Managers
         /// <summary>
         /// Destroys all player related game objects.
         /// </summary>
-        public static void DestroyPlayers()
+        public static void DestroyPlayers(bool forceOnline = false)
         {
+            if (!forceOnline && ProjectArrhythmia.State.IsOnlineMultiplayer && !ProjectArrhythmia.State.IsHosting)
+                return;
+
+            if (ProjectArrhythmia.State.IsHosting)
+                NetworkManager.inst.RunFunction(NetworkFunction.DESTROY_PLAYERS);
+
             foreach (var player in Players)
                 DestroyPlayer(player);
         }
@@ -591,14 +613,25 @@ namespace BetterLegacy.Core.Managers
         /// <summary>
         /// Respawns all players at the default spawn position.
         /// </summary>
-        public static void RespawnPlayers() => RespawnPlayers(GetSpawnPosition());
+        public static void RespawnPlayers() => RespawnPlayers(false);
+
+        /// <summary>
+        /// Respawns all players at the default spawn position.
+        /// </summary>
+        public static void RespawnPlayers(bool forceOnline) => RespawnPlayers(GetSpawnPosition(), forceOnline);
 
         /// <summary>
         /// Respawns all players at a set spawn position.
         /// </summary>
-        public static void RespawnPlayers(Vector2 pos)
+        public static void RespawnPlayers(Vector2 pos, bool forceOnline)
         {
-            DestroyPlayers();
+            if (!forceOnline && ProjectArrhythmia.State.IsOnlineMultiplayer && !ProjectArrhythmia.State.IsHosting)
+                return;
+
+            if (ProjectArrhythmia.State.IsHosting)
+                NetworkManager.inst.RunFunction(NetworkFunction.RESPAWN_PLAYERS_POS, new NetworkFunction.Vector2Parameter(pos));
+
+            DestroyPlayers(true);
             AssignPlayerModels();
             SpawnPlayers(pos);
         }

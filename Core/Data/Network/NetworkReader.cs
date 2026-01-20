@@ -23,6 +23,8 @@ namespace BetterLegacy.Core.Data.Network
 
         readonly BinaryReader reader;
 
+        public long Count => reader.BaseStream.Length;
+
         #endregion
 
         #region Functions

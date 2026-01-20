@@ -147,7 +147,15 @@ namespace BetterLegacy.Core.Data.Network
         public void OnConnected(Connection connection, ConnectionInfo info)
         {
             CoreHelper.Log($"Client connected!");
-            var id = GetNextConnectionID();
+            int id;
+            if (steamIDToNetID.TryGetValue(info.Identity.SteamId, out id))
+            {
+                idToConnection[id] = connection;
+                onServerClientConnected?.Invoke(new ClientNetworkConnection(id, info.Identity.SteamId.ToString()));
+                return;
+            }
+
+            id = GetNextConnectionID();
 
             idToConnection.Add(id, connection);
             steamIDToNetID.Add(info.Identity.SteamId, id);
