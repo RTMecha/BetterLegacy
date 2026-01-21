@@ -11,6 +11,7 @@ using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers.Settings;
+using BetterLegacy.Menus;
 using BetterLegacy.Menus.UI.Popups;
 
 namespace BetterLegacy.Core.Managers
@@ -40,6 +41,11 @@ namespace BetterLegacy.Core.Managers
         Dictionary<SteamId, bool> loadedPlayers = new Dictionary<SteamId, bool>();
 
         public List<PAPlayer> localPlayers = new List<PAPlayer>();
+
+        /* logic notes
+        - when a client joins the lobby, all current players from that client get sent to the server.
+        - and GameData gets sent from the server to all clients
+         */
 
         #endregion
 
@@ -366,11 +372,18 @@ namespace BetterLegacy.Core.Managers
 
             if (!Transport.Instance)
             {
-                NetworkManager.inst.onClientConnectedTemp += connection => SyncPlayersToServer();
+                NetworkManager.inst.onClientConnectedTemp += connection =>
+                {
+                    SyncPlayersToServer();
+                    NetworkFunction.RequestGameData(RTSteamManager.inst.steamUser.steamID, SceneHelper.Current, InterfaceManager.inst.CurrentInterface?.name ?? string.Empty);
+                };
                 RTSteamManager.inst.StartClient(lobby.Owner.Id);
             }
             else
+            {
                 SyncPlayersToServer();
+                NetworkFunction.RequestGameData(RTSteamManager.inst.steamUser.steamID, SceneHelper.Current, InterfaceManager.inst.CurrentInterface?.name ?? string.Empty);
+            }
             foreach (var lobbyMember in lobby.Members)
             {
                 //if (lobbyMember.Id != RTSteamManager.inst.steamUser.steamID)

@@ -1493,7 +1493,7 @@ namespace BetterLegacy.Core.Components.Player
         {
             UpdateControls(); UpdateRotation();
 
-            if (ProjectArrhythmia.State.IsOnlineMultiplayer && Core && Core.IsLocalPlayer)
+            if (ProjectArrhythmia.State.IsOnlineMultiplayer && Core && Core.IsLocalPlayer && (!ProjectArrhythmia.State.InEditor || !EditorLevelManager.inst.loadingLevel))
                 NetworkManager.inst.RunFunction(NetworkFunction.SET_PLAYER_POSITION, sendType: SteamworksFacepunch.Data.SendType.Unreliable,
                     new NetworkFunction.ULongParameter(RTSteamManager.inst.steamUser.steamID),
                     new NetworkFunction.StringParameter(Core.id),

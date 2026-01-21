@@ -230,7 +230,7 @@ namespace BetterLegacy.Core.Data.Player
             var hasSteamID = reader.ReadBoolean();
             if (hasSteamID)
                 ID = reader.ReadUInt64();
-            //PlayerModel = Packet.CreateFromPacket<PlayerModel>(reader);
+            PlayerModel = Packet.CreateFromPacket<PlayerModel>(reader);
         }
 
         public void WritePacket(NetworkWriter writer)
@@ -247,7 +247,7 @@ namespace BetterLegacy.Core.Data.Player
             }
             else
                 writer.Write(false);
-            //PlayerModel.WritePacket(writer);
+            PlayerModel.WritePacket(writer);
         }
 
         public void SetCustomActive(bool active)

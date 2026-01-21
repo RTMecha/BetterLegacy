@@ -552,33 +552,12 @@ namespace BetterLegacy.Core.Data.Player
             assets = Packet.CreateFromPacket<Assets>(reader);
             basePart = Packet.CreateFromPacket<Base>(reader);
             guiPart = Packet.CreateFromPacket<GUI>(reader);
-            try
-            {
-                headPart = Packet.CreateFromPacket<PlayerObject>(reader);
-            }
-            catch (Exception ex)
-            {
-                CoreHelper.LogError($"Failed to create the head from a packet due to the exception: {ex}");
-            }
-            try
-            {
-                boostPart = Packet.CreateFromPacket<PlayerObject>(reader);
-            }
-            catch (Exception ex)
-            {
-                CoreHelper.LogError($"Failed to create the boost from a packet due to the exception: {ex}");
-            }
+            headPart = Packet.CreateFromPacket<PlayerObject>(reader);
+            boostPart = Packet.CreateFromPacket<PlayerObject>(reader);
             pulsePart = Packet.CreateFromPacket<Pulse>(reader);
             bulletPart = Packet.CreateFromPacket<Bullet>(reader);
             tailBase = Packet.CreateFromPacket<TailBase>(reader);
-            try
-            {
-                boostTailPart = Packet.CreateFromPacket<PlayerObject>(reader);
-            }
-            catch (Exception ex)
-            {
-                CoreHelper.LogError($"Failed to create the boost tail from a packet due to the exception: {ex}");
-            }
+            boostTailPart = Packet.CreateFromPacket<PlayerObject>(reader);
             Packet.ReadPacketList(tailParts, reader);
             Packet.ReadPacketList(customObjects, reader);
             icon = reader.ReadSprite();
@@ -808,6 +787,9 @@ namespace BetterLegacy.Core.Data.Player
                 bounciness = orig.bounciness;
                 canBoost = orig.canBoost;
                 airBoostOnly = orig.airBoostOnly;
+                stretchActive = orig.stretchActive;
+                stretchAmount = orig.stretchAmount;
+                stretchEasing = orig.stretchEasing;
             }
 
             public override void ReadJSON(JSONNode jn)
@@ -866,6 +848,13 @@ namespace BetterLegacy.Core.Data.Player
                     canBoost = jn["can_boost"].AsBool;
                 if (jn["air_boost_only"] != null)
                     airBoostOnly = jn["air_boost_only"].AsBool;
+
+                if (jn["stretch_active"] != null)
+                    stretchActive = jn["stretch_active"].AsBool;
+                if (jn["stretch_amount"] != null)
+                    stretchAmount = jn["stretch_amount"].AsFloat;
+                if (jn["stretch_easing"] != null)
+                    stretchEasing = jn["stretch_easing"].AsInt;
             }
 
             public override JSONNode ToJSON()
@@ -886,6 +875,12 @@ namespace BetterLegacy.Core.Data.Player
                     jn["rotate_s"] = rotationSpeed;
                 if (rotationCurveType != Easing.OutCirc)
                     jn["rotate_ct"] = (int)rotationCurveType;
+                if (stretchActive)
+                    jn["stretch_active"] = stretchActive;
+                if (stretchAmount != 0.4f)
+                    jn["stretch_amount"] = stretchAmount;
+                if (stretchEasing != 6)
+                    jn["stretch_easing"] = stretchEasing;
 
                 #endregion
 
@@ -961,6 +956,10 @@ namespace BetterLegacy.Core.Data.Player
                 rotationSpeed = reader.ReadSingle();
                 rotationCurveType = (Easing)reader.ReadByte();
 
+                stretchActive = reader.ReadBoolean();
+                stretchAmount = reader.ReadSingle();
+                stretchEasing = reader.ReadInt32();
+
                 #endregion
 
                 #region Control
@@ -1012,6 +1011,10 @@ namespace BetterLegacy.Core.Data.Player
                 writer.Write((byte)rotateMode);
                 writer.Write(rotationSpeed);
                 writer.Write((byte)rotationCurveType);
+
+                writer.Write(stretchActive);
+                writer.Write(stretchAmount);
+                writer.Write(stretchEasing);
 
                 #endregion
 
@@ -1519,7 +1522,7 @@ namespace BetterLegacy.Core.Data.Player
 
                 writer.Write(startPosition);
                 writer.Write(endPosition);
-                writer.Write(easingPosition);
+                writer.Write((byte)easingPosition);
 
                 #endregion
 
@@ -1527,7 +1530,7 @@ namespace BetterLegacy.Core.Data.Player
 
                 writer.Write(startScale);
                 writer.Write(endScale);
-                writer.Write(easingScale);
+                writer.Write((byte)easingScale);
 
                 #endregion
 
@@ -1535,7 +1538,7 @@ namespace BetterLegacy.Core.Data.Player
 
                 writer.Write(startRotation);
                 writer.Write(endRotation);
-                writer.Write(easingRotation);
+                writer.Write((byte)easingRotation);
 
                 #endregion
 
@@ -1545,11 +1548,11 @@ namespace BetterLegacy.Core.Data.Player
                 writer.Write(startCustomColor);
                 writer.Write(endColor);
                 writer.Write(endCustomColor);
-                writer.Write(easingColor);
+                writer.Write((byte)easingColor);
 
                 writer.Write(startOpacity);
                 writer.Write(endOpacity);
-                writer.Write(easingOpacity);
+                writer.Write((byte)easingOpacity);
 
                 #endregion
 
@@ -1969,7 +1972,7 @@ namespace BetterLegacy.Core.Data.Player
 
                 writer.Write(startPosition);
                 writer.Write(endPosition);
-                writer.Write(easingPosition);
+                writer.Write((byte)easingPosition);
                 writer.Write(durationPosition);
 
                 #endregion
@@ -1978,7 +1981,7 @@ namespace BetterLegacy.Core.Data.Player
 
                 writer.Write(startScale);
                 writer.Write(endScale);
-                writer.Write(easingScale);
+                writer.Write((byte)easingScale);
                 writer.Write(durationScale);
 
                 #endregion
@@ -1987,7 +1990,7 @@ namespace BetterLegacy.Core.Data.Player
 
                 writer.Write(startRotation);
                 writer.Write(endRotation);
-                writer.Write(easingRotation);
+                writer.Write((byte)easingRotation);
                 writer.Write(durationRotation);
 
                 #endregion
@@ -1998,12 +2001,12 @@ namespace BetterLegacy.Core.Data.Player
                 writer.Write(startCustomColor);
                 writer.Write(endColor);
                 writer.Write(endCustomColor);
-                writer.Write(easingColor);
+                writer.Write((byte)easingColor);
                 writer.Write(durationColor);
 
                 writer.Write(startOpacity);
                 writer.Write(endOpacity);
-                writer.Write(easingOpacity);
+                writer.Write((byte)easingOpacity);
                 writer.Write(durationOpacity);
 
                 #endregion
