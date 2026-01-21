@@ -1225,11 +1225,11 @@ namespace BetterLegacy.Companion.Data
             {
                 public override string Name => "add_start_time";
 
-                public override int ParameterCount => 1;
+                public override int ParameterCount => 2;
 
                 public override string Description => "Start time of the object.";
 
-                public override string AddToAutocomplete => "add_start_time 0.1";
+                public override string AddToAutocomplete => "add_start_time current_time 0.1";
 
                 public override void Apply(T obj, string[] parameters) => obj.StartTime = Parser.TryParse(parameters[0], 0f) + (Parser.TryParse(parameters[1], 0f) * index);
             }
@@ -1812,7 +1812,7 @@ namespace BetterLegacy.Companion.Data
             {
                 public override string Name => "add_time";
 
-                public override int ParameterCount => 1;
+                public override int ParameterCount => 2;
 
                 public override string Description => "Time of the marker.";
 
@@ -1881,7 +1881,7 @@ namespace BetterLegacy.Companion.Data
             {
                 public override string Name => "add_time";
 
-                public override int ParameterCount => 1;
+                public override int ParameterCount => 2;
 
                 public override string Description => "Time of the checkpoint.";
 
