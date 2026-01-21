@@ -60,6 +60,18 @@ namespace BetterLegacy.Core.Data.Network
 
         public const int MULTI_TEST = 984885;
 
+        #region Core
+
+        public const int LOG_CLIENT = 842754988;
+        public const int LOG_SERVER = 53295835;
+        public const int LOG_MULTI = 43292487;
+
+        public const int SEND_CHUNK_DATA = 326243667;
+
+        #endregion
+
+        #region Player
+
         public const int SEND_CLIENT_PLAYER_DATA = 5932573;
         public const int SEND_SERVER_PLAYER_DATA = 74362567;
         public const int SEND_MULTI_PLAYER_DATA = 476256437;
@@ -80,11 +92,16 @@ namespace BetterLegacy.Core.Data.Network
         public const int PLAYER_KILL = 593762876;
         public const int PLAYER_JUMP = 8538582;
 
-        public const int LOG_CLIENT = 842754988;
-        public const int LOG_SERVER = 53295835;
-        public const int LOG_MULTI = 43292487;
+        #endregion
+
+        #region Game States
+
+        public const int SET_CLIENT_SCENE = 683429582;
 
         public const int SET_CLIENT_GAME_DATA = 9432119;
+        public const int REQUEST_GAME_DATA = 636725988;
+
+        public const int SET_CLIENT_AUDIO = 82386538;
 
         public const int SET_CLIENT_MUSIC_TIME = 352633265;
         public const int SET_SERVER_MUSIC_TIME = 75842873;
@@ -92,7 +109,7 @@ namespace BetterLegacy.Core.Data.Network
         public const int SET_CLIENT_PITCH = 266775874;
         public const int SET_SERVER_PITCH = 378545366;
 
-        public const int SEND_CHUNK_DATA = 326243667;
+        #endregion
 
         #endregion
 
@@ -147,7 +164,21 @@ namespace BetterLegacy.Core.Data.Network
 
         public static void LogMultiSide(string message) => NetworkManager.inst.RunFunction(LOG_MULTI, new StringParameter(message));
 
-        public static void SetClientGameData(GameData gameData, string id = null) => NetworkManager.inst.RunFunction(SET_CLIENT_GAME_DATA, gameData, new StringParameter(id));
+        public static void SetClientScene(SceneName scene, bool showLoading, int onLoadFunc) => NetworkManager.inst.RunFunction(SET_CLIENT_SCENE, new ByteParameter((byte)scene), new BoolParameter(showLoading), new IntParameter(onLoadFunc));
+
+        public static void RequestGameData(ulong id, SceneName scene, string interfaceName) => NetworkManager.inst.RunFunction(REQUEST_GAME_DATA, new ULongParameter(id), new ByteParameter((byte)scene), new StringParameter(interfaceName));
+
+        public static void SetClientGameData(GameData gameData, string id = null) => NetworkManager.inst.RunFunction(SET_CLIENT_GAME_DATA, new StringParameter(id), gameData);
+
+        public static void SetClientAudio(AudioClip audioClip) => NetworkManager.inst.RunFunction(SET_CLIENT_AUDIO, new AudioClipParameter(audioClip));
+
+        public static void SetClientMusicTime(float time) => NetworkManager.inst.RunFunction(SET_CLIENT_MUSIC_TIME, new FloatParameter(time));
+
+        public static void SetServerMusicTime(float time) => NetworkManager.inst.RunFunction(SET_SERVER_MUSIC_TIME, new FloatParameter(time));
+
+        public static void SetClientPitch(float pitch) => NetworkManager.inst.RunFunction(SET_CLIENT_PITCH, new FloatParameter(pitch));
+
+        public static void SetServerPitch(float pitch) => NetworkManager.inst.RunFunction(SET_SERVER_PITCH, new FloatParameter(pitch));
 
         #endregion
 
@@ -167,6 +198,39 @@ namespace BetterLegacy.Core.Data.Network
             public abstract void WritePacket(NetworkWriter writer);
         }
 
+        public class AudioClipParameter : Parameter
+        {
+            public AudioClipParameter(AudioClip value) => this.value = value;
+
+            public AudioClip value;
+
+            public override void ReadPacket(NetworkReader reader) => value = Packet.AudioClipFromPacket(reader);
+
+            public override void WritePacket(NetworkWriter writer) => value.WritePacket(writer);
+        }
+
+        public class ByteParameter : Parameter
+        {
+            public ByteParameter(byte value) => this.value = value;
+
+            public byte value;
+
+            public override void ReadPacket(NetworkReader reader) => value = reader.ReadByte();
+
+            public override void WritePacket(NetworkWriter writer) => writer.Write(value);
+        }
+        
+        public class BoolParameter : Parameter
+        {
+            public BoolParameter(bool value) => this.value = value;
+
+            public bool value;
+
+            public override void ReadPacket(NetworkReader reader) => value = reader.ReadBoolean();
+
+            public override void WritePacket(NetworkWriter writer) => writer.Write(value);
+        }
+        
         public class IntParameter : Parameter
         {
             public IntParameter(int value) => this.value = value;

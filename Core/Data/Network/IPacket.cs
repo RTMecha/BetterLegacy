@@ -178,7 +178,7 @@ namespace BetterLegacy.Core.Data.Network
             writer.Write(clip.samples);
             writer.Write(clip.channels);
             writer.Write(clip.frequency);
-            float[] data = new float[clip.frequency * clip.channels];
+            float[] data = new float[clip.samples * clip.channels];
             clip.GetData(data, 0);
             writer.Write(data);
         }

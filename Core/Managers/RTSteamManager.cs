@@ -184,7 +184,7 @@ namespace BetterLegacy.Core.Managers
                 SteamNetworkingUtils.InitRelayNetworkAccess();
                 SteamNetworkingUtils.ConnectionTimeout = 5000;
                 SteamNetworkingUtils.Timeout = 6000;
-                SteamNetworkingUtils.SendBufferSize = 10485760;
+                SteamNetworkingUtils.SendBufferSize = 10485760; // max is still 524288 (500KB) for some reason
             }
             catch (Exception ex)
             {
@@ -236,6 +236,7 @@ namespace BetterLegacy.Core.Managers
             Log($"Starting client. Connecting to [{id}]");
             Transport.Instance = new Transport();
             NetworkManager.inst.ConnectToServer(id.ToString());
+            ProjectArrhythmia.State.IsOnlineMultiplayer = true;
         }
 
         public void EndClient()
@@ -261,6 +262,7 @@ namespace BetterLegacy.Core.Managers
         {
             Log($"Starting server.");
             NetworkManager.inst.StartServer();
+            ProjectArrhythmia.State.IsOnlineMultiplayer = true;
         }
 
         public void EndServer()

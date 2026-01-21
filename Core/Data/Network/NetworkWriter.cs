@@ -12,15 +12,19 @@ namespace BetterLegacy.Core.Data.Network
     {
         #region Constructors
 
-        public NetworkWriter() => memoryStream.Position = 0;
+        public NetworkWriter()
+        {
+            memoryStream.Position = 0;
+            writer = new BinaryWriter(memoryStream, Encoding.UTF8, true);
+        }
 
         #endregion
 
         #region Values
 
         public long Position { get => memoryStream.Position; set => memoryStream.Position = value; }
-        static MemoryStream memoryStream = new MemoryStream(1024);
-        readonly BinaryWriter writer = new BinaryWriter(memoryStream, Encoding.UTF8, true);
+        MemoryStream memoryStream = new MemoryStream(1024);
+        readonly BinaryWriter writer;
 
         #endregion
 

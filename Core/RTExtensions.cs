@@ -3045,7 +3045,9 @@ namespace BetterLegacy.Core
         /// <param name="reader">Packet data to read from.</param>
         public static void ReadModifiersPacket(this IModifyable modifyable, NetworkReader reader)
         {
-            modifyable.Tags = reader.ReadList(() => reader.ReadString());
+            var hasTags = reader.ReadBoolean();
+            if (hasTags)
+                modifyable.Tags = reader.ReadList(() => reader.ReadString());
             modifyable.IgnoreLifespan = reader.ReadBoolean();
             modifyable.OrderModifiers = reader.ReadBoolean();
             Packet.ReadPacketList(modifyable.Modifiers, reader);
@@ -3058,7 +3060,10 @@ namespace BetterLegacy.Core
         /// <param name="writer">Packet data to write to.</param>
         public static void WriteModifiersPacket(this IModifyable modifyable, NetworkWriter writer)
         {
-            writer.Write(modifyable.Tags ?? new List<string>(), tag => writer.Write(tag));
+            var hasTags = modifyable.Tags != null;
+            writer.Write(hasTags);
+            if (hasTags)
+                writer.Write(modifyable.Tags, tag => writer.Write(tag));
             writer.Write(modifyable.IgnoreLifespan);
             writer.Write(modifyable.OrderModifiers);
             Packet.WritePacketList(modifyable.Modifiers, writer);

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Text;
 
 using UnityEngine;
 
@@ -9,6 +11,7 @@ using SteamworksFacepunch;
 using SteamworksFacepunch.Data;
 
 using BetterLegacy.Core.Components.Player;
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Data.Player;
@@ -20,8 +23,13 @@ using BetterLegacy.Editor.Managers;
 namespace BetterLegacy.Core.Managers
 {
     // class based on https://github.com/Aiden-ytarame/AttributeNetworkWrapper
+    /// <summary>
+    /// Manages server-client connections.
+    /// </summary>
     public class NetworkManager : BaseManager<NetworkManager, ManagerSettings>
     {
+        #region Values
+
         protected ServerNetworkConnection serverConnection;
         protected Dictionary<int, ClientNetworkConnection> clientConnections = new Dictionary<int, ClientNetworkConnection>();
 
@@ -31,27 +39,37 @@ namespace BetterLegacy.Core.Managers
 
         public Action<int, ClientNetworkConnection> onServerConnectedTemp;
 
+        // was gonna do 9000000 but oh well
+        /// <summary>
+        /// Max packet size until packets get split.
+        /// </summary>
+        public const int SPLIT_DATA_COUNT = 500000; // 9 MB
+
         bool eventsSet;
 
+        /// <summary>
+        /// List of functions to run over a network.
+        /// </summary>
         public List<NetworkFunction> functions = new List<NetworkFunction>
         {
-            new NetworkFunction(NetworkFunction.SEND_CHUNK_DATA, 1, reader =>
-            {
-                var id = reader.ReadString();
-                if (!inst.queuedBytes.TryGetValue(id, out DataQueue dataQueue))
-                    return;
+            //new NetworkFunction(NetworkFunction.SEND_CHUNK_DATA, 1, reader =>
+            //{
+            //    var id = reader.ReadString();
+            //    if (!inst.queuedBytes.TryGetValue(id, out DataQueue dataQueue))
+            //        return;
 
-                using var writer = new NetworkWriter();
-                writer.Write(dataQueue.id);
-                writer.Write(dataQueue.count);
-                writer.Write(id);
-                writer.Write(dataQueue.chunks[0].ToArray());
+            //    using var writer = new NetworkWriter();
+            //    writer.Write(dataQueue.id);
+            //    writer.Write(dataQueue.count);
+            //    writer.Write(id);
+            //    writer.Write(dataQueue.chunks[0].ToArray());
+            //    dataQueue.chunks.RemoveAt(0);
 
-                if (dataQueue.chunks.IsEmpty())
-                    inst.queuedBytes.Remove(id);
+            //    if (dataQueue.chunks.IsEmpty())
+            //        inst.queuedBytes.Remove(id);
 
-                inst.Send(dataQueue.side, writer.GetData(), SendType.Reliable);
-            }),
+            //    inst.Send(dataQueue.side, writer.GetData(), SendType.Reliable);
+            //}),
             new NetworkFunction(Side.Client, NetworkFunction.CLIENT_TEST, reader => { }),
             new NetworkFunction(Side.Server, NetworkFunction.SERVER_TEST, reader => { }),
             new NetworkFunction(NetworkFunction.MULTI_TEST, reader => { }),
@@ -80,47 +98,26 @@ namespace BetterLegacy.Core.Managers
                         PlayerManager.Players.Add(player);
                     }
                 }
-                if (ProjectArrhythmia.State.InEditor)
+                if (ProjectArrhythmia.State.InEditor && EditorManager.inst.hasLoadedLevel)
                     PlayerManager.SpawnPlayers(PlayerManager.GetSpawnPosition());
             }),
             new NetworkFunction(Side.Server, NetworkFunction.SEND_SERVER_PLAYER_DATA, 1, reader =>
             {
-                foreach (var player in PlayerManager.Players)
-                    PlayerManager.DestroyPlayer(player);
-                PlayerManager.Players.Clear();
                 var list = new PacketList<PAPlayer>(new List<PAPlayer>());
                 list.ReadPacket(reader);
                 CoreHelper.Log($"Got players [{list.Count}]");
-                int index = 0;
-                if (SteamLobbyManager.inst.localPlayers != null)
-                    for (int i = 0; i < SteamLobbyManager.inst.localPlayers.Count; i++)
-                    {
-                        var player = SteamLobbyManager.inst.localPlayers[i];
-                        if (!PlayerManager.Players.Has(x => x.id == player.id))
-                        {
-                            player.index = index;
-                            PlayerManager.Players.Add(player);
-                            index++;
-                        }
-                    }
                 for (int i = 0; i < list.Count; i++)
                 {
                     var player = list[i];
-                    if (SteamLobbyManager.inst.localPlayers != null && SteamLobbyManager.inst.localPlayers.TryFind(x => x.id == player.id, out PAPlayer origPlayer))
-                    {
-                        origPlayer.index = index;
-                        PlayerManager.Players.Add(origPlayer);
-                    }
-                    else
-                    {
-                        player.index = index;
+                    if (!PlayerManager.Players.Has(x => x.id == player.id))
                         PlayerManager.Players.Add(player);
-                    }
-                    index++;
                 }
+                PlayerManager.Players.Sort((a, b) => b.IsLocalPlayer.CompareTo(a.IsLocalPlayer));
+                for (int i = 0; i < PlayerManager.Players.Count; i++)
+                    PlayerManager.Players[i].index = i;
                 SteamLobbyManager.inst.SyncPlayersToClients();
-                if (ProjectArrhythmia.State.InEditor)
-                    PlayerManager.SpawnPlayers(PlayerManager.GetSpawnPosition());
+                if (ProjectArrhythmia.State.InEditor && EditorManager.inst.hasLoadedLevel)
+                    PlayerManager.RespawnPlayers();
             }),
             new NetworkFunction(NetworkFunction.SEND_MULTI_PLAYER_DATA, 1, reader =>
             {
@@ -245,11 +242,20 @@ namespace BetterLegacy.Core.Managers
             new NetworkFunction(Side.Client, NetworkFunction.LOG_CLIENT, 1, reader => CoreHelper.Log(reader.ReadString())),
             new NetworkFunction(Side.Server, NetworkFunction.LOG_SERVER, 1, reader => CoreHelper.Log(reader.ReadString())),
             new NetworkFunction(NetworkFunction.LOG_MULTI, 1, reader => CoreHelper.Log(reader.ReadString())),
+            new NetworkFunction(Side.Client, NetworkFunction.SET_CLIENT_SCENE, 3, reader =>
+            {
+                var func = reader.ReadInt32();
+                if (func != 0)
+                    SceneHelper.OnSceneLoad += scene => inst.RunFunction(func);
+                SceneHelper.LoadScene((SceneName)reader.ReadByte(), reader.ReadBoolean());
+            }),
             new NetworkFunction(Side.Client, NetworkFunction.SET_CLIENT_GAME_DATA, 2, reader =>
             {
                 var steamID = reader.ReadString();
                 if (!string.IsNullOrEmpty(steamID) && ulong.TryParse(steamID, out ulong id) && RTSteamManager.inst.steamUser.steamID != id)
                     return;
+
+                SteamLobbyManager.inst.CurrentLobby.SetMemberData("IsLoaded", "1");
 
                 try
                 {
@@ -266,6 +272,9 @@ namespace BetterLegacy.Core.Managers
 
                     if (ProjectArrhythmia.State.InEditor)
                     {
+                        if (RTEditor.inst.PreviewCover != null && RTEditor.inst.PreviewCover.gameObject)
+                            RTEditor.inst.PreviewCover.gameObject.SetActive(false);
+
                         EditorLevelManager.inst.PostInitLevel();
                         EditorTimeline.inst.RenderTimeline();
                         EditorTimeline.inst.RenderBins();
@@ -276,6 +285,32 @@ namespace BetterLegacy.Core.Managers
                     LogError($"Failed to read game data due to the exception: {ex}");
                 }
             }),
+            new NetworkFunction(Side.Server, NetworkFunction.REQUEST_GAME_DATA, 3, reader =>
+            {
+                var id = reader.ReadUInt64();
+                var clientScene = (SceneName)reader.ReadByte();
+                var currentScene = SceneHelper.Current;
+                var currentInterface = reader.ReadString();
+                if (currentScene != clientScene)
+                {
+                    NetworkFunction.SetClientScene(currentScene, true, 0);
+                    NetworkFunction.RequestGameData(id, currentScene, currentInterface);
+                }
+                else if (SceneHelper.GetSceneType(currentScene) != SceneType.Interface)
+                {
+                    NetworkFunction.SetClientGameData(GameData.Current, id.ToString());
+                    NetworkFunction.SetClientMusicTime(AudioManager.inst.CurrentAudioSource.time);
+                    NetworkFunction.SetClientPitch(RTLevel.Current && RTLevel.Current.eventEngine ? RTLevel.Current.eventEngine.pitchOffset : AudioManager.inst.pitch);
+                }
+            }),
+
+            new NetworkFunction(Side.Client, NetworkFunction.SET_CLIENT_AUDIO, 1, reader =>
+            {
+                if (ProjectArrhythmia.State.InEditor)
+                    EditorLevelManager.inst.SetCurrentAudio(Packet.AudioClipFromPacket(reader));
+                else
+                    LevelManager.SetCurrentAudio(Packet.AudioClipFromPacket(reader));
+            }),
             new NetworkFunction(Side.Client, NetworkFunction.SET_CLIENT_MUSIC_TIME, 1, reader => AudioManager.inst.SetMusicTime(reader.ReadSingle())),
             new NetworkFunction(Side.Server, NetworkFunction.SET_SERVER_MUSIC_TIME, 1, reader => AudioManager.inst.SetMusicTime(reader.ReadSingle())),
             new NetworkFunction(Side.Client, NetworkFunction.SET_CLIENT_PITCH, 1, reader => AudioManager.inst.SetPitch(reader.ReadSingle())),
@@ -284,22 +319,18 @@ namespace BetterLegacy.Core.Managers
 
         Dictionary<string, DataChunkHandler> dataChunkHandlers = new Dictionary<string, DataChunkHandler>();
 
-        Dictionary<string, DataQueue> queuedBytes = new Dictionary<string, DataQueue>();
+        Dictionary<string, NetworkWriter> dataChunks = new Dictionary<string, NetworkWriter>();
 
-        class DataQueue
-        {
-            public DataQueue(List<List<byte>> chunks, NetworkFunction.Side side, int id, long count)
-            {
-                this.chunks = chunks;
-                this.side = side;
-                this.id = id;
-                this.count = count;
-            }
-            public List<List<byte>> chunks = new List<List<byte>>();
-            public NetworkFunction.Side side;
-            public int id;
-            public long count;
-        }
+        //Dictionary<string, DataQueue> queuedBytes = new Dictionary<string, DataQueue>();
+
+        /// <summary>
+        /// If packets are being written.
+        /// </summary>
+        public bool writingPackets;
+
+        #endregion
+
+        #region Functions
 
         public override void OnInit() => SetEvents();
 
@@ -322,16 +353,38 @@ namespace BetterLegacy.Core.Managers
         public override void OnManagerDestroyed() => RemoveEvents();
 
         // BetterLegacy.Core.Managers.NetworkManager.inst.RunFunction(NetworkFunction.LOG_MULTI, new NetworkFunction.StringParameter("test"));
+        /// <summary>
+        /// Runs a function over the network.
+        /// </summary>
+        /// <param name="id">ID of the function.</param>
+        /// <param name="packets">Parameters as packets. Must match the specific network functions' parameter count.</param>
         public void RunFunction(int id, params IPacket[] packets) => RunFunction(id, SendType.Reliable, packets);
 
+        /// <summary>
+        /// Runs a function over the network.
+        /// </summary>
+        /// <param name="id">ID of the function.</param>
+        /// <param name="sendType">How the packet data should be handled over the network.</param>
+        /// <param name="packets">Parameters as packets. Must match the specific network functions' parameter count.</param>
         public void RunFunction(int id, SendType sendType, params IPacket[] packets)
         {
             if (functions.TryFind(x => x.id == id && x.parameterCount == packets.Length, out NetworkFunction function))
                 RunFunction(function, sendType, packets);
         }
 
+        /// <summary>
+        /// Runs a function over the network.
+        /// </summary>
+        /// <param name="function">Function to run.</param>
+        /// <param name="packets">Parameters as packets. Must match the specific network functions' parameter count.</param>
         public void RunFunction(NetworkFunction function, params IPacket[] packets) => RunFunction(function, SendType.Reliable, packets);
 
+        /// <summary>
+        /// Runs a function over the network.
+        /// </summary>
+        /// <param name="function">Function to run.</param>
+        /// <param name="sendType">How the packet data should be handled over the network.</param>
+        /// <param name="packets">Parameters as packets. Must match the specific network functions' parameter count.</param>
         public void RunFunction(NetworkFunction function, SendType sendType, params IPacket[] packets)
         {
             //using var writer = new NetworkWriter();
@@ -346,14 +399,12 @@ namespace BetterLegacy.Core.Managers
             //writer.Write(position); // add 20 = 30 - 10
             //writer.Position = position + (writer.Position - setPos); // 170
 
+            writingPackets = true;
             // not very good way of getting packet length but idk how else to do it so yeah
-            var packetWriter = new NetworkWriter();
+            using var packetWriter = new NetworkWriter();
             for (int i = 0; i < packets.Length; i++)
                 packets[i].WritePacket(packetWriter);
-
-            var packetData = packetWriter.GetData();
-            var length = packetData.Array.LongLength;
-            packetWriter.Dispose();
+            var length = packetWriter.Position;
             using var writer = new NetworkWriter();
             writer.Write(function.id);
             writer.Write(length);
@@ -363,8 +414,9 @@ namespace BetterLegacy.Core.Managers
                 packets[i].WritePacket(writer);
 
             var data = writer.GetData();
+            writingPackets = false;
             // handle data chunk splitting
-            if (length > 9000000)
+            if (length > SPLIT_DATA_COUNT)
             {
                 CoreHelper.Log($"Splitting function [{function.id} {uniqueID}] and sending it to [{function.side}] with send type [{sendType}]\nPacket size: {length}");
                 Split(data, function, length, uniqueID);
@@ -376,15 +428,22 @@ namespace BetterLegacy.Core.Managers
 
         void Split(ArraySegment<byte> data, NetworkFunction function, long position, string uniqueID)
         {
-            var chunks = data.Split(9000000);
-            var dataQueue = new DataQueue(chunks, function.side, function.id, position);
-            queuedBytes[uniqueID] = dataQueue;
-            using var writer = new NetworkWriter();
-            writer.Write(function.id);
-            writer.Write(uniqueID);
-            writer.Write(data.Array);
-            writer.Write(position);
-            Send(function.side, writer.GetData(), SendType.Reliable);
+            var chunks = data.Split(SPLIT_DATA_COUNT);
+            //var dataQueue = new DataQueue(chunks, function.side, function.id, position);
+            //queuedBytes[uniqueID] = dataQueue;
+            while (!chunks.IsEmpty())
+            {
+                using var writer = new NetworkWriter();
+                writer.Write(function.id);
+                writer.Write(position);
+                writer.Write(uniqueID);
+                writer.Write(chunks.Count);
+                var d = chunks[0].ToArray();
+                writer.Write(d.Length);
+                writer.Write(d);
+                chunks.RemoveAt(0);
+                Send(function.side, writer.GetData(), SendType.NoDelay);
+            }
         }
 
         void Send(NetworkFunction.Side side, ArraySegment<byte> data, SendType sendType)
@@ -405,6 +464,8 @@ namespace BetterLegacy.Core.Managers
                 case NetworkFunction.Side.Multi: {
                         if (ProjectArrhythmia.State.IsHosting)
                             Transport.onServerDataReceived?.Invoke(ServerSelfPeerConnection, data);
+                        else
+                            SendToServer(data, sendType);
                         SendToAllClients(data, sendType);
                         break;
                     }
@@ -568,22 +629,111 @@ namespace BetterLegacy.Core.Managers
         {
             var dataLength = reader.ReadInt64();
             var uniqueID = reader.ReadString();
-            if (dataLength <= 9000000)
+            if (dataLength <= SPLIT_DATA_COUNT)
                 return true;
-            if (!dataChunkHandlers.TryGetValue(uniqueID, out DataChunkHandler handler))
+
+            var count = reader.ReadInt32();
+            var currentDataLength = reader.ReadInt32();
+
+            if (!dataChunks.TryGetValue(uniqueID, out NetworkWriter writer))
             {
-                handler = new DataChunkHandler() { id = uniqueID };
-                dataChunkHandlers[uniqueID] = handler;
+                writer = new NetworkWriter();
+                dataChunks[uniqueID] = writer;
             }
 
-            if (!handler.WriteChunkData(reader, dataLength))
+            writer.Write(reader.ReadBytes(currentDataLength));
+
+            if (count > 1)
             {
-                RunFunction(NetworkFunction.SEND_CHUNK_DATA, new NetworkFunction.StringParameter(uniqueID));
+                CoreHelper.Log($"Data chunk is not the end of the chunk list, so waiting for more.\n" +
+                    $"Count: {count}\n" +
+                    $"ID: {uniqueID}\n" +
+                    $"Total data size: {dataLength}\n" +
+                    $"Chunk data size: {currentDataLength}");
                 return false;
             }
-            dataChunkHandlers.Remove(uniqueID);
-            reader = new NetworkReader(handler.GetData());
+
+            CoreHelper.Log($"Data chunk has reached the end.\n" +
+                    $"Count: {count}\n" +
+                    $"ID: {uniqueID}\n" +
+                    $"Total data size: {dataLength}\n" +
+                    $"Chunk data size: {currentDataLength}");
+
+            reader = new NetworkReader(writer.GetData());
+            writer.Dispose();
+            dataChunks.Remove(uniqueID);
+
+            //if (!dataChunkHandlers.TryGetValue(uniqueID, out DataChunkHandler handler))
+            //{
+            //    handler = new DataChunkHandler();
+            //    dataChunkHandlers[uniqueID] = handler;
+            //}
+
+            //if (!handler.WriteChunkData(reader, dataLength))
+            //{
+            //    CoreHelper.Log($"Requesting more chunk data for [{uniqueID}] with total size [{dataLength}]");
+            //    //RunFunction(NetworkFunction.SEND_CHUNK_DATA, new NetworkFunction.StringParameter(uniqueID));
+            //    return false;
+            //}
+            //CoreHelper.Log($"Chunk data request for [{uniqueID}] with total size [{dataLength}] has ended");
+            //dataChunkHandlers.Remove(uniqueID);
+            //reader = new NetworkReader(handler.GetData());
             return true;
         }
+
+        #endregion
+
+        #region Sub Classes
+
+        //class DataQueue
+        //{
+        //    public DataQueue(List<List<byte>> chunks, NetworkFunction.Side side, int id, long count)
+        //    {
+        //        this.chunks = chunks;
+        //        this.side = side;
+        //        this.id = id;
+        //        this.count = count;
+        //    }
+        //    public List<List<byte>> chunks = new List<List<byte>>();
+        //    public NetworkFunction.Side side;
+        //    public int id;
+        //    public long count;
+        //}
+
+        class DataChunkHandler : Exists, IDisposable
+        {
+            public DataChunkHandler() => writer = new BinaryWriter(memoryStream, Encoding.UTF8, true);
+
+            public long Position { get => memoryStream.Position; set => memoryStream.Position = value; }
+            MemoryStream memoryStream = new MemoryStream(1024);
+            readonly BinaryWriter writer;
+
+            /// <summary>
+            /// Gets the byte data of the current writer.
+            /// </summary>
+            /// <returns>Returns a byte array.</returns>
+            public ArraySegment<byte> GetData() => new ArraySegment<byte>(memoryStream.GetBuffer(), 0, (int)memoryStream.Position);
+
+            /// <summary>
+            /// Writes chunk data from packet data.
+            /// </summary>
+            /// <param name="reader">The current network reader.</param>
+            /// <returns>Returns <see langword="true"/> if the chunk data has reached the end, otherwise returns <see langword="false"/>.</returns>
+            public bool WriteChunkData(NetworkReader reader, long dataCount)
+            {
+                if (Position >= dataCount)
+                    return true;
+                writer.Write(reader.ReadBytes(SPLIT_DATA_COUNT));
+                return Position >= dataCount;
+            }
+
+            public void Dispose()
+            {
+                writer.Dispose();
+                GC.SuppressFinalize(this);
+            }
+        }
+
+        #endregion
     }
 }
