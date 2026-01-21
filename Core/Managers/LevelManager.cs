@@ -16,6 +16,7 @@ using BetterLegacy.Core.Components.Player;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Level;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers.Settings;
@@ -244,6 +245,9 @@ namespace BetterLegacy.Core.Managers
 
             #region Init
 
+            if (ProjectArrhythmia.State.IsHosting)
+                SteamLobbyManager.inst.UnloadAll();
+
             RandomHelper.UpdateSeed();
 
             Log($"Updating scene.");
@@ -324,6 +328,7 @@ namespace BetterLegacy.Core.Managers
                 SetCurrentGameData(level);
                 if (GameData.Current && GameData.Current.data && GameData.Current.data.level)
                     RTBeatmap.Current.respawnImmediately = GameData.Current.data.level.respawnImmediately;
+                NetworkFunction.SetClientGameData(GameData.Current);
             }
 
             if (level.IsVG)
@@ -378,6 +383,8 @@ namespace BetterLegacy.Core.Managers
 
             SetCurrentAudio(level.music);
             GameManager.inst.songLength = level.music.length;
+
+            NetworkFunction.SetClientAudio(level.music);
 
             // preload audio clips
             if (GameData.Current && GameData.Current.assets)
@@ -437,6 +444,10 @@ namespace BetterLegacy.Core.Managers
             #endregion
 
             #region Done
+
+            if (ProjectArrhythmia.State.IsInLobby)
+                while (!SteamLobbyManager.inst.IsEveryoneLoaded)
+                    yield return null;
 
             Log($"Done!");
 

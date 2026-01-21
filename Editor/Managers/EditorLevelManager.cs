@@ -895,6 +895,9 @@ namespace BetterLegacy.Editor.Managers
             CoreHelper.Log("Playing level music...");
             RTEditor.inst.InfoPopup.SetInfo($"Playing Music for [ {name} ]\n\nIf it doesn't, then something went wrong!");
             SetCurrentAudio(level.music);
+            if (ProjectArrhythmia.State.IsInLobby && ProjectArrhythmia.State.IsHosting)
+                NetworkFunction.SetClientAudio(level.music);
+
             CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
 
             RTEditor.inst.InfoPopup.SetInfo($"Updating states for [ {name} ]");
