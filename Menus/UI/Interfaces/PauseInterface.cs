@@ -304,6 +304,12 @@ namespace BetterLegacy.Menus.UI.Interfaces
             },
             new ButtonElement
             {
+                name = "Lobby Button",
+                text = "<b> [ LOBBY ]",
+                func = LobbyPopup.Instance.Open,
+            },
+            new ButtonElement
+            {
                 check = () => LevelManager.Hub,
                 name = "Return Button",
                 text = "<b> [ RETURN TO HUB ]",
