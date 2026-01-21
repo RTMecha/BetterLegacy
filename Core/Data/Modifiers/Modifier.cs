@@ -367,7 +367,7 @@ namespace BetterLegacy.Core.Data.Modifiers
         public void ReadPacket(NetworkReader reader)
         {
             id = reader.ReadString();
-            type = (Type)reader.ReadUInt16();
+            type = (Type)reader.ReadByte();
             if (type == Type.Trigger)
             {
                 not = reader.ReadBoolean();
@@ -397,7 +397,7 @@ namespace BetterLegacy.Core.Data.Modifiers
         public void WritePacket(NetworkWriter writer)
         {
             writer.Write(id);
-            writer.Write((ushort)type);
+            writer.Write((byte)type);
             if (type == Type.Trigger)
             {
                 writer.Write(not);
