@@ -290,7 +290,7 @@ namespace BetterLegacy.Core.Managers
             for (int i = 0; i < players.Count; i++)
             {
                 var player = players[i];
-                if (player && player.RuntimePlayer && player.RuntimePlayer.rb)
+                if (player && player.IsLocalPlayer && player.RuntimePlayer && player.RuntimePlayer.rb)
                 {
                     result += player.RuntimePlayer.rb.position;
                     count++;

@@ -1526,7 +1526,7 @@ namespace BetterLegacy.Core.Components.Player
         void ClampToCamera()
         {
             // Here we handle the player's bounds to the camera. It is possible to include negative zoom in those bounds but it might not be a good idea since people have already utilized it.
-            if (!OutOfBounds && !(RTEditor.inst && RTEditor.inst.Freecam) && ProjectArrhythmia.State.Playing)
+            if ((!Core || Core.IsLocalPlayer) && !OutOfBounds && !(RTEditor.inst && RTEditor.inst.Freecam) && ProjectArrhythmia.State.Playing)
             {
                 if (Camera.main.orthographicSize <= 0f && includeNegativeZoom)
                     return;
