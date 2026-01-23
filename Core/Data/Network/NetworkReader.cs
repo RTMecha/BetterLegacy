@@ -15,7 +15,9 @@ namespace BetterLegacy.Core.Data.Network
 
         public NetworkReader(Stream stream) => reader = new BinaryReader(stream);
 
-        public NetworkReader(ArraySegment<byte> data) : this(new MemoryStream(data.Array)) { }
+        public NetworkReader(byte[] array) : this(new MemoryStream(array)) { }
+
+        public NetworkReader(ArraySegment<byte> data) : this(data.Array) { }
 
         #endregion
 

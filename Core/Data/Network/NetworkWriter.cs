@@ -36,6 +36,12 @@ namespace BetterLegacy.Core.Data.Network
         /// <returns>Returns a byte array.</returns>
         public ArraySegment<byte> GetData() => new ArraySegment<byte>(memoryStream.GetBuffer(), 0, (int)memoryStream.Position);
 
+        /// <summary>
+        /// Gets the buffer of the memory stream.
+        /// </summary>
+        /// <returns>Returns the buffer of the current memory stream.</returns>
+        public byte[] GetBuffer() => memoryStream.GetBuffer();
+
         public void Write(string value) => writer.Write(value ?? string.Empty);
         public void Write(float value) => writer.Write(value);
         public void Write(ulong value) => writer.Write(value);

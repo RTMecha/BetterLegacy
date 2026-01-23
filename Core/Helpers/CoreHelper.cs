@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
 
 using UnityEngine;
@@ -692,6 +694,36 @@ namespace BetterLegacy.Core.Helpers
         #endregion
 
         #region Misc
+
+        // https://stackoverflow.com/questions/39191950/how-to-compress-a-byte-array-without-stream-or-system-io
+        public static MemoryStream CompressToStream(byte[] data)
+        {
+            var output = new MemoryStream();
+            using var dstream = new DeflateStream(output, System.IO.Compression.CompressionLevel.Optimal);
+            dstream.Write(data, 0, data.Length);
+            return output;
+        }
+
+        public static byte[] Compress(byte[] data)
+        {
+            using var output = CompressToStream(data);
+            return output.ToArray();
+        }
+
+        public static MemoryStream DecompressToStream(byte[] data)
+        {
+            using var input = new MemoryStream(data);
+            var output = new MemoryStream();
+            using var dstream = new DeflateStream(input, CompressionMode.Decompress);
+            dstream.CopyTo(output);
+            return output;
+        }
+
+        public static byte[] Decompress(byte[] data)
+        {
+            using var output = DecompressToStream(data);
+            return output.ToArray();
+        }
 
         public static int CombineHashCodes<T1, T2>(T1 t1, T2 t2)
         {
