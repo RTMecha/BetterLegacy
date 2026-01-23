@@ -1,12 +1,12 @@
 ﻿# ???
 ## Features
 ### Core
-- Added online lobbies. This allows you to play multiplayer online.
+- Added online lobbies. This allows you to play multiplayer online. DISCLAIMER: this feature is in very early testing so it is bound to break or not work in a lot of cases. Use with caution. Also, make sure you're always up to date on the latest version when playing online just in case changes are made.
 
 ## Fixes
 - Fixed run count value in Example commands being assigned the wrong variable.
 - Fixed some level property values not saving.
-- Fixed the User Search popup list not being the right size.
+- Fixed the User Search popup items not being the right size.
 - Fixed player model panels scaling down when hovered.
 
 -------------------------------------------------------------------
