@@ -52,9 +52,9 @@ namespace BetterLegacy.Core.Data
         public string SongURL => string.IsNullOrEmpty(song.link) || string.IsNullOrEmpty(artist.link) ? null : AlephNetwork.GetURL(URLSource.Song, song.linkType, song.linkType == 2 ? artist.link + "," + song.link : song.link);
 
         public ArtistMetaData artist;
-        public List<ArtistMetaData> artists;
+        public List<ArtistMetaData> artists = new List<ArtistMetaData>();
         public CreatorMetaData creator;
-        public List<CreatorMetaData> creators;
+        public List<CreatorMetaData> creators = new List<CreatorMetaData>();
         public SongMetaData song;
         public BeatmapMetaData beatmap;
 
