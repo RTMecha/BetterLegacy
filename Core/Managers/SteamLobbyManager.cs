@@ -42,6 +42,17 @@ namespace BetterLegacy.Core.Managers
 
         public List<PAPlayer> localPlayers = new List<PAPlayer>();
 
+        public const string SCENE_LOADED = "SceneLoaded";
+        public const string SONG_LOADED = "SongLoaded";
+        public const string GAME_DATA_LOADED = "GameDataLoaded";
+        public const string IS_LOADED = "IsLoaded";
+
+        public bool sceneLoaded;
+        public bool songLoaded;
+        public bool gameDataLoaded;
+
+        public bool AllLoaded => sceneLoaded && songLoaded && gameDataLoaded;
+
         /* logic notes
         - when a client joins the lobby, all current players from that client get sent to the server.
         - and GameData gets sent from the server to all clients
@@ -229,6 +240,30 @@ namespace BetterLegacy.Core.Managers
 
         #region Load State
 
+        public void SetSceneLoaded(bool sceneLoaded)
+        {
+            this.sceneLoaded = sceneLoaded;
+            CurrentLobby.SetMemberData(SCENE_LOADED, sceneLoaded ? "1" : "0");
+            if (AllLoaded)
+                CurrentLobby.SetMemberData(IS_LOADED, "1");
+        }
+
+        public void SetSongLoaded(bool songLoaded)
+        {
+            this.songLoaded = songLoaded;
+            CurrentLobby.SetMemberData(SONG_LOADED, songLoaded ? "1" : "0");
+            if (AllLoaded)
+                CurrentLobby.SetMemberData(IS_LOADED, "1");
+        }
+
+        public void SetGameDataLoaded(bool gameDataLoaded)
+        {
+            this.gameDataLoaded = gameDataLoaded;
+            CurrentLobby.SetMemberData(GAME_DATA_LOADED, gameDataLoaded ? "1" : "0");
+            if (AllLoaded)
+                CurrentLobby.SetMemberData(IS_LOADED, "1");
+        }
+
         /// <summary>
         /// Sets all players as unloaded.
         /// </summary>
@@ -289,7 +324,7 @@ namespace BetterLegacy.Core.Managers
 
         void OnLobbyMemberDataChanged(Lobby lobby, Friend friend)
         {
-            if (lobby.GetMemberData(friend, "IsLoaded") != "1")
+            if (lobby.GetMemberData(friend, IS_LOADED) != "1")
                 return;
 
             SetLoaded(friend.Id);
@@ -389,7 +424,7 @@ namespace BetterLegacy.Core.Managers
                 //if (lobbyMember.Id != RTSteamManager.inst.steamUser.steamID)
                 //    PlayerManager.Players.Add(new PAPlayer(PlayerManager.Players.Count, lobbyMember.Id));
                 AddPlayerToLoadList(lobbyMember.Id);
-                if (lobby.GetMemberData(lobbyMember, "IsLoaded") == "1")
+                if (lobby.GetMemberData(lobbyMember, IS_LOADED) == "1")
                     SetLoaded(lobbyMember.Id);
             }
         }

@@ -208,7 +208,7 @@ namespace BetterLegacy.Core.Helpers
         /// <param name="showLoading">If the progress screen should display.</param>
         public static IEnumerator ILoadScene(string level, bool showLoading = true)
         {
-            if (!LevelManager.LoadingFromHere && ProjectArrhythmia.State.IsInLobby && ProjectArrhythmia.State.IsHosting && Enum.TryParse(level, out SceneName sceneName))
+            if (ProjectArrhythmia.State.IsInLobby && ProjectArrhythmia.State.IsHosting && Enum.TryParse(level.Replace(" ", "_"), true, out SceneName sceneName))
                 NetworkFunction.SetClientScene(sceneName, showLoading, 0);
 
             PreviousScene = CurrentScene;

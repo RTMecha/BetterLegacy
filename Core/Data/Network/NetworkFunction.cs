@@ -3,7 +3,11 @@
 using UnityEngine;
 
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Player;
+using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Runtime;
+using BetterLegacy.Story;
 
 namespace BetterLegacy.Core.Data.Network
 {
@@ -66,6 +70,8 @@ namespace BetterLegacy.Core.Data.Network
         public const int LOG_SERVER = 53295835;
         public const int LOG_MULTI = 43292487;
 
+        public const int SET_CLIENT_UNLOADED = 5285835;
+
         public const int SEND_CHUNK_DATA = 326243667;
 
         #endregion
@@ -98,7 +104,10 @@ namespace BetterLegacy.Core.Data.Network
 
         public const int SET_CLIENT_SCENE = 683429582;
 
+        public const int SET_CLIENT_SEED = 64674378;
         public const int SET_CLIENT_GAME_DATA = 9432119;
+        public const int SET_CLIENT_META_DATA = 52635853;
+        public const int SET_CLIENT_RUNTIME = 2536736;
         public const int REQUEST_GAME_DATA = 636725988;
 
         public const int SET_CLIENT_AUDIO = 82386538;
@@ -108,6 +117,8 @@ namespace BetterLegacy.Core.Data.Network
 
         public const int SET_CLIENT_PITCH = 266775874;
         public const int SET_SERVER_PITCH = 378545366;
+
+        public const int LOAD_CLIENT_LEVEL = 8637528;
 
         #endregion
 
@@ -164,9 +175,17 @@ namespace BetterLegacy.Core.Data.Network
 
         public static void LogMultiSide(string message) => NetworkManager.inst.RunFunction(LOG_MULTI, new StringParameter(message));
 
+        public static void SetClientUnloaded() => NetworkManager.inst.RunFunction(SET_CLIENT_UNLOADED);
+
         public static void SetClientScene(SceneName scene, bool showLoading, int onLoadFunc) => NetworkManager.inst.RunFunction(SET_CLIENT_SCENE, new ByteParameter((byte)scene), new BoolParameter(showLoading), new IntParameter(onLoadFunc));
 
         public static void RequestGameData(ulong id, SceneName scene, string interfaceName) => NetworkManager.inst.RunFunction(REQUEST_GAME_DATA, new ULongParameter(id), new ByteParameter((byte)scene), new StringParameter(interfaceName));
+
+        public static void SetClientRuntime(RTBeatmap runtime, string id = null) => NetworkManager.inst.RunFunction(SET_CLIENT_RUNTIME, new StringParameter(id), runtime);
+
+        public static void SetClientSeed(string seed, string id = null) => NetworkManager.inst.RunFunction(SET_CLIENT_SEED, new StringParameter(id), new StringParameter(seed));
+
+        public static void SetClientMetaData(MetaData metaData, string id = null) => NetworkManager.inst.RunFunction(SET_CLIENT_META_DATA, new StringParameter(id), metaData);
 
         public static void SetClientGameData(GameData gameData, string id = null) => NetworkManager.inst.RunFunction(SET_CLIENT_GAME_DATA, new StringParameter(id), gameData);
 
@@ -179,6 +198,19 @@ namespace BetterLegacy.Core.Data.Network
         public static void SetClientPitch(float pitch) => NetworkManager.inst.RunFunction(SET_CLIENT_PITCH, new FloatParameter(pitch));
 
         public static void SetServerPitch(float pitch) => NetworkManager.inst.RunFunction(SET_SERVER_PITCH, new FloatParameter(pitch));
+
+        public static void LoadClientLevel(Level.Level level) => NetworkManager.inst.RunFunction(LOAD_CLIENT_LEVEL,
+            new StringParameter(RandomHelper.CurrentSeed),
+            RTBeatmap.Current,
+            new BoolParameter(ProjectArrhythmia.State.InStory),
+            new IntParameter(StoryManager.inst.currentPlayingChapterIndex),
+            new IntParameter(StoryManager.inst.currentPlayingLevelSequenceIndex),
+            MetaData.Current,
+            GameData.Current,
+            new BoolParameter(level.IsVG),
+            new AudioClipParameter(level.music),
+            PlayersData.Current
+            );
 
         #endregion
 

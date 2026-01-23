@@ -233,20 +233,29 @@ namespace BetterLegacy.Core.Managers
             new NetworkFunction(Side.Client, NetworkFunction.LOG_CLIENT, 1, reader => CoreHelper.Log(reader.ReadString())),
             new NetworkFunction(Side.Server, NetworkFunction.LOG_SERVER, 1, reader => CoreHelper.Log(reader.ReadString())),
             new NetworkFunction(NetworkFunction.LOG_MULTI, 1, reader => CoreHelper.Log(reader.ReadString())),
+            new NetworkFunction(Side.Client, NetworkFunction.SET_CLIENT_UNLOADED, reader =>
+            {
+                SteamLobbyManager.inst.CurrentLobby.SetMemberData(SteamLobbyManager.IS_LOADED, "0");
+                SteamLobbyManager.inst.UnloadAll();
+                SteamLobbyManager.inst.SetSceneLoaded(false);
+                SteamLobbyManager.inst.SetSongLoaded(false);
+                SteamLobbyManager.inst.SetGameDataLoaded(false);
+            }),
             new NetworkFunction(Side.Client, NetworkFunction.SET_CLIENT_SCENE, 3, reader =>
             {
+                var scene = (SceneName)reader.ReadByte();
+                var showLoading = reader.ReadBoolean();
                 var func = reader.ReadInt32();
                 if (func != 0)
                     SceneHelper.OnSceneLoad += scene => inst.RunFunction(func);
-                SceneHelper.LoadScene((SceneName)reader.ReadByte(), reader.ReadBoolean());
+                SceneHelper.OnSceneLoad += scene => SteamLobbyManager.inst.SetSceneLoaded(true);
+                SceneHelper.LoadScene(scene, showLoading);
             }),
             new NetworkFunction(Side.Client, NetworkFunction.SET_CLIENT_GAME_DATA, 2, reader =>
             {
                 var steamID = reader.ReadString();
                 if (!string.IsNullOrEmpty(steamID) && ulong.TryParse(steamID, out ulong id) && RTSteamManager.inst.steamUser.steamID != id)
                     return;
-
-                SteamLobbyManager.inst.CurrentLobby.SetMemberData("IsLoaded", "1");
 
                 try
                 {
@@ -275,6 +284,53 @@ namespace BetterLegacy.Core.Managers
                 {
                     LogError($"Failed to read game data due to the exception: {ex}");
                 }
+
+                SteamLobbyManager.inst.SetGameDataLoaded(true);
+            }),
+            new NetworkFunction(Side.Client, NetworkFunction.SET_CLIENT_META_DATA, 2, reader =>
+            {
+                var steamID = reader.ReadString();
+                if (!string.IsNullOrEmpty(steamID) && ulong.TryParse(steamID, out ulong id) && RTSteamManager.inst.steamUser.steamID != id)
+                    return;
+
+                try
+                {
+                    LevelManager.SetCurrentMetaData(Packet.CreateFromPacket<MetaData>(reader));
+                }
+                catch (Exception ex)
+                {
+                    LogError($"Failed to read game data due to the exception: {ex}");
+                }
+            }),
+            new NetworkFunction(Side.Client, NetworkFunction.SET_CLIENT_RUNTIME, 2, reader =>
+            {
+                var steamID = reader.ReadString();
+                if (!string.IsNullOrEmpty(steamID) && ulong.TryParse(steamID, out ulong id) && RTSteamManager.inst.steamUser.steamID != id)
+                    return;
+
+                try
+                {
+                    RTBeatmap.Current.ReadPacket(reader);
+                }
+                catch (Exception ex)
+                {
+                    LogError($"Failed to read game data due to the exception: {ex}");
+                }
+            }),
+            new NetworkFunction(Side.Client, NetworkFunction.SET_CLIENT_SEED, 2, reader =>
+            {
+                var steamID = reader.ReadString();
+                if (!string.IsNullOrEmpty(steamID) && ulong.TryParse(steamID, out ulong id) && RTSteamManager.inst.steamUser.steamID != id)
+                    return;
+
+                try
+                {
+                    RandomHelper.CurrentSeed = reader.ReadString();
+                }
+                catch (Exception ex)
+                {
+                    LogError($"Failed to read game data due to the exception: {ex}");
+                }
             }),
             new NetworkFunction(Side.Server, NetworkFunction.REQUEST_GAME_DATA, 3, reader =>
             {
@@ -289,9 +345,13 @@ namespace BetterLegacy.Core.Managers
                 }
                 else if (SceneHelper.GetSceneType(currentScene) != SceneType.Interface)
                 {
+                    NetworkFunction.SetClientSeed(RandomHelper.CurrentSeed, id.ToString());
+                    NetworkFunction.SetClientMetaData(MetaData.Current, id.ToString());
                     NetworkFunction.SetClientGameData(GameData.Current, id.ToString());
                     NetworkFunction.SetClientMusicTime(AudioManager.inst.CurrentAudioSource.time);
                     NetworkFunction.SetClientPitch(RTLevel.Current && RTLevel.Current.eventEngine ? RTLevel.Current.eventEngine.pitchOffset : AudioManager.inst.pitch);
+                    NetworkFunction.SetClientRuntime(RTBeatmap.Current, id.ToString());
+                    NetworkFunction.SetClientAudio(AudioManager.inst.CurrentAudioSource.clip);
                 }
             }),
 
@@ -301,11 +361,14 @@ namespace BetterLegacy.Core.Managers
                     EditorLevelManager.inst.SetCurrentAudio(Packet.AudioClipFromPacket(reader));
                 else
                     LevelManager.SetCurrentAudio(Packet.AudioClipFromPacket(reader));
+                SteamLobbyManager.inst.SetSongLoaded(true);
             }),
             new NetworkFunction(Side.Client, NetworkFunction.SET_CLIENT_MUSIC_TIME, 1, reader => AudioManager.inst.SetMusicTime(reader.ReadSingle())),
             new NetworkFunction(Side.Server, NetworkFunction.SET_SERVER_MUSIC_TIME, 1, reader => AudioManager.inst.SetMusicTime(reader.ReadSingle())),
             new NetworkFunction(Side.Client, NetworkFunction.SET_CLIENT_PITCH, 1, reader => AudioManager.inst.SetPitch(reader.ReadSingle())),
             new NetworkFunction(Side.Server, NetworkFunction.SET_SERVER_PITCH, 1, reader => AudioManager.inst.SetPitch(reader.ReadSingle())),
+
+            new NetworkFunction(Side.Client, NetworkFunction.LOAD_CLIENT_LEVEL, 10, LevelManager.PlayClient),
         };
 
         Dictionary<string, NetworkWriter> dataChunks = new Dictionary<string, NetworkWriter>();

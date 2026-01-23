@@ -246,7 +246,13 @@ namespace BetterLegacy.Core.Managers
             #region Init
 
             if (ProjectArrhythmia.State.IsHosting)
+            {
                 SteamLobbyManager.inst.UnloadAll();
+                NetworkFunction.SetClientUnloaded();
+                SteamLobbyManager.inst.SetSceneLoaded(true);
+                SteamLobbyManager.inst.SetSongLoaded(true);
+                SteamLobbyManager.inst.SetGameDataLoaded(true);
+            }
 
             RandomHelper.UpdateSeed();
 
@@ -258,6 +264,8 @@ namespace BetterLegacy.Core.Managers
                 Log($"Switching to Game scene.");
                 SceneHelper.LoadGameWithProgress();
             }
+            //else
+            //    NetworkFunction.SetClientScene(SceneName.Game, true, 0);
 
             bool logged = false;
             while (ProjectArrhythmia.State.InEditor || !ProjectArrhythmia.State.InGame || !ShapeManager.inst.loadedShapes)
@@ -303,6 +311,8 @@ namespace BetterLegacy.Core.Managers
                 RTBeatmap.Current.lives = RTBeatmap.Current.challengeMode.Lives;
             }
 
+            //NetworkFunction.SetClientRuntime(RTBeatmap.Current);
+
             #endregion
 
             #region Parsing
@@ -316,6 +326,7 @@ namespace BetterLegacy.Core.Managers
             ProjectArrhythmia.State.InStory = level.isStory;
 
             MetaData.Current = level.metadata;
+            //NetworkFunction.SetClientMetaData(MetaData.Current);
             if (level.isInterface)
             {
                 RTFile.BasePath = RTFile.AppendEndSlash(level.path);
@@ -328,7 +339,7 @@ namespace BetterLegacy.Core.Managers
                 SetCurrentGameData(level);
                 if (GameData.Current && GameData.Current.data && GameData.Current.data.level)
                     RTBeatmap.Current.respawnImmediately = GameData.Current.data.level.respawnImmediately;
-                NetworkFunction.SetClientGameData(GameData.Current);
+                //NetworkFunction.SetClientGameData(GameData.Current);
             }
 
             if (level.IsVG)
@@ -384,7 +395,7 @@ namespace BetterLegacy.Core.Managers
             SetCurrentAudio(level.music);
             GameManager.inst.songLength = level.music.length;
 
-            NetworkFunction.SetClientAudio(level.music);
+            //NetworkFunction.SetClientAudio(level.music);
 
             // preload audio clips
             if (GameData.Current && GameData.Current.assets)
@@ -414,7 +425,7 @@ namespace BetterLegacy.Core.Managers
 
             #endregion
 
-            #region Spawning
+            #region Players
 
             Log($"Spawning...");
 
@@ -428,8 +439,234 @@ namespace BetterLegacy.Core.Managers
 
             RTPlayer.GameMode = GameMode.Regular;
 
+            RTPlayer.SetGameDataProperties();
+
+            yield return inst.StartCoroutine(RTLevel.IReinit());
+
+            CursorManager.inst.HideCursor();
+
+            if (RTBeatmap.Current.shouldResetEndFuncOnStart)
+                RTBeatmap.Current.ResetEndLevelVariables();
+            RTBeatmap.Current.shouldResetEndFuncOnStart = true;
+
+            #endregion
+
+            #region Sync
+
+            if (ProjectArrhythmia.State.IsInLobby)
+            {
+                NetworkFunction.LoadClientLevel(level);
+                while (!SteamLobbyManager.inst.IsEveryoneLoaded)
+                    yield return null;
+            }
+
+            #endregion
+
+            #region Done
+
+            Log($"Done!");
+
             RTGameManager.inst.PlayIntro();
             PlayerManager.SpawnPlayersOnStart();
+
+            AudioManager.inst.SetMusicTime(GameData.Current.data.level.LevelStartOffset);
+            AudioManager.inst.CurrentAudioSource.Play();
+            GameManager.inst.gameState = GameManager.State.Playing;
+            //NetworkFunction.SetClientMusicTime(GameData.Current.data.level.LevelStartOffset);
+
+            LoadingFromHere = false;
+
+            ResetTransition();
+            RTBeatmap.Current.CurrentMusicVolume = CoreConfig.Instance.MusicVol.Value;
+            AchievementManager.inst.CheckLevelBeginAchievements();
+
+            OnLevelStart?.Invoke(level);
+            OnLevelStart = null;
+
+            LegacyPlugin.AddRecentArcadeLevel(level);
+
+            #endregion
+        }
+
+        public static void PlayClient(NetworkReader reader) => CoroutineHelper.StartCoroutine(IPlayClient(reader));
+
+        public static IEnumerator IPlayClient(NetworkReader reader)
+        {
+            LoadingFromHere = true;
+            LevelEnded = false;
+
+            CurrentLevel = new Level();
+
+            #region Read
+
+            var seed = reader.ReadString();
+            var runtime = Packet.CreateFromPacket<RTBeatmap>(reader);
+            var inStory = reader.ReadBoolean();
+            var chapter = reader.ReadInt32();
+            var levelSequence = reader.ReadInt32();
+            var metadata = Packet.CreateFromPacket<MetaData>(reader);
+            var gamedata = Packet.CreateFromPacket<GameData>(reader);
+            var isVG = reader.ReadBoolean();
+            var audio = Packet.AudioClipFromPacket(reader);
+            var playersData = Packet.CreateFromPacket<PlayersData>(reader);
+
+            #endregion
+
+            #region Init
+
+            RandomHelper.CurrentSeed = seed;
+
+            Log($"Updating scene.");
+
+            bool inGame = ProjectArrhythmia.State.InGame;
+            if (!inGame || ProjectArrhythmia.State.InEditor)
+            {
+                Log($"Switching to Game scene.");
+                SceneHelper.OnSceneLoad += scene => SteamLobbyManager.inst.SetSceneLoaded(true);
+                SceneHelper.LoadGameWithProgress();
+            }
+            else
+                SteamLobbyManager.inst.SetSceneLoaded(true);
+
+            bool logged = false;
+            while (ProjectArrhythmia.State.InEditor || !ProjectArrhythmia.State.InGame || !ShapeManager.inst.loadedShapes)
+            {
+                if (!logged)
+                {
+                    logged = true;
+                    if (ProjectArrhythmia.State.InEditor)
+                        Log($"Have to switch to the game scene from the editor.");
+                    if (!ProjectArrhythmia.State.InGame)
+                        Log($"Have to switch to the game scene.");
+                    if (!ShapeManager.inst.loadedShapes)
+                        Log($"Shapes haven't initialized yet.");
+                }
+
+                yield return null;
+            }
+
+            Log($"Resetting window states.");
+            ProjectArrhythmia.Window.ResetPosition();
+            ProjectArrhythmia.Window.ApplySettings();
+            ProjectArrhythmia.Window.ResetTitle();
+
+            if (BackgroundManager.inst)
+                LSHelpers.DeleteChildren(BackgroundManager.inst.backgroundParent);
+
+            RTBeatmap.Current = runtime;
+            RTBeatmap.Current.levelTimer.offset = 0f;
+            RTBeatmap.Current.levelTimer.Reset();
+
+            #endregion
+
+            #region Parsing
+
+            Log($"Parsing level...");
+
+            GameManager.inst.gameState = GameManager.State.Parsing;
+
+            ProjectArrhythmia.State.InStory = inStory;
+            if (ProjectArrhythmia.State.InStory)
+            {
+                StoryManager.inst.currentPlayingChapterIndex = chapter;
+                StoryManager.inst.currentPlayingLevelSequenceIndex = levelSequence;
+            }
+
+            MetaData.Current = null;
+            MetaData.Current = metadata;
+            CurrentLevel.metadata = MetaData.Current;
+            GameData.Current = null;
+            GameData.Current = gamedata;
+            if (GameData.Current && GameData.Current.data && GameData.Current.data.level)
+                RTBeatmap.Current.respawnImmediately = GameData.Current.data.level.respawnImmediately;
+            SteamLobbyManager.inst.SetGameDataLoaded(true);
+
+            if (isVG)
+                AchievementManager.inst.UnlockAchievement("time_traveler");
+
+            ThemeManager.inst.UpdateAllThemes();
+
+            Log($"Setting paths...");
+            GameManager.inst.currentLevelName = MetaData.Current.beatmap.name;
+            RTFile.BasePath = RTFile.CombinePaths(RTFile.ApplicationDirectory, "cache");
+            RTFile.CreateDirectory(RTFile.BasePath);
+
+            #endregion
+
+            #region States
+
+            Log($"Updating states...");
+
+            if (IsArcade || !ProjectArrhythmia.State.InStory)
+                DiscordHelper.UpdateDiscordStatus($"Level: {MetaData.Current.beatmap.name}",
+                    "In Arcade",
+                    "arcade");
+            else
+                DiscordHelper.UpdateDiscordStatus(
+                    $"DOC{RTString.ToStoryNumber(StoryManager.inst.currentPlayingChapterIndex)}-{RTString.ToStoryNumber(StoryManager.inst.currentPlayingLevelSequenceIndex)}: {MetaData.Current.beatmap.name}",
+                    "In Story",
+                    "arcade");
+
+            if (CoreConfig.Instance.DiscordTimestampUpdatesPerLevel.Value)
+                DiscordController.inst.presence.startTimestamp = SteamworksFacepunch.Epoch.Current;
+
+            while (!GameManager.inst.introTitle && !GameManager.inst.introArtist)
+                yield return null;
+
+            GameManager.inst.introTitle.text = MetaData.Current.song.title;
+            GameManager.inst.introArtist.text = MetaData.Current.artist.name;
+
+            RTBeatmap.Current.LevelStarted = true;
+
+            #endregion
+
+            #region Music
+
+            Log($"Loading music...");
+
+            SteamLobbyManager.inst.SetSongLoaded(true);
+            SetCurrentAudio(audio);
+            GameManager.inst.songLength = AudioManager.inst.CurrentAudioSource.clip.length;
+
+            // preload audio clips
+            if (GameData.Current && GameData.Current.assets)
+                yield return CoroutineHelper.StartCoroutine(GameData.Current.assets.LoadSounds());
+
+            #endregion
+
+            #region Camera
+
+            Log($"Setting Camera...");
+
+            // todo figure out video bg
+            //if (!storyLevel)
+            //    yield return RTVideoManager.inst.Setup(level.path);
+            //else if (storyLevel.videoClip)
+            //    RTVideoManager.inst.Play(storyLevel.videoClip);
+
+            RTGameManager.inst.SetCameraArea(new Rect(0f, 0f, 1f, 1f));
+
+            #endregion
+
+            #region Checkpoints
+
+            Log($"Updating checkpoints...");
+
+            GameManager.inst.UpdateTimeline();
+            RTBeatmap.Current.ResetCheckpoint();
+
+            #endregion
+
+            #region Spawning
+
+            Log($"Spawning...");
+
+            PlayersData.Current = playersData;
+
+            PlayerManager.ValidatePlayers();
+            PlayerManager.AssignPlayerModels();
+
+            RTPlayer.GameMode = GameMode.Regular;
 
             RTPlayer.SetGameDataProperties();
 
@@ -443,16 +680,23 @@ namespace BetterLegacy.Core.Managers
 
             #endregion
 
-            #region Done
+            #region Sync
 
             if (ProjectArrhythmia.State.IsInLobby)
                 while (!SteamLobbyManager.inst.IsEveryoneLoaded)
                     yield return null;
 
+            #endregion
+
+            #region Done
+
+            RTGameManager.inst.PlayIntro();
+
             Log($"Done!");
 
-            GameManager.inst.gameState = GameManager.State.Playing;
             AudioManager.inst.SetMusicTime(GameData.Current.data.level.LevelStartOffset);
+            AudioManager.inst.CurrentAudioSource.Play();
+            GameManager.inst.gameState = GameManager.State.Playing;
 
             LoadingFromHere = false;
 
@@ -460,10 +704,10 @@ namespace BetterLegacy.Core.Managers
             RTBeatmap.Current.CurrentMusicVolume = CoreConfig.Instance.MusicVol.Value;
             AchievementManager.inst.CheckLevelBeginAchievements();
 
-            OnLevelStart?.Invoke(level);
+            OnLevelStart?.Invoke(CurrentLevel);
             OnLevelStart = null;
 
-            LegacyPlugin.AddRecentArcadeLevel(level);
+            LegacyPlugin.AddRecentArcadeLevel(CurrentLevel);
 
             #endregion
         }

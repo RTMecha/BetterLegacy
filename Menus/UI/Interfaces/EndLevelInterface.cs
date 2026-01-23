@@ -176,6 +176,13 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 }
             }
 
+            if (ProjectArrhythmia.State.IsInLobby && !ProjectArrhythmia.State.IsHosting) // only host should be able to change levels
+            {
+                elements.AddRange(GenerateBottomBar());
+                InterfaceManager.inst.SetCurrentInterface(this);
+                return;
+            }
+
             var nextLevel = LevelManager.NextLevelInCollection;
             if (LevelManager.CurrentLevelCollection && (metadata.song.Difficulty == DifficultyType.Animation || nextLevel && nextLevel.saveData && nextLevel.saveData.Unlocked || LevelManager.CurrentLevelCollection.allowZenProgression || !RTBeatmap.Current.challengeMode.Invincible) && LevelManager.currentLevelIndex + 1 != LevelManager.CurrentLevelCollection.Count || !LevelManager.IsNextEndOfQueue)
             {
@@ -287,7 +294,6 @@ namespace BetterLegacy.Menus.UI.Interfaces
             });
 
             elements.AddRange(GenerateBottomBar());
-
             InterfaceManager.inst.SetCurrentInterface(this);
         }
 
