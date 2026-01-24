@@ -8,6 +8,7 @@ using LSFunctions;
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
@@ -149,7 +150,12 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
             elements.AddRange(GenerateBottomBar());
 
-            exitFunc = UnPause;
+            exitFunc = () =>
+            {
+                UnPause();
+                if (ProjectArrhythmia.State.IsInLobby)
+                    UnPauseLobby();
+            };
 
             InterfaceManager.inst.SetCurrentInterface(this);
         }
@@ -236,12 +242,29 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// </summary>
         public static void Pause()
         {
-            if (!ProjectArrhythmia.State.Playing)
+            if (!ProjectArrhythmia.State.Playing || Current)
                 return;
 
             RTBeatmap.Current?.Pause();
             ArcadeHelper.endedLevel = false;
             Current = new PauseInterface();
+        }
+
+        /// <summary>
+        /// Initializes the pause menu for client / server.
+        /// </summary>
+        public static void PauseLobby()
+        {
+            if (ProjectArrhythmia.State.IsHosting)
+            {
+                NetworkFunction.SetServerPlayingState(true);
+                NetworkFunction.SetClientMusicTime(AudioManager.inst.CurrentAudioSource.time);
+            }
+            else
+            {
+                NetworkFunction.SetClientPlayingState(true);
+                NetworkFunction.RequestMusicTime();
+            }
         }
 
         /// <summary>
@@ -262,6 +285,23 @@ namespace BetterLegacy.Menus.UI.Interfaces
             CoroutineHelper.StartCoroutine(CoreConfig.Instance.PlayPauseCountdown.Value ? Current.StartCountdown(onCooldownEnd) : Current.SkipCountdown(onCooldownEnd));
         }
 
+        /// <summary>
+        /// Unpauses the game for client / server.
+        /// </summary>
+        public static void UnPauseLobby()
+        {
+            if (ProjectArrhythmia.State.IsHosting)
+            {
+                NetworkFunction.SetServerPlayingState(false);
+                NetworkFunction.SetClientMusicTime(AudioManager.inst.CurrentAudioSource.time);
+            }
+            else
+            {
+                NetworkFunction.SetClientPlayingState(false);
+                NetworkFunction.RequestMusicTime();
+            }
+        }
+
         #endregion
 
         public bool unpausing;
@@ -275,7 +315,12 @@ namespace BetterLegacy.Menus.UI.Interfaces
             {
                 name = "Continue Button",
                 text = "<b> [ CONTINUE ]",
-                func = UnPause,
+                func = () =>
+                {
+                    UnPause();
+                    if (ProjectArrhythmia.State.IsInLobby)
+                        UnPauseLobby();
+                },
             },
             new ButtonElement
             {

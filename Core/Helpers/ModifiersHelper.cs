@@ -12543,6 +12543,8 @@ namespace BetterLegacy.Core.Helpers
             }
 
             PauseInterface.Pause();
+            if (ProjectArrhythmia.State.IsInLobby)
+                PauseInterface.PauseLobby();
         }
 
         public static void quitToMenu(Modifier modifier, ModifierLoop modifierLoop)

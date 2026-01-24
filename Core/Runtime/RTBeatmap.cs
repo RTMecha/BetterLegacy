@@ -57,7 +57,11 @@ namespace BetterLegacy.Core.Runtime
                 pausedTimer.Update();
 
             if (!CoreHelper.IsUsingInputField && InputDataManager.inst.menuActions.Cancel.WasPressed && ProjectArrhythmia.State.Paused && !LevelManager.LevelEnded && PauseInterface.Current && !PauseInterface.Current.generating)
+            {
                 PauseInterface.UnPause();
+                if (ProjectArrhythmia.State.IsInLobby)
+                    PauseInterface.UnPauseLobby();
+            }
 
             if (ProjectArrhythmia.State.Playing)
             {
@@ -69,7 +73,11 @@ namespace BetterLegacy.Core.Runtime
                             shouldPause = true;
 
                     if (shouldPause)
+                    {
                         PauseInterface.Pause();
+                        if (ProjectArrhythmia.State.IsInLobby)
+                            PauseInterface.PauseLobby();
+                    }
                 }
 
                 UpdateCheckpoints();
