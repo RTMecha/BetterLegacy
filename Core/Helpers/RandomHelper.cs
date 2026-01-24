@@ -16,13 +16,23 @@ namespace BetterLegacy.Core.Helpers
         public static string CurrentSeed { get; set; }
 
         /// <summary>
+        /// The current lobby host seed.
+        /// </summary>
+        public static string HostSeed { get; set; }
+
+        /// <summary>
+        /// If seed based random should be used.
+        /// </summary>
+        public static bool UseSeedBasedRandom => ProjectArrhythmia.State.IsOnlineMultiplayer || CoreConfig.Instance.UseSeedBasedRandom.Value;
+
+        /// <summary>
         /// Updates the seed to the current seed setting.
         /// </summary>
         public static void UpdateSeed()
         {
             try
             {
-                SetSeed(CoreConfig.Instance.Seed.Value);
+                SetSeed(ProjectArrhythmia.State.IsInLobby ? HostSeed : CoreConfig.Instance.Seed.Value);
             }
             catch (Exception ex)
             {
@@ -252,7 +262,7 @@ namespace BetterLegacy.Core.Helpers
         {
             public static float RandomizeFloatKeyframe(string id, EventKeyframe eventKeyframe, int index = 0, int kfIndex = 0)
             {
-                if (!CoreConfig.Instance.UseSeedBasedRandom.Value)
+                if (!UseSeedBasedRandom)
                     return RandomizeFloatKeyframe(eventKeyframe, index);
 
                 var round = eventKeyframe.randomValues.Length > 2 && eventKeyframe.randomValues[2] != 0f;
@@ -273,7 +283,7 @@ namespace BetterLegacy.Core.Helpers
 
             public static UnityEngine.Vector2 RandomizeVector2Keyframe(string id, EventKeyframe eventKeyframe, int kfIndex = 0)
             {
-                if (!CoreConfig.Instance.UseSeedBasedRandom.Value)
+                if (!UseSeedBasedRandom)
                     return RandomizeVector2Keyframe(eventKeyframe);
 
                 float x = 0f;
