@@ -288,7 +288,14 @@ namespace BetterLegacy.Menus.UI.Popups
                 if (ProjectArrhythmia.State.IsHosting)
                     RTSteamManager.inst.EndServer();
                 else
+                {
                     RTSteamManager.inst.EndClient();
+                    PlayerManager.Players.ForLoopReverse(player =>
+                    {
+                        if (player.ID != RTSteamManager.inst.steamUser.steamID)
+                            PlayerManager.RemovePlayer(player);
+                    });
+                }
             });
 
             closeLobbyLabel = GenerateText(closeLobby.transform, "Close Lobby", RectValues.FullAnchored.SizeDelta(-12f, 0f), TextAnchor.MiddleCenter);

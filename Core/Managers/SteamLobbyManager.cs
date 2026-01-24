@@ -111,6 +111,11 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         public void CreateLobby()
         {
+            if (PlayerManager.NoPlayers)
+            {
+                LogError($"Cannot create a lobby with no players.");
+                return;
+            }
             if (ProjectArrhythmia.State.IsInLobby)
             {
                 LogError($"Cannot create a lobby because you're already in a lobby.");
@@ -192,7 +197,13 @@ namespace BetterLegacy.Core.Managers
         /// Joins a specific lobby.
         /// </summary>
         /// <param name="lobby">Lobby reference.</param>
-        public void JoinLobby(Lobby lobby) => CoroutineHelper.StartCoroutine(IJoinLobby(lobby));
+        public void JoinLobby(Lobby lobby)
+        {
+            if (PlayerManager.NoPlayers)
+                SceneHelper.LoadInputSelect(() => CoroutineHelper.StartCoroutine(IJoinLobby(lobby)));
+            else
+                CoroutineHelper.StartCoroutine(IJoinLobby(lobby));
+        }
 
         IEnumerator IJoinLobby(Lobby lobby)
         {
