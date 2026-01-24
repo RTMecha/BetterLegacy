@@ -1,7 +1,10 @@
 ﻿# ???
 ## Features
 ### Core
-- Added online lobbies. This allows you to play multiplayer online. DISCLAIMER: this feature is in very early testing so it is bound to break or not work in a lot of cases. Use with caution. Also, make sure you're always up to date on the latest version when playing online just in case changes are made.
+- Added online lobbies. This allows you to play multiplayer online.  
+DISCLAIMER: this feature is in very early testing so it is bound to break or not work in a lot of cases. Use with caution.  
+Just in case, it's highly recommended you make a separate instance of Project Arrhythmia to test multiplayer.  
+Also, make sure you're always up to date on the latest version when playing online just in case changes are made.
 
 ## Fixes
 - Fixed run count value in Example commands being assigned the wrong variable.
