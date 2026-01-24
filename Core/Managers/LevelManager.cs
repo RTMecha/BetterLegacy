@@ -457,7 +457,7 @@ namespace BetterLegacy.Core.Managers
             {
                 NetworkFunction.LoadClientLevel(level);
                 while (!SteamLobbyManager.inst.IsEveryoneLoaded)
-                    yield return null;
+                    yield return new WaitForEndOfFrame();
             }
 
             #endregion
@@ -488,8 +488,16 @@ namespace BetterLegacy.Core.Managers
             #endregion
         }
 
+        /// <summary>
+        /// Loads the game scene and plays a level for clients connected to the current lobby.
+        /// </summary>
+        /// <param name="reader">The current network reader.</param>
         public static void PlayClient(NetworkReader reader) => CoroutineHelper.StartCoroutine(IPlayClient(reader));
 
+        /// <summary>
+        /// Loads the game scene and plays a level for clients connected to the current lobby.
+        /// </summary>
+        /// <param name="reader">The current network reader.</param>
         public static IEnumerator IPlayClient(NetworkReader reader)
         {
             LoadingFromHere = true;
@@ -514,7 +522,9 @@ namespace BetterLegacy.Core.Managers
 
             #region Init
 
-            RandomHelper.CurrentSeed = seed;
+            Log($"Setting seed {seed}");
+
+            RandomHelper.HostSeed = seed;
 
             Log($"Updating scene.");
 
@@ -684,7 +694,7 @@ namespace BetterLegacy.Core.Managers
 
             if (ProjectArrhythmia.State.IsInLobby)
                 while (!SteamLobbyManager.inst.IsEveryoneLoaded)
-                    yield return null;
+                    yield return new WaitForEndOfFrame();
 
             #endregion
 

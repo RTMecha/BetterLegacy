@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Text;
+using System.Threading.Tasks
 
 using UnityEngine;
 
 using LSFunctions;
 
-using SteamworksFacepunch;
 using SteamworksFacepunch.Data;
 
 using BetterLegacy.Core.Components.Player;
@@ -19,6 +17,7 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers.Settings;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Editor.Managers;
+using BetterLegacy.Menus.UI.Interfaces;
 
 namespace BetterLegacy.Core.Managers
 {
@@ -43,7 +42,9 @@ namespace BetterLegacy.Core.Managers
         /// <summary>
         /// Max packet size until packets get split.
         /// </summary>
-        public const int SPLIT_DATA_COUNT = 500000; // 9 MB
+        public const int SPLIT_DATA_COUNT = 500000; // 500KB
+
+        public const int MAX_BUFFER_SIZE = 10000000; // 10MB
 
         bool eventsSet;
 
@@ -52,6 +53,19 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         public List<NetworkFunction> functions = new List<NetworkFunction>
         {
+            #region Core
+            
+            new NetworkFunction(Side.Client, NetworkFunction.LOG_CLIENT, 1, reader => CoreHelper.Log(reader.ReadString())),
+            new NetworkFunction(Side.Server, NetworkFunction.LOG_SERVER, 1, reader => CoreHelper.Log(reader.ReadString())),
+            new NetworkFunction(NetworkFunction.LOG_MULTI, 1, reader => CoreHelper.Log(reader.ReadString())),
+            new NetworkFunction(Side.Client, NetworkFunction.SET_CLIENT_UNLOADED, reader =>
+            {
+                SteamLobbyManager.inst.CurrentLobby.SetMemberData(SteamLobbyManager.IS_LOADED, "0");
+                SteamLobbyManager.inst.UnloadAll();
+                SteamLobbyManager.inst.SetSceneLoaded(false);
+                SteamLobbyManager.inst.SetSongLoaded(false);
+                SteamLobbyManager.inst.SetGameDataLoaded(false);
+            }),
             new NetworkFunction(NetworkFunction.SEND_CHUNK_DATA, 1, reader =>
             {
                 var uniqueID = reader.ReadString();
@@ -61,9 +75,18 @@ namespace BetterLegacy.Core.Managers
                 inst.dataChunkQueue.Remove(uniqueID);
                 inst.Split(dataQueue.chunks, dataQueue.id, dataQueue.side, dataQueue.count, uniqueID);
             }),
-            new NetworkFunction(Side.Client, NetworkFunction.CLIENT_TEST, reader => { }),
-            new NetworkFunction(Side.Server, NetworkFunction.SERVER_TEST, reader => { }),
-            new NetworkFunction(NetworkFunction.MULTI_TEST, reader => { }),
+
+            new NetworkFunction(NetworkFunction.MULTI_LOG_TEST, 100, reader =>
+            {
+                int index = 0;
+                while (index < 100)
+                {
+                    CoreHelper.Log(reader.ReadString());
+                    index++;
+                }
+            }),
+
+            #endregion
 
             #region Players
 
@@ -230,17 +253,8 @@ namespace BetterLegacy.Core.Managers
 
             #endregion
 
-            new NetworkFunction(Side.Client, NetworkFunction.LOG_CLIENT, 1, reader => CoreHelper.Log(reader.ReadString())),
-            new NetworkFunction(Side.Server, NetworkFunction.LOG_SERVER, 1, reader => CoreHelper.Log(reader.ReadString())),
-            new NetworkFunction(NetworkFunction.LOG_MULTI, 1, reader => CoreHelper.Log(reader.ReadString())),
-            new NetworkFunction(Side.Client, NetworkFunction.SET_CLIENT_UNLOADED, reader =>
-            {
-                SteamLobbyManager.inst.CurrentLobby.SetMemberData(SteamLobbyManager.IS_LOADED, "0");
-                SteamLobbyManager.inst.UnloadAll();
-                SteamLobbyManager.inst.SetSceneLoaded(false);
-                SteamLobbyManager.inst.SetSongLoaded(false);
-                SteamLobbyManager.inst.SetGameDataLoaded(false);
-            }),
+            #region Game States
+
             new NetworkFunction(Side.Client, NetworkFunction.SET_CLIENT_SCENE, 3, reader =>
             {
                 var scene = (SceneName)reader.ReadByte();
@@ -332,6 +346,7 @@ namespace BetterLegacy.Core.Managers
                     LogError($"Failed to read game data due to the exception: {ex}");
                 }
             }),
+
             new NetworkFunction(Side.Server, NetworkFunction.REQUEST_GAME_DATA, 3, reader =>
             {
                 var id = reader.ReadUInt64();
@@ -368,7 +383,33 @@ namespace BetterLegacy.Core.Managers
             new NetworkFunction(Side.Client, NetworkFunction.SET_CLIENT_PITCH, 1, reader => AudioManager.inst.SetPitch(reader.ReadSingle())),
             new NetworkFunction(Side.Server, NetworkFunction.SET_SERVER_PITCH, 1, reader => AudioManager.inst.SetPitch(reader.ReadSingle())),
 
+            new NetworkFunction(Side.Server, NetworkFunction.REQUEST_MUSIC_TIME, reader => NetworkFunction.SetClientMusicTime(AudioManager.inst.CurrentAudioSource.time)),
+
+            new NetworkFunction(NetworkFunction.SET_SERVER_PLAYING_STATE, 1, reader =>
+            {
+                var state = reader.ReadBoolean();
+                if (ProjectArrhythmia.State.Paused == state)
+                    return;
+                if (state)
+                    PauseInterface.Pause();
+                else
+                    PauseInterface.UnPause();
+            }),
+            new NetworkFunction(Side.Client, NetworkFunction.SET_CLIENT_PLAYING_STATE, 1, reader =>
+            {
+                var state = reader.ReadBoolean();
+                if (ProjectArrhythmia.State.Paused == state)
+                    return;
+                if (state)
+                    PauseInterface.Pause();
+                else
+                    PauseInterface.UnPause();
+            }),
+
             new NetworkFunction(Side.Client, NetworkFunction.LOAD_CLIENT_LEVEL, 10, LevelManager.PlayClient),
+            new NetworkFunction(Side.Client, NetworkFunction.LOAD_CLIENT_EDITOR_LEVEL, 6, reader => EditorLevelManager.inst?.LoadLevelClient(reader)),
+
+            #endregion
         };
 
         Dictionary<string, NetworkWriter> dataChunks = new Dictionary<string, NetworkWriter>();
@@ -481,15 +522,15 @@ namespace BetterLegacy.Core.Managers
                 writer.Write(position);
                 writer.Write(uniqueID);
                 writer.Write(chunks.Count);
-                var data = chunks[0].ToArray();
+                var data = CoreHelper.Compress(chunks[0].ToArray());
                 size += data.Length;
                 writer.Write(size);
                 writer.Write(data.Length);
                 writer.Write(data);
                 chunks.RemoveAt(0);
-                Send(side, writer.GetData(), SendType.Reliable);
+                Send(side, writer.GetData(), SendType.Reliable | SendType.NoNagle);
 
-                if (size > 9000000)
+                if (size > MAX_BUFFER_SIZE)
                 {
                     dataChunkQueue[uniqueID] = new DataQueue(chunks, side, id, uniqueID, position);
                     break;
@@ -605,9 +646,11 @@ namespace BetterLegacy.Core.Managers
             }
             var reader = new NetworkReader(data);
             var id = reader.ReadInt32();
-            if (HandleChunkData(ref reader) && functions.TryFind(x => x.id == id && x.side != NetworkFunction.Side.Server, out NetworkFunction function))
-                function.Run(reader);
-            reader.Dispose();
+            //var handler = await HandleChunkData(reader);
+            var handler = HandleChunkData(reader);
+            if (handler.Item1 && functions.TryFind(x => x.id == id && x.side != NetworkFunction.Side.Server, out NetworkFunction function))
+                function.Run(handler.Item2);
+            handler.Item2.Dispose();
         }
 
         public void StartServer()
@@ -671,17 +714,20 @@ namespace BetterLegacy.Core.Managers
             }
             var reader = new NetworkReader(data);
             var id = reader.ReadInt32();
-            if (HandleChunkData(ref reader) && functions.TryFind(x => x.id == id && x.side != NetworkFunction.Side.Client, out NetworkFunction function))
-                function.Run(reader);
-            reader.Dispose();
+            //var handler = await HandleChunkData(reader);
+            var handler = HandleChunkData(reader);
+            if (handler.Item1 && functions.TryFind(x => x.id == id && x.side != NetworkFunction.Side.Client, out NetworkFunction function))
+                function.Run(handler.Item2);
+            handler.Item2.Dispose();
         }
 
-        bool HandleChunkData(ref NetworkReader reader)
+        //async Task<(bool, NetworkReader)> HandleChunkData(NetworkReader reader)
+        (bool, NetworkReader) HandleChunkData(NetworkReader reader)
         {
             var dataLength = reader.ReadInt64();
             var uniqueID = reader.ReadString();
             if (dataLength <= SPLIT_DATA_COUNT)
-                return true;
+                return (true, reader);
 
             var count = reader.ReadInt32();
             var totalChunkSize = reader.ReadInt64();
@@ -693,9 +739,12 @@ namespace BetterLegacy.Core.Managers
                 dataChunks[uniqueID] = writer;
             }
 
-            writer.Write(reader.ReadBytes(currentDataLength));
+            var sw = CoreHelper.StartNewStopwatch();
+            //await Task.Run(() => writer.Write(reader.ReadBytes(currentDataLength)));
+            writer.Write(CoreHelper.Decompress(reader.ReadBytes(currentDataLength)));
+            sw.Stop();
 
-            if (totalChunkSize > 9000000)
+            if (totalChunkSize > MAX_BUFFER_SIZE)
                 RunFunction(NetworkFunction.SEND_CHUNK_DATA, new NetworkFunction.StringParameter(uniqueID));
 
             if (count > 1)
@@ -705,16 +754,17 @@ namespace BetterLegacy.Core.Managers
                     $"ID: {uniqueID}\n" +
                     $"Total data size: {dataLength}\n" +
                     $"Current chunk sequence size: {totalChunkSize}\n" +
-                    $"Chunk data size: {currentDataLength}");
-                return false;
+                    $"Chunk data size: {currentDataLength}\n" +
+                    $"Elapsed read/write time: {sw.Elapsed}");
+                return (false, reader);
             }
 
             var data = writer.GetBuffer();
             var compressedData = CoreHelper.Decompress(data);
+            reader.Dispose();
             reader = new NetworkReader(compressedData);
             writer.Dispose();
             dataChunks.Remove(uniqueID);
-
             CoreHelper.Log($"Data chunk has reached the end.\n" +
                     $"Count: {count}\n" +
                     $"ID: {uniqueID}\n" +
@@ -722,8 +772,9 @@ namespace BetterLegacy.Core.Managers
                     $"Current chunk sequence size: {totalChunkSize}\n" +
                     $"Chunk data size: {currentDataLength}\n" +
                     $"Compressed data size: {data.Length}\n" +
-                    $"Final data size: {compressedData.Length}");
-            return true;
+                    $"Final data size: {compressedData.Length}\n" +
+                    $"Elapsed read/write time: {sw.Elapsed}");
+            return (true, reader);
         }
 
         #endregion
@@ -746,40 +797,6 @@ namespace BetterLegacy.Core.Managers
             public string uniqueID;
             public long count;
         }
-
-        //class DataChunkHandler : Exists, IDisposable
-        //{
-        //    public DataChunkHandler() => writer = new BinaryWriter(memoryStream, Encoding.UTF8, true);
-
-        //    public long Position { get => memoryStream.Position; set => memoryStream.Position = value; }
-        //    MemoryStream memoryStream = new MemoryStream(1024);
-        //    readonly BinaryWriter writer;
-
-        //    /// <summary>
-        //    /// Gets the byte data of the current writer.
-        //    /// </summary>
-        //    /// <returns>Returns a byte array.</returns>
-        //    public ArraySegment<byte> GetData() => new ArraySegment<byte>(memoryStream.GetBuffer(), 0, (int)memoryStream.Position);
-
-        //    /// <summary>
-        //    /// Writes chunk data from packet data.
-        //    /// </summary>
-        //    /// <param name="reader">The current network reader.</param>
-        //    /// <returns>Returns <see langword="true"/> if the chunk data has reached the end, otherwise returns <see langword="false"/>.</returns>
-        //    public bool WriteChunkData(NetworkReader reader, long dataCount)
-        //    {
-        //        if (Position >= dataCount)
-        //            return true;
-        //        writer.Write(reader.ReadBytes(SPLIT_DATA_COUNT));
-        //        return Position >= dataCount;
-        //    }
-
-        //    public void Dispose()
-        //    {
-        //        writer.Dispose();
-        //        GC.SuppressFinalize(this);
-        //    }
-        //}
 
         #endregion
     }

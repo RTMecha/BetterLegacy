@@ -58,12 +58,6 @@ namespace BetterLegacy.Core.Data.Network
 
         #region Constants
 
-        public const int CLIENT_TEST = 532986;
-
-        public const int SERVER_TEST = 632957668;
-
-        public const int MULTI_TEST = 984885;
-
         #region Core
 
         public const int LOG_CLIENT = 842754988;
@@ -73,6 +67,8 @@ namespace BetterLegacy.Core.Data.Network
         public const int SET_CLIENT_UNLOADED = 5285835;
 
         public const int SEND_CHUNK_DATA = 326243667;
+
+        public const int MULTI_LOG_TEST = 6368498;
 
         #endregion
 
@@ -118,7 +114,14 @@ namespace BetterLegacy.Core.Data.Network
         public const int SET_CLIENT_PITCH = 266775874;
         public const int SET_SERVER_PITCH = 378545366;
 
+        public const int REQUEST_MUSIC_TIME = 25643243;
+
+        public const int SET_SERVER_PLAYING_STATE = 493217532;
+        public const int SET_CLIENT_PLAYING_STATE = 124853777;
+
         public const int LOAD_CLIENT_LEVEL = 8637528;
+
+        public const int LOAD_CLIENT_EDITOR_LEVEL = 32583295;
 
         #endregion
 
@@ -169,6 +172,8 @@ namespace BetterLegacy.Core.Data.Network
 
         #region Global
 
+        #region Core
+
         public static void LogClientSide(string message) => NetworkManager.inst.RunFunction(LOG_CLIENT, new StringParameter(message));
 
         public static void LogServerSide(string message) => NetworkManager.inst.RunFunction(LOG_SERVER, new StringParameter(message));
@@ -176,6 +181,10 @@ namespace BetterLegacy.Core.Data.Network
         public static void LogMultiSide(string message) => NetworkManager.inst.RunFunction(LOG_MULTI, new StringParameter(message));
 
         public static void SetClientUnloaded() => NetworkManager.inst.RunFunction(SET_CLIENT_UNLOADED);
+
+        #endregion
+
+        #region Game States
 
         public static void SetClientScene(SceneName scene, bool showLoading, int onLoadFunc) => NetworkManager.inst.RunFunction(SET_CLIENT_SCENE, new ByteParameter((byte)scene), new BoolParameter(showLoading), new IntParameter(onLoadFunc));
 
@@ -199,6 +208,12 @@ namespace BetterLegacy.Core.Data.Network
 
         public static void SetServerPitch(float pitch) => NetworkManager.inst.RunFunction(SET_SERVER_PITCH, new FloatParameter(pitch));
 
+        public static void RequestMusicTime() => NetworkManager.inst.RunFunction(REQUEST_MUSIC_TIME);
+
+        public static void SetServerPlayingState(bool state) => NetworkManager.inst.RunFunction(SET_SERVER_PLAYING_STATE, new BoolParameter(state));
+
+        public static void SetClientPlayingState(bool state) => NetworkManager.inst.RunFunction(SET_CLIENT_PLAYING_STATE, new BoolParameter(state));
+
         public static void LoadClientLevel(Level.Level level) => NetworkManager.inst.RunFunction(LOAD_CLIENT_LEVEL,
             new StringParameter(RandomHelper.CurrentSeed),
             RTBeatmap.Current,
@@ -211,6 +226,17 @@ namespace BetterLegacy.Core.Data.Network
             new AudioClipParameter(level.music),
             PlayersData.Current
             );
+
+        public static void LoadClientEditorLevel(Level.Level level) => NetworkManager.inst.RunFunction(LOAD_CLIENT_EDITOR_LEVEL,
+            new StringParameter(EditorManager.inst.currentLoadedLevel),
+            new StringParameter(RandomHelper.CurrentSeed),
+            MetaData.Current,
+            GameData.Current,
+            new AudioClipParameter(level.music),
+            PlayersData.Current
+            );
+
+        #endregion
 
         #endregion
 
