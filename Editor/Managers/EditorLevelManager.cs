@@ -755,7 +755,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="level">Level to load and edit.</param>
         public IEnumerator ILoadLevel(Level level)
         {
-            if (ProjectArrhythmia.State.IsInLobby && !ProjectArrhythmia.State.IsHosting)
+            if (ProjectArrhythmia.State.IsClient)
                 yield break;
 
             loadingLevel = true;
@@ -768,6 +768,15 @@ namespace BetterLegacy.Editor.Managers
             level.saveData = new SaveData(level);
 
             var sw = CoreHelper.StartNewStopwatch();
+
+            if (ProjectArrhythmia.State.IsHosting)
+            {
+                SteamLobbyManager.inst.UnloadAll();
+                NetworkFunction.SetClientUnloaded();
+                SteamLobbyManager.inst.SetSceneLoaded(true);
+                SteamLobbyManager.inst.SetSongLoaded(true);
+                SteamLobbyManager.inst.SetGameDataLoaded(true);
+            }
 
             RTPlayer.GameMode = GameMode.Regular;
 
@@ -846,8 +855,6 @@ namespace BetterLegacy.Editor.Managers
             {
                 LevelManager.SetCurrentMetaData(level.metadata);
                 LevelManager.SetCurrentGameData(level);
-                if (ProjectArrhythmia.State.IsInLobby && ProjectArrhythmia.State.IsHosting)
-                    NetworkFunction.SetClientGameData(GameData.Current);
             }
             catch (MetaDataException ex)
             {
@@ -895,8 +902,6 @@ namespace BetterLegacy.Editor.Managers
             CoreHelper.Log("Playing level music...");
             RTEditor.inst.InfoPopup.SetInfo($"Playing Music for [ {name} ]\n\nIf it doesn't, then something went wrong!");
             SetCurrentAudio(level.music);
-            if (ProjectArrhythmia.State.IsInLobby && ProjectArrhythmia.State.IsHosting)
-                NetworkFunction.SetClientAudio(level.music);
 
             CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
 
@@ -923,6 +928,17 @@ namespace BetterLegacy.Editor.Managers
             yield return StartCoroutine(RTLevel.IReinit());
             RTLevel.Current.Tick();
             CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
+
+            #region Sync
+
+            if (ProjectArrhythmia.State.IsInLobby)
+            {
+                NetworkFunction.LoadClientEditorLevel(level);
+                while (!SteamLobbyManager.inst.IsEveryoneLoaded)
+                    yield return new WaitForEndOfFrame();
+            }
+
+            #endregion
 
             CoreHelper.Log("Updating timeline...");
             PostInitLevel();
@@ -978,6 +994,211 @@ namespace BetterLegacy.Editor.Managers
         }
 
         /// <summary>
+        /// Loads a level for clients connected to the current lobby.
+        /// </summary>
+        /// <param name="reader">The current network reader.</param>
+        public void LoadLevelClient(NetworkReader reader) => CoroutineHelper.StartCoroutine(ILoadLevelClient(reader));
+
+        /// <summary>
+        /// Loads a level for clients connected to the current lobby.
+        /// </summary>
+        /// <param name="reader">The current network reader.</param>
+        public IEnumerator ILoadLevelClient(NetworkReader reader)
+        {
+            if (ProjectArrhythmia.State.IsClient)
+                yield break;
+
+            loadingLevel = true;
+
+            #region Read
+
+            var name = reader.ReadString();
+            var seed = reader.ReadString();
+            var metadata = Packet.CreateFromPacket<MetaData>(reader);
+            var gamedata = Packet.CreateFromPacket<GameData>(reader);
+            var audio = Packet.AudioClipFromPacket(reader);
+            var playersData = Packet.CreateFromPacket<PlayersData>(reader);
+
+            #endregion
+
+            CurrentLevel = new Level();
+            CurrentLevel.saveData = new SaveData(CurrentLevel);
+
+            var sw = CoreHelper.StartNewStopwatch();
+
+            RTPlayer.GameMode = GameMode.Regular;
+
+            SteamLobbyManager.inst.SetSceneLoaded(true);
+
+            EditorTimeline.inst.SetLayer(0, EditorTimeline.LayerType.Objects);
+
+            ProjectArrhythmia.Window.ResetTitle();
+
+            RandomHelper.CurrentSeed = seed;
+
+            RTEditor.inst.ResetHistory();
+
+            CoreHelper.Log("Clearing data...");
+            ClearObjects();
+
+            // We stop and play the doggo bop animation in case the user has looked at the settings dialog.
+            EditorManager.inst.CancelInvoke("LoadingIconUpdate");
+            EditorManager.inst.InvokeRepeating("LoadingIconUpdate", 0f, 0.05f);
+
+            CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
+
+            EditorManager.inst.currentLoadedLevel = name;
+            EditorManager.inst.SetPitch(1f);
+
+            EditorManager.inst.timelineScrollRectBar.value = 0f;
+            GameManager.inst.gameState = GameManager.State.Loading;
+
+            EditorManager.inst.ClearPopups();
+            EditorDialog.CurrentDialog?.Close();
+            RTEditor.inst.InfoPopup.Open();
+
+            if (EditorManager.inst.hasLoadedLevel && EditorConfig.Instance.BackupPreviousLoadedLevel.Value && RTFile.FileExists(GameManager.inst.path))
+            {
+                CoreHelper.Log("Backing up previous level...");
+
+                RTEditor.inst.InfoPopup.SetInfo($"Backing up previous level [ {Path.GetFileName(RTFile.RemoveEndSlash(GameManager.inst.path))} ]");
+
+                GameData.Current.SaveData(RTFile.CombinePaths(RTFile.BasePath, $"level-open-backup{FileFormat.LSB.Dot()}"));
+
+                CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
+            }
+
+            CoreHelper.Log("Loading data...");
+
+            RTEditor.inst.InfoPopup.SetInfo($"Loading Level Data for [ {name} ]");
+
+            CoreHelper.Log($"Loading level...");
+
+            GameManager.inst.path = RTFile.CombinePaths(RTFile.ApplicationDirectory, "cache");
+            RTFile.BasePath = RTFile.CombinePaths(RTFile.ApplicationDirectory, "cache");
+            GameManager.inst.levelName = name;
+            RTEditor.inst.InfoPopup.SetInfo($"Loading Level Music for [ {name} ]\n\nIf this is taking more than a minute or two check if the song file (.ogg / .wav / .mp3) is corrupt. If not, then something went really wrong.");
+
+            CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
+
+            //CoreHelper.Log("Setting up Video...");
+            //yield return StartCoroutine(RTVideoManager.inst.Setup(fullPath));
+            //CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
+
+            GameManager.inst.gameState = GameManager.State.Parsing;
+            CoreHelper.Log("Parsing data...");
+            RTEditor.inst.InfoPopup.SetInfo($"Parsing Level Data for [ {name} ]");
+
+            CurrentLevel.metadata = metadata;
+            LevelManager.SetCurrentMetaData(metadata);
+            GameData.Current = null;
+            GameData.Current = gamedata;
+            SteamLobbyManager.inst.SetGameDataLoaded(true);
+
+            // preload audio clips
+            if (GameData.Current && GameData.Current.assets)
+                yield return CoroutineHelper.StartCoroutine(GameData.Current.assets.LoadSounds());
+            yield return CoroutineHelper.StartCoroutine(AssetEditor.inst.ILoadAssets());
+
+            CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
+
+            AchievementEditor.inst.LoadAchievements();
+
+            if (RTEditor.inst.PreviewCover != null && RTEditor.inst.PreviewCover.gameObject)
+                RTEditor.inst.PreviewCover.gameObject.SetActive(false);
+
+            CoreHelper.Log("Playing level music...");
+            RTEditor.inst.InfoPopup.SetInfo($"Playing Music for [ {name} ]\n\nIf it doesn't, then something went wrong!");
+            SetCurrentAudio(audio);
+            SteamLobbyManager.inst.SetSongLoaded(true);
+
+            CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
+
+            RTEditor.inst.InfoPopup.SetInfo($"Updating states for [ {name} ]");
+            if (CoreConfig.Instance.DiscordTimestampUpdatesPerLevel.Value)
+                DiscordController.inst.presence.startTimestamp = SteamworksFacepunch.Epoch.Current;
+            DiscordHelper.UpdateDiscordStatus($"Editing: {MetaData.Current.beatmap.name}", "In Editor", "editor");
+
+            CoreHelper.Log("Spawning players...");
+            try
+            {
+                PlayersData.LoadJSON(new JSONNull());
+                PlayersData.Current = playersData;
+                PlayerManager.SpawnPlayersOnStart();
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            }
+
+            RTPlayer.SetGameDataProperties();
+            CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
+
+            CoreHelper.Log("Updating objects...");
+            yield return StartCoroutine(RTLevel.IReinit());
+            RTLevel.Current.Tick();
+            CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
+
+            #region Sync
+
+            if (ProjectArrhythmia.State.IsInLobby)
+                while (!SteamLobbyManager.inst.IsEveryoneLoaded)
+                    yield return new WaitForEndOfFrame();
+
+            #endregion
+
+            CoreHelper.Log("Updating timeline...");
+            PostInitLevel();
+            RTEditor.inst.InfoPopup.SetInfo("Done!");
+            RTEditor.inst.InfoPopup.Close();
+            EditorManager.inst.CancelInvoke("LoadingIconUpdate");
+
+            GameManager.inst.gameState = GameManager.State.Playing;
+
+            EditorManager.inst.DisplayNotification($"{name} Level loaded", 2f, EditorManager.NotificationType.Success);
+            EditorManager.inst.hasLoadedLevel = true;
+
+            SetAutosave();
+
+            // Load Settings like timeline position, editor layer, bpm active, etc
+            RTEditor.inst.LoadSettings();
+
+            if (!EditorConfig.Instance.RetainCopiedPrefabInstanceData.Value)
+                RTPrefabEditor.inst.copiedInstanceData = null;
+
+            if (EditorConfig.Instance.AnalyzeBPMOnLevelLoad.Value && !RTEditor.inst.editorInfo.analyzedBPM)
+                yield return CoroutineHelper.StartCoroutineAsync(UniBpmAnalyzer.IAnalyzeBPM(AudioManager.inst.CurrentAudioSource.clip, bpm =>
+                {
+                    RTEditor.inst.editorInfo.analyzedBPM = true;
+                    MetaData.Current.song.bpm = bpm;
+                    RTEditor.inst.editorInfo.bpm = bpm;
+                    EditorTimeline.inst.SetTimelineGridSize();
+                }));
+
+            EditorTimeline.inst.RenderTimeline();
+            EditorTimeline.inst.RenderBins();
+
+            if (EditorConfig.Instance.LevelPausesOnStart.Value)
+                AudioManager.inst.CurrentAudioSource.Pause();
+            EditorManager.inst.UpdatePlayButton();
+
+            Example.Current?.brain?.Notice(ExampleBrain.Notices.LOADED_LEVEL);
+
+            loadingLevel = false;
+            fromNewLevel = false;
+
+            CoreHelper.StopAndLogStopwatch(sw, $"Finished loading {name}");
+            sw = null;
+
+            onLoadLevel?.Invoke(CurrentLevel);
+            onLoadLevel = null;
+
+            LegacyPlugin.AddRecentEditorLevel(CurrentLevel);
+
+            yield break;
+        }
+
+        /// <summary>
         /// Should run after a level has initialized.
         /// </summary>
         public void PostInitLevel()
@@ -1007,6 +1228,9 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void SaveLevel()
         {
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             var currentLevelCollection = CurrentLevelCollection ?? OpenLevelCollection;
             if (currentLevelCollection)
                 currentLevelCollection.Save();
@@ -1135,6 +1359,9 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void AutosaveLevel()
         {
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             if (EditorManager.inst.loading)
                 return;
 
@@ -1187,6 +1414,9 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void SaveBackup()
         {
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             if (EditorManager.inst.loading)
                 return;
 
@@ -1227,6 +1457,9 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="levelPanel">Level to save the backup of.</param>
         public void SaveBackup(LevelPanel levelPanel)
         {
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             if (EditorManager.inst.loading)
                 return;
 
@@ -1265,6 +1498,9 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="newLevelSettings">Settings to apply to the new level.</param>
         public void CreateNewLevel(Func<GameData> func, NewLevelSettings newLevelSettings)
         {
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             var newAudioPath = newLevelSettings.audioPath;
             var newLevelName = newLevelSettings.levelName;
             var newSongArtist = newLevelSettings.songArtist;
