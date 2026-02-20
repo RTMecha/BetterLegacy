@@ -66,6 +66,7 @@
       "name": "truepianoskg",
       "clips": [
         {
+          "asset_bundle": "story/ost.asset",
           "path": "air_-_truepianoskg.ogg",
           "name": "AiR - Truepianoskg"
         }
@@ -75,6 +76,7 @@
       "name": "dread",
       "clips": [
         {
+          "asset_bundle": "story/ost.asset",
           "path": "dread.ogg",
           "name": "Dread"
         }
@@ -84,6 +86,7 @@
       "name": "in_the_distance",
       "clips": [
         {
+          "asset_bundle": "story/ost.asset",
           "path": "in the distance.ogg",
           "name": "F-777 - In the Distance"
         }
@@ -93,6 +96,7 @@
       "name": "io",
       "clips": [
         {
+          "asset_bundle": "story/ost.asset",
           "path": "io.ogg",
           "name": "meganeko - IO"
         }
@@ -102,6 +106,7 @@
       "name": "jukio_distance",
       "clips": [
         {
+          "asset_bundle": "story/ost.asset",
           "path": "jukio -kozilek- kallio - distance.ogg",
           "name": "Jukio -Kozilek- Kallio - Distance"
         }
@@ -111,6 +116,7 @@
       "name": "little_calculations",
       "clips": [
         {
+          "asset_bundle": "story/ost.asset",
           "path": "shirobon - infinity - 06 little calculations.ogg",
           "name": "Shirobon - Little Calculations"
         }
@@ -120,6 +126,7 @@
       "name": "reflections",
       "clips": [
         {
+          "asset_bundle": "story/ost.asset",
           "path": "shirobon - infinity - 10 reflections.ogg",
           "name": "Shirobon - Reflections"
         }
@@ -129,6 +136,7 @@
       "name": "fracture",
       "clips": [
         {
+          "asset_bundle": "story/ost.asset",
           "path": "shirobon - rebirth - 01 fracture.ogg",
           "name": "Shirobon - Fracture"
         }
@@ -138,6 +146,7 @@
       "name": "xilioh",
       "clips": [
         {
+          "asset_bundle": "story/ost.asset",
           "path": "shirobon - rebirth - 04 xilioh.ogg",
           "name": "Shirobon - Xilioh"
         }

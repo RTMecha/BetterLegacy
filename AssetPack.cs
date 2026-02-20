@@ -79,9 +79,9 @@ namespace BetterLegacy
         /// Gets an asset file.
         /// </summary>
         /// <param name="assetPath">Path to the asset.</param>
-        /// <returns>Returns a combined path of the found asset.
-        /// <br></br>Searches through the loaded asset packs for the specified file. If any of the loaded asset packs contains the file, then returns the asset pack file path and the <paramref name="assetPath"/>.
-        /// <br></br>Otherwise if none of the loaded asset packs contains the file, returns the built-in asset pack file path and the <paramref name="assetPath"/>.</returns>
+        /// <returns>Returns a combined path of the found asset.<br/>
+        /// Searches through the loaded asset packs for the specified file. If any of the loaded asset packs contains the file, then returns the asset pack file path and the <paramref name="assetPath"/>.<br/>
+        /// Otherwise if none of the loaded asset packs contains the file, returns the built-in asset pack file path and the <paramref name="assetPath"/>.</returns>
         public static string GetFile(string assetPath)
         {
             for (int i = AssetPacks.Count - 1; i >= 0; i--)
@@ -155,6 +155,26 @@ namespace BetterLegacy
         {
             directory = GetFile(assetPath);
             return RTFile.DirectoryExists(directory);
+        }
+
+        /// <summary>
+        /// Iterates through each asset file with the same asset path.
+        /// </summary>
+        /// <param name="assetPath">Path to the asset.</param>
+        /// <param name="action">Action to run for each found file.</param>
+        public static void ForEachFile(string assetPath, Action<string> action)
+        {
+            action?.Invoke(BuiltIn.GetPath(assetPath));
+            for (int i = 0; i < AssetPacks.Count; i++)
+            {
+                var assetPack = AssetPacks[i];
+                var settings = assetPack.GetSettings();
+                if (settings && !settings.enabled)
+                    continue;
+
+                if (assetPack.HasFile(assetPath))
+                    action?.Invoke(assetPack.GetPath(assetPath));
+            }
         }
 
         /// <summary>

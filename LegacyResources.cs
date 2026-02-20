@@ -294,37 +294,13 @@ namespace BetterLegacy
                 }));
         }
 
-        public static void LoadMusic()
+        public static void LoadOST()
         {
+            musicClips.Clear();
+
             var library = Patchers.SoundLibraryPatch.inst;
-
-            var ostFilePath = RTFile.GetAsset($"builtin/ost{FileFormat.ASSET.Dot()}");
-            List<AudioClip> loadedClips = new List<AudioClip>();
-
-            if (RTFile.FileExists(ostFilePath))
-            {
-                var ost = AssetBundle.LoadFromFile(ostFilePath);
-
-                foreach (var asset in ost.GetAllAssetNames())
-                {
-                    var assetName = asset.Remove("assets/ost/");
-                    var music = ost.LoadAsset<AudioClip>(assetName);
-
-                    if (music == null)
-                    {
-                        Debug.LogError($"{library.className}The music ({assetName}) does not exist in the asset bundle for some reason.");
-                        continue;
-                    }
-
-                    var name = GetMusicName(assetName);
-                    var groupName = GetGroupName(assetName);
-
-                    music.name = assetName;
-
-                    loadedClips.Add(music);
-                }
-                ost.Unload(false);
-            }
+            var assetBundles = new Dictionary<string, AssetBundle>();
+            var loadedClips = new List<AudioClip>();
 
             // removes barrels from main menu music so it can serve as the loading music
             var menuMusic = library.musicGroups[1];
@@ -341,58 +317,82 @@ namespace BetterLegacy
                 musicClips.Add(musicGroup);
             }
 
-            var songs = AssetPack.GetArray("core/music.json");
-            for (int i = 0; i < songs.Count; i++)
+            AssetPack.ForEachFile("core/music.json", file =>
             {
-                var song = songs[i];
-                if (song["clips"] == null)
-                    continue;
-
-                var id = song["name"];
-                CoreHelper.Log($"Loading sound {id}");
-
-                var musicGroupIndex = musicClips.FindIndex(x => x.id == id);
-                var musicGroup = musicGroupIndex >= 0 ? musicClips[musicGroupIndex] : new MusicGroup(id);
-                if (musicGroupIndex < 0)
-                    musicClips.Add(musicGroup);
-
-                if (song["always_random"] != null)
-                    musicGroup.alwaysRandom = song["always_random"].AsBool;
-
-                for (int j = 0; j < song["clips"].Count; j++)
+                var jn = JSON.Parse(file);
+                for (int i = 0; i < jn.Count; i++)
                 {
-                    var clipIndex = j;
-                    var c = song["clips"][j];
-                    if (c == null)
+                    var song = jn[i];
+                    if (song["clips"] == null)
                         continue;
 
-                    if (c.IsString)
+                    var id = song["name"];
+                    CoreHelper.Log($"Loading sound {id}");
+
+                    var musicGroupIndex = musicClips.FindIndex(x => x.id == id);
+                    var musicGroup = musicGroupIndex >= 0 ? musicClips[musicGroupIndex] : new MusicGroup(id);
+                    if (musicGroupIndex < 0)
+                        musicClips.Add(musicGroup);
+
+                    if (song["always_random"] != null)
+                        musicGroup.alwaysRandom = song["always_random"].AsBool;
+
+                    for (int j = 0; j < song["clips"].Count; j++)
                     {
-                        LoadMusic(c, id, clipIndex, musicGroup, loadedClips);
+                        var clipIndex = j;
+                        var c = song["clips"][j];
+                        if (c == null)
+                            continue;
+
+                        if (c.IsString)
+                        {
+                            LoadMusic(c, id, clipIndex, musicGroup, loadedClips);
+                            continue;
+                        }
+
+                        var orig = musicGroup.orig;
+                        var assetBundleKey = c["asset_bundle"];
+                        var path = c["path"];
+                        if (assetBundleKey != null && path != null)
+                        {
+                            var assetBundleFile = AssetPack.GetFile(assetBundleKey);
+                            if (!RTFile.FileExists(assetBundleFile))
+                                continue;
+                            if (!assetBundles.TryGetValue(assetBundleKey, out AssetBundle assetBundle))
+                                assetBundles[assetBundleKey] = AssetBundle.LoadFromFile(assetBundleFile);
+                            var audioClip = assetBundle.LoadAsset<AudioClip>(path);
+                            if (!audioClip)
+                                continue;
+                            audioClip.name = path;
+
+                            musicGroup.group.TryAdd(clipIndex, new SoundGroup.AudioClipWrapper(audioClip, true));
+                            if (!loadedClips.Has(x => x.name == path))
+                                loadedClips.Add(audioClip);
+                            continue;
+                        }
+                        else if (path != null)
+                        {
+                            LoadMusic(path, id, clipIndex, musicGroup, loadedClips);
+                            continue;
+                        }
+
+                        var findID = c["id"];
+                        if (!string.IsNullOrEmpty(findID))
+                            orig = library.musicGroups.FirstOrDefault(x => x.musicID == findID);
+
+                        var index = c["index"].AsInt;
+                        if (orig != null && orig.music.TryGetAt(index, out AudioClip origClip))
+                            musicGroup.group.TryAdd(clipIndex, origClip);
                         continue;
                     }
 
-                    if (c["path"] != null)
-                    {
-                        LoadMusic(c["path"], id, clipIndex, musicGroup, loadedClips);
-                        continue;
-                    }
-
-                    var orig = musicGroup.orig;
-                    var findID = c["id"];
-                    if (!string.IsNullOrEmpty(findID))
-                        orig = library.musicGroups.First(x => x.musicID == findID);
-
-                    var index = c["index"].AsInt;
-                    if (orig != null && orig.music.TryGetAt(index, out AudioClip origClip))
-                        musicGroup.group.TryAdd(clipIndex, origClip);
-                    continue;
+                    musicGroup.Shuffle();
                 }
+            });
 
-                musicGroup.Shuffle();
-            }
-
-            loadedClips.Clear();
+            foreach (var assetBundle in assetBundles.Values)
+                assetBundle.Unload(false);
+            assetBundles.Clear();
         }
 
         static void LoadMusic(string c, string id, int clipIndex, MusicGroup musicGroup, List<AudioClip> loadedClips)
@@ -402,34 +402,6 @@ namespace BetterLegacy
             else
                 LoadSound(c, id, clipIndex, musicGroup);
         }
-
-        static string GetMusicName(string input) => input switch
-        {
-            "air_-_truepianoskg.ogg" => "AiR - Truepianoskg",
-            "dread.ogg" => "Dread",
-            "in the distance.ogg" => "F-777 - In the Distance",
-            "io.ogg" => "meganeko - IO",
-            "jukio -kozilek- kallio - distance.ogg" => "Jukio -Kozilek- Kallio - Distance",
-            "shirobon - infinity - 06 little calculations.ogg" => "Shirobon - Little Calculations",
-            "shirobon - infinity - 10 reflections.ogg" => "Shirobon - Reflections",
-            "shirobon - rebirth - 01 fracture.ogg" => "Shirobon - Fracture",
-            "shirobon - rebirth - 04 xilioh.ogg" => "Shirobon - Xilioh",
-            _ => input
-        };
-
-        static string GetGroupName(string input) => input switch
-        {
-            "air_-_truepianoskg.ogg" => "truepianoskg",
-            "dread.ogg" => "dread",
-            "in the distance.ogg" => "in_the_distance",
-            "io.ogg" => "io",
-            "jukio -kozilek- kallio - distance.ogg" => "jukio_distance",
-            "shirobon - infinity - 06 little calculations.ogg" => "little_calculations",
-            "shirobon - infinity - 10 reflections.ogg" => "reflections",
-            "shirobon - rebirth - 01 fracture.ogg" => "fracture",
-            "shirobon - rebirth - 04 xilioh.ogg" => "xilioh",
-            _ => input
-        };
 
         public static List<SoundGroup> soundClips = new List<SoundGroup>();
         public static List<MusicGroup> musicClips = new List<MusicGroup>();
