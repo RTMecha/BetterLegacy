@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading.Tasks
 
 using UnityEngine;
 
@@ -507,7 +506,8 @@ namespace BetterLegacy.Core.Managers
 
         void Split(byte[] data, NetworkFunction function, long position, string uniqueID)
         {
-            data = CoreHelper.Compress(data);
+            data = SevenZip.SevenZipCompressor.CompressBytes(data);
+            //data = CoreHelper.Compress(data);
             var chunks = data.Split(SPLIT_DATA_COUNT);
             Split(chunks, function.id, function.side, position, uniqueID);
         }
@@ -522,7 +522,8 @@ namespace BetterLegacy.Core.Managers
                 writer.Write(position);
                 writer.Write(uniqueID);
                 writer.Write(chunks.Count);
-                var data = CoreHelper.Compress(chunks[0].ToArray());
+                //var data = CoreHelper.Compress(chunks[0].ToArray());
+                var data = SevenZip.SevenZipCompressor.CompressBytes(chunks[0].ToArray());
                 size += data.Length;
                 writer.Write(size);
                 writer.Write(data.Length);
@@ -741,7 +742,8 @@ namespace BetterLegacy.Core.Managers
 
             var sw = CoreHelper.StartNewStopwatch();
             //await Task.Run(() => writer.Write(reader.ReadBytes(currentDataLength)));
-            writer.Write(CoreHelper.Decompress(reader.ReadBytes(currentDataLength)));
+            //writer.Write(CoreHelper.Decompress(reader.ReadBytes(currentDataLength)));
+            writer.Write(SevenZip.SevenZipExtractor.ExtractBytes(reader.ReadBytes(currentDataLength)));
             sw.Stop();
 
             if (totalChunkSize > MAX_BUFFER_SIZE)
@@ -760,7 +762,8 @@ namespace BetterLegacy.Core.Managers
             }
 
             var data = writer.GetBuffer();
-            var compressedData = CoreHelper.Decompress(data);
+            //var compressedData = CoreHelper.Decompress(data);
+            var compressedData = SevenZip.SevenZipExtractor.ExtractBytes(data);
             reader.Dispose();
             reader = new NetworkReader(compressedData);
             writer.Dispose();
