@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Net;
 using System.Text;
 
@@ -90,6 +91,11 @@ namespace BetterLegacy.Editor.Managers
         /// Prefab custom default tags.
         /// </summary>
         public List<string> customDefaultPrefabTags = new List<string>();
+
+        /// <summary>
+        /// Copied tags.
+        /// </summary>
+        public List<string> copiedTags = new List<string>();
 
         /// <summary>
         /// Indicates a default tag's relation to an object.
@@ -1307,7 +1313,54 @@ namespace BetterLegacy.Editor.Managers
                 input.onEndEdit.NewListener(_val => onUpdateTags?.Invoke());
                 EditorContextMenu.AddContextMenu(input.gameObject,
                     new ButtonElement("Add to Default Tags", () => AddCustomDefaultTag(uploadable.ArcadeTags[index], relation)),
-                    new ButtonElement("Copy to Clipboard", () => LSText.CopyToClipboard(uploadable.ArcadeTags[index])));
+                    new ButtonElement("Copy to Clipboard", () => LSText.CopyToClipboard(uploadable.ArcadeTags[index])),
+                    new ButtonElement("Copy Tag List", () =>
+                    {
+                        copiedTags = new List<string>(uploadable.ArcadeTags);
+                        EditorManager.inst.DisplayNotification($"Copied arcade tags!", 2f, EditorManager.NotificationType.Success);
+                    }),
+                    new ButtonElement("Paste Tag List (Override)", () =>
+                    {
+                        var tags = new List<string>(uploadable.ArcadeTags);
+                        uploadable.ArcadeTags = new List<string>(copiedTags);
+                        onUpdateTags?.Invoke();
+                        RenderTagDialog(uploadable, dialog, relation, onUpdateTags);
+                        EditorManager.inst.DisplayNotification($"Pasted and overridden arcade tags!", 2f, EditorManager.NotificationType.Success);
+
+                        EditorManager.inst.history.Add(new History.Command("Paste tags",
+                            () =>
+                            {
+                                uploadable.ArcadeTags = new List<string>(copiedTags);
+                                onUpdateTags?.Invoke();
+                                RenderTagDialog(uploadable, dialog, relation, onUpdateTags);
+                            },
+                            () =>
+                            {
+                                uploadable.ArcadeTags = tags;
+                                OpenTagDialog(uploadable, dialog, relation, onUpdateTags);
+                            }));
+                    }, shouldGenerate: () => copiedTags != null && !copiedTags.IsEmpty()),
+                    new ButtonElement("Paste Tag List (Add)", () =>
+                    {
+                        var tags = new List<string>(uploadable.ArcadeTags);
+                        uploadable.ArcadeTags.AddRange(copiedTags.Where(x => !uploadable.ArcadeTags.Contains(x)));
+                        onUpdateTags?.Invoke();
+                        RenderTagDialog(uploadable, dialog, relation, onUpdateTags);
+                        EditorManager.inst.DisplayNotification($"Pasted arcade tags!", 2f, EditorManager.NotificationType.Success);
+
+                        EditorManager.inst.history.Add(new History.Command("Paste tags",
+                            () =>
+                            {
+                                uploadable.ArcadeTags.AddRange(copiedTags.Where(x => !uploadable.ArcadeTags.Contains(x)));
+                                onUpdateTags?.Invoke();
+                                RenderTagDialog(uploadable, dialog, relation, onUpdateTags);
+                            },
+                            () =>
+                            {
+                                uploadable.ArcadeTags = tags;
+                                OpenTagDialog(uploadable, dialog, relation, onUpdateTags);
+                            }));
+                    }, shouldGenerate: () => copiedTags != null && !copiedTags.IsEmpty()));
 
                 var deleteStorage = gameObject.transform.Find("Delete").GetComponent<DeleteButtonStorage>();
                 deleteStorage.OnClick.NewListener(() =>
@@ -1395,7 +1448,50 @@ namespace BetterLegacy.Editor.Managers
                             uploadable.ArcadeTags.AddRange(tags);
                             OpenTagDialog(uploadable, dialog, relation, onUpdateTags);
                         }));
-                }));
+                }),
+                new SpacerElement(),
+                new ButtonElement("Paste Tag List (Override)", () =>
+                {
+                    var tags = new List<string>(uploadable.ArcadeTags);
+                    uploadable.ArcadeTags = new List<string>(copiedTags);
+                    onUpdateTags?.Invoke();
+                    RenderTagDialog(uploadable, dialog, relation, onUpdateTags);
+                    EditorManager.inst.DisplayNotification($"Pasted and overridden arcade tags!", 2f, EditorManager.NotificationType.Success);
+
+                    EditorManager.inst.history.Add(new History.Command("Paste tags",
+                        () =>
+                        {
+                            uploadable.ArcadeTags = new List<string>(copiedTags);
+                            onUpdateTags?.Invoke();
+                            RenderTagDialog(uploadable, dialog, relation, onUpdateTags);
+                        },
+                        () =>
+                        {
+                            uploadable.ArcadeTags = tags;
+                            OpenTagDialog(uploadable, dialog, relation, onUpdateTags);
+                        }));
+                }, shouldGenerate: () => copiedTags != null && !copiedTags.IsEmpty()),
+                new ButtonElement("Paste Tag List (Add)", () =>
+                {
+                    var tags = new List<string>(uploadable.ArcadeTags);
+                    uploadable.ArcadeTags.AddRange(copiedTags.Where(x => !uploadable.ArcadeTags.Contains(x)));
+                    onUpdateTags?.Invoke();
+                    RenderTagDialog(uploadable, dialog, relation, onUpdateTags);
+                    EditorManager.inst.DisplayNotification($"Pasted arcade tags!", 2f, EditorManager.NotificationType.Success);
+
+                    EditorManager.inst.history.Add(new History.Command("Paste tags",
+                        () =>
+                        {
+                            uploadable.ArcadeTags.AddRange(copiedTags.Where(x => !uploadable.ArcadeTags.Contains(x)));
+                            onUpdateTags?.Invoke();
+                            RenderTagDialog(uploadable, dialog, relation, onUpdateTags);
+                        },
+                        () =>
+                        {
+                            uploadable.ArcadeTags = tags;
+                            OpenTagDialog(uploadable, dialog, relation, onUpdateTags);
+                        }));
+                }, shouldGenerate: () => copiedTags != null && !copiedTags.IsEmpty()));
         }
 
         #endregion
