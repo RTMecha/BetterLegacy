@@ -197,7 +197,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public override void CopyData(LevelData orig, bool newID = true)
         {
@@ -207,9 +207,9 @@ namespace BetterLegacy.Core.Data.Beatmap
             levelVersion = orig.levelVersion;
             modVersion = orig.modVersion;
 
-            levelStartOffset = orig.levelStartOffset;
-            reverse = orig.reverse;
             hideIntro = orig.hideIntro;
+            forceReplayLevelOff = orig.forceReplayLevelOff;
+            reverse = orig.reverse;
 
             respawnImmediately = orig.allowCustomPlayerModels;
             lockBoost = orig.lockBoost;
@@ -220,7 +220,6 @@ namespace BetterLegacy.Core.Data.Beatmap
             maxJumpCount = orig.maxJumpCount;
             maxJumpBoostCount = orig.maxJumpBoostCount;
             maxHealth = orig.maxHealth;
-            forceReplayLevelOff = orig.forceReplayLevelOff;
             multiplyPlayerSpeed = orig.multiplyPlayerSpeed;
             allowCustomPlayerModels = orig.allowCustomPlayerModels;
             allowPlayerModelControls = orig.allowPlayerModelControls;
@@ -238,6 +237,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             limitBoostMaxTime = orig.limitBoostMaxTime;
             limitHitCooldown = orig.limitHitCooldown;
 
+            levelStartOffset = orig.levelStartOffset;
             levelEndOffset = orig.levelEndOffset;
             autoEndLevel = orig.autoEndLevel;
             endLevelFunc = orig.endLevelFunc;
@@ -247,6 +247,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public override void ReadJSON(JSONNode jn)
         {
+            #region Info
+
             if (jn["level_version"] != null)
                 levelVersion = jn["level_version"];
             else
@@ -257,11 +259,25 @@ namespace BetterLegacy.Core.Data.Beatmap
             else
                 modVersion = LegacyPlugin.ModVersion.ToString();
 
+            #endregion
+
+            #region Behavior
+
             if (jn["show_intro"] != null)
                 hideIntro = jn["show_intro"].AsBool;
-            
+
             if (jn["hide_intro"] != null)
                 hideIntro = jn["hide_intro"].AsBool;
+
+            if (jn["force_replay_level_off"] != null)
+                forceReplayLevelOff = jn["force_replay_level_off"].AsBool;
+
+            if (jn["reverse"] != null)
+                reverse = jn["reverse"].AsBool;
+
+            #endregion
+
+            #region Player Conditions
 
             if (jn["respawn_now"] != null)
                 respawnImmediately = jn["respawn_now"].AsBool;
@@ -290,15 +306,12 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (jn["max_health"] != null)
                 maxHealth = jn["max_health"].AsInt;
 
-            if (jn["force_replay_level_off"] != null)
-                forceReplayLevelOff = jn["force_replay_level_off"].AsBool;
-
             if (jn["multiply_player_speed"] != null)
                 multiplyPlayerSpeed = jn["multiply_player_speed"].AsBool;
 
             if (jn["allow_custom_player_models"] != null)
                 allowCustomPlayerModels = jn["allow_custom_player_models"].AsBool;
-            
+
             if (jn["allow_player_model_controls"] != null)
                 allowPlayerModelControls = jn["allow_player_model_controls"].AsBool;
 
@@ -307,37 +320,48 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             if (jn["allow_jumping"] != null)
                 allowJumping = jn["allow_jumping"].AsBool;
-            
+
             if (jn["allow_rev_jumping"] != null)
                 allowReversedJumping = jn["allow_rev_jumping"].AsBool;
-            
+
             if (jn["allow_wall_jumping"] != null)
                 allowWallJumping = jn["allow_wall_jumping"].AsBool;
-            
+
             if (jn["allow_wall_sticking"] != null)
                 allowWallSticking = jn["allow_wall_sticking"].AsBool;
+
+            #endregion
+
+            #region Limit
 
             if (jn["limit_player"] != null)
                 limitPlayer = jn["limit_player"].AsBool;
             else if (jn["mod_version"] != null)
                 limitPlayer = false;
 
-            if (jn["limit_move_speed"] != null)
-                limitMoveSpeed = Parser.TryParse(jn["limit_move_speed"], new Vector2(20f, 20f));
-            if (jn["limit_boost_speed"] != null)
-                limitBoostSpeed = Parser.TryParse(jn["limit_boost_speed"], new Vector2(85f, 85f));
-            if (jn["limit_boost_cooldown"] != null)
-                limitBoostCooldown = Parser.TryParse(jn["limit_boost_cooldown"], new Vector2(0.1f, 0.1f));
-            if (jn["limit_boost_min_time"] != null)
-                limitBoostMinTime = Parser.TryParse(jn["limit_boost_min_time"], new Vector2(0.07f, 0.07f));
-            if (jn["limit_boost_max_time"] != null)
-                limitBoostMaxTime = Parser.TryParse(jn["limit_boost_max_time"], new Vector2(0.18f, 0.18f));
-            if (jn["limit_hit_cooldown"] != null)
-                limitHitCooldown = Parser.TryParse(jn["limit_hit_cooldown"], new Vector2(2.5f, 2.5f));
+            if (limitPlayer)
+            {
+                if (jn["limit_move_speed"] != null)
+                    limitMoveSpeed = Parser.TryParse(jn["limit_move_speed"], new Vector2(20f, 20f));
+                if (jn["limit_boost_speed"] != null)
+                    limitBoostSpeed = Parser.TryParse(jn["limit_boost_speed"], new Vector2(85f, 85f));
+                if (jn["limit_boost_cooldown"] != null)
+                    limitBoostCooldown = Parser.TryParse(jn["limit_boost_cooldown"], new Vector2(0.1f, 0.1f));
+                if (jn["limit_boost_min_time"] != null)
+                    limitBoostMinTime = Parser.TryParse(jn["limit_boost_min_time"], new Vector2(0.07f, 0.07f));
+                if (jn["limit_boost_max_time"] != null)
+                    limitBoostMaxTime = Parser.TryParse(jn["limit_boost_max_time"], new Vector2(0.18f, 0.18f));
+                if (jn["limit_hit_cooldown"] != null)
+                    limitHitCooldown = Parser.TryParse(jn["limit_hit_cooldown"], new Vector2(2.5f, 2.5f));
+            }
+
+            #endregion
+
+            #region Start / End Level
 
             if (jn["level_start_offset"] != null)
                 LevelStartOffset = Parser.TryParse(jn["level_start_offset"], 0f);
-            
+
             if (jn["level_end_offset"] != null)
                 LevelEndOffset = Parser.TryParse(jn["level_end_offset"], 0.1f);
 
@@ -352,17 +376,38 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             if (jn["end_level_update_progress"] != null)
                 endLevelUpdateProgress = jn["end_level_update_progress"].AsBool;
+
+            #endregion
         }
 
         public override JSONNode ToJSON()
         {
             var jn = Parser.NewJSONObject();
 
+            #region Info
+
             jn["level_version"] = ProjectArrhythmia.GAME_VERSION;
             jn["mod_version"] = modVersion;
 
+            #endregion
+
+            #region Behavior
+
             if (hideIntro)
                 jn["hide_intro"] = hideIntro;
+
+            if (forceReplayLevelOff)
+                jn["force_replay_level_off"] = forceReplayLevelOff;
+
+            if (!reverse)
+                jn["reverse"] = reverse;
+
+            #endregion
+
+            #region Player Conditions
+
+            if (respawnImmediately)
+                jn["respawn_now"] = respawnImmediately;
 
             if (lockBoost)
                 jn["lock_boost"] = lockBoost;
@@ -387,18 +432,15 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (maxHealth != 3)
                 jn["max_health"] = maxHealth;
 
-            if (forceReplayLevelOff)
-                jn["force_replay_level_off"] = forceReplayLevelOff;
-
             if (!multiplyPlayerSpeed)
                 jn["multiply_player_speed"] = multiplyPlayerSpeed;
 
             if (!allowCustomPlayerModels)
                 jn["allow_custom_player_models"] = allowCustomPlayerModels;
-            
+
             if (allowPlayerModelControls)
                 jn["allow_player_model_controls"] = allowPlayerModelControls;
-            
+
             if (!spawnPlayers)
                 jn["spawn_players"] = spawnPlayers;
 
@@ -407,31 +449,41 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             if (!allowReversedJumping)
                 jn["allow_rev_jumping"] = allowReversedJumping;
-            
+
             if (!allowWallJumping)
                 jn["allow_wall_jumping"] = allowWallJumping;
-            
+
             if (!allowWallSticking)
                 jn["allow_wall_sticking"] = allowWallSticking;
 
-            jn["limit_player"] = limitPlayer;
+            #endregion
 
-            if (limitMoveSpeed.x != 20f || limitMoveSpeed.y != 20f)
-                jn["limit_move_speed"] = limitMoveSpeed.ToJSON();
-            if (limitBoostSpeed.x != 85f || limitBoostSpeed.y != 85f)
-                jn["limit_boost_speed"] = limitBoostSpeed.ToJSON();
-            if (limitBoostCooldown.x != 0.1f || limitBoostCooldown.y != 0.1f)
-                jn["limit_boost_cooldown"] = limitBoostCooldown.ToJSON();
-            if (limitBoostMinTime.x != 0.07f || limitBoostMinTime.y != 0.07f)
-                jn["limit_boost_min_time"] = limitBoostMinTime.ToJSON();
-            if (limitBoostMaxTime.x != 0.18f || limitBoostMaxTime.y != 0.18f)
-                jn["limit_boost_max_time"] = limitBoostMaxTime.ToJSON();
-            if (limitHitCooldown.x != 2.5f || limitHitCooldown.y != 2.5f)
-                jn["limit_hit_cooldown"] = limitHitCooldown.ToJSON();
+            #region Limit
+
+            jn["limit_player"] = limitPlayer;
+            if (limitPlayer)
+            {
+                if (limitMoveSpeed.x != 20f || limitMoveSpeed.y != 20f)
+                    jn["limit_move_speed"] = limitMoveSpeed.ToJSON();
+                if (limitBoostSpeed.x != 85f || limitBoostSpeed.y != 85f)
+                    jn["limit_boost_speed"] = limitBoostSpeed.ToJSON();
+                if (limitBoostCooldown.x != 0.1f || limitBoostCooldown.y != 0.1f)
+                    jn["limit_boost_cooldown"] = limitBoostCooldown.ToJSON();
+                if (limitBoostMinTime.x != 0.07f || limitBoostMinTime.y != 0.07f)
+                    jn["limit_boost_min_time"] = limitBoostMinTime.ToJSON();
+                if (limitBoostMaxTime.x != 0.18f || limitBoostMaxTime.y != 0.18f)
+                    jn["limit_boost_max_time"] = limitBoostMaxTime.ToJSON();
+                if (limitHitCooldown.x != 2.5f || limitHitCooldown.y != 2.5f)
+                    jn["limit_hit_cooldown"] = limitHitCooldown.ToJSON();
+            }
+
+            #endregion
+
+            #region Start / End Level
 
             if (LevelStartOffset != 0f)
                 jn["level_start_offset"] = LevelStartOffset;
-            
+
             if (LevelEndOffset != 0.1f)
                 jn["level_end_offset"] = LevelEndOffset;
 
@@ -446,6 +498,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             if (!endLevelUpdateProgress)
                 jn["end_level_update_progress"] = endLevelUpdateProgress;
+
+            #endregion
 
             return jn;
         }
