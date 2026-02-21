@@ -118,6 +118,11 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public EditorInfo editorInfo = new EditorInfo();
 
+        /// <summary>
+        /// The currently copied shape data.
+        /// </summary>
+        public ShapeableData copiedShapeableData;
+
         #endregion
 
         #region Preview
@@ -5120,6 +5125,46 @@ namespace BetterLegacy.Editor.Managers
 
                         RenderShapeable(shapeable, dialog, onUpdate);
                     });
+
+                EditorContextMenu.AddContextMenu(toggle.gameObject,
+                    new ButtonElement("Copy Shape Data", () =>
+                    {
+                        if (!toggle.interactable)
+                            return;
+                        copiedShapeableData = ShapeableData.FromIShapeable(shapeable);
+                    }),
+                    new ButtonElement("Paste Shape Data", () =>
+                    {
+                        copiedShapeableData.ApplyShapeData(shapeable);
+
+                        if (shapeable is BeatmapObject beatmapObject && beatmapObject.gradientType != GradientType.Normal && (shapeable.Shape == 4 || shapeable.Shape == 6))
+                            shapeable.Shape = 0;
+
+                        if (shapeable.ShapeType == ShapeType.Polygon && EditorConfig.Instance.AutoPolygonRadius.Value)
+                            shapeable.Polygon.Radius = shapeable.Polygon.GetAutoRadius();
+
+                        // Since text has no affect on the timeline object, we will only need to update the physical object.
+                        onUpdate?.Invoke(ObjectContext.SHAPE);
+
+                        RenderShapeable(shapeable, dialog, onUpdate);
+                    }, shouldGenerate: () => copiedShapeableData),
+                    new SpacerElement(),
+                    new ButtonElement("Reset Shape Data", () =>
+                    {
+                        shapeable.Shape = 0;
+                        shapeable.ShapeOption = 0;
+                        shapeable.Text = string.Empty;
+                        shapeable.AutoTextAlign = false;
+                        shapeable.Polygon = new PolygonShape();
+
+                        if (shapeable.ShapeType == ShapeType.Polygon && EditorConfig.Instance.AutoPolygonRadius.Value)
+                            shapeable.Polygon.Radius = shapeable.Polygon.GetAutoRadius();
+
+                        // Since text has no affect on the timeline object, we will only need to update the physical object.
+                        onUpdate?.Invoke(ObjectContext.SHAPE);
+
+                        RenderShapeable(shapeable, dialog, onUpdate);
+                    }));
 
                 num++;
             }
