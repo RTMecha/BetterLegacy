@@ -275,7 +275,10 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Transforms
 
-        float depth = 15f;
+        /// <summary>
+        /// The depth the visual object is rendered on.
+        /// </summary>
+        public float depth = 15f;
         /// <summary>
         /// The depth the visual object is rendered on.
         /// </summary>
