@@ -1199,7 +1199,7 @@ namespace BetterLegacy.Companion.Data
             {
                 public override string Name => "add_editor_bin";
 
-                public override int ParameterCount => 1;
+                public override int ParameterCount => 2;
 
                 public override string Description => "Editor bin of the object.";
 
@@ -1331,13 +1331,13 @@ namespace BetterLegacy.Companion.Data
             {
                 public override string Name => "autokill_offset";
 
-                public override int ParameterCount => 1;
+                public override int ParameterCount => 2;
 
                 public override string Description => "Despawn time of the object.";
 
-                public override string AddToAutocomplete => "autokill_offset 0";
+                public override string AddToAutocomplete => "autokill_offset set 0";
 
-                public override void Apply(BeatmapObject obj, string[] parameters) => obj.autoKillOffset = Parser.TryParse(parameters[0], 0f);
+                public override void Apply(BeatmapObject obj, string[] parameters) => RTMath.Operation(ref obj.autoKillOffset, Parser.TryParse(parameters[1], 0f), RTMath.GetOperation(parameters[0], MathOperation.Set));
             }
 
             public class BeatmapObjectGradientTypeParameter : EditParameter<BeatmapObject>
@@ -1366,13 +1366,13 @@ namespace BetterLegacy.Companion.Data
             {
                 public override string Name => "depth";
 
-                public override int ParameterCount => 1;
+                public override int ParameterCount => 2;
 
                 public override string Description => "Render depth of the object.";
 
-                public override string AddToAutocomplete => "depth 15";
+                public override string AddToAutocomplete => "depth set 15";
 
-                public override void Apply(BeatmapObject obj, string[] parameters) => obj.Depth = Parser.TryParse(parameters[0], 0f);
+                public override void Apply(BeatmapObject obj, string[] parameters) => RTMath.Operation(ref obj.depth, Parser.TryParse(parameters[1], 0f), RTMath.GetOperation(parameters[0], MathOperation.Set));
             }
 
             public class BeatmapObjectPositionKeyframeParameter : EditParameter<BeatmapObject>
@@ -1544,78 +1544,78 @@ namespace BetterLegacy.Companion.Data
             {
                 public override string Name => "autokill_offset";
 
-                public override int ParameterCount => 1;
+                public override int ParameterCount => 2;
 
                 public override string Description => "Despawn time of the object.";
 
-                public override string AddToAutocomplete => "autokill_offset 0";
+                public override string AddToAutocomplete => "autokill_offset set 0";
 
-                public override void Apply(BackgroundObject obj, string[] parameters) => obj.autoKillOffset = Parser.TryParse(parameters[0], 0f);
+                public override void Apply(BackgroundObject obj, string[] parameters) => RTMath.Operation(ref obj.autoKillOffset, Parser.TryParse(parameters[1], 0f), RTMath.GetOperation(parameters[0], MathOperation.Set));
             }
 
             public class BackgroundObjectPositionParameter : EditParameter<BackgroundObject>
             {
                 public override string Name => "pos";
 
-                public override int ParameterCount => 2;
+                public override int ParameterCount => 3;
 
                 public override string Description => "Position of the object.";
 
-                public override string AddToAutocomplete => "pos 0 0";
+                public override string AddToAutocomplete => "pos set 0 0";
 
-                public override void Apply(BackgroundObject obj, string[] parameters) => obj.pos = new Vector2(Parser.TryParse(parameters[0], 0f), Parser.TryParse(parameters[1], 0f));
+                public override void Apply(BackgroundObject obj, string[] parameters) => RTMath.Operation(ref obj.pos, new Vector2(Parser.TryParse(parameters[1], 0f), Parser.TryParse(parameters[2], 0f)), RTMath.GetOperation(parameters[0], MathOperation.Set));
             }
 
             public class BackgroundObjectScaleParameter : EditParameter<BackgroundObject>
             {
                 public override string Name => "sca";
 
-                public override int ParameterCount => 2;
+                public override int ParameterCount => 3;
 
                 public override string Description => "Scale of the object.";
 
-                public override string AddToAutocomplete => "sca 0 0";
+                public override string AddToAutocomplete => "sca set 0 0";
 
-                public override void Apply(BackgroundObject obj, string[] parameters) => obj.scale = new Vector2(Parser.TryParse(parameters[0], 0f), Parser.TryParse(parameters[1], 0f));
+                public override void Apply(BackgroundObject obj, string[] parameters) => RTMath.Operation(ref obj.scale, new Vector2(Parser.TryParse(parameters[1], 0f), Parser.TryParse(parameters[2], 0f)), RTMath.GetOperation(parameters[0], MathOperation.Set));
             }
 
             public class BackgroundObjectRotationParameter : EditParameter<BackgroundObject>
             {
                 public override string Name => "rot";
 
-                public override int ParameterCount => 1;
+                public override int ParameterCount => 2;
 
                 public override string Description => "Rotation of the object.";
 
-                public override string AddToAutocomplete => "rot 0";
+                public override string AddToAutocomplete => "rot set 0";
 
-                public override void Apply(BackgroundObject obj, string[] parameters) => obj.rot = Parser.TryParse(parameters[0], 0f);
+                public override void Apply(BackgroundObject obj, string[] parameters) => RTMath.Operation(ref obj.rot, Parser.TryParse(parameters[1], 0f), RTMath.GetOperation(parameters[0], MathOperation.Set));
             }
 
             public class BackgroundObjectColorParameter : EditParameter<BackgroundObject>
             {
                 public override string Name => "color";
 
-                public override int ParameterCount => 1;
+                public override int ParameterCount => 2;
 
                 public override string Description => "Color of the object.";
 
-                public override string AddToAutocomplete => "color 0";
+                public override string AddToAutocomplete => "color set 0";
 
-                public override void Apply(BackgroundObject obj, string[] parameters) => obj.color = Parser.TryParse(parameters[0], 0);
+                public override void Apply(BackgroundObject obj, string[] parameters) => RTMath.Operation(ref obj.color, Parser.TryParse(parameters[1], 0), RTMath.GetOperation(parameters[0], MathOperation.Set));
             }
 
             public class BackgroundObjectFadeColorParameter : EditParameter<BackgroundObject>
             {
                 public override string Name => "fade_color";
 
-                public override int ParameterCount => 1;
+                public override int ParameterCount => 2;
 
                 public override string Description => "Fade color of the object.";
 
-                public override string AddToAutocomplete => "fade_color 0";
+                public override string AddToAutocomplete => "fade_color set 0";
 
-                public override void Apply(BackgroundObject obj, string[] parameters) => obj.fadeColor = Parser.TryParse(parameters[0], 0);
+                public override void Apply(BackgroundObject obj, string[] parameters) => RTMath.Operation(ref obj.fadeColor, Parser.TryParse(parameters[1], 0), RTMath.GetOperation(parameters[0], MathOperation.Set));
             }
 
             #endregion
@@ -1645,65 +1645,79 @@ namespace BetterLegacy.Companion.Data
             {
                 public override string Name => "autokill_offset";
 
-                public override int ParameterCount => 1;
+                public override int ParameterCount => 2;
 
                 public override string Description => "Despawn time of the object.";
 
-                public override string AddToAutocomplete => "autokill_offset 0";
+                public override string AddToAutocomplete => "autokill_offset set 0";
 
-                public override void Apply(PrefabObject obj, string[] parameters) => obj.autoKillOffset = Parser.TryParse(parameters[0], 0f);
+                public override void Apply(PrefabObject obj, string[] parameters) => RTMath.Operation(ref obj.autoKillOffset, Parser.TryParse(parameters[1], 0f), RTMath.GetOperation(parameters[0], MathOperation.Set));
             }
 
             public class PrefabObjectPositionParameter : EditParameter<PrefabObject>
             {
                 public override string Name => "pos";
 
-                public override int ParameterCount => 2;
+                public override int ParameterCount => 3;
 
                 public override string Description => "Position of the object.";
 
-                public override string AddToAutocomplete => "pos 0 0";
+                public override string AddToAutocomplete => "pos set 0 0";
 
-                public override void Apply(PrefabObject obj, string[] parameters) => obj.events[0].SetValues(Parser.TryParse(parameters[0], 0f), Parser.TryParse(parameters[1], 0f));
+                public override void Apply(PrefabObject obj, string[] parameters)
+                {
+                    var x = obj.events[0].values.GetAtOrDefault(0, 0f);
+                    var y = obj.events[0].values.GetAtOrDefault(1, 0f);
+                    RTMath.Operation(ref x, Parser.TryParse(parameters[1], 0f), RTMath.GetOperation(parameters[0], MathOperation.Set));
+                    RTMath.Operation(ref y, Parser.TryParse(parameters[2], 0f), RTMath.GetOperation(parameters[0], MathOperation.Set));
+                    obj.events[0].SetValues(x, y);
+                }
             }
 
             public class PrefabObjectScaleParameter : EditParameter<PrefabObject>
             {
                 public override string Name => "sca";
 
-                public override int ParameterCount => 2;
+                public override int ParameterCount => 3;
 
                 public override string Description => "Scale of the object.";
 
-                public override string AddToAutocomplete => "sca 0 0";
+                public override string AddToAutocomplete => "sca set 0 0";
 
-                public override void Apply(PrefabObject obj, string[] parameters) => obj.events[1].SetValues(Parser.TryParse(parameters[0], 0f), Parser.TryParse(parameters[1], 0f));
+                public override void Apply(PrefabObject obj, string[] parameters)
+                {
+                    var x = obj.events[1].values.GetAtOrDefault(0, 0f);
+                    var y = obj.events[1].values.GetAtOrDefault(1, 0f);
+                    RTMath.Operation(ref x, Parser.TryParse(parameters[1], 0f), RTMath.GetOperation(parameters[0], MathOperation.Set));
+                    RTMath.Operation(ref y, Parser.TryParse(parameters[2], 0f), RTMath.GetOperation(parameters[0], MathOperation.Set));
+                    obj.events[1].SetValues(x, y);
+                }
             }
 
             public class PrefabObjectRotationParameter : EditParameter<PrefabObject>
             {
                 public override string Name => "rot";
 
-                public override int ParameterCount => 1;
+                public override int ParameterCount => 2;
 
                 public override string Description => "Rotation of the object.";
 
-                public override string AddToAutocomplete => "rot 0";
+                public override string AddToAutocomplete => "rot set 0";
 
-                public override void Apply(PrefabObject obj, string[] parameters) => obj.events[2].SetValues(Parser.TryParse(parameters[0], 0f));
+                public override void Apply(PrefabObject obj, string[] parameters) => RTMath.Operation(ref obj.events[2].values[0], Parser.TryParse(parameters[1], 0f), RTMath.GetOperation(parameters[0], MathOperation.Set));
             }
 
             public class PrefabObjectDepthParameter : EditParameter<PrefabObject>
             {
                 public override string Name => "depth";
 
-                public override int ParameterCount => 1;
+                public override int ParameterCount => 2;
 
                 public override string Description => "Render depth of the object.";
 
-                public override string AddToAutocomplete => "depth 0";
+                public override string AddToAutocomplete => "depth set 0";
 
-                public override void Apply(PrefabObject obj, string[] parameters) => obj.depth = Parser.TryParse(parameters[0], 0f);
+                public override void Apply(PrefabObject obj, string[] parameters) => RTMath.Operation(ref obj.depth, Parser.TryParse(parameters[1], 0f), RTMath.GetOperation(parameters[0], MathOperation.Set));
             }
 
             #endregion
@@ -1838,13 +1852,13 @@ namespace BetterLegacy.Companion.Data
             {
                 public override string Name => "color";
 
-                public override int ParameterCount => 1;
+                public override int ParameterCount => 2;
 
                 public override string Description => "Color of the marker.";
 
-                public override string AddToAutocomplete => "color 0";
+                public override string AddToAutocomplete => "color set 0";
 
-                public override void Apply(Marker obj, string[] parameters) => obj.color = Parser.TryParse(parameters[0], 0);
+                public override void Apply(Marker obj, string[] parameters) => RTMath.Operation(ref obj.color, Parser.TryParse(parameters[1], 0), RTMath.GetOperation(parameters[0], MathOperation.Set));
             }
 
             #endregion
@@ -2160,6 +2174,7 @@ namespace BetterLegacy.Companion.Data
                 new UncollapsedParameter(),
                 new HiddenParameter(),
                 new UnhiddenParameter(),
+                new ObjectTypeParameter(),
 
                 #endregion
 
@@ -2979,7 +2994,7 @@ namespace BetterLegacy.Companion.Data
 
                 public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
                 {
-                    var type = Parser.TryParse(parameters[0].ToLower().Remove("_"), true, TimelineObject.TimelineReferenceType.Null);
+                    var type = Parser.TryParse(parameters[0].Remove("_"), true, TimelineObject.TimelineReferenceType.Null);
                     foreach (var selectable in selectables)
                         if (selectable is TimelineObject timelineObject && timelineObject.TimelineReference == type)
                             yield return selectable;
@@ -3066,6 +3081,21 @@ namespace BetterLegacy.Companion.Data
                 public override string Description => "Checks if an object is not hidden.";
 
                 public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters) => selectables.Where(x => x is TimelineObject timelineObject && !timelineObject.Hidden);
+            }
+
+            public class ObjectTypeParameter : GetSelectableParameter
+            {
+                public override string Name => "object_type";
+
+                public override string Description => "Checks an objects' object type.";
+
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
+                {
+                    var objectType = Parser.TryParse(parameters[0].Remove("_"), true, BeatmapObject.ObjectType.Normal);
+                    foreach (var selectable in selectables)
+                        if (selectable is TimelineObject timelineObject && timelineObject.isBeatmapObject && timelineObject.GetData<BeatmapObject>().objectType == objectType)
+                            yield return selectable;
+                }
             }
 
             #endregion
