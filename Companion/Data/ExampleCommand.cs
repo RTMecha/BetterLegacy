@@ -2175,6 +2175,7 @@ namespace BetterLegacy.Companion.Data
                 new HiddenParameter(),
                 new UnhiddenParameter(),
                 new ObjectTypeParameter(),
+                new AutokillTypeParameter(),
 
                 #endregion
 
@@ -3087,13 +3088,36 @@ namespace BetterLegacy.Companion.Data
             {
                 public override string Name => "object_type";
 
+                public override int ParameterCount => 1;
+
                 public override string Description => "Checks an objects' object type.";
+
+                public override string AddToAutocomplete => "object_type normal";
 
                 public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
                 {
                     var objectType = Parser.TryParse(parameters[0].Remove("_"), true, BeatmapObject.ObjectType.Normal);
                     foreach (var selectable in selectables)
                         if (selectable is TimelineObject timelineObject && timelineObject.isBeatmapObject && timelineObject.GetData<BeatmapObject>().objectType == objectType)
+                            yield return selectable;
+                }
+            }
+
+            public class AutokillTypeParameter : GetSelectableParameter
+            {
+                public override string Name => "autokill_type";
+
+                public override int ParameterCount => 1;
+
+                public override string Description => "Checks an objects' autokill type.";
+
+                public override string AddToAutocomplete => "autokill_type no_autokill";
+
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
+                {
+                    var autoKillType = Parser.TryParse(parameters[0].Remove("_"), true, AutoKillType.NoAutokill);
+                    foreach (var selectable in selectables)
+                        if (selectable is TimelineObject timelineObject && timelineObject.isBeatmapObject && timelineObject.GetData<BeatmapObject>().autoKillType == autoKillType)
                             yield return selectable;
                 }
             }
