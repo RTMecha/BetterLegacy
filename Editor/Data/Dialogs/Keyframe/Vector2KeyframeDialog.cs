@@ -22,7 +22,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public float max = 0f;
 
-        public bool allowNegative;
+        public bool allowNegative = true;
 
         public override void Init()
         {
