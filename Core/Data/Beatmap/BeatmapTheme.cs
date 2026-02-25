@@ -435,7 +435,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public void Reset()
         {
-            creator = Configs.CoreConfig.Instance.DisplayName.Value;
+            creator = CoreConfig.Instance.DisplayName.Value;
 
             // clear
             playerColors.Clear();
