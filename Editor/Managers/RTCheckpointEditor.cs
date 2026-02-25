@@ -334,6 +334,9 @@ namespace BetterLegacy.Editor.Managers
                 TriggerHelper.ScrollDelta(Dialog.PositionFields.y.inputField),
                 TriggerHelper.ScrollDeltaVector2(Dialog.PositionFields.x.inputField, Dialog.PositionFields.y.inputField));
 
+            Dialog.PositionFields.x.gameObject.GetOrAddComponent<InputFieldSwapper>().Init(Dialog.PositionFields.x.inputField, InputFieldSwapper.Type.Num);
+            Dialog.PositionFields.y.gameObject.GetOrAddComponent<InputFieldSwapper>().Init(Dialog.PositionFields.y.inputField, InputFieldSwapper.Type.Num);
+
             Dialog.RespawnToggle.SetIsOnWithoutNotify(checkpoint.respawn);
             Dialog.RespawnToggle.OnValueChanged.NewListener(_val => checkpoint.respawn = _val);
             
