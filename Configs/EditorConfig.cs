@@ -575,7 +575,7 @@ namespace BetterLegacy.Configs
             HoverUIPlaySound = Bind(this, EDITOR_GUI, "Hover UI Play Sound", false, "Plays a sound when the hover UI element is hovered over.");
             ImportPrefabsDirectly = Bind(this, EDITOR_GUI, "Import Prefabs Directly", false, "When clicking on an External Prefab, instead of importing it directly it'll bring up a Prefab External View Dialog if this config is off.");
             ThemesPerPage = Bind(this, EDITOR_GUI, "Themes Per Page", 10, "How many themes are shown per page in the Beatmap Themes popup.");
-            ThemesEventKeyframePerPage = Bind(this, EDITOR_GUI, "Themes (Event Keyframe) Per Page", 30, "How many themes are shown per page in the theme event keyframe.");
+            ThemesEventKeyframePerPage = Bind(this, EDITOR_GUI, "Themes (Event Keyframe) Per Page", 40, "How many themes are shown per page in the theme event keyframe.");
             ShowHelpOnStartup = Bind(this, EDITOR_GUI, "Show Help on Startup", true, "If the help info box should appear on startup.");
             MouseTooltipDisplay = Bind(this, EDITOR_GUI, "Mouse Tooltip Display", true, "If the mouse tooltip should display.");
             MouseTooltipRequiresHelp = Bind(this, EDITOR_GUI, "Mouse Tooltip Requires Help", false, "If the mouse tooltip should only display when the help info box is active.");
