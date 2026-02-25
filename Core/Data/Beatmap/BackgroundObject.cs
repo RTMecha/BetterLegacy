@@ -444,6 +444,9 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             this.ReadShapeJSON(jn);
 
+            if (jn["flat"] != null)
+                flat = jn["flat"].AsBool;
+
             if (jn["col"] != null)
             {
                 color = jn["col"]["slot"].AsInt;
