@@ -699,7 +699,7 @@ namespace BetterLegacy.Core.Runtime.Events
         }
 
         bool IsLerper(int i, int j)
-            => !(i == 4 || i == 6 && j == 4 || i == 7 && j == 6 || i == 15 && (j == 2 || j == 3) || i == 20 && j == 0 || i == 22 && j == 6 || i == 30 && j == 2);
+            => !(i == 4 || i == 6 && j == 4 || i == 7 && j == 6 || i == 15 && (j == 2 || j == 3) || i == 20 && j == 0 || i == 22 && j == 6 || i == 23 && j == 6 || i == 30 && j == 2);
 
         bool SupportsRelative(int type, int valueIndex) => !(type switch
         {
