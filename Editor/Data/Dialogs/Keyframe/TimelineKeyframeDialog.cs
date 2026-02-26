@@ -60,7 +60,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             RotationField.inputField.image.rectTransform.sizeDelta = new Vector2(317f, 32f);
 
             new LabelsElement("Color").Init(EditorElement.InitSettings.Default.Parent(GameObject.transform));
-            var colors = new ColorGroupElement(20, new Vector2(366f, 64f), new Vector2(32f, 32f), new Vector2(5f, 5f));
+            var colors = new ColorGroupElement(19, new Vector2(366f, 64f), new Vector2(32f, 32f), new Vector2(5f, 5f));
             colors.Init(EditorElement.InitSettings.Default.Parent(GameObject.transform).Name("colors"));
             ColorToggles = colors.toggles;
 
@@ -103,7 +103,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             SetFloatInputField(RotationField, 5, 15f, 3f);
 
             // Timeline Color
-            SetListColor((int)currentKeyframe.values[6], 6, ColorToggles, ThemeManager.inst.Current.guiColor, Color.black, 7, 8, 9, 10);
+            SetListColor((int)currentKeyframe.values[6], 6, ColorToggles, ThemeManager.inst.Current.guiColor, 7, 8, 9, 10);
 
             // Timeline Color Shift
             SetFloatInputField(OpacityField, 7, max: 1f);

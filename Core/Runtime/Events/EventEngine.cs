@@ -201,7 +201,12 @@ namespace BetterLegacy.Core.Runtime.Events
                     UpdatePlayerPositionX,
                     UpdatePlayerPositionY,
                     UpdatePlayerRotation,
-                    UpdatePlayerOoB
+                    UpdatePlayerOoB,
+                    UpdatePlayerTailColor,
+                    UpdatePlayerTailOpacity,
+                    UpdatePlayerTailHue,
+                    UpdatePlayerTailSat,
+                    UpdatePlayerTailVal,
                 }, // Player
                 new KFDelegate[]
                 {
@@ -350,6 +355,7 @@ namespace BetterLegacy.Core.Runtime.Events
             FindColor(time, allEvents, ref prevGradientColor1, ref nextGradientColor1, ref prevGradientColor2, ref nextGradientColor2, 15, 2, 3);
             FindColor(time, allEvents, ref prevBGColor, ref nextBGColor, 20, 0);
             FindColor(time, allEvents, ref prevTimelineColor, ref nextTimelineColor, 22, 6);
+            FindColor(time, allEvents, ref prevPlayerTailColor, ref nextPlayerTailColor, 23, 6);
             FindColor(time, allEvents, ref prevDangerColor, ref nextDangerColor, 30, 2);
 
             if (shakeSequence != null && shakeSequence.keyframes != null && shakeSequence.keyframes.Length > 0 && EventsConfig.Instance.ShakeEventMode.Value == ShakeType.Catalyst)
@@ -775,6 +781,10 @@ namespace BetterLegacy.Core.Runtime.Events
             ThemeManager.inst.timelineColorToLerp =
                 RTColors.FadeColor(RTColors.ChangeColorHSV(LerpColor(prevTimelineColor, nextTimelineColor, timelineColor, beatmapTheme.guiColor),
                 timelineHue, timelineSat, timelineVal), timelineOpacity);
+
+            ThemeManager.inst.tailColorToLerp =
+                RTColors.FadeColor(RTColors.ChangeColorHSV(LerpColor(prevPlayerTailColor, nextPlayerTailColor, playerTailColor, beatmapTheme.guiAccentColor),
+                playerTailHue, playerTailSat, playerTailVal), playerTailOpacity);
 
             var dangerColorResult =
                 RTColors.FadeColor(RTColors.ChangeColorHSV(LerpColor(prevDangerColor, nextDangerColor, dangerColor, RTColors.defaultDangerColor),
@@ -1615,6 +1625,21 @@ namespace BetterLegacy.Core.Runtime.Events
         // 23 - 5
         void UpdatePlayerOoB(float x) => RTPlayer.OutOfBounds = x == 1f;
 
+        // 23 - 6
+        void UpdatePlayerTailColor(float x) => playerTailColor = x;
+
+        // 23 - 7
+        void UpdatePlayerTailOpacity(float x) => playerTailOpacity = x;
+
+        // 23 - 8
+        void UpdatePlayerTailHue(float x) => playerTailHue = x;
+
+        // 23 - 9
+        void UpdatePlayerTailSat(float x) => playerTailSat = x;
+
+        // 23 - 10
+        void UpdatePlayerTailVal(float x) => playerTailVal = x;
+
         #endregion
 
         #region Camera Follows Player - 24
@@ -1970,11 +1995,6 @@ namespace BetterLegacy.Core.Runtime.Events
 
         public bool analogGlitchEnabled;
 
-        public float timelineVal;
-        public float timelineSat;
-        public float timelineHue;
-        public float timelineOpacity = 1f;
-
         public float dangerVal;
         public float dangerSat;
         public float dangerHue;
@@ -2044,6 +2064,14 @@ namespace BetterLegacy.Core.Runtime.Events
 
         public bool playersCanMove = true;
         public bool playersActive = true;
+        public float playerTailColor;
+        public int prevPlayerTailColor = 18;
+        public int nextPlayerTailColor = 18;
+
+        public float playerTailVal;
+        public float playerTailSat;
+        public float playerTailHue;
+        public float playerTailOpacity = 1f;
 
         public bool timelineActive = true;
         public Vector2 timelinePos;
@@ -2052,6 +2080,11 @@ namespace BetterLegacy.Core.Runtime.Events
         public float timelineColor;
         public int prevTimelineColor = 18;
         public int nextTimelineColor = 18;
+
+        public float timelineVal;
+        public float timelineSat;
+        public float timelineHue;
+        public float timelineOpacity = 1f;
 
         public float bgColor;
         public int prevBGColor = 18;

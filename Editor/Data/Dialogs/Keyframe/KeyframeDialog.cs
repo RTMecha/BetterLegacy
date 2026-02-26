@@ -734,6 +734,54 @@ namespace BetterLegacy.Editor.Data.Dialogs
             }
         }
 
+        public void SetListColor(int value, int index, List<Toggle> toggles, Color defaultColor, int opacityIndex = -1, int hueIndex = -1, int satIndex = -1, int valIndex = -1)
+        {
+            int num = 0;
+            foreach (var toggle in toggles)
+            {
+                int tmpIndex = num;
+                var color = num < 18 ? CoreHelper.CurrentBeatmapTheme.effectColors[num] : defaultColor;
+
+                if (EditorConfig.Instance.ShowModifiedColors.Value && hueIndex >= 0 && satIndex >= 0 && valIndex >= 0)
+                {
+                    float hueNum = RTLevel.Current.eventEngine.Interpolate(EventEditor.inst.currentEventType, hueIndex, RTLevel.Current.FixedTime);
+                    float satNum = RTLevel.Current.eventEngine.Interpolate(EventEditor.inst.currentEventType, satIndex, RTLevel.Current.FixedTime);
+                    float valNum = RTLevel.Current.eventEngine.Interpolate(EventEditor.inst.currentEventType, valIndex, RTLevel.Current.FixedTime);
+
+                    toggle.image.color = RTColors.ChangeColorHSV(color, hueNum, satNum, valNum);
+                }
+                else
+                    toggle.image.color = color;
+
+                toggle.SetIsOnWithoutNotify(num == value);
+                toggle.onValueChanged.NewListener(_val =>
+                {
+                    SetKeyframeValue(index, tmpIndex);
+                    SetListColor(tmpIndex, index, toggles, defaultColor, opacityIndex, hueIndex, satIndex, valIndex);
+                });
+
+                EditorContextMenu.AddContextMenu(toggle.gameObject,
+                    new ButtonElement("Reset Value", () =>
+                    {
+                        int value = (int)EventLibrary.cachedDefaultKeyframes[EventEditor.inst.currentEventType].values[index];
+                        SetKeyframeValue(index, value);
+                        SetListColor(value, index, toggles, defaultColor, opacityIndex, hueIndex, satIndex, valIndex);
+                    }),
+                    ButtonElement.ToggleButton("Show Modified Colors", () => EditorConfig.Instance.ShowModifiedColors.Value, () => EditorConfig.Instance.ShowModifiedColors.Value = !EditorConfig.Instance.ShowModifiedColors.Value),
+                    new ButtonElement("Copy Hex Color", () => LSText.CopyToClipboard(RTColors.ColorToHexOptional(color))),
+                    new ButtonElement("Copy Modified Hex Color", () =>
+                    {
+                        float hueNum = RTLevel.Current.eventEngine.Interpolate(EventEditor.inst.currentEventType, hueIndex, RTLevel.Current.FixedTime);
+                        float satNum = RTLevel.Current.eventEngine.Interpolate(EventEditor.inst.currentEventType, satIndex, RTLevel.Current.FixedTime);
+                        float valNum = RTLevel.Current.eventEngine.Interpolate(EventEditor.inst.currentEventType, valIndex, RTLevel.Current.FixedTime);
+
+                        LSText.CopyToClipboard(RTColors.ColorToHexOptional(RTColors.ChangeColorHSV(color, hueNum, satNum, valNum)));
+                    }, shouldGenerate: () => hueIndex >= 0 && satIndex >= 0 && valIndex >= 0));
+
+                num++;
+            }
+        }
+
         public void SetToggle(Toggle toggle, int index, int onValue, int offValue)
         {
             var currentKeyframe = RTEventEditor.inst.CurrentSelectedKeyframe;

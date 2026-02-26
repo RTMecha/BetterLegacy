@@ -512,7 +512,7 @@ namespace BetterLegacy.Core
                     1f,
                     1f,
                     0f,
-                    18f,
+                    18f, // Color
                     1f, // Opacity
 					0f, // Hue
 					0f, // Sat
@@ -526,7 +526,20 @@ namespace BetterLegacy.Core
             public static EventKeyframe Player => new EventKeyframe
             {
                 time = 0f,
-                values = new float[6],
+                values = new float[11]
+                {
+                    0f,
+                    0f,
+                    0f,
+                    0f,
+                    0f,
+                    0f,
+                    18f, // Color
+                    1f, // Opacity
+                    0f, // Hue
+                    0f, // Sat
+                    0f, // Val
+                },
             };
 
             /// <summary>
