@@ -1,23 +1,47 @@
-# 1.8.18 [Jan 15, 2025]
+# 1.8.19 [Feb 26, 2026]
 ## Features
+### Story
+- Tweaked the speed and size of some objects in Spinning Bars (Ahead of the Curve).
+- Updated some levels to use the updated default themes.
+
 ### Core
-- Added getAnimateVariable and getAnimateVariableMath modifiers. These act like the animateObject modifiers, except it animates a local modifier variable.
-- Added translateShape3D modifier.
+- The Player keyframe now has a way to change the Tail color of the players.
+- Added getKeyframeValue modifier. This works similar to getAxis, except here it allows for getting any keyframe value (including random).
+- Added getEasing and getEasingName modifiers.
+- Added getRandom and getRandomVector2 modifiers. This works like keyframe randomization.
 
 ### Editor
-- Added some extra settings for custom dropdown keyframe values that make it easier to edit specific dropdown entries.
-- Added Flip Z button to Position keyframe.
-- Added folder viewing to Project Planner.
-- Finally implemented the multi level selection collection context menu buttons.
+- Added copying & pasting for server tags.
+- Added copying & pasting for object shape data.
+- Added Offset Parent Desync and Parent Self toggle editing to Multi Object Editor.
 
 ## Changes
 ### Core
-- Background Objects and Prefab Objects now support detail mode.
-- The region modifier now include the endregion modifier when collapsed.
-- Changed Render Depth to a float value to support the change in alpha branch.
+- Updated the default theme list to include themes from the modern game, the 1.0.0 version of the game and even some custom themes that fit right in with BetterLegacy!  
+The new themes include:  
+  - Live (Ahead of the Curve theme)
+  - Outbreak (theme from the Outbreak level)
+  - Battle Cube (theme based on the Arrhythmia alpha versions of the game)
+  - Christina (from 1.0.0)
+  - Dust (from 1.0.0, used to be called "the new Pallete" so had to make a new name)
+  - Himitsu (Project Arrhythmia 1.0.0 Demo level theme)
+  - Hyper Mode (from 1.0.0)
+  - Major (from 1.0.0)
+  - Nadia (from 1.0.0)
+  - Plex (from 1.0.0, Sunquake theme)
+  - Retro (from 1.0.0)
+  - Kemono (from 4.0.19)
+  - As well as the modern themes
+- Tweaked some of the existing theme color slots to validate the usage of the default themes.
 
-### Example Companion
-- Completely overhauled Example's commands to be more modular and support a variety of functions. Basically think of it as the in-game command-line.
+### Editor
+- Checkpoint position can now be reversed by middle mouse click.
+- Changed the default value for the themes per page in the event editor setting.
 
 ## Fixes
-- Fixed some issues with callModifiers and forLoop modifiers.
+- Fixed the flat toggle on Background Objects not loading.
+- Fixed user search popup content being smaller than it should be.
+- Fixed player model panels scaling down to 0x0. (temporarily uses the level panel setting)
+- Fixed some level data not being saved and / or loaded.
+- Fixed the Update button in the theme editor showing for new themes.
+- Fixed an issue where an internal theme would have a file path assigned to it.
