@@ -7,6 +7,7 @@ using UnityEngine;
 using LSFunctions;
 
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
 
 namespace BetterLegacy.Core
 {
@@ -33,6 +34,34 @@ namespace BetterLegacy.Core
         public static Color defaultGradientColor2 = new Color(0.81f, 0.37f, 1f, 0.5f);
         public static Color defaultDangerColor = new Color(0.66f, 0f, 0f);
         public static Color errorColor = LSColors.pink500;
+
+        public static Color[] defaultPlayerColorsRegular = new Color[4]
+        {
+            HexToColor("E57373"),
+            HexToColor("64B5F6"),
+            HexToColor("81C784"),
+            HexToColor("FFB74D"),
+        };
+        
+        public static Color[] defaultPlayerColorsSaturated = new Color[4]
+        {
+            HexToColor("F44336"),
+            HexToColor("2196F3"),
+            HexToColor("4CAF50"),
+            HexToColor("FF9800"),
+        };
+        
+        public static Color[] defaultPlayerColorsAlpha = new Color[4]
+        {
+            HexToColor("FA5C66"),
+            HexToColor("5C8BFA"),
+            HexToColor("06D6A0"),
+            HexToColor("FFD166"),
+        };
+
+        public const string REGULAR_PLAYER_COLOR_GROUP = "regular";
+        public const string SATURATED_PLAYER_COLOR_GROUP = "saturated";
+        public const string ALPHA_PLAYER_COLOR_GROUP = "alpha";
 
         /// <summary>
         /// Converts a float to a hex value.
@@ -157,10 +186,18 @@ namespace BetterLegacy.Core
         public static Color GetPlayerColor(int playerIndex, int col, float alpha, string hex)
         {
             var beatmapTheme = CoreHelper.CurrentBeatmapTheme;
-
-            return FadeColor(col >= 0 && col < 4 ? beatmapTheme.playerColors[col] : col == 4 ? beatmapTheme.guiColor : col > 4 && col < 23 ? beatmapTheme.objectColors[col - 5] :
-                col == 23 ? beatmapTheme.playerColors[playerIndex % 4] : col == 24 ? LSColors.HexToColor(hex) : col == 25 ? beatmapTheme.guiAccentColor : LSColors.pink500, alpha);
+            return col == 25 ? FadeColor(ThemeManager.inst.tailColorToLerp, alpha * ThemeManager.inst.tailColorToLerp.a) : 
+                FadeColor(col >= 0 && col < 4 ? beatmapTheme.playerColors[col] : col == 4 ? beatmapTheme.guiColor : col > 4 && col < 23 ? beatmapTheme.objectColors[col - 5] :
+                col == 23 ? beatmapTheme.playerColors[playerIndex % 4] : col == 24 ? LSColors.HexToColor(hex) : LSColors.pink500, alpha);
         }
+
+        public static Color GetDefaultPlayerColor(string group, int index) => group switch
+        {
+            REGULAR_PLAYER_COLOR_GROUP => defaultPlayerColorsRegular[index],
+            SATURATED_PLAYER_COLOR_GROUP => defaultPlayerColorsSaturated[index],
+            ALPHA_PLAYER_COLOR_GROUP => defaultPlayerColorsAlpha[index],
+            _ => errorColor,
+        };
 
         /// <summary>
         /// Creates and fills a color list.

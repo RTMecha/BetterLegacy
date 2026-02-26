@@ -62,13 +62,24 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         public Color timelineColorToLerp;
 
+        /// <summary>
+        /// Lerped color for the player tail.
+        /// </summary>
+        public Color tailColorToLerp;
+
         #endregion
 
         #region Functions
 
-        public override void OnInit()
+        public override void OnInit() => LoadDefaultThemes();
+
+        /// <summary>
+        /// Loads the default themes list from assets.
+        /// </summary>
+        public void LoadDefaultThemes()
         {
-            var jn = JSON.Parse(RTFile.ReadFromFile(RTFile.GetAsset($"builtin/default_themes{FileFormat.LST.Dot()}")));
+            defaultThemes.Clear();
+            var jn = JSON.Parse(RTFile.ReadFromFile(AssetPack.GetFile($"core/default_themes{FileFormat.LST.Dot()}")));
             for (int i = 0; i < jn["themes"].Count; i++)
             {
                 var beatmapTheme = BeatmapTheme.Parse(jn["themes"][i]);

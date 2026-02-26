@@ -832,40 +832,42 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="theme">Theme to export.</param>
         public void ExportTheme(BeatmapTheme theme)
         {
-            Debug.Log($"{EventEditor.inst.className}Saving {theme.id} ({theme.name}) to File System!");
+            var exportTheme = theme.Copy(false);
 
-            if (string.IsNullOrEmpty(theme.id))
-                theme.id = LSText.randomNumString(BeatmapTheme.ID_LENGTH);
+            Debug.Log($"{EventEditor.inst.className}Saving {exportTheme.id} ({exportTheme.name}) to File System!");
+
+            if (string.IsNullOrEmpty(exportTheme.id))
+                exportTheme.id = LSText.randomNumString(BeatmapTheme.ID_LENGTH);
 
             GameData.SaveOpacityToThemes = EditorConfig.Instance.SavingSavesThemeOpacity.Value;
 
             int count = ExternalThemePanels.Count;
-            if (string.IsNullOrEmpty(theme.filePath))
-                theme.filePath = $"{RTFile.FormatLegacyFileName(theme.name)}{FileFormat.LST.Dot()}";
-            var file = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.ThemePath, theme.GetFileName());
-            if (RTFile.FileExists(theme.filePath))
+            if (string.IsNullOrEmpty(exportTheme.filePath))
+                exportTheme.filePath = $"{RTFile.FormatLegacyFileName(exportTheme.name)}{FileFormat.LST.Dot()}";
+            var file = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.ThemePath, exportTheme.GetFileName());
+            if (RTFile.FileExists(exportTheme.filePath))
             {
                 RTEditor.inst.ShowWarningPopup("File already exists. Do you wish to overwrite it?",
                     onConfirm: () =>
                     {
                         RTEditor.inst.DisableThemeWatcher();
 
-                        theme.filePath = file;
-                        theme.WriteToFile(file);
+                        exportTheme.filePath = file;
+                        exportTheme.WriteToFile(file);
 
-                        EditorManager.inst.DisplayNotification($"Saved theme [{theme.name}]!", 2f, EditorManager.NotificationType.Success);
+                        EditorManager.inst.DisplayNotification($"Saved theme [{exportTheme.name}]!", 2f, EditorManager.NotificationType.Success);
 
                         if (ExternalThemePanels.TryFind(x => x.Path == file, out ThemePanel originalThemePanel))
                         {
-                            originalThemePanel.Item = theme;
-                            theme.themePanel = originalThemePanel;
+                            originalThemePanel.Item = exportTheme;
+                            exportTheme.themePanel = originalThemePanel;
                             originalThemePanel.Render();
                             RenderThemeList();
                         }
                         else
                         {
                             var themePanel = new ThemePanel(ObjectSource.External, count);
-                            themePanel.Init(theme);
+                            themePanel.Init(exportTheme);
                             ExternalThemePanels.Add(themePanel);
                         }
 
@@ -884,22 +886,22 @@ namespace BetterLegacy.Editor.Managers
 
             RTEditor.inst.DisableThemeWatcher();
 
-            theme.filePath = file;
-            theme.WriteToFile(file);
+            exportTheme.filePath = file;
+            exportTheme.WriteToFile(file);
 
-            EditorManager.inst.DisplayNotification($"Saved theme [{theme.name}]!", 2f, EditorManager.NotificationType.Success);
+            EditorManager.inst.DisplayNotification($"Saved theme [{exportTheme.name}]!", 2f, EditorManager.NotificationType.Success);
 
             if (ExternalThemePanels.TryFind(x => x.Path == file, out ThemePanel originalThemePanel))
             {
-                originalThemePanel.Item = theme;
-                theme.themePanel = originalThemePanel;
+                originalThemePanel.Item = exportTheme;
+                exportTheme.themePanel = originalThemePanel;
                 originalThemePanel.Render();
                 RenderThemeList();
             }
             else
             {
                 var themePanel = new ThemePanel(ObjectSource.External, count);
-                themePanel.Init(theme);
+                themePanel.Init(exportTheme);
                 ExternalThemePanels.Add(themePanel);
             }
 
@@ -1096,7 +1098,7 @@ namespace BetterLegacy.Editor.Managers
                 SetEditor(false);
             });
 
-            Dialog.EditorUpdate.gameObject.SetActive(!isDefaultTheme);
+            Dialog.EditorUpdate.gameObject.SetActive(!isDefaultTheme && !newTheme);
             Dialog.EditorUpdate.onClick.NewListener(() =>
             {
                 var beatmapTheme = PreviewTheme.Copy(false);
@@ -1251,6 +1253,14 @@ namespace BetterLegacy.Editor.Managers
                 });
 
                 SetDropper(dropper, preview, hex, previewET, colors[indexTmp]);
+
+                if (name == "player")
+                    EditorContextMenu.AddContextMenu(hex.gameObject,
+                        new ButtonElement($"Player {i + 1} Regular Color", () => hex.text = RTColors.ColorToHex(RTColors.GetDefaultPlayerColor(RTColors.REGULAR_PLAYER_COLOR_GROUP, i))),
+                        new ButtonElement($"Player {i + 1} Saturated Color", () => hex.text = RTColors.ColorToHex(RTColors.GetDefaultPlayerColor(RTColors.SATURATED_PLAYER_COLOR_GROUP, i))),
+                        new ButtonElement($"Player {i + 1} Alpha Color", () => hex.text = RTColors.ColorToHex(RTColors.GetDefaultPlayerColor(RTColors.ALPHA_PLAYER_COLOR_GROUP, i))),
+                        new ButtonElement("Full White", () => hex.text = "FFFFFF"),
+                        new ButtonElement("Full Black", () => hex.text = "000000"));
             }
         }
 
