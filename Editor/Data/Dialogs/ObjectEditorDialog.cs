@@ -985,7 +985,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                         EditorThemeManager.ApplyGraphic(flipXStorage.button.image, ThemeGroup.Function_1, true);
                         EditorThemeManager.ApplyGraphic(flipXStorage.label, ThemeGroup.Function_1_Text);
-                        EditorHelper.SetComplexity(flipX, Complexity.Normal);
 
                         if (i != 2)
                         {
@@ -1008,7 +1007,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                             EditorThemeManager.ApplyGraphic(flipYStorage.button.image, ThemeGroup.Function_1, true);
                             EditorThemeManager.ApplyGraphic(flipYStorage.label, ThemeGroup.Function_1_Text);
-                            EditorHelper.SetComplexity(flipY, Complexity.Normal);
                         }
                         if (i == 0)
                         {
@@ -1031,7 +1029,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                             EditorThemeManager.ApplyGraphic(flipZStorage.button.image, ThemeGroup.Function_1, true);
                             EditorThemeManager.ApplyGraphic(flipZStorage.label, ThemeGroup.Function_1_Text);
-                            EditorHelper.SetComplexity(flipZ, Complexity.Advanced);
                         }
                     }
 

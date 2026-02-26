@@ -1419,6 +1419,31 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         for (int i = 0; i < 2; i++)
                             KeyframeRandomValueHandler(type, i, selected, firstKF, animatable);
 
+                        var flipX = kfdialog.Find("flipx").gameObject;
+                        var flipY = kfdialog.Find("flipy").gameObject;
+                        var flipZ = kfdialog.Find("flipz").gameObject;
+                        EditorContextMenu.AddContextMenu(flipX,
+                            new ButtonElement("Hide Flip Buttons", () =>
+                            {
+                                animatable.EditorData.miscDisplayValues[IntToType(type) + "/flip_active"] = 0f;
+                                RenderDialog(animatable);
+                            }));
+                        EditorContextMenu.AddContextMenu(flipY,
+                            new ButtonElement("Hide Flip Buttons", () =>
+                            {
+                                animatable.EditorData.miscDisplayValues[IntToType(type) + "/flip_active"] = 0f;
+                                RenderDialog(animatable);
+                            }));
+                        EditorContextMenu.AddContextMenu(flipZ,
+                            new ButtonElement("Hide Flip Buttons", () =>
+                            {
+                                animatable.EditorData.miscDisplayValues[IntToType(type) + "/flip_active"] = 0f;
+                                RenderDialog(animatable);
+                            }));
+                        EditorHelper.SetComplexity(flipX, Complexity.Normal, visible: () => !animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(type) + "/flip_active", out float f) || f == 1f);
+                        EditorHelper.SetComplexity(flipY, Complexity.Normal, visible: () => !animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(type) + "/flip_active", out float f) || f == 1f);
+                        EditorHelper.SetComplexity(flipZ, Complexity.Advanced, visible: () => !animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(type) + "/flip_active", out float f) || f == 1f);
+
                         break;
                     }
                 case 1: {
@@ -1429,6 +1454,23 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         for (int i = 0; i < 2; i++)
                             KeyframeRandomValueHandler(type, i, selected, firstKF, animatable);
 
+                        var flipX = kfdialog.Find("flipx").gameObject;
+                        var flipY = kfdialog.Find("flipy").gameObject;
+                        EditorContextMenu.AddContextMenu(flipX,
+                            new ButtonElement("Hide Flip Buttons", () =>
+                            {
+                                animatable.EditorData.miscDisplayValues[IntToType(type) + "/flip_active"] = 0f;
+                                RenderDialog(animatable);
+                            }));
+                        EditorContextMenu.AddContextMenu(flipY,
+                            new ButtonElement("Hide Flip Buttons", () =>
+                            {
+                                animatable.EditorData.miscDisplayValues[IntToType(type) + "/flip_active"] = 0f;
+                                RenderDialog(animatable);
+                            }));
+                        EditorHelper.SetComplexity(flipX, Complexity.Normal, visible: () => !animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(type) + "/flip_active", out float f) || f == 1f);
+                        EditorHelper.SetComplexity(flipY, Complexity.Normal, visible: () => !animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(type) + "/flip_active", out float f) || f == 1f);
+
                         break;
                     }
                 case 2: {
@@ -1437,6 +1479,15 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         KeyframeRandomHandler(type, selected, firstKF, animatable);
                         for (int i = 0; i < 2; i++)
                             KeyframeRandomValueHandler(type, i, selected, firstKF, animatable);
+
+                        var flipX = kfdialog.Find("flipx").gameObject;
+                        EditorContextMenu.AddContextMenu(flipX,
+                            new ButtonElement("Hide Flip Button", () =>
+                            {
+                                animatable.EditorData.miscDisplayValues[IntToType(type) + "/flip_active"] = 0f;
+                                RenderDialog(animatable);
+                            }));
+                        EditorHelper.SetComplexity(flipX, Complexity.Normal, visible: () => !animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(type) + "/flip_active", out float f) || f == 1f);
 
                         break;
                     }
@@ -1448,7 +1499,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             RenderRelative(type, selected, firstKF, animatable, beatmapObject, dialog);
 
-            dialog.GameObject.transform.parent.gameObject.GetOrAddComponent<Button>();
+            kfdialog.parent.gameObject.GetOrAddComponent<Button>();
             if (type != 3)
                 EditorContextMenu.AddContextMenu(dialog.GameObject.transform.parent.gameObject,
                     new ButtonElement("Show Random", () =>
@@ -1461,6 +1512,11 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         animatable.EditorData.miscDisplayValues.Remove(IntToType(type) + "/relative_active");
                         RenderDialog(animatable);
                     }),
+                    new ButtonElement("Show Flip Buttons", () =>
+                    {
+                        animatable.EditorData.miscDisplayValues.Remove(IntToType(type) + "/flip_active");
+                        RenderDialog(animatable);
+                    }),
                     new SpacerElement(),
                     new ButtonElement("Remove Keyframe Settings", () =>
                     {
@@ -1468,6 +1524,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         animatable.EditorData.miscDisplayValues.Remove(IntToType(type) + "/relative_active");
                         animatable.EditorData.miscDisplayValues.Remove(IntToType(type) + "/lock_relative");
                         animatable.EditorData.miscDisplayValues.Remove(IntToType(type) + "/force_relative");
+                        animatable.EditorData.miscDisplayValues.Remove(IntToType(type) + "/flip_active");
                         RenderDialog(animatable);
                     }));
             else
@@ -1632,8 +1689,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
             inputFieldStorage.inputField.characterValidation = InputField.CharacterValidation.None;
             inputFieldStorage.inputField.contentType = InputField.ContentType.Standard;
             inputFieldStorage.inputField.keyboardType = TouchScreenKeyboardType.Default;
-            inputFieldStorage.inputField.SetTextWithoutNotify(selected.Count() == 1 ? firstKF.eventKeyframe.randomValues[valueIndex].ToString() : type == 2 ? "15" : "1");
-            inputFieldStorage.inputField.onValueChanged.NewListener(_val =>
+
+            inputFieldStorage.SetTextWithoutNotify(selected.Count() == 1 ? firstKF.eventKeyframe.randomValues[valueIndex].ToString() : type == 2 ? "15" : "1");
+            inputFieldStorage.OnValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num) && selected.Count() == 1)
                 {
@@ -1663,7 +1721,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                 }
             });
-
             inputFieldStorage.rightButton.onClick.NewListener(() =>
             {
                 if (float.TryParse(inputFieldStorage.inputField.text, out float x))
@@ -1696,6 +1753,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
             }
 
             TriggerHelper.InversableField(inputFieldStorage);
+            EditorContextMenu.AddContextMenu(inputFieldStorage.inputField.gameObject,
+                new ButtonElement("Match Normal Value", () => inputFieldStorage.Text = firstKF.eventKeyframe.values[valueIndex].ToString()),
+                new ButtonElement("Mirror Normal Value", () => inputFieldStorage.Text = (-firstKF.eventKeyframe.values[valueIndex]).ToString()));
         }
 
         void ColorKeyframeHandler(int valueIndex, List<Toggle> colorButtons, IEnumerable<TimelineKeyframe> selected, TimelineKeyframe firstKF, IAnimatable animatable)
