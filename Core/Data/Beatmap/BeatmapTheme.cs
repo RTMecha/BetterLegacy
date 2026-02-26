@@ -512,6 +512,24 @@ namespace BetterLegacy.Core.Data.Beatmap
         }
 
         /// <summary>
+        /// Gets a color from a specified color source.
+        /// </summary>
+        /// <param name="source">Color source.</param>
+        /// <param name="index">Index of the color.</param>
+        /// <returns>Returns a color from the theme.</returns>
+        public Color GetColor(ThemeSource source, int index) => source switch
+        {
+            ThemeSource.GUI => guiColor,
+            ThemeSource.PlayerTail => guiAccentColor,
+            ThemeSource.Background => backgroundColor,
+            ThemeSource.Player => GetPlayerColor(index),
+            ThemeSource.Objects => GetObjColor(index),
+            ThemeSource.BackgroundObjects => GetBGColor(index),
+            ThemeSource.Effects => GetFXColor(index),
+            _ => RTColors.errorColor,
+        };
+
+        /// <summary>
         /// Gets a player color from the theme.
         /// </summary>
         /// <param name="index">Index of the color.</param>

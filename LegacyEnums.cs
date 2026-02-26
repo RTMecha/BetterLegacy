@@ -1350,6 +1350,17 @@ namespace BetterLegacy
         Color,
     }
 
+    public enum ThemeSource
+    {
+        GUI,
+        Background,
+        Player,
+        PlayerTail,
+        Objects,
+        BackgroundObjects,
+        Effects,
+    }
+
     #endregion
 
     #region Arcade / Game

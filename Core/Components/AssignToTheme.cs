@@ -21,34 +21,14 @@ namespace BetterLegacy.Core.Components
         /// <summary>
         /// What to use from a theme.
         /// </summary>
-        public Type ThemeType { get; set; } = Type.Objects;
-        public enum Type
-        {
-            GUI,
-            Background,
-            Player,
-            PlayerTail,
-            Objects,
-            BackgroundObjects,
-            Effects
-        }
+        public ThemeSource Source { get; set; } = ThemeSource.Objects;
 
         void Update()
         {
             if (!gameObject.activeInHierarchy || !Graphic.isActiveAndEnabled)
                 return;
 
-            Graphic.color = ThemeType switch
-            {
-                Type.GUI => CoreHelper.CurrentBeatmapTheme.guiColor,
-                Type.PlayerTail => CoreHelper.CurrentBeatmapTheme.guiAccentColor,
-                Type.Background => CoreHelper.CurrentBeatmapTheme.backgroundColor,
-                Type.Player => CoreHelper.CurrentBeatmapTheme.GetPlayerColor(Index),
-                Type.Objects => CoreHelper.CurrentBeatmapTheme.GetObjColor(Index),
-                Type.BackgroundObjects => CoreHelper.CurrentBeatmapTheme.GetBGColor(Index),
-                Type.Effects => CoreHelper.CurrentBeatmapTheme.GetFXColor(Index),
-                _ => Color.white,
-            };
+            Graphic.color = CoreHelper.CurrentBeatmapTheme.GetColor(Source, Index);
         }
     }
 }
