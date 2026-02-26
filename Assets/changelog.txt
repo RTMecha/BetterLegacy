@@ -45,3 +45,9 @@ The new themes include:
 - Fixed some level data not being saved and / or loaded.
 - Fixed the Update button in the theme editor showing for new themes.
 - Fixed an issue where an internal theme would have a file path assigned to it.
+
+------------------------------------------------------------------------------------------
+
+# 1.8.20 [Feb 26, 2026]
+## Fixes
+- Player tail hotfix.
