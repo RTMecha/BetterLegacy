@@ -830,7 +830,53 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                 if (!timelineObjects.IsEmpty())
                                     EditorManager.inst.DisplayNotification($"Pasted Prefab instance data.", 2f, EditorManager.NotificationType.Success);
                             }, buttonThemeGroup: ThemeGroup.Paste, graphicThemeGroup: ThemeGroup.Paste_Text).Init(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Normal).Rect(RectValues.Default.SizeDelta(0f, 32f)));
-                            
+
+                            #endregion
+
+                            #region Parent
+
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                new LabelElement("Offset Parent Desync")
+                                {
+                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                },
+                                ButtonElement.Label1Button("On", () => MultiObjectEditor.inst.ForEachPrefabObject(prefabObject =>
+                                {
+                                    prefabObject.offsetParentDesyncTime = true;
+                                    RTLevel.Current?.UpdatePrefab(prefabObject);
+                                }), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button("Off", () => MultiObjectEditor.inst.ForEachPrefabObject(prefabObject =>
+                                {
+                                    prefabObject.offsetParentDesyncTime = false;
+                                    RTLevel.Current?.UpdatePrefab(prefabObject);
+                                }), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button("Swap", () => MultiObjectEditor.inst.ForEachPrefabObject(prefabObject =>
+                                {
+                                    prefabObject.offsetParentDesyncTime = !prefabObject.offsetParentDesyncTime;
+                                    RTLevel.Current?.UpdatePrefab(prefabObject);
+                                }), labelAlignment: TextAnchor.MiddleCenter));
+
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                new LabelElement("Parent Self (Prefab Object is origin)")
+                                {
+                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                },
+                                ButtonElement.Label1Button("On", () => MultiObjectEditor.inst.ForEachPrefabObject(prefabObject =>
+                                {
+                                    prefabObject.parentSelf = true;
+                                    RTLevel.Current?.UpdatePrefab(prefabObject);
+                                }), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button("Off", () => MultiObjectEditor.inst.ForEachPrefabObject(prefabObject =>
+                                {
+                                    prefabObject.parentSelf = false;
+                                    RTLevel.Current?.UpdatePrefab(prefabObject);
+                                }), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button("Swap", () => MultiObjectEditor.inst.ForEachPrefabObject(prefabObject =>
+                                {
+                                    prefabObject.parentSelf = !prefabObject.parentSelf;
+                                    RTLevel.Current?.UpdatePrefab(prefabObject);
+                                }), labelAlignment: TextAnchor.MiddleCenter));
+
                             #endregion
 
                             break;
