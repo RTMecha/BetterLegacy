@@ -129,6 +129,18 @@
       }, // getEnum
       {
         "type": 1,
+        "name": "getRandom",
+        "values": [ "RANDOM_VAR", "1", "0", "0", "0", "0" ],
+        "const": "True"
+      }, // getRandom
+      {
+        "type": 1,
+        "name": "getRandomVector2",
+        "values": [ "RANDOM_X_VAR", "RANDOM_Y_VAR", "1", "0", "0", "0", "0", "0" ],
+        "const": "True"
+      }, // getRandomVector2
+      {
+        "type": 1,
         "commands": [ "getCurrentKey" ],
         "value": "KEYCODE_VAR",
         "const": "True"
@@ -2610,7 +2622,7 @@
       }, // getColor
       {
         "type": 1,
-        "commands": [ "getColorSlotHexCode", "0", "1", "0", "0", "0" ],
+        "commands": [ "getColorSlotHexCode", "0", "1", "0", "0", "0", "4" ],
         "value": "COLORHEX_VAR",
         "const": "True"
       }, // getColorSlotHexCode
@@ -2703,14 +2715,14 @@
       }, // setOpacityOther
       {
         "type": 1,
-        "commands": [ "addColor", "0", "0", "0", "0" ],
+        "commands": [ "addColor", "0", "0", "0", "0", "1", "4" ],
         "value": "0",
         "const": "True",
         "compat": "obj"
       }, // addColor
       {
         "type": 1,
-        "commands": [ "addColorOther", "Object Group", "0", "0", "0", "0" ],
+        "commands": [ "addColorOther", "Object Group", "0", "0", "0", "0", "1", "4" ],
         "value": "0",
         "const": "True",
         "compat": "full_beatmap"
@@ -2731,14 +2743,14 @@
       }, // lerpColorPlayerDistance
       {
         "type": 1,
-        "commands": [ "lerpColor", "0", "0", "0", "0" ],
+        "commands": [ "lerpColor", "0", "0", "0", "0", "1", "4" ],
         "value": "0",
         "const": "True",
         "compat": "obj"
       }, // lerpColor
       {
         "type": 1,
-        "commands": [ "lerpColorOther", "Object Group", "0", "0", "0", "0" ],
+        "commands": [ "lerpColorOther", "Object Group", "0", "0", "0", "0", "1", "4" ],
         "value": "0",
         "const": "True",
         "compat": "full_beatmap"
@@ -3004,6 +3016,25 @@
         "values": [ "1", "ANIMATE_VAR", "0", "True", "0", "True" ],
         "const": "False"
       }, // getAnimateVariableMath
+      {
+        "type": 1,
+        "name": "getEasing",
+        "values": [ "EASING_VAR", "0" ],
+        "const": "True"
+      }, // getEasing
+      {
+        "type": 1,
+        "name": "getEasingName",
+        "values": [ "EASING_VAR", "0" ],
+        "const": "True"
+      }, // getEasingName
+      {
+        "type": 1,
+        "name": "getKeyframeValue",
+        "values": [ "KEYFRAME_VALUE_VAR", "0", "0", "0", "0" ],
+        "const": "True",
+        "compat": "obj"
+      }, // getKeyframeValue
 
       {
         "type": 1,

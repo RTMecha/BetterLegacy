@@ -380,7 +380,7 @@ namespace BetterLegacy.Core.Data
             return low - 1;
         }
 
-        public float Interpolate(int type, int valueIndex, float time)
+        public float Interpolate(int type, int valueIndex, float time, int source = 0)
         {
             var list = GetEventKeyframes(type);
             if (list == null)
@@ -390,15 +390,25 @@ namespace BetterLegacy.Core.Data
             var nextKFIndex = RTMath.Clamp(prevKFIndex + 1, 0, list.Count - 1);
 
             var prevKF = list[prevKFIndex];
+            var prevKFValues = source switch
+            {
+                1 => prevKF.randomValues,
+                _ => prevKF.values,
+            };
             var nextKF = list[nextKFIndex];
+            var nextKFValues = source switch
+            {
+                1 => nextKF.randomValues,
+                _ => nextKF.values,
+            };
 
-            valueIndex = Mathf.Clamp(valueIndex, 0, list[0].values.Length);
+            valueIndex = Mathf.Clamp(valueIndex, 0, (source == 0 ? list[0].values : list[0].randomValues).Length);
 
-            if (prevKF.values.Length <= valueIndex)
+            if (prevKFValues.Length <= valueIndex)
                 return 0f;
 
             if (time <= 0f)
-                return prevKF.values[valueIndex];
+                return prevKFValues[valueIndex];
 
             var total = 0f;
             var prevtotal = 0f;
@@ -406,20 +416,25 @@ namespace BetterLegacy.Core.Data
             {
                 for (int k = 0; k < nextKFIndex; k++)
                 {
+                    var rv = source switch
+                    {
+                        1 => list[k].randomValues,
+                        _ => list[k].values,
+                    };
                     if (list[k + 1].relative)
-                        total += list[k].values[valueIndex];
+                        total += rv[valueIndex];
                     else
                         total = 0f;
 
                     if (list[k].relative)
-                        prevtotal += list[k].values[valueIndex];
+                        prevtotal += rv[valueIndex];
                     else
                         prevtotal = 0f;
                 }
             }
 
-            var next = nextKF.relative ? total + nextKF.values[valueIndex] : nextKF.values[valueIndex];
-            var prev = prevKF.relative || nextKF.relative ? prevtotal : prevKF.values[valueIndex];
+            var next = nextKF.relative ? total + nextKFValues[valueIndex] : nextKFValues[valueIndex];
+            var prev = prevKF.relative || nextKF.relative ? prevtotal : prevKFValues[valueIndex];
 
             bool isLerper = type != 3 || valueIndex != 0 || valueIndex != 5;
 

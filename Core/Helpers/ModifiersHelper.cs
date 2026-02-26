@@ -1013,6 +1013,10 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction(nameof(ModifierFunctions.getStringUpper),  ModifierFunctions.getStringUpper),
             new ModifierAction(nameof(ModifierFunctions.getColor),  ModifierFunctions.getColor),
             new ModifierAction(nameof(ModifierFunctions.getEnum),  ModifierFunctions.getEnum),
+            new ModifierAction(nameof(ModifierFunctions.getRandom),  ModifierFunctions.getRandom),
+            new ModifierAction(nameof(ModifierFunctions.getRandomVector2),  ModifierFunctions.getRandomVector2),
+            new ModifierAction(nameof(ModifierFunctions.getEasing),  ModifierFunctions.getEasing),
+            new ModifierAction(nameof(ModifierFunctions.getEasingName),  ModifierFunctions.getEasingName),
             new ModifierAction(nameof(ModifierFunctions.getTag),  ModifierFunctions.getTag),
             new ModifierAction(nameof(ModifierFunctions.getPitch),  ModifierFunctions.getPitch),
             new ModifierAction(nameof(ModifierFunctions.getMusicTime),  ModifierFunctions.getMusicTime),
@@ -1059,6 +1063,7 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction(nameof(ModifierFunctions.getEditorBin),  ModifierFunctions.getEditorBin),
             new ModifierAction(nameof(ModifierFunctions.getEditorLayer),  ModifierFunctions.getEditorLayer),
             new ModifierAction(nameof(ModifierFunctions.getObjectName),  ModifierFunctions.getObjectName),
+            new ModifierAction(nameof(ModifierFunctions.getKeyframeValue),  ModifierFunctions.getKeyframeValue),
             new ModifierAction(nameof(ModifierFunctions.getSignaledVariables),  ModifierFunctions.getSignaledVariables),
             new ModifierAction(nameof(ModifierFunctions.signalLocalVariables),  ModifierFunctions.signalLocalVariables),
             new ModifierAction(nameof(ModifierFunctions.clearLocalVariables),  ModifierFunctions.clearLocalVariables),
@@ -2870,6 +2875,61 @@ namespace BetterLegacy.Core.Helpers
                 modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = ModifiersHelper.FormatStringVariables(modifier.GetValue(index, modifierLoop.variables), modifierLoop.variables);
         }
 
+        public static void getRandom(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            var id = string.Empty;
+            if (modifierLoop.reference is PAObjectBase obj)
+                id = obj.id;
+
+            var modifyable = modifierLoop.reference as IModifyable;
+
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = RandomHelper.KeyframeRandomizer.RandomizeFloatKeyframe(id,
+                randomType: (RandomType)modifier.GetInt(1, 0, modifierLoop.variables),
+                value: modifier.GetFloat(2, 0f, modifierLoop.variables),
+                randomValueA: modifier.GetFloat(3, 0f, modifierLoop.variables),
+                randomValueB: modifier.GetFloat(4, 0f, modifierLoop.variables),
+                interval: modifier.GetFloat(5, 0f, modifierLoop.variables),
+                kfIndex: modifyable.Modifiers?.IndexOf(modifier) ?? 0).ToString();
+        }
+
+        public static void getRandomVector2(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            var id = string.Empty;
+            if (modifierLoop.reference is PAObjectBase obj)
+                id = obj.id;
+
+            var modifyable = modifierLoop.reference as IModifyable;
+
+            var vector = RandomHelper.KeyframeRandomizer.RandomizeVector2Keyframe(id,
+                randomType: (RandomType)modifier.GetInt(2, 0, modifierLoop.variables),
+                valueX: modifier.GetFloat(3, 0f, modifierLoop.variables),
+                valueY: modifier.GetFloat(4, 0f, modifierLoop.variables),
+                randomValueX: modifier.GetFloat(5, 0f, modifierLoop.variables),
+                randomValueY: modifier.GetFloat(6, 0f, modifierLoop.variables),
+                interval: modifier.GetFloat(7, 0f, modifierLoop.variables),
+                kfIndex: modifyable.Modifiers?.IndexOf(modifier) ?? 0);
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = vector.x.ToString();
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(1), modifierLoop.variables)] = vector.y.ToString();
+        }
+
+        public static void getEasing(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            var value = modifier.GetValue(1, modifierLoop.variables);
+            if (Enum.TryParse(value, out Easing easing))
+                modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = ((int)easing).ToString();
+            else
+                modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = value;
+        }
+        
+        public static void getEasingName(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            var value = modifier.GetValue(1, modifierLoop.variables);
+            if (Enum.TryParse(value, out Easing easing))
+                modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = easing.ToString();
+            else if (int.TryParse(value, out int num))
+                modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = ((Easing)num).ToString();
+        }
+
         public static void getTag(Modifier modifier, ModifierLoop modifierLoop)
         {
             modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = modifierLoop.reference is IModifyable modifyable && modifyable.Tags.TryGetAt(modifier.GetInt(1, 0, modifierLoop.variables), out string tag) ? tag : string.Empty;
@@ -3218,7 +3278,8 @@ namespace BetterLegacy.Core.Helpers
 
         public static void getColorSlotHexCode(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var color = ThemeManager.inst.Current.GetObjColor(modifier.GetInt(1, 0, modifierLoop.variables));
+            var colorSource = (ThemeSource)modifier.GetInt(6, 4, modifierLoop.variables);
+            var color = ThemeManager.inst.Current.GetColor(colorSource, modifier.GetInt(1, 0, modifierLoop.variables));
             color = RTColors.FadeColor(color, modifier.GetFloat(2, 1f, modifierLoop.variables));
             color = RTColors.ChangeColorHSV(color, modifier.GetFloat(3, 0f, modifierLoop.variables), modifier.GetFloat(4, 0f, modifierLoop.variables), modifier.GetFloat(5, 0f, modifierLoop.variables));
 
@@ -3615,6 +3676,22 @@ namespace BetterLegacy.Core.Helpers
                 modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = prefab.name;
             else if (modifierLoop.reference is RTPlayer.RTCustomPlayerObject customPlayerObject && customPlayerObject.reference)
                 modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = customPlayerObject.reference.name;
+        }
+
+        public static void getKeyframeValue(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
+                return;
+
+            var source = modifier.GetInt(1, 0, modifierLoop.variables);
+            var type = modifier.GetInt(2, 0, modifierLoop.variables);
+            var valueIndex = modifier.GetInt(3, 0, modifierLoop.variables);
+            var time = modifier.GetFloat(4, 0f, modifierLoop.variables);
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = beatmapObject.Interpolate(
+                type: type,
+                valueIndex: valueIndex,
+                time: time,
+                source: source).ToString();
         }
 
         public static void getSignaledVariables(Modifier modifier, ModifierLoop modifierLoop)
@@ -7901,11 +7978,14 @@ namespace BetterLegacy.Core.Helpers
             var hue = modifier.GetFloat(2, 0f, modifierLoop.variables);
             var sat = modifier.GetFloat(3, 0f, modifierLoop.variables);
             var val = modifier.GetFloat(4, 0f, modifierLoop.variables);
+            var colorSource = (ThemeSource)modifier.GetInt(5, 4, modifierLoop.variables);
 
             // queue post tick so the color overrides the sequence color
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                beatmapObject.runtimeObject.visualObject.SetColor(beatmapObject.runtimeObject.visualObject.GetPrimaryColor() + RTColors.ChangeColorHSV(CoreHelper.CurrentBeatmapTheme.GetObjColor(index), hue, sat, val) * multiply);
+                var colorA = RTColors.ChangeColorHSV(ThemeManager.inst.Current.GetColor(colorSource, index), hue, sat, val);
+                var color = beatmapObject.runtimeObject.visualObject.GetPrimaryColor() + colorA * multiply;
+                beatmapObject.runtimeObject.visualObject.SetColor(color);
             });
         }
 
@@ -7928,14 +8008,18 @@ namespace BetterLegacy.Core.Helpers
             var hue = modifier.GetFloat(3, 0f, modifierLoop.variables);
             var sat = modifier.GetFloat(4, 0f, modifierLoop.variables);
             var val = modifier.GetFloat(5, 0f, modifierLoop.variables);
+            var colorSource = (ThemeSource)modifier.GetInt(6, 4, modifierLoop.variables);
 
             // queue post tick so the color overrides the sequence color
             RTLevel.Current.postTick.Enqueue(() =>
             {
+                var colorA = RTColors.ChangeColorHSV(ThemeManager.inst.Current.GetColor(colorSource, index), hue, sat, val);
                 foreach (var bm in list)
                 {
-                    if (bm.runtimeObject)
-                        bm.runtimeObject.visualObject.SetColor(bm.runtimeObject.visualObject.GetPrimaryColor() + RTColors.ChangeColorHSV(ThemeManager.inst.Current.GetObjColor(index), hue, sat, val) * multiply);
+                    if (!bm.runtimeObject || !bm.runtimeObject.visualObject)
+                        continue;
+                    var color = bm.runtimeObject.visualObject.GetPrimaryColor() + colorA * multiply;
+                    bm.runtimeObject.visualObject.SetColor(color);
                 }
             });
         }
@@ -7950,11 +8034,16 @@ namespace BetterLegacy.Core.Helpers
             var hue = modifier.GetFloat(2, 0f, modifierLoop.variables);
             var sat = modifier.GetFloat(3, 0f, modifierLoop.variables);
             var val = modifier.GetFloat(4, 0f, modifierLoop.variables);
+            var opacity = modifier.GetFloat(5, 1f, modifierLoop.variables);
+            var colorSource = (ThemeSource)modifier.GetInt(6, 4, modifierLoop.variables);
 
             // queue post tick so the color overrides the sequence color
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                beatmapObject.runtimeObject.visualObject.SetColor(RTMath.Lerp(beatmapObject.runtimeObject.visualObject.GetPrimaryColor(), RTColors.ChangeColorHSV(ThemeManager.inst.Current.GetObjColor(index), hue, sat, val), multiply));
+                var colorA = RTColors.ChangeColorHSV(ThemeManager.inst.Current.GetColor(colorSource, index), hue, sat, val);
+                colorA.a *= opacity;
+                var color = RTMath.Lerp(beatmapObject.runtimeObject.visualObject.GetPrimaryColor(), colorA, multiply);
+                beatmapObject.runtimeObject.visualObject.SetColor(color);
             });
         }
 
@@ -7977,16 +8066,21 @@ namespace BetterLegacy.Core.Helpers
             var hue = modifier.GetFloat(3, 0f, modifierLoop.variables);
             var sat = modifier.GetFloat(4, 0f, modifierLoop.variables);
             var val = modifier.GetFloat(5, 0f, modifierLoop.variables);
+            var opacity = modifier.GetFloat(6, 1f, modifierLoop.variables);
+            var colorSource = (ThemeSource)modifier.GetInt(7, 4, modifierLoop.variables);
 
             // queue post tick so the color overrides the sequence color
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                var color = RTColors.ChangeColorHSV(ThemeManager.inst.Current.GetObjColor(index), hue, sat, val);
+                var colorA = RTColors.ChangeColorHSV(ThemeManager.inst.Current.GetColor(colorSource, index), hue, sat, val);
+                colorA.a *= opacity;
                 for (int i = 0; i < list.Count; i++)
                 {
                     var bm = list[i];
-                    if (bm.runtimeObject && bm.runtimeObject.visualObject)
-                        bm.runtimeObject.visualObject.SetColor(RTMath.Lerp(bm.runtimeObject.visualObject.GetPrimaryColor(), color, multiply));
+                    if (!bm.runtimeObject || !bm.runtimeObject.visualObject)
+                        continue;
+                    var color = RTMath.Lerp(bm.runtimeObject.visualObject.GetPrimaryColor(), colorA, multiply);
+                    bm.runtimeObject.visualObject.SetColor(color);
                 }
             });
         }

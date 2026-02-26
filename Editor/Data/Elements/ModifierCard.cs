@@ -1885,6 +1885,40 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
+                case nameof(ModifierFunctions.getRandom): {
+                        StringGenerator(modifier, reference, "Variable Name", 0, renderVariables: false);
+                        DropdownGenerator(modifier, reference, "Random Type", 1, CoreHelper.StringToOptionData("None", "Normal", "BETA_SUPPORT", "Toggle", "Scale"));
+                        SingleGenerator(modifier, reference, "Value", 2);
+                        SingleGenerator(modifier, reference, "Random Value A", 3);
+                        SingleGenerator(modifier, reference, "Random Value B", 4);
+                        SingleGenerator(modifier, reference, "Random Interval", 5);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.getRandomVector2): {
+                        StringGenerator(modifier, reference, "Variable X Name", 0, renderVariables: false);
+                        StringGenerator(modifier, reference, "Variable Y Name", 1, renderVariables: false);
+                        DropdownGenerator(modifier, reference, "Random Type", 2, CoreHelper.StringToOptionData("None", "Normal", "BETA_SUPPORT", "Toggle", "Scale"));
+                        SingleGenerator(modifier, reference, "Value X", 3);
+                        SingleGenerator(modifier, reference, "Value Y", 4);
+                        SingleGenerator(modifier, reference, "Random Value X", 5);
+                        SingleGenerator(modifier, reference, "Random Value Y", 6);
+                        SingleGenerator(modifier, reference, "Random Interval", 7);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.getEasing): {
+                        StringGenerator(modifier, reference, "Variable Name", 0, renderVariables: false);
+                        EaseGenerator(modifier, reference, 1);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.getEasingName): {
+                        StringGenerator(modifier, reference, "Variable Name", 0, renderVariables: false);
+                        EaseGenerator(modifier, reference, 1);
+
+                        break;
+                    }
                 case nameof(ModifierFunctions.getTag): {
                         StringGenerator(modifier, reference, "Variable Name", 0, renderVariables: false);
                         IntegerGenerator(modifier, reference, "Index", 1, 0);
@@ -2064,7 +2098,12 @@ namespace BetterLegacy.Editor.Data.Elements
                     }
                 case nameof(ModifierFunctions.getColorSlotHexCode): {
                         StringGenerator(modifier, reference, "Variable Name", 0, renderVariables: false);
-                        ColorGenerator(modifier, reference, "Color", 1);
+                        DropdownGenerator(modifier, reference, "Color Source", 6, CoreHelper.ToOptionData<ThemeSource>(), _val =>
+                        {
+                            modifier.SetValue(6, _val.ToString());
+                            RenderModifier(reference, modifyable);
+                        });
+                        ColorGenerator(modifier, reference, "Color", 1, (ThemeSource)modifier.GetInt(6, 4));
                         SingleGenerator(modifier, reference, "Opacity", 2, 1f, max: 1f);
                         SingleGenerator(modifier, reference, "Hue", 3);
                         SingleGenerator(modifier, reference, "Saturation", 4);
@@ -2318,6 +2357,16 @@ namespace BetterLegacy.Editor.Data.Elements
                     }
                 case nameof(ModifierFunctions.getObjectName): {
                         StringGenerator(modifier, reference, "Variable Name", 0, renderVariables: false);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.getKeyframeValue): {
+                        StringGenerator(modifier, reference, "Variable Name", 0, renderVariables: false);
+
+                        DropdownGenerator(modifier, reference, "Source", 1, CoreHelper.StringToOptionData("Normal", "Random"));
+                        DropdownGenerator(modifier, reference, "Type", 2, CoreHelper.StringToOptionData("Position", "Scale", "Rotation", "Color"));
+                        IntegerGenerator(modifier, reference, "Value Index", 3);
+                        SingleGenerator(modifier, reference, "Time", 4);
 
                         break;
                     }
@@ -2725,12 +2774,17 @@ namespace BetterLegacy.Editor.Data.Elements
                 case nameof(ModifierFunctions.lerpTheme): {
                         StringGenerator(modifier, reference, "Previous ID", 0);
                         StringGenerator(modifier, reference, "Next ID", 1);
-                        SingleGenerator(modifier, reference, "Time", 2);
+                        SingleGenerator(modifier, reference, "Interpolate", 2);
 
                         break;
                     }
                 case nameof(ModifierFunctions.addColor): {
-                        ColorGenerator(modifier, reference, "Color", 1);
+                        DropdownGenerator(modifier, reference, "Color Source", 5, CoreHelper.ToOptionData<ThemeSource>(), _val =>
+                        {
+                            modifier.SetValue(5, _val.ToString());
+                            RenderModifier(reference, modifyable);
+                        });
+                        ColorGenerator(modifier, reference, "Color", 1, (ThemeSource)modifier.GetInt(5, 4));
 
                         SingleGenerator(modifier, reference, "Hue", 2, 0f);
                         SingleGenerator(modifier, reference, "Saturation", 3, 0f);
@@ -2745,7 +2799,12 @@ namespace BetterLegacy.Editor.Data.Elements
                         var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
-                        ColorGenerator(modifier, reference, "Color", 2);
+                        DropdownGenerator(modifier, reference, "Color Source", 6, CoreHelper.ToOptionData<ThemeSource>(), _val =>
+                        {
+                            modifier.SetValue(6, _val.ToString());
+                            RenderModifier(reference, modifyable);
+                        });
+                        ColorGenerator(modifier, reference, "Color", 2, (ThemeSource)modifier.GetInt(6, 4));
 
                         SingleGenerator(modifier, reference, "Hue", 3, 0f);
                         SingleGenerator(modifier, reference, "Saturation", 4, 0f);
@@ -2756,13 +2815,19 @@ namespace BetterLegacy.Editor.Data.Elements
                         break;
                     }
                 case nameof(ModifierFunctions.lerpColor): {
-                        ColorGenerator(modifier, reference, "Color", 1);
+                        DropdownGenerator(modifier, reference, "Color Source", 6, CoreHelper.ToOptionData<ThemeSource>(), _val =>
+                        {
+                            modifier.SetValue(6, _val.ToString());
+                            RenderModifier(reference, modifyable);
+                        });
+                        ColorGenerator(modifier, reference, "Color", 1, (ThemeSource)modifier.GetInt(6, 4));
 
+                        SingleGenerator(modifier, reference, "Opacity", 5, 1f);
                         SingleGenerator(modifier, reference, "Hue", 2, 0f);
                         SingleGenerator(modifier, reference, "Saturation", 3, 0f);
                         SingleGenerator(modifier, reference, "Value", 4, 0f);
 
-                        SingleGenerator(modifier, reference, "Multiply", 0, 1f);
+                        SingleGenerator(modifier, reference, "Interpolate", 0, 1f);
 
                         break;
                     }
@@ -2771,13 +2836,19 @@ namespace BetterLegacy.Editor.Data.Elements
                         var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
-                        ColorGenerator(modifier, reference, "Color", 2);
+                        DropdownGenerator(modifier, reference, "Color Source", 7, CoreHelper.ToOptionData<ThemeSource>(), _val =>
+                        {
+                            modifier.SetValue(7, _val.ToString());
+                            RenderModifier(reference, modifyable);
+                        });
+                        ColorGenerator(modifier, reference, "Color", 2, (ThemeSource)modifier.GetInt(7, 4));
 
+                        SingleGenerator(modifier, reference, "Opacity", 6, 1f);
                         SingleGenerator(modifier, reference, "Hue", 3, 0f);
                         SingleGenerator(modifier, reference, "Saturation", 4, 0f);
                         SingleGenerator(modifier, reference, "Value", 5, 0f);
 
-                        SingleGenerator(modifier, reference, "Multiply", 0, 1f);
+                        SingleGenerator(modifier, reference, "Interpolate", 0, 1f);
 
                         break;
                     }
@@ -5280,6 +5351,17 @@ namespace BetterLegacy.Editor.Data.Elements
                 num++;
             }
         }
+
+        public GameObject ColorGenerator(Modifier modifier, IModifierReference reference, string label, int type, ThemeSource source) => ColorGenerator(modifier, reference, label, type, source switch
+        {
+            ThemeSource.GUI => new List<Color>() { CoreHelper.CurrentBeatmapTheme.guiColor },
+            ThemeSource.Background => new List<Color>() { CoreHelper.CurrentBeatmapTheme.backgroundColor },
+            ThemeSource.Player => CoreHelper.CurrentBeatmapTheme.playerColors,
+            ThemeSource.PlayerTail => new List<Color>() { CoreHelper.CurrentBeatmapTheme.guiAccentColor },
+            ThemeSource.BackgroundObjects => CoreHelper.CurrentBeatmapTheme.backgroundColors,
+            ThemeSource.Effects => CoreHelper.CurrentBeatmapTheme.effectColors,
+            _ => CoreHelper.CurrentBeatmapTheme.objectColors,
+        });
 
         public GameObject ColorGenerator(Modifier modifier, IModifierReference reference, string label, int type, int colorSource = 0) => ColorGenerator(modifier, reference, label, type, colorSource switch
         {

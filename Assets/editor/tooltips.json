@@ -940,6 +940,26 @@
             ]
           }, // getEnum
           {
+            "name": "Object Modifier - getRandom (Action)",
+            "tooltips": [
+              {
+                "desc": "getRandom (Action)",
+                "hint": "Gets a random value and passes it to other modifiers.",
+                "lang": 0
+              }
+            ]
+          }, // getRandom
+          {
+            "name": "Object Modifier - getRandomVector2 (Action)",
+            "tooltips": [
+              {
+                "desc": "getRandomVector2 (Action)",
+                "hint": "Gets a random value and passes it to other modifiers.",
+                "lang": 0
+              }
+            ]
+          }, // getRandomVector2
+          {
             "name": "Object Modifier - getEventValue (Action)",
             "tooltips": [
               {
@@ -5013,6 +5033,36 @@
               }
             ]
           }, // getAnimateVariableMath
+          {
+            "name": "Object Modifier - getEasing (Action)",
+            "tooltips": [
+              {
+                "desc": "getEasing (Action)",
+                "hint": "Gets an easing index value and passes it to other modifiers.",
+                "lang": 0
+              }
+            ]
+          }, // getEasing
+          {
+            "name": "Object Modifier - getEasingName (Action)",
+            "tooltips": [
+              {
+                "desc": "getEasingName (Action)",
+                "hint": "Gets the name of an easing and passes it to other modifiers.",
+                "lang": 0
+              }
+            ]
+          }, // getEasingName
+          {
+            "name": "Object Modifier - getKeyframeValue (Action)",
+            "tooltips": [
+              {
+                "desc": "getKeyframeValue (Action)",
+                "hint": "Gets the objects' interpolated keyframe value and passes it to other modifiers.",
+                "lang": 0
+              }
+            ]
+          }, // getKeyframeValue
 
           {
             "name": "Object Modifier - animateObject (Action)",

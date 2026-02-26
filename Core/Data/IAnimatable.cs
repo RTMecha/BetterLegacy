@@ -58,7 +58,7 @@ namespace BetterLegacy.Core.Data
         /// <param name="valueIndex">Axis index to interpolate.</param>
         /// <param name="time">Time to interpolate to.</param>
         /// <returns>Returns a single value based on the event.</returns>
-        public float Interpolate(int type, int valueIndex, float time);
+        public float Interpolate(int type, int valueIndex, float time, int source = 0);
 
         public float Interpolate(EventKeyframe prevKeyframe, EventKeyframe nextKeyframe, int type, int valueIndex, float time);
 

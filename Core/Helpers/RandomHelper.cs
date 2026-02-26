@@ -254,19 +254,29 @@ namespace BetterLegacy.Core.Helpers
             {
                 if (!CoreConfig.Instance.UseSeedBasedRandom.Value)
                     return RandomizeFloatKeyframe(eventKeyframe, index);
-
-                var round = eventKeyframe.randomValues.Length > 2 && eventKeyframe.randomValues[2] != 0f;
+                return RandomizeFloatKeyframe(id,
+                    eventKeyframe.RandomType,
+                    eventKeyframe.values[index],
+                    eventKeyframe.randomValues[0],
+                    eventKeyframe.randomValues[1],
+                    eventKeyframe.randomValues[2],
+                    kfIndex);
+            }
+            
+            public static float RandomizeFloatKeyframe(string id, RandomType randomType, float value, float randomValueA, float randomValueB, float interval, int kfIndex = 0)
+            {
+                var round = interval != 0f;
                 var hash = GetHash(id + kfIndex, CurrentSeed);
-                return eventKeyframe.RandomType switch
+                return randomType switch
                 {
                     RandomType.Normal => round ?
-                            RTMath.RoundToNearestNumber(SingleFromRange(hash, eventKeyframe.values[index], eventKeyframe.randomValues[0]), eventKeyframe.randomValues[2]) :
-                            SingleFromRange(hash, eventKeyframe.values[index], eventKeyframe.randomValues[0]),
-                    RandomType.BETA_SUPPORT => UnityEngine.Mathf.Round(SingleFromRange(hash, eventKeyframe.values[index], eventKeyframe.randomValues[0])),
-                    RandomType.Toggle => (Single(hash) > 0.5f) ? eventKeyframe.values[index] : eventKeyframe.randomValues[0],
-                    RandomType.Scale => eventKeyframe.values[index] * (round ?
-                                RTMath.RoundToNearestNumber(SingleFromRange(hash, eventKeyframe.randomValues[0], eventKeyframe.randomValues[1]), eventKeyframe.randomValues[2]) :
-                                SingleFromRange(hash, eventKeyframe.randomValues[0], eventKeyframe.randomValues[1])),
+                            RTMath.RoundToNearestNumber(SingleFromRange(hash, value, randomValueA), interval) :
+                            SingleFromRange(hash, value, randomValueA),
+                    RandomType.BETA_SUPPORT => UnityEngine.Mathf.Round(SingleFromRange(hash, value, randomValueA)),
+                    RandomType.Toggle => (Single(hash) > 0.5f) ? value : randomValueA,
+                    RandomType.Scale => value * (round ?
+                                RTMath.RoundToNearestNumber(SingleFromRange(hash, randomValueA, randomValueB), interval) :
+                                SingleFromRange(hash, randomValueA, randomValueB)),
                     _ => 0f
                 };
             }
@@ -276,10 +286,22 @@ namespace BetterLegacy.Core.Helpers
                 if (!CoreConfig.Instance.UseSeedBasedRandom.Value)
                     return RandomizeVector2Keyframe(eventKeyframe);
 
+                return RandomizeVector2Keyframe(id,
+                    eventKeyframe.RandomType,
+                    eventKeyframe.values[0],
+                    eventKeyframe.values[1],
+                    eventKeyframe.randomValues[0],
+                    eventKeyframe.randomValues[1],
+                    eventKeyframe.randomValues[2],
+                    kfIndex);
+            }
+            
+            public static UnityEngine.Vector2 RandomizeVector2Keyframe(string id, RandomType randomType, float valueX, float valueY, float randomValueX, float randomValueY, float interval, int kfIndex = 0)
+            {
                 float x = 0f;
                 float y = 0f;
-                var round = eventKeyframe.randomValues.Length > 2 && eventKeyframe.randomValues[2] != 0f;
-                switch ((RandomType)eventKeyframe.random)
+                var round = interval != 0f;
+                switch (randomType)
                 {
                     case RandomType.Normal: {
                             var xHash = GetHash(id + kfIndex + "XXXXXXXXXXXX", CurrentSeed);
@@ -287,17 +309,17 @@ namespace BetterLegacy.Core.Helpers
 
                             if (round)
                             {
-                                x = (eventKeyframe.values[0] == eventKeyframe.randomValues[0]) ?
-                                        eventKeyframe.values[0] :
-                                        RTMath.RoundToNearestNumber(SingleFromRange(xHash, eventKeyframe.values[0], eventKeyframe.randomValues[0]), eventKeyframe.randomValues[2]);
-                                y = (eventKeyframe.values[1] == eventKeyframe.randomValues[1]) ?
-                                        eventKeyframe.values[1] :
-                                        RTMath.RoundToNearestNumber(SingleFromRange(yHash, eventKeyframe.values[1], eventKeyframe.randomValues[1]), eventKeyframe.randomValues[2]);
+                                x = (valueX == randomValueX) ?
+                                        valueX :
+                                        RTMath.RoundToNearestNumber(SingleFromRange(xHash, valueX, randomValueX), interval);
+                                y = (valueY == randomValueY) ?
+                                        valueY :
+                                        RTMath.RoundToNearestNumber(SingleFromRange(yHash, valueY, randomValueY), interval);
                             }
                             else
                             {
-                                x = SingleFromRange(xHash, eventKeyframe.values[0], eventKeyframe.randomValues[0]);
-                                y = SingleFromRange(yHash, eventKeyframe.values[1], eventKeyframe.randomValues[1]);
+                                x = SingleFromRange(xHash, valueX, randomValueX);
+                                y = SingleFromRange(yHash, valueY, randomValueY);
                             }
                             break;
                         }
@@ -305,26 +327,26 @@ namespace BetterLegacy.Core.Helpers
                             var xHash = GetHash(id + kfIndex + "XXXXXXXXXXXX", CurrentSeed);
                             var yHash = GetHash(id + kfIndex + "YYYYYYYYYYYY", CurrentSeed);
 
-                            x = UnityEngine.Mathf.Round(SingleFromRange(xHash, eventKeyframe.values[0], eventKeyframe.randomValues[0]));
-                            y = UnityEngine.Mathf.Round(SingleFromRange(yHash, eventKeyframe.values[1], eventKeyframe.randomValues[1]));
+                            x = UnityEngine.Mathf.Round(SingleFromRange(xHash, valueX, randomValueX));
+                            y = UnityEngine.Mathf.Round(SingleFromRange(yHash, valueY, randomValueY));
                             break;
                         }
                     case RandomType.Toggle: {
                             var hash = GetHash(id + kfIndex, CurrentSeed);
                             bool toggle = Single(hash) > 0.5f;
-                            x = toggle ? eventKeyframe.values[0] : eventKeyframe.randomValues[0];
-                            y = toggle ? eventKeyframe.values[1] : eventKeyframe.randomValues[1];
+                            x = toggle ? valueX : randomValueX;
+                            y = toggle ? valueY : randomValueY;
                             break;
                         }
                     case RandomType.Scale: {
                             var hash = GetHash(id + kfIndex, CurrentSeed);
-                            float multiply = SingleFromRange(hash, eventKeyframe.randomValues[0], eventKeyframe.randomValues[1]);
+                            float multiply = SingleFromRange(hash, randomValueX, randomValueY);
 
                             if (round)
-                                multiply = RTMath.RoundToNearestNumber(multiply, eventKeyframe.randomValues[2]);
+                                multiply = RTMath.RoundToNearestNumber(multiply, interval);
 
-                            x = eventKeyframe.values[0] * multiply;
-                            y = eventKeyframe.values[1] * multiply;
+                            x = valueX * multiply;
+                            y = valueY * multiply;
                             break;
                         }
                 }
