@@ -1,4 +1,10 @@
-﻿# 1.8.19 [Feb 26, 2026]
+﻿# 1.8.20 [Feb 26, 2026]
+## Fixes
+- Player tail hotfix.
+
+------------------------------------------------------------------------------------------
+
+# 1.8.19 [Feb 26, 2026]
 ## Features
 ### Story
 - Tweaked the speed and size of some objects in Spinning Bars (Ahead of the Curve).
