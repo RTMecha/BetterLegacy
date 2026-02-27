@@ -132,7 +132,11 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public bool AutoTextAlign { get; set; }
 
-        public PolygonShape Polygon { get; set; }
+        /// <summary>
+        /// Settings for the custom polygon shape.
+        /// </summary>
+        public PolygonShape polygonShape = new PolygonShape();
+        public PolygonShape Polygon { get => polygonShape; set => polygonShape = value; }
 
         public bool flat;
 

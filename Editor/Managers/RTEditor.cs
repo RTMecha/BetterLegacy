@@ -5116,6 +5116,8 @@ namespace BetterLegacy.Editor.Managers
 
                         if (shapeable is BeatmapObject beatmapObject && beatmapObject.gradientType != GradientType.Normal && (index == 4 || index == 6))
                             shapeable.Shape = 0;
+                        if (shapeable is BackgroundObject backgroundObject && backgroundObject.ShapeType == ShapeType.Polygon)
+                            RTBackgroundEditor.inst.Dialog.FlatToggle.toggle.isOn = true;
 
                         if (shapeable.ShapeType == ShapeType.Polygon && EditorConfig.Instance.AutoPolygonRadius.Value)
                             shapeable.Polygon.Radius = shapeable.Polygon.GetAutoRadius();

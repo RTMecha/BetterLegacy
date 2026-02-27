@@ -132,8 +132,11 @@ namespace BetterLegacy.Core.Helpers
             if (cache.mesh.vertexCount > 0)
             {
                 meshFilter.sharedMesh = cache.mesh;
-                polygonCollider.pathCount = 1;
-                polygonCollider.SetPath(0, cache.colliderPaths);
+                if (polygonCollider)
+                {
+                    polygonCollider.pathCount = 1;
+                    polygonCollider.SetPath(0, cache.colliderPaths);
+                }
                 return;
             }
 
@@ -217,7 +220,8 @@ namespace BetterLegacy.Core.Helpers
             if (cache.mesh.vertexCount > 0)
             {
                 meshFilter.sharedMesh = cache.mesh;
-                polygonCollider.SetPath(0, cache.colliderPaths);
+                if (polygonCollider)
+                    polygonCollider.SetPath(0, cache.colliderPaths);
                 return;
             }
 

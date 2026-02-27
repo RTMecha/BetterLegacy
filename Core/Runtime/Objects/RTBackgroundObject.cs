@@ -75,6 +75,29 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         public void UpdateShape(int shape, int shapeOption, bool flat = false)
         {
+            var shapeType = (ShapeType)shape;
+            if (shapeType == ShapeType.Polygon)
+            {
+                var polygon = backgroundObject.Polygon;
+                if (!polygon)
+                    return;
+
+                foreach (var visualFadeObject in visualFadeObjects)
+                {
+                    if (visualFadeObject && visualFadeObject.meshFilter)
+                        VGShapes.RoundedRingMesh(visualFadeObject.meshFilter, null,
+                            polygon.Radius,
+                            polygon.Sides,
+                            polygon.Roundness,
+                            polygon.Thickness,
+                            polygon.ThicknessOffset,
+                            polygon.ThicknessScale,
+                            polygon.Angle,
+                            polygon.ThicknessRotation);
+                }
+                return;
+            }
+
             var paShape = flat ? ShapeManager.inst.GetShape(shape, shapeOption) : ShapeManager.inst.GetShape3D(shape, shapeOption);
             foreach (var visualFadeObject in visualFadeObjects)
             {

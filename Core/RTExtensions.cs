@@ -2623,7 +2623,7 @@ namespace BetterLegacy.Core
             if (shapeable.ShapeOption != 0)
                 jn["so"] = shapeable.ShapeOption;
 
-            if (shapeable.ShapeType == ShapeType.Polygon && shapeable.Polygon != null)
+            if (shapeable.ShapeType == ShapeType.Polygon && shapeable.Polygon)
                 jn["csp"] = shapeable.Polygon.ToJSON();
 
             if (!string.IsNullOrEmpty(shapeable.Text))
