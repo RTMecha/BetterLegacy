@@ -331,7 +331,7 @@
                   ]
                 }
               }
-            },
+            }, // meganeko
             {
               "1": {
                 "text": "- <b><#2B2B2B>Creo",
@@ -344,7 +344,7 @@
                   ]
                 }
               }
-            },
+            }, // Creo
             {
               "1": {
                 "text": "- <b><#4c3293>Chipzel",
@@ -357,7 +357,7 @@
                   ]
                 }
               }
-            },
+            }, // Chipzel
             {
               "1": {
                 "text": "- <b><#2196f3>Miyolophone",
@@ -370,7 +370,7 @@
                   ]
                 }
               }
-            },
+            }, // Miyolophone
             {
               "1": {
                 "text": "- <b><#22d5ff>Shirobon",
@@ -383,7 +383,7 @@
                   ]
                 }
               }
-            },
+            }, // Shirobon
             {
               "1": {
                 "text": "- <b><#8E4141>Jukio -Kozilek- Kallio",
@@ -396,7 +396,7 @@
                   ]
                 }
               }
-            },
+            }, // Jukio -Kozilek- Kallio
             {
               "1": {
                 "text": "- <b><#7528A9>F-777",
@@ -409,7 +409,7 @@
                   ]
                 }
               }
-            },
+            }, // F-777
             {
               "1": {
                 "text": "- <b><#7528A9>AiR",
@@ -420,7 +420,20 @@
                   ]
                 }
               }
-            }
+            }, // AiR
+            {
+              "1": {
+                "text": "- <b><#D95437>Foxberry",
+                "func": {
+                  "name": "OpenLink",
+                  "params": [
+                    "Artist",
+                    "1",
+                    "foxburial"
+                  ]
+                }
+              }
+            } // Foxberry
           ]
         },
         {
@@ -590,6 +603,16 @@
             {
               "1": {
                 "text": "Alpha porting support."
+              }
+            },
+            {
+              "1": {
+                "text": "- <b>Nifflas (NicklasNygren)"
+              }
+            },
+            {
+              "1": {
+                "text": "Creator of the original Battle Cube game that started everything."
               }
             }
           ]
