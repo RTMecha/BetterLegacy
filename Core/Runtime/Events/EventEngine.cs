@@ -281,7 +281,16 @@ namespace BetterLegacy.Core.Runtime.Events
                     UpdateCameraDepth,
                     UpdateCameraPerspectiveZoom,
                     UpdateCameraPerspectiveGlobal,
-                    UpdateCameraPerspectiveAlign
+                    UpdateCameraPerspectiveAlign,
+                    UpdateBGZoomMultiply,
+                    UpdateBGFOVAlign,
+                    UpdateFOVMultiply,
+                    UpdateFOV,
+                    UpdateBGPosX,
+                    UpdateBGPosY,
+                    UpdateBGRotX,
+                    UpdateBGRotY,
+                    UpdateBGRotZ,
                 }, // Camera Depth
                 new KFDelegate[]
                 {
@@ -973,28 +982,32 @@ namespace BetterLegacy.Core.Runtime.Events
             GameManager.inst.timeline.SetActive(!EventsConfig.Instance.HideTimeline.Value && timelineActive && EventsConfig.Instance.ShowGUI.Value);
         }
 
-        public Vector2 GetCameraPosition() => EventManager.inst.camParentTop.transform.localPosition;
+        public Vector2 GetCameraPosition() => RTLevel.Cameras.CameraParentTop.transform.localPosition;
 
-        public void SetCameraPosition(Vector2 camPos) => EventManager.inst.camParentTop.transform.localPosition = new Vector3(camPos.x, camPos.y, zPosition);
+        public void SetCameraPosition(Vector2 camPos) => RTLevel.Cameras.CameraParentTop.transform.localPosition = new Vector3(camPos.x, camPos.y, zPosition);
 
         public void SetZoom(float zoom)
         {
             if (float.IsNaN(zoom) || zoom == 0f)
                 zoom = 20f;
 
+            // set camera orthographic size
             RTLevel.Cameras.FG.orthographicSize = zoom;
-
             if (RTLevel.Cameras.UI)
                 RTLevel.Cameras.UI.orthographicSize = zoom;
 
-            RTLevel.Cameras.BG.fieldOfView = fieldOfView;
-
-            var bgZoom = -zoom + perspectiveZoom;
-            if (!bgGlobalPosition)
-                RTLevel.Cameras.BG.transform.SetLocalPositionZ(bgZoom);
+            if (bgFOVAlign)
+                RTLevel.Cameras.BG.fieldOfView = zoom * bgFOVMultiply;
             else
-                RTLevel.Cameras.BG.transform.SetPositionZ(bgZoom);
+                RTLevel.Cameras.BG.fieldOfView = fieldOfView;
 
+            var bgZoom = (zoom * bgZoomMultiply) + perspectiveZoom;
+            if (!bgGlobalPosition)
+                RTLevel.Cameras.BG.transform.localPosition = new Vector3(bgPos.x, bgPos.y, bgZoom);
+            else
+                RTLevel.Cameras.BG.transform.position = new Vector3(RTLevel.Cameras.CameraParent.position.x + bgPos.x, RTLevel.Cameras.CameraParent.position.y + bgPos.y, RTLevel.Cameras.CameraParent.position.z + bgZoom);
+
+            RTLevel.Cameras.BG.transform.localEulerAngles = bgRot;
             RTLevel.Cameras.BG.nearClipPlane = bgAlignNearPlane ? -RTLevel.Cameras.BG.transform.position.z + camPerspectiveOffset : 0.3f;
         }
 
@@ -1795,6 +1808,24 @@ namespace BetterLegacy.Core.Runtime.Events
         void UpdateCameraPerspectiveGlobal(float x) => bgGlobalPosition = x == 0f;
         // 32 - 3
         void UpdateCameraPerspectiveAlign(float x) => bgAlignNearPlane = x == 1f;
+        // 32 - 4
+        void UpdateBGZoomMultiply(float x) => bgZoomMultiply = x;
+        // 32 - 5
+        void UpdateBGFOVAlign(float x) => bgFOVAlign = x == 1f;
+        // 32 - 6
+        void UpdateFOVMultiply(float x) => bgFOVMultiply = x;
+        // 32 - 7
+        void UpdateFOV(float x) => fieldOfView = x;
+        // 32 - 8
+        void UpdateBGPosX(float x) => bgPos.x = x;
+        // 32 - 9
+        void UpdateBGPosY(float x) => bgPos.y = x;
+        // 32 - 10
+        void UpdateBGRotX(float x) => bgRot.x = x;
+        // 32 - 11
+        void UpdateBGRotY(float x) => bgRot.y = x;
+        // 32 - 12
+        void UpdateBGRotZ(float x) => bgRot.z = x;
 
         #endregion
 
@@ -1988,6 +2019,16 @@ namespace BetterLegacy.Core.Runtime.Events
 
         public int prevTheme;
         public int nextTheme;
+
+        public Vector2 bgPos;
+
+        public Vector3 bgRot;
+
+        public float bgZoomMultiply = -1f;
+
+        public bool bgFOVAlign = false;
+
+        public float bgFOVMultiply = 2.5f;
 
         public bool bgAlignNearPlane = true;
 

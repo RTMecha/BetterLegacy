@@ -398,7 +398,7 @@ namespace BetterLegacy.Core.Managers
             else if (storyLevel.videoClip)
                 RTVideoManager.inst.Play(storyLevel.videoClip);
 
-            RTGameManager.inst.SetCameraArea(new Rect(0f, 0f, 1f, 1f));
+            RTLevel.Cameras.SetCameraArea(new Rect(0f, 0f, 1f, 1f));
 
             #endregion
 

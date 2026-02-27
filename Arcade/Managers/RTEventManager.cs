@@ -52,7 +52,7 @@ namespace BetterLegacy.Arcade.Managers
             shockwave = glitchCamera.AddComponent<Shockwave>();
 
             var uiCamera = new GameObject("UI Camera");
-            uiCamera.transform.SetParent(EventManager.inst.cam.transform.parent);
+            uiCamera.transform.SetParent(EventManager.inst.camParent);
             uiCamera.transform.localPosition = Vector3.zero;
             uiCamera.transform.localScale = Vector3.one;
 

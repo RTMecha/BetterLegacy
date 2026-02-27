@@ -38,7 +38,7 @@ namespace BetterLegacy.Patchers
 
             var camBase = new GameObject("Camera Base");
 
-            EventManager.inst.camParentTop.SetParent(camBase.transform);
+            RTLevel.Cameras.CameraParentTop.SetParent(camBase.transform);
 
             RTEventManager.inst.delayTracker = camBase.AddComponent<EventDelayTracker>();
 

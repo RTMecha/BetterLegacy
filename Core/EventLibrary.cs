@@ -680,12 +680,21 @@ namespace BetterLegacy.Core
             public static EventKeyframe CameraDepth => new EventKeyframe
             {
                 time = 0f,
-                values = new float[4]
+                values = new float[13]
                 {
                     -10f, // Depth
 					0f, // Zoom
 					0f, // Global Position
 					1f, // Near Clip Plane Align
+                    -1f, // BG Zoom Multiply
+                    0f, // BG FOV Align
+                    2.5f, // BG FOV Multiply
+                    50f, // BG FOV
+                    0f, // BG Pos X
+                    0f, // BG Pos Y
+                    0f, // BG Rot X
+                    0f, // BG Rot Y
+                    0f, // BG Rot Z
                 },
             };
 

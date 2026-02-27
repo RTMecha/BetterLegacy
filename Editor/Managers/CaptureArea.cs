@@ -811,7 +811,7 @@ namespace BetterLegacy.Editor.Managers
 
             baseObject.SetActive(false);
             var rect = RTLevel.Cameras.FG.rect;
-            RTGameManager.inst.SetCameraArea(new Rect(0f, 0f, 1f, 1f));
+            RTLevel.Cameras.SetCameraArea(new Rect(0f, 0f, 1f, 1f));
             var total = captureSettings.Resolution.x + captureSettings.Resolution.y;
             RTLevel.Current.eventEngine.SetZoom(total / 2 / 512f * 12.66f * captureSettings.Zoom);
 
@@ -892,7 +892,7 @@ namespace BetterLegacy.Editor.Managers
                 RTLevel.Cameras.FG.backgroundColor = bgColor;
             }
 
-            RTGameManager.inst.SetCameraArea(rect);
+            RTLevel.Cameras.SetCameraArea(rect);
 
             SoundManager.inst.PlaySound(DefaultSounds.menuflip);
 

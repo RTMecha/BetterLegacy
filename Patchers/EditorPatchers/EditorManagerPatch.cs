@@ -14,7 +14,6 @@ using TMPro;
 using SimpleJSON;
 
 using BetterLegacy.Arcade.Interfaces;
-using BetterLegacy.Arcade.Managers;
 using BetterLegacy.Companion.Entity;
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
@@ -866,7 +865,7 @@ namespace BetterLegacy.Patchers
             if (InterfaceManager.inst && InterfaceManager.inst.CurrentInterface)
                 InterfaceManager.inst.CloseMenus();
 
-            RTGameManager.inst.SetCameraArea(new Rect(0f, 0.3708f, 0.601f, 0.601f));
+            RTLevel.Cameras.SetCameraArea(new Rect(0f, 0.3708f, 0.601f, 0.601f));
             return false;
         }
 
@@ -874,7 +873,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool SetNormalRenderAreaPrefix()
         {
-            RTGameManager.inst.SetCameraArea(new Rect(0f, 0f, 1f, 1f));
+            RTLevel.Cameras.SetCameraArea(new Rect(0f, 0f, 1f, 1f));
             return false;
         }
 

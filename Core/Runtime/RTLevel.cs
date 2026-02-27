@@ -515,16 +515,7 @@ namespace BetterLegacy.Core.Runtime
         /// </summary>
         public static class Cameras
         {
-            /// <summary>
-            /// Gets the list of cameras.
-            /// </summary>
-            /// <returns>Returns a list of game cameras.</returns>
-            public static List<Camera> GetCameras() => new List<Camera>
-            {
-                BG,
-                FG,
-                UI,
-            };
+            #region Values
 
             /// <summary>
             /// Background layer camera.
@@ -542,6 +533,53 @@ namespace BetterLegacy.Core.Runtime
             /// Post process camera. Not included in <see cref="GetCameras"/>.
             /// </summary>
             public static Camera PostProcess => RTEventManager.inst ? RTEventManager.inst.glitchCam : null;
+            /// <summary>
+            /// Parent that contains all cameras.
+            /// </summary>
+            public static Transform CameraParent => EventManager.inst.camParent;
+            /// <summary>
+            /// Camera parent that controls the position of all cameras.
+            /// </summary>
+            public static Transform CameraParentTop => EventManager.inst.camParentTop;
+            /// <summary>
+            /// Camera parent that can follow the player.
+            /// </summary>
+            public static Transform CameraParentBase => CameraParentTop.parent;
+
+            #endregion
+
+            #region Functions
+
+            /// <summary>
+            /// Gets the list of cameras.
+            /// </summary>
+            /// <returns>Returns a list of game cameras.</returns>
+            public static List<Camera> GetCameras() => new List<Camera>
+            {
+                BG,
+                FG,
+                UI,
+            };
+
+            /// <summary>
+            /// Sets the camera's render area.
+            /// </summary>
+            /// <param name="rect">Rect to set.</param>
+            public static void SetCameraArea(Rect rect)
+            {
+                EventManager.inst.cam.rect = rect;
+                EventManager.inst.camPer.rect = rect;
+
+                if (RTEventManager.inst && RTEventManager.inst.uiCam)
+                    RTEventManager.inst.uiCam.rect = rect;
+                if (RTEventManager.inst && RTEventManager.inst.glitchCam)
+                {
+                    rect.xMin = -0.001f;
+                    RTEventManager.inst.glitchCam.rect = rect;
+                }
+            }
+
+            #endregion
         }
 
         #endregion
