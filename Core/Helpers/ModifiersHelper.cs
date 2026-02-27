@@ -2409,9 +2409,9 @@ namespace BetterLegacy.Core.Helpers
                 if (animateRot)
                     applyTo.rotationOffset = new Vector3(0f, 0f, takeFrom.cachedSequences.RotationSequence.GetValue(currentTime - time - delayRot));
             }
-            else if (useVisual && takeFrom.runtimeObject is RTBeatmapObject levelObject && levelObject.visualObject != null && levelObject.visualObject.gameObject)
+            else if (useVisual && takeFrom.runtimeObject is RTBeatmapObject runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject)
             {
-                var transform = levelObject.visualObject.gameObject.transform;
+                var transform = runtimeObject.visualObject.gameObject.transform.parent;
 
                 // Animate position
                 if (animatePos)
@@ -2458,7 +2458,7 @@ namespace BetterLegacy.Core.Helpers
                     _ => 0f,
                 };
             else if (visual && reference.runtimeObject is RTBeatmapObject runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject)
-                return runtimeObject.visualObject.gameObject.transform.GetVector(fromType).At(fromAxis);
+                return runtimeObject.visualObject.gameObject.transform.transform.parent.GetVector(fromType).At(fromAxis);
 
             return 0f;
         }
@@ -2477,7 +2477,7 @@ namespace BetterLegacy.Core.Helpers
                     _ => 0f,
                 };
             else if (visual && reference.runtimeObject is RTBeatmapObject runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject)
-                return Mathf.Clamp((runtimeObject.visualObject.gameObject.transform.GetVector(fromType).At(fromAxis) - offset) * multiply % loop, min, max);
+                return Mathf.Clamp((runtimeObject.visualObject.gameObject.transform.parent.GetVector(fromType).At(fromAxis) - offset) * multiply % loop, min, max);
 
             return 0f;
         }
@@ -8861,7 +8861,7 @@ namespace BetterLegacy.Core.Helpers
                 RTEventManager.inst.delayTracker.transform.localPosition = Vector2.zero;
 
                 var rect = RTLevel.Cameras.FG.rect;
-                RTGameManager.inst.SetCameraArea(new Rect(0f, 0f, 1f, 1f));
+                RTLevel.Cameras.SetCameraArea(new Rect(0f, 0f, 1f, 1f));
                 var total = width + height;
                 RTLevel.Current.eventEngine.SetZoom(calculateZoom ? (width + height) / 2 / 512f * 12.66f * zoom : zoom);
 
@@ -8940,7 +8940,7 @@ namespace BetterLegacy.Core.Helpers
                 //    RTLevel.Cameras.FG.backgroundColor = bgColor;
                 //}
 
-                RTGameManager.inst.SetCameraArea(rect);
+                RTLevel.Cameras.SetCameraArea(rect);
             }
             else
             {
