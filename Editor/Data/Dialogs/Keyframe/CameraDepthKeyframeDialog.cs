@@ -36,7 +36,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             base.Init();
 
-            new LabelsElement("Depth").Init(EditorElement.InitSettings.Default.Parent(GameObject.transform));
+            new LabelsElement("Depth", "Zoom Multiply").Init(EditorElement.InitSettings.Default.Parent(GameObject.transform));
             var vector2Field = EditorPrefabHolder.Instance.Vector2InputFields.Duplicate(GameObject.transform, "position").GetOrAddComponent<Vector2InputFieldStorage>();
             DepthField = vector2Field.x;
             BGZoomMultiplyField = vector2Field.y;
