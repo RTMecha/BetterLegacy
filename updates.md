@@ -1,4 +1,16 @@
-﻿# 1.8.20 [Feb 26, 2026]
+﻿# 1.8.21 [Feb 28, 2026]
+## Features
+### Core
+- Background objects now support polygon shapes (sort of). Currently the polygon shape does not support 3D.
+- Added some FOV values to the Camera Depth keyframe.
+- Added a secret I forgot to add before.
+
+## Fixes
+- The axis modifiers with Use Visual on should no longer count the origin offset.
+
+------------------------------------------------------------------------------------------
+
+# 1.8.20 [Feb 26, 2026]
 ## Fixes
 - Player tail hotfix.
 
