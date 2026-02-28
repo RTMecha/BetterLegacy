@@ -1,4 +1,16 @@
-﻿# 1.8.0 [Sep 19, 2025]
+﻿# snapshot-2026.2.1 - (Story Playtest) [Feb 28, 2026]
+## Features
+### Story
+- Added WIP Levels chapter. This bonus chapter acts as a way to playtest future story mode levels early. There may be spoilers, so if you do not wish to be spoiled it's recommended you don't look at the menu.
+- Updated the internal story mode code to allow for more versatility.
+- Added "desolate" menu theme song from the 1.0.0 build.
+
+### Menus
+- Added "Also try BATTLE CUBE" splash text.
+
+-------------------------------------------------------------------
+
+# 1.8.0 [Sep 19, 2025]
 ## Features
 ### Core
 - Added getCurrentLevelName modifier. This passed the current levels' name to other modifiers.
