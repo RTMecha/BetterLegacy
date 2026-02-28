@@ -153,6 +153,23 @@ namespace BetterLegacy.Story
                 AchievementManager.inst.UnlockAchievement("discover_hidden_levels");
                 LoadResourceLevel(false, AOTC_RESOURCE, AOTC_RESOURCE);
             }), // load old demo
+            new SecretSequence(new List<KeyCode> { KeyCode.N, KeyCode.O, KeyCode.D, KeyCode.E, }, () =>
+            {
+                SoundManager.inst.PlaySound(inst.gameObject, DefaultSounds.loadsound);
+
+                if (Editor.Managers.RTEditor.inst)
+                {
+                    Editor.Managers.RTEditor.inst.ShowWarningPopup("Are you sure you want to continue?", () =>
+                    {
+                        AchievementManager.inst.UnlockAchievement("discover_hidden_levels");
+                        LoadResourceLevel(true, NODE_RESOURCE, NODE_RESOURCE);
+                    }, Editor.Managers.RTEditor.inst.HideWarningPopup);
+                    return;
+                }
+
+                AchievementManager.inst.UnlockAchievement("discover_hidden_levels");
+                LoadResourceLevel(true, NODE_RESOURCE, NODE_RESOURCE);
+            }), // load old node level (not the boss level unfortunately ;-;)
             new SecretSequence(new List<KeyCode> { KeyCode.M, KeyCode.I, KeyCode.K, KeyCode.U, }, () =>
             {
                 SoundManager.inst.PlaySound(inst.gameObject, DefaultSounds.loadsound);
@@ -169,7 +186,7 @@ namespace BetterLegacy.Story
 
                 AchievementManager.inst.UnlockAchievement("discover_hidden_levels");
                 LoadResourceLevel(false, VIDEO_TEST_LEVEL, VIDEO_TEST_MUSIC, VIDEO_TEST_VIDEO);
-            }), // load old demo
+            }), // load miku video test
         };
 
         class SecretSequence
@@ -271,52 +288,16 @@ namespace BetterLegacy.Story
 
             GameData gameData = old ? ParseSave(JSON.Parse(json.text)) : GameData.Parse(JSON.Parse(LevelManager.UpdateBeatmap(json.text, "1.0.0")));
 
-            if (jsonPath == "demo_new/level")
-            {
-                gameData.beatmapThemes.Add(new BeatmapTheme()
-                {
-                    id = "003051",
-                    name = "PA Ahead of the Curve",
-                    guiColor = new Color(0.1294f, 0.1216f, 0.1294f, 1f),
-                    guiAccentColor = new Color(0.1294f, 0.1216f, 0.1294f, 1f),
-                    backgroundColor = new Color(0.9686f, 0.9529f, 0.9686f, 1f),
-                    backgroundColors = new List<Color>()
-                    {
-                        new Color(0.9686f, 0.9529f, 0.9686f, 1f),
-                        new Color(0.1882f, 0.1882f, 0.1882f, 1f),
-                        new Color(0.9176f, 0.9176f, 0.9176f, 1f),
-                        new Color(0.7176f, 0.7176f, 0.7176f, 1f),
-                        new Color(0.3059f, 0.3059f, 0.3059f, 1f),
-                        new Color(0.298f, 0.298f, 0.298f, 1f),
-                        new Color(0.7608f, 0.0941f, 0.3569f, 1f),
-                        new Color(0.6784f, 0.0784f, 0.3412f, 1f),
-                        new Color(0.5333f, 0.0549f, 0.3098f, 1f),
-                    },
-                    objectColors = new List<Color>()
-                    {
-                        Color.white,
-                        new Color(0.0627f, 0.8941f, 0.3373f, 1f),
-                        new Color(0.1804f, 0.3569f, 0.9686f, 1f),
-                    }.Fill(15, new Color(0.1804f, 0.3569f, 0.9686f, 1f)),
-                    playerColors = new List<Color>()
-                    {
-                        new Color(0.7569f, 0f, 0.0078f, 1f),
-                        new Color(0.0471f, 0.0863f, 0.9686f, 1f),
-                        new Color(0.1294f, 0.9882f, 0.0118f, 1f),
-                        new Color(0.9922f, 0.5922f, 0.0039f, 1f),
-                    },
-                    effectColors = new List<Color>().Fill(18, Color.white),
-                });
-                gameData.events[4][0].values[0] = 3051;
-            }
+            if (jsonPath == AOTC_RESOURCE)
+                gameData.events[4][0].values[0] = 799099;
 
             var id = jsonPath switch
             {
-                "demo/level" => "1",
-                "demo_new/level" => "2",
-                "new/level" => "3",
-                "node/level" => "4",
-                "video_test/video_test" => "5",
+                SAVE_RESOURCE => "1",
+                AOTC_RESOURCE => "2",
+                NEW_RESOURCE => "3",
+                NODE_RESOURCE => "4",
+                VIDEO_TEST_LEVEL => "5",
                 _ => "0"
             };
             var storyLevel = new StoryLevel
@@ -336,11 +317,11 @@ namespace BetterLegacy.Story
                     {
                         name = jsonPath switch
                         {
-                            "demo/level" => "Beluga Bugatti",
-                            "demo_new/level" => "Ahead of the Curve",
-                            "new/level" => "new",
-                            "node/level" => "Node",
-                            "video_test/video_test" => "miku",
+                            SAVE_RESOURCE => "Beluga Bugatti",
+                            AOTC_RESOURCE => "Ahead of the Curve",
+                            NEW_RESOURCE => "new",
+                            NODE_RESOURCE => "Node",
+                            VIDEO_TEST_LEVEL => "miku",
                             _ => string.Empty
                         }
                     },
@@ -348,11 +329,11 @@ namespace BetterLegacy.Story
                     {
                         title = jsonPath switch
                         {
-                            "demo/level" => "Save",
-                            "demo_new/level" => "Ahead of the Curve",
-                            "new/level" => "Staring Down the Barrels",
-                            "node/level" => "Node",
-                            "video_test/video_test" => "miku",
+                            SAVE_RESOURCE => "Save",
+                            AOTC_RESOURCE => "Ahead of the Curve",
+                            NEW_RESOURCE => "Staring Down the Barrels",
+                            NODE_RESOURCE => "Node",
+                            VIDEO_TEST_LEVEL => "miku",
                             _ => string.Empty
                         }
                     },
@@ -360,11 +341,11 @@ namespace BetterLegacy.Story
                     {
                         name = jsonPath switch
                         {
-                            "demo/level" => "meganeko",
-                            "demo_new/level" => "Creo",
-                            "new/level" => "Creo",
-                            "node/level" => "meganeko",
-                            "video_test/video_test" => "miku",
+                            SAVE_RESOURCE => "meganeko",
+                            AOTC_RESOURCE => "Creo",
+                            NEW_RESOURCE => "Creo",
+                            NODE_RESOURCE => "meganeko",
+                            VIDEO_TEST_LEVEL => "miku",
                             _ => string.Empty
                         }
                     },
@@ -386,7 +367,7 @@ namespace BetterLegacy.Story
                 SceneHelper.LoadScene(SceneName.Main_Menu);
             });
         }
-
+        
         public static GameData ParseSave(JSONNode jn)
         {
             var gameData = new GameData();
@@ -460,8 +441,7 @@ namespace BetterLegacy.Story
                     {
                         switch (jnEvent["eventParts"][k]["kind"].AsInt)
                         {
-                            case 0:
-                                {
+                            case 0: {
                                     if (hasPos)
                                         break;
 
@@ -471,8 +451,7 @@ namespace BetterLegacy.Story
                                     hasPos = true;
                                     break;
                                 }
-                            case 1:
-                                {
+                            case 1: {
                                     if (hasSca)
                                         break;
 
@@ -482,8 +461,7 @@ namespace BetterLegacy.Story
                                     hasSca = true;
                                     break;
                                 }
-                            case 2:
-                                {
+                            case 2: {
                                     if (hasRot)
                                         break;
 
@@ -492,8 +470,7 @@ namespace BetterLegacy.Story
                                     hasRot = true;
                                     break;
                                 }
-                            case 3:
-                                {
+                            case 3: {
                                     if (hasCol)
                                         break;
 
@@ -507,11 +484,11 @@ namespace BetterLegacy.Story
                     }
 
                     if (!hasPos)
-                        events[0].Add(new EventKeyframe(eventTime, new float[] { lastPos.x, lastPos.y }, new float[] { }));
+                        events[0].Add(new EventKeyframe(eventTime, new float[3], new float[3]) { relative = true });
                     if (!hasSca)
-                        events[1].Add(new EventKeyframe(eventTime, new float[] { lastSca.x, lastSca.y }, new float[] { }));
+                        events[1].Add(new EventKeyframe(eventTime, new float[2], new float[3]) { relative = true });
                     if (!hasRot)
-                        events[2].Add(new EventKeyframe(eventTime, new float[] { 0f }, new float[] { }) { relative = true });
+                        events[2].Add(new EventKeyframe(eventTime, new float[1], new float[3]) { relative = true });
                     if (!hasCol)
                         events[3].Add(new EventKeyframe(eventTime, new float[] { lastCol }, new float[] { }));
                 }
@@ -570,8 +547,7 @@ namespace BetterLegacy.Story
 
                     switch (jnEvent["kind"].AsInt)
                     {
-                        case 0:
-                            {
+                        case 0: {
                                 var eventKeyframe = new EventKeyframe(startTime, new float[] { lastMove.x, lastMove.y, }, new float[] { });
                                 allEvents[0].Add(eventKeyframe);
 
@@ -581,8 +557,7 @@ namespace BetterLegacy.Story
                                 hasMove = true;
                                 break;
                             }
-                        case 1:
-                            {
+                        case 1: {
                                 var eventKeyframe = new EventKeyframe(startTime, new float[] { lastZoom, }, new float[] { });
                                 allEvents[1].Add(eventKeyframe);
 
@@ -592,8 +567,7 @@ namespace BetterLegacy.Story
                                 hasZoom = true;
                                 break;
                             }
-                        case 2:
-                            {
+                        case 2: {
                                 var eventKeyframe = new EventKeyframe(startTime, new float[] { lastRotate, }, new float[] { });
                                 allEvents[2].Add(eventKeyframe);
 
