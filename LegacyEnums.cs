@@ -847,6 +847,7 @@ namespace BetterLegacy
         reflections,
         fracture,
         xilioh,
+        desolate,
     }
 
     /// <summary>

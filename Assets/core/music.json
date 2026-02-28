@@ -142,6 +142,15 @@
           "name": "Shirobon - Xilioh"
         }
       ]
+    },
+    {
+      "name": "desolate",
+      "clips": [
+        {
+          "path": "desolate part ii.ogg",
+          "name": "Desolate Part II"
+        }
+      ]
     }
   ]
 }
