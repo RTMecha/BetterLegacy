@@ -831,6 +831,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public void SetOtherObjectVariables(Dictionary<string, float> variables)
         {
+            variables["otherRuntimeStartTime"] = this.GetParentRuntime().GetStartTime();
             variables["otherRuntimeFixedTime"] = this.GetParentRuntime().FixedTime;
             variables["otherRuntimeTime"] = this.GetParentRuntime().CurrentTime;
 
@@ -879,6 +880,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public void SetObjectVariables(Dictionary<string, float> variables)
         {
+            variables["runtimeStartTime"] = this.GetParentRuntime().GetStartTime();
             variables["runtimeFixedTime"] = this.GetParentRuntime().FixedTime;
             variables["runtimeTime"] = this.GetParentRuntime().CurrentTime;
 
