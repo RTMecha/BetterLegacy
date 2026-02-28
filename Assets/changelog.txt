@@ -1,9 +1,9 @@
-# 1.8.21 [Feb 28, 2026]
+# snapshot-2026.2.1 - (Story Playtest) [Feb 28, 2026]
 ## Features
-### Core
-- Background objects now support polygon shapes (sort of). Currently the polygon shape does not support 3D.
-- Added some FOV values to the Camera Depth keyframe.
-- Added a secret I forgot to add before.
+### Story
+- Added WIP Levels chapter. This bonus chapter acts as a way to playtest future story mode levels early. There may be spoilers, so if you do not wish to be spoiled it's recommended you don't look at the menu.
+- Updated the internal story mode code to allow for more versatility.
+- Added "desolate" menu theme song from the 1.0.0 build.
 
-## Fixes
-- The axis modifiers with Use Visual on should no longer count the origin offset.
+### Menus
+- Added "Also try BATTLE CUBE" splash text.
