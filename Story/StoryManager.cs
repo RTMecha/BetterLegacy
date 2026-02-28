@@ -21,10 +21,6 @@ using BetterLegacy.Menus;
 
 namespace BetterLegacy.Story
 {
-    /* TODO:
-    - Rework story system to be more data driven.
-     */
-
     /// <summary>
     /// Manager class for handling the BetterLegacy (Classic Arrhythmia) story mode.
     /// </summary>
@@ -35,7 +31,7 @@ namespace BetterLegacy.Story
         /// <summary>
         /// Path to the story assets folder.
         /// </summary>
-        public static string StoryAssetsPath => RTFile.GetAsset("Story/");
+        public static string StoryAssetsPath => AssetPack.GetDirectory("story");
 
         /// <summary>
         /// If a story level was loaded.
@@ -52,12 +48,18 @@ namespace BetterLegacy.Story
         /// </summary>
         public static StoryMode StoryModeDebugRef => StoryMode.Instance;
 
+        public StoryFunctions functions = new StoryFunctions();
+
         #region Progression
 
         /// <summary>
         /// The default chapter rank requirement for "bonuses" to be unlocked. In this case, the player needs to get higher than a B rank (S / SS / A rank).
         /// </summary>
         public const int CHAPTER_RANK_REQUIREMENT = 3;
+
+        public StorySelection currentStorySelection;
+
+        public bool isCutscene;
 
         public int currentPlayingChapterIndex;
         public int currentPlayingLevelSequenceIndex;
@@ -66,7 +68,7 @@ namespace BetterLegacy.Story
         /// <summary>
         /// The story mode chapter that is currently open.
         /// </summary>
-        public StoryMode.Chapter CurrentChapter => StoryMode.Instance.chapters[currentPlayingChapterIndex];
+        public StoryMode.Chapter CurrentChapter => (inBonusChapter ? StoryMode.Instance.bonusChapters : StoryMode.Instance.chapters)[currentPlayingChapterIndex];
         /// <summary>
         /// The story mode level that is selected.
         /// </summary>
@@ -367,7 +369,7 @@ namespace BetterLegacy.Story
                 SceneHelper.LoadScene(SceneName.Main_Menu);
             });
         }
-        
+
         public static GameData ParseSave(JSONNode jn)
         {
             var gameData = new GameData();
@@ -547,7 +549,8 @@ namespace BetterLegacy.Story
 
                     switch (jnEvent["kind"].AsInt)
                     {
-                        case 0: {
+                        case 0:
+                            {
                                 var eventKeyframe = new EventKeyframe(startTime, new float[] { lastMove.x, lastMove.y, }, new float[] { });
                                 allEvents[0].Add(eventKeyframe);
 
@@ -557,7 +560,8 @@ namespace BetterLegacy.Story
                                 hasMove = true;
                                 break;
                             }
-                        case 1: {
+                        case 1:
+                            {
                                 var eventKeyframe = new EventKeyframe(startTime, new float[] { lastZoom, }, new float[] { });
                                 allEvents[1].Add(eventKeyframe);
 
@@ -567,7 +571,8 @@ namespace BetterLegacy.Story
                                 hasZoom = true;
                                 break;
                             }
-                        case 2: {
+                        case 2:
+                            {
                                 var eventKeyframe = new EventKeyframe(startTime, new float[] { lastRotate, }, new float[] { });
                                 allEvents[2].Add(eventKeyframe);
 
@@ -628,41 +633,91 @@ namespace BetterLegacy.Story
         /// Gets a story level from the <see cref="StoryMode"/> and plays it.
         /// </summary>
         /// <param name="storySelection">Location of the story level.</param>
-        public void Play(StorySelection storySelection) => Play(storySelection.chapter, storySelection.level, storySelection.cutsceneIndex, storySelection.bonus, storySelection.skipCutscenes);
+        public void Play(StorySelection storySelection, Action onLevelEnd = null)
+        {
+            // get story chapter and story level.
+            var storyChapter = (storySelection.bonus ? StoryMode.Instance.bonusChapters : StoryMode.Instance.chapters)[storySelection.chapter];
+            var storyLevel = storyChapter.GetLevel(storySelection.level);
+
+            inBonusChapter = storySelection.bonus;
+            currentStorySelection = storySelection;
+            currentPlayingChapterIndex = storySelection.chapter;
+            currentPlayingLevelSequenceIndex = storySelection.level;
+
+            var path = storyLevel.filePath;
+
+            // check if the current level part is a cutscene.
+            if (!storySelection.skipCutscenes && storySelection.cutsceneIndex >= 0 && storySelection.cutsceneIndex < storyLevel.Count && storyLevel.Count > 1 && storySelection.cutsceneIndex != storyLevel.preCutscenes.Count)
+            {
+                isCutscene = true;
+                path = storyLevel[storySelection.cutsceneIndex];
+            }
+            else
+                isCutscene = false;
+
+            // allow LSB file format.
+            if (RTFile.FileIsFormat(path, FileFormat.LSB))
+            {
+                Loaded = true;
+                var level = new Level(RTFile.GetDirectory(path)) { isStory = true };
+
+                // assign story level music. if a song is specified then the level will use that song instead of the one in the files.
+                AssignStoryLevelMusic(path.songName, level);
+                LevelManager.Play(level, () => EndFunction(storyChapter, storyLevel, path, onLevelEnd));
+                return;
+            }
+
+            Loaded = false;
+            StartCoroutine(StoryLevel.LoadFromAsset(path, level =>
+            {
+                Loaded = true;
+                // assign story level music. if a song is specified then the level will use that song instead of the one in the files.
+                AssignStoryLevelMusic(path.songName, level);
+                LevelManager.Play(level, () => EndFunction(storyChapter, storyLevel, path, onLevelEnd));
+            }));
+        }
 
         /// <summary>
         /// Plays a story level directly from a path.
         /// </summary>
         /// <param name="path">Path to a story level.</param>
-        public void Play(string path, string songName = null) => StartCoroutine(IPlay(path, songName));
-
-        /// <summary>
-        /// Gets a story level from the <see cref="StoryMode"/> and plays it.
-        /// </summary>
-        /// <param name="chapter">Chapter index of the story level.</param>
-        /// <param name="level">Index of the story level.</param>
-        /// <param name="bonus">If the story level is from a bonus chapter.</param>
-        /// <param name="skipCutscenes">If cutscenes should be skipped.</param>
-        public void Play(int chapter, int level, int cutsceneIndex = 0, bool bonus = false, bool skipCutscenes = false)
+        public void Play(string path, string songName = null)
         {
-            var storyChapter = (bonus ? StoryMode.Instance.bonusChapters : StoryMode.Instance.chapters)[chapter];
-            var storyLevel = storyChapter.GetLevel(level);
+            // allow LSB file format.
+            if (RTFile.FileIsFormat(path, FileFormat.LSB))
+            {
+                Loaded = true;
+                var level = new Level(RTFile.GetDirectory(path)) { isStory = true };
 
-            currentPlayingChapterIndex = chapter;
-            currentPlayingLevelSequenceIndex = level;
+                // assign story level music. if a song is specified then the level will use that song instead of the one in the files.
+                AssignStoryLevelMusic(songName, level);
+                LevelManager.Play(level, () =>
+                {
+                    LevelManager.Clear();
+                    RTLevel.Reinit(false);
+                    LevelManager.OnLevelEnd = null;
 
-            StartCoroutine(IPlay(storyLevel, cutsceneIndex, skipCutscenes));
-        }
+                    ProjectArrhythmia.State.InStory = true;
+                    SceneHelper.LoadInterfaceScene();
+                });
+                return;
+            }
 
-        public void PlayCutscene(int chapter, int level, CutsceneDestination cutsceneDestination, int cutsceneIndex, bool bonus = false, Action onLevelEnd = null)
-        {
-            var storyChapter = (bonus ? StoryMode.Instance.bonusChapters : StoryMode.Instance.chapters)[chapter];
-            var storyLevel = storyChapter.GetLevel(level);
+            StartCoroutine(StoryLevel.LoadFromAsset(path, level =>
+            {
+                Loaded = true;
+                // assign story level music. if a song is specified then the level will use that song instead of the one in the files.
+                AssignStoryLevelMusic(songName, level);
+                LevelManager.Play(level, () =>
+                {
+                    LevelManager.Clear();
+                    RTLevel.Reinit(false);
+                    LevelManager.OnLevelEnd = null;
 
-            currentPlayingChapterIndex = chapter;
-            currentPlayingLevelSequenceIndex = level;
-
-            StartCoroutine(IPlayCutscene(storyLevel, cutsceneDestination, cutsceneIndex, onLevelEnd));
+                    ProjectArrhythmia.State.InStory = true;
+                    SceneHelper.LoadInterfaceScene();
+                });
+            }));
         }
 
         public void PlayAllCutscenes(int chapter, bool bonus = false)
@@ -676,8 +731,15 @@ namespace BetterLegacy.Story
         void PlayCutsceneRecursive(int chapter, int level, CutsceneDestination cutsceneDestination, int cutsceneIndex, bool bonus)
         {
             var storyChapter = (bonus ? StoryMode.Instance.bonusChapters : StoryMode.Instance.chapters)[chapter];
-
-            PlayCutscene(chapter, level, cutsceneDestination, cutsceneIndex, bonus, () =>
+            Play(new StorySelection
+            {
+                chapter = chapter,
+                level = level,
+                cutsceneDestination = cutsceneDestination,
+                cutsceneIndex = cutsceneIndex,
+                bonus = bonus,
+            },
+            () =>
             {
                 var storyLevel = storyChapter.GetLevel(level);
                 cutsceneIndex++;
@@ -731,320 +793,23 @@ namespace BetterLegacy.Story
             });
         }
 
-        /// <summary>
-        /// Plays a story level.
-        /// </summary>
-        /// <param name="level">The current level sequence.</param>
-        /// <param name="cutsceneIndex">The current index of the level sequence.</param>
-        /// <param name="skipCutscenes">If cutscenes should be skipped.</param>
-        public IEnumerator IPlay(StoryMode.LevelSequence level, int cutsceneIndex = 0, bool skipCutscenes = false)
-        {
-            var path = level.filePath;
-            bool isCutscene = false;
-
-            int chapterIndex = CurrentSave.ChapterIndex;
-            int levelIndex = CurrentSave.LoadInt($"DOC{RTString.ToStoryNumber(chapterIndex)}Progress", 0);
-
-            if (!skipCutscenes && cutsceneIndex >= 0 && cutsceneIndex < level.Count && level.Count > 1 && cutsceneIndex != level.preCutscenes.Count)
-            {
-                isCutscene = true;
-                path = level[cutsceneIndex];
-            }
-
-            if (!RTFile.FileExists(path))
-            {
-                CoreHelper.LogError($"File \'{path}\' does not exist.");
-                SoundManager.inst.PlaySound(DefaultSounds.Block);
-                Loaded = false;
-                ProjectArrhythmia.State.InStory = false;
-                LevelManager.OnLevelEnd = null;
-                SceneHelper.LoadScene(SceneName.Main_Menu);
-                yield break;
-            }
-
-            CoreHelper.Log($"Loading story mode level... {path}");
-            if (RTFile.FileIsFormat(path, FileFormat.LSB))
-            {
-                var storyLevel = new Level(RTFile.GetDirectory(path)) { isStory = true };
-                AssignStoryLevelMusic(path.songName, storyLevel);
-                LevelManager.Play(storyLevel, () => OnLevelEnd(level, isCutscene, cutsceneIndex));
-                yield break;
-            }
-
-            StartCoroutine(StoryLevel.LoadFromAsset(path, storyLevel =>
-            {
-                Loaded = true;
-
-                ProjectArrhythmia.State.InStory = true;
-
-                if (storyLevel == null)
-                {
-                    LevelManager.OnLevelEnd = null;
-                    SceneHelper.LoadInterfaceScene();
-                    return;
-                }
-
-                AssignStoryLevelMusic(path.songName, storyLevel);
-
-                if (!storyLevel.music)
-                {
-                    CoreHelper.LogError($"Music is null for some reason wtf");
-                    return;
-                }
-
-                LevelManager.Play(storyLevel, () => OnLevelEnd(level, isCutscene, cutsceneIndex));
-            }));
-
-            yield break;
-        }
-
-        public IEnumerator IPlayCutscene(StoryMode.LevelSequence level, CutsceneDestination cutsceneDestination, int cutsceneIndex, Action onLevelEnd = null)
-        {
-            var path = level.GetPaths(cutsceneDestination)[cutsceneIndex];
-
-            int chapterIndex = CurrentSave.ChapterIndex;
-            int levelIndex = CurrentSave.LoadInt($"DOC{RTString.ToStoryNumber(chapterIndex)}Progress", 0);
-
-            if (!RTFile.FileExists(path))
-            {
-                CoreHelper.LogError($"File \'{path}\' does not exist.");
-                SoundManager.inst.PlaySound(DefaultSounds.Block);
-                Loaded = false;
-                ProjectArrhythmia.State.InStory = false;
-                LevelManager.OnLevelEnd = null;
-                SceneHelper.LoadScene(SceneName.Main_Menu);
-                yield break;
-            }
-
-            CoreHelper.Log($"Loading story mode level... {path}");
-            if (RTFile.FileIsFormat(path, FileFormat.LSB))
-            {
-                var storyLevel = new Level(RTFile.GetDirectory(path)) { isStory = true };
-                AssignStoryLevelMusic(path.songName, storyLevel);
-                LevelManager.Play(storyLevel, () =>
-                {
-                    LevelManager.OnLevelEnd = null;
-                    if (onLevelEnd != null)
-                    {
-                        onLevelEnd();
-                        return;
-                    }
-
-                    SceneHelper.LoadInterfaceScene();
-                });
-                yield break;
-            }
-
-            StartCoroutine(StoryLevel.LoadFromAsset(path, storyLevel =>
-            {
-                Loaded = true;
-
-                ProjectArrhythmia.State.InStory = true;
-
-                if (storyLevel == null)
-                {
-                    LevelManager.OnLevelEnd = null;
-                    if (onLevelEnd != null)
-                    {
-                        onLevelEnd();
-                        return;
-                    }
-
-                    SceneHelper.LoadInterfaceScene();
-                    return;
-                }
-
-                AssignStoryLevelMusic(path.songName, storyLevel);
-
-                if (!storyLevel.music)
-                {
-                    CoreHelper.LogError($"Music is null for some reason wtf");
-                    return;
-                }
-
-                LevelManager.Play(storyLevel, () =>
-                {
-                    LevelManager.OnLevelEnd = null;
-                    if (onLevelEnd != null)
-                    {
-                        onLevelEnd();
-                        return;
-                    }
-
-                    SceneHelper.LoadInterfaceScene();
-                });
-            }));
-
-            yield break;
-        }
-
-        /// <summary>
-        /// Plays a story level directly from a path.
-        /// </summary>
-        /// <param name="path">Path to a story level.</param>
-        public IEnumerator IPlay(string path, string songName = null)
-        {
-            if (!RTFile.FileExists(path))
-            {
-                CoreHelper.LogError($"File \'{path}\' does not exist.");
-                SoundManager.inst.PlaySound(DefaultSounds.Block);
-                Loaded = false;
-                ProjectArrhythmia.State.InStory = false;
-                LevelManager.OnLevelEnd = null;
-                SceneHelper.LoadScene(SceneName.Main_Menu);
-                yield break;
-            }
-
-            CoreHelper.Log($"Loading story mode level... {path}");
-            if (RTFile.FileIsFormat(path, FileFormat.LSB))
-            {
-                var storyLevel = new Level(RTFile.GetDirectory(path)) { isStory = true };
-                AssignStoryLevelMusic(songName, storyLevel);
-                LevelManager.Play(storyLevel, () =>
-                {
-                    LevelManager.OnLevelEnd = null;
-                    SceneHelper.LoadInterfaceScene();
-                });
-                yield break;
-            }
-
-            StartCoroutine(StoryLevel.LoadFromAsset(path, storyLevel =>
-            {
-                Loaded = true;
-
-                ProjectArrhythmia.State.InStory = true;
-
-                if (storyLevel == null)
-                {
-                    LevelManager.OnLevelEnd = null;
-                    SceneHelper.LoadInterfaceScene();
-                    return;
-                }
-
-                AssignStoryLevelMusic(songName, storyLevel);
-
-                if (!storyLevel.music)
-                {
-                    CoreHelper.LogError($"Music is null for some reason wtf");
-                    return;
-                }
-
-                LevelManager.Play(storyLevel, () =>
-                {
-                    LevelManager.OnLevelEnd = null;
-                    SceneHelper.LoadInterfaceScene();
-                });
-            }));
-
-            yield break;
-        }
-
-        void UnlockChapterAchievement(int chapter) => AchievementManager.inst.UnlockAchievement($"story_doc{RTString.ToStoryNumber(chapter)}_complete");
-
-        void OnLevelEnd()
-        {
-            LevelManager.Clear();
-            RTLevel.Current?.Clear();
-            CurrentSave.UpdateCurrentLevelProgress(); // allow players to get a better rank
-
-            if (!ContinueStory)
-            {
-                Return();
-                return;
-            }
-
-            int chapter = CurrentSave.ChapterIndex;
-            int level = CurrentSave.LoadInt($"DOC{RTString.ToStoryNumber(chapter)}Progress", 0);
-
-            if (chapter >= StoryMode.Instance.chapters.Count)
-            {
-                Return();
-                return;
-            }
-
-            level++;
-            if (level >= StoryMode.Instance.chapters[chapter].levels.Count)
-            {
-                UnlockChapterAchievement(chapter);
-                chapter++;
-                level = 0;
-            }
-
-            CurrentSave.SaveProgress(chapter, level);
-
-            ProjectArrhythmia.State.InStory = true;
-            LevelManager.OnLevelEnd = null;
-            SceneHelper.LoadInterfaceScene();
-        }
-
-        void OnLevelEnd(StoryMode.LevelSequence level, bool isCutscene = false, int cutsceneIndex = 0)
+        void EndFunction(StoryMode.Chapter storyChapter, StoryMode.LevelSequence storyLevel, StoryMode.LevelPath levelPath, Action onLevelEnd = null)
         {
             LevelManager.Clear();
             RTLevel.Reinit(false);
-            if (!isCutscene)
-                CurrentSave.UpdateCurrentLevelProgress(); // allow players to get a better rank
-
-            int chapterIndex = currentPlayingChapterIndex;
-            int levelIndex = currentPlayingLevelSequenceIndex;
-
-            if (!isCutscene && !level.isChapterTransition)
-                CurrentSave.SaveBool($"DOC{RTString.ToStoryNumber(chapterIndex)}_{RTString.ToStoryNumber(levelIndex)}Complete", true);
-
-            if (!ContinueStory)
-            {
-                Return();
-                return;
-            }
-
-            cutsceneIndex++;
-            levelIndex++;
-
-            CurrentSave.SaveProgress(chapterIndex, levelIndex);
-
-            // chapter completion should only occur after beating the transition level.
-            if (!isCutscene && level.isChapterTransition)
-            {
-                UnlockChapterAchievement(chapterIndex);
-                CurrentSave.SaveBool($"DOC{RTString.ToStoryNumber(chapterIndex)}Complete", true);
-                chapterIndex++;
-                levelIndex = 0;
-
-                CurrentSave.SaveProgress(chapterIndex, levelIndex);
-            }
-
-            if (cutsceneIndex < level.Count)
-            {
-                StartCoroutine(IPlay(level, cutsceneIndex));
-                return;
-            }
-
-            if (chapterIndex >= StoryMode.Instance.chapters.Count)
-            {
-                StoryCompletion();
-                return;
-            }
-
-            ProjectArrhythmia.State.InStory = true;
             LevelManager.OnLevelEnd = null;
-            InterfaceManager.inst.onReturnToStoryInterface = () => InterfaceManager.inst.ParseInterface(level.returnInterface);
-            SceneHelper.LoadInterfaceScene();
-        }
-
-        void Return()
-        {
-            ProjectArrhythmia.State.InStory = true;
-            LevelManager.OnLevelEnd = null;
-            ContinueStory = true;
-            SceneHelper.LoadInterfaceScene();
-        }
-
-        // function to run when completing the story mode
-        void StoryCompletion()
-        {
-            SoundManager.inst.PlaySound(DefaultSounds.loadsound);
-            ProjectArrhythmia.State.InStory = false;
-            LevelManager.OnLevelEnd = null;
-            SceneHelper.LoadScene(SceneName.Main_Menu);
+            onLevelEnd?.Invoke();
+            // if the current level part is complete, run the level part end function.
+            if (levelPath.onCompleteFunc != null)
+                functions.ParseFunction(levelPath.onCompleteFunc, StoryMode.Instance);
+            // if the level is complete, run the level end function.
+            if (functions.onLevelCompleteFunc != null)
+                functions.ParseFunction(functions.onLevelCompleteFunc, StoryMode.Instance);
+            if (storyLevel.onCompleteFunc != null && (functions.onLevelCompleteFunc == null || !functions.overrideOnCompleteFunc))
+                functions.ParseFunction(storyLevel.onCompleteFunc, StoryMode.Instance);
+            // if the level is the final level in a chapter, run the chapter end function.
+            if (storyChapter.onCompleteFunc != null && currentPlayingLevelSequenceIndex + 1 == storyChapter.Count)
+                functions.ParseFunction(storyChapter.onCompleteFunc, StoryMode.Instance);
         }
 
         void AssignStoryLevelMusic(string songName, Level level)
@@ -1057,5 +822,69 @@ namespace BetterLegacy.Story
         }
 
         #endregion
+
+        public class StoryFunctions : JSONFunctionParser<StoryMode>
+        {
+            public JSONNode onLevelCompleteFunc;
+
+            public bool overrideOnCompleteFunc;
+
+            public override bool IfFunction(JSONNode jn, string name, JSONNode parameters, StoryMode thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                switch (name)
+                {
+                    case "IsCutscene": return inst.isCutscene;
+                }
+
+                return base.IfFunction(jn, name, parameters, thisElement, customVariables);
+            }
+
+            public override void Function(JSONNode jn, string name, JSONNode parameters, StoryMode thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                switch (name)
+                {
+                    case "SetOnLevelCompleteFunc": {
+                            if (parameters == null)
+                                return;
+
+                            onLevelCompleteFunc = parameters.Get(0, "func");
+                            overrideOnCompleteFunc = parameters.Get(1, "override").AsBool;
+
+                            return;
+                        }
+                    case "ReturnToStoryInterface": {
+                            if (!inst || !inst.CurrentLevelSequence)
+                                return;
+
+                            ProjectArrhythmia.State.InStory = true;
+                            LevelManager.OnLevelEnd = null;
+                            InterfaceManager.inst.onReturnToStoryInterface = () => InterfaceManager.inst.ParseInterface(inst.CurrentLevelSequence.returnInterface);
+                            SceneHelper.LoadInterfaceScene();
+
+                            return;
+                        }
+                    case "StoryCompletion": {
+                            SoundManager.inst.PlaySound(DefaultSounds.loadsound);
+                            ProjectArrhythmia.State.InStory = false;
+                            LevelManager.OnLevelEnd = null;
+                            SceneHelper.LoadScene(SceneName.Main_Menu);
+
+                            return;
+                        }
+                }
+
+                base.Function(jn, name, parameters, thisElement, customVariables);
+            }
+
+            public override JSONNode VarFunction(JSONNode jn, string name, JSONNode parameters, StoryMode thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                //switch (name)
+                //{
+
+                //}
+
+                return base.VarFunction(jn, name, parameters, thisElement, customVariables);
+            }
+        }
     }
 }

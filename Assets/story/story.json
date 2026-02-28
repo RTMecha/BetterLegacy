@@ -1,9 +1,9 @@
 {
-	"entry_interface": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Interfaces/disclaimer_interface.lsi",
+	"entry_interface": "{{AppDirectory}}{{BepInExAssetsDirectory}}story/interfaces/disclaimer_interface.lsi",
 	"chapters": [
 		{
 			"name": "Prologue",
-			"interface": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Interfaces/doc01/base_interface.lsi",
+			"interface": "{{AppDirectory}}{{BepInExAssetsDirectory}}story/interfaces/doc01/base_interface.lsi",
 			"levels": [
 				{
 					"id": "0603661088835365",
@@ -11,19 +11,44 @@
 					"name": "Tutorial",
 					"file": {
 						"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Levels/doc01_01.asset",
-						"editor_path": "{{AppDirectory}}beatmaps/editor/Classic Arrhythmia/Chapter 01/Granite/level.lsb"
+						"editor_path": "{{AppDirectory}}beatmaps/editor/BetterLegacy/ACT 1/DOC01/Granite/level.lsb",
+						"on_complete_func": [
+							{
+								"name": "StorySaveBool",
+								"params": [
+									"DOC01_01Complete",
+									true
+								]
+							},
+							{
+								"name": "StorySaveInt",
+								"params": [
+									"Chapter",
+									0
+								]
+							},
+							{
+								"name": "StorySaveInt",
+								"params": [
+									"DOC01Progress",
+									1
+								]
+							},
+							"UpdateCurrentLevelProgress"
+						]
 					},
 					"pre_cutscenes": [
 						{
 							"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Levels/Cutscenes/doc01_01_pre_cutscene_01.asset",
-							"editor_path": "{{AppDirectory}}beatmaps/editor/Classic Arrhythmia/Chapter 01/Cutscenes/Introduction to Nano/level.lsb"
+							"editor_path": "{{AppDirectory}}beatmaps/editor/BetterLegacy/ACT 1/DOC01/Cutscenes/Introduction to Nano/level.lsb"
 						}
 					],
 					"post_cutscenes": [
 						{
 							"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Levels/Cutscenes/doc01_01_post_cutscene_01.asset",
-							"editor_path": "{{AppDirectory}}beatmaps/editor/Classic Arrhythmia/Chapter 01/Cutscenes/Nanobots/level.lsb",
-							"song": "distance"
+							"editor_path": "{{AppDirectory}}beatmaps/editor/BetterLegacy/ACT 1/DOC01/Cutscenes/Nanobots/level.lsb",
+							"song": "distance",
+							"on_complete_func": "ReturnToStoryInterface"
 						}
 					],
 					"return_replayable": "False",
@@ -35,19 +60,44 @@
 					"name": "Spinning Bars",
 					"file": {
 						"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Levels/doc01_02.asset",
-						"editor_path": "{{AppDirectory}}beatmaps/editor/Classic Arrhythmia/Chapter 01/Ahead of the Curve/level.lsb"
+						"editor_path": "{{AppDirectory}}beatmaps/editor/BetterLegacy/ACT 1/DOC01/Ahead of the Curve/level.lsb",
+						"on_complete_func": [
+							{
+								"name": "StorySaveBool",
+								"params": [
+									"DOC01_02Complete",
+									true
+								]
+							},
+							{
+								"name": "StorySaveInt",
+								"params": [
+									"Chapter",
+									0
+								]
+							},
+							{
+								"name": "StorySaveInt",
+								"params": [
+									"DOC01Progress",
+									2
+								]
+							},
+							"UpdateCurrentLevelProgress"
+						]
 					},
 					"pre_cutscenes": [
 						{
 							"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Levels/Cutscenes/doc01_02_pre_cutscene_01.asset",
-							"editor_path": "{{AppDirectory}}beatmaps/editor/Classic Arrhythmia/Chapter 01/Cutscenes/Nanobots Searching/level.lsb",
+							"editor_path": "{{AppDirectory}}beatmaps/editor/BetterLegacy/ACT 1/DOC01/Cutscenes/Nanobots Searching/level.lsb",
 							"song": "in_the_distance"
 						}
 					],
 					"post_cutscenes": [
 						{
 							"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Levels/Cutscenes/doc01_02_post_cutscene_01.asset",
-							"editor_path": "{{AppDirectory}}beatmaps/editor/Classic Arrhythmia/Chapter 01/Cutscenes/Nanobots Mystery/level.lsb"
+							"editor_path": "{{AppDirectory}}beatmaps/editor/BetterLegacy/ACT 1/DOC01/Cutscenes/Nanobots Mystery/level.lsb",
+							"on_complete_func": "ReturnToStoryInterface"
 						}
 					],
 					"return_replayable": "False",
@@ -59,19 +109,44 @@
 					"name": "Learning Symptoms",
 					"file": {
 						"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Levels/doc01_03.asset",
-						"editor_path": "{{AppDirectory}}beatmaps/editor/Classic Arrhythmia/Chapter 01/Super Gamer Girl 3D/level.lsb"
+						"editor_path": "{{AppDirectory}}beatmaps/editor/BetterLegacy/ACT 1/DOC01/Super Gamer Girl 3D/level.lsb",
+						"on_complete_func": [
+							{
+								"name": "StorySaveBool",
+								"params": [
+									"DOC01_03Complete",
+									true
+								]
+							},
+							{
+								"name": "StorySaveInt",
+								"params": [
+									"Chapter",
+									0
+								]
+							},
+							{
+								"name": "StorySaveInt",
+								"params": [
+									"DOC01Progress",
+									3
+								]
+							},
+							"UpdateCurrentLevelProgress"
+						]
 					},
 					"pre_cutscenes": [
 						{
 							"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Levels/Cutscenes/doc01_03_pre_cutscene_01.asset",
-							"editor_path": "{{AppDirectory}}beatmaps/editor/Classic Arrhythmia/Chapter 01/Cutscenes/Anna Discovered/level.lsb"
+							"editor_path": "{{AppDirectory}}beatmaps/editor/BetterLegacy/ACT 1/DOC01/Cutscenes/Anna Discovered/level.lsb"
 						}
 					],
 					"post_cutscenes": [
 						{
 							"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Levels/Cutscenes/doc01_03_post_cutscene_01.asset",
-							"editor_path": "{{AppDirectory}}beatmaps/editor/Classic Arrhythmia/Chapter 01/Cutscenes/Anna Noticed/level.lsb",
-							"song": "truepianoskg"
+							"editor_path": "{{AppDirectory}}beatmaps/editor/BetterLegacy/ACT 1/DOC01/Cutscenes/Anna Noticed/level.lsb",
+							"song": "truepianoskg",
+							"on_complete_func": "ReturnToStoryInterface"
 						}
 					],
 					"return_replayable": "False",
@@ -83,18 +158,43 @@
 					"name": "Pulsing Loops",
 					"file": {
 						"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Levels/doc01_04.asset",
-						"editor_path": "{{AppDirectory}}beatmaps/editor/Classic Arrhythmia/Chapter 01/Slime Boy Color/level.lsb"
+						"editor_path": "{{AppDirectory}}beatmaps/editor/BetterLegacy/ACT 1/DOC01/Slime Boy Color/level.lsb",
+						"on_complete_func": [
+							{
+								"name": "StorySaveBool",
+								"params": [
+									"DOC01_04Complete",
+									true
+								]
+							},
+							{
+								"name": "StorySaveInt",
+								"params": [
+									"Chapter",
+									0
+								]
+							},
+							{
+								"name": "StorySaveInt",
+								"params": [
+									"DOC01Progress",
+									4
+								]
+							},
+							"UpdateCurrentLevelProgress"
+						]
 					},
 					"pre_cutscenes": [
 						{
 							"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Levels/Cutscenes/doc01_04_pre_cutscene_01.asset",
-							"editor_path": "{{AppDirectory}}beatmaps/editor/Classic Arrhythmia/Chapter 01/Cutscenes/Anna Meet/level.lsb"
+							"editor_path": "{{AppDirectory}}beatmaps/editor/BetterLegacy/ACT 1/DOC01/Cutscenes/Anna Meet/level.lsb"
 						}
 					],
 					"post_cutscenes": [
 						{
 							"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Levels/Cutscenes/doc01_04_post_cutscene_01.asset",
-							"editor_path": "{{AppDirectory}}beatmaps/editor/Classic Arrhythmia/Chapter 01/Cutscenes/HAL Forming/level.lsb"
+							"editor_path": "{{AppDirectory}}beatmaps/editor/BetterLegacy/ACT 1/DOC01/Cutscenes/HAL Forming/level.lsb",
+							"on_complete_func": "ReturnToStoryInterface"
 						}
 					],
 					"return_replayable": "False",
@@ -106,18 +206,43 @@
 					"name": "BOSS 1 - Para",
 					"file": {
 						"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Levels/doc01_05.asset",
-						"editor_path": "{{AppDirectory}}beatmaps/editor/Classic Arrhythmia/Chapter 01/Node (Para)/level.lsb"
+						"editor_path": "{{AppDirectory}}beatmaps/editor/BetterLegacy/ACT 1/DOC01/Node (Para)/level.lsb",
+						"on_complete_func": [
+							{
+								"name": "StorySaveBool",
+								"params": [
+									"DOC01_05Complete",
+									true
+								]
+							},
+							{
+								"name": "StorySaveInt",
+								"params": [
+									"Chapter",
+									0
+								]
+							},
+							{
+								"name": "StorySaveInt",
+								"params": [
+									"DOC01Progress",
+									5
+								]
+							},
+							"UpdateCurrentLevelProgress"
+						]
 					},
 					"pre_cutscenes": [
 						{
 							"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Levels/Cutscenes/doc01_05_pre_cutscene_01.asset",
-							"editor_path": "{{AppDirectory}}beatmaps/editor/Classic Arrhythmia/Chapter 01/Cutscenes/Approaching the Edge/level.lsb"
+							"editor_path": "{{AppDirectory}}beatmaps/editor/BetterLegacy/ACT 1/DOC01/Cutscenes/Approaching the Edge/level.lsb"
 						}
 					],
 					"post_cutscenes": [
 						{
 							"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Levels/Cutscenes/doc01_05_post_cutscene_01.asset",
-							"editor_path": "{{AppDirectory}}beatmaps/editor/Classic Arrhythmia/Chapter 01/Cutscenes/Para Discussion/level.lsb"
+							"editor_path": "{{AppDirectory}}beatmaps/editor/BetterLegacy/ACT 1/DOC01/Cutscenes/Para Discussion/level.lsb",
+							"on_complete_func": "ReturnToStoryInterface"
 						}
 					],
 					"return_replayable": "False",
@@ -129,12 +254,37 @@
 					"name": "SECRET 1",
 					"file": {
 						"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Levels/doc01_06.asset",
-						"editor_path": "{{AppDirectory}}beatmaps/editor/Classic Arrhythmia/Chapter 01/Moonflowers/level.lsb"
+						"editor_path": "{{AppDirectory}}beatmaps/editor/BetterLegacy/ACT 1/DOC01/Moonflowers/level.lsb",
+						"on_complete_func": [
+							{
+								"name": "StorySaveBool",
+								"params": [
+									"DOC01_06Complete",
+									true
+								]
+							},
+							{
+								"name": "StorySaveInt",
+								"params": [
+									"Chapter",
+									0
+								]
+							},
+							{
+								"name": "StorySaveInt",
+								"params": [
+									"DOC01Progress",
+									6
+								]
+							},
+							"UpdateCurrentLevelProgress"
+						]
 					},
 					"post_cutscenes": [
 						{
 							"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Levels/Cutscenes/doc01_06_post_cutscene_01.asset",
-							"editor_path": "{{AppDirectory}}beatmaps/editor/Classic Arrhythmia/Chapter 01/Cutscenes/The Flower Drowns In The Night/level.lsb"
+							"editor_path": "{{AppDirectory}}beatmaps/editor/BetterLegacy/ACT 1/DOC01/Cutscenes/The Flower Drowns In The Night/level.lsb",
+							"on_complete_func": "ReturnToStoryInterface"
 						}
 					],
 					"return_replayable": "False",
@@ -150,13 +300,43 @@
 					"name": "SECTOR UNLOCK",
 					"file": {
 						"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Levels/doc01_07.asset",
-						"editor_path": "{{AppDirectory}}beatmaps/editor/Classic Arrhythmia/Chapter 01/Crystal Tokyo/level.lsb"
+						"editor_path": "{{AppDirectory}}beatmaps/editor/BetterLegacy/ACT 1/DOC01/Crystal Tokyo/level.lsb",
+						"on_complete_func": [
+							{
+								"name": "StorySaveBool",
+								"params": [
+									"DOC01_07Complete",
+									true
+								]
+							},
+							{
+								"name": "StorySaveBool",
+								"params": [
+									"DOC01Complete",
+									true
+								]
+							},
+							{
+								"name": "StorySaveInt",
+								"params": [
+									"Chapter",
+									0
+								]
+							},
+							{
+								"name": "UnlockAchievement",
+								"params": [ "story_doc01_complete" ]
+							}
+						]
 					},
 					"post_cutscenes": [
 						{
 							"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Levels/Cutscenes/credits.asset",
-							"editor_path": "{{AppDirectory}}beatmaps/editor/Classic Arrhythmia/Credits/level.lsb",
-							"song": "nostalgia"
+							"editor_path": "{{AppDirectory}}beatmaps/editor/BetterLegacy/Credits/level.lsb",
+							"song": "nostalgia",
+							"on_complete_func": [
+								"StoryCompletion"
+							]
 						}
 					],
 					"return_replayable": "False", // with this off, the return interface will not be loaded and instead the main chapter interface will be loaded when returning from a level played from level selection.
@@ -164,5 +344,59 @@
 				}
 			}
 		} // Prologue
+	],
+	"bonus_chapters": [
+		{
+			"name": "WIP",
+			"interface": "{{AppDirectory}}{{BepInExAssetsDirectory}}story/interfaces/wip_levels.lsi",
+			"levels": [
+				{
+					"id": "1375317577657",
+					"song_title": "Root Beer Float",
+					"name": "Pool Party",
+					"file": {
+						"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}story/levels/wip/root_beer_float.asset",
+						"editor_path": "{{AppDirectory}}beatmaps/editor/BetterLegacy/ACT 1/DOC02/Root Beer Float/level.lsb",
+						"on_complete_func": "ReturnToStoryInterface"
+					},
+					"return_replayable": "False",
+					"return_interface": "{{AppDirectory}}{{BepInExAssetsDirectory}}story/interfaces/wip_levels.lsi"
+				}, // Pool Party
+				{
+					"id": "846847543257436",
+					"song_title": "Spectra",
+					"name": "Maze",
+					"file": {
+						"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}story/levels/wip/spectra.asset",
+						"editor_path": "{{AppDirectory}}beatmaps/editor/BetterLegacy/ACT 1/DOC02/Spectra/level.lsb",
+						"on_complete_func": "ReturnToStoryInterface"
+					},
+					"return_replayable": "False",
+					"return_interface": "{{AppDirectory}}{{BepInExAssetsDirectory}}story/interfaces/wip_levels.lsi"
+				}, // Maze
+				{
+					"id": "348148718577",
+					"song_title": "Dimension",
+					"name": "Shard",
+					"file": {
+						"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}story/levels/wip/dimension.asset",
+						"on_complete_func": "ReturnToStoryInterface"
+					},
+					"return_replayable": "False",
+					"return_interface": "{{AppDirectory}}{{BepInExAssetsDirectory}}story/interfaces/wip_levels.lsi"
+				}, // Shard
+				{
+					"id": "348148718577",
+					"song_title": "Find Us in the Air",
+					"name": "Target Aquired",
+					"file": {
+						"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}story/levels/wip/find_us_in_the_air.asset",
+						"on_complete_func": "ReturnToStoryInterface"
+					},
+					"return_replayable": "False",
+					"return_interface": "{{AppDirectory}}{{BepInExAssetsDirectory}}story/interfaces/wip_levels.lsi"
+				} // Shard
+			]
+		}
 	]
 }

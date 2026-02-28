@@ -1165,6 +1165,32 @@ namespace BetterLegacy.Core
 
                 #endregion
 
+                #region Achievements
+                    
+                #region UnlockAchievement
+
+                case "UnlockAchievement": {
+                        if (parameters == null)
+                            break;
+                        AchievementManager.inst.UnlockAchievement(parameters.Get(0, "id"));
+                        break;
+                    }
+
+                #endregion
+
+                #region LockAchievement
+
+                case "LockAchievement": {
+                        if (parameters == null)
+                            break;
+                        AchievementManager.inst.LockAchievement(parameters.Get(0, "id"));
+                        break;
+                    }
+
+                #endregion
+
+                #endregion
+
                 #region Levels
 
                 #region LoadLevel
@@ -1231,6 +1257,18 @@ namespace BetterLegacy.Core
 
                         LevelManager.Load(path.Value);
 
+                        break;
+                    }
+
+                #endregion
+
+                #region UpdateCurrentLevelProgress
+
+                case "UpdateCurrentLevelProgress": {
+                        if (ProjectArrhythmia.State.InStory)
+                            StoryManager.inst.CurrentSave.UpdateCurrentLevelProgress();
+                        else
+                            LevelManager.UpdateCurrentLevelProgress();
                         break;
                     }
 
@@ -1350,7 +1388,14 @@ namespace BetterLegacy.Core
                         StoryManager.inst.ContinueStory = ParseVarFunction(parameters.Get(3, "continue"), thisElement, customVariables).AsBool;
 
                         ArcadeHelper.ResetModifiedStates();
-                        StoryManager.inst.Play(chapter.AsInt, level.AsInt, cutsceneIndex, bonus, skipCutscenes);
+                        StoryManager.inst.Play(new StorySelection
+                        {
+                            chapter = chapter.AsInt,
+                            level = level.AsInt,
+                            cutsceneIndex = cutsceneIndex,
+                            bonus = bonus,
+                            skipCutscenes = skipCutscenes,
+                        });
 
                         break;
                     }
@@ -1380,7 +1425,14 @@ namespace BetterLegacy.Core
                         StoryManager.inst.ContinueStory = false;
 
                         ArcadeHelper.ResetModifiedStates();
-                        StoryManager.inst.PlayCutscene(chapter, level, cutsceneDestination, cutsceneIndex, bonus);
+                        StoryManager.inst.Play(new StorySelection
+                        {
+                            chapter = chapter,
+                            level = level,
+                            cutsceneDestination = cutsceneDestination,
+                            cutsceneIndex = cutsceneIndex,
+                            bonus = bonus,
+                        });
 
                         break;
                     }
@@ -1432,7 +1484,13 @@ namespace BetterLegacy.Core
                         StoryManager.inst.ContinueStory = true;
 
                         int chapter = StoryManager.inst.CurrentSave.ChapterIndex;
-                        StoryManager.inst.Play(chapter, StoryManager.inst.CurrentSave.LoadInt($"DOC{RTString.ToStoryNumber(chapter)}Progress", 0), 0, StoryManager.inst.inBonusChapter);
+                        StoryManager.inst.Play(new StorySelection
+                        {
+                            chapter = chapter,
+                            level = StoryManager.inst.CurrentSave.LoadInt($"DOC{RTString.ToStoryNumber(chapter)}Progress", 0),
+                            cutsceneIndex = 0,
+                            bonus = StoryManager.inst.inBonusChapter
+                        });
 
                         break;
                     }
@@ -1445,7 +1503,13 @@ namespace BetterLegacy.Core
                         StoryManager.inst.ContinueStory = true;
 
                         var chapter = StoryManager.inst.CurrentSave.ChapterIndex;
-                        StoryManager.inst.Play(chapter, StoryMode.Instance.chapters[chapter].Count, 0, StoryManager.inst.inBonusChapter);
+                        StoryManager.inst.Play(new StorySelection
+                        {
+                            chapter = chapter,
+                            level = StoryMode.Instance.chapters[chapter].Count,
+                            cutsceneIndex = 0,
+                            bonus = StoryManager.inst.inBonusChapter
+                        });
 
                         break;
                     }

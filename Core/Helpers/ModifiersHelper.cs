@@ -30,6 +30,7 @@ using BetterLegacy.Editor.Data.Elements;
 using BetterLegacy.Editor.Managers;
 using BetterLegacy.Menus;
 using BetterLegacy.Menus.UI.Interfaces;
+using BetterLegacy.Story;
 
 // ignore naming styles since modifiers are named like this.
 #pragma warning disable IDE1006 // Naming Styles
@@ -760,27 +761,27 @@ namespace BetterLegacy.Core.Helpers
 
             new ModifierTrigger("storyLoadIntEqualsDEVONLY", (modifier, modifierLoop) =>
             {
-                return Story.StoryManager.inst.CurrentSave && Story.StoryManager.inst.CurrentSave.LoadInt(FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables), modifier.GetInt(1, 0, modifierLoop.variables)) == modifier.GetInt(2, 0, modifierLoop.variables);
+                return StoryManager.inst.CurrentSave && StoryManager.inst.CurrentSave.LoadInt(FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables), modifier.GetInt(1, 0, modifierLoop.variables)) == modifier.GetInt(2, 0, modifierLoop.variables);
             }),
             new ModifierTrigger("storyLoadIntLesserEqualsDEVONLY", (modifier, modifierLoop) =>
             {
-                return Story.StoryManager.inst.CurrentSave && Story.StoryManager.inst.CurrentSave.LoadInt(FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables), modifier.GetInt(1, 0, modifierLoop.variables)) <= modifier.GetInt(2, 0, modifierLoop.variables);
+                return StoryManager.inst.CurrentSave && StoryManager.inst.CurrentSave.LoadInt(FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables), modifier.GetInt(1, 0, modifierLoop.variables)) <= modifier.GetInt(2, 0, modifierLoop.variables);
             }),
             new ModifierTrigger("storyLoadIntGreaterEqualsDEVONLY", (modifier, modifierLoop) =>
             {
-                return Story.StoryManager.inst.CurrentSave && Story.StoryManager.inst.CurrentSave.LoadInt(FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables), modifier.GetInt(1, 0, modifierLoop.variables)) >= modifier.GetInt(2, 0, modifierLoop.variables);
+                return StoryManager.inst.CurrentSave && StoryManager.inst.CurrentSave.LoadInt(FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables), modifier.GetInt(1, 0, modifierLoop.variables)) >= modifier.GetInt(2, 0, modifierLoop.variables);
             }),
             new ModifierTrigger("storyLoadIntLesserDEVONLY", (modifier, modifierLoop) =>
             {
-                return Story.StoryManager.inst.CurrentSave && Story.StoryManager.inst.CurrentSave.LoadInt(FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables), modifier.GetInt(1, 0, modifierLoop.variables)) < modifier.GetInt(2, 0, modifierLoop.variables);
+                return StoryManager.inst.CurrentSave && StoryManager.inst.CurrentSave.LoadInt(FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables), modifier.GetInt(1, 0, modifierLoop.variables)) < modifier.GetInt(2, 0, modifierLoop.variables);
             }),
             new ModifierTrigger("storyLoadIntGreaterDEVONLY", (modifier, modifierLoop) =>
             {
-                return Story.StoryManager.inst.CurrentSave && Story.StoryManager.inst.CurrentSave.LoadInt(FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables), modifier.GetInt(1, 0, modifierLoop.variables)) > modifier.GetInt(2, 0, modifierLoop.variables);
+                return StoryManager.inst.CurrentSave && StoryManager.inst.CurrentSave.LoadInt(FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables), modifier.GetInt(1, 0, modifierLoop.variables)) > modifier.GetInt(2, 0, modifierLoop.variables);
             }),
             new ModifierTrigger("storyLoadBoolDEVONLY", (modifier, modifierLoop) =>
             {
-                return Story.StoryManager.inst.CurrentSave && Story.StoryManager.inst.CurrentSave.LoadBool(FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables), modifier.GetBool(1, false, modifierLoop.variables));
+                return StoryManager.inst.CurrentSave && StoryManager.inst.CurrentSave.LoadBool(FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables), modifier.GetBool(1, false, modifierLoop.variables));
             }),
 
             #endregion
@@ -13086,57 +13087,64 @@ namespace BetterLegacy.Core.Helpers
         public static void loadStoryLevelDEVONLY(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (ProjectArrhythmia.State.InStory)
-                Story.StoryManager.inst.Play(modifier.GetInt(1, 0, modifierLoop.variables), modifier.GetInt(2, 0, modifierLoop.variables), modifier.GetInt(4, 0, modifierLoop.variables), modifier.GetBool(0, false, modifierLoop.variables), modifier.GetBool(3, false, modifierLoop.variables));
+                StoryManager.inst.Play(new Story.StorySelection
+                {
+                    chapter = modifier.GetInt(1, 0, modifierLoop.variables),
+                    level = modifier.GetInt(2, 0, modifierLoop.variables),
+                    cutsceneIndex = modifier.GetInt(4, 0, modifierLoop.variables),
+                    bonus = modifier.GetBool(0, false, modifierLoop.variables),
+                    skipCutscenes = modifier.GetBool(3, false, modifierLoop.variables)
+                });
         }
 
         public static void storySaveBoolDEVONLY(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (ProjectArrhythmia.State.InStory)
-                Story.StoryManager.inst.CurrentSave.SaveBool(modifier.GetValue(0, modifierLoop.variables), modifier.GetBool(1, false, modifierLoop.variables));
+                StoryManager.inst.CurrentSave.SaveBool(modifier.GetValue(0, modifierLoop.variables), modifier.GetBool(1, false, modifierLoop.variables));
         }
 
         public static void storySaveIntDEVONLY(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (ProjectArrhythmia.State.InStory)
-                Story.StoryManager.inst.CurrentSave.SaveInt(modifier.GetValue(0, modifierLoop.variables), modifier.GetInt(1, 0, modifierLoop.variables));
+                StoryManager.inst.CurrentSave.SaveInt(modifier.GetValue(0, modifierLoop.variables), modifier.GetInt(1, 0, modifierLoop.variables));
         }
 
         public static void storySaveFloatDEVONLY(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (ProjectArrhythmia.State.InStory)
-                Story.StoryManager.inst.CurrentSave.SaveFloat(modifier.GetValue(0, modifierLoop.variables), modifier.GetFloat(1, 0f, modifierLoop.variables));
+                StoryManager.inst.CurrentSave.SaveFloat(modifier.GetValue(0, modifierLoop.variables), modifier.GetFloat(1, 0f, modifierLoop.variables));
         }
 
         public static void storySaveStringDEVONLY(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (ProjectArrhythmia.State.InStory)
-                Story.StoryManager.inst.CurrentSave.SaveString(modifier.GetValue(0, modifierLoop.variables), modifier.GetValue(1, modifierLoop.variables));
+                StoryManager.inst.CurrentSave.SaveString(modifier.GetValue(0, modifierLoop.variables), modifier.GetValue(1, modifierLoop.variables));
         }
 
         public static void storySaveIntVariableDEVONLY(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (ProjectArrhythmia.State.InStory && modifierLoop.reference is IModifyable modifyable)
-                Story.StoryManager.inst.CurrentSave.SaveInt(modifier.GetValue(0, modifierLoop.variables), modifyable.IntVariable);
+                StoryManager.inst.CurrentSave.SaveInt(modifier.GetValue(0, modifierLoop.variables), modifyable.IntVariable);
         }
 
         public static void getStorySaveBoolDEVONLY(Modifier modifier, ModifierLoop modifierLoop)
         {
-            modifierLoop.variables[modifier.GetValue(0)] = !ProjectArrhythmia.State.InStory ? modifier.GetBool(2, false, modifierLoop.variables).ToString() : Story.StoryManager.inst.CurrentSave.LoadBool(modifier.GetValue(1, modifierLoop.variables), modifier.GetBool(2, false, modifierLoop.variables)).ToString();
+            modifierLoop.variables[modifier.GetValue(0)] = !ProjectArrhythmia.State.InStory ? modifier.GetBool(2, false, modifierLoop.variables).ToString() : StoryManager.inst.CurrentSave.LoadBool(modifier.GetValue(1, modifierLoop.variables), modifier.GetBool(2, false, modifierLoop.variables)).ToString();
         }
 
         public static void getStorySaveIntDEVONLY(Modifier modifier, ModifierLoop modifierLoop)
         {
-            modifierLoop.variables[modifier.GetValue(0)] = !ProjectArrhythmia.State.InStory ? modifier.GetInt(2, 0, modifierLoop.variables).ToString() : Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(1, modifierLoop.variables), modifier.GetInt(2, 0, modifierLoop.variables)).ToString();
+            modifierLoop.variables[modifier.GetValue(0)] = !ProjectArrhythmia.State.InStory ? modifier.GetInt(2, 0, modifierLoop.variables).ToString() : StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(1, modifierLoop.variables), modifier.GetInt(2, 0, modifierLoop.variables)).ToString();
         }
 
         public static void getStorySaveFloatDEVONLY(Modifier modifier, ModifierLoop modifierLoop)
         {
-            modifierLoop.variables[modifier.GetValue(0)] = !ProjectArrhythmia.State.InStory ? modifier.GetFloat(2, 0f, modifierLoop.variables).ToString() : Story.StoryManager.inst.CurrentSave.LoadFloat(modifier.GetValue(1, modifierLoop.variables), modifier.GetFloat(2, 0f, modifierLoop.variables)).ToString();
+            modifierLoop.variables[modifier.GetValue(0)] = !ProjectArrhythmia.State.InStory ? modifier.GetFloat(2, 0f, modifierLoop.variables).ToString() : StoryManager.inst.CurrentSave.LoadFloat(modifier.GetValue(1, modifierLoop.variables), modifier.GetFloat(2, 0f, modifierLoop.variables)).ToString();
         }
 
         public static void getStorySaveStringDEVONLY(Modifier modifier, ModifierLoop modifierLoop)
         {
-            modifierLoop.variables[modifier.GetValue(0)] = !ProjectArrhythmia.State.InStory ? modifier.GetValue(2, modifierLoop.variables) : Story.StoryManager.inst.CurrentSave.LoadString(modifier.GetValue(1, modifierLoop.variables), modifier.GetValue(2, modifierLoop.variables)).ToString();
+            modifierLoop.variables[modifier.GetValue(0)] = !ProjectArrhythmia.State.InStory ? modifier.GetValue(2, modifierLoop.variables) : StoryManager.inst.CurrentSave.LoadString(modifier.GetValue(1, modifierLoop.variables), modifier.GetValue(2, modifierLoop.variables)).ToString();
         }
 
         public static void exampleEnableDEVONLY(Modifier modifier, ModifierLoop modifierLoop)

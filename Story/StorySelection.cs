@@ -16,6 +16,11 @@
         public int level;
 
         /// <summary>
+        /// Cutscene destination.
+        /// </summary>
+        public CutsceneDestination cutsceneDestination;
+
+        /// <summary>
         /// Cutscene index of the level.
         /// </summary>
         public int cutsceneIndex;

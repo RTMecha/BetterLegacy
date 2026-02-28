@@ -405,7 +405,7 @@ namespace BetterLegacy.Menus
         /// </summary>
         /// <param name="chapterIndex">Chapter to load.</param>
         /// <param name="levelIndex">Level to use.</param>
-        public void StartupStoryInterface(int chapterIndex, int levelIndex)
+        public void StartupStoryInterface(int chapterIndex, bool bonus = false)
         {
             Clear(false, false);
             ProjectArrhythmia.State.InStory = true;
@@ -414,7 +414,8 @@ namespace BetterLegacy.Menus
                 Companion.Entity.Example.Current.model.SetActive(true); // if Example was disabled
 
             var storyStarted = StoryManager.inst.CurrentSave.LoadBool("StoryModeStarted", false);
-            var chapter = StoryMode.Instance.chapters[chapterIndex];
+            StoryManager.inst.inBonusChapter = bonus;
+            var chapter = (bonus ? StoryMode.Instance.bonusChapters : StoryMode.Instance.chapters)[chapterIndex];
 
             if (onReturnToStoryInterface != null)
             {
@@ -467,7 +468,7 @@ namespace BetterLegacy.Menus
         /// <summary>
         /// Starts the story mode interface.
         /// </summary>
-        public void StartupStoryInterface() => StartupStoryInterface(StoryManager.inst.currentPlayingChapterIndex, StoryManager.inst.currentPlayingLevelSequenceIndex);
+        public void StartupStoryInterface() => StartupStoryInterface(StoryManager.inst.currentPlayingChapterIndex, StoryManager.inst.inBonusChapter);
 
         /// <summary>
         /// Starts the main menu interface.
@@ -3043,7 +3044,7 @@ namespace BetterLegacy.Menus
                     #region LoadStoryInterface
 
                     case "LoadStoryInterface": {
-                            inst.StartupStoryInterface(ParseVarFunction(parameters.Get(0, "chapter"), thisElement, customVariables).AsInt, ParseVarFunction(parameters.Get(1, "level"), thisElement, customVariables).AsInt);
+                            inst.StartupStoryInterface(ParseVarFunction(parameters.Get(0, "chapter"), thisElement, customVariables).AsInt, ParseVarFunction(parameters.Get(1, "bonus"), thisElement, customVariables).AsBool);
 
                             return;
                         }
