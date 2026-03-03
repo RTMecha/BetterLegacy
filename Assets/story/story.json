@@ -388,14 +388,36 @@
 				{
 					"id": "348148718577",
 					"song_title": "Find Us in the Air",
-					"name": "Target Aquired",
+					"name": "Target Acquired",
 					"file": {
 						"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}story/levels/wip/find_us_in_the_air.asset",
 						"on_complete_func": "ReturnToStoryInterface"
 					},
 					"return_replayable": "False",
 					"return_interface": "{{AppDirectory}}{{BepInExAssetsDirectory}}story/interfaces/wip_levels.lsi"
-				} // Shard
+				}, // Target Acquired
+				{
+					"id": "5326747345",
+					"song_title": "Silent Waves",
+					"name": "Scatter",
+					"file": {
+						"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}story/levels/wip/silent_waves.asset",
+						"on_complete_func": "ReturnToStoryInterface"
+					},
+					"return_replayable": "False",
+					"return_interface": "{{AppDirectory}}{{BepInExAssetsDirectory}}story/interfaces/wip_levels.lsi"
+				}, // Silent Waves
+				{
+					"id": "84735325464367",
+					"song_title": "Elevate",
+					"name": "Discovery",
+					"file": {
+						"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}story/levels/wip/elevate.asset",
+						"on_complete_func": "ReturnToStoryInterface"
+					},
+					"return_replayable": "False",
+					"return_interface": "{{AppDirectory}}{{BepInExAssetsDirectory}}story/interfaces/wip_levels.lsi"
+				} // Elevate
 			]
 		}
 	]
