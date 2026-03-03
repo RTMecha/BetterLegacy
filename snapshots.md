@@ -1,4 +1,15 @@
-﻿# snapshot-2026.2.1 - (Story Playtest) [Feb 28, 2026]
+﻿# snapshot-2026.3.1 - (Story Playtest) [Mar 3, 2026]
+## Features
+### Story
+- Added two more story levels to WIP playtest. Again may contain spoilers.
+
+### Menus
+- Added Lunicuss (Elevate) and Matthew Pablo (Desolate) as musicians.
+
+## Fixes
+- Fixed slices not being read for BG objects.
+
+# snapshot-2026.2.1 - (Story Playtest) [Feb 28, 2026]
 ## Features
 ### Story
 - Added WIP Levels chapter. This bonus chapter acts as a way to playtest future story mode levels early. There may be spoilers, so if you do not wish to be spoiled it's recommended you don't look at the menu.
