@@ -907,12 +907,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                         }
                         else if (shapeOption == 5)
                         {
-                            shapeOption = 0;
-                            origin.y = TRIANGLE_BOTTOM_OFFSET;
-                        }
-                        else if (shapeOption == 6)
-                        {
-                            shapeOption = 0;
+                            shapeOption = 1;
                             origin.y = TRIANGLE_BOTTOM_OFFSET;
                         }
                         else
