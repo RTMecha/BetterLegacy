@@ -343,6 +343,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             iterations = orig.iterations;
             shape = orig.shape;
             shapeOption = orig.shapeOption;
+            Polygon = orig.Polygon?.Copy();
             flat = orig.flat;
             zposition = orig.zposition;
             zscale = orig.zscale;

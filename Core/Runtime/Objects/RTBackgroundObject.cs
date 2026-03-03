@@ -90,6 +90,7 @@ namespace BetterLegacy.Core.Runtime.Objects
                             polygon.Sides,
                             polygon.Roundness,
                             polygon.Thickness,
+                            polygon.Slices,
                             polygon.ThicknessOffset,
                             polygon.ThicknessScale,
                             polygon.Angle,
