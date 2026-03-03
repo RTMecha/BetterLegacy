@@ -188,7 +188,7 @@
               "name": "Test Object",
               "parent_layout": "credits_layout",
               "rect": {
-                "size": [ "1400", "64" ]
+                "size": [ "1400", "32" ]
               },
               "hide_bg": "True",
               "col": "0",
@@ -215,6 +215,16 @@
             {
               "1": {
                 "text": "Creator of the BetterLegacy mod."
+              }
+            },
+            {
+              "1": {
+                "text": "- <b>Nifflas (NicklasNygren)"
+              }
+            },
+            {
+              "1": {
+                "text": "Creator of the original Battle Cube game that started everything."
               }
             }
           ]
@@ -310,7 +320,7 @@
               "text": "- <b><#FF0048>meganeko",
               "parent_layout": "credits_layout",
               "rect": {
-                "size": [ "1400", "64" ]
+                "size": [ "1400", "32" ]
               },
               "hide_bg": "True",
               "col": "0",
@@ -433,7 +443,33 @@
                   ]
                 }
               }
-            } // Foxberry
+            }, // Foxberry
+            {
+              "1": {
+                "text": "- <b><#FC9E23>Lunicuss",
+                "func": {
+                  "name": "OpenLink",
+                  "params": [
+                    "Artist",
+                    "4",
+                    "akopa"
+                  ]
+                }
+              }
+            }, // Lunicuss
+            {
+              "1": {
+                "text": "- <b><#01040F>Matthew Pablo",
+                "func": {
+                  "name": "OpenLink",
+                  "params": [
+                    "Artist",
+                    "3",
+                    "UC8zvP72p9bGC1xHEtVjyy-g"
+                  ]
+                }
+              }
+            } // Matthew Pablo
           ]
         },
         {
@@ -454,7 +490,7 @@
           "text": "<align=center><b>[ RETURN ]",
           "select": [ "0", "0" ],
           "rect": {
-            "anc_pos": [ "0", "-300" ],
+            "anc_pos": [ "600", "-300" ],
             "size": [ "400", "64" ]
           },
           "opacity": "0.1",
@@ -604,16 +640,6 @@
               "1": {
                 "text": "Alpha porting support."
               }
-            },
-            {
-              "1": {
-                "text": "- <b>Nifflas (NicklasNygren)"
-              }
-            },
-            {
-              "1": {
-                "text": "Creator of the original Battle Cube game that started everything."
-              }
             }
           ]
         },
@@ -635,7 +661,7 @@
           "text": "<align=center><b>[ RETURN ]",
           "select": [ "0", "0" ],
           "rect": {
-            "anc_pos": [ "0", "-300" ],
+            "anc_pos": [ "600", "-300" ],
             "size": [ "400", "64" ]
           },
           "opacity": "0.1",
