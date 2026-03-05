@@ -34,13 +34,35 @@
 									1
 								]
 							},
-							"UpdateCurrentLevelProgress"
+							"UpdateCurrentLevelProgress",
+							{
+								"name": "LoadStoryLevel",
+								"params": [
+									0, // chapter
+									0, // level
+									2, // index
+									false,
+									false,
+									false
+								]
+							}
 						]
 					},
 					"pre_cutscenes": [
 						{
 							"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Levels/Cutscenes/doc01_01_pre_cutscene_01.asset",
-							"editor_path": "{{AppDirectory}}beatmaps/editor/BetterLegacy/ACT 1/DOC01/Cutscenes/Introduction to Nano/level.lsb"
+							"editor_path": "{{AppDirectory}}beatmaps/editor/BetterLegacy/ACT 1/DOC01/Cutscenes/Introduction to Nano/level.lsb",
+							"on_complete_func": {
+								"name": "LoadStoryLevel",
+								"params": [
+									0, // chapter
+									0, // level
+									1, // index
+									false,
+									false,
+									false
+								]
+							}
 						}
 					],
 					"post_cutscenes": [
@@ -83,14 +105,36 @@
 									2
 								]
 							},
-							"UpdateCurrentLevelProgress"
+							"UpdateCurrentLevelProgress",
+							{
+								"name": "LoadStoryLevel",
+								"params": [
+									0, // chapter
+									1, // level
+									2, // index
+									false,
+									false,
+									false
+								]
+							}
 						]
 					},
 					"pre_cutscenes": [
 						{
 							"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Levels/Cutscenes/doc01_02_pre_cutscene_01.asset",
 							"editor_path": "{{AppDirectory}}beatmaps/editor/BetterLegacy/ACT 1/DOC01/Cutscenes/Nanobots Searching/level.lsb",
-							"song": "in_the_distance"
+							"song": "in_the_distance",
+							"on_complete_func": {
+								"name": "LoadStoryLevel",
+								"params": [
+									0, // chapter
+									1, // level
+									1, // index
+									false,
+									false,
+									false
+								]
+							}
 						}
 					],
 					"post_cutscenes": [
@@ -132,13 +176,35 @@
 									3
 								]
 							},
-							"UpdateCurrentLevelProgress"
+							"UpdateCurrentLevelProgress",
+							{
+								"name": "LoadStoryLevel",
+								"params": [
+									0, // chapter
+									2, // level
+									2, // index
+									false,
+									false,
+									false
+								]
+							}
 						]
 					},
 					"pre_cutscenes": [
 						{
 							"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Levels/Cutscenes/doc01_03_pre_cutscene_01.asset",
-							"editor_path": "{{AppDirectory}}beatmaps/editor/BetterLegacy/ACT 1/DOC01/Cutscenes/Anna Discovered/level.lsb"
+							"editor_path": "{{AppDirectory}}beatmaps/editor/BetterLegacy/ACT 1/DOC01/Cutscenes/Anna Discovered/level.lsb",
+							"on_complete_func": {
+								"name": "LoadStoryLevel",
+								"params": [
+									0, // chapter
+									2, // level
+									1, // index
+									false,
+									false,
+									false
+								]
+							}
 						}
 					],
 					"post_cutscenes": [
@@ -181,13 +247,35 @@
 									4
 								]
 							},
-							"UpdateCurrentLevelProgress"
+							"UpdateCurrentLevelProgress",
+							{
+								"name": "LoadStoryLevel",
+								"params": [
+									0, // chapter
+									3, // level
+									2, // index
+									false,
+									false,
+									false
+								]
+							}
 						]
 					},
 					"pre_cutscenes": [
 						{
 							"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Levels/Cutscenes/doc01_04_pre_cutscene_01.asset",
-							"editor_path": "{{AppDirectory}}beatmaps/editor/BetterLegacy/ACT 1/DOC01/Cutscenes/Anna Meet/level.lsb"
+							"editor_path": "{{AppDirectory}}beatmaps/editor/BetterLegacy/ACT 1/DOC01/Cutscenes/Anna Meet/level.lsb",
+							"on_complete_func": {
+								"name": "LoadStoryLevel",
+								"params": [
+									0, // chapter
+									3, // level
+									1, // index
+									false,
+									false,
+									false
+								]
+							}
 						}
 					],
 					"post_cutscenes": [
@@ -229,13 +317,35 @@
 									5
 								]
 							},
-							"UpdateCurrentLevelProgress"
+							"UpdateCurrentLevelProgress",
+							{
+								"name": "LoadStoryLevel",
+								"params": [
+									0, // chapter
+									4, // level
+									2, // index
+									false,
+									false,
+									false
+								]
+							}
 						]
 					},
 					"pre_cutscenes": [
 						{
 							"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Levels/Cutscenes/doc01_05_pre_cutscene_01.asset",
-							"editor_path": "{{AppDirectory}}beatmaps/editor/BetterLegacy/ACT 1/DOC01/Cutscenes/Approaching the Edge/level.lsb"
+							"editor_path": "{{AppDirectory}}beatmaps/editor/BetterLegacy/ACT 1/DOC01/Cutscenes/Approaching the Edge/level.lsb",
+							"on_complete_func": {
+								"name": "LoadStoryLevel",
+								"params": [
+									0, // chapter
+									4, // level
+									1, // index
+									false,
+									false,
+									false
+								]
+							}
 						}
 					],
 					"post_cutscenes": [
@@ -277,7 +387,18 @@
 									6
 								]
 							},
-							"UpdateCurrentLevelProgress"
+							"UpdateCurrentLevelProgress",
+							{
+								"name": "LoadStoryLevel",
+								"params": [
+									0, // chapter
+									5, // level
+									1, // index
+									false,
+									false,
+									false
+								]
+							}
 						]
 					},
 					"post_cutscenes": [
@@ -326,6 +447,17 @@
 							{
 								"name": "UnlockAchievement",
 								"params": [ "story_doc01_complete" ]
+							},
+							{
+								"name": "LoadStoryLevel",
+								"params": [
+									0, // chapter
+									6, // level
+									1, // index
+									false,
+									false,
+									false
+								]
 							}
 						]
 					},
