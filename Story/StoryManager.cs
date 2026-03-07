@@ -799,14 +799,20 @@ namespace BetterLegacy.Story
             RTLevel.Reinit(false);
             LevelManager.OnLevelEnd = null;
             onLevelEnd?.Invoke();
-            // if the current level part is complete, run the level part end function.
-            if (levelPath.onCompleteFunc != null)
-                functions.ParseFunction(levelPath.onCompleteFunc, StoryMode.Instance);
-            // if the level is complete, run the level end function.
-            if (functions.onLevelCompleteFunc != null)
+
+            var hasGlobalLevelCompleteFunc = functions.onLevelCompleteFunc != null;
+            if (hasGlobalLevelCompleteFunc)
                 functions.ParseFunction(functions.onLevelCompleteFunc, StoryMode.Instance);
-            if (storyLevel.onCompleteFunc != null && (functions.onLevelCompleteFunc == null || !functions.overrideOnCompleteFunc))
+            functions.onLevelCompleteFunc = null;
+
+            // if the current level part is complete, run the level part end function.
+            if (levelPath.onCompleteFunc != null && (!hasGlobalLevelCompleteFunc || !functions.overrideOnCompleteFunc))
+                functions.ParseFunction(levelPath.onCompleteFunc, StoryMode.Instance);
+
+            // if the level is complete, run the level end function.
+            if (storyLevel.onCompleteFunc != null && (!hasGlobalLevelCompleteFunc || !functions.overrideOnCompleteFunc))
                 functions.ParseFunction(storyLevel.onCompleteFunc, StoryMode.Instance);
+
             // if the level is the final level in a chapter, run the chapter end function.
             if (storyChapter.onCompleteFunc != null && currentPlayingLevelSequenceIndex + 1 == storyChapter.Count)
                 functions.ParseFunction(storyChapter.onCompleteFunc, StoryMode.Instance);
@@ -843,15 +849,6 @@ namespace BetterLegacy.Story
             {
                 switch (name)
                 {
-                    case "SetOnLevelCompleteFunc": {
-                            if (parameters == null)
-                                return;
-
-                            onLevelCompleteFunc = parameters.Get(0, "func");
-                            overrideOnCompleteFunc = parameters.Get(1, "override").AsBool;
-
-                            return;
-                        }
                     case "ReturnToStoryInterface": {
                             if (!inst || !inst.CurrentLevelSequence)
                                 return;
@@ -859,6 +856,17 @@ namespace BetterLegacy.Story
                             ProjectArrhythmia.State.InStory = true;
                             LevelManager.OnLevelEnd = null;
                             InterfaceManager.inst.onReturnToStoryInterface = () => InterfaceManager.inst.ParseInterface(inst.CurrentLevelSequence.returnInterface);
+                            SceneHelper.LoadInterfaceScene();
+
+                            return;
+                        }
+                    case "ReturnToStoryChapterInterface": {
+                            if (!inst || !inst.CurrentLevelSequence)
+                                return;
+
+                            ProjectArrhythmia.State.InStory = true;
+                            LevelManager.OnLevelEnd = null;
+                            InterfaceManager.inst.onReturnToStoryInterface = () => InterfaceManager.inst.ParseInterface(inst.CurrentChapter.interfacePath);
                             SceneHelper.LoadInterfaceScene();
 
                             return;
