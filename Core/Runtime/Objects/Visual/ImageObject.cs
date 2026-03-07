@@ -66,6 +66,7 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
                 return;
             }
 
+            // support really old image system
             var regex = new System.Text.RegularExpressions.Regex(@"img\((.*?)\)");
             var match = regex.Match(text);
 
@@ -73,6 +74,14 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
 
             if (!RTFile.FileExists(path))
             {
+                // allow asset pack images
+                if (AssetPack.TryGetFile(path, out string assetPackFile))
+                {
+                    CoroutineHelper.StartCoroutine(AlephNetwork.DownloadImageTexture("file://" + assetPackFile, SetTexture, SetDefaultSprite));
+                    return;
+                }
+
+
                 SetDefaultSprite();
                 return;
             }
