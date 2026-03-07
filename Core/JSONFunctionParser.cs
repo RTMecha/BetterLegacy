@@ -1402,6 +1402,20 @@ namespace BetterLegacy.Core
 
                 #endregion
 
+                #region
+
+                case "SetOnLevelCompleteFunc": {
+                        if (parameters == null)
+                            return;
+
+                        StoryManager.inst.functions.onLevelCompleteFunc = parameters.Get(0, "func");
+                        StoryManager.inst.functions.overrideOnCompleteFunc = parameters.Get(1, "override").AsBool;
+
+                        return;
+                    }
+
+                #endregion
+
                 #region LoadStoryCutscene
 
                 case "LoadStoryCutscene": {
