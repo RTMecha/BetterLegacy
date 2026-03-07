@@ -43,6 +43,8 @@ namespace BetterLegacy.Editor.Managers
     {
         #region Values
 
+        public static bool editStory = true;
+
         #region Levels
 
         /// <summary>
@@ -351,6 +353,49 @@ namespace BetterLegacy.Editor.Managers
 
             LevelInfoDialog = new LevelInfoEditorDialog();
             LevelInfoDialog.Init();
+
+            if (!editStory)
+                return;
+
+            EditorHelper.AddEditorDropdown("Edit Story", string.Empty, EditorHelper.EDIT_DROPDOWN, EditorSprites.EditSprite, () => EditorContextMenu.inst.ShowContextMenu(
+                new ButtonElement("Send to Compiler", ToStoryLevel),
+                new ButtonElement("Send to Repository", ToStoryVersionControl),
+                ButtonElement.ToggleButton("Is Story", () => RTEditor.inst.editorInfo.isStory, () => RTEditor.inst.editorInfo.isStory = !RTEditor.inst.editorInfo.isStory),
+                new LabelElement("Chapter Index"),
+                new NumberInputElement(RTEditor.inst.editorInfo.storyChapter.ToString(), _val =>
+                {
+                    if (int.TryParse(_val, out int result))
+                        RTEditor.inst.editorInfo.storyChapter = result;
+                }),
+                new LabelElement("Level Index"),
+                new NumberInputElement(RTEditor.inst.editorInfo.storyLevel.ToString(), _val =>
+                {
+                    if (int.TryParse(_val, out int result))
+                        RTEditor.inst.editorInfo.storyLevel = result;
+                }),
+                new LabelElement("Cutscene Index"),
+                new NumberInputElement(RTEditor.inst.editorInfo.cutscene.ToString(), _val =>
+                {
+                    if (int.TryParse(_val, out int result))
+                        RTEditor.inst.editorInfo.cutscene = result;
+                }),
+                ButtonElement.SelectionButton(() => RTEditor.inst.editorInfo.cutsceneDestination == Story.CutsceneDestination.Pre, nameof(Story.CutsceneDestination.Pre), () =>
+                {
+                    RTEditor.inst.editorInfo.cutsceneDestination = Story.CutsceneDestination.Pre;
+                    EditorManager.inst.DisplayNotification($"Set cutscene destination to {RTEditor.inst.editorInfo.cutsceneDestination}!", 2f, EditorManager.NotificationType.Success);
+                }),
+                ButtonElement.SelectionButton(() => RTEditor.inst.editorInfo.cutsceneDestination == Story.CutsceneDestination.Level, nameof(Story.CutsceneDestination.Level), () =>
+                {
+                    RTEditor.inst.editorInfo.cutsceneDestination = Story.CutsceneDestination.Level;
+                    EditorManager.inst.DisplayNotification($"Set cutscene destination to {RTEditor.inst.editorInfo.cutsceneDestination}!", 2f, EditorManager.NotificationType.Success);
+                }),
+                ButtonElement.SelectionButton(() => RTEditor.inst.editorInfo.cutsceneDestination == Story.CutsceneDestination.Post, nameof(Story.CutsceneDestination.Post), () =>
+                {
+                    RTEditor.inst.editorInfo.cutsceneDestination = Story.CutsceneDestination.Post;
+                    EditorManager.inst.DisplayNotification($"Set cutscene destination to {RTEditor.inst.editorInfo.cutsceneDestination}!", 2f, EditorManager.NotificationType.Success);
+                }),
+                new LabelElement("Custom Location"),
+                new StringInputElement(RTEditor.inst.editorInfo.customLocation, _val => RTEditor.inst.editorInfo.customLocation = _val)));
         }
 
         public override void OnTick() => autosaveTimer.Update();
@@ -2569,28 +2614,38 @@ namespace BetterLegacy.Editor.Managers
 
         public void ToStoryLevel(EditorInfo editorInfo)
         {
-            try
+            if (!editorInfo.isStory)
+                return;
+
+            if (!string.IsNullOrEmpty(editorInfo.customLocation))
             {
-                if (!editorInfo.isStory)
-                    return;
-
-                string cutsceneDestination = string.Empty;
-                if (editorInfo.cutsceneDestination != Story.CutsceneDestination.Level)
-                    cutsceneDestination = editorInfo.cutsceneDestination.ToString().ToLower() + "_cutscene";
-                int cutscene = 0;
-                if (editorInfo.cutscene >= 0)
-                    cutscene = editorInfo.cutscene;
-
-                ToStoryLevel(editorInfo.storyChapter, editorInfo.storyLevel, cutsceneDestination, cutscene);
+                ToStoryLevel(RTFile.CombinePaths(storyLevelsCompilerPath, editorInfo.customLocation));
+                return;
             }
-            catch { }
+
+            string cutsceneDestination = string.Empty;
+            if (editorInfo.cutsceneDestination != Story.CutsceneDestination.Level)
+                cutsceneDestination = editorInfo.cutsceneDestination.ToString().ToLower() + "_cutscene";
+            int cutscene = 0;
+            if (editorInfo.cutscene >= 0)
+                cutscene = editorInfo.cutscene;
+
+            ToStoryLevel(editorInfo.storyChapter, editorInfo.storyLevel, cutsceneDestination, cutscene);
         }
 
         public void ToStoryLevel(int chapter, int level, string type = "", int cutscene = 0)
         {
-            var path = RTFile.BasePath;
             var doc = $"doc{RTString.ToStoryNumber(chapter)}";
-            var saveTo = RTFile.CombinePaths(storyLevelsCompilerPath, doc, $"{doc}_{RTString.ToStoryNumber(level)}{(string.IsNullOrEmpty(type) ? string.Empty : "_" + type + RTString.ToStoryNumber(cutscene))}");
+            var saveTo = RTFile.CombinePaths(
+                storyLevelsCompilerPath,
+                doc,
+                $"{doc}_{RTString.ToStoryNumber(level)}{(string.IsNullOrEmpty(type) ? string.Empty : "_" + type + RTString.ToStoryNumber(cutscene))}");
+            ToStoryLevel(saveTo);
+        }
+
+        public void ToStoryLevel(string saveTo)
+        {
+            var path = RTFile.BasePath;
 
             RTFile.CreateDirectory(saveTo);
             RTFile.CopyFile(RTFile.CombinePaths(path, Level.LEVEL_LSB), RTFile.CombinePaths(saveTo, $"level{FileFormat.JSON.Dot()}"));

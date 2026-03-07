@@ -100,15 +100,35 @@ namespace BetterLegacy.Editor.Data
 
         #region Story
 
+        /// <summary>
+        /// If the level is a story level.
+        /// </summary>
         public bool isStory;
 
+        /// <summary>
+        /// Chapter index.
+        /// </summary>
         public int storyChapter;
 
+        /// <summary>
+        /// Level index.
+        /// </summary>
         public int storyLevel;
 
+        /// <summary>
+        /// Cutscene index.
+        /// </summary>
         public int cutscene = -1;
 
+        /// <summary>
+        /// Indicates the section a level is located in a level sequence.
+        /// </summary>
         public Story.CutsceneDestination cutsceneDestination = Story.CutsceneDestination.Level;
+
+        /// <summary>
+        /// Location used for WIP levels / levels outside of the usual story indexer system.
+        /// </summary>
+        public string customLocation;
 
         #endregion
 
@@ -202,6 +222,7 @@ namespace BetterLegacy.Editor.Data
             storyLevel = orig.storyLevel;
             cutscene = orig.cutscene;
             cutsceneDestination = orig.cutsceneDestination;
+            customLocation = orig.customLocation;
             Progress = orig.Progress;
             time = orig.time;
             prefabPath = orig.prefabPath;
@@ -299,7 +320,9 @@ namespace BetterLegacy.Editor.Data
                     if (jn["story"]["cutscene"] != null)
                         cutscene = jn["story"]["cutscene"].AsInt;
                     if (jn["story"]["cutscene_destination"] != null && System.Enum.TryParse(jn["story"]["cutscene_destination"], true, out Story.CutsceneDestination cutsceneDestination))
-                        cutsceneDestination = cutsceneDestination;
+                        this.cutsceneDestination = cutsceneDestination;
+                    if (jn["story"]["custom_location"] != null)
+                        customLocation = jn["story"]["custom_location"];
                 }
             }
             catch (System.Exception ex)
@@ -369,6 +392,8 @@ namespace BetterLegacy.Editor.Data
 
             if (isStory)
             {
+                if (!string.IsNullOrEmpty(customLocation))
+                    jn["story"]["custom_location"] = customLocation;
                 jn["story"]["chapter"] = storyChapter;
                 jn["story"]["level"] = storyLevel;
                 if (cutscene >= 0)
