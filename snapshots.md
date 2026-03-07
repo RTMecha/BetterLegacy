@@ -1,4 +1,21 @@
-﻿# snapshot-2026.3.1 - (Story Playtest) [Mar 3, 2026]
+﻿# snapshot-2026.3.2 - (Story Playtest) [Mar 7, 2026]
+## Features
+### Story
+- Attack additions to certain levels.
+
+## Changes
+### Story
+- Tweaked some attacks in Pulsing Loops (Slime Boy Color) to be more readable.
+- Made the camera zoom out more in BOSS 1.
+
+## Fixes
+- Fixed level sequences in the story being broken.
+- Fixed colors in a lot of cutscenes being incorrect.
+- Fixed some issues with the cutscene / level select menus.
+
+-------------------------------------------------------------------
+
+# snapshot-2026.3.1 - (Story Playtest) [Mar 3, 2026]
 ## Features
 ### Story
 - Added two more story levels to WIP playtest. Again may contain spoilers.
@@ -8,6 +25,8 @@
 
 ## Fixes
 - Fixed slices not being read for BG objects.
+
+-------------------------------------------------------------------
 
 # snapshot-2026.2.1 - (Story Playtest) [Feb 28, 2026]
 ## Features
