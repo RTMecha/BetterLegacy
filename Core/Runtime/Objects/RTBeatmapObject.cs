@@ -75,12 +75,13 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         bool cachedColliderEnabled;
         bool cachedRendererEnabled;
+        bool updated;
 
         #endregion
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public void Clear()
         {
@@ -161,10 +162,6 @@ namespace BetterLegacy.Core.Runtime.Objects
                 visualObject.colorSequence.keyframes[i].Stop();
         }
 
-        /// <summary>
-        /// Sets the top object active.
-        /// </summary>
-        /// <param name="active">Active state to set.</param>
         public void SetCustomActive(bool active)
         {
             CustomActive = active;
@@ -201,16 +198,18 @@ namespace BetterLegacy.Core.Runtime.Objects
             var colliderEnabled = visualObject.HasCollision && active;
             if (visualObject.collider)
             {
-                if (cachedColliderEnabled != colliderEnabled)
+                if (!updated || cachedColliderEnabled != colliderEnabled)
                 {
+                    updated = true;
                     cachedColliderEnabled = colliderEnabled;
                     visualObject.collider.enabled = colliderEnabled;
                 }
             }
             if (visualObject.renderer)
             {
-                if (cachedRendererEnabled != active)
+                if (!updated || cachedRendererEnabled != active)
                 {
+                    updated = true;
                     cachedRendererEnabled = active;
                     visualObject.renderer.enabled = active;
                 }
