@@ -37,6 +37,10 @@ namespace BetterLegacy.Core.Runtime.Objects
             deactivateList.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
         }
 
+        /// <summary>
+        /// Ticks the spawner engine.
+        /// </summary>
+        /// <param name="time">Elapsed time.</param>
         public void Update(float time)
         {
             if (time >= currentTime)
@@ -45,6 +49,18 @@ namespace BetterLegacy.Core.Runtime.Objects
                 UpdateObjectsBackward(time);
 
             currentTime = time;
+        }
+
+        /// <summary>
+        /// Despawns all objects in the active list.
+        /// </summary>
+        public void DespawnAll()
+        {
+            foreach (var runtimeObject in ActiveObjects)
+                runtimeObject.SetActive(false);
+            activateIndex = 0;
+            deactivateIndex = 0;
+            activeObjects.Clear();
         }
 
         /// <summary>
