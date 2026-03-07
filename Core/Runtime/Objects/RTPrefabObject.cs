@@ -100,6 +100,8 @@ namespace BetterLegacy.Core.Runtime.Objects
         /// </summary>
         public Action<bool> onActiveChanged;
 
+        bool prevActive;
+
         public override void Load()
         {
             previousAudioTime = 0.0f;
@@ -141,8 +143,10 @@ namespace BetterLegacy.Core.Runtime.Objects
 
             if (PrefabObject.parentSelf && ParentObjects != null && !ParentObjects.IsEmpty())
             {
+                var time = PrefabObject.ParentDesync ? PrefabObject.offsetParentDesyncTime ? PrefabObject.StartTime : PrefabObject.StartTime + Prefab.offset : ParentRuntime.CurrentTime;
+                //CoreHelper.Log($"Updating parent chain {time}");
                 this.UpdateCameraParent();
-                this.InterpolateParentChain(PrefabObject.ParentDesync ? PrefabObject.offsetParentDesyncTime ? PrefabObject.StartTime : PrefabObject.StartTime + Prefab.offset : ParentRuntime.CurrentTime, PrefabObject.FromPrefab, true);
+                this.InterpolateParentChain(time, PrefabObject.FromPrefab, true);
             }
             if (SpawnParent)
             {
@@ -207,6 +211,17 @@ namespace BetterLegacy.Core.Runtime.Objects
             var parent = Parent;
             if (parent)
                 parent.gameObject.SetActive(isActive);
+
+            if (isActive && !prevActive)
+            {
+                objectEngine?.spawner?.DespawnAll();
+                objectModifiersEngine?.spawner?.DespawnAll();
+                backgroundEngine?.spawner?.DespawnAll();
+                bgModifiersEngine?.spawner?.DespawnAll();
+                prefabEngine?.spawner?.DespawnAll();
+                prefabModifiersEngine?.spawner?.DespawnAll();
+            }
+            prevActive = isActive;
         }
 
         #region Parent Chain
@@ -241,10 +256,37 @@ namespace BetterLegacy.Core.Runtime.Objects
                     }
 
                     SpawnParent = Creator.NewGameObject($"spawner - [{Prefab.name}]", gameObject.transform).transform;
+                    parentObjects.Insert(0, ParentRuntime.converter.ToParentObject(new BeatmapObject
+                    {
+                        Parent = PrefabObject.Parent,
+                        ParentDetatched = PrefabObject.ParentDetatched,
+                        ParentDesync = PrefabObject.ParentDesync,
+                        ParentDesyncOffset = PrefabObject.ParentDesyncOffset,
+                        ParentAdditive = PrefabObject.ParentAdditive,
+                        ParentType = PrefabObject.ParentType,
+                        ParentOffsets = PrefabObject.ParentOffsets,
+                        ParentParallax = PrefabObject.ParentParallax,
+                    }, SpawnParent.gameObject));
+                    parentObjects[0].animate = false;
+                    parentObjects[0].prefabObject = PrefabObject;
                     this.UpdateParentValues();
                     TransferSpawned(SpawnParent);
                     return;
                 }
+
+                parentObjects.Insert(0, ParentRuntime.converter.ToParentObject(new BeatmapObject
+                {
+                    Parent = PrefabObject.Parent,
+                    ParentDetatched = PrefabObject.ParentDetatched,
+                    ParentDesync = PrefabObject.ParentDesync,
+                    ParentDesyncOffset = PrefabObject.ParentDesyncOffset,
+                    ParentAdditive = PrefabObject.ParentAdditive,
+                    ParentType = PrefabObject.ParentType,
+                    ParentOffsets = PrefabObject.ParentOffsets,
+                    ParentParallax = PrefabObject.ParentParallax,
+                }, p.gameObject));
+                parentObjects[0].animate = false;
+                parentObjects[0].prefabObject = PrefabObject;
             }
             SpawnParent = Parent;
         }

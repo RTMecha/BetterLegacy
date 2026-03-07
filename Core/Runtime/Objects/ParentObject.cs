@@ -38,8 +38,10 @@ namespace BetterLegacy.Core.Runtime.Objects
         public bool desync;
         public float desyncOffset;
         public bool spawned;
+        public bool animate = true;
 
         public BeatmapObject beatmapObject;
+        public PrefabObject prefabObject;
 
         public override string ToString() => beatmapObject?.ToString() ?? string.Empty;
     }

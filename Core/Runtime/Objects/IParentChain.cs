@@ -198,35 +198,38 @@ namespace BetterLegacy.Core.Runtime.Objects
                 if (parentObject.parentAdditiveRotation)
                     rotationAddedOffset += parentObject.parentOffsetRotation;
 
-                // If last parent is position parented, animate position
-                if (animatePosition)
+                if (parentObject.animate)
                 {
-                    var value =
-                        parentObject.positionSequence.GetValue(desync ? syncOffset + prefabOffset - timeOffset - (positionOffset + positionAddedOffset) : localTime - timeOffset - (positionOffset + positionAddedOffset)) +
-                        parentObject.beatmapObject.reactivePositionOffset + parentObject.beatmapObject.PositionOffset + parentObject.beatmapObject.fullTransform.position;
+                    // If last parent is position parented, animate position
+                    if (animatePosition)
+                    {
+                        var value =
+                            parentObject.positionSequence.Interpolate(desync ? syncOffset + prefabOffset - timeOffset - (positionOffset + positionAddedOffset) : localTime - timeOffset - (positionOffset + positionAddedOffset)) +
+                            parentObject.beatmapObject.reactivePositionOffset + parentObject.beatmapObject.PositionOffset + parentObject.beatmapObject.fullTransform.position;
 
-                    float z = parentChain.Depth * BeatmapObject.DEPTH_MULTIPLY + (value.z / 10f);
+                        float z = parentChain.Depth * BeatmapObject.DEPTH_MULTIPLY + (value.z / 10f);
 
-                    parentObject.transform.localPosition = new Vector3(value.x * positionParallax, value.y * positionParallax, z);
-                }
+                        parentObject.transform.localPosition = new Vector3(value.x * positionParallax, value.y * positionParallax, z);
+                    }
 
-                // If last parent is scale parented, animate scale
-                if (animateScale)
-                {
-                    var r = parentObject.beatmapObject.reactiveScaleOffset + parentObject.beatmapObject.scaleOffset;
-                    var value = parentObject.scaleSequence.GetValue(desync ? syncOffset + prefabOffset - timeOffset - (scaleOffset + scaleAddedOffset) : localTime - timeOffset - (scaleOffset + scaleAddedOffset)) + new Vector2(r.x, r.y);
-                    var scale = RTMath.Scale(new Vector3(value.x * scaleParallax, value.y * scaleParallax, 1.0f + r.z), parentObject.beatmapObject.fullTransform.scale);
-                    parentObject.transform.localScale = scale;
-                    totalScale = RTMath.Scale(totalScale, scale);
-                }
+                    // If last parent is scale parented, animate scale
+                    if (animateScale)
+                    {
+                        var r = parentObject.beatmapObject.reactiveScaleOffset + parentObject.beatmapObject.scaleOffset;
+                        var value = parentObject.scaleSequence.Interpolate(desync ? syncOffset + prefabOffset - timeOffset - (scaleOffset + scaleAddedOffset) : localTime - timeOffset - (scaleOffset + scaleAddedOffset)) + new Vector2(r.x, r.y);
+                        var scale = RTMath.Scale(new Vector3(value.x * scaleParallax, value.y * scaleParallax, 1.0f + r.z), parentObject.beatmapObject.fullTransform.scale);
+                        parentObject.transform.localScale = scale;
+                        totalScale = RTMath.Scale(totalScale, scale);
+                    }
 
-                // If last parent is rotation parented, animate rotation
-                if (animateRotation)
-                {
-                    var value = Quaternion.AngleAxis(
-                        (parentObject.rotationSequence.GetValue(desync ? syncOffset + prefabOffset - timeOffset - (rotationOffset + rotationAddedOffset) : localTime - timeOffset - (rotationOffset + rotationAddedOffset)) + parentObject.beatmapObject.reactiveRotationOffset) * rotationParallax,
-                        Vector3.forward);
-                    parentObject.transform.localRotation = Quaternion.Euler(value.eulerAngles + parentObject.beatmapObject.rotationOffset + parentObject.beatmapObject.fullTransform.rotation);
+                    // If last parent is rotation parented, animate rotation
+                    if (animateRotation)
+                    {
+                        var value = Quaternion.AngleAxis(
+                            (parentObject.rotationSequence.Interpolate(desync ? syncOffset + prefabOffset - timeOffset - (rotationOffset + rotationAddedOffset) : localTime - timeOffset - (rotationOffset + rotationAddedOffset)) + parentObject.beatmapObject.reactiveRotationOffset) * rotationParallax,
+                            Vector3.forward);
+                        parentObject.transform.localRotation = Quaternion.Euler(value.eulerAngles + parentObject.beatmapObject.rotationOffset + parentObject.beatmapObject.fullTransform.rotation);
+                    }
                 }
 
                 // Cache parent values to use for next parent
@@ -247,8 +250,10 @@ namespace BetterLegacy.Core.Runtime.Objects
 
                 desync = parentObject.desync || parentObject.beatmapObject.detatched;
                 syncOffset = timeOffset + parentObject.desyncOffset;
-                if (parentObject.beatmapObject.fromPrefab)
+                if (i != 0 && parentObject.beatmapObject.fromPrefab)
                     prefabOffset = parentObject.beatmapObject.GetPrefabOffsetTime();
+                if (parentObject.prefabObject)
+                    prefabOffset = parentObject.prefabObject.StartTime + parentObject.prefabObject.GetPrefab()?.offset ?? 0f;
             }
 
             parentChain.CurrentScale = totalScale;
