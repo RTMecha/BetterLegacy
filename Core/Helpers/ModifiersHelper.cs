@@ -8433,7 +8433,7 @@ namespace BetterLegacy.Core.Helpers
             Sequence<Color> sequence2;
 
             var audioTime = modifier.GetFloat(0, 0f, modifierLoop.variables);
-            var colorSource = modifier.GetInt(1, 0, modifierLoop.variables);
+            var colorSource = (ThemeSource)modifier.GetInt(1, 0, modifierLoop.variables);
 
             if (modifier.TryGetResult(out KeyValuePair<Sequence<Color>, Sequence<Color>> sequences))
             {
@@ -8463,7 +8463,8 @@ namespace BetterLegacy.Core.Helpers
                 for (int i = 12; i < modifier.values.Count; i += 14)
                 {
                     var time = modifier.GetFloat(i + 1, 0f, modifierLoop.variables);
-                    if (time < currentTime)
+                    var relative = modifier.GetBool(i + 12, true, modifierLoop.variables);
+                    if (relative ? time < 0f : time < currentTime)
                         continue;
 
                     var colorSlot1 = modifier.GetInt(i + 2, 0, modifierLoop.variables);
@@ -8476,15 +8477,14 @@ namespace BetterLegacy.Core.Helpers
                     var hue2 = modifier.GetFloat(i + 9, 0f, modifierLoop.variables);
                     var saturation2 = modifier.GetFloat(i + 10, 0f, modifierLoop.variables);
                     var value2 = modifier.GetFloat(i + 11, 0f, modifierLoop.variables);
-                    var relative = modifier.GetBool(i + 12, true, modifierLoop.variables);
 
                     var easing = modifier.GetValue(i + 13, modifierLoop.variables);
                     if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
                         easing = Ease.EaseReferences[e].Name;
 
                     var ease = Ease.GetEaseFunction(easing, Ease.Linear);
-                    keyframes1.Add(new CustomThemeKeyframe(currentTime + time, colorSource, colorSlot1, opacity1, hue1, saturation1, value1, ease, false));
-                    keyframes2.Add(new CustomThemeKeyframe(currentTime + time, colorSource, colorSlot2, opacity2, hue2, saturation2, value2, ease, false));
+                    keyframes1.Add(new CustomThemeKeyframe(relative ? currentTime + time : time, colorSource, colorSlot1, opacity1, hue1, saturation1, value1, ease, false));
+                    keyframes2.Add(new CustomThemeKeyframe(relative ? currentTime + time : time, colorSource, colorSlot2, opacity2, hue2, saturation2, value2, ease, false));
 
                     currentTime = time;
                 }

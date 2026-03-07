@@ -11,10 +11,10 @@ namespace BetterLegacy.Core.Animation.Keyframe
     /// </summary>
     public struct CustomThemeKeyframe : IKeyframe<Color>
     {
-        public CustomThemeKeyframe(float time, int colorSource, int colorSlot, float opacity, float hue, float saturation, float value, EaseFunction ease, bool invertOpacity)
+        public CustomThemeKeyframe(float time, ThemeSource source, int colorSlot, float opacity, float hue, float saturation, float value, EaseFunction ease, bool invertOpacity)
         {
             Time = time;
-            this.colorSource = colorSource;
+            this.source = source;
             this.colorSlot = colorSlot;
             this.opacity = opacity;
             this.hue = hue;
@@ -45,7 +45,7 @@ namespace BetterLegacy.Core.Animation.Keyframe
         /// <summary>
         /// Source of the colors.
         /// </summary>
-        public int colorSource;
+        public ThemeSource source;
 
         /// <summary>
         /// Slot index of the color to get from the current theme.
@@ -77,17 +77,9 @@ namespace BetterLegacy.Core.Animation.Keyframe
         /// </summary>
         public bool invertOpacity;
 
-        List<Color> Theme => colorSource switch
-        {
-            0 => CoreHelper.CurrentBeatmapTheme.objectColors,
-            1 => CoreHelper.CurrentBeatmapTheme.backgroundColors,
-            2 => CoreHelper.CurrentBeatmapTheme.effectColors,
-            _ => null,
-        };
-
         #endregion
 
-        #region Methods
+        #region Functions
 
         public void Start(IKeyframe<Color> prev, Color value, float time) => Active = true;
 
@@ -99,8 +91,7 @@ namespace BetterLegacy.Core.Animation.Keyframe
 
         public Color GetValue()
         {
-            var colorSlots = Theme;
-            var color = colorSlots[colorSlot];
+            var color = CoreHelper.CurrentBeatmapTheme.GetColor(source, colorSlot);
             var opacity = this.opacity;
             if (invertOpacity)
                 opacity = -(opacity - 1f);

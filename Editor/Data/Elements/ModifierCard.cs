@@ -2970,17 +2970,21 @@ namespace BetterLegacy.Editor.Data.Elements
                     }
                 case nameof(ModifierFunctions.animateColorKF): {
                         SingleGenerator(modifier, reference, "Time", 0);
-                        DropdownGenerator(modifier, reference, "Color Source", 1, CoreHelper.StringToOptionData("Objects", "BG Objects", "Effects"), onSelect: _val => RenderModifier(reference));
+                        DropdownGenerator(modifier, reference, "Color Source", 1, CoreHelper.ToOptionData<ThemeSource>(), onSelect: _val =>
+                        {
+                            modifier.SetValue(1, _val.ToString());
+                            RenderModifier(reference);
+                        });
 
-                        var colorSource = modifier.GetInt(1, 0);
+                        var source = (ThemeSource)modifier.GetInt(1, 0);
 
-                        ColorGenerator(modifier, reference, "Color 1 Start", 2, colorSource);
+                        ColorGenerator(modifier, reference, "Color 1 Start", 2, source);
                         SingleGenerator(modifier, reference, "Opacity 1 Start", 3, 1f);
                         SingleGenerator(modifier, reference, "Hue 1 Start", 4, 0f);
                         SingleGenerator(modifier, reference, "Saturation 1 Start", 5, 0f);
                         SingleGenerator(modifier, reference, "Value 1 Start", 6, 0f);
 
-                        ColorGenerator(modifier, reference, "Color 2 Start", 7, colorSource);
+                        ColorGenerator(modifier, reference, "Color 2 Start", 7, source);
                         SingleGenerator(modifier, reference, "Opacity 2 Start", 8, 1f);
                         SingleGenerator(modifier, reference, "Hue 2 Start", 9, 0f);
                         SingleGenerator(modifier, reference, "Saturation 2 Start", 10, 0f);
@@ -3019,13 +3023,13 @@ namespace BetterLegacy.Editor.Data.Elements
 
                             BoolGenerator(modifier, reference, "Relative", i + 12, true);
 
-                            ColorGenerator(modifier, reference, "Color 1", i + 2, colorSource);
+                            ColorGenerator(modifier, reference, "Color 1", i + 2, source);
                             SingleGenerator(modifier, reference, "Opacity 1", i + 3, 1f);
                             SingleGenerator(modifier, reference, "Hue 1", i + 4, 0f);
                             SingleGenerator(modifier, reference, "Saturation 1", i + 5, 0f);
                             SingleGenerator(modifier, reference, "Value 1", i + 6, 0f);
 
-                            ColorGenerator(modifier, reference, "Color 2", i + 7, colorSource);
+                            ColorGenerator(modifier, reference, "Color 2", i + 7, source);
                             SingleGenerator(modifier, reference, "Opacity 2", i + 8, 1f);
                             SingleGenerator(modifier, reference, "Hue 2", i + 9, 0f);
                             SingleGenerator(modifier, reference, "Saturation 2", i + 10, 0f);
