@@ -688,148 +688,161 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             if (jn["e"] != null)
             {
+                EventKeyframe prevEventKeyframe = null;
                 // Position
+                for (int j = 0; j < jn["e"][0]["k"].Count; j++)
                 {
-                    for (int j = 0; j < jn["e"][0]["k"].Count; j++)
-                    {
-                        var eventKeyframe = new EventKeyframe();
-                        var kfjn = jn["e"][0]["k"][j];
+                    var eventKeyframe = new EventKeyframe();
+                    var kfjn = jn["e"][0]["k"][j];
 
-                        eventKeyframe.id = LSText.randomNumString(8);
+                    eventKeyframe.id = LSText.randomNumString(8);
 
-                        eventKeyframe.time = kfjn["t"].AsFloat;
+                    eventKeyframe.time = (float)kfjn["t"].AsDouble;
 
-                        if (kfjn["ct"] != null)
-                            eventKeyframe.curve = Parser.TryParse(kfjn["ct"], Easing.Linear);
+                    if (prevEventKeyframe && prevEventKeyframe.time == eventKeyframe.time)
+                        prevEventKeyframe.time -= 0.01f;
 
-                        eventKeyframe.SetValues(
-                            kfjn["ev"][0].AsFloat,
-                            kfjn["ev"][1].AsFloat,
-                            // camera parent in alpha is above all other objects for some reason
-                            isCameraParented ? -10f : 0f);
+                    if (kfjn["ct"] != null)
+                        eventKeyframe.curve = Parser.TryParse(kfjn["ct"], Easing.Linear);
 
-                        eventKeyframe.random = kfjn["r"].AsInt;
+                    eventKeyframe.SetValues(
+                        kfjn["ev"][0].AsFloat,
+                        kfjn["ev"][1].AsFloat,
+                        // camera parent in alpha is above all other objects for some reason
+                        isCameraParented ? -10f : 0f);
 
-                        eventKeyframe.SetRandomValues(
-                            kfjn["er"][0].AsFloat,
-                            kfjn["er"][1].AsFloat,
-                            kfjn["er"][2].AsFloat,
-                            0f);
+                    eventKeyframe.random = kfjn["r"].AsInt;
 
-                        eventKeyframe.relative = false;
-                        events[0].Add(eventKeyframe);
-                    }
+                    eventKeyframe.SetRandomValues(
+                        kfjn["er"][0].AsFloat,
+                        kfjn["er"][1].AsFloat,
+                        kfjn["er"][2].AsFloat,
+                        0f);
+
+                    eventKeyframe.relative = false;
+                    events[0].Add(eventKeyframe);
+                    prevEventKeyframe = eventKeyframe;
                 }
 
+                prevEventKeyframe = null;
                 // Scale
+                for (int j = 0; j < jn["e"][1]["k"].Count; j++)
                 {
-                    for (int j = 0; j < jn["e"][1]["k"].Count; j++)
-                    {
-                        var eventKeyframe = new EventKeyframe();
-                        var kfjn = jn["e"][1]["k"][j];
+                    var eventKeyframe = new EventKeyframe();
+                    var kfjn = jn["e"][1]["k"][j];
 
-                        eventKeyframe.id = LSText.randomNumString(8);
+                    eventKeyframe.id = LSText.randomNumString(8);
 
-                        eventKeyframe.time = kfjn["t"].AsFloat;
+                    eventKeyframe.time = (float)kfjn["t"].AsDouble;
 
-                        if (kfjn["ct"] != null)
-                            eventKeyframe.curve = Parser.TryParse(kfjn["ct"], Easing.Linear);
+                    if (prevEventKeyframe && prevEventKeyframe.time == eventKeyframe.time)
+                        prevEventKeyframe.time -= 0.01f;
 
-                        eventKeyframe.SetValues(
-                            kfjn["ev"][0].AsFloat,
-                            kfjn["ev"][1].AsFloat);
+                    if (kfjn["ct"] != null)
+                        eventKeyframe.curve = Parser.TryParse(kfjn["ct"], Easing.Linear);
 
-                        eventKeyframe.random = kfjn["r"].AsInt;
+                    eventKeyframe.SetValues(
+                        kfjn["ev"][0].AsFloat,
+                        kfjn["ev"][1].AsFloat);
 
-                        eventKeyframe.SetRandomValues(
-                            kfjn["er"][0].AsFloat,
-                            kfjn["er"][1].AsFloat,
-                            kfjn["er"][2].AsFloat);
+                    eventKeyframe.random = kfjn["r"].AsInt;
 
-                        eventKeyframe.relative = false;
-                        events[1].Add(eventKeyframe);
-                    }
+                    eventKeyframe.SetRandomValues(
+                        kfjn["er"][0].AsFloat,
+                        kfjn["er"][1].AsFloat,
+                        kfjn["er"][2].AsFloat);
+
+                    eventKeyframe.relative = false;
+                    events[1].Add(eventKeyframe);
+                    prevEventKeyframe = eventKeyframe;
                 }
 
+                prevEventKeyframe = null;
                 // Rotation
+                for (int j = 0; j < jn["e"][2]["k"].Count; j++)
                 {
-                    for (int j = 0; j < jn["e"][2]["k"].Count; j++)
-                    {
-                        var eventKeyframe = new EventKeyframe();
-                        var kfjn = jn["e"][2]["k"][j];
+                    var eventKeyframe = new EventKeyframe();
+                    var kfjn = jn["e"][2]["k"][j];
 
-                        eventKeyframe.id = LSText.randomNumString(8);
+                    eventKeyframe.id = LSText.randomNumString(8);
 
-                        eventKeyframe.time = kfjn["t"].AsFloat;
+                    eventKeyframe.time = (float)kfjn["t"].AsDouble;
 
-                        if (kfjn["ct"] != null)
-                            eventKeyframe.curve = Parser.TryParse(kfjn["ct"], Easing.Linear);
+                    // fixes cases where the keyframe times are merged for some reason.
+                    if (prevEventKeyframe && prevEventKeyframe.time == eventKeyframe.time)
+                        prevEventKeyframe.time -= 0.01f;
 
-                        eventKeyframe.SetValues(
-                            kfjn["ev"][0].AsFloat);
+                    if (kfjn["ct"] != null)
+                        eventKeyframe.curve = Parser.TryParse(kfjn["ct"], Easing.Linear);
 
-                        eventKeyframe.random = kfjn["r"].AsInt;
+                    eventKeyframe.SetValues(
+                        kfjn["ev"][0].AsFloat);
 
-                        eventKeyframe.SetRandomValues(
-                            kfjn["er"][0].AsFloat,
-                            kfjn["er"][1].AsFloat,
-                            kfjn["er"][2].AsFloat);
+                    eventKeyframe.random = kfjn["r"].AsInt;
 
-                        eventKeyframe.relative = true;
-                        if (version >= new Version(ProjectArrhythmia.Versions.FIXED_ROTATION_SHAKE) && kfjn["ev"].Count > 1 && !kfjn["ev"][1].IsNull && kfjn["ev"][1].AsFloat == 1)
-                            eventKeyframe.relative = false;
+                    eventKeyframe.SetRandomValues(
+                        kfjn["er"][0].AsFloat,
+                        kfjn["er"][1].AsFloat,
+                        kfjn["er"][2].AsFloat);
 
-                        events[2].Add(eventKeyframe);
-                    }
+                    eventKeyframe.relative = true;
+                    if (version >= new Version(ProjectArrhythmia.Versions.FIXED_ROTATION_SHAKE) && kfjn["ev"].Count > 1 && !kfjn["ev"][1].IsNull && kfjn["ev"][1].AsFloat == 1)
+                        eventKeyframe.relative = false;
+
+                    events[2].Add(eventKeyframe);
+                    prevEventKeyframe = eventKeyframe;
                 }
 
+                prevEventKeyframe = null;
                 // Color
+                for (int j = 0; j < jn["e"][3]["k"].Count; j++)
                 {
-                    for (int j = 0; j < jn["e"][3]["k"].Count; j++)
-                    {
-                        var eventKeyframe = new EventKeyframe();
-                        var kfjn = jn["e"][3]["k"][j];
+                    var eventKeyframe = new EventKeyframe();
+                    var kfjn = jn["e"][3]["k"][j];
 
-                        eventKeyframe.id = LSText.randomNumString(8);
+                    eventKeyframe.id = LSText.randomNumString(8);
 
-                        eventKeyframe.time = kfjn["t"].AsFloat;
+                    eventKeyframe.time = (float)kfjn["t"].AsDouble;
 
-                        if (kfjn["ct"] != null)
-                            eventKeyframe.curve = Parser.TryParse(kfjn["ct"], Easing.Linear);
+                    if (prevEventKeyframe && prevEventKeyframe.time == eventKeyframe.time)
+                        prevEventKeyframe.time -= 0.01f;
 
-                        // 0 = start color slot
-                        // 1 = start opacity
-                        // 2 = start hue
-                        // 3 = start saturation
-                        // 4 = start value
-                        // 5 = end color slot
-                        // 6 = end opacity
-                        // 7 = end hue
-                        // 8 = end saturation
-                        // 9 = end value
-                        eventKeyframe.SetValues(
-                            kfjn["ev"][0].AsFloat,
-                            kfjn["ev"].Count <= 1 ? 0f : (-(kfjn["ev"][1].AsFloat / 100f) + 1f),
-                            0f,
-                            0f,
-                            0f,
-                            kfjn["ev"].Count <= 2 ? 0f : kfjn["ev"][2].AsFloat,
-                            10f,
-                            0f,
-                            0f,
-                            0f);
+                    if (kfjn["ct"] != null)
+                        eventKeyframe.curve = Parser.TryParse(kfjn["ct"], Easing.Linear);
 
-                        eventKeyframe.random = kfjn["r"].AsInt;
+                    // 0 = start color slot
+                    // 1 = start opacity
+                    // 2 = start hue
+                    // 3 = start saturation
+                    // 4 = start value
+                    // 5 = end color slot
+                    // 6 = end opacity
+                    // 7 = end hue
+                    // 8 = end saturation
+                    // 9 = end value
+                    eventKeyframe.SetValues(
+                        kfjn["ev"][0].AsFloat,
+                        kfjn["ev"].Count <= 1 ? 0f : (-(kfjn["ev"][1].AsFloat / 100f) + 1f),
+                        0f,
+                        0f,
+                        0f,
+                        kfjn["ev"].Count <= 2 ? 0f : kfjn["ev"][2].AsFloat,
+                        10f,
+                        0f,
+                        0f,
+                        0f);
 
-                        eventKeyframe.SetRandomValues(
-                            kfjn["er"][0].AsFloat,
-                            kfjn["er"][1].AsFloat,
-                            kfjn["er"][2].AsFloat,
-                            0f);
+                    eventKeyframe.random = kfjn["r"].AsInt;
 
-                        eventKeyframe.relative = false;
-                        events[3].Add(eventKeyframe);
-                    }
+                    eventKeyframe.SetRandomValues(
+                        kfjn["er"][0].AsFloat,
+                        kfjn["er"][1].AsFloat,
+                        kfjn["er"][2].AsFloat,
+                        0f);
+
+                    eventKeyframe.relative = false;
+                    events[3].Add(eventKeyframe);
+                    prevEventKeyframe = eventKeyframe;
                 }
 
                 SortKeyframes(events);
