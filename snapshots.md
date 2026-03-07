@@ -1,4 +1,16 @@
-﻿# snapshot-2026.3.2 - (Story Playtest) [Mar 7, 2026]
+﻿# ???
+## Changes
+- Changed the animateColorKF modifier Color Source value to fit with the other color modifiers.
+
+## Fixes
+- Fixed Opacity Collision not disabling at start if the opacity is less than 1.
+- Fixed cases a VG level would have keyframes at the same time.
+- Fixed the Parent Self value on Prefab Objects not working with other parent settings.
+- Objects now should properly reset on Prefab Object spawn.
+
+-------------------------------------------------------------------
+
+# snapshot-2026.3.2 - (Story Playtest) [Mar 7, 2026]
 ## Features
 ### Story
 - Attack additions to certain levels.
