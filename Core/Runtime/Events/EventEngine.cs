@@ -1925,7 +1925,7 @@ namespace BetterLegacy.Core.Runtime.Events
         void UpdateShockwaveIntensity(float x)
         {
             if (RTEventManager.inst.shockwave)
-                RTEventManager.inst.shockwave.intensity = x;
+                RTEventManager.inst.shockwave.intensity = !EventsConfig.Instance.ShowFX.Value ? 0f : x;
         }
         
         // 40 - 1
