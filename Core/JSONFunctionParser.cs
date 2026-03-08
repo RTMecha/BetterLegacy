@@ -1402,7 +1402,7 @@ namespace BetterLegacy.Core
 
                 #endregion
 
-                #region
+                #region SetOnLevelCompleteFunc
 
                 case "SetOnLevelCompleteFunc": {
                         if (parameters == null)
