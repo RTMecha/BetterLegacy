@@ -430,6 +430,7 @@ namespace BetterLegacy.Core.Runtime.Events
                         }
 
                         bool isLerper = IsLerper(i, j);
+                        bool isMode = IsMode(i, j);
 
                         if (float.IsNaN(prev) || !isLerper)
                             prev = 0f;
@@ -440,7 +441,7 @@ namespace BetterLegacy.Core.Runtime.Events
                         if (!isLerper)
                             next = 1f;
 
-                        var x = RTMath.Lerp(prev, next, Ease.GetEaseFunction(nextKF.curve.ToString())(RTMath.InverseLerp(prevKF.time, nextKF.time, time)));
+                        var x = isMode ? prev : RTMath.Lerp(prev, next, Ease.GetEaseFunction(nextKF.curve.ToString())(RTMath.InverseLerp(prevKF.time, nextKF.time, time)));
 
                         if (prevKFIndex == nextKFIndex)
                             x = next;
@@ -709,6 +710,15 @@ namespace BetterLegacy.Core.Runtime.Events
 
         bool IsLerper(int i, int j)
             => !(i == 4 || i == 6 && j == 4 || i == 7 && j == 6 || i == 15 && (j == 2 || j == 3) || i == 20 && j == 0 || i == 22 && j == 6 || i == 23 && j == 6 || i == 30 && j == 2);
+
+        bool IsMode(int type, int valueIndex)
+            => type == 11 && valueIndex == 5 ||
+            type == 13 && valueIndex == 1 ||
+            type == 15 &&
+            valueIndex == 4 ||
+            type == 16 && valueIndex == 1 ||
+            type == 27 && valueIndex == 9 ||
+            type == 29 && valueIndex == 1;
 
         bool SupportsRelative(int type, int valueIndex) => !(type switch
         {
