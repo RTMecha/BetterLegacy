@@ -1,12 +1,25 @@
-﻿# ???
+﻿# snapshot-2026.3.3 - (Story Playtest) [Mar 8, 2026]
+## Features
+### Core
+- Image objects now support Asset Pack images.
+
 ## Changes
+### Core
 - Changed the animateColorKF modifier Color Source value to fit with the other color modifiers.
+- Tweaked DevPlus player model to be closer to the actual modern player in terms of controls. VG levels will default to this.
+- Removed Use Seed Based Random setting since seed-based random is pretty consistent now.
+- Mode event values now automatically use instant easing since there they don't actually transition.
+
+### Story
+- Updated a certain level.
 
 ## Fixes
 - Fixed Opacity Collision not disabling at start if the opacity is less than 1.
 - Fixed cases a VG level would have keyframes at the same time.
+- Fixed some triangles not having the correct option in VG levels.
 - Fixed the Parent Self value on Prefab Objects not working with other parent settings.
 - Objects now should properly reset on Prefab Object spawn.
+- Fixed some issues with story interfaces.
 
 -------------------------------------------------------------------
 
