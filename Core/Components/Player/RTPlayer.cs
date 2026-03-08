@@ -1548,7 +1548,7 @@ namespace BetterLegacy.Core.Components.Player
 
             animationController.speed = pitch;
 
-            if (GameData.Current.data.level.allowPlayerModelControls && !Model)
+            if (!Model)
                 return;
 
             var control = Core.GetControl();
