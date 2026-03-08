@@ -10,14 +10,6 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
     /// </summary>
     public class ImageObject : VisualObject
     {
-        public SpriteRenderer spriteRenderer;
-
-        public Material material;
-
-        public string path;
-
-        Color color;
-
         public ImageObject(GameObject gameObject, float opacity, string text, int renderType, Sprite imageData)
         {
             this.gameObject = gameObject;
@@ -36,11 +28,35 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
             UpdateImage(text, imageData);
         }
 
+        #region Values
+
+        /// <summary>
+        /// Sprite renderer of the image object.
+        /// </summary>
+        public SpriteRenderer spriteRenderer;
+
+        /// <summary>
+        /// Material of the image object.
+        /// </summary>
+        public Material material;
+
+        /// <summary>
+        /// Path to the image.
+        /// </summary>
+        public string path;
+
+        Color color;
+
+        #endregion
+
+        #region Functions
+
         /// <summary>
         /// Updates the image objects' collision.
         /// </summary>
         public void UpdateCollider()
         {
+            // check if image objects can be selectable
             if (ProjectArrhythmia.State.InEditor && EditorConfig.Instance.SelectImageObjectsInPreview.Value)
             {
                 var collider = gameObject.AddComponent<BoxCollider2D>();
@@ -52,6 +68,29 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
             else if (collider)
                 CoreHelper.Destroy(collider);
         }
+
+        public override void Clear()
+        {
+            base.Clear();
+            material = null;
+            spriteRenderer = null;
+        }
+
+        #region Colors
+
+        public override void SetColor(Color color)
+        {
+            this.color = color;
+            material?.SetColor(new Color(color.r, color.g, color.b, color.a * opacity));
+        }
+
+        public override void SetPrimaryColor(Color color) => material.color = color;
+
+        public override Color GetPrimaryColor() => color;
+
+        #endregion
+
+        #region Update Image
 
         /// <summary>
         /// Updates the image object.
@@ -70,34 +109,22 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
             var regex = new System.Text.RegularExpressions.Regex(@"img\((.*?)\)");
             var match = regex.Match(text);
 
-            path = match.Success ? RTFile.CombinePaths(RTFile.BasePath, match.Groups[1].ToString()) : RTFile.CombinePaths(RTFile.BasePath, text);
+            path =
+                // allow asset pack images
+                AssetPack.TryGetFile(text, out string assetPackFile) ? assetPackFile :
+                // use old image system (idk why this was the way it was done but whatever)
+                match.Success ? RTFile.CombinePaths(RTFile.BasePath, match.Groups[1].ToString()) : 
+                // get the full path
+                RTFile.CombinePaths(RTFile.BasePath, text);
 
             if (!RTFile.FileExists(path))
             {
-                // allow asset pack images
-                if (AssetPack.TryGetFile(path, out string assetPackFile))
-                {
-                    CoroutineHelper.StartCoroutine(AlephNetwork.DownloadImageTexture("file://" + assetPackFile, SetTexture, SetDefaultSprite));
-                    return;
-                }
-
-
                 SetDefaultSprite();
                 return;
             }
 
             CoroutineHelper.StartCoroutine(AlephNetwork.DownloadImageTexture("file://" + path, SetTexture, SetDefaultSprite));
         }
-
-        public override void SetColor(Color color)
-        {
-            this.color = color;
-            material?.SetColor(new Color(color.r, color.g, color.b, color.a * opacity));
-        }
-
-        public override void SetPrimaryColor(Color color) => material.color = color;
-
-        public override Color GetPrimaryColor() => color;
 
         /// <summary>
         /// Sets the image objects' image to the default image.
@@ -124,11 +151,8 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
             UpdateCollider();
         }
 
-        public override void Clear()
-        {
-            base.Clear();
-            material = null;
-            spriteRenderer = null;
-        }
+        #endregion
+
+        #endregion
     }
 }

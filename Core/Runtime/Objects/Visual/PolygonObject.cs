@@ -10,6 +10,17 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
     /// </summary>
     public class PolygonObject : SolidObject
     {
+        public PolygonObject(GameObject gameObject, float opacity, bool hasCollider, bool solid, int renderType, bool opacityCollision, int gradientType, float gradientScale, float gradientRotation, int colorBlendMode, PolygonShape polygonShape) : base(gameObject, opacity, hasCollider, solid, renderType, opacityCollision, gradientType, gradientScale, gradientRotation, colorBlendMode)
+        {
+            meshFilter = gameObject.GetComponent<MeshFilter>();
+
+            polygonCollider = collider as PolygonCollider2D;
+
+            UpdatePolygon(polygonShape);
+        }
+
+        #region Values
+
         MeshFilter meshFilter;
         PolygonCollider2D polygonCollider;
 
@@ -23,14 +34,18 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
         float thicknessRotation = 0f;
         float angle = 0f;
 
-        public PolygonObject(GameObject gameObject, float opacity, bool hasCollider, bool solid, int renderType, bool opacityCollision, int gradientType, float gradientScale, float gradientRotation, int colorBlendMode, PolygonShape polygonShape) : base(gameObject, opacity, hasCollider, solid, renderType, opacityCollision, gradientType, gradientScale, gradientRotation, colorBlendMode)
+        #endregion
+
+        #region Functions
+
+        public override void Clear()
         {
-            meshFilter = gameObject.GetComponent<MeshFilter>();
-
-            polygonCollider = collider as PolygonCollider2D;
-
-            UpdatePolygon(polygonShape);
+            base.Clear();
+            meshFilter = null;
+            polygonCollider = null;
         }
+
+        #region Update Polygon
 
         /// <summary>
         /// Updates the custom polygon.
@@ -83,11 +98,8 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
             VGShapes.RoundedRingMesh(meshFilter, polygonCollider, radius, sides, roundness, thickness, slices, thicknessOffset, thicknessScale, angle, thicknessRotation);
         }
 
-        public override void Clear()
-        {
-            base.Clear();
-            meshFilter = null;
-            polygonCollider = null;
-        }
+        #endregion
+
+        #endregion
     }
 }

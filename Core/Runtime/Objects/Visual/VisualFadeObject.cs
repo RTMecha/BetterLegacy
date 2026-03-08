@@ -9,14 +9,14 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
     /// </summary>
     public class VisualFadeObject : Exists
     {
-        public VisualFadeObject() { }
-
         public VisualFadeObject(GameObject gameObject, Renderer renderer, MeshFilter meshFilter)
         {
             this.gameObject = gameObject;
             this.renderer = renderer;
             this.meshFilter = meshFilter;
         }
+
+        #region Values
 
         /// <summary>
         /// The visual objects' game object.
@@ -31,6 +31,10 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
         /// </summary>
         public MeshFilter meshFilter;
         public bool Active { get; set; } = true;
+
+        #endregion
+
+        #region Functions
 
         /// <summary>
         /// Sets the active state of the visual object.
@@ -48,5 +52,7 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
             if (renderer)
                 renderer.material.color = color;
         }
+
+        #endregion
     }
 }

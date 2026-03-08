@@ -12,6 +12,23 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
     /// </summary>
     public class SolidObject : VisualObject
     {
+        public SolidObject(GameObject gameObject, float opacity, bool deco, bool solid, int renderType, bool opacityCollision, int gradientType, float gradientScale, float gradientRotation, int colorBlendMode)
+        {
+            this.gameObject = gameObject;
+
+            this.opacity = opacity;
+
+            renderer = gameObject.GetComponent<Renderer>();
+            renderer.enabled = true;
+
+            collider = gameObject.GetComponent<Collider2D>();
+
+            UpdateRendering(gradientType, renderType, false, gradientScale, gradientRotation, colorBlendMode);
+            UpdateCollider(deco, solid, opacityCollision);
+        }
+        
+        #region Values
+
         /// <summary>
         /// Material of the solid object.
         /// </summary>
@@ -97,20 +114,9 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
         Color primaryColor;
         Color secondaryColor;
 
-        public SolidObject(GameObject gameObject, float opacity, bool deco, bool solid, int renderType, bool opacityCollision, int gradientType, float gradientScale, float gradientRotation, int colorBlendMode)
-        {
-            this.gameObject = gameObject;
+        #endregion
 
-            this.opacity = opacity;
-
-            renderer = gameObject.GetComponent<Renderer>();
-            renderer.enabled = true;
-
-            collider = gameObject.GetComponent<Collider2D>();
-
-            UpdateRendering(gradientType, renderType, false, gradientScale, gradientRotation, colorBlendMode);
-            UpdateCollider(deco, solid, opacityCollision);
-        }
+        #region Functions
 
         /// <summary>
         /// Updates the solid objects' collision.
@@ -152,6 +158,14 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
             if (isGradient)
                 TranslateGradient(gradientScale, gradientRotation);
         }
+
+        public override void Clear()
+        {
+            base.Clear();
+            material = null;
+        }
+
+        #region Color
 
         public override void InterpolateColor(float time)
         {
@@ -236,6 +250,10 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
         /// <returns>Returns the gradient colors.</returns>
         public GradientColors GetColors() => new GradientColors(GetColor(true), GetColor(false));
 
+        #endregion
+
+        #region Materials
+
         /// <summary>
         /// Changes the scale and rotation of the gradient.
         /// </summary>
@@ -310,6 +328,10 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
             SetOutline(outlineData.color, outlineData.width);
             SetEditorOutline(editorOutlineData.color, editorOutlineData.width);
         }
+
+        #endregion
+
+        #region Outline
 
         /// <summary>
         /// Gets the outline material.
@@ -416,10 +438,8 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
             material.SetFloat("_OutlineWidth", outlineWidth);
         }
 
-        public override void Clear()
-        {
-            base.Clear();
-            material = null;
-        }
+        #endregion
+
+        #endregion
     }
 }

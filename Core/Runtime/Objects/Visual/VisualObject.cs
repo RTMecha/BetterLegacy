@@ -12,6 +12,8 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
     /// </summary>
     public abstract class VisualObject : Exists
     {
+        #region Values
+
         /// <summary>
         /// The visual objects' game object.
         /// </summary>
@@ -62,6 +64,10 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
         /// </summary>
         public bool isGradient;
 
+        #endregion
+
+        #region Functions
+
         /// <summary>
         /// Sets the render type layer of the object.
         /// </summary>
@@ -76,6 +82,54 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
                 _ => RTLevel.FOREGROUND_LAYER,
             };
         }
+
+        /// <summary>
+        /// Clears the visual object data.
+        /// </summary>
+        public virtual void Clear()
+        {
+            gameObject = null;
+            renderer = null;
+            collider = null;
+        }
+
+        #region Origin
+
+        /// <summary>
+        /// Sets the origin of the visual object.
+        /// </summary>
+        /// <param name="origin">Origin to set.</param>
+        public virtual void SetOrigin(Vector3 origin)
+        {
+            if (!gameObject)
+                return;
+
+            gameObject.transform.localPosition = origin;
+        }
+
+        /// <summary>
+        /// Sets the scale offset of the visual object.
+        /// </summary>
+        /// <param name="scale">Scale to set.</param>
+        public void SetScaleOffset(Vector2 scale)
+        {
+            if (gameObject)
+                gameObject.transform.localScale = new Vector3(scale.x, scale.y, 1f);
+        }
+
+        /// <summary>
+        /// Sets the rotation offset of the visual object.
+        /// </summary>
+        /// <param name="rot">Rotation to set.</param>
+        public void SetRotationOffset(float rot)
+        {
+            if (gameObject)
+                gameObject.transform.localRotation = Quaternion.Euler(0f, 0f, rot);
+        }
+
+        #endregion
+
+        #region Colors
 
         /// <summary>
         /// Interpolates the visual objects' colors.
@@ -113,46 +167,8 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
         /// <returns>Returns the secondary color of the gradient object.</returns>
         public virtual Color GetSecondaryColor() => LSColors.pink500;
 
-        /// <summary>
-        /// Sets the origin of the visual object.
-        /// </summary>
-        /// <param name="origin">Origin to set.</param>
-        public virtual void SetOrigin(Vector3 origin)
-        {
-            if (!gameObject)
-                return;
+        #endregion
 
-            gameObject.transform.localPosition = origin;
-        }
-
-        /// <summary>
-        /// Sets the scale offset of the visual object.
-        /// </summary>
-        /// <param name="scale">Scale to set.</param>
-        public void SetScaleOffset(Vector2 scale)
-        {
-            if (gameObject)
-                gameObject.transform.localScale = new Vector3(scale.x, scale.y, 1f);
-        }
-
-        /// <summary>
-        /// Sets the rotation offset of the visual object.
-        /// </summary>
-        /// <param name="rot">Rotation to set.</param>
-        public void SetRotationOffset(float rot)
-        {
-            if (gameObject)
-                gameObject.transform.localRotation = Quaternion.Euler(0f, 0f, rot);
-        }
-
-        /// <summary>
-        /// Clears the visual object data.
-        /// </summary>
-        public virtual void Clear()
-        {
-            gameObject = null;
-            renderer = null;
-            collider = null;
-        }
+        #endregion
     }
 }

@@ -12,13 +12,6 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
     /// </summary>
     public class TextObject : VisualObject
     {
-        public TextMeshPro textMeshPro;
-
-        readonly bool autoTextAlign;
-        public string text;
-
-        Color color;
-
         public TextObject(GameObject gameObject, float opacity, string text, bool autoTextAlign, TextAlignmentOptions textAlignment, int renderType)
         {
             this.gameObject = gameObject;
@@ -41,6 +34,26 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
             UpdateCollider();
         }
 
+        #region Values
+
+        /// <summary>
+        /// TMP text reference.
+        /// </summary>
+        public TextMeshPro textMeshPro;
+
+        readonly bool autoTextAlign;
+
+        /// <summary>
+        /// Text of the text object.
+        /// </summary>
+        public string text;
+
+        Color color;
+
+        #endregion
+
+        #region Functions
+
         /// <summary>
         /// Updates the text objects' collision.
         /// </summary>
@@ -62,6 +75,26 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
                 CoreHelper.Destroy(collider);
         }
 
+        public override void SetOrigin(Vector3 origin)
+        {
+            if (!gameObject)
+                return;
+
+            if (textMeshPro && autoTextAlign)
+                textMeshPro.alignment = autoTextAlign ? GetAlignment(origin) : TextAlignmentOptions.Center;
+
+            if (!autoTextAlign)
+                gameObject.transform.localPosition = origin;
+        }
+
+        public override void Clear()
+        {
+            base.Clear();
+            textMeshPro = null;
+        }
+
+        #region Text
+
         /// <summary>
         /// Sets the text objects' text.
         /// </summary>
@@ -78,28 +111,6 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
         /// <returns>Returns the text of the text object.</returns>
         public string GetText() => textMeshPro ? textMeshPro.text : string.Empty;
 
-        public override void SetColor(Color color)
-        {
-            this.color = color;
-            textMeshPro.color = new Color(color.r, color.g, color.b, color.a * opacity);
-        }
-
-        public override void SetPrimaryColor(Color color) => textMeshPro.color = color;
-
-        public override Color GetPrimaryColor() => color;
-
-        public override void SetOrigin(Vector3 origin)
-        {
-            if (!gameObject)
-                return;
-
-            if (textMeshPro && autoTextAlign)
-                textMeshPro.alignment = autoTextAlign ? GetAlignment(origin) : TextAlignmentOptions.Center;
-
-            if (!autoTextAlign)
-                gameObject.transform.localPosition = origin;
-        }
-
         /// <summary>
         /// Gets the automatic alignment of the text object based on the origin.
         /// </summary>
@@ -113,10 +124,22 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
             _ => TextAlignmentOptions.Center,
         };
 
-        public override void Clear()
+        #endregion
+
+        #region Colors
+
+        public override void SetColor(Color color)
         {
-            base.Clear();
-            textMeshPro = null;
+            this.color = color;
+            textMeshPro.color = new Color(color.r, color.g, color.b, color.a * opacity);
         }
+
+        public override void SetPrimaryColor(Color color) => textMeshPro.color = color;
+
+        public override Color GetPrimaryColor() => color;
+
+        #endregion
+
+        #endregion
     }
 }
