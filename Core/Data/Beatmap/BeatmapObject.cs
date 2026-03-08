@@ -923,7 +923,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                             shapeOption = 1;
                             origin.y = TRIANGLE_BOTTOM_OFFSET;
                         }
-                        else
+                        else if (shapeOption > 5)
                             ShapeType = ShapeType.Polygon;
 
                         break;
