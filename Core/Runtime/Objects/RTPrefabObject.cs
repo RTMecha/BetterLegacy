@@ -36,6 +36,14 @@ namespace BetterLegacy.Core.Runtime.Objects
             UpdateActive();
         }
 
+        #region Values
+
+        public RTLevelBase ParentRuntime { get; set; }
+
+        public Transform Parent { get; set; }
+
+        #region References
+
         /// <summary>
         /// Prefab package.
         /// </summary>
@@ -46,16 +54,24 @@ namespace BetterLegacy.Core.Runtime.Objects
         /// </summary>
         public PrefabObject PrefabObject { get; set; }
 
+        #endregion
+
+        #region Spawning
+
         /// <summary>
         /// Spawner package.
         /// </summary>
         public PrefabSpawner Spawner { get; set; } = new PrefabSpawner();
 
-        public RTLevelBase ParentRuntime { get; set; }
-
-        public Transform Parent { get; set; }
-
         public override Transform SpawnParent { get; set; }
+
+        #endregion
+
+        #region Time
+
+        public float StartTime { get; set; }
+
+        public float KillTime { get; set; }
 
         public override float FixedTime => UseCustomTime ? CustomTime : GetTime(/*ParentRuntime.GetStartTime() + */ParentRuntime.FixedTime); // why did i do that?
 
@@ -69,6 +85,10 @@ namespace BetterLegacy.Core.Runtime.Objects
         /// </summary>
         public bool UseCustomTime { get; set; }
 
+        #endregion
+
+        #region Active States
+
         /// <summary>
         /// If the Runtime Prefab Object is currently active.
         /// </summary>
@@ -79,6 +99,17 @@ namespace BetterLegacy.Core.Runtime.Objects
         /// If the Runtime Prefab Object is currently active. Used for modifiers.
         /// </summary>
         public bool CustomActive { get; set; } = true;
+
+        /// <summary>
+        /// Triggers when active state changes.
+        /// </summary>
+        public Action<bool> onActiveChanged;
+
+        bool prevActive;
+
+        #endregion
+
+        #region Transforms
 
         /// <summary>
         /// Position offset of the Prefab Object.
@@ -95,12 +126,43 @@ namespace BetterLegacy.Core.Runtime.Objects
         /// </summary>
         public Vector3 Rotation { get; set; }
 
-        /// <summary>
-        /// Triggers when active state changes.
-        /// </summary>
-        public Action<bool> onActiveChanged;
+        #endregion
 
-        bool prevActive;
+        #region Parent
+
+        public bool CachedParentSelf { get; set; }
+
+        public float Depth { get; set; }
+
+        public bool CameraParent { get; set; }
+
+        public bool PositionParent { get; set; }
+
+        public bool ScaleParent { get; set; }
+
+        public bool RotationParent { get; set; }
+
+        public float PositionParentOffset { get; set; }
+
+        public float ScaleParentOffset { get; set; }
+
+        public float RotationParentOffset { get; set; }
+
+        public Vector3 TopPosition { get; set; }
+
+        public Vector3 TopScale { get; set; } = Vector3.one;
+
+        public Vector3 TopRotation { get; set; }
+
+        public Vector3 CurrentScale { get; set; } // if scale is 0, 0 then disable collider and renderer
+
+        public List<ParentObject> ParentObjects { get; set; }
+
+        #endregion
+
+        #endregion
+
+        #region Main
 
         public override void Load()
         {
@@ -110,6 +172,229 @@ namespace BetterLegacy.Core.Runtime.Objects
             ApplyPrefab();
             Load(Spawner, false);
         }
+        
+        /// <summary>
+        /// Applies all objects stored in the Prefab to the level.
+        /// </summary>
+        public void ApplyPrefab()
+        {
+            var prefabObject = PrefabObject;
+
+            if (!prefabObject)
+            {
+                CoreHelper.LogError($"Cannot add a null Prefab Object to the level.");
+                return;
+            }
+
+            // reset transform offsets
+            prefabObject.ResetOffsets();
+
+            // get the prefab
+            var prefab = Prefab;
+            if (!prefab)
+                prefab = prefabObject.GetPrefab();
+
+            if (!prefab)
+            {
+                GameData.Current.prefabObjects.RemoveAll(x => x.prefabID == prefabObject.prefabID);
+                return;
+            }
+
+            // do not apply if prefab is empty or the prefab object is considered as expanded.
+            if (prefab.beatmapObjects.IsEmpty() && prefab.backgroundObjects.IsEmpty() && prefab.prefabs.IsEmpty() && prefab.prefabObjects.IsEmpty() || prefabObject.expanded)
+                return;
+
+            Spawner.Clear();
+
+            // repeat offset time to add to each iteration.
+            float t = 1f;
+            if (prefabObject.RepeatOffsetTime != 0f)
+                t = prefabObject.RepeatOffsetTime;
+            float timeToAdd = 0f;
+
+            // clear the expanded list.
+            if (prefabObject.expandedObjects == null)
+                prefabObject.expandedObjects = new List<IPrefabable>();
+            prefabObject.expandedObjects.Clear();
+
+            // apply prefabs for the sub-prefab objects to use
+            foreach (var subPrefab in prefab.prefabs)
+            {
+                var subPrefabCopy = subPrefab.Copy(false);
+                subPrefabCopy.CachedPrefab = Prefab;
+                subPrefabCopy.CachedPrefabObject = PrefabObject;
+
+                subPrefabCopy.fromPrefab = true;
+                subPrefabCopy.SetPrefabReference(prefabObject);
+
+                subPrefabCopy.originalID = subPrefab.id;
+                prefabObject.expandedObjects.Add(subPrefabCopy);
+                Spawner.Prefabs.Add(subPrefabCopy);
+            }
+
+            // start applying objects to the level
+            var startTime = GetStartTime();
+            for (int i = 0; i < prefabObject.RepeatCount + 1; i++)
+            {
+                // randomize object IDs and ensure that parent / id relations are kept.
+                var objectIDs = new List<IDPair>(prefab.beatmapObjects.Count);
+                for (int j = 0; j < prefab.beatmapObjects.Count; j++)
+                {
+                    var beatmapObject = prefab.beatmapObjects[j];
+                    objectIDs.Add(new IDPair(beatmapObject.id, RandomHelper.RandomString(RandomHelper.GetHash(beatmapObject.id + i + prefabObject.id, RandomHelper.CurrentSeed), 16)));
+                }
+
+                int num = 0;
+                foreach (var beatmapObject in prefab.beatmapObjects)
+                {
+                    var beatmapObjectCopy = beatmapObject.Copy(false);
+                    beatmapObjectCopy.CachedPrefab = beatmapObjectCopy.GetPrefab(Spawner.Prefabs);
+                    beatmapObjectCopy.CachedPrefabObject = PrefabObject;
+
+                    beatmapObjectCopy.id = objectIDs[num].newID;
+
+                    if (!string.IsNullOrEmpty(beatmapObject.Parent) && objectIDs.TryFind(x => x.oldID == beatmapObject.Parent, out IDPair idPair))
+                        beatmapObjectCopy.Parent = idPair.newID;
+                    else if (!string.IsNullOrEmpty(beatmapObject.Parent) && GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObject.Parent) == -1 && beatmapObject.Parent != "CAMERA_PARENT")
+                        beatmapObjectCopy.Parent = string.Empty;
+
+                    // if the parent self value is off, then parent values can be applied to the base object if a parent is selected.
+                    beatmapObjectCopy.fromPrefabBase = string.IsNullOrEmpty(beatmapObjectCopy.Parent);
+                    if (beatmapObjectCopy.fromPrefabBase && !string.IsNullOrEmpty(prefabObject.parent) && !prefabObject.parentSelf)
+                    {
+                        beatmapObjectCopy.Parent = prefabObject.parent;
+                        beatmapObjectCopy.parentType = prefabObject.parentType;
+                        beatmapObjectCopy.parentOffsets = prefabObject.parentOffsets;
+                        beatmapObjectCopy.parentAdditive = prefabObject.parentAdditive;
+                        beatmapObjectCopy.parallaxSettings = prefabObject.parentParallax;
+                        beatmapObjectCopy.desync = prefabObject.desync;
+                    }
+
+                    beatmapObjectCopy.fromPrefab = true;
+                    beatmapObjectCopy.SetPrefabReference(prefabObject);
+
+                    beatmapObjectCopy.StartTime += timeToAdd;
+
+                    // set autokill for objects inside of the prefab.
+                    if (prefabObject.autoKillType != PrefabAutoKillType.Regular && ((prefabObject.StartTime * prefabObject.Speed) + prefab.offset) + beatmapObjectCopy.SpawnDuration > prefabObject.autoKillOffset)
+                    {
+                        beatmapObjectCopy.autoKillType = AutoKillType.SongTime;
+                        beatmapObjectCopy.autoKillOffset = prefabObject.autoKillType == PrefabAutoKillType.StartTimeOffset ? ((prefabObject.StartTime * prefabObject.Speed) + prefab.offset) - prefabObject.autoKillOffset : prefabObject.autoKillOffset;
+                    }
+
+                    // offset song time since object start time is relative to the prefab runtime.
+                    if (beatmapObjectCopy.autoKillType == AutoKillType.SongTime)
+                        beatmapObjectCopy.autoKillOffset -= startTime;
+
+                    //if (beatmapObjectCopy.shape == 6 && !string.IsNullOrEmpty(beatmapObjectCopy.text) && prefab.assets.sprites.TryFind(x => x.name == beatmapObjectCopy.text, out SpriteAsset spriteAsset))
+                    //    GameData.Current.assets.sprites.Add(spriteAsset.Copy());
+
+                    beatmapObjectCopy.editorData.hidden = prefabObject.editorData.hidden;
+                    beatmapObjectCopy.editorData.selectable = prefabObject.editorData.selectable;
+
+                    // set the original ID so it can be referenced when an object changes.
+                    beatmapObjectCopy.originalID = beatmapObject.id;
+
+                    GameData.Current.beatmapObjects.Add(beatmapObjectCopy);
+                    prefabObject.expandedObjects.Add(beatmapObjectCopy);
+                    Spawner.BeatmapObjects.Add(beatmapObjectCopy);
+
+                    num++;
+                }
+
+                foreach (var backgroundObject in prefab.backgroundObjects)
+                {
+                    var backgroundObjectCopy = backgroundObject.Copy();
+                    backgroundObjectCopy.CachedPrefab = backgroundObjectCopy.GetPrefab(Spawner.Prefabs);
+                    backgroundObjectCopy.CachedPrefabObject = PrefabObject;
+
+                    backgroundObjectCopy.fromPrefab = true;
+                    backgroundObjectCopy.SetPrefabReference(prefabObject);
+
+                    backgroundObjectCopy.StartTime += timeToAdd;
+
+                    // set autokill for objects inside of the prefab.
+                    if (prefabObject.autoKillType != PrefabAutoKillType.Regular && prefabObject.StartTime + prefab.offset + backgroundObjectCopy.SpawnDuration > prefabObject.autoKillOffset)
+                    {
+                        backgroundObjectCopy.autoKillType = AutoKillType.SongTime;
+                        backgroundObjectCopy.autoKillOffset = prefabObject.autoKillType == PrefabAutoKillType.StartTimeOffset ? prefabObject.StartTime + prefab.offset + prefabObject.autoKillOffset : prefabObject.autoKillOffset;
+                    }
+
+                    // offset song time since object start time is relative to the prefab runtime.
+                    if (backgroundObjectCopy.autoKillType == AutoKillType.SongTime)
+                        backgroundObjectCopy.autoKillOffset -= startTime;
+
+                    //if (backgroundObjectCopy.shape == 6 && !string.IsNullOrEmpty(backgroundObjectCopy.text) && prefab.assets.sprites.TryFind(x => x.name == backgroundObjectCopy.text, out SpriteAsset spriteAsset))
+                    //    GameData.Current.assets.sprites.Add(spriteAsset.Copy());
+
+                    backgroundObjectCopy.editorData.hidden = prefabObject.editorData.hidden;
+                    backgroundObjectCopy.editorData.selectable = prefabObject.editorData.selectable;
+
+                    // set the original ID so it can be referenced when an object changes.
+                    backgroundObjectCopy.originalID = backgroundObject.id;
+
+                    GameData.Current.backgroundObjects.Add(backgroundObjectCopy);
+                    prefabObject.expandedObjects.Add(backgroundObjectCopy);
+                    Spawner.BackgroundObjects.Add(backgroundObjectCopy);
+                }
+
+                objectIDs = new List<IDPair>(prefab.prefabObjects.Count);
+                for (int j = 0; j < prefab.prefabObjects.Count; j++)
+                {
+                    var subPrefabObject = prefab.prefabObjects[j];
+                    objectIDs.Add(new IDPair(subPrefabObject.id, RandomHelper.RandomString(RandomHelper.GetHash(subPrefabObject.id + i + prefabObject.id, RandomHelper.CurrentSeed), 16)));
+                }
+
+                num = 0;
+                foreach (var subPrefabObject in prefab.prefabObjects)
+                {
+                    var subPrefabObjectCopy = subPrefabObject.Copy(false);
+                    subPrefabObjectCopy.CachedPrefab = subPrefabObjectCopy.GetPrefab(Spawner.Prefabs);
+                    subPrefabObjectCopy.CachedPrefabObject = PrefabObject;
+
+                    subPrefabObjectCopy.id = objectIDs[num].newID;
+
+                    if (!string.IsNullOrEmpty(subPrefabObject.Parent) && objectIDs.TryFind(x => x.oldID == subPrefabObject.Parent, out IDPair idPair))
+                        subPrefabObjectCopy.Parent = idPair.newID;
+                    else if (!string.IsNullOrEmpty(subPrefabObject.Parent) && GameData.Current.beatmapObjects.FindIndex(x => x.id == subPrefabObject.Parent) == -1 && subPrefabObject.Parent != "CAMERA_PARENT")
+                        subPrefabObjectCopy.Parent = string.Empty;
+
+                    // if the parent self value is off, then parent values can be applied to the base object if a parent is selected.
+                    subPrefabObjectCopy.fromPrefabBase = string.IsNullOrEmpty(subPrefabObjectCopy.Parent);
+                    if (subPrefabObjectCopy.fromPrefabBase && !string.IsNullOrEmpty(prefabObject.parent) && !prefabObject.parentSelf)
+                    {
+                        subPrefabObjectCopy.Parent = prefabObject.parent;
+                        subPrefabObjectCopy.parentType = prefabObject.parentType;
+                        subPrefabObjectCopy.parentOffsets = prefabObject.parentOffsets;
+                        subPrefabObjectCopy.parentAdditive = prefabObject.parentAdditive;
+                        subPrefabObjectCopy.parentParallax = prefabObject.parentParallax;
+                        subPrefabObjectCopy.desync = prefabObject.desync;
+                    }
+
+                    subPrefabObjectCopy.fromPrefab = true;
+                    subPrefabObjectCopy.SetPrefabReference(prefabObject);
+
+                    subPrefabObjectCopy.StartTime += timeToAdd;
+
+                    // offset song time since object start time is relative to the prefab runtime.
+                    if (subPrefabObjectCopy.autoKillType == PrefabAutoKillType.SongTime)
+                        subPrefabObjectCopy.autoKillOffset -= startTime;
+
+                    // set the original ID so it can be referenced when an object changes.
+                    subPrefabObjectCopy.originalID = subPrefabObject.id;
+
+                    GameData.Current.prefabObjects.Add(subPrefabObjectCopy);
+                    prefabObject.expandedObjects.Add(subPrefabObjectCopy);
+                    Spawner.PrefabObjects.Add(subPrefabObjectCopy);
+                    num++;
+                }
+
+                timeToAdd += t;
+            }
+        }
+
+        // implements Interpolate(float time) and runs Tick()
+        public void Interpolate(float time) => Tick();
 
         public override void Tick()
         {
@@ -141,6 +426,7 @@ namespace BetterLegacy.Core.Runtime.Objects
             OnPrefabModifiersTick(); // prefab modifiers update fifth
             OnPrefabObjectsTick(); // prefab objects update last
 
+            // interpolate parent chain if parent self value is on.
             if (PrefabObject.parentSelf && ParentObjects != null && !ParentObjects.IsEmpty())
             {
                 var time = PrefabObject.ParentDesync ? PrefabObject.offsetParentDesyncTime ? PrefabObject.StartTime : PrefabObject.StartTime + Prefab.offset : ParentRuntime.CurrentTime;
@@ -148,6 +434,7 @@ namespace BetterLegacy.Core.Runtime.Objects
                 this.UpdateCameraParent();
                 this.InterpolateParentChain(time, PrefabObject.FromPrefab, true);
             }
+            // offset spawn parent
             if (SpawnParent)
             {
                 SpawnParent.localPosition = Position + PrefabObject.PositionOffset + PrefabObject.fullTransform.position;
@@ -172,11 +459,22 @@ namespace BetterLegacy.Core.Runtime.Objects
             PrefabObject = null;
         }
 
-        public float StartTime { get; set; }
+        #endregion
 
-        public float KillTime { get; set; }
+        #region Time
 
         public override float GetStartTime() => PrefabObject.StartTime + Prefab.offset + ParentRuntime.GetStartTime();
+
+        /// <summary>
+        /// Calculates the runtimes' current time.
+        /// </summary>
+        /// <param name="time">Current time.</param>
+        /// <returns>Returns the calculated runtime time.</returns>
+        public float GetTime(float time) => (time * PrefabObject.Speed) - ((PrefabObject.StartTime * PrefabObject.Speed) + Prefab.offset);
+
+        #endregion
+
+        #region Active States
 
         public void SetActive(bool active)
         {
@@ -224,56 +522,52 @@ namespace BetterLegacy.Core.Runtime.Objects
             prevActive = isActive;
         }
 
-        #region Parent Chain
+        #endregion
 
+        #region Parent
+
+        /// <summary>
+        /// Initializes the parent chain.
+        /// </summary>
         public void InitParentChain()
         {
             var p = Creator.NewGameObject($"top - [{Prefab.name}]", ParentRuntime.SpawnParent).transform;
             TransferSpawned(p);
             CoreHelper.Delete(Parent);
             Parent = p;
-            if (PrefabObject.parentSelf)
+
+            // if parent self is off the parent is applied to base objects with no parents
+            if (!PrefabObject.parentSelf)
             {
-                var parentObjects = new List<ParentObject>(ParentObject.DEFAULT_PARENT_CHAIN_CAPACITY);
+                SpawnParent = Parent;
+                return;
+            }
 
-                GameObject gameObject = null;
-                PrefabObject.CachedParent = null;
-                if (!string.IsNullOrEmpty(PrefabObject.Parent) && GameData.Current.beatmapObjects.TryFind(x => x.id == PrefabObject.Parent, out BeatmapObject beatmapObjectParent))
+            // begin parent self parent chain initialization.
+            var parentObjects = new List<ParentObject>(ParentObject.DEFAULT_PARENT_CHAIN_CAPACITY);
+
+            GameObject gameObject = null;
+            PrefabObject.CachedParent = null;
+            if (!string.IsNullOrEmpty(PrefabObject.Parent) && GameData.Current.beatmapObjects.TryFind(x => x.id == PrefabObject.Parent, out BeatmapObject beatmapObjectParent))
+            {
+                PrefabObject.CachedParent = beatmapObjectParent;
+                gameObject = ParentRuntime.converter.InitParentChain(beatmapObjectParent, parentObjects);
+            }
+            ParentObjects = parentObjects;
+            if (gameObject)
+            {
+                var firstParent = parentObjects[parentObjects.Count - 1];
+                var tf = firstParent?.transform;
+
+                if (tf)
                 {
-                    PrefabObject.CachedParent = beatmapObjectParent;
-                    gameObject = ParentRuntime.converter.InitParentChain(beatmapObjectParent, parentObjects);
-                }
-                ParentObjects = parentObjects;
-                if (gameObject)
-                {
-                    var firstParent = parentObjects[parentObjects.Count - 1];
-                    var tf = firstParent?.transform;
-
-                    if (tf)
-                    {
-                        tf.SetParent(Parent.transform);
-                        tf.localScale = Vector3.one;
-                    }
-
-                    SpawnParent = Creator.NewGameObject($"spawner - [{Prefab.name}]", gameObject.transform).transform;
-                    parentObjects.Insert(0, ParentRuntime.converter.ToParentObject(new BeatmapObject
-                    {
-                        Parent = PrefabObject.Parent,
-                        ParentDetatched = PrefabObject.ParentDetatched,
-                        ParentDesync = PrefabObject.ParentDesync,
-                        ParentDesyncOffset = PrefabObject.ParentDesyncOffset,
-                        ParentAdditive = PrefabObject.ParentAdditive,
-                        ParentType = PrefabObject.ParentType,
-                        ParentOffsets = PrefabObject.ParentOffsets,
-                        ParentParallax = PrefabObject.ParentParallax,
-                    }, SpawnParent.gameObject));
-                    parentObjects[0].animate = false;
-                    parentObjects[0].prefabObject = PrefabObject;
-                    this.UpdateParentValues();
-                    TransferSpawned(SpawnParent);
-                    return;
+                    tf.SetParent(Parent.transform);
+                    tf.localScale = Vector3.one;
                 }
 
+                SpawnParent = Creator.NewGameObject($"spawner - [{Prefab.name}]", gameObject.transform).transform;
+
+                // create beatmap object that represents the prefab with the same parent values.
                 parentObjects.Insert(0, ParentRuntime.converter.ToParentObject(new BeatmapObject
                 {
                     Parent = PrefabObject.Parent,
@@ -284,13 +578,37 @@ namespace BetterLegacy.Core.Runtime.Objects
                     ParentType = PrefabObject.ParentType,
                     ParentOffsets = PrefabObject.ParentOffsets,
                     ParentParallax = PrefabObject.ParentParallax,
-                }, p.gameObject));
+                }, SpawnParent.gameObject));
                 parentObjects[0].animate = false;
                 parentObjects[0].prefabObject = PrefabObject;
+
+                this.UpdateParentValues();
+                TransferSpawned(SpawnParent);
+                return;
             }
+
+            // create beatmap object that represents the prefab with the same parent values.
+            parentObjects.Insert(0, ParentRuntime.converter.ToParentObject(new BeatmapObject
+            {
+                Parent = PrefabObject.Parent,
+                ParentDetatched = PrefabObject.ParentDetatched,
+                ParentDesync = PrefabObject.ParentDesync,
+                ParentDesyncOffset = PrefabObject.ParentDesyncOffset,
+                ParentAdditive = PrefabObject.ParentAdditive,
+                ParentType = PrefabObject.ParentType,
+                ParentOffsets = PrefabObject.ParentOffsets,
+                ParentParallax = PrefabObject.ParentParallax,
+            }, p.gameObject));
+            parentObjects[0].animate = false;
+            parentObjects[0].prefabObject = PrefabObject;
+
             SpawnParent = Parent;
         }
 
+        /// <summary>
+        /// Transfers the spawned list.
+        /// </summary>
+        /// <param name="parent">Parent to transfer the spawn list to.</param>
         public void TransferSpawned(Transform parent)
         {
             if (Objects != null)
@@ -313,34 +631,6 @@ namespace BetterLegacy.Core.Runtime.Objects
                 }
         }
 
-        public bool CachedParentSelf { get; set; }
-
-        public float Depth { get; set; }
-
-        public bool CameraParent { get; set; }
-
-        public bool PositionParent { get; set; }
-
-        public bool ScaleParent { get; set; }
-
-        public bool RotationParent { get; set; }
-
-        public float PositionParentOffset { get; set; }
-
-        public float ScaleParentOffset { get; set; }
-
-        public float RotationParentOffset { get; set; }
-
-        public Vector3 TopPosition { get; set; }
-
-        public Vector3 TopScale { get; set; } = Vector3.one;
-
-        public Vector3 TopRotation { get; set; }
-
-        public Vector3 CurrentScale { get; set; } // if scale is 0, 0 then disable collider and renderer
-
-        public List<ParentObject> ParentObjects { get; set; }
-
         public void CheckScale()
         {
             //var active = RTMath.Distance(0f, CurrentScale.x) > 0.001f && RTMath.Distance(0f, CurrentScale.y) > 0.001f && RTMath.Distance(0f, CurrentScale.z) > 0.001f;
@@ -348,240 +638,6 @@ namespace BetterLegacy.Core.Runtime.Objects
         }
 
         #endregion
-
-        public void Interpolate(float time) => Tick();
-        
-        /// <summary>
-        /// Applies all Beatmap Objects stored in the Prefab Object's Prefab to the level.
-        /// </summary>
-        /// <param name="prefabObject">Prefab Object to add to the level</param>
-        /// <param name="update">If the object should be updated.</param>
-        /// <param name="recalculate">If the engine should be recalculated.</param>
-        public void ApplyPrefab()
-        {
-            var prefabObject = PrefabObject;
-
-            if (!prefabObject)
-            {
-                CoreHelper.LogError($"Cannot add a null Prefab Object to the level.");
-                return;
-            }
-
-            prefabObject.ResetOffsets();
-
-            var prefab = Prefab;
-            if (!prefab)
-                prefab = prefabObject.GetPrefab();
-
-            if (!prefab)
-            {
-                GameData.Current.prefabObjects.RemoveAll(x => x.prefabID == prefabObject.prefabID);
-                return;
-            }
-
-            if (prefab.beatmapObjects.IsEmpty() && prefab.backgroundObjects.IsEmpty() && prefab.prefabs.IsEmpty() && prefab.prefabObjects.IsEmpty() || prefabObject.expanded)
-                return;
-
-            Spawner.Clear();
-
-            float t = 1f;
-
-            if (prefabObject.RepeatOffsetTime != 0f)
-                t = prefabObject.RepeatOffsetTime;
-
-            float timeToAdd = 0f;
-
-            if (prefabObject.expandedObjects == null)
-                prefabObject.expandedObjects = new List<IPrefabable>();
-            prefabObject.expandedObjects.Clear();
-
-            foreach (var subPrefab in prefab.prefabs)
-            {
-                var subPrefabCopy = subPrefab.Copy(false);
-                subPrefabCopy.CachedPrefab = Prefab;
-                subPrefabCopy.CachedPrefabObject = PrefabObject;
-
-                subPrefabCopy.fromPrefab = true;
-                subPrefabCopy.SetPrefabReference(prefabObject);
-
-                subPrefabCopy.originalID = subPrefab.id;
-                prefabObject.expandedObjects.Add(subPrefabCopy);
-                Spawner.Prefabs.Add(subPrefabCopy);
-            }
-
-            var startTime = GetStartTime();
-
-            for (int i = 0; i < prefabObject.RepeatCount + 1; i++)
-            {
-                var objectIDs = new List<IDPair>(prefab.beatmapObjects.Count);
-                for (int j = 0; j < prefab.beatmapObjects.Count; j++)
-                {
-                    var beatmapObject = prefab.beatmapObjects[j];
-                    //if (CoreConfig.Instance.UseSeedBasedRandom.Value)
-                        objectIDs.Add(new IDPair(beatmapObject.id, RandomHelper.RandomString(RandomHelper.GetHash(beatmapObject.id + i + prefabObject.id, RandomHelper.CurrentSeed), 16)));
-                    //else
-                    //    objectIDs.Add(new IDPair(beatmapObject.id));
-                }
-
-                int num = 0;
-                foreach (var beatmapObject in prefab.beatmapObjects)
-                {
-                    var beatmapObjectCopy = beatmapObject.Copy(false);
-                    beatmapObjectCopy.CachedPrefab = beatmapObjectCopy.GetPrefab(Spawner.Prefabs);
-                    beatmapObjectCopy.CachedPrefabObject = PrefabObject;
-
-                    try
-                    {
-                        beatmapObjectCopy.id = objectIDs[num].newID;
-
-                        if (!string.IsNullOrEmpty(beatmapObject.Parent) && objectIDs.TryFind(x => x.oldID == beatmapObject.Parent, out IDPair idPair))
-                            beatmapObjectCopy.Parent = idPair.newID;
-                        else if (!string.IsNullOrEmpty(beatmapObject.Parent) && GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObject.Parent) == -1 && beatmapObject.Parent != "CAMERA_PARENT")
-                            beatmapObjectCopy.Parent = string.Empty;
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.LogError($"{RTLevel.className}Failed to set object ID.\n{ex}");
-                    }
-
-                    beatmapObjectCopy.fromPrefabBase = string.IsNullOrEmpty(beatmapObjectCopy.Parent);
-                    if (beatmapObjectCopy.fromPrefabBase && !string.IsNullOrEmpty(prefabObject.parent) && !prefabObject.parentSelf)
-                    {
-                        beatmapObjectCopy.Parent = prefabObject.parent;
-                        beatmapObjectCopy.parentType = prefabObject.parentType;
-                        beatmapObjectCopy.parentOffsets = prefabObject.parentOffsets;
-                        beatmapObjectCopy.parentAdditive = prefabObject.parentAdditive;
-                        beatmapObjectCopy.parallaxSettings = prefabObject.parentParallax;
-                        beatmapObjectCopy.desync = prefabObject.desync;
-                    }
-
-                    beatmapObjectCopy.fromPrefab = true;
-                    beatmapObjectCopy.SetPrefabReference(prefabObject);
-
-                    beatmapObjectCopy.StartTime += timeToAdd;
-
-                    if (prefabObject.autoKillType != PrefabAutoKillType.Regular && ((prefabObject.StartTime * prefabObject.Speed) + prefab.offset) + beatmapObjectCopy.SpawnDuration > prefabObject.autoKillOffset)
-                    {
-                        beatmapObjectCopy.autoKillType = AutoKillType.SongTime;
-                        beatmapObjectCopy.autoKillOffset = prefabObject.autoKillType == PrefabAutoKillType.StartTimeOffset ? ((prefabObject.StartTime * prefabObject.Speed) + prefab.offset) - prefabObject.autoKillOffset : prefabObject.autoKillOffset;
-                    }
-
-                    if (beatmapObjectCopy.autoKillType == AutoKillType.SongTime)
-                        beatmapObjectCopy.autoKillOffset -= startTime;
-
-                    //if (beatmapObjectCopy.shape == 6 && !string.IsNullOrEmpty(beatmapObjectCopy.text) && prefab.assets.sprites.TryFind(x => x.name == beatmapObjectCopy.text, out SpriteAsset spriteAsset))
-                    //    GameData.Current.assets.sprites.Add(spriteAsset.Copy());
-
-                    beatmapObjectCopy.editorData.hidden = prefabObject.editorData.hidden;
-                    beatmapObjectCopy.editorData.selectable = prefabObject.editorData.selectable;
-
-                    beatmapObjectCopy.originalID = beatmapObject.id;
-                    GameData.Current.beatmapObjects.Add(beatmapObjectCopy);
-                    prefabObject.expandedObjects.Add(beatmapObjectCopy);
-                    Spawner.BeatmapObjects.Add(beatmapObjectCopy);
-
-                    num++;
-                }
-
-                foreach (var backgroundObject in prefab.backgroundObjects)
-                {
-                    var backgroundObjectCopy = backgroundObject.Copy();
-                    backgroundObjectCopy.CachedPrefab = backgroundObjectCopy.GetPrefab(Spawner.Prefabs);
-                    backgroundObjectCopy.CachedPrefabObject = PrefabObject;
-
-                    backgroundObjectCopy.fromPrefab = true;
-                    backgroundObjectCopy.SetPrefabReference(prefabObject);
-
-                    backgroundObjectCopy.StartTime += timeToAdd;
-
-                    if (prefabObject.autoKillType != PrefabAutoKillType.Regular && prefabObject.StartTime + prefab.offset + backgroundObjectCopy.SpawnDuration > prefabObject.autoKillOffset)
-                    {
-                        backgroundObjectCopy.autoKillType = AutoKillType.SongTime;
-                        backgroundObjectCopy.autoKillOffset = prefabObject.autoKillType == PrefabAutoKillType.StartTimeOffset ? prefabObject.StartTime + prefab.offset + prefabObject.autoKillOffset : prefabObject.autoKillOffset;
-                    }
-
-                    if (backgroundObjectCopy.autoKillType == AutoKillType.SongTime)
-                        backgroundObjectCopy.autoKillOffset -= startTime;
-
-                    //if (backgroundObjectCopy.shape == 6 && !string.IsNullOrEmpty(backgroundObjectCopy.text) && prefab.assets.sprites.TryFind(x => x.name == backgroundObjectCopy.text, out SpriteAsset spriteAsset))
-                    //    GameData.Current.assets.sprites.Add(spriteAsset.Copy());
-
-                    backgroundObjectCopy.editorData.hidden = prefabObject.editorData.hidden;
-                    backgroundObjectCopy.editorData.selectable = prefabObject.editorData.selectable;
-
-                    backgroundObjectCopy.originalID = backgroundObject.id;
-                    GameData.Current.backgroundObjects.Add(backgroundObjectCopy);
-                    prefabObject.expandedObjects.Add(backgroundObjectCopy);
-                    Spawner.BackgroundObjects.Add(backgroundObjectCopy);
-                }
-
-                objectIDs = new List<IDPair>(prefab.prefabObjects.Count);
-                for (int j = 0; j < prefab.prefabObjects.Count; j++)
-                {
-                    var subPrefabObject = prefab.prefabObjects[j];
-                    //if (CoreConfig.Instance.UseSeedBasedRandom.Value)
-                        objectIDs.Add(new IDPair(subPrefabObject.id, RandomHelper.RandomString(RandomHelper.GetHash(subPrefabObject.id + i + prefabObject.id, RandomHelper.CurrentSeed), 16)));
-                    //else
-                    //    objectIDs.Add(new IDPair(subPrefabObject.id));
-                }
-
-                num = 0;
-                foreach (var subPrefabObject in prefab.prefabObjects)
-                {
-                    var subPrefabObjectCopy = subPrefabObject.Copy(false);
-                    subPrefabObjectCopy.CachedPrefab = subPrefabObjectCopy.GetPrefab(Spawner.Prefabs);
-                    subPrefabObjectCopy.CachedPrefabObject = PrefabObject;
-
-                    try
-                    {
-                        subPrefabObjectCopy.id = objectIDs[num].newID;
-
-                        if (!string.IsNullOrEmpty(subPrefabObject.Parent) && objectIDs.TryFind(x => x.oldID == subPrefabObject.Parent, out IDPair idPair))
-                            subPrefabObjectCopy.Parent = idPair.newID;
-                        else if (!string.IsNullOrEmpty(subPrefabObject.Parent) && GameData.Current.beatmapObjects.FindIndex(x => x.id == subPrefabObject.Parent) == -1 && subPrefabObject.Parent != "CAMERA_PARENT")
-                            subPrefabObjectCopy.Parent = string.Empty;
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.LogError($"{RTLevel.className}Failed to set object ID.\n{ex}");
-                    }
-
-                    subPrefabObjectCopy.fromPrefabBase = string.IsNullOrEmpty(subPrefabObjectCopy.Parent);
-                    if (subPrefabObjectCopy.fromPrefabBase && !string.IsNullOrEmpty(prefabObject.parent))
-                    {
-                        subPrefabObjectCopy.Parent = prefabObject.parent;
-                        subPrefabObjectCopy.parentType = prefabObject.parentType;
-                        subPrefabObjectCopy.parentOffsets = prefabObject.parentOffsets;
-                        subPrefabObjectCopy.parentAdditive = prefabObject.parentAdditive;
-                        subPrefabObjectCopy.parentParallax = prefabObject.parentParallax;
-                        subPrefabObjectCopy.desync = prefabObject.desync;
-                    }
-
-                    subPrefabObjectCopy.fromPrefab = true;
-                    subPrefabObjectCopy.SetPrefabReference(prefabObject);
-
-                    subPrefabObjectCopy.StartTime += timeToAdd;
-
-                    if (subPrefabObjectCopy.autoKillType == PrefabAutoKillType.SongTime)
-                        subPrefabObjectCopy.autoKillOffset -= startTime;
-
-                    subPrefabObjectCopy.originalID = subPrefabObject.id;
-                    GameData.Current.prefabObjects.Add(subPrefabObjectCopy);
-                    prefabObject.expandedObjects.Add(subPrefabObjectCopy);
-                    Spawner.PrefabObjects.Add(subPrefabObjectCopy);
-                    num++;
-                }
-
-                timeToAdd += t;
-            }
-        }
-
-        /// <summary>
-        /// Calculates the runtimes' current time.
-        /// </summary>
-        /// <param name="time">Current time.</param>
-        /// <returns>Returns the calculated runtime time.</returns>
-        public float GetTime(float time) => (time * PrefabObject.Speed) - ((PrefabObject.StartTime * PrefabObject.Speed) + Prefab.offset);
 
         public override string ToString() => PrefabObject?.ToString() ?? string.Empty;
     }
