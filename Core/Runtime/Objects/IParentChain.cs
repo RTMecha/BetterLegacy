@@ -250,7 +250,7 @@ namespace BetterLegacy.Core.Runtime.Objects
 
                 desync = parentObject.desync || parentObject.beatmapObject.detatched;
                 syncOffset = timeOffset + parentObject.desyncOffset;
-                if (i != 0 && parentObject.beatmapObject.fromPrefab)
+                if (parentObject.beatmapObject.fromPrefab)
                     prefabOffset = parentObject.beatmapObject.GetPrefabOffsetTime();
                 if (parentObject.prefabObject)
                     prefabOffset = parentObject.prefabObject.StartTime + parentObject.prefabObject.GetPrefab()?.offset ?? 0f;
