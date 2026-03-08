@@ -5272,6 +5272,13 @@ namespace BetterLegacy.Editor.Managers
                                             RTFileBrowser.inst.Popup.Close();
                                         });
                                     }),
+                                    new ButtonElement("Update Old Image Path", () => RTString.RegexMatch(shapeable.Text, new Regex(@"img\((.*?)\)"), match =>
+                                    {
+                                        shapeable.Text = match.Groups[1].ToString();
+
+                                        // Since text has no affect on the timeline object, we will only need to update the physical object.
+                                        onUpdate?.Invoke(ObjectContext.IMAGE);
+                                    }), shouldGenerate: () => Regex.IsMatch(shapeable.Text, @"img\((.*?)\)")),
                                     new SpacerElement(),
                                     new ButtonElement("Remove Image", () =>
                                     {
@@ -5292,7 +5299,16 @@ namespace BetterLegacy.Editor.Managers
                                         onUpdate?.Invoke(ObjectContext.SHAPE);
 
                                         RenderShapeable(shapeable, dialog, onUpdate);
-                                    }))
+                                    })),
+                                    new SpacerElement(),
+                                    new LabelElement("Set Path"),
+                                    new StringInputElement(shapeable.Text, _val =>
+                                    {
+                                        shapeable.Text = _val;
+
+                                        // Since text has no affect on the timeline object, we will only need to update the physical object.
+                                        onUpdate?.Invoke(ObjectContext.IMAGE);
+                                    })
                                     );
                                 return;
                             }
