@@ -107,8 +107,20 @@ namespace BetterLegacy.Core.Data.Player
 
             var currentLevel = CoreHelper.CurrentLevel;
             if (!exists && currentLevel)
+            {
                 for (int i = 0; i < Current.playerModelsIndex.Count; i++)
                     Current.playerModelsIndex[i] = currentLevel.IsVG ? PlayerModel.DEV_ID : PlayerModel.DEFAULT_ID;
+                for (int i = 0; i < Current.playerControls.Count; i++)
+                {
+                    var playerControl = Current.playerControls[i];
+                    playerControl.moveSpeed = 22f;
+                    playerControl.boostSpeed = 80f;
+                    playerControl.boostCooldown = 0f;
+                    playerControl.minBoostTime = 0.05f;
+                    playerControl.maxBoostTime = 0.25f;
+                    playerControl.hitCooldown = 2f;
+                }
+            }
 
             externalPlayerModels.Clear();
             foreach (var playerModel in PlayerModel.DefaultModels)

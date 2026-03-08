@@ -189,7 +189,11 @@ namespace BetterLegacy.Core.Data.Player
                     devPlayer.basePart.name = "DevPlus";
                     devPlayer.tailBase.mode = TailBase.TailMode.DevPlus;
                     devPlayer.basePart.moveSpeed = 22f;
+                    devPlayer.basePart.boostSpeed = 87f; // changed from 80 to 87 to account for boost decay in modern PA
                     devPlayer.basePart.boostCooldown = 0f;
+                    devPlayer.basePart.minBoostTime = 0.05f;
+                    devPlayer.basePart.maxBoostTime = 0.26f; // slight increase from 0.25 to account for boost decay
+                    devPlayer.basePart.hitCooldown = 2f;
                 }
 
                 return devPlayer;
