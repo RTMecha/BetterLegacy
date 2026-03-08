@@ -250,19 +250,14 @@ namespace BetterLegacy.Core.Helpers
 
         public static class KeyframeRandomizer
         {
-            public static float RandomizeFloatKeyframe(string id, EventKeyframe eventKeyframe, int index = 0, int kfIndex = 0)
-            {
-                if (!CoreConfig.Instance.UseSeedBasedRandom.Value)
-                    return RandomizeFloatKeyframe(eventKeyframe, index);
-                return RandomizeFloatKeyframe(id,
+            public static float RandomizeFloatKeyframe(string id, EventKeyframe eventKeyframe, int index = 0, int kfIndex = 0) => RandomizeFloatKeyframe(id,
                     eventKeyframe.RandomType,
                     eventKeyframe.values[index],
                     eventKeyframe.randomValues[0],
                     eventKeyframe.randomValues[1],
                     eventKeyframe.randomValues[2],
                     kfIndex);
-            }
-            
+
             public static float RandomizeFloatKeyframe(string id, RandomType randomType, float value, float randomValueA, float randomValueB, float interval, int kfIndex = 0)
             {
                 var round = interval != 0f;
@@ -281,12 +276,7 @@ namespace BetterLegacy.Core.Helpers
                 };
             }
 
-            public static UnityEngine.Vector2 RandomizeVector2Keyframe(string id, EventKeyframe eventKeyframe, int kfIndex = 0)
-            {
-                if (!CoreConfig.Instance.UseSeedBasedRandom.Value)
-                    return RandomizeVector2Keyframe(eventKeyframe);
-
-                return RandomizeVector2Keyframe(id,
+            public static UnityEngine.Vector2 RandomizeVector2Keyframe(string id, EventKeyframe eventKeyframe, int kfIndex = 0) => RandomizeVector2Keyframe(id,
                     eventKeyframe.RandomType,
                     eventKeyframe.values[0],
                     eventKeyframe.values[1],
@@ -294,8 +284,7 @@ namespace BetterLegacy.Core.Helpers
                     eventKeyframe.randomValues[1],
                     eventKeyframe.randomValues[2],
                     kfIndex);
-            }
-            
+
             public static UnityEngine.Vector2 RandomizeVector2Keyframe(string id, RandomType randomType, float valueX, float valueY, float randomValueX, float randomValueY, float interval, int kfIndex = 0)
             {
                 float x = 0f;

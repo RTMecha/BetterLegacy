@@ -195,11 +195,6 @@ namespace BetterLegacy.Configs
         public Setting<string> Seed { get; set; }
 
         /// <summary>
-        /// If the random systems should use the current seed instead of the original random method. If randomization breaks, feel free to turn this setting off.
-        /// </summary>
-        public Setting<bool> UseSeedBasedRandom { get; set; }
-
-        /// <summary>
         /// If enabled, any objects with "LDM" (Low Detail Mode) toggled on will not be rendered.
         /// </summary>
         public Setting<bool> LDM { get; set; }
@@ -404,7 +399,6 @@ namespace BetterLegacy.Configs
             #region Level
 
             Seed = Bind(this, LEVEL, "Seed", string.Empty, "The current seed randomization a level uses. Leave empty to randomize the seed each time you play a level.");
-            UseSeedBasedRandom = Bind(this, LEVEL, "Use Seed Based Random", true, "If the random systems should use the current seed instead of the original random method. If randomization breaks, feel free to turn this setting off.");
             LDM = Bind(this, LEVEL, "Low Detail Mode", false, "If enabled, any objects with \"LDM\" (Low Detail Mode) toggled on will not be rendered.");
             GameSpeedSetting = Bind(this, LEVEL, "Game Speed", GameSpeed.X1_0, "Custom game pitch.");
             ChallengeModeSetting = Bind(this, LEVEL, "Challenge Mode", ChallengeMode.Normal, "Custom challenge mode that affects gameplay.\n" +
@@ -486,7 +480,6 @@ namespace BetterLegacy.Configs
             CursorVisibleTime.SettingChanged += OnCursorChanged;
 
             Seed.SettingChanged += SeedChanged;
-            UseSeedBasedRandom.SettingChanged += SeedChanged;
 
             Language.SettingChanged += LanguageChanged;
         }
