@@ -9550,7 +9550,15 @@ namespace BetterLegacy.Core.Helpers
             if (modifier.HasResult() || beatmapObject.IsSpecialShape || !runtimeObject || !runtimeObject.visualObject || !runtimeObject.visualObject.gameObject)
                 return;
 
-            runtimeObject.visualObject.gameObject.GetComponent<MeshFilter>().mesh = GameManager.inst.PlayerPrefabs[1].GetComponentInChildren<MeshFilter>().mesh;
+            var option = modifier.GetInt(0, 0, modifierLoop.variables);
+
+            runtimeObject.visualObject.gameObject.GetComponent<MeshFilter>().mesh = option switch
+            {
+                1 => LegacyResources.halfSphereMesh,
+                2 => LegacyResources.quarterSphereMesh,
+                3 => LegacyResources.eighthSphereMesh,
+                _ => GameManager.inst.PlayerPrefabs[1].GetComponentInChildren<MeshFilter>().mesh,
+            };
             modifier.Result = "frick";
             runtimeObject.visualObject.gameObject.AddComponent<DestroyModifierResult>().Modifier = modifier;
         }

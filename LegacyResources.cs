@@ -181,6 +181,49 @@ namespace BetterLegacy
             postProcessResources = postProcessResourcesAssetBundle.LoadAsset<PostProcessResources>("postprocessresources.asset");
         }
 
+        public static Mesh halfSphereMesh;
+        public static Mesh quarterSphereMesh;
+        public static Mesh eighthSphereMesh;
+
+        public static void GetCustomMeshes()
+        {
+            halfSphereMesh = ReadMesh(RTFile.GetAsset("builtin/mesh/half_sphere.json"));
+            quarterSphereMesh = ReadMesh(RTFile.GetAsset("builtin/mesh/quarter_sphere.json"));
+            eighthSphereMesh = ReadMesh(RTFile.GetAsset("builtin/mesh/eighth_sphere.json"));
+        }
+
+        static Mesh ReadMesh(string path)
+        {
+            var mesh = new Mesh();
+            mesh.name = System.IO.Path.GetFileName(path);
+
+            var jn = JSON.Parse(RTFile.ReadFromFile(path));
+
+            var vertices = new Vector3[jn["verts"].Count];
+            for (int i = 0; i < vertices.Length; i++)
+                vertices[i] = Parser.TryParse(jn["verts"][i], Vector3.zero);
+            mesh.vertices = vertices;
+            var triangles = new int[jn["tris"].Count];
+            for (int i = 0; i < triangles.Length; i++)
+                triangles[i] = jn["tris"][i].AsInt;
+            mesh.triangles = triangles;
+            if (jn["norms"] != null)
+            {
+                var normals = new Vector3[jn["norms"].Count];
+                for (int i = 0; i < normals.Length; i++)
+                    normals[i] = Parser.TryParse(jn["norms"][i], Vector3.zero);
+                mesh.normals = normals;
+            }
+            if (jn["tangs"] != null)
+            {
+                var tangents = new Vector4[jn["tangs"].Count];
+                for (int i = 0; i < tangents.Length; i++)
+                    tangents[i] = new Vector4(jn["tangs"][i]["x"], jn["tangs"][i]["y"], jn["tangs"][i]["z"], jn["tangs"][i]["w"]);
+                mesh.tangents = tangents;
+            }
+            return mesh;
+        }
+
         public static Dictionary<Rank, string[]> sayings = new Dictionary<Rank, string[]>()
         {
             { Rank.Null, null },

@@ -128,6 +128,7 @@ namespace BetterLegacy
                 LegacyResources.GetObjectMaterials();
                 LegacyResources.GetGUIAssets();
                 LegacyResources.GetEffects();
+                LegacyResources.GetCustomMeshes();
                 LegacyResources.GetSayings();
                 
                 LockSprite = SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/lock{FileFormat.PNG.Dot()}"));

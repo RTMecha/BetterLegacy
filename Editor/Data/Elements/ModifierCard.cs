@@ -3309,12 +3309,14 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                //case "backgroundShape): {
+                //case nameof(ModifierFunctions.backgroundShape): {
                 //        break;
                 //    }
-                //case "sphereShape): {
-                //        break;
-                //    }
+                case nameof(ModifierFunctions.sphereShape): {
+                        DropdownGenerator(modifier, reference, "Option", 0, CoreHelper.StringToOptionData("Full", "Half", "Quarter", "Eighth"));
+
+                        break;
+                    }
                 case nameof(ModifierFunctions.translateShape): {
                         SingleGenerator(modifier, reference, "Pos X", 1, 0f);
                         SingleGenerator(modifier, reference, "Pos Y", 2, 0f);
