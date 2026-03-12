@@ -104,6 +104,8 @@ namespace BetterLegacy.Core.Data.Beatmap
             values = orig.values.Copy();
             randomValues = orig.randomValues.Copy();
             random = orig.random;
+            if (orig.stringValues != null)
+                stringValues = orig.stringValues.Copy();
             flee = orig.flee;
             relative = orig.relative;
             locked = orig.locked;
@@ -262,8 +264,18 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public void SetStringValue(int index, string val)
         {
+            if (stringValues == null)
+                stringValues = new string[index + 1];
+
             if (stringValues.InRange(index))
                 stringValues[index] = val;
+            else
+            {
+                var sv = new string[index + 1];
+                System.Array.Copy(stringValues, sv, stringValues.Length);
+                sv[index] = val;
+                stringValues = sv;
+            }
         }
 
         public float GetValue(int index, float defaultValue = 0f) => values.TryGetAt(index, out float result) ? result : defaultValue;

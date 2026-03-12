@@ -1030,11 +1030,11 @@ namespace BetterLegacy.Core.Data.Beatmap
                     eventKeyframe.playerIndex = kfjn["pindex"].AsInt;
                     eventKeyframe.locked = kfjn["l"].AsBool;
 
-                    if (jn["str"] != null)
+                    if (kfjn["str"] != null)
                     {
-                        eventKeyframe.stringValues = new string[jn["str"].Count];
-                        for (int j = 0; j < jn["str"].Count; j++)
-                            eventKeyframe.stringValues[j] = jn["str"][j];
+                        eventKeyframe.stringValues = new string[kfjn["str"].Count];
+                        for (int j = 0; j < kfjn["str"].Count; j++)
+                            eventKeyframe.stringValues[j] = kfjn["str"][j];
                     }
 
                     events[0].Add(eventKeyframe);
@@ -1061,11 +1061,11 @@ namespace BetterLegacy.Core.Data.Beatmap
                     eventKeyframe.relative = kfjn["rel"].AsBool;
                     eventKeyframe.locked = kfjn["l"].AsBool;
 
-                    if (jn["str"] != null)
+                    if (kfjn["str"] != null)
                     {
-                        eventKeyframe.stringValues = new string[jn["str"].Count];
-                        for (int j = 0; j < jn["str"].Count; j++)
-                            eventKeyframe.stringValues[j] = jn["str"][j];
+                        eventKeyframe.stringValues = new string[kfjn["str"].Count];
+                        for (int j = 0; j < kfjn["str"].Count; j++)
+                            eventKeyframe.stringValues[j] = kfjn["str"][j];
                     }
 
                     events[1].Add(eventKeyframe);
@@ -1095,11 +1095,11 @@ namespace BetterLegacy.Core.Data.Beatmap
                     eventKeyframe.playerIndex = kfjn["pindex"].AsInt;
                     eventKeyframe.locked = kfjn["l"].AsBool;
 
-                    if (jn["str"] != null)
+                    if (kfjn["str"] != null)
                     {
-                        eventKeyframe.stringValues = new string[jn["str"].Count];
-                        for (int j = 0; j < jn["str"].Count; j++)
-                            eventKeyframe.stringValues[j] = jn["str"][j];
+                        eventKeyframe.stringValues = new string[kfjn["str"].Count];
+                        for (int j = 0; j < kfjn["str"].Count; j++)
+                            eventKeyframe.stringValues[j] = kfjn["str"][j];
                     }
 
                     events[2].Add(eventKeyframe);
@@ -1160,11 +1160,11 @@ namespace BetterLegacy.Core.Data.Beatmap
 
                     eventKeyframe.locked = kfjn["l"].AsBool;
 
-                    if (jn["str"] != null)
+                    if (kfjn["str"] != null)
                     {
-                        eventKeyframe.stringValues = new string[jn["str"].Count];
-                        for (int j = 0; j < jn["str"].Count; j++)
-                            eventKeyframe.stringValues[j] = jn["str"][j];
+                        eventKeyframe.stringValues = new string[kfjn["str"].Count];
+                        for (int j = 0; j < kfjn["str"].Count; j++)
+                            eventKeyframe.stringValues[j] = kfjn["str"][j];
                     }
 
                     events[3].Add(eventKeyframe);
