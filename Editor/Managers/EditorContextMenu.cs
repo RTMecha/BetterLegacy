@@ -179,7 +179,7 @@ namespace BetterLegacy.Editor.Managers
                 }
             };
         }
-
+        
         /// <summary>
         /// Shows the editor context menu.
         /// </summary>
@@ -257,6 +257,35 @@ namespace BetterLegacy.Editor.Managers
             contextMenu.transform.AsRT().anchoredPosition = pos;
             contextMenu.transform.AsRT().sizeDelta = new Vector2(width, contextMenuLayout.transform.AsRT().sizeDelta.y);
         }
+
+        public static List<EditorElement> GetNameFunctions(InputField name) => new List<EditorElement>
+        {
+            new ButtonElement("Flip Left/Right", () => name.text = RTString.FlipLeftRight(name.text)),
+            new ButtonElement("Flip Up/Down", () => name.text = RTString.FlipUpDown(name.text)),
+            new ButtonElement("Flip Upper/Lower", () => name.text = RTString.FlipUpperLower(name.text)),
+            new SpacerElement(),
+            new ButtonElement("Flip Number", () => RTString.RegexMatches(name.text, new Regex(@"([-0-9]+)"), match =>
+            {
+                int num = Parser.TryParse(match.Groups[1].ToString(), 0);
+                num = -num;
+                name.text = name.text.Replace(match.Groups[1].ToString(), num.ToString());
+            })),
+            new ButtonElement("Increase Number", () => RTString.RegexMatches(name.text, new Regex(@"([-0-9]+)"), match =>
+            {
+                int num = Parser.TryParse(match.Groups[1].ToString(), 0);
+                num++;
+                name.text = name.text.Replace(match.Groups[1].ToString(), num.ToString());
+            })),
+            new ButtonElement("Decrease Number", () => RTString.RegexMatches(name.text, new Regex(@"([-0-9]+)"), match =>
+            {
+                int num = Parser.TryParse(match.Groups[1].ToString(), 0);
+                num--;
+                name.text = name.text.Replace(match.Groups[1].ToString(), num.ToString());
+            })),
+            new SpacerElement(),
+            new ButtonElement("To Lower", () => name.text = name.text.ToLower()),
+            new ButtonElement("To Upper", () => name.text = name.text.ToUpper()),
+        };
 
         public static List<EditorElement> GetMoveIndexFunctions<T>(List<T> list, int index, Action onMove = null) => new List<EditorElement>
         {
