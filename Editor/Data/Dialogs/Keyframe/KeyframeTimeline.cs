@@ -16,6 +16,7 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Editor.Data.Timeline;
 using BetterLegacy.Editor.Managers;
@@ -27,6 +28,102 @@ namespace BetterLegacy.Editor.Data.Dialogs
     /// </summary>
     public class KeyframeTimeline : Exists
     {
+        #region Values
+
+        /// <summary>
+        /// The currently active keyframe timeline.
+        /// </summary>
+        public static KeyframeTimeline CurrentTimeline { get; set; }
+
+        /// <summary>
+        /// All registered keyframe timelines.
+        /// </summary>
+        public static List<KeyframeTimeline> AllTimelines { get; set; } = new List<KeyframeTimeline>();
+
+        /// <summary>
+        /// Main dialog the timeline is a part of.
+        /// </summary>
+        public IAnimationDialog Dialog { get; set; }
+
+        /// <summary>
+        /// The currently selected object.
+        /// </summary>
+        public IAnimatable CurrentObject { get; set; }
+
+        #region UI
+
+        public RectTransform TimelineLeft { get; set; }
+        public RectTransform TimelineRight { get; set; }
+        public RectTransform TimelineGrid { get; set; }
+
+        public List<GameObject> SelectionArea { get; set; } = new List<GameObject>();
+
+        public RectTransform Parent { get; set; }
+        public RectTransform ScrollView { get; set; }
+        public RectTransform Viewport { get; set; }
+        public RectTransform Content { get; set; }
+
+        public List<RectTransform> KeyframeParents { get; set; } = new List<RectTransform>();
+
+        public Transform Markers { get; set; }
+
+        public Slider ZoomSlider { get; set; }
+        public Slider Cursor { get; set; }
+        public Scrollbar PosScrollbar { get; set; }
+
+        public Image cursorHandle;
+        public Image cursorRuler;
+
+        public List<TimelineKeyframe> RenderedKeyframes { get; set; } = new List<TimelineKeyframe>();
+
+        #endregion
+
+        #region Keyframe Editor
+
+        public List<Toggle> startColorsReference;
+        public List<Toggle> endColorsReference;
+
+        public InputField StartHexColorField { get; set; }
+        public InputField EndHexColorField { get; set; }
+
+        public ToggleButtonStorage UseHexColorToggle { get; set; }
+
+        public int currentKeyframeType;
+        public int currentKeyframeIndex;
+
+        public static List<TimelineKeyframe> copiedObjectKeyframes = new List<TimelineKeyframe>();
+
+        public EventKeyframe CopiedPositionData { get; set; }
+        public EventKeyframe CopiedScaleData { get; set; }
+        public EventKeyframe CopiedRotationData { get; set; }
+        public EventKeyframe CopiedColorData { get; set; }
+
+        #endregion
+
+        #region Timeline States
+
+        public bool movingTimeline;
+        public Vector2 cachedTimelinePos;
+
+        /// <summary>
+        /// If the mouse cursor is over this timeline.
+        /// </summary>
+        public bool MouseOver { get; set; }
+
+        public bool changingTime;
+
+        public float time;
+
+        public bool setTime;
+
+        public bool draggingKeyframes;
+
+        #endregion
+
+        #endregion
+
+        #region Functions
+        
         #region Init
         
         /// <summary>
@@ -279,97 +376,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         #endregion
 
-        #region Values
-
-        /// <summary>
-        /// The currently active keyframe timeline.
-        /// </summary>
-        public static KeyframeTimeline CurrentTimeline { get; set; }
-
-        /// <summary>
-        /// All registered keyframe timelines.
-        /// </summary>
-        public static List<KeyframeTimeline> AllTimelines { get; set; } = new List<KeyframeTimeline>();
-
-        /// <summary>
-        /// Main dialog the timeline is a part of.
-        /// </summary>
-        public IAnimationDialog Dialog { get; set; }
-
-        /// <summary>
-        /// The currently selected object.
-        /// </summary>
-        public IAnimatable CurrentObject { get; set; }
-
-        #region UI
-
-        public RectTransform TimelineLeft { get; set; }
-        public RectTransform TimelineRight { get; set; }
-        public RectTransform TimelineGrid { get; set; }
-
-        public List<GameObject> SelectionArea { get; set; } = new List<GameObject>();
-
-        public RectTransform Parent { get; set; }
-        public RectTransform ScrollView { get; set; }
-        public RectTransform Viewport { get; set; }
-        public RectTransform Content { get; set; }
-
-        public List<RectTransform> KeyframeParents { get; set; } = new List<RectTransform>();
-
-        public Transform Markers { get; set; }
-
-        public Slider ZoomSlider { get; set; }
-        public Slider Cursor { get; set; }
-        public Scrollbar PosScrollbar { get; set; }
-
-        public Image cursorHandle;
-        public Image cursorRuler;
-
-        public List<TimelineKeyframe> RenderedKeyframes { get; set; } = new List<TimelineKeyframe>();
-
-        #endregion
-
-        #region Keyframe Editor
-
-        public List<Toggle> startColorsReference;
-        public List<Toggle> endColorsReference;
-
-        public int currentKeyframeType;
-        public int currentKeyframeIndex;
-
-        public static List<TimelineKeyframe> copiedObjectKeyframes = new List<TimelineKeyframe>();
-
-        public EventKeyframe CopiedPositionData { get; set; }
-        public EventKeyframe CopiedScaleData { get; set; }
-        public EventKeyframe CopiedRotationData { get; set; }
-        public EventKeyframe CopiedColorData { get; set; }
-
-        #endregion
-
-        #region Timeline States
-
-        public bool movingTimeline;
-        public Vector2 cachedTimelinePos;
-
-        /// <summary>
-        /// If the mouse cursor is over this timeline.
-        /// </summary>
-        public bool MouseOver { get; set; }
-
-        public bool changingTime;
-
-        public float time;
-
-        public bool setTime;
-
-        public bool draggingKeyframes;
-
-        #endregion
-
-        #endregion
-
-        #region Methods
-
         #region Deleting
 
         public IEnumerator DeleteKeyframes(IAnimatable animatable)
@@ -610,6 +616,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
             kf.values = copiedData.values.Copy();
             kf.randomValues = copiedData.randomValues.Copy();
             kf.random = copiedData.random;
+            if (copiedData.stringValues != null)
+                kf.stringValues = copiedData.stringValues.Copy();
             kf.relative = copiedData.relative;
         }
 
@@ -1208,7 +1216,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             currentKeyframeIndex = firstKF.Index;
 
             var dialog = Dialog.KeyframeDialogs[type];
-            var kfdialog = dialog.GameObject.transform;
+            var kfdialog = dialog.Content;
 
             dialog.EventTimeField.SetInteractible(!isFirst);
 
@@ -1548,7 +1556,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             dialog.RandomEventValueLabels.transform.GetChild(1).gameObject.SetActive(type != 2 || random == 6);
             dialog.RandomEventValueLabels.transform.GetChild(1).GetComponent<Text>().text = (random == 4) ? "Random Scale Max" : random == 6 ? "Maximum Range" : "Random Y";
             dialog.RandomIntervalField.gameObject.SetActive(random != 0 && random != 3 && random != 5);
-            dialog.GameObject.transform.Find("r_label/interval").gameObject.SetActive(random != 0 && random != 3 && random != 5);
+            dialog.Content.Find("r_label/interval").gameObject.SetActive(random != 0 && random != 3 && random != 5);
 
             dialog.RandomEventValueParent.transform.GetChild(1).gameObject.SetActive(type != 2 || random == 6);
 
@@ -1556,7 +1564,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             dialog.RandomEventValueParent.transform.GetChild(1).GetChild(0).AsRT().sizeDelta = new Vector2(type != 2 || random == 6 ? 117 : 317f, 32f);
 
             if (random != 0 && random != 3 && random != 5)
-                dialog.GameObject.transform.Find("r_label/interval").GetComponent<Text>().text = random == 6 ? "Delay" : "Random Interval";
+                dialog.Content.transform.Find("r_label/interval").GetComponent<Text>().text = random == 6 ? "Delay" : "Random Interval";
 
             var complexityPrefix = type switch
             {
@@ -1680,7 +1688,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
         void KeyframeRandomValueHandler(int type, int valueIndex, IEnumerable<TimelineKeyframe> selected, TimelineKeyframe firstKF, IAnimatable animatable)
         {
             var dialog = Dialog.KeyframeDialogs[type];
-            var kfdialog = dialog.GameObject.transform;
+            var kfdialog = dialog.Content;
 
             var random = firstKF.eventKeyframe.random;
 
@@ -1845,17 +1853,70 @@ namespace BetterLegacy.Editor.Data.Dialogs
         {
             ColorKeyframeHandler(0, startColorsReference, selected, firstKF, animatable);
 
+            var useCustomHexColor = firstKF.eventKeyframe.RandomType != RandomType.None;
+            var showGradient = EditorHelper.CheckComplexity(EditorHelper.GetComplexity("beatmapobject/gradient", Complexity.Normal)) && beatmapObject && beatmapObject.gradientType != GradientType.Normal;
+
+            var colorToggles = kfdialog.Find("color").gameObject;
+            colorToggles.SetActive(!useCustomHexColor);
+
             var opacityObj = kfdialog.Find("opacity").gameObject;
             var collision = kfdialog.Find("opacity/collision").GetComponent<Toggle>();
             var hsvObj = kfdialog.Find("huesatval").gameObject;
-            EditorHelper.SetComplexity(kfdialog.Find("opacity_label").gameObject, "color_keyframe/opacity", Complexity.Normal);
-            EditorHelper.SetComplexity(opacityObj, "color_keyframe/opacity", Complexity.Normal);
+            EditorHelper.SetComplexity(kfdialog.Find("opacity_label").gameObject, "color_keyframe/opacity", Complexity.Normal, visible: () => !useCustomHexColor);
+            EditorHelper.SetComplexity(opacityObj, "color_keyframe/opacity", Complexity.Normal, visible: () => !useCustomHexColor);
             EditorHelper.SetComplexity(collision.gameObject, "color_keyframe/opacity_collision", Complexity.Normal, visible: () => beatmapObject);
 
-            EditorHelper.SetComplexity(kfdialog.Find("huesatval_label").gameObject, "color_keyframe/hsv", Complexity.Advanced);
-            EditorHelper.SetComplexity(hsvObj, "color_keyframe/hsv", Complexity.Advanced);
+            EditorHelper.SetComplexity(kfdialog.Find("huesatval_label").gameObject, "color_keyframe/hsv", Complexity.Advanced, visible: () => !useCustomHexColor);
+            EditorHelper.SetComplexity(hsvObj, "color_keyframe/hsv", Complexity.Advanced, visible: () => !useCustomHexColor);
 
-            var showGradient = EditorHelper.CheckComplexity(EditorHelper.GetComplexity("beatmapobject/gradient", Complexity.Normal)) && beatmapObject && beatmapObject.gradientType != GradientType.Normal;
+            var startHexColor = firstKF.eventKeyframe.stringValues != null && firstKF.eventKeyframe.stringValues.TryGetAt(0, out string startHex) ? startHex : RTColors.WHITE_HEX_CODE;
+            var endHexColor = firstKF.eventKeyframe.stringValues != null && firstKF.eventKeyframe.stringValues.TryGetAt(1, out string endHex) ? endHex : RTColors.WHITE_HEX_CODE;
+
+            StartHexColorField.gameObject.SetActive(useCustomHexColor);
+            StartHexColorField.SetTextWithoutNotify(startHexColor);
+            StartHexColorField.onValueChanged.NewListener(_val =>
+            {
+                foreach (var keyframe in selected.Select(x => x.eventKeyframe))
+                    keyframe.SetStringValue(0, _val);
+
+                // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                if (beatmapObject)
+                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+            });
+            EditorContextMenu.AddContextMenu(StartHexColorField.gameObject,
+                EditorContextMenu.GetEditorColorFunctions(StartHexColorField, () => startHexColor));
+            EndHexColorField.gameObject.SetActive(useCustomHexColor && showGradient);
+            EndHexColorField.SetTextWithoutNotify(endHexColor);
+            EndHexColorField.onValueChanged.NewListener(_val =>
+            {
+                foreach (var keyframe in selected.Select(x => x.eventKeyframe))
+                    keyframe.SetStringValue(1, _val);
+
+                // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                if (beatmapObject)
+                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+            });
+            EditorContextMenu.AddContextMenu(EndHexColorField.gameObject,
+                EditorContextMenu.GetEditorColorFunctions(EndHexColorField, () => endHexColor));
+
+            var hexCollision = kfdialog.Find("opacitycollision").GetComponent<Toggle>();
+            EditorHelper.SetComplexity(hexCollision.gameObject, "color_keyframe/opacity_collision", Complexity.Normal, visible: () => useCustomHexColor && beatmapObject);
+
+            hexCollision.SetIsOnWithoutNotify(beatmapObject && beatmapObject.opacityCollision);
+            hexCollision.onValueChanged.NewListener(_val =>
+            {
+                beatmapObject.opacityCollision = _val;
+                // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                if (beatmapObject)
+                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.OBJECT_TYPE);
+            });
+
+            var gradientColorToggles = kfdialog.Find("gradient_color").gameObject;
+            var gradientOpacityObj = kfdialog.Find("gradient_opacity").gameObject;
+            var gradientHSVObj = kfdialog.Find("gradient_huesatval").gameObject;
+
+            colorToggles.GetComponent<GridLayoutGroup>().spacing = showGradient ? new Vector2(8f, 8f) : new Vector2(9.32f, 9.32f);
+            gradientColorToggles.GetComponent<GridLayoutGroup>().spacing = showGradient ? new Vector2(8f, 8f) : new Vector2(9.32f, 9.32f);
 
             kfdialog.Find("color_label").GetChild(0).GetComponent<Text>().text = showGradient ? "Start Color" : "Color";
             kfdialog.Find("opacity_label").GetChild(0).GetComponent<Text>().text = showGradient ? "Start Opacity" : "Opacity";
@@ -1863,16 +1924,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
             kfdialog.Find("huesatval_label").GetChild(1).GetComponent<Text>().text = showGradient ? "Start Sat" : "Saturation";
             kfdialog.Find("huesatval_label").GetChild(2).GetComponent<Text>().text = showGradient ? "Start Val" : "Value";
 
-            var gradientColorToggles = kfdialog.Find("gradient_color").gameObject;
-            var gradientOpacityObj = kfdialog.Find("gradient_opacity").gameObject;
-            var gradientHSVObj = kfdialog.Find("gradient_huesatval").gameObject;
-            gradientColorToggles.SetActive(showGradient);
-            kfdialog.Find("gradient_color").gameObject.SetActive(showGradient);
+            gradientColorToggles.SetActive(showGradient && !useCustomHexColor);
             EditorHelper.SetComplexity(kfdialog.Find("gradient_color_label").gameObject, "color_keyframe/gradient", Complexity.Normal, visible: () => showGradient);
-            EditorHelper.SetComplexity(kfdialog.Find("gradient_opacity_label").gameObject, "color_keyframe/gradient_opacity", Complexity.Advanced, visible: () => showGradient);
-            EditorHelper.SetComplexity(gradientOpacityObj, "color_keyframe/gradient_opacity", Complexity.Advanced, visible: () => showGradient);
-            EditorHelper.SetComplexity(kfdialog.Find("gradient_huesatval_label").gameObject, "color_keyframe/gradient_hsv", Complexity.Advanced, visible: () => showGradient);
-            EditorHelper.SetComplexity(gradientHSVObj, "color_keyframe/gradient_hsv", Complexity.Advanced, visible: () => showGradient);
+            EditorHelper.SetComplexity(kfdialog.Find("gradient_opacity_label").gameObject, "color_keyframe/gradient_opacity", Complexity.Advanced, visible: () => showGradient && !useCustomHexColor);
+            EditorHelper.SetComplexity(gradientOpacityObj, "color_keyframe/gradient_opacity", Complexity.Advanced, visible: () => showGradient && !useCustomHexColor);
+            EditorHelper.SetComplexity(kfdialog.Find("gradient_huesatval_label").gameObject, "color_keyframe/gradient_hsv", Complexity.Advanced, visible: () => showGradient && !useCustomHexColor);
+            EditorHelper.SetComplexity(gradientHSVObj, "color_keyframe/gradient_hsv", Complexity.Advanced, visible: () => showGradient && !useCustomHexColor);
 
             kfdialog.Find("color").AsRT().sizeDelta = new Vector2(366f, RTEditor.ShowModdedUI ? 78f : 32f);
             kfdialog.Find("gradient_color").AsRT().sizeDelta = new Vector2(366f, RTEditor.ShowModdedUI ? 78f : 32f);
@@ -2387,6 +2444,25 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         FullColorKeyframeHandler(selected, firstKF, animatable, beatmapObject, kfdialog);
                     }));
             }
+
+            UseHexColorToggle.SetIsOnWithoutNotify(useCustomHexColor);
+            UseHexColorToggle.OnValueChanged.NewListener(_val =>
+            {
+                foreach (var keyframe in selected.Select(x => x.eventKeyframe))
+                {
+                    keyframe.random = _val ? 1 : 0;
+                    if (_val)
+                        keyframe.SetStringValues(RTColors.WHITE_HEX_CODE, RTColors.WHITE_HEX_CODE);
+                    else
+                        keyframe.SetStringValues();
+                }
+
+                // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                if (beatmapObject)
+                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+
+                FullColorKeyframeHandler(selected, firstKF, animatable, beatmapObject, kfdialog);
+            });
         }
 
         void RenderRelative(int type, IEnumerable<TimelineKeyframe> selected, TimelineKeyframe firstKF, IAnimatable animatable, BeatmapObject beatmapObject, KeyframeDialog dialog)

@@ -887,6 +887,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 var collision = EditorPrefabHolder.Instance.ToggleButton.Duplicate(opacity.transform, "collision");
                 var collisionToggle = collision.GetComponent<ToggleButtonStorage>();
                 collisionToggle.Text = "Collide";
+                TooltipHelper.AssignTooltip(collision, "Opacity Collision");
 
                 var inputFieldStorage = opacity.transform.Find("x").gameObject.GetOrAddComponent<InputFieldStorage>();
                 inputFieldStorage.Assign();
@@ -936,6 +937,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     inputFieldStorage.Assign();
                     EditorThemeManager.ApplyInputField(inputFieldStorage);
                 }
+
+                var startHexColor = EditorPrefabHolder.Instance.StringInputField.Duplicate(colorDialog, "starthex");
+                startHexColor.transform.AsRT().sizeDelta = new Vector2(150f, 32f);
+                var startHexColorField = startHexColor.GetComponent<InputField>();
+
+                EditorThemeManager.ApplyInputField(startHexColorField);
             }
 
             // Relative / Copy / Paste
@@ -1604,37 +1611,37 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         gradientRotationLabelLayout.minWidth = 100f;
                     }
 
-                    var shift = EditorPrefabHolder.Instance.ToggleButton.Duplicate(colorDialog, "shift", 16);
-                    var shiftToggleButton = shift.GetComponent<ToggleButtonStorage>();
-                    shiftToggleButton.label.text = "Shift Dialog Down";
-                    shiftToggleButton.toggle.SetIsOnWithoutNotify(false);
-                    shiftToggleButton.toggle.onValueChanged.NewListener(_val =>
-                    {
-                        ObjectEditor.inst.colorShifted = _val;
-                        shiftToggleButton.label.text = _val ? "Shift Dialog Up" : "Shift Dialog Down";
-                        var animation = new RTAnimation("shift color UI");
-                        animation.animationHandlers = new List<AnimationHandlerBase>
-                        {
-                            new AnimationHandler<float>(new List<IKeyframe<float>>
-                            {
-                                new FloatKeyframe(0f, _val ? 0f : 195f, Ease.Linear),
-                                new FloatKeyframe(0.3f, _val ? 195f : 0f, Ease.CircOut),
-                                new FloatKeyframe(0.32f, _val ? 195f : 0f, Ease.Linear),
-                            }, x => { if (ObjEditor.inst) ObjEditor.inst.KeyframeDialogs[3].transform.AsRT().anchoredPosition = new Vector2(0f, x); }),
-                        };
+                    //var shift = EditorPrefabHolder.Instance.ToggleButton.Duplicate(colorDialog, "shift", 16);
+                    //var shiftToggleButton = shift.GetComponent<ToggleButtonStorage>();
+                    //shiftToggleButton.label.text = "Shift Dialog Down";
+                    //shiftToggleButton.toggle.SetIsOnWithoutNotify(false);
+                    //shiftToggleButton.toggle.onValueChanged.NewListener(_val =>
+                    //{
+                    //    ObjectEditor.inst.colorShifted = _val;
+                    //    shiftToggleButton.label.text = _val ? "Shift Dialog Up" : "Shift Dialog Down";
+                    //    var animation = new RTAnimation("shift color UI");
+                    //    animation.animationHandlers = new List<AnimationHandlerBase>
+                    //    {
+                    //        new AnimationHandler<float>(new List<IKeyframe<float>>
+                    //        {
+                    //            new FloatKeyframe(0f, _val ? 0f : 195f, Ease.Linear),
+                    //            new FloatKeyframe(0.3f, _val ? 195f : 0f, Ease.CircOut),
+                    //            new FloatKeyframe(0.32f, _val ? 195f : 0f, Ease.Linear),
+                    //        }, x => { if (ObjEditor.inst) ObjEditor.inst.KeyframeDialogs[3].transform.AsRT().anchoredPosition = new Vector2(0f, x); }),
+                    //    };
 
-                        animation.onComplete = () =>
-                        {
-                            if (ObjEditor.inst)
-                                ObjEditor.inst.KeyframeDialogs[3].transform.AsRT().anchoredPosition = new Vector2(0f, _val ? 195f : 0f);
-                            AnimationManager.inst.Remove(animation.id);
-                        };
+                    //    animation.onComplete = () =>
+                    //    {
+                    //        if (ObjEditor.inst)
+                    //            ObjEditor.inst.KeyframeDialogs[3].transform.AsRT().anchoredPosition = new Vector2(0f, _val ? 195f : 0f);
+                    //        AnimationManager.inst.Remove(animation.id);
+                    //    };
 
-                        AnimationManager.inst.Play(animation);
-                    });
+                    //    AnimationManager.inst.Play(animation);
+                    //});
 
-                    EditorThemeManager.ApplySelectable(shiftToggleButton.toggle, ThemeGroup.Function_2);
-                    EditorThemeManager.ApplyGraphic(shiftToggleButton.label, ThemeGroup.Function_2_Text);
+                    //EditorThemeManager.ApplySelectable(shiftToggleButton.toggle, ThemeGroup.Function_2);
+                    //EditorThemeManager.ApplyGraphic(shiftToggleButton.label, ThemeGroup.Function_2_Text);
 
                     var endColorLabel = colorDialog.Find("color_label").gameObject.Duplicate(colorDialog, "gradient_color_label");
                     endColorLabel.GetComponentInChildren<Text>().text = "End Color";
@@ -1660,6 +1667,25 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     ObjectEditor.inst.gradientColorButtons.Clear();
                     for (int i = 0; i < endColor.transform.childCount; i++)
                         ObjectEditor.inst.gradientColorButtons.Add(endColor.transform.GetChild(i).GetComponent<Toggle>());
+
+                    var endHexColor = EditorPrefabHolder.Instance.StringInputField.Duplicate(colorDialog, "endhex");
+                    endHexColor.transform.AsRT().sizeDelta = new Vector2(150f, 32f);
+                    var endHexColorField = endHexColor.GetComponent<InputField>();
+
+                    EditorThemeManager.ApplyInputField(endHexColorField);
+
+                    var opacityCollision = EditorPrefabHolder.Instance.ToggleButton.Duplicate(colorDialog, "opacitycollision");
+                    var opacityCollisionToggle = opacityCollision.GetComponent<ToggleButtonStorage>();
+                    opacityCollisionToggle.Text = "Opacity Affects Collision";
+                    TooltipHelper.AssignTooltip(opacityCollision, "Opacity Collision");
+
+                    EditorThemeManager.ApplyToggle(opacityCollisionToggle);
+
+                    var useHexColor = EditorPrefabHolder.Instance.ToggleButton.Duplicate(colorDialog, "hexcolor");
+                    var useHexColorToggle = useHexColor.GetComponent<ToggleButtonStorage>();
+                    useHexColorToggle.Text = "Use Hex Color";
+
+                    EditorThemeManager.ApplyToggle(useHexColorToggle);
                 }
                 catch (Exception ex)
                 {
@@ -1847,6 +1873,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             #endregion
 
+            #region Anim
+
             var animIDLabel = EditorPrefabHolder.Instance.Labels.Duplicate(Content, "anim_label");
             var animIDLabelText = animIDLabel.transform.GetChild(0).GetComponent<Text>();
             animIDLabelText.text = "Animation ID";
@@ -1857,6 +1885,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             EditorThemeManager.ApplyInputField(AnimIDField);
             AnimIDField.gameObject.GetOrAddComponent<InputFieldSwapper>().Init(AnimIDField, InputFieldSwapper.Type.String);
+
+            #endregion
 
             try
             {
@@ -1873,6 +1903,26 @@ namespace BetterLegacy.Editor.Data.Dialogs
             {
                 var keyframeDialog = new KeyframeDialog(i);
                 keyframeDialog.GameObject = ObjEditor.inst.KeyframeDialogs[i];
+
+                if (i != 4)
+                {
+                    keyframeDialog.Content = EditorPrefabHolder.Instance.ScrollView.Duplicate(keyframeDialog.GameObject.transform, "Scroll View", 1).transform.Find("Viewport/Content").AsRT();
+
+                    var baseLayoutGroup = keyframeDialog.GameObject.GetComponent<VerticalLayoutGroup>();
+                    var contentLayoutGroup = keyframeDialog.Content.GetComponent<VerticalLayoutGroup>();
+                    contentLayoutGroup.childControlWidth = false;
+                    contentLayoutGroup.childForceExpandHeight = false;
+                    contentLayoutGroup.padding = new RectOffset(left: 1, right: 0, top: 8, bottom: 8);
+                    keyframeDialog.GameObject.transform.Find("Scroll View").AsRT().sizeDelta = new Vector2(371f, 510f);
+
+                    while (keyframeDialog.GameObject.transform.childCount > 2)
+                        keyframeDialog.GameObject.transform.GetChild(2).SetParent(keyframeDialog.Content);
+
+                    ObjEditor.inst.KeyframeDialogs[i] = keyframeDialog.Content.gameObject;
+                }
+                else
+                    keyframeDialog.Content = keyframeDialog.GameObject.transform.AsRT();
+
                 keyframeDialog.isMulti = i == 4;
                 keyframeDialog.isObjectKeyframe = true;
                 keyframeDialog.Init();
@@ -1882,6 +1932,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
             Timeline = new KeyframeTimeline();
             Timeline.startColorsReference = ObjEditor.inst.colorButtons;
             Timeline.endColorsReference = ObjectEditor.inst.gradientColorButtons;
+            Timeline.StartHexColorField = colorDialog.Find("Scroll View/Viewport/Content/starthex").GetComponent<InputField>();
+            Timeline.EndHexColorField = colorDialog.Find("Scroll View/Viewport/Content/endhex").GetComponent<InputField>();
+            Timeline.UseHexColorToggle = colorDialog.Find("Scroll View/Viewport/Content/hexcolor").GetComponent<ToggleButtonStorage>();
             Timeline.setTime = true;
             Timeline.Init(this);
         }

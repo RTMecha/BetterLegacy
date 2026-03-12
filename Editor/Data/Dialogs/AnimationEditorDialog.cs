@@ -122,7 +122,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             SetupStates();
 
             var keyframeDialogsParent = GameObject.transform.Find("data/right");
-            var colorDialog = keyframeDialogsParent.Find("color");
+            var colorDialog = keyframeDialogsParent.Find("color/Scroll View/Viewport/Content");
             var endColor = colorDialog.Find("gradient_color");
 
             startColorToggles.Clear();
@@ -137,6 +137,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             {
                 var keyframeDialog = new KeyframeDialog(i);
                 keyframeDialog.GameObject = keyframeDialogsParent.GetChild(i).gameObject;
+                keyframeDialog.Content = i == 4 ? keyframeDialog.GameObject.transform.AsRT() : keyframeDialog.GameObject.transform.Find("Scroll View/Viewport/Content").AsRT();
                 keyframeDialog.isMulti = i == 4;
                 keyframeDialog.isObjectKeyframe = true;
                 keyframeDialog.Init();
@@ -155,6 +156,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
             Timeline = new KeyframeTimeline();
             Timeline.startColorsReference = startColorToggles;
             Timeline.endColorsReference = endColorToggles;
+            Timeline.StartHexColorField = colorDialog.Find("starthex").GetComponent<InputField>();
+            Timeline.EndHexColorField = colorDialog.Find("endhex").GetComponent<InputField>();
+            Timeline.UseHexColorToggle = colorDialog.Find("hexcolor").GetComponent<ToggleButtonStorage>();
             Timeline.Init(this);
 
             #endregion

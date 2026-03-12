@@ -42,6 +42,11 @@ namespace BetterLegacy.Editor.Data.Dialogs
         /// </summary>
         public GameObject GameObject { get; set; }
 
+        /// <summary>
+        /// Content UI of the keyframe editor.
+        /// </summary>
+        public RectTransform Content { get; set; }
+
         #region Edit
 
         public Transform Edit { get; set; }
@@ -177,7 +182,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
             if (!GameObject)
                 return;
 
-            Edit = GameObject.transform.Find("edit");
+            var content = Content ?? GameObject.transform.AsRT();
+
+            Edit = content.Find("edit");
             if (!isObjectKeyframe)
                 InitEdit();
             RTEditor.inst.SetupIndexer(this);
@@ -188,18 +195,18 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             try
             {
-                CurvesLabel = GameObject.transform.Find("curves_label").gameObject;
-                CurvesDropdown = GameObject.transform.Find("curves").GetComponent<Dropdown>();
-                EventTimeField = GameObject.transform.Find("time").gameObject.GetOrAddComponent<InputFieldStorage>();
+                CurvesLabel = content.Find("curves_label").gameObject;
+                CurvesDropdown = content.Find("curves").GetComponent<Dropdown>();
+                EventTimeField = content.Find("time").gameObject.GetOrAddComponent<InputFieldStorage>();
                 EventTimeField.Assign(EventTimeField.gameObject);
 
-                GameObject.transform.GetChild(2).gameObject.SetActive(false);
+                content.GetChild(Content ? 1 : 2).gameObject.SetActive(false);
                 if (type != 4)
-                    GameObject.transform.GetChild(7).gameObject.SetActive(false);
+                    content.GetChild(Content ? 6 : 7).gameObject.SetActive(false);
 
                 if (isObjectKeyframe)
                 {
-                    if (GameObject.transform.TryFind(Name.ToLower(), out Transform valuesTransform))
+                    if (content.TryFind(Name.ToLower(), out Transform valuesTransform))
                     {
                         EventValuesParent = valuesTransform;
                         var labels = valuesTransform.GetPreviousSibling();
@@ -237,9 +244,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
                             CoreHelper.DestroyChildren(EventValuesParent);
                     }
 
-                    if (GameObject.transform.TryFind($"r_{Name.ToLower()}", out Transform randomValuesTransform))
+                    if (content.TryFind($"r_{Name.ToLower()}", out Transform randomValuesTransform))
                     {
-                        RandomEventValueLabels = GameObject.transform.Find($"r_{Name.ToLower()}_label")?.gameObject;
+                        RandomEventValueLabels = content.Find($"r_{Name.ToLower()}_label")?.gameObject;
                         try
                         {
                             if (RandomEventValueLabels)
@@ -263,19 +270,19 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     }
                 }
 
-                if (GameObject.transform.TryFind("relative", out Transform relativeTransform))
+                if (content.TryFind("relative", out Transform relativeTransform))
                     RelativeToggle = relativeTransform.GetComponent<ToggleButtonStorage>();
                 
-                if (GameObject.transform.TryFind("flee", out Transform fleeTransform))
+                if (content.TryFind("flee", out Transform fleeTransform))
                     FleeToggle = fleeTransform.GetComponent<ToggleButtonStorage>();
 
-                if (GameObject.transform.TryFind("r_label", out Transform randomLabelTransform))
+                if (content.TryFind("r_label", out Transform randomLabelTransform))
                 {
                     for (int i = 0; i < randomLabelTransform.childCount; i++)
                         EditorThemeManager.ApplyLightText(randomLabelTransform.GetChild(i).GetComponent<Text>());
                 }
 
-                if (GameObject.transform.TryFind("random", out Transform randomTransform))
+                if (content.TryFind("random", out Transform randomTransform))
                 {
                     RandomTogglesParent = randomTransform;
                     RandomToggles = new List<Toggle>();
@@ -298,7 +305,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     RandomIntervalField = randomTransform.Find("interval-input").GetComponent<InputField>();
                     EditorThemeManager.ApplyInputField(RandomIntervalField);
 
-                    if (GameObject.transform.TryFind("r_axis", out Transform rAxisTransform))
+                    if (Content.transform.TryFind("r_axis", out Transform rAxisTransform))
                         RandomAxisDropdown = rAxisTransform.GetComponent<Dropdown>();
                 }
 

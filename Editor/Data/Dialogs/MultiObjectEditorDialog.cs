@@ -2212,6 +2212,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                 primarySaturationField,
                                 primaryValueField);
 
+                            new LabelsElement("Primary Hex Color").Init(EditorElement.InitSettings.Default.Parent(parent));
+                            var primaryHexColor = new StringInputElement(string.Empty, null);
+                            primaryHexColor.Init(EditorElement.InitSettings.Default.Parent(parent));
+                            EditorContextMenu.AddContextMenu(primaryHexColor.inputField.gameObject,
+                                EditorContextMenu.GetEditorColorFunctions(primaryHexColor.inputField, () => primaryHexColor.inputField.text));
+
                             #endregion
 
                             new SpacerElement().Init(EditorElement.InitSettings.Default.Parent(parent));
@@ -2281,6 +2287,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                 secondaryHueField,
                                 secondarySaturationField,
                                 secondaryValueField);
+
+                            new LabelsElement("Secondary Hex Color").Init(EditorElement.InitSettings.Default.Parent(parent));
+                            var secondaryHexColor = new StringInputElement(string.Empty, null);
+                            secondaryHexColor.Init(EditorElement.InitSettings.Default.Parent(parent));
+                            EditorContextMenu.AddContextMenu(primaryHexColor.inputField.gameObject,
+                                EditorContextMenu.GetEditorColorFunctions(primaryHexColor.inputField, () => primaryHexColor.inputField.text));
 
                             #endregion
 
@@ -2356,6 +2368,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                                 kf.values[8] = Parser.TryParse(secondarySaturationField.numberInputField.Text, 0f);
                                             if (!string.IsNullOrEmpty(secondaryValueField.numberInputField.Text))
                                                 kf.values[9] = Parser.TryParse(secondaryValueField.numberInputField.Text, 0f);
+
+                                            kf.random = !string.IsNullOrEmpty(primaryHexColor.inputField.text) ? 1 : 0;
+                                            if (kf.random != 0)
+                                                kf.SetStringValues(primaryHexColor.inputField.text, secondaryHexColor.inputField.text);
+                                            else
+                                                kf.SetStringValues();
                                         }
                                         RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                                     });
@@ -2452,10 +2470,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                             primaryHueField.numberInputField.Text,
                                             primarySaturationField.numberInputField.Text,
                                             primaryValueField.numberInputField.Text,
+                                            primaryHexColor.inputField.text,
                                             secondaryOpacityField.numberInputField.Text,
                                             secondaryHueField.numberInputField.Text,
                                             secondarySaturationField.numberInputField.Text,
-                                            secondaryValueField.numberInputField.Text, MathOperation.Set);
+                                            secondaryValueField.numberInputField.Text,
+                                            secondaryHexColor.inputField.text, MathOperation.Set);
                                         RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                                     }));
                                 }),
@@ -2469,10 +2489,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                             primaryHueField.numberInputField.Text,
                                             primarySaturationField.numberInputField.Text,
                                             primaryValueField.numberInputField.Text,
+                                            primaryHexColor.inputField.text,
                                             secondaryOpacityField.numberInputField.Text,
                                             secondaryHueField.numberInputField.Text,
                                             secondarySaturationField.numberInputField.Text,
-                                            secondaryValueField.numberInputField.Text, MathOperation.Subtract);
+                                            secondaryValueField.numberInputField.Text,
+                                            secondaryHexColor.inputField.text, MathOperation.Subtract);
                                         RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                                     }));
                                 }),
@@ -2486,10 +2508,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                             primaryHueField.numberInputField.Text,
                                             primarySaturationField.numberInputField.Text,
                                             primaryValueField.numberInputField.Text,
+                                            primaryHexColor.inputField.text,
                                             secondaryOpacityField.numberInputField.Text,
                                             secondaryHueField.numberInputField.Text,
                                             secondarySaturationField.numberInputField.Text,
-                                            secondaryValueField.numberInputField.Text, MathOperation.Addition);
+                                            secondaryValueField.numberInputField.Text,
+                                            secondaryHexColor.inputField.text, MathOperation.Addition);
                                         RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                                     }));
                                 }));
@@ -2515,11 +2539,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                         primaryHueField.numberInputField.Text,
                                         primarySaturationField.numberInputField.Text,
                                         primaryValueField.numberInputField.Text,
+                                        primaryHexColor.inputField.text,
                                         secondaryOpacityField.numberInputField.Text,
                                         secondaryHueField.numberInputField.Text,
                                         secondarySaturationField.numberInputField.Text,
                                         secondaryValueField.numberInputField.Text,
-                                        MathOperation.Set);
+                                        secondaryHexColor.inputField.text, MathOperation.Set);
                                     beatmapObject.events[3].Add(kf);
 
                                     RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
@@ -3960,8 +3985,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
         }
 
         public void SetKeyframeValues(EventKeyframe kf, bool setCurves, Easing anim,
-            string primaryOpacity, string primaryHue, string primarySaturation, string primaryValue,
-            string secondaryOpacity, string secondaryHue, string secondarySaturation, string secondaryValue, MathOperation operation)
+            string primaryOpacity, string primaryHue, string primarySaturation, string primaryValue, string primaryHexColor,
+            string secondaryOpacity, string secondaryHue, string secondarySaturation, string secondaryValue, string secondaryHexColor, MathOperation operation)
         {
             if (setCurves)
                 kf.curve = anim;
@@ -4019,6 +4044,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 RTMath.Operation(ref kf.values[8], Parser.TryParse(secondarySaturation, 0f), operation);
             if (!string.IsNullOrEmpty(secondaryValue))
                 RTMath.Operation(ref kf.values[9], Parser.TryParse(secondaryValue, 0f), operation);
+
+            kf.random = !string.IsNullOrEmpty(primaryHexColor) ? 1 : 0;
+            if (kf.random != 0)
+                kf.SetStringValues(primaryHexColor, secondaryHexColor);
+            else
+                kf.SetStringValues();
         }
 
         void UpdateMultiColorButtons()
