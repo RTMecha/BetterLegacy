@@ -1013,7 +1013,12 @@ namespace BetterLegacy.Editor.Data
             ApplyLayoutElement();
 
             if (swapType is InputFieldSwapper.Type type)
+            {
                 inputField.gameObject.GetOrAddComponent<InputFieldSwapper>().Init(inputField, type);
+                if (type == InputFieldSwapper.Type.String)
+                    EditorContextMenu.AddContextMenu(inputField.gameObject,
+                        EditorContextMenu.GetNameFunctions(inputField));
+            }
 
             if (!initSettings.applyThemes)
                 return;
