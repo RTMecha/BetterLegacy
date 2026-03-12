@@ -357,6 +357,18 @@ namespace BetterLegacy.Editor.Managers
             if (!editStory)
                 return;
 
+            if (RTFile.TryReadFromFile("story_dev_paths.json", out string file))
+            {
+                var jn = JSON.Parse(file);
+                storyLevelsCompilerPath = jn["compiler_path"];
+                storyLevelsVersionControlPath = jn["version_control_path"];
+            }
+            else
+            {
+                storyLevelsCompilerPath = default;
+                storyLevelsVersionControlPath = default;
+            }
+
             EditorHelper.AddEditorDropdown("Edit Story", string.Empty, EditorHelper.EDIT_DROPDOWN, EditorSprites.EditSprite, () => EditorContextMenu.inst.ShowContextMenu(
                 new ButtonElement("Send to Compiler", ToStoryLevel),
                 new ButtonElement("Send to Repository", ToStoryVersionControl),
@@ -2607,14 +2619,17 @@ namespace BetterLegacy.Editor.Managers
 
         #region Story Development
 
-        string storyLevelsCompilerPath = "C:/Users/Mecha/Documents/Project Arrhythmia/Unity/BetterLegacyEditor/Assets/Story Levels";
-        string storyLevelsVersionControlPath = "C:/Users/Mecha/Documents/Project Arrhythmia/BetterLegacy.Story";
+        string storyLevelsCompilerPath;
+        string storyLevelsVersionControlPath;
 
         public void ToStoryLevel() => ToStoryLevel(RTEditor.inst.editorInfo);
 
         public void ToStoryLevel(EditorInfo editorInfo)
         {
             if (!editorInfo.isStory)
+                return;
+
+            if (string.IsNullOrEmpty(storyLevelsCompilerPath))
                 return;
 
             if (!string.IsNullOrEmpty(editorInfo.customLocation))
@@ -2661,21 +2676,20 @@ namespace BetterLegacy.Editor.Managers
 
         public void ToStoryVersionControl(EditorInfo editorInfo)
         {
-            try
-            {
-                if (!editorInfo.isStory)
-                    return;
+            if (string.IsNullOrEmpty(storyLevelsVersionControlPath))
+                return;
 
-                string cutsceneDestination = string.Empty;
-                if (editorInfo.cutsceneDestination != Story.CutsceneDestination.Level)
-                    cutsceneDestination = editorInfo.cutsceneDestination.ToString().ToLower();
-                int cutscene = 0;
-                if (editorInfo.cutscene >= 0)
-                    cutscene = editorInfo.cutscene;
+            if (!editorInfo.isStory)
+                return;
 
-                ToStoryVersionControl(editorInfo.storyChapter, editorInfo.storyLevel, cutsceneDestination, cutscene);
-            }
-            catch { }
+            string cutsceneDestination = string.Empty;
+            if (editorInfo.cutsceneDestination != Story.CutsceneDestination.Level)
+                cutsceneDestination = editorInfo.cutsceneDestination.ToString().ToLower();
+            int cutscene = 0;
+            if (editorInfo.cutscene >= 0)
+                cutscene = editorInfo.cutscene;
+
+            ToStoryVersionControl(editorInfo.storyChapter, editorInfo.storyLevel, cutsceneDestination, cutscene);
         }
 
         public void ToStoryVersionControl(int chapter, int level, string type, int cutscene)
