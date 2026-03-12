@@ -1,4 +1,16 @@
-﻿# snapshot-2026.3.3 - (Story Playtest) [Mar 8, 2026]
+﻿# snapshot-2026.3.? - (Story Playtest) [???]
+## Features
+### Core
+- Added mesh options for the sphereShape modifier.
+- Color keyframes can now be switched to use hex colors instead of theme keyframes.
+
+## Changes
+### Editor
+- The object keyframe editors now have a scroll area. The "Move Dialog" toggle button has been removed due to this.
+
+-------------------------------------------------------------------
+
+# snapshot-2026.3.3 - (Story Playtest) [Mar 8, 2026]
 ## Features
 ### Core
 - Image objects now support Asset Pack images.
