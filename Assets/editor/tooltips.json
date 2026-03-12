@@ -335,7 +335,17 @@
             "lang": 0
           }
         ]
-      } // Autokill Type
+      }, // Autokill Type
+      {
+        "name": "Opacity Collision",
+        "tooltips": [
+          {
+            "desc": "The collision behavior of the object in relation to opacity.",
+            "hint": "If this toggle is on, the collision will only enable if the opacity is fully opaque (100% / 1.0 opacity).",
+            "lang": 0
+          }
+        ]
+      } // Opacity Collision
     ],
 
     // Prefabs
@@ -4736,25 +4746,45 @@
             ]
           }, // applyColorGroup
           {
-            "name": "Object Modifier - setAlpha (Action)",
+            "name": "Object Modifier - setOpacity (Action)",
             "tooltips": [
               {
-                "desc": "setAlpha (Action)",
+                "desc": "setOpacity (Action)",
                 "hint": "Set the opacity of the object.",
                 "lang": 0
               }
             ]
-          }, // setAlpha
+          }, // setOpacity
           {
-            "name": "Object Modifier - setAlphaOther (Action)",
+            "name": "Object Modifier - setOpacityOther (Action)",
             "tooltips": [
               {
-                "desc": "setAlphaOther (Action)",
+                "desc": "setOpacityOther (Action)",
                 "hint": "Set the opacity of a group of objects.",
                 "lang": 0
               }
             ]
-          }, // setAlphaOther
+          }, // setOpacityOther
+          {
+            "name": "Object Modifier - modifyColorHSV (Action)",
+            "tooltips": [
+              {
+                "desc": "modifyColorHSV (Action)",
+                "hint": "Modifies the HSV values of the object.",
+                "lang": 0
+              }
+            ]
+          }, // modifyColorHSV
+          {
+            "name": "Object Modifier - modifyColorHSVOther (Action)",
+            "tooltips": [
+              {
+                "desc": "modifyColorHSVOther (Action)",
+                "hint": "Modifies the HSV values of a group of objects.",
+                "lang": 0
+              }
+            ]
+          }, // modifyColorHSVOther
           {
             "name": "Object Modifier - copyColor (Action)",
             "tooltips": [

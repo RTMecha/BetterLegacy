@@ -2884,6 +2884,29 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
+                case nameof(ModifierFunctions.modifyColorHSV): {
+                        SingleGenerator(modifier, reference, "Start Hue", 0, 0f);
+                        SingleGenerator(modifier, reference, "Start Sat", 1, 0f);
+                        SingleGenerator(modifier, reference, "Start Value", 2, 0f);
+                        SingleGenerator(modifier, reference, "End Hue", 3, 0f);
+                        SingleGenerator(modifier, reference, "End Sat", 4, 0f);
+                        SingleGenerator(modifier, reference, "End Value", 5, 0f);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.modifyColorHSVOther): {
+                        PrefabGroupOnly(modifier, reference);
+                        SingleGenerator(modifier, reference, "Start Hue", 0, 0f);
+                        SingleGenerator(modifier, reference, "Start Sat", 1, 0f);
+                        SingleGenerator(modifier, reference, "Start Value", 2, 0f);
+                        SingleGenerator(modifier, reference, "End Hue", 3, 0f);
+                        SingleGenerator(modifier, reference, "End Sat", 4, 0f);
+                        SingleGenerator(modifier, reference, "End Value", 5, 0f);
+                        var str = StringGenerator(modifier, reference, "Object Group", 6);
+                        EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
+
+                        break;
+                    }
                 case nameof(ModifierFunctions.copyColor): {
                         PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 0);

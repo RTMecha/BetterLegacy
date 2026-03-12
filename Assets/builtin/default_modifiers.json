@@ -2715,6 +2715,20 @@
       }, // setOpacityOther
       {
         "type": 1,
+        "name": "modifyColorHSV",
+        "values": [ "0", "0", "0", "0", "0", "0" ],
+        "const": "True",
+        "compat": "obj"
+      }, // modifyColorHSV
+      {
+        "type": 1,
+        "name": "modifyColorHSVOther",
+        "values": [ "0", "0", "0", "0", "0", "0", "Object Group" ],
+        "const": "True",
+        "compat": "full_beatmap"
+      }, // modifyColorHSVOther
+      {
+        "type": 1,
         "commands": [ "addColor", "0", "0", "0", "0", "1", "4" ],
         "value": "0",
         "const": "True",

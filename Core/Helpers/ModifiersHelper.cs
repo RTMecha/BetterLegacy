@@ -1166,6 +1166,10 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction(nameof(ModifierFunctions.setOpacity),  ModifierFunctions.setOpacity, ModifierCompatibility.BeatmapObjectCompatible),
             new ModifierAction("setAlphaOther",  ModifierFunctions.setOpacityOther, ModifierCompatibility.BeatmapObjectCompatible),
             new ModifierAction(nameof(ModifierFunctions.setOpacityOther),  ModifierFunctions.setOpacityOther, ModifierCompatibility.FullBeatmapCompatible),
+            
+            // hsv
+            new ModifierAction(nameof(ModifierFunctions.modifyColorHSV),  ModifierFunctions.modifyColorHSV, ModifierCompatibility.BeatmapObjectCompatible.WithBackgroundObject()),
+            new ModifierAction(nameof(ModifierFunctions.modifyColorHSVOther),  ModifierFunctions.modifyColorHSVOther, ModifierCompatibility.FullBeatmapCompatible),
 
             // copy
             new ModifierAction(nameof(ModifierFunctions.copyColor),  ModifierFunctions.copyColor, ModifierCompatibility.BeatmapObjectCompatible),
@@ -2675,65 +2679,69 @@ namespace BetterLegacy.Core.Helpers
                 var prevKF = beatmapObject.events[3][prevKFIndex];
                 var nextKF = beatmapObject.events[3][Mathf.Clamp(prevKFIndex + 1, 0, beatmapObject.events[3].Count - 1)];
                 var easing = Ease.GetEaseFunction(nextKF.curve.ToString())(RTMath.InverseLerp(prevKF.time, nextKF.time, time));
-                int prevcolor = (int)prevKF.values[0];
-                int nextColor = (int)nextKF.values[0];
                 var lerp = RTMath.Lerp(0f, 1f, easing);
                 if (float.IsNaN(lerp) || float.IsInfinity(lerp))
                     lerp = 1f;
 
                 color = Color.Lerp(
-                    CoreHelper.CurrentBeatmapTheme.GetObjColor(prevcolor),
-                    CoreHelper.CurrentBeatmapTheme.GetObjColor(nextColor),
+                    prevKF.random == 1 ? RTColors.HexToColor(prevKF.GetStringValue(0)) : CoreHelper.CurrentBeatmapTheme.GetObjColor((int)prevKF.values[0]),
+                    nextKF.random == 1 ? RTColors.HexToColor(nextKF.GetStringValue(0)) : CoreHelper.CurrentBeatmapTheme.GetObjColor((int)nextKF.values[0]),
                     lerp);
 
-                lerp = RTMath.Lerp(prevKF.values[1], nextKF.values[1], easing);
+                var prevOpacity = prevKF.random == 1 ? RTColors.HexToColor(prevKF.GetStringValue(0)).a : prevKF.values[1];
+                var nextOpacity = nextKF.random == 1 ? RTColors.HexToColor(nextKF.GetStringValue(0)).a : nextKF.values[1];
+
+                lerp = RTMath.Lerp(prevOpacity, nextOpacity, easing);
                 if (float.IsNaN(lerp) || float.IsInfinity(lerp))
                     lerp = 0f;
 
                 color = RTColors.FadeColor(color, -(lerp - 1f));
 
-                var lerpHue = RTMath.Lerp(prevKF.values[2], nextKF.values[2], easing);
-                var lerpSat = RTMath.Lerp(prevKF.values[3], nextKF.values[3], easing);
-                var lerpVal = RTMath.Lerp(prevKF.values[4], nextKF.values[4], easing);
+                var lerpHue = RTMath.Lerp(prevKF.random == 1 ? 0f : prevKF.values[2], nextKF.random == 1 ? 0f : nextKF.values[2], easing);
+                var lerpSat = RTMath.Lerp(prevKF.random == 1 ? 0f : prevKF.values[3], nextKF.random == 1 ? 0f : nextKF.values[3], easing);
+                var lerpVal = RTMath.Lerp(prevKF.random == 1 ? 0f : prevKF.values[4], nextKF.random == 1 ? 0f : nextKF.values[4], easing);
 
                 if (float.IsNaN(lerpHue))
-                    lerpHue = nextKF.values[2];
+                    lerpHue = nextKF.random == 1 ? 0f : nextKF.values[2];
                 if (float.IsNaN(lerpSat))
-                    lerpSat = nextKF.values[3];
+                    lerpSat = nextKF.random == 1 ? 0f : nextKF.values[3];
                 if (float.IsNaN(lerpVal))
-                    lerpVal = nextKF.values[4];
+                    lerpVal = nextKF.random == 1 ? 0f : nextKF.values[4];
 
-                color = RTColors.ChangeColorHSV(color, lerpHue, lerpSat, lerpVal);
+                if (lerpHue != 0f || lerpSat != 0f || lerpVal != 0f)
+                    color = RTColors.ChangeColorHSV(color, lerpHue, lerpSat, lerpVal);
 
-                prevcolor = (int)prevKF.values[5];
-                nextColor = (int)nextKF.values[5];
                 lerp = RTMath.Lerp(0f, 1f, easing);
                 if (float.IsNaN(lerp) || float.IsInfinity(lerp))
                     lerp = 1f;
 
                 secondColor = Color.Lerp(
-                    CoreHelper.CurrentBeatmapTheme.GetObjColor(prevcolor),
-                    CoreHelper.CurrentBeatmapTheme.GetObjColor(nextColor),
+                    prevKF.random == 1 ? RTColors.HexToColor(prevKF.GetStringValue(1)) : CoreHelper.CurrentBeatmapTheme.GetObjColor((int)prevKF.values[5]),
+                    prevKF.random == 1 ? RTColors.HexToColor(prevKF.GetStringValue(1)) : CoreHelper.CurrentBeatmapTheme.GetObjColor((int)nextKF.values[5]),
                     lerp);
 
-                lerp = RTMath.Lerp(prevKF.values[6], nextKF.values[6], easing);
+                prevOpacity = prevKF.random == 1 ? RTColors.HexToColor(prevKF.GetStringValue(1)).a : prevKF.values[6];
+                nextOpacity = nextKF.random == 1 ? RTColors.HexToColor(nextKF.GetStringValue(1)).a : nextKF.values[6];
+
+                lerp = RTMath.Lerp(prevOpacity, nextOpacity, easing);
                 if (float.IsNaN(lerp) || float.IsInfinity(lerp))
                     lerp = 0f;
 
                 secondColor = RTColors.FadeColor(secondColor, -(lerp - 1f));
 
-                lerpHue = RTMath.Lerp(prevKF.values[7], nextKF.values[7], easing);
-                lerpSat = RTMath.Lerp(prevKF.values[8], nextKF.values[8], easing);
-                lerpVal = RTMath.Lerp(prevKF.values[9], nextKF.values[9], easing);
+                lerpHue = RTMath.Lerp(prevKF.random == 1 ? 0f : prevKF.values[7], nextKF.random == 1 ? 0f : nextKF.values[7], easing);
+                lerpSat = RTMath.Lerp(prevKF.random == 1 ? 0f : prevKF.values[8], nextKF.random == 1 ? 0f : nextKF.values[8], easing);
+                lerpVal = RTMath.Lerp(prevKF.random == 1 ? 0f : prevKF.values[9], nextKF.random == 1 ? 0f : nextKF.values[9], easing);
 
                 if (float.IsNaN(lerpHue))
-                    lerpHue = nextKF.values[7];
+                    lerpHue = nextKF.random == 1 ? 0f : nextKF.values[7];
                 if (float.IsNaN(lerpSat))
-                    lerpSat = nextKF.values[8];
+                    lerpSat = nextKF.random == 1 ? 0f : nextKF.values[8];
                 if (float.IsNaN(lerpVal))
-                    lerpVal = nextKF.values[9];
+                    lerpVal = nextKF.random == 1 ? 0f : nextKF.values[9];
 
-                secondColor = RTColors.ChangeColorHSV(color, lerpHue, lerpSat, lerpVal);
+                if (lerpHue != 0f || lerpSat != 0f || lerpVal != 0f)
+                    secondColor = RTColors.ChangeColorHSV(color, lerpHue, lerpSat, lerpVal);
             } // assign
 
             return new GradientColors(color, secondColor);
@@ -8030,7 +8038,7 @@ namespace BetterLegacy.Core.Helpers
             if (modifierLoop.reference is not BeatmapObject beatmapObject || !beatmapObject.runtimeObject || !beatmapObject.runtimeObject.visualObject)
                 return;
 
-            var multiply = modifier.GetFloat(0, 0f, modifierLoop.variables);
+            var interpolate = modifier.GetFloat(0, 0f, modifierLoop.variables);
             var index = modifier.GetInt(1, 0, modifierLoop.variables);
             var hue = modifier.GetFloat(2, 0f, modifierLoop.variables);
             var sat = modifier.GetFloat(3, 0f, modifierLoop.variables);
@@ -8043,7 +8051,7 @@ namespace BetterLegacy.Core.Helpers
             {
                 var colorA = RTColors.ChangeColorHSV(ThemeManager.inst.Current.GetColor(colorSource, index), hue, sat, val);
                 colorA.a *= opacity;
-                var color = RTMath.Lerp(beatmapObject.runtimeObject.visualObject.GetPrimaryColor(), colorA, multiply);
+                var color = RTMath.Lerp(beatmapObject.runtimeObject.visualObject.GetPrimaryColor(), colorA, interpolate);
                 beatmapObject.runtimeObject.visualObject.SetColor(color);
             });
         }
@@ -8158,10 +8166,7 @@ namespace BetterLegacy.Core.Helpers
             var opacity = modifier.GetFloat(0, 1f, modifierLoop.variables);
 
             // queue post tick so the color overrides the sequence color
-            RTLevel.Current.postTick.Enqueue(() =>
-            {
-                runtimeObject.visualObject.SetColor(RTColors.FadeColor(runtimeObject.visualObject.GetPrimaryColor(), opacity));
-            });
+            RTLevel.Current.postTick.Enqueue(() => runtimeObject.visualObject.SetColor(RTColors.FadeColor(runtimeObject.visualObject.GetPrimaryColor(), opacity)));
         }
 
         public static void setOpacityOther(Modifier modifier, ModifierLoop modifierLoop)
@@ -8183,6 +8188,70 @@ namespace BetterLegacy.Core.Helpers
                 {
                     if (bm.runtimeObject && bm.runtimeObject.visualObject)
                         bm.runtimeObject.visualObject.SetColor(RTColors.FadeColor(bm.runtimeObject.visualObject.GetPrimaryColor(), opacity));
+                }
+            });
+        }
+
+        public static void modifyColorHSV(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            var h1 = modifier.GetFloat(0, 0f, modifierLoop.variables);
+            var s1 = modifier.GetFloat(1, 0f, modifierLoop.variables);
+            var v1 = modifier.GetFloat(2, 0f, modifierLoop.variables);
+            var h2 = modifier.GetFloat(3, 0f, modifierLoop.variables);
+            var s2 = modifier.GetFloat(4, 0f, modifierLoop.variables);
+            var v2 = modifier.GetFloat(5, 0f, modifierLoop.variables);
+
+            if (modifierLoop.reference is BackgroundObject backgroundObject)
+            {
+                backgroundObject.runtimeObject.SetColor(
+                    RTColors.ChangeColorHSV(backgroundObject.runtimeObject.mainColor, h1, s1, v1),
+                    RTColors.ChangeColorHSV(backgroundObject.runtimeObject.fadeColor, h2, s2, v2));
+                return;
+            }
+
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
+                return;
+
+            var runtimeObject = beatmapObject.runtimeObject;
+            if (!runtimeObject || !runtimeObject.visualObject.gameObject)
+                return;
+
+            // queue post tick so the color overrides the sequence color
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                if (runtimeObject.visualObject.isGradient && runtimeObject.visualObject is SolidObject solidObject)
+                {
+                    var colors = solidObject.GetColors();
+                    solidObject.SetColor(
+                        RTColors.ChangeColorHSV(colors.startColor, h1, s1, v1),
+                        RTColors.ChangeColorHSV(colors.endColor, h2, s2, v2));
+                }
+                else
+                    runtimeObject.visualObject.SetColor(RTColors.ChangeColorHSV(runtimeObject.visualObject.GetPrimaryColor(), h1, s1, v1));
+            });
+        }
+
+        public static void modifyColorHSVOther(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (modifierLoop.reference is not IPrefabable prefabable)
+                return;
+
+            var h = modifier.GetFloat(0, 0f, modifierLoop.variables);
+            var s = modifier.GetFloat(1, 0f, modifierLoop.variables);
+            var v = modifier.GetFloat(2, 0f, modifierLoop.variables);
+
+            var list = modifier.GetResultOrDefault(() => GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(3, modifierLoop.variables)));
+
+            if (list.IsEmpty())
+                return;
+
+            // queue post tick so the color overrides the sequence color
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                foreach (var bm in list)
+                {
+                    if (bm.runtimeObject && bm.runtimeObject.visualObject)
+                        bm.runtimeObject.visualObject.SetColor(RTColors.ChangeColorHSV(bm.runtimeObject.visualObject.GetPrimaryColor(), h, s, v));
                 }
             });
         }
