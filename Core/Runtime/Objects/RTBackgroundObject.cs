@@ -55,8 +55,8 @@ namespace BetterLegacy.Core.Runtime.Objects
         public int depthOffset;
         public int Depth => backgroundObject.depth + Mathf.Clamp(depthOffset, 0, backgroundObject.iterations - 1);
 
-        Color mainColor;
-        Color fadeColor;
+        public Color mainColor;
+        public Color fadeColor;
         int fadeCount = -1;
         bool showFade = true;
 
