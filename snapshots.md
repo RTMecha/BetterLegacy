@@ -3,6 +3,12 @@
 ### Core
 - Added mesh options for the sphereShape modifier.
 - Color keyframes can now be switched to use hex colors instead of theme keyframes.
+- Replaced old "Level Mode" system with a new package / file management system. With this, you can specify the file name of the song, level and cover files.
+- Added setAudio modifier. This gets a song registered in the files and sets it as the current.
+- Added setGameData modifier. This swaps the current level data with a different registered .lsb, .vgd or even .json file. This feature is heavily experimental so beware.
+
+### Arcade
+- With the new package system, a preview song can be set for the arcade.
 
 ## Changes
 ### Editor
