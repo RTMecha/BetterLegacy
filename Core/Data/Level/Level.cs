@@ -5,6 +5,8 @@ using System.IO;
 
 using UnityEngine;
 
+using LSFunctions;
+
 using SimpleJSON;
 
 using BetterLegacy.Configs;
@@ -42,10 +44,7 @@ namespace BetterLegacy.Core.Data.Level
             }
 
             if (loadIcon)
-                icon =
-                    RTFile.FileExists(GetFile(LEVEL_JPG)) ? SpriteHelper.LoadSprite(GetFile(LEVEL_JPG)) :
-                    RTFile.FileExists(GetFile(COVER_JPG)) ? SpriteHelper.LoadSprite(GetFile(COVER_JPG)) :
-                    LegacyPlugin.AtanPlaceholder;
+                LoadCover();
 
             UpdateDefaults();
         }
@@ -58,14 +57,7 @@ namespace BetterLegacy.Core.Data.Level
             this.metadata = metadata;
 
             if (loadIcon)
-            {
-                icon =
-                    RTFile.FileExists(GetFile(LEVEL_JPG)) ? SpriteHelper.LoadSprite(GetFile(LEVEL_JPG)) :
-                    RTFile.FileExists(GetFile(COVER_JPG)) ? SpriteHelper.LoadSprite(GetFile(COVER_JPG)) :
-                    LegacyPlugin.AtanPlaceholder;
-
-                lockedIcon = RTFile.FileExists(GetFile(LOCKED_JPG)) ? SpriteHelper.LoadSprite(GetFile(LOCKED_JPG)) : null;
-            }    
+                LoadCover();
 
             UpdateDefaults();
         }
@@ -101,6 +93,8 @@ namespace BetterLegacy.Core.Data.Level
         /// Song the level plays.
         /// </summary>
         public AudioClip music;
+
+        public AudioClip previewAudio;
 
         /// <summary>
         /// List of tracks to load from.
@@ -184,16 +178,12 @@ namespace BetterLegacy.Core.Data.Level
         /// <summary>
         /// Gets the current locked state of the level. Returns true if <see cref="MetaData.requireUnlock"/> is on and the level was not unlocked, otherwise returns false.
         /// </summary>
-        public bool Locked => metadata != null && metadata.requireUnlock && (!saveData || !saveData.Unlocked);
+        public bool Locked => metadata && metadata.requireUnlock && (!saveData || !saveData.Unlocked);
 
-        /// <summary>
-        /// The level files. (level.lsb, level.vgd, etc)
-        /// </summary>
-        public string[] LevelFiles { get; set; }
         /// <summary>
         /// The current selected level file.
         /// </summary>
-        public string CurrentFile => !string.IsNullOrEmpty(currentFile) ? currentFile : LevelFiles[Mathf.Clamp(LevelManager.CurrentLevelMode, 0, LevelFiles.Length - 1)];
+        public string CurrentFile => !string.IsNullOrEmpty(currentFile) ? currentFile : metadata && metadata.package && metadata.package.GetLevel(metadata.package.mainLevel) is PackageMetaData.File file ? file.fileName : Level.LEVEL_LSB;
 
         /// <summary>
         /// The type of Project Arrhythmia the level comes from.
@@ -313,26 +303,38 @@ namespace BetterLegacy.Core.Data.Level
         /// </summary>
         public void UpdateDefaults()
         {
-            if (metadata)
-            {
-                if (!string.IsNullOrEmpty(metadata.arcadeID) && metadata.arcadeID != "-1")
-                    id = metadata.arcadeID;
-                else
-                    id = metadata.beatmap.workshopID.ToString();
-            }
+            if (!metadata)
+                return;
 
-            var defaultFile = (!ProjectArrhythmia.State.InEditor || !RTFile.FileExists(GetFile(LEVEL_LSB))) && CoreConfig.Instance.PrioritizeVG.Value && RTFile.FileExists(GetFile(LEVEL_VGD)) ? LEVEL_VGD : LEVEL_LSB;
+            if (!string.IsNullOrEmpty(metadata.arcadeID) && metadata.arcadeID != "-1")
+                id = metadata.arcadeID;
+            else
+                id = metadata.beatmap.workshopID.ToString();
+        }
 
-            if (RTFile.FileExists(GetFile(FILES_LSF)))
+        /// <summary>
+        /// Loads the levels' cover art.
+        /// </summary>
+        public void LoadCover()
+        {
+            if (metadata && metadata.package && metadata.package.GetImage(metadata.package.mainCover) is PackageMetaData.File file)
             {
-                var jn = JSON.Parse(RTFile.ReadFromFile(GetFile(FILES_LSF)));
-                LevelFiles = new string[jn["paths"].Count + 1];
-                LevelFiles[0] = defaultFile;
-                for (int i = 1; i < jn["paths"].Count + 1; i++)
-                    LevelFiles[i] = jn["paths"][i - 1];
+                icon = RTFile.FileExists(GetFile(file.fileName)) ?
+                    SpriteHelper.LoadSprite(GetFile(file.fileName)) :
+                    LegacyPlugin.AtanPlaceholder;
             }
             else
-                LevelFiles = new string[1] { defaultFile, };
+                icon =
+                    RTFile.FileExists(GetFile(LEVEL_JPG)) ? SpriteHelper.LoadSprite(GetFile(LEVEL_JPG)) :
+                    RTFile.FileExists(GetFile(COVER_JPG)) ? SpriteHelper.LoadSprite(GetFile(COVER_JPG)) :
+                    LegacyPlugin.AtanPlaceholder;
+
+            if (metadata && metadata.package && metadata.package.GetImage(metadata.package.mainLockedCover) is PackageMetaData.File lockedFile)
+                lockedIcon = RTFile.FileExists(GetFile(lockedFile.fileName)) ?
+                    SpriteHelper.LoadSprite(GetFile(lockedFile.fileName)) :
+                    LegacyPlugin.AtanPlaceholder;
+            else
+                lockedIcon = RTFile.FileExists(GetFile(LOCKED_JPG)) ? SpriteHelper.LoadSprite(GetFile(LOCKED_JPG)) : null;
         }
 
         /// <summary>
@@ -369,20 +371,60 @@ namespace BetterLegacy.Core.Data.Level
                 yield break;
             }
 
-            if (RTFile.FileExists(GetFile(LEVEL_OGG)))
-                yield return CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip("file://" + GetFile(LEVEL_OGG), AudioType.OGGVORBIS, audioClip => music = audioClip));
-            else if (RTFile.FileExists(GetFile(LEVEL_WAV)))
-                yield return CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip("file://" + GetFile(LEVEL_WAV), AudioType.WAV, audioClip => music = audioClip));
-            else if (RTFile.FileExists(GetFile(LEVEL_MP3)))
-                music = LSFunctions.LSAudio.CreateAudioClipUsingMP3File(GetFile(LEVEL_MP3));
-            else if (RTFile.FileExists(GetFile(AUDIO_OGG)))
-                yield return CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip("file://" + GetFile(AUDIO_OGG), AudioType.OGGVORBIS, audioClip => music = audioClip));
-            else if (RTFile.FileExists(GetFile(AUDIO_WAV)))
-                yield return CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip("file://" + GetFile(AUDIO_WAV), AudioType.WAV, audioClip => music = audioClip));
-            else if (RTFile.FileExists(GetFile(AUDIO_MP3)))
-                music = LSFunctions.LSAudio.CreateAudioClipUsingMP3File(GetFile(AUDIO_MP3));
+            tracks.Clear();
+            if (!metadata)
+            {
+                var coroutine = LoadAudioClipFileRoutine("level", audioClip => music = audioClip);
+                if (coroutine != null)
+                    yield return coroutine;
+                coroutine = LoadAudioClipFileRoutine("audio", audioClip => music = audioClip);
+                if (coroutine != null)
+                    yield return coroutine;
+                tracks["audio"] = music;
+                yield break;
+            }
 
+            for (int i = 0; i < metadata.package.files.Count; i++)
+            {
+                var file = metadata.package.files[i];
+                if (!file.IsAudio)
+                    continue;
+
+                var coroutine = LoadAudioClipFileRoutine(file.fileName, audioClip => tracks.TryAdd(file.id, audioClip));
+                if (coroutine != null)
+                    yield return coroutine;
+            }
+
+            if (tracks.TryGetValue(metadata.package.mainAudio, out AudioClip audioClip))
+                music = audioClip;
+            else
+            {
+                CoreHelper.Log($"Level [{this}] had to load the main audio the default way.");
+                var coroutine = LoadAudioClipFileRoutine("level", audioClip => music = audioClip);
+                if (coroutine != null)
+                    yield return coroutine;
+                coroutine = LoadAudioClipFileRoutine("audio", audioClip => music = audioClip);
+                if (coroutine != null)
+                    yield return coroutine;
+                tracks["audio"] = music;
+            }
+
+            if (tracks.TryGetValue(metadata.package.mainPreviewAudio, out AudioClip previewAudioClip))
+                previewAudio = previewAudioClip;
+            
             onComplete?.Invoke();
+        }
+
+        Coroutine LoadAudioClipFileRoutine(string file, Action<AudioClip> callback)
+        {
+            file = Path.GetFileNameWithoutExtension(file);
+            if (RTFile.FileExists(GetFile(file + FileFormat.OGG.Dot())))
+                return CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip("file://" + GetFile(file + FileFormat.OGG.Dot()), AudioType.OGGVORBIS, callback));
+            if (RTFile.FileExists(GetFile(file + FileFormat.WAV.Dot())))
+                return CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip("file://" + GetFile(file + FileFormat.WAV.Dot()), AudioType.WAV, callback));
+            if (RTFile.FileExists(GetFile(file + FileFormat.MP3.Dot())))
+                callback?.Invoke(LSAudio.CreateAudioClipUsingMP3File(GetFile(file + FileFormat.MP3.Dot())));
+            return null;
         }
 
         /// <summary>
@@ -452,6 +494,12 @@ namespace BetterLegacy.Core.Data.Level
                 list.AddRange(levelCollection.achievements);
             return list;
         }
+
+        /// <summary>
+        /// Gets the preview audio that should play.
+        /// </summary>
+        /// <returns>Returns <see cref="previewAudio"/> if it is not null, otherwise returns <see cref="music"/>.</returns>
+        public AudioClip GetPreviewAudio() => previewAudio ? previewAudio : music;
 
         /// <summary>
         /// Checks if all files required to load a level exist. Includes LS / VG formats.

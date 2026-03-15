@@ -67,7 +67,7 @@ namespace BetterLegacy.Arcade.Interfaces
                 func = Close,
             });
 
-            if (CurrentLevel.metadata != null && !string.IsNullOrEmpty(CurrentLevel.metadata.serverID))
+            if (CurrentLevel.metadata && !string.IsNullOrEmpty(CurrentLevel.metadata.serverID))
             {
                 elements.Add(new MenuButton
                 {
@@ -685,13 +685,13 @@ namespace BetterLegacy.Arcade.Interfaces
 
         static void InternalInit(Level level)
         {
-            var playMusic = AudioManager.inst.CurrentAudioSource.clip != level.music;
+            var playMusic = AudioManager.inst.CurrentAudioSource.clip != level.GetPreviewAudio();
             if (playMusic)
                 AudioManager.inst.StopMusic();
             CurrentLevel = level;
             Current = new PlayLevelMenu();
             if (playMusic)
-                AudioManager.inst.PlayMusic(level.metadata.song.title, level.music);
+                AudioManager.inst.PlayMusic(level.metadata.song.title, level.GetPreviewAudio());
             AudioManager.inst.SetPitch(CoreConfig.Instance.GameSpeedSetting.Value.Pitch);
         }
 

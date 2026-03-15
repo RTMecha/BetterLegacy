@@ -17,7 +17,6 @@ namespace BetterLegacy.Configs
             Instance = this;
             BindSettings();
 
-            LevelManager.CurrentLevelMode = CurrentLevelMode.Value;
             LevelManager.Path = LocalLevelsPath.Value;
 
             SetupSettingChanged();
@@ -30,11 +29,6 @@ namespace BetterLegacy.Configs
         #region Settings
 
         #region Level
-
-        /// <summary>
-        /// If a modes.lsms exists in the arcade level folder that you're loading, it will list other level modes (think easy mode, cutscene mode, hard mode, etc). The value in this config is for choosing which mode gets loaded. 0 is the default level.lsb or level.vgd.
-        /// </summary>
-        public Setting<int> CurrentLevelMode { get; set; }
 
         /// <summary>
         /// If the Play Level Menu should open once the level has finished downloading.
@@ -197,7 +191,6 @@ namespace BetterLegacy.Configs
 
             #region Level
 
-            CurrentLevelMode = Bind(this, LEVEL, "Level Mode", 0, "If a modes.lsms exists in the arcade level folder that you're loading, it will list other level modes (think easy mode, cutscene mode, hard mode, etc). The value in this config is for choosing which mode gets loaded. 0 is the default level.lsb or level.vgd.");
             OpenOnlineLevelAfterDownload = Bind(this, "Level", "Open After Download", true, "If the Play Level Menu should open once the level has finished downloading.");
             LocalLevelsPath = Bind(this, LEVEL, "Arcade Path in Beatmaps", "arcade", "The location of your local arcade folder.");
             LoadSteamLevels = Bind(this, LEVEL, "Load Steam Levels After Local Loaded", true, "If subscribed Steam levels should load after the local levels have loaded.");
@@ -252,8 +245,6 @@ namespace BetterLegacy.Configs
 
         public override void SetupSettingChanged()
         {
-            CurrentLevelMode.SettingChanged += CurrentLevelModeChanged;
-
             LocalLevelOrderby.SettingChanged += LocalLevelSortChanged;
             LocalLevelAscend.SettingChanged += LocalLevelSortChanged;
 
@@ -295,8 +286,6 @@ namespace BetterLegacy.Configs
                 ArcadeMenu.Current.RefreshLocalLevels(true);
             }
         }
-
-        void CurrentLevelModeChanged() => LevelManager.CurrentLevelMode = CurrentLevelMode.Value;
 
         void LocalLevelsPathChanged() => LevelManager.Path = LocalLevelsPath.Value;
 

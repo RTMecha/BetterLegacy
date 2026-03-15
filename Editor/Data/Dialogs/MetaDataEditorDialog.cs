@@ -87,6 +87,22 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         GameObject linkPrefab;
 
+        #region Package
+
+        public InputField MainAudioField { get; set; }
+
+        public InputField MainPreviewAudioField { get; set; }
+
+        public InputField MainCoverField { get; set; }
+
+        public InputField MainLockedCoverField { get; set; }
+
+        public InputField MainLevelField { get; set; }
+
+        public RectTransform FileContent { get; set; }
+
+        #endregion
+
         #region Settings
 
         public Toggle IsHubLevelToggle { get; set; }
@@ -153,6 +169,18 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             RTMetaDataEditor.inst.difficultyToggle = old.transform.Find("Scroll View/Viewport/Content/song/difficulty/toggles/easy").gameObject;
             RTMetaDataEditor.inst.difficultyToggle.transform.SetParent(RTMetaDataEditor.inst.transform);
+
+            RTMetaDataEditor.inst.filePefab = Creator.NewUIObject("File", RTMetaDataEditor.inst.transform);
+            // File Prefab
+            {
+                var horizontalLayoutGroup = RTMetaDataEditor.inst.filePefab.AddComponent<HorizontalLayoutGroup>();
+                horizontalLayoutGroup.spacing = 8f;
+
+                var idField = EditorPrefabHolder.Instance.StringInputField.Duplicate(RTMetaDataEditor.inst.filePefab.transform, "id");
+                var fileNameField = EditorPrefabHolder.Instance.StringInputField.Duplicate(RTMetaDataEditor.inst.filePefab.transform, "file name");
+                var deleteButton = EditorPrefabHolder.Instance.DeleteButton.Duplicate(RTMetaDataEditor.inst.filePefab.transform, "delete");
+                deleteButton.GetComponent<LayoutElement>().ignoreLayout = false;
+            }
 
             if (rework)
             {
@@ -444,6 +472,59 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                 #endregion
 
+                #region Package
+
+                var package = Creator.NewUIObject("package", Content);
+                package.transform.AsRT().sizeDelta = new Vector2(764f, 0f);
+                package.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.MinSize;
+                var packageLayout = package.AddComponent<VerticalLayoutGroup>();
+                packageLayout.childControlHeight = false;
+                packageLayout.childForceExpandHeight = false;
+                packageLayout.spacing = 4f;
+                packageLayout.padding = new RectOffset(left: 8, right: 8, top: 8, bottom: 8);
+
+                new LabelsElement("Main Audio").Init(EditorElement.InitSettings.Default.Parent(package.transform));
+                var audio = EditorPrefabHolder.Instance.StringInputField.Duplicate(package.transform, "audio");
+                audio.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
+                MainAudioField = audio.GetComponent<InputField>();
+                MainAudioField.textComponent.alignment = TextAnchor.UpperLeft;
+                EditorThemeManager.ApplyInputField(MainAudioField);
+                
+                new LabelsElement("Main Preview Audio").Init(EditorElement.InitSettings.Default.Parent(package.transform));
+                var previewAudio = EditorPrefabHolder.Instance.StringInputField.Duplicate(package.transform, "preview audio");
+                previewAudio.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
+                MainPreviewAudioField = previewAudio.GetComponent<InputField>();
+                MainPreviewAudioField.textComponent.alignment = TextAnchor.UpperLeft;
+                EditorThemeManager.ApplyInputField(MainPreviewAudioField);
+                
+                new LabelsElement("Main Cover").Init(EditorElement.InitSettings.Default.Parent(package.transform));
+                var cover = EditorPrefabHolder.Instance.StringInputField.Duplicate(package.transform, "cover");
+                cover.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
+                MainCoverField = cover.GetComponent<InputField>();
+                MainCoverField.textComponent.alignment = TextAnchor.UpperLeft;
+                EditorThemeManager.ApplyInputField(MainCoverField);
+                
+                new LabelsElement("Main Locked Cover").Init(EditorElement.InitSettings.Default.Parent(package.transform));
+                var lockedCover = EditorPrefabHolder.Instance.StringInputField.Duplicate(package.transform, "locked cover");
+                lockedCover.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
+                MainLockedCoverField = lockedCover.GetComponent<InputField>();
+                MainLockedCoverField.textComponent.alignment = TextAnchor.UpperLeft;
+                EditorThemeManager.ApplyInputField(MainLockedCoverField);
+                
+                new LabelsElement("Main Level").Init(EditorElement.InitSettings.Default.Parent(package.transform));
+                var mainLevel = EditorPrefabHolder.Instance.StringInputField.Duplicate(package.transform, "level");
+                mainLevel.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
+                MainLevelField = mainLevel.GetComponent<InputField>();
+                MainLevelField.textComponent.alignment = TextAnchor.UpperLeft;
+                EditorThemeManager.ApplyInputField(MainLevelField);
+
+                new LabelsElement("Files").Init(EditorElement.InitSettings.Default.Parent(package.transform));
+                var fileScrollView = new ScrollViewElement(ScrollViewElement.Direction.Vertical);
+                fileScrollView.Init(EditorElement.InitSettings.Default.Parent(package.transform).Rect(RectValues.Default.SizeDelta(734f, 165f)));
+                FileContent = fileScrollView.Content;
+
+                #endregion
+
                 #region Settings
 
                 var settingsBase = Creator.NewUIObject("settings", Content);
@@ -491,7 +572,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 ChangelogField = changelog.GetComponent<InputField>();
                 ChangelogField.textComponent.alignment = TextAnchor.UpperLeft;
                 ChangelogField.lineType = InputField.LineType.MultiLineNewline;
-                EditorThemeManager.ApplyInputField(DescriptionField);
                 var changelogLayoutElement = changelog.GetComponent<LayoutElement>();
                 changelogLayoutElement.minHeight = 140f;
                 changelogLayoutElement.preferredHeight = 140f;

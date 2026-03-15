@@ -16,6 +16,7 @@ using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Data.Dialogs;
 using BetterLegacy.Editor.Managers.Settings;
 
@@ -45,6 +46,8 @@ namespace BetterLegacy.Editor.Managers
         /// Difficulty toggle prefab.
         /// </summary>
         public GameObject difficultyToggle;
+
+        public GameObject filePefab;
 
         #endregion
 
@@ -127,6 +130,7 @@ namespace BetterLegacy.Editor.Managers
             RenderLevel(metadata);
             RenderDifficulty(metadata);
             EditorServerManager.inst.RenderTagDialog(metadata, Dialog, EditorServerManager.DefaultTagRelation.Level);
+            RenderPackage(metadata);
             RenderSettings(metadata);
 
             EditorServerManager.inst.RenderServerDialog(
@@ -376,6 +380,58 @@ namespace BetterLegacy.Editor.Managers
             Dialog.VersionField.onValueChanged.NewListener(_val => metadata.ObjectVersion = _val);
             Dialog.VersionField.onEndEdit.NewListener(_val => RenderLevel(metadata));
             EditorContextMenu.AddContextMenu(Dialog.VersionField.gameObject, EditorContextMenu.GetObjectVersionFunctions(metadata, () => RenderLevel(metadata)));
+        }
+
+        /// <summary>
+        /// Renders the package section.
+        /// </summary>
+        /// <param name="metadata">Metadata to render.</param>
+        public void RenderPackage(MetaData metadata)
+        {
+            Dialog.MainAudioField.SetTextWithoutNotify(metadata.package.mainAudio);
+            Dialog.MainAudioField.onValueChanged.NewListener(_val => metadata.package.mainAudio = _val);
+            Dialog.MainPreviewAudioField.SetTextWithoutNotify(metadata.package.mainPreviewAudio);
+            Dialog.MainPreviewAudioField.onValueChanged.NewListener(_val => metadata.package.mainPreviewAudio = _val);
+            Dialog.MainCoverField.SetTextWithoutNotify(metadata.package.mainCover);
+            Dialog.MainCoverField.onValueChanged.NewListener(_val => metadata.package.mainCover = _val);
+            Dialog.MainLockedCoverField.SetTextWithoutNotify(metadata.package.mainLockedCover);
+            Dialog.MainLockedCoverField.onValueChanged.NewListener(_val => metadata.package.mainLockedCover = _val);
+            Dialog.MainLevelField.SetTextWithoutNotify(metadata.package.mainLevel);
+            Dialog.MainLevelField.onValueChanged.NewListener(_val => metadata.package.mainLevel = _val);
+
+            CoreHelper.DestroyChildren(Dialog.FileContent);
+            for (int i = 0; i < metadata.package.files.Count; i++)
+            {
+                var index = i;
+                var file = metadata.package.files[i];
+                var gameObject = filePefab.Duplicate(Dialog.FileContent);
+                gameObject.transform.AsRT().sizeDelta = new Vector2(719f, 32f);
+                var idField = gameObject.transform.Find("id").GetComponent<InputField>();
+                idField.SetTextWithoutNotify(file.id);
+                idField.onValueChanged.NewListener(_val => file.id = _val);
+
+                var fileNameField = gameObject.transform.Find("file name").GetComponent<InputField>();
+                fileNameField.SetTextWithoutNotify(file.fileName);
+                fileNameField.onValueChanged.NewListener(_val => file.fileName = _val);
+
+                var deleteButton = gameObject.transform.Find("delete").GetComponent<DeleteButtonStorage>();
+                deleteButton.OnClick.NewListener(() =>
+                {
+                    metadata.package.files.RemoveAt(index);
+                    RenderPackage(metadata);
+                });
+
+                EditorThemeManager.ApplyInputField(idField);
+                EditorThemeManager.ApplyInputField(fileNameField);
+                EditorThemeManager.ApplyDeleteButton(deleteButton);
+            }
+            var add = EditorPrefabHolder.Instance.CreateAddButton(Dialog.FileContent);
+            add.Text = "Add File Reference";
+            add.OnClick.NewListener(() =>
+            {
+                metadata.package.files.Add(new PackageMetaData.File());
+                RenderPackage(metadata);
+            });
         }
 
         /// <summary>

@@ -64,11 +64,6 @@ namespace BetterLegacy.Core.Managers
         public static bool LoadingFromHere { get; set; }
 
         /// <summary>
-        /// Which level mode is going to load.
-        /// </summary>
-        public static int CurrentLevelMode { get; set; }
-
-        /// <summary>
         /// The level that is currently being played if the game is in the arcade.
         /// </summary>
         public static Level CurrentLevel { get; set; }

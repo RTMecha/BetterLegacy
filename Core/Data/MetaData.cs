@@ -21,6 +21,7 @@ namespace BetterLegacy.Core.Data
             creator = new CreatorMetaData();
             song = new SongMetaData();
             beatmap = new BeatmapMetaData();
+            package = new PackageMetaData();
         }
 
         #region Values
@@ -56,6 +57,7 @@ namespace BetterLegacy.Core.Data
         public List<CreatorMetaData> creators;
         public SongMetaData song;
         public BeatmapMetaData beatmap;
+        public PackageMetaData package;
 
         /// <summary>
         /// Required asset packs for the level.
@@ -114,7 +116,7 @@ namespace BetterLegacy.Core.Data
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public override void CopyData(MetaData orig, bool newID = true)
         {
@@ -155,6 +157,12 @@ namespace BetterLegacy.Core.Data
             creator.ReadJSONVG(jn, version);
             song.ReadJSONVG(jn, version);
             beatmap.ReadJSONVG(jn, version);
+            package.files = new List<PackageMetaData.File>
+            {
+                new PackageMetaData.File("audio", "audio.ogg"), // by default the audio is audio.ogg in modern. if the .ogg file does not exist, it will search for other file formats.
+                new PackageMetaData.File("cover", "cover.jpg"),
+                new PackageMetaData.File("level", "level.vgd"),
+            };
         }
 
         public override void ReadJSON(JSONNode jn)
@@ -165,6 +173,7 @@ namespace BetterLegacy.Core.Data
                 creator.ReadJSON(jn);
                 song.ReadJSON(jn);
                 beatmap.ReadJSON(jn);
+                package.ReadJSON(jn);
 
                 if (jn["asset_packs"] != null)
                     requiredAssetPacks = Parser.ParseObjectList<RequiredAssetPackData>(jn["asset_packs"]);
@@ -212,6 +221,10 @@ namespace BetterLegacy.Core.Data
                 if (jn["song"] != null && jn["song"]["tags"] != null)
                     for (int i = 0; i < jn["song"]["tags"].Count; i++)
                         tags.Add(jn["song"]["tags"][i].Value.Replace(" ", "_"));
+
+                if (jn["file"] != null)
+                {
+                }
             }
             catch
             {
@@ -249,6 +262,8 @@ namespace BetterLegacy.Core.Data
             jn["creator"] = creator.ToJSON();
             jn["song"] = song.ToJSON();
             jn["beatmap"] = beatmap.ToJSON();
+            if (package.ShouldSerialize)
+                jn["package"] = package.ToJSON();
 
             for (int i = 0; i < requiredAssetPacks.Count; i++)
                 jn["asset_packs"][i] = requiredAssetPacks[i].ToJSON();
@@ -354,6 +369,8 @@ namespace BetterLegacy.Core.Data
     /// </summary>
     public class ArtistMetaData : PAObject<ArtistMetaData>
     {
+        #region Constructors
+
         public ArtistMetaData() : this(string.Empty, 2, string.Empty) { }
 
         public ArtistMetaData(string name, int linkType, string link)
@@ -362,6 +379,8 @@ namespace BetterLegacy.Core.Data
             this.linkType = linkType;
             this.link = link;
         }
+
+        #endregion
 
         #region Values
 
@@ -376,7 +395,7 @@ namespace BetterLegacy.Core.Data
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public override void CopyData(ArtistMetaData orig, bool newID = true)
         {
@@ -439,6 +458,8 @@ namespace BetterLegacy.Core.Data
     /// </summary>
     public class CreatorMetaData : PAObject<CreatorMetaData>
     {
+        #region Constructors
+
         public CreatorMetaData() => name = "Unknown User";
 
         public CreatorMetaData(string name, int steamID, string link, int linkType)
@@ -448,6 +469,8 @@ namespace BetterLegacy.Core.Data
             this.linkType = linkType;
             this.link = link;
         }
+
+        #endregion
 
         #region Values
 
@@ -463,7 +486,7 @@ namespace BetterLegacy.Core.Data
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public override void CopyData(CreatorMetaData orig, bool newID = true)
         {
@@ -532,6 +555,8 @@ namespace BetterLegacy.Core.Data
     /// </summary>
     public class SongMetaData : PAObject<SongMetaData>
     {
+        #region Constructors
+
         public SongMetaData() { }
 
         public SongMetaData(string title, int difficulty, string description, float bpm, float time, float previewStart, float previewLength, int linkType, string link)
@@ -547,6 +572,8 @@ namespace BetterLegacy.Core.Data
             this.linkType = linkType;
             this.link = link;
         }
+
+        #endregion
 
         #region Values
 
@@ -572,7 +599,7 @@ namespace BetterLegacy.Core.Data
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public override void CopyData(SongMetaData orig, bool newID = true)
         {
@@ -677,6 +704,8 @@ namespace BetterLegacy.Core.Data
     /// </summary>
     public class BeatmapMetaData : PAObject<BeatmapMetaData>
     {
+        #region Constructors
+
         public BeatmapMetaData()
         {
             name = "Level Name";
@@ -698,6 +727,8 @@ namespace BetterLegacy.Core.Data
             this.gameVersion = gameVersion;
             this.modVersion = modVersion;
         }
+
+        #endregion
 
         #region Values
 
@@ -747,7 +778,7 @@ namespace BetterLegacy.Core.Data
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public override void CopyData(BeatmapMetaData orig, bool newID = true)
         {
@@ -874,11 +905,203 @@ namespace BetterLegacy.Core.Data
     }
 
     /// <summary>
+    /// Controls what files should be loaded.
+    /// </summary>
+    public class PackageMetaData : PAObject<PackageMetaData>
+    {
+        #region Constructors
+
+        public PackageMetaData() => files = new List<File>
+        {
+            new File("audio", Level.Level.LEVEL_OGG), // by default the audio is level.ogg in Legacy. if the .ogg file does not exist, it will search for other file formats.
+            new File("cover", Level.Level.LEVEL_JPG),
+            new File("level", Level.Level.LEVEL_LSB),
+        };
+
+        #endregion
+
+        #region Values
+
+        /// <summary>
+        /// List of files.
+        /// </summary>
+        public List<File> files;
+
+        /// <summary>
+        /// The main audio file.
+        /// </summary>
+        public string mainAudio = "audio";
+
+        /// <summary>
+        /// The main audio file that plays when the level is selected in the play level interface.
+        /// </summary>
+        public string mainPreviewAudio = "audio";
+
+        /// <summary>
+        /// The main cover file.
+        /// </summary>
+        public string mainCover = "cover";
+
+        /// <summary>
+        /// The main locked cover file.
+        /// </summary>
+        public string mainLockedCover = "cover";
+
+        /// <summary>
+        /// The main level file.
+        /// </summary>
+        public string mainLevel = "level";
+
+        #endregion
+
+        #region Functions
+
+        public override void CopyData(PackageMetaData orig, bool newID = true)
+        {
+            files = new List<File>(orig.files.Select(x => x.Copy(false)));
+            mainAudio = orig.mainAudio;
+            mainPreviewAudio = orig.mainPreviewAudio;
+            mainCover = orig.mainCover;
+            mainLevel = orig.mainLevel;
+        }
+
+        public override void ReadJSON(JSONNode jn)
+        {
+            if (jn == null || jn["package"] == null)
+                return;
+
+            if (!string.IsNullOrEmpty(jn["package"]["audio"]))
+                mainAudio = jn["package"]["audio"];
+            if (!string.IsNullOrEmpty(jn["package"]["preview_audio"]))
+                mainPreviewAudio = jn["package"]["preview_audio"];
+            if (!string.IsNullOrEmpty(jn["package"]["cover"]))
+                mainCover = jn["package"]["cover"];
+            if (!string.IsNullOrEmpty(jn["package"]["level"]))
+                mainLevel = jn["package"]["level"];
+            if (jn["package"]["files"] != null)
+                files = Parser.ParseObjectList<File>(jn["package"]["files"]);
+        }
+
+        public override JSONNode ToJSON()
+        {
+            var jn = Parser.NewJSONObject();
+
+            if (!string.IsNullOrEmpty(mainAudio))
+                jn["audio"] = mainAudio;
+            if (!string.IsNullOrEmpty(mainPreviewAudio))
+                jn["preview_audio"] = mainPreviewAudio;
+            if (!string.IsNullOrEmpty(mainCover))
+                jn["cover"] = mainCover;
+            if (!string.IsNullOrEmpty(mainLevel))
+                jn["level"] = mainLevel;
+            if (!files.IsEmpty())
+                jn["files"] = Parser.ObjectListToJSON(files);
+
+            return jn;
+        }
+
+        public File GetAudio(string id) => files.Find(x => x.id == id && x.IsAudio);
+
+        public File GetImage(string id) => files.Find(x => x.id == id && x.IsCover);
+
+        public File GetLevel(string id) => files.Find(x => x.id == id && x.IsLevel);
+
+        #endregion
+
+        #region Sub Classes
+
+        /// <summary>
+        /// Represents a file that should be read.
+        /// </summary>
+        public class File : PAObject<File>
+        {
+            #region Constructors
+
+            public File() => id = GetNumberID();
+
+            public File(string id, string fileName)
+            {
+                this.id = id;
+                this.fileName = fileName;
+            }
+
+            #endregion
+
+            #region Values
+
+            /// <summary>
+            /// Name of the file, including the format. (e.g. level.lsb)
+            /// </summary>
+            public string fileName;
+
+            public override bool ShouldSerialize => !string.IsNullOrEmpty(id);
+
+            /// <summary>
+            /// Checks if the file is an audio file type.
+            /// </summary>
+            public bool IsAudio => RTFile.FileIsAudio(fileName);
+
+            /// <summary>
+            /// Checks if the file is an image file type.
+            /// </summary>
+            public bool IsCover => RTFile.FileIsFormat(fileName, FileFormat.JPG);
+
+            /// <summary>
+            /// Checks if the file is a level file type.
+            /// </summary>
+            public bool IsLevel => RTFile.FileIsFormat(fileName, FileFormat.LSB, FileFormat.VGD, FileFormat.JSON);
+
+            public Type FileType => IsAudio ? Type.Audio : IsCover ? Type.Cover : IsLevel ? Type.Level : Type.Null;
+
+            public enum Type
+            {
+                Null,
+                Audio,
+                Cover,
+                Level,
+            }
+
+            #endregion
+
+            #region Functions
+
+            public override void CopyData(File orig, bool newID = true)
+            {
+                id = newID ? GetNumberID() : orig.id;
+                fileName = orig.fileName;
+            }
+
+            public override void ReadJSON(JSONNode jn)
+            {
+                id = jn["id"];
+                fileName = jn["file"];
+            }
+
+            public override JSONNode ToJSON()
+            {
+                var jn = Parser.NewJSONObject();
+
+                if (!string.IsNullOrEmpty(id))
+                    jn["id"] = id;
+                jn["file"] = fileName ?? string.Empty;
+
+                return jn;
+            }
+
+            #endregion
+        }
+
+        #endregion
+    }
+
+    /// <summary>
     /// Indicates an asset pack that is required to play the level. Useful for fully custom functions.
     /// </summary>
     public class RequiredAssetPackData : PAObject<RequiredAssetPackData>
     {
         public RequiredAssetPackData() { }
+
+        #region Values
 
         /// <summary>
         /// Asset Pack ID reference.
@@ -892,6 +1115,10 @@ namespace BetterLegacy.Core.Data
         /// ID of the Asset Pack on the server.
         /// </summary>
         public string serverID;
+
+        #endregion
+
+        #region Functions
 
         public override void CopyData(RequiredAssetPackData orig, bool newID = true)
         {
@@ -923,5 +1150,7 @@ namespace BetterLegacy.Core.Data
 
             return jn;
         }
+
+        #endregion
     }
 }
