@@ -5594,6 +5594,26 @@
               }
             ]
           }, // setSeed
+          {
+            "name": "Object Modifier - setAudio (Action)",
+            "tooltips": [
+              {
+                "desc": "setAudio (Action)",
+                "hint": "Sets the current audio the game is playing.",
+                "lang": 0
+              }
+            ]
+          }, // setAudio
+          {
+            "name": "Object Modifier - setGameData (Action)",
+            "tooltips": [
+              {
+                "desc": "setGameData (Action)",
+                "hint": "Sets the current level data.",
+                "lang": 0
+              }
+            ]
+          }, // setGameData
 
           {
             "name": "Object Modifier - objectActive (Trigger)",

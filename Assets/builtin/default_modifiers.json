@@ -3408,6 +3408,20 @@
         "const": "False",
         "compat": "level_control"
       }, // setSeed
+      {
+        "type": 1,
+        "name": "setAudio",
+        "values": [ "audio", "1", "", "True" ],
+        "const": "False",
+        "compat": "level_control"
+      }, // setAudio
+      {
+        "type": 1,
+        "name": "setGameData",
+        "values": [ "level" ],
+        "const": "False",
+        "compat": "level_control"
+      }, // setGameData
 
       {
         "type": 0,

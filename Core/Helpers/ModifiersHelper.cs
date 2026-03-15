@@ -1046,7 +1046,9 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction(nameof(ModifierFunctions.getLerpColor),  ModifierFunctions.getLerpColor),
             new ModifierAction(nameof(ModifierFunctions.getAddColor),  ModifierFunctions.getAddColor),
             new ModifierAction(nameof(ModifierFunctions.getVisualColor),  ModifierFunctions.getVisualColor),
+            new ModifierAction(nameof(ModifierFunctions.getVisualColorOther),  ModifierFunctions.getVisualColorOther),
             new ModifierAction(nameof(ModifierFunctions.getVisualColorRGBA),  ModifierFunctions.getVisualColorRGBA),
+            new ModifierAction(nameof(ModifierFunctions.getVisualColorRGBAOther),  ModifierFunctions.getVisualColorRGBAOther),
             new ModifierAction(nameof(ModifierFunctions.getVisualOpacity),  ModifierFunctions.getVisualOpacity),
             new ModifierAction(nameof(ModifierFunctions.getJSONString),  ModifierFunctions.getJSONString),
             new ModifierAction(nameof(ModifierFunctions.getJSONFloat),  ModifierFunctions.getJSONFloat),
@@ -1303,7 +1305,9 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction(nameof(ModifierFunctions.detachParent),  ModifierFunctions.detachParent, ModifierCompatibility.BeatmapObjectCompatible.WithPrefabObject(true)),
             new ModifierAction(nameof(ModifierFunctions.detachParentOther),  ModifierFunctions.detachParentOther, ModifierCompatibility.BeatmapObjectCompatible.WithPrefabObject(true)),
 
-            new ModifierAction(nameof(ModifierFunctions.setSeed),  ModifierFunctions.setSeed, ModifierCompatibility.BeatmapObjectCompatible.WithPrefabObject(true)),
+            new ModifierAction(nameof(ModifierFunctions.setSeed),  ModifierFunctions.setSeed, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.setAudio),  ModifierFunctions.setAudio, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.setGameData),  ModifierFunctions.setGameData, ModifierCompatibility.LevelControlCompatible),
 
             #endregion
 
@@ -1358,6 +1362,8 @@ namespace BetterLegacy.Core.Helpers
 
             new ModifierAction(nameof(ModifierFunctions.callModifierBlock),  ModifierFunctions.callModifierBlock, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierFunctions.callModifiers),  ModifierFunctions.callModifiers, ModifierCompatibility.LevelControlCompatible),
+
+            new ModifierAction(nameof(ModifierFunctions.addTag),  ModifierFunctions.addTag, ModifierCompatibility.PrefabObjectCompatible),
 
             #endregion
 
@@ -3519,6 +3525,33 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
+        public static void getVisualColorOther(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (!GameData.Current.TryFindObjectWithTag(modifier, modifierLoop.reference as IPrefabable, modifier.GetValue(2), out BeatmapObject beatmapObject))
+                return;
+
+            if (beatmapObject.runtimeObject && beatmapObject.runtimeObject.visualObject is SolidObject solidObject)
+            {
+                var colors = solidObject.GetColors();
+                var startColorName = ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables);
+                var endColorName = ModifiersHelper.FormatStringVariables(modifier.GetValue(1), modifierLoop.variables);
+                if (!string.IsNullOrEmpty(startColorName))
+                    modifierLoop.variables[startColorName] = RTColors.ColorToHexOptional(colors.startColor);
+                if (!string.IsNullOrEmpty(endColorName))
+                    modifierLoop.variables[endColorName] = RTColors.ColorToHexOptional(colors.endColor);
+            }
+            else
+            {
+                var colors = ModifiersHelper.GetColors(beatmapObject);
+                var startColorName = ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables);
+                var endColorName = ModifiersHelper.FormatStringVariables(modifier.GetValue(1), modifierLoop.variables);
+                if (!string.IsNullOrEmpty(startColorName))
+                    modifierLoop.variables[startColorName] = RTColors.ColorToHexOptional(colors.startColor);
+                if (!string.IsNullOrEmpty(endColorName))
+                    modifierLoop.variables[endColorName] = RTColors.ColorToHexOptional(colors.endColor);
+            }
+        }
+
         public static void getVisualColorRGBA(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (modifierLoop.reference.GetRuntimeObject() is RTBeatmapObject runtimeObject && runtimeObject.visualObject is SolidObject solidObject)
@@ -3550,6 +3583,69 @@ namespace BetterLegacy.Core.Helpers
                     modifierLoop.variables[endColorAName] = colors.endColor.a.ToString();
             }
             else if (modifierLoop.reference is BeatmapObject beatmapObject)
+            {
+                var colors = ModifiersHelper.GetColors(beatmapObject);
+                var startColorRName = ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables);
+                var startColorGName = ModifiersHelper.FormatStringVariables(modifier.GetValue(1), modifierLoop.variables);
+                var startColorBName = ModifiersHelper.FormatStringVariables(modifier.GetValue(2), modifierLoop.variables);
+                var startColorAName = ModifiersHelper.FormatStringVariables(modifier.GetValue(3), modifierLoop.variables);
+                var endColorRName = ModifiersHelper.FormatStringVariables(modifier.GetValue(4), modifierLoop.variables);
+                var endColorGName = ModifiersHelper.FormatStringVariables(modifier.GetValue(5), modifierLoop.variables);
+                var endColorBName = ModifiersHelper.FormatStringVariables(modifier.GetValue(6), modifierLoop.variables);
+                var endColorAName = ModifiersHelper.FormatStringVariables(modifier.GetValue(7), modifierLoop.variables);
+                if (!string.IsNullOrEmpty(startColorRName))
+                    modifierLoop.variables[startColorRName] = colors.startColor.r.ToString();
+                if (!string.IsNullOrEmpty(startColorGName))
+                    modifierLoop.variables[startColorGName] = colors.startColor.g.ToString();
+                if (!string.IsNullOrEmpty(startColorBName))
+                    modifierLoop.variables[startColorBName] = colors.startColor.b.ToString();
+                if (!string.IsNullOrEmpty(startColorAName))
+                    modifierLoop.variables[startColorAName] = colors.startColor.a.ToString();
+                if (!string.IsNullOrEmpty(endColorRName))
+                    modifierLoop.variables[endColorRName] = colors.endColor.r.ToString();
+                if (!string.IsNullOrEmpty(endColorGName))
+                    modifierLoop.variables[endColorGName] = colors.endColor.g.ToString();
+                if (!string.IsNullOrEmpty(endColorBName))
+                    modifierLoop.variables[endColorBName] = colors.endColor.b.ToString();
+                if (!string.IsNullOrEmpty(endColorAName))
+                    modifierLoop.variables[endColorAName] = colors.endColor.a.ToString();
+            }
+        }
+
+        public static void getVisualColorRGBAOther(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (!GameData.Current.TryFindObjectWithTag(modifier, modifierLoop.reference as IPrefabable, modifier.GetValue(8), out BeatmapObject beatmapObject))
+                return;
+
+            if (beatmapObject.runtimeObject && beatmapObject.runtimeObject.visualObject is SolidObject solidObject)
+            {
+                var colors = solidObject.GetColors();
+                var startColorRName = ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables);
+                var startColorGName = ModifiersHelper.FormatStringVariables(modifier.GetValue(1), modifierLoop.variables);
+                var startColorBName = ModifiersHelper.FormatStringVariables(modifier.GetValue(2), modifierLoop.variables);
+                var startColorAName = ModifiersHelper.FormatStringVariables(modifier.GetValue(3), modifierLoop.variables);
+                var endColorRName = ModifiersHelper.FormatStringVariables(modifier.GetValue(4), modifierLoop.variables);
+                var endColorGName = ModifiersHelper.FormatStringVariables(modifier.GetValue(5), modifierLoop.variables);
+                var endColorBName = ModifiersHelper.FormatStringVariables(modifier.GetValue(6), modifierLoop.variables);
+                var endColorAName = ModifiersHelper.FormatStringVariables(modifier.GetValue(7), modifierLoop.variables);
+                if (!string.IsNullOrEmpty(startColorRName))
+                    modifierLoop.variables[startColorRName] = colors.startColor.r.ToString();
+                if (!string.IsNullOrEmpty(startColorGName))
+                    modifierLoop.variables[startColorGName] = colors.startColor.g.ToString();
+                if (!string.IsNullOrEmpty(startColorBName))
+                    modifierLoop.variables[startColorBName] = colors.startColor.b.ToString();
+                if (!string.IsNullOrEmpty(startColorAName))
+                    modifierLoop.variables[startColorAName] = colors.startColor.a.ToString();
+                if (!string.IsNullOrEmpty(endColorRName))
+                    modifierLoop.variables[endColorRName] = colors.endColor.r.ToString();
+                if (!string.IsNullOrEmpty(endColorGName))
+                    modifierLoop.variables[endColorGName] = colors.endColor.g.ToString();
+                if (!string.IsNullOrEmpty(endColorBName))
+                    modifierLoop.variables[endColorBName] = colors.endColor.b.ToString();
+                if (!string.IsNullOrEmpty(endColorAName))
+                    modifierLoop.variables[endColorAName] = colors.endColor.a.ToString();
+            }
+            else
             {
                 var colors = ModifiersHelper.GetColors(beatmapObject);
                 var startColorRName = ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables);
@@ -12521,6 +12617,105 @@ namespace BetterLegacy.Core.Helpers
                 RTLevel.Current?.InitSeed(modifier.GetValue(0, modifierLoop.variables));
         }
 
+        public static void setAudio(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            var currentLevel = ProjectArrhythmia.State.InEditor ? EditorLevelManager.inst.CurrentLevel : LevelManager.CurrentLevel;
+
+            if (!MetaData.Current || !MetaData.Current.package || !currentLevel)
+                return;
+
+            if (currentLevel.tracks.TryGetValue(modifier.GetValue(0, modifierLoop.variables), out AudioClip audioClip))
+            {
+                AudioManager.inst.PlayMusic(null, audioClip, true, modifier.GetFloat(1, 1f, modifierLoop.variables), false);
+                var t = modifier.GetValue(2, modifierLoop.variables);
+                if (!string.IsNullOrEmpty(t) && float.TryParse(t, out float time))
+                    AudioManager.inst.SetMusicTime(time);
+                GameManager.inst.songLength = audioClip.length;
+
+                if (modifier.GetBool(3, true, modifierLoop.variables) && !ProjectArrhythmia.State.InEditor)
+                    RTGameManager.inst.PlayIntro();
+                if (ProjectArrhythmia.State.InEditor)
+                {
+                    if (EditorConfig.Instance.WaveformGenerate.Value)
+                    {
+                        CoreHelper.Log("Assigning waveform textures...");
+                        CoroutineHelper.StartCoroutine(EditorTimeline.inst.AssignTimelineTexture(audioClip, true));
+                    }
+                    else
+                    {
+                        CoreHelper.Log("Skipping waveform textures...");
+                        EditorTimeline.inst.SetTimelineSprite(null);
+                    }
+
+                    EditorTimeline.inst.UpdateTimelineSizes();
+                    GameManager.inst.UpdateTimeline();
+
+                    var timeField = RTEditor.inst.timeField;
+                    TriggerHelper.AddEventTriggers(timeField.gameObject, TriggerHelper.ScrollDelta(timeField, max: AudioManager.inst.CurrentAudioSource.clip.length));
+                }
+            }
+        }
+
+        public static void setGameData(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (ProjectArrhythmia.State.InEditor && !EditorConfig.Instance.ModifiersCanLoadLevels.Value)
+                return;
+
+            var currentLevel = ProjectArrhythmia.State.InEditor ? EditorLevelManager.inst.CurrentLevel : LevelManager.CurrentLevel;
+
+            if (!MetaData.Current || !MetaData.Current.package || !currentLevel)
+                return;
+
+            if (MetaData.Current.package.GetLevel(modifier.GetValue(0, modifierLoop.variables)) is not PackageMetaData.File file)
+                return;
+
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                GameManager.inst.gameState = GameManager.State.Parsing;
+                GameData.Current = GameData.ReadFromFile(currentLevel.GetFile(file.fileName),
+                    RTFile.FileIsFormat(file.fileName, FileFormat.VGD) ? ArrhythmiaType.VG : ArrhythmiaType.LS);
+                if (GameData.Current && GameData.Current.data && GameData.Current.data.level)
+                    RTBeatmap.Current.respawnImmediately = GameData.Current.data.level.respawnImmediately;
+                ThemeManager.inst.UpdateAllThemes();
+
+                GameManager.inst.UpdateTimeline();
+                RTBeatmap.Current.ResetCheckpoint();
+
+                RTPlayer.SetGameDataProperties();
+
+                CoroutineHelper.StartCoroutine(RTLevel.IReinit());
+
+                if (ProjectArrhythmia.State.InEditor)
+                {
+                    Editor.Data.Dialogs.EditorDialog.CurrentDialog.Close();
+
+                    RTCheckpointEditor.inst.CreateGhostCheckpoints();
+
+                    RTEventEditor.inst.CreateTimelineKeyframes();
+
+                    RTMarkerEditor.inst.CreateMarkers();
+                    RTMarkerEditor.inst.markerLooping = false;
+                    RTMarkerEditor.inst.markerLoopBegin = null;
+                    RTMarkerEditor.inst.markerLoopEnd = null;
+
+                    RTThemeEditor.inst.LoadInternalThemes();
+
+                    EditorTimeline.inst.InitTimelineObjects();
+
+                    RTCheckpointEditor.inst.SetCurrentCheckpoint(0);
+
+                    RTPrefabEditor.inst.currentQuickPrefab = null; // remove selected quick prefab as it probably doesn't exist anymore.
+
+                    RTBeatmap.Current.ResetCheckpoint();
+
+                    EditorTimeline.inst.RenderTimeline();
+                    EditorTimeline.inst.RenderBins();
+                }
+
+                GameManager.inst.gameState = GameManager.State.Playing;
+            });
+        }
+
         #endregion
 
         #region Physics
@@ -12922,6 +13117,21 @@ namespace BetterLegacy.Core.Helpers
                 return cache;
             });
             return cache.Run(new ModifierLoop(modifierLoop.reference, modifierLoop.variables)).result;
+        }
+
+        public static void addTag(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            var prefabable = modifierLoop.reference.AsPrefabable();
+            if (prefabable == null)
+                return;
+
+            var group = GameData.Current.FindModifyables(modifier, prefabable, modifier.GetValue(0, modifierLoop.variables));
+            var tag = modifier.GetValue(1, modifierLoop.variables);
+            foreach (var obj in group)
+            {
+                if (obj is IPrefabable p && p.FromPrefab && !obj.Tags.Contains(tag))
+                    obj.Tags.Add(tag);
+            }
         }
 
         #endregion

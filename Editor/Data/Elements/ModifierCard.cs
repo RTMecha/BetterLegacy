@@ -2180,7 +2180,31 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
+                case nameof(ModifierFunctions.getVisualColorOther): {
+                        PrefabGroupOnly(modifier, reference);
+                        var str = StringGenerator(modifier, reference, "Object Group", 2);
+                        EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
+                        StringGenerator(modifier, reference, "Color 1 Var Name", 0, renderVariables: false);
+                        StringGenerator(modifier, reference, "Color 2 Var Name", 1, renderVariables: false);
+
+                        break;
+                    }
                 case nameof(ModifierFunctions.getVisualColorRGBA): {
+                        StringGenerator(modifier, reference, "Color 1 R Var Name", 0, renderVariables: false);
+                        StringGenerator(modifier, reference, "Color 1 G Var Name", 1, renderVariables: false);
+                        StringGenerator(modifier, reference, "Color 1 B Var Name", 2, renderVariables: false);
+                        StringGenerator(modifier, reference, "Color 1 A Var Name", 3, renderVariables: false);
+                        StringGenerator(modifier, reference, "Color 2 R Var Name", 4, renderVariables: false);
+                        StringGenerator(modifier, reference, "Color 2 G Var Name", 5, renderVariables: false);
+                        StringGenerator(modifier, reference, "Color 2 B Var Name", 6, renderVariables: false);
+                        StringGenerator(modifier, reference, "Color 2 A Var Name", 7, renderVariables: false);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.getVisualColorRGBAOther): {
+                        PrefabGroupOnly(modifier, reference);
+                        var str = StringGenerator(modifier, reference, "Object Group", 8);
+                        EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                         StringGenerator(modifier, reference, "Color 1 R Var Name", 0, renderVariables: false);
                         StringGenerator(modifier, reference, "Color 1 G Var Name", 1, renderVariables: false);
                         StringGenerator(modifier, reference, "Color 1 B Var Name", 2, renderVariables: false);
@@ -4045,6 +4069,19 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
+                case nameof(ModifierFunctions.setAudio): {
+                        StringGenerator(modifier, reference, "File ID", 0);
+                        SingleGenerator(modifier, reference, "Transition Time", 1, 1f);
+                        SingleGenerator(modifier, reference, "Set Song Time", 2);
+                        BoolGenerator(modifier, reference, "Show Info", 3);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.setGameData): {
+                        StringGenerator(modifier, reference, "File ID", 0);
+
+                        break;
+                    }
 
                 #endregion
 
@@ -4405,12 +4442,25 @@ namespace BetterLegacy.Editor.Data.Elements
                         break;
                     }
                 case nameof(ModifierFunctions.callModifiers): {
-                        StringGenerator(modifier, reference, "Object Group", 0);
+                        PrefabGroupOnly(modifier, reference);
+                        var str = StringGenerator(modifier, reference, "Object Group", 0);
+                        EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
                         break;
                     }
                 case nameof(ModifierFunctions.callModifiersTrigger): {
-                        StringGenerator(modifier, reference, "Object Group", 0);
+                        PrefabGroupOnly(modifier, reference);
+                        var str = StringGenerator(modifier, reference, "Object Group", 0);
+                        EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
+
+                        break;
+                    }
+
+                case nameof(ModifierFunctions.addTag): {
+                        PrefabGroupOnly(modifier, reference);
+                        var str = StringGenerator(modifier, reference, "Object Group", 0);
+                        EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
+                        StringGenerator(modifier, reference, "Tag", 1);
 
                         break;
                     }
