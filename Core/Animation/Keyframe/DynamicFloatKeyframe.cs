@@ -4,9 +4,9 @@ using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Core.Animation.Keyframe
 {
-    public struct DynamicFloatKeyframe : IKeyframe<float>, IHomingKeyframe, IDynamicHomingKeyframe<float>, IHomingFloatKeyframe
+    public struct DynamicRotationKeyframe : IKeyframe<Vector3>, IHomingKeyframe, IDynamicHomingKeyframe<Vector3>, IHomingFloatKeyframe
     {
-        public DynamicFloatKeyframe(float time, float value, EaseFunction ease, float delay, float min, float max, bool flee, Sequence<Vector3> positionSequence, bool relative, HomingPriority priority, int playerIndex)
+        public DynamicRotationKeyframe(float time, Vector3 value, EaseFunction ease, float delay, float min, float max, bool flee, Sequence<Vector3> positionSequence, bool relative, HomingPriority priority, int playerIndex)
         {
             Time = time;
             Value = value;
@@ -24,7 +24,7 @@ namespace BetterLegacy.Core.Animation.Keyframe
             Target = Vector3.zero;
             Position = Vector3.zero;
             PositionSequence = positionSequence;
-            TotalValue = 0f;
+            TotalValue = Vector3.zero;
             Relative = relative;
             Priority = priority;
             PlayerIndex = playerIndex;
@@ -35,9 +35,9 @@ namespace BetterLegacy.Core.Animation.Keyframe
         public bool Active { get; set; }
         public float Time { get; set; }
         public EaseFunction Ease { get; set; }
-        public float Value { get; set; }
-        public float OriginalValue { get; set; }
-        public float TotalValue { get; set; }
+        public Vector3 Value { get; set; }
+        public Vector3 OriginalValue { get; set; }
+        public Vector3 TotalValue { get; set; }
         public bool Relative { get; set; }
         public float Delay { get; set; }
         public float MinRange { get; set; }
@@ -90,12 +90,12 @@ namespace BetterLegacy.Core.Animation.Keyframe
 
         #endregion
 
-        #region Methods
+        #region Functions
 
-        public void Start(IKeyframe<float> prev, float value, float time)
+        public void Start(IKeyframe<Vector3> prev, Vector3 value, float time)
         {
             Active = true;
-            if (prev is not IDynamicHomingKeyframe<float>)
+            if (prev is not IDynamicHomingKeyframe<Vector3>)
                 Value = OriginalValue;
             var player = this.GetPlayer(time);
             Target = player?.localPosition ?? Vector3.zero;
@@ -129,11 +129,11 @@ namespace BetterLegacy.Core.Animation.Keyframe
 
         public void SetEase(EaseFunction ease) => Ease = ease;
 
-        public void SetValue(float value) => Value = value;
+        public void SetValue(Vector3 value) => Value = value;
 
-        public float GetValue() => GetValue(0f);
+        public Vector3 GetValue() => GetValue(0f);
 
-        public float GetValue(float ease) => GetValue(null, ease);
+        public Vector3 GetValue(float ease) => GetValue(null, ease);
 
         /// <summary>
         /// Gets the value of the dynamic homing keyframe. Interpolates only min & max range and delay.
@@ -141,7 +141,7 @@ namespace BetterLegacy.Core.Animation.Keyframe
         /// <param name="dynamicHomingKeyframe">Next dynamic homing keyframe. If is null, doesn't interpolate.</param>
         /// <param name="ease">Eased time scale.</param>
         /// <returns>Returns the dynamic homing value.</returns>
-        public float GetValue(IDynamicHomingKeyframe<float> dynamicHomingKeyframe, float ease)
+        public Vector3 GetValue(IDynamicHomingKeyframe<Vector3> dynamicHomingKeyframe, float ease)
         {
             var player = this.GetPlayer();
             var vector = player?.localPosition ?? Vector3.zero;
@@ -231,17 +231,17 @@ namespace BetterLegacy.Core.Animation.Keyframe
             }
 
             if (minRange == 0f && maxRange == 0f || Vector2.Distance(vector, PositionSequence.Value) > minRange && Vector2.Distance(vector, PositionSequence.Value) < maxRange)
-                Value += (Angle - Value) * delay;
+                Value += (new Vector3(0f, 0f, Angle) - Value) * delay;
 
             return Value;
         }
 
         public float CalculateDelay() => 1f - Mathf.Pow(Delay, UnityEngine.Time.deltaTime * CoreHelper.ForwardPitch);
 
-        public float Interpolate(IKeyframe<float> other, float time)
+        public Vector3 Interpolate(IKeyframe<Vector3> other, float time)
         {
             var ease = other.Ease(time);
-            if (other is IDynamicHomingKeyframe<float> dynamicHomingKeyframe)
+            if (other is IDynamicHomingKeyframe<Vector3> dynamicHomingKeyframe)
             {
                 var value = GetValue(dynamicHomingKeyframe, ease);
                 // set the value to the other dynamic homing keyframe so it doesn't snap to 0 when the keyframe starts interpolating.

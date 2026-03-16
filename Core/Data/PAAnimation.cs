@@ -311,15 +311,15 @@ namespace BetterLegacy.Core.Data
             if (animateRotation)
                 for (int i = 0; i < rotationKeyframes.Count; i++)
                 {
-                    var rotationKeyframes = ObjectConverter.GetFloatKeyframes(this, this.rotationKeyframes, 0, ObjectConverter.DefaultFloatKeyframe);
+                    var rotationKeyframes = ObjectConverter.GetFloatKeyframes(this, this.rotationKeyframes, ObjectConverter.DefaultVector3Keyframe);
 
                     if (transition)
-                        rotationKeyframes[0].SetValue(transform.localEulerAngles.z);
+                        rotationKeyframes[0].SetValue(new Vector3(0f, 0f, transform.localEulerAngles.z));
 
-                    runtimeAnim.animationHandlers.Add(new AnimationHandler<float>(rotationKeyframes, x =>
+                    runtimeAnim.animationHandlers.Add(new AnimationHandler<Vector3>(rotationKeyframes, x =>
                     {
                         if (transform)
-                            transform.localEulerAngles = (new Vector3(0f, 0f, rotationOffset + x));
+                            transform.localEulerAngles = (new Vector3(0f, 0f, rotationOffset + x.z));
                     }, interpolateOnComplete: true));
                 }
 

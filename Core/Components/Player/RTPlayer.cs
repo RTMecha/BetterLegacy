@@ -3578,14 +3578,14 @@ namespace BetterLegacy.Core.Components.Player
             if (animation.animateRotation)
                 for (int i = 0; i < animation.rotationKeyframes.Count; i++)
                 {
-                    var rotationKeyframes = ObjectConverter.GetFloatKeyframes(animation, animation.rotationKeyframes, 0, ObjectConverter.DefaultFloatKeyframe);
+                    var rotationKeyframes = ObjectConverter.GetFloatKeyframes(animation, animation.rotationKeyframes, ObjectConverter.DefaultVector3Keyframe);
 
                     if (animation.transition && customObject.gameObject)
-                        rotationKeyframes[0].SetValue(customObject.anim.rotation);
+                        rotationKeyframes[0].SetValue(new Vector3(0f, 0f, customObject.anim.rotation));
 
-                    runtimeAnim.animationHandlers.Add(new AnimationHandler<float>(rotationKeyframes, rot =>
+                    runtimeAnim.animationHandlers.Add(new AnimationHandler<Vector3>(rotationKeyframes, rot =>
                     {
-                        customObject.anim.rotation = rot;
+                        customObject.anim.rotation = rot.z;
                     }, interpolateOnComplete: true));
                 }
 

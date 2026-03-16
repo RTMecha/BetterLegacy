@@ -12,6 +12,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 {
     public class EventKeyframe : PAObject<EventKeyframe>
     {
+        #region Constructors
+
         public EventKeyframe()
         {
             id = LSText.randomNumString(8);
@@ -44,6 +46,8 @@ namespace BetterLegacy.Core.Data.Beatmap
         public EventKeyframe(float time, float value, string curve) : this(time, new float[1] { value }, curve) { }
         public EventKeyframe(float time, Vector2 value, string curve) : this(time, new float[2] { value.x, value.y }, curve) { }
         public EventKeyframe(float time, Vector3 value, string curve) : this(time, new float[3] { value.x, value.y, value.z }, curve) { }
+
+        #endregion
 
         public static EventKeyframe DefaultPositionKeyframe => new EventKeyframe(0f, new float[3], new float[4]);
         public static EventKeyframe DefaultScaleKeyframe => new EventKeyframe(0f, new float[2] { 1f, 1f }, new float[4]);
@@ -90,7 +94,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         /// <summary>
         /// Copies data from another EventKeyframe.
@@ -322,7 +326,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #endregion
 
-        static readonly string[] axis = new string[]
+        public static readonly string[] axis = new string[]
         {
             "x",
             "y",
@@ -341,7 +345,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             "z5",
         };
 
-        static readonly string[] raxis = new string[]
+        public static readonly string[] raxis = new string[]
         {
             "rx",
             "ry",

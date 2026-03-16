@@ -287,7 +287,7 @@ namespace ILMath
                             {
                                 0 => cachedSequences.PositionSequence.Interpolate(time)[fromAxis],
                                 1 => cachedSequences.ScaleSequence.Interpolate(time)[fromAxis],
-                                2 => cachedSequences.RotationSequence.Interpolate(time),
+                                2 => cachedSequences.RotationSequence.Interpolate(time)[fromAxis],
                                 _ => 0,
                             };
                             return true;

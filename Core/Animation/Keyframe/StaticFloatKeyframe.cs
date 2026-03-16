@@ -5,9 +5,9 @@ namespace BetterLegacy.Core.Animation.Keyframe
     /// <summary>
     /// A keyframe that targets the player and animates a float value.
     /// </summary>
-    public struct StaticFloatKeyframe : IKeyframe<float>, IHomingKeyframe, IHomingFloatKeyframe
+    public struct StaticRotationKeyframe : IKeyframe<Vector3>, IHomingKeyframe, IHomingFloatKeyframe
     {
-        public StaticFloatKeyframe(float time, float value, EaseFunction ease, Sequence<Vector3> positionSequence, bool relative, HomingPriority priority, int playerIndex)
+        public StaticRotationKeyframe(float time, Vector3 value, EaseFunction ease, Sequence<Vector3> positionSequence, bool relative, HomingPriority priority, int playerIndex)
         {
             Time = time;
             Value = value;
@@ -16,7 +16,7 @@ namespace BetterLegacy.Core.Animation.Keyframe
             Target = Vector3.zero;
             PositionSequence = positionSequence;
             Angle = 0f;
-            TotalValue = 0f;
+            TotalValue = Vector3.zero;
             Relative = relative;
             Priority = priority;
             PlayerIndex = playerIndex;
@@ -27,8 +27,8 @@ namespace BetterLegacy.Core.Animation.Keyframe
         public bool Active { get; set; }
         public float Time { get; set; }
         public EaseFunction Ease { get; set; }
-        public float Value { get; set; }
-        public float TotalValue { get; set; }
+        public Vector3 Value { get; set; }
+        public Vector3 TotalValue { get; set; }
         public bool Relative { get; set; }
         public Sequence<Vector3> PositionSequence { get; set; }
         public Vector3 Target { get; set; }
@@ -38,11 +38,11 @@ namespace BetterLegacy.Core.Animation.Keyframe
 
         #endregion
 
-        #region Methods
+        #region Functions
 
-        public void Start(IKeyframe<float> prev, float value, float time)
+        public void Start(IKeyframe<Vector3> prev, Vector3 value, float time)
         {
-            TotalValue = Relative ? prev is IHomingKeyframe ? prev.GetValue() : prev.TotalValue : 0f;
+            TotalValue = Relative ? prev is IHomingKeyframe ? prev.GetValue() : prev.TotalValue : Vector3.zero;
             Active = true;
             var player = this.GetPlayer(time);
             if (player)
@@ -59,11 +59,11 @@ namespace BetterLegacy.Core.Animation.Keyframe
 
         public void SetEase(EaseFunction ease) => Ease = ease;
 
-        public void SetValue(float value) => Value = value;
+        public void SetValue(Vector3 value) => Value = value;
 
-        public float GetValue() => Angle + Value + TotalValue;
+        public Vector3 GetValue() => new Vector3(0f, 0f, Angle) + Value + TotalValue;
 
-        public float Interpolate(IKeyframe<float> other, float time) => RTMath.Lerp(GetValue(), other.GetValue(), other.Ease(time));
+        public Vector3 Interpolate(IKeyframe<Vector3> other, float time) => RTMath.Lerp(GetValue(), other.GetValue(), other.Ease(time));
 
         #endregion
     }

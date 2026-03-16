@@ -945,6 +945,27 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 EditorThemeManager.ApplyInputField(startHexColorField);
             }
 
+            // 3D Rotation
+            {
+                var use3D = EditorPrefabHolder.Instance.ToggleButton.Duplicate(ObjEditor.inst.KeyframeDialogs[2].transform, "use3D");
+                var use3DToggle = use3D.GetComponent<ToggleButtonStorage>();
+                use3DToggle.Text = "Use 3D Axis";
+
+                EditorThemeManager.ApplyToggle(use3DToggle);
+
+                var labels = ObjEditor.inst.KeyframeDialogs[2].transform.Find("rotation").GetPreviousSibling();
+                var rotYLabel = labels.GetChild(0).gameObject.Duplicate(labels, "text");
+                var rotYLabelText = rotYLabel.GetComponent<Text>();
+                rotYLabelText.text = "Rotation Y";
+                EditorThemeManager.ApplyLightText(rotYLabelText);
+                var rotZLabel = labels.GetChild(0).gameObject.Duplicate(labels, "text");
+                var rotZLabelText = rotZLabel.GetComponent<Text>();
+                rotZLabelText.text = "Rotation Z";
+                EditorThemeManager.ApplyLightText(rotZLabelText);
+
+                labels.GetChild(0).GetComponent<Text>().text = "Rotation X";
+            }
+
             // Relative / Copy / Paste
             {
                 for (int i = 0; i < 4; i++)
@@ -993,29 +1014,27 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         EditorThemeManager.ApplyGraphic(flipXStorage.button.image, ThemeGroup.Function_1, true);
                         EditorThemeManager.ApplyGraphic(flipXStorage.label, ThemeGroup.Function_1_Text);
 
-                        if (i != 2)
+                        var flipY = EditorPrefabHolder.Instance.Function1Button.Duplicate(parent, "flipy");
+                        flipY.transform.AsRT().sizeDelta = new Vector2(366f, 32f);
+                        var flipYStorage = flipY.GetComponent<FunctionButtonStorage>();
+                        flipYStorage.Text = "Flip Y";
+                        flipYStorage.OnClick.NewListener(() =>
                         {
-                            var flipY = EditorPrefabHolder.Instance.Function1Button.Duplicate(parent, "flipy");
-                            flipY.transform.AsRT().sizeDelta = new Vector2(366f, 32f);
-                            var flipYStorage = flipY.GetComponent<FunctionButtonStorage>();
-                            flipYStorage.Text = "Flip Y";
-                            flipYStorage.OnClick.NewListener(() =>
+                            foreach (var timelineObject in EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>().TimelineKeyframes.Where(x => x.Selected))
                             {
-                                foreach (var timelineObject in EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>().TimelineKeyframes.Where(x => x.Selected))
-                                {
-                                    var eventKeyframe = timelineObject.eventKeyframe;
-                                    eventKeyframe.values[1] = -eventKeyframe.values[1];
-                                }
+                                var eventKeyframe = timelineObject.eventKeyframe;
+                                eventKeyframe.values[1] = -eventKeyframe.values[1];
+                            }
 
-                                var beatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
-                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
-                                Timeline.RenderDialog(beatmapObject);
-                            });
+                            var beatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                            Timeline.RenderDialog(beatmapObject);
+                        });
 
-                            EditorThemeManager.ApplyGraphic(flipYStorage.button.image, ThemeGroup.Function_1, true);
-                            EditorThemeManager.ApplyGraphic(flipYStorage.label, ThemeGroup.Function_1_Text);
-                        }
-                        if (i == 0)
+                        EditorThemeManager.ApplyGraphic(flipYStorage.button.image, ThemeGroup.Function_1, true);
+                        EditorThemeManager.ApplyGraphic(flipYStorage.label, ThemeGroup.Function_1_Text);
+
+                        if (i == 0 || i == 2)
                         {
                             var flipZ = EditorPrefabHolder.Instance.Function1Button.Duplicate(parent, "flipz");
                             flipZ.transform.AsRT().sizeDelta = new Vector2(366f, 32f);

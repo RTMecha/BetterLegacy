@@ -1482,13 +1482,16 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         break;
                     }
                 case 2: {
-                        dialog.EventValueElements[0].Render(type, 0, selected, firstKF, animatable);
+                        for (int i = 0; i < dialog.EventValueElements.Count; i++)
+                            dialog.EventValueElements[i].Render(type, i, selected, firstKF, animatable);
 
                         KeyframeRandomHandler(type, selected, firstKF, animatable);
                         for (int i = 0; i < 2; i++)
                             KeyframeRandomValueHandler(type, i, selected, firstKF, animatable);
 
                         var flipX = kfdialog.Find("flipx").gameObject;
+                        var flipY = kfdialog.Find("flipy").gameObject;
+                        var flipZ = kfdialog.Find("flipz").gameObject;
                         EditorContextMenu.AddContextMenu(flipX,
                             new ButtonElement("Hide Flip Button", () =>
                             {
@@ -1496,6 +1499,27 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                 RenderDialog(animatable);
                             }));
                         EditorHelper.SetComplexity(flipX, Complexity.Normal, visible: () => !animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(type) + "/flip_active", out float f) || f == 1f);
+                        EditorHelper.SetComplexity(flipY, Complexity.Advanced, visible: () => firstKF.eventKeyframe.values.Length > 1 && (!animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(type) + "/flip_active", out float f) || f == 1f));
+                        EditorHelper.SetComplexity(flipZ, Complexity.Advanced, visible: () => firstKF.eventKeyframe.values.Length > 2 && (!animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(type) + "/flip_active", out float f) || f == 1f));
+
+                        var use3DToggle = (dialog.Content ? dialog.Content : dialog.GameObject.transform.AsRT()).Find("use3D").GetComponent<Toggle>();
+                        use3DToggle.SetIsOnWithoutNotify(firstKF.eventKeyframe.values.Length > 1);
+                        use3DToggle.onValueChanged.NewListener(_val =>
+                        {
+                            foreach (var keyframe in selected.Select(x => x.eventKeyframe))
+                            {
+                                if (_val)
+                                    firstKF.eventKeyframe.SetValues(0f, 0f, firstKF.eventKeyframe.values[firstKF.eventKeyframe.values.Length > 2 ? 2 : 0]);
+                                else
+                                    firstKF.eventKeyframe.SetValues(firstKF.eventKeyframe.values[firstKF.eventKeyframe.values.Length > 2 ? 2 : 0]);
+                            }
+
+                            // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                            if (beatmapObject)
+                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+
+                            RenderDialog(animatable);
+                        });
 
                         break;
                     }

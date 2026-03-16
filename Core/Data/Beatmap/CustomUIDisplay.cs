@@ -165,15 +165,27 @@ namespace BetterLegacy.Core.Data.Beatmap
             resetValue = 1.0f,
         };
 
-        public static CustomValueDisplay DefaultRotationDisplay => new CustomValueDisplay()
+        public static CustomValueDisplay DefaultRotationXDisplay => new CustomValueDisplay()
         {
             path = "rotation/x",
+            type = UIType.InputField,
+        };
+        
+        public static CustomValueDisplay DefaultRotationYDisplay => new CustomValueDisplay()
+        {
+            path = "rotation/y",
+            type = UIType.InputField,
+        };
+        
+        public static CustomValueDisplay DefaultRotationZDisplay => new CustomValueDisplay()
+        {
+            path = "rotation/z",
             type = UIType.InputField,
         };
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public override void CopyData(CustomValueDisplay orig, bool newID = true)
         {

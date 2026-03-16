@@ -247,14 +247,14 @@ namespace BetterLegacy.Core.Runtime.Objects
                     var sca = new List<IKeyframe<Vector2>>();
                     sca.Add(new Vector2Keyframe(0f, Vector2.one, Ease.Linear));
 
-                    var rot = new List<IKeyframe<float>>();
-                    rot.Add(new FloatKeyframe(0f, 0f, Ease.Linear));
+                    var rot = new List<IKeyframe<Vector3>>();
+                    rot.Add(new Vector3Keyframe(0f, Vector3.zero, Ease.Linear));
 
                     parentObject = new ParentObject
                     {
                         positionSequence = new Sequence<Vector3>(pos),
                         scaleSequence = new Sequence<Vector2>(sca),
-                        rotationSequence = new Sequence<float>(rot),
+                        rotationSequence = new Sequence<Vector3>(rot),
 
                         parentAnimatePosition = beatmapObject.GetParentType(0),
                         parentAnimateScale = beatmapObject.GetParentType(1),
@@ -649,7 +649,7 @@ namespace BetterLegacy.Core.Runtime.Objects
                 PositionSequence = GetVector3Sequence(beatmapObject, beatmapObject.events[0], DefaultVector3Keyframe),
                 ScaleSequence = GetVector2Sequence(beatmapObject, beatmapObject.events[1], DefaultVector2Keyframe),
             };
-            collection.RotationSequence = GetFloatSequence(beatmapObject, beatmapObject.events[2], 0, DefaultFloatKeyframe, collection.PositionSequence, false);
+            collection.RotationSequence = GetFloatSequence(beatmapObject, beatmapObject.events[2], DefaultVector3Keyframe, collection.PositionSequence);
 
             // Empty objects don't need a color sequence, so it is not cached
             if (EditorConfig.Instance.ShowEmpties.Value || beatmapObject.objectType != ObjectType.Empty)
@@ -678,7 +678,7 @@ namespace BetterLegacy.Core.Runtime.Objects
         {
             collection.PositionSequence = GetVector3Sequence(beatmapObject, beatmapObject.events[0], DefaultVector3Keyframe);
             collection.ScaleSequence = GetVector2Sequence(beatmapObject, beatmapObject.events[1], DefaultVector2Keyframe);
-            collection.RotationSequence = GetFloatSequence(beatmapObject, beatmapObject.events[2], 0, DefaultFloatKeyframe, collection.PositionSequence, false);
+            collection.RotationSequence = GetFloatSequence(beatmapObject, beatmapObject.events[2], DefaultVector3Keyframe, collection.PositionSequence);
 
             // Empty objects don't need a color sequence, so it is not cached
             if (EditorConfig.Instance.ShowEmpties.Value || beatmapObject.objectType != ObjectType.Empty)
@@ -773,29 +773,31 @@ namespace BetterLegacy.Core.Runtime.Objects
             return keyframes;
         }
 
-        public static Sequence<float> GetFloatSequence(PAObjectBase obj, List<EventKeyframe> eventKeyframes, int index, FloatKeyframe defaultKeyframe, Sequence<Vector3> vector3Sequence = null, bool color = false)
-            => new Sequence<float>(GetFloatKeyframes(obj, eventKeyframes, index, defaultKeyframe, vector3Sequence, color));
+        public static Sequence<Vector3> GetFloatSequence(PAObjectBase obj, List<EventKeyframe> eventKeyframes, Vector3Keyframe defaultKeyframe, Sequence<Vector3> vector3Sequence = null)
+            => new Sequence<Vector3>(GetFloatKeyframes(obj, eventKeyframes, defaultKeyframe, vector3Sequence));
 
-        public static List<IKeyframe<float>> GetFloatKeyframes(PAObjectBase obj, List<EventKeyframe> eventKeyframes, int index, FloatKeyframe defaultKeyframe, Sequence<Vector3> vector3Sequence = null, bool color = false)
+        public static List<IKeyframe<Vector3>> GetFloatKeyframes(PAObjectBase obj, List<EventKeyframe> eventKeyframes, Vector3Keyframe defaultKeyframe, Sequence<Vector3> vector3Sequence = null)
         {
-            List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>(eventKeyframes.Count);
+            List<IKeyframe<Vector3>> keyframes = new List<IKeyframe<Vector3>>(eventKeyframes.Count);
 
-            var currentValue = 0f;
-            IKeyframe<float> currentKeyfame = null;
+            var currentValue = Vector3.zero;
+            IKeyframe<Vector3> currentKeyfame = null;
             int num = 0;
             foreach (var eventKeyframe in eventKeyframes)
             {
-                var value = eventKeyframe.random != 0 ? RandomHelper.KeyframeRandomizer.RandomizeFloatKeyframe(obj.id, eventKeyframe, index, num) : eventKeyframe.values[index];
+                var value = eventKeyframe.values.Length > 2 ?
+                    new Vector3(eventKeyframe.values[0], eventKeyframe.values[1], eventKeyframe.random != 0 ? RandomHelper.KeyframeRandomizer.RandomizeFloatKeyframe(obj.id, eventKeyframe, 2, num) : eventKeyframe.values[2]) :
+                    new Vector3(0f, 0f, eventKeyframe.random != 0 ? RandomHelper.KeyframeRandomizer.RandomizeFloatKeyframe(obj.id, eventKeyframe, 0, num) : eventKeyframe.values[0]);
 
-                currentValue = eventKeyframe.relative && !color ? currentValue + value : value;
+                currentValue = eventKeyframe.relative ? currentValue + value : value;
 
                 currentKeyfame = eventKeyframe.random switch
                 {
-                    5 => new StaticFloatKeyframe(eventKeyframe.time, currentValue, Ease.GetEaseFunction(eventKeyframe.curve), vector3Sequence, eventKeyframe.relative, eventKeyframe.homingPriority, eventKeyframe.playerIndex),
-                    6 => new DynamicFloatKeyframe(eventKeyframe.time, currentValue, Ease.GetEaseFunction(eventKeyframe.curve),
+                    5 => new StaticRotationKeyframe(eventKeyframe.time, currentValue, Ease.GetEaseFunction(eventKeyframe.curve), vector3Sequence, eventKeyframe.relative, eventKeyframe.homingPriority, eventKeyframe.playerIndex),
+                    6 => new DynamicRotationKeyframe(eventKeyframe.time, currentValue, Ease.GetEaseFunction(eventKeyframe.curve),
                         eventKeyframe.randomValues[2], eventKeyframe.randomValues[0], eventKeyframe.randomValues[1],
                         eventKeyframe.flee, vector3Sequence, eventKeyframe.relative, eventKeyframe.homingPriority, eventKeyframe.playerIndex),
-                    _ => new FloatKeyframe(eventKeyframe.time, currentValue, Ease.GetEaseFunction(eventKeyframe.curve), eventKeyframe.relative),
+                    _ => new Vector3Keyframe(eventKeyframe.time, currentValue, Ease.GetEaseFunction(eventKeyframe.curve), eventKeyframe.relative),
                 };
 
                 if (!keyframes.Has(x => x.Time == currentKeyfame.Time))

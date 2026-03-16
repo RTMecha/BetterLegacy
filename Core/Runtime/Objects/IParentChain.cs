@@ -225,10 +225,11 @@ namespace BetterLegacy.Core.Runtime.Objects
                     // If last parent is rotation parented, animate rotation
                     if (animateRotation)
                     {
+                        var rot = parentObject.rotationSequence.Interpolate(desync ? syncOffset + prefabOffset - timeOffset - (rotationOffset + rotationAddedOffset) : localTime - timeOffset - (rotationOffset + rotationAddedOffset));
                         var value = Quaternion.AngleAxis(
-                            (parentObject.rotationSequence.Interpolate(desync ? syncOffset + prefabOffset - timeOffset - (rotationOffset + rotationAddedOffset) : localTime - timeOffset - (rotationOffset + rotationAddedOffset)) + parentObject.beatmapObject.reactiveRotationOffset) * rotationParallax,
+                            (rot.z + parentObject.beatmapObject.reactiveRotationOffset) * rotationParallax,
                             Vector3.forward);
-                        parentObject.transform.localRotation = Quaternion.Euler(value.eulerAngles + parentObject.beatmapObject.rotationOffset + parentObject.beatmapObject.fullTransform.rotation);
+                        parentObject.transform.localRotation = Quaternion.Euler(value.eulerAngles + parentObject.beatmapObject.rotationOffset + parentObject.beatmapObject.fullTransform.rotation + new Vector3(rot.x, rot.y));
                     }
                 }
 

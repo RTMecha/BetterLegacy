@@ -2418,7 +2418,7 @@ namespace BetterLegacy.Core.Helpers
 
                 // Animate rotation
                 if (animateRot)
-                    applyTo.rotationOffset = new Vector3(0f, 0f, takeFrom.cachedSequences.RotationSequence.GetValue(currentTime - time - delayRot));
+                    applyTo.rotationOffset = takeFrom.cachedSequences.RotationSequence.GetValue(currentTime - time - delayRot);
             }
             else if (useVisual && takeFrom.runtimeObject is RTBeatmapObject runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject)
             {
@@ -2465,7 +2465,7 @@ namespace BetterLegacy.Core.Helpers
                 {
                     0 => reference.cachedSequences.PositionSequence.GetValue(t).At(fromAxis),
                     1 => reference.cachedSequences.ScaleSequence.GetValue(t).At(fromAxis),
-                    2 => reference.cachedSequences.RotationSequence.GetValue(t),
+                    2 => reference.cachedSequences.RotationSequence.GetValue(t).At(fromAxis),
                     _ => 0f,
                 };
             else if (visual && reference.runtimeObject is RTBeatmapObject runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject)
@@ -2484,7 +2484,7 @@ namespace BetterLegacy.Core.Helpers
                 {
                     0 => Mathf.Clamp((reference.cachedSequences.PositionSequence.GetValue(t).At(fromAxis) - offset) * multiply % loop, min, max),
                     1 => Mathf.Clamp((reference.cachedSequences.ScaleSequence.GetValue(t).At(fromAxis) - offset) * multiply % loop, min, max),
-                    2 => Mathf.Clamp((reference.cachedSequences.RotationSequence.GetValue(t) - offset) * multiply % loop, min, max),
+                    2 => Mathf.Clamp((reference.cachedSequences.RotationSequence.GetValue(t).At(fromAxis) - offset) * multiply % loop, min, max),
                     _ => 0f,
                 };
             else if (visual && reference.runtimeObject is RTBeatmapObject runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject)
@@ -4040,7 +4040,7 @@ namespace BetterLegacy.Core.Helpers
                     case 0: {
                             var sequence = cachedSequences.PositionSequence.GetValue(time - beatmapObject.StartTime - delay);
 
-                            beatmapObject.integerVariable = (int)Mathf.Clamp((fromAxis == 0 ? sequence.x % loop : fromAxis == 1 ? sequence.y % loop : sequence.z % loop) * multiply - offset, min, max);
+                            beatmapObject.integerVariable = (int)Mathf.Clamp((sequence.At(fromAxis) % loop) * multiply - offset, min, max);
                             break;
                         }
                     // To Type Position
@@ -4049,7 +4049,7 @@ namespace BetterLegacy.Core.Helpers
                     case 1: {
                             var sequence = cachedSequences.ScaleSequence.GetValue(time - beatmapObject.StartTime - delay);
 
-                            beatmapObject.integerVariable = (int)Mathf.Clamp((fromAxis == 0 ? sequence.x % loop : sequence.y % loop) * multiply - offset, min, max);
+                            beatmapObject.integerVariable = (int)Mathf.Clamp((sequence.At(fromAxis) % loop) * multiply - offset, min, max);
                             break;
                         }
                     // To Type Position
@@ -4058,7 +4058,7 @@ namespace BetterLegacy.Core.Helpers
                     case 2: {
                             var sequence = cachedSequences.RotationSequence.GetValue(time - beatmapObject.StartTime - delay) * multiply;
 
-                            beatmapObject.integerVariable = (int)Mathf.Clamp((sequence % loop) - offset, min, max);
+                            beatmapObject.integerVariable = (int)Mathf.Clamp((sequence.At(fromAxis) % loop) - offset, min, max);
                             break;
                         }
                 }
@@ -7987,7 +7987,7 @@ namespace BetterLegacy.Core.Helpers
                 {
                     0 => Mathf.Clamp((beatmapObject.cachedSequences.PositionSequence.GetValue(time - beatmapObject.StartTime - delay).At(fromAxis) - offset) * multiply % loop, min, max),
                     1 => Mathf.Clamp((beatmapObject.cachedSequences.ScaleSequence.GetValue(time - beatmapObject.StartTime - delay).At(fromAxis) - offset) * multiply % loop, min, max),
-                    2 => Mathf.Clamp((beatmapObject.cachedSequences.RotationSequence.GetValue(time - beatmapObject.StartTime - delay) - offset) * multiply % loop, min, max),
+                    2 => Mathf.Clamp((beatmapObject.cachedSequences.RotationSequence.GetValue(time - beatmapObject.StartTime - delay).At(fromAxis) - offset) * multiply % loop, min, max),
                     _ => 0f,
                 });
             else if (beatmapObject.runtimeObject is RTBeatmapObject runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject)
@@ -8428,15 +8428,15 @@ namespace BetterLegacy.Core.Helpers
 
                 float t = !isEmpty ? type switch
                 {
-                    0 => axis == 0 ? cachedSequences.PositionSequence.Value.x : axis == 1 ? cachedSequences.PositionSequence.Value.y : cachedSequences.PositionSequence.Value.z,
-                    1 => axis == 0 ? cachedSequences.ScaleSequence.Value.x : cachedSequences.ScaleSequence.Value.y,
-                    2 => cachedSequences.RotationSequence.Value,
+                    0 => cachedSequences.PositionSequence.Value.At(axis),
+                    1 => cachedSequences.ScaleSequence.Value.At(axis),
+                    2 => cachedSequences.RotationSequence.Value.At(axis),
                     _ => 0f
                 } : type switch
                 {
-                    0 => axis == 0 ? cachedSequences.PositionSequence.GetValue(time).x : axis == 1 ? cachedSequences.PositionSequence.GetValue(time).y : cachedSequences.PositionSequence.GetValue(time).z,
-                    1 => axis == 0 ? cachedSequences.ScaleSequence.GetValue(time).x : cachedSequences.ScaleSequence.GetValue(time).y,
-                    2 => cachedSequences.RotationSequence.GetValue(time),
+                    0 => cachedSequences.PositionSequence.GetValue(time).At(axis),
+                    1 => cachedSequences.ScaleSequence.GetValue(time).At(axis),
+                    2 => cachedSequences.RotationSequence.GetValue(time).At(axis),
                     _ => 0f
                 };
 
@@ -10771,7 +10771,7 @@ namespace BetterLegacy.Core.Helpers
                 {
                     0 => Mathf.Clamp((bm.cachedSequences.PositionSequence.GetValue(t).At(fromAxis) - offset) * multiply % loop, min, max),
                     1 => Mathf.Clamp((bm.cachedSequences.ScaleSequence.GetValue(t).At(fromAxis) - offset) * multiply % loop, min, max),
-                    2 => Mathf.Clamp((bm.cachedSequences.RotationSequence.GetValue(t) - offset) * multiply % loop, min, max),
+                    2 => Mathf.Clamp((bm.cachedSequences.RotationSequence.GetValue(t).At(fromAxis) - offset) * multiply % loop, min, max),
                     _ => 0f,
                 });
             }
@@ -10873,7 +10873,7 @@ namespace BetterLegacy.Core.Helpers
                             {
                                 0 => bm.cachedSequences.PositionSequence.GetValue(time - bm.StartTime - delay).At(fromAxis),
                                 1 => bm.cachedSequences.ScaleSequence.GetValue(time - bm.StartTime - delay).At(fromAxis),
-                                2 => bm.cachedSequences.RotationSequence.GetValue(time - bm.StartTime - delay),
+                                2 => bm.cachedSequences.RotationSequence.GetValue(time - bm.StartTime - delay).At(fromAxis),
                                 _ => 0f,
                             };
                         bm.SetOtherObjectVariables(numberVariables);
@@ -10999,7 +10999,7 @@ namespace BetterLegacy.Core.Helpers
                         {
                             0 => Mathf.Clamp(beatmapObject.cachedSequences.PositionSequence.GetValue(time - beatmapObject.StartTime - delay).At(fromAxis), min, max),
                             1 => Mathf.Clamp(beatmapObject.cachedSequences.ScaleSequence.GetValue(time - beatmapObject.StartTime - delay).At(fromAxis), min, max),
-                            2 => Mathf.Clamp(beatmapObject.cachedSequences.RotationSequence.GetValue(time - beatmapObject.StartTime - delay), min, max),
+                            2 => Mathf.Clamp(beatmapObject.cachedSequences.RotationSequence.GetValue(time - beatmapObject.StartTime - delay).At(fromAxis), min, max),
                             _ => 0f,
                         });
                     else if (useVisual && beatmapObject.runtimeObject is RTBeatmapObject runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject)

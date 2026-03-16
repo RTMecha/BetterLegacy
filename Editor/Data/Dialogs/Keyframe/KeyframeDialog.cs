@@ -1253,8 +1253,15 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public override void Render(int type, int valueIndex, IEnumerable<TimelineKeyframe> selected, TimelineKeyframe firstKF, IAnimatable animatable)
         {
+            GameObject.SetActive(firstKF.eventKeyframe.values.Length > valueIndex);
             if (Dialog.EventValueLabels.TryGetAt(valueIndex, out Text label) && label)
+            {
+                label.gameObject.SetActive(firstKF.eventKeyframe.values.Length > valueIndex);
                 label.text = !string.IsNullOrEmpty(Display.label) ? Display.label : Dialog.originalLabels[valueIndex];
+            }
+
+            if (firstKF.eventKeyframe.values.Length <= valueIndex)
+                return;
 
             var isSingle = selected.Count() == 1;
 
@@ -1597,8 +1604,15 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public override void Render(int type, int valueIndex, IEnumerable<TimelineKeyframe> selected, TimelineKeyframe firstKF, IAnimatable animatable)
         {
+            GameObject.SetActive(firstKF.eventKeyframe.values.Length > valueIndex);
             if (Dialog.EventValueLabels.TryGetAt(valueIndex, out Text label) && label)
+            {
+                label.gameObject.SetActive(firstKF.eventKeyframe.values.Length > valueIndex);
                 label.text = !string.IsNullOrEmpty(Display.label) ? Display.label : Dialog.originalLabels[valueIndex];
+            }
+
+            if (firstKF.eventKeyframe.values.Length <= valueIndex)
+                return;
 
             var isSingle = selected.Count() == 1;
 
@@ -1833,8 +1847,15 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public override void Render(int type, int valueIndex, IEnumerable<TimelineKeyframe> selected, TimelineKeyframe firstKF, IAnimatable animatable)
         {
+            GameObject.SetActive(firstKF.eventKeyframe.values.Length > valueIndex);
             if (Dialog.EventValueLabels.TryGetAt(valueIndex, out Text label) && label)
+            {
+                label.gameObject.SetActive(firstKF.eventKeyframe.values.Length > valueIndex);
                 label.text = !string.IsNullOrEmpty(Display.label) ? Display.label : Dialog.originalLabels[valueIndex];
+            }
+
+            if (firstKF.eventKeyframe.values.Length <= valueIndex)
+                return;
 
             var isSingle = selected.Count() == 1;
             var offValue = getOffValue?.Invoke() ?? 0f;

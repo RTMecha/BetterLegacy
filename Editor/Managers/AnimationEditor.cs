@@ -360,7 +360,9 @@ namespace BetterLegacy.Editor.Managers
                 animation.EditorData.GetDisplay("scale/x", CustomValueDisplay.DefaultScaleXDisplay),
                 animation.EditorData.GetDisplay("scale/y", CustomValueDisplay.DefaultScaleYDisplay));
             Dialog.keyframeDialogs[2].InitCustomUI(
-                animation.EditorData.GetDisplay("rotation/x", CustomValueDisplay.DefaultRotationDisplay));
+                animation.EditorData.GetDisplay("rotation/x", CustomValueDisplay.DefaultRotationXDisplay),
+                animation.EditorData.GetDisplay("rotation/y", CustomValueDisplay.DefaultRotationYDisplay),
+                animation.EditorData.GetDisplay("rotation/z", CustomValueDisplay.DefaultRotationZDisplay));
         }
 
         #endregion
