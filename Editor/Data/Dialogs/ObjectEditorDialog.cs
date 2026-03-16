@@ -2387,6 +2387,30 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         rotationLabelLayout.minWidth = 100f;
 
                         #endregion
+
+                        #region Alternate
+
+                        var alternate = EditorPrefabHolder.Instance.NumberInputField.Duplicate(so, "alternate");
+                        var alternateStorage = alternate.GetComponent<InputFieldStorage>();
+
+                        CoreHelper.Delete(alternateStorage.addButton);
+                        CoreHelper.Delete(alternateStorage.subButton);
+                        CoreHelper.Delete(alternateStorage.leftGreaterButton);
+                        CoreHelper.Delete(alternateStorage.middleButton);
+                        CoreHelper.Delete(alternateStorage.rightGreaterButton);
+
+                        EditorThemeManager.ApplyInputField(alternateStorage);
+
+                        var alternateLabel = EditorPrefabHolder.Instance.Labels.transform.GetChild(0).gameObject.Duplicate(alternate.transform, "label", 0);
+                        var alternateLabelText = alternateLabel.GetComponent<Text>();
+                        alternateLabelText.alignment = TextAnchor.MiddleLeft;
+                        alternateLabelText.text = "Alternate";
+                        alternateLabelText.rectTransform.sizeDelta = new Vector2(100f, 32f);
+                        EditorThemeManager.ApplyLightText(alternateLabelText);
+                        var alternateLabelLayout = alternateLabel.AddComponent<LayoutElement>();
+                        alternateLabelLayout.minWidth = 100f;
+
+                        #endregion
                     }
                 }
             }

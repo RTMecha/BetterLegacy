@@ -5344,7 +5344,7 @@ namespace BetterLegacy.Editor.Managers
                         break;
                     }
                 case ShapeType.Polygon: {
-                        shapeSettings.AsRT().sizeDelta = new Vector2(351f, 320f);
+                        shapeSettings.AsRT().sizeDelta = new Vector2(351f, 360f);
 
                         var radius = shapeSettings.Find("10/radius").gameObject.GetComponent<InputFieldStorage>();
                         radius.OnValueChanged.ClearAll();
@@ -5546,6 +5546,20 @@ namespace BetterLegacy.Editor.Managers
 
                         TriggerHelper.IncreaseDecreaseButtons(rotation, 15f, 3f);
                         TriggerHelper.AddEventTriggers(rotation.inputField.gameObject, TriggerHelper.ScrollDelta(rotation.inputField, 15f, 3f));
+                        
+                        var alternate = shapeSettings.Find("10/alternate").gameObject.GetComponent<InputFieldStorage>();
+                        alternate.SetTextWithoutNotify(shapeable.Polygon.Alternate.ToString());
+                        alternate.OnValueChanged.NewListener(_val =>
+                        {
+                            if (float.TryParse(_val, out float num))
+                            {
+                                shapeable.Polygon.Alternate = num;
+                                onUpdate?.Invoke(ObjectContext.POLYGONS);
+                            }
+                        });
+
+                        TriggerHelper.IncreaseDecreaseButtons(alternate);
+                        TriggerHelper.AddEventTriggers(alternate.inputField.gameObject, TriggerHelper.ScrollDelta(alternate.inputField));
 
                         break;
                     }

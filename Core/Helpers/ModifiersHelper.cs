@@ -8880,6 +8880,7 @@ namespace BetterLegacy.Core.Helpers
             var thicknessScale = new Vector2(modifier.GetFloat(7, 1f, modifierLoop.variables), modifier.GetFloat(8, 1f, modifierLoop.variables));
             var thicknessRotation = modifier.GetFloat(10, 0f, modifierLoop.variables);
             var rotation = modifier.GetFloat(9, 0f, modifierLoop.variables);
+            var alternate = modifier.GetFloat(11, 1f, modifierLoop.variables);
 
             var meshParams = new VGShapes.MeshParams
             {
@@ -8892,12 +8893,13 @@ namespace BetterLegacy.Core.Helpers
                 thicknessScale = thicknessScale,
                 thicknessRotation = thicknessRotation,
                 rotation = rotation,
+                alternate = alternate,
             };
 
             if (modifier.TryGetResult(out VGShapes.MeshParams cache) && meshParams.Equals(cache))
                 return;
 
-            polygonObject.UpdatePolygon(radius, sides, roundness, thickness, slices, thicknessOffset, thicknessScale, rotation, thicknessRotation);
+            polygonObject.UpdatePolygon(radius, sides, roundness, thickness, slices, thicknessOffset, thicknessScale, rotation, thicknessRotation, alternate);
             modifier.Result = meshParams;
         }
 
@@ -8915,6 +8917,7 @@ namespace BetterLegacy.Core.Helpers
             var thicknessScale = new Vector2(modifier.GetFloat(8, 1f, modifierLoop.variables), modifier.GetFloat(9, 1f, modifierLoop.variables));
             var thicknessRotation = modifier.GetFloat(11, 0f, modifierLoop.variables);
             var rotation = modifier.GetFloat(10, 0f, modifierLoop.variables);
+            var alternate = modifier.GetFloat(12, 1f, modifierLoop.variables);
 
             var meshParams = new VGShapes.MeshParams
             {
@@ -8926,6 +8929,7 @@ namespace BetterLegacy.Core.Helpers
                 thicknessScale = thicknessScale,
                 thicknessRotation = thicknessRotation,
                 rotation = rotation,
+                alternate = alternate,
             };
 
             if (modifier.TryGetResult(out VGShapes.MeshParams cache) && meshParams.Equals(cache))
@@ -8937,7 +8941,7 @@ namespace BetterLegacy.Core.Helpers
             {
                 var beatmapObject = list[i];
                 if (beatmapObject.runtimeObject && beatmapObject.runtimeObject.visualObject is PolygonObject polygonObject)
-                    polygonObject.UpdatePolygon(radius, sides, roundness, thickness, slices, thicknessOffset, thicknessScale, rotation, thicknessRotation);
+                    polygonObject.UpdatePolygon(radius, sides, roundness, thickness, slices, thicknessOffset, thicknessScale, rotation, thicknessRotation, alternate);
             }
 
             modifier.Result = meshParams;

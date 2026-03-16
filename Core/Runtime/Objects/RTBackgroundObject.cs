@@ -94,7 +94,8 @@ namespace BetterLegacy.Core.Runtime.Objects
                             polygon.ThicknessOffset,
                             polygon.ThicknessScale,
                             polygon.Angle,
-                            polygon.ThicknessRotation);
+                            polygon.ThicknessRotation,
+                            polygon.Alternate);
                 }
                 return;
             }

@@ -1179,6 +1179,21 @@ namespace BetterLegacy.Editor.Managers
                         TriggerHelper.IncreaseDecreaseButtons(rotation, 15f, 3f);
                         TriggerHelper.AddEventTriggers(rotation.inputField.gameObject, TriggerHelper.ScrollDelta(rotation.inputField, 15f, 3f));
 
+                        var alternate = shapeSettings.Find("10/alternate").gameObject.GetComponent<InputFieldStorage>();
+                        alternate.SetTextWithoutNotify(shapeable.Polygon.Alternate.ToString());
+                        alternate.OnValueChanged.NewListener(_val =>
+                        {
+                            if (float.TryParse(_val, out float num))
+                            {
+                                shapeable.Polygon.Alternate = num;
+
+                                PlayerManager.UpdatePlayerModels();
+                            }
+                        });
+
+                        TriggerHelper.IncreaseDecreaseButtons(alternate);
+                        TriggerHelper.AddEventTriggers(alternate.inputField.gameObject, TriggerHelper.ScrollDelta(alternate.inputField));
+
                         break;
                     }
                 default: {

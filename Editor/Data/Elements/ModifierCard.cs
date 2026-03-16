@@ -3226,6 +3226,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         SingleGenerator(modifier, reference, "Thick Angle", 10);
                         IntegerGenerator(modifier, reference, "Slices", 4, max: 32);
                         SingleGenerator(modifier, reference, "Angle", 9);
+                        SingleGenerator(modifier, reference, "Alternate", 11, 1f);
 
                         break;
                     }
@@ -3245,6 +3246,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         SingleGenerator(modifier, reference, "Thick Angle", 11);
                         IntegerGenerator(modifier, reference, "Slices", 5, max: 32);
                         SingleGenerator(modifier, reference, "Angle", 10);
+                        SingleGenerator(modifier, reference, "Alternate", 12, 1f);
 
                         break;
                     }

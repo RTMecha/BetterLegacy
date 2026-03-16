@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+
+using UnityEngine;
 
 using SimpleJSON;
 
@@ -21,7 +23,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             this.thicknessScale = thicknessScale;
         }
 
-        #region Properties
+        #region Values
 
         /// <summary>
         /// Radius of the shape.
@@ -101,6 +103,25 @@ namespace BetterLegacy.Core.Data.Beatmap
         public float Angle { get; set; }
 
         /// <summary>
+        /// Amount each alternate corner is multiplied by, creating a star shape.
+        /// </summary>
+        public float Alternate
+        {
+            get => alternate;
+            set => alternate = value;
+        }
+
+        /// <summary>
+        /// Points that should render if <see cref="Type"/> is <see cref="PolygonType.Vector"/>.
+        /// </summary>
+        public List<Vector2> Points { get; set; }
+
+        /// <summary>
+        /// Type of the polygon.
+        /// </summary>
+        public PolygonType Type { get; set; }
+
+        /// <summary>
         /// The default radius for the triangle polygon.
         /// </summary>
         public const float TRIANGLE_RADIUS = 0.575f;
@@ -123,10 +144,11 @@ namespace BetterLegacy.Core.Data.Beatmap
         Vector2 thicknessOffset;
         Vector2 thicknessScale = Vector2.one;
         float thicknessRotation = 0f;
+        float alternate = 1f;
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public override void CopyData(PolygonShape orig, bool newID = true)
         {
@@ -139,6 +161,9 @@ namespace BetterLegacy.Core.Data.Beatmap
             ThicknessScale = orig.ThicknessScale;
             ThicknessRotation = orig.ThicknessRotation;
             Angle = orig.Angle;
+            Alternate = orig.Alternate;
+            Type = orig.Type;
+            Points = orig.Points != null ? new List<Vector2>(orig.Points) : null;
         }
 
         public override void ReadJSONVG(JSONNode jn, Version version = default)
@@ -160,16 +185,30 @@ namespace BetterLegacy.Core.Data.Beatmap
                 return;
             }
 
-            if (jn["ra"] != null)
-                Radius = jn["ra"].AsFloat;
-            Sides = jn["si"].AsInt;
-            Roundness = jn["ro"].AsFloat;
-            Thickness = jn["th"].AsFloat;
-            Slices = jn["sl"].AsInt;
-            ThicknessOffset = Parser.TryParse(jn["tho"], Vector2.zero);
-            ThicknessScale = Parser.TryParse(jn["ths"], Vector2.one);
-            ThicknessRotation = jn["thr"].AsFloat;
-            Angle = jn["ang"].AsFloat;
+            if (jn["t"] != null)
+                Type = (PolygonType)jn["t"].AsInt;
+
+            if (Type != PolygonType.Vector)
+            {
+                if (jn["ra"] != null)
+                    Radius = jn["ra"].AsFloat;
+                Sides = jn["si"].AsInt;
+                Roundness = jn["ro"].AsFloat;
+                Thickness = jn["th"].AsFloat;
+                Slices = jn["sl"].AsInt;
+                ThicknessOffset = Parser.TryParse(jn["tho"], Vector2.zero);
+                ThicknessScale = Parser.TryParse(jn["ths"], Vector2.one);
+                ThicknessRotation = jn["thr"].AsFloat;
+                Angle = jn["ang"].AsFloat;
+                if (jn["alt"] != null)
+                    Alternate = jn["alt"].AsFloat;
+            }
+            else
+            {
+                Points = new List<Vector2>();
+                for (int i = 0; i < jn["p"].Count; i++)
+                    Points.Add(Parser.TryParse(jn["p"][i], Vector2.zero));
+            }
         }
 
         public override JSONNode ToJSONVG()
@@ -185,20 +224,32 @@ namespace BetterLegacy.Core.Data.Beatmap
         public override JSONNode ToJSON()
         {
             var jn = Parser.NewJSONObject();
-            if (radius != 0.5f)
-                jn["ra"] = radius;
-            jn["si"] = sides;
-            jn["ro"] = roundness;
-            jn["th"] = thickness;
-            jn["sl"] = slices;
-            if (thicknessOffset.x != 0f || thicknessOffset.y != 0f)
-                jn["tho"] = thicknessOffset.ToJSONArray();
-            if (thicknessScale.x != 1f || thicknessScale.y != 1f)
-                jn["ths"] = thicknessScale.ToJSONArray();
-            if (ThicknessRotation != 0f)
-                jn["thr"] = ThicknessRotation;
-            if (Angle != 0f)
-                jn["ang"] = Angle;
+            if (Type != PolygonType.Vector)
+            {
+                if (radius != 0.5f)
+                    jn["ra"] = radius;
+                jn["si"] = sides;
+                jn["ro"] = roundness;
+                jn["th"] = thickness;
+                jn["sl"] = slices;
+                if (thicknessOffset.x != 0f || thicknessOffset.y != 0f)
+                    jn["tho"] = thicknessOffset.ToJSONArray();
+                if (thicknessScale.x != 1f || thicknessScale.y != 1f)
+                    jn["ths"] = thicknessScale.ToJSONArray();
+                if (ThicknessRotation != 0f)
+                    jn["thr"] = ThicknessRotation;
+                if (Angle != 0f)
+                    jn["ang"] = Angle;
+                if (Alternate != 1f)
+                    jn["alt"] = Alternate;
+            }
+            else if (Points != null)
+            {
+                for (int i = 0; i < Points.Count; i++)
+                    jn["p"][i] = Points[i].ToJSONArray();
+            }
+            if (Type != PolygonType.Ring)
+                jn["t"] = (int)Type;
             return jn;
         }
 
@@ -221,5 +272,24 @@ namespace BetterLegacy.Core.Data.Beatmap
         };
 
         #endregion
+    }
+
+    /// <summary>
+    /// Type of a polygon shape.
+    /// </summary>
+    public enum PolygonType
+    {
+        /// <summary>
+        /// Ring polygon type.
+        /// </summary>
+        Ring,
+        /// <summary>
+        /// Inverted ring polygon type.
+        /// </summary>
+        InvertedRing,
+        /// <summary>
+        /// Custom vector polygon type.
+        /// </summary>
+        Vector,
     }
 }
