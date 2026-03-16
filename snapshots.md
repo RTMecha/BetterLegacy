@@ -2,6 +2,7 @@
 ## Features
 ### Core
 - Added mesh options for the sphereShape modifier.
+- Rotation keyframes can be switched to a 3D mode.
 - Color keyframes can now be switched to use hex colors instead of theme keyframes.
 - Replaced old "Level Mode" system with a new package / file management system. With this, you can specify the file name of the song, level and cover files.
 - Added setAudio modifier. This gets a song registered in the files and sets it as the current.
