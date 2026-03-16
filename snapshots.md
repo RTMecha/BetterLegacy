@@ -7,6 +7,8 @@
 - Replaced old "Level Mode" system with a new package / file management system. With this, you can specify the file name of the song, level and cover files.
 - Added setAudio modifier. This gets a song registered in the files and sets it as the current.
 - Added setGameData modifier. This swaps the current level data with a different registered .lsb, .vgd or even .json file. This feature is heavily experimental so beware.
+- Added "Alternate" value to polygon shapes. This value makes each corner alternate their radius, creating a star shape.
+- Internally a "Polyon Type" is being worked on, just need to wait on how the inverted shape will end up in the main game.
 
 ### Arcade
 - With the new package system, a preview song can be set for the arcade.
