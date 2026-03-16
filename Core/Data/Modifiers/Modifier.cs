@@ -152,6 +152,11 @@ namespace BetterLegacy.Core.Data.Modifiers
         /// </summary>
         public List<string> values = new List<string>();
 
+        /// <summary>
+        /// Version increases if the modifier is reworked.
+        /// </summary>
+        public int version;
+
         #endregion
 
         #region Trigger Settings
@@ -259,6 +264,7 @@ namespace BetterLegacy.Core.Data.Modifiers
         public override void CopyData(Modifier orig, bool newID = true)
         {
             id = newID ? GetNumberID() : orig.id;
+            version = orig.version;
             name = orig.name;
             type = orig.type;
             values = new List<string>(orig.values);
@@ -283,6 +289,8 @@ namespace BetterLegacy.Core.Data.Modifiers
 
         public override void ReadJSON(JSONNode jn)
         {
+            if (jn["v"] != null)
+                version = jn["v"].AsInt;
             type = (Type)jn["type"].AsInt;
 
             if (type == Type.Trigger)
@@ -325,6 +333,9 @@ namespace BetterLegacy.Core.Data.Modifiers
         public override JSONNode ToJSON()
         {
             var jn = Parser.NewJSONObject();
+
+            if (version != 0)
+                jn["v"] = version;
 
             jn["type"] = (int)type;
 

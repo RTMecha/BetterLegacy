@@ -1945,6 +1945,14 @@ namespace BetterLegacy.Editor.Data.Elements
                         SingleGenerator(modifier, reference, "Loop", 9, 99999f);
                         BoolGenerator(modifier, reference, "Use Visual", 8, false);
 
+                        if (modifier.version == 0)
+                            AddGenerator(modifier, reference, "Update", () =>
+                            {
+                                if (modifier.GetInt(1, 0) == 2 && modifier.GetInt(2, 0) == 0 && !modifier.GetBool(8, false))
+                                    modifier.SetValue(2, "2");
+                                modifier.version = 1;
+                            });
+
                         break;
                     }
                 case nameof(ModifierFunctions.getAxisMath): {
@@ -1962,6 +1970,14 @@ namespace BetterLegacy.Editor.Data.Elements
                         BoolGenerator(modifier, reference, "Use Visual", 4, false);
 
                         StringGenerator(modifier, reference, "Expression", 6);
+
+                        if (modifier.version == 0)
+                            AddGenerator(modifier, reference, "Update", () =>
+                            {
+                                if (modifier.GetInt(1, 0) == 2 && modifier.GetInt(2, 0) == 0 && !modifier.GetBool(4, false))
+                                    modifier.SetValue(2, "2");
+                                modifier.version = 1;
+                            });
 
                         break;
                     }
@@ -3609,6 +3625,14 @@ namespace BetterLegacy.Editor.Data.Elements
                         SingleGenerator(modifier, reference, "Loop", 10, 99999f);
                         BoolGenerator(modifier, reference, "Use Visual", 11, false);
 
+                        if (modifier.version == 0)
+                            AddGenerator(modifier, reference, "Update", () =>
+                            {
+                                if (modifier.GetInt(1, 0) == 2 && modifier.GetInt(2, 0) == 0 && !modifier.GetBool(11, false))
+                                    modifier.SetValue(2, "2");
+                                modifier.version = 1;
+                            });
+
                         break;
                     }
                 case nameof(ModifierFunctions.copyAxisMath): {
@@ -3628,6 +3652,14 @@ namespace BetterLegacy.Editor.Data.Elements
                         SingleGenerator(modifier, reference, "Max", 7, 99999f);
                         BoolGenerator(modifier, reference, "Use Visual", 9, false);
                         StringGenerator(modifier, reference, "Expression", 8);
+
+                        if (modifier.version == 0)
+                            AddGenerator(modifier, reference, "Update", () =>
+                            {
+                                if (modifier.GetInt(1, 0) == 2 && modifier.GetInt(2, 0) == 0 && !modifier.GetBool(9, false))
+                                    modifier.SetValue(2, "2");
+                                modifier.version = 1;
+                            });
 
                         break;
                     }
@@ -3677,6 +3709,14 @@ namespace BetterLegacy.Editor.Data.Elements
                             modifier.values.Add("9999");
                             modifier.values.Add("False");
                         });
+
+                        if (modifier.version == 0)
+                            AddGenerator(modifier, reference, "Update", () =>
+                            {
+                                if (modifier.GetInt(1, 0) == 2 && modifier.GetInt(2, 0) == 0)
+                                    modifier.SetValue(2, "2");
+                                modifier.version = 1;
+                            });
 
                         break;
                     }
@@ -4786,6 +4826,14 @@ namespace BetterLegacy.Editor.Data.Elements
                         BoolGenerator(modifier, reference, "Use Visual", 9, false);
 
                         SingleGenerator(modifier, reference, "Equals", 8, 1f);
+
+                        if (modifier.version == 0)
+                            AddGenerator(modifier, reference, "Update", () =>
+                            {
+                                if (modifier.GetInt(1, 0) == 2 && modifier.GetInt(2, 0) == 0 && !modifier.GetBool(9, false))
+                                    modifier.SetValue(2, "2");
+                                modifier.version = 1;
+                            });
 
                         break;
                     }

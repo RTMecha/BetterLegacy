@@ -2474,7 +2474,7 @@ namespace BetterLegacy.Core.Helpers
             return 0f;
         }
 
-        public static float GetAnimation(BeatmapObject reference, int fromType, int fromAxis, float min, float max, float offset, float multiply, float delay, float loop, bool visual)
+        public static float GetAnimation(BeatmapObject reference, int fromType, int fromAxis, float min, float max, float offset, float multiply, float delay, float loop, bool visual, int version)
         {
             var time = GetTime(reference);
             var t = time - reference.StartTime - delay;
@@ -2484,7 +2484,7 @@ namespace BetterLegacy.Core.Helpers
                 {
                     0 => Mathf.Clamp((reference.cachedSequences.PositionSequence.GetValue(t).At(fromAxis) - offset) * multiply % loop, min, max),
                     1 => Mathf.Clamp((reference.cachedSequences.ScaleSequence.GetValue(t).At(fromAxis) - offset) * multiply % loop, min, max),
-                    2 => Mathf.Clamp((reference.cachedSequences.RotationSequence.GetValue(t).At(fromAxis) - offset) * multiply % loop, min, max),
+                    2 => Mathf.Clamp((reference.cachedSequences.RotationSequence.GetValue(t).At(version == 0 ? 2 : fromAxis) - offset) * multiply % loop, min, max),
                     _ => 0f,
                 };
             else if (visual && reference.runtimeObject is RTBeatmapObject runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject)
@@ -2996,7 +2996,7 @@ namespace BetterLegacy.Core.Helpers
             if (fromType < 0 || fromType > 2)
                 return;
 
-            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = ModifiersHelper.GetAnimation(beatmapObject, fromType, fromAxis, min, max, offset, multiply, delay, loop, useVisual).ToString();
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = ModifiersHelper.GetAnimation(beatmapObject, fromType, fromAxis, min, max, offset, multiply, delay, loop, useVisual, modifier.version).ToString();
         }
 
         public static void getAxisMath(Modifier modifier, ModifierLoop modifierLoop)
@@ -10747,8 +10747,6 @@ namespace BetterLegacy.Core.Helpers
             var time = ModifiersHelper.GetTime(bm);
 
             fromType = Mathf.Clamp(fromType, 0, bm.events.Count);
-            if (!useVisual)
-                fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].values.Length);
 
             if (toType < 0 || toType > 3)
                 return;
@@ -10771,7 +10769,7 @@ namespace BetterLegacy.Core.Helpers
                 {
                     0 => Mathf.Clamp((bm.cachedSequences.PositionSequence.GetValue(t).At(fromAxis) - offset) * multiply % loop, min, max),
                     1 => Mathf.Clamp((bm.cachedSequences.ScaleSequence.GetValue(t).At(fromAxis) - offset) * multiply % loop, min, max),
-                    2 => Mathf.Clamp((bm.cachedSequences.RotationSequence.GetValue(t).At(fromAxis) - offset) * multiply % loop, min, max),
+                    2 => Mathf.Clamp((bm.cachedSequences.RotationSequence.GetValue(t).At(modifier.version == 0 ? 2 : fromAxis) - offset) * multiply % loop, min, max),
                     _ => 0f,
                 });
             }
@@ -10873,7 +10871,7 @@ namespace BetterLegacy.Core.Helpers
                             {
                                 0 => bm.cachedSequences.PositionSequence.GetValue(time - bm.StartTime - delay).At(fromAxis),
                                 1 => bm.cachedSequences.ScaleSequence.GetValue(time - bm.StartTime - delay).At(fromAxis),
-                                2 => bm.cachedSequences.RotationSequence.GetValue(time - bm.StartTime - delay).At(fromAxis),
+                                2 => bm.cachedSequences.RotationSequence.GetValue(time - bm.StartTime - delay).At(modifier.version == 0 ? 2 : fromAxis),
                                 _ => 0f,
                             };
                         bm.SetOtherObjectVariables(numberVariables);
@@ -10999,7 +10997,7 @@ namespace BetterLegacy.Core.Helpers
                         {
                             0 => Mathf.Clamp(beatmapObject.cachedSequences.PositionSequence.GetValue(time - beatmapObject.StartTime - delay).At(fromAxis), min, max),
                             1 => Mathf.Clamp(beatmapObject.cachedSequences.ScaleSequence.GetValue(time - beatmapObject.StartTime - delay).At(fromAxis), min, max),
-                            2 => Mathf.Clamp(beatmapObject.cachedSequences.RotationSequence.GetValue(time - beatmapObject.StartTime - delay).At(fromAxis), min, max),
+                            2 => Mathf.Clamp(beatmapObject.cachedSequences.RotationSequence.GetValue(time - beatmapObject.StartTime - delay).At(modifier.version == 0 ? 2 : fromAxis), min, max),
                             _ => 0f,
                         });
                     else if (useVisual && beatmapObject.runtimeObject is RTBeatmapObject runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject)
@@ -14500,7 +14498,7 @@ namespace BetterLegacy.Core.Helpers
             if (!useVisual)
                 fromAxis = Mathf.Clamp(fromAxis, 0, beatmapObject.events[fromType][0].values.Length);
 
-            return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(beatmapObject, fromType, fromAxis, min, max, offset, multiply, delay, loop, useVisual) == equals;
+            return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(beatmapObject, fromType, fromAxis, min, max, offset, multiply, delay, loop, useVisual, modifier.version) == equals;
         }
 
         public static bool axisLesserEquals(Modifier modifier, ModifierLoop modifierLoop)
@@ -14537,7 +14535,7 @@ namespace BetterLegacy.Core.Helpers
             if (!useVisual)
                 fromAxis = Mathf.Clamp(fromAxis, 0, beatmapObject.events[fromType][0].values.Length);
 
-            return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(beatmapObject, fromType, fromAxis, min, max, offset, multiply, delay, loop, useVisual) <= equals;
+            return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(beatmapObject, fromType, fromAxis, min, max, offset, multiply, delay, loop, useVisual, modifier.version) <= equals;
         }
 
         public static bool axisGreaterEquals(Modifier modifier, ModifierLoop modifierLoop)
@@ -14574,7 +14572,7 @@ namespace BetterLegacy.Core.Helpers
             if (!useVisual)
                 fromAxis = Mathf.Clamp(fromAxis, 0, beatmapObject.events[fromType][0].values.Length);
 
-            return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(beatmapObject, fromType, fromAxis, min, max, offset, multiply, delay, loop, useVisual) >= equals;
+            return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(beatmapObject, fromType, fromAxis, min, max, offset, multiply, delay, loop, useVisual, modifier.version) >= equals;
         }
 
         public static bool axisLesser(Modifier modifier, ModifierLoop modifierLoop)
@@ -14611,7 +14609,7 @@ namespace BetterLegacy.Core.Helpers
             if (!useVisual)
                 fromAxis = Mathf.Clamp(fromAxis, 0, beatmapObject.events[fromType][0].values.Length);
 
-            return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(beatmapObject, fromType, fromAxis, min, max, offset, multiply, delay, loop, useVisual) < equals;
+            return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(beatmapObject, fromType, fromAxis, min, max, offset, multiply, delay, loop, useVisual, modifier.version) < equals;
         }
 
         public static bool axisGreater(Modifier modifier, ModifierLoop modifierLoop)
@@ -14648,7 +14646,7 @@ namespace BetterLegacy.Core.Helpers
             if (!useVisual)
                 fromAxis = Mathf.Clamp(fromAxis, 0, beatmapObject.events[fromType][0].values.Length);
 
-            return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(beatmapObject, fromType, fromAxis, min, max, offset, multiply, delay, loop, useVisual) > equals;
+            return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(beatmapObject, fromType, fromAxis, min, max, offset, multiply, delay, loop, useVisual, modifier.version) > equals;
         }
 
         public static bool eventEquals(Modifier modifier, ModifierLoop modifierLoop)
