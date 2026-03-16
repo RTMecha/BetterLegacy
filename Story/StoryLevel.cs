@@ -21,6 +21,8 @@ namespace BetterLegacy.Story
     {
         public StoryLevel() : base() => isStory = true;
 
+        #region Values
+
         /// <summary>
         /// Name of the story level.
         /// </summary>
@@ -45,6 +47,10 @@ namespace BetterLegacy.Story
         /// If the level is from the game files.
         /// </summary>
         public bool isResourcesBeatmap;
+
+        #endregion
+
+        #region Functions
 
         /// <summary>
         /// Loads a story level from an <see cref="AssetBundle"/>.
@@ -91,26 +97,58 @@ namespace BetterLegacy.Story
         /// <returns>Returns a story level.</returns>
         public static StoryLevel FromAsset(AssetBundle assets)
         {
-            var icon = assets.LoadAsset<Sprite>($"cover{FileFormat.JPG.Dot()}");
-            var song = assets.LoadAsset<AudioClip>($"song{FileFormat.OGG.Dot()}");
-            var levelJSON = assets.LoadAsset<TextAsset>($"level{FileFormat.JSON.Dot()}");
-            var interfaceJSON = assets.LoadAsset<TextAsset>($"interface{FileFormat.JSON.Dot()}");
             var metadataJSON = assets.LoadAsset<TextAsset>($"metadata{FileFormat.JSON.Dot()}");
-            var players = assets.LoadAsset<TextAsset>($"players{FileFormat.JSON.Dot()}");
+            var metadataJN = JSON.Parse(metadataJSON.text);
+            var metadata = MetaData.Parse(metadataJN);
+            if (metadataJN != null && metadataJN["package"] == null && metadata)
+            {
+                metadata.package = new PackageMetaData
+                {
+                    files = new System.Collections.Generic.List<PackageMetaData.File>
+                    {
+                        new PackageMetaData.File("audio", $"song{FileFormat.OGG.Dot()}"),
+                        new PackageMetaData.File("cover", $"cover{FileFormat.JPG.Dot()}"),
+                        new PackageMetaData.File("level", $"level{FileFormat.JSON.Dot()}"),
+                        new PackageMetaData.File("players", $"players{FileFormat.JSON.Dot()}"),
+                    },
+                };
+            }
 
-            var metadata = MetaData.Parse(JSON.Parse(metadataJSON.text));
+            var icon = assets.LoadAsset<Sprite>(metadata.package.GetImage(metadata.package.mainCover)?.fileName ?? "cover.jpg");
+            var levelJSON = assets.LoadAsset<TextAsset>(metadata.package.GetLevel(metadata.package.mainLevel)?.fileName ?? "level.json");
+            var players = assets.LoadAsset<TextAsset>(metadata.package.GetLevel("players")?.fileName ?? $"players{FileFormat.JSON.Dot()}");
+
             var storyLevel = new StoryLevel
             {
                 id = metadata?.arcadeID,
                 name = metadata?.beatmap?.name,
                 icon = icon,
-                music = song,
-                json = levelJSON ? levelJSON.text : interfaceJSON ? interfaceJSON.text : null,
-                isInterface = !levelJSON && interfaceJSON,
+                json = levelJSON ? levelJSON.text : null,
                 metadata = metadata,
-                jsonPlayers = players.text,
+                jsonPlayers = players ? players.text : null,
                 videoClip = assets.Contains($"bg{FileFormat.MP4.Dot()}") ? assets.LoadAsset<VideoClip>($"bg{FileFormat.MP4.Dot()}") : null,
             };
+
+            for (int i = 0; i < metadata.package.files.Count; i++)
+            {
+                var file = metadata.package.files[i];
+                if (!file.IsAudio)
+                    continue;
+
+                var audioClip = assets.LoadAsset<AudioClip>(file.fileName);
+                if (!audioClip)
+                    continue;
+                storyLevel.tracks.TryAdd(file.id, audioClip);
+            }
+
+            if (storyLevel.tracks.TryGetValue(metadata.package.mainAudio, out AudioClip music))
+                storyLevel.music = music;
+            else
+            {
+                CoreHelper.Log($"Level [{storyLevel}] had to load the main audio the default way.");
+                storyLevel.music = assets.LoadAsset<AudioClip>($"song{FileFormat.OGG.Dot()}");
+                storyLevel.tracks["audio"] = storyLevel.music;
+            }
 
             return storyLevel;
         }
@@ -120,5 +158,7 @@ namespace BetterLegacy.Story
         /// </summary>
         /// <returns>Returns the loaded game data.</returns>
         public override GameData LoadGameData() => GameData.Parse(JSON.Parse(json));
+
+        #endregion
     }
 }
