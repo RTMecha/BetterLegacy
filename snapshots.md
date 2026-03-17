@@ -17,6 +17,9 @@
 ### Editor
 - The object keyframe editors now have a scroll area. The "Move Dialog" toggle button has been removed due to this.
 
+## Fixes
+- Fixed the player not being able to jump off platforms in some cases. (collision distance less than 0.1)
+
 -------------------------------------------------------------------
 
 # snapshot-2026.3.3 - (Story Playtest) [Mar 8, 2026]
