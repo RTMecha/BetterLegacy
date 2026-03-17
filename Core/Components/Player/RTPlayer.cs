@@ -1722,8 +1722,9 @@ namespace BetterLegacy.Core.Components.Player
 
             var cast = collisionState.Cast;
             var collider = cast.collider;
-            collisionState.solidColliding = collisionState.AnySolid(collisionState.All) && cast.distance <= 0.1f;
-            collisionState.triggerColliding = collisionState.AnyTrigger(collisionState.All) && cast.distance <= 0.1f;
+            collisionState.solidColliding = collisionState.AnySolid(collisionState.All) /*&& cast.distance <= 0.1f*/;
+            collisionState.triggerColliding = collisionState.AnyTrigger(collisionState.All) /*&& cast.distance <= 0.1f*/;
+            // the cast.distance <= 0.1f part was originally the way to prevent self collision detection. this however caused issues with platforming.
 
             if (CanMove && Core.Input && !ProjectArrhythmia.State.Paused)
             {
