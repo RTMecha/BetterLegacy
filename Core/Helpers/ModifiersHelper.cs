@@ -2990,8 +2990,6 @@ namespace BetterLegacy.Core.Helpers
                 return;
 
             fromType = Mathf.Clamp(fromType, 0, beatmapObject.events.Count);
-            if (!useVisual)
-                fromAxis = Mathf.Clamp(fromAxis, 0, beatmapObject.events[fromType][0].values.Length);
 
             if (fromType < 0 || fromType > 2)
                 return;
@@ -3028,8 +3026,6 @@ namespace BetterLegacy.Core.Helpers
                 return;
 
             fromType = Mathf.Clamp(fromType, 0, beatmapObject.events.Count);
-            if (!useVisual)
-                fromAxis = Mathf.Clamp(fromAxis, 0, beatmapObject.events[fromType][0].values.Length);
 
             if (fromType < 0 || fromType > 2)
                 return;
@@ -10829,8 +10825,6 @@ namespace BetterLegacy.Core.Helpers
                 var time = ModifiersHelper.GetTime(bm);
 
                 fromType = Mathf.Clamp(fromType, 0, bm.events.Count);
-                if (!useVisual)
-                    fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].values.Length);
 
                 if (toType < 0 || toType > 3)
                     return;
@@ -14499,8 +14493,6 @@ namespace BetterLegacy.Core.Helpers
                 return false;
 
             fromType = Mathf.Clamp(fromType, 0, beatmapObject.events.Count);
-            if (!useVisual)
-                fromAxis = Mathf.Clamp(fromAxis, 0, beatmapObject.events[fromType][0].values.Length);
 
             return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(beatmapObject, fromType, fromAxis, min, max, offset, multiply, delay, loop, useVisual, modifier.version) == equals;
         }
@@ -14536,8 +14528,6 @@ namespace BetterLegacy.Core.Helpers
                 return false;
 
             fromType = Mathf.Clamp(fromType, 0, beatmapObject.events.Count);
-            if (!useVisual)
-                fromAxis = Mathf.Clamp(fromAxis, 0, beatmapObject.events[fromType][0].values.Length);
 
             return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(beatmapObject, fromType, fromAxis, min, max, offset, multiply, delay, loop, useVisual, modifier.version) <= equals;
         }
@@ -14573,8 +14563,6 @@ namespace BetterLegacy.Core.Helpers
                 return false;
 
             fromType = Mathf.Clamp(fromType, 0, beatmapObject.events.Count);
-            if (!useVisual)
-                fromAxis = Mathf.Clamp(fromAxis, 0, beatmapObject.events[fromType][0].values.Length);
 
             return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(beatmapObject, fromType, fromAxis, min, max, offset, multiply, delay, loop, useVisual, modifier.version) >= equals;
         }
@@ -14610,8 +14598,6 @@ namespace BetterLegacy.Core.Helpers
                 return false;
 
             fromType = Mathf.Clamp(fromType, 0, beatmapObject.events.Count);
-            if (!useVisual)
-                fromAxis = Mathf.Clamp(fromAxis, 0, beatmapObject.events[fromType][0].values.Length);
 
             return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(beatmapObject, fromType, fromAxis, min, max, offset, multiply, delay, loop, useVisual, modifier.version) < equals;
         }
@@ -14647,8 +14633,6 @@ namespace BetterLegacy.Core.Helpers
                 return false;
 
             fromType = Mathf.Clamp(fromType, 0, beatmapObject.events.Count);
-            if (!useVisual)
-                fromAxis = Mathf.Clamp(fromAxis, 0, beatmapObject.events[fromType][0].values.Length);
 
             return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(beatmapObject, fromType, fromAxis, min, max, offset, multiply, delay, loop, useVisual, modifier.version) > equals;
         }
@@ -15363,7 +15347,10 @@ namespace BetterLegacy.Core.Helpers
             Cache(pos, sca, rot);
 
             if (meshFilter && vertices != null)
+            {
                 meshFilter.mesh.vertices = vertices.Select(x => RTMath.Move(RTMath.Rotate(RTMath.Scale(x, sca), rot), pos)).ToArray();
+                meshFilter.mesh.RecalculateBounds();
+            }
             if (collider2D && points != null)
                 collider2D.points = points.Select(x => (Vector2)RTMath.Move(RTMath.Rotate(RTMath.Scale(x, sca), rot), pos)).ToArray();
         }
@@ -15453,7 +15440,10 @@ namespace BetterLegacy.Core.Helpers
             Cache(pos, sca, rot);
 
             if (meshFilter && vertices != null)
+            {
                 meshFilter.mesh.vertices = vertices.Select(x => RTMath.Move(RTMath.Rotate(RTMath.Scale(x, sca), rot), pos)).ToArray();
+                meshFilter.mesh.RecalculateBounds();
+            }
             if (collider2D && points != null)
                 collider2D.points = points.Select(x => (Vector2)RTMath.Move(RTMath.Rotate(RTMath.Scale(x, sca), rot), pos)).ToArray();
         }
