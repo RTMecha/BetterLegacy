@@ -2466,7 +2466,9 @@ namespace BetterLegacy.Core
 
             if (!beatmapThemes.Has(x => x.id == beatmapTheme.id))
             {
-                beatmapThemes.Add(beatmapTheme.Copy(false));
+                beatmapTheme = beatmapTheme.Copy(false);
+                beatmapTheme.filePath = string.Empty;
+                beatmapThemes.Add(beatmapTheme);
                 return true;
             }
             return false;
@@ -2485,6 +2487,9 @@ namespace BetterLegacy.Core
             var beatmapThemes = beatmap.BeatmapThemes;
             if (beatmapThemes == null)
                 return false;
+
+            beatmapTheme = beatmapTheme.Copy(false);
+            beatmapTheme.filePath = string.Empty;
 
             if (beatmapThemes.TryFindIndex(x => x.id == beatmapTheme.id, out int index))
             {
