@@ -13,12 +13,16 @@
 ### Arcade
 - With the new package system, a preview song can be set for the arcade.
 
+### Editor
+- Added "Hex Color Keyframe Converts" in Config Manager > Editor > Data. This setting automatically changes the color keyframe value to hex if the Use Hex Color toggle is toggled on.
+
 ## Changes
 ### Editor
 - The object keyframe editors now have a scroll area. The "Move Dialog" toggle button has been removed due to this.
 
 ## Fixes
 - Fixed the player not being able to jump off platforms in some cases. (collision distance less than 0.1)
+- Fixed themes retaining their file path when imported.
 
 -------------------------------------------------------------------
 
