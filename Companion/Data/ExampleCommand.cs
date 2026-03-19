@@ -923,7 +923,10 @@ namespace BetterLegacy.Companion.Data
             {
                 new EventKeframeTimeParameter(),
                 new EventKeyframeValueParameter(),
+                new EventKeyframeRandomValueParameter(),
+                new EventKeyframeStringValueParameter(),
                 new EventKeyframeEasingParameter(),
+                new EventKeyframeRandomTypeParameter(),
                 new EventKeyframeRelativeParameter(),
             };
 
@@ -1013,14 +1016,24 @@ namespace BetterLegacy.Companion.Data
                             {
                                 if (selectable is not TimelineKeyframe timelineKeyframe)
                                     continue;
+                                var randomType = timelineKeyframe.eventKeyframe.RandomType;
                                 CurrentEdit.eventKeyframe = timelineKeyframe.eventKeyframe;
                                 Apply(input, 0, timelineKeyframe.eventKeyframe, parameters, eventKeyframeParameters);
                                 timelineKeyframe.Render();
+
+                                if (timelineKeyframe.Type == 3 && randomType != timelineKeyframe.eventKeyframe.RandomType)
+                                {
+                                    if (timelineKeyframe.eventKeyframe.RandomType == RandomType.None)
+                                        timelineKeyframe.eventKeyframe.SetStringValues();
+                                    if (timelineKeyframe.eventKeyframe.RandomType == RandomType.Normal)
+                                        timelineKeyframe.eventKeyframe.SetStringValues(RTColors.WHITE_HEX_CODE, RTColors.WHITE_HEX_CODE);
+                                }
+
                                 index++;
                             }
                             EditorTimeline.inst.CurrentSelection?.Render();
-                            if (ObjectEditor.inst.Dialog.IsCurrent)
-                                ObjectEditor.inst.Dialog.Timeline.ResizeKeyframeTimeline(ObjectEditor.inst.Dialog.Timeline.CurrentObject);
+                            if (ObjectEditor.inst.Dialog.IsCurrent && EditorTimeline.inst.CurrentSelection && EditorTimeline.inst.CurrentSelection.isBeatmapObject)
+                                ObjectEditor.inst.RenderDialog(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>());
                             break;
                         }
                     case SelectCommand.SelectableType.Markers: {
@@ -1756,13 +1769,70 @@ namespace BetterLegacy.Companion.Data
 
                 public override string AddToAutocomplete => "value 0 set 10";
 
-                // 0 set 10
                 public override void Apply(EventKeyframe obj, string[] parameters)
                 {
                     var valueIndex = Mathf.Clamp(Parser.TryParse(parameters[0], 0), 0, obj.values.Length - 1);
                     var operation = RTMath.GetOperation(parameters[1], MathOperation.Set);
                     var value = Parser.TryParse(parameters[2], 0f);
                     RTMath.Operation(ref obj.values[valueIndex], value, operation);
+                }
+            }
+
+            public class EventKeyframeRandomValueParameter : EditParameter<EventKeyframe>
+            {
+                public override string Name => "random_value";
+
+                public override int ParameterCount => 3;
+
+                public override string Description => "A value of the keyframe.";
+
+                public override string AddToAutocomplete => "random_value 0 set 10";
+
+                public override void Apply(EventKeyframe obj, string[] parameters)
+                {
+                    var valueIndex = Mathf.Clamp(Parser.TryParse(parameters[0], 0), 0, obj.randomValues.Length - 1);
+                    var operation = RTMath.GetOperation(parameters[1], MathOperation.Set);
+                    var value = Parser.TryParse(parameters[2], 0f);
+                    RTMath.Operation(ref obj.randomValues[valueIndex], value, operation);
+                }
+            }
+
+            public class EventKeyframeStringValueParameter : EditParameter<EventKeyframe>
+            {
+                public override string Name => "string_value";
+
+                public override int ParameterCount => 3;
+
+                public override string Description => "A value of the keyframe.";
+
+                public override string AddToAutocomplete => "string_value 0 set FFFFFF";
+
+                public override void Apply(EventKeyframe obj, string[] parameters)
+                {
+                    if (obj.stringValues == null)
+                        return;
+
+                    var valueIndex = Mathf.Clamp(Parser.TryParse(parameters[0], 0), 0, obj.stringValues.Length - 1);
+                    if (valueIndex < 0)
+                        return;
+
+                    var operation = parameters[1];
+                    var value = parameters[2];
+                    switch (operation)
+                    {
+                        case "set": {
+                                obj.stringValues[valueIndex] = value;
+                                break;
+                            }
+                        case "add": {
+                                obj.stringValues[valueIndex] += value;
+                                break;
+                            }
+                        case "sub": {
+                                obj.stringValues[valueIndex] = obj.stringValues[valueIndex].Remove(value);
+                                break;
+                            }
+                    }
                 }
             }
 
@@ -1777,6 +1847,24 @@ namespace BetterLegacy.Companion.Data
                 public override string AddToAutocomplete => "easing linear";
 
                 public override void Apply(EventKeyframe obj, string[] parameters) => obj.curve = Parser.TryParse(parameters[0], true, Easing.Linear);
+            }
+
+            public class EventKeyframeRandomTypeParameter : EditParameter<EventKeyframe>
+            {
+                public override string Name => "random_type";
+
+                public override int ParameterCount => 3;
+
+                public override string Description => "The random type of the keyframe.";
+
+                public override string AddToAutocomplete => "random_type set 1";
+
+                public override void Apply(EventKeyframe obj, string[] parameters)
+                {
+                    var operation = RTMath.GetOperation(parameters[0], MathOperation.Set);
+                    var value = Parser.TryParse(parameters[1], 0);
+                    RTMath.Operation(ref obj.random, value, operation);
+                }
             }
 
             public class EventKeyframeRelativeParameter : EditParameter<EventKeyframe>
