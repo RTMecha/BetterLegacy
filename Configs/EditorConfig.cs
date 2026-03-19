@@ -149,6 +149,7 @@ namespace BetterLegacy.Configs
         public Setting<int> ImageSequenceFPS { get; set; }
         public Setting<bool> OverwriteImportedImages { get; set; }
         public Setting<bool> LoadSoundAssetOnClick { get; set; }
+        public Setting<bool> HexColorKeyframeConverts { get; set; }
 
         #endregion
 
@@ -560,6 +561,7 @@ namespace BetterLegacy.Configs
             ImageSequenceFPS = Bind(this, DATA, "Image Sequence FPS", 24, "FPS of a generated image sequence. Image sequences can be created by dragging in a collection of images or a folder that only contains images.");
             OverwriteImportedImages = Bind(this, DATA, "Overwrite Imported Images", false, "If imported images to image objects should overwrite the file.");
             LoadSoundAssetOnClick = Bind(this, DATA, "Load Sound Asset On Click", true, "If sound assets should load the audio clip when clicked.");
+            HexColorKeyframeConverts = Bind(this, DATA, "Hex Color Keyframe Converts", true, "If toggling the hex color toggle on automatically converts the current color values to hex.");
 
             #endregion
 
