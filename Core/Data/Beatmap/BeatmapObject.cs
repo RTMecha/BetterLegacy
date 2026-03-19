@@ -1094,7 +1094,11 @@ namespace BetterLegacy.Core.Data.Beatmap
                         if (kfjn[EventKeyframe.axis[j]] != null)
                             eventValues.Add(kfjn[EventKeyframe.axis[j]].AsFloat);
 
-                    eventKeyframe.SetValues(eventValues.ToArray());
+                    // some older levels save a second rotation value
+                    if (eventValues.Count == 2)
+                        eventKeyframe.SetValues(eventValues[0]);
+                    else
+                        eventKeyframe.SetValues(eventValues.ToArray());
 
                     eventKeyframe.random = kfjn["r"].AsInt;
                     eventKeyframe.SetRandomValues(kfjn["rx"].AsFloat, kfjn["ry"].AsFloat, kfjn["rz"].AsFloat);
