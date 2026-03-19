@@ -1498,14 +1498,30 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                 animatable.EditorData.miscDisplayValues[IntToType(type) + "/flip_active"] = 0f;
                                 RenderDialog(animatable);
                             }));
+                        EditorContextMenu.AddContextMenu(flipY,
+                            new ButtonElement("Hide Flip Button", () =>
+                            {
+                                animatable.EditorData.miscDisplayValues[IntToType(type) + "/flip_active"] = 0f;
+                                RenderDialog(animatable);
+                            }));
+                        EditorContextMenu.AddContextMenu(flipZ,
+                            new ButtonElement("Hide Flip Button", () =>
+                            {
+                                animatable.EditorData.miscDisplayValues[IntToType(type) + "/flip_active"] = 0f;
+                                RenderDialog(animatable);
+                            }));
                         EditorHelper.SetComplexity(flipX, Complexity.Normal, visible: () => !animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(type) + "/flip_active", out float f) || f == 1f);
                         EditorHelper.SetComplexity(flipY, Complexity.Advanced, visible: () => firstKF.eventKeyframe.values.Length > 1 && (!animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(type) + "/flip_active", out float f) || f == 1f));
                         EditorHelper.SetComplexity(flipZ, Complexity.Advanced, visible: () => firstKF.eventKeyframe.values.Length > 2 && (!animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(type) + "/flip_active", out float f) || f == 1f));
 
                         var use3DToggle = (dialog.Content ? dialog.Content : dialog.GameObject.transform.AsRT()).Find("use3D").GetComponent<Toggle>();
+                        use3DToggle.interactable = !animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(type) + "/lock_3d_axis", out float axisLock) || axisLock != 1f;
                         use3DToggle.SetIsOnWithoutNotify(firstKF.eventKeyframe.values.Length > 1);
                         use3DToggle.onValueChanged.NewListener(_val =>
                         {
+                            if (animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(type) + "/force_3d_axis", out float forceRelative))
+                                _val = forceRelative == 1f;
+
                             foreach (var keyframe in selected.Select(x => x.eventKeyframe))
                             {
                                 if (_val)
@@ -1521,6 +1537,42 @@ namespace BetterLegacy.Editor.Data.Dialogs
                             RenderDialog(animatable);
                         });
 
+                        use3DToggle.gameObject.SetActive(!animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(type) + "/3d_axis_active", out float use3DActive) || use3DActive == 1f);
+                        EditorContextMenu.AddContextMenu(use3DToggle.gameObject,
+                            new ButtonElement("Hide 3D Axis Toggle", () =>
+                            {
+                                animatable.EditorData.miscDisplayValues[IntToType(type) + "/3d_axis_active"] = 0f;
+                                RenderDialog(animatable);
+                            }),
+                            new ButtonElement(dialog.RelativeToggle.Interactable ? "Lock 3D Axis Toggle" : "Unlock 3D Axis Toggle", () =>
+                            {
+                                animatable.EditorData.miscDisplayValues[IntToType(type) + "/lock_3d_axis"] = use3DToggle.interactable ? 1f : 0f;
+                                RenderDialog(animatable);
+                            }),
+                            new ButtonElement("Force 3D Axis On", () =>
+                            {
+                                animatable.EditorData.miscDisplayValues[IntToType(type) + "/force_3d_axis"] = 1f;
+                                RenderDialog(animatable);
+                            }),
+                            new ButtonElement("Force 3D Axis Off", () =>
+                            {
+                                animatable.EditorData.miscDisplayValues[IntToType(type) + "/force_3d_axis"] = 0f;
+                                RenderDialog(animatable);
+                            }),
+                            new ButtonElement("Don't Force 3D Axis", () =>
+                            {
+                                animatable.EditorData.miscDisplayValues.Remove(IntToType(type) + "/force_3d_axis");
+                                RenderDialog(animatable);
+                            }, shouldGenerate: () => animatable.EditorData.miscDisplayValues.ContainsKey(IntToType(type) + "/force_3d_axis")),
+                            new SpacerElement(),
+                            new ButtonElement("Remove 3D Axis Settings", () =>
+                            {
+                                animatable.EditorData.miscDisplayValues.Remove(IntToType(type) + "/3d_axis_active");
+                                animatable.EditorData.miscDisplayValues.Remove(IntToType(type) + "/lock_3d_axis");
+                                animatable.EditorData.miscDisplayValues.Remove(IntToType(type) + "/force_3d_axis");
+                                RenderDialog(animatable);
+                            }));
+
                         break;
                     }
                 case 3: {
@@ -1531,7 +1583,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             RenderRelative(type, selected, firstKF, animatable, beatmapObject, dialog);
 
-            kfdialog.parent.gameObject.GetOrAddComponent<Button>();
+            dialog.GameObject.transform.parent.gameObject.GetOrAddComponent<Button>();
             if (type != 3)
                 EditorContextMenu.AddContextMenu(dialog.GameObject.transform.parent.gameObject,
                     new ButtonElement("Show Random", () =>
@@ -1549,6 +1601,11 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         animatable.EditorData.miscDisplayValues.Remove(IntToType(type) + "/flip_active");
                         RenderDialog(animatable);
                     }),
+                    new ButtonElement("Show 3D Axis Toggles", () =>
+                    {
+                        animatable.EditorData.miscDisplayValues.Remove(IntToType(type) + "/3d_axis_active");
+                        RenderDialog(animatable);
+                    }),
                     new SpacerElement(),
                     new ButtonElement("Remove Keyframe Settings", () =>
                     {
@@ -1557,6 +1614,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         animatable.EditorData.miscDisplayValues.Remove(IntToType(type) + "/lock_relative");
                         animatable.EditorData.miscDisplayValues.Remove(IntToType(type) + "/force_relative");
                         animatable.EditorData.miscDisplayValues.Remove(IntToType(type) + "/flip_active");
+                        animatable.EditorData.miscDisplayValues.Remove(IntToType(type) + "/3d_axis_active");
+                        animatable.EditorData.miscDisplayValues.Remove(IntToType(type) + "/lock_3d_axis");
+                        animatable.EditorData.miscDisplayValues.Remove(IntToType(type) + "/force_3d_axis");
                         RenderDialog(animatable);
                     }));
             else
@@ -2472,13 +2532,52 @@ namespace BetterLegacy.Editor.Data.Dialogs
             UseHexColorToggle.SetIsOnWithoutNotify(useCustomHexColor);
             UseHexColorToggle.OnValueChanged.NewListener(_val =>
             {
-                foreach (var keyframe in selected.Select(x => x.eventKeyframe))
+                if (EditorConfig.Instance.HexColorKeyframeConverts.Value)
                 {
-                    keyframe.random = _val ? 1 : 0;
-                    if (_val)
-                        keyframe.SetStringValues(RTColors.WHITE_HEX_CODE, RTColors.WHITE_HEX_CODE);
+                    var eventTime = firstKF.eventKeyframe.time;
+                    RTLevel.Current?.eventEngine?.Update(eventTime);
+                    RTLevel.Current?.eventEngine?.Render();
+                    var startColor = CoreHelper.CurrentBeatmapTheme.GetObjColor((int)firstKF.eventKeyframe.values[0]);
+                    var startOpacity = animatable.Interpolate(3, 1, eventTime);
+                    var startHue = animatable.Interpolate(3, 2, eventTime);
+                    var startSat = animatable.Interpolate(3, 3, eventTime);
+                    var startVal = animatable.Interpolate(3, 4, eventTime);
+                    var startColorHex = RTColors.ColorToHexOptional(RTColors.FadeColor(RTColors.ChangeColorHSV(startColor, startHue, startSat, startVal), -(startOpacity - 1f)));
+
+                    if (beatmapObject && beatmapObject.gradientType != GradientType.Normal)
+                    {
+                        var endColor = CoreHelper.CurrentBeatmapTheme.GetObjColor((int)firstKF.eventKeyframe.values[5]);
+                        var endOpacity = animatable.Interpolate(3, 6, eventTime);
+                        var endHue = animatable.Interpolate(3, 7, eventTime);
+                        var endSat = animatable.Interpolate(3, 8, eventTime);
+                        var endVal = animatable.Interpolate(3, 9, eventTime);
+                        var endColorHex = RTColors.ColorToHexOptional(RTColors.FadeColor(RTColors.ChangeColorHSV(endColor, endHue, endSat, endVal), -(endOpacity - 1f)));
+
+                        foreach (var keyframe in selected.Select(x => x.eventKeyframe))
+                        {
+                            keyframe.random = 1;
+                            keyframe.SetStringValues(startColorHex, endColorHex);
+                        }
+                    }
                     else
-                        keyframe.SetStringValues();
+                    {
+                        foreach (var keyframe in selected.Select(x => x.eventKeyframe))
+                        {
+                            keyframe.random = 1;
+                            keyframe.SetStringValues(startColorHex, RTColors.WHITE_HEX_CODE);
+                        }
+                    }
+                }
+                else
+                {
+                    foreach (var keyframe in selected.Select(x => x.eventKeyframe))
+                    {
+                        keyframe.random = _val ? 1 : 0;
+                        if (_val)
+                            keyframe.SetStringValues(RTColors.WHITE_HEX_CODE, RTColors.WHITE_HEX_CODE);
+                        else
+                            keyframe.SetStringValues();
+                    }
                 }
 
                 // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
@@ -2487,6 +2586,50 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                 FullColorKeyframeHandler(selected, firstKF, animatable, beatmapObject, kfdialog);
             });
+
+            EditorContextMenu.AddContextMenu(UseHexColorToggle.gameObject,
+                new ButtonElement("Convert Values to Hex", () =>
+                {
+                    var eventTime = firstKF.eventKeyframe.time;
+                    RTLevel.Current?.eventEngine?.Update(eventTime);
+                    RTLevel.Current?.eventEngine?.Render();
+                    var startColor = CoreHelper.CurrentBeatmapTheme.GetObjColor((int)firstKF.eventKeyframe.values[0]);
+                    var startOpacity = animatable.Interpolate(3, 1, eventTime);
+                    var startHue = animatable.Interpolate(3, 2, eventTime);
+                    var startSat = animatable.Interpolate(3, 3, eventTime);
+                    var startVal = animatable.Interpolate(3, 4, eventTime);
+                    var startColorHex = RTColors.ColorToHexOptional(RTColors.FadeColor(RTColors.ChangeColorHSV(startColor, startHue, startSat, startVal), -(startOpacity - 1f)));
+
+                    if (beatmapObject && beatmapObject.gradientType != GradientType.Normal)
+                    {
+                        var endColor = CoreHelper.CurrentBeatmapTheme.GetObjColor((int)firstKF.eventKeyframe.values[5]);
+                        var endOpacity = animatable.Interpolate(3, 6, eventTime);
+                        var endHue = animatable.Interpolate(3, 7, eventTime);
+                        var endSat = animatable.Interpolate(3, 8, eventTime);
+                        var endVal = animatable.Interpolate(3, 9, eventTime);
+                        var endColorHex = RTColors.ColorToHexOptional(RTColors.FadeColor(RTColors.ChangeColorHSV(endColor, endHue, endSat, endVal), -(endOpacity - 1f)));
+
+                        foreach (var keyframe in selected.Select(x => x.eventKeyframe))
+                        {
+                            keyframe.random = 1;
+                            keyframe.SetStringValues(startColorHex, endColorHex);
+                        }
+                    }
+                    else
+                    {
+                        foreach (var keyframe in selected.Select(x => x.eventKeyframe))
+                        {
+                            keyframe.random = 1;
+                            keyframe.SetStringValues(startColorHex, RTColors.WHITE_HEX_CODE);
+                        }
+                    }
+
+                    // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                    if (beatmapObject)
+                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+
+                    FullColorKeyframeHandler(selected, firstKF, animatable, beatmapObject, kfdialog);
+                }));
         }
 
         void RenderRelative(int type, IEnumerable<TimelineKeyframe> selected, TimelineKeyframe firstKF, IAnimatable animatable, BeatmapObject beatmapObject, KeyframeDialog dialog)
@@ -2514,11 +2657,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             dialog.RelativeToggle.OnValueChanged.NewListener(_val =>
             {
                 if (animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(type) + "/force_relative", out float forceRelative))
-                    _val = forceRelative switch
-                    {
-                        1f => true,
-                        _ => false,
-                    };
+                    _val = forceRelative == 1f;
 
                 foreach (var keyframe in selected.Select(x => x.eventKeyframe))
                     keyframe.relative = _val;
