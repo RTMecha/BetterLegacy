@@ -2612,6 +2612,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                                 kf.curve = copiedKeyframeData.curve;
                                                 kf.values = copiedKeyframeData.values.Copy();
                                                 kf.randomValues = copiedKeyframeData.randomValues.Copy();
+                                                if (copiedKeyframeData.stringValues != null)
+                                                    kf.stringValues = copiedKeyframeData.stringValues.Copy();
                                                 kf.random = copiedKeyframeData.random;
                                                 kf.relative = copiedKeyframeData.relative;
                                             }
@@ -2634,6 +2636,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                             kf.curve = copiedKeyframeData.curve;
                                             kf.values = copiedKeyframeData.values.Copy();
                                             kf.randomValues = copiedKeyframeData.randomValues.Copy();
+                                            if (copiedKeyframeData.stringValues != null)
+                                                kf.stringValues = copiedKeyframeData.stringValues.Copy();
                                             kf.random = copiedKeyframeData.random;
                                             kf.relative = copiedKeyframeData.relative;
                                         }
@@ -2671,6 +2675,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                                 kf.curve = copiedKeyframeData.curve;
                                                 kf.values = copiedKeyframeData.values.Copy();
                                                 kf.randomValues = copiedKeyframeData.randomValues.Copy();
+                                                if (copiedKeyframeData.stringValues != null)
+                                                    kf.stringValues = copiedKeyframeData.stringValues.Copy();
                                                 kf.random = copiedKeyframeData.random;
                                                 kf.relative = copiedKeyframeData.relative;
                                             }
@@ -2693,6 +2699,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                             kf.curve = copiedKeyframeData.curve;
                                             kf.values = copiedKeyframeData.values.Copy();
                                             kf.randomValues = copiedKeyframeData.randomValues.Copy();
+                                            if (copiedKeyframeData.stringValues != null)
+                                                kf.stringValues = copiedKeyframeData.stringValues.Copy();
                                             kf.random = copiedKeyframeData.random;
                                             kf.relative = copiedKeyframeData.relative;
                                             RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
