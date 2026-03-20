@@ -1,22 +1,29 @@
-# snapshot-2026.3.3 - (Story Playtest) [Mar 8, 2026]
+# snapshot-2026.3.4 - (Story Playtest) [Mar 20, 2026]
 ## Features
 ### Core
-- Image objects now support Asset Pack images.
-
-## Changes
-### Core
-- Changed the animateColorKF modifier Color Source value to fit with the other color modifiers.
-- Tweaked DevPlus player model to be closer to the actual modern player in terms of controls. VG levels will default to this.
-- Removed Use Seed Based Random setting since seed-based random is pretty consistent now.
-- Mode event values now automatically use instant easing since there they don't actually transition.
+- Added mesh options for the sphereShape modifier.
+- Rotation keyframes can be switched to a 3D mode.
+- Color keyframes can now be switched to use hex colors instead of theme keyframes.
+- Replaced old "Level Mode" system with a new package / file management system. With this, you can specify the file name of the song, level and cover files.
+- Added setAudio modifier. This gets a song registered in the files and sets it as the current.
+- Added setGameData modifier. This swaps the current level data with a different registered .lsb, .vgd or even .json file. This feature is heavily experimental so beware.
+- Added "Alternate" value to polygon shapes. This value makes each corner alternate their radius, creating a star shape.
+- Internally a "Polyon Type" is being worked on, just need to wait on how the inverted shape will end up in the main game.
 
 ### Story
-- Updated a certain level.
+- Story levels can now have the End Level Interface display when a level is complete via the "Story Shows End Interface" setting in Config Manager > Core > Level. This setting is off by default for a more streamlined story experience.
+- Level selects now open the Play Level Interface rather than booting the level immediately. This now allows you to properly play the levels with challenge and speed modes.
+
+### Arcade
+- With the new package system, a preview song can be set for the arcade.
+
+### Editor
+- Added "Hex Color Keyframe Converts" in Config Manager > Editor > Data. This setting automatically changes the color keyframe value to hex if the Use Hex Color toggle is toggled on.
+
+## Changes
+### Editor
+- The object keyframe editors now have a scroll area. The "Move Dialog" toggle button has been removed due to this.
 
 ## Fixes
-- Fixed Opacity Collision not disabling at start if the opacity is less than 1.
-- Fixed cases a VG level would have keyframes at the same time.
-- Fixed some triangles not having the correct option in VG levels.
-- Fixed the Parent Self value on Prefab Objects not working with other parent settings.
-- Objects now should properly reset on Prefab Object spawn.
-- Fixed some issues with story interfaces.
+- Fixed the player not being able to jump off platforms in some cases. (collision distance less than 0.1)
+- Fixed themes retaining their file path when imported.
