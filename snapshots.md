@@ -10,6 +10,10 @@
 - Added "Alternate" value to polygon shapes. This value makes each corner alternate their radius, creating a star shape.
 - Internally a "Polyon Type" is being worked on, just need to wait on how the inverted shape will end up in the main game.
 
+### Story
+- Story levels can now have the End Level Interface display when a level is complete via the "Story Shows End Interface" setting in Config Manager > Core > Level. This setting is off by default for a more streamlined story experience.
+- Level selects now open the Play Level Interface rather than booting the level immediately. This now allows you to properly play the levels with challenge and speed modes.
+
 ### Arcade
 - With the new package system, a preview song can be set for the arcade.
 
