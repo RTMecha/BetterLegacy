@@ -235,12 +235,11 @@ namespace BetterLegacy.Arcade.Interfaces
 
                     SoundManager.inst.PlaySound(DefaultSounds.blip);
                     var collection = CurrentCollection;
-                    PlayLevelMenu.close = () =>
+                    PlayLevelMenu.Init(LevelManager.CurrentLevel, onReturn: () =>
                     {
                         Init(collection);
                         collection = null;
-                    };
-                    PlayLevelMenu.Init(LevelManager.CurrentLevel);
+                    });
                 },
             });
 

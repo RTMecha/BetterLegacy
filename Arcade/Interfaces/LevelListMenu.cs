@@ -591,12 +591,11 @@ namespace BetterLegacy.Arcade.Interfaces
                     SoundManager.inst.PlaySound(DefaultSounds.blip);
                     LevelManager.currentLevelIndex = index;
                     var levels = Levels;
-                    PlayLevelMenu.close = () =>
+                    PlayLevelMenu.Init(level, onReturn: () =>
                     {
                         Init(levels);
                         levels = null;
-                    };
-                    PlayLevelMenu.Init(level);
+                    });
                 };
                 elements.Add(button);
                 if (levelIsLocked)
