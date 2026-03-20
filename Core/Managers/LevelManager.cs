@@ -280,7 +280,7 @@ namespace BetterLegacy.Core.Managers
             RTBeatmap.Current.hits.Clear();
             RTBeatmap.Current.deaths.Clear();
 
-            if (level.isStory && GetLevelRank(level) != Rank.SS)
+            if (level.isStory && !StoryManager.inst.AllowModes && GetLevelRank(level) != Rank.SS)
             {
                 RTBeatmap.Current.challengeMode = ChallengeMode.Normal;
                 RTBeatmap.Current.gameSpeed = GameSpeed.X1_0;

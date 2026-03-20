@@ -6,6 +6,7 @@ using UnityEngine;
 
 using SimpleJSON;
 
+using BetterLegacy.Arcade.Interfaces;
 using BetterLegacy.Companion.Entity;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Data;
@@ -1193,6 +1194,82 @@ namespace BetterLegacy.Core
 
                 #region Levels
 
+                #region OpenPlayLevelInterface
+
+                case "OpenPlayLevelInterface": {
+                        if (parameters == null)
+                            break;
+
+                        var source = ParseVarFunction(parameters.Get(0, "source"), thisElement, customVariables).AsInt;
+                        switch (source)
+                        {
+                            case 0: {
+                                    var id = ParseVarFunction(parameters.Get(1, "id"), thisElement, customVariables);
+                                    if (id == null || !id.IsString)
+                                        break;
+
+                                    if (LevelManager.Levels.TryFind(x => x.id == id, out Level level))
+                                        PlayLevelMenu.Init(level);
+                                    else if (RTSteamManager.inst && RTSteamManager.inst.Initialized && RTSteamManager.inst.Levels.TryFind(x => x.id == id, out Level steamLevel))
+                                        PlayLevelMenu.Init(steamLevel);
+
+                                    break;
+                                } // Arcade ID
+                            case 1: {
+                                    var path = ParseVarFunction(parameters.Get(1, "path"), thisElement, customVariables);
+                                    if (path == null || !path.IsString)
+                                        break;
+
+                                    if (Level.TryVerify(path, true, out Level level))
+                                        PlayLevelMenu.Init(level);
+
+                                    break;
+                                } // Path
+                            case 2: {
+                                    var chapter = ParseVarFunction(parameters.Get(1, "chapter"), thisElement, customVariables);
+                                    if (chapter == null)
+                                        break;
+
+                                    var level = ParseVarFunction(parameters.Get(2, "level"), thisElement, customVariables);
+                                    if (level == null)
+                                        break;
+
+                                    var cutsceneIndex = ParseVarFunction(parameters.Get(3, "cutscene_index"), thisElement, customVariables).AsInt;
+                                    var bonus = ParseVarFunction(parameters.Get(5, "bonus"), thisElement, customVariables).AsBool;
+                                    var skipCutscenes = ParseVarFunction(parameters.GetOrDefault(6, "skip_cutscenes", true), thisElement, customVariables).AsBool;
+                                    var allowModes = ParseVarFunction(parameters.GetOrDefault(7, "allow_modes", true), thisElement, customVariables).AsBool;
+                                    var onReturnFunc = ParseVarFunction(parameters.Get(8, "return_func"), thisElement, customVariables);
+
+                                    StoryManager.inst.ContinueStory = ParseVarFunction(parameters.Get(4, "continue"), thisElement, customVariables).AsBool;
+
+                                    // get story chapter and story level.
+                                    var storyChapter = (bonus ? StoryMode.Instance.bonusChapters : StoryMode.Instance.chapters)[chapter];
+                                    var storyLevel = storyChapter.GetLevel(level);
+                                    var path = storyLevel.filePath;
+
+                                    ArcadeHelper.ResetModifiedStates();
+                                    StoryManager.inst.SetupStorySelection(new StorySelection
+                                    {
+                                        chapter = chapter.AsInt,
+                                        level = level.AsInt,
+                                        cutsceneIndex = cutsceneIndex,
+                                        bonus = bonus,
+                                        skipCutscenes = skipCutscenes,
+                                        allowModes = allowModes,
+                                    }, level => PlayLevelMenu.Init(
+                                        level: level,
+                                        onPlay: () => LevelManager.Play(level, () => StoryManager.inst.EndFunctionInterface(storyChapter, storyLevel, path)),
+                                        onReturn: onReturnFunc == null ? null : () => ParseFunction(onReturnFunc, thisElement, customVariables)));
+                                    // weird code but oh well
+
+                                    break;
+                                } // Story
+                        }
+                        break;
+                    }
+
+                #endregion
+
                 #region LoadLevel
 
                 // Finds a level by its' ID and loads it. Only works if the user has already loaded levels.
@@ -1384,6 +1461,7 @@ namespace BetterLegacy.Core
                         var cutsceneIndex = ParseVarFunction(parameters.Get(2, "cutscene_index"), thisElement, customVariables).AsInt;
                         var bonus = ParseVarFunction(parameters.Get(4, "bonus"), thisElement, customVariables).AsBool;
                         var skipCutscenes = ParseVarFunction(parameters.GetOrDefault(5, "skip_cutscenes", true), thisElement, customVariables).AsBool;
+                        var allowModes = ParseVarFunction(parameters.GetOrDefault(6, "allow_modes", false), thisElement, customVariables).AsBool;
 
                         StoryManager.inst.ContinueStory = ParseVarFunction(parameters.Get(3, "continue"), thisElement, customVariables).AsBool;
 

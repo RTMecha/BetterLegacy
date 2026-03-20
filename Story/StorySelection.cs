@@ -34,5 +34,10 @@
         /// If cutscenes should be skipped. If set to <see langword="true"/>, <see cref="cutsceneIndex"/> is ignored.
         /// </summary>
         public bool skipCutscenes;
+
+        /// <summary>
+        /// If custom challenge and speed modes are allowed.
+        /// </summary>
+        public bool allowModes;
     }
 }

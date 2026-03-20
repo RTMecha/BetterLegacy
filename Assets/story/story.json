@@ -489,6 +489,7 @@
 					"file": {
 						"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}story/levels/wip/root_beer_float.asset",
 						"editor_path": "{{AppDirectory}}beatmaps/editor/BetterLegacy/ACT 1/DOC02/Root Beer Float/level.lsb",
+						"cover": "story/covers/wip/root_beer_float.jpg",
 						"on_complete_func": "ReturnToStoryInterface"
 					},
 					"return_replayable": "False",
@@ -501,6 +502,7 @@
 					"file": {
 						"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}story/levels/wip/spectra.asset",
 						"editor_path": "{{AppDirectory}}beatmaps/editor/BetterLegacy/ACT 1/DOC02/Spectra/level.lsb",
+						"cover": "story/covers/wip/spectra.jpg",
 						"on_complete_func": "ReturnToStoryInterface"
 					},
 					"return_replayable": "False",
@@ -512,6 +514,7 @@
 					"name": "Shard",
 					"file": {
 						"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}story/levels/wip/dimension.asset",
+						"cover": "story/covers/wip/dimension.jpg",
 						"on_complete_func": "ReturnToStoryInterface"
 					},
 					"return_replayable": "False",
@@ -523,6 +526,7 @@
 					"name": "Target Acquired",
 					"file": {
 						"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}story/levels/wip/find_us_in_the_air.asset",
+						"cover": "story/covers/wip/find_us_in_the_air.jpg",
 						"on_complete_func": "ReturnToStoryInterface"
 					},
 					"return_replayable": "False",
@@ -534,6 +538,7 @@
 					"name": "Scatter",
 					"file": {
 						"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}story/levels/wip/silent_waves.asset",
+						"cover": "story/covers/wip/silent_waves.jpg",
 						"on_complete_func": "ReturnToStoryInterface"
 					},
 					"return_replayable": "False",
@@ -545,6 +550,7 @@
 					"name": "Discovery",
 					"file": {
 						"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}story/levels/wip/elevate.asset",
+						"cover": "story/covers/wip/elevate.jpg",
 						"on_complete_func": "ReturnToStoryInterface"
 					},
 					"return_replayable": "False",

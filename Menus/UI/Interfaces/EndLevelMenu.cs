@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 using LSFunctions;
 using BetterLegacy.Companion.Data.Parameters;
@@ -18,7 +20,9 @@ namespace BetterLegacy.Menus.UI.Interfaces
     {
         public static EndLevelMenu Current { get; set; }
 
-        public EndLevelMenu() : base()
+        public EndLevelMenu() : this(null) { }
+
+        public EndLevelMenu(Func<List<MenuImage>> getElements) : base()
         {
             if (!ProjectArrhythmia.State.InGame || ProjectArrhythmia.State.InEditor)
             {
@@ -176,22 +180,85 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 }
             }
 
-            var nextLevel = LevelManager.NextLevelInCollection;
-            if (LevelManager.CurrentLevelCollection && (metadata.song.Difficulty == DifficultyType.Animation || nextLevel && nextLevel.saveData && nextLevel.saveData.Unlocked || LevelManager.CurrentLevelCollection.allowZenProgression || !RTBeatmap.Current.challengeMode.Invincible) && LevelManager.currentLevelIndex + 1 != LevelManager.CurrentLevelCollection.Count || !LevelManager.IsNextEndOfQueue)
+            if (getElements != null)
+                elements.AddRange(getElements.Invoke());
+            else
             {
-                if (nextLevel)
-                    CoreHelper.Log($"Selecting next Arcade level in collection [{LevelManager.currentLevelIndex + 2} / {LevelManager.CurrentLevelCollection.Count}]");
-                else
-                    CoreHelper.Log($"Selecting next Arcade level in queue [{LevelManager.currentQueueIndex + 2} / {LevelManager.ArcadeQueue.Count}]");
+                var nextLevel = LevelManager.NextLevelInCollection;
+                if (LevelManager.CurrentLevelCollection && (metadata.song.Difficulty == DifficultyType.Animation || nextLevel && nextLevel.saveData && nextLevel.saveData.Unlocked || LevelManager.CurrentLevelCollection.allowZenProgression || !RTBeatmap.Current.challengeMode.Invincible) && LevelManager.currentLevelIndex + 1 != LevelManager.CurrentLevelCollection.Count || !LevelManager.IsNextEndOfQueue)
+                {
+                    if (nextLevel)
+                        CoreHelper.Log($"Selecting next Arcade level in collection [{LevelManager.currentLevelIndex + 2} / {LevelManager.CurrentLevelCollection.Count}]");
+                    else
+                        CoreHelper.Log($"Selecting next Arcade level in queue [{LevelManager.currentQueueIndex + 2} / {LevelManager.ArcadeQueue.Count}]");
+
+                    elements.Add(new MenuButton
+                    {
+                        id = "0",
+                        name = "Next Button",
+                        text = "<b><align=center>[ NEXT ]", // continue if story mode.
+                        parentLayout = "buttons",
+                        autoAlignSelectionPosition = true,
+                        rect = RectValues.Default.SizeDelta(100f, 64f),
+                        opacity = 0.1f,
+                        val = -40f,
+                        textVal = 40f,
+                        selectedOpacity = 1f,
+                        selectedVal = 40f,
+                        selectedTextVal = -40f,
+                        length = 0.3f,
+                        playBlipSound = true,
+                        func = ArcadeHelper.NextLevel,
+                    });
+                }
+
+                if (LevelManager.HasQueue)
+                    elements.Add(new MenuButton
+                    {
+                        id = "674",
+                        name = "Return Button",
+                        text = "<b><align=center>[ RESTART QUEUE ]",
+                        parentLayout = "buttons",
+                        autoAlignSelectionPosition = true,
+                        rect = RectValues.Default.SizeDelta(100f, 64f),
+                        opacity = 0.1f,
+                        val = -40f,
+                        textVal = 40f,
+                        selectedOpacity = 1f,
+                        selectedVal = 40f,
+                        selectedTextVal = -40f,
+                        length = 0.3f,
+                        playBlipSound = true,
+                        func = ArcadeHelper.FirstLevel,
+                    });
+
+                if (LevelManager.Hub)
+                    elements.Add(new MenuButton
+                    {
+                        id = "625235",
+                        name = "Return Button",
+                        text = "<b><align=center>[ RETURN TO HUB ]",
+                        parentLayout = "buttons",
+                        autoAlignSelectionPosition = true,
+                        rect = RectValues.Default.SizeDelta(100f, 64f),
+                        opacity = 0.1f,
+                        val = -40f,
+                        textVal = 40f,
+                        selectedOpacity = 1f,
+                        selectedVal = 40f,
+                        selectedTextVal = -40f,
+                        length = 0.3f,
+                        playBlipSound = true,
+                        func = ArcadeHelper.ReturnToHub,
+                    });
 
                 elements.Add(new MenuButton
                 {
-                    id = "0",
-                    name = "Next Button",
-                    text = "<b><align=center>[ NEXT ]", // continue if story mode.
+                    id = "1",
+                    name = "Arcade Button",
+                    text = "<b><align=center>[ TO ARCADE ]",
                     parentLayout = "buttons",
                     autoAlignSelectionPosition = true,
-                    rect = RectValues.Default.SizeDelta(100f, 64f),
                     opacity = 0.1f,
                     val = -40f,
                     textVal = 40f,
@@ -200,72 +267,10 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     selectedTextVal = -40f,
                     length = 0.3f,
                     playBlipSound = true,
-                    func = ArcadeHelper.NextLevel,
-                });
-            }
-
-            if (LevelManager.HasQueue)
-            {
-                elements.Add(new MenuButton
-                {
-                    id = "674",
-                    name = "Return Button",
-                    text = "<b><align=center>[ RESTART QUEUE ]",
-                    parentLayout = "buttons",
-                    autoAlignSelectionPosition = true,
                     rect = RectValues.Default.SizeDelta(100f, 64f),
-                    opacity = 0.1f,
-                    val = -40f,
-                    textVal = 40f,
-                    selectedOpacity = 1f,
-                    selectedVal = 40f,
-                    selectedTextVal = -40f,
-                    length = 0.3f,
-                    playBlipSound = true,
-                    func = ArcadeHelper.FirstLevel,
+                    func = ArcadeHelper.QuitToArcade,
                 });
             }
-
-            if (LevelManager.Hub)
-            {
-                elements.Add(new MenuButton
-                {
-                    id = "625235",
-                    name = "Return Button",
-                    text = "<b><align=center>[ RETURN TO HUB ]",
-                    parentLayout = "buttons",
-                    autoAlignSelectionPosition = true,
-                    rect = RectValues.Default.SizeDelta(100f, 64f),
-                    opacity = 0.1f,
-                    val = -40f,
-                    textVal = 40f,
-                    selectedOpacity = 1f,
-                    selectedVal = 40f,
-                    selectedTextVal = -40f,
-                    length = 0.3f,
-                    playBlipSound = true,
-                    func = ArcadeHelper.ReturnToHub,
-                });
-            }
-
-            elements.Add(new MenuButton
-            {
-                id = "1",
-                name = "Arcade Button",
-                text = "<b><align=center>[ TO ARCADE ]",
-                parentLayout = "buttons",
-                autoAlignSelectionPosition = true,
-                opacity = 0.1f,
-                val = -40f,
-                textVal = 40f,
-                selectedOpacity = 1f,
-                selectedVal = 40f,
-                selectedTextVal = -40f,
-                length = 0.3f,
-                playBlipSound = true,
-                rect = RectValues.Default.SizeDelta(100f, 64f),
-                func = ArcadeHelper.QuitToArcade,
-            });
 
             elements.Add(new MenuButton
             {
@@ -302,6 +307,11 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// Initializes the end level menu.
         /// </summary>
         public static void Init() => Current = new EndLevelMenu();
+
+        /// <summary>
+        /// Initializes the end level menu.
+        /// </summary>
+        public static void Init(Func<List<MenuImage>> getElements) => Current = new EndLevelMenu(getElements);
 
         public static void Close()
         {

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -8,6 +7,7 @@ using UnityEngine;
 using SimpleJSON;
 
 using BetterLegacy.Companion.Entity;
+using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
@@ -18,6 +18,8 @@ using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Managers.Settings;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Menus;
+using BetterLegacy.Menus.UI.Elements;
+using BetterLegacy.Menus.UI.Interfaces;
 
 namespace BetterLegacy.Story
 {
@@ -42,6 +44,8 @@ namespace BetterLegacy.Story
         /// If story should continue when a level is completed.
         /// </summary>
         public bool ContinueStory { get; set; } = true;
+
+        public bool AllowModes { get; set; }
 
         /// <summary>
         /// Story mode reference for debugging
@@ -633,7 +637,8 @@ namespace BetterLegacy.Story
         /// Gets a story level from the <see cref="StoryMode"/> and plays it.
         /// </summary>
         /// <param name="storySelection">Location of the story level.</param>
-        public void Play(StorySelection storySelection, Action onLevelEnd = null)
+        /// <param name="onLevelRetrieved">Function to run on level retrieved.</param>
+        public void SetupStorySelection(StorySelection storySelection, Action<Level> onLevelRetrieved)
         {
             // get story chapter and story level.
             var storyChapter = (storySelection.bonus ? StoryMode.Instance.bonusChapters : StoryMode.Instance.chapters)[storySelection.chapter];
@@ -643,6 +648,7 @@ namespace BetterLegacy.Story
             currentStorySelection = storySelection;
             currentPlayingChapterIndex = storySelection.chapter;
             currentPlayingLevelSequenceIndex = storySelection.level;
+            AllowModes = storySelection.allowModes;
 
             var path = storyLevel.filePath;
 
@@ -663,7 +669,9 @@ namespace BetterLegacy.Story
 
                 // assign story level music. if a song is specified then the level will use that song instead of the one in the files.
                 AssignStoryLevelMusic(path.songName, level);
-                LevelManager.Play(level, () => EndFunction(storyChapter, storyLevel, path, onLevelEnd));
+                if (AssetPack.TryGetFile(path.coverPath, out string coverPath))
+                    level.icon = SpriteHelper.LoadSprite(coverPath);
+                onLevelRetrieved?.Invoke(level);
                 return;
             }
 
@@ -673,8 +681,25 @@ namespace BetterLegacy.Story
                 Loaded = true;
                 // assign story level music. if a song is specified then the level will use that song instead of the one in the files.
                 AssignStoryLevelMusic(path.songName, level);
-                LevelManager.Play(level, () => EndFunction(storyChapter, storyLevel, path, onLevelEnd));
+                if (AssetPack.TryGetFile(path.coverPath, out string coverPath))
+                    level.icon = SpriteHelper.LoadSprite(coverPath);
+                onLevelRetrieved?.Invoke(level);
             }));
+        }
+
+        /// <summary>
+        /// Gets a story level from the <see cref="StoryMode"/> and plays it.
+        /// </summary>
+        /// <param name="storySelection">Location of the story level.</param>
+        /// <param name="onLevelEnd">Function to run on level end.</param>
+        public void Play(StorySelection storySelection, Action onLevelEnd = null)
+        {
+            // get story chapter and story level.
+            var storyChapter = (storySelection.bonus ? StoryMode.Instance.bonusChapters : StoryMode.Instance.chapters)[storySelection.chapter];
+            var storyLevel = storyChapter.GetLevel(storySelection.level);
+            var path = storyLevel.filePath;
+
+            SetupStorySelection(storySelection, level => LevelManager.Play(level, () => EndFunctionInterface(storyChapter, storyLevel, path, onLevelEnd)));
         }
 
         /// <summary>
@@ -791,6 +816,34 @@ namespace BetterLegacy.Story
 
                 PlayCutsceneRecursive(chapter, level, cutsceneDestination, cutsceneIndex, bonus);
             });
+        }
+
+        public void EndFunctionInterface(StoryMode.Chapter storyChapter, StoryMode.LevelSequence storyLevel, StoryMode.LevelPath levelPath, Action onLevelEnd = null)
+        {
+            if (CoreConfig.Instance.StoryShowsEndInterface.Value && !isCutscene)
+                EndLevelMenu.Init(() => new List<MenuImage>
+                    {
+                        new MenuButton
+                        {
+                            id = "0",
+                            name = "Next Button",
+                            text = "<b><align=center>[ CONTINUE ]",
+                            parentLayout = "buttons",
+                            autoAlignSelectionPosition = true,
+                            rect = RectValues.Default.SizeDelta(100f, 64f),
+                            opacity = 0.1f,
+                            val = -40f,
+                            textVal = 40f,
+                            selectedOpacity = 1f,
+                            selectedVal = 40f,
+                            selectedTextVal = -40f,
+                            length = 0.3f,
+                            playBlipSound = true,
+                            func = () => EndFunction(storyChapter, storyLevel, levelPath, onLevelEnd),
+                        }
+                    });
+            else
+                EndFunction(storyChapter, storyLevel, levelPath, onLevelEnd);
         }
 
         void EndFunction(StoryMode.Chapter storyChapter, StoryMode.LevelSequence storyLevel, StoryMode.LevelPath levelPath, Action onLevelEnd = null)

@@ -21,6 +21,8 @@ namespace BetterLegacy.Arcade.Interfaces
     {
         public static PlayLevelMenu Current { get; set; }
         public static Level CurrentLevel { get; set; }
+        public Action onPlay;
+        public Action onReturn;
 
         public PlayLevelMenu() : base()
         {
@@ -67,8 +69,7 @@ namespace BetterLegacy.Arcade.Interfaces
                 func = Close,
             });
 
-            if (CurrentLevel.metadata && !string.IsNullOrEmpty(CurrentLevel.metadata.serverID))
-            {
+            if (CurrentLevel.metadata && !string.IsNullOrEmpty(CurrentLevel.metadata.serverID) && CurrentLevel.metadata.Visibility == ServerVisibility.Public)
                 elements.Add(new MenuButton
                 {
                     id = "4857529985",
@@ -86,7 +87,6 @@ namespace BetterLegacy.Arcade.Interfaces
                     playBlipSound = true,
                     func = () => LSText.CopyToClipboard(CurrentLevel.metadata?.serverID),
                 });
-            }
             
             elements.Add(new MenuButton
             {
@@ -356,6 +356,13 @@ namespace BetterLegacy.Arcade.Interfaces
                 playBlipSound = true,
                 func = () =>
                 {
+                    if (onPlay != null)
+                    {
+                        InterfaceManager.inst.CloseMenus();
+                        onPlay.Invoke();
+                        return;
+                    }
+
                     var collection = LevelManager.CurrentLevelCollection;
                     if (collection)
                     {
@@ -407,7 +414,7 @@ namespace BetterLegacy.Arcade.Interfaces
                 },
             });
 
-            if (!LevelManager.CurrentLevelCollection)
+            if (!LevelManager.CurrentLevelCollection && !CurrentLevel.isStory)
             {
                 var queueButton = new MenuButton
                 {
@@ -678,37 +685,43 @@ namespace BetterLegacy.Arcade.Interfaces
         public static void Init(Level level)
         {
             if (!level.music)
-                CoroutineHelper.StartCoroutine(level.LoadAudioClipRoutine(() => InternalInit(level)));
+                CoroutineHelper.StartCoroutine(level.LoadAudioClipRoutine(() => InternalInit(level, null, null)));
             else
-                InternalInit(level);
+                InternalInit(level, null, null);
+        }
+        
+        public static void Init(Level level, Action onPlay = null, Action onReturn = null)
+        {
+            if (!level.music)
+                CoroutineHelper.StartCoroutine(level.LoadAudioClipRoutine(() => InternalInit(level, onPlay, onReturn)));
+            else
+                InternalInit(level, onPlay, onReturn);
         }
 
-        static void InternalInit(Level level)
+        static void InternalInit(Level level, Action onPlay, Action onReturn)
         {
             var playMusic = AudioManager.inst.CurrentAudioSource.clip != level.GetPreviewAudio();
             if (playMusic)
                 AudioManager.inst.StopMusic();
             CurrentLevel = level;
             Current = new PlayLevelMenu();
+            Current.onPlay = onPlay;
+            Current.onReturn = onReturn;
             if (playMusic)
                 AudioManager.inst.PlayMusic(level.metadata.song.title, level.GetPreviewAudio());
             AudioManager.inst.SetPitch(CoreConfig.Instance.GameSpeedSetting.Value.Pitch);
         }
 
-        public static void Close()
+        public void Close()
         {
+            var onReturn = this.onReturn;
             InterfaceManager.inst.CloseMenus();
 
-            if (close == null)
-                ArcadeMenu.Init();
+            if (onReturn != null)
+                onReturn.Invoke();
             else
-            {
-                close();
-                close = null;
-            }
+                ArcadeMenu.Init();
         }
-
-        public static Action close;
 
         public override void Clear()
         {

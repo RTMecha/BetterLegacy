@@ -419,6 +419,11 @@ namespace BetterLegacy.Story
             public string songName;
 
             /// <summary>
+            /// Path to the level cover.
+            /// </summary>
+            public string coverPath;
+
+            /// <summary>
             /// Function to run when the level file is complete.
             /// </summary>
             public JSONNode onCompleteFunc;
@@ -434,6 +439,7 @@ namespace BetterLegacy.Story
                 editorFilePathNoParse = orig.editorFilePathNoParse;
                 editorFilePath = orig.editorFilePath;
                 songName = orig.songName;
+                coverPath = orig.coverPath;
                 if (orig.onCompleteFunc != null)
                     onCompleteFunc = JSON.Parse(orig.onCompleteFunc.ToString());
             }
@@ -452,6 +458,7 @@ namespace BetterLegacy.Story
                 editorFilePathNoParse = jn["editor_path"];
                 editorFilePath = RTFile.ParsePaths(editorFilePathNoParse);
                 songName = jn["song"];
+                coverPath = jn["cover"];
 
                 if (jn["on_complete_func"] != null)
                     onCompleteFunc = jn["on_complete_func"];
@@ -470,6 +477,8 @@ namespace BetterLegacy.Story
                     jn["editor_path"] = editorFilePathNoParse;
                 if (!string.IsNullOrEmpty(songName))
                     jn["song"] = songName;
+                if (!string.IsNullOrEmpty(coverPath))
+                    jn["cover"] = coverPath;
 
                 if (onCompleteFunc != null)
                     jn["on_complete_func"] = onCompleteFunc;

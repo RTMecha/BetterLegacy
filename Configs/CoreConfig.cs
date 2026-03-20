@@ -259,6 +259,8 @@ namespace BetterLegacy.Configs
         /// </summary>
         public Setting<bool> StoreRecentLevels { get; set; }
 
+        public Setting<bool> StoryShowsEndInterface { get; set; }
+
         #endregion
 
         #region Discord
@@ -417,6 +419,7 @@ namespace BetterLegacy.Configs
             PlayCheckpointSound = Bind(this, LEVEL, "Play Checkpoint Sound", true, "If the checkpoint sound should play.");
             PlayCheckpointAnimation = Bind(this, LEVEL, "Play Checkpoint Animation", true, "If the checkpoint animation should play.");
             StoreRecentLevels = Bind(this, LEVEL, "Store Recent Levels", false, "If recently opened / saved levels in the editor / arcade are saved to a stats.json file. Good for remembering what you did recently.");
+            StoryShowsEndInterface = Bind(this, LEVEL, "Story Shows End Interface", false, "If levels in the story mode should show the end level interface when the level ends. If this setting is off, the next cutscene / level / interface will show.");
 
             #endregion
 
