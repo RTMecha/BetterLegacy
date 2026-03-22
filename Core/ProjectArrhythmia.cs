@@ -5,10 +5,7 @@ using UnityEngine;
 
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Data;
-using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Managers;
-using BetterLegacy.Editor.Managers;
 using BetterLegacy.Menus;
 
 using Version = BetterLegacy.Core.Data.Version;
@@ -49,7 +46,7 @@ namespace BetterLegacy.Core
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         /// <summary>
         /// Checks if the version matches PA Legacy's version.
@@ -141,7 +138,7 @@ namespace BetterLegacy.Core
 
             #endregion
 
-            #region Methods
+            #region Functions
 
             #region External
 
