@@ -1015,7 +1015,7 @@ namespace BetterLegacy.Core.Runtime.Events
             if (!bgGlobalPosition)
                 RTLevel.Cameras.BG.transform.localPosition = new Vector3(bgPos.x, bgPos.y, bgZoom);
             else
-                RTLevel.Cameras.BG.transform.position = new Vector3(RTLevel.Cameras.CameraParent.position.x + bgPos.x, RTLevel.Cameras.CameraParent.position.y + bgPos.y, RTLevel.Cameras.CameraParent.position.z + bgZoom);
+                RTLevel.Cameras.BG.transform.position = new Vector3(RTLevel.Cameras.CameraParent.position.x + bgPos.x, RTLevel.Cameras.CameraParent.position.y + bgPos.y, bgZoom);
 
             RTLevel.Cameras.BG.transform.localEulerAngles = bgRot;
             RTLevel.Cameras.BG.nearClipPlane = bgAlignNearPlane ? -RTLevel.Cameras.BG.transform.position.z + camPerspectiveOffset : 0.3f;
