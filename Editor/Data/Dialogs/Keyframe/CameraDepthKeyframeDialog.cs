@@ -105,7 +105,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
         {
             base.Render();
 
-            SetFloatInputField(DepthField, 0);
+            SetFloatInputField(DepthField, 1);
             SetFloatInputField(BGZoomMultiplyField, 4);
             SetToggle(GlobalToggle, 2, 0, 1);
             SetToggle(AlignToggle, 3, 1, 0);
@@ -116,7 +116,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             // Position
             SetFloatInputField(PositionFields.x, 8);
             SetFloatInputField(PositionFields.y, 9);
-            SetFloatInputField(PositionFields.z, 1);
+            SetFloatInputField(PositionFields.z, 0);
 
             // Rotation
             SetFloatInputField(RotationFields.x, 10, 15f, 3f);
