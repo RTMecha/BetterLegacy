@@ -1,4 +1,15 @@
-﻿# snapshot-2026.3.4 - (Story Playtest) [Mar 20, 2026]
+﻿# snapshot-2026.?.? - (Story Playtest) [???]
+## Changes
+### Editor
+- Swapped Camera Depth keyframe values "Position Z" and "Depth".
+
+## Fixes
+- Fixed BG camera not being consistent with older Legacy levels. This may break some levels that turn Use Global Position on in the Camera Depth keyframe.
+- Fixed older Legacy levels not updating correctly.
+
+-------------------------------------------------------------------
+
+# snapshot-2026.3.4 - (Story Playtest) [Mar 20, 2026]
 ## Features
 ### Core
 - Added mesh options for the sphereShape modifier.
