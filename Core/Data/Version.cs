@@ -12,6 +12,8 @@ namespace BetterLegacy.Core.Data
     /// </summary>
     public struct Version
     {
+        #region Constructors.
+
         public Version(string prefix, int major, int minor, int patch, string iteration)
         {
             Prefix = prefix;
@@ -35,6 +37,10 @@ namespace BetterLegacy.Core.Data
 
             BuildDate = DateTime.Now.ToString("G");
         }
+
+        #endregion
+
+        #region Values
 
         /// <summary>
         /// Prefix build. What this version is used for. (e.g. snapshot, etc)
@@ -61,6 +67,9 @@ namespace BetterLegacy.Core.Data
         /// </summary>
         public string Iteration { get; set; }
 
+        /// <summary>
+        /// Index of the iteration.
+        /// </summary>
         public int IterationIndex
         {
             get => string.IsNullOrEmpty(Iteration) ? 0 : RTString.alphabetLower.Select(x => x.ToString()).ToList().IndexOf(Iteration.ToLower());
@@ -71,6 +80,9 @@ namespace BetterLegacy.Core.Data
             }
         }
 
+        /// <summary>
+        /// Build date.
+        /// </summary>
         public string BuildDate { get; set; }
 
         public int this[int index]
@@ -95,24 +107,15 @@ namespace BetterLegacy.Core.Data
             }
         }
 
-        public override string ToString()
-        {
-            var result = $"{Major}.{Minor}.{Patch}{Iteration}";
-            if (!string.IsNullOrEmpty(Prefix))
-                result = $"{Prefix}-{result}";
-            return result;
-        }
+        #endregion
 
-        public override bool Equals(object obj) => obj is Version && (Version)obj == this;
+        #region Functions
 
-        public override int GetHashCode()
-        {
-            var hash = Major.GetHashCode() ^ Minor.GetHashCode() ^ Patch.GetHashCode();
-            if (!string.IsNullOrEmpty(Iteration))
-                hash ^= Iteration.GetHashCode();
-            return hash;
-        }
-
+        /// <summary>
+        /// Gets the version comparison.
+        /// </summary>
+        /// <param name="other">Other version to compare.</param>
+        /// <returns>Returns a <see cref="VersionComparison"/> enum value based on the comparison of <see langword="this"/> and <paramref name="other"/>.</returns>
         public VersionComparison CompareVersions(Version other) => other > this ? VersionComparison.GreaterThan : other< this ? VersionComparison.LessThan : VersionComparison.EqualTo;
 
         /// <summary>
@@ -208,6 +211,26 @@ namespace BetterLegacy.Core.Data
             return new Version(prefix, major, minor, patch, iteration);
         }
 
+        public override string ToString()
+        {
+            var result = $"{Major}.{Minor}.{Patch}{Iteration}";
+            if (!string.IsNullOrEmpty(Prefix))
+                result = $"{Prefix}-{result}";
+            return result;
+        }
+
+        public override bool Equals(object obj) => obj is Version version && version == this;
+
+        public override int GetHashCode()
+        {
+            var hash = Major.GetHashCode() ^ Minor.GetHashCode() ^ Patch.GetHashCode();
+            if (!string.IsNullOrEmpty(Iteration))
+                hash ^= Iteration.GetHashCode();
+            return hash;
+        }
+
+        #endregion
+
         #region Operators
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -241,19 +264,7 @@ namespace BetterLegacy.Core.Data
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator ==(Version a, Version b)
-        {
-            if (a.Major == b.Major)
-                return true;
-            if (a.Minor == b.Minor)
-                return true;
-            if (a.Patch == b.Patch)
-                return true;
-            if (!string.IsNullOrEmpty(a.Iteration) && !string.IsNullOrEmpty(b.Iteration) && a.IterationIndex == b.IterationIndex)
-                return true;
-
-            return false;
-        }
+        public static bool operator ==(Version a, Version b) => a.Major == b.Major && a.Minor == b.Minor && a.Patch == b.Patch && (string.IsNullOrEmpty(a.Iteration) || string.IsNullOrEmpty(b.Iteration) || a.IterationIndex == b.IterationIndex);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator !=(Version a, Version b) => !(a == b);
