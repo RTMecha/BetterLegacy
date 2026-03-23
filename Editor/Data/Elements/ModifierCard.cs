@@ -5512,7 +5512,8 @@ namespace BetterLegacy.Editor.Data.Elements
             CoreHelper.Delete(startColorBase.transform.Find(">").gameObject);
             CoreHelper.Delete(startColorBase.transform.Find("<").gameObject);
 
-            var startColors = ObjEditor.inst.KeyframeDialogs[3].transform.Find("color").gameObject.Duplicate(startColorBase.transform, "color");
+            var startColors = EditorPrefabHolder.Instance.ColorsLayout.Duplicate(startColorBase.transform, "color");
+            startColors.SetActive(true);
 
             if (startColors.TryGetComponent(out GridLayoutGroup scglg))
             {
