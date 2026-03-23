@@ -2532,7 +2532,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             UseHexColorToggle.SetIsOnWithoutNotify(useCustomHexColor);
             UseHexColorToggle.OnValueChanged.NewListener(_val =>
             {
-                if (EditorConfig.Instance.HexColorKeyframeConverts.Value)
+                if (EditorConfig.Instance.HexColorKeyframeConverts.Value && _val)
                 {
                     var eventTime = firstKF.eventKeyframe.time;
                     RTLevel.Current?.eventEngine?.Update(eventTime);
