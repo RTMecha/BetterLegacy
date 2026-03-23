@@ -6,6 +6,8 @@
 ## Fixes
 - Fixed BG camera not being consistent with older Legacy levels. This may break some levels that turn Use Global Position on in the Camera Depth keyframe.
 - Fixed older Legacy levels not updating correctly.
+- Fixed Use Hex Color toggle not turning off if the "Hex Color Keyframe Converts" setting is on.
+- Fixed color toggles not displaying in modifier cards if the color toggles in the object keyframe editor are hidden.
 
 -------------------------------------------------------------------
 
