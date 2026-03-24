@@ -2579,6 +2579,20 @@
         "const": "True",
         "compat": "level_control"
       }, // lensTracksPlayer
+      {
+        "type": 1,
+        "name": "datamoshGlitch",
+        "values": [],
+        "const": false,
+        "compat": "level_control"
+      }, // datamoshGlitch
+      {
+        "type": 1,
+        "name": "datamoshReset",
+        "values": [],
+        "const": false,
+        "compat": "level_control"
+      }, // datamoshReset
 
       {
         "type": 0,

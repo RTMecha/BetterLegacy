@@ -4498,7 +4498,27 @@
                 "lang": 0
               }
             ]
-          } // lensTracksPlayer
+          }, // lensTracksPlayer
+          {
+            "name": "Object Modifier - datamoshGlitch (Action)",
+            "tooltips": [
+              {
+                "desc": "datamoshGlitch (Action)",
+                "hint": "Triggers the datamosh event.",
+                "lang": 0
+              }
+            ]
+          }, // datamoshGlitch
+          {
+            "name": "Object Modifier - datamoshReset (Action)",
+            "tooltips": [
+              {
+                "desc": "datamoshReset (Action)",
+                "hint": "Resets the datamosh event.",
+                "lang": 0
+              }
+            ]
+          } // datamoshReset
         ],
 
         // Color

@@ -2795,17 +2795,23 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                //case "vignetteTracksPlayer): {
+                //case nameof(ModifierFunctions.vignetteTracksPlayer): {
                 //        break;
                 //    }
-                //case "lensTracksPlayer): {
+                //case nameof(ModifierFunctions.lensTracksPlayer): {
+                //        break;
+                //    }
+                //case nameof(ModifierFunctions.datamoshGlitch): {
+                //        break;
+                //    }
+                //case nameof(ModifierFunctions.datamoshReset): {
                 //        break;
                 //    }
 
                 #endregion
 
                 #region Color
-                    
+
                 case nameof(ModifierFunctions.setTheme): {
                         StringGenerator(modifier, reference, "ID", 0);
 

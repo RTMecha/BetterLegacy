@@ -1144,6 +1144,8 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction(nameof(ModifierFunctions.eventOffsetCopyAxis),  ModifierFunctions.eventOffsetCopyAxis, ModifierCompatibility.BeatmapObjectCompatible),
             new ModifierAction(nameof(ModifierFunctions.vignetteTracksPlayer),  ModifierFunctions.vignetteTracksPlayer, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierFunctions.lensTracksPlayer),  ModifierFunctions.lensTracksPlayer, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.datamoshGlitch),  ModifierFunctions.datamoshGlitch, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.datamoshReset),  ModifierFunctions.datamoshReset, ModifierCompatibility.LevelControlCompatible),
 
             #endregion
 
@@ -8027,6 +8029,10 @@ namespace BetterLegacy.Core.Helpers
             RTLevel.Current.eventEngine.SetOffset(8, 1, cameraToViewportPoint.x - 0.5f);
             RTLevel.Current.eventEngine.SetOffset(8, 2, cameraToViewportPoint.y - 0.5f);
         }
+
+        public static void datamoshGlitch(Modifier modifier, ModifierLoop modifierLoop) => RTEventManager.inst?.datamosh?.Glitch();
+
+        public static void datamoshReset(Modifier modifier, ModifierLoop modifierLoop) => RTEventManager.inst?.datamosh?.Reset();
 
         #endregion
 
