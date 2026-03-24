@@ -1,4 +1,8 @@
 ﻿# snapshot-2026.?.? - (Story Playtest) [???]
+## Features
+### Core
+- Added a new "Datamosh" event. In order to use this event, you must use the new datamoshGlitch and datamoshReset modifiers.
+
 ## Changes
 ### Editor
 - Swapped Camera Depth keyframe values "Position Z" and "Depth".
