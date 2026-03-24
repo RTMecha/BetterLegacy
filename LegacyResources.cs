@@ -20,6 +20,10 @@ namespace BetterLegacy
         public static Material analogGlitchMaterial;
         public static Shader digitalGlitchShader;
         public static Material digitalGlitchMaterial;
+        public static Shader feedbackShader;
+        public static Material feedbackMaterial;
+        public static Shader datamoshShader;
+        public static Material datamoshMaterial;
         public static Shader shockwaveShader;
 
         public static void GetKinoGlitch()
@@ -27,8 +31,12 @@ namespace BetterLegacy
             var assetBundle = AssetBundle.LoadFromFile(RTFile.GetAsset($"builtin/effects.asset")); // Get AssetBundle from assets folder.
             analogGlitchMaterial = assetBundle.LoadAsset<Material>("analogglitchmaterial.mat"); // Load asset
             digitalGlitchMaterial = assetBundle.LoadAsset<Material>("digitalglitchmaterial.mat"); // Load asset
+            feedbackMaterial = assetBundle.LoadAsset<Material>("feedbackmaterial.mat"); // Load asset
+            datamoshMaterial = assetBundle.LoadAsset<Material>("datamoshmaterial.mat"); // Load asset
             analogGlitchShader = assetBundle.LoadAsset<Shader>("analogglitch.shader"); // Load asset
             digitalGlitchShader = assetBundle.LoadAsset<Shader>("digitalglitch.shader"); // Load asset
+            feedbackShader = assetBundle.LoadAsset<Shader>("feedback.shader"); // Load asset
+            datamoshShader = assetBundle.LoadAsset<Shader>("datamosh.shader"); // Load asset
             shockwaveShader = assetBundle.LoadAsset<Shader>("shockwave.shader"); // Load asset
         }
 

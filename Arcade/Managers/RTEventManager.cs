@@ -1,4 +1,6 @@
 ﻿using UnityEngine;
+
+using Kino;
  
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Managers;
@@ -17,6 +19,7 @@ namespace BetterLegacy.Arcade.Managers
         public AnalogGlitch analogGlitch;
         public DigitalGlitch digitalGlitch;
         public Shockwave shockwave;
+        public Datamosh datamosh;
 
         public Camera uiCam;
 
@@ -50,6 +53,7 @@ namespace BetterLegacy.Arcade.Managers
             analogGlitch._shader = LegacyResources.analogGlitchShader;
 
             shockwave = glitchCamera.AddComponent<Shockwave>();
+            datamosh = glitchCamera.AddComponent<Datamosh>();
 
             var uiCamera = new GameObject("UI Camera");
             uiCamera.transform.SetParent(EventManager.inst.camParent);

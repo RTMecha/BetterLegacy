@@ -340,6 +340,14 @@ namespace BetterLegacy.Core.Runtime.Events
                     UpdateShockwaveWarp,
                     UpdateShockwaveElapsed,
                 }, // Shockwave
+                new KFDelegate[]
+                {
+                    UpdateDatamoshBlockSize,
+                    UpdateDatamoshEntropy,
+                    UpdateDatamoshNoiseContrast,
+                    UpdateDatamoshVelocityScale,
+                    UpdateDatamoshDiffusion,
+                }, // Datamosh
             };
 
             offsets = CreateOffsets();
@@ -1992,6 +2000,45 @@ namespace BetterLegacy.Core.Runtime.Events
         {
             if (RTEventManager.inst.shockwave)
                 RTEventManager.inst.shockwave.elapsed = x;
+        }
+
+        #endregion
+
+        #region Datamosh - 41
+
+        // 41 - 0
+        void UpdateDatamoshBlockSize(float x)
+        {
+            if (RTEventManager.inst.datamosh)
+                RTEventManager.inst.datamosh.blockSize = (int)x;
+        }
+
+        // 41 - 1
+        void UpdateDatamoshEntropy(float x)
+        {
+            if (RTEventManager.inst.datamosh)
+                RTEventManager.inst.datamosh.entropy = x;
+        }
+
+        // 41 - 2
+        void UpdateDatamoshNoiseContrast(float x)
+        {
+            if (RTEventManager.inst.datamosh)
+                RTEventManager.inst.datamosh.noiseContrast = x;
+        }
+        
+        // 41 - 3
+        void UpdateDatamoshVelocityScale(float x)
+        {
+            if (RTEventManager.inst.datamosh)
+                RTEventManager.inst.datamosh.velocityScale = x;
+        }
+        
+        // 41 - 4
+        void UpdateDatamoshDiffusion(float x)
+        {
+            if (RTEventManager.inst.datamosh)
+                RTEventManager.inst.datamosh.diffusion = x;
         }
 
         #endregion

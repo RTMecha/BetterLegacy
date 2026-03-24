@@ -80,6 +80,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     EventLibrary.Indexes.ANALOG_GLITCH => new AnalogGlitchKeyframeDialog(),
                     EventLibrary.Indexes.DIGITAL_GLITCH => new FloatKeyframeDialog(i, "Intensity"),
                     EventLibrary.Indexes.SHOCKWAVE => new ShockwaveKeyframeDialog(),
+                    EventLibrary.Indexes.DATAMOSH => new DatamoshKeyframeDialog(),
                     _ => new KeyframeDialog(i),
                 };
                 var dialog = EventEditor.inst.dialogRight.TryGetChild(i);

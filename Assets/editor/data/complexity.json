@@ -382,5 +382,9 @@
   "event/shockwave": {
     "complexity": 2,
     "only_this": false
+  },
+  "event/datamosh": {
+    "complexity": 2,
+    "only_this": false
   }
 }

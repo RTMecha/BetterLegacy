@@ -62,6 +62,7 @@ namespace BetterLegacy.Core
             "Analog Glitch",
             "Digital Glitch",
             "Shockwave",
+            "Datamosh",
 
             #endregion
         };
@@ -119,6 +120,7 @@ namespace BetterLegacy.Core
 			"analog_glitch", // 38
 			"digital_glitch", // 39
             "shockwave", // 40
+            "datamosh", // 41
 
             #endregion
         };
@@ -145,7 +147,7 @@ namespace BetterLegacy.Core
         /// </summary>
         public static int Count => cachedDefaultKeyframes.Count;
 
-        public const int EVENT_COUNT = 41;
+        public const int EVENT_COUNT = 42;
 
         /// <summary>
         /// The default event keyframes in BetterLegacy.
@@ -210,6 +212,7 @@ namespace BetterLegacy.Core
 			/*[ 38 ]*/ DefaultKeyframes.AnalogGlitch,
 			/*[ 39 ]*/ DefaultKeyframes.DigitalGlitch,
 			/*[ 40 ]*/ DefaultKeyframes.Shockwave,
+			/*[ 41 ]*/ DefaultKeyframes.Datamosh,
 
             #endregion
         };
@@ -789,6 +792,7 @@ namespace BetterLegacy.Core
                     0f, // Intensity
                 },
             };
+
             /// <summary>
             /// <see cref="Indexes.SHOCKWAVE"/>
             /// </summary>
@@ -806,6 +810,22 @@ namespace BetterLegacy.Core
                     0f, // Rotation
                     0f, // Warp
                     0f, // Elapsed
+                },
+            };
+
+            /// <summary>
+            /// <see cref="Indexes.DATAMOSH"/>
+            /// </summary>
+            public static EventKeyframe Datamosh => new EventKeyframe
+            {
+                time = 0f,
+                values = new float[]
+                {
+                    16f, // block size
+                    0.5f, // entropy
+                    1f, // noise contrast
+                    0.8f, // velocity scale
+                    0.4f, // diffusion
                 },
             };
 
@@ -873,6 +893,7 @@ namespace BetterLegacy.Core
             public const int ANALOG_GLITCH = 38;
             public const int DIGITAL_GLITCH = 39;
             public const int SHOCKWAVE = 40;
+            public const int DATAMOSH = 41;
 
             #endregion
         }

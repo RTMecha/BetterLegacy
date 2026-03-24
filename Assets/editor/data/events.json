@@ -204,6 +204,11 @@
       "name": "Shockwave",
       "index": 40,
       "complexity_path": "event/shockwave"
+    },
+    {
+      "name": "Datamosh",
+      "index": 41,
+      "complexity_path": "event/datamosh"
     }
   ]
 }
