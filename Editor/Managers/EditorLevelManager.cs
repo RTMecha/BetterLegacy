@@ -14,6 +14,7 @@ using CielaSpike;
 using SimpleJSON;
 using Crosstales.FB;
 
+using BetterLegacy.Arcade.Managers;
 using BetterLegacy.Companion.Entity;
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
@@ -858,6 +859,7 @@ namespace BetterLegacy.Editor.Managers
 
             EditorManager.inst.timelineScrollRectBar.value = 0f;
             GameManager.inst.gameState = GameManager.State.Loading;
+            RTEventManager.inst.datamosh.Reset();
 
             EditorManager.inst.ClearPopups();
             EditorDialog.CurrentDialog?.Close();

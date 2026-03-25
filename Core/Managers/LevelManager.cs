@@ -273,6 +273,8 @@ namespace BetterLegacy.Core.Managers
 
             if (BackgroundManager.inst)
                 LSHelpers.DeleteChildren(BackgroundManager.inst.backgroundParent);
+            if (RTEventManager.inst)
+                RTEventManager.inst.datamosh.Reset();
 
             RTBeatmap.Current.levelTimer.offset = 0f;
             RTBeatmap.Current.levelTimer.Reset();
