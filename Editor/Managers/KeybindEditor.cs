@@ -11,6 +11,7 @@ using LSFunctions;
 
 using SimpleJSON;
 
+using BetterLegacy.Arcade.Managers;
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
@@ -1430,6 +1431,8 @@ namespace BetterLegacy.Editor.Managers
             });
 
             PlayerManager.RespawnPlayers();
+
+            RTEventManager.inst?.datamosh?.Reset();
         }
 
         public void UpdateObject(Keybind keybind)
