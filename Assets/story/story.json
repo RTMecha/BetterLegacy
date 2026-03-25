@@ -387,6 +387,10 @@
 									6
 								]
 							},
+							{
+								"name": "UnlockAchievement",
+								"params": [ "story_doc01_secret" ]
+							},
 							"UpdateCurrentLevelProgress",
 							{
 								"name": "LoadStoryLevel",
@@ -448,6 +452,7 @@
 								"name": "UnlockAchievement",
 								"params": [ "story_doc01_complete" ]
 							},
+							"UpdateCurrentLevelProgress",
 							{
 								"name": "LoadStoryLevel",
 								"params": [
