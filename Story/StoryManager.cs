@@ -697,7 +697,7 @@ namespace BetterLegacy.Story
             // get story chapter and story level.
             var storyChapter = (storySelection.bonus ? StoryMode.Instance.bonusChapters : StoryMode.Instance.chapters)[storySelection.chapter];
             var storyLevel = storyChapter.GetLevel(storySelection.level);
-            var path = storyLevel.filePath;
+            var path = storySelection.skipCutscenes ? storyLevel.filePath : storyLevel[storySelection.cutsceneIndex];
 
             SetupStorySelection(storySelection, level => LevelManager.Play(level, () => EndFunctionInterface(storyChapter, storyLevel, path, onLevelEnd)));
         }
