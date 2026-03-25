@@ -3388,6 +3388,175 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
+                case nameof(ModifierFunctions.customMesh): {
+                        var modifierLoop = reference.GetModifierLoop();
+                        if (!modifierLoop)
+                            break;
+
+                        int valueIndex = 0;
+
+                        var vertexCountIndex = valueIndex;
+                        var vertexCount = modifier.GetInt(valueIndex, 0, modifierLoop.variables);
+                        valueIndex++;
+                        for (int i = 0; i < vertexCount; i++)
+                        {
+                            var startIndex = valueIndex;
+                            var label = LabelGenerator($"- Vertex {i}");
+                            DeleteGenerator(modifier, reference, label.transform, () =>
+                            {
+                                for (int i = 0; i < 3; i++)
+                                    modifier.values.RemoveAt(startIndex);
+                                modifier.values[vertexCountIndex] = (vertexCount - 3).ToString();
+                            });
+
+                            SingleGenerator(modifier, reference, "X", valueIndex);
+                            valueIndex++;
+                            SingleGenerator(modifier, reference, "Y", valueIndex);
+                            valueIndex++;
+                            SingleGenerator(modifier, reference, "Z", valueIndex);
+                            valueIndex++;
+                        }
+                        // Add
+                        {
+                            var _valueIndex = valueIndex;
+                            AddGenerator(modifier, reference, "Add Vertex", () =>
+                            {
+                                for (int i = 0; i < 3; i++)
+                                    modifier.values.Insert(_valueIndex, "0");
+                                modifier.values[vertexCountIndex] = (vertexCount + 1).ToString();
+                            }).AddComponent<LayoutElement>().minWidth = 304f;
+                        }
+                        var triangleCountIndex = valueIndex;
+                        var triangleCount = modifier.GetInt(valueIndex, 0, modifierLoop.variables);
+                        valueIndex++;
+                        int tri = 0;
+                        for (int i = 0; i < triangleCount; i++)
+                        {
+                            var startIndex = valueIndex;
+                            if (i % 3 == 0)
+                            {
+                                var label = LabelGenerator($"- Triangle {tri}");
+                                DeleteGenerator(modifier, reference, label.transform, () =>
+                                {
+                                    modifier.values.RemoveAt(startIndex);
+                                    modifier.values[triangleCountIndex] = (triangleCount - 1).ToString();
+                                });
+                                tri++;
+                            }
+
+                            IntegerGenerator(modifier, reference, "Point", valueIndex);
+                            valueIndex++;
+                        }
+                        // Add
+                        {
+                            var _valueIndex = valueIndex;
+                            AddGenerator(modifier, reference, "Add Triangle", () =>
+                            {
+                                var c = triangleCount % 3;
+                                // if triangleCount = 3, then c = 0
+                                // if triangleCount = 4, then c = 1
+                                // c = 1
+                                // c - 3 = -2
+
+                                for (int i = 0; i < -(c - 3); i++)
+                                    modifier.values.Insert(_valueIndex, "0");
+                                modifier.values[triangleCountIndex] = (triangleCount + 3).ToString();
+                            }).AddComponent<LayoutElement>().minWidth = 304f;
+                        }
+                        var normalCountIndex = valueIndex;
+                        var normalCount = modifier.GetInt(valueIndex, 0, modifierLoop.variables);
+                        valueIndex++;
+                        for (int i = 0; i < normalCount; i++)
+                        {
+                            var startIndex = valueIndex;
+                            var label = LabelGenerator($"- Normal {i}");
+                            DeleteGenerator(modifier, reference, label.transform, () =>
+                            {
+                                for (int i = 0; i < 3; i++)
+                                    modifier.values.RemoveAt(startIndex);
+                                modifier.values[normalCountIndex] = (normalCount - 3).ToString();
+                            });
+
+                            SingleGenerator(modifier, reference, "Normal X", valueIndex);
+                            valueIndex++;
+                            SingleGenerator(modifier, reference, "Normal Y", valueIndex);
+                            valueIndex++;
+                            SingleGenerator(modifier, reference, "Normal Z", valueIndex);
+                            valueIndex++;
+                        }
+                        // Add
+                        {
+                            var _valueIndex = valueIndex;
+                            AddGenerator(modifier, reference, "Add Normal", () =>
+                            {
+                                for (int i = 0; i < 3; i++)
+                                    modifier.values.Insert(_valueIndex, "0");
+                                modifier.values[normalCountIndex] = (normalCount + 1).ToString();
+                            }).AddComponent<LayoutElement>().minWidth = 304f;
+                        }
+                        var tangentCountIndex = valueIndex;
+                        var tangentCount = modifier.GetInt(valueIndex, 0, modifierLoop.variables);
+                        valueIndex++;
+                        for (int i = 0; i < tangentCount; i++)
+                        {
+                            var startIndex = valueIndex;
+                            var label = LabelGenerator($"- Tangent {i}");
+                            DeleteGenerator(modifier, reference, label.transform, () =>
+                            {
+                                for (int i = 0; i < 4; i++)
+                                    modifier.values.RemoveAt(startIndex);
+                                modifier.values[tangentCountIndex] = (tangentCount - 4).ToString();
+                            });
+
+                            SingleGenerator(modifier, reference, "Tangent X", valueIndex);
+                            valueIndex++;
+                            SingleGenerator(modifier, reference, "Tangent Y", valueIndex);
+                            valueIndex++;
+                            SingleGenerator(modifier, reference, "Tangent Z", valueIndex);
+                            valueIndex++;
+                            SingleGenerator(modifier, reference, "Tangent W", valueIndex);
+                            valueIndex++;
+                        }
+                        // Add
+                        {
+                            var _valueIndex = valueIndex;
+                            AddGenerator(modifier, reference, "Add Tangent", () =>
+                            {
+                                for (int i = 0; i < 4; i++)
+                                    modifier.values.Insert(_valueIndex, "0");
+                                modifier.values[tangentCountIndex] = (tangentCount + 1).ToString();
+                            }).AddComponent<LayoutElement>().minWidth = 304f;
+                        }
+                        var colorCountIndex = valueIndex;
+                        var colorCount = modifier.GetInt(valueIndex, 0, modifierLoop.variables);
+                        valueIndex++;
+                        for (int i = 0; i < colorCount; i++)
+                        {
+                            var startIndex = valueIndex;
+                            var label = LabelGenerator($"- Color {i}");
+                            DeleteGenerator(modifier, reference, label.transform, () =>
+                            {
+                                modifier.values.RemoveAt(startIndex);
+                                modifier.values[colorCountIndex] = (colorCount - 1).ToString();
+                            });
+
+                            var hexCode = StringGenerator(modifier, reference, "Primary Hex Code", valueIndex);
+                            valueIndex++;
+                            var _valueIndex = valueIndex;
+                            EditorContextMenu.AddContextMenu(hexCode,
+                                EditorContextMenu.GetEditorColorFunctions(hexCode.transform.Find("Input").GetComponent<InputField>(), () => modifier.GetValue(_valueIndex)));
+                        }
+                        // Add
+                        {
+                            var _valueIndex = valueIndex;
+                            AddGenerator(modifier, reference, "Add Color", () =>
+                            {
+                                modifier.values.Insert(_valueIndex, RTColors.WHITE_HEX_CODE);
+                                modifier.values[colorCountIndex] = (colorCount + 1).ToString();
+                            }).AddComponent<LayoutElement>().minWidth = 304f;
+                        }
+                        break;
+                    }
                 case nameof(ModifierFunctions.translateShape): {
                         SingleGenerator(modifier, reference, "Pos X", 1, 0f);
                         SingleGenerator(modifier, reference, "Pos Y", 2, 0f);

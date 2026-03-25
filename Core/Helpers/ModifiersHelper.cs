@@ -1220,6 +1220,7 @@ namespace BetterLegacy.Core.Helpers
             // modify shape
             new ModifierAction(nameof(ModifierFunctions.backgroundShape),  ModifierFunctions.backgroundShape, ModifierCompatibility.BeatmapObjectCompatible),
             new ModifierAction(nameof(ModifierFunctions.sphereShape),  ModifierFunctions.sphereShape, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierFunctions.customMesh),  ModifierFunctions.customMesh, ModifierCompatibility.BeatmapObjectCompatible),
 
             #endregion
 
@@ -9732,6 +9733,224 @@ namespace BetterLegacy.Core.Helpers
             };
             modifier.Result = "frick";
             runtimeObject.visualObject.gameObject.AddComponent<DestroyModifierResult>().Modifier = modifier;
+        }
+
+        public static void customMesh(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
+                return;
+
+            var runtimeObject = beatmapObject.runtimeObject;
+            CustomMeshCache cache;
+            if (modifier.TryGetResult(out cache) && cache.meshFilter)
+            {
+                var mesh = cache.meshFilter.mesh;
+                int valueIndex = 0;
+
+                var vertexCount = modifier.GetInt(valueIndex, 0, modifierLoop.variables);
+                valueIndex++;
+                var verticesChanged = cache.vertices.Length != vertexCount;
+                if (verticesChanged)
+                    cache.vertices = new Vector3[vertexCount];
+                for (int i = 0; i < vertexCount; i++)
+                {
+                    var x = modifier.GetFloat(valueIndex, 0f, modifierLoop.variables);
+                    valueIndex++;
+                    var y = modifier.GetFloat(valueIndex, 0f, modifierLoop.variables);
+                    valueIndex++;
+                    var z = modifier.GetFloat(valueIndex, 0f, modifierLoop.variables);
+                    valueIndex++;
+                    var vertex = new Vector3(x, y, z);
+                    if (cache.vertices[i] == vertex)
+                        continue;
+
+                    cache.vertices[i] = new Vector3(x, y, z);
+                    verticesChanged = true;
+                }
+                if (verticesChanged)
+                    mesh.vertices = cache.vertices;
+
+                var triangleCount = modifier.GetInt(valueIndex, 0, modifierLoop.variables);
+                valueIndex++;
+                var trianglesChanged = cache.triangles.Length != triangleCount;
+                if (trianglesChanged)
+                    cache.triangles = new int[triangleCount];
+                for (int i = 0; i < triangleCount; i++)
+                {
+                    var triangle = modifier.GetInt(valueIndex, 0, modifierLoop.variables);
+                    valueIndex++;
+                    if (cache.triangles[i] == triangle)
+                        continue;
+                    cache.triangles[i] = triangle;
+                    trianglesChanged = true;
+                }
+                if (trianglesChanged)
+                    mesh.triangles = cache.triangles;
+
+                var normalCount = modifier.GetInt(valueIndex, 0, modifierLoop.variables);
+                valueIndex++;
+                var normalsChanged = cache.normals.Length != normalCount;
+                if (normalsChanged)
+                    cache.normals = new Vector3[normalCount];
+                for (int i = 0; i < normalCount; i++)
+                {
+                    var x = modifier.GetFloat(valueIndex, 0f, modifierLoop.variables);
+                    valueIndex++;
+                    var y = modifier.GetFloat(valueIndex, 0f, modifierLoop.variables);
+                    valueIndex++;
+                    var z = modifier.GetFloat(valueIndex, 0f, modifierLoop.variables);
+                    valueIndex++;
+                    var normal = new Vector3(x, y, z);
+                    if (cache.normals[i] == normal)
+                        continue;
+                    cache.normals[i] = normal;
+                    normalsChanged = true;
+                }
+                if (normalsChanged)
+                    mesh.normals = cache.normals;
+
+                var tangentCount = modifier.GetInt(valueIndex, 0, modifierLoop.variables);
+                valueIndex++;
+                var tangentsChanged = cache.tangents.Length != tangentCount;
+                if (tangentsChanged)
+                    cache.tangents = new Vector4[tangentCount];
+                for (int i = 0; i < tangentCount; i++)
+                {
+                    var x = modifier.GetFloat(valueIndex, 0f, modifierLoop.variables);
+                    valueIndex++;
+                    var y = modifier.GetFloat(valueIndex, 0f, modifierLoop.variables);
+                    valueIndex++;
+                    var z = modifier.GetFloat(valueIndex, 0f, modifierLoop.variables);
+                    valueIndex++;
+                    var w = modifier.GetFloat(valueIndex, 0f, modifierLoop.variables);
+                    valueIndex++;
+                    var tangent = new Vector4(x, y, z, w);
+                    if (cache.tangents[i] == tangent)
+                        continue;
+                    cache.tangents[i] = tangent;
+                    tangentsChanged = true;
+                }
+                if (tangentsChanged)
+                    mesh.tangents = cache.tangents;
+
+                var colorCount = modifier.GetInt(valueIndex, 0, modifierLoop.variables);
+                valueIndex++;
+                var colorsChanged = cache.colors.Length != colorCount;
+                if (colorsChanged)
+                    cache.colors = new Color[colorCount];
+                for (int i = 0; i < colorCount; i++)
+                {
+                    var color = RTColors.HexToColor(modifier.GetValue(valueIndex, modifierLoop.variables));
+                    valueIndex++;
+                    if (cache.colors[i] == color)
+                        continue;
+                    cache.colors[i] = color;
+                    colorsChanged = true;
+                }
+                if (colorsChanged)
+                    mesh.colors = cache.colors;
+
+                if (verticesChanged)
+                    mesh.RecalculateBounds();
+            }
+            else
+            {
+                if (beatmapObject.IsSpecialShape || !runtimeObject || !runtimeObject.visualObject || !runtimeObject.visualObject.gameObject)
+                    return;
+
+                cache = new CustomMeshCache();
+                var mesh = new Mesh();
+                int valueIndex = 0;
+
+                var vertexCount = modifier.GetInt(valueIndex, 0, modifierLoop.variables);
+                valueIndex++;
+                cache.vertices = new Vector3[vertexCount];
+                for (int i = 0; i < vertexCount; i++)
+                {
+                    var x = modifier.GetFloat(valueIndex, 0f, modifierLoop.variables);
+                    valueIndex++;
+                    var y = modifier.GetFloat(valueIndex, 0f, modifierLoop.variables);
+                    valueIndex++;
+                    var z = modifier.GetFloat(valueIndex, 0f, modifierLoop.variables);
+                    valueIndex++;
+                    cache.vertices[i] = new Vector3(x, y, z);
+                }
+                mesh.vertices = cache.vertices;
+
+                var triangleCount = modifier.GetInt(valueIndex, 0, modifierLoop.variables);
+                valueIndex++;
+                cache.triangles = new int[triangleCount];
+                for (int i = 0; i < triangleCount; i++)
+                {
+                    cache.triangles[i] = modifier.GetInt(valueIndex, 0, modifierLoop.variables);
+                    valueIndex++;
+                }
+                mesh.triangles = cache.triangles;
+
+                var normalCount = modifier.GetInt(valueIndex, 0, modifierLoop.variables);
+                valueIndex++;
+                cache.normals = new Vector3[normalCount];
+                for (int i = 0; i < normalCount; i++)
+                {
+                    var x = modifier.GetFloat(valueIndex, 0f, modifierLoop.variables);
+                    valueIndex++;
+                    var y = modifier.GetFloat(valueIndex, 0f, modifierLoop.variables);
+                    valueIndex++;
+                    var z = modifier.GetFloat(valueIndex, 0f, modifierLoop.variables);
+                    valueIndex++;
+                    cache.normals[i] = new Vector3(x, y, z);
+                }
+                mesh.normals = cache.normals;
+
+                var tangentCount = modifier.GetInt(valueIndex, 0, modifierLoop.variables);
+                valueIndex++;
+                cache.tangents = new Vector4[tangentCount];
+                for (int i = 0; i < tangentCount; i++)
+                {
+                    var x = modifier.GetFloat(valueIndex, 0f, modifierLoop.variables);
+                    valueIndex++;
+                    var y = modifier.GetFloat(valueIndex, 0f, modifierLoop.variables);
+                    valueIndex++;
+                    var z = modifier.GetFloat(valueIndex, 0f, modifierLoop.variables);
+                    valueIndex++;
+                    var w = modifier.GetFloat(valueIndex, 0f, modifierLoop.variables);
+                    valueIndex++;
+                    cache.tangents[i] = new Vector4(x, y, z, w);
+                }
+                mesh.tangents = cache.tangents;
+
+                var colorCount = modifier.GetInt(valueIndex, 0, modifierLoop.variables);
+                valueIndex++;
+                cache.colors = new Color[colorCount];
+                for (int i = 0; i < colorCount; i++)
+                {
+                    cache.colors[i] = RTColors.HexToColor(modifier.GetValue(valueIndex, modifierLoop.variables));
+                    valueIndex++;
+                }
+                mesh.colors = cache.colors;
+
+                mesh.RecalculateBounds();
+                var meshFilter = runtimeObject.visualObject.gameObject.GetComponent<MeshFilter>();
+                meshFilter.mesh = mesh;
+                cache.meshFilter = meshFilter;
+                modifier.Result = cache;
+                runtimeObject.visualObject.gameObject.AddComponent<DestroyModifierResult>().Modifier = modifier;
+            }
+        }
+
+        public class CustomMeshCache : Exists
+        {
+            public MeshFilter meshFilter;
+
+            public Vector3[] vertices;
+
+            public int[] triangles;
+
+            public Vector3[] normals;
+
+            public Vector4[] tangents;
+
+            public Color[] colors;
         }
 
         #endregion

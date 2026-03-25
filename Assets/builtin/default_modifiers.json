@@ -3015,7 +3015,14 @@
         "value": "0",
         "const": "True",
         "compat": "obj"
-      } // sphereShape
+      }, // sphereShape
+      {
+        "type": 1,
+        "name": "customMesh",
+        "values": ["0","0","0","0","0"],
+        "const": true,
+        "compat": "obj"
+      } // customMesh
     ],
 
     // Animation
