@@ -2,6 +2,7 @@
 ## Features
 ### Core
 - Added a new "Datamosh" event. In order to use this event, you must use the new datamoshGlitch and datamoshReset modifiers.
+- Added customMesh modifier. This fully opens mesh editing so you can make any shape you wish, only if you know how meshes work in Unity.
 
 ## Changes
 ### Editor
@@ -12,6 +13,7 @@
 - Fixed older Legacy levels not updating correctly.
 - Fixed Use Hex Color toggle not turning off if the "Hex Color Keyframe Converts" setting is on.
 - Fixed color toggles not displaying in modifier cards if the color toggles in the object keyframe editor are hidden.
+- Fixed some buttons not displaying as round with the Rounded UI setting on.
 
 -------------------------------------------------------------------
 
