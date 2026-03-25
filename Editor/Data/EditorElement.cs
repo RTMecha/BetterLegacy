@@ -780,26 +780,6 @@ namespace BetterLegacy.Editor.Data
 
             switch (buttonType)
             {
-                case Type.Label2: {
-                        var labelButton = GameObject.GetOrAddComponent<FunctionButtonStorage>();
-                        buttonAdapter = new ButtonAdapter(labelButton);
-
-                        buttonAdapter.Apply(this, initSettings);
-
-                        labelButton.label.alignment = labelAlignment ?? TextAnchor.MiddleLeft;
-                        labelButton.Text = Name;
-                        labelButton.label.rectTransform.sizeDelta = new Vector2(-12f, 0f);
-
-                        if (!initSettings.applyThemes)
-                            break;
-
-                        if (EditorThemeManager.IsSelectable(buttonThemeGroup))
-                            EditorThemeManager.ApplySelectable(labelButton.button, buttonThemeGroup);
-                        else
-                            EditorThemeManager.ApplyGraphic(labelButton.button.image, buttonThemeGroup);
-                        EditorThemeManager.ApplyGraphic(labelButton.label, graphicThemeGroup);
-                        break;
-                    }
                 case Type.Icon: {
                         var iconButton = GameObject.GetOrAddComponent<DeleteButtonStorage>();
                         buttonAdapter = new ButtonAdapter(iconButton);
@@ -856,7 +836,7 @@ namespace BetterLegacy.Editor.Data
                         if (EditorThemeManager.IsSelectable(buttonThemeGroup))
                             EditorThemeManager.ApplySelectable(labelButton.button, buttonThemeGroup);
                         else
-                            EditorThemeManager.ApplyGraphic(labelButton.button.image, buttonThemeGroup);
+                            EditorThemeManager.ApplyGraphic(labelButton.button.image, buttonThemeGroup, true);
                         EditorThemeManager.ApplyGraphic(labelButton.label, graphicThemeGroup);
                         break;
                     }
