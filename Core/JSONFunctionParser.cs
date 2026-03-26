@@ -1459,11 +1459,10 @@ namespace BetterLegacy.Core
                             break;
 
                         var cutsceneIndex = ParseVarFunction(parameters.Get(2, "cutscene_index"), thisElement, customVariables).AsInt;
-                        var bonus = ParseVarFunction(parameters.Get(4, "bonus"), thisElement, customVariables).AsBool;
-                        var skipCutscenes = ParseVarFunction(parameters.GetOrDefault(5, "skip_cutscenes", true), thisElement, customVariables).AsBool;
-                        var allowModes = ParseVarFunction(parameters.GetOrDefault(6, "allow_modes", false), thisElement, customVariables).AsBool;
+                        var bonus = ParseVarFunction(parameters.Get(3, "bonus"), thisElement, customVariables).AsBool;
+                        var allowModes = ParseVarFunction(parameters.GetOrDefault(4, "allow_modes", false), thisElement, customVariables).AsBool;
 
-                        StoryManager.inst.ContinueStory = ParseVarFunction(parameters.Get(3, "continue"), thisElement, customVariables).AsBool;
+                        //StoryManager.inst.ContinueStory = ParseVarFunction(parameters.Get(3, "continue"), thisElement, customVariables).AsBool;
 
                         ArcadeHelper.ResetModifiedStates();
                         StoryManager.inst.Play(new StorySelection
@@ -1472,7 +1471,6 @@ namespace BetterLegacy.Core
                             level = level.AsInt,
                             cutsceneIndex = cutsceneIndex,
                             bonus = bonus,
-                            skipCutscenes = skipCutscenes,
                         });
 
                         break;

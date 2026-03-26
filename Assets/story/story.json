@@ -37,14 +37,19 @@
 							"UpdateCurrentLevelProgress",
 							{
 								"name": "LoadStoryLevel",
-								"params": [
-									0, // chapter
-									0, // level
-									2, // index
-									false,
-									false,
-									false
-								]
+								//"params": [
+								//	0, // chapter
+								//	0, // level
+								//	2, // index
+								//	false,
+								//	false,
+								//	false
+								//]
+								"params": {
+									"chapter": 0,
+									"level": 0,
+									"cutscene_index": 2
+								}
 							}
 						]
 					},
@@ -54,14 +59,19 @@
 							"editor_path": "{{AppDirectory}}beatmaps/editor/BetterLegacy/ACT 1/DOC01/Cutscenes/Introduction to Nano/level.lsb",
 							"on_complete_func": {
 								"name": "LoadStoryLevel",
-								"params": [
-									0, // chapter
-									0, // level
-									1, // index
-									false,
-									false,
-									false
-								]
+								//"params": [
+								//	0, // chapter
+								//	0, // level
+								//	1, // index
+								//	false,
+								//	false,
+								//	false
+								//]
+								"params": {
+									"chapter": 0,
+									"level": 0,
+									"cutscene_index": 1
+								}
 							}
 						}
 					],
@@ -108,14 +118,19 @@
 							"UpdateCurrentLevelProgress",
 							{
 								"name": "LoadStoryLevel",
-								"params": [
-									0, // chapter
-									1, // level
-									2, // index
-									false,
-									false,
-									false
-								]
+								//"params": [
+								//	0, // chapter
+								//	1, // level
+								//	2, // index
+								//	false,
+								//	false,
+								//	false
+								//]
+								"params": {
+									"chapter": 0,
+									"level": 1,
+									"cutscene_index": 2
+								}
 							}
 						]
 					},
@@ -126,14 +141,19 @@
 							"song": "in_the_distance",
 							"on_complete_func": {
 								"name": "LoadStoryLevel",
-								"params": [
-									0, // chapter
-									1, // level
-									1, // index
-									false,
-									false,
-									false
-								]
+								//"params": [
+								//	0, // chapter
+								//	1, // level
+								//	1, // index
+								//	false,
+								//	false,
+								//	false
+								//]
+								"params": {
+									"chapter": 0,
+									"level": 1,
+									"cutscene_index": 1
+								}
 							}
 						}
 					],
@@ -179,14 +199,11 @@
 							"UpdateCurrentLevelProgress",
 							{
 								"name": "LoadStoryLevel",
-								"params": [
-									0, // chapter
-									2, // level
-									2, // index
-									false,
-									false,
-									false
-								]
+								"params": {
+									"chapter": 0,
+									"level": 2,
+									"cutscene_index": 2
+								}
 							}
 						]
 					},
@@ -196,14 +213,11 @@
 							"editor_path": "{{AppDirectory}}beatmaps/editor/BetterLegacy/ACT 1/DOC01/Cutscenes/Anna Discovered/level.lsb",
 							"on_complete_func": {
 								"name": "LoadStoryLevel",
-								"params": [
-									0, // chapter
-									2, // level
-									1, // index
-									false,
-									false,
-									false
-								]
+								"params": {
+									"chapter": 0,
+									"level": 2,
+									"cutscene_index": 1
+								}
 							}
 						}
 					],
@@ -250,14 +264,11 @@
 							"UpdateCurrentLevelProgress",
 							{
 								"name": "LoadStoryLevel",
-								"params": [
-									0, // chapter
-									3, // level
-									2, // index
-									false,
-									false,
-									false
-								]
+								"params": {
+									"chapter": 0,
+									"level": 3,
+									"cutscene_index": 2
+								}
 							}
 						]
 					},
@@ -267,14 +278,11 @@
 							"editor_path": "{{AppDirectory}}beatmaps/editor/BetterLegacy/ACT 1/DOC01/Cutscenes/Anna Meet/level.lsb",
 							"on_complete_func": {
 								"name": "LoadStoryLevel",
-								"params": [
-									0, // chapter
-									3, // level
-									1, // index
-									false,
-									false,
-									false
-								]
+								"params": {
+									"chapter": 0,
+									"level": 3,
+									"cutscene_index": 1
+								}
 							}
 						}
 					],
@@ -320,14 +328,11 @@
 							"UpdateCurrentLevelProgress",
 							{
 								"name": "LoadStoryLevel",
-								"params": [
-									0, // chapter
-									4, // level
-									2, // index
-									false,
-									false,
-									false
-								]
+								"params": {
+									"chapter": 0,
+									"level": 4,
+									"cutscene_index": 2
+								}
 							}
 						]
 					},
@@ -337,14 +342,11 @@
 							"editor_path": "{{AppDirectory}}beatmaps/editor/BetterLegacy/ACT 1/DOC01/Cutscenes/Approaching the Edge/level.lsb",
 							"on_complete_func": {
 								"name": "LoadStoryLevel",
-								"params": [
-									0, // chapter
-									4, // level
-									1, // index
-									false,
-									false,
-									false
-								]
+								"params": {
+									"chapter": 0,
+									"level": 4,
+									"cutscene_index": 1
+								}
 							}
 						}
 					],
@@ -394,14 +396,11 @@
 							"UpdateCurrentLevelProgress",
 							{
 								"name": "LoadStoryLevel",
-								"params": [
-									0, // chapter
-									5, // level
-									1, // index
-									false,
-									false,
-									false
-								]
+								"params": {
+									"chapter": 0,
+									"level": 5,
+									"cutscene_index": 1
+								}
 							}
 						]
 					},
@@ -455,14 +454,11 @@
 							"UpdateCurrentLevelProgress",
 							{
 								"name": "LoadStoryLevel",
-								"params": [
-									0, // chapter
-									6, // level
-									1, // index
-									false,
-									false,
-									false
-								]
+								"params": {
+									"chapter": 0,
+									"level": 6,
+									"cutscene_index": 1
+								}
 							}
 						]
 					},
