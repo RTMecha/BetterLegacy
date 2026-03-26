@@ -1,4 +1,4 @@
-﻿# snapshot-2026.?.? - (Story Playtest) [???]
+﻿# snapshot-2026.3.5 - (Story Playtest) [Mar 26, 2026]
 ## Features
 ### Core
 - Added a new "Datamosh" event. In order to use this event, you must use the new datamoshGlitch and datamoshReset modifiers.
@@ -14,6 +14,8 @@
 - Fixed Use Hex Color toggle not turning off if the "Hex Color Keyframe Converts" setting is on.
 - Fixed color toggles not displaying in modifier cards if the color toggles in the object keyframe editor are hidden.
 - Fixed some buttons not displaying as round with the Rounded UI setting on.
+- Fixed the End Level Interface displaying in cutscenes.
+- Fixed Story sequences being broken.
 
 -------------------------------------------------------------------
 
