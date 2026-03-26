@@ -1,29 +1,18 @@
-# snapshot-2026.3.4 - (Story Playtest) [Mar 20, 2026]
+# snapshot-2026.3.5 - (Story Playtest) [Mar 26, 2026]
 ## Features
 ### Core
-- Added mesh options for the sphereShape modifier.
-- Rotation keyframes can be switched to a 3D mode.
-- Color keyframes can now be switched to use hex colors instead of theme keyframes.
-- Replaced old "Level Mode" system with a new package / file management system. With this, you can specify the file name of the song, level and cover files.
-- Added setAudio modifier. This gets a song registered in the files and sets it as the current.
-- Added setGameData modifier. This swaps the current level data with a different registered .lsb, .vgd or even .json file. This feature is heavily experimental so beware.
-- Added "Alternate" value to polygon shapes. This value makes each corner alternate their radius, creating a star shape.
-- Internally a "Polyon Type" is being worked on, just need to wait on how the inverted shape will end up in the main game.
-
-### Story
-- Story levels can now have the End Level Interface display when a level is complete via the "Story Shows End Interface" setting in Config Manager > Core > Level. This setting is off by default for a more streamlined story experience.
-- Level selects now open the Play Level Interface rather than booting the level immediately. This now allows you to properly play the levels with challenge and speed modes.
-
-### Arcade
-- With the new package system, a preview song can be set for the arcade.
-
-### Editor
-- Added "Hex Color Keyframe Converts" in Config Manager > Editor > Data. This setting automatically changes the color keyframe value to hex if the Use Hex Color toggle is toggled on.
+- Added a new "Datamosh" event. In order to use this event, you must use the new datamoshGlitch and datamoshReset modifiers.
+- Added customMesh modifier. This fully opens mesh editing so you can make any shape you wish, only if you know how meshes work in Unity.
 
 ## Changes
 ### Editor
-- The object keyframe editors now have a scroll area. The "Move Dialog" toggle button has been removed due to this.
+- Swapped Camera Depth keyframe values "Position Z" and "Depth".
 
 ## Fixes
-- Fixed the player not being able to jump off platforms in some cases. (collision distance less than 0.1)
-- Fixed themes retaining their file path when imported.
+- Fixed BG camera not being consistent with older Legacy levels. This may break some levels that turn Use Global Position on in the Camera Depth keyframe.
+- Fixed older Legacy levels not updating correctly.
+- Fixed Use Hex Color toggle not turning off if the "Hex Color Keyframe Converts" setting is on.
+- Fixed color toggles not displaying in modifier cards if the color toggles in the object keyframe editor are hidden.
+- Fixed some buttons not displaying as round with the Rounded UI setting on.
+- Fixed the End Level Interface displaying in cutscenes.
+- Fixed Story sequences being broken.
