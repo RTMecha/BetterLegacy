@@ -2454,7 +2454,7 @@ namespace BetterLegacy.Core.Helpers
 
                 // Animate rotation
                 if (animateRot)
-                    applyTo.rotationOffset = new Vector3(0f, 0f, takeFrom.InterpolateChainRotation(currentTime - time - delayRot));
+                    applyTo.rotationOffset = takeFrom.InterpolateChainRotation(currentTime - time - delayRot);
             }
         }
 
@@ -11005,7 +11005,7 @@ namespace BetterLegacy.Core.Helpers
                 {
                     0 => bm.InterpolateChainPosition().At(fromAxis),
                     1 => bm.InterpolateChainScale().At(fromAxis),
-                    2 => bm.InterpolateChainRotation(),
+                    2 => bm.InterpolateChainRotation().At(modifier.version == 0 ? 2 : fromAxis),
                     _ => 0f,
                 }, min, max));
         }
@@ -11127,7 +11127,7 @@ namespace BetterLegacy.Core.Helpers
                     {
                         0 => bm.InterpolateChainPosition().At(fromAxis),
                         1 => bm.InterpolateChainScale().At(fromAxis),
-                        2 => bm.InterpolateChainRotation(),
+                        2 => bm.InterpolateChainRotation().At(modifier.version == 0 ? 2 : fromAxis),
                         _ => 0f,
                     };
                     bm.SetOtherObjectVariables(numberVariables);
@@ -11230,7 +11230,7 @@ namespace BetterLegacy.Core.Helpers
                         {
                             0 => Mathf.Clamp(beatmapObject.InterpolateChainPosition().At(fromAxis), min, max),
                             1 => Mathf.Clamp(beatmapObject.InterpolateChainScale().At(fromAxis), min, max),
-                            2 => Mathf.Clamp(beatmapObject.InterpolateChainRotation(), min, max),
+                            2 => Mathf.Clamp(beatmapObject.InterpolateChainRotation().At(modifier.version == 0 ? 2 : fromAxis), min, max),
                             _ => 0f,
                         });
 
@@ -11246,6 +11246,43 @@ namespace BetterLegacy.Core.Helpers
             {
                 CoreHelper.LogError($"{modifierLoop.reference} had an error. Exception: {ex}");
             }
+        }
+
+        // probably won't go with this
+        public static void interpolateObject(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            var transformable = modifierLoop.reference.AsTransformable();
+            if (transformable == null)
+                return;
+            var prefabable = modifierLoop.reference.AsPrefabable();
+            if (prefabable == null)
+                return;
+
+            var tag = modifier.GetValue(0, modifierLoop.variables);
+
+            var cache = modifier.GetResultOrDefault(() => GroupBeatmapObjectCache.Get(modifier, prefabable, tag));
+            if (cache.tag != tag)
+            {
+                cache.UpdateCache(modifier, prefabable, tag);
+                modifier.Result = cache;
+            }
+
+            var bm = cache.obj;
+            if (!bm)
+                return;
+
+            var time = modifier.GetFloat(1, 0f, modifierLoop.variables);
+            if (modifier.GetBool(2, true, modifierLoop.variables)) // animate pos x
+                transformable.PositionOffset = transformable.PositionOffset.X(Mathf.Clamp((bm.Interpolate(0, 0, time) - modifier.GetFloat(3, 0f, modifierLoop.variables)) * modifier.GetFloat(4, 1f, modifierLoop.variables), modifier.GetFloat(5, -9999f, modifierLoop.variables), modifier.GetFloat(6, -9999f, modifierLoop.variables)));
+            if (modifier.GetBool(7, true, modifierLoop.variables)) // animate pos y
+                transformable.PositionOffset = transformable.PositionOffset.Y(Mathf.Clamp((bm.Interpolate(0, 1, time) - modifier.GetFloat(8, 0f, modifierLoop.variables)) * modifier.GetFloat(9, 1f, modifierLoop.variables), modifier.GetFloat(10, -9999f, modifierLoop.variables), modifier.GetFloat(11, -9999f, modifierLoop.variables)));
+            if (modifier.GetBool(12, true, modifierLoop.variables)) // animate pos z
+                transformable.PositionOffset = transformable.PositionOffset.Y(Mathf.Clamp((bm.Interpolate(0, 2, time) - modifier.GetFloat(13, 0f, modifierLoop.variables)) * modifier.GetFloat(14, 1f, modifierLoop.variables), modifier.GetFloat(15, -9999f, modifierLoop.variables), modifier.GetFloat(16, -9999f, modifierLoop.variables)));
+
+            if (modifier.GetBool(17, true, modifierLoop.variables)) // animate sca x
+                transformable.PositionOffset = transformable.PositionOffset.X(Mathf.Clamp((bm.Interpolate(1, 0, time) - modifier.GetFloat(18, 0f, modifierLoop.variables)) * modifier.GetFloat(19, 1f, modifierLoop.variables), modifier.GetFloat(20, -9999f, modifierLoop.variables), modifier.GetFloat(21, -9999f, modifierLoop.variables)));
+            if (modifier.GetBool(22, true, modifierLoop.variables)) // animate sca y
+                transformable.PositionOffset = transformable.PositionOffset.Y(Mathf.Clamp((bm.Interpolate(1, 1, time) - modifier.GetFloat(8, 0f, modifierLoop.variables)) * modifier.GetFloat(9, 1f, modifierLoop.variables), modifier.GetFloat(10, -9999f, modifierLoop.variables), modifier.GetFloat(11, -9999f, modifierLoop.variables)));
         }
 
         public static void copyPlayerAxis(Modifier modifier, ModifierLoop modifierLoop)
@@ -11307,7 +11344,7 @@ namespace BetterLegacy.Core.Helpers
 
             var animationResult = beatmapObject.InterpolateChain();
             list[0].pos = animationResult.position;
-            list[0].rot = Quaternion.Euler(0f, 0f, animationResult.rotation);
+            list[0].rot = Quaternion.Euler(animationResult.rotation);
 
             float num = Time.deltaTime * totalTime;
 
