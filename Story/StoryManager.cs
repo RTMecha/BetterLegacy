@@ -839,7 +839,11 @@ namespace BetterLegacy.Story
                             selectedTextVal = -40f,
                             length = 0.3f,
                             playBlipSound = true,
-                            func = () => EndFunction(storyChapter, storyLevel, levelPath, onLevelEnd),
+                            func = () =>
+                            {
+                                InterfaceManager.inst.CloseMenus();
+                                EndFunction(storyChapter, storyLevel, levelPath, onLevelEnd);
+                            },
                         }
                     });
             else
