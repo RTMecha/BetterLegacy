@@ -379,7 +379,7 @@ namespace ILMath
                             {
                                 0 => bm.InterpolateChainPosition((float)time, hasValues && parameters[3] == 1, !hasValues || parameters[4] == 1, !hasValues || parameters[5] == 1)[(int)axis],
                                 1 => bm.InterpolateChainScale((float)time, !hasValues || parameters[3] == 1, !hasValues || parameters[4] == 1)[(int)axis],
-                                2 => bm.InterpolateChainRotation((float)time, !hasValues || parameters[3] == 1, !hasValues || parameters[4] == 1),
+                                2 => bm.InterpolateChainRotation((float)time, !hasValues || parameters[3] == 1, !hasValues || parameters[4] == 1)[(int)axis],
                                 _ => 0,
                             };
                             return true;

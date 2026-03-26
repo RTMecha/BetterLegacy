@@ -1738,7 +1738,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 return transform.parent.eulerAngles;
             }
 
-            return new Vector3(0f, 0f, InterpolateChainRotation(includeSelf: includeSelf));
+            return InterpolateChainRotation(includeSelf: includeSelf);
         }
 
         public List<EventKeyframe> GetEventKeyframes(int type) => events[type];
@@ -1801,13 +1801,10 @@ namespace BetterLegacy.Core.Data.Beatmap
                 _ => nextKF.values,
             };
 
-            valueIndex = Mathf.Clamp(valueIndex, 0, (source == 0 ? list[0].values : list[0].randomValues).Length);
-
-            if (prevKFValues.Length <= valueIndex)
-                return 0f;
+            //valueIndex = Mathf.Clamp(valueIndex, 0, (source == 0 ? list[0].values : list[0].randomValues).Length);
 
             if (time <= 0f)
-                return prevKFValues[valueIndex];
+                return !prevKFValues.InRange(valueIndex) ? 0f : prevKFValues[valueIndex];
 
             var total = 0f;
             var prevtotal = 0f;
@@ -1821,19 +1818,21 @@ namespace BetterLegacy.Core.Data.Beatmap
                         _ => list[k].values,
                     };
                     if (list[k + 1].relative)
-                        total += rv[valueIndex];
+                        total += !rv.InRange(valueIndex) ? 0f : rv[valueIndex];
                     else
                         total = 0f;
 
                     if (list[k].relative)
-                        prevtotal += rv[valueIndex];
+                        prevtotal += !rv.InRange(valueIndex) ? 0f : rv[valueIndex];
                     else
                         prevtotal = 0f;
                 }
             }
 
-            var next = nextKF.relative ? total + nextKFValues[valueIndex] : nextKFValues[valueIndex];
-            var prev = prevKF.relative || nextKF.relative ? prevtotal : prevKFValues[valueIndex];
+            var next = !nextKFValues.InRange(valueIndex) ? 0f : nextKFValues[valueIndex];
+            if (nextKF.relative)
+                next += total;
+            var prev = prevKF.relative || nextKF.relative ? prevtotal : !prevKFValues.InRange(valueIndex) ? 0f : prevKFValues[valueIndex];
 
             bool isLerper = type != 3 || valueIndex != 0 || valueIndex != 5;
 
@@ -1859,10 +1858,10 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public float Interpolate(EventKeyframe prevKeyframe, EventKeyframe nextKeyframe, int type, int valueIndex, float time)
         {
-            valueIndex = Mathf.Clamp(valueIndex, 0, prevKeyframe.values.Length);
+            //valueIndex = Mathf.Clamp(valueIndex, 0, prevKeyframe.values.Length);
 
-            if (prevKeyframe.values.Length <= valueIndex)
-                return 0f;
+            if (time <= 0f)
+                return !prevKeyframe.values.InRange(valueIndex) ? 0f : prevKeyframe.values[valueIndex];
 
             var total = 0f;
             var prevtotal = 0f;
@@ -1871,23 +1870,26 @@ namespace BetterLegacy.Core.Data.Beatmap
                 var list = events[type];
                 for (int k = 0; k < events[type].Count; k++)
                 {
-                    if (time >= list[k].time)
+                    var kf = list[k];
+                    if (time >= kf.time)
                         break;
 
                     if (list[k + 1].relative)
-                        total += list[k].values[valueIndex];
+                        total += !kf.values.InRange(valueIndex) ? 0f : kf.values[valueIndex];
                     else
                         total = 0f;
 
-                    if (list[k].relative)
-                        prevtotal += list[k].values[valueIndex];
+                    if (kf.relative)
+                        prevtotal += !kf.values.InRange(valueIndex) ? 0f : kf.values[valueIndex];
                     else
                         prevtotal = 0f;
                 }
             }
 
-            var next = nextKeyframe.relative ? total + nextKeyframe.values[valueIndex] : nextKeyframe.values[valueIndex];
-            var prev = prevKeyframe.relative || nextKeyframe.relative ? prevtotal : prevKeyframe.values[valueIndex];
+            var next = !nextKeyframe.values.InRange(valueIndex) ? 0f : nextKeyframe.values[valueIndex];
+            if (nextKeyframe.relative)
+                next += total;
+            var prev = prevKeyframe.relative || nextKeyframe.relative ? prevtotal : !prevKeyframe.values.InRange(valueIndex) ? 0f : prevKeyframe.values[valueIndex];
 
             bool isLerper = type != 3 || valueIndex != 0;
 
@@ -2022,9 +2024,9 @@ namespace BetterLegacy.Core.Data.Beatmap
             return InterpolateChain(time, false, includeOffsets, includeSelf).scale;
         }
 
-        public float InterpolateChainRotation(bool includeOffsets = true, bool includeSelf = true) => InterpolateChainRotation(this.GetParentRuntime().CurrentTime, includeOffsets, includeSelf);
+        public Vector3 InterpolateChainRotation(bool includeOffsets = true, bool includeSelf = true) => InterpolateChainRotation(this.GetParentRuntime().CurrentTime, includeOffsets, includeSelf);
 
-        public float InterpolateChainRotation(float time, bool includeOffsets = true, bool includeSelf = true)
+        public Vector3 InterpolateChainRotation(float time, bool includeOffsets = true, bool includeSelf = true)
         {
             //float result = 0f;
 
@@ -2054,11 +2056,11 @@ namespace BetterLegacy.Core.Data.Beatmap
             return InterpolateChain(time, false, includeOffsets, includeSelf).rotation;
         }
 
-        public ObjectTransform.Struct InterpolateChain(bool includeDepth = false, bool includeOffsets = true, bool includeSelf = true) => InterpolateChain(this.GetParentRuntime().CurrentTime, includeDepth, includeOffsets, includeSelf);
+        public FullTransform.Struct InterpolateChain(bool includeDepth = false, bool includeOffsets = true, bool includeSelf = true) => InterpolateChain(this.GetParentRuntime().CurrentTime, includeDepth, includeOffsets, includeSelf);
 
-        public ObjectTransform.Struct InterpolateChain(float time, bool includeDepth = false, bool includeOffsets = true, bool includeSelf = true)
+        public FullTransform.Struct InterpolateChain(float time, bool includeDepth = false, bool includeOffsets = true, bool includeSelf = true)
         {
-            var result = ObjectTransform.Struct.Default;
+            var result = FullTransform.Struct.Default;
 
             var parents = GetParentChain();
             parents.Reverse();
@@ -2113,7 +2115,8 @@ namespace BetterLegacy.Core.Data.Beatmap
                     if (!animatePosition)
                         result.position = RTMath.Rotate(result.position, result.rotation);
 
-                    var rotation = parent.Interpolate(2, 0, time - timeOffset - (rotationOffset + rotationAddedOffset));
+                    var t = time - timeOffset - (rotationOffset + rotationAddedOffset);
+                    var rotation = new Vector3(parent.Interpolate(2, 0, t), parent.Interpolate(2, 1, t), parent.Interpolate(2, 2, t));
                     result.rotation = (result.rotation + rotation) * rotationParallax;
                 }
 
@@ -2123,7 +2126,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                         result.position *= currentScale;
 
                     var t = time - timeOffset - (scaleOffset + scaleAddedOffset);
-                    var scale = new Vector2(parent.Interpolate(1, 0, t), parent.Interpolate(1, 1, t));
+                    var scale = new Vector3(parent.Interpolate(1, 0, t), parent.Interpolate(1, 1, t), 1f);
                     result.scale = RTMath.Scale(result.scale, scale) * scaleParallax;
                     currentScale = scale;
                 }
@@ -2144,11 +2147,11 @@ namespace BetterLegacy.Core.Data.Beatmap
                 if (includeOffsets)
                 {
                     result.position += parent.positionOffset;
-                    result.scale = new Vector2(result.scale.x + parent.scaleOffset.x, result.scale.y + parent.scaleOffset.y);
-                    result.rotation += parent.rotationOffset.z;
+                    result.scale = new Vector3(result.scale.x + parent.scaleOffset.x, result.scale.y + parent.scaleOffset.y, result.scale.z + parent.scaleOffset.z);
+                    result.rotation += parent.rotationOffset;
                 }
 
-                if (result.scale == Vector2.zero) // optimize scaled zero
+                if (result.scale.x == 0f || result.scale.y == 0f || result.scale.z == 0f) // optimize scaled zero
                     break;
             }
 
@@ -2268,30 +2271,14 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public void SetObjectFunctions(Dictionary<string, MathFunction> functions)
         {
-            functions["interpolateChainPosX"] = parameters =>
-            {
-                return InterpolateChainPosition((float)parameters[0], parameters[1] == 1, parameters[2] == 1, parameters[3] == 1).x;
-            };
-            functions["interpolateChainPosY"] = parameters =>
-            {
-                return InterpolateChainPosition((float)parameters[0], parameters[1] == 1, parameters[2] == 1, parameters[3] == 1).y;
-            };
-            functions["interpolateChainPosZ"] = parameters =>
-            {
-                return InterpolateChainPosition((float)parameters[0], parameters[1] == 1, parameters[2] == 1, parameters[3] == 1).z;
-            };
-            functions["interpolateChainScaX"] = parameters =>
-            {
-                return InterpolateChainScale((float)parameters[0], parameters[1] == 1, parameters[2] == 1).x;
-            };
-            functions["interpolateChainScaY"] = parameters =>
-            {
-                return InterpolateChainScale((float)parameters[0], parameters[1] == 1, parameters[2] == 1).y;
-            };
-            functions["interpolateChainRot"] = parameters =>
-            {
-                return InterpolateChainRotation((float)parameters[0], parameters[1] == 1, parameters[2] == 1);
-            };
+            functions["interpolateChainPosX"] = parameters => InterpolateChainPosition((float)parameters[0], parameters[1] == 1, parameters[2] == 1, parameters[3] == 1).x;
+            functions["interpolateChainPosY"] = parameters => InterpolateChainPosition((float)parameters[0], parameters[1] == 1, parameters[2] == 1, parameters[3] == 1).y;
+            functions["interpolateChainPosZ"] = parameters => InterpolateChainPosition((float)parameters[0], parameters[1] == 1, parameters[2] == 1, parameters[3] == 1).z;
+            functions["interpolateChainScaX"] = parameters => InterpolateChainScale((float)parameters[0], parameters[1] == 1, parameters[2] == 1).x;
+            functions["interpolateChainScaY"] = parameters => InterpolateChainScale((float)parameters[0], parameters[1] == 1, parameters[2] == 1).y;
+            functions["interpolateChainRot"] = parameters => InterpolateChainRotation((float)parameters[0], parameters[1] == 1, parameters[2] == 1).z;
+            functions["interpolateChainRotX"] = parameters => InterpolateChainRotation((float)parameters[0], parameters[1] == 1, parameters[2] == 1).x;
+            functions["interpolateChainRotY"] = parameters => InterpolateChainRotation((float)parameters[0], parameters[1] == 1, parameters[2] == 1).y;;
         }
 
         #endregion

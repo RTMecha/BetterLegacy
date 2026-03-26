@@ -518,6 +518,24 @@ namespace BetterLegacy.Core
         /// <returns>Returns a color channel.</returns>
         public static float At(this Color color, int index) => color[Mathf.Clamp(index, 0, 3)];
 
+        public static Vector2 X(this Vector2 vector, float x) => new Vector2(x, vector.y);
+
+        public static Vector2 Y(this Vector2 vector, float y) => new Vector2(vector.x, y);
+        
+        public static Vector3 X(this Vector3 vector, float x) => new Vector3(x, vector.y, vector.z);
+
+        public static Vector3 Y(this Vector3 vector, float y) => new Vector3(vector.x, y, vector.z);
+        
+        public static Vector3 Z(this Vector3 vector, float z) => new Vector3(vector.x, vector.y, z);
+
+        public static Vector4 X(this Vector4 vector, float x) => new Vector4(x, vector.y, vector.z, vector.w);
+
+        public static Vector4 Y(this Vector4 vector, float y) => new Vector4(vector.x, y, vector.z, vector.w);
+
+        public static Vector4 Z(this Vector4 vector, float z) => new Vector4(vector.x, vector.y, z, vector.w);
+        
+        public static Vector4 W(this Vector4 vector, float w) => new Vector4(vector.x, vector.y, vector.z, w);
+
         public static Vector3 AsVector3(this Vector2 vector2) => new Vector3(vector2.x, vector2.y);
         public static Vector3 AsVector3(this Vector2 vector2, float z) => new Vector3(vector2.x, vector2.y, z);
 
@@ -3232,13 +3250,6 @@ namespace BetterLegacy.Core
         }
 
         public static void Save(this Sprite sprite, string path) => SpriteHelper.SaveSprite(sprite, path);
-
-        public static Vector3 X(this Vector3 vector3) => new Vector3(vector3.x, 0f, 0f);
-        public static Vector3 Y(this Vector3 vector3) => new Vector3(0f, vector3.y, 0f);
-        public static Vector3 Z(this Vector3 vector3) => new Vector3(0f, 0f, vector3.z);
-
-        public static Vector2 X(this Vector2 vector3) => new Vector2(vector3.x, 0f);
-        public static Vector2 Y(this Vector2 vector3) => new Vector2(0f, vector3.y);
 
         #endregion
     }

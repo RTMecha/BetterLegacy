@@ -155,7 +155,7 @@ namespace BetterLegacy.Editor.Components
                                         break;
                                     }
                                 case 2: {
-                                        eventKeyfame.values[0] = val.rotation;
+                                        eventKeyfame.values[0] = val.rotation.z;
                                         break;
                                     }
                             }

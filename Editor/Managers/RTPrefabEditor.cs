@@ -1523,7 +1523,7 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         /// <param name="prefab">Prefab to import.</param>
         /// <param name="target">Object to target.</param>
-        public void AddPrefabObjectToLevel(Prefab prefab, ObjectTransform target = null)
+        public void AddPrefabObjectToLevel(Prefab prefab, FullTransform target = null)
         {
             var prefabObject = new PrefabObject
             {
@@ -1565,7 +1565,7 @@ namespace BetterLegacy.Editor.Managers
                 prefabObject.events[0].values[1] = target.position.y;
                 prefabObject.events[1].values[0] = target.scale.x;
                 prefabObject.events[1].values[1] = target.scale.y;
-                prefabObject.events[2].values[0] = target.rotation;
+                prefabObject.events[2].values[0] = target.rotation.z;
             }
             else if (EditorConfig.Instance.SpawnPrefabsAtCameraCenter.Value)
             {
