@@ -235,6 +235,16 @@ namespace BetterLegacy.Configs
         public Setting<bool> ReplayLevel { get; set; }
 
         /// <summary>
+        /// If music should play when a level is completed.
+        /// </summary>
+        public Setting<bool> PlayEndLevelMusic { get; set; }
+
+        /// <summary>
+        /// If levels in the story mode should show the end level interface when the level ends. If this setting is off, the next cutscene / level / interface will play instead.
+        /// </summary>
+        public Setting<bool> StoryShowsEndInterface { get; set; }
+
+        /// <summary>
         /// Due to LS file formats also being in level folders with VG formats, VG format will need to be prioritized, though you can turn this off if a VG level isn't working and it has a level.lsb file.
         /// </summary>
         public Setting<bool> PrioritizeVG { get; set; }
@@ -258,8 +268,6 @@ namespace BetterLegacy.Configs
         /// If recently opened / saved levels in the editor / arcade are saved to a stats.json file. Good for remembering what you did recently.
         /// </summary>
         public Setting<bool> StoreRecentLevels { get; set; }
-
-        public Setting<bool> StoryShowsEndInterface { get; set; }
 
         #endregion
 
@@ -414,12 +422,13 @@ namespace BetterLegacy.Configs
             EnableVideoBackground = Bind(this, LEVEL, "Video Backgrounds", true, "If on, the old video BG feature returns, though somewhat buggy. Requires a bg.mp4 or bg.mov file to exist in the level folder.");
             UseNewUpdateMethod = Bind(this, LEVEL, "Use New Update Method", true, "Possibly releases the fixed framerate of the game.");
             ReplayLevel = Bind(this, LEVEL, "Replay Level in Background After Completion", true, "When completing a level, having this on will replay the level with no players in the background of the end screen.");
+            PlayEndLevelMusic = Bind(this, LEVEL, "Play End Level Music", false, "If music should play when a level is completed.");
+            StoryShowsEndInterface = Bind(this, LEVEL, "Story Shows End Interface", false, "If levels in the story mode should show the end level interface when the level ends. If this setting is off, the next cutscene / level / interface will play instead.");
             PrioritizeVG = Bind(this, LEVEL, "Priotize VG format", true, "Due to LS file formats also being in level folders with VG formats, VG format will need to be prioritized, though you can turn this off if a VG level isn't working and it has a level.lsb file.");
             ParseOptimizations = Bind(this, LEVEL, "Parse Optimizations", false, "When parsing a level, it will automatically try to apply as many optimizations to itself as possible changing how the level works.");
             PlayCheckpointSound = Bind(this, LEVEL, "Play Checkpoint Sound", true, "If the checkpoint sound should play.");
             PlayCheckpointAnimation = Bind(this, LEVEL, "Play Checkpoint Animation", true, "If the checkpoint animation should play.");
             StoreRecentLevels = Bind(this, LEVEL, "Store Recent Levels", false, "If recently opened / saved levels in the editor / arcade are saved to a stats.json file. Good for remembering what you did recently.");
-            StoryShowsEndInterface = Bind(this, LEVEL, "Story Shows End Interface", false, "If levels in the story mode should show the end level interface when the level ends. If this setting is off, the next cutscene / level / interface will show.");
 
             #endregion
 

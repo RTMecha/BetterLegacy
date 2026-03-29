@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 
 using LSFunctions;
+
 using BetterLegacy.Companion.Data.Parameters;
 using BetterLegacy.Companion.Entity;
+using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
@@ -33,6 +35,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
             GameManager.inst.players.SetActive(false);
             InputDataManager.inst.SetAllControllerRumble(0f);
             onGenerateUIFinish = () => InputDataManager.inst.SetAllControllerRumble(0f);
+            allowCustomMusic = false;
+            musicName = "end_level";
 
             GameManager.inst.timeline.gameObject.SetActive(false);
 
@@ -294,6 +298,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
             elements.AddRange(GenerateBottomBar());
 
             InterfaceManager.inst.SetCurrentInterface(this);
+            if (!CoreConfig.Instance.ReplayLevel.Value && CoreConfig.Instance.PlayEndLevelMusic.Value)
+                InterfaceManager.inst.PlayMusic();
         }
 
         public override void UpdateTheme()
