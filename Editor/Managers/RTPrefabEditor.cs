@@ -1457,6 +1457,18 @@ namespace BetterLegacy.Editor.Managers
                 GameData.Current.prefabObjects.RemoveAt(index);
             });
 
+            ForEachPrefabRecursive((prefab, source, index) =>
+            {
+                if (!prefab || prefab.id == newPrefab.id || source is GameData)
+                    return;
+                source.Prefabs[index] = newPrefab;
+                for (int i = 0; i < source.PrefabObjects.Count; i++)
+                {
+                    var prefabObject = source.PrefabObjects[i];
+                    prefabObject?.ParentRuntime?.UpdatePrefab(prefabObject);
+                }
+            });
+
             GameData.Current.prefabObjects.Add(prefabObject);
             RTLevel.Current?.UpdatePrefab(prefabObject, recalculate: false);
 
@@ -3110,6 +3122,54 @@ namespace BetterLegacy.Editor.Managers
             int num = GameData.Current.prefabs.FindAll(x => Regex.Replace(x.name, "( +\\[\\d+])", string.Empty) == prefab.name).Count;
             if (num > 0)
                 prefab.name = $"{prefab.name} [{num}]";
+        }
+
+        /// <summary>
+        /// Iterates through all prefabs in the level, including recursive prefabs.
+        /// </summary>
+        /// <param name="action">Function to run for each prefab.</param>
+        public void ForEachPrefabRecursive(Action<Prefab> action) => ForEachPrefabRecursive(GameData.Current.prefabs, action);
+        
+        /// <summary>
+        /// Iterates through all prefabs in the level, including recursive prefabs.
+        /// </summary>
+        /// <param name="prefabs">Prefab list to iterate through.</param>
+        /// <param name="action">Function to run for each prefab.</param>
+        public void ForEachPrefabRecursive(List<Prefab> prefabs, Action<Prefab> action)
+        {
+            for (int i = 0; i < prefabs.Count; i++)
+            {
+                var prefab = prefabs[i];
+                action?.Invoke(prefab);
+                if (!prefab.prefabs.IsEmpty())
+                    ForEachPrefabRecursive(prefab.prefabs, action);
+            }
+        }
+
+        /// <summary>
+        /// Iterates through all prefabs in the level, including recursive prefabs.
+        /// </summary>
+        /// <param name="action">Function to run for each prefab.</param>
+        public void ForEachPrefabRecursive(Action<Prefab, IBeatmap, int> action) => ForEachPrefabRecursive(GameData.Current, action);
+
+        /// <summary>
+        /// Iterates through all prefabs in the level, including recursive prefabs.
+        /// </summary>
+        /// <param name="prefabs">Prefab list to iterate through.</param>
+        /// <param name="action">Function to run for each prefab.</param>
+        public void ForEachPrefabRecursive(IBeatmap source, Action<Prefab, IBeatmap, int> action)
+        {
+            var prefabs = source.Prefabs;
+            if (prefabs == null)
+                return;
+
+            for (int i = 0; i < prefabs.Count; i++)
+            {
+                var prefab = prefabs[i];
+                action?.Invoke(prefab, source, i);
+                if (!prefab.prefabs.IsEmpty())
+                    ForEachPrefabRecursive(prefab, action);
+            }
         }
 
         public bool UpdateLevelPrefab(Prefab prefab)
