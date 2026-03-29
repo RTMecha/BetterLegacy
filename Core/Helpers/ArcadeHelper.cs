@@ -74,6 +74,7 @@ namespace BetterLegacy.Core.Helpers
             LevelManager.LevelEnded = false;
 
             InterfaceManager.inst.CloseMenus();
+            InterfaceManager.inst.StopMusic();
             LevelManager.Play(LevelManager.Hub);
         }
 
@@ -82,7 +83,7 @@ namespace BetterLegacy.Core.Helpers
         /// </summary>
         public static void FirstLevel()
         {
-            if (LevelManager.CurrentLevelCollection != null)
+            if (LevelManager.CurrentLevelCollection)
             {
                 var prevIndex = LevelManager.currentLevelIndex;
                 LevelManager.currentLevelIndex = LevelManager.CurrentLevelCollection.EntryLevelIndex;
@@ -99,6 +100,7 @@ namespace BetterLegacy.Core.Helpers
                 LevelManager.LevelEnded = false;
 
                 InterfaceManager.inst.CloseMenus();
+                InterfaceManager.inst.StopMusic();
                 LevelManager.Play(LevelManager.CurrentLevelCollection[LevelManager.currentLevelIndex]);
 
                 return;
@@ -115,6 +117,7 @@ namespace BetterLegacy.Core.Helpers
             LevelManager.LevelEnded = false;
 
             InterfaceManager.inst.CloseMenus();
+            InterfaceManager.inst.StopMusic();
             LevelManager.Play(LevelManager.NextLevel);
         }
 
@@ -162,6 +165,7 @@ namespace BetterLegacy.Core.Helpers
             LevelManager.LevelEnded = false;
 
             InterfaceManager.inst.CloseMenus();
+            InterfaceManager.inst.StopMusic();
             LevelManager.Play(LevelManager.NextLevel);
         }
 
@@ -184,6 +188,7 @@ namespace BetterLegacy.Core.Helpers
             AudioManager.inst.SetMusicTime(GameData.Current.data.level.LevelStartOffset);
             AudioManager.inst.SetPitch(1f);
             RTBeatmap.Current.ResetCheckpoint();
+            InterfaceManager.inst.StopMusic();
             endedLevel = false;
             if (!AudioManager.inst.CurrentAudioSource.isPlaying)
                 AudioManager.inst.CurrentAudioSource.Play();
@@ -195,6 +200,7 @@ namespace BetterLegacy.Core.Helpers
         public static void QuitToArcade()
         {
             InterfaceManager.inst.CloseMenus();
+            InterfaceManager.inst.StopMusic();
 
             CoreHelper.Log("Quitting to arcade...");
             LevelManager.Clear();
@@ -230,6 +236,7 @@ namespace BetterLegacy.Core.Helpers
         public static void QuitToMainMenu()
         {
             InterfaceManager.inst.CloseMenus();
+            InterfaceManager.inst.StopMusic();
 
             CoreHelper.Log("Quitting to main menu...");
             LevelManager.Clear();
