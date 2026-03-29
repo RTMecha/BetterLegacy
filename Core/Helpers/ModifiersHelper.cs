@@ -9987,10 +9987,9 @@ namespace BetterLegacy.Core.Helpers
                 setVector += vector;
             }
 
-            if (!modifier.constant)
+            if (!modifier.constant && time != 0f)
             {
                 var animation = new RTAnimation("Animate Object Offset");
-
                 animation.animationHandlers = new List<AnimationHandlerBase>
                 {
                     new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
@@ -10040,10 +10039,9 @@ namespace BetterLegacy.Core.Helpers
                     setVector += vector;
                 }
 
-                if (!modifier.constant)
+                if (!modifier.constant && time != 0f)
                 {
                     var animation = new RTAnimation("Animate Other Object Offset");
-
                     animation.animationHandlers = new List<AnimationHandlerBase>
                     {
                         new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
@@ -10170,10 +10168,9 @@ namespace BetterLegacy.Core.Helpers
                 setVector += vector;
             }
 
-            if (!modifier.constant)
+            if (!modifier.constant && time != 0f)
             {
                 var animation = new RTAnimation("Animate Object Offset");
-
                 animation.animationHandlers = new List<AnimationHandlerBase>
                 {
                     new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
@@ -10247,10 +10244,9 @@ namespace BetterLegacy.Core.Helpers
                     setVector += vector;
                 }
 
-                if (!modifier.constant)
+                if (!modifier.constant && time != 0f)
                 {
                     var animation = new RTAnimation("Animate Other Object Offset");
-
                     animation.animationHandlers = new List<AnimationHandlerBase>
                     {
                         new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
@@ -10317,10 +10313,9 @@ namespace BetterLegacy.Core.Helpers
                 setVector += vector;
             }
 
-            if (!modifier.constant)
+            if (!modifier.constant && time != 0f)
             {
                 var animation = new RTAnimation("Animate Object Offset");
-
                 animation.animationHandlers = new List<AnimationHandlerBase>
                 {
                     new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
@@ -10450,10 +10445,9 @@ namespace BetterLegacy.Core.Helpers
                 setVector += vector;
             }
 
-            if (!modifier.constant)
+            if (!modifier.constant && time != 0f)
             {
                 var animation = new RTAnimation("Animate Object Offset");
-
                 animation.animationHandlers = new List<AnimationHandlerBase>
                 {
                     new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
@@ -10533,10 +10527,9 @@ namespace BetterLegacy.Core.Helpers
                     setVector += vector;
                 }
 
-                if (!modifier.constant)
+                if (!modifier.constant && time != 0f)
                 {
                     var animation = new RTAnimation("Animate Other Object Offset");
-
                     animation.animationHandlers = new List<AnimationHandlerBase>
                     {
                         new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
