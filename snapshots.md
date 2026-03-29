@@ -1,4 +1,17 @@
-﻿# snapshot-2026.3.5 - (Story Playtest) [Mar 26, 2026]
+﻿# snapshot-2026.?.? - (Story Playtest) [???]
+## Features
+### Core
+- Ported the end level music from the old development branch. This can be enabled / disabled via the new setting "Play End Level Music" in Config Manager > Core > Level.
+- Added "level_up" SFX.
+
+## Changes
+### Core
+- animateObject modifiers with their time set to 0 no longer animates, instead it instantly sets the transform values.
+- Updating a prefab now updates all recursive sub prefabs.
+
+-------------------------------------------------------------------
+
+# snapshot-2026.3.5 - (Story Playtest) [Mar 26, 2026]
 ## Features
 ### Core
 - Added a new "Datamosh" event. In order to use this event, you must use the new datamoshGlitch and datamoshReset modifiers.
