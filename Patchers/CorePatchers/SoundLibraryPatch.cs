@@ -34,7 +34,7 @@ namespace BetterLegacy.Patchers
             //        __instance.soundClips["qe_" + audioClip.name] = new AudioClip[] { audioClip };
 
             LegacyResources.LoadSounds();
-            LegacyResources.LoadMusic();
+            LegacyResources.LoadOST();
 
             return false;
         }

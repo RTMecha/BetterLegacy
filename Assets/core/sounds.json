@@ -118,6 +118,12 @@
         ]
       },
       {
+        "name": "level_up",
+        "clips": [
+          "core/sfx/level_up.ogg"
+        ]
+      },
+      {
         "name": "pirate_KillPlayer",
         "clips": [
           {

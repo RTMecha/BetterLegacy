@@ -832,11 +832,13 @@ namespace BetterLegacy
     /// </summary>
     public enum DefaultMusic
     {
+        eos,
         loading,
         menu,
-        barrels,
+        end_level,
+        staring_down_the_barrels,
         nostalgia,
-        arcade_dream,
+        galactic_freeway,
         distance,
         truepianoskg,
         dread,
@@ -867,6 +869,7 @@ namespace BetterLegacy
         boost,
         boost_recover,
         shoot,
+        level_up,
         pirate_KillPlayer,
 
         KillPlayer,
