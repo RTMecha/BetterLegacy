@@ -21,7 +21,7 @@ namespace BetterLegacy.Core.Managers
         SoundLibrary Library => AudioManager.inst.library;
 
         /// <summary>
-        /// Music volume reference for the no_volume achievement.
+        /// Individual music volume.
         /// </summary>
         public static float musicVolume = 1f;
 
