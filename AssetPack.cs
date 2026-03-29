@@ -28,6 +28,8 @@ namespace BetterLegacy
     /// </summary>
     public class AssetPack : Exists, IFile, IUploadable
     {
+        #region Constructors
+
         public AssetPack() { }
 
         public AssetPack(string path) => this.path = path;
@@ -37,6 +39,8 @@ namespace BetterLegacy
         public AssetPack(string path, Sprite icon, string name) : this(path, icon) => this.name = name;
 
         public AssetPack(string path, Sprite icon, string name, string description) : this(path, icon, name) => this.description = description;
+
+        #endregion
 
         #region Global
 
@@ -69,7 +73,7 @@ namespace BetterLegacy
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         /// <summary>
         /// Gets an asset file.
@@ -151,6 +155,26 @@ namespace BetterLegacy
         {
             directory = GetFile(assetPath);
             return RTFile.DirectoryExists(directory);
+        }
+
+        /// <summary>
+        /// Iterates through each asset file with the same asset path.
+        /// </summary>
+        /// <param name="assetPath">Path to the asset.</param>
+        /// <param name="action">Action to run for each found file.</param>
+        public static void ForEachFile(string assetPath, Action<string> action)
+        {
+            action?.Invoke(BuiltIn.GetPath(assetPath));
+            for (int i = 0; i < AssetPacks.Count; i++)
+            {
+                var assetPack = AssetPacks[i];
+                var settings = assetPack.GetSettings();
+                if (settings && !settings.enabled)
+                    continue;
+
+                if (assetPack.HasFile(assetPath))
+                    action?.Invoke(assetPack.GetPath(assetPath));
+            }
         }
 
         /// <summary>
@@ -345,7 +369,7 @@ namespace BetterLegacy
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         /// <summary>
         /// Gets the associated user settings for the asset pack.
