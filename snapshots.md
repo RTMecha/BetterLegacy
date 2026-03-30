@@ -3,6 +3,7 @@
 ### Core
 - Ported the end level music from the old development branch. This can be enabled / disabled via the new setting "Play End Level Music" in Config Manager > Core > Level.
 - Added "level_up" SFX.
+- Added "Offset Audio" value to most axis related modifiers (like copyAxis).
 
 ## Changes
 ### Core
