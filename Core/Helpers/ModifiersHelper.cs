@@ -2458,11 +2458,8 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static float GetAnimation(BeatmapObject reference, int fromType, int fromAxis, float delay, bool visual)
+        public static float GetAnimation(BeatmapObject reference, int fromType, int fromAxis, float t, bool visual)
         {
-            var time = GetTime(reference);
-            var t = time - reference.StartTime - delay;
-
             if (!visual && reference.cachedSequences)
                 return fromType switch
                 {
@@ -2477,11 +2474,8 @@ namespace BetterLegacy.Core.Helpers
             return 0f;
         }
 
-        public static float GetAnimation(BeatmapObject reference, int fromType, int fromAxis, float min, float max, float offset, float multiply, float delay, float loop, bool visual, int version)
+        public static float GetAnimation(BeatmapObject reference, int fromType, int fromAxis, float min, float max, float offset, float multiply, float t, float loop, bool visual, int version)
         {
-            var time = GetTime(reference);
-            var t = time - reference.StartTime - delay;
-
             if (!visual && reference.cachedSequences)
                 return fromType switch
                 {
@@ -2961,87 +2955,6 @@ namespace BetterLegacy.Core.Helpers
         public static void getMusicTime(Modifier modifier, ModifierLoop modifierLoop)
         {
             modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = AudioManager.inst.CurrentAudioSource.time.ToString();
-        }
-
-        public static void getAxis(Modifier modifier, ModifierLoop modifierLoop)
-        {
-            var prefabable = modifierLoop.reference.AsPrefabable();
-            if (prefabable == null)
-                return;
-
-            int fromType = modifier.GetInt(1, 0, modifierLoop.variables);
-            int fromAxis = modifier.GetInt(2, 0, modifierLoop.variables);
-
-            float delay = modifier.GetFloat(3, 0f, modifierLoop.variables);
-            float multiply = modifier.GetFloat(4, 0f, modifierLoop.variables);
-            float offset = modifier.GetFloat(5, 0f, modifierLoop.variables);
-            float min = modifier.GetFloat(6, -9999f, modifierLoop.variables);
-            float max = modifier.GetFloat(7, 9999f, modifierLoop.variables);
-            bool useVisual = modifier.GetBool(8, false, modifierLoop.variables);
-            float loop = modifier.GetFloat(9, 9999f, modifierLoop.variables);
-            var tag = ModifiersHelper.FormatStringVariables(modifier.GetValue(10, modifierLoop.variables), modifierLoop.variables);
-
-            var cache = modifier.GetResultOrDefault(() => GroupBeatmapObjectCache.Get(modifier, prefabable, tag));
-            if (cache.tag != tag)
-            {
-                cache.UpdateCache(modifier, prefabable, tag);
-                modifier.Result = cache;
-            }
-
-            var beatmapObject = cache.obj;
-            if (!beatmapObject)
-                return;
-
-            fromType = Mathf.Clamp(fromType, 0, beatmapObject.events.Count);
-
-            if (fromType < 0 || fromType > 2)
-                return;
-
-            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = ModifiersHelper.GetAnimation(beatmapObject, fromType, fromAxis, min, max, offset, multiply, delay, loop, useVisual, modifier.version).ToString();
-        }
-
-        public static void getAxisMath(Modifier modifier, ModifierLoop modifierLoop)
-        {
-            var prefabable = modifierLoop.reference.AsPrefabable();
-            if (prefabable == null)
-                return;
-
-            if (modifierLoop.reference is not IEvaluatable evaluatable)
-                return;
-
-            int fromType = modifier.GetInt(1, 0, modifierLoop.variables);
-            int fromAxis = modifier.GetInt(2, 0, modifierLoop.variables);
-
-            float delay = modifier.GetFloat(3, 0f, modifierLoop.variables);
-            bool useVisual = modifier.GetBool(4, false, modifierLoop.variables);
-            var tag = ModifiersHelper.FormatStringVariables(modifier.GetValue(5, modifierLoop.variables), modifierLoop.variables);
-            var evaluation = ModifiersHelper.FormatStringVariables(modifier.GetValue(6, modifierLoop.variables), modifierLoop.variables);
-
-            var cache = modifier.GetResultOrDefault(() => GroupBeatmapObjectCache.Get(modifier, prefabable, tag));
-            if (cache.tag != tag)
-            {
-                cache.UpdateCache(modifier, prefabable, tag);
-                modifier.Result = cache;
-            }
-
-            var beatmapObject = cache.obj;
-            if (!beatmapObject)
-                return;
-
-            fromType = Mathf.Clamp(fromType, 0, beatmapObject.events.Count);
-
-            if (fromType < 0 || fromType > 2)
-                return;
-
-            var numberVariables = evaluatable.GetObjectVariables();
-            ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
-
-            numberVariables["axis"] = ModifiersHelper.GetAnimation(beatmapObject, fromType, fromAxis, delay, useVisual);
-            beatmapObject.SetOtherObjectVariables(numberVariables);
-
-            float value = RTMath.Parse(evaluation, RTLevel.Current?.evaluationContext, numberVariables);
-
-            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = value.ToString();
         }
 
         public static void getAnimateVariable(Modifier modifier, ModifierLoop modifierLoop)
@@ -9957,6 +9870,93 @@ namespace BetterLegacy.Core.Helpers
 
         #region Animation
 
+        public static void getAxis(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            var prefabable = modifierLoop.reference.AsPrefabable();
+            if (prefabable == null)
+                return;
+
+            int fromType = modifier.GetInt(1, 0, modifierLoop.variables);
+            int fromAxis = modifier.GetInt(2, 0, modifierLoop.variables);
+
+            float delay = modifier.GetFloat(3, 0f, modifierLoop.variables);
+            float multiply = modifier.GetFloat(4, 0f, modifierLoop.variables);
+            float offset = modifier.GetFloat(5, 0f, modifierLoop.variables);
+            float min = modifier.GetFloat(6, -9999f, modifierLoop.variables);
+            float max = modifier.GetFloat(7, 9999f, modifierLoop.variables);
+            bool useVisual = modifier.GetBool(8, false, modifierLoop.variables);
+            float loop = modifier.GetFloat(9, 9999f, modifierLoop.variables);
+            var tag = ModifiersHelper.FormatStringVariables(modifier.GetValue(10, modifierLoop.variables), modifierLoop.variables);
+            var offsetAudio = modifier.GetBool(11, true, modifierLoop.variables);
+
+            var cache = modifier.GetResultOrDefault(() => GroupBeatmapObjectCache.Get(modifier, prefabable, tag));
+            if (cache.tag != tag)
+            {
+                cache.UpdateCache(modifier, prefabable, tag);
+                modifier.Result = cache;
+            }
+
+            var beatmapObject = cache.obj;
+            if (!beatmapObject)
+                return;
+
+            fromType = Mathf.Clamp(fromType, 0, beatmapObject.events.Count);
+
+            if (fromType < 0 || fromType > 2)
+                return;
+
+            var t = !offsetAudio ? delay : ModifiersHelper.GetTime(beatmapObject) - beatmapObject.StartTime - delay;
+
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = ModifiersHelper.GetAnimation(beatmapObject, fromType, fromAxis, min, max, offset, multiply, t, loop, useVisual, modifier.version).ToString();
+        }
+
+        public static void getAxisMath(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            var prefabable = modifierLoop.reference.AsPrefabable();
+            if (prefabable == null)
+                return;
+
+            if (modifierLoop.reference is not IEvaluatable evaluatable)
+                return;
+
+            int fromType = modifier.GetInt(1, 0, modifierLoop.variables);
+            int fromAxis = modifier.GetInt(2, 0, modifierLoop.variables);
+
+            float delay = modifier.GetFloat(3, 0f, modifierLoop.variables);
+            bool useVisual = modifier.GetBool(4, false, modifierLoop.variables);
+            var tag = ModifiersHelper.FormatStringVariables(modifier.GetValue(5, modifierLoop.variables), modifierLoop.variables);
+            var evaluation = ModifiersHelper.FormatStringVariables(modifier.GetValue(6, modifierLoop.variables), modifierLoop.variables);
+            var offsetAudio = modifier.GetBool(7, true, modifierLoop.variables);
+
+            var cache = modifier.GetResultOrDefault(() => GroupBeatmapObjectCache.Get(modifier, prefabable, tag));
+            if (cache.tag != tag)
+            {
+                cache.UpdateCache(modifier, prefabable, tag);
+                modifier.Result = cache;
+            }
+
+            var beatmapObject = cache.obj;
+            if (!beatmapObject)
+                return;
+
+            fromType = Mathf.Clamp(fromType, 0, beatmapObject.events.Count);
+
+            if (fromType < 0 || fromType > 2)
+                return;
+
+            var numberVariables = evaluatable.GetObjectVariables();
+            ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
+
+            var t = !offsetAudio ? delay : ModifiersHelper.GetTime(beatmapObject) - beatmapObject.StartTime - delay;
+
+            numberVariables["axis"] = ModifiersHelper.GetAnimation(beatmapObject, fromType, fromAxis, t, useVisual);
+            beatmapObject.SetOtherObjectVariables(numberVariables);
+
+            float value = RTMath.Parse(evaluation, RTLevel.Current?.evaluationContext, numberVariables);
+
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = value.ToString();
+        }
+
         public static void animateObject(Modifier modifier, ModifierLoop modifierLoop)
         {
             var transformable = modifierLoop.reference.AsTransformable();
@@ -10950,6 +10950,7 @@ namespace BetterLegacy.Core.Helpers
             var max = modifier.GetFloat(9, 9999f, modifierLoop.variables);
             var loop = modifier.GetFloat(10, 9999f, modifierLoop.variables);
             var useVisual = modifier.GetBool(11, false, modifierLoop.variables);
+            var offsetAudio = modifier.GetBool(12, true, modifierLoop.variables);
 
             var cache = modifier.GetResultOrDefault(() => GroupBeatmapObjectCache.Get(modifier, prefabable, tag));
             if (cache.tag != tag)
@@ -10962,7 +10963,7 @@ namespace BetterLegacy.Core.Helpers
             if (!bm)
                 return;
 
-            var time = ModifiersHelper.GetTime(bm);
+            var t = !offsetAudio ? delay : ModifiersHelper.GetTime(bm) - bm.StartTime - delay;
 
             fromType = Mathf.Clamp(fromType, 0, bm.events.Count);
 
@@ -10971,7 +10972,6 @@ namespace BetterLegacy.Core.Helpers
 
             if (!useVisual && bm.cachedSequences)
             {
-                var t = time - bm.StartTime - delay;
                 if (fromType == 3)
                 {
                     if (toType == 3 && toAxis == 0 && bm.cachedSequences.ColorSequence != null && modifierLoop.reference is BeatmapObject beatmapObject && beatmapObject.runtimeObject && beatmapObject.runtimeObject.visualObject)
@@ -10996,9 +10996,9 @@ namespace BetterLegacy.Core.Helpers
             else if (useVisual)
                 transformable.SetTransform(toType, toAxis, Mathf.Clamp(fromType switch
                 {
-                    0 => bm.InterpolateChainPosition().At(fromAxis),
-                    1 => bm.InterpolateChainScale().At(fromAxis),
-                    2 => bm.InterpolateChainRotation().At(modifier.version == 0 ? 2 : fromAxis),
+                    0 => bm.InterpolateChainPosition(t).At(fromAxis),
+                    1 => bm.InterpolateChainScale(t).At(fromAxis),
+                    2 => bm.InterpolateChainRotation(t).At(modifier.version == 0 ? 2 : fromAxis),
                     _ => 0f,
                 }, min, max));
         }
@@ -11028,6 +11028,7 @@ namespace BetterLegacy.Core.Helpers
                 var max = modifier.GetFloat(7, 9999f, modifierLoop.variables);
                 var evaluation = modifier.GetValue(8, modifierLoop.variables);
                 var useVisual = modifier.GetBool(9, false, modifierLoop.variables);
+                var offsetAudio = modifier.GetBool(10, true, modifierLoop.variables);
 
                 var cache = modifier.GetResultOrDefault(() => GroupBeatmapObjectCache.Get(modifier, prefabable, tag));
                 if (cache.tag != tag)
@@ -11040,7 +11041,7 @@ namespace BetterLegacy.Core.Helpers
                 if (!bm)
                     return;
 
-                var time = ModifiersHelper.GetTime(bm);
+                var t = !offsetAudio ? delay : ModifiersHelper.GetTime(bm) - bm.StartTime - delay;
 
                 fromType = Mathf.Clamp(fromType, 0, bm.events.Count);
 
@@ -11058,7 +11059,7 @@ namespace BetterLegacy.Core.Helpers
                             // queue post tick so the color overrides the sequence color
                             RTLevel.Current.postTick.Enqueue(() =>
                             {
-                                var sequence = bm.cachedSequences.ColorSequence.GetValue(time - bm.StartTime - delay);
+                                var sequence = bm.cachedSequences.ColorSequence.GetValue(t);
 
                                 var renderer = beatmapObject.runtimeObject.visualObject.renderer;
 
@@ -11085,9 +11086,9 @@ namespace BetterLegacy.Core.Helpers
                         if (bm.cachedSequences)
                             numberVariables["axis"] = fromType switch
                             {
-                                0 => bm.cachedSequences.PositionSequence.GetValue(time - bm.StartTime - delay).At(fromAxis),
-                                1 => bm.cachedSequences.ScaleSequence.GetValue(time - bm.StartTime - delay).At(fromAxis),
-                                2 => bm.cachedSequences.RotationSequence.GetValue(time - bm.StartTime - delay).At(modifier.version == 0 ? 2 : fromAxis),
+                                0 => bm.cachedSequences.PositionSequence.GetValue(t).At(fromAxis),
+                                1 => bm.cachedSequences.ScaleSequence.GetValue(t).At(fromAxis),
+                                2 => bm.cachedSequences.RotationSequence.GetValue(t).At(modifier.version == 0 ? 2 : fromAxis),
                                 _ => 0f,
                             };
                         bm.SetOtherObjectVariables(numberVariables);
@@ -11118,9 +11119,9 @@ namespace BetterLegacy.Core.Helpers
 
                     numberVariables["axis"] = fromType switch
                     {
-                        0 => bm.InterpolateChainPosition().At(fromAxis),
-                        1 => bm.InterpolateChainScale().At(fromAxis),
-                        2 => bm.InterpolateChainRotation().At(modifier.version == 0 ? 2 : fromAxis),
+                        0 => bm.InterpolateChainPosition(t).At(fromAxis),
+                        1 => bm.InterpolateChainScale(t).At(fromAxis),
+                        2 => bm.InterpolateChainRotation(t).At(modifier.version == 0 ? 2 : fromAxis),
                         _ => 0f,
                     };
                     bm.SetOtherObjectVariables(numberVariables);
@@ -11265,17 +11266,20 @@ namespace BetterLegacy.Core.Helpers
                 return;
 
             var time = modifier.GetFloat(1, 0f, modifierLoop.variables);
-            if (modifier.GetBool(2, true, modifierLoop.variables)) // animate pos x
-                transformable.PositionOffset = transformable.PositionOffset.X(Mathf.Clamp((bm.Interpolate(0, 0, time) - modifier.GetFloat(3, 0f, modifierLoop.variables)) * modifier.GetFloat(4, 1f, modifierLoop.variables), modifier.GetFloat(5, -9999f, modifierLoop.variables), modifier.GetFloat(6, -9999f, modifierLoop.variables)));
-            if (modifier.GetBool(7, true, modifierLoop.variables)) // animate pos y
-                transformable.PositionOffset = transformable.PositionOffset.Y(Mathf.Clamp((bm.Interpolate(0, 1, time) - modifier.GetFloat(8, 0f, modifierLoop.variables)) * modifier.GetFloat(9, 1f, modifierLoop.variables), modifier.GetFloat(10, -9999f, modifierLoop.variables), modifier.GetFloat(11, -9999f, modifierLoop.variables)));
-            if (modifier.GetBool(12, true, modifierLoop.variables)) // animate pos z
-                transformable.PositionOffset = transformable.PositionOffset.Y(Mathf.Clamp((bm.Interpolate(0, 2, time) - modifier.GetFloat(13, 0f, modifierLoop.variables)) * modifier.GetFloat(14, 1f, modifierLoop.variables), modifier.GetFloat(15, -9999f, modifierLoop.variables), modifier.GetFloat(16, -9999f, modifierLoop.variables)));
+            var type = modifier.GetInt(2, 0, modifierLoop.variables);
 
-            if (modifier.GetBool(17, true, modifierLoop.variables)) // animate sca x
-                transformable.PositionOffset = transformable.PositionOffset.X(Mathf.Clamp((bm.Interpolate(1, 0, time) - modifier.GetFloat(18, 0f, modifierLoop.variables)) * modifier.GetFloat(19, 1f, modifierLoop.variables), modifier.GetFloat(20, -9999f, modifierLoop.variables), modifier.GetFloat(21, -9999f, modifierLoop.variables)));
-            if (modifier.GetBool(22, true, modifierLoop.variables)) // animate sca y
-                transformable.PositionOffset = transformable.PositionOffset.Y(Mathf.Clamp((bm.Interpolate(1, 1, time) - modifier.GetFloat(8, 0f, modifierLoop.variables)) * modifier.GetFloat(9, 1f, modifierLoop.variables), modifier.GetFloat(10, -9999f, modifierLoop.variables), modifier.GetFloat(11, -9999f, modifierLoop.variables)));
+
+            //if (modifier.GetBool(2, true, modifierLoop.variables)) // animate pos x
+            //    transformable.PositionOffset = transformable.PositionOffset.X(Mathf.Clamp((bm.Interpolate(0, 0, time) - modifier.GetFloat(3, 0f, modifierLoop.variables)) * modifier.GetFloat(4, 1f, modifierLoop.variables), modifier.GetFloat(5, -9999f, modifierLoop.variables), modifier.GetFloat(6, -9999f, modifierLoop.variables)));
+            //if (modifier.GetBool(7, true, modifierLoop.variables)) // animate pos y
+            //    transformable.PositionOffset = transformable.PositionOffset.Y(Mathf.Clamp((bm.Interpolate(0, 1, time) - modifier.GetFloat(8, 0f, modifierLoop.variables)) * modifier.GetFloat(9, 1f, modifierLoop.variables), modifier.GetFloat(10, -9999f, modifierLoop.variables), modifier.GetFloat(11, -9999f, modifierLoop.variables)));
+            //if (modifier.GetBool(12, true, modifierLoop.variables)) // animate pos z
+            //    transformable.PositionOffset = transformable.PositionOffset.Y(Mathf.Clamp((bm.Interpolate(0, 2, time) - modifier.GetFloat(13, 0f, modifierLoop.variables)) * modifier.GetFloat(14, 1f, modifierLoop.variables), modifier.GetFloat(15, -9999f, modifierLoop.variables), modifier.GetFloat(16, -9999f, modifierLoop.variables)));
+
+            //if (modifier.GetBool(17, true, modifierLoop.variables)) // animate sca x
+            //    transformable.PositionOffset = transformable.PositionOffset.X(Mathf.Clamp((bm.Interpolate(1, 0, time) - modifier.GetFloat(18, 0f, modifierLoop.variables)) * modifier.GetFloat(19, 1f, modifierLoop.variables), modifier.GetFloat(20, -9999f, modifierLoop.variables), modifier.GetFloat(21, -9999f, modifierLoop.variables)));
+            //if (modifier.GetBool(22, true, modifierLoop.variables)) // animate sca y
+            //    transformable.PositionOffset = transformable.PositionOffset.Y(Mathf.Clamp((bm.Interpolate(1, 1, time) - modifier.GetFloat(8, 0f, modifierLoop.variables)) * modifier.GetFloat(9, 1f, modifierLoop.variables), modifier.GetFloat(10, -9999f, modifierLoop.variables), modifier.GetFloat(11, -9999f, modifierLoop.variables)));
         }
 
         public static void copyPlayerAxis(Modifier modifier, ModifierLoop modifierLoop)
@@ -14736,6 +14740,7 @@ namespace BetterLegacy.Core.Helpers
             float equals = modifier.GetFloat(8, 0f, modifierLoop.variables);
             bool useVisual = modifier.GetBool(9, false, modifierLoop.variables);
             float loop = modifier.GetFloat(10, 9999f, modifierLoop.variables);
+            var offsetAudio = modifier.GetBool(11, true, modifierLoop.variables);
 
             var cache = modifier.GetResultOrDefault(() => GroupBeatmapObjectCache.Get(modifier, prefabable, tag));
             if (cache.tag != tag)
@@ -14749,7 +14754,9 @@ namespace BetterLegacy.Core.Helpers
 
             fromType = Mathf.Clamp(fromType, 0, beatmapObject.events.Count);
 
-            return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(beatmapObject, fromType, fromAxis, min, max, offset, multiply, delay, loop, useVisual, modifier.version) == equals;
+            var t = !offsetAudio ? delay : ModifiersHelper.GetTime(beatmapObject) - beatmapObject.StartTime - delay;
+
+            return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(beatmapObject, fromType, fromAxis, min, max, offset, multiply, t, loop, useVisual, modifier.version) == equals;
         }
 
         public static bool axisLesserEquals(Modifier modifier, ModifierLoop modifierLoop)
@@ -14771,6 +14778,7 @@ namespace BetterLegacy.Core.Helpers
             float equals = modifier.GetFloat(8, 0f, modifierLoop.variables);
             bool useVisual = modifier.GetBool(9, false, modifierLoop.variables);
             float loop = modifier.GetFloat(10, 9999f, modifierLoop.variables);
+            var offsetAudio = modifier.GetBool(11, true, modifierLoop.variables);
 
             var cache = modifier.GetResultOrDefault(() => GroupBeatmapObjectCache.Get(modifier, prefabable, tag));
             if (cache.tag != tag)
@@ -14784,7 +14792,9 @@ namespace BetterLegacy.Core.Helpers
 
             fromType = Mathf.Clamp(fromType, 0, beatmapObject.events.Count);
 
-            return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(beatmapObject, fromType, fromAxis, min, max, offset, multiply, delay, loop, useVisual, modifier.version) <= equals;
+            var t = !offsetAudio ? delay : ModifiersHelper.GetTime(beatmapObject) - beatmapObject.StartTime - delay;
+
+            return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(beatmapObject, fromType, fromAxis, min, max, offset, multiply, t, loop, useVisual, modifier.version) <= equals;
         }
 
         public static bool axisGreaterEquals(Modifier modifier, ModifierLoop modifierLoop)
@@ -14806,6 +14816,7 @@ namespace BetterLegacy.Core.Helpers
             float equals = modifier.GetFloat(8, 0f, modifierLoop.variables);
             bool useVisual = modifier.GetBool(9, false, modifierLoop.variables);
             float loop = modifier.GetFloat(10, 9999f, modifierLoop.variables);
+            var offsetAudio = modifier.GetBool(11, true, modifierLoop.variables);
 
             var cache = modifier.GetResultOrDefault(() => GroupBeatmapObjectCache.Get(modifier, prefabable, tag));
             if (cache.tag != tag)
@@ -14819,7 +14830,9 @@ namespace BetterLegacy.Core.Helpers
 
             fromType = Mathf.Clamp(fromType, 0, beatmapObject.events.Count);
 
-            return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(beatmapObject, fromType, fromAxis, min, max, offset, multiply, delay, loop, useVisual, modifier.version) >= equals;
+            var t = !offsetAudio ? delay : ModifiersHelper.GetTime(beatmapObject) - beatmapObject.StartTime - delay;
+
+            return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(beatmapObject, fromType, fromAxis, min, max, offset, multiply, t, loop, useVisual, modifier.version) >= equals;
         }
 
         public static bool axisLesser(Modifier modifier, ModifierLoop modifierLoop)
@@ -14841,6 +14854,7 @@ namespace BetterLegacy.Core.Helpers
             float equals = modifier.GetFloat(8, 0f, modifierLoop.variables);
             bool useVisual = modifier.GetBool(9, false, modifierLoop.variables);
             float loop = modifier.GetFloat(10, 9999f, modifierLoop.variables);
+            var offsetAudio = modifier.GetBool(11, true, modifierLoop.variables);
 
             var cache = modifier.GetResultOrDefault(() => GroupBeatmapObjectCache.Get(modifier, prefabable, tag));
             if (cache.tag != tag)
@@ -14854,7 +14868,9 @@ namespace BetterLegacy.Core.Helpers
 
             fromType = Mathf.Clamp(fromType, 0, beatmapObject.events.Count);
 
-            return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(beatmapObject, fromType, fromAxis, min, max, offset, multiply, delay, loop, useVisual, modifier.version) < equals;
+            var t = !offsetAudio ? delay : ModifiersHelper.GetTime(beatmapObject) - beatmapObject.StartTime - delay;
+
+            return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(beatmapObject, fromType, fromAxis, min, max, offset, multiply, t, loop, useVisual, modifier.version) < equals;
         }
 
         public static bool axisGreater(Modifier modifier, ModifierLoop modifierLoop)
@@ -14876,6 +14892,7 @@ namespace BetterLegacy.Core.Helpers
             float equals = modifier.GetFloat(8, 0f, modifierLoop.variables);
             bool useVisual = modifier.GetBool(9, false, modifierLoop.variables);
             float loop = modifier.GetFloat(10, 9999f, modifierLoop.variables);
+            var offsetAudio = modifier.GetBool(11, true, modifierLoop.variables);
 
             var cache = modifier.GetResultOrDefault(() => GroupBeatmapObjectCache.Get(modifier, prefabable, tag));
             if (cache.tag != tag)
@@ -14889,7 +14906,9 @@ namespace BetterLegacy.Core.Helpers
 
             fromType = Mathf.Clamp(fromType, 0, beatmapObject.events.Count);
 
-            return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(beatmapObject, fromType, fromAxis, min, max, offset, multiply, delay, loop, useVisual, modifier.version) > equals;
+            var t = !offsetAudio ? delay : ModifiersHelper.GetTime(beatmapObject) - beatmapObject.StartTime - delay;
+
+            return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(beatmapObject, fromType, fromAxis, min, max, offset, multiply, t, loop, useVisual, modifier.version) > equals;
         }
 
         public static bool eventEquals(Modifier modifier, ModifierLoop modifierLoop)

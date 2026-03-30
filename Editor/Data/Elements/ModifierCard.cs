@@ -1944,6 +1944,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         SingleGenerator(modifier, reference, "Max", 7, 99999f);
                         SingleGenerator(modifier, reference, "Loop", 9, 99999f);
                         BoolGenerator(modifier, reference, "Use Visual", 8, false);
+                        BoolGenerator(modifier, reference, "Offset Audio", 11, true);
 
                         if (modifier.version == 0)
                             AddGenerator(modifier, reference, "Update", () =>
@@ -1970,6 +1971,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         BoolGenerator(modifier, reference, "Use Visual", 4, false);
 
                         StringGenerator(modifier, reference, "Expression", 6);
+                        BoolGenerator(modifier, reference, "Offset Audio", 7, true);
 
                         if (modifier.version == 0)
                             AddGenerator(modifier, reference, "Update", () =>
@@ -3801,6 +3803,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         SingleGenerator(modifier, reference, "Loop", 10, 99999f);
                         BoolGenerator(modifier, reference, "Use Visual", 11, false);
+                        BoolGenerator(modifier, reference, "Offset Audio", 12, true);
 
                         if (modifier.version == 0)
                             AddGenerator(modifier, reference, "Update", () =>
@@ -3829,6 +3832,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         SingleGenerator(modifier, reference, "Max", 7, 99999f);
                         BoolGenerator(modifier, reference, "Use Visual", 9, false);
                         StringGenerator(modifier, reference, "Expression", 8);
+                        BoolGenerator(modifier, reference, "Offset Audio", 10, true);
 
                         if (modifier.version == 0)
                             AddGenerator(modifier, reference, "Update", () =>
@@ -5001,6 +5005,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         SingleGenerator(modifier, reference, "Max", 7, 99999f);
                         SingleGenerator(modifier, reference, "Loop", 10, 99999f);
                         BoolGenerator(modifier, reference, "Use Visual", 9, false);
+                        BoolGenerator(modifier, reference, "Offset Audio", 11, true);
 
                         SingleGenerator(modifier, reference, "Equals", 8, 1f);
 

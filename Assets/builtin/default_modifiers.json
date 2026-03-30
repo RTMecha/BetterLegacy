@@ -3031,14 +3031,14 @@
         "v": 1,
         "type": 1,
         "name": "getAxis",
-        "values": [ "AXIS_VAR", "0", "0", "0", "1", "0", "-99999", "99999", "False", "99999", "Object Group" ],
+        "values": [ "AXIS_VAR", "0", "0", "0", "1", "0", "-99999", "99999", "False", "99999", "Object Group", "True" ],
         "const": "True"
       }, // getAxis
       {
         "v": 1,
         "type": 1,
         "name": "getAxisMath",
-        "values": [ "AXIS_VAR", "0", "0", "0", "False", "Object Group", "axis + 0" ],
+        "values": [ "AXIS_VAR", "0", "0", "0", "False", "Object Group", "axis + 0", "True" ],
         "const": "True"
       }, // getAxisMath
       {
@@ -3173,14 +3173,14 @@
         "v": 1,
         "type": 1,
         "name": "copyAxis",
-        "values": [ "Object Group", "0", "0", "0", "0", "0", "1", "0", "-99999", "99999", "99999", "False" ],
+        "values": [ "Object Group", "0", "0", "0", "0", "0", "1", "0", "-99999", "99999", "99999", "False", "True" ],
         "const": "True"
       }, // copyAxis
       {
         "v": 1,
         "type": 1,
         "name": "copyAxisMath",
-        "values": [ "Object Group", "0", "0", "0", "0", "0", "-99999", "99999", "(axis - 0) * 1 % 9999", "False" ],
+        "values": [ "Object Group", "0", "0", "0", "0", "0", "-99999", "99999", "(axis - 0) * 1 % 9999", "False", "True" ],
         "const": "True"
       }, // copyAxisMath
       {
@@ -3219,7 +3219,7 @@
       {
         "v": 1,
         "type": 0,
-        "commands": [ "axisEquals", "0", "0", "0", "1", "0", "-99999", "99999", "1", "False", "99999" ],
+        "commands": [ "axisEquals", "0", "0", "0", "1", "0", "-99999", "99999", "1", "False", "99999", "True" ],
         "value": "Object Group",
         "const": "True",
         "compat": "obj"
@@ -3227,7 +3227,7 @@
       {
         "v": 1,
         "type": 0,
-        "commands": [ "axisLesserEquals", "0", "0", "0", "1", "0", "-99999", "99999", "1", "False", "99999" ],
+        "commands": [ "axisLesserEquals", "0", "0", "0", "1", "0", "-99999", "99999", "1", "False", "99999", "True" ],
         "value": "Object Group",
         "const": "True",
         "compat": "obj"
@@ -3235,7 +3235,7 @@
       {
         "v": 1,
         "type": 0,
-        "commands": [ "axisGreaterEquals", "0", "0", "0", "1", "0", "-99999", "99999", "1", "False", "99999" ],
+        "commands": [ "axisGreaterEquals", "0", "0", "0", "1", "0", "-99999", "99999", "1", "False", "99999", "True" ],
         "value": "Object Group",
         "const": "True",
         "compat": "obj"
@@ -3243,7 +3243,7 @@
       {
         "v": 1,
         "type": 0,
-        "commands": [ "axisLesser", "0", "0", "0", "1", "0", "-99999", "99999", "1", "False", "99999" ],
+        "commands": [ "axisLesser", "0", "0", "0", "1", "0", "-99999", "99999", "1", "False", "99999", "True" ],
         "value": "Object Group",
         "const": "True",
         "compat": "obj"
@@ -3251,7 +3251,7 @@
       {
         "v": 1,
         "type": 0,
-        "commands": [ "axisGreater", "0", "0", "0", "1", "0", "-99999", "99999", "1", "False", "99999" ],
+        "commands": [ "axisGreater", "0", "0", "0", "1", "0", "-99999", "99999", "1", "False", "99999", "True" ],
         "value": "Object Group",
         "const": "True",
         "compat": "obj"
