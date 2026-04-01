@@ -557,6 +557,9 @@ namespace BetterLegacy.Editor.Managers
             }
             EditorTimeline.inst.timelineKeyframes.Clear();
 
+            if (!GameData.Current)
+                return;
+
             for (int type = 0; type < GameData.Current.events.Count; type++)
             {
                 for (int index = 0; index < GameData.Current.events[type].Count; index++)

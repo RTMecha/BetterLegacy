@@ -313,7 +313,7 @@ namespace BetterLegacy.Patchers
                 if (!Seasons.IsAprilFools)
                     Instance.TogglePlayingSong();
                 else
-                    Instance.DisplayNotification("Welcome to the 3.0.0 update!\njk, April Fools!", 6f, EditorManager.NotificationType.Error);
+                    Instance.DisplayNotification("Welcome to the LOL update!\njk, April Fools!", 6f, EditorManager.NotificationType.Error);
                 CoreHelper.Log($"EDITOR START -> {nameof(EditorManager.ClearDialogs)}");
                 Instance.ClearDialogs();
 
@@ -468,6 +468,7 @@ namespace BetterLegacy.Patchers
             CoroutineHelper.StartCoroutine(AlephNetwork.DownloadJSONFile("https://drive.google.com/uc?export=download&id=1QJUeviLerCX1tZXW7QxpBC6K1BjtG1KT", json =>
             {
                 GameData.Current = GameData.Parse(JSON.Parse(json));
+                ThemeManager.inst.UpdateAllThemes();
 
                 CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip("https://drive.google.com/uc?export=download&id=1BDrRqX1IDk7bKo2hhYDqDqWLncMy7FkP", AudioType.OGGVORBIS, audioClip =>
                 {
