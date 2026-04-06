@@ -10,6 +10,10 @@
 - animateObject modifiers with their time set to 0 no longer animates, instead it instantly sets the transform values.
 - Updating a prefab now updates all recursive sub prefabs.
 
+## Fixes
+- Fixed issues relating to April 1st.
+- Fixed the Editor file browser not showing up.
+
 -------------------------------------------------------------------
 
 # snapshot-2026.3.5 - (Story Playtest) [Mar 26, 2026]
