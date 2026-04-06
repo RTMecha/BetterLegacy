@@ -4267,6 +4267,8 @@ namespace BetterLegacy.Editor.Managers
 
             EditorThemeManager.ApplyInputField(fileBrowser.transform.Find("folder-bar").GetComponent<InputField>());
 
+            RTFileBrowser.inst = rtfb;
+
             try
             {
                 rtfb.Popup = new EditorPopup(EditorPopup.BROWSER_POPUP);
