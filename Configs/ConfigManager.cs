@@ -648,8 +648,8 @@ namespace BetterLegacy.Configs
                                     setting.BoxedValue = new Vector2Int(value, vector2Setting.Value.y);
                             });
 
-                            TriggerHelper.IncreaseDecreaseButtons(floatingPointStorage.inputField, min: vector2Setting.MinValue.x, max: vector2Setting.MaxValue.x, t: floatingPoint.transform);
-                            TriggerHelper.AddEventTriggers(floatingPoint.gameObject, TriggerHelper.ScrollDelta(floatingPointStorage.inputField, min: vector2Setting.MinValue.x, max: vector2Setting.MaxValue.x));
+                            TriggerHelper.IncreaseDecreaseButtonsInt(floatingPointStorage.inputField, min: vector2Setting.MinValue.x, max: vector2Setting.MaxValue.x, t: floatingPoint.transform);
+                            TriggerHelper.AddEventTriggers(floatingPoint.gameObject, TriggerHelper.ScrollDeltaInt(floatingPointStorage.inputField, min: vector2Setting.MinValue.x, max: vector2Setting.MaxValue.x));
 
                             Destroy(floatingPointStorage.leftGreaterButton.gameObject);
                             Destroy(floatingPointStorage.rightGreaterButton.gameObject);
@@ -673,8 +673,8 @@ namespace BetterLegacy.Configs
                                     setting.BoxedValue = new Vector2Int(vector2Setting.Value.x, value);
                             });
 
-                            TriggerHelper.IncreaseDecreaseButtons(floatingPointStorage.inputField, min: vector2Setting.MinValue.y, max: vector2Setting.MaxValue.y, t: floatingPoint.transform);
-                            TriggerHelper.AddEventTriggers(floatingPoint.gameObject, TriggerHelper.ScrollDelta(floatingPointStorage.inputField, min: vector2Setting.MinValue.y, max: vector2Setting.MaxValue.y));
+                            TriggerHelper.IncreaseDecreaseButtonsInt(floatingPointStorage.inputField, min: vector2Setting.MinValue.y, max: vector2Setting.MaxValue.y, t: floatingPoint.transform);
+                            TriggerHelper.AddEventTriggers(floatingPoint.gameObject, TriggerHelper.ScrollDeltaInt(floatingPointStorage.inputField, min: vector2Setting.MinValue.y, max: vector2Setting.MaxValue.y));
 
                             Destroy(floatingPointStorage.leftGreaterButton.gameObject);
                             Destroy(floatingPointStorage.rightGreaterButton.gameObject);
@@ -781,8 +781,8 @@ namespace BetterLegacy.Configs
                         {
                             var name = Enum.GetName(type, j);
                             hide.DisabledOptions.Add(name == null);
-
-                            dropdown.options.Add(new Dropdown.OptionData(name ?? "Invalid Value"));
+                            name = name != null ? RTString.SplitWords(name) : "Invalid Value";
+                            dropdown.options.Add(new Dropdown.OptionData(name));
                         }
 
                         dropdown.SetValueWithoutNotify((int)setting.BoxedValue);
