@@ -5,6 +5,9 @@
 - Added "level_up" SFX.
 - Added "Offset Audio" value to most axis related modifiers (like copyAxis).
 
+### Editor
+- Added Background Object creation settings to Config Manager > Editor > Creation.
+
 ## Changes
 ### Core
 - animateObject modifiers with their time set to 0 no longer animates, instead it instantly sets the transform values.
@@ -13,6 +16,10 @@
 ## Fixes
 - Fixed issues relating to April 1st.
 - Fixed the Editor file browser not showing up.
+- Fixed Vector2 Integer settings scrolling as a float instead of as an integer.
+- Fixed prefab parenting not being consistent.
+- Fixed and tweaked keyframe custom UI displays context menu buttons.
+- Fixed ForceSnapBPM applying snap to objects even if the mouse is over the keyframe timeline.
 
 -------------------------------------------------------------------
 
