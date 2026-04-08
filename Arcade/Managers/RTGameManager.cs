@@ -140,7 +140,7 @@ namespace BetterLegacy.Arcade.Managers
                 return;
             }
 
-            objectDragger.gameObject.SetActive(SelectObject.Enabled && ProjectArrhythmia.State.InEditor && EditorManager.inst.isEditing &&
+            objectDragger.gameObject.SetActive(EditorConfig.Instance.ObjectDraggerEnabled.Value && ProjectArrhythmia.State.InEditor && EditorManager.inst.isEditing &&
                 EditorTimeline.inst.SelectedObjectCount == 1 &&
                 (EditorTimeline.inst.CurrentSelection.isBeatmapObject && EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>().objectType != BeatmapObject.ObjectType.Empty || EditorTimeline.inst.CurrentSelection.isPrefabObject));
         }

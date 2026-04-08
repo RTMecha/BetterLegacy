@@ -23,11 +23,6 @@ namespace BetterLegacy.Editor.Components
     public class SelectObject : MonoBehaviour
     {
         /// <summary>
-        /// If dragging is enabled via <see cref="Configs.EditorConfig.ObjectDraggerEnabled"/>.
-        /// </summary>
-        public static bool Enabled { get; set; }
-
-        /// <summary>
         /// If dragging prioritizes creating keyframes.
         /// </summary>
         public static bool CreateKeyframe { get; set; }
@@ -292,7 +287,7 @@ namespace BetterLegacy.Editor.Components
             if (!beatmapObject)
                 return;
 
-            if (Enabled)
+            if (EditorConfig.Instance.ObjectDraggerEnabled.Value)
             {
                 var currentSelection = EditorTimeline.inst.CurrentSelection;
 
@@ -340,7 +335,7 @@ namespace BetterLegacy.Editor.Components
                 RTPrefabEditor.inst.RenderPrefabObjectTransforms(prefabObjectToDrag);
         }
 
-        public void Highlight(bool highlight)
+        void Highlight(bool highlight)
         {
             if (beatmapObject.fromPrefab)
             {
@@ -348,12 +343,11 @@ namespace BetterLegacy.Editor.Components
                     return;
 
                 var prefabObject = beatmapObject.GetPrefabObject();
-                if (!prefabObject || prefabObject.fromModifier || !(highlight || ShowObjectsOnlyOnLayer && prefabObject.editorData.Layer != EditorTimeline.inst.Layer))
+                if (!prefabObject || prefabObject.fromModifier || !highlight || !prefabObject.runtimeObject)
                     return;
 
-                var beatmapObjects = prefabObject.ExpandedObjects.FindAll(x => x.objectType != BeatmapObject.ObjectType.Empty);
-                for (int i = 0; i < beatmapObjects.Count; i++)
-                    SetColor(beatmapObjects[i].runtimeObject, prefabObject.editorData.Layer, true);
+                foreach (RTBeatmapObject runtimeObject in prefabObject.runtimeObject.objectEngine.spawner.ActiveObjects)
+                    SetColor(runtimeObject, prefabObject.editorData.Layer, true);
 
                 return;
             }
@@ -364,13 +358,13 @@ namespace BetterLegacy.Editor.Components
             SetColor(beatmapObject.runtimeObject, beatmapObject.editorData.Layer, highlight);
         }
 
-        void SetColor(RTBeatmapObject levelObject, int layer, bool highlight)
+        void SetColor(RTBeatmapObject runtimeObject, int layer, bool highlight)
         {
-            if (!levelObject)
+            if (!runtimeObject)
                 return;
 
-            SetHoverColor(levelObject, highlight);
-            SetLayerColor(levelObject, layer);
+            SetHoverColor(runtimeObject, highlight);
+            SetLayerColor(runtimeObject, layer);
         }
 
         void SetHoverColor(RTBeatmapObject runtimeObject, bool highlight)
