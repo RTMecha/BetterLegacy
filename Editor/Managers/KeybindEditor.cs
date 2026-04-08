@@ -1312,7 +1312,7 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Objects && EditorTimeline.inst.SelectedObjects.Count > 0)
+            if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Objects && EditorTimeline.inst.SelectedObjects.Count > 0 && EditorTimeline.inst.isOverMainTimeline)
                 foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
                 {
                     timelineObject.Time = RTEditor.SnapToBPM(timelineObject.Time);
