@@ -391,6 +391,54 @@ namespace BetterLegacy.Configs
         public Setting<bool> CreateObjectScaleKFRelativeDefault { get; set; }
         public Setting<bool> CreateObjectRotationKFRelativeDefault { get; set; }
 
+        public Setting<bool> ApplyRandomToSingleBackgroundObject { get; set; }
+
+        public Setting<Vector2> CreateBackgroundsPositionXRange { get; set; }
+        public Setting<Vector2> CreateBackgroundsPositionYRange { get; set; }
+        public Setting<Vector2> CreateBackgroundsPositionZRange { get; set; }
+
+        public Setting<float> CreateBackgroundsPositionInterval { get; set; }
+
+        public Setting<int> CreateBackgroundsScaleMatchesChance { get; set; }
+        public Setting<Vector2> CreateBackgroundsMatchingScaleRange { get; set; }
+        public Setting<Vector2> CreateBackgroundsScaleXRange { get; set; }
+        public Setting<Vector2> CreateBackgroundsScaleYRange { get; set; }
+        public Setting<Vector2> CreateBackgroundsScaleZRange { get; set; }
+        public Setting<float> CreateBackgroundsScaleInterval { get; set; }
+
+        public Setting<Vector2> CreateBackgroundsRotationRange { get; set; }
+        public Setting<float> CreateBackgroundsRotationInterval { get; set; }
+
+        public Setting<Vector2Int> CreateBackgroundsShapeRange { get; set; }
+        public Setting<Vector2Int> CreateBackgroundsShapeOptionRange { get; set; }
+        public Setting<int> CreateBackgroundsFlatChance { get; set; }
+
+        public Setting<Vector2Int> CreateBackgroundsColorRange { get; set; }
+        public Setting<Vector2Int> CreateBackgroundsFadeColorRange { get; set; }
+        public Setting<Vector2Int> CreateBackgroundsDepthRange { get; set; }
+        public Setting<Vector2Int> CreateBackgroundsIterationRange { get; set; }
+        public Setting<int> CreateBackgroundsDrawFadeChance { get; set; }
+
+        public Setting<int> CreateBackgroundsReactiveChance { get; set; }
+        public Setting<BackgroundObject.ReactiveType> CreateBackgroundsMinimumReactiveType { get; set; }
+        public Setting<BackgroundObject.ReactiveType> CreateBackgroundsMaximumReactiveType { get; set; }
+        public Setting<Vector2> CreateBackgroundsReactiveIntensityRange { get; set; }
+
+        public Setting<int> CreateBackgroundsReactivePositionXChance { get; set; }
+        public Setting<Vector2> CreateBackgroundsReactivePositionXRange { get; set; }
+        public Setting<int> CreateBackgroundsReactivePositionYChance { get; set; }
+        public Setting<Vector2> CreateBackgroundsReactivePositionYRange { get; set; }
+        
+        public Setting<int> CreateBackgroundsReactiveScaleXChance { get; set; }
+        public Setting<Vector2> CreateBackgroundsReactiveScaleXRange { get; set; }
+        public Setting<int> CreateBackgroundsReactiveScaleYChance { get; set; }
+        public Setting<Vector2> CreateBackgroundsReactiveScaleYRange { get; set; }
+
+        public Setting<int> CreateBackgroundsReactiveRotationChance { get; set; }
+        public Setting<Vector2> CreateBackgroundsReactiveRotationRange { get; set; }
+
+        public Setting<Vector2Int> CreateBackgroundsReactiveColorRange { get; set; }
+
         #endregion
 
         #region Camera
@@ -879,6 +927,55 @@ namespace BetterLegacy.Configs
             CreateObjectScaleKFRelativeDefault = Bind(this, CREATION, "Object Scale KF Relative Default", false, "The default value for new objects' scale keyframe relative toggle.");
             CreateObjectRotationKFRelativeDefault = Bind(this, CREATION, "Object Rotation KF Relative Default", true, "The default value for new objects' rotation keyframe relative toggle.");
 
+            ApplyRandomToSingleBackgroundObject = Bind(this, CREATION, "Apply Random to Single Background Object", false, "If randomization properties should be applied to the singular created background objects.");
+
+            CreateBackgroundsPositionXRange = Bind(this, CREATION, "Create Background Position X Range", new Vector2(-48f, 48f), "Position X random range for background objects.");
+            CreateBackgroundsPositionYRange = Bind(this, CREATION, "Create Background Position Y Range", new Vector2(-32f, 32f), "Position Y random range for background objects.");
+            CreateBackgroundsPositionZRange = Bind(this, CREATION, "Create Background Position Z Range", new Vector2(0f, 0f), "Position Z random range for background objects.");
+
+            CreateBackgroundsPositionInterval = Bind(this, CREATION, "Create Background Position Interval", 0f, "Random position interval for background objects.");
+
+            CreateBackgroundsScaleMatchesChance = Bind(this, CREATION, "Create Background Scale Matches Chance", 50, "Percent chance the background object scale matches.", 0, 100);
+            CreateBackgroundsMatchingScaleRange = Bind(this, CREATION, "Create Background Matching Scale Range", new Vector2(2f, 6f), "Matching scale range for background objects.", Vector2.zero, new Vector2(float.MaxValue, float.MaxValue));
+            CreateBackgroundsScaleXRange = Bind(this, CREATION, "Create Background Scale X Range", new Vector2(2f, 8f), "Scale X range for background objects.", Vector2.zero, new Vector2(float.MaxValue, float.MaxValue));
+            CreateBackgroundsScaleYRange = Bind(this, CREATION, "Create Background Scale Y Range", new Vector2(2f, 8f), "Scale Y range for background objects.", Vector2.zero, new Vector2(float.MaxValue, float.MaxValue));
+            CreateBackgroundsScaleZRange = Bind(this, CREATION, "Create Background Scale Z Range", new Vector2(10f, 10f), "Scale Z range for background objects.", Vector2.zero, new Vector2(float.MaxValue, float.MaxValue));
+            CreateBackgroundsScaleInterval = Bind(this, CREATION, "Create Background Scale Interval", 0f, "Random scale interval for background objects.");
+
+            CreateBackgroundsRotationRange = Bind(this, CREATION, "Create Background Rotation Range", new Vector2(0f, 0f), "Rotation range for background objects.");
+            CreateBackgroundsRotationInterval = Bind(this, CREATION, "Create Background Rotation Interval", 0f, "Random rotation interval for background objects.");
+
+            CreateBackgroundsShapeRange = Bind(this, CREATION, "Create Background Shape Range", new Vector2Int(0, 3), "Shape range for background objects.", Vector2Int.zero, new Vector2Int(int.MaxValue, int.MaxValue));
+            CreateBackgroundsShapeOptionRange = Bind(this, CREATION, "Create Background Shape Option Range", new Vector2Int(0, 3), "Shape option range for background objects.", Vector2Int.zero, new Vector2Int(int.MaxValue, int.MaxValue));
+            CreateBackgroundsFlatChance = Bind(this, CREATION, "Create Background Flat Chance", 50, "Percent chance for the background object to be flat.", 0, 100);
+
+            CreateBackgroundsColorRange = Bind(this, CREATION, "Create Background Color Range", new Vector2Int(1, 5), "Color range for background objects.", Vector2Int.zero, new Vector2Int(9, 9));
+            CreateBackgroundsFadeColorRange = Bind(this, CREATION, "Create Background Fade Color Range", new Vector2Int(0, 0), "Fade color range for background objects.", Vector2Int.zero, new Vector2Int(9, 9));
+
+            CreateBackgroundsDepthRange = Bind(this, CREATION, "Create Background Depth Range", new Vector2Int(0, 5), "Depth range for background objects.");
+            CreateBackgroundsIterationRange = Bind(this, CREATION, "Create Background Iterations Range", new Vector2Int(0, 9), "Iteration range for background objects.");
+            CreateBackgroundsDrawFadeChance = Bind(this, CREATION, "Create Background Draw Fade Chance", 100, "Percent chance for the background object to draw fade iterations.", 0, 100);
+
+            CreateBackgroundsReactiveChance = Bind(this, CREATION, "Create Backgrounds Reactive Chance", 50, "Percent chance the background object has a reactive type.", 0, 100);
+            CreateBackgroundsMinimumReactiveType = Bind(this, CREATION, "Create Background Minimum Reactive Type", BackgroundObject.ReactiveType.Bass, "Minimum reactive type range for background object.");
+            CreateBackgroundsMaximumReactiveType = Bind(this, CREATION, "Create Background Maximum Reactive Type", BackgroundObject.ReactiveType.Custom, "Maximum reactive type range for background object.");
+            CreateBackgroundsReactiveIntensityRange = Bind(this, CREATION, "Create Background Reactive Intensity Range", new Vector2(0.01f, 0.04f), "Reactive intensity range for background objects.", Vector2.zero, new Vector2(float.MaxValue, float.MaxValue));
+
+            CreateBackgroundsReactivePositionXChance = Bind(this, CREATION, "Create Background Reactive Position X Chance", 65, "Percent chance for the background object to have position X reactive.", 0, 100);
+            CreateBackgroundsReactivePositionXRange = Bind(this, CREATION, "Create Background Reactive Position X Range", new Vector2(0f, 1f), "Reactive position X range for background objects.");
+            CreateBackgroundsReactivePositionYChance = Bind(this, CREATION, "Create Background Reactive Position Y Chance", 65, "Percent chance for the background object to have position Y reactive.", 0, 100);
+            CreateBackgroundsReactivePositionYRange = Bind(this, CREATION, "Create Background Reactive Position Y Range", new Vector2(0f, 1f), "Reactive position Y range for background objects.");
+            
+            CreateBackgroundsReactiveScaleXChance = Bind(this, CREATION, "Create Background Reactive Scale X Chance", 45, "Percent chance for the background object to have scale X reactive.", 0, 100);
+            CreateBackgroundsReactiveScaleXRange = Bind(this, CREATION, "Create Background Reactive Scale X Range", new Vector2(0f, 1f), "Reactive scale X range for background objects.");
+            CreateBackgroundsReactiveScaleYChance = Bind(this, CREATION, "Create Background Reactive Scale Y Chance", 45, "Percent chance for the background object to have scale Y reactive.", 0, 100);
+            CreateBackgroundsReactiveScaleYRange = Bind(this, CREATION, "Create Background Reactive Scale Y Range", new Vector2(0f, 1f), "Reactive scale Y range for background objects.");
+
+            CreateBackgroundsReactiveRotationChance = Bind(this, CREATION, "Create Background Reactive Rotation Chance", 45, "Percent chance for the background object to have rotation reactive.", 0, 100);
+            CreateBackgroundsReactiveRotationRange = Bind(this, CREATION, "Create Background Reactive Rotation Range", new Vector2(0f, 1f), "Reactive rotation range for background objects.");
+
+            CreateBackgroundsReactiveColorRange = Bind(this, CREATION, "Create Background Reactive Rotation Range", new Vector2Int(1, 5), "Reactive color range for background objects.", Vector2Int.zero, new Vector2Int(9, 9));
+
             #endregion
 
             #region Freecam
@@ -1331,7 +1428,6 @@ namespace BetterLegacy.Configs
 
         void SetPreviewConfig()
         {
-            SelectObject.Enabled = ObjectDraggerEnabled.Value;
             SelectObject.CreateKeyframe = ObjectDraggerCreatesKeyframe.Value;
             SelectObject.HighlightColor = ObjectHighlightAmount.Value;
             SelectObject.HighlightDoubleColor = ObjectHighlightDoubleAmount.Value;
