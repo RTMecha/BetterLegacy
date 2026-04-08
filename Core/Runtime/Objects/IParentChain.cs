@@ -254,7 +254,9 @@ namespace BetterLegacy.Core.Runtime.Objects
                 if (parentObject.beatmapObject.fromPrefab)
                     prefabOffset = parentObject.beatmapObject.GetPrefabOffsetTime();
                 if (parentObject.prefabObject)
-                    prefabOffset = parentObject.prefabObject.StartTime + parentObject.prefabObject.GetPrefab()?.offset ?? 0f;
+                    prefabOffset = parentObject.prefabObject.ParentDesync && parentObject.prefabObject.offsetParentDesyncTime ?
+                        parentObject.prefabObject.StartTime :
+                        parentObject.prefabObject.StartTime + parentObject.prefabObject.GetPrefab()?.offset ?? 0f;
             }
 
             parentChain.CurrentScale = totalScale;
