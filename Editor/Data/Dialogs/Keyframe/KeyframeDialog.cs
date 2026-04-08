@@ -1382,7 +1382,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     Display.ApplyFrom(ObjectEditor.inst.copiedValueDisplay);
                     UpdateDisplay(animatable);
                     EditorManager.inst.DisplayNotification($"Paste UI settings.", 2f, EditorManager.NotificationType.Success);
-                }));
+                }, shouldGenerate: () => ObjectEditor.inst.copiedValueDisplay));
 
             var amount = Display.overrideScroll ? Display.scrollAmount : type switch
             {
@@ -1646,7 +1646,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         RTEditor.inst.HideNameEditor();
                     });
                 })),
-                new ButtonElement("Insert Entry", () => RTEditor.inst.ShowNameEditor("Add Dropdown Option", "Entry Index", "Index", "Next", () =>
+                new ButtonElement("Insert Entry", () => RTEditor.inst.ShowNameEditor("Add Dropdown Option", "Entry Index", "0", "Next", () =>
                 {
                     if (!int.TryParse(RTEditor.inst.folderCreatorName.text, out int index) || index < 0 || index > Display.options.Count)
                         return;
@@ -1664,16 +1664,16 @@ namespace BetterLegacy.Editor.Data.Dialogs
                             RTEditor.inst.HideNameEditor();
                         });
                     });
-                })),
-                new ButtonElement("Edit Entry", () => RTEditor.inst.ShowNameEditor("Add Dropdown Option", "Entry Index", "Index", "Next", () =>
+                }), shouldGenerate: () => !Display.options.IsEmpty()),
+                new ButtonElement("Edit Entry", () => RTEditor.inst.ShowNameEditor("Add Dropdown Option", "Entry Index", "0", "Next", () =>
                 {
                     if (!int.TryParse(RTEditor.inst.folderCreatorName.text, out int index) || !Display.options.TryGetAt(index, out CustomValueDisplay.Option option))
                         return;
 
-                    RTEditor.inst.ShowNameEditor("Add Dropdown Option", "Entry Name", option.name, "Next", () =>
+                    RTEditor.inst.ShowNameEditor("Edit Dropdown Option", "Entry Name", option.name, "Next", () =>
                     {
                         var name = RTEditor.inst.folderCreatorName.text;
-                        RTEditor.inst.ShowNameEditor("Add Dropdown Option", "Entry Value", option.value.ToString(), "Add", () =>
+                        RTEditor.inst.ShowNameEditor("Edit Dropdown Option", "Entry Value", option.value.ToString(), "Update", () =>
                         {
                             if (!float.TryParse(RTEditor.inst.folderCreatorName.text, out float value))
                                 return;
@@ -1684,7 +1684,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                             RTEditor.inst.HideNameEditor();
                         });
                     });
-                })),
+                }), shouldGenerate: () => !Display.options.IsEmpty()),
                 new ButtonElement("Remove Entry", () =>
                 {
                     if (Display.options.IsEmpty())
@@ -1698,7 +1698,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     if (Display.options.IsEmpty())
                         return;
 
-                    RTEditor.inst.ShowNameEditor("Add Dropdown Option", "Entry Index", "Index", "Next", () =>
+                    RTEditor.inst.ShowNameEditor("Add Dropdown Option", "Entry Index", "0", "Next", () =>
                     {
                         if (!int.TryParse(RTEditor.inst.folderCreatorName.text, out int index) || !Display.options.InRange(index))
                             return;
@@ -1707,12 +1707,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         UpdateDisplay(animatable);
                         RTEditor.inst.HideNameEditor();
                     });
-                }),
+                }, shouldGenerate: () => !Display.options.IsEmpty()),
                 new ButtonElement("Clear Entries", () =>
                 {
                     Display.options.Clear();
                     UpdateDisplay(animatable);
-                }),
+                }, shouldGenerate: () => !Display.options.IsEmpty()),
                 new SpacerElement(),
                 new ButtonElement("Change to Input Field", () =>
                 {
@@ -1741,7 +1741,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     Display.ApplyFrom(ObjectEditor.inst.copiedValueDisplay);
                     UpdateDisplay(animatable);
                     EditorManager.inst.DisplayNotification($"Paste UI settings.", 2f, EditorManager.NotificationType.Success);
-                }));
+                }, shouldGenerate: () => ObjectEditor.inst.copiedValueDisplay));
 
             if (getOptions != null)
                 Dropdown.options = getOptions.Invoke();
@@ -1930,7 +1930,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     Display.ApplyFrom(ObjectEditor.inst.copiedValueDisplay);
                     UpdateDisplay(animatable);
                     EditorManager.inst.DisplayNotification($"Paste UI settings.", 2f, EditorManager.NotificationType.Success);
-                }));
+                }, shouldGenerate: () => ObjectEditor.inst.copiedValueDisplay));
 
             Toggle.SetIsOnWithoutNotify(isSingle ? firstKF.eventKeyframe.values[valueIndex] == onValue : Parser.TryParse(getMultiValue?.Invoke(), false));
             Toggle.onValueChanged.NewListener(_val =>
