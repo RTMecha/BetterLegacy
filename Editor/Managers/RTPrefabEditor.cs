@@ -278,7 +278,7 @@ namespace BetterLegacy.Editor.Managers
                 new ButtonElement("Assign", () =>
                 {
                     selectQuickPrefabText.text = "<color=#669e37>Selecting</color>";
-                    StartCoroutine(RefreshInternalPrefabs(true));
+                    RefreshInternalPrefabs(true);
                 }),
                 new ButtonElement("Remove", () =>
                 {
@@ -2575,7 +2575,7 @@ namespace BetterLegacy.Editor.Managers
 
             RTLevel.Current?.RecalculateObjectStates();
 
-            StartCoroutine(RefreshInternalPrefabs());
+            RefreshInternalPrefabs();
         }
 
         /// <summary>
@@ -2617,7 +2617,7 @@ namespace BetterLegacy.Editor.Managers
 
             RTLevel.Current?.RecalculateObjectStates();
 
-            StartCoroutine(RefreshInternalPrefabs());
+            RefreshInternalPrefabs();
         }
 
         /// <summary>
@@ -2645,7 +2645,7 @@ namespace BetterLegacy.Editor.Managers
             selectQuickPrefabButton.onClick.NewListener(() =>
             {
                 selectQuickPrefabText.text = "<color=#669e37>Selecting</color>";
-                StartCoroutine(RefreshInternalPrefabs(true));
+                RefreshInternalPrefabs(true);
             });
 
             PrefabEditor.inst.externalSearch.onValueChanged.NewListener(_val =>
@@ -2657,14 +2657,14 @@ namespace BetterLegacy.Editor.Managers
             PrefabEditor.inst.internalSearch.onValueChanged.NewListener(_val =>
             {
                 PrefabEditor.inst.internalSearchStr = _val;
-                StartCoroutine(RefreshInternalPrefabs());
+                RefreshInternalPrefabs();
             });
 
             savingToPrefab = false;
             prefabToSaveFrom = null;
 
-            StartCoroutine(IRenderExternalPrefabs());
-            StartCoroutine(RefreshInternalPrefabs());
+            RenderExternalPrefabs();
+            RefreshInternalPrefabs();
         }
 
         /// <summary>
@@ -2992,8 +2992,19 @@ namespace BetterLegacy.Editor.Managers
         /// <summary>
         /// Refreshes the Internal Prefabs UI.
         /// </summary>
+        public void RefreshInternalPrefabs() => CoroutineHelper.StartCoroutine(IRefreshInternalPrefabs(false));
+        
+        /// <summary>
+        /// Refreshes the Internal Prefabs UI.
+        /// </summary>
         /// <param name="updateCurrentPrefab">If the current quick prefab should be set instead of importing.</param>
-        public IEnumerator RefreshInternalPrefabs(bool updateCurrentPrefab = false)
+        public void RefreshInternalPrefabs(bool updateCurrentPrefab) => CoroutineHelper.StartCoroutine(IRefreshInternalPrefabs(updateCurrentPrefab));
+
+        /// <summary>
+        /// Refreshes the Internal Prefabs UI.
+        /// </summary>
+        /// <param name="updateCurrentPrefab">If the current quick prefab should be set instead of importing.</param>
+        public IEnumerator IRefreshInternalPrefabs(bool updateCurrentPrefab = false)
         {
             if (!GameData.Current)
                 yield break;
@@ -3008,7 +3019,7 @@ namespace BetterLegacy.Editor.Managers
                 ButtonElement.ToggleButton("Filter: Used", () => filterUsed, () =>
                 {
                     filterUsed = !filterUsed;
-                    StartCoroutine(RefreshInternalPrefabs());
+                    RefreshInternalPrefabs();
                 }));
 
             Popups.Internal.ClearContent();
@@ -3106,7 +3117,7 @@ namespace BetterLegacy.Editor.Managers
             ValidateDuplicateName(newPrefab);
 
             GameData.Current.prefabs.Add(newPrefab);
-            CoroutineHelper.StartCoroutine(RefreshInternalPrefabs());
+            RefreshInternalPrefabs();
 
             Example.Current?.brain?.Notice(ExampleBrain.Notices.IMPORT_PREFAB, new PrefabNoticeParameters(newPrefab));
 
@@ -3181,7 +3192,7 @@ namespace BetterLegacy.Editor.Managers
             var origID = internalPrefab.id;
             internalPrefab.CopyData(prefab, false);
             internalPrefab.id = origID;
-            StartCoroutine(RefreshInternalPrefabs());
+            RefreshInternalPrefabs();
 
             GameData.Current.prefabObjects.FindAll(x => x.prefabID == prefab.id && string.IsNullOrEmpty(x.PrefabInstanceID)).ForEach(x =>
             {

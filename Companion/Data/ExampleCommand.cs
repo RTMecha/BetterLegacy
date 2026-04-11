@@ -3989,7 +3989,7 @@ namespace BetterLegacy.Companion.Data
                         }
                     }
                     if (count > 0)
-                        CoroutineHelper.StartCoroutine(RTPrefabEditor.inst.RefreshInternalPrefabs());
+                        RTPrefabEditor.inst.RefreshInternalPrefabs();
                 }
             }
 
@@ -4016,7 +4016,7 @@ namespace BetterLegacy.Companion.Data
                         }
                     }
                     if (count > 0)
-                        CoroutineHelper.StartCoroutine(RTPrefabEditor.inst.RefreshInternalPrefabs());
+                        RTPrefabEditor.inst.RefreshInternalPrefabs();
                 }
             }
 
@@ -4040,7 +4040,7 @@ namespace BetterLegacy.Companion.Data
                         }
                     }
                     if (count > 0)
-                        CoroutineHelper.StartCoroutine(RTPrefabEditor.inst.RefreshInternalPrefabs());
+                        RTPrefabEditor.inst.RefreshInternalPrefabs();
                 }
             }
 

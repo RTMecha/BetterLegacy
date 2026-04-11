@@ -429,7 +429,7 @@ namespace BetterLegacy.Editor.Data.Elements
                             if (RTPrefabEditor.inst.selectingQuickPrefab)
                             {
                                 RTPrefabEditor.inst.UpdateCurrentPrefab(prefab);
-                                CoroutineHelper.StartCoroutine(RTPrefabEditor.inst.RefreshInternalPrefabs());
+                                RTPrefabEditor.inst.RefreshInternalPrefabs();
                                 return;
                             }
 
@@ -450,7 +450,7 @@ namespace BetterLegacy.Editor.Data.Elements
                                     new ButtonElement("Assign to Quick Prefab", () =>
                                     {
                                         RTPrefabEditor.inst.UpdateCurrentPrefab(prefab);
-                                        CoroutineHelper.StartCoroutine(RTPrefabEditor.inst.RefreshInternalPrefabs());
+                                        RTPrefabEditor.inst.RefreshInternalPrefabs();
                                     }),
                                     new SpacerElement(),
                                     new ButtonElement("Edit", () => RTPrefabEditor.inst.OpenPrefabEditorDialog(this)),
@@ -458,10 +458,7 @@ namespace BetterLegacy.Editor.Data.Elements
                                     new ButtonElement("Export", () => RTPrefabEditor.inst.SavePrefab(Item.Copy(false)), "Internal Prefab Export"),
                                     new SpacerElement(),
                                 };
-                                buttonFunctions.AddRange(EditorContextMenu.GetMoveIndexFunctions(GameData.Current.prefabs, index, () =>
-                                {
-                                    CoroutineHelper.StartCoroutine(RTPrefabEditor.inst.RefreshInternalPrefabs());
-                                }));
+                                buttonFunctions.AddRange(EditorContextMenu.GetMoveIndexFunctions(GameData.Current.prefabs, index, RTPrefabEditor.inst.RefreshInternalPrefabs));
 
                                 EditorContextMenu.inst.ShowContextMenu(buttonFunctions);
                                 return;
