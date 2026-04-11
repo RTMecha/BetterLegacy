@@ -696,39 +696,5 @@ namespace BetterLegacy.Core.Helpers
         });
 
         #endregion
-
-        #region Themes
-
-        public static EventTrigger.Entry CreatePreviewClickTrigger(Image preview, Image dropper, InputField hexField, Color currentColor, string popupName = "") => CreateEntry(EventTriggerType.PointerClick, eventData =>
-        {
-            RTColorPicker.inst.Show(currentColor, (col, hex) =>
-            {
-                hexField.SetTextWithoutNotify(hex);
-                preview.color = col;
-
-                if (dropper)
-                    dropper.color = RTColors.InvertColor(col);
-            }, (col, hex) =>
-            {
-                if (!string.IsNullOrEmpty(popupName))
-                    RTEditor.inst.ShowDialog(popupName);
-
-                hexField.SetTextWithoutNotify(string.Empty);
-                hexField.text = hex;
-                preview.color = col;
-
-                if (dropper)
-                    dropper.color = RTColors.InvertColor(col);
-            }, () =>
-            {
-                hexField.SetTextWithoutNotify(RTColors.ColorToHex(currentColor));
-                preview.color = currentColor;
-
-                if (dropper)
-                    dropper.color = RTColors.InvertColor(currentColor);
-            });
-        });
-
-        #endregion
     }
 }
