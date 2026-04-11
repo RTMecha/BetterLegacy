@@ -589,8 +589,7 @@ namespace BetterLegacy.Core
         public static T[] Copy<T>(this T[] array)
         {
             var newArray = new T[array.Length];
-            for (int i = 0; i < array.Length; i++)
-                newArray[i] = array[i];
+            Array.Copy(array, newArray, array.Length);
             return newArray;
         }
 
