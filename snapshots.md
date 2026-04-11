@@ -11,7 +11,13 @@
 ## Changes
 ### Core
 - animateObject modifiers with their time set to 0 no longer animates, instead it instantly sets the transform values.
+
+### Editor
 - Updating a prefab now updates all recursive sub prefabs.
+- Using the color picker now updates the preview of the color.
+- Theme effect colors no longer show 8 digit hex color codes if the opacity saving setting is off.
+- Prefab Objects copied from one level to another now copy their origin Prefabs.
+- Added a "Convert Colors to Hex Color" button to the Multi Object Editor keyframes tab.
 
 ## Fixes
 - Fixed issues relating to April 1st.
@@ -20,6 +26,7 @@
 - Fixed prefab parenting not being consistent.
 - Fixed and tweaked keyframe custom UI displays context menu buttons.
 - Fixed ForceSnapBPM applying snap to objects even if the mouse is over the keyframe timeline.
+- Fixed color picker hue / saturation selection not displaying the correct value when the popup opens.
 
 -------------------------------------------------------------------
 
