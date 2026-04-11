@@ -2719,6 +2719,18 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                             new SpacerElement().Init(EditorElement.InitSettings.Default.Parent(parent));
 
+                            ButtonElement.Label1Button("Convert Colors to Hex Color",
+                                () => MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                {
+                                    for (int i = 0; i < beatmapObject.events[3].Count; i++)
+                                        beatmapObject.events[3][i].ConvertToHexColor(beatmapObject.gradientType != GradientType.Normal);
+
+                                    var runtime = beatmapObject.GetParentRuntime();
+                                    runtime?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                                })).Init(EditorElement.InitSettings.Default.Parent(parent).Rect(RectValues.Default.SizeDelta(0f, 32f)));
+
+                            new SpacerElement().Init(EditorElement.InitSettings.Default.Parent(parent));
+
                             #region Clear
 
                             new LabelsElement(new LabelElement("Clear") { fontSize = 22, fontStyle = FontStyle.Bold }).Init(EditorElement.InitSettings.Default.Parent(parent));

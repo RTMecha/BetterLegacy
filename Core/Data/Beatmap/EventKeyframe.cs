@@ -10,6 +10,9 @@ using BetterLegacy.Editor.Data.Timeline;
 
 namespace BetterLegacy.Core.Data.Beatmap
 {
+    /// <summary>
+    /// Represents the data of a keyframe that can animate an object with any amount of values.
+    /// </summary>
     public class EventKeyframe : PAObject<EventKeyframe>
     {
         #region Constructors
@@ -49,45 +52,146 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #endregion
 
-        public static EventKeyframe DefaultPositionKeyframe => new EventKeyframe(0f, new float[3], new float[4]);
-        public static EventKeyframe DefaultScaleKeyframe => new EventKeyframe(0f, new float[2] { 1f, 1f }, new float[4]);
-        public static EventKeyframe DefaultRotationKeyframe => new EventKeyframe(0f, new float[1], new float[4]) { relative = true };
-        public static EventKeyframe DefaultColorKeyframe => new EventKeyframe(0f, new float[10], new float[3]);
-
         #region Values
 
+        #region Global
+
+        /// <summary>
+        /// The default position keyframe.
+        /// </summary>
+        public static EventKeyframe DefaultPositionKeyframe => new EventKeyframe(0f, new float[3], new float[4]);
+        /// <summary>
+        /// The default scale keyframe.
+        /// </summary>
+        public static EventKeyframe DefaultScaleKeyframe => new EventKeyframe(0f, new float[2] { 1f, 1f }, new float[4]);
+        /// <summary>
+        /// The default rotation keyframe.
+        /// </summary>
+        public static EventKeyframe DefaultRotationKeyframe => new EventKeyframe(0f, new float[1], new float[4]) { relative = true };
+        /// <summary>
+        /// The default color keyframe.
+        /// </summary>
+        public static EventKeyframe DefaultColorKeyframe => new EventKeyframe(0f, new float[10], new float[3]);
+
+        /// <summary>
+        /// JSON value names.
+        /// </summary>
+        public static readonly string[] axis = new string[]
+        {
+            "x",
+            "y",
+            "z",
+            "x2",
+            "y2",
+            "z2",
+            "x3",
+            "y3",
+            "z3",
+            "x4",
+            "y4",
+            "z4",
+            "x5",
+            "y5",
+            "z5",
+        };
+
+        /// <summary>
+        /// JSON random value names.
+        /// </summary>
+        public static readonly string[] raxis = new string[]
+        {
+            "rx",
+            "ry",
+            "rz",
+            "rx2",
+            "ry2",
+            "rz2",
+            "rx3",
+            "ry3",
+            "rz3",
+            "rx4",
+            "ry4",
+            "rz4",
+            "rx5",
+            "ry5",
+            "rz5",
+        };
+
+        #endregion
+
+        /// <summary>
+        /// Keyframe values.
+        /// </summary>
         public float[] values = new float[2];
 
+        /// <summary>
+        /// Keyframe random values, used when <see cref="random"/> is not 0.
+        /// </summary>
         public float[] randomValues = new float[3];
 
+        /// <summary>
+        /// Keyframe string values, used for cases where strings are needed.
+        /// </summary>
         public string[] stringValues;
 
+        /// <summary>
+        /// Keyframe random type.
+        /// </summary>
         public int random;
 
+        /// <summary>
+        /// Keyframe random type.
+        /// </summary>
         public RandomType RandomType => (RandomType)random;
 
+        /// <summary>
+        /// If the keyframe should add all previous keyframe values to itself in runtime.
+        /// </summary>
         public bool relative;
 
+        #region Homing
+
+        /// <summary>
+        /// If <see cref="IsHoming"/> is true and the keyframe should have the object flee rather than follow.
+        /// </summary>
         public bool flee;
 
+        /// <summary>
+        /// Homing target priority.
+        /// </summary>
         public HomingPriority homingPriority;
 
+        /// <summary>
+        /// Player index to target if <see cref="homingPriority"/> is <see cref="HomingPriority.Index"/>.
+        /// </summary>
         public int playerIndex;
 
-        public bool locked;
+        #endregion
 
         #region Timing
 
+        /// <summary>
+        /// Keyframe time.
+        /// </summary>
         public float time;
 
+        /// <summary>
+        /// Keyframe curve / easing type.
+        /// </summary>
         public Easing curve = Easing.Linear;
+
+        /// <summary>
+        /// If the keyframes' time is locked.
+        /// </summary>
+        public bool locked;
 
         #endregion
 
         #region Reference
 
-        public int type;
-        public int index;
+        /// <summary>
+        /// Reference of the keyframe in an editor timeline.
+        /// </summary>
         public TimelineKeyframe timelineKeyframe;
 
         #endregion
@@ -211,84 +315,165 @@ namespace BetterLegacy.Core.Data.Beatmap
         }
 
         /// <summary>
-        /// Set an EventKeyframe's easing via an integer. If the number is within the range of the list, then the ease is set.
+        /// Set a the easing via an integer.
         /// </summary>
-        /// <param name="eventKeyframe">The EventKeyframe instance</param>
-        /// <param name="ease">The ease to set to the keyframe</param>
+        /// <param name="ease">The ease to set to the keyframe.</param>
         public void SetCurve(int ease) => curve = (Easing)Mathf.Clamp(ease, 0, System.Enum.GetNames(typeof(Easing)).Length - 1);
 
         /// <summary>
-        /// Set an EventKeyframe's easing via a string. If the AnimationList contains the specified string, then the ease is set.
+        /// Set the easing via a string.
         /// </summary>
-        /// <param name="eventKeyframe">The EventKeyframe instance</param>
-        /// <param name="ease">The ease to set to the keyframe</param>
+        /// <param name="ease">The ease to set to the keyframe.</param>
         public void SetCurve(string ease) => curve = Parser.TryParse(ease, Easing.Linear);
 
-        public void SetValues(params float[] vals)
+        /// <summary>
+        /// Sets the <see cref="values"/> array.
+        /// </summary>
+        /// <param name="values">Values to set.</param>
+        public void SetValues(params float[] values)
         {
-            if (vals == null)
+            if (values == null)
                 return;
 
-            values = new float[vals.Length];
-            for (int i = 0; i < vals.Length; i++)
-                values[i] = vals[i];
+            this.values = new float[values.Length];
+            for (int i = 0; i < values.Length; i++)
+                this.values[i] = values[i];
         }
 
-        public void SetRandomValues(params float[] vals)
+        /// <summary>
+        /// Sets the <see cref="randomValues"/> array.
+        /// </summary>
+        /// <param name="values">Values to set.</param>
+        public void SetRandomValues(params float[] values)
         {
-            if (vals == null)
+            if (values == null)
                 return;
 
-            randomValues = new float[vals.Length];
-            for (int i = 0; i < vals.Length; i++)
-                randomValues[i] = vals[i];
+            randomValues = new float[values.Length];
+            for (int i = 0; i < values.Length; i++)
+                randomValues[i] = values[i];
         }
 
-        public void SetStringValues(params string[] vals)
+        /// <summary>
+        /// Sets the <see cref="stringValues"/> array.
+        /// </summary>
+        /// <param name="values">Values to set.</param>
+        public void SetStringValues(params string[] values)
         {
-            if (vals == null)
+            if (values == null)
                 return;
 
-            stringValues = new string[vals.Length];
-            for (int i = 0; i < vals.Length; i++)
-                stringValues[i] = vals[i];
+            stringValues = new string[values.Length];
+            for (int i = 0; i < values.Length; i++)
+                stringValues[i] = values[i];
         }
 
-        public void SetValue(int index, float val)
+        /// <summary>
+        /// Sets a value at an index.
+        /// </summary>
+        /// <param name="index">Index of the value to set.</param>
+        /// <param name="value">Value to set.</param>
+        public void SetValue(int index, float value)
         {
             if (values.InRange(index))
-                values[index] = val;
-        }
-        
-        public void SetRandomValue(int index, float val)
-        {
-            if (randomValues.InRange(index))
-                randomValues[index] = val;
+                values[index] = value;
         }
 
-        public void SetStringValue(int index, string val)
+        /// <summary>
+        /// Sets a random value at an index.
+        /// </summary>
+        /// <param name="index">Index of the value to set.</param>
+        /// <param name="value">Value to set.</param>
+        public void SetRandomValue(int index, float value)
+        {
+            if (randomValues.InRange(index))
+                randomValues[index] = value;
+        }
+
+        /// <summary>
+        /// Sets a string value at an index.
+        /// </summary>
+        /// <param name="index">Index of the value to set.</param>
+        /// <param name="value">Value to set.</param>
+        public void SetStringValue(int index, string value)
         {
             if (stringValues == null)
                 stringValues = new string[index + 1];
 
             if (stringValues.InRange(index))
-                stringValues[index] = val;
+                stringValues[index] = value;
             else
             {
                 var sv = new string[index + 1];
                 System.Array.Copy(stringValues, sv, stringValues.Length);
-                sv[index] = val;
+                sv[index] = value;
                 stringValues = sv;
             }
         }
 
+        /// <summary>
+        /// Gets a value at an index.
+        /// </summary>
+        /// <param name="index">Index of the value to get.</param>
+        /// <param name="defaultValue">Default value to return if the index is out of the range of the array.</param>
+        /// <returns>Returns the specified entry in <see cref="values"/> if <paramref name="index"/> is in the range of the array, otherwise returns <paramref name="defaultValue"/>.</returns>
         public float GetValue(int index, float defaultValue = 0f) => values.TryGetAt(index, out float result) ? result : defaultValue;
 
+        /// <summary>
+        /// Gets a random value at an index.
+        /// </summary>
+        /// <param name="index">Index of the value to get.</param>
+        /// <param name="defaultValue">Default value to return if the index is out of the range of the array.</param>
+        /// <returns>Returns the specified entry in <see cref="randomValues"/> if <paramref name="index"/> is in the range of the array, otherwise returns <paramref name="defaultValue"/>.</returns>
         public float GetRandomValue(int index, float defaultValue = 0f) => randomValues.TryGetAt(index, out float result) ? result : defaultValue;
 
-        public string GetStringValue(int index, string defaultValue = null) => stringValues.TryGetAt(index, out string result) ? result : defaultValue;
+        /// <summary>
+        /// Gets a string value at an index.
+        /// </summary>
+        /// <param name="index">Index of the value to get.</param>
+        /// <param name="defaultValue">Default value to return if the index is out of the range of the array.</param>
+        /// <returns>Returns the specified entry in <see cref="stringValues"/> if <paramref name="index"/> is in the range of the array, otherwise returns <paramref name="defaultValue"/>.</returns>
+        public string GetStringValue(int index, string defaultValue = null) => stringValues != null && stringValues.TryGetAt(index, out string result) ? result : defaultValue;
 
+        /// <summary>
+        /// Checks if the keyframe is a homing keyframe.
+        /// </summary>
+        /// <returns>Returns true if <see cref="random"/> is 5 or 6.</returns>
         public bool IsHoming() => random == 5 || random == 6;
+
+        /// <summary>
+        /// Converts the color keyframe's color data to hex color.
+        /// </summary>
+        /// <param name="isGradient">If the reference object is a gradient.</param>
+        public void ConvertToHexColor(bool isGradient)
+        {
+            random = 1;
+
+            var startColorSlot = (int)values[0];
+            var startOpacity = -(values[1] - 1f);
+            var startHue = values[2];
+            var startSat = values[3];
+            var startVal = values[4];
+
+            if (isGradient)
+            {
+                var endColorSlot = (int)values[5];
+                var endOpacity = -(values[6] - 1f);
+                var endHue = values[7];
+                var endSat = values[8];
+                var endVal = values[9];
+
+                SetStringValues(
+                    RTColors.ColorToHexOptional(RTColors.FadeColor(RTColors.ChangeColorHSV(Helpers.CoreHelper.CurrentBeatmapTheme.GetObjColor(startColorSlot), startHue, startSat, startVal), startOpacity)),
+                    RTColors.ColorToHexOptional(RTColors.FadeColor(RTColors.ChangeColorHSV(Helpers.CoreHelper.CurrentBeatmapTheme.GetObjColor(endColorSlot), endHue, endSat, endVal), endOpacity)));
+            }
+            else
+            {
+                SetStringValues(
+                    RTColors.ColorToHexOptional(RTColors.FadeColor(RTColors.ChangeColorHSV(Helpers.CoreHelper.CurrentBeatmapTheme.GetObjColor(startColorSlot), startHue, startSat, startVal), startOpacity)),
+                    RTColors.WHITE_HEX_CODE);
+            }
+        }
 
         public Dictionary<string, float> GetKeyframeVariables(int index) => new Dictionary<string, float>
         {
@@ -303,21 +488,16 @@ namespace BetterLegacy.Core.Data.Beatmap
             { "currentValueY", values[yindex] }
         };
 
-        #endregion
-
-        #region Operators
-
         public override string ToString()
         {
-            string strs = string.Empty;
+            string strs = $"{time} - {curve}: ";
             for (int i = 0; i < values.Length; i++)
             {
                 strs += $"{values[i]}";
                 if (i != values.Length - 1)
                     strs += ", ";
             }
-
-            return $"{index}, {type}: {strs}";
+            return strs;
         }
 
         public override bool Equals(object obj) => obj is EventKeyframe eventKeyframe && id == eventKeyframe.id;
@@ -325,43 +505,5 @@ namespace BetterLegacy.Core.Data.Beatmap
         public override int GetHashCode() => base.GetHashCode();
 
         #endregion
-
-        public static readonly string[] axis = new string[]
-        {
-            "x",
-            "y",
-            "z",
-            "x2",
-            "y2",
-            "z2",
-            "x3",
-            "y3",
-            "z3",
-            "x4",
-            "y4",
-            "z4",
-            "x5",
-            "y5",
-            "z5",
-        };
-
-        public static readonly string[] raxis = new string[]
-        {
-            "rx",
-            "ry",
-            "rz",
-            "rx2",
-            "ry2",
-            "rz2",
-            "rx3",
-            "ry3",
-            "rz3",
-            "rx4",
-            "ry4",
-            "rz4",
-            "rx5",
-            "ry5",
-            "rz5",
-        };
     }
 }
