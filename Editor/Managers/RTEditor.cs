@@ -2606,11 +2606,11 @@ namespace BetterLegacy.Editor.Managers
 
                             ObjectEditor.inst.CopyObjects();
                             if (!cut)
-                                EditorManager.inst.DisplayNotification("Copied Beatmap Object", 1f, EditorManager.NotificationType.Success);
+                                EditorManager.inst.DisplayNotification("Copied objects.", 1f, EditorManager.NotificationType.Success);
                             else
                             {
                                 EditorTimeline.inst.DeleteObjects();
-                                EditorManager.inst.DisplayNotification("Cut Beatmap Object", 1f, EditorManager.NotificationType.Success);
+                                EditorManager.inst.DisplayNotification("Cut objects.", 1f, EditorManager.NotificationType.Success);
                             }
 
                             if (dup)
@@ -3127,7 +3127,7 @@ namespace BetterLegacy.Editor.Managers
             PrefabPanel.internalDeleteRect = RectValues.TryParse(jn["delete"]["rect"], new RectValues(new Vector2(467f, -16f), new Vector2(0f, 1f), new Vector2(0f, 1f), RectValues.CenterPivot, new Vector2(32f, 32f)));
 
             if (update)
-                CoroutineHelper.StartCoroutine(RTPrefabEditor.inst.RefreshInternalPrefabs());
+                RTPrefabEditor.inst.RefreshInternalPrefabs();
         }
 
         public void LoadExternalPrefabPanelUI(bool update = true)
