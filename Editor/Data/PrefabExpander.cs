@@ -333,6 +333,27 @@ namespace BetterLegacy.Editor.Data
                 EditorTimeline.inst.RenderTimelineObject(timelineObject);
             }
 
+            if (prefab.prefabs != null)
+            {
+                expanded.Prefabs = new List<Prefab>();
+                for (int i = 0; i < prefab.prefabs.Count; i++)
+                {
+                    var prefab = this.prefab.prefabs[i];
+                    if (!prefab)
+                        continue;
+
+                    var prefabCopy = prefab.Copy(false);
+                    if (GameData.Current.prefabs.Has(x => x.id == prefabCopy.id))
+                        continue;
+
+                    GameData.Current.prefabs.Add(prefabCopy);
+                    expanded.Prefabs.Add(prefab);
+
+                    if (ProjectArrhythmia.State.InEditor && i == this.prefab.prefabs.Count - 1 && RTPrefabEditor.inst.Popups.IsOpen)
+                        RTPrefabEditor.inst.RefreshInternalPrefabs();
+                }
+            }
+
             var ids = new List<string>();
             for (int i = 0; i < prefab.prefabObjects.Count; i++)
                 ids.Add(LSText.randomString(16));
@@ -344,6 +365,9 @@ namespace BetterLegacy.Editor.Data
                 var prefabObjectCopy = prefabObject.Copy(false);
                 prefabObjectCopy.id = ids[i];
                 prefabObjectCopy.prefabID = prefabObject.prefabID;
+
+                if (!GameData.Current.prefabs.Has(x => x.id == prefabObjectCopy.prefabID))
+                    continue;
 
                 if (!retainID && !string.IsNullOrEmpty(prefabObject.Parent) && objectIDs.TryFind(x => x.oldID == prefabObject.Parent, out IDPair idPair))
                     prefabObjectCopy.Parent = idPair.newID;

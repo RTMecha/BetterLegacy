@@ -570,11 +570,26 @@ namespace BetterLegacy.Editor.Managers
             if (EditorConfig.Instance.PasteOffset.Value)
                 start = -AudioManager.inst.CurrentAudioSource.time + selected.Min(x => x.Time);
 
+            var beatmapObjects = selected.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>());
+            var prefabObjects = selected.Where(x => x.isPrefabObject).Select(x => x.GetData<PrefabObject>());
+            var backgroundObjects = selected.Where(x => x.isBackgroundObject).Select(x => x.GetData<BackgroundObject>());
+
+            var prefabIDs = new Dictionary<string, Prefab>();
+            foreach (var prefabObject in prefabObjects)
+            {
+                if (string.IsNullOrEmpty(prefabObject.prefabID))
+                    continue;
+                var prefab = prefabObject.GetPrefab();
+                if (prefab)
+                    prefabIDs[prefabObject.prefabID] = prefab;
+            }
+
             var copy = new Prefab("copied prefab", 0, start,
-                selected.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()).ToList(),
-                selected.Where(x => x.isPrefabObject).Select(x => x.GetData<PrefabObject>()).ToList(),
+                beatmapObjects.ToList(),
+                prefabObjects.ToList(),
                 null,
-                selected.Where(x => x.isBackgroundObject).Select(x => x.GetData<BackgroundObject>()).ToList());
+                backgroundObjects.ToList(),
+                !prefabIDs.IsEmpty() ? prefabIDs.Values.ToList() : null);
 
             copy.description = "Take me wherever you go!";
             this.copy = copy;
