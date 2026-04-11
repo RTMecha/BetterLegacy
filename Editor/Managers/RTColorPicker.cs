@@ -99,6 +99,18 @@ namespace BetterLegacy.Editor.Managers
 
         Action cancel;
 
+        Rect BrightnessPanelRect
+        {
+            get
+            {
+                var transform = baseColorPicker.brightnessPanel.transform.AsRT();
+                float num = transform.position.x + transform.anchoredPosition.x;
+                float num2 = (float)Screen.height - transform.position.y - transform.anchoredPosition.y;
+                return new Rect(num, num2, transform.rect.size.x, transform.rect.size.y);
+            }
+        }
+        Vector2 colorCoord;
+
         #endregion
 
         #region Functions
@@ -226,15 +238,15 @@ namespace BetterLegacy.Editor.Managers
         {
             LSColors.ColorToHSV(currentColor, out double hue, out double sat, out double val);
 			this.currentColor = currentColor;
-			hueSlider.value = (float)hue / 359f;
+			hueSlider.SetValueWithoutNotify((float)hue / 359f);
 			RenderPanel((float)hue / 359f);
 			RenderEditor(currentColor);
-            UpdateSlider((float)sat, (float)val, LSMath.RectTransformToScreenSpace2(baseColorPicker.brightnessPanel.transform.AsRT()));
+            UpdateSlider((float)sat, (float)val, BrightnessPanelRect);
         }
 
 		void ClickTrigger(BaseEventData eventData)
 		{
-			var rect2 = LSMath.RectTransformToScreenSpace2(baseColorPicker.brightnessPanel.transform.AsRT());
+			var rect2 = BrightnessPanelRect;
 			var offset = baseColorPicker.transform.position;
 			offset.y -= 100f * CoreHelper.ScreenScale;
 			var mousePosition = Input.mousePosition;
@@ -252,6 +264,7 @@ namespace BetterLegacy.Editor.Managers
 
 		void UpdateSlider(float saturation, float value, Rect panelScreenRect)
 		{
+            colorCoord = new Vector2(saturation, value);
 			baseColorPicker.brightnessPanelSlider.GetComponent<Image>().color = ((value <= 0.5) ? LSColors.white : LSColors.black);
 			baseColorPicker.brightnessPanelSlider.transform.AsRT().anchoredPosition = new Vector3(saturation * panelScreenRect.width - 2.5f, value * panelScreenRect.height - 2.5f) * CoreHelper.ScreenScaleInverse;
 		}

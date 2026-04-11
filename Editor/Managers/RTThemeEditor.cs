@@ -1146,23 +1146,42 @@ namespace BetterLegacy.Editor.Managers
                 SetEditor(false);
             });
 
+            var backgroundColor = PreviewTheme.backgroundColor;
             var bgHex = Dialog.EditorContent.Find("bg/hex").GetComponent<InputField>();
             var bgPreview = Dialog.EditorContent.Find("bg/preview").GetComponent<Image>();
             var bgPreviewET = Dialog.EditorContent.Find("bg/preview").GetComponent<EventTrigger>();
             var bgDropper = Dialog.EditorContent.Find("bg/preview/dropper").GetComponent<Image>();
 
-            bgPreview.color = PreviewTheme.backgroundColor;
-            bgHex.SetTextWithoutNotify(LSColors.ColorToHex(PreviewTheme.backgroundColor));
+            bgPreview.color = backgroundColor;
+            bgHex.SetTextWithoutNotify(LSColors.ColorToHex(backgroundColor));
             bgHex.onValueChanged.NewListener(_val =>
             {
-                bgPreview.color = _val.Length == 6 ? LSColors.HexToColor(_val) : LSColors.pink500;
-                PreviewTheme.backgroundColor = _val.Length == 6 ? LSColors.HexToColor(_val) : LSColors.pink500;
+                var backgroundColor = _val.Length == 6 ? LSColors.HexToColor(_val) : LSColors.pink500;
+                bgPreview.color = backgroundColor;
+                PreviewTheme.backgroundColor = backgroundColor;
 
-                SetDropper(bgDropper, bgPreview, bgHex, bgPreviewET, PreviewTheme.backgroundColor);
+                SetDropper(bgDropper, bgPreview, bgHex, bgPreviewET, backgroundColor,
+                    previewColor: _color =>
+                    {
+                        PreviewTheme.backgroundColor = _color;
+                    },
+                    cancel: () =>
+                    {
+                        PreviewTheme.backgroundColor = backgroundColor;
+                    });
             });
 
-            SetDropper(bgDropper, bgPreview, bgHex, bgPreviewET, PreviewTheme.backgroundColor);
+            SetDropper(bgDropper, bgPreview, bgHex, bgPreviewET, backgroundColor,
+                    previewColor: _color =>
+                    {
+                        PreviewTheme.backgroundColor = _color;
+                    },
+                    cancel: () =>
+                    {
+                        PreviewTheme.backgroundColor = backgroundColor;
+                    });
 
+            var guiColor = PreviewTheme.guiColor;
             var guiHex = Dialog.EditorContent.Find("gui/hex").GetComponent<InputField>();
             var guiPreview = Dialog.EditorContent.Find("gui/preview").GetComponent<Image>();
             var guiPreviewET = Dialog.EditorContent.Find("gui/preview").GetComponent<EventTrigger>();
@@ -1171,18 +1190,36 @@ namespace BetterLegacy.Editor.Managers
             guiHex.characterLimit = EditorConfig.Instance.SavingSavesThemeOpacity.Value ? 8 : 6;
             guiHex.characterValidation = InputField.CharacterValidation.None;
             guiHex.contentType = InputField.ContentType.Standard;
-            guiPreview.color = PreviewTheme.guiColor;
-            guiHex.SetTextWithoutNotify(EditorConfig.Instance.SavingSavesThemeOpacity.Value ? RTColors.ColorToHex(PreviewTheme.guiColor) : LSColors.ColorToHex(PreviewTheme.guiColor));
+            guiPreview.color = guiColor;
+            guiHex.SetTextWithoutNotify(EditorConfig.Instance.SavingSavesThemeOpacity.Value ? RTColors.ColorToHex(guiColor) : LSColors.ColorToHex(guiColor));
             guiHex.onValueChanged.NewListener(_val =>
             {
-                guiPreview.color = _val.Length == 8 ? LSColors.HexToColorAlpha(_val) : _val.Length == 6 ? LSColors.HexToColor(_val) : LSColors.pink500;
-                PreviewTheme.guiColor = _val.Length == 8 ? LSColors.HexToColorAlpha(_val) : _val.Length == 6 ? LSColors.HexToColor(_val) : LSColors.pink500;
+                var guiColor = _val.Length == 8 ? LSColors.HexToColorAlpha(_val) : _val.Length == 6 ? LSColors.HexToColor(_val) : LSColors.pink500;
+                guiPreview.color = guiColor;
+                PreviewTheme.guiColor = guiColor;
 
-                SetDropper(guiDropper, guiPreview, guiHex, guiPreviewET, PreviewTheme.guiColor);
+                SetDropper(guiDropper, guiPreview, guiHex, guiPreviewET, guiColor,
+                    previewColor: _color =>
+                    {
+                        PreviewTheme.guiColor = _color;
+                    },
+                    cancel: () =>
+                    {
+                        PreviewTheme.guiColor = guiColor;
+                    });
             });
 
-            SetDropper(guiDropper, guiPreview, guiHex, guiPreviewET, PreviewTheme.guiColor);
+            SetDropper(guiDropper, guiPreview, guiHex, guiPreviewET, guiColor,
+                    previewColor: _color =>
+                    {
+                        PreviewTheme.guiColor = _color;
+                    },
+                    cancel: () =>
+                    {
+                        PreviewTheme.guiColor = guiColor;
+                    });
 
+            var guiAccentColor = PreviewTheme.guiAccentColor;
             var guiaccentHex = Dialog.EditorContent.Find("guiaccent/hex").GetComponent<InputField>();
             var guiaccentPreview = Dialog.EditorContent.Find("guiaccent/preview").GetComponent<Image>();
             var guiaccentPreviewET = Dialog.EditorContent.Find("guiaccent/preview").GetComponent<EventTrigger>();
@@ -1191,17 +1228,34 @@ namespace BetterLegacy.Editor.Managers
             guiaccentHex.characterLimit = EditorConfig.Instance.SavingSavesThemeOpacity.Value ? 8 : 6;
             guiaccentHex.characterValidation = InputField.CharacterValidation.None;
             guiaccentHex.contentType = InputField.ContentType.Standard;
-            guiaccentPreview.color = PreviewTheme.guiAccentColor;
-            guiaccentHex.SetTextWithoutNotify(EditorConfig.Instance.SavingSavesThemeOpacity.Value ? RTColors.ColorToHex(PreviewTheme.guiAccentColor) : LSColors.ColorToHex(PreviewTheme.guiAccentColor));
+            guiaccentPreview.color = guiAccentColor;
+            guiaccentHex.SetTextWithoutNotify(EditorConfig.Instance.SavingSavesThemeOpacity.Value ? RTColors.ColorToHex(guiAccentColor) : LSColors.ColorToHex(guiAccentColor));
             guiaccentHex.onValueChanged.NewListener(_val =>
             {
-                guiaccentPreview.color = _val.Length == 8 ? LSColors.HexToColorAlpha(_val) : _val.Length == 6 ? LSColors.HexToColor(_val) : LSColors.pink500;
-                PreviewTheme.guiAccentColor = _val.Length == 8 ? LSColors.HexToColorAlpha(_val) : _val.Length == 6 ? LSColors.HexToColor(_val) : LSColors.pink500;
+                var guiAccentColor = _val.Length == 8 ? LSColors.HexToColorAlpha(_val) : _val.Length == 6 ? LSColors.HexToColor(_val) : LSColors.pink500;
+                guiaccentPreview.color = guiAccentColor;
+                PreviewTheme.guiAccentColor = guiAccentColor;
 
-                SetDropper(guiaccentDropper, guiaccentPreview, guiaccentHex, guiaccentPreviewET, PreviewTheme.guiAccentColor);
+                SetDropper(guiaccentDropper, guiaccentPreview, guiaccentHex, guiaccentPreviewET, guiAccentColor,
+                    previewColor: _color =>
+                    {
+                        PreviewTheme.guiAccentColor = _color;
+                    },
+                    cancel: () =>
+                    {
+                        PreviewTheme.guiAccentColor = guiAccentColor;
+                    });
             });
 
-            SetDropper(guiaccentDropper, guiaccentPreview, guiaccentHex, guiaccentPreviewET, PreviewTheme.guiAccentColor);
+            SetDropper(guiaccentDropper, guiaccentPreview, guiaccentHex, guiaccentPreviewET, guiAccentColor,
+                    previewColor: _color =>
+                    {
+                        PreviewTheme.guiAccentColor = _color;
+                    },
+                    cancel: () =>
+                    {
+                        PreviewTheme.guiAccentColor = guiAccentColor;
+                    });
 
             RenderColorList(Dialog.EditorContent, "player", 4, PreviewTheme.playerColors, EditorConfig.Instance.SavingSavesThemeOpacity.Value);
 
@@ -1210,7 +1264,7 @@ namespace BetterLegacy.Editor.Managers
             RenderColorList(Dialog.EditorContent, "background", 9, PreviewTheme.backgroundColors, false);
 
             Dialog.EditorContent.Find("effect_label").gameObject.SetActive(RTEditor.ShowModdedUI);
-            RenderColorList(Dialog.EditorContent, "effect", 18, PreviewTheme.effectColors);
+            RenderColorList(Dialog.EditorContent, "effect", 18, PreviewTheme.effectColors, EditorConfig.Instance.SavingSavesThemeOpacity.Value);
         }
 
         void RenderColorList(Transform themeContent, string name, int count, List<Color> colors, bool allowAlpha = true)
@@ -1237,22 +1291,39 @@ namespace BetterLegacy.Editor.Managers
                 var previewET = p.Find("preview").GetComponent<EventTrigger>();
                 var dropper = p.Find("preview").GetChild(0).GetComponent<Image>();
 
-                int indexTmp = i;
+                int index = i;
+                var color = colors[index];
                 hex.characterLimit = allowAlpha ? 8 : 6;
                 hex.characterValidation = InputField.CharacterValidation.None;
                 hex.contentType = InputField.ContentType.Standard;
-                preview.color = colors[indexTmp];
-                hex.SetTextWithoutNotify(allowAlpha ? RTColors.ColorToHex(colors[indexTmp]) : LSColors.ColorToHex(colors[indexTmp]));
+                preview.color = color;
+                hex.SetTextWithoutNotify(allowAlpha ? RTColors.ColorToHex(color) : LSColors.ColorToHex(color));
                 hex.onValueChanged.NewListener(_val =>
                 {
                     var color = _val.Length == 8 && allowAlpha ? LSColors.HexToColorAlpha(_val) : _val.Length == 6 ? LSColors.HexToColor(_val) : LSColors.pink500;
                     preview.color = color;
-                    colors[indexTmp] = color;
+                    colors[index] = color;
 
-                    SetDropper(dropper, preview, hex, previewET, colors[indexTmp]);
+                    SetDropper(dropper, preview, hex, previewET, color,
+                    previewColor: _color =>
+                    {
+                        colors[index] = _color;
+                    },
+                    cancel: () =>
+                    {
+                        colors[index] = color;
+                    });
                 });
 
-                SetDropper(dropper, preview, hex, previewET, colors[indexTmp]);
+                SetDropper(dropper, preview, hex, previewET, color,
+                    previewColor: _color =>
+                    {
+                        colors[index] = _color;
+                    },
+                    cancel: () =>
+                    {
+                        colors[index] = color;
+                    });
 
                 if (name == "player")
                     EditorContextMenu.AddContextMenu(hex.gameObject,
@@ -1264,11 +1335,41 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
-        void SetDropper(Image dropper, Image preview, InputField hex, EventTrigger previewET, Color color)
+        void SetDropper(Image dropper, Image preview, InputField hexField, EventTrigger previewET, Color currentColor, Action<Color> previewColor = null, Action cancel = null)
         {
-            dropper.color = RTColors.InvertColorHue(RTColors.InvertColorValue(color));
+            dropper.color = RTColors.InvertColorHue(RTColors.InvertColorValue(currentColor));
             previewET.triggers.Clear();
-            previewET.triggers.Add(TriggerHelper.CreatePreviewClickTrigger(preview, dropper, hex, color));
+            previewET.triggers.Add(TriggerHelper.CreateEntry(EventTriggerType.PointerClick, eventData =>
+            {
+                RTColorPicker.inst.Show(currentColor,
+                    colorChanged: (col, hex) =>
+                    {
+                        previewColor?.Invoke(col);
+                        hexField.SetTextWithoutNotify(hex);
+                        preview.color = col;
+
+                        if (dropper)
+                            dropper.color = RTColors.InvertColor(col);
+                    },
+                    colorSaved: (col, hex) =>
+                    {
+                        hexField.SetTextWithoutNotify(string.Empty);
+                        hexField.text = hex;
+                        preview.color = col;
+
+                        if (dropper)
+                            dropper.color = RTColors.InvertColor(col);
+                    },
+                    cancel: () =>
+                    {
+                        cancel?.Invoke();
+                        hexField.SetTextWithoutNotify(RTColors.ColorToHex(currentColor));
+                        preview.color = currentColor;
+
+                        if (dropper)
+                            dropper.color = RTColors.InvertColor(currentColor);
+                    });
+            }));
         }
 
         #endregion

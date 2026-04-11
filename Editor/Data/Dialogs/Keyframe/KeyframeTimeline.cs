@@ -1953,35 +1953,75 @@ namespace BetterLegacy.Editor.Data.Dialogs
             EditorHelper.SetComplexity(kfdialog.Find("huesatval_label").gameObject, "color_keyframe/hsv", Complexity.Advanced, visible: () => !useCustomHexColor);
             EditorHelper.SetComplexity(hsvObj, "color_keyframe/hsv", Complexity.Advanced, visible: () => !useCustomHexColor);
 
-            var startHexColor = firstKF.eventKeyframe.stringValues != null && firstKF.eventKeyframe.stringValues.TryGetAt(0, out string startHex) ? startHex : RTColors.WHITE_HEX_CODE;
-            var endHexColor = firstKF.eventKeyframe.stringValues != null && firstKF.eventKeyframe.stringValues.TryGetAt(1, out string endHex) ? endHex : RTColors.WHITE_HEX_CODE;
+            var hexColors = selected.ToDictionary(x => x.ID, x => x.eventKeyframe.stringValues?.Copy());
 
             StartHexColorField.gameObject.SetActive(useCustomHexColor);
-            StartHexColorField.SetTextWithoutNotify(startHexColor);
+            StartHexColorField.SetTextWithoutNotify(firstKF.eventKeyframe.GetStringValue(0, RTColors.WHITE_HEX_CODE));
             StartHexColorField.onValueChanged.NewListener(_val =>
             {
                 foreach (var keyframe in selected.Select(x => x.eventKeyframe))
                     keyframe.SetStringValue(0, _val);
-
+                hexColors = selected.ToDictionary(x => x.ID, x => x.eventKeyframe.stringValues?.Copy());
                 // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                 if (beatmapObject)
                     RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
             });
             EditorContextMenu.AddContextMenu(StartHexColorField.gameObject,
-                EditorContextMenu.GetEditorColorFunctions(StartHexColorField, () => startHexColor));
+                EditorContextMenu.GetEditorColorFunctions(StartHexColorField, () => firstKF.eventKeyframe.GetStringValue(0, RTColors.WHITE_HEX_CODE), _val =>
+                {
+                    foreach (var keyframe in selected.Select(x => x.eventKeyframe))
+                        keyframe.SetStringValue(0, _val);
+
+                    // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                    if (beatmapObject)
+                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                },
+                () =>
+                {
+                    foreach (var keyframe in selected.Select(x => x.eventKeyframe))
+                    {
+                        if (hexColors.TryGetValue(keyframe.id, out string[] stringValues))
+                            keyframe.stringValues = stringValues;
+                    }
+
+                    // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                    if (beatmapObject)
+                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                }));
             EndHexColorField.gameObject.SetActive(useCustomHexColor && showGradient);
-            EndHexColorField.SetTextWithoutNotify(endHexColor);
+            EndHexColorField.SetTextWithoutNotify(firstKF.eventKeyframe.GetStringValue(1, RTColors.WHITE_HEX_CODE));
             EndHexColorField.onValueChanged.NewListener(_val =>
             {
                 foreach (var keyframe in selected.Select(x => x.eventKeyframe))
                     keyframe.SetStringValue(1, _val);
-
+                hexColors = selected.ToDictionary(x => x.ID, x => x.eventKeyframe.stringValues?.Copy());
                 // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                 if (beatmapObject)
                     RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
             });
             EditorContextMenu.AddContextMenu(EndHexColorField.gameObject,
-                EditorContextMenu.GetEditorColorFunctions(EndHexColorField, () => endHexColor));
+                EditorContextMenu.GetEditorColorFunctions(EndHexColorField, () => firstKF.eventKeyframe.GetStringValue(1, RTColors.WHITE_HEX_CODE), _val =>
+                {
+                    foreach (var keyframe in selected.Select(x => x.eventKeyframe))
+                        keyframe.SetStringValue(1, _val);
+
+                    // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                    if (beatmapObject)
+                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                },
+                () =>
+                {
+                    CoreHelper.Log($"Reset {hexColors.Count}");
+                    foreach (var keyframe in selected.Select(x => x.eventKeyframe))
+                    {
+                        if (hexColors.TryGetValue(keyframe.id, out string[] stringValues))
+                            keyframe.stringValues = stringValues;
+                    }
+
+                    // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                    if (beatmapObject)
+                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                }));
 
             var hexCollision = kfdialog.Find("opacitycollision").GetComponent<Toggle>();
             EditorHelper.SetComplexity(hexCollision.gameObject, "color_keyframe/opacity_collision", Complexity.Normal, visible: () => useCustomHexColor && beatmapObject);

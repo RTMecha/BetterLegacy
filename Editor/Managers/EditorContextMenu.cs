@@ -579,10 +579,14 @@ namespace BetterLegacy.Editor.Managers
             return buttonFunctions;
         }
 
-        public static List<EditorElement> GetEditorColorFunctions(InputField inputField, Func<string> getValue) => new List<EditorElement>
+        public static List<EditorElement> GetEditorColorFunctions(InputField inputField, Func<string> getValue, Action<string> showValue = null, Action cancel = null) => new List<EditorElement>
         {
             new ButtonElement("Edit Color", () => RTColorPicker.inst.Show(RTColors.HexToColor(getValue?.Invoke() ?? string.Empty),
-                (col, hex) => inputField.SetTextWithoutNotify(hex),
+                (col, hex) =>
+                {
+                    inputField.SetTextWithoutNotify(hex);
+                    showValue?.Invoke(hex);
+                },
                 (col, hex) =>
                 {
                     CoreHelper.Log($"Set timeline object color: {hex}");
@@ -590,7 +594,11 @@ namespace BetterLegacy.Editor.Managers
                     inputField.SetTextWithoutNotify(string.Empty);
                     inputField.text = hex;
                 },
-                () => inputField.SetTextWithoutNotify(getValue?.Invoke() ?? string.Empty))),
+                () =>
+                {
+                    cancel?.Invoke();
+                    inputField.SetTextWithoutNotify(getValue?.Invoke() ?? string.Empty);
+                })),
             new ButtonElement("Clear", () => inputField.text = string.Empty),
             new SpacerElement(),
             new ButtonElement("VG Red", () => inputField.text = ObjectEditorData.RED),
