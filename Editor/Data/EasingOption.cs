@@ -9,6 +9,8 @@ namespace BetterLegacy.Editor.Data
     /// </summary>
     public class EasingOption : Exists
     {
+        #region Values
+
         /// <summary>
         /// Display name of the easing.
         /// </summary>
@@ -28,5 +30,13 @@ namespace BetterLegacy.Editor.Data
         /// <see cref="Easing"/> value that this easing option represents.
         /// </summary>
         public Easing EasingValue => (Easing)index;
+
+        #endregion
+
+        #region Functions
+
+        public override string ToString() => name ?? base.ToString();
+
+        #endregion
     }
 }

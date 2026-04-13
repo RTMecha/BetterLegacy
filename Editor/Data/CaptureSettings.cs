@@ -12,6 +12,8 @@ namespace BetterLegacy.Editor.Data
     /// </summary>
     public class CaptureSettings : PAObject<CaptureSettings>
     {
+        #region Constructors
+
         public CaptureSettings() : base() { }
 
         public CaptureSettings(Vector2Int resolution, Vector2 pos, float rot) : this()
@@ -20,6 +22,8 @@ namespace BetterLegacy.Editor.Data
             this.pos = pos;
             this.rot = rot;
         }
+
+        #endregion
 
         #region Values
 
@@ -118,7 +122,7 @@ namespace BetterLegacy.Editor.Data
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public override void CopyData(CaptureSettings orig, bool newID = true)
         {
@@ -209,13 +213,13 @@ namespace BetterLegacy.Editor.Data
         /// <summary>
         /// Sets the resolution's width.
         /// </summary>
-        /// <param name="x">Width value.</param>
+        /// <param name="width">Width value.</param>
         public void SetResolutionWidth(int width) => resolution.x = RTMath.Clamp(width, 32, int.MaxValue);
 
         /// <summary>
         /// Sets the resolution's height.
         /// </summary>
-        /// <param name="y">Height value.</param>
+        /// <param name="height">Height value.</param>
         public void SetResolutionHeight(int height) => resolution.y = RTMath.Clamp(height, 32, int.MaxValue);
 
         #endregion

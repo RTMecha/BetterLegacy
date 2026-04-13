@@ -12,9 +12,15 @@ namespace BetterLegacy.Editor.Data
     /// </summary>
     public class EditorGroup : PAObject<EditorGroup>
     {
+        #region Constructors
+
         public EditorGroup() { }
 
         public EditorGroup(string name) => this.name = name;
+
+        #endregion
+
+        #region Values
 
         /// <summary>
         /// Name of the group.
@@ -25,6 +31,25 @@ namespace BetterLegacy.Editor.Data
         /// Timeline object collapse override.
         /// </summary>
         public CollapsedType collapsedType;
+
+        /// <summary>
+        /// Timeline object collapse type.
+        /// </summary>
+        public enum CollapsedType
+        {
+            /// <summary>
+            /// Does not override timeline object.
+            /// </summary>
+            Off,
+            /// <summary>
+            /// Overrides timeline object collapse.
+            /// </summary>
+            Collapsed,
+            /// <summary>
+            /// Hides the timeline object.
+            /// </summary>
+            Hidden,
+        }
 
         int bin;
         /// <summary>
@@ -46,24 +71,9 @@ namespace BetterLegacy.Editor.Data
             set => layer = Mathf.Clamp(value, 0, int.MaxValue);
         }
 
-        /// <summary>
-        /// Timeline object collapse type.
-        /// </summary>
-        public enum CollapsedType
-        {
-            /// <summary>
-            /// Does not override timeline object.
-            /// </summary>
-            Off,
-            /// <summary>
-            /// Overrides timeline object collapse.
-            /// </summary>
-            Collapsed,
-            /// <summary>
-            /// Hides the timeline object.
-            /// </summary>
-            Hidden,
-        }
+        #endregion
+
+        #region Functions
 
         public override void CopyData(EditorGroup orig, bool newID = true)
         {
@@ -98,5 +108,7 @@ namespace BetterLegacy.Editor.Data
 
             return jn;
         }
+
+        #endregion
     }
 }
