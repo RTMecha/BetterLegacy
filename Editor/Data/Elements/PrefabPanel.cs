@@ -378,7 +378,6 @@ namespace BetterLegacy.Editor.Data.Elements
         /// <summary>
         /// Updates the prefab panels' function.
         /// </summary>
-        /// <param name="updateCurrentPrefab">If the current quick prefab should be set instead of importing.</param>
         public void UpdateFunction()
         {
             var prefab = Item;
