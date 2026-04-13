@@ -2226,6 +2226,7 @@ namespace BetterLegacy.Core.Helpers
             name == nameof(ModifierFunctions.getAxisMath) ||
             name == nameof(ModifierFunctions.activateModifier) ||
             name == nameof(ModifierFunctions.legacyTail) ||
+            name == nameof(ModifierFunctions.applyColorGroup) ||
             name.ToLower().Contains("signal") ||
             name.Contains("Other") ||
             name.Contains("copy") && name != nameof(ModifierFunctions.copyPlayerAxis) ||
@@ -8327,22 +8328,16 @@ namespace BetterLegacy.Core.Helpers
             if (list.IsEmpty() || !cachedSequences)
                 return;
 
-            var type = modifier.GetInt(1, 0, modifierLoop.variables);
-            var axis = modifier.GetInt(2, 0, modifierLoop.variables);
-            var overrideStartOpacity = modifier.GetBool(3, true, modifierLoop.variables);
-            var overrideEndOpacity = modifier.GetBool(4, true, modifierLoop.variables);
-
-            // queue post tick so the color overrides the sequence color
-            RTLevel.Current.postTick.Enqueue(() =>
+            var t = 0f;
+            if (modifier.version == 0)
             {
-                var time = beatmapObject.GetParentRuntime().CurrentTime - beatmapObject.StartTime;
-                var colors = ModifiersHelper.GetColors(beatmapObject, time);
-                Color color = colors.startColor;
-                Color secondColor = colors.endColor;
+                var type = modifier.GetInt(1, 0, modifierLoop.variables);
+                var axis = modifier.GetInt(2, 0, modifierLoop.variables);
 
                 var isEmpty = beatmapObject.objectType == BeatmapObject.ObjectType.Empty;
+                var time = beatmapObject.GetParentRuntime().CurrentTime - beatmapObject.StartTime;
 
-                float t = !isEmpty ? type switch
+                t = !isEmpty ? type switch
                 {
                     0 => cachedSequences.PositionSequence.Value.At(axis),
                     1 => cachedSequences.ScaleSequence.Value.At(axis),
@@ -8355,6 +8350,20 @@ namespace BetterLegacy.Core.Helpers
                     2 => cachedSequences.RotationSequence.GetValue(time).At(axis),
                     _ => 0f
                 };
+            }
+            else
+                t = modifier.GetFloat(1, 0f, modifierLoop.variables);
+
+            var overrideStartOpacity = modifier.GetBool(modifier.version == 0 ? 3 : 2, true, modifierLoop.variables);
+            var overrideEndOpacity = modifier.GetBool(modifier.version == 0 ? 4 : 3, true, modifierLoop.variables);
+
+            // queue post tick so the color overrides the sequence color
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var time = beatmapObject.GetParentRuntime().CurrentTime - beatmapObject.StartTime;
+                var colors = ModifiersHelper.GetColors(beatmapObject, time);
+                var color = colors.startColor;
+                var secondColor = colors.endColor;
 
                 foreach (var other in list)
                 {

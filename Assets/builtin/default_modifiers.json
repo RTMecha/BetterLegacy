@@ -2826,11 +2826,12 @@
         "compat": "full_beatmap"
       }, // setColorRGBAOther
       {
+        "v": 1,
         "type": 1,
-        "commands": [ "applyColorGroup", "0", "0", "True", "True" ],
-        "value": "Object Group",
+        "name": "applyColorGroup",
+        "values": [ "Object Group", "0", "True", "True" ],
         "const": "True",
-        "compat": "full_beatmap"
+        "compat": "obj"
       }, // applyColorGroup
       {
         "type": 1,

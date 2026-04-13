@@ -2977,10 +2977,24 @@ namespace BetterLegacy.Editor.Data.Elements
                         PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
-                        DropdownGenerator(modifier, reference, "From Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
-                        DropdownGenerator(modifier, reference, "From Axis", 2, CoreHelper.StringToOptionData("X", "Y", "Z"));
-                        BoolGenerator(modifier, reference, "Override Start Opacity", 3, true);
-                        BoolGenerator(modifier, reference, "Override End Opacity", 4, true);
+                        if (modifier.version == 0)
+                        {
+                            DropdownGenerator(modifier, reference, "From Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
+                            DropdownGenerator(modifier, reference, "From Axis", 2, CoreHelper.StringToOptionData("X", "Y", "Z"));
+                        }
+                        else
+                            SingleGenerator(modifier, reference, "Lerp", 1, max: 1f);
+                        BoolGenerator(modifier, reference, "Override Start Opacity", modifier.version == 0 ? 3 : 2, true);
+                        BoolGenerator(modifier, reference, "Override End Opacity", modifier.version == 0 ? 4 : 3, true);
+
+                        if (modifier.version == 0)
+                            AddGenerator(modifier, reference, "Update", () =>
+                            {
+                                modifier.values.RemoveAt(1); // From Type
+                                modifier.values.RemoveAt(1); // From Axis
+                                modifier.values.Insert(1, "0");
+                                modifier.version = 1;
+                            });
 
                         break;
                     }
