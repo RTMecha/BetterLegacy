@@ -106,7 +106,7 @@ namespace BetterLegacy.Story
                 {
                     files = new System.Collections.Generic.List<PackageMetaData.File>
                     {
-                        new PackageMetaData.File("audio", $"song{FileFormat.OGG.Dot()}"),
+                        new PackageMetaData.File("audio", $"audio{FileFormat.OGG.Dot()}"),
                         new PackageMetaData.File("cover", $"cover{FileFormat.JPG.Dot()}"),
                         new PackageMetaData.File("level", $"level{FileFormat.JSON.Dot()}"),
                         new PackageMetaData.File("players", $"players{FileFormat.JSON.Dot()}"),
@@ -115,8 +115,8 @@ namespace BetterLegacy.Story
             }
 
             var icon = assets.LoadAsset<Sprite>(metadata.package.GetImage(metadata.package.mainCover)?.fileName ?? "cover.jpg");
-            var levelJSON = assets.LoadAsset<TextAsset>(metadata.package.GetLevel(metadata.package.mainLevel)?.fileName ?? "level.json");
-            var players = assets.LoadAsset<TextAsset>(metadata.package.GetLevel("players")?.fileName ?? $"players{FileFormat.JSON.Dot()}");
+            var levelJSON = assets.LoadAsset<TextAsset>(metadata.package.GetLevel(metadata.package.mainLevel)?.fileName?.Replace(".lsb", ".json") ?? "level.json");
+            var players = assets.LoadAsset<TextAsset>(metadata.package.GetLevel("players")?.fileName?.Replace(".lsb", ".json") ?? $"players{FileFormat.JSON.Dot()}");
 
             var storyLevel = new StoryLevel
             {

@@ -656,7 +656,7 @@ namespace BetterLegacy.Story
             if (!storySelection.skipCutscenes && storySelection.cutsceneIndex >= 0 && storySelection.cutsceneIndex < storyLevel.Count && storyLevel.Count > 1 && storySelection.cutsceneIndex != storyLevel.preCutscenes.Count)
             {
                 isCutscene = true;
-                path = storyLevel[storySelection.cutsceneIndex];
+                path = storyLevel.GetLevelPath(storySelection.cutsceneDestination, storySelection.cutsceneIndex);
             }
             else
                 isCutscene = false;
@@ -669,6 +669,7 @@ namespace BetterLegacy.Story
 
                 // assign story level music. if a song is specified then the level will use that song instead of the one in the files.
                 AssignStoryLevelMusic(path.songName, level);
+                AssignStorySaveData(storyLevel, level);
                 if (AssetPack.TryGetFile(path.coverPath, out string coverPath))
                     level.icon = SpriteHelper.LoadSprite(coverPath);
                 onLevelRetrieved?.Invoke(level);
@@ -681,6 +682,7 @@ namespace BetterLegacy.Story
                 Loaded = true;
                 // assign story level music. if a song is specified then the level will use that song instead of the one in the files.
                 AssignStoryLevelMusic(path.songName, level);
+                AssignStorySaveData(storyLevel, level);
                 if (AssetPack.TryGetFile(path.coverPath, out string coverPath))
                     level.icon = SpriteHelper.LoadSprite(coverPath);
                 onLevelRetrieved?.Invoke(level);
@@ -697,7 +699,7 @@ namespace BetterLegacy.Story
             // get story chapter and story level.
             var storyChapter = (storySelection.bonus ? StoryMode.Instance.bonusChapters : StoryMode.Instance.chapters)[storySelection.chapter];
             var storyLevel = storyChapter.GetLevel(storySelection.level);
-            var path = storySelection.skipCutscenes ? storyLevel.filePath : storyLevel[storySelection.cutsceneIndex];
+            var path = storySelection.skipCutscenes ? storyLevel.filePath : storyLevel.GetLevelPath(storySelection.cutsceneDestination, storySelection.cutsceneIndex);
 
             SetupStorySelection(storySelection, level => LevelManager.Play(level, () => EndFunctionInterface(storyChapter, storyLevel, path, onLevelEnd)));
         }
@@ -716,6 +718,7 @@ namespace BetterLegacy.Story
 
                 // assign story level music. if a song is specified then the level will use that song instead of the one in the files.
                 AssignStoryLevelMusic(songName, level);
+                AssignStorySaveData(level);
                 LevelManager.Play(level, () =>
                 {
                     LevelManager.Clear();
@@ -733,6 +736,7 @@ namespace BetterLegacy.Story
                 Loaded = true;
                 // assign story level music. if a song is specified then the level will use that song instead of the one in the files.
                 AssignStoryLevelMusic(songName, level);
+                AssignStorySaveData(level);
                 LevelManager.Play(level, () =>
                 {
                     LevelManager.Clear();
@@ -842,6 +846,7 @@ namespace BetterLegacy.Story
                             func = () =>
                             {
                                 InterfaceManager.inst.CloseMenus();
+                                InterfaceManager.inst.StopMusic();
                                 EndFunction(storyChapter, storyLevel, levelPath, onLevelEnd);
                             },
                         }
@@ -855,7 +860,11 @@ namespace BetterLegacy.Story
             LevelManager.Clear();
             RTLevel.Reinit(false);
             LevelManager.OnLevelEnd = null;
-            onLevelEnd?.Invoke();
+            if (onLevelEnd != null)
+            {
+                onLevelEnd.Invoke();
+                return;
+            }
 
             var hasGlobalLevelCompleteFunc = functions.onLevelCompleteFunc != null;
             if (hasGlobalLevelCompleteFunc)
@@ -883,6 +892,14 @@ namespace BetterLegacy.Story
             CoreHelper.Log($"Setting song to: {songName}");
             level.music = audioClip;
         }
+
+        void AssignStorySaveData(StoryMode.LevelSequence levelSequence, Level storyLevel)
+        {
+            storyLevel.id = levelSequence.id;
+            AssignStorySaveData(storyLevel);
+        }
+        
+        void AssignStorySaveData(Level storyLevel) => storyLevel.saveData = CurrentSave.Saves.Find(x => x.ID == storyLevel.id) ?? new SaveData(storyLevel);
 
         #endregion
 

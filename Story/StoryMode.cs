@@ -370,6 +370,15 @@ namespace BetterLegacy.Story
                 _ => new List<LevelPath>() { filePath }
             };
 
+            /// <summary>
+            /// Gets the levels based on their destination in a level sequence.
+            /// </summary>
+            /// <param name="cutsceneDestination">Cutscene destination.</param>
+            /// <param name="index">Index of the level.</param>
+            /// <returns>Returns a level from the level sequence.</returns>
+            public LevelPath GetLevelPath(CutsceneDestination cutsceneDestination, int index) => cutsceneDestination != CutsceneDestination.None ?
+                GetPaths(cutsceneDestination)[index] : this[index];
+
             public override string ToString() => $"{name} | {songTitle} - {Count}";
 
             #endregion

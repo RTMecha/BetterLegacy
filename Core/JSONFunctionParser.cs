@@ -1469,8 +1469,10 @@ namespace BetterLegacy.Core
                         {
                             chapter = chapter.AsInt,
                             level = level.AsInt,
+                            cutsceneDestination = CutsceneDestination.None,
                             cutsceneIndex = cutsceneIndex,
                             bonus = bonus,
+                            allowModes = allowModes,
                         });
 
                         break;
@@ -1578,6 +1580,7 @@ namespace BetterLegacy.Core
                         {
                             chapter = chapter,
                             level = StoryManager.inst.CurrentSave.LoadInt($"DOC{RTString.ToStoryNumber(chapter)}Progress", 0),
+                            cutsceneDestination = CutsceneDestination.None,
                             cutsceneIndex = 0,
                             bonus = StoryManager.inst.inBonusChapter
                         });
@@ -1598,6 +1601,7 @@ namespace BetterLegacy.Core
                             chapter = chapter,
                             level = StoryMode.Instance.chapters[chapter].Count,
                             cutsceneIndex = 0,
+                            cutsceneDestination = CutsceneDestination.None,
                             bonus = StoryManager.inst.inBonusChapter
                         });
 

@@ -738,7 +738,7 @@ namespace BetterLegacy.Core.Managers
         /// <param name="level">Level to assign to.</param>
         public static void AssignSaveData(Level level)
         {
-            if (!level)
+            if (!level || level.isStory)
                 return;
 
             if (Saves.TryFind(x => x.ID == level.id, out SaveData saveData))

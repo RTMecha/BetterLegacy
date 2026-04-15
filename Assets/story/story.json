@@ -12,6 +12,7 @@
 					"file": {
 						"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Levels/doc01_01.asset",
 						"editor_path": "{{AppDirectory}}beatmaps/editor/BetterLegacy/ACT 1/DOC01/Granite/level.lsb",
+						"cover": "story/covers/doc01/doc01_01.jpg",
 						"on_complete_func": [
 							{
 								"name": "StorySaveBool",
@@ -93,6 +94,7 @@
 					"file": {
 						"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Levels/doc01_02.asset",
 						"editor_path": "{{AppDirectory}}beatmaps/editor/BetterLegacy/ACT 1/DOC01/Ahead of the Curve/level.lsb",
+						"cover": "story/covers/doc01/doc01_02.jpg",
 						"on_complete_func": [
 							{
 								"name": "StorySaveBool",
@@ -174,6 +176,7 @@
 					"file": {
 						"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Levels/doc01_03.asset",
 						"editor_path": "{{AppDirectory}}beatmaps/editor/BetterLegacy/ACT 1/DOC01/Super Gamer Girl 3D/level.lsb",
+						"cover": "story/covers/doc01/doc01_03.jpg",
 						"on_complete_func": [
 							{
 								"name": "StorySaveBool",
@@ -239,6 +242,7 @@
 					"file": {
 						"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Levels/doc01_04.asset",
 						"editor_path": "{{AppDirectory}}beatmaps/editor/BetterLegacy/ACT 1/DOC01/Slime Boy Color/level.lsb",
+						"cover": "story/covers/doc01/doc01_04.jpg",
 						"on_complete_func": [
 							{
 								"name": "StorySaveBool",
@@ -303,6 +307,7 @@
 					"file": {
 						"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Levels/doc01_05.asset",
 						"editor_path": "{{AppDirectory}}beatmaps/editor/BetterLegacy/ACT 1/DOC01/Node (Para)/level.lsb",
+						"cover": "story/covers/doc01/doc01_05.jpg",
 						"on_complete_func": [
 							{
 								"name": "StorySaveBool",
@@ -367,6 +372,7 @@
 					"file": {
 						"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Levels/doc01_06.asset",
 						"editor_path": "{{AppDirectory}}beatmaps/editor/BetterLegacy/ACT 1/DOC01/Moonflowers/level.lsb",
+						"cover": "story/covers/doc01/doc01_06.jpg",
 						"on_complete_func": [
 							{
 								"name": "StorySaveBool",
@@ -425,6 +431,7 @@
 					"file": {
 						"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Levels/doc01_07.asset",
 						"editor_path": "{{AppDirectory}}beatmaps/editor/BetterLegacy/ACT 1/DOC01/Crystal Tokyo/level.lsb",
+						"cover": "story/covers/doc01/doc01_07.jpg",
 						"on_complete_func": [
 							{
 								"name": "StorySaveBool",
