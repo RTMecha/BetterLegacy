@@ -323,6 +323,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
         {
             ArcadeHelper.RestartLevel();
             InterfaceManager.inst.CloseMenus();
+            InterfaceManager.inst.StopMusic();
             RTBeatmap.Current?.Resume();
         }
     }
