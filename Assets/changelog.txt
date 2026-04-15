@@ -1,18 +1,42 @@
-# snapshot-2026.3.5 - (Story Playtest) [Mar 26, 2026]
+# snapshot-2026.4.1 - (Story Playtest) [Apr 15, 2026]
 ## Features
 ### Core
-- Added a new "Datamosh" event. In order to use this event, you must use the new datamoshGlitch and datamoshReset modifiers.
-- Added customMesh modifier. This fully opens mesh editing so you can make any shape you wish, only if you know how meshes work in Unity.
+- Ported the end level music from the old development branch. This can be enabled / disabled via the new setting "Play End Level Music" in Config Manager > Core > Level.
+- Added "level_up" SFX.
+- Added "Offset Audio" value to most axis related modifiers (like copyAxis).
+
+### Editor
+- Added Background Object creation settings to Config Manager > Editor > Creation.
 
 ## Changes
+### Story
+- Reworked Slime Boy Color finale segment.
+- Fixed readability on some Slime Boy Color attacks.
+- Changed some movement for BOSS 1.
+- Updated BOSS 1 dialogue.
+- Removed some dialogue from Crystal Tokyo.
+- Updated the themes in a couple story levels.
+- Reworked how you unlock a certain level.
+
+### Core
+- animateObject modifiers with their time set to 0 no longer animates, instead it instantly sets the transform values.
+- Made the White On Black and Black On White themes more consistent with other themes.
+
 ### Editor
-- Swapped Camera Depth keyframe values "Position Z" and "Depth".
+- Updating a prefab now updates all recursive sub prefabs.
+- Using the color picker now updates the preview of the color.
+- Theme effect colors no longer show 8 digit hex color codes if the opacity saving setting is off.
+- Prefab Objects copied from one level to another now copy their origin Prefabs.
+- Added a "Convert Colors to Hex Color" button to the Multi Object Editor keyframes tab.
 
 ## Fixes
-- Fixed BG camera not being consistent with older Legacy levels. This may break some levels that turn Use Global Position on in the Camera Depth keyframe.
-- Fixed older Legacy levels not updating correctly.
-- Fixed Use Hex Color toggle not turning off if the "Hex Color Keyframe Converts" setting is on.
-- Fixed color toggles not displaying in modifier cards if the color toggles in the object keyframe editor are hidden.
-- Fixed some buttons not displaying as round with the Rounded UI setting on.
-- Fixed the End Level Interface displaying in cutscenes.
-- Fixed Story sequences being broken.
+- Fixed issues relating to April 1st.
+- Fixed the Editor file browser not showing up.
+- Fixed Vector2 Integer settings scrolling as a float instead of as an integer.
+- Fixed prefab parenting not being consistent.
+- Fixed and tweaked keyframe custom UI displays context menu buttons.
+- Fixed ForceSnapBPM applying snap to objects even if the mouse is over the keyframe timeline.
+- Fixed color picker hue / saturation selection not displaying the correct value when the popup opens.
+- Fixed some story save issues that prevented challenge & speed modes even if the level has the SS rank.
+- Fixed Play All Cutscenes in story not working.
+- Fixed end level music still playing after closing the end level interface in some cases.
