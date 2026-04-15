@@ -1,4 +1,4 @@
-﻿# snapshot-2026.?.? - (Story Playtest) [???]
+﻿# snapshot-2026.4.1 - (Story Playtest) [Apr 15, 2026]
 ## Features
 ### Core
 - Ported the end level music from the old development branch. This can be enabled / disabled via the new setting "Play End Level Music" in Config Manager > Core > Level.
@@ -9,8 +9,18 @@
 - Added Background Object creation settings to Config Manager > Editor > Creation.
 
 ## Changes
+### Story
+- Reworked Slime Boy Color finale segment.
+- Fixed readability on some Slime Boy Color attacks.
+- Changed some movement for BOSS 1.
+- Updated BOSS 1 dialogue.
+- Removed some dialogue from Crystal Tokyo.
+- Updated the themes in a couple story levels.
+- Reworked how you unlock a certain level.
+
 ### Core
 - animateObject modifiers with their time set to 0 no longer animates, instead it instantly sets the transform values.
+- Made the White On Black and Black On White themes more consistent with other themes.
 
 ### Editor
 - Updating a prefab now updates all recursive sub prefabs.
@@ -27,6 +37,9 @@
 - Fixed and tweaked keyframe custom UI displays context menu buttons.
 - Fixed ForceSnapBPM applying snap to objects even if the mouse is over the keyframe timeline.
 - Fixed color picker hue / saturation selection not displaying the correct value when the popup opens.
+- Fixed some story save issues that prevented challenge & speed modes even if the level has the SS rank.
+- Fixed Play All Cutscenes in story not working.
+- Fixed end level music still playing after closing the end level interface in some cases.
 
 -------------------------------------------------------------------
 
