@@ -1,4 +1,11 @@
-﻿# snapshot-2026.4.1 - (Story Playtest) [Apr 15, 2026]
+﻿# snapshot-2026.4.2 - (Story Playtest) [Apr ??, 2026]
+## Changes
+### Core
+- Color slot related modifiers now use the associated event keyframe color (background, timeline and player tail colors) rather than the base theme color.
+
+-------------------------------------------------------------------
+
+# snapshot-2026.4.1 - (Story Playtest) [Apr 15, 2026]
 ## Features
 ### Core
 - Ported the end level music from the old development branch. This can be enabled / disabled via the new setting "Play End Level Music" in Config Manager > Core > Level.
