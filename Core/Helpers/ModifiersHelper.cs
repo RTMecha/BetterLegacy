@@ -3207,7 +3207,13 @@ namespace BetterLegacy.Core.Helpers
         public static void getColorSlotHexCode(Modifier modifier, ModifierLoop modifierLoop)
         {
             var colorSource = (ThemeSource)modifier.GetInt(6, 4, modifierLoop.variables);
-            var color = ThemeManager.inst.Current.GetColor(colorSource, modifier.GetInt(1, 0, modifierLoop.variables));
+            var color = colorSource switch
+            {
+                ThemeSource.Background => ThemeManager.inst.bgColorToLerp,
+                ThemeSource.GUI => ThemeManager.inst.timelineColorToLerp,
+                ThemeSource.PlayerTail => ThemeManager.inst.tailColorToLerp,
+                _ => ThemeManager.inst.Current.GetColor(colorSource, modifier.GetInt(1, 0, modifierLoop.variables)),
+            };
             color = RTColors.FadeColor(color, modifier.GetFloat(2, 1f, modifierLoop.variables));
             color = RTColors.ChangeColorHSV(color, modifier.GetFloat(3, 0f, modifierLoop.variables), modifier.GetFloat(4, 0f, modifierLoop.variables), modifier.GetFloat(5, 0f, modifierLoop.variables));
 
@@ -8005,9 +8011,15 @@ namespace BetterLegacy.Core.Helpers
             // queue post tick so the color overrides the sequence color
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                var colorA = RTColors.ChangeColorHSV(ThemeManager.inst.Current.GetColor(colorSource, index), hue, sat, val);
-                var color = beatmapObject.runtimeObject.visualObject.GetPrimaryColor() + colorA * multiply;
-                beatmapObject.runtimeObject.visualObject.SetColor(color);
+                var color = colorSource switch
+                {
+                    ThemeSource.Background => ThemeManager.inst.bgColorToLerp,
+                    ThemeSource.GUI => ThemeManager.inst.timelineColorToLerp,
+                    ThemeSource.PlayerTail => ThemeManager.inst.tailColorToLerp,
+                    _ => ThemeManager.inst.Current.GetColor(colorSource, index),
+                };
+                color = RTColors.ChangeColorHSV(color, hue, sat, val);
+                beatmapObject.runtimeObject.visualObject.SetColor(beatmapObject.runtimeObject.visualObject.GetPrimaryColor() + color * multiply);
             });
         }
 
@@ -8035,13 +8047,19 @@ namespace BetterLegacy.Core.Helpers
             // queue post tick so the color overrides the sequence color
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                var colorA = RTColors.ChangeColorHSV(ThemeManager.inst.Current.GetColor(colorSource, index), hue, sat, val);
+                var color = colorSource switch
+                {
+                    ThemeSource.Background => ThemeManager.inst.bgColorToLerp,
+                    ThemeSource.GUI => ThemeManager.inst.timelineColorToLerp,
+                    ThemeSource.PlayerTail => ThemeManager.inst.tailColorToLerp,
+                    _ => ThemeManager.inst.Current.GetColor(colorSource, index),
+                };
+                color = RTColors.ChangeColorHSV(color, hue, sat, val);
                 foreach (var bm in list)
                 {
                     if (!bm.runtimeObject || !bm.runtimeObject.visualObject)
                         continue;
-                    var color = bm.runtimeObject.visualObject.GetPrimaryColor() + colorA * multiply;
-                    bm.runtimeObject.visualObject.SetColor(color);
+                    bm.runtimeObject.visualObject.SetColor(bm.runtimeObject.visualObject.GetPrimaryColor() + color * multiply);
                 }
             });
         }
@@ -8062,10 +8080,16 @@ namespace BetterLegacy.Core.Helpers
             // queue post tick so the color overrides the sequence color
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                var colorA = RTColors.ChangeColorHSV(ThemeManager.inst.Current.GetColor(colorSource, index), hue, sat, val);
-                colorA.a *= opacity;
-                var color = RTMath.Lerp(beatmapObject.runtimeObject.visualObject.GetPrimaryColor(), colorA, interpolate);
-                beatmapObject.runtimeObject.visualObject.SetColor(color);
+                var color = colorSource switch
+                {
+                    ThemeSource.Background => ThemeManager.inst.bgColorToLerp,
+                    ThemeSource.GUI => ThemeManager.inst.timelineColorToLerp,
+                    ThemeSource.PlayerTail => ThemeManager.inst.tailColorToLerp,
+                    _ => ThemeManager.inst.Current.GetColor(colorSource, index),
+                };
+                color = RTColors.ChangeColorHSV(color, hue, sat, val);
+                color.a *= opacity;
+                beatmapObject.runtimeObject.visualObject.SetColor(RTMath.Lerp(beatmapObject.runtimeObject.visualObject.GetPrimaryColor(), color, interpolate));
             });
         }
 
@@ -8094,15 +8118,21 @@ namespace BetterLegacy.Core.Helpers
             // queue post tick so the color overrides the sequence color
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                var colorA = RTColors.ChangeColorHSV(ThemeManager.inst.Current.GetColor(colorSource, index), hue, sat, val);
-                colorA.a *= opacity;
+                var color = colorSource switch
+                {
+                    ThemeSource.Background => ThemeManager.inst.bgColorToLerp,
+                    ThemeSource.GUI => ThemeManager.inst.timelineColorToLerp,
+                    ThemeSource.PlayerTail => ThemeManager.inst.tailColorToLerp,
+                    _ => ThemeManager.inst.Current.GetColor(colorSource, index),
+                };
+                color = RTColors.ChangeColorHSV(color, hue, sat, val);
+                color.a *= opacity;
                 for (int i = 0; i < list.Count; i++)
                 {
                     var bm = list[i];
                     if (!bm.runtimeObject || !bm.runtimeObject.visualObject)
                         continue;
-                    var color = RTMath.Lerp(bm.runtimeObject.visualObject.GetPrimaryColor(), colorA, multiply);
-                    bm.runtimeObject.visualObject.SetColor(color);
+                    bm.runtimeObject.visualObject.SetColor(RTMath.Lerp(bm.runtimeObject.visualObject.GetPrimaryColor(), color, multiply));
                 }
             });
         }
