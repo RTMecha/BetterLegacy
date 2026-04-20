@@ -1,7 +1,13 @@
 ﻿# snapshot-2026.4.2 - (Story Playtest) [Apr ??, 2026]
+## Features
+### Core
+- Added getCurrentArtistName and getCurrentSongTitle variable modifiers.
+- Added resetDiscordStatus action modifier.
+
 ## Changes
 ### Core
 - Color slot related modifiers now use the associated event keyframe color (background, timeline and player tail colors) rather than the base theme color.
+- Support Discord status changes.
 
 -------------------------------------------------------------------
 
