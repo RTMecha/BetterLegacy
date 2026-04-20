@@ -520,7 +520,7 @@ namespace BetterLegacy.Configs
                 DiscordController.inst.enabled = false;
                 DiscordController.inst.enabled = true;
             });
-            CoreHelper.UpdateDiscordStatus(CoreHelper.discordLevel, CoreHelper.discordDetails, CoreHelper.discordIcon, CoreHelper.discordArt);
+            DiscordHelper.UpdateDiscordStatus(DiscordHelper.state, DiscordHelper.details, DiscordHelper.icon, DiscordHelper.art);
         }
 
         void LDMChanged()

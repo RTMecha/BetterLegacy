@@ -832,6 +832,8 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction(nameof(ModifierFunctions.setIntroFade),  ModifierFunctions.setIntroFade, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierFunctions.setLevelEndFunc),  ModifierFunctions.setLevelEndFunc, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierFunctions.getCurrentLevelID),  ModifierFunctions.getCurrentLevelID),
+            new ModifierAction(nameof(ModifierFunctions.getCurrentArtistName),  ModifierFunctions.getCurrentArtistName),
+            new ModifierAction(nameof(ModifierFunctions.getCurrentSongTitle),  ModifierFunctions.getCurrentSongTitle),
             new ModifierAction(nameof(ModifierFunctions.getCurrentLevelName),  ModifierFunctions.getCurrentLevelName),
             new ModifierAction(nameof(ModifierFunctions.getCurrentLevelRank),  ModifierFunctions.getCurrentLevelRank),
             new ModifierAction(nameof(ModifierFunctions.getLevelVariable),  ModifierFunctions.getLevelVariable),
@@ -1362,6 +1364,7 @@ namespace BetterLegacy.Core.Helpers
             // external
             new ModifierAction(nameof(ModifierFunctions.setWindowTitle),  ModifierFunctions.setWindowTitle, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierFunctions.setDiscordStatus),  ModifierFunctions.setDiscordStatus, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.resetDiscordStatus),  ModifierFunctions.resetDiscordStatus, ModifierCompatibility.LevelControlCompatible),
 
             new ModifierAction(nameof(ModifierFunctions.callModifierBlock),  ModifierFunctions.callModifierBlock, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierFunctions.callModifiers),  ModifierFunctions.callModifiers, ModifierCompatibility.LevelControlCompatible),
@@ -4613,12 +4616,22 @@ namespace BetterLegacy.Core.Helpers
                 modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = EditorLevelManager.inst.CurrentLevel.id;
         }
         
+        public static void getCurrentArtistName(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (MetaData.Current && MetaData.Current.artist)
+                modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = MetaData.Current.artist.name;
+        }
+        
+        public static void getCurrentSongTitle(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (MetaData.Current && MetaData.Current.song)
+                modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = MetaData.Current.song.title;
+        }
+        
         public static void getCurrentLevelName(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (LevelManager.CurrentLevel && LevelManager.CurrentLevel.metadata)
-                modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = LevelManager.CurrentLevel.metadata.beatmap.name;
-            if (ProjectArrhythmia.State.InEditor && EditorLevelManager.inst.CurrentLevel && EditorLevelManager.inst.CurrentLevel.metadata)
-                modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = EditorLevelManager.inst.CurrentLevel.metadata.beatmap.name;
+            if (MetaData.Current && MetaData.Current.beatmap)
+                modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = MetaData.Current.beatmap.name;
         }
 
         public static void getCurrentLevelRank(Modifier modifier, ModifierLoop modifierLoop)
@@ -13326,25 +13339,43 @@ namespace BetterLegacy.Core.Helpers
 
         public static void setDiscordStatus(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var discordSubIcons = CoreHelper.discordSubIcons;
-            var discordIcons = CoreHelper.discordIcons;
+            var discordSubIcons = DiscordHelper.subIcons;
+            var discordIcons = DiscordHelper.icons;
 
             var state = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables);
             var details = ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables);
-            var discordSubIcon = modifier.GetInt(2, 0, modifierLoop.variables);
-            var discordIcon = modifier.GetInt(3, 0, modifierLoop.variables);
+            var discordSubIcon = modifier.GetValue(2, modifierLoop.variables);
+            var discordIcon = modifier.GetValue(3, modifierLoop.variables);
+
+            discordSubIcon = int.TryParse(discordSubIcon, out int discordSubIconIndex) ?
+                discordSubIcons[Mathf.Clamp(discordSubIconIndex, 0, discordSubIcons.Length - 1)] : DiscordHelper.subIcons.Has(x => x == discordSubIcon) ? discordSubIcon : DiscordHelper.PLAY;
+            discordIcon = int.TryParse(discordIcon, out int discordIconIndex) ?
+                discordIcons[Mathf.Clamp(discordIconIndex, 0, discordIcons.Length - 1)] : DiscordHelper.icons.Has(x => x == discordIcon) ? discordIcon : DiscordHelper.LOGO_LEGACY;
 
             try
             {
-                CoreHelper.UpdateDiscordStatus(
-                    string.Format(state, MetaData.Current.song.title, $"{(!ProjectArrhythmia.State.InEditor ? "Game" : "Editor")}", $"{(!ProjectArrhythmia.State.InEditor ? "Level" : "Editing")}", $"{(!ProjectArrhythmia.State.InEditor ? "Arcade" : "Editor")}"),
-                    string.Format(details, MetaData.Current.song.title, $"{(!ProjectArrhythmia.State.InEditor ? "Game" : "Editor")}", $"{(!ProjectArrhythmia.State.InEditor ? "Level" : "Editing")}", $"{(!ProjectArrhythmia.State.InEditor ? "Arcade" : "Editor")}"),
-                    discordSubIcons[Mathf.Clamp(discordSubIcon, 0, discordSubIcons.Length - 1)], discordIcons[Mathf.Clamp(discordIcon, 0, discordIcons.Length - 1)]);
+                DiscordHelper.UpdateDiscordStatus(
+                    string.Format(state, MetaData.Current.beatmap.name, $"{(!ProjectArrhythmia.State.InEditor ? "Game" : "Editor")}", $"{(!ProjectArrhythmia.State.InEditor ? "Level" : "Editing")}", $"{(!ProjectArrhythmia.State.InEditor ? "Arcade" : "Editor")}"),
+                    string.Format(details, MetaData.Current.beatmap.name, $"{(!ProjectArrhythmia.State.InEditor ? "Game" : "Editor")}", $"{(!ProjectArrhythmia.State.InEditor ? "Level" : "Editing")}", $"{(!ProjectArrhythmia.State.InEditor ? "Arcade" : "Editor")}"),
+                    discordSubIcon, discordIcon);
             }
             catch
             {
-                CoreHelper.UpdateDiscordStatus((ProjectArrhythmia.State.InEditor ? "Editing: " : "Level: ") + MetaData.Current.beatmap.name, ProjectArrhythmia.State.InEditor ? "In Editor" : "In Arcade", ProjectArrhythmia.State.InEditor ? "editor" : "arcade");
+                DiscordHelper.UpdateDiscordStatus(
+                    state: (ProjectArrhythmia.State.InEditor ? "Editing: " : "Level: ") + MetaData.Current.beatmap.name, 
+                    details: ProjectArrhythmia.State.InEditor ? DiscordHelper.IN_EDITOR : DiscordHelper.IN_ARCADE,
+                    icon: ProjectArrhythmia.State.InEditor ? DiscordHelper.EDITOR : DiscordHelper.ARCADE,
+                    art: DiscordHelper.LOGO_LEGACY);
             }
+        }
+
+        public static void resetDiscordStatus(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            DiscordHelper.UpdateDiscordStatus(
+                state: (ProjectArrhythmia.State.InEditor ? "Editing: " : "Level: ") + MetaData.Current.beatmap.name,
+                details: ProjectArrhythmia.State.InEditor ? DiscordHelper.IN_EDITOR : DiscordHelper.IN_ARCADE,
+                icon: ProjectArrhythmia.State.InEditor ? DiscordHelper.EDITOR : DiscordHelper.ARCADE,
+                art: DiscordHelper.LOGO_LEGACY);
         }
 
         public static void callModifierBlock(Modifier modifier, ModifierLoop modifierLoop)

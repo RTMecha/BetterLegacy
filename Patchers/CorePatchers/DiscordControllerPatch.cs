@@ -17,7 +17,7 @@ namespace BetterLegacy.Patchers
 
         [HarmonyPatch(nameof(DiscordController.Awake))]
         [HarmonyPostfix]
-        static void AwakePostfix(DiscordController __instance) => __instance.OnArtChange("pa_logo_white"); // fixes the logo being incorrect
+        static void AwakePostfix(DiscordController __instance) => __instance.OnArtChange(DiscordHelper.LOGO_LEGACY); // fixes the logo being incorrect
 
         [HarmonyPatch(nameof(DiscordController.Start))]
         [HarmonyPostfix]
@@ -74,7 +74,7 @@ namespace BetterLegacy.Patchers
             __instance.callbackCalls++;
             __instance.Initialized = true;
             Debug.Log($"{__instance.className}Discord: ready");
-            CoreHelper.UpdateDiscordStatus(CoreHelper.discordLevel, CoreHelper.discordDetails, CoreHelper.discordIcon, CoreHelper.discordArt);
+            DiscordHelper.UpdateDiscordStatus(DiscordHelper.state, DiscordHelper.details, DiscordHelper.icon, DiscordHelper.art);
             __instance.onConnect.Invoke();
             return false;
         }

@@ -338,14 +338,14 @@ namespace BetterLegacy.Core.Managers
             Log($"Updating states...");
 
             if (IsArcade || !ProjectArrhythmia.State.InStory)
-                CoreHelper.UpdateDiscordStatus($"Level: {level.metadata.beatmap.name}",
-                    "In Arcade",
-                    "arcade");
+                DiscordHelper.UpdateDiscordStatus($"Level: {level.metadata.beatmap.name}",
+                    DiscordHelper.IN_ARCADE,
+                    DiscordHelper.ARCADE);
             else
-                CoreHelper.UpdateDiscordStatus(
+                DiscordHelper.UpdateDiscordStatus(
                     $"DOC{RTString.ToStoryNumber(StoryManager.inst.currentPlayingChapterIndex)}-{RTString.ToStoryNumber(StoryManager.inst.currentPlayingLevelSequenceIndex)}: {level.metadata.beatmap.name}",
-                    "In Story",
-                    "arcade");
+                    DiscordHelper.IN_STORY,
+                    DiscordHelper.ARCADE);
 
             if (CoreConfig.Instance.DiscordTimestampUpdatesPerLevel.Value)
                 DiscordController.inst.presence.startTimestamp = SteamworksFacepunch.Epoch.Current;
