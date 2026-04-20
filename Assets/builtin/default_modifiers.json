@@ -785,6 +785,18 @@
       }, // getCurrentLevelID
       {
         "type": 1,
+        "name": "getCurrentArtistName",
+        "values": [ "NAME_VAR" ],
+        "const": "True"
+      }, // getCurrentArtistName
+      {
+        "type": 1,
+        "name": "getCurrentSongTitle",
+        "values": [ "NAME_VAR" ],
+        "const": "True"
+      }, // getCurrentSongTitle
+      {
+        "type": 1,
         "name": "getCurrentLevelName",
         "values": [ "NAME_VAR" ],
         "const": "True"
@@ -3626,11 +3638,18 @@
       }, // setWindowTitle
       {
         "type": 1,
-        "commands": [ "setDiscordStatus", "In {3}", "0", "0" ],
-        "value": "{1}: {0}",
+        "name": "setDiscordStatus",
+        "values": [ "{1}: {0}", "In {3}", "0", "0" ],
         "const": "False",
         "compat": "level_control"
       }, // setDiscordStatus
+      {
+        "type": 1,
+        "name": "resetDiscordStatus",
+        "values": [],
+        "const": "False",
+        "compat": "level_control"
+      }, // resetDiscordStatus
       {
         "type": 1,
         "commands": [ "editorNotify", "2", "1" ],

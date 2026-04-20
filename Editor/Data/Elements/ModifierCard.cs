@@ -747,6 +747,16 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
+                case nameof(ModifierFunctions.getCurrentArtistName): {
+                        StringGenerator(modifier, reference, "Variable Name", 0, renderVariables: false);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.getCurrentSongTitle): {
+                        StringGenerator(modifier, reference, "Variable Name", 0, renderVariables: false);
+
+                        break;
+                    }
                 case nameof(ModifierFunctions.getCurrentLevelName): {
                         StringGenerator(modifier, reference, "Variable Name", 0, renderVariables: false);
 
@@ -4660,11 +4670,15 @@ namespace BetterLegacy.Editor.Data.Elements
                 case nameof(ModifierFunctions.setDiscordStatus): {
                         StringGenerator(modifier, reference, "State", 0);
                         StringGenerator(modifier, reference, "Details", 1);
-                        DropdownGenerator(modifier, reference, "Sub Icon", 2, CoreHelper.StringToOptionData("Arcade", "Editor", "Play", "Menu"));
-                        DropdownGenerator(modifier, reference, "Icon", 3, CoreHelper.StringToOptionData("PA Logo White", "PA Logo Black"));
+                        DropdownGenerator(modifier, reference, "Sub Icon", 2, CoreHelper.StringToOptionData(DiscordHelper.subIcons));
+                        DropdownGenerator(modifier, reference, "Icon", 3, CoreHelper.StringToOptionData(DiscordHelper.icons));
 
                         break;
                     }
+                //case nameof(ModifierFunctions.resetDiscordStatus): {
+
+                //        break;
+                //    }
 
                 case nameof(ModifierFunctions.callModifierBlock): {
                         StringGenerator(modifier, reference, "Function Name", 0);

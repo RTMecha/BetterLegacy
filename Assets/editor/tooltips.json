@@ -2008,6 +2008,26 @@
             ]
           }, // getCurrentLevelID
           {
+            "name": "Object Modifier - getCurrentArtistName (Action)",
+            "tooltips": [
+              {
+                "desc": "getCurrentArtistName (Action)",
+                "hint": "Gets the levels' song artist name and passes it to other modifiers.",
+                "lang": 0
+              }
+            ]
+          }, // getCurrentArtistName
+          {
+            "name": "Object Modifier - getCurrentSongTitle (Action)",
+            "tooltips": [
+              {
+                "desc": "getCurrentSongTitle (Action)",
+                "hint": "Gets the levels' song title and passes it to other modifiers.",
+                "lang": 0
+              }
+            ]
+          }, // getCurrentSongTitle
+          {
             "name": "Object Modifier - getCurrentLevelName (Action)",
             "tooltips": [
               {
@@ -5899,6 +5919,16 @@
               }
             ]
           }, // setDiscordStatus
+          {
+            "name": "Object Modifier - resetDiscordStatus (Action)",
+            "tooltips": [
+              {
+                "desc": "resetDiscordStatus (Action)",
+                "hint": "Resets the current Discord status to what it normally is.",
+                "lang": 0
+              }
+            ]
+          }, // resetDiscordStatus
           {
             "name": "Object Modifier - editorNotify (Action)",
             "tooltips": [
