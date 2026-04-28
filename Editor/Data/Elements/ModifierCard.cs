@@ -4722,6 +4722,12 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
+                case nameof(ModifierFunctions.forLoopPlayer): {
+                        StringGenerator(modifier, reference, "Variable Name", 0, renderVariables: false);
+                        IntegerGenerator(modifier, reference, "Increment", 1, 1);
+
+                        break;
+                    }
                 //case "continue): {
                 //        break;
                 //    }

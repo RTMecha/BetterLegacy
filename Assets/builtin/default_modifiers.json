@@ -1579,6 +1579,12 @@
 
       {
         "type": 1,
+        "name": "forLoopPlayer",
+        "values": [ "INDEX_VAR", "1" ],
+        "const": "True"
+      }, // forLoopPlayer
+      {
+        "type": 1,
         "commands": [ "playerHeal" ],
         "value": "1",
         "const": "False",
@@ -1997,64 +2003,64 @@
       }, // playerSpeed
       {
         "type": 1,
-        "commands": [ "playerVelocity", "10" ],
-        "value": "0",
+        "name": "playerVelocity",
+        "values": [ "0", "10" ],
         "const": "False",
         "compat": "obj"
       }, // playerVelocity
       {
         "type": 1,
-        "commands": [ "playerVelocityIndex", "0", "10" ],
-        "value": "0",
+        "name": "playerVelocityIndex",
+        "values": [ "0", "0", "10" ],
         "const": "False",
         "compat": "level_control"
       }, // playerVelocityIndex
       {
         "type": 1,
-        "commands": [ "playerVelocityAll", "10" ],
-        "value": "0",
+        "name": "playerVelocityAll",
+        "values": [ "0", "10" ],
         "const": "False",
         "compat": "level_control"
       }, // playerVelocityAll
       {
         "type": 1,
-        "commands": [ "playerVelocityX" ],
-        "value": "10",
+        "name": "playerVelocityX",
+        "values": [ "10" ],
         "const": "False",
         "compat": "obj"
       }, // playerVelocityX
       {
         "type": 1,
-        "commands": [ "playerVelocityXIndex", "0" ],
-        "value": "10",
+        "name": "playerVelocityXIndex",
+        "values": [ "0", "10" ],
         "const": "False",
         "compat": "level_control"
       }, // playerVelocityXIndex
       {
         "type": 1,
-        "commands": [ "playerVelocityXAll" ],
-        "value": "10",
+        "value": "playerVelocityXAll",
+        "values": [ "10" ],
         "const": "False",
         "compat": "level_control"
       }, // playerVelocityXAll
       {
         "type": 1,
-        "commands": [ "playerVelocityY" ],
-        "value": "10",
+        "name": "playerVelocityY",
+        "values": [ "10" ],
         "const": "False",
         "compat": "obj"
       }, // playerVelocityY
       {
         "type": 1,
-        "commands": [ "playerVelocityYIndex", "0" ],
-        "value": "10",
+        "name": "playerVelocityYIndex",
+        "values": [ "0", "10" ],
         "const": "False",
         "compat": "level_control"
       }, // playerVelocityYIndex
       {
         "type": 1,
-        "commands": [ "playerVelocityYAll" ],
-        "value": "10",
+        "name": "playerVelocityYAll",
+        "values": [ "10" ],
         "const": "False",
         "compat": "level_control"
       }, // playerVelocityYAll
@@ -3032,7 +3038,7 @@
       {
         "type": 1,
         "name": "customMesh",
-        "values": ["0","0","0","0","0"],
+        "values": [ "0", "0", "0", "0", "0" ],
         "const": true,
         "compat": "obj"
       } // customMesh

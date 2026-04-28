@@ -368,6 +368,14 @@ namespace BetterLegacy.Core.Helpers
                 // Continue if modifier was already active with constant on
                 if (modifier.active || !loop.state.result || modifier.triggerCount > 0 && modifier.runCount >= modifier.triggerCount)
                 {
+                    if (name == nameof(ModifierFunctions.forLoop) || name == nameof(ModifierFunctions.forLoopPlayer))
+                    {
+                        var endIndex = modifiers.FindLastIndex(x => x.Name == "return"); // return is treated as a break of the for loop
+                        loop.state.previousType = modifier.type;
+                        loop.state.index = endIndex <= loop.state.index ? modifiers.Count : endIndex;
+                        continue;
+                    }
+
                     loop.state.previousType = modifier.type;
                     loop.state.index++;
                     continue;
@@ -874,6 +882,8 @@ namespace BetterLegacy.Core.Helpers
             #endregion
 
             #region Player
+            
+            new ModifierAction(nameof(ModifierFunctions.forLoopPlayer), ModifierFunctions.forLoopPlayer),
 
             // hit
             new ModifierAction(nameof(ModifierFunctions.playerHit),  ModifierFunctions.playerHit, ModifierCompatibility.BeatmapObjectCompatible),
@@ -2783,24 +2793,31 @@ namespace BetterLegacy.Core.Helpers
             var endCount = modifier.GetInt(2, 0, modifierLoop.variables);
             var increment = modifier.GetInt(3, 1, modifierLoop.variables);
 
-            var distance = -(startIndex - endCount);
-            var allowed = increment != 0 && endCount > startIndex && (distance < 0 ? increment < 0 : increment > 0);
+            var allowed = increment != 0 && endCount > startIndex;
 
             var endIndex = modifiers.FindLastIndex(x => x.Name == "return"); // return is treated as a break of the for loop
-            endIndex = endIndex < 0 ? modifiers.Count : endIndex;
+            endIndex = endIndex <= modifierLoop.state.index ? modifiers.Count : endIndex;
 
             try
             {
                 // if result is false, then skip the for loop sequence.
-                if (allowed && !(modifier.active || !modifierLoop.state.result || modifier.triggerCount > 0 && modifier.runCount >= modifier.triggerCount))
+                if (allowed)
                 {
                     var selectModifiers = modifiers.GetIndexRange(modifierLoop.state.index + 1, endIndex);
+                    var innerLoop = modifier.GetResultOrDefault(() => new ModifierLoop(modifierLoop.reference, modifierLoop.variables));
 
-                    for (int i = startIndex; i < endCount; i += increment)
-                    {
-                        modifierLoop.variables[variable] = i.ToString();
-                        ModifiersHelper.RunModifiersLoop(selectModifiers, new ModifierLoop(modifierLoop.reference, modifierLoop.variables), i, endCount);
-                    }
+                    if (increment > 0)
+                        for (int i = startIndex; i < endCount; i += increment)
+                        {
+                            innerLoop.variables[variable] = i.ToString();
+                            ModifiersHelper.RunModifiersLoop(selectModifiers, innerLoop, i, endCount);
+                        }
+                    else
+                        for (int i = endCount - 1; i >= startIndex; i -= increment)
+                        {
+                            innerLoop.variables[variable] = i.ToString();
+                            ModifiersHelper.RunModifiersLoop(selectModifiers, innerLoop, i, endCount);
+                        }
                 }
             }
             catch (Exception ex)
@@ -5457,6 +5474,55 @@ namespace BetterLegacy.Core.Helpers
         #endregion
 
         #region Player
+
+        public static void forLoopPlayer(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (modifierLoop.reference is not IModifyable modifyable)
+                return;
+
+            var modifiers = modifyable.Modifiers;
+
+            var variable = ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables);
+            var startIndex = 0;
+            var endCount = PlayerManager.Players.Count;
+            var increment = modifier.GetInt(1, 1, modifierLoop.variables);
+
+            var allowed = increment != 0 && endCount > startIndex;
+
+            var endIndex = modifiers.FindLastIndex(x => x.Name == "return"); // return is treated as a break of the for loop
+            endIndex = endIndex <= modifierLoop.state.index ? modifiers.Count : endIndex;
+
+            try
+            {
+                // if result is false, then skip the for loop sequence.
+                if (allowed)
+                {
+                    var selectModifiers = modifiers.GetIndexRange(modifierLoop.state.index + 1, endIndex);
+                    var innerLoop = modifier.GetResultOrDefault(() => new ModifierLoop(modifierLoop.reference, modifierLoop.variables));
+
+                    if (increment > 0)
+                        for (int i = startIndex; i < endCount; i += increment)
+                        {
+                            innerLoop.variables[variable] = i.ToString();
+                            ModifiersHelper.RunModifiersLoop(selectModifiers, innerLoop, i, endCount);
+                        }
+                    else
+                        for (int i = endCount - 1; i >= startIndex; i -= increment)
+                        {
+                            innerLoop.variables[variable] = i.ToString();
+                            ModifiersHelper.RunModifiersLoop(selectModifiers, innerLoop, i, endCount);
+                        }
+                }
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Had an exception with the forLoopPlayer modifier.\n" +
+                    $"Index: {modifierLoop.state.index}\n" +
+                    $"End Index: {endIndex}\nException: {ex}");
+            }
+
+            modifierLoop.state.index = endIndex; // exit for loop.
+        }
 
         public static void playerHit(Modifier modifier, ModifierLoop modifierLoop)
         {
@@ -13784,8 +13850,11 @@ namespace BetterLegacy.Core.Helpers
             var runtimeObject = beatmapObject.runtimeObject;
             if (runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.collider)
             {
-                if (runtimeObject.visualObject is SolidObject solidObject)
+                if (runtimeObject.visualObject is SolidObject solidObject && !solidObject.forceCollisionEnabled)
+                {
                     solidObject.forceCollisionEnabled = true;
+                    solidObject.UpdateCollider();
+                }
 
                 var collider = runtimeObject.visualObject.collider;
 
@@ -13816,8 +13885,11 @@ namespace BetterLegacy.Core.Helpers
             var runtimeObject = beatmapObject.runtimeObject;
             if (runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.collider)
             {
-                if (runtimeObject.visualObject is SolidObject solidObject)
+                if (runtimeObject.visualObject is SolidObject solidObject && !solidObject.forceCollisionEnabled)
+                {
                     solidObject.forceCollisionEnabled = true;
+                    solidObject.UpdateCollider();
+                }
 
                 var collider = runtimeObject.visualObject.collider;
 
@@ -13852,8 +13924,11 @@ namespace BetterLegacy.Core.Helpers
                 if (!runtimeObject || !runtimeObject.visualObject || !runtimeObject.visualObject.collider)
                     continue;
 
-                if (runtimeObject.visualObject is SolidObject solidObject)
+                if (runtimeObject.visualObject is SolidObject solidObject && !solidObject.forceCollisionEnabled)
+                {
                     solidObject.forceCollisionEnabled = true;
+                    solidObject.UpdateCollider();
+                }
 
                 var collider = runtimeObject.visualObject.collider;
 
@@ -13896,8 +13971,11 @@ namespace BetterLegacy.Core.Helpers
                 if (!runtimeObject || !runtimeObject.visualObject || !runtimeObject.visualObject.collider)
                     continue;
 
-                if (runtimeObject.visualObject is SolidObject solidObject)
+                if (runtimeObject.visualObject is SolidObject solidObject && !solidObject.forceCollisionEnabled)
+                {
                     solidObject.forceCollisionEnabled = true;
+                    solidObject.UpdateCollider();
+                }
 
                 var collider = runtimeObject.visualObject.collider;
 

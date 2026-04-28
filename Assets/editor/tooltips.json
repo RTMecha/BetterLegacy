@@ -3176,6 +3176,16 @@
           }, // onPlayerJumped
 
           {
+            "name": "Object Modifier - forLoopPlayer (Action)",
+            "tooltips": [
+              {
+                "desc": "forLoopPlayer (Action)",
+                "hint": "Runs the next sequence of modifiers for each player, with an index variable passed to each sequence. The 'return' modifier can be used to stop the loop or skip it entirely if triggers before the forLoopPlayer modifiers weren't triggered.",
+                "lang": 0
+              }
+            ]
+          }, // forLoopPlayer
+          {
             "name": "Object Modifier - playerHeal (Action)",
             "tooltips": [
               {
