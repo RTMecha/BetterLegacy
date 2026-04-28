@@ -129,7 +129,14 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
             this.deco = deco;
             this.solid = solid;
             this.opacityCollision = opacityCollision;
+            UpdateCollider();
+        }
 
+        /// <summary>
+        /// Updates the solid objects' collision.
+        /// </summary>
+        public void UpdateCollider()
+        {
             if (!collider)
                 return;
 
