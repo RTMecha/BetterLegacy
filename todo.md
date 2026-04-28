@@ -56,18 +56,18 @@ Next: Multiplayer Snapshots
   - Movement (controls the players velocity)
   - Consumable toggle (removes the item after use, heal mechanic always has this on for balance sake or I might go for a cooldown mechanic instead)
   - Aiming behavior (mouse, right stick, rotate with player, etc)
-- Endless shuffle.
+- Endless shuffle.  
   Update: 1.9.0  
   Notes:  
-  - "Next Level" button always shows in endless shuffle mode. Clicking it takes the player to a random level.
+  - "Next Level" button always shows in endless shuffle mode. Clicking it takes the player to a random level.  
 - Arcade auto plays song config.
-- Global animation library.
+- Global animation library.  
   Update: 1.11.0  
   Notes:  
   - Can turn an object into an animation and back.
   - Can be played onto an object using a modifier.
   - Modifiers can also use it to interpolate.
-- Homing targetting
+- Homing targetting  
   Update: 1.10.0  
   NEEDS IMPLEMENTATION  
   - Closest
@@ -76,22 +76,20 @@ Next: Multiplayer Snapshots
   - Highest Health
   - Lowest Health
   - Random
-- Multiple audio tracks.
-  Update: 1.10.0-1.11.0  
-  Notes:  
-  - The current song can be set from the loaded audio tracks via modifiers.
-  - Tracks can be loaded / unloaded via modifiers.
-- Metadata controller config that can be used via modifiers.
+- Metadata controller config that can be used via modifiers.  
   Update: 1.9.0+  
-- End level music via custom audio source.
+- End level music via custom audio source.  
   Update: 1.9.0  
-- Backup arcade and story savedata onto the server.
+- Backup arcade and story savedata onto the server.  
   Update: 1.9.0  
-- Way to download all levels in Level Collection.
+- Way to download all levels in Level Collection.  
   Update: 1.9.0+  
 - Extra credits (artists, creators, songs)
-- Implement BeatmapVariable
+- Implement BeatmapVariable  
   Update: 1.10.0+  
+- Object pooling  
+  Update: 1.10.0  
+  
 
 ### Story
 - Chapter 1.  
