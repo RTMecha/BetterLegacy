@@ -3,11 +3,15 @@
 ### Core
 - Added getCurrentArtistName and getCurrentSongTitle variable modifiers.
 - Added resetDiscordStatus action modifier.
+- Added "Smooth Reactive" setting to Config Manager > Core > Level. This setting smoothens the reactive behavior of Background Objects.
+- Added "forLoopPlayer" modifier. This modifier acts like forLoop but specifically for iterating through all players.
 
 ## Changes
 ### Core
 - Color slot related modifiers now use the associated event keyframe color (background, timeline and player tail colors) rather than the base theme color.
 - Support Discord status changes.
+- Tweaked forLoop behavior.
+- Made the default themes effect colors more consistent.
 
 -------------------------------------------------------------------
 
