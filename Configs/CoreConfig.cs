@@ -220,6 +220,11 @@ namespace BetterLegacy.Configs
         public Setting<bool> ShowBackgroundFade { get; set; }
 
         /// <summary>
+        /// If enabled, anything that is automatically reactive to the music will be smoother.
+        /// </summary>
+        public Setting<bool> SmoothReactive { get; set; }
+
+        /// <summary>
         /// If on, the old video BG feature returns, though somewhat buggy. Requires a bg.mp4 or bg.mov file to exist in the level folder.
         /// </summary>
         public Setting<bool> EnableVideoBackground { get; set; }
@@ -419,6 +424,7 @@ namespace BetterLegacy.Configs
                 "<b>1 Hit</b>: The level restarts when any Player takes damage.");
             ShowBackgroundObjects = Bind(this, LEVEL, "Show Background Objects", true, "If enabled, the Background Objects will render. Otherwise, they will be hidden and will boost performance.");
             ShowBackgroundFade = Bind(this, LEVEL, "Show Background Fade", true, "If enabled, the Background Objects will render a fade effect. Otherwise they will render as a single object and will boost performance.");
+            SmoothReactive = Bind(this, LEVEL, "Smooth Reactive", false, "If enabled, anything that is automatically reactive to the music will be smoother.");
             EnableVideoBackground = Bind(this, LEVEL, "Video Backgrounds", true, "If on, the old video BG feature returns, though somewhat buggy. Requires a bg.mp4 or bg.mov file to exist in the level folder.");
             UseNewUpdateMethod = Bind(this, LEVEL, "Use New Update Method", true, "Possibly releases the fixed framerate of the game.");
             ReplayLevel = Bind(this, LEVEL, "Replay Level in Background After Completion", true, "When completing a level, having this on will replay the level with no players in the background of the end screen.");

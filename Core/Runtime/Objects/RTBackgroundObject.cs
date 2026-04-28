@@ -59,10 +59,13 @@ namespace BetterLegacy.Core.Runtime.Objects
         public Color fadeColor;
         int fadeCount = -1;
         bool showFade = true;
+        float sample;
 
         public void ReactiveDepth(int sample, float intensity, int offset, bool inverse)
         {
-            var reactive = (int)RTLevel.Current.GetSample(sample, intensity) + offset;
+            var s = RTLevel.Current.GetSample(sample, intensity);
+            this.sample = CoreConfig.Instance.SmoothReactive.Value ? RTMath.Lerp(this.sample, s, Time.deltaTime * 50f) : s;
+            var reactive = (int)this.sample + offset;
             depthOffset = Mathf.Clamp(inverse ? -(reactive - (backgroundObject.iterations - 1)) : reactive, 0, int.MaxValue);
             visualFadeObjects.ForLoop((visualFadeObject, i) => visualFadeObject.SetActive(i == 0 || i < backgroundObject.iterations - Depth));
         }
@@ -217,7 +220,7 @@ namespace BetterLegacy.Core.Runtime.Objects
                 return;
             }
 
-            backgroundObject.reactiveSize = backgroundObject.reactiveType switch
+            var reactiveSize = backgroundObject.reactiveType switch
             {
                 BackgroundObject.ReactiveType.Bass => new Vector2(RTLevel.Current.sampleLow, RTLevel.Current.sampleLow) * backgroundObject.reactiveScale,
                 BackgroundObject.ReactiveType.Mids => new Vector2(RTLevel.Current.sampleMid, RTLevel.Current.sampleMid) * backgroundObject.reactiveScale,
@@ -225,6 +228,7 @@ namespace BetterLegacy.Core.Runtime.Objects
                 BackgroundObject.ReactiveType.Custom => new Vector2(RTLevel.Current.GetSample(backgroundObject.reactiveScaSamples.x, backgroundObject.reactiveScaIntensity.x), RTLevel.Current.GetSample(backgroundObject.reactiveScaSamples.y, backgroundObject.reactiveScaIntensity.y)) * backgroundObject.reactiveScale,
                 _ => Vector2.zero,
             };
+            backgroundObject.reactiveSize = CoreConfig.Instance.SmoothReactive.Value ? RTMath.Lerp(backgroundObject.reactiveSize, reactiveSize, Time.deltaTime * 50f) : reactiveSize;
 
             if (backgroundObject.reactiveType != BackgroundObject.ReactiveType.Custom)
             {
