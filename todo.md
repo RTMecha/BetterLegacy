@@ -168,6 +168,9 @@ Next: Multiplayer Snapshots
 - Rework audio transition system.  
 - Update modifier caches.  
 
+### Interfaces
+- Change reload button to show in the center if there are no levels present.
+
 ### Editor
 - Multi language support.
 - Make Editor Documentation read from a json file.  
