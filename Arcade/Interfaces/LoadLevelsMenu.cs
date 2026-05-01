@@ -37,7 +37,27 @@ namespace BetterLegacy.Arcade.Interfaces
             Current = new LoadLevelsMenu();
             InterfaceManager.inst.CurrentInterface = Current;
             Current.StartGeneration();
-            CoroutineHelper.StartCoroutine(Current.GetLevelList(levelsDirectory, onLoadingEnd));
+            CoroutineHelper.StartCoroutine(Current.GetLevelList(levelsDirectory, true, ArcadeConfig.Instance.LoadSteamLevels.Value, onLoadingEnd));
+        }
+
+        public static void InitLocal() => InitLocal(RTFile.CombinePaths(RTFile.ApplicationDirectory, LevelManager.ListPath));
+
+        public static void InitLocal(string levelsDirectory)
+        {
+            InterfaceManager.inst.CloseMenus();
+            Current = new LoadLevelsMenu();
+            InterfaceManager.inst.CurrentInterface = Current;
+            Current.StartGeneration();
+            CoroutineHelper.StartCoroutine(Current.GetLevelList(levelsDirectory, true, false));
+        }
+        
+        public static void InitSteam()
+        {
+            InterfaceManager.inst.CloseMenus();
+            Current = new LoadLevelsMenu();
+            InterfaceManager.inst.CurrentInterface = Current;
+            Current.StartGeneration();
+            CoroutineHelper.StartCoroutine(Current.GetLevelList(string.Empty, false, true));
         }
 
         public LoadLevelsMenu()
@@ -124,7 +144,7 @@ namespace BetterLegacy.Arcade.Interfaces
         /// Loads the Arcade & Steam levels.
         /// </summary>
         /// <param name="onLoadingEnd">Function to run when loading ends.</param>
-        public IEnumerator GetLevelList(string levelsDirectory, Action onLoadingEnd = null)
+        public IEnumerator GetLevelList(string levelsDirectory, bool loadLocal, bool loadSteam, Action onLoadingEnd = null)
         {
             float delay = 0f;
             if (currentlyLoading)
@@ -140,110 +160,113 @@ namespace BetterLegacy.Arcade.Interfaces
             ArcadeManager.inst.forcedSkip = false;
             LevelManager.IsArcade = true;
 
-            RTFile.CreateDirectory(levelsDirectory);
-
-            var directories = Directory.GetDirectories(levelsDirectory, "*", SearchOption.TopDirectoryOnly);
-
-            totalLevelCount = directories.Length;
-
-            LevelManager.Levels.Clear();
-            LevelManager.ArcadeQueue.Clear();
-            LevelManager.LevelCollections.Clear();
-            LevelManager.CurrentLevel = null;
-            LevelManager.CurrentLevelCollection = null;
-            LevelManager.LoadProgress();
+            var loadYieldMode = ArcadeConfig.Instance.LoadYieldMode.Value;
 
             var levelCollections = new Queue<string>();
 
-            var loadYieldMode = ArcadeConfig.Instance.LoadYieldMode.Value;
-
-            for (int i = 0; i < directories.Length; i++)
+            if (loadLocal)
             {
-                var folder = directories[i];
+                RTFile.CreateDirectory(levelsDirectory);
 
-                if (cancelled)
+                var directories = Directory.GetDirectories(levelsDirectory, "*", SearchOption.TopDirectoryOnly);
+
+                totalLevelCount = directories.Length;
+
+                LevelManager.Levels.Clear();
+                LevelManager.ArcadeQueue.Clear();
+                LevelManager.LevelCollections.Clear();
+                LevelManager.CurrentLevel = null;
+                LevelManager.CurrentLevelCollection = null;
+                LevelManager.LoadProgress();
+
+                for (int i = 0; i < directories.Length; i++)
                 {
-                    SceneHelper.LoadScene(SceneName.Main_Menu, false);
-                    currentlyLoading = false;
-                    LevelManager.ClearData();
-                    yield break;
+                    var folder = directories[i];
+
+                    if (cancelled)
+                    {
+                        SceneHelper.LoadScene(SceneName.Main_Menu, false);
+                        currentlyLoading = false;
+                        LevelManager.ClearData();
+                        yield break;
+                    }
+
+                    var path = RTFile.ReplaceSlash(folder);
+                    var name = Path.GetFileName(path);
+
+                    if (loadYieldMode != YieldType.None)
+                        yield return CoroutineHelper.GetYieldInstruction(loadYieldMode, ref delay);
+
+                    if (RTFile.FileExists(RTFile.CombinePaths(path, LevelCollection.COLLECTION_LSCO)))
+                    {
+                        levelCollections.Enqueue(path);
+                        continue;
+                    }
+
+                    if (!RTFile.FileExists(RTFile.CombinePaths(path, Level.METADATA_VGM)) && !RTFile.FileExists(RTFile.CombinePaths(path, Level.METADATA_LSB)))
+                    {
+                        levelCollections.Enqueue(path);
+                        continue;
+                    }
+
+                    MetaData metadata = null;
+
+                    try
+                    {
+                        if (RTFile.FileExists(RTFile.CombinePaths(path, Level.METADATA_VGM)))
+                            metadata = MetaData.ParseVG(JSON.Parse(RTFile.ReadFromFile(RTFile.CombinePaths(path, Level.METADATA_VGM))));
+                        else if (RTFile.FileExists(RTFile.CombinePaths(path, Level.METADATA_LSB)))
+                            metadata = MetaData.Parse(JSON.Parse(RTFile.ReadFromFile(RTFile.CombinePaths(path, RTFile.CombinePaths(path, Level.METADATA_LSB)))));
+                    }
+                    catch (Exception ex)
+                    {
+                        CoreHelper.LogError($"Could not load metadata of {name} due to the exception: {ex}");
+                        UpdateInfo(LegacyPlugin.AtanPlaceholder, $"<color=$FF0000>Failed to load metadata of {name}</color>", i, true);
+                        continue;
+                    }
+
+                    if (!metadata)
+                    {
+                        UpdateInfo(LegacyPlugin.AtanPlaceholder, $"<color=$FF0000>No metadata in {name}</color>", i, true);
+                        continue;
+                    }
+
+                    if (!RTFile.FileExists(RTFile.CombinePaths(path, Level.LEVEL_OGG)) && !RTFile.FileExists(RTFile.CombinePaths(path, Level.LEVEL_WAV)) && !RTFile.FileExists(RTFile.CombinePaths(path, Level.LEVEL_MP3))
+                        && !RTFile.FileExists(RTFile.CombinePaths(path, Level.AUDIO_OGG)) && !RTFile.FileExists(RTFile.CombinePaths(path, Level.AUDIO_WAV)) && !RTFile.FileExists(RTFile.CombinePaths(path, Level.AUDIO_MP3)))
+                    {
+                        UpdateInfo(LegacyPlugin.AtanPlaceholder, $"<color=$FF0000>No song in {name}</color>", i, true);
+                        continue;
+                    }
+
+                    if (!RTFile.FileExists(RTFile.CombinePaths(path, Level.LEVEL_LSB)) && !RTFile.FileExists(RTFile.CombinePaths(path, Level.LEVEL_VGD)))
+                    {
+                        UpdateInfo(LegacyPlugin.AtanPlaceholder, $"<color=$FF0000>No song in {name}</color>", i, true);
+                        continue;
+                    }
+
+                    try
+                    {
+                        metadata.VerifyID(path);
+                        var level = new Level(path, metadata);
+
+                        LevelManager.AssignSaveData(level);
+
+                        UpdateInfo(level.icon, $"Loading {name}", i);
+
+                        LevelManager.Levels.Add(level);
+                    }
+                    catch (Exception ex)
+                    {
+                        CoreHelper.LogError($"Could not load {name} due to the exception: {ex}");
+                        UpdateInfo(LegacyPlugin.AtanPlaceholder, $"<color=$FF0000>Failed to load {name}</color>", i, true);
+                        continue;
+                    }
                 }
 
-                var path = RTFile.ReplaceSlash(folder);
-                var name = Path.GetFileName(path);
-
-                if (loadYieldMode != YieldType.None)
-                    yield return CoroutineHelper.GetYieldInstruction(loadYieldMode, ref delay);
-
-                if (RTFile.FileExists(RTFile.CombinePaths(path, LevelCollection.COLLECTION_LSCO)))
-                {
-                    levelCollections.Enqueue(path);
-                    continue;
-                }
-
-                if (!RTFile.FileExists(RTFile.CombinePaths(path, Level.METADATA_VGM)) && !RTFile.FileExists(RTFile.CombinePaths(path, Level.METADATA_LSB)))
-                {
-                    levelCollections.Enqueue(path);
-                    continue;
-                }
-
-                MetaData metadata = null;
-
-                try
-                {
-                    if (RTFile.FileExists(RTFile.CombinePaths(path, Level.METADATA_VGM)))
-                        metadata = MetaData.ParseVG(JSON.Parse(RTFile.ReadFromFile(RTFile.CombinePaths(path, Level.METADATA_VGM))));
-                    else if (RTFile.FileExists(RTFile.CombinePaths(path, Level.METADATA_LSB)))
-                        metadata = MetaData.Parse(JSON.Parse(RTFile.ReadFromFile(RTFile.CombinePaths(path, RTFile.CombinePaths(path, Level.METADATA_LSB)))));
-                }
-                catch (Exception ex)
-                {
-                    CoreHelper.LogError($"Could not load metadata of {name} due to the exception: {ex}");
-                    UpdateInfo(LegacyPlugin.AtanPlaceholder, $"<color=$FF0000>Failed to load metadata of {name}</color>", i, true);
-                    continue;
-                }
-
-                if (!metadata)
-                {
-                    UpdateInfo(LegacyPlugin.AtanPlaceholder, $"<color=$FF0000>No metadata in {name}</color>", i, true);
-                    continue;
-                }
-
-                if (!RTFile.FileExists(RTFile.CombinePaths(path, Level.LEVEL_OGG)) && !RTFile.FileExists(RTFile.CombinePaths(path, Level.LEVEL_WAV)) && !RTFile.FileExists(RTFile.CombinePaths(path, Level.LEVEL_MP3))
-                    && !RTFile.FileExists(RTFile.CombinePaths(path, Level.AUDIO_OGG)) && !RTFile.FileExists(RTFile.CombinePaths(path, Level.AUDIO_WAV)) && !RTFile.FileExists(RTFile.CombinePaths(path, Level.AUDIO_MP3)))
-                {
-                    UpdateInfo(LegacyPlugin.AtanPlaceholder, $"<color=$FF0000>No song in {name}</color>", i, true);
-                    continue;
-                }
-
-                if (!RTFile.FileExists(RTFile.CombinePaths(path, Level.LEVEL_LSB)) && !RTFile.FileExists(RTFile.CombinePaths(path, Level.LEVEL_VGD)))
-                {
-                    UpdateInfo(LegacyPlugin.AtanPlaceholder, $"<color=$FF0000>No song in {name}</color>", i, true);
-                    continue;
-                }
-
-                try
-                {
-                    metadata.VerifyID(path);
-                    var level = new Level(path, metadata);
-
-                    LevelManager.AssignSaveData(level);
-
-                    UpdateInfo(level.icon, $"Loading {name}", i);
-
-                    LevelManager.Levels.Add(level);
-                }
-                catch (Exception ex)
-                {
-                    CoreHelper.LogError($"Could not load {name} due to the exception: {ex}");
-                    UpdateInfo(LegacyPlugin.AtanPlaceholder, $"<color=$FF0000>Failed to load {name}</color>", i, true);
-                    continue;
-                }
+                CoreHelper.Log($"Finished loading Arcade levels at {sw.Elapsed}");
             }
 
-            CoreHelper.Log($"Finished loading Arcade levels at {sw.Elapsed}");
-
-            if (ArcadeConfig.Instance.LoadSteamLevels.Value)
+            if (loadSteam)
             {
                 yield return CoroutineHelper.StartCoroutine(RTSteamManager.inst.GetSubscribedItems((Level level, int i) =>
                 {
@@ -264,32 +287,35 @@ namespace BetterLegacy.Arcade.Interfaces
 
             RTSteamManager.inst.Levels = LevelManager.SortLevels(RTSteamManager.inst.Levels, ArcadeConfig.Instance.SteamLevelOrderby.Value, ArcadeConfig.Instance.SteamLevelAscend.Value);
 
-            int collectionIndex = 0;
-            totalLevelCount = levelCollections.Count;
-            while (!levelCollections.IsEmpty())
+            if (loadLocal)
             {
-                var path = levelCollections.Dequeue();
-                var name = Path.GetFileName(path);
-
-                LevelCollection levelCollection = null;
-
-                if (!RTFile.FileExists(RTFile.CombinePaths(path, LevelCollection.COLLECTION_LSCO)))
+                int collectionIndex = 0;
+                totalLevelCount = levelCollections.Count;
+                while (!levelCollections.IsEmpty())
                 {
-                    if (!ArcadeConfig.Instance.LoadFolders.Value)
+                    var path = levelCollections.Dequeue();
+                    var name = Path.GetFileName(path);
+
+                    LevelCollection levelCollection = null;
+
+                    if (!RTFile.FileExists(RTFile.CombinePaths(path, LevelCollection.COLLECTION_LSCO)))
                     {
-                        collectionIndex++;
-                        continue;
+                        if (!ArcadeConfig.Instance.LoadFolders.Value)
+                        {
+                            collectionIndex++;
+                            continue;
+                        }
+                        levelCollection = new LevelCollection() { path = path, isFolder = true, icon = LegacyPlugin.AtanPlaceholder, name = name, id = PAObjectBase.GetNumberID(), };
                     }
-                    levelCollection = new LevelCollection() { path = path, isFolder = true, icon = LegacyPlugin.AtanPlaceholder, name = name, id = PAObjectBase.GetNumberID(), };
+                    else
+                        levelCollection = LevelCollection.Parse(path, JSON.Parse(RTFile.ReadFromFile(RTFile.CombinePaths(path, LevelCollection.COLLECTION_LSCO))));
+
+                    LevelManager.AssignSaveData(levelCollection);
+
+                    LevelManager.LevelCollections.Add(levelCollection);
+                    UpdateInfo(levelCollection.icon, $"Loading {name}", collectionIndex);
+                    collectionIndex++;
                 }
-                else
-                    levelCollection = LevelCollection.Parse(path, JSON.Parse(RTFile.ReadFromFile(RTFile.CombinePaths(path, LevelCollection.COLLECTION_LSCO)))); 
-
-                LevelManager.AssignSaveData(levelCollection);
-
-                LevelManager.LevelCollections.Add(levelCollection);
-                UpdateInfo(levelCollection.icon, $"Loading {name}", collectionIndex);
-                collectionIndex++;
             }
 
             sw.Stop();
