@@ -180,24 +180,49 @@ namespace BetterLegacy.Arcade.Interfaces
                             regenerate = false,
                         });
 
-                        elements.Add(new MenuButton
+                        int x = 0;
+                        if (!LevelManager.Levels.IsEmpty())
                         {
-                            id = "25428852",
-                            name = "Reload Button",
-                            text = "<align=center><b>[ RELOAD ]",
-                            parentLayout = "local settings",
-                            selectionPosition = new Vector2Int(0, 1),
-                            rect = RectValues.Default.SizeDelta(200f, 64f),
-                            func = LoadLevelsMenu.Init,
-                            color = 6,
-                            opacity = 0.1f,
-                            textColor = 6,
-                            selectedColor = 6,
-                            selectedOpacity = 1f,
-                            selectedTextColor = 7,
-                            length = 0.1f,
-                            regenerate = false,
-                        });
+                            elements.Add(new MenuButton
+                            {
+                                id = "25428852",
+                                name = "Reload Button",
+                                text = "<align=center><b>[ RELOAD ]",
+                                parentLayout = "local settings",
+                                selectionPosition = new Vector2Int(x, 1),
+                                rect = RectValues.Default.SizeDelta(200f, 64f),
+                                func = LoadLevelsMenu.InitLocal,
+                                color = 6,
+                                opacity = 0.1f,
+                                textColor = 6,
+                                selectedColor = 6,
+                                selectedOpacity = 1f,
+                                selectedTextColor = 7,
+                                length = 0.1f,
+                                regenerate = false,
+                            });
+                            x++;
+                        }
+                        else
+                        {
+                            elements.Add(new MenuButton
+                            {
+                                id = "25428852",
+                                name = "Reload Button",
+                                text = "<size=50><align=center><b>[ RELOAD ]",
+                                selectionPosition = new Vector2Int(0, 2),
+                                rect = RectValues.Default.SizeDelta(300f, 128f),
+                                func = LoadLevelsMenu.InitLocal,
+                                color = 6,
+                                opacity = 0.1f,
+                                textColor = 6,
+                                selectedColor = 6,
+                                selectedOpacity = 1f,
+                                selectedTextColor = 7,
+                                length = 0.1f,
+                                regenerate = false,
+                            });
+                        }
 
                         var sortButton = new MenuButton
                         {
@@ -205,7 +230,7 @@ namespace BetterLegacy.Arcade.Interfaces
                             name = "Sort Button",
                             text = $"<align=center><b>[ SORT: {ArcadeConfig.Instance.LocalLevelOrderby.Value} ]",
                             parentLayout = "local settings",
-                            selectionPosition = new Vector2Int(1, 1),
+                            selectionPosition = new Vector2Int(x, 1),
                             rect = RectValues.Default.SizeDelta(400f, 64f),
                             color = 6,
                             opacity = 0.1f,
@@ -232,13 +257,14 @@ namespace BetterLegacy.Arcade.Interfaces
                         };
                         elements.Add(sortButton);
 
+                        x++;
                         var ascendButton = new MenuButton
                         {
                             id = "25428852",
                             name = "Sort Button",
                             text = $"<align=center><b><rotate={(ArcadeConfig.Instance.LocalLevelAscend.Value ? "90" : "-90")}>>",
                             parentLayout = "local settings",
-                            selectionPosition = new Vector2Int(2, 1),
+                            selectionPosition = new Vector2Int(x, 1),
                             rect = RectValues.Default.SizeDelta(64f, 64f),
                             color = 6,
                             opacity = 0.1f,
@@ -310,13 +336,14 @@ namespace BetterLegacy.Arcade.Interfaces
                             }),
                         };
 
+                        x++;
                         elements.Add(new MenuButton
                         {
                             id = "32848924",
                             name = "Prev Page",
                             text = "<align=center><b><",
                             parentLayout = "local settings",
-                            selectionPosition = new Vector2Int(3, 1),
+                            selectionPosition = new Vector2Int(x, 1),
                             rect = RectValues.Default.SizeDelta(132f, 64f),
                             func = () =>
                             {
@@ -341,13 +368,14 @@ namespace BetterLegacy.Arcade.Interfaces
 
                         elements.Add(pageField);
 
+                        x++;
                         elements.Add(new MenuButton
                         {
                             id = "32848924",
                             name = "Next Page",
                             text = "<align=center><b>>",
                             parentLayout = "local settings",
-                            selectionPosition = new Vector2Int(4, 1),
+                            selectionPosition = new Vector2Int(x, 1),
                             rect = RectValues.Default.SizeDelta(132f, 64f),
                             func = () =>
                             {
@@ -1074,6 +1102,21 @@ namespace BetterLegacy.Arcade.Interfaces
                         break;
                     }
                 case Tab.Steam: {
+                        if (!RTSteamManager.inst.Initialized)
+                        {
+                            elements.Add(new MenuText
+                            {
+                                id = "5136326",
+                                name = "Init message",
+                                text = Lang.Current.GetOrDefault("arcade.steam.no_access", "<size=40><align=center><b>Steam could not be accessed.\nOpen Steam and relaunch the game to access the workshop."),
+                                rect = RectValues.Default.SizeDelta(600f, 300f),
+                                length = 0.1f,
+                                regenerate = false,
+                                hideBG = true,
+                            });
+                            break;
+                        }
+
                         layouts.Add("steam settings", new MenuHorizontalLayout
                         {
                             name = "steam settings",
@@ -1100,6 +1143,7 @@ namespace BetterLegacy.Arcade.Interfaces
                             regenerate = false,
                         });
 
+                        int x = 0;
                         if (ViewOnline)
                         {
                             elements.Add(new MenuButton
@@ -1108,7 +1152,7 @@ namespace BetterLegacy.Arcade.Interfaces
                                 name = "Search Button",
                                 text = "<align=center><b>[ SEARCH ]",
                                 parentLayout = "steam settings",
-                                selectionPosition = new Vector2Int(0, 1),
+                                selectionPosition = new Vector2Int(x, 1),
                                 rect = RectValues.Default.SizeDelta(200f, 64f),
                                 func = RefreshOnlineSteamLevels().Start,
                                 color = 6,
@@ -1121,13 +1165,14 @@ namespace BetterLegacy.Arcade.Interfaces
                                 regenerate = false,
                             });
 
+                            x++;
                             var sortButton = new MenuButton
                             {
                                 id = "25428852",
                                 name = "Sort Button",
                                 text = $"<align=center><b>[ SORT: {ArcadeConfig.Instance.SteamWorkshopOrderby.Value} ]",
                                 parentLayout = "steam settings",
-                                selectionPosition = new Vector2Int(1, 1),
+                                selectionPosition = new Vector2Int(x, 1),
                                 rect = RectValues.Default.SizeDelta(400f, 64f),
                                 color = 6,
                                 opacity = 0.1f,
@@ -1156,24 +1201,48 @@ namespace BetterLegacy.Arcade.Interfaces
                         }
                         else
                         {
-                            elements.Add(new MenuButton
+                            if (!RTSteamManager.inst.Levels.IsEmpty())
                             {
-                                id = "25428852",
-                                name = "Reload Button",
-                                text = "<align=center><b>[ RELOAD ]",
-                                parentLayout = "steam settings",
-                                selectionPosition = new Vector2Int(0, 1),
-                                rect = RectValues.Default.SizeDelta(200f, 64f),
-                                func = LoadLevelsMenu.Init,
-                                color = 6,
-                                opacity = 0.1f,
-                                textColor = 6,
-                                selectedColor = 6,
-                                selectedOpacity = 1f,
-                                selectedTextColor = 7,
-                                length = 0.1f,
-                                regenerate = false,
-                            });
+                                elements.Add(new MenuButton
+                                {
+                                    id = "25428852",
+                                    name = "Reload Button",
+                                    text = "<align=center><b>[ RELOAD ]",
+                                    parentLayout = "steam settings",
+                                    selectionPosition = new Vector2Int(x, 1),
+                                    rect = RectValues.Default.SizeDelta(200f, 64f),
+                                    func = LoadLevelsMenu.InitSteam,
+                                    color = 6,
+                                    opacity = 0.1f,
+                                    textColor = 6,
+                                    selectedColor = 6,
+                                    selectedOpacity = 1f,
+                                    selectedTextColor = 7,
+                                    length = 0.1f,
+                                    regenerate = false,
+                                });
+                                x++;
+                            }
+                            else
+                            {
+                                elements.Add(new MenuButton
+                                {
+                                    id = "25428852",
+                                    name = "Reload Button",
+                                    text = "<size=50><align=center><b>[ RELOAD ]",
+                                    selectionPosition = new Vector2Int(0, 2),
+                                    rect = RectValues.Default.SizeDelta(300f, 128f),
+                                    func = LoadLevelsMenu.InitSteam,
+                                    color = 6,
+                                    opacity = 0.1f,
+                                    textColor = 6,
+                                    selectedColor = 6,
+                                    selectedOpacity = 1f,
+                                    selectedTextColor = 7,
+                                    length = 0.1f,
+                                    regenerate = false,
+                                });
+                            }
 
                             var sortButton = new MenuButton
                             {
@@ -1181,7 +1250,7 @@ namespace BetterLegacy.Arcade.Interfaces
                                 name = "Sort Button",
                                 text = $"<align=center><b>[ SORT: {ArcadeConfig.Instance.SteamLevelOrderby.Value} ]",
                                 parentLayout = "steam settings",
-                                selectionPosition = new Vector2Int(1, 1),
+                                selectionPosition = new Vector2Int(x, 1),
                                 rect = RectValues.Default.SizeDelta(400f, 64f),
                                 color = 6,
                                 opacity = 0.1f,
@@ -1208,13 +1277,14 @@ namespace BetterLegacy.Arcade.Interfaces
                             };
                             elements.Add(sortButton);
 
+                            x++;
                             var ascendButton = new MenuButton
                             {
                                 id = "25428852",
                                 name = "Sort Button",
                                 text = $"<align=center><b><rotate={(ArcadeConfig.Instance.SteamLevelAscend.Value ? "90" : "-90")}>>",
                                 parentLayout = "steam settings",
-                                selectionPosition = new Vector2Int(2, 1),
+                                selectionPosition = new Vector2Int(x, 1),
                                 rect = RectValues.Default.SizeDelta(64f, 64f),
                                 color = 6,
                                 opacity = 0.1f,
@@ -1293,13 +1363,14 @@ namespace BetterLegacy.Arcade.Interfaces
                             }),
                         };
 
+                        x++;
                         elements.Add(new MenuButton
                         {
                             id = "32848924",
                             name = "Prev Page",
                             text = "<align=center><b><",
                             parentLayout = "steam settings",
-                            selectionPosition = new Vector2Int(!ViewOnline ? 3 : 2, 1),
+                            selectionPosition = new Vector2Int(x, 1),
                             rect = RectValues.Default.SizeDelta(132f, 64f),
                             func = () =>
                             {
@@ -1324,13 +1395,14 @@ namespace BetterLegacy.Arcade.Interfaces
 
                         elements.Add(pageField);
 
+                        x++;
                         elements.Add(new MenuButton
                         {
                             id = "32848924",
                             name = "Next Page",
                             text = "<align=center><b>>",
                             parentLayout = "steam settings",
-                            selectionPosition = new Vector2Int(!ViewOnline ? 4 : 3, 1),
+                            selectionPosition = new Vector2Int(x, 1),
                             rect = RectValues.Default.SizeDelta(132f, 64f),
                             func = () =>
                             {
@@ -1352,14 +1424,15 @@ namespace BetterLegacy.Arcade.Interfaces
                             regenerate = false,
                             playBlipSound = false,
                         });
-                        
+
+                        x++;
                         elements.Add(new MenuButton
                         {
                             id = "32848924",
                             name = "Switch Steam View",
                             text = $"<align=center><b>[ {(ViewOnline ? "VIEW SUBSCRIBED" : "VIEW ONLINE")} ]",
                             parentLayout = "steam settings",
-                            selectionPosition = new Vector2Int(!ViewOnline ? 5 : 4, 1),
+                            selectionPosition = new Vector2Int(x, 1),
                             rect = RectValues.Default.SizeDelta(300f, 64f),
                             func = () =>
                             {
