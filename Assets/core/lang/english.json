@@ -1,6 +1,9 @@
 ﻿{
   "splash.dictionaries": "Dictionaries!",
 
+  // arcade
+  "arcade.steam.no_access": "<size=40><align=center><b>Steam could not be accessed.\nOpen Steam and relaunch the game to access the workshop.",
+
   // editor
   "editor.titlebar.file": "File",
   "editor.titlebar.edit": "Edit",
