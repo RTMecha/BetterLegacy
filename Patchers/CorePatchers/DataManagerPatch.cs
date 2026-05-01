@@ -32,6 +32,7 @@ namespace BetterLegacy.Patchers
         {
             // Initialize managers
             ModCompatibility.Init();
+            PoolManager.Init();
             ShapeManager.Init();
             ThemeManager.Init();
             UIManager.Init();
