@@ -532,7 +532,10 @@ namespace BetterLegacy.Editor.Data.Elements
                     return;
                 }
 
-                EditorLevelManager.inst.OpenLevelCollectionEditor(Item);
+                if (EditorConfig.Instance.ViewCollectionLevelsOnClick.Value)
+                    EditorLevelManager.inst.LoadLevelCollection(this);
+                else
+                    EditorLevelManager.inst.OpenLevelCollectionEditor(Item);
             };
         }
 
