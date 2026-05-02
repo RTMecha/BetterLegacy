@@ -48,7 +48,7 @@ namespace BetterLegacy.Arcade.Interfaces
             Current = new LoadLevelsMenu();
             InterfaceManager.inst.CurrentInterface = Current;
             Current.StartGeneration();
-            CoroutineHelper.StartCoroutine(Current.GetLevelList(levelsDirectory, true, false));
+            CoroutineHelper.StartCoroutine(Current.GetLevelList(levelsDirectory, true, false, ArcadeHelper.OnLoadingEnd().Start));
         }
         
         public static void InitSteam()
@@ -57,7 +57,7 @@ namespace BetterLegacy.Arcade.Interfaces
             Current = new LoadLevelsMenu();
             InterfaceManager.inst.CurrentInterface = Current;
             Current.StartGeneration();
-            CoroutineHelper.StartCoroutine(Current.GetLevelList(string.Empty, false, true));
+            CoroutineHelper.StartCoroutine(Current.GetLevelList(string.Empty, false, true, ArcadeHelper.OnLoadingEnd().Start));
         }
 
         public LoadLevelsMenu()
