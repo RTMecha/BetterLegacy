@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 using LSFunctions;
 
@@ -8,8 +9,13 @@ using BetterLegacy.Editor.Data.Timeline;
 
 namespace BetterLegacy.Core.Data.Beatmap
 {
+    /// <summary>
+    /// Marker used for organizing the editor timeline.
+    /// </summary>
     public class Marker : PAObject<Marker>
     {
+        #region Constructors
+
         public Marker() : base() { }
 
         public Marker(string name, string desc, int color, float time) : this(GetStringID(), name, desc, color, time) { }
@@ -22,6 +28,10 @@ namespace BetterLegacy.Core.Data.Beatmap
             this.color = color;
             this.time = time;
         }
+
+        #endregion
+
+        #region Values
 
         /// <summary>
         /// Name of the marker.
@@ -49,11 +59,18 @@ namespace BetterLegacy.Core.Data.Beatmap
         public List<int> layers = new List<int>();
 
         /// <summary>
+        /// Annotation to render for the marker.
+        /// </summary>
+        public List<Annotation> annotations = new List<Annotation>();
+
+        /// <summary>
         /// Timeline Marker reference.
         /// </summary>
         public TimelineMarker timelineMarker;
 
-        #region Methods
+        #endregion
+
+        #region Functions
 
         public override void CopyData(Marker orig, bool newID = true)
         {
@@ -64,6 +81,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             time = orig.time;
             layers.Clear();
             layers.AddRange(orig.layers);
+            annotations = new List<Annotation>(orig.annotations.Select(x => x.Copy(false)));
         }
 
         public override void ReadJSONVG(JSONNode jn, Version version = default)
@@ -85,6 +103,9 @@ namespace BetterLegacy.Core.Data.Beatmap
             layers.Clear();
             for (int i = 0; i < jn["ls"].Count; i++)
                 layers.Add(jn["ls"][i].AsInt);
+
+            if (jn["an"] != null)
+                annotations = Parser.ParseObjectList<Annotation>(jn["an"]);
         }
 
         public override JSONNode ToJSONVG()
@@ -118,6 +139,9 @@ namespace BetterLegacy.Core.Data.Beatmap
             for (int i = 0; i < layers.Count; i++)
                 jn["ls"][i] = layers[i];
 
+            for (int i = 0; i < annotations.Count; i++)
+                jn["an"][i] = annotations[i].ToJSON();
+
             return jn;
         }
 
@@ -136,10 +160,6 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <param name="layer">Layer to check. Can be left at -1.</param>
         /// <returns>Returns true if the marker matches, otherwise returns false.</returns>
         public bool Matches(string name = null, int color = -1, int layer = -1) => (string.IsNullOrEmpty(name) || this.name == name) && (color == -1 || this.color == color) && (layer == -1 || VisibleOnLayer(layer));
-
-        #endregion
-
-        #region Operators
 
         public override bool Equals(object obj) => obj is Marker paObj && id == paObj.id;
 
