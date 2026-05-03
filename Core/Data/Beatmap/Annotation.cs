@@ -52,11 +52,6 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #endregion
 
-        /// <summary>
-        /// Time length the annotation should display for.
-        /// </summary>
-        public float time;
-
         #endregion
 
         #region Functions
@@ -70,7 +65,6 @@ namespace BetterLegacy.Core.Data.Beatmap
             hexColor = orig.hexColor;
 
             thickness = orig.thickness;
-            time = orig.time;
 
             points = new List<Vector2>(orig.points);
         }
@@ -84,7 +78,6 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             if (jn["th"] != null)
                 thickness = jn["th"].AsFloat;
-            time = jn["t"].AsFloat;
             if (jn["p"] != null)
             {
                 points.Clear();
@@ -106,7 +99,6 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             if (thickness != 4f)
                 jn["th"] = thickness;
-            jn["t"] = time;
             for (int i = 0; i < points.Count; i++)
                 jn["p"][i] = points[i].ToJSONArray();
 
