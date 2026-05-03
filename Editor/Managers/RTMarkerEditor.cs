@@ -16,6 +16,7 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Prefabs;
+using BetterLegacy.Core.Runtime;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
 using BetterLegacy.Editor.Data.Timeline;
@@ -146,10 +147,40 @@ namespace BetterLegacy.Editor.Managers
 
         #endregion
 
+        #region Annotation
+
+        public AnnotationTool annotationTool;
+
+        public Annotation currentStroke;
+
+        public int annotationColor;
+
+        public string annotationHexColor;
+
+        public float annotationOpacity = 1f;
+
+        public float annotationThickness = 4f;
+
+        public bool drawingAnnotation;
+
+        public float eraserRadius = 0.5f;
+
+        public float bucketRadius = 0.5f;
+
+        public enum AnnotationTool
+        {
+            Draw,
+            Erase,
+            Bucket,
+            // Shape? + text???
+        }
+
+        #endregion
+
         #endregion
 
         #region Functions
-        
+
         public override void OnInit()
         {
             try
@@ -199,6 +230,8 @@ namespace BetterLegacy.Editor.Managers
 
         public override void OnTick()
         {
+            AnnotationTick();
+
             if (dragging && Input.GetMouseButtonUp((int)EditorConfig.Instance.MarkerDragButton.Value))
                 StopDragging();
 
@@ -974,6 +1007,22 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.DisplayNotification("Pasted Markers", 1.5f, EditorManager.NotificationType.Success);
         }
 
+        /// <summary>
+        /// If a specified time is in the active area of a marker.
+        /// </summary>
+        /// <param name="marker">Marker to check.</param>
+        /// <param name="time">Time to compare.</param>
+        /// <returns>Returns true if the <paramref name="time"/> is in the active area of the <paramref name="marker"/>, otherwise returns false.</returns>
+        public bool IsInMarkerArea(Marker marker, float time) => time >= marker.time && time < marker.time + marker.duration && marker.VisibleOnLayer(EditorTimeline.inst.Layer) ||
+            (CurrentMarker && CurrentMarker.Marker == marker);
+
+        /// <summary>
+        /// Gets a color from the marker colors list.
+        /// </summary>
+        /// <param name="colorSlot">Color slot to get.</param>
+        /// <returns>Returns a color from the marker colors list.</returns>
+        public Color GetColor(int colorSlot) => MarkerEditor.inst.markerColors.TryGetAt(colorSlot, out Color color) ? color : RTColors.errorColor;
+
         #endregion
 
         #region Update Values
@@ -1049,6 +1098,159 @@ namespace BetterLegacy.Editor.Managers
                     action?.Invoke(selectedMarkers[i]);
             else if (timelineMarker)
                 action?.Invoke(timelineMarker);
+        }
+
+        #endregion
+
+        #region Annotation
+
+        // directly based on AnnotationEditor code.
+        void AnnotationTick()
+        {
+            if (!ProjectArrhythmia.State.IsEditing || !Dialog || !Dialog.IsCurrent || EventSystem.current.IsPointerOverGameObject())
+                return;
+
+            var pos = RTLevel.Cameras.FG.ScreenToWorldPoint(Input.mousePosition);
+            switch (annotationTool)
+            {
+                case AnnotationTool.Draw: {
+                        if (Input.GetMouseButtonDown(0))
+                        {
+                            BeginStroke(pos);
+                            return;
+                        }
+                        if (Input.GetMouseButton(0))
+                        {
+                            ContinueStroke(pos);
+                            return;
+                        }
+                        if (Input.GetMouseButtonUp(0))
+                        {
+                            FinalizeStroke(pos);
+                            return;
+                        }
+                        break;
+                    }
+                case AnnotationTool.Erase: {
+                        if (Input.GetMouseButton(0))
+                            EraseAtPosition(pos);
+                        break;
+                    }
+                case AnnotationTool.Bucket: {
+                        if (Input.GetMouseButton(0))
+                            BucketAtPosition(pos);
+                        break;
+                    }
+            }
+        }
+
+        void BeginStroke(Vector2 pos)
+        {
+            currentStroke = new Annotation
+            {
+                color = annotationColor,
+                hexColor = annotationHexColor,
+                opacity = annotationOpacity,
+                thickness = annotationThickness,
+            };
+            currentStroke.points.Add(pos);
+            drawingAnnotation = true;
+        }
+
+        void ContinueStroke(Vector2 pos)
+        {
+            if (currentStroke.points.IsEmpty())
+            {
+                currentStroke.points.Add(pos);
+                return;
+            }
+            var point = currentStroke.points.Last();
+            if (RTMath.Distance(point, pos) >= 0.0025f)
+                currentStroke.points.Add(pos);
+        }
+
+        void FinalizeStroke(Vector2 pos)
+        {
+            ContinueStroke(pos);
+            if (currentStroke.points.Count > 1)
+                CurrentMarker.Marker.annotations.Add(currentStroke);
+            currentStroke = null;
+            drawingAnnotation = false;
+        }
+
+        void EraseAtPosition(Vector2 pos)
+        {
+            var rSq = eraserRadius * eraserRadius;
+
+            var time = AudioManager.inst.CurrentAudioSource.time;
+            for (int i = 0; i < GameData.Current.data.markers.Count; i++)
+            {
+                var marker = GameData.Current.data.markers[i];
+                if (IsInMarkerArea(marker, time))
+                    continue;
+
+                for (int j = marker.annotations.Count - 1; j >= 0; j--)
+                {
+                    var annotation = marker.annotations[j];
+                    bool shouldRemove = false;
+                    for (int p = 0; p < annotation.points.Count; p++)
+                    {
+                        var point = annotation.points[p];
+                        var x = point.x - pos.x;
+                        var y = point.y - pos.y;
+                        if (x * x + y * y <= rSq)
+                            shouldRemove = true;
+                    }
+                    if (shouldRemove)
+                        marker.annotations.RemoveAt(j);
+                }
+            }
+        }
+
+        void BucketAtPosition(Vector2 pos)
+        {
+            var rSq = bucketRadius * bucketRadius;
+
+            var time = AudioManager.inst.CurrentAudioSource.time;
+            for (int i = 0; i < GameData.Current.data.markers.Count; i++)
+            {
+                var marker = GameData.Current.data.markers[i];
+                if (IsInMarkerArea(marker, time))
+                    continue;
+
+                for (int j = 0; j < marker.annotations.Count; j++)
+                {
+                    var annotation = marker.annotations[j];
+                    for (int p = 0; p < annotation.points.Count; p++)
+                    {
+                        var point = annotation.points[p];
+                        var x = point.x - pos.x;
+                        var y = point.y - pos.y;
+                        if (x * x + y * y <= rSq)
+                        {
+                            annotation.color = annotationColor;
+                            annotation.hexColor = annotationHexColor;
+                            annotation.opacity = annotationOpacity;
+                        }
+                    }
+                }
+            }
+        }
+
+        void AbortActiveStroke()
+        {
+            currentStroke = null;
+            drawingAnnotation = false;
+        }
+
+        /// <summary>
+        /// Clears all annotations from the current marker.
+        /// </summary>
+        public void ClearMarkerAnnotation()
+        {
+            if (!CurrentMarker || !CurrentMarker.Marker)
+                return;
+            CurrentMarker.Marker.annotations.Clear();
         }
 
         #endregion
