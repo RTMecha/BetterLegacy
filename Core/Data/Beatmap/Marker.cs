@@ -54,6 +54,11 @@ namespace BetterLegacy.Core.Data.Beatmap
         public float time;
 
         /// <summary>
+        /// Duration the marker indicates.
+        /// </summary>
+        public float duration;
+
+        /// <summary>
         /// Layers that the marker should display on.
         /// </summary>
         public List<int> layers = new List<int>();
@@ -79,6 +84,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             desc = orig.desc;
             color = orig.color;
             time = orig.time;
+            duration = orig.duration;
             layers.Clear();
             layers.AddRange(orig.layers);
             annotations = new List<Annotation>(orig.annotations.Select(x => x.Copy(false)));
@@ -91,6 +97,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             desc = jn["d"] ?? string.Empty;
             color = jn["c"].AsInt;
             time = jn["t"].AsFloat;
+            duration = jn["dur"].AsFloat;
         }
 
         public override void ReadJSON(JSONNode jn)
@@ -99,6 +106,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             desc = jn["desc"] ?? string.Empty;
             color = jn["col"].AsInt;
             time = jn["t"].AsFloat;
+            duration = jn["d"].AsFloat;
 
             layers.Clear();
             for (int i = 0; i < jn["ls"].Count; i++)
@@ -118,6 +126,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             jn["d"] = desc ?? string.Empty;
             jn["c"] = color;
             jn["t"] = time;
+            jn["dur"] = duration;
 
             return jn;
         }
@@ -135,6 +144,8 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["col"] = color;
 
             jn["t"] = time;
+            if (duration != 0f)
+                jn["d"] = duration;
 
             for (int i = 0; i < layers.Count; i++)
                 jn["ls"][i] = layers[i];
