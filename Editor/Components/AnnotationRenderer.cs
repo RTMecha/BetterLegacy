@@ -63,6 +63,8 @@ namespace BetterLegacy.Editor.Components
                 RenderAnnotationStroke(null, RTMarkerEditor.inst.mirrorHorizontalStroke);
             if (RTMarkerEditor.inst.mirrorVerticalStroke)
                 RenderAnnotationStroke(null, RTMarkerEditor.inst.mirrorVerticalStroke);
+            if (RTMarkerEditor.inst.mirrorDiagonalStroke)
+                RenderAnnotationStroke(null, RTMarkerEditor.inst.mirrorDiagonalStroke);
 
             var time = AudioManager.inst.CurrentAudioSource.time;
             for (int i = 0; i < GameData.Current.data.markers.Count; i++)
@@ -94,6 +96,9 @@ namespace BetterLegacy.Editor.Components
             color.a *= EditorConfig.Instance.AnnotationOpacity.Value;
             if (marker && !marker.VisibleOnLayer(EditorTimeline.inst.Layer))
                 color.a *= EditorConfig.Instance.AnnotationOtherLayerOpacity.Value;
+            if (annotation.selected)
+                color += new Color(1f, 1f, 1f, 0f) * (Mathf.PingPong(Time.time * 2, 2f) - 1f);
+
             for (int p = 0; p < annotation.points.Count - 1; p++)
             {
                 GL.Color(color);

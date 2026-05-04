@@ -165,6 +165,11 @@ namespace BetterLegacy.Editor.Managers
         public Annotation mirrorVerticalStroke;
 
         /// <summary>
+        /// The current diagonally mirrored annotation stroke.
+        /// </summary>
+        public Annotation mirrorDiagonalStroke;
+
+        /// <summary>
         /// Annotation settings.
         /// </summary>
         public AnnotationSettings Settings => RTEditor.inst?.editorInfo?.annotationSettings;
@@ -185,6 +190,11 @@ namespace BetterLegacy.Editor.Managers
         public float bucketRadius = 0.5f;
 
         /// <summary>
+        /// Select radius.
+        /// </summary>
+        public float selectRadius = 0.5f;
+
+        /// <summary>
         /// Copied list of annotations.
         /// </summary>
         public List<Annotation> copiedAnnotations = new List<Annotation>();
@@ -194,6 +204,7 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public bool movingAnnotations;
 
+        int selectedCount;
         Vector2 startMovePos;
         List<List<Vector2>> pointsCache = new List<List<Vector2>>();
 
@@ -212,7 +223,11 @@ namespace BetterLegacy.Editor.Managers
                 var activeState = Dialog.GameObject.AddComponent<ActiveState>();
                 activeState.onStateChanged = state =>
                 {
-                    if (state || !EditorConfig.Instance.DeselectMarkersOnDialogClosed.Value)
+                    if (state)
+                        return;
+
+                    DeselectAllAnnotations();
+                    if (!EditorConfig.Instance.DeselectMarkersOnDialogClosed.Value)
                         return;
 
                     dragging = false;
@@ -414,7 +429,16 @@ namespace BetterLegacy.Editor.Managers
             Dialog.DurationField.middleButton.onClick.NewListener(() => Dialog.DurationField.inputField.text = (AudioManager.inst.CurrentAudioSource.time - marker.time).ToString());
 
             EditorContextMenu.AddContextMenu(Dialog.DurationField.inputField.gameObject,
-                new ButtonElement("Snap to BPM", () => Dialog.DurationField.inputField.text = (RTEditor.SnapToBPM(marker.time + marker.duration) - marker.time).ToString()));
+                new ButtonElement("Snap to BPM", () => Dialog.DurationField.inputField.text = (RTEditor.SnapToBPM(marker.time + marker.duration) - marker.time).ToString()),
+                new ButtonElement("Set to Next Marker", () =>
+                {
+                    var timelineMarker = marker.timelineMarker;
+                    if (!timelineMarker || !GameData.Current.data.markers.TryGetAt(timelineMarker.Index + 1, out Marker nextMarker))
+                        return;
+
+                    timelineMarker.Duration = RTMath.Clamp(-(marker.time - nextMarker.time), 0f, float.MaxValue);
+                    RenderDuration(marker);
+                }));
         }
 
         /// <summary>
@@ -891,21 +915,7 @@ namespace BetterLegacy.Editor.Managers
             }),
             new ButtonElement("Copy Selected", CopySelectedMarkers),
             new ButtonElement("Copy All", CopyAllMarkers),
-            new ButtonElement("Paste", () =>
-            {
-                if (!markerCopy)
-                {
-                    EditorManager.inst.DisplayNotification("No copied Marker yet!", 1.5f, EditorManager.NotificationType.Error);
-                    return;
-                }
-
-                var marker = markerCopy.Copy();
-                marker.time = RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsPasted.Value && EditorConfig.Instance.BPMSnapsMarkers.Value ? RTEditor.SnapToBPM(EditorManager.inst.CurrentAudioPos) : EditorManager.inst.CurrentAudioPos;
-                GameData.Current.data.markers.Add(marker);
-                CreateMarker(GameData.Current.data.markers.Count - 1);
-                OrderMarkers();
-                EditorManager.inst.DisplayNotification("Pasted Marker", 1.5f, EditorManager.NotificationType.Success);
-            }),
+            new ButtonElement("Paste", PasteMarker),
             new ButtonElement("Paste All", PasteMarkers),
             new ButtonElement("Delete", () => DeleteMarker(timelineMarker.Index)),
             new ButtonElement("Delete Selected", () =>
@@ -1173,6 +1183,25 @@ namespace BetterLegacy.Editor.Managers
         }
 
         /// <summary>
+        /// Pastes the singular copied marker.
+        /// </summary>
+        public void PasteMarker()
+        {
+            if (!markerCopy)
+            {
+                EditorManager.inst.DisplayNotification("No copied Marker yet!", 1.5f, EditorManager.NotificationType.Error);
+                return;
+            }
+
+            var marker = markerCopy.Copy();
+            marker.time = RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsPasted.Value && EditorConfig.Instance.BPMSnapsMarkers.Value ? RTEditor.SnapToBPM(EditorManager.inst.CurrentAudioPos) : EditorManager.inst.CurrentAudioPos;
+            GameData.Current.data.markers.Add(marker);
+            CreateMarker(GameData.Current.data.markers.Count - 1);
+            OrderMarkers();
+            EditorManager.inst.DisplayNotification("Pasted Marker", 1.5f, EditorManager.NotificationType.Success);
+        }
+
+        /// <summary>
         /// Pastes all copied Markers to the level.
         /// </summary>
         public void PasteMarkers()
@@ -1395,11 +1424,20 @@ namespace BetterLegacy.Editor.Managers
                         }
                         break;
                     }
+                case AnnotationTool.Select: {
+                        if (Input.GetMouseButtonDown(0))
+                            SelectAtPosition(pos);
+                        break;
+                    }
             }
         }
 
         void BeginMove(Vector2 pos)
         {
+            if (!CurrentMarker || !CurrentMarker.Marker)
+                return;
+
+            selectedCount = !CurrentMarker.Marker.annotations.IsEmpty() ? CurrentMarker.Marker.annotations.Count(x => x.selected) : 0;
             startMovePos = pos;
             movingAnnotations = true;
             pointsCache.Clear();
@@ -1418,6 +1456,9 @@ namespace BetterLegacy.Editor.Managers
             for (int i = 0; i < CurrentMarker.Marker.annotations.Count; i++)
             {
                 var annotation = CurrentMarker.Marker.annotations[i];
+                if (selectedCount != 0 && !annotation.selected)
+                    continue;
+
                 for (int j = 0; j < annotation.points.Count; j++)
                 {
                     var origPoint = pointsCache[i][j];
@@ -1496,6 +1537,19 @@ namespace BetterLegacy.Editor.Managers
                 };
                 mirrorVerticalStroke.points.Add(new Vector2(pos.x, -pos.y));
             }
+
+            if (Settings.mirrorDrawingHorizontal && Settings.mirrorDrawingVertical)
+            {
+                mirrorDiagonalStroke = new Annotation
+                {
+                    color = Settings.color,
+                    hexColor = Settings.hexColor,
+                    opacity = Settings.opacity,
+                    thickness = Settings.thickness,
+                    fixedCamera = Settings.fixedCamera,
+                };
+                mirrorDiagonalStroke.points.Add(new Vector2(-pos.x, -pos.y));
+            }
         }
 
         void ContinueStroke(Vector2 pos)
@@ -1505,6 +1559,8 @@ namespace BetterLegacy.Editor.Managers
                 ContinueStroke(mirrorHorizontalStroke, new Vector2(-pos.x, pos.y));
             if (mirrorVerticalStroke)
                 ContinueStroke(mirrorVerticalStroke, new Vector2(pos.x, -pos.y));
+            if (mirrorDiagonalStroke)
+                ContinueStroke(mirrorDiagonalStroke, new Vector2(-pos.x, -pos.y));
         }
 
         void ContinueStroke(Annotation annotation, Vector2 pos)
@@ -1535,9 +1591,12 @@ namespace BetterLegacy.Editor.Managers
                 CurrentMarker.Marker.annotations.Add(mirrorHorizontalStroke);
             if (mirrorVerticalStroke && mirrorVerticalStroke.points.Count > 1)
                 CurrentMarker.Marker.annotations.Add(mirrorVerticalStroke);
+            if (mirrorDiagonalStroke && mirrorDiagonalStroke.points.Count > 1)
+                CurrentMarker.Marker.annotations.Add(mirrorDiagonalStroke);
             var cache = currentStroke;
             var horizontalCache = mirrorHorizontalStroke;
             var verticalCache = mirrorVerticalStroke;
+            var diagonalCache = mirrorDiagonalStroke;
             EditorManager.inst.history.Add(new History.Command("Draw Annotation",
                 () =>
                 {
@@ -1548,25 +1607,30 @@ namespace BetterLegacy.Editor.Managers
                         CurrentMarker.Marker.annotations.Add(horizontalCache);
                     if (verticalCache && verticalCache.points.Count > 1)
                         CurrentMarker.Marker.annotations.Add(verticalCache);
+                    if (diagonalCache && diagonalCache.points.Count > 1)
+                        CurrentMarker.Marker.annotations.Add(diagonalCache);
                 },
                 () =>
                 {
                     CurrentMarker.Marker.annotations.RemoveAt(count);
                     if (horizontalCache)
                         CurrentMarker.Marker.annotations.RemoveAt(count);
-                    if (mirrorVerticalStroke)
+                    if (verticalCache)
+                        CurrentMarker.Marker.annotations.RemoveAt(count);
+                    if (diagonalCache)
                         CurrentMarker.Marker.annotations.RemoveAt(count);
                 }));
             currentStroke = null;
             mirrorHorizontalStroke = null;
             mirrorVerticalStroke = null;
+            mirrorDiagonalStroke = null;
             drawingAnnotation = false;
         }
 
         void EraseAtPosition(Vector2 pos)
         {
             var rSq = eraserRadius * eraserRadius;
-
+            selectedCount = !CurrentMarker.Marker.annotations.IsEmpty() ? CurrentMarker.Marker.annotations.Count(x => x.selected) : 0;
             var time = AudioManager.inst.CurrentAudioSource.time;
             for (int i = 0; i < GameData.Current.data.markers.Count; i++)
             {
@@ -1591,7 +1655,7 @@ namespace BetterLegacy.Editor.Managers
 
                             point = RTMath.Move(RTMath.Rotate(point * zoom, rot), camPos);
                         }
-                        if (RTMath.Distance(point, pos) <= rSq)
+                        if ((selectedCount == 0 || annotation.selected) && RTMath.Distance(point, pos) <= rSq)
                         {
                             shouldRemove = true;
                             pointIndex = p;
@@ -1602,6 +1666,7 @@ namespace BetterLegacy.Editor.Managers
 
                     var cache = annotation.Copy();
                     var annotationCopy = annotation.Copy();
+                    annotationCopy.selected = annotation.selected;
                     annotation.points.RemoveRange(pointIndex, annotationCopy.points.Count - pointIndex);
                     annotationCopy.points.RemoveRange(0, pointIndex);
                     if (!annotationCopy.points.IsEmpty())
@@ -1630,7 +1695,7 @@ namespace BetterLegacy.Editor.Managers
         void DeleteAtPosition(Vector2 pos)
         {
             var rSq = eraserRadius * eraserRadius;
-
+            selectedCount = !CurrentMarker.Marker.annotations.IsEmpty() ? CurrentMarker.Marker.annotations.Count(x => x.selected) : 0;
             var time = AudioManager.inst.CurrentAudioSource.time;
             for (int i = 0; i < GameData.Current.data.markers.Count; i++)
             {
@@ -1654,7 +1719,8 @@ namespace BetterLegacy.Editor.Managers
 
                             point = RTMath.Move(RTMath.Rotate(point * zoom, rot), camPos);
                         }
-                        if (RTMath.Distance(point, pos) <= rSq)
+
+                        if (selectedCount != 0 && annotation.selected || RTMath.Distance(point, pos) <= rSq)
                             shouldRemove = true;
                     }
                     if (!shouldRemove)
@@ -1677,7 +1743,7 @@ namespace BetterLegacy.Editor.Managers
         void BucketAtPosition(Vector2 pos)
         {
             var rSq = bucketRadius * bucketRadius;
-
+            selectedCount = !CurrentMarker.Marker.annotations.IsEmpty() ? CurrentMarker.Marker.annotations.Count(x => x.selected) : 0;
             var time = AudioManager.inst.CurrentAudioSource.time;
             for (int i = 0; i < GameData.Current.data.markers.Count; i++)
             {
@@ -1701,7 +1767,7 @@ namespace BetterLegacy.Editor.Managers
                             point = RTMath.Move(RTMath.Rotate(point * zoom, rot), camPos);
                         }
 
-                        if (RTMath.Distance(point, pos) <= rSq)
+                        if (selectedCount != 0 && annotation.selected || RTMath.Distance(point, pos) <= rSq)
                             shouldBucket = true;
                     }
                     if (shouldBucket)
@@ -1715,10 +1781,59 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
+        void SelectAtPosition(Vector2 pos)
+        {
+            var rSq = selectRadius * selectRadius;
+
+            var time = AudioManager.inst.CurrentAudioSource.time;
+            for (int i = 0; i < GameData.Current.data.markers.Count; i++)
+            {
+                var marker = GameData.Current.data.markers[i];
+                if (!IsInMarkerArea(marker, time))
+                    continue;
+
+                for (int j = 0; j < marker.annotations.Count; j++)
+                {
+                    var annotation = marker.annotations[j];
+                    var shouldSelect = false;
+                    for (int p = 0; p < annotation.points.Count; p++)
+                    {
+                        var point = annotation.points[p];
+                        if (annotation.fixedCamera)
+                        {
+                            var camPos = RTLevel.Cameras.FG.transform.position;
+                            var rot = RTLevel.Cameras.FG.transform.eulerAngles.z;
+                            var zoom = RTLevel.Cameras.FG.orthographicSize / 20f;
+
+                            point = RTMath.Move(RTMath.Rotate(point * zoom, rot), camPos);
+                        }
+
+                        if (RTMath.Distance(point, pos) <= rSq)
+                            shouldSelect = true;
+                    }
+                    if (shouldSelect)
+                        annotation.selected = !annotation.selected;
+                }
+            }
+        }
+
         void AbortActiveStroke()
         {
             currentStroke = null;
             drawingAnnotation = false;
+        }
+
+        /// <summary>
+        /// Deselects all selected annotations.
+        /// </summary>
+        public void DeselectAllAnnotations()
+        {
+            for (int i = 0; i < GameData.Current.data.markers.Count; i++)
+            {
+                var marker = GameData.Current.data.markers[i];
+                for (int j = 0; j < marker.annotations.Count; j++)
+                    marker.annotations[j].selected = false;
+            }
         }
 
         /// <summary>
@@ -1727,12 +1842,16 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="direction">Direction to flip.</param>
         public void FlipAnnotations(Direction direction)
         {
+            selectedCount = !CurrentMarker.Marker.annotations.IsEmpty() ? CurrentMarker.Marker.annotations.Count(x => x.selected) : 0;
             switch (direction)
             {
                 case Direction.Horizontal: {
                         for (int i = 0; i < CurrentMarker.Marker.annotations.Count; i++)
                         {
                             var annotation = CurrentMarker.Marker.annotations[i];
+                            if (selectedCount != 0 && !annotation.selected)
+                                continue;
+
                             for (int j = 0; j < annotation.points.Count; j++)
                                 annotation.points[j] = new Vector2(-annotation.points[j].x, annotation.points[j].y);
                         }
@@ -1742,6 +1861,9 @@ namespace BetterLegacy.Editor.Managers
                         for (int i = 0; i < CurrentMarker.Marker.annotations.Count; i++)
                         {
                             var annotation = CurrentMarker.Marker.annotations[i];
+                            if (selectedCount != 0 && !annotation.selected)
+                                continue;
+
                             for (int j = 0; j < annotation.points.Count; j++)
                                 annotation.points[j] = new Vector2(annotation.points[j].x, -annotation.points[j].y);
                         }
@@ -1761,7 +1883,8 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            copiedAnnotations = new List<Annotation>(CurrentMarker.Marker.annotations);
+            selectedCount = !CurrentMarker.Marker.annotations.IsEmpty() ? CurrentMarker.Marker.annotations.Count(x => x.selected) : 0;
+            copiedAnnotations = new List<Annotation>(selectedCount == 0 ? CurrentMarker.Marker.annotations : CurrentMarker.Marker.annotations.Where(x => x.selected));
             EditorManager.inst.DisplayNotification("Copied all annotations from the current marker!", 2f, EditorManager.NotificationType.Success);
         }
 
@@ -1788,7 +1911,11 @@ namespace BetterLegacy.Editor.Managers
             {
                 if (!CurrentMarker || !CurrentMarker.Marker)
                     return;
-                CurrentMarker.Marker.annotations.Clear();
+                selectedCount = !CurrentMarker.Marker.annotations.IsEmpty() ? CurrentMarker.Marker.annotations.Count(x => x.selected) : 0;
+                if (selectedCount != 0)
+                    CurrentMarker.Marker.annotations.RemoveAll(x => x.selected);
+                else
+                    CurrentMarker.Marker.annotations.Clear();
             });
 
         #endregion

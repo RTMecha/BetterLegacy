@@ -57,6 +57,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #endregion
 
+        public bool selected;
+
         #endregion
 
         #region Functions

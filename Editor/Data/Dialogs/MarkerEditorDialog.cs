@@ -187,10 +187,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
             new Labels(Labels.InitSettings.Default.Parent(LeftContent).Name("annotation_label"), "Annotation");
 
             var toolsParent = new LayoutGroupElement(HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f).ChildControlWidth(false).ChildForceExpandWidth(false),
-                new SpacerElement()
-                {
-                    size = new Vector2(16f, 32f),
-                },
                 new ButtonElement(ButtonElement.Type.Icon, "Copy", RTMarkerEditor.inst.CopyAnnotations, tooltipGroup: "Copy Annotations")
                 {
                     buttonThemeGroup = ThemeGroup.Copy,
@@ -230,6 +226,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     AnnotationTool.Delete => "core/sprites/icons/operations/delete.png",
                     AnnotationTool.Bucket => "core/sprites/icons/operations/bucket.png",
                     AnnotationTool.Move => "core/sprites/icons/empty.png",
+                    AnnotationTool.Select => "core/sprites/icons/operations/down.png",
                     _ => "core/sprites/icons/operations/close.png",
                 }));
 
@@ -239,6 +236,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                 if (tool != AnnotationTool.None)
                     TooltipHelper.AssignTooltip(gameObject, tool.ToString() + " Annotation");
+                if (tool == AnnotationTool.Select)
+                    EditorContextMenu.AddContextMenu(gameObject,
+                        new ButtonElement("Deselect All", RTMarkerEditor.inst.DeselectAllAnnotations));
 
                 AnnotationToolButtons.Add(toolButton);
             }

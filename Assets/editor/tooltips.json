@@ -545,6 +545,16 @@
           }
         ]
       }, // Move Annotation
+      {
+        "name": "Select Annotation",
+        "tooltips": [
+          {
+            "desc": "Selects annotations.",
+            "hint": "Click on an annotation to select it. Click again to unselect it.",
+            "lang": 0
+          }
+        ]
+      }, // Select Annotation
 
       {
         "name": "Copy Annotations",

@@ -2429,6 +2429,10 @@ namespace BetterLegacy
         /// Moves the annotations.
         /// </summary>
         Move,
+        /// <summary>
+        /// Selects annotations.
+        /// </summary>
+        Select,
         // Shape? + text???
     }
 
