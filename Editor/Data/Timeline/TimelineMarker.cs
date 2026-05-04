@@ -335,7 +335,8 @@ namespace BetterLegacy.Editor.Data.Timeline
         /// <param name="zoom">Timeline zoom.</param>
         public void RenderArea(float duration, float zoom)
         {
-            Area.rectTransform.sizeDelta = new Vector2(duration * zoom, 0f);
+            if (Area)
+                Area.rectTransform.sizeDelta = new Vector2(duration * zoom, 0f);
         }
 
         /// <summary>

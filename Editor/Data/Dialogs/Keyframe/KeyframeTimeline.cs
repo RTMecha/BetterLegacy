@@ -2787,6 +2787,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 timelineMarker.Line = gameObject.transform.Find("line").GetComponent<Image>();
                 timelineMarker.Text = gameObject.GetComponentInChildren<Text>();
                 timelineMarker.HoverTooltip = gameObject.GetComponent<HoverTooltip>();
+                timelineMarker.Area = timelineMarker.Line.transform.GetChild(0).GetComponent<Image>();
 
                 var markerColor = timelineMarker.Color;
 
