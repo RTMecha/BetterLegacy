@@ -2733,6 +2733,10 @@ namespace BetterLegacy.Editor.Managers
                         }
                         break;
                     }
+                case EditorDialog.MARKER_EDITOR: {
+                        RTMarkerEditor.inst.CopyAnnotations();
+                        break;
+                    }
             }
         }
 
@@ -2815,6 +2819,10 @@ namespace BetterLegacy.Editor.Managers
 
                         AnimationEditor.inst.Dialog.Timeline.PasteKeyframes(AnimationEditor.inst.CurrentAnimation);
                         EditorManager.inst.DisplayNotification($"Pasted Object Keyframe{(KeyframeTimeline.copiedObjectKeyframes.Count > 1 ? "s" : string.Empty)}", 1f, EditorManager.NotificationType.Success);
+                        break;
+                    }
+                case EditorDialog.MARKER_EDITOR: {
+                        RTMarkerEditor.inst.PasteAnnotations();
                         break;
                     }
             }
@@ -3028,6 +3036,10 @@ namespace BetterLegacy.Editor.Managers
                                 if (pasted != null)
                                     list = pasted;
                             }), true);
+                        break;
+                    }
+                case EditorDialog.MARKER_EDITOR: {
+                        RTMarkerEditor.inst.ClearMarkerAnnotations();
                         break;
                     }
             }
