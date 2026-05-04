@@ -169,7 +169,6 @@ Next: Multiplayer Snapshots
 - Update modifier caches.  
 
 ### Interfaces
-- Change reload button to show in the center if there are no levels present.
 
 ### Editor
 - Multi language support.
