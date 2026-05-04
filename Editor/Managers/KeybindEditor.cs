@@ -1973,6 +1973,7 @@ namespace BetterLegacy.Editor.Managers
                 return;
 
             RTMarkerEditor.inst.annotationTool = (AnnotationTool)keybind.GetSettingOrDefault("Annotation Tool", 0);
+            EditorManager.inst.DisplayNotification($"Set annotation tool to {RTMarkerEditor.inst.annotationTool}", 2f, EditorManager.NotificationType.Success);
             RTMarkerEditor.inst.RenderAnnotationTool();
         }
 
@@ -1985,6 +1986,7 @@ namespace BetterLegacy.Editor.Managers
             if (num < 0)
                 num = EnumHelper.GetNames<AnnotationTool>().Length - 1;
             RTMarkerEditor.inst.annotationTool = (AnnotationTool)num;
+            EditorManager.inst.DisplayNotification($"Set annotation tool to {RTMarkerEditor.inst.annotationTool}", 2f, EditorManager.NotificationType.Success);
             RTMarkerEditor.inst.RenderAnnotationTool();
         }
         
@@ -1997,6 +1999,7 @@ namespace BetterLegacy.Editor.Managers
             if (num >= EnumHelper.GetNames<AnnotationTool>().Length)
                 num = 0;
             RTMarkerEditor.inst.annotationTool = (AnnotationTool)num;
+            EditorManager.inst.DisplayNotification($"Set annotation tool to {RTMarkerEditor.inst.annotationTool}", 2f, EditorManager.NotificationType.Success);
             RTMarkerEditor.inst.RenderAnnotationTool();
         }
 
