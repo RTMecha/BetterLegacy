@@ -65,6 +65,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             MarkerEditor.inst.right = dialog.Find("data/right");
 
             var scrollView = EditorPrefabHolder.Instance.ScrollView.Duplicate(RTMarkerEditor.inst.transform, "Scroll View");
+            scrollView.transform.localScale = Vector3.one;
             LeftContent = scrollView.transform.Find("Viewport/Content").AsRT();
 
             scrollView.transform.AsRT().sizeDelta = new Vector2(735f, 690f);
@@ -250,6 +251,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             new Labels(Labels.InitSettings.Default.Parent(LeftContent).Name("annotation hex color_label"), "Annotation Hex Color");
             var annotationHexColor = NameField.gameObject.Duplicate(LeftContent, "annotation hex color");
             AnnotationHexColorField = annotationHexColor.GetComponent<InputField>();
+            AnnotationHexColorField.GetPlaceholderText().text = "Set hex value...";
             EditorThemeManager.ApplyInputField(AnnotationHexColorField);
 
             new Labels(Labels.InitSettings.Default.Parent(LeftContent).Name("annotation opacity_label"), "Annotation Opacity");
