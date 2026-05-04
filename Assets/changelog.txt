@@ -1,42 +1,23 @@
-# snapshot-2026.4.1 - (Story Playtest) [Apr 15, 2026]
+# snapshot-2026.5.1 - (Story Playtest) [May 4, 2026]
 ## Features
 ### Core
-- Ported the end level music from the old development branch. This can be enabled / disabled via the new setting "Play End Level Music" in Config Manager > Core > Level.
-- Added "level_up" SFX.
-- Added "Offset Audio" value to most axis related modifiers (like copyAxis).
+- Added getCurrentArtistName and getCurrentSongTitle variable modifiers.
+- Added resetDiscordStatus action modifier.
+- Added "Smooth Reactive" setting to Config Manager > Core > Level. This setting smoothens the reactive behavior of Background Objects.
+- Added "forLoopPlayer" modifier. This modifier acts like forLoop but specifically for iterating through all players.
 
 ### Editor
-- Added Background Object creation settings to Config Manager > Editor > Creation.
+- Added "View Collection Levels On Click" setting to Config Manager > Editor > General.
+- Ported annotations for markers. These allow you to draw visual notes and plan out a level visually, whether it be a storyboard or just a concept.
+- Added "Show Current Marker Annotation" setting to Config Manager > Editor > Markers.
+- Added "Annotation Opacity" setting to Config Manager > Editor > Markers. Global multiplied opacity of all annotations.
+- Added "Annotation Other Layer Opacity" setting to Config Manager > Editor > Markers. Multiplied opacity of annotations that aren't set to show on the current editor layer.
+- Added "Annotations Display In Preview Mode" setting to Config Manager > Editor > Markers. With this setting on, annotations will appear in the playtest / preview mode.
+- Added SetAnnotationTool, PrevAnnotationTool and NextAnnotationTool keybinds.
 
 ## Changes
-### Story
-- Reworked Slime Boy Color finale segment.
-- Fixed readability on some Slime Boy Color attacks.
-- Changed some movement for BOSS 1.
-- Updated BOSS 1 dialogue.
-- Removed some dialogue from Crystal Tokyo.
-- Updated the themes in a couple story levels.
-- Reworked how you unlock a certain level.
-
 ### Core
-- animateObject modifiers with their time set to 0 no longer animates, instead it instantly sets the transform values.
-- Made the White On Black and Black On White themes more consistent with other themes.
-
-### Editor
-- Updating a prefab now updates all recursive sub prefabs.
-- Using the color picker now updates the preview of the color.
-- Theme effect colors no longer show 8 digit hex color codes if the opacity saving setting is off.
-- Prefab Objects copied from one level to another now copy their origin Prefabs.
-- Added a "Convert Colors to Hex Color" button to the Multi Object Editor keyframes tab.
-
-## Fixes
-- Fixed issues relating to April 1st.
-- Fixed the Editor file browser not showing up.
-- Fixed Vector2 Integer settings scrolling as a float instead of as an integer.
-- Fixed prefab parenting not being consistent.
-- Fixed and tweaked keyframe custom UI displays context menu buttons.
-- Fixed ForceSnapBPM applying snap to objects even if the mouse is over the keyframe timeline.
-- Fixed color picker hue / saturation selection not displaying the correct value when the popup opens.
-- Fixed some story save issues that prevented challenge & speed modes even if the level has the SS rank.
-- Fixed Play All Cutscenes in story not working.
-- Fixed end level music still playing after closing the end level interface in some cases.
+- Color slot related modifiers now use the associated event keyframe color (background, timeline and player tail colors) rather than the base theme color.
+- Support Discord status changes.
+- Tweaked forLoop behavior.
+- Made the default themes effect colors more consistent.
