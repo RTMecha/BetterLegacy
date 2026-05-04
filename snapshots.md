@@ -3,6 +3,11 @@
 ### Editor
 - Added Mirror toggles for annotation.
 - Added Flip buttons for annotation.
+- Added Select annotation tool. This allows you to select specific annotations to move, copy, etc.
+
+## Changes
+### Editor
+- Made pasting markers a little more consistent.
 
 ## Fixes
 - Fixed Marker Editor dialog scale issue.
