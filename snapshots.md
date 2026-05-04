@@ -8,6 +8,7 @@
 
 ### Editor
 - Added "View Collection Levels On Click" setting to Config Manager > Editor > General.
+- Ported annotations for markers. These allow you to draw visual notes and plan out a level visually, whether it be a storyboard or just a concept.
 
 ## Changes
 ### Core
