@@ -623,11 +623,11 @@ namespace BetterLegacy.Editor.Managers
             Dialog.AnnotationThicknessField.OnValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
-                    annotationThickness = RTMath.Clamp(num, 0.1f, 10f);
+                    annotationThickness = RTMath.Clamp(num, 0.1f, 100f);
             });
 
-            TriggerHelper.AddEventTriggers(Dialog.AnnotationThicknessField.inputField.gameObject, TriggerHelper.ScrollDelta(Dialog.AnnotationThicknessField.inputField, min: 0.1f, max: 10f));
-            TriggerHelper.IncreaseDecreaseButtons(Dialog.AnnotationThicknessField, min: 0.1f, max: 10f);
+            TriggerHelper.AddEventTriggers(Dialog.AnnotationThicknessField.inputField.gameObject, TriggerHelper.ScrollDelta(Dialog.AnnotationThicknessField.inputField, min: 0.1f, max: 100f));
+            TriggerHelper.IncreaseDecreaseButtons(Dialog.AnnotationThicknessField, min: 0.1f, max: 100f);
         }
 
         /// <summary>
