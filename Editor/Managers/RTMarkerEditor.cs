@@ -1276,8 +1276,16 @@ namespace BetterLegacy.Editor.Managers
             if (!ProjectArrhythmia.State.IsEditing || !Dialog || !Dialog.IsCurrent || EventSystem.current.IsPointerOverGameObject())
                 return;
 
-            if (!CurrentMarker || CurrentMarker.Duration == 0f)
+            // don't draw if Example is being dragged.
+            if (Companion.Entity.Example.Current && Companion.Entity.Example.Current.Dragging)
                 return;
+
+            if (!CurrentMarker || CurrentMarker.Duration == 0f)
+            {
+                if (Input.GetMouseButtonDown(0) && annotationTool != AnnotationTool.None)
+                    EditorManager.inst.DisplayNotification($"Cannot {annotationTool.ToString().ToLower()} if marker duration is set to 0!", 3f, EditorManager.NotificationType.Warning);
+                return;
+            }
 
             var pos = RTLevel.Cameras.FG.ScreenToWorldPoint(Input.mousePosition);
 
