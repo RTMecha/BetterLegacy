@@ -62,6 +62,11 @@ namespace BetterLegacy.Editor.Data.Timeline
         public Image Line { get; set; }
 
         /// <summary>
+        /// Area of the timeline marker.
+        /// </summary>
+        public Image Area { get; set; }
+
+        /// <summary>
         /// Start flag of the timeline marker.
         /// </summary>
         public Image FlagStart { get; set; }
@@ -110,6 +115,19 @@ namespace BetterLegacy.Editor.Data.Timeline
         {
             get => Marker.time;
             set => Marker.time = value;
+        }
+
+        /// <summary>
+        /// Duration of the marker.
+        /// </summary>
+        public float Duration
+        {
+            get => Marker.duration;
+            set
+            {
+                Marker.duration = value;
+                RenderArea();
+            }
         }
 
         /// <summary>
@@ -192,6 +210,7 @@ namespace BetterLegacy.Editor.Data.Timeline
             RectTransform = gameObject.transform.AsRT();
             Handle = markerStorage.handle;
             Line = markerStorage.line;
+            Area = markerStorage.area;
             Text = markerStorage.label;
             FlagStart = markerStorage.flagStart;
             FlagEnd = markerStorage.flagEnd;
@@ -260,6 +279,7 @@ namespace BetterLegacy.Editor.Data.Timeline
 
             GameObject.SetActive(EditorConfig.Instance.ShowMarkersOnAllLayers.Value || Marker.VisibleOnLayer(EditorTimeline.inst.Layer));
             RenderPosition();
+            RenderArea();
             RenderTooltip(markerColor);
             RenderName();
             RenderTextWidth();
@@ -301,6 +321,21 @@ namespace BetterLegacy.Editor.Data.Timeline
         {
             RectTransform.sizeDelta = new Vector2(12f, 12f);
             RectTransform.anchoredPosition = new Vector2(time * zoom - offset, -12f);
+        }
+
+        /// <summary>
+        /// Renders the timeline marker area.
+        /// </summary>
+        public void RenderArea() => RenderArea(Duration, EditorManager.inst.Zoom);
+
+        /// <summary>
+        /// Renders the timeline marker area.
+        /// </summary>
+        /// <param name="duration">Marker duration.</param>
+        /// <param name="zoom">Timeline zoom.</param>
+        public void RenderArea(float duration, float zoom)
+        {
+            Area.rectTransform.sizeDelta = new Vector2(duration * zoom, 0f);
         }
 
         /// <summary>

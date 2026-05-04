@@ -2792,6 +2792,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                 timelineMarker.GameObject.SetActive(true);
                 timelineMarker.RenderPosition(marker.time - (beatmapObject ? beatmapObject.StartTime : 0f), ObjEditor.inst.Zoom * 14f, 0f);
+                timelineMarker.RenderArea(marker.duration, ObjEditor.inst.Zoom * 14f);
                 timelineMarker.RenderTooltip(markerColor);
                 timelineMarker.RenderName();
                 timelineMarker.RenderTextWidth(EditorConfig.Instance.ObjectMarkerTextWidth.Value);

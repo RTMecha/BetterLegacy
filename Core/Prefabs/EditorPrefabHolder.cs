@@ -608,5 +608,8 @@ namespace BetterLegacy.Core.Prefabs
 
         [SerializeField]
         public Image flagEnd;
+
+        [SerializeField]
+        public Image area;
     }
 }
