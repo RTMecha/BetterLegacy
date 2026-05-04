@@ -39,6 +39,8 @@ namespace BetterLegacy.Editor.Components
 
         Renderer renderer;
 
+        public static bool clicked;
+
         #region Highlighting
 
         bool hovered;
@@ -123,11 +125,12 @@ namespace BetterLegacy.Editor.Components
             selectedKeyframe = null;
             setKeyframeValues = false;
             firstDirection = Axis.Static;
+            clicked = false;
         }
 
         void OnMouseDown()
         {
-            if (!ProjectArrhythmia.State.IsEditing || CoreHelper.IsUsingInputField || EventSystem.current.IsPointerOverGameObject())
+            if (!ProjectArrhythmia.State.IsEditing || CoreHelper.IsUsingInputField || EventSystem.current.IsPointerOverGameObject() || RTMarkerEditor.inst && RTMarkerEditor.inst.Dialog.IsCurrent && RTMarkerEditor.inst.annotationTool != AnnotationTool.None)
                 return;
 
             // don't drag object if Example is being dragged.
@@ -136,6 +139,7 @@ namespace BetterLegacy.Editor.Components
 
             startDragTime = Time.time;
 
+            clicked = true;
             EditorTimeline.inst.SelectObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
         }
 
@@ -168,7 +172,7 @@ namespace BetterLegacy.Editor.Components
         void OnMouseDrag()
         {
             dragTime = Time.time;
-            if (!ProjectArrhythmia.State.IsEditing || dragTime <= startDragTime + 0.15f || EditorTimeline.inst.SelectedObjectCount >= 2 || EventSystem.current.IsPointerOverGameObject())
+            if (!ProjectArrhythmia.State.IsEditing || dragTime <= startDragTime + 0.15f || EditorTimeline.inst.SelectedObjectCount >= 2 || EventSystem.current.IsPointerOverGameObject() || RTMarkerEditor.inst && RTMarkerEditor.inst.Dialog.IsCurrent && RTMarkerEditor.inst.annotationTool != AnnotationTool.None)
                 return;
 
             var vector = new Vector3(Input.mousePosition.x, Input.mousePosition.y, transform.localPosition.z);
@@ -268,7 +272,7 @@ namespace BetterLegacy.Editor.Components
 
         void Update()
         {
-            if (!ProjectArrhythmia.State.IsEditing)
+            if (!ProjectArrhythmia.State.IsEditing || RTMarkerEditor.inst && RTMarkerEditor.inst.Dialog.IsCurrent && RTMarkerEditor.inst.annotationTool != AnnotationTool.None)
             {
                 hovered = false;
                 if (this.selected)
@@ -384,7 +388,7 @@ namespace BetterLegacy.Editor.Components
             }
         }
 
-        Color Highlight(Color currentColor) => Input.GetKey(KeyCode.LeftShift) ? new Color(
+        public static Color Highlight(Color currentColor) => Input.GetKey(KeyCode.LeftShift) ? new Color(
                 currentColor.r > 0.9f ? -HighlightDoubleColor.r : HighlightDoubleColor.r,
                 currentColor.g > 0.9f ? -HighlightDoubleColor.g : HighlightDoubleColor.g,
                 currentColor.b > 0.9f ? -HighlightDoubleColor.b : HighlightDoubleColor.b,

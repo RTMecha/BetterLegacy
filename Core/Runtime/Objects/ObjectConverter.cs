@@ -428,7 +428,10 @@ namespace BetterLegacy.Core.Runtime.Objects
             renderer.material = LegacyResources.objectMaterial;
 
             CoreHelper.Destroy(gameObject.GetComponent<SelectBackgroundInEditor>());
-            CoreHelper.Destroy(gameObject.GetComponent<BoxCollider>());
+            if (!ProjectArrhythmia.State.InEditor)
+                CoreHelper.Destroy(gameObject.GetComponent<BoxCollider>());
+            else
+                gameObject.AddComponent<SelectBackgroundObject>().backgroundObject = backgroundObject;
 
             visualFadeObjects.Add(new VisualFadeObject(gameObject, renderer, gameObject.GetComponent<MeshFilter>()));
 
