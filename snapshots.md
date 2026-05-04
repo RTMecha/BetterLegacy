@@ -9,6 +9,11 @@
 ### Editor
 - Added "View Collection Levels On Click" setting to Config Manager > Editor > General.
 - Ported annotations for markers. These allow you to draw visual notes and plan out a level visually, whether it be a storyboard or just a concept.
+- Added "Show Current Marker Annotation" setting to Config Manager > Editor > Markers.
+- Added "Annotation Opacity" setting to Config Manager > Editor > Markers. Global multiplied opacity of all annotations.
+- Added "Annotation Other Layer Opacity" setting to Config Manager > Editor > Markers. Multiplied opacity of annotations that aren't set to show on the current editor layer.
+- Added "Annotations Display In Preview Mode" setting to Config Manager > Editor > Markers. With this setting on, annotations will appear in the playtest / preview mode.
+- Added SetAnnotationTool, PrevAnnotationTool and NextAnnotationTool keybinds.
 
 ## Changes
 ### Core
