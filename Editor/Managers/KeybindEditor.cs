@@ -99,6 +99,7 @@ namespace BetterLegacy.Editor.Managers
         public Dictionary<string, List<Dropdown.OptionData>> keybindSettingEnumValues = new Dictionary<string, List<Dropdown.OptionData>>
         {
             { "search prefab using", CoreHelper.StringToOptionData("Index", "Name", "ID") },
+            { "annotation tool", CoreHelper.ToOptionData<AnnotationTool>() },
         };
 
         #region Transform
@@ -130,7 +131,7 @@ namespace BetterLegacy.Editor.Managers
         #endregion
 
         #region Functions
-        
+
         #region Init
 
         public override void OnInit()
@@ -232,6 +233,10 @@ namespace BetterLegacy.Editor.Managers
                     new KeybindFunction(nameof(CreateNewMarker), CreateNewMarker),
                     new KeybindFunction(nameof(JumpToNextMarker), JumpToNextMarker),
                     new KeybindFunction(nameof(JumpToPreviousMarker), JumpToPreviousMarker),
+
+                    new KeybindFunction(nameof(SetAnnotationTool), SetAnnotationTool, new Keybind.Setting("Annotation Tool", "0", ValueType.Enum)),
+                    new KeybindFunction(nameof(PrevAnnotationTool), PrevAnnotationTool),
+                    new KeybindFunction(nameof(NextAnnotationTool), NextAnnotationTool),
 
                     #endregion
 
@@ -588,7 +593,7 @@ namespace BetterLegacy.Editor.Managers
             Dialog.SelectActionButton.OnClick.NewListener(OpenFunctionPopup);
 
             Dialog.ClearKeys();
-            
+
             var add = EditorPrefabHolder.Instance.CreateAddButton(Dialog.KeysContent, "Add Key");
             add.Text = "Add new Key";
             add.OnClick.NewListener(() =>
@@ -1295,20 +1300,16 @@ namespace BetterLegacy.Editor.Managers
         {
             var value = !RTEditor.inst.editorInfo.bpmSnapActive;
             RTEditor.inst.editorInfo.bpmSnapActive = value;
-            EditorManager.inst.DisplayNotification($"Set BPM snap {(value ? "on": "off")}!", 2f, EditorManager.NotificationType.Success);
+            EditorManager.inst.DisplayNotification($"Set BPM snap {(value ? "on" : "off")}!", 2f, EditorManager.NotificationType.Success);
         }
-        
+
         public void ForceSnapBPM(Keybind keybind)
         {
             var markers = GameData.Current.data.markers;
             var currentMarker = MarkerEditor.inst.currentMarker;
             if (RTMarkerEditor.inst.Dialog.IsCurrent && currentMarker >= 0 && currentMarker < markers.Count)
             {
-                var marker = markers[currentMarker];
-                var time = MarkerEditor.inst.left.Find("time/input").GetComponent<InputField>();
-
-                time.text = RTEditor.SnapToBPM(marker.time).ToString();
-
+                RTMarkerEditor.inst.Dialog.TimeField.Text = RTEditor.SnapToBPM(markers[currentMarker].time).ToString();
                 return;
             }
 
@@ -1488,7 +1489,7 @@ namespace BetterLegacy.Editor.Managers
 
             RTLevel.Current?.RecalculateObjectStates();
         }
-        
+
         public void SetSongTimeAutokill(Keybind keybind)
         {
             foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
@@ -1713,7 +1714,7 @@ namespace BetterLegacy.Editor.Managers
             if (index - 1 >= 0)
                 EditorTimeline.inst.SetCurrentObject(EditorTimeline.inst.timelineObjects[index - 1], EditorConfig.Instance.BringToSelection.Value);
         }
-        
+
         public void HideSelection(Keybind keybind)
         {
             int hiddenCount = 0;
@@ -1830,7 +1831,7 @@ namespace BetterLegacy.Editor.Managers
             if (RTEditor.inst.SelectObjectHelper && RTEditor.inst.SelectObjectHelper.dragging)
                 RTEditor.inst.SelectObjectHelper.firstDirection = SelectObject.Axis.PosX;
         }
-        
+
         public void SetObjectDragHelperAxisY(Keybind keybind)
         {
             if (RTEditor.inst.SelectObjectHelper && RTEditor.inst.SelectObjectHelper.dragging)
@@ -1964,6 +1965,39 @@ namespace BetterLegacy.Editor.Managers
 
             if (RTMarkerEditor.inst.timelineMarkers.TryFind(x => x.Marker.id == marker.id, out TimelineMarker timelineMarker))
                 RTMarkerEditor.inst.SetCurrentMarker(timelineMarker, true, EditorConfig.Instance.BringToSelection.Value, false);
+        }
+
+        public void SetAnnotationTool(Keybind keybind)
+        {
+            if (!RTMarkerEditor.inst.Dialog.IsCurrent)
+                return;
+
+            RTMarkerEditor.inst.annotationTool = (AnnotationTool)keybind.GetSettingOrDefault("Annotation Tool", 0);
+            RTMarkerEditor.inst.RenderAnnotationTool();
+        }
+
+        public void PrevAnnotationTool(Keybind keybind)
+        {
+            if (!RTMarkerEditor.inst.Dialog.IsCurrent)
+                return;
+
+            var num = (int)RTMarkerEditor.inst.annotationTool - 1;
+            if (num < 0)
+                num = EnumHelper.GetNames<AnnotationTool>().Length - 1;
+            RTMarkerEditor.inst.annotationTool = (AnnotationTool)num;
+            RTMarkerEditor.inst.RenderAnnotationTool();
+        }
+        
+        public void NextAnnotationTool(Keybind keybind)
+        {
+            if (!RTMarkerEditor.inst.Dialog.IsCurrent)
+                return;
+
+            var num = (int)RTMarkerEditor.inst.annotationTool + 1;
+            if (num >= EnumHelper.GetNames<AnnotationTool>().Length)
+                num = 0;
+            RTMarkerEditor.inst.annotationTool = (AnnotationTool)num;
+            RTMarkerEditor.inst.RenderAnnotationTool();
         }
 
         #endregion
