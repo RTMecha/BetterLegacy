@@ -1,4 +1,4 @@
-﻿# snapshot-2026.4.2 - (Story Playtest) [Apr ??, 2026]
+﻿# snapshot-2026.5.1 - (Story Playtest) [May 4, 2026]
 ## Features
 ### Core
 - Added getCurrentArtistName and getCurrentSongTitle variable modifiers.
