@@ -3543,7 +3543,8 @@ namespace BetterLegacy.Editor.Managers
                     new SpacerElement(),
                     new ButtonElement("Clear Markers", RTMarkerEditor.inst.ClearMarkers),
                     new ButtonElement("Copy All Markers", RTMarkerEditor.inst.CopyAllMarkers),
-                    new ButtonElement("Paste Markers", RTMarkerEditor.inst.PasteMarkers)
+                    new ButtonElement("Paste", RTMarkerEditor.inst.PasteMarker),
+                    new ButtonElement("Paste All", RTMarkerEditor.inst.PasteMarkers)
                 });
 
             EditorContextMenu.AddContextMenu(checkpointButton,
