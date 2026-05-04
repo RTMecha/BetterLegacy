@@ -130,7 +130,7 @@ namespace BetterLegacy.Editor.Components
 
         void OnMouseDown()
         {
-            if (!ProjectArrhythmia.State.IsEditing || CoreHelper.IsUsingInputField || EventSystem.current.IsPointerOverGameObject() || RTMarkerEditor.inst && RTMarkerEditor.inst.Dialog.IsCurrent && RTMarkerEditor.inst.annotationTool != AnnotationTool.None)
+            if (!ProjectArrhythmia.State.IsEditing || CoreHelper.IsUsingInputField || EventSystem.current.IsPointerOverGameObject() || RTMarkerEditor.inst && RTMarkerEditor.inst.Dialog.IsCurrent && RTMarkerEditor.inst.Settings.tool != AnnotationTool.None)
                 return;
 
             // don't drag object if Example is being dragged.
@@ -172,7 +172,7 @@ namespace BetterLegacy.Editor.Components
         void OnMouseDrag()
         {
             dragTime = Time.time;
-            if (!ProjectArrhythmia.State.IsEditing || dragTime <= startDragTime + 0.15f || EditorTimeline.inst.SelectedObjectCount >= 2 || EventSystem.current.IsPointerOverGameObject() || RTMarkerEditor.inst && RTMarkerEditor.inst.Dialog.IsCurrent && RTMarkerEditor.inst.annotationTool != AnnotationTool.None)
+            if (!ProjectArrhythmia.State.IsEditing || dragTime <= startDragTime + 0.15f || EditorTimeline.inst.SelectedObjectCount >= 2 || EventSystem.current.IsPointerOverGameObject() || RTMarkerEditor.inst && RTMarkerEditor.inst.Dialog.IsCurrent && RTMarkerEditor.inst.Settings.tool != AnnotationTool.None)
                 return;
 
             var vector = new Vector3(Input.mousePosition.x, Input.mousePosition.y, transform.localPosition.z);
@@ -272,7 +272,7 @@ namespace BetterLegacy.Editor.Components
 
         void Update()
         {
-            if (!ProjectArrhythmia.State.IsEditing || RTMarkerEditor.inst && RTMarkerEditor.inst.Dialog.IsCurrent && RTMarkerEditor.inst.annotationTool != AnnotationTool.None)
+            if (!ProjectArrhythmia.State.IsEditing || RTMarkerEditor.inst && RTMarkerEditor.inst.Dialog.IsCurrent && RTMarkerEditor.inst.Settings.tool != AnnotationTool.None)
             {
                 hovered = false;
                 if (this.selected)

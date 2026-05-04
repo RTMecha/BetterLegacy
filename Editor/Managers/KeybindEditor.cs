@@ -1972,8 +1972,8 @@ namespace BetterLegacy.Editor.Managers
             if (!RTMarkerEditor.inst.Dialog.IsCurrent)
                 return;
 
-            RTMarkerEditor.inst.annotationTool = (AnnotationTool)keybind.GetSettingOrDefault("Annotation Tool", 0);
-            EditorManager.inst.DisplayNotification($"Set annotation tool to {RTMarkerEditor.inst.annotationTool}", 2f, EditorManager.NotificationType.Success);
+            RTMarkerEditor.inst.Settings.tool = (AnnotationTool)keybind.GetSettingOrDefault("Annotation Tool", 0);
+            EditorManager.inst.DisplayNotification($"Set annotation tool to {RTMarkerEditor.inst.Settings.tool}", 2f, EditorManager.NotificationType.Success);
             RTMarkerEditor.inst.RenderAnnotationTool();
         }
 
@@ -1982,11 +1982,11 @@ namespace BetterLegacy.Editor.Managers
             if (!RTMarkerEditor.inst.Dialog.IsCurrent)
                 return;
 
-            var num = (int)RTMarkerEditor.inst.annotationTool - 1;
+            var num = (int)RTMarkerEditor.inst.Settings.tool - 1;
             if (num < 0)
                 num = EnumHelper.GetNames<AnnotationTool>().Length - 1;
-            RTMarkerEditor.inst.annotationTool = (AnnotationTool)num;
-            EditorManager.inst.DisplayNotification($"Set annotation tool to {RTMarkerEditor.inst.annotationTool}", 2f, EditorManager.NotificationType.Success);
+            RTMarkerEditor.inst.Settings.tool = (AnnotationTool)num;
+            EditorManager.inst.DisplayNotification($"Set annotation tool to {RTMarkerEditor.inst.Settings.tool}", 2f, EditorManager.NotificationType.Success);
             RTMarkerEditor.inst.RenderAnnotationTool();
         }
         
@@ -1995,11 +1995,11 @@ namespace BetterLegacy.Editor.Managers
             if (!RTMarkerEditor.inst.Dialog.IsCurrent)
                 return;
 
-            var num = (int)RTMarkerEditor.inst.annotationTool + 1;
+            var num = (int)RTMarkerEditor.inst.Settings.tool + 1;
             if (num >= EnumHelper.GetNames<AnnotationTool>().Length)
                 num = 0;
-            RTMarkerEditor.inst.annotationTool = (AnnotationTool)num;
-            EditorManager.inst.DisplayNotification($"Set annotation tool to {RTMarkerEditor.inst.annotationTool}", 2f, EditorManager.NotificationType.Success);
+            RTMarkerEditor.inst.Settings.tool = (AnnotationTool)num;
+            EditorManager.inst.DisplayNotification($"Set annotation tool to {RTMarkerEditor.inst.Settings.tool}", 2f, EditorManager.NotificationType.Success);
             RTMarkerEditor.inst.RenderAnnotationTool();
         }
 

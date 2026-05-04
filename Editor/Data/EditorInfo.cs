@@ -167,6 +167,11 @@ namespace BetterLegacy.Editor.Data
         /// </summary>
         public CaptureSettings captureSettings = new CaptureSettings();
 
+        /// <summary>
+        /// Settings for marker annotation.
+        /// </summary>
+        public AnnotationSettings annotationSettings = new AnnotationSettings();
+
         public List<EditorGroup> editorGroups = new List<EditorGroup>();
 
         public FileFormat FileFormat => FileFormat.LSE;
@@ -332,7 +337,12 @@ namespace BetterLegacy.Editor.Data
 
             if (jn["misc"] != null)
             {
-                captureSettings?.ReadJSON(jn["misc"]["capture_settings"]);
+                if (jn["misc"]["capture_settings"] != null)
+                    captureSettings?.ReadJSON(jn["misc"]["capture_settings"]);
+                if (jn["capture"] != null)
+                    captureSettings?.ReadJSON(jn["capture"]);
+                if (jn["annotation"] != null)
+                    annotationSettings?.ReadJSON(jn["annotation"]);
 
                 if (jn["misc"]["bpm_analyzed"] != null)
                     analyzedBPM = jn["misc"]["bpm_analyzed"].AsBool;
@@ -405,7 +415,9 @@ namespace BetterLegacy.Editor.Data
             }
 
             if (captureSettings)
-                jn["misc"]["capture_settings"] = captureSettings.ToJSON();
+                jn["capture"] = captureSettings.ToJSON();
+            if (annotationSettings)
+                jn["annotation"] = annotationSettings.ToJSON();
 
             if (analyzedBPM)
                 jn["misc"]["bpm_analyzed"] = analyzedBPM;

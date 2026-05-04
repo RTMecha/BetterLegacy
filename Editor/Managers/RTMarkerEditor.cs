@@ -149,35 +149,52 @@ namespace BetterLegacy.Editor.Managers
 
         #region Annotation
 
-        public AnnotationTool annotationTool;
-
+        /// <summary>
+        /// The current annotation stroke.
+        /// </summary>
         public Annotation currentStroke;
+
+        /// <summary>
+        /// The current horizontally mirrored annotation stroke.
+        /// </summary>
         public Annotation mirrorHorizontalStroke;
+
+        /// <summary>
+        /// The current vertically mirrored annotation stroke.
+        /// </summary>
         public Annotation mirrorVerticalStroke;
 
-        public int annotationColor;
+        /// <summary>
+        /// Annotation settings.
+        /// </summary>
+        public AnnotationSettings Settings => RTEditor.inst?.editorInfo?.annotationSettings;
 
-        public string annotationHexColor;
-
-        public float annotationOpacity = 1f;
-
-        public float annotationThickness = 4f;
-
-        public bool annotationFixedCamera;
-
-        public bool mirrorDrawingHorizontal;
-        public bool mirrorDrawingVertical;
-
+        /// <summary>
+        /// If an annotation is currently being drawn.
+        /// </summary>
         public bool drawingAnnotation;
 
+        /// <summary>
+        /// Eraser radius.
+        /// </summary>
         public float eraserRadius = 0.5f;
 
+        /// <summary>
+        /// Bucket radius.
+        /// </summary>
         public float bucketRadius = 0.5f;
 
+        /// <summary>
+        /// Copied list of annotations.
+        /// </summary>
         public List<Annotation> copiedAnnotations = new List<Annotation>();
 
-        Vector2 startMovePos;
+        /// <summary>
+        /// If annotations are currently being translated (moved / rotated).
+        /// </summary>
         public bool movingAnnotations;
+
+        Vector2 startMovePos;
         List<List<Vector2>> pointsCache = new List<List<Vector2>>();
 
         #endregion
@@ -531,11 +548,11 @@ namespace BetterLegacy.Editor.Managers
             {
                 var index = i;
                 var button = Dialog.AnnotationToolButtons[i];
-                button.transform.GetChild(1).gameObject.SetActive(index == (int)annotationTool);
+                button.transform.GetChild(1).gameObject.SetActive(index == (int)Settings.tool);
                 button.onClick.NewListener(() =>
                 {
                     AbortActiveStroke();
-                    annotationTool = (AnnotationTool)index;
+                    Settings.tool = (AnnotationTool)index;
                     RenderAnnotationTool();
                 });
             }
@@ -546,10 +563,10 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void RenderAnnotationMirror()
         {
-            Dialog.AnnotationHorizontalMirrorToggle.SetIsOnWithoutNotify(mirrorDrawingHorizontal);
-            Dialog.AnnotationHorizontalMirrorToggle.OnValueChanged.NewListener(_val => mirrorDrawingHorizontal = _val);
-            Dialog.AnnotationVerticalMirrorToggle.SetIsOnWithoutNotify(mirrorDrawingVertical);
-            Dialog.AnnotationVerticalMirrorToggle.OnValueChanged.NewListener(_val => mirrorDrawingVertical = _val);
+            Dialog.AnnotationHorizontalMirrorToggle.SetIsOnWithoutNotify(Settings.mirrorDrawingHorizontal);
+            Dialog.AnnotationHorizontalMirrorToggle.OnValueChanged.NewListener(_val => Settings.mirrorDrawingHorizontal = _val);
+            Dialog.AnnotationVerticalMirrorToggle.SetIsOnWithoutNotify(Settings.mirrorDrawingVertical);
+            Dialog.AnnotationVerticalMirrorToggle.OnValueChanged.NewListener(_val => Settings.mirrorDrawingVertical = _val);
         }
 
         /// <summary>
@@ -567,21 +584,21 @@ namespace BetterLegacy.Editor.Managers
                 gameObject.transform.localScale = Vector3.one;
 
                 var markerColorSelection = gameObject.transform.Find("Image").gameObject;
-                markerColorSelection.SetActive(annotationColor == colorIndex);
+                markerColorSelection.SetActive(Settings.color == colorIndex);
                 Dialog.AnnotationColors.Add(markerColorSelection);
 
                 var button = gameObject.GetComponent<Button>();
                 button.image.color = color;
                 button.onClick.NewListener(() =>
                 {
-                    annotationColor = colorIndex;
+                    Settings.color = colorIndex;
                     UpdateAnnotationColorSelection();
                 });
 
                 EditorContextMenu.AddContextMenu(gameObject,
                     new ButtonElement("Use", () =>
                     {
-                        annotationColor = colorIndex;
+                        Settings.color = colorIndex;
                         UpdateAnnotationColorSelection();
                     }),
                     new ButtonElement("Set as Default", () => EditorConfig.Instance.MarkerDefaultColor.Value = colorIndex),
@@ -600,7 +617,7 @@ namespace BetterLegacy.Editor.Managers
         public void UpdateAnnotationColorSelection()
         {
             for (int i = 0; i < Dialog.AnnotationColors.Count; i++)
-                Dialog.AnnotationColors[i].SetActive(annotationColor == i);
+                Dialog.AnnotationColors[i].SetActive(Settings.color == i);
         }
 
         /// <summary>
@@ -608,11 +625,11 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void RenderAnnotationHexColor()
         {
-            Dialog.AnnotationHexColorField.SetTextWithoutNotify(annotationHexColor);
-            Dialog.AnnotationHexColorField.onValueChanged.NewListener(_val => annotationHexColor = _val);
+            Dialog.AnnotationHexColorField.SetTextWithoutNotify(Settings.hexColor);
+            Dialog.AnnotationHexColorField.onValueChanged.NewListener(_val => Settings.hexColor = _val);
 
             EditorContextMenu.AddContextMenu(Dialog.AnnotationHexColorField.gameObject,
-                EditorContextMenu.GetEditorColorFunctions(Dialog.AnnotationHexColorField, () => annotationHexColor));
+                EditorContextMenu.GetEditorColorFunctions(Dialog.AnnotationHexColorField, () => Settings.hexColor));
         }
 
         /// <summary>
@@ -620,11 +637,11 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void RenderAnnotationOpacity()
         {
-            Dialog.AnnotationOpacityField.SetTextWithoutNotify(annotationOpacity.ToString());
+            Dialog.AnnotationOpacityField.SetTextWithoutNotify(Settings.opacity.ToString());
             Dialog.AnnotationOpacityField.OnValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
-                    annotationOpacity = RTMath.Clamp(num, 0f, 1f);
+                    Settings.opacity = RTMath.Clamp(num, 0f, 1f);
             });
 
             TriggerHelper.AddEventTriggers(Dialog.AnnotationOpacityField.inputField.gameObject, TriggerHelper.ScrollDelta(Dialog.AnnotationOpacityField.inputField, max: 1f));
@@ -636,11 +653,11 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void RenderAnnotationThickness()
         {
-            Dialog.AnnotationThicknessField.SetTextWithoutNotify(annotationThickness.ToString());
+            Dialog.AnnotationThicknessField.SetTextWithoutNotify(Settings.thickness.ToString());
             Dialog.AnnotationThicknessField.OnValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
-                    annotationThickness = RTMath.Clamp(num, 0.1f, 100f);
+                    Settings.thickness = RTMath.Clamp(num, 0.1f, 100f);
             });
 
             TriggerHelper.AddEventTriggers(Dialog.AnnotationThicknessField.inputField.gameObject, TriggerHelper.ScrollDelta(Dialog.AnnotationThicknessField.inputField, min: 0.1f, max: 100f));
@@ -652,8 +669,8 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void RenderAnnotationFixedCamera()
         {
-            Dialog.AnnotationFixedCameraToggle.SetIsOnWithoutNotify(annotationFixedCamera);
-            Dialog.AnnotationFixedCameraToggle.OnValueChanged.NewListener(_val => annotationFixedCamera = _val);
+            Dialog.AnnotationFixedCameraToggle.SetIsOnWithoutNotify(Settings.fixedCamera);
+            Dialog.AnnotationFixedCameraToggle.OnValueChanged.NewListener(_val => Settings.fixedCamera = _val);
         }
 
         /// <summary>
@@ -1297,19 +1314,20 @@ namespace BetterLegacy.Editor.Managers
             if (Companion.Entity.Example.Current && Companion.Entity.Example.Current.Dragging)
                 return;
 
+            var tool = Settings.tool;
             if (!CurrentMarker || CurrentMarker.Duration == 0f)
             {
-                if (Input.GetMouseButtonDown(0) && annotationTool != AnnotationTool.None)
-                    EditorManager.inst.DisplayNotification($"Cannot {annotationTool.ToString().ToLower()} if marker duration is set to 0!", 3f, EditorManager.NotificationType.Warning);
+                if (Input.GetMouseButtonDown(0) && tool != AnnotationTool.None)
+                    EditorManager.inst.DisplayNotification($"Cannot {tool.ToString().ToLower()} if marker duration is set to 0!", 3f, EditorManager.NotificationType.Warning);
                 return;
             }
 
             var pos = RTLevel.Cameras.FG.ScreenToWorldPoint(Input.mousePosition);
 
-            switch (annotationTool)
+            switch (tool)
             {
                 case AnnotationTool.Draw: {
-                        if (annotationFixedCamera)
+                        if (Settings.fixedCamera)
                         {
                             var camPos = RTLevel.Cameras.FG.transform.position;
                             var rot = RTLevel.Cameras.FG.transform.eulerAngles.z;
@@ -1444,37 +1462,37 @@ namespace BetterLegacy.Editor.Managers
         {
             currentStroke = new Annotation
             {
-                color = annotationColor,
-                hexColor = annotationHexColor,
-                opacity = annotationOpacity,
-                thickness = annotationThickness,
-                fixedCamera = annotationFixedCamera,
+                color = Settings.color,
+                hexColor = Settings.hexColor,
+                opacity = Settings.opacity,
+                thickness = Settings.thickness,
+                fixedCamera = Settings.fixedCamera,
             };
             currentStroke.points.Add(pos);
             drawingAnnotation = true;
 
-            if (mirrorDrawingHorizontal)
+            if (Settings.mirrorDrawingHorizontal)
             {
                 mirrorHorizontalStroke = new Annotation
                 {
-                    color = annotationColor,
-                    hexColor = annotationHexColor,
-                    opacity = annotationOpacity,
-                    thickness = annotationThickness,
-                    fixedCamera = annotationFixedCamera,
+                    color = Settings.color,
+                    hexColor = Settings.hexColor,
+                    opacity = Settings.opacity,
+                    thickness = Settings.thickness,
+                    fixedCamera = Settings.fixedCamera,
                 };
                 mirrorHorizontalStroke.points.Add(new Vector2(-pos.x, pos.y));
             }
 
-            if (mirrorDrawingVertical)
+            if (Settings.mirrorDrawingVertical)
             {
                 mirrorVerticalStroke = new Annotation
                 {
-                    color = annotationColor,
-                    hexColor = annotationHexColor,
-                    opacity = annotationOpacity,
-                    thickness = annotationThickness,
-                    fixedCamera = annotationFixedCamera,
+                    color = Settings.color,
+                    hexColor = Settings.hexColor,
+                    opacity = Settings.opacity,
+                    thickness = Settings.thickness,
+                    fixedCamera = Settings.fixedCamera,
                 };
                 mirrorVerticalStroke.points.Add(new Vector2(pos.x, -pos.y));
             }
@@ -1670,6 +1688,7 @@ namespace BetterLegacy.Editor.Managers
                 for (int j = 0; j < marker.annotations.Count; j++)
                 {
                     var annotation = marker.annotations[j];
+                    var shouldBucket = false;
                     for (int p = 0; p < annotation.points.Count; p++)
                     {
                         var point = annotation.points[p];
@@ -1683,12 +1702,14 @@ namespace BetterLegacy.Editor.Managers
                         }
 
                         if (RTMath.Distance(point, pos) <= rSq)
-                        {
-                            annotation.color = annotationColor;
-                            annotation.hexColor = annotationHexColor;
-                            annotation.opacity = annotationOpacity;
-                            annotation.fixedCamera = annotationFixedCamera;
-                        }
+                            shouldBucket = true;
+                    }
+                    if (shouldBucket)
+                    {
+                        annotation.color = Settings.color;
+                        annotation.hexColor = Settings.hexColor;
+                        annotation.opacity = Settings.opacity;
+                        annotation.fixedCamera = Settings.fixedCamera;
                     }
                 }
             }
