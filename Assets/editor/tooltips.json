@@ -493,6 +493,102 @@
       } // Internal Remove Unused Themes
     ],
 
+    // Markers
+    [
+      {
+        "name": "Draw Annotation",
+        "tooltips": [
+          {
+            "desc": "Draws a line. Used for keeping visual notes, such as storyboarding.",
+            "hint": "Click and drag to draw a line, let go to complete. Right click while drawing to cancel.",
+            "lang": 0
+          }
+        ]
+      }, // Draw Annotation
+      {
+        "name": "Erase Annotation",
+        "tooltips": [
+          {
+            "desc": "Erases the points in a line, creating split lines.",
+            "hint": "Click and drag through a line to erase through it, let go to complete.",
+            "lang": 0
+          }
+        ]
+      }, // Erase Annotation
+      {
+        "name": "Delete Annotation",
+        "tooltips": [
+          {
+            "desc": "Deletes an entire line.",
+            "hint": "Click on a line to remove it.",
+            "lang": 0
+          }
+        ]
+      }, // Delete Annotation
+      {
+        "name": "Bucket Annotation",
+        "tooltips": [
+          {
+            "desc": "Changes the color and fixed camera state of a line.",
+            "hint": "Click on a line to change the color and/or the fixed camera state.",
+            "lang": 0
+          }
+        ]
+      }, // Bucket Annotation
+      {
+        "name": "Move Annotation",
+        "tooltips": [
+          {
+            "desc": "Moves all annotations.",
+            "hint": "Click and drag to move all annotations, let go to complete. Right click while moving to cancel. Hold shift to rotate instead of move.",
+            "lang": 0
+          }
+        ]
+      }, // Move Annotation
+
+      {
+        "name": "Copy Annotations",
+        "tooltips": [
+          {
+            "desc": "Copies all annotations from the current marker.",
+            "hint": "Allows for annotations to be transfered to another marker.",
+            "lang": 0
+          }
+        ]
+      }, // Copy Annotations
+      {
+        "name": "Paste Annotations",
+        "tooltips": [
+          {
+            "desc": "Pastes all copied annotations onto the current marker.",
+            "hint": "Allows for annotations to be transfered to another marker.",
+            "lang": 0
+          }
+        ]
+      }, // Paste Annotations
+      {
+        "name": "Clear Annotations",
+        "tooltips": [
+          {
+            "desc": "Clears all annotations from the current marker.",
+            "hint": "Removes the annotations.",
+            "lang": 0
+          }
+        ]
+      }, // Clear Annotations
+
+      {
+        "name": "Annotation Fixed Camera",
+        "tooltips": [
+          {
+            "desc": "Forces the annotations to stick to the camera.",
+            "hint": "Acts like camera parenting.",
+            "lang": 0
+          }
+        ]
+      } // Clear Annotations
+    ],
+
     // Lists
     [
       {

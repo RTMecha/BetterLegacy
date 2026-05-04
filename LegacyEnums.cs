@@ -2403,6 +2403,35 @@ namespace BetterLegacy
         CreateObject,
     }
 
+    public enum AnnotationTool
+    {
+        /// <summary>
+        /// No tool selected.
+        /// </summary>
+        None,
+        /// <summary>
+        /// Draws a line.
+        /// </summary>
+        Draw,
+        /// <summary>
+        /// Erases points from a line, creating two lines.
+        /// </summary>
+        Erase,
+        /// <summary>
+        /// Deletes a line.
+        /// </summary>
+        Delete,
+        /// <summary>
+        /// Changes the color properties of a line.
+        /// </summary>
+        Bucket,
+        /// <summary>
+        /// Moves the annotations.
+        /// </summary>
+        Move,
+        // Shape? + text???
+    }
+
     #endregion
 
     #region Menus

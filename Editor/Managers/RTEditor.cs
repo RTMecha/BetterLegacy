@@ -1408,6 +1408,8 @@ namespace BetterLegacy.Editor.Managers
             EditorDocumentation.Init();
 
             CaptureArea.Init();
+
+            gameObject.AddComponent<AnnotationRenderer>();
         }
 
         // 7 - finalization

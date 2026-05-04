@@ -218,6 +218,9 @@ namespace BetterLegacy.Configs
         public Setting<float> ObjectMarkerLineWidth { get; set; }
         public Setting<float> ObjectMarkerTextWidth { get; set; }
         public Setting<bool> ObjectMarkerLineDotted { get; set; }
+        public Setting<bool> ShowCurrentMarkerAnnotation { get; set; }
+        public Setting<float> AnnotationOpacity { get; set; }
+        public Setting<float> AnnotationOtherLayerOpacity { get; set; }
 
         #endregion
 
@@ -665,7 +668,7 @@ namespace BetterLegacy.Configs
             ShowMarkersOnAllLayers = Bind(this, MARKERS, "Show Markers On All Layers", false, "If the marker layer value should be ignored and all markers on all layers should display.");
             ChangeSelectedMarkerColor = Bind(this, MARKERS, "Change Selected Marker Color", true, "If selected markers should change to the selection color.");
             MarkerSelectionColor = Bind(this, MARKERS, "Selection Color", new Color(0.251f, 0.4627f, 0.8745f, 1f), "Color of selected markers.");
-            DeselectMarkersOnDialogClosed = Bind(this, MARKERS, "Deselect Markers On Dialog Closed", false, "If markers should be deselected when the Marker Editor dialog closes.");
+            DeselectMarkersOnDialogClosed = Bind(this, MARKERS, "Deselect Markers On Dialog Closed", true, "If markers should be deselected when the Marker Editor dialog closes.");
             MarkerDefaultColor = Bind(this, MARKERS, "Default Color", 0, "The default color assigned to a new marker.");
             MarkerDragButton = BindEnum(this, MARKERS, "Drag Button", PointerEventData.InputButton.Middle, "The mouse button to click and hold to drag a marker.");
             MarkerShowContextMenu = Bind(this, MARKERS, "Show Context Menu", true, "If a context menu should show instead of deleting a marker when you right click a marker.");
@@ -678,6 +681,9 @@ namespace BetterLegacy.Configs
             ObjectMarkerLineWidth = Bind(this, MARKERS, "Object Marker Line Width", 4f, "The width of the marker lines.");
             ObjectMarkerTextWidth = Bind(this, MARKERS, "Object Marker Text Width", 64f, "The width of the markers' text. If the text is longer than this width, then it doesn't display the symbols after the width.");
             ObjectMarkerLineDotted = Bind(this, MARKERS, "Object Marker Line Dotted", false, "If the markers' line should be dotted.");
+            ShowCurrentMarkerAnnotation = Bind(this, MARKERS, "Show Current Marker Annotation", true, "If the current markers' annotation should display regardless of if it is active.");
+            AnnotationOpacity = Bind(this, MARKERS, "Annotation Opacity", 1f, "Opacity of all shown annotations.");
+            AnnotationOtherLayerOpacity = Bind(this, MARKERS, "Annotation Other Layer Opacity", 0.1f, "Opacity of all annotations on other editor layers.");
 
             #endregion
 

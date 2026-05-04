@@ -50,6 +50,11 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public List<Vector2> points = new List<Vector2>();
 
+        /// <summary>
+        /// If the annotation is fixed to the camera.
+        /// </summary>
+        public bool fixedCamera;
+
         #endregion
 
         #endregion
@@ -67,6 +72,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             thickness = orig.thickness;
 
             points = new List<Vector2>(orig.points);
+            fixedCamera = orig.fixedCamera;
         }
 
         public override void ReadJSON(JSONNode jn)
@@ -84,6 +90,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 for (int i = 0; i < jn["p"].Count; i++)
                     points.Add(jn["p"][i].AsVector2());
             }
+            fixedCamera = jn["f"].AsBool;
         }
 
         public override JSONNode ToJSON()
@@ -101,6 +108,8 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["th"] = thickness;
             for (int i = 0; i < points.Count; i++)
                 jn["p"][i] = points[i].ToJSONArray();
+            if (fixedCamera)
+                jn["f"] = fixedCamera;
 
             return jn;
         }
