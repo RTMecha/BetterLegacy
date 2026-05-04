@@ -152,6 +152,8 @@ namespace BetterLegacy.Editor.Managers
         public AnnotationTool annotationTool;
 
         public Annotation currentStroke;
+        public Annotation mirrorHorizontalStroke;
+        public Annotation mirrorVerticalStroke;
 
         public int annotationColor;
 
@@ -162,6 +164,9 @@ namespace BetterLegacy.Editor.Managers
         public float annotationThickness = 4f;
 
         public bool annotationFixedCamera;
+
+        public bool mirrorDrawingHorizontal;
+        public bool mirrorDrawingVertical;
 
         public bool drawingAnnotation;
 
@@ -315,6 +320,7 @@ namespace BetterLegacy.Editor.Managers
             RenderDuration(marker);
 
             RenderAnnotationTool();
+            RenderAnnotationMirror();
             RenderAnnotationColors();
             RenderAnnotationHexColor();
             RenderAnnotationOpacity();
@@ -533,6 +539,17 @@ namespace BetterLegacy.Editor.Managers
                     RenderAnnotationTool();
                 });
             }
+        }
+
+        /// <summary>
+        /// Updates the annotation mirror states.
+        /// </summary>
+        public void RenderAnnotationMirror()
+        {
+            Dialog.AnnotationHorizontalMirrorToggle.SetIsOnWithoutNotify(mirrorDrawingHorizontal);
+            Dialog.AnnotationHorizontalMirrorToggle.OnValueChanged.NewListener(_val => mirrorDrawingHorizontal = _val);
+            Dialog.AnnotationVerticalMirrorToggle.SetIsOnWithoutNotify(mirrorDrawingVertical);
+            Dialog.AnnotationVerticalMirrorToggle.OnValueChanged.NewListener(_val => mirrorDrawingVertical = _val);
         }
 
         /// <summary>
@@ -1435,21 +1452,56 @@ namespace BetterLegacy.Editor.Managers
             };
             currentStroke.points.Add(pos);
             drawingAnnotation = true;
+
+            if (mirrorDrawingHorizontal)
+            {
+                mirrorHorizontalStroke = new Annotation
+                {
+                    color = annotationColor,
+                    hexColor = annotationHexColor,
+                    opacity = annotationOpacity,
+                    thickness = annotationThickness,
+                    fixedCamera = annotationFixedCamera,
+                };
+                mirrorHorizontalStroke.points.Add(new Vector2(-pos.x, pos.y));
+            }
+
+            if (mirrorDrawingVertical)
+            {
+                mirrorVerticalStroke = new Annotation
+                {
+                    color = annotationColor,
+                    hexColor = annotationHexColor,
+                    opacity = annotationOpacity,
+                    thickness = annotationThickness,
+                    fixedCamera = annotationFixedCamera,
+                };
+                mirrorVerticalStroke.points.Add(new Vector2(pos.x, -pos.y));
+            }
         }
 
         void ContinueStroke(Vector2 pos)
         {
-            if (!currentStroke)
+            ContinueStroke(currentStroke, pos);
+            if (mirrorHorizontalStroke)
+                ContinueStroke(mirrorHorizontalStroke, new Vector2(-pos.x, pos.y));
+            if (mirrorVerticalStroke)
+                ContinueStroke(mirrorVerticalStroke, new Vector2(pos.x, -pos.y));
+        }
+
+        void ContinueStroke(Annotation annotation, Vector2 pos)
+        {
+            if (!annotation)
                 return;
 
-            if (currentStroke.points.IsEmpty())
+            if (annotation.points.IsEmpty())
             {
-                currentStroke.points.Add(pos);
+                annotation.points.Add(pos);
                 return;
             }
-            var point = currentStroke.points.Last();
+            var point = annotation.points.Last();
             if (RTMath.Distance(point, pos) >= 0.0025f)
-                currentStroke.points.Add(pos);
+                annotation.points.Add(pos);
         }
 
         void FinalizeStroke(Vector2 pos)
@@ -1461,19 +1513,35 @@ namespace BetterLegacy.Editor.Managers
             var count = CurrentMarker.Marker.annotations.Count;
             if (currentStroke.points.Count > 1)
                 CurrentMarker.Marker.annotations.Add(currentStroke);
+            if (mirrorHorizontalStroke && mirrorHorizontalStroke.points.Count > 1)
+                CurrentMarker.Marker.annotations.Add(mirrorHorizontalStroke);
+            if (mirrorVerticalStroke && mirrorVerticalStroke.points.Count > 1)
+                CurrentMarker.Marker.annotations.Add(mirrorVerticalStroke);
             var cache = currentStroke;
+            var horizontalCache = mirrorHorizontalStroke;
+            var verticalCache = mirrorVerticalStroke;
             EditorManager.inst.history.Add(new History.Command("Draw Annotation",
                 () =>
                 {
                     count = CurrentMarker.Marker.annotations.Count;
                     if (cache.points.Count > 1)
                         CurrentMarker.Marker.annotations.Add(cache);
+                    if (horizontalCache && horizontalCache.points.Count > 1)
+                        CurrentMarker.Marker.annotations.Add(horizontalCache);
+                    if (verticalCache && verticalCache.points.Count > 1)
+                        CurrentMarker.Marker.annotations.Add(verticalCache);
                 },
                 () =>
                 {
                     CurrentMarker.Marker.annotations.RemoveAt(count);
+                    if (horizontalCache)
+                        CurrentMarker.Marker.annotations.RemoveAt(count);
+                    if (mirrorVerticalStroke)
+                        CurrentMarker.Marker.annotations.RemoveAt(count);
                 }));
             currentStroke = null;
+            mirrorHorizontalStroke = null;
+            mirrorVerticalStroke = null;
             drawingAnnotation = false;
         }
 
@@ -1630,6 +1698,35 @@ namespace BetterLegacy.Editor.Managers
         {
             currentStroke = null;
             drawingAnnotation = false;
+        }
+
+        /// <summary>
+        /// Flips all annotations along a direction.
+        /// </summary>
+        /// <param name="direction">Direction to flip.</param>
+        public void FlipAnnotations(Direction direction)
+        {
+            switch (direction)
+            {
+                case Direction.Horizontal: {
+                        for (int i = 0; i < CurrentMarker.Marker.annotations.Count; i++)
+                        {
+                            var annotation = CurrentMarker.Marker.annotations[i];
+                            for (int j = 0; j < annotation.points.Count; j++)
+                                annotation.points[j] = new Vector2(-annotation.points[j].x, annotation.points[j].y);
+                        }
+                        break;
+                    }
+                case Direction.Vertical: {
+                        for (int i = 0; i < CurrentMarker.Marker.annotations.Count; i++)
+                        {
+                            var annotation = CurrentMarker.Marker.annotations[i];
+                            for (int j = 0; j < annotation.points.Count; j++)
+                                annotation.points[j] = new Vector2(annotation.points[j].x, -annotation.points[j].y);
+                        }
+                        break;
+                    }
+            }
         }
 
         /// <summary>

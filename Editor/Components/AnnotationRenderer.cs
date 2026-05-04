@@ -59,6 +59,10 @@ namespace BetterLegacy.Editor.Components
             GL.Begin(mode);
             if (RTMarkerEditor.inst.currentStroke)
                 RenderAnnotationStroke(null, RTMarkerEditor.inst.currentStroke);
+            if (RTMarkerEditor.inst.mirrorHorizontalStroke)
+                RenderAnnotationStroke(null, RTMarkerEditor.inst.mirrorHorizontalStroke);
+            if (RTMarkerEditor.inst.mirrorVerticalStroke)
+                RenderAnnotationStroke(null, RTMarkerEditor.inst.mirrorVerticalStroke);
 
             var time = AudioManager.inst.CurrentAudioSource.time;
             for (int i = 0; i < GameData.Current.data.markers.Count; i++)
