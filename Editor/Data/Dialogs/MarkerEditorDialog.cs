@@ -38,6 +38,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public List<Button> AnnotationToolButtons { get; set; } = new List<Button>();
 
+        public ToggleButtonStorage AnnotationHorizontalMirrorToggle { get; set; }
+        public ToggleButtonStorage AnnotationVerticalMirrorToggle { get; set; }
+
         public RectTransform AnnotationColorsParent { get; set; }
 
         public List<GameObject> AnnotationColors { get; set; } = new List<GameObject>();
@@ -65,7 +68,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
             MarkerEditor.inst.right = dialog.Find("data/right");
 
             var scrollView = EditorPrefabHolder.Instance.ScrollView.Duplicate(RTMarkerEditor.inst.transform, "Scroll View");
-            scrollView.transform.localScale = Vector3.one;
             LeftContent = scrollView.transform.Find("Viewport/Content").AsRT();
 
             scrollView.transform.AsRT().sizeDelta = new Vector2(735f, 690f);
@@ -76,6 +78,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             MarkerEditor.inst.left.TransferChildren(LeftContent);
             scrollView.transform.SetParent(MarkerEditor.inst.left);
+            scrollView.transform.localScale = Vector3.one;
 
             var indexparent = Creator.NewUIObject("index", LeftContent, 0);
             indexparent.transform.AsRT().pivot = new Vector2(0f, 1f);
@@ -140,6 +143,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
             LeftContent.Find("color").GetComponent<GridLayoutGroup>().spacing = new Vector2(8f, 8f);
 
             ColorsParent = LeftContent.Find("color").AsRT();
+            var colorsContentSizeFitter = ColorsParent.gameObject.AddComponent<ContentSizeFitter>();
+            colorsContentSizeFitter.verticalFit = ContentSizeFitter.FitMode.MinSize;
 
             new Labels(Labels.InitSettings.Default.Parent(LeftContent).Name("layers_label"), "Layers to appear on");
 
@@ -177,14 +182,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             LayersContent = scroll.content;
 
-            var button = EditorPrefabHolder.Instance.DeleteButton.Duplicate(DescriptionField.transform, "edit");
-            var buttonStorage = button.GetComponent<DeleteButtonStorage>();
-            buttonStorage.Sprite = EditorSprites.EditSprite;
-            EditorThemeManager.ApplySelectable(buttonStorage.button, ThemeGroup.Function_2);
-            EditorThemeManager.ApplyGraphic(buttonStorage.image, ThemeGroup.Function_2_Text);
-            buttonStorage.OnClick.NewListener(() => RTTextEditor.inst.SetInputField(DescriptionField));
-            RectValues.Default.AnchoredPosition(171f, 112f).SizeDelta(22f, 22f).AssignToRectTransform(buttonStorage.baseImage.rectTransform);
-            EditorHelper.SetComplexity(button, "marker/layers", Complexity.Advanced);
+            EditorHelper.SetComplexity(tagScrollView, "marker/layers", Complexity.Advanced);
 
             new Labels(Labels.InitSettings.Default.Parent(LeftContent).Name("annotation_label"), "Annotation");
 
@@ -245,6 +243,20 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 AnnotationToolButtons.Add(toolButton);
             }
 
+            new ButtonElement("Flip Horizontally", () => RTMarkerEditor.inst.FlipAnnotations(Direction.Horizontal)).Init(EditorElement.InitSettings.Default.Parent(LeftContent));
+            new ButtonElement("Flip Vertically", () => RTMarkerEditor.inst.FlipAnnotations(Direction.Vertical)).Init(EditorElement.InitSettings.Default.Parent(LeftContent));
+
+            new Labels(Labels.InitSettings.Default.Parent(LeftContent).Name("annotation horizontal mirror_label"), "Annotation Mirror");
+            var annotationHorizontalMirror = EditorPrefabHolder.Instance.ToggleButton.Duplicate(LeftContent, "annotation horizontal mirror");
+            AnnotationHorizontalMirrorToggle = annotationHorizontalMirror.GetComponent<ToggleButtonStorage>();
+            AnnotationHorizontalMirrorToggle.Text = "Horizontal";
+            EditorThemeManager.ApplyToggle(AnnotationHorizontalMirrorToggle);
+
+            var annotationVerticalMirror = EditorPrefabHolder.Instance.ToggleButton.Duplicate(LeftContent, "annotation vertical mirror");
+            AnnotationVerticalMirrorToggle = annotationVerticalMirror.GetComponent<ToggleButtonStorage>();
+            AnnotationVerticalMirrorToggle.Text = "Vertical";
+            EditorThemeManager.ApplyToggle(AnnotationVerticalMirrorToggle);
+
             new Labels(Labels.InitSettings.Default.Parent(LeftContent).Name("annotation color_label"), "Annotation Color");
             AnnotationColorsParent = ColorsParent.gameObject.Duplicate(LeftContent, "annotation colors").transform.AsRT();
 
@@ -266,7 +278,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             CoreHelper.Delete(AnnotationThicknessField.middleButton);
             EditorThemeManager.ApplyInputField(AnnotationThicknessField);
 
-            new Labels(Labels.InitSettings.Default.Parent(LeftContent).Name("annotation fixed camera_label"), "Annotation Fixed Camera");
+            new Labels(Labels.InitSettings.Default.Parent(LeftContent).Name("annotation fixed camera_label"), new Label("Annotation Fixed Camera") { sizeDelta = new Vector2(300f, 20f) });
             var annotationFixedCamera = EditorPrefabHolder.Instance.ToggleButton.Duplicate(LeftContent, "annotation fixed camera");
             AnnotationFixedCameraToggle = annotationFixedCamera.GetComponent<ToggleButtonStorage>();
             AnnotationFixedCameraToggle.Text = "Fixed";
