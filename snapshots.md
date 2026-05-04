@@ -1,4 +1,15 @@
-﻿# snapshot-2026.5.1 - (Story Playtest) [May 4, 2026]
+﻿# snapshot-2026.5.2 - (Story Playtest) [May 5, 2026]
+## Features
+### Editor
+- Added Mirror toggles for annotation.
+- Added Flip buttons for annotation.
+
+## Fixes
+- Fixed Marker Editor dialog scale issue.
+
+-------------------------------------------------------------------
+
+# snapshot-2026.5.1 - (Story Playtest) [May 4, 2026]
 ## Features
 ### Core
 - Added getCurrentArtistName and getCurrentSongTitle variable modifiers.
