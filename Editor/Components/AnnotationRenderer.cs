@@ -43,6 +43,9 @@ namespace BetterLegacy.Editor.Components
             if (current != RTLevel.Cameras.UI)
                 return;
 
+            if (!EditorConfig.Instance.AnnotationsDisplayInPreviewMode.Value && !ProjectArrhythmia.State.IsEditing)
+                return;
+
             CreateLineMaterial();
             // Apply the line material
             lineMaterial.SetPass(0);

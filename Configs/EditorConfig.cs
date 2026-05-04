@@ -221,6 +221,7 @@ namespace BetterLegacy.Configs
         public Setting<bool> ShowCurrentMarkerAnnotation { get; set; }
         public Setting<float> AnnotationOpacity { get; set; }
         public Setting<float> AnnotationOtherLayerOpacity { get; set; }
+        public Setting<bool> AnnotationsDisplayInPreviewMode { get; set; }
 
         #endregion
 
@@ -682,8 +683,9 @@ namespace BetterLegacy.Configs
             ObjectMarkerTextWidth = Bind(this, MARKERS, "Object Marker Text Width", 64f, "The width of the markers' text. If the text is longer than this width, then it doesn't display the symbols after the width.");
             ObjectMarkerLineDotted = Bind(this, MARKERS, "Object Marker Line Dotted", false, "If the markers' line should be dotted.");
             ShowCurrentMarkerAnnotation = Bind(this, MARKERS, "Show Current Marker Annotation", true, "If the current markers' annotation should display regardless of if it is active.");
-            AnnotationOpacity = Bind(this, MARKERS, "Annotation Opacity", 1f, "Opacity of all shown annotations.");
-            AnnotationOtherLayerOpacity = Bind(this, MARKERS, "Annotation Other Layer Opacity", 0.1f, "Opacity of all annotations on other editor layers.");
+            AnnotationOpacity = Bind(this, MARKERS, "Annotation Opacity", 1f, "Opacity of all shown annotations.", maxValue: 1f);
+            AnnotationOtherLayerOpacity = Bind(this, MARKERS, "Annotation Other Layer Opacity", 0.1f, "Opacity of all annotations on other editor layers.", maxValue: 1f);
+            AnnotationsDisplayInPreviewMode = Bind(this, MARKERS, "Annotations Display In Preview Mode", false, "If annotations should display in the playtest mode.");
 
             #endregion
 
