@@ -21,6 +21,8 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// </summary>
     public class Prefab : PAObject<Prefab>, IBeatmap, IPrefabable, IUploadable, IFile
     {
+        #region Constructors
+
         public Prefab() : base() { }
 
         public Prefab(string name, int type, float offset, List<BeatmapObject> beatmapObjects, List<PrefabObject> prefabObjects, List<BackgroundLayer> backgroundLayers = null, List<BackgroundObject> backgroundObjects = null, List<Prefab> prefabs = null) : this()
@@ -42,6 +44,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             CopyObjects(beatmap);
         }
+
+        #endregion
 
         #region Values
 
@@ -214,7 +218,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public override void CopyData(Prefab orig, bool newID = true)
         {
@@ -274,6 +278,9 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public override void ReadJSONVG(JSONNode jn, Version version = default)
         {
+            if (jn == null)
+                throw new NullReferenceException("Could not read an empty prefab JSON!");
+
             beatmapObjects.Clear();
             for (int i = 0; i < jn["objs"].Count; i++)
                 beatmapObjects.Add(BeatmapObject.ParseVG(jn["objs"][i], version));
@@ -291,6 +298,9 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public override void ReadJSON(JSONNode jn)
         {
+            if (jn == null)
+                throw new NullReferenceException("Could not read an empty prefab JSON!");
+
             id = jn["id"];
             name = jn["name"];
             type = jn["type"].AsInt;

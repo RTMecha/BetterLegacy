@@ -2101,33 +2101,47 @@ namespace BetterLegacy.Editor.Managers
             var files = Directory.GetFiles(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath), FileFormat.LSP.ToPattern(), SearchOption.TopDirectoryOnly);
             for (int i = 0; i < files.Length; i++)
             {
-                var file = files[i];
-                var jn = JSON.Parse(RTFile.ReadFromFile(file));
+                try
+                {
+                    var file = files[i];
+                    var jn = JSON.Parse(RTFile.ReadFromFile(file));
 
-                var prefab = Prefab.Parse(jn);
-                prefab.beatmapObjects.ForEach(x => x?.RemovePrefabReference());
-                prefab.filePath = RTFile.ReplaceSlash(file);
+                    var prefab = Prefab.Parse(jn);
+                    prefab.beatmapObjects.ForEach(x => x?.RemovePrefabReference());
+                    prefab.filePath = RTFile.ReplaceSlash(file);
 
-                var prefabPanel = new PrefabPanel(ObjectSource.External, index);
-                prefabPanel.Init(prefab);
-                PrefabPanels.Add(prefabPanel);
-                index++;
+                    var prefabPanel = new PrefabPanel(ObjectSource.External, index);
+                    prefabPanel.Init(prefab);
+                    PrefabPanels.Add(prefabPanel);
+                    index++;
+                }
+                catch (Exception ex)
+                {
+                    CoreHelper.LogException(ex);
+                }
             }
             
             files = Directory.GetFiles(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath), FileFormat.VGP.ToPattern(), SearchOption.TopDirectoryOnly);
             for (int i = 0; i < files.Length; i++)
             {
-                var file = files[i];
-                var jn = JSON.Parse(RTFile.ReadFromFile(file));
+                try
+                {
+                    var file = files[i];
+                    var jn = JSON.Parse(RTFile.ReadFromFile(file));
 
-                var prefab = Prefab.ParseVG(jn);
-                prefab.beatmapObjects.ForEach(x => x?.RemovePrefabReference());
-                prefab.filePath = RTFile.ReplaceSlash(file);
+                    var prefab = Prefab.ParseVG(jn);
+                    prefab.beatmapObjects.ForEach(x => x?.RemovePrefabReference());
+                    prefab.filePath = RTFile.ReplaceSlash(file);
 
-                var prefabPanel = new PrefabPanel(ObjectSource.External, index);
-                prefabPanel.Init(prefab);
-                PrefabPanels.Add(prefabPanel);
-                index++;
+                    var prefabPanel = new PrefabPanel(ObjectSource.External, index);
+                    prefabPanel.Init(prefab);
+                    PrefabPanels.Add(prefabPanel);
+                    index++;
+                }
+                catch (Exception ex)
+                {
+                    CoreHelper.LogException(ex);
+                }
             }
 
             prefabsLoading = false;
