@@ -1,4 +1,11 @@
-﻿# snapshot-2026.5.2 - (Story Playtest) [May 5, 2026]
+﻿# ???
+## Changes
+### Editor
+- Changed Show Current Marker Annotation setting default value to false.
+
+-------------------------------------------------------------------
+
+# snapshot-2026.5.2 - (Story Playtest) [May 5, 2026]
 ## Features
 ### Editor
 - Added Mirror toggles for annotation.
