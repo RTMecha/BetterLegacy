@@ -1351,6 +1351,10 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
+            // don't draw if the marker is active
+            if (!IsInMarkerArea(CurrentMarker.Marker, AudioManager.inst.CurrentAudioSource.time))
+                return;
+
             var pos = RTLevel.Cameras.FG.ScreenToWorldPoint(Input.mousePosition);
 
             switch (tool)
