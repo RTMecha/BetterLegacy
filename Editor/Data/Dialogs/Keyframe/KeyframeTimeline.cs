@@ -2842,7 +2842,11 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             var beatmapObject = animatable as BeatmapObject;
             for (int i = 0; i < timelineMarkers.Count; i++)
-                timelineMarkers[i].RenderPosition(timelineMarkers[i].Time - (beatmapObject ? beatmapObject.StartTime : 0f), ObjEditor.inst.Zoom * 14f, 0f);
+            {
+                var timelineMarker = timelineMarkers[i];
+                timelineMarker.RenderPosition(timelineMarker.Time - (beatmapObject ? beatmapObject.StartTime : 0f), ObjEditor.inst.Zoom * 14f, 0f);
+                timelineMarker.RenderArea(timelineMarker.Duration, ObjEditor.inst.Zoom * 14f);
+            }
         }
 
         public void SetCursorColor(Color color)
