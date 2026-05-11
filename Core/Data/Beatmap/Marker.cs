@@ -73,6 +73,11 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public TimelineMarker timelineMarker;
 
+        /// <summary>
+        /// Amount of currently selected annotations.
+        /// </summary>
+        public int SelectedAnnotationCount => !annotations.IsEmpty() ? annotations.Count(x => x.selected) : 0;
+
         #endregion
 
         #region Functions
