@@ -1336,7 +1336,10 @@ namespace BetterLegacy.Editor.Managers
         // directly based on AnnotationEditor code.
         void AnnotationTick()
         {
-            if (!ProjectArrhythmia.State.IsEditing || !Dialog || !Dialog.IsCurrent || EventSystem.current.IsPointerOverGameObject())
+            if (!ProjectArrhythmia.State.IsEditing || !Dialog || !Dialog.IsCurrent)
+                return;
+
+            if (!(drawingAnnotation || movingAnnotations) && EventSystem.current.IsPointerOverGameObject())
                 return;
 
             // don't draw if Example is being dragged.
@@ -1441,7 +1444,7 @@ namespace BetterLegacy.Editor.Managers
             if (!CurrentMarker || !CurrentMarker.Marker)
                 return;
 
-            selectedCount = !CurrentMarker.Marker.annotations.IsEmpty() ? CurrentMarker.Marker.annotations.Count(x => x.selected) : 0;
+            selectedCount = CurrentMarker.Marker.SelectedAnnotationCount;
             startMovePos = pos;
             movingAnnotations = true;
             pointsCache.Clear();
@@ -1634,7 +1637,7 @@ namespace BetterLegacy.Editor.Managers
         void EraseAtPosition(Vector2 pos)
         {
             var rSq = eraserRadius * eraserRadius;
-            selectedCount = !CurrentMarker.Marker.annotations.IsEmpty() ? CurrentMarker.Marker.annotations.Count(x => x.selected) : 0;
+            selectedCount = CurrentMarker.Marker.SelectedAnnotationCount;
             var time = AudioManager.inst.CurrentAudioSource.time;
             for (int i = 0; i < GameData.Current.data.markers.Count; i++)
             {
@@ -1699,7 +1702,7 @@ namespace BetterLegacy.Editor.Managers
         void DeleteAtPosition(Vector2 pos)
         {
             var rSq = eraserRadius * eraserRadius;
-            selectedCount = !CurrentMarker.Marker.annotations.IsEmpty() ? CurrentMarker.Marker.annotations.Count(x => x.selected) : 0;
+            selectedCount = CurrentMarker.Marker.SelectedAnnotationCount;
             var time = AudioManager.inst.CurrentAudioSource.time;
             for (int i = 0; i < GameData.Current.data.markers.Count; i++)
             {
@@ -1747,7 +1750,7 @@ namespace BetterLegacy.Editor.Managers
         void BucketAtPosition(Vector2 pos)
         {
             var rSq = bucketRadius * bucketRadius;
-            selectedCount = !CurrentMarker.Marker.annotations.IsEmpty() ? CurrentMarker.Marker.annotations.Count(x => x.selected) : 0;
+            selectedCount = CurrentMarker.Marker.SelectedAnnotationCount;
             var time = AudioManager.inst.CurrentAudioSource.time;
             for (int i = 0; i < GameData.Current.data.markers.Count; i++)
             {
