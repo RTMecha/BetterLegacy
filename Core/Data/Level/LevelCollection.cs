@@ -704,6 +704,8 @@ namespace BetterLegacy.Core.Data.Level
             actualLevel.id = id;
             if (actualLevel.metadata)
                 actualLevel.metadata.arcadeID = id;
+            if (RTFile.DirectoryExists(RTFile.CombinePaths(path, Path.GetFileName(level.path))))
+                levelInfo.path = Path.GetFileName(level.path);
 
             levels.Add(actualLevel);
             levelInformation.Add(levelInfo);
