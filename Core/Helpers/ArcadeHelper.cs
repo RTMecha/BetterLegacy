@@ -141,6 +141,7 @@ namespace BetterLegacy.Core.Helpers
                 LevelManager.LevelEnded = false;
 
                 InterfaceManager.inst.CloseMenus();
+                InterfaceManager.inst.StopMusic();
                 var nextLevel = LevelManager.CurrentLevelCollection[LevelManager.currentLevelIndex];
                 if (!nextLevel)
                 {
