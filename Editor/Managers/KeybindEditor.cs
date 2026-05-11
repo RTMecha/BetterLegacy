@@ -238,6 +238,10 @@ namespace BetterLegacy.Editor.Managers
                     new KeybindFunction(nameof(PrevAnnotationTool), PrevAnnotationTool),
                     new KeybindFunction(nameof(NextAnnotationTool), NextAnnotationTool),
 
+                    new KeybindFunction(nameof(HideAnnotations), HideAnnotations),
+                    new KeybindFunction(nameof(ShowAnnotations), ShowAnnotations),
+                    new KeybindFunction(nameof(ToggleShowAnnotations), ToggleShowAnnotations),
+
                     #endregion
 
                     #region Save / Load
@@ -1718,6 +1722,22 @@ namespace BetterLegacy.Editor.Managers
         public void HideSelection(Keybind keybind)
         {
             int hiddenCount = 0;
+            if (RTMarkerEditor.inst && RTMarkerEditor.inst.Dialog && RTMarkerEditor.inst.Dialog.IsCurrent)
+            {
+                var selectedCount = RTMarkerEditor.inst.CurrentMarker.Marker.SelectedAnnotationCount;
+                for (int i = 0; i < RTMarkerEditor.inst.CurrentMarker.Marker.annotations.Count; i++)
+                {
+                    var annotation = RTMarkerEditor.inst.CurrentMarker.Marker.annotations[i];
+                    if (selectedCount == 0 || annotation.selected)
+                    {
+                        annotation.hidden = true;
+                        hiddenCount++;
+                    }
+                }
+                EditorManager.inst.DisplayNotification($"Hidden [{hiddenCount}] annotations!", 2f, EditorManager.NotificationType.Success);
+                return;
+            }
+
             foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
             {
                 timelineObject.Hidden = true;
@@ -1748,6 +1768,22 @@ namespace BetterLegacy.Editor.Managers
         public void UnhideHiddenObjects(Keybind keybind)
         {
             int hiddenCount = 0;
+            if (RTMarkerEditor.inst && RTMarkerEditor.inst.Dialog && RTMarkerEditor.inst.Dialog.IsCurrent)
+            {
+                var selectedCount = RTMarkerEditor.inst.CurrentMarker.Marker.SelectedAnnotationCount;
+                for (int i = 0; i < RTMarkerEditor.inst.CurrentMarker.Marker.annotations.Count; i++)
+                {
+                    var annotation = RTMarkerEditor.inst.CurrentMarker.Marker.annotations[i];
+                    if (selectedCount == 0 || annotation.selected)
+                    {
+                        annotation.hidden = false;
+                        hiddenCount++;
+                    }
+                }
+                EditorManager.inst.DisplayNotification($"Unhidden [{hiddenCount}] annotations!", 2f, EditorManager.NotificationType.Success);
+                return;
+            }
+
             foreach (var timelineObject in EditorTimeline.inst.timelineObjects)
             {
                 if (!timelineObject.Hidden)
@@ -1781,6 +1817,22 @@ namespace BetterLegacy.Editor.Managers
         public void ToggleHideSelection(Keybind keybind)
         {
             int hiddenCount = 0;
+            if (RTMarkerEditor.inst && RTMarkerEditor.inst.Dialog && RTMarkerEditor.inst.Dialog.IsCurrent)
+            {
+                var selectedCount = RTMarkerEditor.inst.CurrentMarker.Marker.SelectedAnnotationCount;
+                for (int i = 0; i < RTMarkerEditor.inst.CurrentMarker.Marker.annotations.Count; i++)
+                {
+                    var annotation = RTMarkerEditor.inst.CurrentMarker.Marker.annotations[i];
+                    if (selectedCount == 0 || annotation.selected)
+                    {
+                        annotation.hidden = !annotation.hidden;
+                        hiddenCount++;
+                    }
+                }
+                EditorManager.inst.DisplayNotification($"Toggled hidden state of [{hiddenCount}] annotations!", 2f, EditorManager.NotificationType.Success);
+                return;
+            }
+
             foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
             {
                 timelineObject.Hidden = !timelineObject.Hidden;
@@ -2001,6 +2053,24 @@ namespace BetterLegacy.Editor.Managers
             RTMarkerEditor.inst.Settings.tool = (AnnotationTool)num;
             EditorManager.inst.DisplayNotification($"Set annotation tool to {RTMarkerEditor.inst.Settings.tool}", 2f, EditorManager.NotificationType.Success);
             RTMarkerEditor.inst.RenderAnnotationTool();
+        }
+
+        public void HideAnnotations(Keybind keybind)
+        {
+            EditorConfig.Instance.ShowMarkerAnnotations.Value = false;
+            EditorManager.inst.DisplayNotification($"Show Marker Annotations set to [{EditorConfig.Instance.ShowMarkerAnnotations.Value}]!", 2f, EditorManager.NotificationType.Success);
+        }
+
+        public void ShowAnnotations(Keybind keybind)
+        {
+            EditorConfig.Instance.ShowMarkerAnnotations.Value = true;
+            EditorManager.inst.DisplayNotification($"Show Marker Annotations set to [{EditorConfig.Instance.ShowMarkerAnnotations.Value}]!", 2f, EditorManager.NotificationType.Success);
+        }
+
+        public void ToggleShowAnnotations(Keybind keybind)
+        {
+            EditorConfig.Instance.ShowMarkerAnnotations.Value = !EditorConfig.Instance.ShowMarkerAnnotations.Value;
+            EditorManager.inst.DisplayNotification($"Show Marker Annotations set to [{EditorConfig.Instance.ShowMarkerAnnotations.Value}]!", 2f, EditorManager.NotificationType.Success);
         }
 
         #endregion
