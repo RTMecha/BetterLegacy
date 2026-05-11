@@ -238,19 +238,29 @@ namespace BetterLegacy.Core.Runtime
                             break;
                         }
                     case EndLevelFunction.ReturnToHub: {
-                            LevelManager.Play(LevelManager.Hub);
+                            if (LevelManager.Hub)
+                                LevelManager.Play(LevelManager.Hub);
+                            else if (!EndLevelMenu.Current)
+                                EndLevelMenu.Init();
+                            else
+                                ArcadeHelper.QuitToArcade();
 
                             break;
                         }
                     case EndLevelFunction.ReturnToPrevious: {
-                            LevelManager.Play(LevelManager.PreviousLevel);
+                            if (LevelManager.PreviousLevel)
+                                LevelManager.Play(LevelManager.PreviousLevel);
+                            else if (!EndLevelMenu.Current)
+                                EndLevelMenu.Init();
+                            else
+                                ArcadeHelper.QuitToArcade();
 
                             break;
                         }
                     case EndLevelFunction.ContinueCollection: {
                             var metadata = LevelManager.CurrentLevel.metadata;
                             var nextLevel = LevelManager.NextLevelInCollection;
-                            if (LevelManager.CurrentLevelCollection && (metadata.song.Difficulty == DifficultyType.Animation || nextLevel && nextLevel.saveData && nextLevel.saveData.Unlocked || !RTBeatmap.Current.challengeMode.Invincible || LevelManager.currentLevelIndex + 1 != LevelManager.CurrentLevelCollection.Count) || !LevelManager.IsNextEndOfQueue)
+                            if (LevelManager.CurrentLevelCollection && (metadata.song.Difficulty == DifficultyType.Animation || nextLevel && nextLevel.saveData && nextLevel.saveData.Unlocked || !challengeMode.Invincible || LevelManager.currentLevelIndex + 1 != LevelManager.CurrentLevelCollection.Count) || !LevelManager.IsNextEndOfQueue)
                             {
                                 if (nextLevel)
                                     CoreHelper.Log($"Selecting next Arcade level in collection [{LevelManager.currentLevelIndex + 2} / {LevelManager.CurrentLevelCollection.Count}]");
@@ -261,7 +271,10 @@ namespace BetterLegacy.Core.Runtime
                                 break;
                             }
 
-                            ArcadeHelper.QuitToArcade();
+                            if (!EndLevelMenu.Current)
+                                EndLevelMenu.Init();
+                            else
+                                ArcadeHelper.QuitToArcade();
 
                             break;
                         }
