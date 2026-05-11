@@ -381,7 +381,6 @@ namespace BetterLegacy.Core.Runtime.Events
                     shakeSequence.keyframes[i].SetEase(ShakeEase);
                 var speed = shakeSpeed < 0.001f ? 1f : shakeSpeed;
                 shakeTime += (time - previousAudioTime) * speed;
-                shakeTime = Mathf.Clamp(shakeTime, 0f, !AudioManager.inst.CurrentAudioSource.clip ? 0f : AudioManager.inst.CurrentAudioSource.clip.length);
                 OverrideShake(shakeSequence.Interpolate(shakeTime % shakeLength));
             }
 
