@@ -46,6 +46,9 @@ namespace BetterLegacy.Editor.Components
             if (!EditorConfig.Instance.AnnotationsDisplayInPreviewMode.Value && !ProjectArrhythmia.State.IsEditing)
                 return;
 
+            if (!EditorConfig.Instance.ShowMarkerAnnotations.Value)
+                return;
+
             CreateLineMaterial();
             // Apply the line material
             lineMaterial.SetPass(0);
@@ -88,7 +91,7 @@ namespace BetterLegacy.Editor.Components
 
         void RenderAnnotationStroke(Marker marker, Annotation annotation)
         {
-            if (!annotation)
+            if (!annotation || annotation.hidden)
                 return;
 
             var color = !string.IsNullOrEmpty(annotation.hexColor) ? RTColors.HexToColor(annotation.hexColor) : RTMarkerEditor.inst.GetColor(annotation.color);

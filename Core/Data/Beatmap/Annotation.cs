@@ -41,6 +41,11 @@ namespace BetterLegacy.Core.Data.Beatmap
         #region Display
 
         /// <summary>
+        /// If the annotation should be hidden.
+        /// </summary>
+        public bool hidden;
+
+        /// <summary>
         /// Thickness of the annotation.
         /// </summary>
         public float thickness = 4f;
@@ -72,7 +77,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             hexColor = orig.hexColor;
 
             thickness = orig.thickness;
-
+            hidden = orig.hidden;
             points = new List<Vector2>(orig.points);
             fixedCamera = orig.fixedCamera;
         }
@@ -93,6 +98,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                     points.Add(jn["p"][i].AsVector2());
             }
             fixedCamera = jn["f"].AsBool;
+            hidden = jn["h"].AsBool;
         }
 
         public override JSONNode ToJSON()
@@ -112,6 +118,8 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["p"][i] = points[i].ToJSONArray();
             if (fixedCamera)
                 jn["f"] = fixedCamera;
+            if (hidden)
+                jn["h"] = hidden;
 
             return jn;
         }

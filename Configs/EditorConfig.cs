@@ -218,6 +218,7 @@ namespace BetterLegacy.Configs
         public Setting<float> ObjectMarkerLineWidth { get; set; }
         public Setting<float> ObjectMarkerTextWidth { get; set; }
         public Setting<bool> ObjectMarkerLineDotted { get; set; }
+        public Setting<bool> ShowMarkerAnnotations { get; set; }
         public Setting<bool> ShowCurrentMarkerAnnotation { get; set; }
         public Setting<float> AnnotationOpacity { get; set; }
         public Setting<float> AnnotationOtherLayerOpacity { get; set; }
@@ -682,6 +683,7 @@ namespace BetterLegacy.Configs
             ObjectMarkerLineWidth = Bind(this, MARKERS, "Object Marker Line Width", 4f, "The width of the marker lines.");
             ObjectMarkerTextWidth = Bind(this, MARKERS, "Object Marker Text Width", 64f, "The width of the markers' text. If the text is longer than this width, then it doesn't display the symbols after the width.");
             ObjectMarkerLineDotted = Bind(this, MARKERS, "Object Marker Line Dotted", false, "If the markers' line should be dotted.");
+            ShowMarkerAnnotations = Bind(this, MARKERS, "Show Marker Annotations", true, "If marker annotations should display.");
             ShowCurrentMarkerAnnotation = Bind(this, MARKERS, "Show Current Marker Annotation", false, "If the current markers' annotation should display regardless of if it is active.");
             AnnotationOpacity = Bind(this, MARKERS, "Annotation Opacity", 1f, "Opacity of all shown annotations.", maxValue: 1f);
             AnnotationOtherLayerOpacity = Bind(this, MARKERS, "Annotation Other Layer Opacity", 0.1f, "Opacity of all annotations on other editor layers.", maxValue: 1f);
