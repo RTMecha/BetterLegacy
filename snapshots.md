@@ -1,7 +1,22 @@
-﻿# ???
+﻿# snapshot-2026.5.3 - (Story Playtest) [May 12, 2026]
+## Features
+### Editor
+- Added Show Marker Annotations setting to Config Manager > Editor Markers.
+- Added HideAnnotations, ShowAnnotations and ToggleShowAnnotations keybinds. These change the Show Marker Annotations setting.
+
 ## Changes
+### Core
+- End level interface will now display for end level functions if the associated object is not existing. (e.g. ContinueCollection opens the interface if there is no collection)
+
 ### Editor
 - Changed Show Current Marker Annotation setting default value to false.
+- HideSelection keybinds now hide annotations.
+- Levels created within level collections should now have their level information's path value set.
+
+## Fixes
+- Fixed Shake stopping at certain times depending on Shake Speed.
+- Fixed annotation drawing breaking when the mouse cursor leaves the level preview area.
+- Fixed the end level music not stopping in a specific case.
 
 -------------------------------------------------------------------
 
