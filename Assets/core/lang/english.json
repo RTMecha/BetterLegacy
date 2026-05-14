@@ -10,5 +10,20 @@
   "editor.titlebar.view": "View",
   "editor.titlebar.settings": "Settings",
   "editor.titlebar.upload": "Upload",
-  "editor.titlebar.help": "Help"
+  "editor.titlebar.help": "Help",
+
+  "editor.intro.welcome": "Welcome to the Project Arrhythmia (BetterLegacy) editor!\nBelow you'll find some settings to help you get into the editor. If you need to change them at any time, you can find them in the Config Manager.",
+  "editor.intro.help": "What does this editor have?",
+  "editor.intro.rounded_toggle": "Should the UI be rounded?",
+
+  "editor.theme.legacy.desc": "The default theme of the Legacy editor.",
+  "editor.theme.dark.desc": "A darker version of the Legacy theme.",
+  "editor.theme.light.desc": "A brighter version of the Legacy theme.",
+  "editor.theme.vision.desc": "A mostly red theme.",
+  "editor.theme.butter.desc": "A mostly yellow/orange theme.",
+  "editor.theme.arrhythmia.desc": "A theme based on the Arrhythmia Prototype.",
+  "editor.theme.modern.desc": "A theme based on the modern editor.",
+  "editor.theme.beats.desc": "A theme based on a certain game.",
+  "editor.theme.archives.desc": "A theme based on the Arama Archives series.",
+  "editor.theme.void.desc": "A mostly purple theme."
 }

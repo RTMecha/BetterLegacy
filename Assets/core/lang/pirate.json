@@ -5,10 +5,25 @@
   "arcade.steam.no_access": "<size=40><align=center><b>The cave of treasures was never found.\nWe must try again, arrgh.",
 
   // editor
-  "editor.titlebar.file": "File",
+  "editor.titlebar.file": "Wheel",
   "editor.titlebar.edit": "Hook",
   "editor.titlebar.view": "Spyglass",
   "editor.titlebar.settings": "Patch Ship",
   "editor.titlebar.upload": "Fire!",
-  "editor.titlebar.help": "Help"
+  "editor.titlebar.help": "Sail",
+
+  "editor.intro.welcome": "Welcome to being a pirate! Arrgh",
+  "editor.intro.help": "Where are me treasures?",
+  "editor.intro.rounded_toggle": "Should the seas curl?",
+
+  "editor.theme.legacy.desc": "The default theme of the Legacy editor.",
+  "editor.theme.dark.desc": "A darker version of the Legacy theme.",
+  "editor.theme.light.desc": "A brighter version of the Legacy theme.",
+  "editor.theme.vision.desc": "A mostly red theme.",
+  "editor.theme.butter.desc": "A mostly yellow/orange theme.",
+  "editor.theme.arrhythmia.desc": "A theme based on the Arrhythmia Prototype.",
+  "editor.theme.modern.desc": "A theme based on the modern editor.",
+  "editor.theme.beats.desc": "A theme based on a certain game.",
+  "editor.theme.archives.desc": "A theme based on the Arama Archives series.",
+  "editor.theme.void.desc": "A mostly purple theme."
 }
