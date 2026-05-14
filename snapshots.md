@@ -1,8 +1,10 @@
-﻿# snapshot-2026.5.3 - (Story Playtest) [May 12, 2026]
+﻿# snapshot-2026.5.3 - (Story Playtest) [May 14, 2026]
 ## Features
 ### Editor
+- The editor now has a welcome window that is open at the start.
 - Added Show Marker Annotations setting to Config Manager > Editor Markers.
 - Added HideAnnotations, ShowAnnotations and ToggleShowAnnotations keybinds. These change the Show Marker Annotations setting.
+- The top of the editor will now display icons that indicate something is active or disabled. (e.g. freecam)
 
 ## Changes
 ### Core
@@ -12,11 +14,13 @@
 - Changed Show Current Marker Annotation setting default value to false.
 - HideSelection keybinds now hide annotations.
 - Levels created within level collections should now have their level information's path value set.
+- Reworked the way Editor Complexity is handled. All elements are now handled through individual JSON files that you can overwrite using Asset Packs.
 
 ## Fixes
 - Fixed Shake stopping at certain times depending on Shake Speed.
 - Fixed annotation drawing breaking when the mouse cursor leaves the level preview area.
 - Fixed the end level music not stopping in a specific case.
+- Fixed some issues with going between Editor Complexity values.
 
 -------------------------------------------------------------------
 
