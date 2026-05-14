@@ -332,6 +332,7 @@ namespace BetterLegacy.Patchers
             ArcadeHelper.ResetModifiedStates();
 
             ProjectArrhythmia.Window.ApplySettings();
+            RTEditor.inst.OpenIntroDialog();
             return false;
         }
 

@@ -48,6 +48,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public const string LEVEL_INFO_EDITOR = "Level Info Editor";
         public const string LEVEL_PROPERTIES_EDITOR = "Level Properties Editor";
         public const string ANIMATION_EDITOR_DIALOG = "Animation Editor Dialog";
+        public const string INTRO_DIALOG = "Intro Dialog";
 
         #endregion
 

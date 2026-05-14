@@ -58,11 +58,6 @@ namespace BetterLegacy.Editor.Managers
         public Core.Threading.TickRunner editorThread;
 
         /// <summary>
-        /// If advanced features should display.
-        /// </summary>
-        public static bool ShowModdedUI { get; set; }
-
-        /// <summary>
         /// The default time object.
         /// </summary>
         public GameObject timeDefault;
@@ -97,6 +92,11 @@ namespace BetterLegacy.Editor.Managers
         /// List of editor dialogs.
         /// </summary>
         public List<EditorDialog> editorDialogs = new List<EditorDialog>();
+
+        /// <summary>
+        /// Intro / welcome dialog.
+        /// </summary>
+        public IntroDialog IntroDialog { get; set; }
 
         /// <summary>
         /// Screenshots view dialog.
@@ -513,16 +513,6 @@ namespace BetterLegacy.Editor.Managers
 
             CreateGlobalSettings();
             LoadGlobalSettings();
-
-            try
-            {
-                if (AssetPack.TryReadFromFile("editor/data/complexity.json", out string complexityFile))
-                    EditorHelper.complexityJSON = JSON.Parse(complexityFile);
-            }
-            catch (Exception ex)
-            {
-                CoreHelper.LogError($"There was an error with loading the complexity setting in the editor: {ex}");
-            }
 
             try
             {
@@ -1368,6 +1358,7 @@ namespace BetterLegacy.Editor.Managers
             SetupNewFilePopup();
             CreatePreview();
             CreateDebug();
+            CreateIntroDialog();
             CreateScreenshotsView();
             CreateFontSelector();
             SetupEaseDropdowns();
@@ -1410,6 +1401,7 @@ namespace BetterLegacy.Editor.Managers
             CaptureArea.Init();
 
             gameObject.AddComponent<AnnotationRenderer>();
+            gameObject.AddComponent<EditorIndicators>();
         }
 
         // 7 - finalization
@@ -1523,7 +1515,8 @@ namespace BetterLegacy.Editor.Managers
                 }
             };
 
-            EditorHelper.AddEditorDropdown("View Editor Groups", string.Empty, EditorHelper.VIEW_DROPDOWN, EditorSprites.OpenSprite, EditorTimeline.inst.OpenEditorGroupsPopup);
+            var viewEditorGroups = EditorHelper.AddEditorDropdown("View Editor Groups", string.Empty, EditorHelper.VIEW_DROPDOWN, EditorSprites.OpenSprite, EditorTimeline.inst.OpenEditorGroupsPopup);
+            EditorHelper.SetComplexity(viewEditorGroups, "timeline_object/editor_group", Complexity.Advanced);
         }
 
         #endregion
@@ -3289,7 +3282,8 @@ namespace BetterLegacy.Editor.Managers
             for (int i = 1; i <= 5; i++)
                 timelineBar.transform.Find(i.ToString()).SetParent(null);
             SetupEditorLayers(EditorTimeline.inst, 34f);
-            EditorHelper.SetComplexity(layers, "editor_layer_toggles", Complexity.Simple);
+            Destroy(timelineBar.GetComponent<ToggleGroup>());
+            EditorHelper.SetComplexity(layers, "editor_layer_toggles", Complexity.Simple, true);
 
             eventLayerToggle = timelineBar.transform.Find("6").GetComponent<Toggle>();
             eventLayerToggle.group = null;
@@ -3321,7 +3315,7 @@ namespace BetterLegacy.Editor.Managers
 
             EditorHelper.SetComplexity(timeField.gameObject, "time_field", Complexity.Normal);
 
-            var layersObj = timeObj.Duplicate(timelineBar.transform, "layers", 7);
+            var layersObj = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(timelineBar.transform, "layers", 7);
             EditorHelper.SetComplexity(layersObj, "editor_layer_field", Complexity.Normal);
             layersObj.transform.localScale = Vector3.one;
 
@@ -3357,7 +3351,7 @@ namespace BetterLegacy.Editor.Managers
                         CoreHelper.ListObjectLayers();
                 }));
 
-            var pitchObj = timeObj.Duplicate(timelineBar.transform, "pitch", 5);
+            var pitchObj = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(timelineBar.transform, "pitch", 5);
             pitchObj.SetActive(true);
             pitchObj.transform.localScale = Vector3.one;
             TooltipHelper.AssignTooltip(pitchObj, "Pitch", 3f);
@@ -3717,12 +3711,12 @@ namespace BetterLegacy.Editor.Managers
                     switch (pointerEventData.button)
                     {
                         case PointerEventData.InputButton.Right: {
-                                if (EventLibrary.displayNames.Length > currentEvent && (RTEventEditor.inst.eventBins.TryGetAt(type, out EventBin eventBin) ? eventBin.IsActive : ShowModdedUI && GameData.Current.events.Count > currentEvent || 10 > currentEvent))
-                                    RTEventEditor.inst.CreateNewEventKeyframe(EditorTimeline.inst.GetTimelineTime(RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsKeyframes.Value), type);
+                                if (EventLibrary.displayNames.Length > currentEvent && RTEventEditor.inst.eventBins.TryGetAt(type, out EventBin eventBin) && eventBin.IsActive)
+                                    RTEventEditor.inst.CreateNewEventKeyframe(EditorTimeline.inst.GetTimelineTime(editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsKeyframes.Value), type);
                                 break;
                             }
                         case PointerEventData.InputButton.Middle: {
-                                if (EventLibrary.displayNames.Length > currentEvent && (RTEventEditor.inst.eventBins.TryGetAt(type, out EventBin eventBin) ? eventBin.IsActive : ShowModdedUI && GameData.Current.events.Count > currentEvent || 10 > currentEvent) && GameData.Current.events[currentEvent].TryFindLastIndex(x => x.time < EditorTimeline.inst.GetTimelineTime(false), out int index))
+                                if (EventLibrary.displayNames.Length > currentEvent && RTEventEditor.inst.eventBins.TryGetAt(type, out EventBin eventBin) && eventBin.IsActive && GameData.Current.events[currentEvent].TryFindLastIndex(x => x.time < EditorTimeline.inst.GetTimelineTime(false), out int index))
                                     RTEventEditor.inst.SetCurrentKeyframe(currentEvent, index);
                                 break;
                             }
@@ -3835,7 +3829,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 ShowWarningPopup("Are you sure you want to quit to the arcade? Any unsaved progress will be lost!", ArcadeHelper.QuitToArcade, HideWarningPopup);
             }, 7);
-            EditorHelper.SetComplexity(quitToArcade, Complexity.Normal);
+            EditorHelper.SetComplexity(quitToArcade, "titlebar/quit_to_arcade", Complexity.Normal);
 
             var copyLevelToArcade = EditorHelper.AddEditorDropdown("Copy Level to Arcade", string.Empty, EditorHelper.FILE_DROPDOWN, SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/operations/right_small{FileFormat.PNG.Dot()}")), () =>
             {
@@ -3875,7 +3869,7 @@ namespace BetterLegacy.Editor.Managers
                     EditorManager.inst.DisplayNotification($"Successfully copied {name} to {LevelManager.Path}!", 2f, EditorManager.NotificationType.Success);
                 });
             }, 7);
-            EditorHelper.SetComplexity(copyLevelToArcade, Complexity.Normal);
+            EditorHelper.SetComplexity(copyLevelToArcade, "titlebar/copy_level_to_arcade", Complexity.Normal);
 
             var restartEditor = EditorHelper.AddEditorDropdown("Restart Editor", string.Empty, EditorHelper.FILE_DROPDOWN, EditorSprites.ReloadSprite, () =>
             {
@@ -3886,17 +3880,17 @@ namespace BetterLegacy.Editor.Managers
                 TooltipHelper.InitTooltips();
                 SceneHelper.LoadEditorWithProgress();
             }, 7);
-            EditorHelper.SetComplexity(restartEditor, Complexity.Normal);
+            EditorHelper.SetComplexity(restartEditor, "titlebar/restart_editor", Complexity.Normal);
 
             var openLevelBrowser = EditorHelper.AddEditorDropdown("Open Level Browser", string.Empty, EditorHelper.FILE_DROPDOWN, titleBar.Find("File/File Dropdown/Open/Image").GetComponent<Image>().sprite, () =>
             {
                 RTFileBrowser.inst.Popup.Open();
                 EditorLevelManager.inst.RefreshFileBrowserLevels();
             }, 3);
-            EditorHelper.SetComplexity(openLevelBrowser, Complexity.Normal);
+            EditorHelper.SetComplexity(openLevelBrowser, "titlebar/open_level_browser", Complexity.Normal);
 
             var convertVGToLS = EditorHelper.AddEditorDropdown("Convert VG to LS", string.Empty, EditorHelper.FILE_DROPDOWN, EditorSprites.SearchSprite, ConvertVGToLS, 4);
-            EditorHelper.SetComplexity(convertVGToLS, Complexity.Normal);
+            EditorHelper.SetComplexity(convertVGToLS, "titlebar/convert", Complexity.Normal);
 
             var addFileToLevelFolder = EditorHelper.AddEditorDropdown("Add File to Level", string.Empty, EditorHelper.FILE_DROPDOWN, EditorSprites.SearchSprite, () =>
             {
@@ -3956,7 +3950,7 @@ namespace BetterLegacy.Editor.Managers
                         EditorManager.inst.DisplayNotification($"Could not copy file {Path.GetFileName(selectedFile)}.", 2f, EditorManager.NotificationType.Error);
                 });
             }, 5);
-            EditorHelper.SetComplexity(addFileToLevelFolder, Complexity.Normal);
+            EditorHelper.SetComplexity(addFileToLevelFolder, "titlebar/add_file_to_level", Complexity.Normal);
 
             var reloadLevel = EditorHelper.AddEditorDropdown("Reload Level", string.Empty, EditorHelper.FILE_DROPDOWN, EditorSprites.ReloadSprite, () =>
             {
@@ -3978,7 +3972,7 @@ namespace BetterLegacy.Editor.Managers
                         EditorManager.inst.DisplayNotification("Level does not exist.", 2f, EditorManager.NotificationType.Error);
                 });
             }, 4);
-            EditorHelper.SetComplexity(reloadLevel, Complexity.Normal);
+            EditorHelper.SetComplexity(reloadLevel, "titlebar/reload_level", Complexity.Normal);
 
             EditorHelper.AddEditorDropdown("Editor Config", string.Empty, EditorHelper.SETTINGS_DROPDOWN, SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/preferences{FileFormat.PNG.Dot()}")), () =>
             {
@@ -3995,7 +3989,7 @@ namespace BetterLegacy.Editor.Managers
                     EditorManager.inst.DisplayNotification($"Removed {count} from the level!", 2f, EditorManager.NotificationType.Success);
                 });
             });
-            EditorHelper.SetComplexity(clearSpriteData, Complexity.Advanced);
+            EditorHelper.SetComplexity(clearSpriteData, "titlebar/clear_sprite_data", Complexity.Advanced);
 
             var clearModifierPrefabs = EditorHelper.AddEditorDropdown("Clear Modifier Prefabs", string.Empty, EditorHelper.EDIT_DROPDOWN, titleBar.Find("File/File Dropdown/Quit to Main Menu/Image").GetComponent<Image>().sprite, () =>
             {
@@ -4015,7 +4009,7 @@ namespace BetterLegacy.Editor.Managers
                     RTLevel.Current?.RecalculateObjectStates();
                 });
             });
-            EditorHelper.SetComplexity(clearModifierPrefabs, Complexity.Advanced);
+            EditorHelper.SetComplexity(clearModifierPrefabs, "titlebar/clear_modifier_prefabs", Complexity.Advanced);
 
             var resetEventOffsets = EditorHelper.AddEditorDropdown("Reset Event Offsets", string.Empty, EditorHelper.EDIT_DROPDOWN, EditorSprites.CloseSprite, () =>
             {
@@ -4023,7 +4017,7 @@ namespace BetterLegacy.Editor.Managers
 
                 EditorManager.inst.DisplayNotification("Event Offsets have been reset.", 1.4f, EditorManager.NotificationType.Success);
             });
-            EditorHelper.SetComplexity(resetEventOffsets, Complexity.Advanced);
+            EditorHelper.SetComplexity(resetEventOffsets, "titlebar/reset_event_offsets", Complexity.Advanced);
 
             var renderWaveform = EditorHelper.AddEditorDropdown("Render Waveform", string.Empty, EditorHelper.EDIT_DROPDOWN, EditorSprites.ReloadSprite, () =>
             {
@@ -4032,7 +4026,7 @@ namespace BetterLegacy.Editor.Managers
                 else
                     EditorTimeline.inst.SetTimelineSprite(null);
             });
-            EditorHelper.SetComplexity(renderWaveform, Complexity.Normal);
+            EditorHelper.SetComplexity(renderWaveform, "titlebar/render_waveform", Complexity.Normal);
 
             var deactivateModifiers = EditorHelper.AddEditorDropdown("Deactivate Modifiers", string.Empty, EditorHelper.EDIT_DROPDOWN, EditorSprites.CloseSprite, () =>
             {
@@ -4060,7 +4054,7 @@ namespace BetterLegacy.Editor.Managers
 
                 EditorManager.inst.DisplayNotification("Modifiers have been deactivated.", 1.4f, EditorManager.NotificationType.Success);
             });
-            EditorHelper.SetComplexity(deactivateModifiers, Complexity.Advanced);
+            EditorHelper.SetComplexity(deactivateModifiers, "titlebar/deactivate_modifiers", Complexity.Advanced);
 
             var resetObjectVariables = EditorHelper.AddEditorDropdown("Reset object variables", string.Empty, EditorHelper.EDIT_DROPDOWN, EditorSprites.CloseSprite, () =>
             {
@@ -4083,7 +4077,7 @@ namespace BetterLegacy.Editor.Managers
 
                 EditorManager.inst.DisplayNotification("Reset all integer variables to 0.", 1.4f, EditorManager.NotificationType.Success);
             });
-            EditorHelper.SetComplexity(resetObjectVariables, Complexity.Advanced);
+            EditorHelper.SetComplexity(resetObjectVariables, "titlebar/reset_object_variables", Complexity.Advanced);
 
             EditorHelper.AddEditorDropdown("Get Example", string.Empty, EditorHelper.VIEW_DROPDOWN, SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/example{FileFormat.PNG.Dot()}")), () =>
             {
@@ -4127,7 +4121,7 @@ namespace BetterLegacy.Editor.Managers
             titleBar.Find("Help/Help Dropdown/Which songs can I use?").gameObject.SetActive(false);
             var saveAsDropdown = titleBar.Find("File/File Dropdown/Save As").gameObject;
             saveAsDropdown.SetActive(true);
-            EditorHelper.SetComplexity(saveAsDropdown, Complexity.Normal);
+            EditorHelper.SetComplexity(saveAsDropdown, "titlebar/save_as", Complexity.Normal);
 
             undoButton = EditorManager.inst.undoButton.AddComponent<FunctionButtonStorage>();
             undoButton.Assign();
@@ -4200,12 +4194,12 @@ namespace BetterLegacy.Editor.Managers
             TooltipHelper.RemoveTooltip(EditorLevelManager.inst.OpenLevelPopup.SortDropdown.gameObject);
             TooltipHelper.AssignTooltip(EditorLevelManager.inst.OpenLevelPopup.SortDropdown.gameObject, "Level Sort Dropdown");
 
-            EditorHelper.SetComplexity(EditorLevelManager.inst.OpenLevelPopup.SortDropdown.gameObject, Complexity.Normal);
+            EditorHelper.SetComplexity(EditorLevelManager.inst.OpenLevelPopup.SortDropdown.gameObject, "level/sort", Complexity.Normal);
 
             TooltipHelper.RemoveTooltip(EditorLevelManager.inst.OpenLevelPopup.AscendToggle.gameObject);
             TooltipHelper.AssignTooltip(EditorLevelManager.inst.OpenLevelPopup.AscendToggle.gameObject, "Level Ascend Toggle");
 
-            EditorHelper.SetComplexity(EditorLevelManager.inst.OpenLevelPopup.AscendToggle.gameObject, Complexity.Normal);
+            EditorHelper.SetComplexity(EditorLevelManager.inst.OpenLevelPopup.AscendToggle.gameObject, "level/ascend", Complexity.Normal);
 
             EditorContextMenu.AddContextMenu(EditorLevelManager.inst.OpenLevelPopup.GameObject,
                 new ButtonElement("Create folder", () => ShowFolderCreator(RTFile.CombinePaths(BeatmapsPath, EditorPath), () => { EditorLevelManager.inst.LoadLevels(); HideNameEditor(); })),
@@ -4214,7 +4208,7 @@ namespace BetterLegacy.Editor.Managers
                 new ButtonElement("Open in File Explorer", OpenLevelListFolder));
 
             TooltipHelper.AssignTooltip(EditorLevelManager.inst.OpenLevelPopup.PathField.gameObject, "Editor Path", 3f);
-            EditorHelper.SetComplexity(EditorLevelManager.inst.OpenLevelPopup.PathField.gameObject, Complexity.Advanced);
+            EditorHelper.SetComplexity(EditorLevelManager.inst.OpenLevelPopup.PathField.gameObject, "level/path", Complexity.Advanced);
 
             EditorContextMenu.AddContextMenu(EditorLevelManager.inst.OpenLevelPopup.PathField.gameObject,
                 new ButtonElement("Set folder", () =>
@@ -4753,7 +4747,7 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         /// <param name="parentable">Parentable object to edit.</param>
         /// <param name="dialog">Parent dialog.</param>
-        public void RenderParent(IParentable parentable, IParentDialog dialog)
+        public void RenderParent(IParentable parentable, IParentDialog dialog, bool advancedParent)
         {
             string parent = parentable.Parent;
 
@@ -4766,7 +4760,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     parentable.Parent = BeatmapObject.CAMERA_PARENT;
                     parentable.UpdateParentChain();
-                    RenderParent(parentable, dialog);
+                    RenderParent(parentable, dialog, advancedParent);
                 }));
 
             dialog.ParentPickerButton.onClick.NewListener(() => parentPickerEnabled = true);
@@ -4848,7 +4842,7 @@ namespace BetterLegacy.Editor.Managers
                 else
                     parentable.Parent = string.Empty;
                 parentable.UpdateParentChain();
-                RenderParent(parentable, dialog);
+                RenderParent(parentable, dialog, advancedParent);
             });
 
             if (p == null)
@@ -5121,29 +5115,28 @@ namespace BetterLegacy.Editor.Managers
             foreach (var toggle in dialog.ShapeToggles)
             {
                 int index = num;
+                if (index >= Shape.unmoddedMaxShapes.Length)
+                    EditorHelper.SetComplexity(toggle.gameObject, "extra_shapes", Complexity.Advanced);
                 toggle.interactable = dialog.IsSupportedShapeType(index);
                 toggle.SetIsOnWithoutNotify(shapeable.Shape == index);
-                toggle.gameObject.SetActive(ShowModdedUI || index < Shape.unmoddedMaxShapes.Length);
+                toggle.onValueChanged.NewListener(_val =>
+                {
+                    shapeable.Shape = index;
+                    shapeable.ShapeOption = 0;
 
-                if (ShowModdedUI || index < Shape.unmoddedMaxShapes.Length)
-                    toggle.onValueChanged.NewListener(_val =>
-                    {
-                        shapeable.Shape = index;
-                        shapeable.ShapeOption = 0;
+                    if (shapeable is BeatmapObject beatmapObject && beatmapObject.gradientType != GradientType.Normal && (index == 4 || index == 6))
+                        shapeable.Shape = 0;
+                    if (shapeable is BackgroundObject backgroundObject && backgroundObject.ShapeType == ShapeType.Polygon)
+                        RTBackgroundEditor.inst.Dialog.FlatToggle.toggle.isOn = true;
 
-                        if (shapeable is BeatmapObject beatmapObject && beatmapObject.gradientType != GradientType.Normal && (index == 4 || index == 6))
-                            shapeable.Shape = 0;
-                        if (shapeable is BackgroundObject backgroundObject && backgroundObject.ShapeType == ShapeType.Polygon)
-                            RTBackgroundEditor.inst.Dialog.FlatToggle.toggle.isOn = true;
+                    if (shapeable.ShapeType == ShapeType.Polygon && EditorConfig.Instance.AutoPolygonRadius.Value)
+                        shapeable.Polygon.Radius = shapeable.Polygon.GetAutoRadius();
 
-                        if (shapeable.ShapeType == ShapeType.Polygon && EditorConfig.Instance.AutoPolygonRadius.Value)
-                            shapeable.Polygon.Radius = shapeable.Polygon.GetAutoRadius();
+                    // Since shape has no affect on the timeline object, we will only need to update the physical object.
+                    onUpdate?.Invoke(ObjectContext.SHAPE);
 
-                        // Since shape has no affect on the timeline object, we will only need to update the physical object.
-                        onUpdate?.Invoke(ObjectContext.SHAPE);
-
-                        RenderShapeable(shapeable, dialog, onUpdate);
-                    });
+                    RenderShapeable(shapeable, dialog, onUpdate);
+                });
 
                 EditorContextMenu.AddContextMenu(toggle.gameObject,
                     new ButtonElement("Copy Shape Data", () =>
@@ -5588,19 +5581,18 @@ namespace BetterLegacy.Editor.Managers
                         foreach (var toggle in dialog.ShapeOptionToggles[shapeable.Shape])
                         {
                             int index = num;
+                            if (index >= Shape.unmoddedMaxShapes[shapeable.Shape])
+                                EditorHelper.SetComplexity(toggle.gameObject, "extra_shapes", Complexity.Advanced);
                             toggle.SetIsOnWithoutNotify(shapeable.ShapeOption == index);
-                            toggle.gameObject.SetActive(RTEditor.ShowModdedUI || index < Shape.unmoddedMaxShapes[shapeable.Shape]);
+                            toggle.onValueChanged.NewListener(_val =>
+                            {
+                                shapeable.ShapeOption = index;
 
-                            if (RTEditor.ShowModdedUI || index < Shape.unmoddedMaxShapes[shapeable.Shape])
-                                toggle.onValueChanged.NewListener(_val =>
-                                {
-                                    shapeable.ShapeOption = index;
+                                // Since shape has no affect on the timeline object, we will only need to update the physical object.
+                                onUpdate?.Invoke(ObjectContext.SHAPE);
 
-                                    // Since shape has no affect on the timeline object, we will only need to update the physical object.
-                                    onUpdate?.Invoke(ObjectContext.SHAPE);
-
-                                    RenderShapeable(shapeable, dialog, onUpdate);
-                                });
+                                RenderShapeable(shapeable, dialog, onUpdate);
+                            });
 
                             num++;
                         }
@@ -6544,6 +6536,61 @@ namespace BetterLegacy.Editor.Managers
             text.fontSize = 20;
             text.enableWordWrapping = true;
             text.text = "font";
+        }
+
+        #endregion
+
+        #region Intro
+
+        public void OpenIntroDialog()
+        {
+            IntroDialog.Open();
+            RefreshIntroDialog();
+        }
+
+        public void RefreshIntroDialog()
+        {
+            for (int i = 0; i < IntroDialog.ComplexityToggles.Count; i++)
+            {
+                var index = i;
+                var complexityToggle = IntroDialog.ComplexityToggles[index];
+                complexityToggle.SetIsOnWithoutNotify(EditorConfig.Instance.EditorComplexity.Value == (Complexity)index);
+                complexityToggle.OnValueChanged.NewListener(_val =>
+                {
+                    EditorConfig.Instance.EditorComplexity.Value = (Complexity)index;
+                    RefreshIntroDialog();
+                    if (ConfigManager.inst.Active)
+                        ConfigManager.inst.RefreshSettings();
+                });
+            }
+            for (int i = 0; i < IntroDialog.ThemeToggles.Count; i++)
+            {
+                var index = i;
+                var themeToggle = IntroDialog.ThemeToggles[i];
+                themeToggle.SetIsOnWithoutNotify(EditorConfig.Instance.EditorTheme.Value.Ordinal == index);
+                themeToggle.OnValueChanged.NewListener(_val =>
+                {
+                    EditorConfig.Instance.EditorTheme.Value = index;
+                    RefreshIntroDialog();
+                    if (ConfigManager.inst.Active)
+                        ConfigManager.inst.RefreshSettings();
+                });
+            }
+            IntroDialog.RoundedToggle.SetIsOnWithoutNotify(EditorConfig.Instance.RoundedUI.Value);
+            IntroDialog.RoundedToggle.OnValueChanged.NewListener(_val =>
+            {
+                EditorConfig.Instance.RoundedUI.Value = _val;
+                if (ConfigManager.inst.Active)
+                    ConfigManager.inst.RefreshSettings();
+            });
+        }
+
+        void CreateIntroDialog()
+        {
+            IntroDialog = new IntroDialog();
+            IntroDialog.Init();
+
+            EditorHelper.AddEditorDropdown("View Welcome Dialog", string.Empty, EditorHelper.VIEW_DROPDOWN, EditorSprites.UpArrow, OpenIntroDialog);
         }
 
         #endregion
