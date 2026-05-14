@@ -25,6 +25,14 @@ namespace BetterLegacy.Core
     /// </summary>
     public static class RTString
     {
+        public static string[] axis = new string[]
+        {
+            "x",
+            "y",
+            "z",
+            "w",
+        };
+
         public static string ReplaceFormatting(string str)
         {
             // Here we replace every instance of <formatting> in the text. Examples include <b>, <i>, <color=#FFFFFF>.
