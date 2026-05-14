@@ -6524,6 +6524,40 @@
       } // Timeline Planner Event Type
     ],
 
+    // Indicators
+    [
+      {
+        "name": "Freecam Indicator",
+        "tooltips": [
+          {
+            "desc": "Freecam Indicator",
+            "hint": "Indicates that freecam is active. Editor freecam settings can be found in Config Manager > Editor > Freecam. You can click the scrollwheel to activate freecam.",
+            "lang": 0
+          }
+        ]
+      }, // Freecam Indicator
+      {
+        "name": "Marker Looping Indicator",
+        "tooltips": [
+          {
+            "desc": "Marker Looping Indicator",
+            "hint": "Indicates that marker looping is active.",
+            "lang": 0
+          }
+        ]
+      }, // Marker Looping Indicator
+      {
+        "name": "Disabled Preview Selection Indicator",
+        "tooltips": [
+          {
+            "desc": "Disabled Preview Selection Indicator",
+            "hint": "Indicates that selecting objects in the preview area is disabled. This can be re-enabled with a custom keybind or through the \"Select Objects\" setting in Config Manager > Editor > Preview.",
+            "lang": 0
+          }
+        ]
+      } // Disabled Preview Selection Indicator
+    ],
+
     // Misc
     [
       {
@@ -6585,7 +6619,38 @@
             "lang": 0
           }
         ]
-      } // Hex Color Field
+      }, // Hex Color Field
+
+      {
+        "name": "Simple Editor Complexity",
+        "tooltips": [
+          {
+            "desc": "Simple Editor Complexity",
+            "hint": "Only the most basic editor features should display. Recommended for beginners who haven't used the editor before.",
+            "lang": 0
+          }
+        ]
+      }, // Simple Editor Complexity
+      {
+        "name": "Normal Editor Complexity",
+        "tooltips": [
+          {
+            "desc": "Normal Editor Complexity",
+            "hint": "Only features compatible with the vanilla game will show. Recommended for users who are familiar with the editor and want to get used to BetterLegacy, or if they want to only use vanilla compatible features.",
+            "lang": 0
+          }
+        ]
+      }, // Normal Editor Complexity
+      {
+        "name": "Advanced Editor Complexity",
+        "tooltips": [
+          {
+            "desc": "Advanced Editor Complexity",
+            "hint": "Every feature is active. Recommended for people wanting to use the capabilities of the BetterLegacy editor.",
+            "lang": 0
+          }
+        ]
+      } // Advanced Editor Complexity
     ]
   ]
 }
