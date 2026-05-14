@@ -611,7 +611,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             if (!Edit)
                 return;
 
-            EditorHelper.SetComplexity(Edit.Find("spacer")?.gameObject, Complexity.Simple);
+            EditorHelper.SetComplexity(Edit.Find("spacer")?.gameObject, "keyframe/edit_spacer", Complexity.Simple);
 
             if (!Edit.Find("copy"))
             {
@@ -623,9 +623,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 EditorThemeManager.ApplyGraphic(copyStorage.button.image, ThemeGroup.Copy, true);
                 EditorThemeManager.ApplyGraphic(copyStorage.label, ThemeGroup.Copy_Text);
 
-                EditorHelper.SetComplexity(copy, Complexity.Normal);
+                EditorHelper.SetComplexity(copy, "keyframe/edit_copy", Complexity.Normal);
             }
-
             if (!Edit.Find("paste"))
             {
                 var paste = EditorPrefabHolder.Instance.Function1Button.Duplicate(Edit, "paste", 6);
@@ -636,7 +635,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 EditorThemeManager.ApplyGraphic(pasteStorage.button.image, ThemeGroup.Paste, true);
                 EditorThemeManager.ApplyGraphic(pasteStorage.label, ThemeGroup.Paste_Text);
 
-                EditorHelper.SetComplexity(paste, Complexity.Normal);
+                EditorHelper.SetComplexity(paste, "keyframe/edit_paste", Complexity.Normal);
             }
         }
 
@@ -1176,7 +1175,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public abstract void Render(int type, int valueIndex, IEnumerable<TimelineKeyframe> selected, TimelineKeyframe firstKF, IAnimatable animatable);
 
         /// <summary>
-        /// OVerwrites the display element.
+        /// Overwrites the display element.
         /// </summary>
         /// <param name="animatable">Animatable object.</param>
         public void UpdateDisplay(IAnimatable animatable)
@@ -1195,6 +1194,44 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 ObjectEditor.inst.RenderDialog(beatmapObject);
             if (animatable is PAAnimation animation)
                 AnimationEditor.inst.RenderDialog(animation, AnimationEditor.inst.currentOnReturn);
+        }
+
+        /// <summary>
+        /// Handles the complexity of the keyframe element.
+        /// </summary>
+        /// <param name="type">
+        /// Type of the keyframe.
+        /// <br>0 - Position</br>
+        /// <br>1 - Scale</br>
+        /// <br>2 - Rotation</br>
+        /// <br>3 - Color</br>
+        /// </param>
+        /// <param name="valueIndex">
+        /// Index of the keyframe value.
+        /// <br>0 - X</br>
+        /// <br>1 - Y</br>
+        /// <br>2 - Z</br>
+        /// </param>
+        /// <param name="selected">Collection of selected keyframes.</param>
+        /// <param name="firstKF">First selected keyframe.</param>
+        /// <param name="animatable">Animatable object.</param>
+        public void HandleComplexity(int type, int valueIndex, IEnumerable<TimelineKeyframe> selected, TimelineKeyframe firstKF, IAnimatable animatable)
+        {
+            var typeName = type switch
+            {
+                1 => "scale",
+                2 => "rotation",
+                3 => "color",
+                _ => "position",
+            };
+            var axis = RTString.axis.GetAtOrDefault(valueIndex, string.Empty);
+            var complexityPath = $"{typeName}_keyframe/{axis}_axis";
+            EditorHelper.SetComplexity(GameObject, complexityPath, type == 0 && valueIndex == 2 || type == 2 && valueIndex > 0 ? Complexity.Advanced : Complexity.Simple, visible: () => firstKF.eventKeyframe.values.Length > valueIndex);
+            if (Dialog.EventValueLabels.TryGetAt(valueIndex, out Text label) && label)
+            {
+                EditorHelper.SetComplexity(label.gameObject, complexityPath, type == 0 && valueIndex == 2 || type == 2 && valueIndex > 0 ? Complexity.Advanced : Complexity.Simple, visible: () => firstKF.eventKeyframe.values.Length > valueIndex);
+                label.text = !string.IsNullOrEmpty(Display.label) ? Display.label : Dialog.originalLabels[valueIndex];
+            }
         }
 
         #endregion
@@ -1253,14 +1290,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public override void Render(int type, int valueIndex, IEnumerable<TimelineKeyframe> selected, TimelineKeyframe firstKF, IAnimatable animatable)
         {
-            GameObject.SetActive(firstKF.eventKeyframe.values.Length > valueIndex);
-            if (Dialog.EventValueLabels.TryGetAt(valueIndex, out Text label) && label)
-            {
-                label.gameObject.SetActive(firstKF.eventKeyframe.values.Length > valueIndex);
-                label.text = !string.IsNullOrEmpty(Display.label) ? Display.label : Dialog.originalLabels[valueIndex];
-            }
-
-            if (firstKF.eventKeyframe.values.Length <= valueIndex)
+            HandleComplexity(type, valueIndex, selected, firstKF, animatable);
+            if (!GameObject.activeSelf)
                 return;
 
             var isSingle = selected.Count() == 1;
@@ -1604,14 +1635,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public override void Render(int type, int valueIndex, IEnumerable<TimelineKeyframe> selected, TimelineKeyframe firstKF, IAnimatable animatable)
         {
-            GameObject.SetActive(firstKF.eventKeyframe.values.Length > valueIndex);
-            if (Dialog.EventValueLabels.TryGetAt(valueIndex, out Text label) && label)
-            {
-                label.gameObject.SetActive(firstKF.eventKeyframe.values.Length > valueIndex);
-                label.text = !string.IsNullOrEmpty(Display.label) ? Display.label : Dialog.originalLabels[valueIndex];
-            }
-
-            if (firstKF.eventKeyframe.values.Length <= valueIndex)
+            HandleComplexity(type, valueIndex, selected, firstKF, animatable);
+            if (!GameObject.activeSelf)
                 return;
 
             var isSingle = selected.Count() == 1;
@@ -1847,14 +1872,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public override void Render(int type, int valueIndex, IEnumerable<TimelineKeyframe> selected, TimelineKeyframe firstKF, IAnimatable animatable)
         {
-            GameObject.SetActive(firstKF.eventKeyframe.values.Length > valueIndex);
-            if (Dialog.EventValueLabels.TryGetAt(valueIndex, out Text label) && label)
-            {
-                label.gameObject.SetActive(firstKF.eventKeyframe.values.Length > valueIndex);
-                label.text = !string.IsNullOrEmpty(Display.label) ? Display.label : Dialog.originalLabels[valueIndex];
-            }
-
-            if (firstKF.eventKeyframe.values.Length <= valueIndex)
+            HandleComplexity(type, valueIndex, selected, firstKF, animatable);
+            if (!GameObject.activeSelf)
                 return;
 
             var isSingle = selected.Count() == 1;

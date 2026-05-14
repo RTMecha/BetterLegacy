@@ -484,7 +484,7 @@ namespace BetterLegacy.Editor.Managers
                         EditorManager.inst.DisplayNotification($"Removed default prefab folder.", 5f, EditorManager.NotificationType.Success);
                     }, "Prefab Default Path"));
 
-                EditorHelper.SetComplexity(Popups.External.PathField.gameObject, Complexity.Advanced);
+                EditorHelper.SetComplexity(Popups.External.PathField.gameObject, "prefab/path", Complexity.Normal);
 
                 PrefabCreatorDialog = new PrefabCreatorDialog();
                 PrefabCreatorDialog.Init();
@@ -572,6 +572,8 @@ namespace BetterLegacy.Editor.Managers
             RenderPrefabObjectType(prefab);
             RenderPrefabObjectDefault(prefabObject, prefab);
 
+            EditorHelper.SetComplexity(PrefabObjectEditor.SavePrefabButton.transform.GetPreviousSibling().gameObject, "prefab/save_prefab", Complexity.Advanced);
+            EditorHelper.SetComplexity(PrefabObjectEditor.SavePrefabButton.gameObject, "prefab/save_prefab", Complexity.Advanced);
             PrefabObjectEditor.SavePrefabButton.OnClick.NewListener(() =>
             {
                 Popups.Open();
@@ -587,7 +589,12 @@ namespace BetterLegacy.Editor.Managers
             });
 
             if (ModCompatibility.UnityExplorerInstalled && PrefabObjectEditor.InspectPrefab)
+            {
+                EditorHelper.SetComplexity(PrefabObjectEditor.InspectPrefab.transform.GetPreviousSibling().gameObject, "ue_inspect", Complexity.Advanced);
+                EditorHelper.SetComplexity(PrefabObjectEditor.InspectPrefab.gameObject, "ue_inspect", Complexity.Advanced);
+
                 PrefabObjectEditor.InspectPrefab.OnClick.NewListener(() => ModCompatibility.Inspect(prefab));
+            }
 
             RenderPrefabObjectInfo(prefab);
 
@@ -647,12 +654,8 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderPrefabObjectAutokill(PrefabObject prefabObject, Prefab prefab)
         {
-            PrefabObjectEditor.LeftContent.Find("tod-dropdown label").gameObject.SetActive(RTEditor.ShowModdedUI);
-            PrefabObjectEditor.AutokillDropdown.gameObject.SetActive(RTEditor.ShowModdedUI);
-            PrefabObjectEditor.AutokillField.gameObject.SetActive(RTEditor.ShowModdedUI);
-
-            if (!RTEditor.ShowModdedUI)
-                return;
+            EditorHelper.SetComplexity(PrefabObjectEditor.LeftContent.Find("tod-dropdown label").gameObject, "prefab_object/autokill", Complexity.Advanced);
+            EditorHelper.SetComplexity(PrefabObjectEditor.AutokillDropdown.transform.parent.gameObject, "prefab_object/autokill", Complexity.Advanced);
 
             PrefabObjectEditor.AutokillDropdown.SetValueWithoutNotify((int)prefabObject.autoKillType);
             PrefabObjectEditor.AutokillDropdown.onValueChanged.NewListener(_val =>
@@ -688,6 +691,9 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderPrefabObjectParent(PrefabObject prefabObject)
         {
+            EditorHelper.SetComplexity(PrefabObjectEditor.LeftContent.Find("parent label").gameObject, "prefab_object/parent", Complexity.Advanced);
+            EditorHelper.SetComplexity(PrefabObjectEditor.LeftContent.Find("parent").gameObject, "prefab_object/parent", Complexity.Advanced);
+
             PrefabObjectEditor.OffsetParentDesyncToggle.SetIsOnWithoutNotify(prefabObject.offsetParentDesyncTime);
             PrefabObjectEditor.OffsetParentDesyncToggle.OnValueChanged.NewListener(_val =>
             {
@@ -700,7 +706,7 @@ namespace BetterLegacy.Editor.Managers
                 prefabObject.parentSelf = _val;
                 RTLevel.Current?.UpdatePrefab(prefabObject);
             });
-            RTEditor.inst.RenderParent(prefabObject, PrefabObjectEditor);
+            RTEditor.inst.RenderParent(prefabObject, PrefabObjectEditor, ObjEditor.inst.advancedParent && EditorHelper.CheckComplexity("prefab_object/parent", Complexity.Advanced));
         }
 
         public void RenderPrefabObjectTransforms(PrefabObject prefabObject)
@@ -712,17 +718,32 @@ namespace BetterLegacy.Editor.Managers
                 "rotation"
             };
 
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < types.Length; i++)
             {
                 int index = i;
-
                 var currentKeyframe = prefabObject.events[index];
+                var r_type = "r_" + types[index];
+
+                try
+                {
+                    EditorHelper.SetComplexity(PrefabObjectEditor.LeftContent.Find(types[index]).GetPreviousSibling().gameObject, $"prefab_object/{types[index]}", Complexity.Simple);
+                    EditorHelper.SetComplexity(PrefabObjectEditor.LeftContent.Find(types[index]).gameObject, $"prefab_object/{types[index]}", Complexity.Simple);
+
+                    EditorHelper.SetComplexity(PrefabObjectEditor.LeftContent.Find(r_type).GetPreviousSibling().gameObject, $"prefab_object/{types[index]}_random", Complexity.Advanced, visible: () => currentKeyframe.random != 0);
+                    EditorHelper.SetComplexity(PrefabObjectEditor.LeftContent.Find(r_type).gameObject, $"prefab_object/{types[index]}_random", Complexity.Advanced, visible: () => currentKeyframe.random != 0);
+                    EditorHelper.SetComplexity(PrefabObjectEditor.LeftContent.Find($"{types[index]}-random-label").gameObject, $"prefab_object/{types[index]}_random", Complexity.Advanced, visible: () => currentKeyframe.random != 0);
+                    EditorHelper.SetComplexity(PrefabObjectEditor.LeftContent.Find($"{types[index]}-random").gameObject, $"prefab_object/{types[index]}_random", Complexity.Advanced, visible: () => currentKeyframe.random != 0);
+                }
+                catch (Exception ex)
+                {
+                    CoreHelper.LogException(ex);
+                }
 
                 var inputFieldX = PrefabObjectEditor.TransformFields[index][0];
                 var r_inputFieldX = PrefabObjectEditor.RandomTransformFields[index][0];
 
-                inputFieldX.inputField.SetTextWithoutNotify(currentKeyframe.values[0].ToString());
-                inputFieldX.inputField.onValueChanged.NewListener(_val =>
+                inputFieldX.SetTextWithoutNotify(currentKeyframe.values[0].ToString());
+                inputFieldX.OnValueChanged.NewListener(_val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
@@ -730,7 +751,7 @@ namespace BetterLegacy.Editor.Managers
                         RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                     }
                 });
-                inputFieldX.inputField.onEndEdit.NewListener(_val =>
+                inputFieldX.OnEndEdit.NewListener(_val =>
                 {
                     var variables = new Dictionary<string, float>
                     {
@@ -741,10 +762,8 @@ namespace BetterLegacy.Editor.Managers
                         inputFieldX.inputField.text = calc.ToString();
                 });
 
-                var r_type = "r_" + types[index];
-
-                r_inputFieldX.inputField.SetTextWithoutNotify(currentKeyframe.randomValues[0].ToString());
-                r_inputFieldX.inputField.onValueChanged.NewListener(_val =>
+                r_inputFieldX.SetTextWithoutNotify(currentKeyframe.randomValues[0].ToString());
+                r_inputFieldX.OnValueChanged.NewListener(_val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
@@ -752,7 +771,7 @@ namespace BetterLegacy.Editor.Managers
                         RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                     }
                 });
-                r_inputFieldX.inputField.onEndEdit.NewListener(_val =>
+                r_inputFieldX.OnEndEdit.NewListener(_val =>
                 {
                     var variables = new Dictionary<string, float>
                     {
@@ -786,16 +805,13 @@ namespace BetterLegacy.Editor.Managers
                     }
                 }
 
-                PrefabObjectEditor.LeftContent.Find(r_type + " label").gameObject.SetActive(currentKeyframe.random != 0 && RTEditor.ShowModdedUI);
-                PrefabObjectEditor.LeftContent.Find(r_type).gameObject.SetActive(currentKeyframe.random != 0 && RTEditor.ShowModdedUI);
-
                 if (index != 2)
                 {
                     var inputFieldY = PrefabObjectEditor.TransformFields[index][1];
                     var r_inputFieldY = PrefabObjectEditor.RandomTransformFields[index][1];
 
-                    inputFieldY.inputField.SetTextWithoutNotify(currentKeyframe.values[1].ToString());
-                    inputFieldY.inputField.onValueChanged.NewListener(_val =>
+                    inputFieldY.SetTextWithoutNotify(currentKeyframe.values[1].ToString());
+                    inputFieldY.OnValueChanged.NewListener(_val =>
                     {
                         if (float.TryParse(_val, out float num))
                         {
@@ -803,7 +819,7 @@ namespace BetterLegacy.Editor.Managers
                             RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                         }
                     });
-                    inputFieldY.inputField.onEndEdit.NewListener(_val =>
+                    inputFieldY.OnEndEdit.NewListener(_val =>
                     {
                         var variables = new Dictionary<string, float>
                         {
@@ -824,8 +840,8 @@ namespace BetterLegacy.Editor.Managers
                         TriggerHelper.ScrollDelta(inputFieldY.inputField, multi: true),
                         TriggerHelper.ScrollDeltaVector2(inputFieldX.inputField, inputFieldY.inputField, 0.1f, 10f));
 
-                    r_inputFieldY.inputField.SetTextWithoutNotify(currentKeyframe.randomValues[1].ToString());
-                    r_inputFieldY.inputField.onValueChanged.NewListener(_val =>
+                    r_inputFieldY.SetTextWithoutNotify(currentKeyframe.randomValues[1].ToString());
+                    r_inputFieldY.OnValueChanged.NewListener(_val =>
                     {
                         if (float.TryParse(_val, out float num))
                         {
@@ -833,7 +849,7 @@ namespace BetterLegacy.Editor.Managers
                             RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                         }
                     });
-                    r_inputFieldY.inputField.onEndEdit.NewListener(_val =>
+                    r_inputFieldY.OnEndEdit.NewListener(_val =>
                     {
                         var variables = new Dictionary<string, float>
                         {
@@ -884,6 +900,16 @@ namespace BetterLegacy.Editor.Managers
                 TriggerHelper.AddEventTriggers(randomIntervalField.gameObject, TriggerHelper.ScrollDelta(randomIntervalField, max: float.MaxValue));
             }
 
+            try
+            {
+                EditorHelper.SetComplexity(PrefabObjectEditor.DepthField.transform.GetPreviousSibling().gameObject, $"prefab_object/depth", Complexity.Advanced);
+                EditorHelper.SetComplexity(PrefabObjectEditor.DepthField.gameObject, $"prefab_object/depth", Complexity.Advanced);
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            }
+
             PrefabObjectEditor.DepthField.SetTextWithoutNotify(prefabObject.depth.ToString());
             PrefabObjectEditor.DepthField.OnValueChanged.NewListener(_val =>
             {
@@ -899,11 +925,8 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderPrefabObjectRepeat(PrefabObject prefabObject)
         {
-            PrefabObjectEditor.LeftContent.Find("repeat label").gameObject.SetActive(RTEditor.ShowModdedUI);
-            PrefabObjectEditor.LeftContent.Find("repeat").gameObject.SetActive(RTEditor.ShowModdedUI);
-
-            if (!RTEditor.ShowModdedUI)
-                return;
+            EditorHelper.SetComplexity(PrefabObjectEditor.LeftContent.Find("repeat label").gameObject, "prefab_object/repeat", Complexity.Advanced);
+            EditorHelper.SetComplexity(PrefabObjectEditor.LeftContent.Find("repeat").gameObject, "prefab_object/repeat", Complexity.Advanced);
 
             PrefabObjectEditor.RepeatCountField.SetTextWithoutNotify(Mathf.Clamp(prefabObject.RepeatCount, 0, 1000).ToString());
             PrefabObjectEditor.RepeatCountField.OnValueChanged.NewListener(_val =>
@@ -936,11 +959,8 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderPrefabObjectSpeed(PrefabObject prefabObject)
         {
-            PrefabObjectEditor.LeftContent.Find("speed label").gameObject.SetActive(RTEditor.ShowModdedUI);
-            PrefabObjectEditor.SpeedField.gameObject.SetActive(RTEditor.ShowModdedUI);
-
-            if (!RTEditor.ShowModdedUI)
-                return;
+            EditorHelper.SetComplexity(PrefabObjectEditor.LeftContent.Find("speed label").gameObject, "prefab_object/speed", Complexity.Advanced);
+            EditorHelper.SetComplexity(PrefabObjectEditor.SpeedField.gameObject, "prefab_object/speed", Complexity.Advanced);
 
             PrefabObjectEditor.SpeedField.SetTextWithoutNotify(prefabObject.Speed.ToString());
             PrefabObjectEditor.SpeedField.OnValueChanged.NewListener(_val =>
@@ -955,6 +975,11 @@ namespace BetterLegacy.Editor.Managers
         
         public void RenderPrefabObjectInstanceData(PrefabObject prefabObject)
         {
+            EditorHelper.SetComplexity(PrefabObjectEditor.LeftContent.Find("copy label").gameObject, "prefab_object/instance_data", Complexity.Normal);
+            EditorHelper.SetComplexity(PrefabObjectEditor.CopyInstanceDataButton.gameObject, "prefab_object/instance_data", Complexity.Normal);
+            EditorHelper.SetComplexity(PrefabObjectEditor.PasteInstanceDataButton.gameObject, "prefab_object/instance_data", Complexity.Normal, visible: () => copiedInstanceData);
+            EditorHelper.SetComplexity(PrefabObjectEditor.RemoveInstanceDataButton.gameObject, "prefab_object/instance_data", Complexity.Normal, visible: () => copiedInstanceData);
+
             PrefabObjectEditor.CopyInstanceDataButton.OnClick.NewListener(() =>
             {
                 copiedInstanceData = prefabObject.Copy();
@@ -974,7 +999,6 @@ namespace BetterLegacy.Editor.Managers
 
                 EditorManager.inst.DisplayNotification($"Pasted Prefab instance data.", 2f, EditorManager.NotificationType.Success);
             });
-            PrefabObjectEditor.RemoveInstanceDataButton.gameObject.SetActive(copiedInstanceData);
             PrefabObjectEditor.RemoveInstanceDataButton.OnClick.NewListener(() =>
             {
                 copiedInstanceData = null;
@@ -1004,10 +1028,10 @@ namespace BetterLegacy.Editor.Managers
             if (!PrefabObjectEditor.EditorIndexField)
                 return;
 
-            PrefabObjectEditor.LeftContent.Find("indexer_label").gameObject.SetActive(RTEditor.ShowModdedUI);
-            PrefabObjectEditor.EditorIndexField.gameObject.SetActive(RTEditor.ShowModdedUI);
-
-            if (!RTEditor.ShowModdedUI)
+            EditorHelper.SetComplexity(PrefabObjectEditor.LeftContent.Find("indexer_label").gameObject, "timeline_object/indexer", Complexity.Advanced);
+            EditorHelper.SetComplexity(PrefabObjectEditor.EditorIndexField.gameObject, "timeline_object/indexer", Complexity.Advanced);
+            
+            if (!EditorHelper.CheckComplexity(EditorHelper.GetComplexity("timeline_object/indexer", Complexity.Advanced)))
                 return;
 
             var currentIndex = GameData.Current.prefabObjects.FindIndex(x => x.id == prefabObject.id);
@@ -1120,6 +1144,9 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderPrefabObjectGroup(PrefabObject prefabObject)
         {
+            EditorHelper.SetComplexity(PrefabObjectEditor.EditorGroupField.transform.GetPreviousSibling().gameObject, "timeline_object/editor_group", Complexity.Advanced);
+            EditorHelper.SetComplexity(PrefabObjectEditor.EditorGroupField.gameObject, "timeline_object/editor_group", Complexity.Advanced);
+
             PrefabObjectEditor.EditorGroupField.SetTextWithoutNotify(prefabObject.EditorData.editorGroup);
             PrefabObjectEditor.EditorGroupField.onValueChanged.NewListener(_val =>
             {
@@ -1130,6 +1157,11 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderEditorColors(PrefabObject prefabObject)
         {
+            EditorHelper.SetComplexity(PrefabObjectEditor.BaseColorField.transform.parent.gameObject, "timeline_object/base_color", Complexity.Normal);
+            EditorHelper.SetComplexity(PrefabObjectEditor.SelectColorField.transform.parent.gameObject, "timeline_object/select_color", Complexity.Normal);
+            EditorHelper.SetComplexity(PrefabObjectEditor.TextColorField.transform.parent.gameObject, "timeline_object/text_color", Complexity.Normal);
+            EditorHelper.SetComplexity(PrefabObjectEditor.MarkColorField.transform.parent.gameObject, "timeline_object/mark_color", Complexity.Normal);
+
             PrefabObjectEditor.BaseColorField.SetTextWithoutNotify(prefabObject.editorData.color);
             PrefabObjectEditor.BaseColorField.onValueChanged.NewListener(_val =>
             {
@@ -1188,13 +1220,10 @@ namespace BetterLegacy.Editor.Managers
             if (!ModCompatibility.UnityExplorerInstalled)
                 return;
 
-            PrefabObjectEditor.LeftContent.Find("inspect label").gameObject.SetActive(RTEditor.ShowModdedUI);
-            PrefabObjectEditor.InspectPrefabObject.gameObject.SetActive(RTEditor.ShowModdedUI);
-            PrefabObjectEditor.InspectRuntimeObjectButton.gameObject.SetActive(RTEditor.ShowModdedUI);
-            PrefabObjectEditor.InspectTimelineObject.gameObject.SetActive(RTEditor.ShowModdedUI);
-
-            if (!RTEditor.ShowModdedUI)
-                return;
+            EditorHelper.SetComplexity(PrefabObjectEditor.LeftContent.Find("inspect label").gameObject, "ue_inspect", Complexity.Advanced);
+            EditorHelper.SetComplexity(PrefabObjectEditor.InspectPrefabObject.gameObject, "ue_inspect", Complexity.Advanced);
+            EditorHelper.SetComplexity(PrefabObjectEditor.InspectRuntimeObjectButton.gameObject, "ue_inspect", Complexity.Advanced);
+            EditorHelper.SetComplexity(PrefabObjectEditor.InspectTimelineObject.gameObject, "ue_inspect", Complexity.Advanced);
 
             PrefabObjectEditor.InspectPrefabObject.OnClick.NewListener(() => ModCompatibility.Inspect(prefabObject));
             PrefabObjectEditor.InspectRuntimeObjectButton.OnClick.NewListener(() => ModCompatibility.Inspect(prefabObject.runtimeObject));
@@ -1251,6 +1280,9 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderPrefabObjectType(Prefab prefab)
         {
+            EditorHelper.SetComplexity(PrefabObjectEditor.PrefabTypeSelectorButton.transform.GetPreviousSibling().gameObject, "prefab/type", Complexity.Normal);
+            EditorHelper.SetComplexity(PrefabObjectEditor.PrefabTypeSelectorButton.gameObject, "prefab/type", Complexity.Normal);
+
             var prefabType = prefab.GetPrefabType();
             PrefabObjectEditor.PrefabTypeSelectorButton.Color = prefabType.color;
             PrefabObjectEditor.PrefabTypeSelectorButton.Text = prefabType.name;
@@ -1269,6 +1301,9 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderPrefabObjectDefault(PrefabObject prefabObject, Prefab prefab)
         {
+            EditorHelper.SetComplexity(PrefabObjectEditor.DefaultInstanceDataButton.transform.GetPreviousSibling().gameObject, "prefab/default_instance", Complexity.Advanced);
+            EditorHelper.SetComplexity(PrefabObjectEditor.DefaultInstanceDataButton.gameObject, "prefab/default_instance", Complexity.Advanced);
+
             PrefabObjectEditor.DefaultInstanceDataButton.Text = prefab.defaultInstanceData ? "Remove" : "Set as Default";
             PrefabObjectEditor.DefaultInstanceDataButton.OnClick.NewListener(() =>
             {
@@ -1280,6 +1315,14 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderPrefabObjectInfo(Prefab prefab)
         {
+            EditorHelper.SetComplexity(PrefabObjectEditor.ObjectCountText.gameObject, "prefab/count", Complexity.Advanced);
+            EditorHelper.SetComplexity(PrefabObjectEditor.PrefabObjectCountText.gameObject, "prefab/count", Complexity.Advanced);
+            EditorHelper.SetComplexity(PrefabObjectEditor.BackgroundObjectCountText.gameObject, "prefab/count", Complexity.Advanced);
+            EditorHelper.SetComplexity(PrefabObjectEditor.TimelineObjectCountText.gameObject, "prefab/count", Complexity.Advanced);
+
+            if (!EditorHelper.CheckComplexity("prefab/count", Complexity.Advanced))
+                return;
+
             PrefabObjectEditor.ObjectCountText.text = "Object Count: " + prefab.beatmapObjects.Count.ToString();
             PrefabObjectEditor.PrefabObjectCountText.text = "Prefab Object Count: " + prefab.prefabObjects.Count;
             PrefabObjectEditor.BackgroundObjectCountText.text = "Background Object Count: " + prefab.backgroundObjects.Count;

@@ -79,7 +79,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public override void Init()
         {
@@ -369,6 +369,10 @@ namespace BetterLegacy.Editor.Data.Dialogs
             }
 
             EditorThemeManager.ApplyScrollbar(Editor.transform.Find("theme/Scrollbar Vertical").GetComponent<Scrollbar>(), scrollbarGroup: ThemeGroup.Scrollbar_2, handleGroup: ThemeGroup.Scrollbar_2_Handle);
+
+            EditorContent.GetChild(4).name = "player_label";
+            EditorContent.GetChild(9).name = "object_label";
+            EditorContent.GetChild(28).name = "background_label";
 
             #endregion
         }

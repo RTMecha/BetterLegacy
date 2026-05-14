@@ -638,6 +638,9 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderIterations(BackgroundObject backgroundObject)
         {
+            EditorHelper.SetComplexity(Dialog.IterationsField.transform.parent.GetPreviousSibling().gameObject, "background_object/iterations", Complexity.Advanced);
+            EditorHelper.SetComplexity(Dialog.IterationsField.transform.parent.gameObject, "background_object/iterations", Complexity.Advanced);
+
             Dialog.IterationsField.SetTextWithoutNotify(backgroundObject.iterations.ToString());
             Dialog.IterationsField.OnValueChanged.NewListener(_val =>
             {
@@ -726,6 +729,9 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderZPosition(BackgroundObject backgroundObject)
         {
+            EditorHelper.SetComplexity(Dialog.ZPositionField.transform.parent.GetPreviousSibling().gameObject, "background_object/position_z", Complexity.Advanced);
+            EditorHelper.SetComplexity(Dialog.ZPositionField.transform.parent.gameObject, "background_object/position_z", Complexity.Advanced);
+
             Dialog.ZPositionField.SetTextWithoutNotify(backgroundObject.zposition.ToString());
             Dialog.ZPositionField.OnValueChanged.NewListener(_val =>
             {
@@ -743,6 +749,9 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderZScale(BackgroundObject backgroundObject)
         {
+            EditorHelper.SetComplexity(Dialog.ZScaleField.transform.parent.GetPreviousSibling().gameObject, "background_object/scale_z", Complexity.Advanced);
+            EditorHelper.SetComplexity(Dialog.ZScaleField.transform.parent.gameObject, "background_object/scale_z", Complexity.Advanced);
+
             Dialog.ZScaleField.SetTextWithoutNotify(backgroundObject.zscale.ToString());
             Dialog.ZScaleField.OnValueChanged.NewListener(_val =>
             {
@@ -788,6 +797,9 @@ namespace BetterLegacy.Editor.Managers
 
         public void Render3DRotation(BackgroundObject backgroundObject)
         {
+            EditorHelper.SetComplexity(Dialog.DepthRotation.transform.GetPreviousSibling().gameObject, "background_object/depth_rotation", Complexity.Advanced);
+            EditorHelper.SetComplexity(Dialog.DepthRotation.gameObject, "background_object/depth_rotation", Complexity.Advanced);
+
             Dialog.DepthRotation.x.SetTextWithoutNotify(backgroundObject.rotation.x.ToString());
             Dialog.DepthRotation.x.OnValueChanged.NewListener(_val =>
             {
@@ -868,10 +880,10 @@ namespace BetterLegacy.Editor.Managers
             if (!Dialog.EditorIndexField)
                 return;
 
-            Dialog.LeftContent.Find("indexer_label").gameObject.SetActive(RTEditor.ShowModdedUI);
-            Dialog.EditorIndexField.gameObject.SetActive(RTEditor.ShowModdedUI);
+            EditorHelper.SetComplexity(Dialog.LeftContent.Find("indexer_label").gameObject, "timeline_object/indexer", Complexity.Advanced);
+            EditorHelper.SetComplexity(Dialog.EditorIndexField.gameObject, "timeline_object/indexer", Complexity.Advanced);
 
-            if (!RTEditor.ShowModdedUI)
+            if (!EditorHelper.CheckComplexity(EditorHelper.GetComplexity("timeline_object/indexer", Complexity.Advanced)))
                 return;
 
             var currentIndex = GameData.Current.backgroundObjects.FindIndex(x => x.id == backgroundObject.id);
@@ -983,6 +995,9 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderGroup(BackgroundObject backgroundObject)
         {
+            EditorHelper.SetComplexity(Dialog.EditorGroupField.transform.GetPreviousSibling().gameObject, "timeline_object/editor_group", Complexity.Advanced);
+            EditorHelper.SetComplexity(Dialog.EditorGroupField.gameObject, "timeline_object/editor_group", Complexity.Advanced);
+
             Dialog.EditorGroupField.SetTextWithoutNotify(backgroundObject.EditorData.editorGroup);
             Dialog.EditorGroupField.onValueChanged.NewListener(_val =>
             {
@@ -993,6 +1008,11 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderEditorColors(BackgroundObject backgroundObject)
         {
+            EditorHelper.SetComplexity(Dialog.BaseColorField.transform.parent.gameObject, "timeline_object/base_color", Complexity.Normal);
+            EditorHelper.SetComplexity(Dialog.SelectColorField.transform.parent.gameObject, "timeline_object/select_color", Complexity.Normal);
+            EditorHelper.SetComplexity(Dialog.TextColorField.transform.parent.gameObject, "timeline_object/text_color", Complexity.Normal);
+            EditorHelper.SetComplexity(Dialog.MarkColorField.transform.parent.gameObject, "timeline_object/mark_color", Complexity.Normal);
+
             Dialog.BaseColorField.SetTextWithoutNotify(backgroundObject.editorData.color);
             Dialog.BaseColorField.onValueChanged.NewListener(_val =>
             {
@@ -1058,6 +1078,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 var index = i;
                 var toggle = Dialog.ReactiveRanges[i];
+                EditorHelper.SetComplexity(toggle.gameObject, "background_object/reactive_type_" + ((BackgroundObject.ReactiveType)index).ToString().ToLower(), Complexity.Simple);
                 toggle.SetIsOnWithoutNotify(i == (int)backgroundObject.reactiveType);
                 toggle.onValueChanged.NewListener(_val =>
                 {
@@ -1086,7 +1107,7 @@ namespace BetterLegacy.Editor.Managers
                 RenderReactive(backgroundObject);
             });
 
-            Dialog.CustomReactive.ForLoop(gameObject => gameObject.SetActive(backgroundObject.reactiveType == BackgroundObject.ReactiveType.Custom));
+            Dialog.CustomReactive.ForLoop(gameObject => EditorHelper.SetComplexity(gameObject, "background_object/reactive_type_custom", Complexity.Advanced, visible: () => backgroundObject.reactiveType == BackgroundObject.ReactiveType.Custom));
         }
 
         public void RenderReactivePosition(BackgroundObject backgroundObject)
@@ -1250,11 +1271,14 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderColor(BackgroundObject backgroundObject)
         {
+            EditorHelper.SetComplexity(Dialog.HueSatVal.transform.GetPreviousSibling().gameObject, "background_object/hsv", Complexity.Advanced);
+            EditorHelper.SetComplexity(Dialog.HueSatVal.gameObject, "background_object/hsv", Complexity.Advanced);
+
             LSHelpers.DeleteChildren(Dialog.ColorsParent);
             ThemeManager.inst.Current.backgroundColors.ForLoop((color, index) => SetColorToggle(backgroundObject, color, backgroundObject.color, index, Dialog.ColorsParent, SetColor));
 
-            Dialog.HueSatVal.x.inputField.SetTextWithoutNotify(backgroundObject.hue.ToString());
-            Dialog.HueSatVal.x.inputField.onValueChanged.NewListener(_val =>
+            Dialog.HueSatVal.x.SetTextWithoutNotify(backgroundObject.hue.ToString());
+            Dialog.HueSatVal.x.OnValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
                     backgroundObject.hue = num;
@@ -1263,8 +1287,8 @@ namespace BetterLegacy.Editor.Managers
                 ThemeManager.inst.Current.backgroundColors.ForLoop((color, index) => SetColorToggle(backgroundObject, color, backgroundObject.color, index, Dialog.ColorsParent, SetColor));
             });
 
-            Dialog.HueSatVal.y.inputField.SetTextWithoutNotify(backgroundObject.saturation.ToString());
-            Dialog.HueSatVal.y.inputField.onValueChanged.NewListener(_val =>
+            Dialog.HueSatVal.y.SetTextWithoutNotify(backgroundObject.saturation.ToString());
+            Dialog.HueSatVal.y.OnValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
                     backgroundObject.saturation = num;
@@ -1273,8 +1297,8 @@ namespace BetterLegacy.Editor.Managers
                 ThemeManager.inst.Current.backgroundColors.ForLoop((color, index) => SetColorToggle(backgroundObject, color, backgroundObject.color, index, Dialog.ColorsParent, SetColor));
             });
 
-            Dialog.HueSatVal.z.inputField.SetTextWithoutNotify(backgroundObject.value.ToString());
-            Dialog.HueSatVal.z.inputField.onValueChanged.NewListener(_val =>
+            Dialog.HueSatVal.z.SetTextWithoutNotify(backgroundObject.value.ToString());
+            Dialog.HueSatVal.z.OnValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
                     backgroundObject.value = num;
@@ -1296,11 +1320,16 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderFadeColor(BackgroundObject backgroundObject)
         {
+            EditorHelper.SetComplexity(Dialog.FadeColorsParent.GetPreviousSibling().gameObject, "background_object/fade_color", Complexity.Advanced);
+            EditorHelper.SetComplexity(Dialog.FadeColorsParent.gameObject, "background_object/fade_color", Complexity.Advanced);
+            EditorHelper.SetComplexity(Dialog.FadeHueSatVal.transform.GetPreviousSibling().gameObject, "background_object/fade_hsv", Complexity.Advanced);
+            EditorHelper.SetComplexity(Dialog.FadeHueSatVal.gameObject, "background_object/fade_hsv", Complexity.Advanced);
+
             LSHelpers.DeleteChildren(Dialog.FadeColorsParent);
             ThemeManager.inst.Current.backgroundColors.ForLoop((color, index) => SetColorToggle(backgroundObject, color, backgroundObject.fadeColor, index, Dialog.FadeColorsParent, SetFadeColor));
 
-            Dialog.FadeHueSatVal.x.inputField.SetTextWithoutNotify(backgroundObject.fadeHue.ToString());
-            Dialog.FadeHueSatVal.x.inputField.onValueChanged.NewListener(_val =>
+            Dialog.FadeHueSatVal.x.SetTextWithoutNotify(backgroundObject.fadeHue.ToString());
+            Dialog.FadeHueSatVal.x.OnValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
                     backgroundObject.fadeHue = num;
@@ -1309,8 +1338,8 @@ namespace BetterLegacy.Editor.Managers
                 ThemeManager.inst.Current.backgroundColors.ForLoop((color, index) => SetColorToggle(backgroundObject, color, backgroundObject.fadeColor, index, Dialog.FadeColorsParent, SetFadeColor));
             });
 
-            Dialog.FadeHueSatVal.y.inputField.SetTextWithoutNotify(backgroundObject.fadeSaturation.ToString());
-            Dialog.FadeHueSatVal.y.inputField.onValueChanged.NewListener(_val =>
+            Dialog.FadeHueSatVal.y.SetTextWithoutNotify(backgroundObject.fadeSaturation.ToString());
+            Dialog.FadeHueSatVal.y.OnValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
                     backgroundObject.fadeSaturation = num;
@@ -1319,8 +1348,8 @@ namespace BetterLegacy.Editor.Managers
                 ThemeManager.inst.Current.backgroundColors.ForLoop((color, index) => SetColorToggle(backgroundObject, color, backgroundObject.fadeColor, index, Dialog.FadeColorsParent, SetFadeColor));
             });
 
-            Dialog.FadeHueSatVal.z.inputField.SetTextWithoutNotify(backgroundObject.fadeValue.ToString());
-            Dialog.FadeHueSatVal.z.inputField.onValueChanged.NewListener(_val =>
+            Dialog.FadeHueSatVal.z.SetTextWithoutNotify(backgroundObject.fadeValue.ToString());
+            Dialog.FadeHueSatVal.z.OnValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
                     backgroundObject.fadeValue = num;

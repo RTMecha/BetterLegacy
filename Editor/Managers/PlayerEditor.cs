@@ -827,7 +827,8 @@ namespace BetterLegacy.Editor.Managers
             foreach (var toggle in ui.ShapeToggles)
             {
                 int index = num;
-                toggle.gameObject.SetActive(RTEditor.ShowModdedUI || index < Shape.unmoddedMaxShapes.Length);
+                if (index >= Shape.unmoddedMaxShapes.Length)
+                    EditorHelper.SetComplexity(toggle.gameObject, "extra_shapes", Complexity.Advanced);
                 toggle.SetIsOnWithoutNotify(type == index);
                 toggle.onValueChanged.NewListener(_val =>
                 {
@@ -1205,26 +1206,24 @@ namespace BetterLegacy.Editor.Managers
                         foreach (var toggle in ui.ShapeOptionToggles[type])
                         {
                             int index = num;
-                            toggle.onValueChanged.ClearAll();
-                            toggle.isOn = option == index;
-                            toggle.gameObject.SetActive(RTEditor.ShowModdedUI || index < Shape.unmoddedMaxShapes[type]);
-
-                            if (RTEditor.ShowModdedUI || index < Shape.unmoddedMaxShapes[type])
-                                toggle.onValueChanged.AddListener(_val =>
+                            if (index >= Shape.unmoddedMaxShapes[type])
+                                EditorHelper.SetComplexity(toggle.gameObject, "extra_shapes", Complexity.Advanced);
+                            toggle.SetIsOnWithoutNotify(option == index);
+                            toggle.onValueChanged.NewListener(_val =>
+                            {
+                                if (_val)
                                 {
-                                    if (_val)
+                                    CoreHelper.Log($"Set shape option to {index}");
+                                    if (shapeable != null)
                                     {
-                                        CoreHelper.Log($"Set shape option to {index}");
-                                        if (shapeable != null)
-                                        {
-                                            shapeable.Shape = type;
-                                            shapeable.ShapeOption = index;
-                                        }
-
-                                        PlayerManager.UpdatePlayerModels();
-                                        RenderShape(ui, shapeable);
+                                        shapeable.Shape = type;
+                                        shapeable.ShapeOption = index;
                                     }
-                                });
+
+                                    PlayerManager.UpdatePlayerModels();
+                                    RenderShape(ui, shapeable);
+                                }
+                            });
 
                             num++;
                         }

@@ -120,7 +120,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             SetupTab("Images");
 
             var selection = Content.Find("selection");
-            EditorHelper.SetComplexity(selection.gameObject, Complexity.Advanced);
+            EditorHelper.SetComplexity(selection.gameObject, "prefab/creator_selection", Complexity.Advanced);
             selection.AsRT().sizeDelta = new Vector2(749f, 300f);
             SelectionSearchField = selection.Find("search-box/search").GetComponent<InputField>();
 

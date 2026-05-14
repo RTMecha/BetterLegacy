@@ -11,6 +11,7 @@ using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Prefabs;
+using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data
@@ -137,7 +138,9 @@ namespace BetterLegacy.Editor.Data
             CoreHelper.Delete(GameObject);
             GameObject = GetPrefab(initSettings).Duplicate(initSettings.parent, GetName(initSettings), GetSiblingIndex(initSettings));
             if (initSettings.complexity.HasValue)
-                EditorHelper.SetComplexity(GameObject, initSettings.complexity.Value, initSettings.onlySpecificComplexity, initSettings.visible, autoSpecify: false);
+                EditorHelper.SetComplexity(GameObject, initSettings.complexityPath, initSettings.complexity.Value, initSettings.onlySpecificComplexity, initSettings.visible);
+            else if (!string.IsNullOrEmpty(initSettings.complexityPath))
+                EditorHelper.SetComplexity(GameObject, initSettings.complexityPath, Complexity.Simple, initSettings.onlySpecificComplexity, initSettings.visible);
             Apply(GameObject, initSettings);
         }
 
@@ -267,6 +270,11 @@ namespace BetterLegacy.Editor.Data
             public RectValues? rectValues;
 
             /// <summary>
+            /// Path to the complexity file of the editor element.
+            /// </summary>
+            public string complexityPath;
+
+            /// <summary>
             /// Complexity of the editor element.
             /// </summary>
             public Complexity? complexity;
@@ -355,6 +363,17 @@ namespace BetterLegacy.Editor.Data
             public InitSettings Rect(RectValues rectValues)
             {
                 this.rectValues = rectValues;
+                return this;
+            }
+
+            /// <summary>
+            /// Sets the complexity path of the editor element.
+            /// </summary>
+            /// <param name="complexityPath">Complexity path to set.</param>
+            /// <returns>Returns the current <see cref="InitSettings"/></returns>
+            public InitSettings Complexity(string complexityPath)
+            {
+                this.complexityPath = complexityPath;
                 return this;
             }
 
@@ -550,7 +569,9 @@ namespace BetterLegacy.Editor.Data
             }
 
             if (initSettings.complexity.HasValue)
-                EditorHelper.SetComplexity(GameObject, initSettings.complexity.Value, initSettings.onlySpecificComplexity, initSettings.visible, autoSpecify: false);
+                EditorHelper.SetComplexity(GameObject, initSettings.complexityPath, initSettings.complexity.Value, initSettings.onlySpecificComplexity, initSettings.visible);
+            else if (!string.IsNullOrEmpty(initSettings.complexityPath))
+                EditorHelper.SetComplexity(GameObject, initSettings.complexityPath, Complexity.Simple, initSettings.onlySpecificComplexity, initSettings.visible);
             Apply(GameObject, initSettings);
             InitSubElements(InitSettings.Default.OnClick(initSettings.onClick));
         }
@@ -827,8 +848,8 @@ namespace BetterLegacy.Editor.Data
                         buttonAdapter.Apply(this, initSettings);
 
                         labelButton.label.alignment = labelAlignment ?? TextAnchor.MiddleLeft;
-                        labelButton.Text = Name;
                         labelButton.label.rectTransform.sizeDelta = new Vector2(-12f, 0f);
+                        LangObject.Init(labelButton.label, Name);
 
                         if (!initSettings.applyThemes)
                             break;

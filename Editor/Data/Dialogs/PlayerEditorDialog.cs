@@ -138,7 +138,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             base.InitDialog(PLAYER_EDITOR);
 
             var playerEditor = EditorHelper.AddEditorDropdown("Player Editor", string.Empty, "Edit", EditorSprites.PlayerSprite, () => PlayerEditor.inst.OpenDialog());
-            EditorHelper.SetComplexity(playerEditor, Complexity.Advanced);
+            EditorHelper.SetComplexity(playerEditor, "player/title_bar_button", Complexity.Advanced);
 
             Content = scrollView.transform.Find("Viewport/Content");
             CoreHelper.DestroyChildren(Content);

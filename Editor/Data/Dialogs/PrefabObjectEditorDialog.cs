@@ -421,9 +421,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
             EditorThemeManager.ApplyInputField(positionStorage);
             TransformFields[0] = new InputFieldStorage[2] { positionStorage.x, positionStorage.y };
 
-            EditorHelper.SetComplexity(posLabel, Complexity.Normal);
-            EditorHelper.SetComplexity(position, Complexity.Normal);
-
             var r_posLabel = RTEditor.GenerateLabels("r_position label", LeftContent, new Label("Random X", new Vector2(175f, 20f)), new Label("Random Y", new Vector2(175f, 20f)));
 
             var r_position = EditorPrefabHolder.Instance.Vector2InputFields.Duplicate(LeftContent, "r_position");
@@ -439,9 +436,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
             EditorThemeManager.ApplyInputField(r_positionStorage);
             RandomTransformFields[0] = new InputFieldStorage[2] { r_positionStorage.x, r_positionStorage.y };
 
-            EditorHelper.SetComplexity(r_posLabel, Complexity.Normal);
-            EditorHelper.SetComplexity(r_position, Complexity.Normal);
-
             var randomPrefab = ObjEditor.inst.KeyframeDialogs[0].transform.Find("random").gameObject;
             var randomPositionLabel = RTEditor.GenerateLabels("position-random-label", LeftContent, "Randomize");
             var randomPosition = randomPrefab.Duplicate(LeftContent, "position-random");
@@ -456,9 +450,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var randomPositionInterval = randomPosition.transform.Find("interval-input").GetComponent<InputField>();
             EditorThemeManager.ApplyInputField(randomPositionInterval);
             RandomIntervalFields[0] = randomPositionInterval;
-
-            EditorHelper.SetComplexity(randomPositionLabel, Complexity.Normal);
-            EditorHelper.SetComplexity(randomPosition, Complexity.Normal);
 
             // Scale
             var scaLabel = RTEditor.GenerateLabels("sca label", LeftContent, new Label("Scale X Offset", new Vector2(175f, 20f)), new Label("Scale Y Offset", new Vector2(175f, 20f)));
@@ -476,9 +467,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
             EditorThemeManager.ApplyInputField(scaleStorage);
             TransformFields[1] = new InputFieldStorage[2] { scaleStorage.x, scaleStorage.y };
 
-            EditorHelper.SetComplexity(scaLabel, Complexity.Normal);
-            EditorHelper.SetComplexity(scale, Complexity.Normal);
-
             var r_scaLabel = RTEditor.GenerateLabels("r_scale label", LeftContent, new Label("Random X", new Vector2(175f, 20f)), new Label("Random Y", new Vector2(175f, 20f)));
 
             var r_scale = EditorPrefabHolder.Instance.Vector2InputFields.Duplicate(LeftContent, "r_scale");
@@ -494,9 +482,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
             EditorThemeManager.ApplyInputField(r_scaleStorage);
             RandomTransformFields[1] = new InputFieldStorage[2] { r_scaleStorage.x, r_scaleStorage.y };
 
-            EditorHelper.SetComplexity(r_scaLabel, Complexity.Normal);
-            EditorHelper.SetComplexity(r_scale, Complexity.Normal);
-
             var randomScaleLabel = RTEditor.GenerateLabels("scale-random-label", LeftContent, "Randomize");
             var randomScale = randomPrefab.Duplicate(LeftContent, "scale-random");
             CoreHelper.DestroyChildren(randomScale.transform, x => x.name == "homing-static" || x.name == "homing-dynamic");
@@ -511,9 +496,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
             EditorThemeManager.ApplyInputField(randomScaleInterval);
             RandomIntervalFields[1] = randomScaleInterval;
 
-            EditorHelper.SetComplexity(randomScaleLabel, Complexity.Normal);
-            EditorHelper.SetComplexity(randomScale, Complexity.Normal);
-
             // Rotation
             var rotLabel = RTEditor.GenerateLabels("rot label", LeftContent, "Rotation Offset");
 
@@ -525,9 +507,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
             TriggerHelper.InversableField(rotationStorage);
             EditorThemeManager.ApplyInputField(rotationStorage);
             TransformFields[2] = new InputFieldStorage[1] { rotationStorage };
-
-            EditorHelper.SetComplexity(rotLabel, Complexity.Normal);
-            EditorHelper.SetComplexity(rotation, Complexity.Normal);
 
             var r_rotLabel = RTEditor.GenerateLabels("r_rotation label", LeftContent, "Random");
 
@@ -554,9 +533,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
             EditorThemeManager.ApplyInputField(randomRotationInterval);
             RandomIntervalFields[2] = randomRotationInterval;
 
-            EditorHelper.SetComplexity(randomRotationLabel, Complexity.Normal);
-            EditorHelper.SetComplexity(randomRotation, Complexity.Normal);
-
             // Depth
             var depthLabel = RTEditor.GenerateLabels("depth label", LeftContent, "Depth");
             var depth = EditorPrefabHolder.Instance.NumberInputField.Duplicate(LeftContent, "depth");
@@ -564,9 +540,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
             CoreHelper.Delete(DepthField.middleButton);
             TriggerHelper.InversableField(DepthField);
             EditorThemeManager.ApplyInputField(DepthField);
-
-            EditorHelper.SetComplexity(depthLabel, Complexity.Normal);
-            EditorHelper.SetComplexity(depth, Complexity.Advanced);
 
             #endregion
 
@@ -684,7 +657,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             CoreHelper.Destroy(EditorLayerTogglesParent.GetComponent<ToggleGroup>());
             RTEditor.inst.SetupEditorLayers(this);
 
-            EditorHelper.SetComplexity(EditorLayerTogglesParent.gameObject, "editor_layer_toggles", Complexity.Simple);
+            EditorHelper.SetComplexity(EditorLayerTogglesParent.gameObject, "editor_layer_toggles", Complexity.Simple, true);
             EditorHelper.SetComplexity(EditorLayerField.gameObject, "editor_layer_field", Complexity.Normal);
 
             var label = EditorPrefabHolder.Instance.Labels.Duplicate(LeftContent, "indexer_label");
@@ -827,7 +800,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             // Name
             var nameLabel = RTEditor.GenerateLabels("name label", Right, new Label("Name"));
-            EditorHelper.SetComplexity(nameLabel, Complexity.Normal);
 
             var prefabName = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(Right, "name");
             prefabName.transform.localScale = Vector3.one;
@@ -839,7 +811,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
             NameField.characterLimit = 0;
 
             EditorThemeManager.ApplyInputField(NameField);
-            EditorHelper.SetComplexity(prefabName, Complexity.Normal);
 
             #endregion
 
@@ -847,7 +818,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             // Type
             var typeLabel = RTEditor.GenerateLabels("type label", Right, new Label("Type"));
-            EditorHelper.SetComplexity(typeLabel, Complexity.Normal);
 
             var type = EditorPrefabHolder.Instance.Function1Button.Duplicate(Right, "type");
 
@@ -857,7 +827,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
             type.gameObject.AddComponent<ContrastColors>().Init(PrefabTypeSelectorButton.label, PrefabTypeSelectorButton.button.image);
 
             EditorThemeManager.ApplyGraphic(PrefabTypeSelectorButton.button.image, ThemeGroup.Null, true);
-            EditorHelper.SetComplexity(type, Complexity.Normal);
 
             #endregion
 
@@ -869,8 +838,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
             SavePrefabButton = savePrefab.GetComponent<FunctionButtonStorage>();
             SavePrefabButton.Text = "Save to a Prefab";
 
-            EditorHelper.SetComplexity(savePrefabLabel.GameObject, Complexity.Normal);
-            EditorHelper.SetComplexity(savePrefab, Complexity.Normal);
             EditorThemeManager.ApplySelectable(SavePrefabButton.button, ThemeGroup.Function_2);
             EditorThemeManager.ApplyGraphic(SavePrefabButton.label, ThemeGroup.Function_2_Text);
 
@@ -884,8 +851,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
             DefaultInstanceDataButton = defaultInstanceData.GetComponent<FunctionButtonStorage>();
             DefaultInstanceDataButton.Text = "Null";
 
-            EditorHelper.SetComplexity(defaultInstanceDataLabel.GameObject, Complexity.Advanced);
-            EditorHelper.SetComplexity(defaultInstanceData, Complexity.Advanced);
             EditorThemeManager.ApplySelectable(DefaultInstanceDataButton.button, ThemeGroup.Function_2);
             EditorThemeManager.ApplyGraphic(DefaultInstanceDataButton.label, ThemeGroup.Function_2_Text);
 
@@ -901,8 +866,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 InspectPrefab = inspectPrefab.GetComponent<FunctionButtonStorage>();
                 InspectPrefab.Text = "Inspect Prefab";
 
-                EditorHelper.SetComplexity(inspectPrefabLabel.GameObject, Complexity.Advanced);
-                EditorHelper.SetComplexity(inspectPrefab, Complexity.Advanced);
                 EditorThemeManager.ApplySelectable(InspectPrefab.button, ThemeGroup.Function_2);
                 EditorThemeManager.ApplyGraphic(InspectPrefab.label, ThemeGroup.Function_2_Text);
             }
@@ -916,22 +879,18 @@ namespace BetterLegacy.Editor.Data.Dialogs
             // Object Count
             var objectCounter = RTEditor.GenerateLabels("object count label", Right, new Label("Object Count: 0") { horizontalWrap = HorizontalWrapMode.Overflow, });
             ObjectCountText = objectCounter.transform.GetChild(0).GetComponent<Text>();
-            EditorHelper.SetComplexity(objectCounter, Complexity.Normal);
 
             // Prefab Object Count
             var prefabObjectCounter = RTEditor.GenerateLabels("prefab object count label", Right, new Label("Prefab Object Count: 0") { horizontalWrap = HorizontalWrapMode.Overflow, });
             PrefabObjectCountText = prefabObjectCounter.transform.GetChild(0).GetComponent<Text>();
-            EditorHelper.SetComplexity(prefabObjectCounter, Complexity.Normal);
 
             // Prefab Object Count
             var backgroundObjectCounter = RTEditor.GenerateLabels("background object count label", Right, new Label("Background Object Count: 0") { horizontalWrap = HorizontalWrapMode.Overflow, });
             BackgroundObjectCountText = backgroundObjectCounter.transform.GetChild(0).GetComponent<Text>();
-            EditorHelper.SetComplexity(backgroundObjectCounter, Complexity.Normal);
 
             // Timeline Object Count
             var timelineObjectCounter = RTEditor.GenerateLabels("timeline object count label", Right, new Label("Timeline Object Count: 0") { horizontalWrap = HorizontalWrapMode.Overflow, });
             TimelineObjectCountText = timelineObjectCounter.transform.GetChild(0).GetComponent<Text>();
-            EditorHelper.SetComplexity(timelineObjectCounter, Complexity.Normal);
 
             #endregion
 

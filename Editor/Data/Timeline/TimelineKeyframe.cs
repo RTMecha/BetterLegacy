@@ -98,9 +98,7 @@ namespace BetterLegacy.Editor.Data.Timeline
         public bool IsCurrentLayer =>
             (RTEventEditor.inst.GetEventTypeIndex(Type) / RTEventEditor.EVENT_LIMIT) == EditorTimeline.inst.Layer &&
             EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events &&
-            (RTEventEditor.inst.eventBins.TryFindIndex(x => x.index == Type, out int eventBinIndex) ?
-                RTEventEditor.inst.eventBins[eventBinIndex].IsActive :
-                (RTEditor.ShowModdedUI || Type < 10));
+            RTEventEditor.inst.eventBins.TryFindIndex(x => x.index == Type, out int eventBinIndex) && RTEventEditor.inst.eventBins[eventBinIndex].IsActive;
 
         bool selected;
         /// <summary>

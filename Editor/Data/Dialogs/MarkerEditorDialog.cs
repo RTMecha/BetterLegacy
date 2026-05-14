@@ -97,7 +97,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             EditorThemeManager.ApplyLightText(IndexText);
 
-            EditorHelper.SetComplexity(indexparent, Complexity.Normal);
+            EditorHelper.SetComplexity(indexparent, "marker/index", Complexity.Normal);
 
             // Makes label consistent with other labels. Originally said "Marker Time" where other labels do not mention "Marker".
             var timeLabel = LeftContent.GetChild(3).GetChild(0).GetComponent<Text>();
@@ -240,49 +240,75 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     EditorContextMenu.AddContextMenu(gameObject,
                         new ButtonElement("Deselect All", RTMarkerEditor.inst.DeselectAllAnnotations));
 
+                EditorHelper.SetComplexity(gameObject, $"annotation/tool_{tool.ToString().ToLower()}", tool switch
+                {
+                    AnnotationTool.Bucket => Complexity.Advanced,
+                    AnnotationTool.Move => Complexity.Advanced,
+                    AnnotationTool.Select => Complexity.Advanced,
+                    _ => Complexity.Normal,
+                });
+
                 AnnotationToolButtons.Add(toolButton);
             }
+            EditorHelper.SetComplexity(toolsParent.GameObject, "annotation/tools", Complexity.Normal);
 
-            new ButtonElement("Flip Horizontally", () => RTMarkerEditor.inst.FlipAnnotations(Direction.Horizontal)).Init(EditorElement.InitSettings.Default.Parent(LeftContent));
-            new ButtonElement("Flip Vertically", () => RTMarkerEditor.inst.FlipAnnotations(Direction.Vertical)).Init(EditorElement.InitSettings.Default.Parent(LeftContent));
+            var flipHorizontally = new ButtonElement("Flip Horizontally", () => RTMarkerEditor.inst.FlipAnnotations(Direction.Horizontal));
+            flipHorizontally.Init(EditorElement.InitSettings.Default.Parent(LeftContent));
+            var flipVertically = new ButtonElement("Flip Vertically", () => RTMarkerEditor.inst.FlipAnnotations(Direction.Vertical));
+            flipVertically.Init(EditorElement.InitSettings.Default.Parent(LeftContent));
+            EditorHelper.SetComplexity(flipHorizontally.GameObject, "annotation/flip", Complexity.Advanced);
+            EditorHelper.SetComplexity(flipVertically.GameObject, "annotation/flip", Complexity.Advanced);
 
-            new Labels(Labels.InitSettings.Default.Parent(LeftContent).Name("annotation horizontal mirror_label"), "Annotation Mirror");
+            var annotationMirrorLabel = new Labels(Labels.InitSettings.Default.Parent(LeftContent).Name("annotation horizontal mirror_label"), "Annotation Mirror");
+            EditorHelper.SetComplexity(annotationMirrorLabel.GameObject, "annotation/mirror", Complexity.Advanced);
             var annotationHorizontalMirror = EditorPrefabHolder.Instance.ToggleButton.Duplicate(LeftContent, "annotation horizontal mirror");
             AnnotationHorizontalMirrorToggle = annotationHorizontalMirror.GetComponent<ToggleButtonStorage>();
             AnnotationHorizontalMirrorToggle.Text = "Horizontal";
             EditorThemeManager.ApplyToggle(AnnotationHorizontalMirrorToggle);
+            EditorHelper.SetComplexity(annotationHorizontalMirror, "annotation/mirror", Complexity.Advanced);
 
             var annotationVerticalMirror = EditorPrefabHolder.Instance.ToggleButton.Duplicate(LeftContent, "annotation vertical mirror");
             AnnotationVerticalMirrorToggle = annotationVerticalMirror.GetComponent<ToggleButtonStorage>();
             AnnotationVerticalMirrorToggle.Text = "Vertical";
             EditorThemeManager.ApplyToggle(AnnotationVerticalMirrorToggle);
+            EditorHelper.SetComplexity(annotationVerticalMirror, "annotation/mirror", Complexity.Advanced);
 
-            new Labels(Labels.InitSettings.Default.Parent(LeftContent).Name("annotation color_label"), "Annotation Color");
+            var annotationColorLabel = new Labels(Labels.InitSettings.Default.Parent(LeftContent).Name("annotation color_label"), "Annotation Color");
             AnnotationColorsParent = ColorsParent.gameObject.Duplicate(LeftContent, "annotation colors").transform.AsRT();
+            EditorHelper.SetComplexity(annotationColorLabel.GameObject, "annotation/colors", Complexity.Normal);
+            EditorHelper.SetComplexity(AnnotationColorsParent.gameObject, "annotation/colors", Complexity.Normal);
 
-            new Labels(Labels.InitSettings.Default.Parent(LeftContent).Name("annotation hex color_label"), "Annotation Hex Color");
+            var annotationHexColorLabel = new Labels(Labels.InitSettings.Default.Parent(LeftContent).Name("annotation hex color_label"), "Annotation Hex Color");
             var annotationHexColor = NameField.gameObject.Duplicate(LeftContent, "annotation hex color");
             AnnotationHexColorField = annotationHexColor.GetComponent<InputField>();
             AnnotationHexColorField.GetPlaceholderText().text = "Set hex value...";
             EditorThemeManager.ApplyInputField(AnnotationHexColorField);
+            EditorHelper.SetComplexity(annotationHexColorLabel.GameObject, "annotation/hex_color", Complexity.Advanced);
+            EditorHelper.SetComplexity(annotationHexColor, "annotation/hex_color", Complexity.Advanced);
 
-            new Labels(Labels.InitSettings.Default.Parent(LeftContent).Name("annotation opacity_label"), "Annotation Opacity");
+            var annotationOpacityLabel = new Labels(Labels.InitSettings.Default.Parent(LeftContent).Name("annotation opacity_label"), "Annotation Opacity");
             var annotationOpacity = EditorPrefabHolder.Instance.NumberInputField.Duplicate(LeftContent, "annotation opacity");
             AnnotationOpacityField = annotationOpacity.GetComponent<InputFieldStorage>();
             CoreHelper.Delete(AnnotationOpacityField.middleButton);
             EditorThemeManager.ApplyInputField(AnnotationOpacityField);
+            EditorHelper.SetComplexity(annotationOpacityLabel.GameObject, "annotation/opacity", Complexity.Advanced);
+            EditorHelper.SetComplexity(annotationOpacity, "annotation/opacity", Complexity.Advanced);
 
-            new Labels(Labels.InitSettings.Default.Parent(LeftContent).Name("annotation thickness_label"), "Annotation Thickness");
+            var annotationThicknessLabel = new Labels(Labels.InitSettings.Default.Parent(LeftContent).Name("annotation thickness_label"), "Annotation Thickness");
             var annotationThickness = EditorPrefabHolder.Instance.NumberInputField.Duplicate(LeftContent, "annotation thickness");
             AnnotationThicknessField = annotationThickness.GetComponent<InputFieldStorage>();
             CoreHelper.Delete(AnnotationThicknessField.middleButton);
             EditorThemeManager.ApplyInputField(AnnotationThicknessField);
+            EditorHelper.SetComplexity(annotationThicknessLabel.GameObject, "annotation/thickness", Complexity.Normal);
+            EditorHelper.SetComplexity(annotationThickness, "annotation/thickness", Complexity.Normal);
 
-            new Labels(Labels.InitSettings.Default.Parent(LeftContent).Name("annotation fixed camera_label"), new Label("Annotation Fixed Camera") { sizeDelta = new Vector2(300f, 20f) });
+            var annotationFixedCameraLabel = new Labels(Labels.InitSettings.Default.Parent(LeftContent).Name("annotation fixed camera_label"), new Label("Annotation Fixed Camera") { sizeDelta = new Vector2(300f, 20f) });
             var annotationFixedCamera = EditorPrefabHolder.Instance.ToggleButton.Duplicate(LeftContent, "annotation fixed camera");
             AnnotationFixedCameraToggle = annotationFixedCamera.GetComponent<ToggleButtonStorage>();
             AnnotationFixedCameraToggle.Text = "Fixed";
             EditorThemeManager.ApplyToggle(AnnotationFixedCameraToggle);
+            EditorHelper.SetComplexity(annotationFixedCameraLabel.GameObject, "annotation/fixed_camera", Complexity.Normal);
+            EditorHelper.SetComplexity(annotationFixedCamera, "annotation/fixed_camera", Complexity.Normal);
 
             TooltipHelper.AssignTooltip(annotationFixedCamera, "Annotation Fixed Camera");
         }

@@ -54,35 +54,10 @@ namespace BetterLegacy.Core.Helpers
             HELP_DROPDOWN,
         };
 
-        /// <summary>
-        /// complexity.json file that stores complexity values.
-        /// </summary>
-        public static JSONNode complexityJSON;
+        #region Complexity
 
         /// <summary>
-        /// Applies a complexity value to an object.
-        /// </summary>
-        /// <param name="gameObject">Unity Game Object to apply the complexity to.</param>
-        /// <param name="complexity">Complexity to set.</param>
-        /// <param name="onlySpecificComplexity">If only the specific complexity should be used.</param>
-        /// <param name="visible">Additional visible check function.</param>
-        /// <param name="onUpdate">Function to run per complexity update.</param>
-        /// <param name="autoSpecify">If <paramref name="onlySpecificComplexity"/> is automatically specified as simple.</param>
-        public static void SetComplexity(GameObject gameObject, Complexity complexity, bool onlySpecificComplexity = false, Func<bool> visible = null, Action<ComplexityObject> onUpdate = null, bool autoSpecify = true)
-        {
-            if (!gameObject)
-                return;
-
-            var obj = gameObject.GetOrAddComponent<ComplexityObject>();
-            obj.complexity = complexity;
-            obj.onlySpecificComplexity = autoSpecify ? complexity == Complexity.Simple || onlySpecificComplexity : onlySpecificComplexity;
-            obj.visible = visible;
-            obj.onUpdate = onUpdate;
-            obj.UpdateActiveState();
-        }
-
-        /// <summary>
-        /// Applies a complexity value from a path in the complexity.json file to an object.
+        /// Applies a complexity value from a complexity file to an object.
         /// </summary>
         /// <param name="gameObject">Unity Game Object to apply the complexity to.</param>
         /// <param name="path">Path of the complexity.</param>
@@ -95,30 +70,30 @@ namespace BetterLegacy.Core.Helpers
             if (!gameObject)
                 return;
 
-            if (complexityJSON == null)
-            {
-                SetComplexity(gameObject, defaultComplexity, defaultOnlySpecificComplexity, visible, onUpdate, false);
-                return;
-            }
-
-            var referenceJSON = complexityJSON[path];
-            if (referenceJSON == null)
-            {
-                SetComplexity(gameObject, defaultComplexity, defaultOnlySpecificComplexity, visible, onUpdate, false);
-                return;
-            }
-
+            var referenceJSON = GetComplexityJSONNode(path);
             var obj = gameObject.GetOrAddComponent<ComplexityObject>();
-            obj.complexity = (Complexity)referenceJSON["complexity"].AsInt;
-            obj.onlySpecificComplexity = referenceJSON["only_this"].AsBool;
-            obj.disabled = referenceJSON["disabled"].AsBool;
-            if (referenceJSON["active"] != null)
-                obj.active = referenceJSON["active"].AsBool;
-            obj.path = path;
+            obj.complexity = referenceJSON == null ? defaultComplexity : (Complexity)referenceJSON["complexity"].AsInt;
+            obj.onlySpecificComplexity = referenceJSON == null ? defaultOnlySpecificComplexity : referenceJSON["only_this"].AsBool;
+            if (referenceJSON != null)
+            {
+                obj.disabled = referenceJSON["disabled"].AsBool;
+                if (referenceJSON["active"] != null)
+                    obj.active = referenceJSON["active"].AsBool;
+                obj.path = path;
+            }
             obj.visible = visible;
             obj.onUpdate = onUpdate;
             obj.UpdateActiveState();
         }
+
+        /// <summary>
+        /// Checks if a complexity is active.
+        /// </summary>
+        /// <param name="path">Path of the complexity.</param>
+        /// <param name="defaultComplexity">The default complexity to use if the path doesn't exist.</param>
+        /// <param name="defaultOnlySpecificComplexity">The default specific complexity check if the path doesn't exist.</param>
+        /// <returns>Returns <see langword="true"/> if the <see cref="EditorConfig.EditorComplexity"/> setting matches the found complexity, otherwise returns <see langword="false"/>.</returns>
+        public static bool CheckComplexity(string path, Complexity defaultComplexity, bool defaultOnlySpecificComplexity = false) => CheckComplexity(GetComplexity(path, defaultComplexity), defaultOnlySpecificComplexity);
 
         /// <summary>
         /// Checks if a complexity is active.
@@ -131,20 +106,27 @@ namespace BetterLegacy.Core.Helpers
                     complexity <= EditorConfig.Instance.EditorComplexity.Value;
 
         /// <summary>
-        /// Gets a complexity value from the complexity.json file.
+        /// Gets a complexity value from the associated file.
         /// </summary>
         /// <param name="path">Path to the complexity value.</param>
         /// <param name="defaultComplexity">The default complexity.</param>
-        /// <returns>Returns the complexity value found in the complexity.json file if the path exists, otherwise returns <paramref name="defaultComplexity"/>.</returns>
+        /// <returns>Returns the complexity value found in an associated complexity file if the path exists, otherwise returns <paramref name="defaultComplexity"/>.</returns>
         public static Complexity GetComplexity(string path, Complexity defaultComplexity)
         {
-            if (complexityJSON == null)
-                return defaultComplexity;
-            var referenceJSON = complexityJSON[path];
+            var referenceJSON = GetComplexityJSONNode(path);
             if (referenceJSON == null)
                 return defaultComplexity;
             return (Complexity)referenceJSON["complexity"].AsInt;
         }
+
+        /// <summary>
+        /// Gets a complexity JSON node from the associated file.
+        /// </summary>
+        /// <param name="path">Path of the complexity.</param>
+        /// <returns>Returns the found complexity JSON.</returns>
+        public static JSONNode GetComplexityJSONNode(string path) => AssetPack.TryReadFromFile($"editor/data/complexity/{path}.json", out string complexityFile) ? JSON.Parse(complexityFile) : null;
+
+        #endregion
 
         public static void AddEditorPopup(string name, GameObject gameObject)
         {

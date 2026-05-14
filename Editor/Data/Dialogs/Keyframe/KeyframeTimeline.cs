@@ -1448,9 +1448,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                 animatable.EditorData.miscDisplayValues[IntToType(type) + "/flip_active"] = 0f;
                                 RenderDialog(animatable);
                             }));
-                        EditorHelper.SetComplexity(flipX, Complexity.Normal, visible: () => !animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(type) + "/flip_active", out float f) || f == 1f);
-                        EditorHelper.SetComplexity(flipY, Complexity.Normal, visible: () => !animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(type) + "/flip_active", out float f) || f == 1f);
-                        EditorHelper.SetComplexity(flipZ, Complexity.Advanced, visible: () => !animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(type) + "/flip_active", out float f) || f == 1f);
+                        EditorHelper.SetComplexity(flipX, "position_keyframe/flip_x", Complexity.Normal, visible: () => !animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(type) + "/flip_active", out float f) || f == 1f);
+                        EditorHelper.SetComplexity(flipY, "position_keyframe/flip_y", Complexity.Normal, visible: () => !animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(type) + "/flip_active", out float f) || f == 1f);
+                        EditorHelper.SetComplexity(flipZ, "position_keyframe/flip_z", Complexity.Advanced, visible: () => !animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(type) + "/flip_active", out float f) || f == 1f);
 
                         break;
                     }
@@ -1476,8 +1476,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                 animatable.EditorData.miscDisplayValues[IntToType(type) + "/flip_active"] = 0f;
                                 RenderDialog(animatable);
                             }));
-                        EditorHelper.SetComplexity(flipX, Complexity.Normal, visible: () => !animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(type) + "/flip_active", out float f) || f == 1f);
-                        EditorHelper.SetComplexity(flipY, Complexity.Normal, visible: () => !animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(type) + "/flip_active", out float f) || f == 1f);
+                        EditorHelper.SetComplexity(flipX, "scale_keyframe/flip_x", Complexity.Normal, visible: () => !animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(type) + "/flip_active", out float f) || f == 1f);
+                        EditorHelper.SetComplexity(flipY, "scale_keyframe/flip_y", Complexity.Normal, visible: () => !animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(type) + "/flip_active", out float f) || f == 1f);
 
                         break;
                     }
@@ -1510,9 +1510,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                 animatable.EditorData.miscDisplayValues[IntToType(type) + "/flip_active"] = 0f;
                                 RenderDialog(animatable);
                             }));
-                        EditorHelper.SetComplexity(flipX, Complexity.Normal, visible: () => !animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(type) + "/flip_active", out float f) || f == 1f);
-                        EditorHelper.SetComplexity(flipY, Complexity.Advanced, visible: () => firstKF.eventKeyframe.values.Length > 1 && (!animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(type) + "/flip_active", out float f) || f == 1f));
-                        EditorHelper.SetComplexity(flipZ, Complexity.Advanced, visible: () => firstKF.eventKeyframe.values.Length > 2 && (!animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(type) + "/flip_active", out float f) || f == 1f));
+                        EditorHelper.SetComplexity(flipX, "rotation_keyframe/flip_x", Complexity.Normal, visible: () => !animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(type) + "/flip_active", out float f) || f == 1f);
+                        EditorHelper.SetComplexity(flipY, "rotation_keyframe/flip_y", Complexity.Advanced, visible: () => firstKF.eventKeyframe.values.Length > 1 && (!animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(type) + "/flip_active", out float f) || f == 1f));
+                        EditorHelper.SetComplexity(flipZ, "rotation_keyframe/flip_z", Complexity.Advanced, visible: () => firstKF.eventKeyframe.values.Length > 2 && (!animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(type) + "/flip_active", out float f) || f == 1f));
 
                         var use3DToggle = (dialog.Content ? dialog.Content : dialog.GameObject.transform.AsRT()).Find("use3D").GetComponent<Toggle>();
                         use3DToggle.interactable = !animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(type) + "/lock_3d_axis", out float axisLock) || axisLock != 1f;
@@ -1537,7 +1537,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                             RenderDialog(animatable);
                         });
 
-                        use3DToggle.gameObject.SetActive(!animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(type) + "/3d_axis_active", out float use3DActive) || use3DActive == 1f);
+                        EditorHelper.SetComplexity(use3DToggle.gameObject, "rotation_keyframe/use_3d", Complexity.Advanced, visible: () => !animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(type) + "/3d_axis_active", out float use3DActive) || use3DActive == 1f);
                         EditorContextMenu.AddContextMenu(use3DToggle.gameObject,
                             new ButtonElement("Hide 3D Axis Toggle", () =>
                             {
@@ -1669,13 +1669,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 var toggle = dialog.RandomToggles[n];
 
                 if (buttonTmp == 5 || buttonTmp == 6)
-                    EditorHelper.SetComplexity(toggle.gameObject,
-                        EditorHelper.GetComplexity(random switch
-                        {
-                            5 => complexityPrefix + "/homing_type_static",
-                            6 => complexityPrefix + "/homing_type_dynamic",
-                            _ => string.Empty,
-                        }, Complexity.Advanced));
+                    EditorHelper.SetComplexity(toggle.gameObject, random switch
+                    {
+                        5 => complexityPrefix + "/homing_type_static",
+                        6 => complexityPrefix + "/homing_type_dynamic",
+                        _ => string.Empty,
+                    }, Complexity.Advanced);
 
                 toggle.SetIsOnWithoutNotify(random == buttonTmp);
                 toggle.onValueChanged.NewListener(_val =>
@@ -1700,12 +1699,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             if (dialog.RandomAxisDropdown)
             {
-                EditorHelper.SetComplexity(dialog.RandomAxisDropdown.gameObject, EditorHelper.GetComplexity(type switch
+                EditorHelper.SetComplexity(dialog.RandomAxisDropdown.gameObject, type switch
                 {
                     0 => "position_keyframe/homing_axis",
                     2 => "rotation_keyframe/homing_axis",
                     _ => "keyframe/homing_axis",
-                }, Complexity.Advanced), visible: () => randomActive && (random == 5 || random == 6));
+                }, Complexity.Advanced, visible: () => randomActive && (random == 5 || random == 6));
                 if (firstKF.eventKeyframe.randomValues.Length < 4)
                 {
                     var keyframe = firstKF.eventKeyframe;
@@ -1724,12 +1723,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             if (dialog.FleeToggle)
             {
-                EditorHelper.SetComplexity(dialog.FleeToggle.gameObject, EditorHelper.GetComplexity(type switch
+                EditorHelper.SetComplexity(dialog.FleeToggle.gameObject, type switch
                 {
                     0 => "position_keyframe/homing_flee",
                     2 => "rotation_keyframe/homing_flee",
                     _ => "keyframe/homing_flee",
-                }, Complexity.Advanced), visible: () => randomActive && random == 6);
+                }, Complexity.Advanced, visible: () => randomActive && random == 6);
                 dialog.FleeToggle.toggle.SetIsOnWithoutNotify(firstKF.eventKeyframe.flee);
                 dialog.FleeToggle.toggle.onValueChanged.NewListener(_val =>
                 {
@@ -1854,22 +1853,24 @@ namespace BetterLegacy.Editor.Data.Dialogs
         {
             bool showModifiedColors = EditorConfig.Instance.ShowModifiedColors.Value;
             var eventTime = firstKF.eventKeyframe.time;
-            int index = 0;
-            foreach (var toggle in colorButtons)
+            for (int i = 0; i < colorButtons.Count; i++)
             {
-                int tmpIndex = index;
-
-                toggle.gameObject.SetActive((RTEditor.ShowModdedUI || tmpIndex < 9) && firstKF.eventKeyframe.values.Length > valueIndex);
+                var index = i;
+                var toggle = colorButtons[index];
+                if (index >= 9)
+                    EditorHelper.SetComplexity(toggle.gameObject, "color_keyframe/extra_colors", Complexity.Advanced, visible: () => firstKF.eventKeyframe.values.Length > valueIndex);
+                else
+                    toggle.gameObject.SetActive(firstKF.eventKeyframe.values.Length > valueIndex);
 
                 if (firstKF.eventKeyframe.values.Length <= valueIndex)
                     continue;
 
                 toggle.SetIsOnWithoutNotify(index == firstKF.eventKeyframe.values[valueIndex]);
-                toggle.onValueChanged.NewListener(_val => SetKeyframeColor(animatable, valueIndex, tmpIndex, colorButtons, selected));
+                toggle.onValueChanged.NewListener(_val => SetKeyframeColor(animatable, valueIndex, index, colorButtons, selected));
 
                 if (showModifiedColors)
                 {
-                    var color = CoreHelper.CurrentBeatmapTheme.GetObjColor(tmpIndex);
+                    var color = CoreHelper.CurrentBeatmapTheme.GetObjColor(index);
 
                     float hueNum = animatable.Interpolate(3, valueIndex + 2, eventTime);
                     float satNum = animatable.Interpolate(3, valueIndex + 3, eventTime);
@@ -1878,17 +1879,17 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     toggle.image.color = RTColors.ChangeColorHSV(color, hueNum, satNum, valNum);
                 }
                 else
-                    toggle.image.color = CoreHelper.CurrentBeatmapTheme.GetObjColor(tmpIndex);
+                    toggle.image.color = CoreHelper.CurrentBeatmapTheme.GetObjColor(index);
 
                 EditorContextMenu.AddContextMenu(toggle.gameObject,
                     getEditorElements: () => new List<EditorElement>
                     {
                         new ButtonElement("Use", () => toggle.isOn = true),
                         ButtonElement.ToggleButton("Show Modified Colors", () => EditorConfig.Instance.ShowModifiedColors.Value, () => EditorConfig.Instance.ShowModifiedColors.Value = !EditorConfig.Instance.ShowModifiedColors.Value),
-                        new ButtonElement("Copy Hex Color", () => LSText.CopyToClipboard(RTColors.ColorToHexOptional(CoreHelper.CurrentBeatmapTheme.GetObjColor(tmpIndex)))),
+                        new ButtonElement("Copy Hex Color", () => LSText.CopyToClipboard(RTColors.ColorToHexOptional(CoreHelper.CurrentBeatmapTheme.GetObjColor(index)))),
                         new ButtonElement("Copy Modified Hex Color", () =>
                         {
-                            var color = CoreHelper.CurrentBeatmapTheme.GetObjColor(tmpIndex);
+                            var color = CoreHelper.CurrentBeatmapTheme.GetObjColor(index);
 
                             float hueNum = animatable.Interpolate(3, valueIndex + 2, eventTime);
                             float satNum = animatable.Interpolate(3, valueIndex + 3, eventTime);
@@ -1905,7 +1906,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     hoverUI.animateSca = true;
                     hoverUI.size = 1.1f;
                 }
-                index++;
             }
         }
 
@@ -1915,7 +1915,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             foreach (var keyframe in selected.Select(x => x.eventKeyframe))
             {
                 keyframe.values[index] = value;
-                if (!RTEditor.ShowModdedUI && beatmapObject)
+                if (!EditorHelper.CheckComplexity("beatmap_object/gradient", Complexity.Normal) && beatmapObject)
                     keyframe.values[6] = 10f; // set behaviour to alpha's default if editor complexity is not set to advanced.
             }
 
@@ -2055,8 +2055,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
             EditorHelper.SetComplexity(kfdialog.Find("gradient_huesatval_label").gameObject, "color_keyframe/gradient_hsv", Complexity.Advanced, visible: () => showGradient && !useCustomHexColor);
             EditorHelper.SetComplexity(gradientHSVObj, "color_keyframe/gradient_hsv", Complexity.Advanced, visible: () => showGradient && !useCustomHexColor);
 
-            kfdialog.Find("color").AsRT().sizeDelta = new Vector2(366f, RTEditor.ShowModdedUI ? 78f : 32f);
-            kfdialog.Find("gradient_color").AsRT().sizeDelta = new Vector2(366f, RTEditor.ShowModdedUI ? 78f : 32f);
+            kfdialog.Find("color").AsRT().sizeDelta = new Vector2(366f, EditorHelper.CheckComplexity("color_keyframe/extra_colors", Complexity.Advanced) ? 78f : 32f);
+            kfdialog.Find("gradient_color").AsRT().sizeDelta = new Vector2(366f, EditorHelper.CheckComplexity("color_keyframe/extra_colors", Complexity.Advanced) ? 78f : 32f);
 
             if (opacityObj.activeSelf)
             {
@@ -2071,7 +2071,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         foreach (var keyframe in selected.Select(x => x.eventKeyframe))
                         {
                             keyframe.values[1] = value;
-                            if (!RTEditor.ShowModdedUI)
+                            if (!EditorHelper.CheckComplexity("beatmap_object/gradient", Complexity.Normal))
                                 keyframe.values[6] = 10f;
                         }
 
@@ -2088,7 +2088,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         foreach (var keyframe in selected.Select(x => x.eventKeyframe))
                         {
                             keyframe.values[1] = value;
-                            if (!RTEditor.ShowModdedUI)
+                            if (!EditorHelper.CheckComplexity("beatmap_object/gradient", Complexity.Normal))
                                 keyframe.values[6] = 10f;
                         }
 
@@ -2108,7 +2108,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         foreach (var keyframe in selected.Select(x => x.eventKeyframe))
                         {
                             keyframe.values[1] = 0f;
-                            if (!RTEditor.ShowModdedUI)
+                            if (!EditorHelper.CheckComplexity("beatmap_object/gradient", Complexity.Normal))
                                 keyframe.values[6] = 10f;
                         }
 
@@ -2123,7 +2123,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         foreach (var keyframe in selected.Select(x => x.eventKeyframe))
                         {
                             keyframe.values[1] = -(BeatmapObject.HELPER_OPACITY - 1f);
-                            if (!RTEditor.ShowModdedUI)
+                            if (!EditorHelper.CheckComplexity("beatmap_object/gradient", Complexity.Normal))
                                 keyframe.values[6] = 10f;
                         }
 
@@ -2569,6 +2569,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     }));
             }
 
+            EditorHelper.SetComplexity(UseHexColorToggle.gameObject, "color_keyframe/use_hex_color", Complexity.Advanced);
             UseHexColorToggle.SetIsOnWithoutNotify(useCustomHexColor);
             UseHexColorToggle.OnValueChanged.NewListener(_val =>
             {
@@ -2677,20 +2678,29 @@ namespace BetterLegacy.Editor.Data.Dialogs
             if (!dialog.RelativeToggle)
                 return;
 
-            var relativeToggleComplexity = EditorHelper.GetComplexity(type switch
-            {
-                0 => "position_keyframe/relative",
-                1 => "scale_keyframe/relative",
-                2 => "rotation_keyframe/relative",
-                _ => "keyframe/relative"
-            }, type switch
-            {
-                2 => Complexity.Normal,
-                _ => Complexity.Advanced,
-            });
-            EditorHelper.SetComplexity(dialog.RelativeToggle.transform.GetPreviousSibling()?.gameObject, relativeToggleComplexity,
+            EditorHelper.SetComplexity(dialog.RelativeToggle.transform.GetPreviousSibling()?.gameObject, type switch
+                {
+                    0 => "position_keyframe/relative",
+                    1 => "scale_keyframe/relative",
+                    2 => "rotation_keyframe/relative",
+                    _ => "keyframe/relative"
+                }, type switch
+                {
+                    2 => Complexity.Normal,
+                    _ => Complexity.Advanced,
+                },
                 visible: () => !animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(type) + "/relative_active", out float val) || val == 1f);
-            EditorHelper.SetComplexity(dialog.RelativeToggle.gameObject, relativeToggleComplexity,
+            EditorHelper.SetComplexity(dialog.RelativeToggle.gameObject, type switch
+                {
+                    0 => "position_keyframe/relative",
+                    1 => "scale_keyframe/relative",
+                    2 => "rotation_keyframe/relative",
+                    _ => "keyframe/relative"
+                }, type switch
+                {
+                    2 => Complexity.Normal,
+                    _ => Complexity.Advanced,
+                },
                 visible: () => !animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(type) + "/relative_active", out float val) || val == 1f);
             dialog.RelativeToggle.Interactable = !animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(type) + "/lock_relative", out float relativeLock) || relativeLock != 1f;
             dialog.RelativeToggle.SetIsOnWithoutNotify(firstKF.eventKeyframe.relative);

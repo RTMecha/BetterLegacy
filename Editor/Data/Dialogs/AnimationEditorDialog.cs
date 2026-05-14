@@ -168,7 +168,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
         {
             var id = EditorPrefabHolder.Instance.Labels.Duplicate(Content, "id");
             IDBase = id.transform.AsRT();
-            EditorHelper.SetComplexity(id, Complexity.Normal);
+            EditorHelper.SetComplexity(id, "animation/id", Complexity.Normal);
 
             IDBase.sizeDelta = new Vector2(515, 32f);
             IDBase.GetChild(0).AsRT().sizeDelta = new Vector2(226f, 32f);

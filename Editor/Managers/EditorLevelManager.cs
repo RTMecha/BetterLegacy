@@ -316,7 +316,7 @@ namespace BetterLegacy.Editor.Managers
 
             TooltipHelper.AssignTooltip(LevelCollectionPopup.PathField.gameObject, "Editor Path", 3f);
 
-            EditorHelper.SetComplexity(LevelCollectionPopup.PathField.gameObject, Complexity.Advanced);
+            EditorHelper.SetComplexity(LevelCollectionPopup.PathField.gameObject, "level_collection/path_field", Complexity.Advanced);
 
             EditorContextMenu.AddContextMenu(LevelCollectionPopup.PathField.gameObject,
                 getEditorElements: () => new List<EditorElement>

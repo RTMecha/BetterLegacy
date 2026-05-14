@@ -355,7 +355,12 @@ namespace BetterLegacy.Editor.Managers
                 animation.EditorData.GetDisplay("position/x", CustomValueDisplay.DefaultPositionXDisplay),
                 animation.EditorData.GetDisplay("position/y", CustomValueDisplay.DefaultPositionYDisplay),
                 animation.EditorData.GetDisplay("position/z", CustomValueDisplay.DefaultPositionZDisplay));
-            Dialog.keyframeDialogs[0].EventValueElements[2].GameObject.SetActive(RTEditor.ShowModdedUI);
+
+            Dialog.KeyframeDialogs[0].EventValuesParent.AsRT().sizeDelta = new Vector2(553f, 32f);
+            var grp = Dialog.KeyframeDialogs[0].EventValuesParent.gameObject.GetComponent<GridLayoutGroup>();
+            grp.cellSize = new Vector2(EditorHelper.CheckComplexity(EditorHelper.GetComplexity("position_keyframe/z_axis", Complexity.Advanced)) ? 122f : 183f, 40f);
+            LayoutRebuilder.ForceRebuildLayoutImmediate(Dialog.KeyframeDialogs[0].EventValuesParent.AsRT());
+
             Dialog.keyframeDialogs[1].InitCustomUI(
                 animation.EditorData.GetDisplay("scale/x", CustomValueDisplay.DefaultScaleXDisplay),
                 animation.EditorData.GetDisplay("scale/y", CustomValueDisplay.DefaultScaleYDisplay));

@@ -33,7 +33,7 @@ namespace BetterLegacy.Configs
 
             RTThemeEditor.themesPerPage = ThemesPerPage.Value;
             RTThemeEditor.eventThemesPerPage = ThemesEventKeyframePerPage.Value;
-            RTEditor.ShowModdedUI = EditorComplexity.Value == Complexity.Advanced;
+            ModifiersEditorDialog.ActiveInComplexity = EditorHelper.CheckComplexity("modifiers", Complexity.Advanced);
             EditorThemeManager.currentTheme = (int)EditorTheme.Value;
 
             SetPreviewConfig();
@@ -1360,7 +1360,7 @@ namespace BetterLegacy.Configs
 
         void ModdedEditorChanged()
         {
-            RTEditor.ShowModdedUI = EditorComplexity.Value == Complexity.Advanced;
+            ModifiersEditorDialog.ActiveInComplexity = EditorHelper.CheckComplexity("modifiers", Complexity.Advanced);
 
             ComplexityObject.UpdateAll();
 
@@ -1379,6 +1379,9 @@ namespace BetterLegacy.Configs
 
             if (RTBackgroundEditor.inst && EditorTimeline.inst.CurrentSelection.isBackgroundObject)
                 RTBackgroundEditor.inst.RenderDialog(EditorTimeline.inst.CurrentSelection.GetData<BackgroundObject>());
+
+            if (RTEditor.inst && RTEditor.inst.IntroDialog && RTEditor.inst.IntroDialog.IsCurrent)
+                RTEditor.inst.RefreshIntroDialog();
         }
 
         void TimelineWaveformChanged()

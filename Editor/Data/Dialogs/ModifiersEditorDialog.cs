@@ -35,6 +35,11 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public static ModifiersEditorDialog Current { get; set; }
 
         /// <summary>
+        /// If the modifier editor elements are active in the current editor complexity setting.
+        /// </summary>
+        public static bool ActiveInComplexity { get; set; }
+
+        /// <summary>
         /// The current object that is being edited.
         /// </summary>
         public IModifyable CurrentObject { get; set; }
@@ -253,17 +258,17 @@ namespace BetterLegacy.Editor.Data.Dialogs
             CurrentObject = modifyable;
 
             if (Label)
-                Label.gameObject.SetActive(RTEditor.ShowModdedUI);
+                EditorHelper.SetComplexity(Label.gameObject, "modifiers", Complexity.Advanced);
             if (IntVariableUI)
-                IntVariableUI.gameObject.SetActive(RTEditor.ShowModdedUI);
+                EditorHelper.SetComplexity(IntVariableUI.gameObject, "modifiers", Complexity.Advanced);
             if (IgnoreToggle)
-                IgnoreToggle.gameObject.SetActive(RTEditor.ShowModdedUI);
+                EditorHelper.SetComplexity(IgnoreToggle.gameObject, "modifiers", Complexity.Advanced);
             if (OrderToggle)
-                OrderToggle.gameObject.SetActive(RTEditor.ShowModdedUI);
+                EditorHelper.SetComplexity(OrderToggle.gameObject, "modifiers", Complexity.Advanced);
 
             if (NameField)
             {
-                NameField.gameObject.SetActive(RTEditor.ShowModdedUI);
+                EditorHelper.SetComplexity(NameField.gameObject, "modifiers", Complexity.Advanced);
                 if (modifyable is ModifierBlock modifierBlock)
                 {
                     NameField.SetTextWithoutNotify(modifierBlock.Name);
@@ -271,14 +276,14 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 }
             }
 
-            if (!RTEditor.ShowModdedUI)
+            if (!EditorHelper.CheckComplexity("modifiers", Complexity.Advanced))
                 showModifiers = false;
 
             ScrollView.gameObject.SetActive(showModifiers);
 
             if (ActiveToggle)
             {
-                ActiveToggle.gameObject.SetActive(RTEditor.ShowModdedUI);
+                EditorHelper.SetComplexity(ActiveToggle.gameObject, "modifiers", Complexity.Advanced);
                 ActiveToggle.SetIsOnWithoutNotify(showModifiers);
                 ActiveToggle.onValueChanged.NewListener(_val =>
                 {
@@ -288,7 +293,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 });
             }
 
-            if (!RTEditor.ShowModdedUI)
+            if (!EditorHelper.CheckComplexity("modifiers", Complexity.Advanced))
                 yield break;
 
             if (IgnoreToggle)
@@ -390,7 +395,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
         {
             try
             {
-                if (!RTEditor.ShowModdedUI)
+                if (!ActiveInComplexity)
                     return;
 
                 if (getReference == null)

@@ -11,6 +11,8 @@ namespace BetterLegacy.Editor.Components
     /// </summary>
     public class ComplexityObject : MonoBehaviour
     {
+        #region Values
+
         [SerializeField]
         /// <summary>
         /// Complexity of the element.
@@ -49,12 +51,16 @@ namespace BetterLegacy.Editor.Components
         /// </summary>
         public Action<ComplexityObject> onUpdate;
 
+        #endregion
+
+        #region Functions
+
         /// <summary>
         /// Updates the active state of all elements.
         /// </summary>
         public static void UpdateAll()
         {
-            var objs = FindObjectsOfType<ComplexityObject>();
+            var objs = Resources.FindObjectsOfTypeAll<ComplexityObject>();
             for (int i = 0; i < objs.Length; i++)
                 objs[i].UpdateActiveState();
         }
@@ -80,5 +86,7 @@ namespace BetterLegacy.Editor.Components
             }
             CoreHelper.SetGameObjectActive(gameObject, EditorHelper.CheckComplexity(complexity, onlySpecificComplexity) && Visible);
         }
+
+        #endregion
     }
 }

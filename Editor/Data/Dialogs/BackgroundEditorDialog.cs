@@ -839,7 +839,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     CoreHelper.Destroy(EditorLayerTogglesParent.GetComponent<ToggleGroup>());
                     RTEditor.inst.SetupEditorLayers(this);
 
-                    EditorHelper.SetComplexity(EditorLayerTogglesParent.gameObject, "editor_layer_toggles", Complexity.Simple);
+                    EditorHelper.SetComplexity(EditorLayerTogglesParent.gameObject, "editor_layer_toggles", Complexity.Simple, true);
                     EditorHelper.SetComplexity(EditorLayerField.gameObject, "editor_layer_field", Complexity.Normal);
 
                     RTEditor.GenerateLabels("indexer_label", LeftContent, 37, false,

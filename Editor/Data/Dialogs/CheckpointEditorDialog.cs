@@ -155,46 +155,60 @@ namespace BetterLegacy.Editor.Data.Dialogs
             editSpacer.SetSiblingIndex(1);
             editSpacer.localScale = Vector3.one;
 
-            new Labels(Labels.InitSettings.Default.Parent(LeftContent), "Respawn Dead Players");
+            var respawnLabel = new Labels(Labels.InitSettings.Default.Parent(LeftContent), "Respawn Dead Players");
             var respawn = EditorPrefabHolder.Instance.ToggleButton.Duplicate(LeftContent);
             RespawnToggle = respawn.GetComponent<ToggleButtonStorage>();
-            RespawnToggle.label.text = "Respawn";
+            RespawnToggle.Text = "Respawn";
             EditorThemeManager.ApplyToggle(RespawnToggle.toggle, graphic: RespawnToggle.label);
+            EditorHelper.SetComplexity(respawnLabel.GameObject, "checkpoint/respawn", Complexity.Advanced);
+            EditorHelper.SetComplexity(respawn, "checkpoint/respawn", Complexity.Advanced);
 
-            new Labels(Labels.InitSettings.Default.Parent(LeftContent), "Heal Players");
+            var healLabel = new Labels(Labels.InitSettings.Default.Parent(LeftContent), "Heal Players");
             var heal = EditorPrefabHolder.Instance.ToggleButton.Duplicate(LeftContent);
             HealToggle = heal.GetComponent<ToggleButtonStorage>();
-            HealToggle.label.text = "Heal";
+            HealToggle.Text = "Heal";
             EditorThemeManager.ApplyToggle(HealToggle.toggle, graphic: HealToggle.label);
-            
-            new Labels(Labels.InitSettings.Default.Parent(LeftContent), "Set time on reverse");
+            EditorHelper.SetComplexity(healLabel.GameObject, "checkpoint/heal", Complexity.Advanced);
+            EditorHelper.SetComplexity(heal, "checkpoint/heal", Complexity.Advanced);
+
+            var setTimeLabel = new Labels(Labels.InitSettings.Default.Parent(LeftContent), "Set time on reverse");
             var setTime = EditorPrefabHolder.Instance.ToggleButton.Duplicate(LeftContent);
             SetTimeToggle = setTime.GetComponent<ToggleButtonStorage>();
-            SetTimeToggle.label.text = "Set Time";
+            SetTimeToggle.Text = "Set Time";
             EditorThemeManager.ApplyToggle(SetTimeToggle.toggle, graphic: SetTimeToggle.label);
-            
-            new Labels(Labels.InitSettings.Default.Parent(LeftContent), "Reverse level on death");
+            EditorHelper.SetComplexity(setTimeLabel.GameObject, "checkpoint/set_time", Complexity.Advanced);
+            EditorHelper.SetComplexity(setTime, "checkpoint/set_time", Complexity.Advanced);
+
+            var reverseLabel = new Labels(Labels.InitSettings.Default.Parent(LeftContent), "Reverse level on death");
             var reverse = EditorPrefabHolder.Instance.ToggleButton.Duplicate(LeftContent);
             ReverseToggle = reverse.GetComponent<ToggleButtonStorage>();
-            ReverseToggle.label.text = "Reverse";
+            ReverseToggle.Text = "Reverse";
             EditorThemeManager.ApplyToggle(ReverseToggle.toggle, graphic: ReverseToggle.label);
-            
-            new Labels(Labels.InitSettings.Default.Parent(LeftContent), "Triggers on reached");
+            EditorHelper.SetComplexity(reverseLabel.GameObject, "checkpoint/reverse", Complexity.Advanced);
+            EditorHelper.SetComplexity(reverse, "checkpoint/reverse", Complexity.Advanced);
+
+            var autoTriggerableLabel = new Labels(Labels.InitSettings.Default.Parent(LeftContent), "Triggers on reached");
             var autoTriggerable = EditorPrefabHolder.Instance.ToggleButton.Duplicate(LeftContent);
             AutoTriggerableToggle = autoTriggerable.GetComponent<ToggleButtonStorage>();
             AutoTriggerableToggle.Text = "Auto Triggerable";
             EditorThemeManager.ApplyToggle(AutoTriggerableToggle.toggle, graphic: AutoTriggerableToggle.label);
+            EditorHelper.SetComplexity(autoTriggerableLabel.GameObject, "checkpoint/auto_triggerable", Complexity.Advanced);
+            EditorHelper.SetComplexity(autoTriggerable, "checkpoint/auto_triggerable", Complexity.Advanced);
 
-            new Labels(Labels.InitSettings.Default.Parent(LeftContent), "Spawn position type");
+            var spawnPositionTypeLabel = new Labels(Labels.InitSettings.Default.Parent(LeftContent), "Spawn position type");
             var spawnPositionType = EditorPrefabHolder.Instance.Dropdown.Duplicate(LeftContent);
             SpawnPositionDropdown = spawnPositionType.GetComponent<Dropdown>();
             SpawnPositionDropdown.options = CoreHelper.StringToOptionData("Single", "Fill All", "Random Single", "Random Fill All", "Random");
             EditorThemeManager.ApplyDropdown(SpawnPositionDropdown);
+            EditorHelper.SetComplexity(spawnPositionTypeLabel.GameObject, "checkpoint/spawn_position_type", Complexity.Advanced);
+            EditorHelper.SetComplexity(spawnPositionType, "checkpoint/spawn_position_type", Complexity.Advanced);
 
-            new Labels(Labels.InitSettings.Default.Parent(LeftContent), "Multi Positions");
+            var positionScrollViewLabel = new Labels(Labels.InitSettings.Default.Parent(LeftContent), "Multi Positions");
             var positionScrollView = EditorPrefabHolder.Instance.ScrollView.Duplicate(LeftContent);
             positionScrollView.transform.AsRT().sizeDelta = new Vector2(359f, 200f);
             PositionContent = positionScrollView.transform.Find("Viewport/Content").AsRT();
+            EditorHelper.SetComplexity(positionScrollViewLabel.GameObject, "checkpoint/positions", Complexity.Advanced);
+            EditorHelper.SetComplexity(positionScrollView, "checkpoint/positions", Complexity.Advanced);
 
             #endregion
         }

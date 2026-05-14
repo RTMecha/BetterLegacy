@@ -1257,13 +1257,16 @@ namespace BetterLegacy.Editor.Managers
                         PreviewTheme.guiAccentColor = guiAccentColor;
                     });
 
+            EditorHelper.SetComplexity(Dialog.EditorContent.Find("player_label").gameObject, "theme/player_colors", Complexity.Simple);
             RenderColorList(Dialog.EditorContent, "player", 4, PreviewTheme.playerColors, EditorConfig.Instance.SavingSavesThemeOpacity.Value);
 
+            EditorHelper.SetComplexity(Dialog.EditorContent.Find("object_label").gameObject, "theme/object_colors", Complexity.Simple);
             RenderColorList(Dialog.EditorContent, "object", 18, PreviewTheme.objectColors, EditorConfig.Instance.SavingSavesThemeOpacity.Value);
 
+            EditorHelper.SetComplexity(Dialog.EditorContent.Find("background_label").gameObject, "theme/background_colors", Complexity.Simple);
             RenderColorList(Dialog.EditorContent, "background", 9, PreviewTheme.backgroundColors, false);
 
-            Dialog.EditorContent.Find("effect_label").gameObject.SetActive(RTEditor.ShowModdedUI);
+            EditorHelper.SetComplexity(Dialog.EditorContent.Find("effect_label").gameObject, "theme/effect_colors", Complexity.Normal);
             RenderColorList(Dialog.EditorContent, "effect", 18, PreviewTheme.effectColors, EditorConfig.Instance.SavingSavesThemeOpacity.Value);
         }
 
@@ -1280,10 +1283,9 @@ namespace BetterLegacy.Editor.Managers
                 if (!Seasons.IsAprilFools)
                     p.transform.localRotation = Quaternion.Euler(Vector3.zero);
 
-                bool active = RTEditor.ShowModdedUI || !name.Contains("effect") && i < 9;
-                p.gameObject.SetActive(active);
+                EditorHelper.SetComplexity(p.gameObject, i >= 9 ? $"theme/extra_{name}_colors" : $"theme/{name}_colors", i >= 9 ? Complexity.Advanced : Complexity.Simple);
 
-                if (!active)
+                if (!EditorHelper.CheckComplexity(i >= 9 ? $"theme/extra_{name}_colors" : $"theme/{name}_colors", i >= 9 ? Complexity.Advanced : Complexity.Simple))
                     continue;
 
                 var hex = p.Find("hex").GetComponent<InputField>();

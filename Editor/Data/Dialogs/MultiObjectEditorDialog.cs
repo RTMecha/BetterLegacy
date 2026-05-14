@@ -134,8 +134,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 tab.AddComponent<ContrastColors>().Init(tabButton.label, tab.GetComponent<Image>());
 
                 var tabType = (Tab)i;
-                if (tabType == Tab.Modifiers || tabType == Tab.Sync)
-                    EditorHelper.SetComplexity(tab, Complexity.Advanced);
+                EditorHelper.SetComplexity(tab, "multi_object_editor/tab_" + tabType.ToString().ToLower(), tabType == Tab.Modifiers || tabType == Tab.Sync ? Complexity.Advanced : tabType == Tab.Replace ? Complexity.Normal : Complexity.Simple);
                 CoreHelper.Log($"Setting up {tabType}");
 
                 TabButtons.Add(tabButton);
@@ -3614,7 +3613,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
             foreach (var toggle in shapeToggles)
             {
                 int index = num;
-                toggle.gameObject.SetActive(RTEditor.ShowModdedUI || index < Shape.unmoddedMaxShapes.Length);
+                if (index >= Shape.unmoddedMaxShapes.Length)
+                    EditorHelper.SetComplexity(toggle.gameObject, "extra_shapes", Complexity.Advanced);
                 toggle.SetIsOnWithoutNotify(shapeSelection.x == index);
                 toggle.onValueChanged.NewListener(_val =>
                 {
@@ -3698,7 +3698,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                             EditorThemeManager.ApplyGraphic(buttonStorage.image, ThemeGroup.Function_2_Text);
                             buttonStorage.OnClick.NewListener(() => RTTextEditor.inst.SetInputField(textIF));
                             UIManager.SetRectTransform(buttonStorage.baseImage.rectTransform, new Vector2(160f, 24f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(22f, 22f));
-                            EditorHelper.SetComplexity(button, Complexity.Advanced);
+                            EditorHelper.SetComplexity(button, "multi_object_editor/open_text_editor", Complexity.Advanced);
                         }
                         else
                         {
@@ -3963,7 +3963,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         foreach (var toggle in shapeOptionToggles[shapeSelection.x])
                         {
                             int index = num;
-                            toggle.gameObject.SetActive(RTEditor.ShowModdedUI || index < Shape.unmoddedMaxShapes[shapeSelection.x]);
+                            if (index >= Shape.unmoddedMaxShapes[shapeSelection.x])
+                                EditorHelper.SetComplexity(toggle.gameObject, "extra_shapes", Complexity.Advanced);
                             toggle.SetIsOnWithoutNotify(shapeSelection.y == index);
                             toggle.onValueChanged.NewListener(_val =>
                             {

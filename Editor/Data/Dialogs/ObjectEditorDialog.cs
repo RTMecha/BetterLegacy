@@ -263,7 +263,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 depthInputFieldStorage.transform.AsRT().sizeDelta = new Vector2(170f, 32f);
                 depthInputFieldStorage.inputField.image.rectTransform.sizeDelta = new Vector2(110f, 32f);
 
-                depthInputFieldStorage.inputField.onValueChanged.ClearAll();
+                depthInputFieldStorage.OnValueChanged.ClearAll();
 
                 CoreHelper.Delete(depthInputFieldStorage.leftGreaterButton.gameObject);
                 CoreHelper.Delete(depthInputFieldStorage.middleButton.gameObject);
@@ -271,19 +271,19 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                 var sliderObject = Content.Find("depth/depth").gameObject;
 
-                var depthLeft = Content.Find("depth/<").gameObject;
-                var depthRight = Content.Find("depth/>").gameObject;
-                EditorHelper.SetComplexity(depthLeft, Complexity.Simple);
-                EditorHelper.SetComplexity(depthRight, Complexity.Simple);
-                EditorThemeManager.ApplySelectable(depthLeft.GetComponent<Button>(), ThemeGroup.Function_2, false);
-                EditorThemeManager.ApplySelectable(depthRight.GetComponent<Button>(), ThemeGroup.Function_2, false);
+                var depthLeft = Content.Find("depth/<").GetComponent<Button>();
+                var depthRight = Content.Find("depth/>").GetComponent<Button>();
+                EditorHelper.SetComplexity(depthLeft.gameObject, "beatmap_object/depth_slider_arrows", Complexity.Simple);
+                EditorHelper.SetComplexity(depthRight.gameObject, "beatmap_object/depth_slider_arrows", Complexity.Simple);
+                CoreHelper.RemoveAnimator(depthLeft);
+                CoreHelper.RemoveAnimator(depthRight);
+                EditorThemeManager.ApplySelectable(depthLeft, ThemeGroup.Function_2, false);
+                EditorThemeManager.ApplySelectable(depthRight, ThemeGroup.Function_2, false);
 
                 sliderObject.transform.AsRT().sizeDelta = new Vector2(352f, 32f);
                 Content.Find("depth").AsRT().sizeDelta = new Vector2(261f, 32f);
 
-                EditorThemeManager.ApplyInputField(depthInputFieldStorage.inputField);
-                EditorThemeManager.ApplySelectable(depthInputFieldStorage.leftButton, ThemeGroup.Function_2, false);
-                EditorThemeManager.ApplySelectable(depthInputFieldStorage.rightButton, ThemeGroup.Function_2, false);
+                EditorThemeManager.ApplyInputField(depthInputFieldStorage);
 
                 var depthSlider = sliderObject.GetComponent<Slider>();
                 var depthSliderImage = sliderObject.transform.Find("Image").GetComponent<Image>();
@@ -476,7 +476,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             // ID & LDM
             {
                 var id = EditorPrefabHolder.Instance.Labels.Duplicate(Content, "id", 0);
-                EditorHelper.SetComplexity(id, Complexity.Normal);
+                EditorHelper.SetComplexity(id, "beatmap_object/id", Complexity.Normal);
 
                 id.transform.AsRT().sizeDelta = new Vector2(515, 32f);
                 id.transform.GetChild(0).AsRT().sizeDelta = new Vector2(226f, 32f);
@@ -1059,7 +1059,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     }
 
                     var edit = parent.Find("edit");
-                    EditorHelper.SetComplexity(edit.Find("spacer").gameObject, Complexity.Simple);
+                    EditorHelper.SetComplexity(edit.Find("spacer").gameObject, "keyframe/edit_spacer", Complexity.Simple);
 
                     var copy = EditorPrefabHolder.Instance.Function1Button.Duplicate(edit, "copy", 5);
                     var copyText = copy.transform.GetChild(0).GetComponent<Text>();
@@ -1068,7 +1068,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                     EditorThemeManager.ApplyGraphic(copy.GetComponent<Image>(), ThemeGroup.Copy, true);
                     EditorThemeManager.ApplyGraphic(copyText, ThemeGroup.Copy_Text);
-                    EditorHelper.SetComplexity(copy, Complexity.Normal);
+                    EditorHelper.SetComplexity(copy, "keyframe/edit_copy", Complexity.Normal);
 
                     var paste = EditorPrefabHolder.Instance.Function1Button.Duplicate(edit, "paste", 6);
                     var pasteText = paste.transform.GetChild(0).GetComponent<Text>();
@@ -1077,7 +1077,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                     EditorThemeManager.ApplyGraphic(paste.GetComponent<Image>(), ThemeGroup.Paste, true);
                     EditorThemeManager.ApplyGraphic(pasteText, ThemeGroup.Paste_Text);
-                    EditorHelper.SetComplexity(paste, Complexity.Normal);
+                    EditorHelper.SetComplexity(paste, "keyframe/edit_paste", Complexity.Normal);
                 }
             }
 
@@ -1760,7 +1760,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             CoreHelper.Destroy(EditorLayerTogglesParent.GetComponent<ToggleGroup>());
             RTEditor.inst.SetupEditorLayers(this);
 
-            EditorHelper.SetComplexity(EditorLayerTogglesParent.gameObject, "editor_layer_toggles", Complexity.Simple);
+            EditorHelper.SetComplexity(EditorLayerTogglesParent.gameObject, "editor_layer_toggles", Complexity.Simple, true);
             EditorHelper.SetComplexity(EditorLayerField.gameObject, "editor_layer_field", Complexity.Normal);
 
             var editorGroupLabel = EditorPrefabHolder.Instance.Labels.Duplicate(Content, "group_label", editorSettingsIndex + 2);
@@ -1874,9 +1874,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
             EditorThemeManager.ApplySelectable(RemovePrefabButton.button, ThemeGroup.Function_2);
             EditorThemeManager.ApplyGraphic(RemovePrefabButton.label, ThemeGroup.Function_2_Text);
 
-            EditorHelper.SetComplexity(AssignPrefabLabel, Complexity.Normal);
-            EditorHelper.SetComplexity(assignPrefab, Complexity.Normal);
-            EditorHelper.SetComplexity(removePrefab, Complexity.Normal);
+            EditorHelper.SetComplexity(AssignPrefabLabel, "prefabable/assign_prefab_label", Complexity.Normal);
+            EditorHelper.SetComplexity(assignPrefab, "prefabable/assign_prefab", Complexity.Normal);
+            EditorHelper.SetComplexity(removePrefab, "prefabable/remove_prefab", Complexity.Normal);
 
             #endregion
 
@@ -2425,7 +2425,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 EditorThemeManager.ApplyGraphic(buttonStorage.image, ThemeGroup.Function_2_Text);
                 buttonStorage.OnClick.NewListener(() => RTTextEditor.inst.SetInputField(textIF));
                 UIManager.SetRectTransform(buttonStorage.baseImage.rectTransform, new Vector2(160f, 24f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(22f, 22f));
-                EditorHelper.SetComplexity(button, Complexity.Advanced);
+                EditorHelper.SetComplexity(button, "beatmap_object/open_text_editor", Complexity.Advanced);
             }
 
             updatedShapes = true;
