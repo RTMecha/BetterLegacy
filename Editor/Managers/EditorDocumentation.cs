@@ -1065,6 +1065,15 @@ namespace BetterLegacy.Editor.Managers
         }
 
         /// <summary>
+        /// Opens the documentation popup.
+        /// </summary>
+        public void OpenPopup()
+        {
+            Popup.Open();
+            RefreshDocumentation();
+        }
+
+        /// <summary>
         /// Refreshes the list of documents.
         /// </summary>
         public void RefreshDocumentation()
