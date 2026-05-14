@@ -118,7 +118,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                 var cover = Creator.NewUIObject("cover", themeToggleObject.transform);
                 var coverImage = cover.AddComponent<Image>();
-                RectValues.RightAnchored.SizeDelta(600f, 32f).AssignToRectTransform(coverImage.rectTransform);
+                RectValues.RightAnchored.SizeDelta(550f, 32f).AssignToRectTransform(coverImage.rectTransform);
                 EditorThemeManager.ApplyGraphic(coverImage, ThemeGroup.Background_2, true, roundedSide: SpriteHelper.RoundedSide.Right);
 
                 var desc = EditorPrefabHolder.Instance.Labels.transform.GetChild(0).gameObject.Duplicate(coverImage.rectTransform);
