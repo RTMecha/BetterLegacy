@@ -93,7 +93,15 @@ namespace BetterLegacy.Core.Helpers
         /// <param name="defaultComplexity">The default complexity to use if the path doesn't exist.</param>
         /// <param name="defaultOnlySpecificComplexity">The default specific complexity check if the path doesn't exist.</param>
         /// <returns>Returns <see langword="true"/> if the <see cref="EditorConfig.EditorComplexity"/> setting matches the found complexity, otherwise returns <see langword="false"/>.</returns>
-        public static bool CheckComplexity(string path, Complexity defaultComplexity, bool defaultOnlySpecificComplexity = false) => CheckComplexity(GetComplexity(path, defaultComplexity), defaultOnlySpecificComplexity);
+        public static bool CheckComplexity(string path, Complexity defaultComplexity, bool defaultOnlySpecificComplexity = false, bool defaultDisabled = false)
+        {
+            var referenceJSON = GetComplexityJSONNode(path);
+            if (referenceJSON == null)
+                return !defaultDisabled && CheckComplexity(defaultComplexity, defaultOnlySpecificComplexity);
+            if (referenceJSON["disabled"].AsBool || referenceJSON["active"] != null && !referenceJSON["active"].AsBool)
+                return false;
+            return CheckComplexity((Complexity)referenceJSON["complexity"].AsInt, referenceJSON["only_this"].AsBool);
+        }
 
         /// <summary>
         /// Checks if a complexity is active.
