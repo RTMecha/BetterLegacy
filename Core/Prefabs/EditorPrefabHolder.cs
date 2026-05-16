@@ -85,6 +85,8 @@ namespace BetterLegacy.Core.Prefabs
 
     public class DropdownStorage : MonoBehaviour
     {
+        #region Values
+
         [SerializeField]
         public Dropdown dropdown;
 
@@ -99,44 +101,113 @@ namespace BetterLegacy.Core.Prefabs
 
         [SerializeField]
         public HideDropdownOptions hideOptions;
+
+        public List<Dropdown.OptionData> Options
+        {
+            get => dropdown.options;
+            set => dropdown.options = value;
+        }
+
+        public int Value
+        {
+            get => dropdown.value;
+            set => dropdown.value = value;
+        }
+
+        #endregion
+
+        #region Functions
+
+        public void SetValueWithoutNotify(int value) => dropdown.SetValueWithoutNotify(value);
+
+        public void SetValueWithoutNotify<T>(T value) where T : struct => dropdown.SetValueWithoutNotify((int)System.Enum.ToUInt64(value));
+
+        public void SetValue<T>(T value) where T : struct => Value = (int)System.Enum.ToUInt64(value);
+
+        public T GetValue<T>() where T : struct => (T)System.Enum.ToObject(typeof(T), Value);
+
+        #endregion
     }
 
     public class ToggleButtonStorage : MonoBehaviour
     {
+        #region Values
+
+        /// <summary>
+        /// Toggle reference.
+        /// </summary>
         [SerializeField]
         public Toggle toggle;
 
+        /// <summary>
+        /// Label for the toggle button.
+        /// </summary>
         [SerializeField]
         public Text label;
 
+        /// <summary>
+        /// Wraps <see cref="Toggle.isOn"/> for <see cref="toggle"/>.
+        /// </summary>
+        public bool IsOn
+        {
+            get => toggle.isOn;
+            set => toggle.isOn = value;
+        }
+
+        /// <summary>
+        /// Wraps <see cref="Toggle.onValueChanged"/> for <see cref="toggle"/>.
+        /// </summary>
         public Toggle.ToggleEvent OnValueChanged
         {
             get => toggle.onValueChanged;
             set => toggle.onValueChanged = value;
         }
 
+        /// <summary>
+        /// Wraps <see cref="Text.text"/> of <see cref="label"/>.
+        /// </summary>
         public string Text
         {
             get => label.text;
             set => label.text = value;
         }
 
+        /// <summary>
+        /// Wraps <see cref="Selectable.interactable"/> for <see cref="toggle"/>.
+        /// </summary>
         public bool Interactable
         {
             get => toggle.interactable;
             set => toggle.interactable = value;
         }
 
+        #endregion
+
+        #region Functions
+
+        /// <summary>
+        /// Wraps <see cref="Toggle.SetIsOnWithoutNotify(bool)"/>.
+        /// </summary>
+        /// <param name="value">Value to set.</param>
         public void SetIsOnWithoutNotify(bool value) => toggle.SetIsOnWithoutNotify(value);
 
+        /// <summary>
+        /// Assigns the cache for the component.
+        /// </summary>
         public void Assign() => Assign(gameObject);
 
+        /// <summary>
+        /// Assigns the cache for the component.
+        /// </summary>
+        /// <param name="gameObject">Object to assign.</param>
         public void Assign(GameObject gameObject)
         {
             if (gameObject.transform.TryFind("Text", out Transform transform))
                 label = transform.GetComponent<Text>();
             toggle = gameObject.GetComponent<Toggle>();
         }
+
+        #endregion
     }
 
     public class DeleteButtonStorage : MonoBehaviour
