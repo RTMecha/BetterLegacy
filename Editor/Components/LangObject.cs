@@ -67,6 +67,7 @@ namespace BetterLegacy.Editor.Components
             langObject.textComponent = textComponent;
             langObject.Text = text;
             langObject.DefaultText = defaultText;
+            langObject.UpdateDisplayText();
         }
 
         void OnEnable() => UpdateDisplayText();
