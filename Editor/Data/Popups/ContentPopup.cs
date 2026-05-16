@@ -395,8 +395,8 @@ namespace BetterLegacy.Editor.Data.Popups
             page.transform.AsRT().sizeDelta = new Vector2(144f, 32f);
 
             PageField = page.GetComponent<InputFieldStorage>();
-            PageField.inputField.SetTextWithoutNotify("0");
-            PageField.inputField.onValueChanged.NewListener(_val =>
+            PageField.SetTextWithoutNotify("0");
+            PageField.OnValueChanged.NewListener(_val =>
             {
                 if (int.TryParse(_val, out int p))
                 {
@@ -405,26 +405,18 @@ namespace BetterLegacy.Editor.Data.Popups
                 }
             });
 
-            PageField.leftGreaterButton.onClick.NewListener(() =>
-            {
-                if (int.TryParse(PageField.inputField.text, out int p))
-                    PageField.inputField.text = "0";
-            });
+            PageField.leftGreaterButton.onClick.NewListener(() => SetPage(0));
             PageField.leftButton.onClick.NewListener(() =>
             {
-                if (int.TryParse(PageField.inputField.text, out int p))
-                    PageField.inputField.text = Mathf.Clamp(p - 1, 0, MaxPageCount).ToString();
+                if (int.TryParse(PageField.Text, out int p))
+                    SetPage(Mathf.Clamp(p - 1, 0, MaxPageCount));
             });
             PageField.rightButton.onClick.NewListener(() =>
             {
-                if (int.TryParse(PageField.inputField.text, out int p))
-                    PageField.inputField.text = Mathf.Clamp(p + 1, 0, MaxPageCount).ToString();
+                if (int.TryParse(PageField.Text, out int p))
+                    SetPage(Mathf.Clamp(p + 1, 0, MaxPageCount));
             });
-            PageField.rightGreaterButton.onClick.NewListener(() =>
-            {
-                if (int.TryParse(PageField.inputField.text, out int p))
-                    PageField.inputField.text = MaxPageCount.ToString();
-            });
+            PageField.rightGreaterButton.onClick.NewListener(() => SetPage(MaxPageCount));
 
             CoreHelper.Delete(PageField.middleButton);
 
@@ -476,6 +468,16 @@ namespace BetterLegacy.Editor.Data.Popups
 
             EditorThemeManager.ApplyToggle(AscendToggle);
 
+        }
+
+        /// <summary>
+        /// Sets the page of the content popup if pages are supported by it.
+        /// </summary>
+        /// <param name="page">Page to show.</param>
+        public void SetPage(int page)
+        {
+            Page = Mathf.Clamp(page, 0, MaxPageCount);
+            SearchField?.onValueChanged?.Invoke(SearchField.text);
         }
 
         #endregion
