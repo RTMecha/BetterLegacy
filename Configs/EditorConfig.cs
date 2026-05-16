@@ -14,6 +14,7 @@ using BetterLegacy.Core.Runtime;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
+using BetterLegacy.Editor.Data.Elements;
 using BetterLegacy.Editor.Data.Popups;
 using BetterLegacy.Editor.Managers;
 
@@ -33,8 +34,8 @@ namespace BetterLegacy.Configs
 
             RTThemeEditor.themesPerPage = ThemesPerPage.Value;
             RTThemeEditor.eventThemesPerPage = ThemesEventKeyframePerPage.Value;
-            ModifiersEditorDialog.ActiveInComplexity = EditorHelper.CheckComplexity("modifiers", Complexity.Advanced);
-            EditorThemeManager.currentTheme = (int)EditorTheme.Value;
+            UpdateComplexityCache();
+            EditorThemeManager.currentTheme = EditorTheme.Value;
 
             SetPreviewConfig();
             SetupSettingChanged();
@@ -184,11 +185,11 @@ namespace BetterLegacy.Configs
         public Setting<bool> OpenNewLevelCreatorIfNoLevels { get; set; }
         public Setting<bool> ShowModifiersDefault { get; set; }
 
-        public Setting<float> OpenLevelButtonHoverSize { get; set; }
-
         public Setting<bool> ChangesRefreshLevelList { get; set; }
-        public Setting<bool> OpenLevelShowDeleteButton { get; set; }
 
+        public Setting<bool> DisableProgressIfZero { get; set; }
+
+        public Setting<float> OpenLevelButtonHoverSize { get; set; }
         public Setting<float> TimelineObjectHoverSize { get; set; }
         public Setting<float> KeyframeHoverSize { get; set; }
         public Setting<float> TimelineBarButtonsHoverSize { get; set; }
@@ -626,7 +627,7 @@ namespace BetterLegacy.Configs
             EditorTheme = Bind(this, EDITOR_GUI, "Editor Theme", EditorThemeType.Legacy, "The current theme the editor uses.");
             EditorFont = BindEnum(this, EDITOR_GUI, "Editor Font", BetterLegacy.EditorFont.Inconsolata_Variable, "The current font the editor uses.");
             RoundedUI = Bind(this, EDITOR_GUI, "Rounded UI", false, "If all elements that can be rounded should be so.");
-            EditorComplexity = BindEnum(this, EDITOR_GUI, "Editor Complexity", Complexity.Advanced, "What features show in the editor.");
+            EditorComplexity = BindEnum(this, EDITOR_GUI, "Editor Complexity", Complexity.Advanced, "What features show in the editor.\nDisclaimer: This does not disable features so they will still appear in a level.");
             ShowExperimental = Bind(this, EDITOR_GUI, "Show Experimental Features", false, "If experimental features should display. These features are not gauranteed to always work and have a chance to be changed in future updates.");
             UserPreference = BindEnum(this, EDITOR_GUI, "User Preference", UserPreferenceType.None, "Change this to whatever config preset you want to use. THIS WILL CHANGE A LOT OF SETTINGS, SO USE WITH CAUTION.");
             HoverUIPlaySound = Bind(this, EDITOR_GUI, "Hover UI Play Sound", false, "Plays a sound when the hover UI element is hovered over.");
@@ -651,7 +652,7 @@ namespace BetterLegacy.Configs
             ShowModifiersDefault = Bind(this, EDITOR_GUI, "Show Modifiers Default", false, "If the modifier lists should be uncollapsed by default.");
 
             ChangesRefreshLevelList = Bind(this, EDITOR_GUI, "Changes Refresh Level List", false, "If the level list reloads whenever a change is made.");
-            OpenLevelShowDeleteButton = Bind(this, EDITOR_GUI, "Open Level Show Delete Button", false, "Shows a delete button that can be used to move levels to a recycling folder.");
+            DisableProgressIfZero = Bind(this, EDITOR_GUI, "Disable Level Progress Display If Value Is 0", false, "Disables the progress value from appearing on level panels if the percentage is 0.");
 
             OpenLevelButtonHoverSize = Bind(this, EDITOR_GUI, "Level Panel Focus Size", 1.05f, "How big the button gets when hovered.", 0.7f, 1.4f);
             TimelineObjectHoverSize = Bind(this, EDITOR_GUI, "Timeline Object Focus Size", 1f, "How big the button gets when hovered.", 0.7f, 1.4f);
@@ -1358,9 +1359,16 @@ namespace BetterLegacy.Configs
 
         void MarkerChanged() => RTMarkerEditor.inst?.RenderMarkers();
 
-        void ModdedEditorChanged()
+        void UpdateComplexityCache()
         {
             ModifiersEditorDialog.ActiveInComplexity = EditorHelper.CheckComplexity("modifiers", Complexity.Advanced);
+            LevelPanel.ShowProgressInComplexity = EditorHelper.CheckComplexity("level/progress", Complexity.Normal);
+            LevelPanel.ShowDeleteInComplexity = EditorHelper.CheckComplexity("level/delete", Complexity.Normal);
+        }
+
+        void ModdedEditorChanged()
+        {
+            UpdateComplexityCache();
 
             ComplexityObject.UpdateAll();
 

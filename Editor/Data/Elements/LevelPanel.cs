@@ -114,6 +114,9 @@ namespace BetterLegacy.Editor.Data.Elements
             "Unknown difficulty",
         };
 
+        public static bool ShowProgressInComplexity { get; set; }
+        public static bool ShowDeleteInComplexity { get; set; }
+
         #endregion
 
         #region Asset Pack
@@ -256,7 +259,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
             EditorThemeManager.ApplyGraphic(deleteStorage.baseImage, ThemeGroup.Delete, true, roundedSide: SpriteHelper.RoundedSide.W);
             EditorThemeManager.ApplyGraphic(deleteStorage.image, ThemeGroup.Delete_Text, false, roundedSide: SpriteHelper.RoundedSide.W);
-            delete.SetActive(EditorConfig.Instance.OpenLevelShowDeleteButton.Value);
+            delete.SetActive(ShowDeleteInComplexity);
 
             SelectedUI = Creator.NewUIObject("selected", gameObject.transform);
             SelectedUI.SetActive(false);
@@ -414,7 +417,7 @@ namespace BetterLegacy.Editor.Data.Elements
         public void RenderProgress()
         {
             CoreHelper.Delete(Progress);
-            if (!EditorInfo)
+            if (!EditorInfo || !ShowProgressInComplexity)
                 return;
 
             if (EditorInfo.IsComplete)
@@ -426,7 +429,7 @@ namespace BetterLegacy.Editor.Data.Elements
                 EditorThemeManager.ApplyGraphic(checkmarkImage, ThemeGroup.Light_Text);
                 Progress = checkmark;
             }
-            else
+            else if (!EditorConfig.Instance.DisableProgressIfZero.Value || EditorInfo.Progress != 0f)
             {
                 var labelElement = new LabelElement($"{RTString.Percentage(EditorInfo.Progress, 100f)}%");
                 labelElement.Init(EditorElement.InitSettings.Default.Parent(GameObject.transform).Rect(progressRect));
@@ -919,7 +922,7 @@ namespace BetterLegacy.Editor.Data.Elements
             if (!DeleteButton)
                 return;
 
-            var active = GetLevelInfo() || EditorConfig.Instance.OpenLevelShowDeleteButton.Value;
+            var active = GetLevelInfo() || ShowDeleteInComplexity;
 
             DeleteButton.gameObject.SetActive(active);
 
