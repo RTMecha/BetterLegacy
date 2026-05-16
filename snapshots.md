@@ -1,8 +1,28 @@
-﻿# snapshot-2026.5.3 - (Story Playtest) [May 14, 2026]
+﻿# snapshot-2026.5.4 - (Story Playtest) [May 16, 2026]
+## Features
+### Editor
+- Added "Disable Level Progress Display If Value Is 0" setting to Config Manager > Editor > Editor GUI.
+- Level Progress display now has an editor complexity value.
+
+## Changes
+### Editor
+- Removed "Open Level Show Delete Button" setting. This is now handled via Asset Pack editor complexity.
+- The file area of the MetaData Editor now has a show / hide toggle.
+- Tweaked the MetaData Editor UI code.
+- Updated Editor Complexity setting description.
+
+## Fixes
+- Fixed intro dialog UI.
+- Fixed the labels on some buttons not appearing.
+- Fixed the page buttons on some popups not updating the page.
+
+-------------------------------------------------------------------
+
+# snapshot-2026.5.3 - (Story Playtest) [May 14, 2026]
 ## Features
 ### Editor
 - The editor now has a welcome window that is open at the start.
-- Added Show Marker Annotations setting to Config Manager > Editor Markers.
+- Added Show Marker Annotations setting to Config Manager > Editor > Markers.
 - Added HideAnnotations, ShowAnnotations and ToggleShowAnnotations keybinds. These change the Show Marker Annotations setting.
 - The top of the editor will now display icons that indicate something is active or disabled. (e.g. freecam)
 
