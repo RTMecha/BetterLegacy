@@ -47,6 +47,9 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public GameObject difficultyToggle;
 
+        /// <summary>
+        /// Package file prefab.
+        /// </summary>
         public GameObject filePefab;
 
         #endregion
@@ -388,6 +391,8 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="metadata">Metadata to render.</param>
         public void RenderPackage(MetaData metadata)
         {
+            Dialog.PackageContent.gameObject.SetActive(Dialog.PackageToggle.IsOn);
+            Dialog.PackageToggle.OnValueChanged.NewListener(_val => RenderPackage(metadata));
             Dialog.MainAudioField.SetTextWithoutNotify(metadata.package.mainAudio);
             Dialog.MainAudioField.onValueChanged.NewListener(_val => metadata.package.mainAudio = _val);
             Dialog.MainPreviewAudioField.SetTextWithoutNotify(metadata.package.mainPreviewAudio);
@@ -441,27 +446,27 @@ namespace BetterLegacy.Editor.Managers
         public void RenderSettings(MetaData metadata)
         {
             Dialog.IsHubLevelToggle.SetIsOnWithoutNotify(metadata.isHubLevel);
-            Dialog.IsHubLevelToggle.onValueChanged.NewListener(_val => metadata.isHubLevel = _val);
+            Dialog.IsHubLevelToggle.OnValueChanged.NewListener(_val => metadata.isHubLevel = _val);
 
             Dialog.UnlockRequiredToggle.SetIsOnWithoutNotify(metadata.requireUnlock);
-            Dialog.UnlockRequiredToggle.onValueChanged.NewListener(_val => metadata.requireUnlock = _val);
+            Dialog.UnlockRequiredToggle.OnValueChanged.NewListener(_val => metadata.requireUnlock = _val);
 
             Dialog.UnlockCompletedToggle.SetIsOnWithoutNotify(metadata.unlockAfterCompletion);
-            Dialog.UnlockCompletedToggle.onValueChanged.NewListener(_val => metadata.unlockAfterCompletion = _val);
+            Dialog.UnlockCompletedToggle.OnValueChanged.NewListener(_val => metadata.unlockAfterCompletion = _val);
 
             var levelData = GameData.Current?.data?.level;
             if (!levelData)
                 return;
 
             Dialog.HideIntroToggle.SetIsOnWithoutNotify(levelData.hideIntro);
-            Dialog.HideIntroToggle.onValueChanged.NewListener(_val =>
+            Dialog.HideIntroToggle.OnValueChanged.NewListener(_val =>
             {
                 if (GameData.Current && GameData.Current.data && GameData.Current.data.level is LevelData levelData)
                     levelData.hideIntro = _val;
             });
 
             Dialog.ReplayEndLevelOffToggle.SetIsOnWithoutNotify(levelData.forceReplayLevelOff);
-            Dialog.ReplayEndLevelOffToggle.onValueChanged.NewListener(_val =>
+            Dialog.ReplayEndLevelOffToggle.OnValueChanged.NewListener(_val =>
             {
                 if (GameData.Current && GameData.Current.data && GameData.Current.data.level is LevelData levelData)
                     levelData.forceReplayLevelOff = _val;
@@ -474,7 +479,7 @@ namespace BetterLegacy.Editor.Managers
             Dialog.PreferredControlTypeDropdown.onValueChanged.NewListener(_val => metadata.beatmap.preferredControlType = (BeatmapMetaData.PreferredControlType)_val);
 
             Dialog.RequireVersion.SetIsOnWithoutNotify(metadata.requireVersion);
-            Dialog.RequireVersion.onValueChanged.NewListener(_val => metadata.requireVersion = _val);
+            Dialog.RequireVersion.OnValueChanged.NewListener(_val => metadata.requireVersion = _val);
 
             Dialog.VersionComparison.options = CoreHelper.ToOptionData<DataManager.VersionComparison>();
             Dialog.VersionComparison.SetValueWithoutNotify((int)metadata.versionRange);
@@ -537,7 +542,7 @@ namespace BetterLegacy.Editor.Managers
             CoroutineHelper.StartCoroutine(EditorManager.inst.GetSprite(jpgFile, new EditorManager.SpriteLimits(new Vector2(512f, 512f)), cover =>
             {
                 RTFile.CopyFile(jpgFile, jpgFileLocation);
-                RTMetaDataEditor.inst.SetLevelCover(cover);
+                SetLevelCover(cover);
             }, errorFile => EditorManager.inst.DisplayNotification("Please resize your image to be less than or equal to 512 x 512 pixels. It must also be a jpg.", 2f, EditorManager.NotificationType.Error)));
         }
 

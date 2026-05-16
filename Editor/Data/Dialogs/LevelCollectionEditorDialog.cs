@@ -64,10 +64,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         #region Server
 
-        public RectTransform ServerBase { get; set; }
         public RectTransform ServerContent { get; set; }
 
-        public Toggle RequireVersion { get; set; }
+        public ToggleButtonStorage RequireVersion { get; set; }
 
         public Dropdown VersionComparison { get; set; }
 
@@ -100,7 +99,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public override void Init()
         {
@@ -160,7 +159,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             CreatorField.textComponent.alignment = TextAnchor.MiddleLeft;
             EditorThemeManager.ApplyInputField(CreatorField);
 
-            var labelRect = new RectValues(new Vector2(16f, 0f), new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(0f, -32f));
+            var labelRect = new RectValues(new Vector2(16f, 0f), new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(0f, 16f));
 
             new Labels(Labels.InitSettings.Default.Parent(Content), "Difficulty");
             var difficulty = Creator.NewUIObject("difficulty", Content);
@@ -224,17 +223,17 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             #region Icon
 
+            new Labels(Labels.InitSettings.Default.Parent(Content).Rect(labelRect), new Label("Icon") { fontStyle = FontStyle.Bold, });
             var iconBase = Creator.NewUIObject("icon", Content);
             IconBase = iconBase.transform.AsRT();
-            RectValues.Default.SizeDelta(764f, 574f).AssignToRectTransform(IconBase);
-            new Labels(Labels.InitSettings.Default.Parent(IconBase).Rect(labelRect), new Label("Icon") { fontStyle = FontStyle.Bold, });
+            RectValues.Default.SizeDelta(764f, 512f).AssignToRectTransform(IconBase);
 
             var icon = Creator.NewUIObject("image", IconBase);
             IconImage = icon.AddComponent<Image>();
-            new RectValues(new Vector2(16f, 0f), new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(512f, 512f)).AssignToRectTransform(IconImage.rectTransform);
+            new RectValues(new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(512f, 512f)).AssignToRectTransform(IconImage.rectTransform);
 
             var selectIcon = EditorPrefabHolder.Instance.Function2Button.Duplicate(IconBase, "select");
-            new RectValues(new Vector2(240f, -62f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(150f, 32f)).AssignToRectTransform(selectIcon.transform.AsRT());
+            new RectValues(new Vector2(240f, 0f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(150f, 32f)).AssignToRectTransform(selectIcon.transform.AsRT());
             var selectIconStorage = selectIcon.GetComponent<FunctionButtonStorage>();
             SelectIconButton = selectIconStorage.button;
             selectIconStorage.Text = "Browse";
@@ -243,7 +242,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             EditorThemeManager.ApplyGraphic(selectIconStorage.label, ThemeGroup.Function_2_Text);
 
             var collapseIcon = EditorPrefabHolder.Instance.CollapseToggle.Duplicate(IconBase, "collapse");
-            new RectValues(new Vector2(340f, -62f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(32f, 32f)).AssignToRectTransform(collapseIcon.transform.AsRT());
+            new RectValues(new Vector2(340f, 0f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(32f, 32f)).AssignToRectTransform(collapseIcon.transform.AsRT());
             CollapseIconToggle = collapseIcon.GetComponent<Toggle>();
 
             EditorThemeManager.ApplyToggle(CollapseIconToggle, ThemeGroup.Background_1);
@@ -255,17 +254,17 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             #region Banner
 
+            new Labels(Labels.InitSettings.Default.Parent(Content).Rect(labelRect), new Label("Banner") { fontStyle = FontStyle.Bold, });
             var bannerBase = Creator.NewUIObject("banner", Content);
             BannerBase = bannerBase.transform.AsRT();
-            RectValues.Default.SizeDelta(764f, 354f).AssignToRectTransform(BannerBase);
-            new Labels(Labels.InitSettings.Default.Parent(BannerBase).Rect(labelRect), new Label("Banner") { fontStyle = FontStyle.Bold, });
+            RectValues.Default.SizeDelta(764f, 170.6666f).AssignToRectTransform(BannerBase);
 
             var banner = Creator.NewUIObject("image", BannerBase);
             BannerImage = banner.AddComponent<Image>();
-            new RectValues(new Vector2(16f, 0f), new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(512f, 512f)).AssignToRectTransform(BannerImage.rectTransform);
+            new RectValues(new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(512f, 512f)).AssignToRectTransform(BannerImage.rectTransform);
 
             var selectBanner = EditorPrefabHolder.Instance.Function2Button.Duplicate(BannerBase, "select");
-            new RectValues(new Vector2(240f, -62f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(150f, 32f)).AssignToRectTransform(selectBanner.transform.AsRT());
+            new RectValues(new Vector2(240f, 0f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(150f, 32f)).AssignToRectTransform(selectBanner.transform.AsRT());
             var selectBannerStorage = selectBanner.GetComponent<FunctionButtonStorage>();
             SelectBannerButton = selectBannerStorage.button;
             selectBannerStorage.Text = "Browse";
@@ -274,7 +273,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             EditorThemeManager.ApplyGraphic(selectBannerStorage.label, ThemeGroup.Function_2_Text);
 
             var collapseBanner = EditorPrefabHolder.Instance.CollapseToggle.Duplicate(BannerBase, "collapse");
-            new RectValues(new Vector2(340f, -62f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(32f, 32f)).AssignToRectTransform(collapseBanner.transform.AsRT());
+            new RectValues(new Vector2(340f, 0f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(32f, 32f)).AssignToRectTransform(collapseBanner.transform.AsRT());
             CollapseBannerToggle = collapseBanner.GetComponent<Toggle>();
 
             EditorThemeManager.ApplyToggle(CollapseBannerToggle, ThemeGroup.Background_1);
@@ -314,17 +313,15 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             #region Server
 
-            var serverBase = Creator.NewUIObject("server", Content);
-            ServerBase = serverBase.transform.AsRT();
-            RectValues.Default.SizeDelta(764f, 800f).AssignToRectTransform(ServerBase);
-            new Labels(Labels.InitSettings.Default.Parent(serverBase.transform).Rect(labelRect), new Label("Server / Arcade") { fontStyle = FontStyle.Bold, });
-            var server = Creator.NewUIObject("info", serverBase.transform);
+            new Labels(Labels.InitSettings.Default.Parent(Content).Rect(labelRect), new Label("Server / Arcade") { fontStyle = FontStyle.Bold, });
+            var server = Creator.NewUIObject("server", Content);
             ServerContent = server.transform.AsRT();
             RectValues.FullAnchored.AnchorMax(1f, 0f).Pivot(0.5f, 0f).SizeDelta(-32f, 740f).AssignToRectTransform(ServerContent);
             var serverLayout = server.AddComponent<VerticalLayoutGroup>();
             serverLayout.childControlHeight = false;
             serverLayout.childForceExpandHeight = false;
             serverLayout.spacing = 4f;
+            server.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.MinSize;
 
             ChangelogLabel = new Labels(Labels.InitSettings.Default.Parent(server.transform), "Changelog").GameObject;
             var changelog = EditorPrefabHolder.Instance.StringInputField.Duplicate(server.transform, "changelog");
@@ -404,15 +401,15 @@ namespace BetterLegacy.Editor.Data.Dialogs
         {
             var size = collapse ? 32f : 512f;
             IconImage.rectTransform.sizeDelta = new Vector2(size, size);
-            IconBase.transform.AsRT().sizeDelta = new Vector2(764f, collapse ? 94f : 574f);
+            IconBase.transform.AsRT().sizeDelta = new Vector2(764f, size);
 
             LayoutRebuilder.ForceRebuildLayoutImmediate(Content);
         }
 
         public void CollapseBanner(bool collapse)
         {
-            BannerImage.rectTransform.sizeDelta = new Vector2(collapse ? 32f : 512f, collapse ? 18.20444f : 170.6666f);
-            BannerBase.transform.AsRT().sizeDelta = new Vector2(764f, collapse ? 94f : 234f);
+            BannerImage.rectTransform.sizeDelta = new Vector2(collapse ? 74f : 512f, collapse ? 32f : 170.6666f);
+            BannerBase.transform.AsRT().sizeDelta = new Vector2(764f, collapse ? 32f : 170.6666f);
 
             LayoutRebuilder.ForceRebuildLayoutImmediate(Content);
         }
@@ -422,9 +419,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
             ChangelogLabel.SetActive(show);
             ChangelogField.gameObject.SetActive(show);
 
-            ServerBase.transform.AsRT().sizeDelta = new Vector2(750f, show ? 1020 : 854f);
-            ServerContent.transform.AsRT().sizeDelta = new Vector2(-32f, show ? 960 : 794f);
-
             LayoutRebuilder.ForceRebuildLayoutImmediate(Content);
         }
 
@@ -433,11 +427,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
             if (doLabel)
                 new Labels(Labels.InitSettings.Default.Parent(parent), new Label(name));
             var gameObject = EditorPrefabHolder.Instance.Dropdown.Duplicate(parent, name.ToLower());
-            gameObject.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
-            var layoutElement = gameObject.GetComponent<LayoutElement>();
-            layoutElement.ignoreLayout = false;
-            layoutElement.minWidth = 200f;
-            layoutElement.preferredWidth = 200f;
             var dropdown = gameObject.GetComponent<Dropdown>();
             dropdown.options = list;
             EditorThemeManager.ApplyDropdown(dropdown);
@@ -447,68 +436,10 @@ namespace BetterLegacy.Editor.Data.Dialogs
         Toggle GenerateToggle(Transform parent, string text)
         {
             var gameObject = EditorPrefabHolder.Instance.ToggleButton.Duplicate(parent, text.ToLower());
-            gameObject.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
-            //var layoutElement = gameObject.GetOrAddComponent<LayoutElement>();
-            //layoutElement.ignoreLayout = false;
-            //layoutElement.minHeight = 32f;
-            //layoutElement.minWidth = 200f;
-            //layoutElement.preferredHeight = 32f;
-            //layoutElement.preferredWidth = 200f;
             var toggleStorage = gameObject.GetComponent<ToggleButtonStorage>();
             toggleStorage.label.text = text;
             EditorThemeManager.ApplyToggle(toggleStorage.toggle, graphic: toggleStorage.label);
             return toggleStorage.toggle;
-        }
-
-        Dropdown GenerateDropdown(Transform content, Text creatorLinkTitle, string name, string text, int siblingIndex)
-        {
-            var dropdownBase = Creator.NewUIObject(name, content, siblingIndex);
-            var dropdownBaseLayout = dropdownBase.AddComponent<HorizontalLayoutGroup>();
-            dropdownBaseLayout.childControlHeight = true;
-            dropdownBaseLayout.childControlWidth = false;
-            dropdownBaseLayout.childForceExpandHeight = true;
-            dropdownBaseLayout.childForceExpandWidth = false;
-            dropdownBase.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
-
-            var label = creatorLinkTitle.gameObject.Duplicate(dropdownBase.transform, "label");
-            var labelText = label.GetComponent<Text>();
-            labelText.text = text;
-            labelText.rectTransform.sizeDelta = new Vector2(210f, 32f);
-            EditorThemeManager.ApplyLightText(labelText);
-
-            var dropdownObj = EditorPrefabHolder.Instance.Dropdown.Duplicate(dropdownBase.transform, "dropdown");
-            var layoutElement = dropdownObj.GetOrAddComponent<LayoutElement>();
-            layoutElement.preferredWidth = 126f;
-            layoutElement.minWidth = 126f;
-            dropdownObj.transform.AsRT().sizeDelta = new Vector2(256f, 32f);
-            var dropdown = dropdownObj.GetComponent<Dropdown>();
-            EditorThemeManager.ApplyDropdown(dropdown);
-            return dropdown;
-        }
-
-        Toggle GenerateToggle(Transform content, Text creatorLinkTitle, string name, string text, int siblingIndex)
-        {
-            var toggleBase = Creator.NewUIObject(name, content, siblingIndex);
-            var toggleBaseLayout = toggleBase.AddComponent<HorizontalLayoutGroup>();
-            toggleBaseLayout.childControlHeight = true;
-            toggleBaseLayout.childControlWidth = false;
-            toggleBaseLayout.childForceExpandHeight = true;
-            toggleBaseLayout.childForceExpandWidth = false;
-            toggleBase.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
-
-            var label = creatorLinkTitle.gameObject.Duplicate(toggleBase.transform, "label");
-            var labelText = label.GetComponent<Text>();
-            labelText.text = text;
-            labelText.rectTransform.sizeDelta = new Vector2(210, 32f);
-            EditorThemeManager.ApplyLightText(labelText);
-
-            var toggleObj = EditorPrefabHolder.Instance.Toggle.Duplicate(toggleBase.transform, "toggle");
-            var layoutElement = toggleObj.GetOrAddComponent<LayoutElement>();
-            layoutElement.preferredWidth = 32f;
-            layoutElement.minWidth = 32f;
-            var toggle = toggleObj.GetComponent<Toggle>();
-            EditorThemeManager.ApplyToggle(toggle);
-            return toggle;
         }
 
         #endregion

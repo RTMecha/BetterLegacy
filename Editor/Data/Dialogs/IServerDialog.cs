@@ -2,15 +2,18 @@
 using UnityEngine.UI;
 
 using BetterLegacy.Core.Components;
+using BetterLegacy.Core.Prefabs;
 
 namespace BetterLegacy.Editor.Data.Dialogs
 {
+    /// <summary>
+    /// Indicates a dialog has the capability to interact with the BetterLegacy server.
+    /// </summary>
     public interface IServerDialog
     {
-        public RectTransform ServerBase { get; set; }
         public RectTransform ServerContent { get; set; }
 
-        public Toggle RequireVersion { get; set; }
+        public ToggleButtonStorage RequireVersion { get; set; }
 
         public Dropdown VersionComparison { get; set; }
 
@@ -37,8 +40,15 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public Button DeleteButton { get; set; }
         public ContextClickable DeleteContextMenu { get; set; }
 
+        /// <summary>
+        /// Opens the editor dialog.
+        /// </summary>
         public void Open();
 
+        /// <summary>
+        /// Shows the changelog.
+        /// </summary>
+        /// <param name="show">If the changelog should display.</param>
         public void ShowChangelog(bool show);
     }
 }
