@@ -2576,7 +2576,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 if (EditorConfig.Instance.HexColorKeyframeConverts.Value && _val)
                 {
                     var eventTime = firstKF.eventKeyframe.time;
-                    RTLevel.Current?.eventEngine?.Update(eventTime);
+                    RTLevel.Current?.eventEngine?.Update(animatable.StartTime + eventTime);
                     RTLevel.Current?.eventEngine?.Render();
                     var startColor = CoreHelper.CurrentBeatmapTheme.GetObjColor((int)firstKF.eventKeyframe.values[0]);
                     var startOpacity = animatable.Interpolate(3, 1, eventTime);
