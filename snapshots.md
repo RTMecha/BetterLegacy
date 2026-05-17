@@ -1,4 +1,16 @@
-﻿# snapshot-2026.5.4 - (Story Playtest) [May 16, 2026]
+﻿# snapshot-2026.5.5 - (Story Playtest) [May 17, 2026]
+## Features
+### Editor
+- Added Open Folder button to the screenshots view.
+- Screenshots in the screenshots view now have a context menu.
+
+## Fixes
+- Fixed Prefab Object random toggles not displaying if the random value is set to 0.
+- Fixed Use Hex Color not converting the hex colors properly in some cases.
+
+-------------------------------------------------------------------
+
+# snapshot-2026.5.4 - (Story Playtest) [May 16, 2026]
 ## Features
 ### Editor
 - Added "Disable Level Progress Display If Value Is 0" setting to Config Manager > Editor > Editor GUI.
