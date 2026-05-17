@@ -731,8 +731,8 @@ namespace BetterLegacy.Editor.Managers
 
                     EditorHelper.SetComplexity(PrefabObjectEditor.LeftContent.Find(r_type).GetPreviousSibling().gameObject, $"prefab_object/{types[index]}_random", Complexity.Advanced, visible: () => currentKeyframe.random != 0);
                     EditorHelper.SetComplexity(PrefabObjectEditor.LeftContent.Find(r_type).gameObject, $"prefab_object/{types[index]}_random", Complexity.Advanced, visible: () => currentKeyframe.random != 0);
-                    EditorHelper.SetComplexity(PrefabObjectEditor.LeftContent.Find($"{types[index]}-random-label").gameObject, $"prefab_object/{types[index]}_random", Complexity.Advanced, visible: () => currentKeyframe.random != 0);
-                    EditorHelper.SetComplexity(PrefabObjectEditor.LeftContent.Find($"{types[index]}-random").gameObject, $"prefab_object/{types[index]}_random", Complexity.Advanced, visible: () => currentKeyframe.random != 0);
+                    EditorHelper.SetComplexity(PrefabObjectEditor.LeftContent.Find($"{types[index]}-random-label").gameObject, $"prefab_object/{types[index]}_random", Complexity.Advanced);
+                    EditorHelper.SetComplexity(PrefabObjectEditor.LeftContent.Find($"{types[index]}-random").gameObject, $"prefab_object/{types[index]}_random", Complexity.Advanced);
                 }
                 catch (Exception ex)
                 {
