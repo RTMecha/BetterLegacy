@@ -101,7 +101,7 @@ namespace BetterLegacy.Editor.Managers
         /// <summary>
         /// Screenshots view dialog.
         /// </summary>
-        public EditorDialog ScreenshotsDialog { get; set; }
+        public ScreenshotsViewDialog ScreenshotsDialog { get; set; }
 
         /// <summary>
         /// List of all current notifications.
@@ -359,16 +359,7 @@ namespace BetterLegacy.Editor.Managers
 
         #region Screenshots
 
-        public Transform screenshotContent;
-        public InputField screenshotPageField;
-
-        public int screenshotPage;
         public int screenshotsPerPage = 5;
-
-        public int CurrentScreenshotPage => screenshotPage + 1;
-        public int MinScreenshots => MaxScreenshots - screenshotsPerPage;
-        public int MaxScreenshots => CurrentScreenshotPage * screenshotsPerPage;
-
         public int screenshotCount;
 
         #endregion
@@ -6604,23 +6595,25 @@ namespace BetterLegacy.Editor.Managers
         {
             var directory = RTFile.ApplicationDirectory + CoreConfig.Instance.ScreenshotsPath.Value;
 
-            LSHelpers.DeleteChildren(screenshotContent);
+            ScreenshotsDialog.ClearContent();
             var files = Directory.GetFiles(directory, FileFormat.PNG.ToPattern(), SearchOption.TopDirectoryOnly);
             screenshotCount = files.Length;
 
             if (screenshotCount > screenshotsPerPage)
-                TriggerHelper.AddEventTriggers(screenshotPageField.gameObject, TriggerHelper.ScrollDeltaInt(screenshotPageField, max: screenshotCount / screenshotsPerPage));
+                TriggerHelper.AddEventTriggers(ScreenshotsDialog.PageField.inputField.gameObject, TriggerHelper.ScrollDeltaInt(ScreenshotsDialog.PageField.inputField, max: ScreenshotsDialog.MaxPageCount));
             else
-                TriggerHelper.AddEventTriggers(screenshotPageField.gameObject);
+                TriggerHelper.AddEventTriggers(ScreenshotsDialog.PageField.inputField.gameObject);
 
+            var screenshotsOnPage = 0;
             for (int i = 0; i < files.Length; i++)
             {
-                if (!(i >= MinScreenshots && i < MaxScreenshots))
+                if (!ScreenshotsDialog.InPage(i, screenshotsPerPage))
                     continue;
 
                 var index = i;
+                var file = files[index];
 
-                var gameObject = Creator.NewUIObject("screenshot", screenshotContent);
+                var gameObject = Creator.NewUIObject("screenshot", ScreenshotsDialog.Content);
                 gameObject.transform.localScale = Vector3.one;
                 gameObject.transform.AsRT().sizeDelta = new Vector2(720f, 405f);
 
@@ -6628,8 +6621,29 @@ namespace BetterLegacy.Editor.Managers
                 image.enabled = false;
 
                 var button = gameObject.AddComponent<Button>();
-                button.onClick.NewListener(() => System.Diagnostics.Process.Start(files[index]));
+                button.onClick.NewListener(() => RTFile.OpenInFileBrowser.OpenFile(file));
                 button.colors = UIManager.SetColorBlock(button.colors, Color.white, new Color(0.9f, 0.9f, 0.9f), new Color(0.7f, 0.7f, 0.7f), Color.white, Color.red);
+
+                EditorContextMenu.AddContextMenu(gameObject,
+                    new ButtonElement("Open File", () => RTFile.OpenInFileBrowser.OpenFile(file)),
+                    new ButtonElement("Open Folder", () => RTFile.OpenInFileBrowser.Open(directory)),
+                    new SpacerElement(),
+                    new ButtonElement("Duplicate", () =>
+                    {
+                        var destination = RTFile.CombinePaths(directory, DateTime.Now.ToString(LegacyPlugin.DATE_TIME_FORMAT) + FileFormat.PNG.Dot());
+                        RTFile.CopyFile(file, destination);
+                        EditorManager.inst.DisplayNotification("Made a copy of the screenshot!", 2f, EditorManager.NotificationType.Success);
+                        RefreshScreenshots();
+                    }),
+                    new ButtonElement("Delete", () => ShowWarningPopup("Are you sure you want to delete this screenshot? This is permanent!", () =>
+                    {
+                        RTFile.DeleteFile(file);
+                        EditorManager.inst.DisplayNotification("Deleted the screenshot!", 2f, EditorManager.NotificationType.Success);
+                        if (screenshotsOnPage == 1)
+                            ScreenshotsDialog.SetPage(ScreenshotsDialog.Page - 1);
+                        else
+                            RefreshScreenshots();
+                    })));
 
                 StartCoroutine(AlephNetwork.DownloadImageTexture($"file://{files[i]}", texture2D =>
                 {
@@ -6639,92 +6653,15 @@ namespace BetterLegacy.Editor.Managers
                     image.enabled = true;
                     image.sprite = SpriteHelper.CreateSprite(texture2D);
                 }));
+                screenshotsOnPage++;
             }
         }
 
         void CreateScreenshotsView()
         {
-            var editorDialogObject = EditorPrefabHolder.Instance.Dialog.Duplicate(EditorManager.inst.dialogs, "ScreenshotDialog");
-            editorDialogObject.transform.AsRT().anchoredPosition = new Vector2(0f, 16f);
-            editorDialogObject.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
-            editorDialogObject.AddComponent<ActiveState>().onStateChanged = enabled => CaptureArea.inst.SetActive(enabled);
-            var dialogStorage = editorDialogObject.GetComponent<EditorDialogStorage>();
-
-            dialogStorage.topPanel.color = LSColors.HexToColor("00FF8C");
-            dialogStorage.title.text = "- Screenshots -";
-
-            var editorDialogSpacer = editorDialogObject.transform.GetChild(1);
-            editorDialogSpacer.AsRT().sizeDelta = new Vector2(765f, 54f);
-
-            Destroy(editorDialogObject.transform.GetChild(2).gameObject);
-
-            EditorHelper.AddEditorDialog(EditorDialog.SCREENSHOTS, editorDialogObject);
-
-            var page = EditorPrefabHolder.Instance.NumberInputField.Duplicate(editorDialogObject.transform.Find("spacer"));
-            var pageStorage = page.GetComponent<InputFieldStorage>();
-            screenshotPageField = pageStorage.inputField;
-
-            pageStorage.inputField.SetTextWithoutNotify(screenshotPage.ToString());
-            pageStorage.inputField.onValueChanged.NewListener(_val =>
-            {
-                if (int.TryParse(_val, out int p))
-                {
-                    screenshotPage = Mathf.Clamp(p, 0, screenshotCount / screenshotsPerPage);
-                    RefreshScreenshots();
-                }
-            });
-            pageStorage.leftGreaterButton.onClick.NewListener(() =>
-            {
-                if (int.TryParse(pageStorage.inputField.text, out int p))
-                    pageStorage.inputField.text = "0";
-            });
-            pageStorage.leftButton.onClick.NewListener(() =>
-            {
-                if (int.TryParse(pageStorage.inputField.text, out int p))
-                    pageStorage.inputField.text = Mathf.Clamp(p - 1, 0, screenshotCount / screenshotsPerPage).ToString();
-            });
-            pageStorage.rightButton.onClick.NewListener(() =>
-            {
-                if (int.TryParse(pageStorage.inputField.text, out int p))
-                    pageStorage.inputField.text = Mathf.Clamp(p + 1, 0, screenshotCount / screenshotsPerPage).ToString();
-            });
-            pageStorage.rightGreaterButton.onClick.NewListener(() =>
-            {
-                if (int.TryParse(pageStorage.inputField.text, out int p))
-                    pageStorage.inputField.text = (screenshotCount / screenshotsPerPage).ToString();
-            });
-
-            Destroy(pageStorage.middleButton.gameObject);
-
-            EditorThemeManager.ApplyInputField(pageStorage.inputField);
-            EditorThemeManager.ApplySelectable(pageStorage.leftGreaterButton, ThemeGroup.Function_2, false);
-            EditorThemeManager.ApplySelectable(pageStorage.leftButton, ThemeGroup.Function_2, false);
-            EditorThemeManager.ApplySelectable(pageStorage.rightButton, ThemeGroup.Function_2, false);
-            EditorThemeManager.ApplySelectable(pageStorage.rightGreaterButton, ThemeGroup.Function_2, false);
-
-            var scrollView = EditorPrefabHolder.Instance.ScrollView.Duplicate(editorDialogObject.transform, "Scroll View");
-            screenshotContent = scrollView.transform.Find("Viewport/Content");
-            scrollView.transform.localScale = Vector3.one;
-
-            LSHelpers.DeleteChildren(screenshotContent);
-
-            var scrollViewLE = scrollView.AddComponent<LayoutElement>();
-            scrollViewLE.ignoreLayout = true;
-
-            scrollView.transform.AsRT().anchoredPosition = new Vector2(392.5f, 320f);
-            scrollView.transform.AsRT().sizeDelta = new Vector2(735f, 638f);
-
-            EditorThemeManager.ApplyGraphic(editorDialogObject.GetComponent<Image>(), ThemeGroup.Background_1);
-
-            EditorHelper.AddEditorDropdown("View Screenshots", string.Empty, EditorHelper.VIEW_DROPDOWN, EditorSprites.SearchSprite, () =>
-            {
-                ScreenshotsDialog.Open();
-                RefreshScreenshots();
-            });
-
             try
             {
-                ScreenshotsDialog = new EditorDialog(EditorDialog.SCREENSHOTS);
+                ScreenshotsDialog = new ScreenshotsViewDialog();
                 ScreenshotsDialog.Init();
             }
             catch (Exception ex)
