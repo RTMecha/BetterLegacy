@@ -22,9 +22,12 @@ using BetterLegacy.Menus.UI.Interfaces;
 
 namespace BetterLegacy.Arcade.Interfaces
 {
-    public class LoadLevelsMenu : MenuBase
+    /// <summary>
+    /// Interface for loading levels and level collections.
+    /// </summary>
+    public class LoadLevelsInterface : BaseInterface
     {
-        public static LoadLevelsMenu Current { get; set; }
+        public static LoadLevelsInterface Current { get; set; }
 
         public static void Init() => Init(ArcadeHelper.OnLoadingEnd().Start);
         public static void Init(string levelsDirectory) => Init(levelsDirectory, ArcadeHelper.OnLoadingEnd().Start);
@@ -34,7 +37,7 @@ namespace BetterLegacy.Arcade.Interfaces
         public static void Init(string levelsDirectory, Action onLoadingEnd)
         {
             InterfaceManager.inst.CloseMenus();
-            Current = new LoadLevelsMenu();
+            Current = new LoadLevelsInterface();
             InterfaceManager.inst.CurrentInterface = Current;
             Current.StartGeneration();
             CoroutineHelper.StartCoroutine(Current.GetLevelList(levelsDirectory, true, ArcadeConfig.Instance.LoadSteamLevels.Value, onLoadingEnd));
@@ -45,7 +48,7 @@ namespace BetterLegacy.Arcade.Interfaces
         public static void InitLocal(string levelsDirectory)
         {
             InterfaceManager.inst.CloseMenus();
-            Current = new LoadLevelsMenu();
+            Current = new LoadLevelsInterface();
             InterfaceManager.inst.CurrentInterface = Current;
             Current.StartGeneration();
             CoroutineHelper.StartCoroutine(Current.GetLevelList(levelsDirectory, true, false, ArcadeHelper.OnLoadingEnd().Start));
@@ -54,13 +57,13 @@ namespace BetterLegacy.Arcade.Interfaces
         public static void InitSteam()
         {
             InterfaceManager.inst.CloseMenus();
-            Current = new LoadLevelsMenu();
+            Current = new LoadLevelsInterface();
             InterfaceManager.inst.CurrentInterface = Current;
             Current.StartGeneration();
             CoroutineHelper.StartCoroutine(Current.GetLevelList(string.Empty, false, true, ArcadeHelper.OnLoadingEnd().Start));
         }
 
-        public LoadLevelsMenu()
+        public LoadLevelsInterface()
         {
             name = "Loading Levels";
 

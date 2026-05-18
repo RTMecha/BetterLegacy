@@ -17,14 +17,17 @@ using BetterLegacy.Menus.UI.Interfaces;
 
 namespace BetterLegacy.Arcade.Interfaces
 {
-    public class PlayLevelMenu : MenuBase
+    /// <summary>
+    /// Interface for viewing a level.
+    /// </summary>
+    public class PlayLevelInterface : BaseInterface
     {
-        public static PlayLevelMenu Current { get; set; }
+        public static PlayLevelInterface Current { get; set; }
         public static Level CurrentLevel { get; set; }
         public Action onPlay;
         public Action onReturn;
 
-        public PlayLevelMenu() : base()
+        public PlayLevelInterface() : base()
         {
             this.name = CurrentLevel?.metadata?.beatmap?.name;
 
@@ -274,8 +277,8 @@ namespace BetterLegacy.Arcade.Interfaces
                     var currentLevel = CurrentLevel;
                     if (currentLevel.metadata != null && !string.IsNullOrEmpty(currentLevel.metadata.uploaderID))
                     {
-                        LevelListMenu.Init($"{AlephNetwork.ArcadeServerURL}api/Level/user/{currentLevel.metadata.uploaderID}");
-                        LevelListMenu.close = () => Init(currentLevel);
+                        LevelListInterface.Init($"{AlephNetwork.ArcadeServerURL}api/Level/user/{currentLevel.metadata.uploaderID}");
+                        LevelListInterface.close = () => Init(currentLevel);
                     }
                 },
             });
@@ -669,7 +672,7 @@ namespace BetterLegacy.Arcade.Interfaces
                     func = () =>
                     {
                         var currentLevel = CurrentLevel;
-                        AchievementListMenu.Init(CurrentLevel, () => Init(currentLevel));
+                        AchievementListInterface.Init(CurrentLevel, () => Init(currentLevel));
                     },
                 });
             }
@@ -704,7 +707,7 @@ namespace BetterLegacy.Arcade.Interfaces
             if (playMusic)
                 AudioManager.inst.StopMusic();
             CurrentLevel = level;
-            Current = new PlayLevelMenu();
+            Current = new PlayLevelInterface();
             Current.onPlay = onPlay;
             Current.onReturn = onReturn;
             if (playMusic)
@@ -720,7 +723,7 @@ namespace BetterLegacy.Arcade.Interfaces
             if (onReturn != null)
                 onReturn.Invoke();
             else
-                ArcadeMenu.Init();
+                ArcadeInterface.Init();
         }
 
         public override void Clear()

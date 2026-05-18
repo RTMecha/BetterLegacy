@@ -825,7 +825,7 @@ namespace BetterLegacy.Story
         public void EndFunctionInterface(StoryMode.Chapter storyChapter, StoryMode.LevelSequence storyLevel, StoryMode.LevelPath levelPath, Action onLevelEnd = null)
         {
             if (CoreConfig.Instance.StoryShowsEndInterface.Value && !isCutscene)
-                EndLevelMenu.Init(() => new List<MenuImage>
+                EndLevelInterface.Init(() => new List<MenuImage>
                     {
                         new MenuButton
                         {

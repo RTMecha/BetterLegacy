@@ -8,10 +8,12 @@ using BetterLegacy.Menus.UI.Layouts;
 
 namespace BetterLegacy.Menus.UI.Interfaces
 {
-
-    public class ChangeLogMenu : MenuBase
+    /// <summary>
+    /// Interface for viewing the changelog.
+    /// </summary>
+    public class ChangelogInterface : BaseInterface
     {
-        public ChangeLogMenu(string[] notes) : base()
+        public ChangelogInterface(string[] notes) : base()
         {
             name = "Changelog";
             musicName = InterfaceManager.RANDOM_MUSIC_NAME;

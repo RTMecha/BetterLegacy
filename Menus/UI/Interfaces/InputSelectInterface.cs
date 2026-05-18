@@ -16,28 +16,14 @@ using BetterLegacy.Menus.UI.Layouts;
 
 namespace BetterLegacy.Menus.UI.Interfaces
 {
-    public class InputSelectMenu : MenuBase
+    /// <summary>
+    /// Interface for selecting controller inputs.
+    /// </summary>
+    public class InputSelectInterface : BaseInterface
     {
-        public static InputSelectMenu Current { get; set; }
+        #region Constructors
 
-        public static void Init()
-        {
-            InputDataManager.inst.BindMenuKeys();
-            InputDataManager.inst.ClearInputs();
-            ArcadeHelper.fromLevel = false;
-            InputDataManager.inst.playersCanJoin = true;
-
-            if (MenuConfig.Instance.PlayInputSelectMusic.Value)
-            {
-                SoundManager.inst.PlayMusic(DefaultMusic.loading);
-                CoreHelper.Notify($"Now playing: Creo - Staring Down the Barrels", InterfaceManager.inst.CurrentTheme.guiColor);
-            }
-
-            Current = new InputSelectMenu();
-            InterfaceManager.inst.CurrentInterface = Current;
-        }
-
-        public InputSelectMenu()
+        public InputSelectInterface()
         {
             name = "Input Select";
             regenerate = false;
@@ -113,17 +99,53 @@ namespace BetterLegacy.Menus.UI.Interfaces
             StartGeneration();
         }
 
+        #endregion
+
+        #region Values
+
         /// <summary>
-        /// Action that occurs when a player selects all controller inputs in the Input Select screen and loads the next scene.
+        /// The current <see cref="InputSelectInterface"/>.
+        /// </summary>
+        public static InputSelectInterface Current { get; set; }
+
+        /// <summary>
+        /// Function that occurs when a player selects all controller inputs in the Input Select screen and loads the next scene.
         /// </summary>
         public static Action OnInputsSelected { get; set; }
 
+        /// <summary>
+        /// Function that occurs when a player exists the interface.
+        /// </summary>
         public static Action OnExit { get; set; }
 
         Coroutine changeTextCoroutine;
         List<MenuText> nanobots = new List<MenuText>();
         List<string> noTexts = new List<string>();
         List<string> noColors = new List<string>();
+
+        #endregion
+
+        #region Functions
+
+        /// <summary>
+        /// Initializes the <see cref="InputSelectInterface"/>.
+        /// </summary>
+        public static void Init()
+        {
+            InputDataManager.inst.BindMenuKeys();
+            InputDataManager.inst.ClearInputs();
+            ArcadeHelper.fromLevel = false;
+            InputDataManager.inst.playersCanJoin = true;
+
+            if (MenuConfig.Instance.PlayInputSelectMusic.Value)
+            {
+                SoundManager.inst.PlayMusic(DefaultMusic.loading);
+                CoreHelper.Notify($"Now playing: Creo - Staring Down the Barrels", InterfaceManager.inst.CurrentTheme.guiColor);
+            }
+
+            Current = new InputSelectInterface();
+            InterfaceManager.inst.CurrentInterface = Current;
+        }
 
         IEnumerator ChangeText()
         {
@@ -231,5 +253,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             if (changeTextCoroutine != null)
                 CoroutineHelper.StopCoroutine(changeTextCoroutine);
         }
+
+        #endregion
     }
 }

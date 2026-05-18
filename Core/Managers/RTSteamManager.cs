@@ -230,10 +230,10 @@ namespace BetterLegacy.Core.Managers
             {
                 var publishedFileID = subscribedFiles[i];
 
-                if (LoadLevelsMenu.Current && LoadLevelsMenu.Current.cancelled)
+                if (LoadLevelsInterface.Current && LoadLevelsInterface.Current.cancelled)
                 {
                     SceneHelper.LoadScene(SceneName.Main_Menu, false);
-                    LoadLevelsMenu.currentlyLoading = false;
+                    LoadLevelsInterface.currentlyLoading = false;
                     Levels.Clear();
                     loading = false;
                     hasLoaded = false;
@@ -261,14 +261,12 @@ namespace BetterLegacy.Core.Managers
                         if (item.Result == Result.AccessDenied)
                         {
                             CoreHelper.Log($"Item {publishedFileID} could not be accessed..");
-                            if (LoadLevelsMenu.Current)
-                                LoadLevelsMenu.Current.UpdateInfo(LegacyPlugin.AtanPlaceholder, $"Item {publishedFileID} could not be accessed.", i);
+                            LoadLevelsInterface.Current?.UpdateInfo(LegacyPlugin.AtanPlaceholder, $"Item {publishedFileID} could not be accessed.", i);
                             continue;
                         }
 
                         CoreHelper.Log($"Attempting to download item: {publishedFileID} Result: {item.Result}.");
-                        if (LoadLevelsMenu.Current)
-                            LoadLevelsMenu.Current.UpdateInfo(LegacyPlugin.AtanPlaceholder, $"Downloading item: {publishedFileID}", i);
+                        LoadLevelsInterface.Current?.UpdateInfo(LegacyPlugin.AtanPlaceholder, $"Downloading item: {publishedFileID}", i);
                         yield return item.DownloadAsync();
                         installInfo = TryGetItemPath(publishedFileID, out folder);
 
@@ -276,8 +274,7 @@ namespace BetterLegacy.Core.Managers
                         if (!installInfo)
                         {
                             CoreHelper.Log($"Item {publishedFileID} no longer exists. {item.Result}");
-                            if (LoadLevelsMenu.Current)
-                                LoadLevelsMenu.Current.UpdateInfo(LegacyPlugin.AtanPlaceholder, $"Item {publishedFileID} no longer exists.", i);
+                            LoadLevelsInterface.Current?.UpdateInfo(LegacyPlugin.AtanPlaceholder, $"Item {publishedFileID} no longer exists.", i);
 
                             continue;
                         }
@@ -285,8 +282,7 @@ namespace BetterLegacy.Core.Managers
                     else
                     {
                         CoreHelper.Log($"Item {publishedFileID} no longer exists.");
-                        if (LoadLevelsMenu.Current)
-                            LoadLevelsMenu.Current.UpdateInfo(LegacyPlugin.AtanPlaceholder, $"Item {publishedFileID} no longer exists.", i);
+                        LoadLevelsInterface.Current?.UpdateInfo(LegacyPlugin.AtanPlaceholder, $"Item {publishedFileID} no longer exists.", i);
 
                         continue;
                     }
@@ -326,7 +322,7 @@ namespace BetterLegacy.Core.Managers
             CoreHelper.LogSeparator();
             CoreHelper.Log($"Beginning {(!item.IsSubscribed ? "subscribing" : "unsubscribing")} of {item.Id}\nTitle: {item.Title}");
 
-            ProgressMenu.Init($"Updating Steam item: {item.Id} - {item.Title}<br>Please wait...");
+            ProgressInterface.Init($"Updating Steam item: {item.Id} - {item.Title}<br>Please wait...");
 
             var subscribed = item.IsSubscribed;
             downloading = true;
@@ -338,7 +334,7 @@ namespace BetterLegacy.Core.Managers
                 {
                     try
                     {
-                        ProgressMenu.Current.UpdateProgress(item.DownloadAmount);
+                        ProgressInterface.Current.UpdateProgress(item.DownloadAmount);
                     }
                     catch
                     {
@@ -350,7 +346,7 @@ namespace BetterLegacy.Core.Managers
                 {
                     try
                     {
-                        ProgressMenu.Current.UpdateProgress(item.DownloadAmount);
+                        ProgressInterface.Current.UpdateProgress(item.DownloadAmount);
                     }
                     catch
                     {
@@ -359,7 +355,7 @@ namespace BetterLegacy.Core.Managers
 
                     yield return null;
                 }
-                ProgressMenu.Current.UpdateProgress(1f);
+                ProgressInterface.Current.UpdateProgress(1f);
 
                 subscribed = true;
             }
@@ -399,7 +395,7 @@ namespace BetterLegacy.Core.Managers
                     yield break;
                 }
 
-                PlayLevelMenu.Init(level);
+                PlayLevelInterface.Init(level);
                 item = default;
                 yield break;
             }
@@ -408,7 +404,7 @@ namespace BetterLegacy.Core.Managers
 
             CoreHelper.Log($"Finished updating Steam item.");
             item = default;
-            ArcadeMenu.Init();
+            ArcadeInterface.Init();
         }
 
         /// <summary>
@@ -428,7 +424,7 @@ namespace BetterLegacy.Core.Managers
             CoreHelper.LogSeparator();
             CoreHelper.Log($"Beginning {(!item.IsSubscribed ? "subscribing" : "unsubscribing")} of {item.Id}\nTitle: {item.Title}");
 
-            ProgressMenu.Init($"Updating Steam item: {item.Id} - {item.Title}<br>Please wait...");
+            ProgressInterface.Init($"Updating Steam item: {item.Id} - {item.Title}<br>Please wait...");
 
             var isSubscribed = item.IsSubscribed;
             downloading = true;
@@ -440,7 +436,7 @@ namespace BetterLegacy.Core.Managers
                 {
                     try
                     {
-                        ProgressMenu.Current.UpdateProgress(item.DownloadAmount);
+                        ProgressInterface.Current.UpdateProgress(item.DownloadAmount);
                     }
                     catch
                     {
@@ -452,7 +448,7 @@ namespace BetterLegacy.Core.Managers
                 {
                     try
                     {
-                        ProgressMenu.Current.UpdateProgress(item.DownloadAmount);
+                        ProgressInterface.Current.UpdateProgress(item.DownloadAmount);
                     }
                     catch
                     {
@@ -461,7 +457,7 @@ namespace BetterLegacy.Core.Managers
 
                     yield return null;
                 }
-                ProgressMenu.Current.UpdateProgress(1f);
+                ProgressInterface.Current.UpdateProgress(1f);
 
                 subscribed = true;
             }
@@ -502,7 +498,7 @@ namespace BetterLegacy.Core.Managers
                     yield break;
                 }
 
-                PlayLevelMenu.Init(level);
+                PlayLevelInterface.Init(level);
                 item = default;
                 yield break;
             }
@@ -511,7 +507,7 @@ namespace BetterLegacy.Core.Managers
 
             CoreHelper.Log($"Finished updating Steam item.");
             item = default;
-            ArcadeMenu.Init();
+            ArcadeInterface.Init();
         }
 
         public bool TryGetItemPath(PublishedFileId publishedFileID, out string folder)

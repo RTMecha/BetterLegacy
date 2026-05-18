@@ -13,12 +13,15 @@ using BetterLegacy.Menus.UI.Interfaces;
 
 namespace BetterLegacy.Arcade.Interfaces
 {
-    public class LevelCollectionMenu : MenuBase
+    /// <summary>
+    /// Interface for viewing a level collection.
+    /// </summary>
+    public class LevelCollectionInterface : BaseInterface
     {
-        public static LevelCollectionMenu Current { get; set; }
+        public static LevelCollectionInterface Current { get; set; }
         public static LevelCollection CurrentCollection { get; set; }
 
-        public LevelCollectionMenu() : base()
+        public LevelCollectionInterface() : base()
         {
             this.name = CurrentCollection.name;
 
@@ -235,7 +238,7 @@ namespace BetterLegacy.Arcade.Interfaces
 
                     SoundManager.inst.PlaySound(DefaultSounds.blip);
                     var collection = CurrentCollection;
-                    PlayLevelMenu.Init(LevelManager.CurrentLevel, onReturn: () =>
+                    PlayLevelInterface.Init(LevelManager.CurrentLevel, onReturn: () =>
                     {
                         Init(collection);
                         collection = null;
@@ -261,8 +264,8 @@ namespace BetterLegacy.Arcade.Interfaces
                 func = () =>
                 {
                     var currentCollection = CurrentCollection;
-                    LevelListMenu.close = () => Init(currentCollection);
-                    LevelListMenu.Init(currentCollection.levels);
+                    LevelListInterface.close = () => Init(currentCollection);
+                    LevelListInterface.Init(currentCollection.levels);
                 },
             });
 
@@ -300,7 +303,7 @@ namespace BetterLegacy.Arcade.Interfaces
 
             InterfaceManager.inst.CloseMenus();
             CurrentCollection = collection;
-            Current = new LevelCollectionMenu();
+            Current = new LevelCollectionInterface();
         }
 
         public static void Close()
@@ -308,7 +311,7 @@ namespace BetterLegacy.Arcade.Interfaces
             LevelManager.CurrentLevelCollection = null;
             InterfaceManager.inst.CloseMenus();
 
-            ArcadeMenu.Init();
+            ArcadeInterface.Init();
         }
 
         public override void Clear()

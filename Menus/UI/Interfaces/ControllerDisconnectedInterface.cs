@@ -13,18 +13,21 @@ using BetterLegacy.Menus.UI.Elements;
 
 namespace BetterLegacy.Menus.UI.Interfaces
 {
-    public class ControllerDisconnectedMenu : MenuBase
+    /// <summary>
+    /// Interface for when a controller has been disconnected whilst in-game.
+    /// </summary>
+    public class ControllerDisconnectedInterface : BaseInterface
     {
-        public static ControllerDisconnectedMenu Current { get; set; }
+        public static ControllerDisconnectedInterface Current { get; set; }
 
         public static void Init(int index)
         {
             RTBeatmap.Current?.Pause();
             ArcadeHelper.endedLevel = false;
-            Current = new ControllerDisconnectedMenu(index);
+            Current = new ControllerDisconnectedInterface(index);
         }
 
-        public ControllerDisconnectedMenu(int index)
+        public ControllerDisconnectedInterface(int index)
         {
             if (!ProjectArrhythmia.State.InGame || ProjectArrhythmia.State.InEditor)
             {

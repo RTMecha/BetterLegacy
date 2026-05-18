@@ -289,7 +289,7 @@ namespace BetterLegacy.Core.Data.Player
             if (device.SortOrder != sortOrder || GetDeviceModel(device.Name) != deviceModel)
                 return;
 
-            if (InputSelectMenu.Current)
+            if (InputSelectInterface.Current)
             {
                 InputManager.OnDeviceAttached -= ControllerConnected;
                 InputManager.OnDeviceDetached -= ControllerDisconnected;
@@ -306,7 +306,7 @@ namespace BetterLegacy.Core.Data.Player
             Input = null;
 
             InputDataManager.inst.SetAllControllerRumble(0f);
-            ControllerDisconnectedMenu.Init(index);
+            ControllerDisconnectedInterface.Init(index);
             Debug.LogFormat("{0}Disconnected Controler was attached to player. Controller [{1}] [{2}] -/- Player [{3}]", InputDataManager.className, device.Name, device.SortOrder, index);
         }
 
@@ -327,7 +327,7 @@ namespace BetterLegacy.Core.Data.Player
             input.Device = device;
             Input = input;
 
-            ControllerDisconnectedMenu.Current?.Reconnected();
+            ControllerDisconnectedInterface.Current?.Reconnected();
             Debug.LogFormat("{0}Connected Controller exists in players. Controller [{1}] [{2}] -> Player [{3}]", InputDataManager.className, device.Name, device.SortOrder, index);
         }
 

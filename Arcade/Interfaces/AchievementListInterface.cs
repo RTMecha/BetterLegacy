@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -13,47 +14,28 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Menus;
 using BetterLegacy.Menus.UI.Elements;
+using BetterLegacy.Menus.UI.Interfaces;
 using BetterLegacy.Menus.UI.Layouts;
 
-namespace BetterLegacy.Menus.UI.Interfaces
+namespace BetterLegacy.Arcade.Interfaces
 {
-    public class ProfileMenu : MenuBase
+    /// <summary>
+    /// Interface for achievements.
+    /// </summary>
+    public class AchievementListInterface : BaseInterface
     {
-        public static ProfileMenu Current { get; set; }
+        #region Constructors
 
-        public static void Init()
+        public AchievementListInterface(List<Achievement> achievements, Action onReturn)
         {
-            InterfaceManager.inst.CloseMenus();
-            Current = new ProfileMenu();
-        }
+            Achievements = achievements;
 
-        public enum Tab
-        {
-            Level,
-            Achievement,
-        }
-
-        public static Tab CurrentTab { get; set; }
-        public static int[] Pages { get; set; } = new int[]
-        {
-            0, // Level
-            0, // Achievement
-        };
-
-        public static int CurrentPage
-        {
-            get => Pages[(int)CurrentTab];
-            set => Pages[(int)CurrentTab] = value;
-        }
-
-        public ProfileMenu() : base()
-        {
-            InterfaceManager.inst.CurrentInterface = this;
-            id = InterfaceManager.PROFILE_MENU_ID;
+            id = "63562464";
 
             musicName = InterfaceManager.RANDOM_MUSIC_NAME;
-            name = "Profile";
+            name = "Achievements";
 
             elements.Add(new MenuEvent
             {
@@ -61,6 +43,16 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 name = "Effects",
                 func = MenuEffectsManager.inst.SetDefaultEffects,
                 length = 0f,
+                regenerate = false,
+            });
+
+            layouts.Add("achievements", new MenuVerticalLayout
+            {
+                name = "achievements",
+                spacing = 4f,
+                childControlWidth = true,
+                childForceExpandWidth = true,
+                rect = RectValues.Default.SizeDelta(1400f, 600f),
                 regenerate = false,
             });
 
@@ -74,22 +66,22 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
             elements.Add(new MenuButton
             {
-                id = "32848924",
-                name = "Return",
-                text = "<align=center><b>[ RETURN ]",
+                id = "1",
+                name = "Arcade Button",
+                text = "<b><align=center>[ RETURN ]",
                 parentLayout = "settings",
-                selectionPosition = new Vector2Int(0, 0),
-                rect = RectValues.Default.SizeDelta(400f, 64f),
-                func = () => InterfaceManager.inst.SetCurrentInterface(InterfaceManager.EXTRAS_MENU_ID),
+                autoAlignSelectionPosition = true,
                 color = 6,
                 opacity = 0.1f,
                 textColor = 6,
                 selectedColor = 6,
-                selectedOpacity = 1f,
                 selectedTextColor = 7,
-                length = 0.1f,
+                selectedOpacity = 1f,
+                length = 0.3f,
+                playBlipSound = true,
+                rect = RectValues.Default.SizeDelta(400f, 64f),
+                func = onReturn,
                 regenerate = false,
-                playBlipSound = false,
             });
 
             elements.Add(new MenuImage
@@ -98,44 +90,10 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 name = "Spacer",
                 parentLayout = "settings",
                 length = 0.3f,
-                rect = RectValues.Default.SizeDelta(100f, 64f),
+                rect = RectValues.Default.SizeDelta(900f, 64f),
                 regenerate = false,
                 opacity = 0f,
             });
-
-            for (int i = 0; i < 2; i++)
-            {
-                int index = i;
-                var name = i switch
-                {
-                    0 => "LEVEL SAVES",
-                    1 => "ACHIEVEMENTS",
-                    _ => string.Empty,
-                };
-                elements.Add(new MenuButton
-                {
-                    id = (i + 1).ToString(),
-                    name = "Tab",
-                    parentLayout = "settings",
-                    selectionPosition = new Vector2Int(i + 1, 0),
-                    text = $"<align=center><b>[ {name} ]",
-                    rect = RectValues.Default.SizeDelta(400f, 64f),
-                    func = () =>
-                    {
-                        CurrentTab = (Tab)index;
-                        Init();
-                    },
-                    color = 6,
-                    opacity = 0.1f,
-                    textColor = 6,
-                    selectedColor = 6,
-                    selectedOpacity = 1f,
-                    selectedTextColor = 7,
-                    length = 0.1f,
-                    wait = false,
-                    regenerate = false,
-                });
-            }
 
             #region Page
 
@@ -152,19 +110,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     if (!int.TryParse(_val, out int num))
                         return;
 
-                    CurrentPage = Mathf.Clamp(num, 0, ElementCount);
-
-                    switch (CurrentTab)
-                    {
-                        case Tab.Level: {
-                                RefreshLevelSaveData(true);
-                                break;
-                            }
-                        case Tab.Achievement: {
-                                RefreshAchievements(true);
-                                break;
-                            }
-                    }
+                    CurrentPage = Mathf.Clamp(num, 0, AchievementPageCount);
+                    RefreshAchievements(true);
                 },
                 placeholder = "Set page...",
                 color = 6,
@@ -195,7 +142,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                             result += 1 * (large ? 10 : 1);
 
                         if (AchievementPageCount != 0)
-                            result = Mathf.Clamp(result, 0, ElementCount);
+                            result = Mathf.Clamp(result, 0, AchievementPageCount);
 
                         if (inputField.text != result.ToString())
                         {
@@ -212,7 +159,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 name = "Prev Page",
                 text = "<align=center><b><",
                 parentLayout = "settings",
-                selectionPosition = new Vector2Int(3, 0),
+                selectionPosition = new Vector2Int(1, 0),
                 rect = RectValues.Default.SizeDelta(132f, 64f),
                 func = () =>
                 {
@@ -243,11 +190,11 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 name = "Next Page",
                 text = "<align=center><b>>",
                 parentLayout = "settings",
-                selectionPosition = new Vector2Int(4, 0),
+                selectionPosition = new Vector2Int(2, 0),
                 rect = RectValues.Default.SizeDelta(132f, 64f),
                 func = () =>
                 {
-                    if (CurrentPage != ElementCount)
+                    if (CurrentPage != AchievementPageCount)
                     {
                         pageField.inputField.text = (CurrentPage + 1).ToString();
                         SoundManager.inst.PlaySound(DefaultSounds.menuflip);
@@ -268,157 +215,110 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
             #endregion
 
-            layouts.Add("buttons", new MenuVerticalLayout
-            {
-                name = "buttons",
-                spacing = 4f,
-                childControlWidth = true,
-                childForceExpandWidth = true,
-                rect = RectValues.Default.SizeDelta(1400f, 600f),
-                regenerate = false,
-            });
+            RefreshAchievements(false, false);
 
-            switch (CurrentTab)
-            {
-                case Tab.Level: {
-                        RefreshLevelSaveData(false, false);
-                        break;
-                    }
-                case Tab.Achievement: {
-                        RefreshAchievements(false, false);
-                        break;
-                    }
-            }
+            exitFunc = onReturn;
 
-            exitFunc = () => InterfaceManager.inst.SetCurrentInterface(InterfaceManager.EXTRAS_MENU_ID);
-            StartGeneration();
-            InterfaceManager.inst.PlayMusic();
+            layer = 10000;
+
+            InterfaceManager.inst.SetCurrentInterface(this);
         }
 
-        public const int MAX_ELEMENTS_PER_PAGE = 5;
-        public static int ElementCount => CurrentTab switch
-        {
-            Tab.Level => LevelPageCount,
-            Tab.Achievement => AchievementPageCount,
-            _ => 0,
-        };
+        public AchievementListInterface(Level level, Action onReturn) : this(level.GetAchievements(), onReturn) => CurrentLevel = level;
 
-        #region Level Save Data
-
-        public static int LevelPageCount => LevelManager.Saves.Count / MAX_ELEMENTS_PER_PAGE;
-
-        public void ClearLevelSaveDataButtons() => ClearElements(x => x.name == "Element Base" || x.name == "Delete Save");
-
-        public void RefreshLevelSaveData(bool regenerateUI, bool clear = true)
-        {
-            if (clear)
-                ClearLevelSaveDataButtons();
-
-            var currentPage = CurrentPage + 1;
-            int max = currentPage * MAX_ELEMENTS_PER_PAGE;
-
-            int num = 0;
-            for (int i = 0; i < LevelManager.Saves.Count; i++)
-            {
-                int index = num;
-                if (index < max - MAX_ELEMENTS_PER_PAGE || index >= max)
-                {
-                    num++;
-                    continue;
-                }
-
-                var save = LevelManager.Saves[i];
-                var id = LSText.randomNumString(16);
-
-                var rank = LevelManager.GetLevelRank(save.Hits);
-
-                var elementBase = new MenuButton
-                {
-                    id = id,
-                    name = "Element Base",
-                    parentLayout = "buttons",
-                    rect = RectValues.Default.SizeDelta(800f, 120f),
-                    text = $" <size=40><b><#{LSColors.ColorToHex(rank.Color)}>{rank.DisplayName}</color></b></size>  {save.LevelName} - ID: {save.ID}",
-                    selectionPosition = new Vector2Int(0, index + 1),
-                    opacity = 0.1f,
-                    selectedOpacity = 1f,
-                    color = 6,
-                    selectedColor = 6,
-                    textColor = 6,
-                    length = regenerateUI ? 0f : 0.01f,
-                    wait = !regenerateUI,
-                    playSound = !regenerateUI,
-                };
-
-                var delete = new MenuButton
-                {
-                    id = "0",
-                    name = "Delete Save",
-                    parent = id,
-                    rect = RectValues.Default.AnchoredPosition(634f, 0f).SizeDelta(100f, 100f),
-                    text = string.Empty,
-                    iconPath = AssetPack.GetFile("core/sprites/icons/operations/delete.png"),
-                    iconRect = RectValues.FullAnchored,
-                    selectionPosition = new Vector2Int(1, index + 1),
-                    opacity = 1f,
-                    selectedOpacity = 1f,
-                    color = 0,
-                    selectedColor = 6,
-                    textColor = 6,
-                    selectedTextColor = 0,
-                    func = () =>
-                    {
-                        ConfirmMenu.Init("Are you sure you want to remove this save data from your profile? This is permanent!",
-                            confirm: () =>
-                            {
-                                if (LevelManager.Levels.TryFind(x => x && x.id == save.ID, out Level level))
-                                    LevelManager.AssignSaveData(level);
-
-                                LevelManager.Saves.RemoveAt(index);
-                                LevelManager.SaveProgress();
-                                elementBase = null;
-                                Init();
-                            },
-                            cancel: Init);
-                    },
-                    length = regenerateUI ? 0f : 0.01f,
-                    wait = !regenerateUI,
-                    playSound = !regenerateUI,
-                };
-
-                elements.Add(elementBase);
-                elements.Add(delete);
-                num++;
-            }
-
-            if (regenerateUI)
-                StartGeneration();
-        }
+        public AchievementListInterface(LevelCollection levelCollection, Action onReturn) : this(levelCollection.achievements, onReturn) => CurrentLevelCollection = levelCollection;
 
         #endregion
 
-        #region Achievements
+        #region Values
 
-        public static int AchievementPageCount => AchievementManager.globalAchievements.Count / MAX_ELEMENTS_PER_PAGE;
+        /// <summary>
+        /// The current achievement list interface.
+        /// </summary>
+        public static AchievementListInterface Current { get; set; }
 
+        /// <summary>
+        /// The current page.
+        /// </summary>
+        public int CurrentPage { get; set; }
+
+        /// <summary>
+        /// The current level.
+        /// </summary>
+        public Level CurrentLevel { get; set; }
+
+        /// <summary>
+        /// The current level collection.
+        /// </summary>
+        public LevelCollection CurrentLevelCollection { get; set; }
+
+        /// <summary>
+        /// The achievements list to display.
+        /// </summary>
+        public List<Achievement> Achievements { get; set; }
+
+        /// <summary>
+        /// Max amount of achievements per page.
+        /// </summary>
+        public const int MAX_ACHIEVEMENTS_PER_PAGE = 5;
+
+        /// <summary>
+        /// Amount of pages in the interface.
+        /// </summary>
+        public int AchievementPageCount => Achievements.Count / MAX_ACHIEVEMENTS_PER_PAGE;
+
+        #endregion
+
+        #region Functions
+
+        /// <summary>
+        /// Initializes the achievement list interface for a level.
+        /// </summary>
+        /// <param name="level">Level reference.</param>
+        /// <param name="onReturn">Function to run when the user wants to return.</param>
+        public static void Init(Level level, Action onReturn)
+        {
+            Current?.Clear();
+            Current = new AchievementListInterface(level, onReturn);
+        }
+
+        /// <summary>
+        /// Initializes the achievement list interface for a level collection.
+        /// </summary>
+        /// <param name="levelCollection">Level collection reference.</param>
+        /// <param name="onReturn">Function to run when the user wants to return.</param>
+        public static void Init(LevelCollection levelCollection, Action onReturn)
+        {
+            Current?.Clear();
+            Current = new AchievementListInterface(levelCollection, onReturn);
+        }
+
+        /// <summary>
+        /// Clears the displayed achievements.
+        /// </summary>
         public void ClearAchievements() => ClearElements(x => x.name == "Achievement Button" || x.name == "Difficulty" || x.name.Contains("Shine"));
 
+        /// <summary>
+        /// Refreshes the displayed achievements.
+        /// </summary>
+        /// <param name="regenerateUI">If the UI should be regenerated.</param>
+        /// <param name="clear">If the current displayed achievements should clear.</param>
         public void RefreshAchievements(bool regenerateUI, bool clear = true)
         {
             if (clear)
                 ClearAchievements();
 
-            var currentPage =  CurrentPage + 1;
-            int max = currentPage * MAX_ELEMENTS_PER_PAGE;
+            var currentPage = CurrentPage + 1;
+            int max = currentPage * MAX_ACHIEVEMENTS_PER_PAGE;
 
-            var achievements = AchievementManager.globalAchievements;
+            var achievements = Achievements;
             int num = 0;
             for (int i = 0; i < achievements.Count; i++)
             {
                 var achievement = achievements[i];
 
                 int index = num;
-                if (index < max - MAX_ELEMENTS_PER_PAGE || index >= max)
+                if (index < max - MAX_ACHIEVEMENTS_PER_PAGE || index >= max)
                 {
                     num++;
                     continue;
@@ -432,7 +332,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     {
                         id = PAObjectBase.GetStringID(),
                         name = "Achievement Button",
-                        parentLayout = "buttons",
+                        parentLayout = "achievements",
                         selectionPosition = new Vector2Int(0, num + 1),
                         rect = RectValues.Default.SizeDelta(800f, 120f),
                         text = $"<b><size=24><font=Arrhythmia>HIDDEN ACHIEVEMENT</font></b>\n{achievement.GetHint()}",
@@ -465,7 +365,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     {
                         id = PAObjectBase.GetStringID(),
                         name = "Achievement Button",
-                        parentLayout = "buttons",
+                        parentLayout = "achievements",
                         selectionPosition = new Vector2Int(0, num + 1),
                         rect = RectValues.Default.SizeDelta(800f, 120f),
                         text = $"<size=30><b>{achievement.id} - <size=24><font=Arrhythmia>{achievement.name}</font></b>\n{achievement.description}",

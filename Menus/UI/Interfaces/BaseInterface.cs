@@ -25,12 +25,19 @@ namespace BetterLegacy.Menus.UI.Interfaces
     /// <summary>
     /// Base menu class to be used for interfaces. Includes a custom selection system and UI system.
     /// </summary>
-    public abstract class MenuBase : Exists
+    public abstract class BaseInterface : Exists
     {
-        public MenuBase() { }
+        #region Constructors
 
-        #region Variables
+        public BaseInterface() { }
 
+        #endregion
+
+        #region Values
+
+        /// <summary>
+        /// Dictionary of sprites that can be reused.
+        /// </summary>
         public Dictionary<string, Sprite> spriteAssets = new Dictionary<string, Sprite>();
 
         /// <summary>
@@ -157,9 +164,14 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// </summary>
         public bool pauseGame = false;
 
+        /// <summary>
+        /// The current theme to use for the menu colors.
+        /// </summary>
+        public BeatmapTheme Theme { get; set; }
+
         #endregion
 
-        #region Methods
+        #region Functions
 
         /// <summary>
         /// For cases where the UI only needs to be set active / inactive instead of destroyed.
@@ -392,7 +404,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
                 InterfaceManager.inst.LoadThemes();
 
-                var canvas = UIManager.GenerateUICanvas(nameof(CustomMenu), null, sortingOrder: layer);
+                var canvas = UIManager.GenerateUICanvas(nameof(CustomInterface), null, sortingOrder: layer);
                 this.canvas = canvas;
                 canvas.Canvas.scaleFactor = 1f;
                 canvas.CanvasScaler.referenceResolution = new Vector2(1920f, 1080f);
@@ -1347,15 +1359,6 @@ namespace BetterLegacy.Menus.UI.Interfaces
         }
 
         public override string ToString() => $"{id} - {name}";
-
-        #endregion
-
-        #region Properties
-
-        /// <summary>
-        /// The current theme to use for the menu colors.
-        /// </summary>
-        public BeatmapTheme Theme { get; set; }
 
         #endregion
     }

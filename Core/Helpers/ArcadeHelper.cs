@@ -287,12 +287,12 @@ namespace BetterLegacy.Core.Helpers
             var currentCollection = LevelManager.CurrentLevelCollection;
             if (!currentCollection)
             {
-                ArcadeMenu.Init();
+                ArcadeInterface.Init();
                 return;
             }
 
-            LevelListMenu.close = () => LevelCollectionMenu.Init(currentCollection);
-            LevelListMenu.Init(currentCollection.levels);
+            LevelListInterface.close = () => LevelCollectionInterface.Init(currentCollection);
+            LevelListInterface.Init(currentCollection.levels);
         }
 
         /// <summary>
@@ -381,8 +381,7 @@ namespace BetterLegacy.Core.Helpers
                     }
                 }
 
-                if (ArcadeMenu.Current)
-                    ArcadeMenu.Current.RefreshQueueLevels(true);
+                ArcadeInterface.Current?.RefreshQueueLevels(true);
                 if (notFound)
                     CoreHelper.Notify("A level was not found, check the logs!", Color.red);
             }
@@ -399,7 +398,7 @@ namespace BetterLegacy.Core.Helpers
         {
             yield return CoroutineHelper.Seconds(0.1f);
             SoundManager.inst.PlaySound(DefaultSounds.loadsound);
-            ArcadeMenu.Init();
+            ArcadeInterface.Init();
             yield break;
         }
 

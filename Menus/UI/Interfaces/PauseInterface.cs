@@ -17,13 +17,11 @@ using BetterLegacy.Menus.UI.Layouts;
 namespace BetterLegacy.Menus.UI.Interfaces
 {
     /// <summary>
-    /// Menu used for pausing in-game.
+    /// Interface for pausing in-game.
     /// </summary>
-    public class PauseMenu : MenuBase
+    public class PauseInterface : BaseInterface
     {
-        public static PauseMenu Current { get; set; }
-
-        public PauseMenu() : base()
+        public PauseInterface() : base()
         {
             if (!ProjectArrhythmia.State.InGame || ProjectArrhythmia.State.InEditor)
             {
@@ -153,14 +151,71 @@ namespace BetterLegacy.Menus.UI.Interfaces
             InterfaceManager.inst.SetCurrentInterface(this);
         }
 
-        public override void UpdateTheme()
+        #region Values
+
+        public static PauseInterface Current { get; set; }
+
+        /// <summary>
+        /// If the game is in the process of unpausing.
+        /// </summary>
+        public bool unpausing;
+
+        /// <summary>
+        /// Array of pause menu elements.
+        /// </summary>
+        public ButtonElement[] buttonElements = new ButtonElement[]
         {
-            Theme = CoreHelper.CurrentBeatmapTheme;
+            new ButtonElement("Continue Button", "<b> [ CONTINUE ]", UnPause),
+            new ButtonElement("Restart Button", "<b> [ RESTART ]", () => UnPause(ArcadeHelper.RestartLevel)),
+            new ButtonElement("Editor Button", "<b> [ EDITOR ]", SceneHelper.LoadEditorWithProgress),
+            new ButtonElement(() => ModCompatibility.UnityExplorerInstalled, "Explorer Button", "<b> [ SHOW EXPLORER ]", ModCompatibility.ShowExplorer),
+            new ButtonElement("Config Button", "<b> [ CONFIG ]", ConfigManager.inst.Show),
+            new ButtonElement(() => LevelManager.Hub, "Return Button", "<b> [ RETURN TO HUB ]", ArcadeHelper.ReturnToHub),
+            new ButtonElement(() => ProjectArrhythmia.State.InStory, "Return Button", "<b> [ RETURN TO INTERFACE ]", SceneHelper.LoadInterfaceScene),
+            new ButtonElement("Arcade Button", ProjectArrhythmia.State.InStory ? "<b> [ QUIT TO MAIN MENU ]" : "<b> [ RETURN TO ARCADE ]", ArcadeHelper.QuitToArcade),
+            new ButtonElement(true),
+            new ButtonElement("Exit Button", "<b> [ QUIT GAME ]", LegacyPlugin.QuitGame),
+        };
 
-            base.UpdateTheme();
-        }
+        /// <summary>
+        /// Array of pause menu information elements.
+        /// </summary>
+        public InfoElement[] infoElements = new InfoElement[]
+        {
+            new InfoElement(() => $"<align=right>Times hit: {RTBeatmap.Current.hits.Count}"),
+            new InfoElement(() => $"<align=right>Times died: {RTBeatmap.Current.deaths.Count}"),
+            new InfoElement(() =>
+                {
+                    var rank = LevelManager.GetLevelRank(LevelManager.CurrentLevel);
+                    return $"<align=right>Previous rank: <b><#{LSColors.ColorToHex(rank.Color)}>{rank.DisplayName}</color></b>";
+                }), // Previously achieved level rank.
+            new InfoElement(() =>
+                {
+                    var rank = LevelManager.GetLevelRank(RTBeatmap.Current.hits);
+                    return $"<align=right>Current rank: <b><#{LSColors.ColorToHex(rank.Color)}>{rank.DisplayName}</color></b>";
+                }), // Current level rank.
+            new InfoElement(() => $"<align=right>Time in level: {RTBeatmap.Current.levelTimer.time}"),
+            new InfoElement(() => $"<align=right>Level completed: {RTString.Percentage(AudioManager.inst.CurrentAudioSource.time, AudioManager.inst.CurrentAudioSource.clip.length)}%"),
+            new InfoElement
+            {
+                check = () => !ProjectArrhythmia.State.InStory || LevelManager.CurrentLevel.saveData && LevelManager.CurrentLevel.saveData.Completed,
+                text = () => $"<align=right>Game Speed: {RTBeatmap.Current.gameSpeed.DisplayName}"
+            }, // Game speed.
+            new InfoElement
+            {
+                check = () => !ProjectArrhythmia.State.InStory || LevelManager.CurrentLevel.saveData && LevelManager.CurrentLevel.saveData.Completed,
+                text = () => $"<align=right>Challenge mode: {RTBeatmap.Current.challengeMode.DisplayName}"
+            }, // Challenge mode
+            new InfoElement
+            {
+                check = () => LevelManager.HasQueue,
+                text = () => $"<align=right>Queue: {LevelManager.currentQueueIndex + 1} / {LevelManager.ArcadeQueue.Count}"
+            }, // Queue index
+        };
 
-        #region Methods
+        #endregion
+
+        #region Functions
 
         #region Internal
 
@@ -230,6 +285,13 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
         #endregion
 
+        public override void UpdateTheme()
+        {
+            Theme = CoreHelper.CurrentBeatmapTheme;
+
+            base.UpdateTheme();
+        }
+
         /// <summary>
         /// Initializes the pause menu.
         /// </summary>
@@ -240,7 +302,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
             RTBeatmap.Current?.Pause();
             ArcadeHelper.endedLevel = false;
-            Current = new PauseMenu();
+            Current = new PauseInterface();
         }
 
         /// <summary>
@@ -263,152 +325,90 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
         #endregion
 
-        public bool unpausing;
-
-        /// <summary>
-        /// Array of pause menu elements.
-        /// </summary>
-        public ButtonElement[] buttonElements = new ButtonElement[]
-        {
-            new ButtonElement
-            {
-                name = "Continue Button",
-                text = "<b> [ CONTINUE ]",
-                func = UnPause,
-            },
-            new ButtonElement
-            {
-                name = "Restart Button",
-                text = "<b> [ RESTART ]",
-                func = () => UnPause(ArcadeHelper.RestartLevel),
-            },
-            new ButtonElement
-            {
-                name = "Editor Button",
-                text = "<b> [ EDITOR ]",
-                func = SceneHelper.LoadEditorWithProgress,
-            },
-            new ButtonElement
-            {
-                check = () => ModCompatibility.UnityExplorerInstalled,
-                name = "Explorer Button",
-                text = "<b> [ SHOW EXPLORER ]",
-                func = ModCompatibility.ShowExplorer,
-            },
-            new ButtonElement
-            {
-                name = "Config Button",
-                text = "<b> [ CONFIG ]",
-                func = ConfigManager.inst.Show,
-            },
-            new ButtonElement
-            {
-                check = () => LevelManager.Hub,
-                name = "Return Button",
-                text = "<b> [ RETURN TO HUB ]",
-                func = ArcadeHelper.ReturnToHub,
-            },
-            new ButtonElement
-            {
-                check = () => ProjectArrhythmia.State.InStory,
-                name = "Return Button",
-                text = "<b> [ RETURN TO INTERFACE ]",
-                func = SceneHelper.LoadInterfaceScene,
-            },
-            new ButtonElement
-            {
-                name = "Arcade Button",
-                text = ProjectArrhythmia.State.InStory ? "<b> [ QUIT TO MAIN MENU ]" : "<b> [ RETURN TO ARCADE ]",
-                func = ArcadeHelper.QuitToArcade,
-            },
-            new ButtonElement
-            {
-                isSpacer = true,
-            },
-            new ButtonElement
-            {
-                name = "Exit Button",
-                text = "<b> [ QUIT GAME ]",
-                func = LegacyPlugin.QuitGame,
-            },
-        };
+        #region Sub Classes
 
         /// <summary>
         /// Represents a pause menu button.
         /// </summary>
         public class ButtonElement
         {
+            #region Constructors
+
+            public ButtonElement() { }
+
+            public ButtonElement(bool isSpacer) => this.isSpacer = isSpacer;
+
+            public ButtonElement(string name, string text, Action func)
+            {
+                this.name = name;
+                this.text = text;
+                this.func = func;
+            }
+
+            public ButtonElement(Func<bool> check, string name, string text, Action func) : this(name, text, func) => this.check = check;
+
+            #endregion
+
+            #region Values
+
             /// <summary>
             /// Checks if the element should spawn.
             /// </summary>
             public Func<bool> check;
-            public string name;
-            public string text;
-            public Action func;
-            public bool isSpacer;
-        }
 
-        /// <summary>
-        /// Array of pause menu information elements.
-        /// </summary>
-        public InfoElement[] infoElements = new InfoElement[]
-        {
-            new InfoElement
-            {
-                text = () => $"<align=right>Times hit: {RTBeatmap.Current.hits.Count}",
-            },
-            new InfoElement
-            {
-                text = () => $"<align=right>Times died: {RTBeatmap.Current.deaths.Count}",
-            },
-            new InfoElement
-            {
-                text = () =>
-                {
-                    var rank = LevelManager.GetLevelRank(LevelManager.CurrentLevel);
-                    return $"<align=right>Previous rank: <b><#{LSColors.ColorToHex(rank.Color)}>{rank.DisplayName}</color></b>";
-                },
-            },
-            new InfoElement
-            {
-                text = () =>
-                {
-                    var rank = LevelManager.GetLevelRank(RTBeatmap.Current.hits);
-                    return $"<align=right>Current rank: <b><#{LSColors.ColorToHex(rank.Color)}>{rank.DisplayName}</color></b>";
-                },
-            },
-            new InfoElement
-            {
-                text = () => $"<align=right>Time in level: {RTBeatmap.Current.levelTimer.time}",
-            },
-            new InfoElement
-            {
-                text = () => $"<align=right>Level completed: {RTString.Percentage(AudioManager.inst.CurrentAudioSource.time, AudioManager.inst.CurrentAudioSource.clip.length)}%",
-            },
-            new InfoElement
-            {
-                check = () => !ProjectArrhythmia.State.InStory || LevelManager.CurrentLevel.saveData && LevelManager.CurrentLevel.saveData.Completed,
-                text = () => $"<align=right>Game Speed: {RTBeatmap.Current.gameSpeed.DisplayName}",
-            },
-            new InfoElement
-            {
-                check = () => !ProjectArrhythmia.State.InStory || LevelManager.CurrentLevel.saveData && LevelManager.CurrentLevel.saveData.Completed,
-                text = () => $"<align=right>Challenge mode: {RTBeatmap.Current.challengeMode.DisplayName}",
-            },
-            new InfoElement
-            {
-                check = () => LevelManager.HasQueue,
-                text = () => $"<align=right>Queue: {LevelManager.currentQueueIndex + 1} / {LevelManager.ArcadeQueue.Count}",
-            },
-        };
+            /// <summary>
+            /// Name of the button.
+            /// </summary>
+            public string name;
+
+            /// <summary>
+            /// The text to display on the button.
+            /// </summary>
+            public string text;
+
+            /// <summary>
+            /// The function to run when the button is clicked.
+            /// </summary>
+            public Action func;
+
+            /// <summary>
+            /// If the element is a spacer.s
+            /// </summary>
+            public bool isSpacer;
+
+            #endregion
+        }
 
         /// <summary>
         /// Represents information the pause menu displays.
         /// </summary>
         public class InfoElement
         {
+            #region Constructors
+
+            public InfoElement() { }
+
+            public InfoElement(Func<string> text) => this.text = text;
+            
+            public InfoElement(Func<bool> check, Func<string> text) : this(text) => this.check = check;
+
+            #endregion
+
+            #region Values
+
+            /// <summary>
+            /// Check ifthe element should spawn.
+            /// </summary>
             public Func<bool> check;
+
+            /// <summary>
+            /// Text to display.
+            /// </summary>
             public Func<string> text;
+
+            #endregion
         }
+
+        #endregion
     }
 }

@@ -18,13 +18,16 @@ using BetterLegacy.Menus.UI.Layouts;
 
 namespace BetterLegacy.Menus.UI.Interfaces
 {
-    public class EndLevelMenu : MenuBase
+    /// <summary>
+    /// Interface for when a level has ended.
+    /// </summary>
+    public class EndLevelInterface : BaseInterface
     {
-        public static EndLevelMenu Current { get; set; }
+        #region Constructors
 
-        public EndLevelMenu() : this(null) { }
+        public EndLevelInterface() : this(null) { }
 
-        public EndLevelMenu(Func<List<MenuImage>> getElements) : base()
+        public EndLevelInterface(Func<List<MenuImage>> getElements) : base()
         {
             if (!ProjectArrhythmia.State.InGame || ProjectArrhythmia.State.InEditor)
             {
@@ -302,6 +305,19 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 InterfaceManager.inst.PlayMusic();
         }
 
+        #endregion
+
+        #region Values
+
+        /// <summary>
+        /// The current <see cref="EndLevelInterface"/>.
+        /// </summary>
+        public static EndLevelInterface Current { get; set; }
+
+        #endregion
+
+        #region Functions
+
         public override void UpdateTheme()
         {
             Theme = CoreHelper.CurrentBeatmapTheme;
@@ -310,14 +326,15 @@ namespace BetterLegacy.Menus.UI.Interfaces
         }
 
         /// <summary>
-        /// Initializes the end level menu.
+        /// Initializes the <see cref="EndLevelInterface"/>.
         /// </summary>
-        public static void Init() => Current = new EndLevelMenu();
+        public static void Init() => Current = new EndLevelInterface();
 
         /// <summary>
-        /// Initializes the end level menu.
+        /// Initializes the <see cref="EndLevelInterface"/>.
         /// </summary>
-        public static void Init(Func<List<MenuImage>> getElements) => Current = new EndLevelMenu(getElements);
+        /// <param name="getElements">The list of button elements to display.</param>
+        public static void Init(Func<List<MenuImage>> getElements) => Current = new EndLevelInterface(getElements);
 
         public static void Close()
         {
@@ -326,5 +343,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             InterfaceManager.inst.StopMusic();
             RTBeatmap.Current?.Resume();
         }
+
+        #endregion
     }
 }

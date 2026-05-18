@@ -5,11 +5,14 @@ using BetterLegacy.Menus.UI.Elements;
 
 namespace BetterLegacy.Menus.UI.Interfaces
 {
-    public class ProgressMenu : MenuBase
+    /// <summary>
+    /// Interface for displaying a progress bar.
+    /// </summary>
+    public class ProgressInterface : BaseInterface
     {
-        public static ProgressMenu Current { get; set; }
-
-        public ProgressMenu(string currentMessage) : base()
+        #region Constructors
+        
+        public ProgressInterface(string currentMessage) : base()
         {
             musicName = InterfaceManager.RANDOM_MUSIC_NAME;
             name = "Progress";
@@ -80,15 +83,36 @@ namespace BetterLegacy.Menus.UI.Interfaces
             InterfaceManager.inst.SetCurrentInterface(this);
         }
 
+        #endregion
+
+        #region Values
+
+        /// <summary>
+        /// The current <see cref="ProgressInterface"/>.
+        /// </summary>
+        public static ProgressInterface Current { get; set; }
+
+        MenuImage progressBar;
+
+        #endregion
+
+        #region Functions
+
+        /// <summary>
+        /// Updates the progress bar.
+        /// </summary>
+        /// <param name="progress">Progress amount. Range: [0-1]</param>
         public void UpdateProgress(float progress)
         {
             if (progressBar && progressBar.gameObject)
                 progressBar.gameObject.transform.AsRT().sizeDelta = new UnityEngine.Vector2(900f * progress, 64f);
         }
 
-        public MenuImage progressBar;
-
-        public static void Init(string currentMessage) => Current = new ProgressMenu(currentMessage);
+        /// <summary>
+        /// Initializes the <see cref="ProgressInterface"/> with a message.
+        /// </summary>
+        /// <param name="currentMessage">The message to display.</param>
+        public static void Init(string currentMessage) => Current = new ProgressInterface(currentMessage);
 
         public override void UpdateTheme()
         {
@@ -97,5 +121,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
             base.UpdateTheme();
         }
+
+        #endregion
     }
 }

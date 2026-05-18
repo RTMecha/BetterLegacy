@@ -1,5 +1,4 @@
-﻿
-using UnityEngine;
+﻿using UnityEngine;
 
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
@@ -12,11 +11,14 @@ using BetterLegacy.Menus.UI.Layouts;
 
 namespace BetterLegacy.Story
 {
-    public class StoryMenu : MenuBase
+    /// <summary>
+    /// Interface for managing story saves.
+    /// </summary>
+    public class StorySavesInterface : BaseInterface
     {
-        public const int MAX_SAVE_SLOTS = 9;
+        #region Constructors
 
-        public StoryMenu() : base()
+        public StorySavesInterface() : base()
         {
             id = InterfaceManager.STORY_SAVES_MENU_ID;
             name = "Story";
@@ -42,7 +44,17 @@ namespace BetterLegacy.Story
             SetupUI();
         }
 
-        public void SetupUI()
+        #endregion
+
+        #region Values
+
+        public const int MAX_SAVE_SLOTS = 9;
+
+        #endregion
+
+        #region Functions
+
+        void SetupUI()
         {
             Clear();
             elements.Clear();
@@ -160,7 +172,7 @@ namespace BetterLegacy.Story
                     selectedTextColor = 6,
                     length = 1f,
                     playBlipSound = true,
-                    func = () => new ConfirmMenu("Are you sure you want to delete this save slot?", () =>
+                    func = () => new ConfirmInterface("Are you sure you want to delete this save slot?", () =>
                     {
                         InterfaceManager.inst.CloseMenus();
                         RTFile.DeleteFile(saveSlot.StorySavesPath);
@@ -172,5 +184,7 @@ namespace BetterLegacy.Story
 
             elements.AddRange(GenerateBottomBar(6, 0f));
         }
+
+        #endregion
     }
 }

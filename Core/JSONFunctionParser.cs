@@ -1209,9 +1209,9 @@ namespace BetterLegacy.Core
                                         break;
 
                                     if (LevelManager.Levels.TryFind(x => x.id == id, out Level level))
-                                        PlayLevelMenu.Init(level);
+                                        PlayLevelInterface.Init(level);
                                     else if (RTSteamManager.inst && RTSteamManager.inst.Initialized && RTSteamManager.inst.Levels.TryFind(x => x.id == id, out Level steamLevel))
-                                        PlayLevelMenu.Init(steamLevel);
+                                        PlayLevelInterface.Init(steamLevel);
 
                                     break;
                                 } // Arcade ID
@@ -1221,7 +1221,7 @@ namespace BetterLegacy.Core
                                         break;
 
                                     if (Level.TryVerify(path, true, out Level level))
-                                        PlayLevelMenu.Init(level);
+                                        PlayLevelInterface.Init(level);
 
                                     break;
                                 } // Path
@@ -1256,7 +1256,7 @@ namespace BetterLegacy.Core
                                         bonus = bonus,
                                         skipCutscenes = skipCutscenes,
                                         allowModes = allowModes,
-                                    }, level => PlayLevelMenu.Init(
+                                    }, level => PlayLevelInterface.Init(
                                         level: level,
                                         onPlay: () => LevelManager.Play(level, () => StoryManager.inst.EndFunctionInterface(storyChapter, storyLevel, path)),
                                         onReturn: onReturnFunc == null ? null : () => ParseFunction(onReturnFunc, thisElement, customVariables)));

@@ -55,7 +55,7 @@ namespace BetterLegacy.Menus.UI.Elements
         public int siblingIndex = -1;
 
         /// <summary>
-        /// If the element should regenerate when the <see cref="MenuBase.GenerateUI"/> coroutine is run. If <see cref="MenuBase.regenerate"/> is true, then this will be ignored.
+        /// If the element should regenerate when the <see cref="BaseInterface.GenerateUI"/> coroutine is run. If <see cref="BaseInterface.regenerate"/> is true, then this will be ignored.
         /// </summary>
         public bool regenerate = true;
 
