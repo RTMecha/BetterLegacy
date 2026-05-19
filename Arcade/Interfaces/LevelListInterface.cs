@@ -30,6 +30,9 @@ namespace BetterLegacy.Arcade.Interfaces
     /// </summary>
     public class LevelListInterface : BaseInterface
     {
+        /// <summary>
+        /// The current <see cref="LevelListInterface"/>.
+        /// </summary>
         public static LevelListInterface Current { get; set; }
 
         public static bool ViewOnline { get; set; }

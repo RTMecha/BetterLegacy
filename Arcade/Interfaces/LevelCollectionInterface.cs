@@ -18,6 +18,9 @@ namespace BetterLegacy.Arcade.Interfaces
     /// </summary>
     public class LevelCollectionInterface : BaseInterface
     {
+        /// <summary>
+        /// The current <see cref="LevelCollectionInterface"/>.
+        /// </summary>
         public static LevelCollectionInterface Current { get; set; }
         public static LevelCollection CurrentCollection { get; set; }
 

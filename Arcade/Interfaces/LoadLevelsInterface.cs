@@ -27,6 +27,9 @@ namespace BetterLegacy.Arcade.Interfaces
     /// </summary>
     public class LoadLevelsInterface : BaseInterface
     {
+        /// <summary>
+        /// The current <see cref="LoadLevelsInterface"/>.
+        /// </summary>
         public static LoadLevelsInterface Current { get; set; }
 
         public static void Init() => Init(ArcadeHelper.OnLoadingEnd().Start);

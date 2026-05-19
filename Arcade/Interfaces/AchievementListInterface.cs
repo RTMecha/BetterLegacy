@@ -233,7 +233,7 @@ namespace BetterLegacy.Arcade.Interfaces
         #region Values
 
         /// <summary>
-        /// The current achievement list interface.
+        /// The current <see cref="AchievementListInterface"/>.
         /// </summary>
         public static AchievementListInterface Current { get; set; }
 

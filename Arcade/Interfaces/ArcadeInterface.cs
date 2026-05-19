@@ -83,19 +83,20 @@ namespace BetterLegacy.Arcade.Interfaces
                 regenerate = false,
             });
 
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < Tab.tabs.Length; i++)
             {
                 int index = i;
+                var tab = Tab.tabs[index];
                 elements.Add(new MenuButton
                 {
                     id = (i + 1).ToString(),
                     name = "Tab",
                     parentLayout = "tabs",
                     selectionPosition = new Vector2Int(i + 1, 0),
-                    text = $"<align=center><b>[ {((Tab)i).ToString().ToUpper()} ]",
+                    text = $"<align=center><b>[ {tab.DisplayName.ToUpper()} ]",
                     func = () =>
                     {
-                        CurrentTab = (Tab)index;
+                        CurrentTab = tab;
                         Init();
                     },
                     color = 6,
@@ -110,12 +111,12 @@ namespace BetterLegacy.Arcade.Interfaces
                 });
             }
 
-            var currentPage = Pages[(int)CurrentTab];
-            var currentSearch = Searches[(int)CurrentTab];
+            var currentPage = CurrentTab.page;
+            var currentSearch = CurrentTab.searchTerm;
 
             switch (CurrentTab)
             {
-                case Tab.Local: {
+                case 0: {
                         layouts.Add("local settings", new MenuHorizontalLayout
                         {
                             name = "local settings",
@@ -257,7 +258,7 @@ namespace BetterLegacy.Arcade.Interfaces
                             rect = RectValues.Default.SizeDelta(132f, 64f),
                             text = currentPage.ToString(),
                             textAnchor = TextAnchor.MiddleCenter,
-                            valueChangedFunc = _val => SetLocalLevelsPage(Parser.TryParse(_val, Pages[(int)CurrentTab])),
+                            valueChangedFunc = _val => SetLocalLevelsPage(Parser.TryParse(_val, CurrentTab.page)),
                             placeholder = "Set page...",
                             color = 6,
                             opacity = 0.1f,
@@ -309,9 +310,9 @@ namespace BetterLegacy.Arcade.Interfaces
                             rect = RectValues.Default.SizeDelta(132f, 64f),
                             func = () =>
                             {
-                                if (Pages[(int)CurrentTab] != 0 && pageField.inputField)
+                                if (CurrentTab.page != 0 && pageField.inputField)
                                 {
-                                    pageField.inputField.text = (Pages[(int)CurrentTab] - 1).ToString();
+                                    pageField.inputField.text = (CurrentTab.page - 1).ToString();
                                     SoundManager.inst.PlaySound(DefaultSounds.menuflip);
                                 }
                                 else
@@ -341,9 +342,9 @@ namespace BetterLegacy.Arcade.Interfaces
                             rect = RectValues.Default.SizeDelta(132f, 64f),
                             func = () =>
                             {
-                                if (Pages[(int)CurrentTab] != LocalLevelPageCount)
+                                if (CurrentTab.page != LocalLevelPageCount)
                                 {
-                                    pageField.inputField.text = (Pages[(int)CurrentTab] + 1).ToString();
+                                    pageField.inputField.text = (CurrentTab.page + 1).ToString();
                                     SoundManager.inst.PlaySound(DefaultSounds.menuflip);
                                 }
                                 else
@@ -374,8 +375,8 @@ namespace BetterLegacy.Arcade.Interfaces
                         RefreshLocalLevels(false, false);
 
                         break;
-                    }
-                case Tab.Online: {
+                    } // Local
+                case 1: {
                         layouts.Add("online settings", new MenuHorizontalLayout
                         {
                             name = "online settings",
@@ -422,7 +423,7 @@ namespace BetterLegacy.Arcade.Interfaces
                             regenerate = false,
                         });
 
-                        var subTab = SubTab.GetValueOrDefault(Tab.Online, 0);
+                        var subTab = Tab.Online.subTab;
 
                         elements.Add(new MenuButton
                         {
@@ -434,8 +435,9 @@ namespace BetterLegacy.Arcade.Interfaces
                             rect = RectValues.Default.SizeDelta(300f, 64f),
                             func = () =>
                             {
-                                SubTab[Tab.Online] = SubTab.GetValueOrDefault(Tab.Online, 0) == 0 ? 1 : 0;
-                                RefreshOnlineLevels().Start();
+                                Tab.Online.CycleSubTab();
+                                Tab.Online.page = 0;
+                                Init();
                             },
                             color = 6,
                             opacity = 0.1f,
@@ -555,7 +557,7 @@ namespace BetterLegacy.Arcade.Interfaces
                             rect = RectValues.Default.SizeDelta(132f, 64f),
                             text = currentPage.ToString(),
                             textAnchor = TextAnchor.MiddleCenter,
-                            valueChangedFunc = _val => SetOnlineLevelsPage(Parser.TryParse(_val, Pages[(int)CurrentTab])),
+                            valueChangedFunc = _val => SetOnlineLevelsPage(Parser.TryParse(_val, CurrentTab.page)),
                             placeholder = "Set page...",
                             color = 6,
                             opacity = 0.1f,
@@ -603,8 +605,8 @@ namespace BetterLegacy.Arcade.Interfaces
                             rect = RectValues.Default.SizeDelta(132f, 64f),
                             func = () =>
                             {
-                                if (Pages[(int)CurrentTab] != 0)
-                                    SetOnlineLevelsPage(Pages[(int)CurrentTab] - 1);
+                                if (CurrentTab.page != 0)
+                                    SetOnlineLevelsPage(CurrentTab.page - 1);
                                 else
                                     SoundManager.inst.PlaySound(DefaultSounds.Block);
                             },
@@ -628,7 +630,7 @@ namespace BetterLegacy.Arcade.Interfaces
                             parentLayout = "online settings",
                             selectionPosition = new Vector2Int(5, 1),
                             rect = RectValues.Default.SizeDelta(132f, 64f),
-                            func = () => SetOnlineLevelsPage(Pages[(int)CurrentTab] + 1),
+                            func = () => SetOnlineLevelsPage(CurrentTab.page + 1),
                             color = 6,
                             opacity = 0.1f,
                             textColor = 6,
@@ -651,8 +653,8 @@ namespace BetterLegacy.Arcade.Interfaces
                         });
 
                         break;
-                    }
-                case Tab.Browser: {
+                    } // Online
+                case 2: {
                         layouts.Add("browser settings", new MenuHorizontalLayout
                         {
                             name = "browser settings",
@@ -687,7 +689,7 @@ namespace BetterLegacy.Arcade.Interfaces
                             rect = RectValues.Default.SizeDelta(132f, 64f),
                             text = currentPage.ToString(),
                             textAnchor = TextAnchor.MiddleCenter,
-                            valueChangedFunc = _val => SetBrowserPage(Parser.TryParse(_val, Pages[(int)CurrentTab])),
+                            valueChangedFunc = _val => SetBrowserPage(Parser.TryParse(_val, CurrentTab.page)),
                             placeholder = "Set page...",
                             color = 6,
                             opacity = 0.1f,
@@ -738,9 +740,9 @@ namespace BetterLegacy.Arcade.Interfaces
                             rect = RectValues.Default.SizeDelta(132f, 64f),
                             func = () =>
                             {
-                                if (Pages[(int)CurrentTab] != 0 && pageField.inputField)
+                                if (CurrentTab.page != 0 && pageField.inputField)
                                 {
-                                    pageField.inputField.text = (Pages[(int)CurrentTab] - 1).ToString();
+                                    pageField.inputField.text = (CurrentTab.page - 1).ToString();
                                     SoundManager.inst.PlaySound(DefaultSounds.menuflip);
                                 }
                                 else
@@ -769,9 +771,9 @@ namespace BetterLegacy.Arcade.Interfaces
                             rect = RectValues.Default.SizeDelta(132f, 64f),
                             func = () =>
                             {
-                                if (Pages[(int)CurrentTab] != BrowserPageCount)
+                                if (CurrentTab.page != BrowserPageCount)
                                 {
-                                    pageField.inputField.text = (Pages[(int)CurrentTab] + 1).ToString();
+                                    pageField.inputField.text = (CurrentTab.page + 1).ToString();
                                     SoundManager.inst.PlaySound(DefaultSounds.menuflip);
                                 }
                                 else
@@ -803,8 +805,8 @@ namespace BetterLegacy.Arcade.Interfaces
 
                         // todo: make browser download zip levels and also browse local files for a level.
                         break;
-                    }
-                case Tab.Queue: {
+                    } // Browser
+                case 3: {
                         layouts.Add("queue settings", new MenuHorizontalLayout
                         {
                             name = "queue settings",
@@ -938,7 +940,7 @@ namespace BetterLegacy.Arcade.Interfaces
                             rect = RectValues.Default.SizeDelta(132f, 64f),
                             text = currentPage.ToString(),
                             textAnchor = TextAnchor.MiddleCenter,
-                            valueChangedFunc = _val => SetQueuedLevelsPage(Parser.TryParse(_val, Pages[(int)CurrentTab])),
+                            valueChangedFunc = _val => SetQueuedLevelsPage(Parser.TryParse(_val, CurrentTab.page)),
                             placeholder = "Set page...",
                             color = 6,
                             opacity = 0.1f,
@@ -989,9 +991,9 @@ namespace BetterLegacy.Arcade.Interfaces
                             rect = RectValues.Default.SizeDelta(132f, 64f),
                             func = () =>
                             {
-                                if (Pages[(int)CurrentTab] != 0 && pageField.inputField)
+                                if (CurrentTab.page != 0 && pageField.inputField)
                                 {
-                                    pageField.inputField.text = (Pages[(int)CurrentTab] - 1).ToString();
+                                    pageField.inputField.text = (CurrentTab.page - 1).ToString();
                                     SoundManager.inst.PlaySound(DefaultSounds.menuflip);
                                 }
                                 else
@@ -1020,9 +1022,9 @@ namespace BetterLegacy.Arcade.Interfaces
                             rect = RectValues.Default.SizeDelta(132f, 64f),
                             func = () =>
                             {
-                                if (Pages[(int)CurrentTab] != QueuePageCount)
+                                if (CurrentTab.page != QueuePageCount)
                                 {
-                                    pageField.inputField.text = (Pages[(int)CurrentTab] + 1).ToString();
+                                    pageField.inputField.text = (CurrentTab.page + 1).ToString();
                                     SoundManager.inst.PlaySound(DefaultSounds.menuflip);
                                 }
                                 else
@@ -1062,8 +1064,8 @@ namespace BetterLegacy.Arcade.Interfaces
                         RefreshQueueLevels(false);
 
                         break;
-                    }
-                case Tab.Steam: {
+                    } // Queue
+                case 4: {
                         if (!RTSteamManager.inst.Initialized)
                         {
                             elements.Add(new MenuText
@@ -1092,9 +1094,9 @@ namespace BetterLegacy.Arcade.Interfaces
                             id = "842848",
                             name = "Search Bar",
                             parentLayout = "steam settings",
-                            rect = RectValues.Default.SizeDelta(!ViewOnline ? 404f : 468f, 64f),
+                            rect = RectValues.Default.SizeDelta(Tab.Steam.subTab == 0 ? 404f : 468f, 64f),
                             text = currentSearch,
-                            valueChangedFunc = ViewOnline ? SearchOnlineSteamLevels : SearchSubscribedSteamLevels,
+                            valueChangedFunc = Tab.Steam.subTab == 1 ? SearchOnlineSteamLevels : SearchSubscribedSteamLevels,
                             placeholder = "Search levels...",
                             color = 6,
                             opacity = 0.1f,
@@ -1106,7 +1108,7 @@ namespace BetterLegacy.Arcade.Interfaces
                         });
 
                         int x = 0;
-                        if (ViewOnline)
+                        if (Tab.Steam.subTab == 1)
                         {
                             elements.Add(new MenuButton
                             {
@@ -1280,10 +1282,10 @@ namespace BetterLegacy.Arcade.Interfaces
                             textAnchor = TextAnchor.MiddleCenter,
                             valueChangedFunc = _val =>
                             {
-                                if (ViewOnline)
-                                    SetOnlineSteamLevelsPage(Parser.TryParse(_val, Pages[(int)CurrentTab]));
+                                if (Tab.Steam.subTab == 1)
+                                    SetOnlineSteamLevelsPage(Parser.TryParse(_val, CurrentTab.page));
                                 else
-                                    SetSubscribedSteamLevelsPage(Parser.TryParse(_val, Pages[(int)CurrentTab]));
+                                    SetSubscribedSteamLevelsPage(Parser.TryParse(_val, CurrentTab.page));
                             },
                             placeholder = "Set page...",
                             color = 6,
@@ -1313,7 +1315,7 @@ namespace BetterLegacy.Arcade.Interfaces
                                     if (pointerEventData.scrollDelta.y > 0f)
                                         result += 1 * (large ? 10 : 1);
 
-                                    if (!ViewOnline && SubscribedSteamLevelPageCount != 0)
+                                    if (Tab.Steam.subTab == 0 && SubscribedSteamLevelPageCount != 0)
                                         result = Mathf.Clamp(result, 0, SubscribedSteamLevelPageCount);
 
                                     if (inputField.text != result.ToString())
@@ -1336,9 +1338,9 @@ namespace BetterLegacy.Arcade.Interfaces
                             rect = RectValues.Default.SizeDelta(132f, 64f),
                             func = () =>
                             {
-                                if (Pages[(int)CurrentTab] != 0 && pageField.inputField)
+                                if (CurrentTab.page != 0 && pageField.inputField)
                                 {
-                                    pageField.inputField.text = (Pages[(int)CurrentTab] - 1).ToString();
+                                    pageField.inputField.text = (CurrentTab.page - 1).ToString();
                                     SoundManager.inst.PlaySound(DefaultSounds.menuflip);
                                 }
                                 else
@@ -1368,9 +1370,9 @@ namespace BetterLegacy.Arcade.Interfaces
                             rect = RectValues.Default.SizeDelta(132f, 64f),
                             func = () =>
                             {
-                                if (ViewOnline || Pages[(int)CurrentTab] != SubscribedSteamLevelPageCount)
+                                if (Tab.Steam.subTab == 1 || CurrentTab.page != SubscribedSteamLevelPageCount)
                                 {
-                                    pageField.inputField.text = (Pages[(int)CurrentTab] + 1).ToString();
+                                    pageField.inputField.text = (CurrentTab.page + 1).ToString();
                                     SoundManager.inst.PlaySound(DefaultSounds.menuflip);
                                 }
                                 else
@@ -1392,14 +1394,14 @@ namespace BetterLegacy.Arcade.Interfaces
                         {
                             id = "32848924",
                             name = "Switch Steam View",
-                            text = $"<align=center><b>[ {(ViewOnline ? "VIEW SUBSCRIBED" : "VIEW ONLINE")} ]",
+                            text = $"<align=center><b>[ {(Tab.Steam.subTab == 1 ? "VIEW SUBSCRIBED" : "VIEW ONLINE")} ]",
                             parentLayout = "steam settings",
                             selectionPosition = new Vector2Int(x, 1),
                             rect = RectValues.Default.SizeDelta(300f, 64f),
                             func = () =>
                             {
-                                ViewOnline = !ViewOnline;
-                                Pages[(int)CurrentTab] = 0;
+                                Tab.Steam.CycleSubTab();
+                                Tab.Steam.page = 0;
                                 Init();
                             },
                             color = 6,
@@ -1416,25 +1418,25 @@ namespace BetterLegacy.Arcade.Interfaces
                         {
                             name = "levels",
                             rect = RectValues.Default.AnchoredPosition(-500f, 100f).SizeDelta(800f, 400f),
-                            cellSize = new Vector2(350f, ViewOnline ? 70f : 180f),
+                            cellSize = new Vector2(350f, Tab.Steam.subTab == 1 ? 70f : 180f),
                             spacing = new Vector2(12f, 12f),
                             constraint = GridLayoutGroup.Constraint.FixedColumnCount,
                             constraintCount = 5,
                             regenerate = false,
                         });
 
-                        if (ViewOnline)
+                        if (Tab.Steam.subTab == 1)
                             CoroutineHelper.StartCoroutine(RefreshOnlineSteamLevels());
                         else
                             RefreshSubscribedSteamLevels(false);
 
                         break;
-                    }
+                    } // Steam
             }
 
             defaultSelection = new Vector2Int(1, 0);
             exitFunc = Exit;
-            if (CurrentTab != Tab.Online && (CurrentTab != Tab.Steam || !ViewOnline))
+            if (CurrentTab != Tab.Online && (CurrentTab != Tab.Steam || Tab.Steam.subTab == 0))
                 StartGeneration();
             onGenerateUIFinish = () =>
             {
@@ -1486,33 +1488,12 @@ namespace BetterLegacy.Arcade.Interfaces
 
         #region Values
 
+        /// <summary>
+        /// The current <see cref="ArcadeInterface"/>.
+        /// </summary>
         public static ArcadeInterface Current { get; set; }
 
-        public enum Tab
-        {
-            Local,
-            Online,
-            Browser, // also allows you to download
-            Queue,
-            Steam
-        }
-
-        public static Dictionary<Tab, int> SubTab { get; set; } = new Dictionary<Tab, int>()
-        {
-            { Tab.Online, 0 }
-        };
-
-        public static Tab CurrentTab { get; set; }
-        public static int[] Pages { get; set; } = new int[]
-        {
-            0, // Local
-            0, // Online
-            0, // Browser
-            0, // Queue
-            0, // Steam
-        };
-
-        public static bool ViewOnline { get; set; }
+        public static Tab CurrentTab { get; set; } = Tab.Local;
 
         public const int MAX_LEVELS_PER_PAGE = 20;
         public const int MAX_QUEUED_PER_PAGE = 6;
@@ -1529,18 +1510,12 @@ namespace BetterLegacy.Arcade.Interfaces
 
         MenuInputField pageField;
 
-        #endregion
-
-        #region Functions
-
-        #endregion
-
         #region Local
 
         public static int LocalLevelPageCount => (LocalLevelCollections.Count + LocalLevels.Count) / MAX_LEVELS_PER_PAGE;
-        public static string LocalSearch => Searches[0];
+
         public static List<Level> LocalLevels => LevelManager.Levels.FindAll(level => !level.fromCollection &&
-            RTString.SearchString(LocalSearch,
+            RTString.SearchString(Tab.Local.searchTerm,
                 new SearchMatcher(level.id, SearchMatchType.Exact),
                 new SearchListMatcher(level.metadata?.tags),
                 level.metadata?.artist?.name,
@@ -1550,37 +1525,159 @@ namespace BetterLegacy.Arcade.Interfaces
                 level.metadata?.song?.Difficulty.DisplayName.GetText()
                 ));
 
-        public static List<LevelCollection> LocalLevelCollections => LevelManager.LevelCollections.FindAll(collection => string.IsNullOrEmpty(LocalSearch)
-                        || collection.id == LocalSearch
-                        || collection.name.ToLower().Contains(LocalSearch.ToLower()));
+        public static List<LevelCollection> LocalLevelCollections => LevelManager.LevelCollections.FindAll(collection => string.IsNullOrEmpty(Tab.Local.searchTerm)
+                        || collection.id == Tab.Local.searchTerm
+                        || collection.name.ToLower().Contains(Tab.Local.searchTerm.ToLower()));
 
+        #endregion
+
+        #region Online
+
+        public static int OnlineLevelCount { get; set; }
+
+        public static Dictionary<string, Sprite> OnlineLevelIcons { get; set; } = new Dictionary<string, Sprite>();
+
+        public bool loadingOnlineLevels;
+
+        #endregion
+
+        #region Browser
+
+        public static int BrowserPageCount => BrowserFolders.Length / MAX_LEVELS_PER_PAGE;
+
+        public static string BrowserCurrentDirectory { get; set; } = RTFile.ApplicationDirectory;
+
+        public static string[] BrowserFolders =>
+            Directory.GetDirectories(BrowserCurrentDirectory)
+                    .Where(x => string.IsNullOrEmpty(Tab.Browser.searchTerm) || Path.GetFileName(x).ToLower().Contains(Tab.Browser.searchTerm.ToLower()) || Level.TryVerify(x + "/", false, out Level level) &&
+                        (level.id == Tab.Browser.searchTerm
+                        || level.metadata.tags.Contains(Tab.Browser.searchTerm.ToLower())
+                        || level.metadata.artist.name.ToLower().Contains(Tab.Browser.searchTerm.ToLower())
+                        || level.metadata.creator.name.ToLower().Contains(Tab.Browser.searchTerm.ToLower())
+                        || level.metadata.song.title.ToLower().Contains(Tab.Browser.searchTerm.ToLower())
+                        || level.metadata.song.Difficulty.DisplayName.ToLower().Contains(Tab.Browser.searchTerm.ToLower()))).ToArray();
+
+        #endregion
+
+        #region Queue
+
+        public static int QueuePageCount => QueueLevels.Count / MAX_QUEUED_PER_PAGE;
+
+        public static List<Level> QueueLevels => LevelManager.ArcadeQueue.FindAll(level => !level.fromCollection &&
+            RTString.SearchString(Tab.Queue.searchTerm,
+                new SearchMatcher(level.id, SearchMatchType.Exact),
+                new SearchListMatcher(level.metadata.tags),
+                level.metadata.artist.name,
+                level.metadata.creator.name,
+                level.metadata.song.title,
+                level.metadata.beatmap.name,
+                level.metadata.song.Difficulty.DisplayName.GetText()
+                ));
+
+        #endregion
+
+        #region Steam
+
+        public static int SubscribedSteamLevelPageCount => SubscribedSteamLevels.Count / MAX_LEVELS_PER_PAGE;
+
+        public static List<Level> SubscribedSteamLevels => RTSteamManager.inst.Levels.FindAll(level => !level.fromCollection &&
+            RTString.SearchString(Tab.Steam.searchTerm,
+                new SearchMatcher(level.id, SearchMatchType.Exact),
+                new SearchListMatcher(level.metadata.tags),
+                level.metadata.artist.name,
+                level.metadata.creator.name,
+                level.metadata.song.title,
+                level.metadata.beatmap.name,
+                level.metadata.song.Difficulty.DisplayName.GetText()
+                ));
+
+        public static Dictionary<string, Sprite> OnlineSteamLevelIcons { get; set; } = new Dictionary<string, Sprite>();
+
+        #endregion
+
+        #endregion
+
+        #region Functions
+
+        /// <summary>
+        /// Runs when the player wants to return to the Input Select screen.
+        /// </summary>
+        public void Exit()
+        {
+            InterfaceManager.inst.CloseMenus();
+            SceneHelper.LoadScene(SceneName.Main_Menu, false);
+        }
+
+        public override void UpdateControls()
+        {
+            if (CurrentTab == Tab.Queue && !CoreHelper.IsUsingInputField && isOpen && !generating)
+            {
+                if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && Input.GetKeyDown(KeyCode.C))
+                    ArcadeHelper.CopyArcadeQueue();
+                if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && Input.GetKeyDown(KeyCode.V))
+                    ArcadeHelper.PasteArcadeQueue();
+            }
+
+            base.UpdateControls();
+        }
+
+        /// <summary>
+        /// Initializes <see cref="ArcadeInterface"/>.
+        /// </summary>
+        public static void Init()
+        {
+            InterfaceManager.inst.CloseMenus();
+            LevelManager.CurrentLevel = null;
+            LevelManager.CurrentLevelCollection = null;
+            LevelManager.currentLevelIndex = 0;
+            LevelManager.currentQueueIndex = 0;
+            Current = new ArcadeInterface();
+        }
+
+        #region Local
+
+        /// <summary>
+        /// Searches the local levels.
+        /// </summary>
+        /// <param name="search">Search term.</param>
         public void SearchLocalLevels(string search)
         {
-            Searches[0] = search;
-            Pages[0] = 0;
+            Tab.Local.searchTerm = search;
+            Tab.Local.page = 0;
             if (pageField && pageField.inputField)
                 pageField.inputField.SetTextWithoutNotify("0");
 
             RefreshLocalLevels(true);
         }
 
+        /// <summary>
+        /// Sets the local levels page.
+        /// </summary>
+        /// <param name="page">Page to set.</param>
         public void SetLocalLevelsPage(int page)
         {
-            Pages[0] = Mathf.Clamp(page, 0, LocalLevelPageCount);
+            Tab.Local.page = Mathf.Clamp(page, 0, LocalLevelPageCount);
+            if (pageField && pageField.inputField)
+                pageField.inputField.SetTextWithoutNotify(Tab.Local.page.ToString());
 
             RefreshLocalLevels(true);
         }
 
         void ClearLocalLevelButtons() => ClearElements(x => x.name == "Level Button" || x.name == "Difficulty" || x.name == "Rank" || x.name.Contains("Shine") || x.name.Contains("Lock"));
 
+        /// <summary>
+        /// Refreshes the local levels view.
+        /// </summary>
+        /// <param name="regenerateUI">If the UI should be regenerated.</param>
+        /// <param name="clear">If the UI should be cleared.</param>
         public void RefreshLocalLevels(bool regenerateUI, bool clear = true)
         {
             if (clear)
                 ClearLocalLevelButtons();
 
-            var currentPage = Pages[(int)CurrentTab] + 1;
+            var currentPage = CurrentTab.page + 1;
             int max = currentPage * MAX_LEVELS_PER_PAGE;
-            var currentSearch = Searches[(int)CurrentTab];
+            var currentSearch = CurrentTab.searchTerm;
 
             var levels = LocalLevels;
             var collections = LocalLevelCollections;
@@ -1976,28 +2073,14 @@ namespace BetterLegacy.Arcade.Interfaces
 
         #region Online
 
-        public static string OnlineSearch => Searches[1];
-
-        public static int OnlineSort { get; set; }
-
-        public static bool OnlineAscend { get; set; }
-
-        public static int OnlineLevelCount { get; set; }
-
-        public static Dictionary<string, Sprite> OnlineLevelIcons { get; set; } = new Dictionary<string, Sprite>();
-
-        public void SetOnlineLevelsPage(int page)
-        {
-            Pages[1] = page;
-
-            if (ArcadeConfig.Instance.AutoSearch.Value)
-                CoroutineHelper.StartCoroutine(RefreshOnlineLevels());
-        }
-
+        /// <summary>
+        /// Searches the online levels.
+        /// </summary>
+        /// <param name="search">Search term.</param>
         public void SearchOnlineLevels(string search)
         {
-            Searches[1] = search;
-            Pages[1] = 0;
+            Tab.Online.searchTerm = search;
+            Tab.Online.page = 0;
             if (pageField && pageField.inputField)
                 pageField.inputField.SetTextWithoutNotify("0");
 
@@ -2005,8 +2088,25 @@ namespace BetterLegacy.Arcade.Interfaces
                 CoroutineHelper.StartCoroutine(RefreshOnlineLevels());
         }
 
+        /// <summary>
+        /// Sets the online levels page.
+        /// </summary>
+        /// <param name="page">Page to set.</param>
+        public void SetOnlineLevelsPage(int page)
+        {
+            Tab.Online.page = page;
+            if (pageField && pageField.inputField)
+                pageField.inputField.SetTextWithoutNotify(Tab.Online.page.ToString());
+
+            if (ArcadeConfig.Instance.AutoSearch.Value)
+                CoroutineHelper.StartCoroutine(RefreshOnlineLevels());
+        }
+
         void ClearOnlineLevelButtons() => ClearElements(x => x.name == "Level Button" || x.name == "Difficulty");
 
+        /// <summary>
+        /// Refreshes the online levels view.
+        /// </summary>
         public IEnumerator RefreshOnlineLevels()
         {
             if (loadingOnlineLevels)
@@ -2014,12 +2114,12 @@ namespace BetterLegacy.Arcade.Interfaces
 
             ClearOnlineLevelButtons();
 
-            var currentTab = SubTab.GetValueOrDefault(Tab.Online, 0);
+            var currentTab = Tab.Online.subTab;
 
-            var page = Pages[1];
+            var page = Tab.Online.page;
             int currentPage = page + 1;
 
-            var search = OnlineSearch;
+            var search = Tab.Online.searchTerm;
             var sort = currentTab == 0 ? (int)ArcadeConfig.Instance.OnlineLevelOrderby.Value : (int)ArcadeConfig.Instance.OnlineLevelCollectionOrderby.Value;
             var ascend = currentTab == 0 ? ArcadeConfig.Instance.OnlineLevelAscend.Value : ArcadeConfig.Instance.OnlineLevelCollectionAscend.Value;
 
@@ -2076,7 +2176,7 @@ namespace BetterLegacy.Arcade.Interfaces
                                 name = "Level Button",
                                 parentLayout = "levels",
                                 selectionPosition = new Vector2Int(column, row),
-                                func = () => SelectOnlineLevel(item.AsObject, currentTab),
+                                func = () => DownloadLevelInterface.Init(item.AsObject, currentTab),
                                 iconRect = RectValues.Default.AnchoredPosition(-90, 30f),
                                 text = "<size=24>" + name,
                                 textRect = RectValues.FullAnchored.AnchoredPosition(20f, -50f),
@@ -2144,53 +2244,50 @@ namespace BetterLegacy.Arcade.Interfaces
             StartGeneration();
         }
 
-        public bool loadingOnlineLevels;
-
-        public void SelectOnlineLevel(JSONObject onlineLevel, int type) => DownloadLevelInterface.Init(onlineLevel.AsObject, type);
-
         #endregion
-
+        
         #region Browser
 
-        public static int BrowserPageCount => BrowserFolders.Length / MAX_LEVELS_PER_PAGE;
-        public static string BrowserSearch => Searches[2];
-        public static string BrowserCurrentDirectory { get; set; } = RTFile.ApplicationDirectory;
-        public static string[] BrowserFolders =>
-            Directory.GetDirectories(BrowserCurrentDirectory)
-                    .Where(x => string.IsNullOrEmpty(BrowserSearch) || Path.GetFileName(x).ToLower().Contains(BrowserSearch.ToLower()) || Level.TryVerify(x + "/", false, out Level level) &&
-                        (level.id == BrowserSearch
-                        || level.metadata.tags.Contains(BrowserSearch.ToLower())
-                        || level.metadata.artist.name.ToLower().Contains(BrowserSearch.ToLower())
-                        || level.metadata.creator.name.ToLower().Contains(BrowserSearch.ToLower())
-                        || level.metadata.song.title.ToLower().Contains(BrowserSearch.ToLower())
-                        || level.metadata.song.Difficulty.DisplayName.ToLower().Contains(BrowserSearch.ToLower()))).ToArray();
-
+        /// <summary>
+        /// Searches the file browser.
+        /// </summary>
+        /// <param name="search">Search term.</param>
         public void SearchBrowser(string search)
         {
-            Searches[2] = search;
-            Pages[2] = 0;
+            Tab.Browser.searchTerm = search;
+            Tab.Browser.page = 0;
             if (pageField && pageField.inputField)
                 pageField.inputField.SetTextWithoutNotify("0");
 
             RefreshBrowserLevels(true);
         }
 
+        /// <summary>
+        /// Sets the file browser page.
+        /// </summary>
+        /// <param name="page">Page to set.</param>
         public void SetBrowserPage(int page)
         {
-            Pages[2] = Mathf.Clamp(page, 0, BrowserPageCount);
+            Tab.Browser.page = Mathf.Clamp(page, 0, BrowserPageCount);
+            if (pageField && pageField.inputField)
+                pageField.inputField.SetTextWithoutNotify(Tab.Browser.page.ToString());
 
             RefreshBrowserLevels(true);
         }
 
         void ClearBrowserButtons() => ClearElements(x => x.name == "Level Button" || x.name == "Difficulty" || x.name.Contains("Shine"));
 
+        /// <summary>
+        /// Refreshes the file browser view.
+        /// </summary>
+        /// <param name="regenerateUI">If the UI should be regenerated.</param>
         public void RefreshBrowserLevels(bool regenerateUI)
         {
             ClearBrowserButtons();
 
-            var currentPage = Pages[(int)CurrentTab] + 1;
+            var currentPage = CurrentTab.page + 1;
             int max = currentPage * (MAX_LEVELS_PER_PAGE - 1);
-            var currentSearch = Searches[(int)CurrentTab];
+            var currentSearch = CurrentTab.searchTerm;
 
             var directoryInfo = new DirectoryInfo(BrowserCurrentDirectory);
 
@@ -2399,37 +2496,39 @@ namespace BetterLegacy.Arcade.Interfaces
 
         #region Queue
 
-        public static int QueuePageCount => QueueLevels.Count / MAX_QUEUED_PER_PAGE;
-        public static string QueueSearch => Searches[3];
-        public static List<Level> QueueLevels => LevelManager.ArcadeQueue.FindAll(level => !level.fromCollection &&
-            RTString.SearchString(QueueSearch,
-                new SearchMatcher(level.id, SearchMatchType.Exact),
-                new SearchListMatcher(level.metadata.tags),
-                level.metadata.artist.name,
-                level.metadata.creator.name,
-                level.metadata.song.title,
-                level.metadata.beatmap.name,
-                level.metadata.song.Difficulty.DisplayName.GetText()
-                ));
-
+        /// <summary>
+        /// Searches the queued levels.
+        /// </summary>
+        /// <param name="search">Search term.</param>
         public void SearchQueuedLevels(string search)
         {
-            Searches[3] = search;
-            Pages[3] = 0;
+            Tab.Queue.searchTerm = search;
+            Tab.Queue.page = 0;
             if (pageField && pageField.inputField)
                 pageField.inputField.SetTextWithoutNotify("0");
 
             RefreshQueueLevels(true);
         }
 
+        /// <summary>
+        /// Sets the queued levels page.
+        /// </summary>
+        /// <param name="page">Page to set.</param>
         public void SetQueuedLevelsPage(int page)
         {
-            Pages[3] = Mathf.Clamp(page, 0, QueuePageCount);
+            Tab.Queue.page = Mathf.Clamp(page, 0, QueuePageCount);
+            if (pageField && pageField.inputField)
+                pageField.inputField.SetTextWithoutNotify(Tab.Queue.page.ToString());
+
             RefreshQueueLevels(true);
         }
 
         void ClearQueueLevelButtons() => ClearElements(x => x.name == "Level Button" || x.name == "Difficulty" || x.name == "Delete Queue Button" || x.name.Contains("Shine"));
 
+        /// <summary>
+        /// Refreshes the queued levels view.
+        /// </summary>
+        /// <param name="regenerateUI">If the UI should be regenerated.</param>
         public void RefreshQueueLevels(bool regenerateUI)
         {
             // x = 800f
@@ -2437,9 +2536,9 @@ namespace BetterLegacy.Arcade.Interfaces
 
             ClearQueueLevelButtons();
 
-            var currentPage = Pages[(int)CurrentTab] + 1;
+            var currentPage = CurrentTab.page + 1;
             int max = currentPage * MAX_QUEUED_PER_PAGE;
-            var currentSearch = Searches[(int)CurrentTab];
+            var currentSearch = CurrentTab.searchTerm;
 
             var levels = QueueLevels;
             for (int i = 0; i < levels.Count; i++)
@@ -2587,7 +2686,7 @@ namespace BetterLegacy.Arcade.Interfaces
                     {
                         LevelManager.ArcadeQueue.RemoveAll(x => x.id == level.id);
 
-                        SetQueuedLevelsPage(Pages[(int)CurrentTab]);
+                        SetQueuedLevelsPage(CurrentTab.page);
                     },
                     text = "<b><align=center>[ REMOVE ]",
                     opacity = 1f,
@@ -2609,12 +2708,19 @@ namespace BetterLegacy.Arcade.Interfaces
                 StartGeneration();
         }
 
+        /// <summary>
+        /// Begins the level queue.
+        /// </summary>
         public void StartQueue()
         {
             InterfaceManager.inst.CloseMenus();
             LevelManager.Play(LevelManager.ArcadeQueue[0], RTBeatmap.Current.EndOfLevel);
         }
 
+        /// <summary>
+        /// Shuffles the level queue.
+        /// </summary>
+        /// <param name="play">If the queue should begin.</param>
         public void ShuffleQueue(bool play)
         {
             if (LevelManager.Levels.IsEmpty())
@@ -2656,7 +2762,7 @@ namespace BetterLegacy.Arcade.Interfaces
                 StartQueue();
             else
             {
-                Pages[3] = 0;
+                Tab.Queue.page = 0;
                 RefreshQueueLevels(true);
             }
 
@@ -2668,48 +2774,48 @@ namespace BetterLegacy.Arcade.Interfaces
 
         #region Steam
 
-        public static int SubscribedSteamLevelPageCount => SubscribedSteamLevels.Count / MAX_LEVELS_PER_PAGE;
-        public static string SteamSearch => Searches[4];
-        public static List<Level> SubscribedSteamLevels => RTSteamManager.inst.Levels.FindAll(level => !level.fromCollection &&
-            RTString.SearchString(SteamSearch,
-                new SearchMatcher(level.id, SearchMatchType.Exact),
-                new SearchListMatcher(level.metadata.tags),
-                level.metadata.artist.name,
-                level.metadata.creator.name,
-                level.metadata.song.title,
-                level.metadata.beatmap.name,
-                level.metadata.song.Difficulty.DisplayName.GetText()
-                ));
-
-        public static Dictionary<string, Sprite> OnlineSteamLevelIcons { get; set; } = new Dictionary<string, Sprite>();
-
+        /// <summary>
+        /// Searches the subscribed Steam levels.
+        /// </summary>
+        /// <param name="search">Search term.</param>
         public void SearchSubscribedSteamLevels(string search)
         {
-            Searches[4] = search;
-            Pages[4] = 0;
+            Tab.Steam.searchTerm = search;
+            Tab.Steam.page = 0;
             if (pageField && pageField.inputField)
                 pageField.inputField.SetTextWithoutNotify("0");
 
             RefreshSubscribedSteamLevels(true, true);
         }
 
+        /// <summary>
+        /// Sets the subscribed Steam levels page.
+        /// </summary>
+        /// <param name="page">Page to set.</param>
         public void SetSubscribedSteamLevelsPage(int page)
         {
-            Pages[4] = Mathf.Clamp(page, 0, SubscribedSteamLevelPageCount);
+            Tab.Steam.page = Mathf.Clamp(page, 0, SubscribedSteamLevelPageCount);
+            if (pageField && pageField.inputField)
+                pageField.inputField.SetTextWithoutNotify(Tab.Steam.page.ToString());
 
             RefreshSubscribedSteamLevels(true, true);
         }
 
         void ClearSubscribedSteamLevelButtons() => ClearElements(x => x.name == "Level Button" || x.name == "Difficulty" || x.name == "Rank" || x.name.Contains("Shine"));
 
+        /// <summary>
+        /// Refreshes the subscribed Steam levels view.
+        /// </summary>
+        /// <param name="regenerateUI">If the UI should be regenerated.</param>
+        /// <param name="clear">If the UI should be cleared.</param>
         public void RefreshSubscribedSteamLevels(bool regenerateUI, bool clear = false)
         {
             if (clear)
                 ClearSubscribedSteamLevelButtons();
 
-            var currentPage = Pages[(int)CurrentTab] + 1;
+            var currentPage = CurrentTab.page + 1;
             int max = currentPage * MAX_LEVELS_PER_PAGE;
-            var currentSearch = Searches[(int)CurrentTab];
+            var currentSearch = CurrentTab.searchTerm;
 
             var levels = SubscribedSteamLevels;
             for (int i = 0; i < levels.Count; i++)
@@ -2865,25 +2971,39 @@ namespace BetterLegacy.Arcade.Interfaces
                 StartGeneration();
         }
 
+        /// <summary>
+        /// Searches the online Steam levels.
+        /// </summary>
+        /// <param name="search">Search term.</param>
         public void SearchOnlineSteamLevels(string search)
         {
-            Searches[4] = search;
-            Pages[4] = 0;
+            Tab.Steam.searchTerm = search;
+            Tab.Steam.page = 0;
         }
-        
+
+        /// <summary>
+        /// Sets the online Steam levels page.
+        /// </summary>
+        /// <param name="page">Page to set.</param>
         public void SetOnlineSteamLevelsPage(int page)
         {
-            Pages[4] = Mathf.Clamp(page, 0, int.MaxValue);
+            Tab.Steam.page = Mathf.Clamp(page, 0, int.MaxValue);
+            if (pageField && pageField.inputField)
+                pageField.inputField.SetTextWithoutNotify(Tab.Steam.page.ToString());
+
             CoroutineHelper.StartCoroutine(RefreshOnlineSteamLevels());
         }
 
         void ClearOnlineSteamLevelButtons() => ClearElements(x => x.name == "Level Button" || x.name == "Difficulty" || x.name.Contains("Shine"));
 
+        /// <summary>
+        /// Refreshes the online Steam levels view.
+        /// </summary>
         public IEnumerator RefreshOnlineSteamLevels()
         {
             ClearOnlineSteamLevelButtons();
 
-            yield return CoroutineHelper.Until(() => RTSteamManager.inst.SearchAsync(SteamSearch, Pages[(int)CurrentTab] + 1, (Item item, int index) =>
+            yield return CoroutineHelper.Until(() => RTSteamManager.inst.SearchAsync(Tab.Steam.searchTerm, CurrentTab.page + 1, (Item item, int index) =>
             {
                 int column = (index % MAX_STEAM_ONLINE_LEVELS_PER_PAGE) % 5;
                 int row = (int)((index % MAX_STEAM_ONLINE_LEVELS_PER_PAGE) / 5) + 2;
@@ -2897,7 +3017,7 @@ namespace BetterLegacy.Arcade.Interfaces
                     name = "Level Button",
                     parentLayout = "levels",
                     selectionPosition = new Vector2Int(column, row),
-                    func = () => SelectOnlineSteamLevel(item),
+                    func = () => SteamLevelInterface.Init(item),
                     iconRect = RectValues.Default.AnchoredPosition(-134f, 0f).SizeDelta(64f, 64f),
                     text = "<size=24>" + $"{item.Title}",
                     textRect = RectValues.FullAnchored.AnchorMin(0.24f, 0f),
@@ -2943,40 +3063,122 @@ namespace BetterLegacy.Arcade.Interfaces
             StartGeneration();
         }
 
-        public void SelectOnlineSteamLevel(Item item) => SteamLevelInterface.Init(item);
+        #endregion
 
         #endregion
 
-        /// <summary>
-        /// Runs when the player wants to return to the Input Select screen.
-        /// </summary>
-        public void Exit()
-        {
-            InterfaceManager.inst.CloseMenus();
-            SceneHelper.LoadScene(SceneName.Main_Menu, false);
-        }
+        #region Sub Classes
 
-        public override void UpdateControls()
+        /// <summary>
+        /// Represents a tab for the arcade interface.
+        /// </summary>
+        public class Tab : Exists
         {
-            if (CurrentTab == Tab.Queue && !CoreHelper.IsUsingInputField && isOpen && !generating)
+            #region Constructors
+
+            public Tab() { }
+
+            public Tab(int ordinal, string displayName, int subTabCount = 1)
             {
-                if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && Input.GetKeyDown(KeyCode.C))
-                    ArcadeHelper.CopyArcadeQueue();
-                if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && Input.GetKeyDown(KeyCode.V))
-                    ArcadeHelper.PasteArcadeQueue();
+                this.ordinal = ordinal;
+                DisplayName = displayName;
+                SubTabCount = subTabCount;
             }
 
-            base.UpdateControls();
+            #endregion
+
+            #region Values
+
+            /// <summary>
+            /// Tab view for local levels and level collections.
+            /// </summary>
+            public static Tab Local { get; set; } = new Tab(0, nameof(Local));
+
+            /// <summary>
+            /// Tab view for online levels and level collections.
+            /// </summary>
+            public static Tab Online { get; set; } = new Tab(1, nameof(Online), 2);
+
+            /// <summary>
+            /// Tab view for file browsing.
+            /// </summary>
+            public static Tab Browser { get; set; } = new Tab(2, nameof(Browser));
+
+            /// <summary>
+            /// Tab view for queued levels.
+            /// </summary>
+            public static Tab Queue { get; set; } = new Tab(3, nameof(Queue));
+
+            /// <summary>
+            /// Tab view for Steam Workshop levels.
+            /// </summary>
+            public static Tab Steam { get; set; } = new Tab(4, nameof(Steam), 2);
+
+            /// <summary>
+            /// Array of tabs.
+            /// </summary>
+            public static Tab[] tabs = new Tab[]
+            {
+                Local,
+                Online,
+                Browser,
+                Queue,
+                Steam,
+            };
+
+            /// <summary>
+            /// Display name of the tab.
+            /// </summary>
+            public string DisplayName { get; }
+
+            /// <summary>
+            /// Amount of tabs.
+            /// </summary>
+            public int SubTabCount { get; }
+
+            /// <summary>
+            /// Tab search term.
+            /// </summary>
+            public string searchTerm;
+
+            /// <summary>
+            /// Tab page.
+            /// </summary>
+            public int page;
+
+            /// <summary>
+            /// Tab sub tab.
+            /// </summary>
+            public int subTab;
+
+            /// <summary>
+            /// Ordinal value of the tab.
+            /// </summary>
+            public int ordinal;
+
+            #endregion
+
+            #region Functions
+
+            /// <summary>
+            /// Cycles the sub tab.
+            /// </summary>
+            public void CycleSubTab()
+            {
+                subTab++;
+                if (subTab >= SubTabCount)
+                    subTab = 0;
+            }
+
+            #endregion
+
+            #region Operators
+
+            public static implicit operator int(Tab tab) => tab.ordinal;
+
+            #endregion
         }
 
-        public static void Init()
-        {
-            InterfaceManager.inst.CloseMenus();
-            LevelManager.CurrentLevel = null;
-            LevelManager.CurrentLevelCollection = null;
-            LevelManager.currentLevelIndex = 0;
-            LevelManager.currentQueueIndex = 0;
-            Current = new ArcadeInterface();
-        }
+        #endregion
     }
 }

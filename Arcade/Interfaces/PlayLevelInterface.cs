@@ -22,6 +22,9 @@ namespace BetterLegacy.Arcade.Interfaces
     /// </summary>
     public class PlayLevelInterface : BaseInterface
     {
+        /// <summary>
+        /// The current <see cref="PlayLevelInterface"/>.
+        /// </summary>
         public static PlayLevelInterface Current { get; set; }
         public static Level CurrentLevel { get; set; }
         public Action onPlay;

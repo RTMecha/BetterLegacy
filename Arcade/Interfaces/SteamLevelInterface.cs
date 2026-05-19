@@ -24,6 +24,9 @@ namespace BetterLegacy.Arcade.Interfaces
     /// </summary>
     public class SteamLevelInterface : BaseInterface
     {
+        /// <summary>
+        /// The current <see cref="SteamLevelInterface"/>.
+        /// </summary>
         public static SteamLevelInterface Current { get; set; }
 
         public static Item CurrentSteamItem { get; set; }

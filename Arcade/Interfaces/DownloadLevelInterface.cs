@@ -24,6 +24,9 @@ namespace BetterLegacy.Arcade.Interfaces
     /// </summary>
     public class DownloadLevelInterface : BaseInterface
     {
+        /// <summary>
+        /// The current <see cref="DownloadLevelInterface"/>.
+        /// </summary>
         public static DownloadLevelInterface Current { get; set; }
 
         public static JSONObject CurrentOnlineLevel { get; set; }
