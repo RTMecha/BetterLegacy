@@ -1,4 +1,12 @@
-﻿# snapshot-2026.5.5 - (Story Playtest) [May 17, 2026]
+﻿# snapshot-2026.?.? - (Story Playtest) [???]
+## Changes
+### Core
+- Link types now exist as asset files.
+- Cleaned up interface code and networking code.
+
+-------------------------------------------------------------------
+
+# snapshot-2026.5.5 - (Story Playtest) [May 17, 2026]
 ## Features
 ### Editor
 - Added Open Folder button to the screenshots view.
