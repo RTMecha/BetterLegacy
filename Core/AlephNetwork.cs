@@ -110,62 +110,63 @@ namespace BetterLegacy.Core
             if (links == null || !links.InRange(site))
                 return null;
 
-            var linkFormat = links[site];
-            if (source == URLSource.Song && linkFormat.linkFormat.Contains("{1}"))
+            var linkType = links[site];
+            if (source == URLSource.Song && linkType.linkFormat.Contains("{1}"))
             {
                 var split = link.Split(',');
-                return string.Format(linkFormat.linkFormat, split[0], split[1]);
+                return string.Format(linkType.linkFormat, split[0], split[1]);
             }
             else
-                return string.Format(linkFormat.linkFormat, link);
+                return string.Format(linkType.linkFormat, link);
         }
 
         /// <summary>
         /// <see cref="URLSource.Song"/> list.
         /// </summary>
-        public static List<DataManager.LinkType> SongLinks { get; } = new List<DataManager.LinkType>
-        {
-            new DataManager.LinkType("Spotify", "https://open.spotify.com/{0}"),
-            new DataManager.LinkType("SoundCloud", "https://soundcloud.com/{0}"),
-            new DataManager.LinkType("Bandcamp", "https://{0}.bandcamp.com/{1}"),
-            new DataManager.LinkType("YouTube", "https://youtube.com/watch?v={0}"),
-            new DataManager.LinkType("Newgrounds", "https://newgrounds.com/audio/listen/{0}"),
-        };
+        public static List<DataManager.LinkType> SongLinks { get; set; }
 
         /// <summary>
         /// <see cref="URLSource.Artist"/> list.
         /// </summary>
-        public static List<DataManager.LinkType> ArtistLinks { get; } = new List<DataManager.LinkType>
-        {
-            new DataManager.LinkType("Spotify", "https://open.spotify.com/artist/{0}"),
-            new DataManager.LinkType("SoundCloud", "https://soundcloud.com/{0}"),
-            new DataManager.LinkType("Bandcamp", "https://{0}.bandcamp.com"),
-            new DataManager.LinkType("YouTube", "https://youtube.com/c/{0}"),
-            new DataManager.LinkType("Newgrounds", "https://{0}.newgrounds.com/"),
-        };
+        public static List<DataManager.LinkType> ArtistLinks { get; set; }
 
         /// <summary>
         /// <see cref="URLSource.Creator"/> list.
         /// </summary>
-        public static List<DataManager.LinkType> CreatorLinks { get; } = new List<DataManager.LinkType>
-        {
-            new DataManager.LinkType("YouTube", "https://youtube.com/c/{0}"),
-            new DataManager.LinkType("YouTube ID", "https://youtube.com/channel/{0}"),
-            new DataManager.LinkType("YouTube Handle", "https://youtube.com/@{0}"),
-            new DataManager.LinkType("Newgrounds", "https://{0}.newgrounds.com/"),
-            new DataManager.LinkType("Patreon", "https://patreon.com/{0}"),
-            new DataManager.LinkType("Twitter", "https://twitter.com/{0}"),
-            new DataManager.LinkType("Bluesky", "https://bsky.app/profile/{0}"),
-        };
+        public static List<DataManager.LinkType> CreatorLinks { get; set; }
 
         /// <summary>
         /// <see cref="URLSource.Video"/> list.
         /// </summary>
-        public static List<DataManager.LinkType> VideoLinks { get; } = new List<DataManager.LinkType>
+        public static List<DataManager.LinkType> VideoLinks { get; set; }
+
+        /// <summary>
+        /// Loads all link types.
+        /// </summary>
+        public static void LoadLinkTypes()
         {
-            new DataManager.LinkType("YouTube", "https://www.youtube.com/watch?v={0}"),
-            new DataManager.LinkType("Streamable", "https://streamable.com/{0}"),
-        };
+            SongLinks = LoadLinkTypes("core/data/links/song_links.json");
+            ArtistLinks = LoadLinkTypes("core/data/links/artist_links.json");
+            CreatorLinks = LoadLinkTypes("core/data/links/creator_links.json");
+            VideoLinks = LoadLinkTypes("core/data/links/video_links.json");
+        }
+
+        /// <summary>
+        /// Loads a list of link types from an asset file.
+        /// </summary>
+        /// <param name="path">Asset path to the file.</param>
+        /// <returns>Returns a list of the link types from the file.</returns>
+        public static List<DataManager.LinkType> LoadLinkTypes(string path)
+        {
+            if (!AssetPack.TryReadFromFile(path, out string file))
+                return new List<DataManager.LinkType>();
+
+            var linkTypes = new List<DataManager.LinkType>();
+            var jn = JSON.Parse(file);
+            for (int i = 0; i < jn.Count; i++)
+                linkTypes.Add(new DataManager.LinkType(jn[i]["name"], jn[i]["link_format"]));
+            return linkTypes;
+        }
 
         #endregion
 

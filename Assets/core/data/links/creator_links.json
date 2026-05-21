@@ -1,0 +1,30 @@
+﻿[
+  {
+    "name": "YouTube",
+    "link_format": "https://youtube.com/c/{0}"
+  },
+  {
+    "name": "YouTube ID",
+    "link_format": "https://youtube.com/channel/{0}"
+  },
+  {
+    "name": "YouTube Handle",
+    "link_format": "https://youtube.com/@{0}"
+  },
+  {
+    "name": "Newgrounds",
+    "link_format": "https://{0}.newgrounds.com/"
+  },
+  {
+    "name": "Patreon",
+    "link_format": "https://patreon.com/{0}"
+  },
+  {
+    "name": "Twitter",
+    "link_format": "https://twitter.com/{0}"
+  },
+  {
+    "name": "Bluesky",
+    "link_format": "https://bsky.app/profile/{0}"
+  }
+]

@@ -1,0 +1,10 @@
+﻿[
+  {
+    "name": "YouTube",
+    "link_format": "https://www.youtube.com/watch?v={0}"
+  },
+  {
+    "name": "Streamable",
+    "link_format": "https://streamable.com/{0}"
+  }
+]

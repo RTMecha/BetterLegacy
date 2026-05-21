@@ -1,0 +1,22 @@
+﻿[
+  {
+    "name": "Spotify",
+    "link_format": "https://open.spotify.com/artist/{0}"
+  },
+  {
+    "name": "SoundCloud",
+    "link_format": "https://soundcloud.com/{0}"
+  },
+  {
+    "name": "Bandcamp",
+    "link_format": "https://{0}.bandcamp.com/"
+  },
+  {
+    "name": "YouTube",
+    "link_format": "https://youtube.com/c/{0}"
+  },
+  {
+    "name": "Newgrounds",
+    "link_format": "https://{0}.newgrounds.com/"
+  }
+]

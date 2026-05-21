@@ -114,6 +114,7 @@ namespace BetterLegacy
                 AssetPack.LoadAssetPacks();
                 Lang.LoadGlobal();
                 CustomObjectType.LoadObjectTypes();
+                AlephNetwork.LoadLinkTypes();
             }
             catch (Exception ex)
             {
