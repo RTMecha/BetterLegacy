@@ -123,13 +123,13 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
                 return;
             }
 
-            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadImageTexture("file://" + path, SetTexture, SetDefaultSprite));
+            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadImageTexture("file://" + path, callback: SetTexture, onError: SetDefaultSprite));
         }
 
         /// <summary>
         /// Sets the image objects' image to the default image.
         /// </summary>
-        public void SetDefaultSprite(string onError = null) => SetSprite(LegacyPlugin.PALogoSprite);
+        public void SetDefaultSprite(string onError = null, long responseCode = 0, string errorMsg = null) => SetSprite(LegacyPlugin.PALogoSprite);
 
         /// <summary>
         /// Sets the image objects' image.

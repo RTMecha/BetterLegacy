@@ -14,11 +14,17 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// </summary>
     public class SoundAsset : PAObject<SoundAsset>
     {
+        #region Constructors
+
         public SoundAsset() : base() { }
 
         public SoundAsset(string name) : this() => this.name = name;
 
         public SoundAsset(string name, AudioClip audio) : this(name) => this.audio = audio;
+
+        #endregion
+
+        #region Values
 
         /// <summary>
         /// Name of the audio.
@@ -34,6 +40,10 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// If the audio should automatically load on start.
         /// </summary>
         public bool autoLoad = true;
+
+        #endregion
+
+        #region Functions
 
         public override void CopyData(SoundAsset orig, bool newID = true)
         {
@@ -85,14 +95,13 @@ namespace BetterLegacy.Core.Data.Beatmap
                 yield break;
             }
 
-            yield return CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip("file://" + path, RTFile.GetAudioType(path), audioClip =>
-            {
-                audio = audioClip;
-                onComplete?.Invoke();
-            }, (string onError, long responseCode, string errorMsg) =>
-            {
-                onComplete?.Invoke();
-            }));
+            yield return CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip("file://" + path, RTFile.GetAudioType(path),
+                callback: audioClip =>
+                {
+                    audio = audioClip;
+                    onComplete?.Invoke();
+                },
+                onError: (string onError, long responseCode, string errorMsg) => onComplete?.Invoke()));
         }
 
         /// <summary>
@@ -106,5 +115,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         }
 
         public override string ToString() => name;
+
+        #endregion
     }
 }

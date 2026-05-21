@@ -429,75 +429,81 @@ namespace BetterLegacy.Core.Data.Level
             }
             else if (!string.IsNullOrEmpty(levelInfo.serverID))
             {
-                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadJSONFile($"{AlephNetwork.ArcadeServerURL}api/level/{levelInfo.serverID}", json =>
-                {
-                    ConfirmInterface.Init("Level does not exist in your level list. Do you want to download it off the Arcade server?", () =>
+                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadJSONFile($"{AlephNetwork.ArcadeServerURL}api/level/{levelInfo.serverID}", 
+                    callback: json =>
                     {
-                        var jn = JSON.Parse(json);
-                        if (jn is JSONObject jsonObject)
+                        ConfirmInterface.Init("Level does not exist in your level list. Do you want to download it off the Arcade server?", () =>
                         {
-                            if (ProjectArrhythmia.State.InGame)
+                            var jn = JSON.Parse(json);
+                            if (jn is JSONObject jsonObject)
                             {
-                                AlephNetwork.DownloadLevel(jsonObject, level =>
+                                if (ProjectArrhythmia.State.InGame)
                                 {
-                                    level = NewCollectionLevel(level.path, collection);
-                                    levelInfo.Overwrite(level);
-                                    if (collection)
-                                        collection[levelInfo.index] = level;
-                                    InterfaceManager.inst.CloseMenus();
-                                    onDownload?.Invoke(level);
-                                }, onError => ArcadeHelper.QuitToArcade());
-                                return;
+                                    AlephNetwork.DownloadLevel(jsonObject,
+                                        onDownload: level =>
+                                        {
+                                            level = NewCollectionLevel(level.path, collection);
+                                            levelInfo.Overwrite(level);
+                                            if (collection)
+                                                collection[levelInfo.index] = level;
+                                            InterfaceManager.inst.CloseMenus();
+                                            onDownload?.Invoke(level);
+                                        },
+                                        onError: (string onError, long responseCode, string errorMsg) => ArcadeHelper.QuitToArcade());
+                                    return;
+                                }
+
+                                InterfaceManager.inst.CloseMenus();
+                                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.LevelCoverURL}{levelInfo.serverID}{FileFormat.JPG.Dot()}?r" + UnityRandom.Range(0, int.MaxValue),
+                                    callback: bytes =>
+                                    {
+                                        var sprite = SpriteHelper.LoadSprite(bytes);
+                                        ArcadeInterface.OnlineLevelIcons[levelInfo.serverID] = sprite;
+
+                                        DownloadLevelInterface.Init(jsonObject);
+                                        DownloadLevelInterface.Current.onDownloadComplete = level =>
+                                        {
+                                            level = NewCollectionLevel(level.path, collection);
+                                            levelInfo.Overwrite(level);
+                                            if (collection)
+                                                collection[levelInfo.index] = level;
+
+                                            InterfaceManager.inst.CloseMenus();
+                                            if (onDownload != null)
+                                            {
+                                                onDownload(level);
+                                                return;
+                                            }
+
+                                            PlayLevelInterface.Init(level);
+                                        };
+                                    },
+                                    onError: (string onError, long responseCode, string errorMsg) =>
+                                    {
+                                        ArcadeInterface.OnlineLevelIcons[levelInfo.serverID] = LegacyPlugin.AtanPlaceholder;
+
+                                        DownloadLevelInterface.Init(jsonObject);
+                                        DownloadLevelInterface.Current.onDownloadComplete = level =>
+                                        {
+                                            level = NewCollectionLevel(level.path, collection);
+                                            levelInfo.Overwrite(level);
+                                            if (collection)
+                                                collection[levelInfo.index] = level;
+
+                                            InterfaceManager.inst.CloseMenus();
+                                            if (onDownload != null)
+                                            {
+                                                onDownload(level);
+                                                return;
+                                            }
+
+                                            PlayLevelInterface.Init(level);
+                                        };
+                                    }));
                             }
-
-                            InterfaceManager.inst.CloseMenus();
-                            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.LevelCoverURL}{levelInfo.serverID}{FileFormat.JPG.Dot()}?r" + UnityRandom.Range(0, int.MaxValue), bytes =>
-                            {
-                                var sprite = SpriteHelper.LoadSprite(bytes);
-                                ArcadeInterface.OnlineLevelIcons[levelInfo.serverID] = sprite;
-
-                                DownloadLevelInterface.Init(jsonObject);
-                                DownloadLevelInterface.Current.onDownloadComplete = level =>
-                                {
-                                    level = NewCollectionLevel(level.path, collection);
-                                    levelInfo.Overwrite(level);
-                                    if (collection)
-                                        collection[levelInfo.index] = level;
-
-                                    InterfaceManager.inst.CloseMenus();
-                                    if (onDownload != null)
-                                    {
-                                        onDownload(level);
-                                        return;
-                                    }
-
-                                    PlayLevelInterface.Init(level);
-                                };
-                            }, onError =>
-                            {
-                                ArcadeInterface.OnlineLevelIcons[levelInfo.serverID] = LegacyPlugin.AtanPlaceholder;
-
-                                DownloadLevelInterface.Init(jsonObject);
-                                DownloadLevelInterface.Current.onDownloadComplete = level =>
-                                {
-                                    level = NewCollectionLevel(level.path, collection);
-                                    levelInfo.Overwrite(level);
-                                    if (collection)
-                                        collection[levelInfo.index] = level;
-
-                                    InterfaceManager.inst.CloseMenus();
-                                    if (onDownload != null)
-                                    {
-                                        onDownload(level);
-                                        return;
-                                    }
-
-                                    PlayLevelInterface.Init(level);
-                                };
-                            }));
-                        }
-                    }, ArcadeHelper.QuitToArcade);
-                }, (string onError, long responseCode, string errorMsg) => ArcadeHelper.QuitToArcade()));
+                        }, ArcadeHelper.QuitToArcade);
+                    },
+                    onError: (string onError, long responseCode, string errorMsg) => ArcadeHelper.QuitToArcade()));
             }
         }
 
@@ -520,23 +526,25 @@ namespace BetterLegacy.Core.Data.Level
             yield return RTSteamManager.GetItem(workshopID, item =>
             {
                 CoreHelper.Log($"Got item: {item}");
-                CoroutineHelper.StartCoroutineAsync(AlephNetwork.DownloadBytes(item.PreviewImageUrl, bytes =>
-                {
-                    LegacyPlugin.MainTick += () =>
+                CoroutineHelper.StartCoroutineAsync(AlephNetwork.DownloadBytes(item.PreviewImageUrl,
+                    callback: bytes =>
                     {
-                        var sprite = SpriteHelper.LoadSprite(bytes);
-                        ArcadeInterface.OnlineSteamLevelIcons[levelInfo.workshopID] = sprite;
-                        InitSteamItem(collection, levelInfo, onDownload, item);
-                    };
-                }, onError =>
-                {
-                    LegacyPlugin.MainTick += () =>
+                        LegacyPlugin.MainTick += () =>
+                        {
+                            var sprite = SpriteHelper.LoadSprite(bytes);
+                            ArcadeInterface.OnlineSteamLevelIcons[levelInfo.workshopID] = sprite;
+                            InitSteamItem(collection, levelInfo, onDownload, item);
+                        };
+                    },
+                    onError: (string onError, long responseCode, string errorMsg) =>
                     {
-                        var sprite = LegacyPlugin.AtanPlaceholder;
-                        ArcadeInterface.OnlineSteamLevelIcons[levelInfo.workshopID] = sprite;
-                        InitSteamItem(collection, levelInfo, onDownload, item);
-                    };
-                }));
+                        LegacyPlugin.MainTick += () =>
+                        {
+                            var sprite = LegacyPlugin.AtanPlaceholder;
+                            ArcadeInterface.OnlineSteamLevelIcons[levelInfo.workshopID] = sprite;
+                            InitSteamItem(collection, levelInfo, onDownload, item);
+                        };
+                    }));
 
             }, onFail);
         }

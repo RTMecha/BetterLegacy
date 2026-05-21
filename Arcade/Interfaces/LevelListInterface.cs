@@ -851,7 +851,7 @@ namespace BetterLegacy.Arcade.Interfaces
 
             var search = Search;
 
-            string query = AlephNetwork.BuildQuery(SearchURL, search, page);
+            string query = LinkQuery.BuildQuery(SearchURL, search, page);
 
             CoreHelper.Log($"Search query: {query}");
 
@@ -859,108 +859,109 @@ namespace BetterLegacy.Arcade.Interfaces
                 yield break;
 
             loadingOnlineLevels = true;
-            var headers = new Dictionary<string, string>();
-            if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null)
-                headers["Authorization"] = $"Bearer {LegacyPlugin.authData["access_token"].Value}";
 
-            yield return CoroutineHelper.StartCoroutine(AlephNetwork.DownloadJSONFile(query, json =>
-            {
-                try
+            yield return CoroutineHelper.StartCoroutine(AlephNetwork.DownloadJSONFile(query,
+                callback: json =>
                 {
-                    var jn = JSON.Parse(json);
-
-                    if (jn["items"] != null)
+                    try
                     {
-                        int num = 0;
-                        for (int i = 0; i < jn["items"].Count; i++)
+                        var jn = JSON.Parse(json);
+
+                        if (jn["items"] != null)
                         {
-                            var item = jn["items"][i];
-
-                            string id = item["id"];
-
-                            string artist = item["artist"];
-                            string title = item["title"];
-                            string name = item["name"];
-                            string creator = item["creator"];
-                            string description = item["description"];
-                            var difficulty = item["difficulty"].AsInt;
-
-                            if (id == null || id == "0")
-                                continue;
-
-                            int index = i;
-                            int column = (num % ArcadeInterface.MAX_LEVELS_PER_PAGE) % 5;
-                            int row = (int)((num % ArcadeInterface.MAX_LEVELS_PER_PAGE) / 5) + 2;
-
-                            var button = new MenuButton
+                            int num = 0;
+                            for (int i = 0; i < jn["items"].Count; i++)
                             {
-                                id = id,
-                                name = "Level Button",
-                                parentLayout = "levels",
-                                selectionPosition = new Vector2Int(column, row),
-                                func = () => DownloadLevelInterface.Init(item.AsObject),
-                                iconRect = RectValues.Default.AnchoredPosition(-90, 30f),
-                                text = "<size=24>" + name,
-                                textRect = RectValues.FullAnchored.AnchoredPosition(20f, -50f),
-                                enableWordWrapping = true,
-                                icon = LegacyPlugin.AtanPlaceholder,
-                                color = 6,
-                                opacity = 0.1f,
-                                textColor = 6,
-                                selectedColor = 6,
-                                selectedOpacity = 1f,
-                                selectedTextColor = 7,
-                                length = 0.01f,
-                            };
-                            elements.Add(button);
+                                var item = jn["items"][i];
 
-                            elements.Add(new MenuImage
-                            {
-                                id = "0",
-                                name = "Difficulty",
-                                parent = id,
-                                rect = new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(1f, 0.5f), new Vector2(8f, 0f)),
-                                overrideColor = CustomEnumHelper.GetValueOrDefault(difficulty, DifficultyType.Unknown).Color,
-                                useOverrideColor = true,
-                                opacity = 1f,
-                                roundedSide = SpriteHelper.RoundedSide.Left,
-                                length = 0f,
-                                wait = false,
-                            });
+                                string id = item["id"];
 
-                            if (OnlineLevelIcons.TryGetValue(id, out Sprite sprite))
-                                button.icon = sprite;
-                            else
-                            {
-                                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.LevelCoverURL}{id}.jpg?r" + UnityRandom.Range(0, int.MaxValue), bytes =>
+                                string artist = item["artist"];
+                                string title = item["title"];
+                                string name = item["name"];
+                                string creator = item["creator"];
+                                string description = item["description"];
+                                var difficulty = item["difficulty"].AsInt;
+
+                                if (id == null || id == "0")
+                                    continue;
+
+                                int index = i;
+                                int column = (num % ArcadeInterface.MAX_LEVELS_PER_PAGE) % 5;
+                                int row = (int)((num % ArcadeInterface.MAX_LEVELS_PER_PAGE) / 5) + 2;
+
+                                var button = new MenuButton
                                 {
-                                    var sprite = SpriteHelper.LoadSprite(bytes);
-                                    OnlineLevelIcons.Add(id, sprite);
-                                    button.icon = sprite;
-                                    if (button.iconUI)
-                                        button.iconUI.sprite = sprite;
-                                }, onError =>
+                                    id = id,
+                                    name = "Level Button",
+                                    parentLayout = "levels",
+                                    selectionPosition = new Vector2Int(column, row),
+                                    func = () => DownloadLevelInterface.Init(item.AsObject),
+                                    iconRect = RectValues.Default.AnchoredPosition(-90, 30f),
+                                    text = "<size=24>" + name,
+                                    textRect = RectValues.FullAnchored.AnchoredPosition(20f, -50f),
+                                    enableWordWrapping = true,
+                                    icon = LegacyPlugin.AtanPlaceholder,
+                                    color = 6,
+                                    opacity = 0.1f,
+                                    textColor = 6,
+                                    selectedColor = 6,
+                                    selectedOpacity = 1f,
+                                    selectedTextColor = 7,
+                                    length = 0.01f,
+                                };
+                                elements.Add(button);
+
+                                elements.Add(new MenuImage
                                 {
-                                    var sprite = LegacyPlugin.AtanPlaceholder;
-                                    OnlineLevelIcons.Add(id, sprite);
+                                    id = "0",
+                                    name = "Difficulty",
+                                    parent = id,
+                                    rect = new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(1f, 0.5f), new Vector2(8f, 0f)),
+                                    overrideColor = CustomEnumHelper.GetValueOrDefault(difficulty, DifficultyType.Unknown).Color,
+                                    useOverrideColor = true,
+                                    opacity = 1f,
+                                    roundedSide = SpriteHelper.RoundedSide.Left,
+                                    length = 0f,
+                                    wait = false,
+                                });
+
+                                if (OnlineLevelIcons.TryGetValue(id, out Sprite sprite))
                                     button.icon = sprite;
-                                    if (button.iconUI)
-                                        button.iconUI.sprite = sprite;
-                                }));
+                                else
+                                {
+                                    CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.LevelCoverURL}{id}.jpg?r" + UnityRandom.Range(0, int.MaxValue),
+                                        callback: bytes =>
+                                        {
+                                            var sprite = SpriteHelper.LoadSprite(bytes);
+                                            OnlineLevelIcons.Add(id, sprite);
+                                            button.icon = sprite;
+                                            if (button.iconUI)
+                                                button.iconUI.sprite = sprite;
+                                        },
+                                        onError: (string onError, long responseCode, string errorMsg) =>
+                                        {
+                                            var sprite = LegacyPlugin.AtanPlaceholder;
+                                            OnlineLevelIcons.Add(id, sprite);
+                                            button.icon = sprite;
+                                            if (button.iconUI)
+                                                button.iconUI.sprite = sprite;
+                                        }));
+                                }
+
+                                num++;
                             }
-
-                            num++;
                         }
-                    }
 
-                    if (jn["count"] != null)
-                        OnlineLevelCount = jn["count"].AsInt;
-                }
-                catch (Exception ex)
-                {
-                    CoreHelper.LogException(ex);
-                }
-            }, headers));
+                        if (jn["count"] != null)
+                            OnlineLevelCount = jn["count"].AsInt;
+                    }
+                    catch (Exception ex)
+                    {
+                        CoreHelper.LogException(ex);
+                    }
+                },
+                headers: AlephNetwork.GetUserHeaders()));
 
             loadingOnlineLevels = false;
             StartGeneration();

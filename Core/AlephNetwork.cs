@@ -3,9 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
 
 using UnityEngine;
 using UnityEngine.Networking;
@@ -28,29 +25,100 @@ namespace BetterLegacy.Core
         /// </summary>
         public static string className = "[<color=#FC5F58>AlephNetwork</color>]\n";
 
+        #region Links
+
         /// <summary>
         /// Link to the Arcade server.
         /// </summary>
         public static string ArcadeServerURL => !string.IsNullOrEmpty(Configs.CoreConfig.Instance.ArcadeServerURL.Value) ? RTFile.AppendEndSlash(Configs.CoreConfig.Instance.ArcadeServerURL.Value) : ARCADE_SERVER_URL;
 
+        #region User
+
         public static string UserURL => $"{ArcadeServerURL}api/user/";
+
+        /// <summary>
+        /// User search endpoint.
+        /// </summary>
         public static string UserSearchURL => $"{UserURL}search";
 
+        #endregion
+
+        #region Level
+
+        /// <summary>
+        /// Level URL.
+        /// </summary>
         public static string LevelURL => $"{ArcadeServerURL}api/level/";
+
+        /// <summary>
+        /// Level search endpoint.
+        /// </summary>
         public static string LevelSearchURL => $"{LevelURL}search";
+
+        /// <summary>
+        /// Level cover image endpoint.
+        /// </summary>
         public static string LevelCoverURL => $"{LevelURL}cover/";
+
+        /// <summary>
+        /// Level zip download endpoint.
+        /// </summary>
         public static string LevelDownloadURL => $"{LevelURL}zip/";
-        
+
+        #endregion
+
+        #region Level Collection
+
+        /// <summary>
+        /// Level Collection URL.
+        /// </summary>
         public static string LevelCollectionURL => $"{ArcadeServerURL}api/levelcollection/";
+
+        /// <summary>
+        /// Level Collection search endpoint.
+        /// </summary>
         public static string LevelCollectionSearchURL => $"{LevelCollectionURL}search";
+
+        /// <summary>
+        /// Level Collection cover image endpoint.
+        /// </summary>
         public static string LevelCollectionCoverURL => $"{LevelCollectionURL}cover/";
+
+        /// <summary>
+        /// Level Collection banner image endpoint.
+        /// </summary>
         public static string LevelCollectionBannerURL => $"{LevelCollectionURL}banner/";
+
+        /// <summary>
+        /// Level Collection zip download endpoint.
+        /// </summary>
         public static string LevelCollectionDownloadURL => $"{LevelCollectionURL}zip/";
 
+        #endregion
+
+        #region Prefab
+
+        /// <summary>
+        /// Prefab URL.
+        /// </summary>
         public static string PrefabURL => $"{ArcadeServerURL}api/prefab/";
+
+        /// <summary>
+        /// Prefab search endpoint.
+        /// </summary>
         public static string PrefabSearchURL => $"{PrefabURL}search";
+
+        /// <summary>
+        /// Prefab cover image endpoint.
+        /// </summary>
         public static string PrefabCoverURL => $"{PrefabURL}cover/";
+
+        /// <summary>
+        /// Prefab download endpoint.
+        /// </summary>
         public static string PrefabDownloadURL => $"{PrefabURL}download/";
+
+        #endregion
 
         #region Constants
 
@@ -58,18 +126,23 @@ namespace BetterLegacy.Core
         /// Link to the Arcade server.
         /// </summary>
         public const string ARCADE_SERVER_URL = "https://betterlegacy.net/";
+
         /// <summary>
         /// Link to the System Error Discord server.
         /// </summary>
         public const string MOD_DISCORD_URL = "https://discord.gg/nB27X2JZcY";
+
         /// <summary>
         /// Link to the Project Arrhythmia mod showcases playlist on YouTube.
         /// </summary>
         public const string PA_MOD_SHOWCASES_URL = "https://www.youtube.com/playlist?list=PLMHuUok_ojlX89xw2z6hUFF3meXFXz9DL";
+
         /// <summary>
         /// Link to the BetterLegacy github.
         /// </summary>
         public const string OPEN_SOURCE_URL = "https://github.com/RTMecha/BetterLegacy";
+
+        #endregion
 
         #endregion
 
@@ -170,155 +243,78 @@ namespace BetterLegacy.Core
 
         #endregion
 
-        #region Client
+        #region Functions
 
-        public static IEnumerator DownloadClient(string path, Action<byte[]> callback)
+        /// <summary>
+        /// Downloads byte data.
+        /// </summary>
+        /// <param name="uri">URI path.</param>
+        /// <param name="callback">Callback function returns a byte array.</param>
+        /// <param name="percentage">Function to run when progress is desired.</param>
+        /// <param name="onError">Function to run if there were any errors.<br/>
+        /// Parameters:<br/>
+        /// onError<br/>
+        /// responseCode<br/>
+        /// errorMsg</param>
+        /// <param name="headers">Headers to provide to the request.</param>
+        public static IEnumerator DownloadBytes(string uri, Action<byte[]> callback, Action<float> percentage = null, Action<string, long, string> onError = null, Dictionary<string, string> headers = null)
         {
-            using var client = new WebClient();
-            var bytes = client.DownloadData(path);
-            while (client.IsBusy)
-                yield return null;
-
-            callback?.Invoke(bytes);
-            yield break;
-        }
-
-        public static IEnumerator DownloadClient(string path, Action<string> callback)
-        {
-            using var client = new WebClient();
-            var bytes = client.DownloadString(path);
-            while (client.IsBusy)
-                yield return null;
-
-            callback?.Invoke(bytes);
-            yield break;
-        }
-
-        #endregion
-
-        #region Bytes
-
-        public static IEnumerator DownloadBytes(string path, Action<byte[]> callback, Action<float> percentage, Action<string> onError)
-        {
-            using var www = UnityWebRequest.Get(path);
+            using var www = UnityWebRequest.Get(uri);
             www.certificateHandler = new ForceAcceptAll();
-            var webRequest = www.SendWebRequest();
+            SetHeaders(www, headers);
 
-            while (!webRequest.isDone)
+            if (percentage == null)
+                yield return www.SendWebRequest();
+            else
             {
-                percentage?.Invoke(webRequest.progress);
-                yield return null;
+                var webRequest = www.SendWebRequest();
+                while (!webRequest.isDone)
+                {
+                    percentage?.Invoke(webRequest.progress);
+                    yield return null;
+                }
             }
-
-            if (www.isNetworkError || www.isHttpError)
-                onError?.Invoke(www.error);
-            else
-                callback?.Invoke(www.downloadHandler.data);
-
-            yield break;
-        }
-
-        public static IEnumerator DownloadBytes(string path, Action<byte[]> callback, Action<string> onError)
-        {
-            using var www = UnityWebRequest.Get(path);
-            www.certificateHandler = new ForceAcceptAll();
-            yield return www.SendWebRequest();
-            if (www.isNetworkError || www.isHttpError)
-                onError?.Invoke(www.error);
-            else
-                callback?.Invoke(www.downloadHandler.data);
-
-            yield break;
-        }
-
-        public static IEnumerator DownloadBytes(string path, Action<byte[]> callback)
-        {
-            using var www = UnityWebRequest.Get(path);
-            www.certificateHandler = new ForceAcceptAll();
-            yield return www.SendWebRequest();
-            if (www.isNetworkError || www.isHttpError)
-                Debug.LogError($"{className}Error: {www.error}\nMessage: {www.downloadHandler.text}");
-            else
-                callback?.Invoke(www.downloadHandler.data);
-        }
-
-        public static IEnumerator UploadBytes(string url, byte[] bytes)
-        {
-            var form = new WWWForm();
-            form.AddBinaryData("file", bytes);
-
-            using var www = UnityWebRequest.Post(url, form);
-
-            www.certificateHandler = new ForceAcceptAll();
-            yield return www.SendWebRequest();
-
-            if (www.isNetworkError || www.isHttpError)
-                Debug.LogError($"{className}Error: {www.error}\nMessage: {www.downloadHandler.text}");
-            else
-                Debug.Log($"{className}Form upload complete! {www.downloadHandler.text}");
-        }
-
-        public static IEnumerator UploadBytes(string url, byte[] bytes, Action<string> onComplete, Dictionary<string, string> headers = null)
-        {
-            var form = new WWWForm();
-            form.AddBinaryData("file", bytes);
-
-            using var www = UnityWebRequest.Post(url, form);
-
-            www.certificateHandler = new ForceAcceptAll();
-
-            if (headers != null)
-                foreach (var header in headers)
-                    www.SetRequestHeader(header.Key, header.Value);
-
-            yield return www.SendWebRequest();
-
-            if (www.isNetworkError || www.isHttpError)
-                Debug.LogError($"{className}Error: {www.error}\nMessage: {www.downloadHandler.text}");
-            else
-                onComplete?.Invoke(www.downloadHandler.text);
-        }
-
-        public static IEnumerator UploadBytes(string url, byte[] bytes, Action<string> onComplete, Action<string, long, string> onError, Dictionary<string, string> headers = null)
-        {
-            var form = new WWWForm();
-            form.AddBinaryData("file", bytes);
-
-            using var www = UnityWebRequest.Post(url, form);
-
-            www.certificateHandler = new ForceAcceptAll();
-            
-            if (headers != null)
-                foreach (var header in headers)
-                    www.SetRequestHeader(header.Key, header.Value);
-            
-            yield return www.SendWebRequest();
 
             if (www.isNetworkError || www.isHttpError)
                 onError?.Invoke(www.error, www.responseCode, www.downloadHandler?.text);
             else
-                onComplete?.Invoke(www.downloadHandler.text);
+                callback?.Invoke(www.downloadHandler.data);
+
+            yield break;
         }
 
-        public static IEnumerator UploadBytes(string url, byte[] bytes, Action<float> percentage, Action<string> onComplete, Action<string, long, string> onError, Dictionary<string, string> headers = null)
+        /// <summary>
+        /// Uploads byte data.
+        /// </summary>
+        /// <param name="uri">URI path.</param>
+        /// <param name="bytes">Byte data to upload.</param>
+        /// <param name="percentage">Function to run when progress is desired.</param>
+        /// <param name="onComplete">Function to run on upload complete.</param>
+        /// <param name="onError">Function to run if there were any errors.<br/>
+        /// Parameters:<br/>
+        /// onError<br/>
+        /// responseCode<br/>
+        /// errorMsg</param>
+        /// <param name="headers">Headers to provide to the request.</param>
+        public static IEnumerator UploadBytes(string uri, byte[] bytes, Action<float> percentage, Action<string> onComplete, Action<string, long, string> onError, Dictionary<string, string> headers = null)
         {
             var form = new WWWForm();
             form.AddBinaryData("file", bytes);
 
-            using var www = UnityWebRequest.Post(url, form);
-
+            using var www = UnityWebRequest.Post(uri, form);
             www.certificateHandler = new ForceAcceptAll();
+            SetHeaders(www, headers);
 
-            if (headers != null)
-                foreach (var header in headers)
-                    www.SetRequestHeader(header.Key, header.Value);
-
-            var webRequest = www.SendWebRequest();
-
-            while (!webRequest.isDone)
+            if (percentage == null)
+                yield return www.SendWebRequest();
+            else
             {
-                percentage?.Invoke(webRequest.progress);
-                yield return null;
+                var webRequest = www.SendWebRequest();
+                while (!webRequest.isDone)
+                {
+                    percentage?.Invoke(webRequest.progress);
+                    yield return null;
+                }
             }
 
             if (www.isNetworkError || www.isHttpError)
@@ -327,342 +323,295 @@ namespace BetterLegacy.Core
                 onComplete?.Invoke(www.downloadHandler.text);
         }
 
-        public static IEnumerator UploadString(string url, string str)
+        /// <summary>
+        /// Uploads string data.
+        /// </summary>
+        /// <param name="uri">URI path.</param>
+        /// <param name="str">String data to upload.</param>
+        /// <param name="percentage">Function to run when progress is desired.</param>
+        /// <param name="onComplete">Function to run on upload complete.</param>
+        /// <param name="onError">Function to run if there were any errors.<br/>
+        /// Parameters:<br/>
+        /// onError<br/>
+        /// responseCode<br/>
+        /// errorMsg</param>
+        /// <param name="headers">Headers to provide to the request.</param>
+        public static IEnumerator UploadString(string uri, string str, Action<float> percentage, Action<string> onComplete, Action<string, long, string> onError, Dictionary<string, string> headers = null)
         {
-            using var www = UnityWebRequest.Post(url, str);
-
+            using var www = UnityWebRequest.Post(uri, str);
             www.certificateHandler = new ForceAcceptAll();
-            yield return www.SendWebRequest();
+            SetHeaders(www, headers);
+
+            if (percentage == null)
+                yield return www.SendWebRequest();
+            else
+            {
+                var webRequest = www.SendWebRequest();
+                while (!webRequest.isDone)
+                {
+                    percentage?.Invoke(webRequest.progress);
+                    yield return null;
+                }
+            }
 
             if (www.isNetworkError || www.isHttpError)
-                Debug.LogError($"{className}Error: {www.error}\nMessage: {www.downloadHandler.text}");
+                onError?.Invoke(www.error, www.responseCode, www.downloadHandler?.text);
             else
-                Debug.Log($"{className}Form upload complete! {www.downloadHandler.text}");
+                onComplete?.Invoke(www.downloadHandler.text);
         }
 
-        public static IEnumerator DownloadBytes(string path, Action<float> percentage, Action<byte[]> callback, Action<string> onError)
+        /// <summary>
+        /// Downloads string data.
+        /// </summary>
+        /// <param name="uri">URI path.</param>
+        /// <param name="callback">Callback function returns a string.</param>
+        /// <param name="percentage">Function to run when progress is desired.</param>
+        /// <param name="onError">Function to run if there were any errors.<br/>
+        /// Parameters:<br/>
+        /// onError<br/>
+        /// responseCode<br/>
+        /// errorMsg</param>
+        /// <param name="headers">Headers to provide to the request.</param>
+        public static IEnumerator DownloadJSONFile(string uri, Action<string> callback, Action<float> percentage = null, Action<string, long, string> onError = null, Dictionary<string, string> headers = null)
         {
-            using var www = UnityWebRequest.Get(path);
-
+            using var www = UnityWebRequest.Get(uri);
             www.certificateHandler = new ForceAcceptAll();
-            var webRequest = www.SendWebRequest();
+            SetHeaders(www, headers);
 
-            while (!webRequest.isDone)
+            if (percentage == null)
+                yield return www.SendWebRequest();
+            else
             {
-                percentage?.Invoke(webRequest.progress);
-                yield return null;
+                var webRequest = www.SendWebRequest();
+                while (!webRequest.isDone)
+                {
+                    percentage?.Invoke(webRequest.progress);
+                    yield return null;
+                }
             }
 
             if (www.isNetworkError || www.isHttpError)
-                onError?.Invoke(www.error);
+                onError?.Invoke(www.error, www.responseCode, www.downloadHandler?.text);
             else
-                callback?.Invoke(www.downloadHandler.data);
-
-            yield break;
+                callback?.Invoke(www.downloadHandler?.text);
         }
 
-        #endregion
-
-        #region JSON
-
-        public static IEnumerator DownloadJSONFile(string path, Action<string> callback, Action<string, long, string> onError)
+        /// <summary>
+        /// Downloads <see cref="Texture2D"/> data.
+        /// </summary>
+        /// <param name="uri">URI path.</param>
+        /// <param name="callback">Callback function returns <see cref="Texture2D"/>.</param>
+        /// <param name="percentage">Function to run when progress is desired.</param>
+        /// <param name="onError">Function to run if there were any errors.<br/>
+        /// Parameters:<br/>
+        /// onError<br/>
+        /// responseCode<br/>
+        /// errorMsg</param>
+        /// <param name="headers">Headers to provide to the request.</param>
+        public static IEnumerator DownloadImageTexture(string uri, Action<Texture2D> callback, Action<float> percentage = null, Action<string, long, string> onError = null, Dictionary<string, string> headers = null)
         {
-            using var www = UnityWebRequest.Get(path);
-            yield return www.SendWebRequest();
-            if (www.isNetworkError || www.isHttpError)
-            {
-                if (www.downloadHandler != null)
-                    onError?.Invoke(www.error, www.responseCode, www.downloadHandler.text);
-                else
-                    onError?.Invoke(www.error, www.responseCode, null);
-            }
-            else
-                callback?.Invoke(www.downloadHandler.text);
-
-        }
-
-        public static IEnumerator DownloadJSONFile(string path, Action<string> callback, Dictionary<string, string> headers = null)
-        {
-            using var www = UnityWebRequest.Get(path);
+            using var www = UnityWebRequestTexture.GetTexture(uri);
             www.certificateHandler = new ForceAcceptAll();
+            SetHeaders(www, headers);
 
-            if (headers != null)
-                foreach (var header in headers)
-                    www.SetRequestHeader(header.Key, header.Value);
-
-            yield return www.SendWebRequest();
-            if (www.isNetworkError || www.isHttpError)
-                Debug.LogError($"{className}Error: {www.error}\nMessage: {www.downloadHandler.text}");
+            if (percentage == null)
+                yield return www.SendWebRequest();
             else
-                callback?.Invoke(www.downloadHandler.text);
-
-            yield break;
-        }
-
-        public static IEnumerator DownloadJSONFile(string path, Action<string> callback, Action<string, long, string> onError, Dictionary<string, string> headers = null)
-        {
-            using var www = UnityWebRequest.Get(path);
-            www.certificateHandler = new ForceAcceptAll();
-
-            if (headers != null)
-                foreach (var header in headers)
-                    www.SetRequestHeader(header.Key, header.Value);
-
-            yield return www.SendWebRequest();
-            if (www.isNetworkError || www.isHttpError)
             {
-                if (www.downloadHandler != null)
-                    onError?.Invoke(www.error, www.responseCode, www.downloadHandler.text);
-                else
-                    onError?.Invoke(www.error, www.responseCode, null);
-            }
-            else
-                callback?.Invoke(www.downloadHandler.text);
-
-            yield break;
-        }
-        
-        public static IEnumerator DownloadJSONFile(string path, Action<float> percentage, Action<string> callback, Action<string, long, string> onError, Dictionary<string, string> headers = null)
-        {
-            using var www = UnityWebRequest.Get(path);
-            www.certificateHandler = new ForceAcceptAll();
-
-            if (headers != null)
-                foreach (var header in headers)
-                    www.SetRequestHeader(header.Key, header.Value);
-
-            var webRequest = www.SendWebRequest();
-
-            while (!webRequest.isDone)
-            {
-                percentage?.Invoke(webRequest.progress);
-                yield return null;
+                var webRequest = www.SendWebRequest();
+                while (!webRequest.isDone)
+                {
+                    percentage?.Invoke(webRequest.progress);
+                    yield return null;
+                }
             }
 
             if (www.isNetworkError || www.isHttpError)
-            {
-                if (www.downloadHandler != null)
-                    onError?.Invoke(www.error, www.responseCode, www.downloadHandler.text);
-                else
-                    onError?.Invoke(www.error, www.responseCode, null);
-            }
-            else
-                callback?.Invoke(www.downloadHandler.text);
-
-            yield break;
-        }
-
-        public static IEnumerator DownloadJSONFile(string path, Action<float> percentage, Action<string> callback, Action<string, long, string> onError)
-        {
-            using var www = UnityWebRequest.Get(path);
-            var webRequest = www.SendWebRequest();
-
-            while (!webRequest.isDone)
-            {
-                percentage?.Invoke(webRequest.progress);
-                yield return null;
-            }
-
-            if (www.isNetworkError || www.isHttpError)
-            {
-                if (www.downloadHandler != null)
-                    onError?.Invoke(www.error, www.responseCode, www.downloadHandler.text);
-                else
-                    onError?.Invoke(www.error, www.responseCode, null);
-            }
-            else
-                callback?.Invoke(www.downloadHandler.text);
-
-            yield break;
-        }
-
-        #endregion
-
-        #region Image
-
-        public static IEnumerator DownloadImageTexture(string path, Action<Texture2D> callback, Action<string, string> onError)
-        {
-            using var www = UnityWebRequestTexture.GetTexture(path);
-            yield return www.SendWebRequest();
-
-            if (www.isNetworkError || www.isHttpError)
-                onError?.Invoke(www.error, www.downloadHandler?.text);
-            else
-                callback?.Invoke(((DownloadHandlerTexture)www.downloadHandler).texture);
-        }
-        
-        public static IEnumerator DownloadImageTexture(string path, Action<Texture2D> callback, Action<string> onError)
-        {
-            using var www = UnityWebRequestTexture.GetTexture(path);
-            yield return www.SendWebRequest();
-
-            if (www.isNetworkError || www.isHttpError)
-                onError?.Invoke(www.error);
+                onError?.Invoke(www.error, www.responseCode, www.downloadHandler?.text);
             else
                 callback?.Invoke(((DownloadHandlerTexture)www.downloadHandler).texture);
         }
 
-        public static IEnumerator DownloadImageTexture(string path, Action<Texture2D> callback)
+        /// <summary>
+        /// Downloads <see cref="AudioClip"/> data.
+        /// </summary>
+        /// <param name="uri">URI path.</param>
+        /// <param name="callback">Callback function returns <see cref="AudioClip"/>.</param>
+        /// <param name="percentage">Function to run when progress is desired.</param>
+        /// <param name="onError">Function to run if there were any errors.<br/>
+        /// Parameters:<br/>
+        /// onError<br/>
+        /// responseCode<br/>
+        /// errorMsg</param>
+        /// <param name="headers">Headers to provide to the request.</param>
+        public static IEnumerator DownloadAudioClip(string uri, AudioType audioType, Action<AudioClip> callback, Action<float> percentage = null, Action<string, long, string> onError = null, Dictionary<string, string> headers = null)
         {
-            using var www = UnityWebRequestTexture.GetTexture(path);
-            yield return www.SendWebRequest();
+            using var www = UnityWebRequestMultimedia.GetAudioClip(uri, audioType);
+            www.certificateHandler = new ForceAcceptAll();
+            SetHeaders(www, headers);
 
-            if (www.isNetworkError || www.isHttpError)
-                Debug.LogError($"{className}Error: {www.error}\nMessage: {www.downloadHandler.text}");
+            if (percentage == null)
+                yield return www.SendWebRequest();
             else
-                callback?.Invoke(((DownloadHandlerTexture)www.downloadHandler).texture);
-        }
-
-        public static IEnumerator DownloadImageTexture(string path, Action<float> percentage, Action<Texture2D> callback, Action<string> onError)
-        {
-            using var www = UnityWebRequestTexture.GetTexture(path);
-            var webRequest = www.SendWebRequest();
-
-            while (!webRequest.isDone)
             {
-                percentage?.Invoke(webRequest.progress);
-                yield return null;
+                var webRequest = www.SendWebRequest();
+                while (!webRequest.isDone)
+                {
+                    percentage?.Invoke(webRequest.progress);
+                    yield return null;
+                }
             }
 
             if (www.isNetworkError || www.isHttpError)
-            {
-                Debug.LogError($"{className}Error: {www.error}\nMessage: {www.downloadHandler.text}");
-                onError?.Invoke(www.error);
-            }
-            else
-                callback?.Invoke(((DownloadHandlerTexture)www.downloadHandler).texture);
-        }
-
-        #endregion
-
-        #region AudioClip
-
-        public static IEnumerator DownloadAudioClip(string path, AudioType audioType, Action<AudioClip> callback, Action<string, long, string> onError)
-        {
-            using var www = UnityWebRequestMultimedia.GetAudioClip(path, audioType);
-            yield return www.SendWebRequest();
-
-            if (www.isNetworkError || www.isHttpError)
-            {
-                if (www.downloadHandler != null)
-                    onError?.Invoke(www.error, www.responseCode, www.downloadHandler.text);
-                else
-                    onError?.Invoke(www.error, www.responseCode, null);
-            }
+                onError?.Invoke(www.error, www.responseCode, www.downloadHandler?.text);
             else
                 callback?.Invoke(((DownloadHandlerAudioClip)www.downloadHandler).audioClip);
         }
 
-        public static IEnumerator DownloadAudioClip(string path, AudioType audioType, Action<AudioClip> callback)
+        /// <summary>
+        /// Downloads <see cref="AssetBundle"/> data.
+        /// </summary>
+        /// <param name="uri">URI path.</param>
+        /// <param name="callback">Callback function returns <see cref="AssetBundle"/>.</param>
+        /// <param name="percentage">Function to run when progress is desired.</param>
+        /// <param name="onError">Function to run if there were any errors.<br/>
+        /// Parameters:<br/>
+        /// onError<br/>
+        /// responseCode<br/>
+        /// errorMsg</param>
+        /// <param name="headers">Headers to provide to the request.</param>
+        public static IEnumerator DownloadAssetBundle(string uri, Action<AssetBundle> callback, Action<float> percentage = null, Action<string, long, string> onError = null, Dictionary<string, string> headers = null)
         {
-            using var www = UnityWebRequestMultimedia.GetAudioClip(path, audioType);
-            yield return www.SendWebRequest();
-
-            if (www.isNetworkError || www.isHttpError)
-                Debug.LogError($"{className}Error: {www.error}");
-            else
-                callback?.Invoke(((DownloadHandlerAudioClip)www.downloadHandler).audioClip);
-        }
-
-        public static IEnumerator DownloadAudioClip(string path, Action<float> percentage, AudioType audioType, Action<AudioClip> callback, Action<string, long, string> onError)
-        {
-            using var www = UnityWebRequestMultimedia.GetAudioClip(path, audioType);
-            var webRequest = www.SendWebRequest();
-
-            while (!webRequest.isDone)
-            {
-                percentage?.Invoke(webRequest.progress);
-                yield return null;
-            }
-
-            if (www.isNetworkError || www.isHttpError)
-            {
-                if (www.downloadHandler != null)
-                    onError?.Invoke(www.error, www.responseCode, www.downloadHandler.text);
-                else
-                    onError?.Invoke(www.error, www.responseCode, null);
-            }
-            else
-                callback?.Invoke(((DownloadHandlerAudioClip)www.downloadHandler).audioClip);
-        }
-
-        #endregion
-
-        #region AssetBundle
-
-        public static IEnumerator DownloadAssetBundle(string path, Action<AssetBundle> callback, Action<string> onError)
-        {
-            using var www = UnityWebRequestAssetBundle.GetAssetBundle(path);
-            yield return www.SendWebRequest();
-
-            if (www.isNetworkError || www.isHttpError)
-            {
-                Debug.LogError($"{className}Error: {www.error}\nMessage: {www.downloadHandler.text}");
-                onError?.Invoke(www.error);
-            }
-            else
-                callback?.Invoke(((DownloadHandlerAssetBundle)www.downloadHandler).assetBundle);
-        }
-
-        public static IEnumerator DownloadAssetBundle(string path, Action<AssetBundle> callback)
-        {
-            using var www = UnityWebRequestAssetBundle.GetAssetBundle(path);
-            yield return www.SendWebRequest();
-
-            if (www.isNetworkError || www.isHttpError)
-                Debug.LogError($"{className}Error: {www.error}\nMessage: {www.downloadHandler.text}");
-            else
-                callback?.Invoke(((DownloadHandlerAssetBundle)www.downloadHandler).assetBundle);
-        }
-
-        public static IEnumerator DownloadAssetBundle(string path, Action<float> percentage, Action<AssetBundle> callback, Action<string> onError)
-        {
-            using var www = UnityWebRequestAssetBundle.GetAssetBundle(path);
-            var webRequest = www.SendWebRequest();
-
-            while (!webRequest.isDone)
-            {
-                percentage?.Invoke(webRequest.progress);
-                yield return null;
-            }
-
-            if (www.isNetworkError || www.isHttpError)
-            {
-                Debug.LogError($"{className}Error: {www.error}\nMessage: {www.downloadHandler.text}");
-                onError?.Invoke(www.error);
-            }
-            else
-                callback?.Invoke(((DownloadHandlerAssetBundle)www.downloadHandler).assetBundle);
-        }
-
-        #endregion
-
-        #region Misc
-
-        public static IEnumerator Delete(string path, Action<float> percentage, Action onComplete, Action<string, long, string> onError, Dictionary<string, string> headers = null)
-        {
-            using var www = UnityWebRequest.Delete(path);
+            using var www = UnityWebRequestAssetBundle.GetAssetBundle(uri);
             www.certificateHandler = new ForceAcceptAll();
+            SetHeaders(www, headers);
 
-            if (headers != null)
-                foreach (var header in headers)
-                    www.SetRequestHeader(header.Key, header.Value);
-
-            yield return www.SendWebRequest();
-            if (www.isNetworkError || www.isHttpError)
-            {
-                if (www.downloadHandler != null)
-                    onError?.Invoke(www.error, www.responseCode, www.downloadHandler.text);
-                else
-                    onError?.Invoke(www.error, www.responseCode, null);
-            }
+            if (percentage == null)
+                yield return www.SendWebRequest();
             else
-                onComplete?.Invoke();
+            {
+                var webRequest = www.SendWebRequest();
+                while (!webRequest.isDone)
+                {
+                    percentage?.Invoke(webRequest.progress);
+                    yield return null;
+                }
+            }
+
+            if (www.isNetworkError || www.isHttpError)
+                onError?.Invoke(www.error, www.responseCode, www.downloadHandler?.text);
+            else
+                callback?.Invoke(((DownloadHandlerAssetBundle)www.downloadHandler).assetBundle);
+        }
+
+        /// <summary>
+        /// Sends a delete request.
+        /// </summary>
+        /// <param name="uri">URI path.</param>
+        /// <param name="percentage">Function to run when progress is desired.</param>
+        /// <param name="onComplete">Function to run on delete complete.</param>
+        /// <param name="onError">Function to run if there were any errors.<br/>
+        /// Parameters:<br/>
+        /// onError<br/>
+        /// responseCode<br/>
+        /// errorMsg</param>
+        /// <param name="headers">Headers to provide to the request.</param>
+        public static IEnumerator Delete(string uri, Action<float> percentage, Action<string> onComplete, Action<string, long, string> onError = null, Dictionary<string, string> headers = null)
+        {
+            using var www = UnityWebRequest.Delete(uri);
+            www.certificateHandler = new ForceAcceptAll();
+            SetHeaders(www, headers);
+
+            if (percentage == null)
+                yield return www.SendWebRequest();
+            else
+            {
+                var webRequest = www.SendWebRequest();
+                while (!webRequest.isDone)
+                {
+                    percentage?.Invoke(webRequest.progress);
+                    yield return null;
+                }
+            }
+
+            if (www.isNetworkError || www.isHttpError)
+                onError?.Invoke(www.error, www.responseCode, www.downloadHandler?.text);
+            else
+                onComplete?.Invoke(www.downloadHandler?.text);
 
             yield break;
         }
 
-        public static void DownloadLevel(JSONObject jn, Action<Level> onDownload, Action<string> onError)
+        /// <summary>
+        /// Gets a response code.
+        /// </summary>
+        /// <param name="uri">URI path.</param>
+        /// <param name="callback">Callback function returns the response code.</param>
+        /// <param name="percentage">Function to run when progress is desired.</param>
+        /// <param name="headers">Headers to provide to the request.</param>
+        public static IEnumerator GetResponseCode(string uri, Action<long> callback, Action<float> percentage = null, Dictionary<string, string> headers = null)
+        {
+            using var www = UnityWebRequest.Get(uri);
+            www.certificateHandler = new ForceAcceptAll();
+            SetHeaders(www, headers);
+
+            if (percentage == null)
+                yield return www.SendWebRequest();
+            else
+            {
+                var webRequest = www.SendWebRequest();
+                while (!webRequest.isDone)
+                {
+                    percentage?.Invoke(webRequest.progress);
+                    yield return null;
+                }
+            }
+
+            callback?.Invoke(www.responseCode);
+        }
+
+        /// <summary>
+        /// Checks if a URI exists.
+        /// </summary>
+        /// <param name="uri">URI path.</param>
+        /// <param name="callback">Callback function returns true if the URI exists, otherwise returns false.</param>s
+        /// <param name="percentage">Function to run when progress is desired.</param>
+        /// <param name="headers">Headers to provide to the request.</param>
+        public static IEnumerator URIExists(string uri, Action<bool> callback, Action<float> percentage = null, Dictionary<string, string> headers = null)
+        {
+            if (callback == null)
+                yield break;
+
+            using var www = UnityWebRequest.Get(uri);
+            www.certificateHandler = new CertificateHandler();
+            SetHeaders(www, headers);
+
+            if (percentage == null)
+                yield return www.SendWebRequest();
+            else
+            {
+                var webRequest = www.SendWebRequest();
+                while (!webRequest.isDone)
+                {
+                    percentage?.Invoke(webRequest.progress);
+                    yield return null;
+                }
+            }
+
+            callback.Invoke(!www.isNetworkError && !www.isHttpError);
+        }
+
+        /// <summary>
+        /// Downloads a level.
+        /// </summary>
+        /// <param name="jn">JSON object reference.</param>
+        /// <param name="onDownload">Function to run on download.</param>
+        /// <param name="onError">Function to run if there were any errors.<br/>
+        /// Parameters:<br/>
+        /// onError<br/>
+        /// responseCode<br/>
+        /// errorMsg</param>
+        public static void DownloadLevel(JSONObject jn, Action<Level> onDownload, Action<string, long, string> onError)
         {
             var name = jn["name"].Value;
             string id = jn["id"];
@@ -672,32 +621,45 @@ namespace BetterLegacy.Core
 
             ProgressInterface.Init($"Downloading Arcade server level: {id} - {name}<br>Please wait...");
 
-            CoroutineHelper.StartCoroutine(DownloadBytes($"{LevelDownloadURL}{id}{FileFormat.ZIP.Dot()}?r" + UnityRandom.Range(0, int.MaxValue), ProgressInterface.Current.UpdateProgress, bytes =>
-            {
-                if (LevelManager.Levels.TryFindIndex(x => x.metadata.serverID == id, out int existingLevelIndex)) // prevent multiple of the same level ID
+            CoroutineHelper.StartCoroutine(DownloadBytes($"{LevelDownloadURL}{id}{FileFormat.ZIP.Dot()}?r" + UnityRandom.Range(0, int.MaxValue),
+                callback: bytes =>
                 {
-                    var existingLevel = LevelManager.Levels[existingLevelIndex];
-                    RTFile.DeleteDirectory(existingLevel.path);
-                    LevelManager.Levels.RemoveAt(existingLevelIndex);
-                }
+                    if (LevelManager.Levels.TryFindIndex(x => x.metadata.serverID == id, out int existingLevelIndex)) // prevent multiple of the same level ID
+                    {
+                        var existingLevel = LevelManager.Levels[existingLevelIndex];
+                        RTFile.DeleteDirectory(existingLevel.path);
+                        LevelManager.Levels.RemoveAt(existingLevelIndex);
+                    }
 
-                RTFile.DeleteDirectory(directory);
-                RTFile.CreateDirectory(directory);
+                    RTFile.DeleteDirectory(directory);
+                    RTFile.CreateDirectory(directory);
 
-                var zipFile = $"{directory}{FileFormat.ZIP.Dot()}";
-                File.WriteAllBytes(zipFile, bytes);
-                ZipFile.ExtractToDirectory(zipFile, directory);
-                RTFile.DeleteFile(zipFile);
+                    var zipFile = $"{directory}{FileFormat.ZIP.Dot()}";
+                    File.WriteAllBytes(zipFile, bytes);
+                    ZipFile.ExtractToDirectory(zipFile, directory);
+                    RTFile.DeleteFile(zipFile);
 
-                var level = new Level(directory);
+                    var level = new Level(directory);
 
-                LevelManager.Levels.Add(level);
+                    LevelManager.Levels.Add(level);
 
-                onDownload?.Invoke(level);
-            }, onError));
+                    onDownload?.Invoke(level);
+                },
+                percentage: ProgressInterface.Current.UpdateProgress,
+                onError: onError));
         }
 
-        public static void DownloadLevelCollection(JSONObject jn, Action<LevelCollection> onDownload, Action<string> onError)
+        /// <summary>
+        /// Downloads a level collection.
+        /// </summary>
+        /// <param name="jn">JSON object reference.</param>
+        /// <param name="onDownload">Function to run on download.</param>
+        /// <param name="onError">Function to run if there were any errors.<br/>
+        /// Parameters:<br/>
+        /// onError<br/>
+        /// responseCode<br/>
+        /// errorMsg</param>
+        public static void DownloadLevelCollection(JSONObject jn, Action<LevelCollection> onDownload, Action<string, long, string> onError)
         {
             var name = jn["name"].Value;
             string id = jn["id"];
@@ -707,109 +669,57 @@ namespace BetterLegacy.Core
 
             ProgressInterface.Init($"Downloading Arcade server level collection: {id} - {name}<br>Please wait...");
 
-            CoroutineHelper.StartCoroutine(DownloadBytes($"{LevelCollectionDownloadURL}{id}{FileFormat.ZIP.Dot()}?r" + UnityRandom.Range(0, int.MaxValue), ProgressInterface.Current.UpdateProgress, bytes =>
-            {
-                if (LevelManager.LevelCollections.TryFindIndex(x => x.serverID == id, out int existingLevelIndex)) // prevent multiple of the same level ID
+            CoroutineHelper.StartCoroutine(DownloadBytes($"{LevelCollectionDownloadURL}{id}{FileFormat.ZIP.Dot()}?r" + UnityRandom.Range(0, int.MaxValue),
+                callback: bytes =>
                 {
-                    var existingLevel = LevelManager.LevelCollections[existingLevelIndex];
-                    RTFile.DeleteDirectory(existingLevel.path);
-                    LevelManager.LevelCollections.RemoveAt(existingLevelIndex);
-                }
+                    if (LevelManager.LevelCollections.TryFindIndex(x => x.serverID == id, out int existingLevelIndex)) // prevent multiple of the same level ID
+                    {
+                        var existingLevel = LevelManager.LevelCollections[existingLevelIndex];
+                        RTFile.DeleteDirectory(existingLevel.path);
+                        LevelManager.LevelCollections.RemoveAt(existingLevelIndex);
+                    }
 
-                RTFile.DeleteDirectory(directory);
-                RTFile.CreateDirectory(directory);
+                    RTFile.DeleteDirectory(directory);
+                    RTFile.CreateDirectory(directory);
 
-                var zipFile = $"{directory}{FileFormat.ZIP.Dot()}";
-                File.WriteAllBytes(zipFile, bytes);
-                ZipFile.ExtractToDirectory(zipFile, directory);
-                RTFile.DeleteFile(zipFile);
+                    var zipFile = $"{directory}{FileFormat.ZIP.Dot()}";
+                    File.WriteAllBytes(zipFile, bytes);
+                    ZipFile.ExtractToDirectory(zipFile, directory);
+                    RTFile.DeleteFile(zipFile);
 
-                var name = Path.GetFileName(directory);
+                    var name = Path.GetFileName(directory);
 
-                var levelCollection = LevelCollection.Parse(directory, JSON.Parse(RTFile.ReadFromFile(RTFile.CombinePaths(directory, LevelCollection.COLLECTION_LSCO))));
-                LevelManager.LevelCollections.Add(levelCollection);
+                    var levelCollection = LevelCollection.Parse(directory, JSON.Parse(RTFile.ReadFromFile(RTFile.CombinePaths(directory, LevelCollection.COLLECTION_LSCO))));
+                    LevelManager.LevelCollections.Add(levelCollection);
 
-                onDownload?.Invoke(levelCollection);
-            }, onError));
-        }
-
-        public static IEnumerator GetResponseCode(string url, Action<long> result)
-        {
-            using var www = UnityWebRequest.Get(url);
-            www.certificateHandler = new ForceAcceptAll();
-            yield return www.SendWebRequest();
-            result?.Invoke(www.responseCode);
-        }
-
-        public static async Task<bool> URLExistsAsync(string url) => await Task.Run(() =>
-        {
-            using var www = UnityWebRequest.Get(url);
-            www.certificateHandler = new ForceAcceptAll();
-
-            var webRequest = www.SendWebRequest();
-
-            while (!webRequest.isDone)
-                Thread.Sleep(1);
-
-            return !www.isNetworkError && !www.isHttpError;
-        });
-
-        /// <summary>
-        /// Builds a search query.
-        /// </summary>
-        /// <param name="searchURL">URL to append.</param>
-        /// <param name="queries">Array of queries.</param>
-        /// <returns>Returns the built query.</returns>
-        public static string BuildQuery(string searchURL, List<Query> queries)
-        {
-            if (!queries.IsEmpty())
-                searchURL += "?";
-
-            for (int i = 0; i < queries.Count; i++)
-            {
-                searchURL += queries[i].ToString();
-                if (i < queries.Count - 1)
-                    searchURL += "&";
-            }
-
-            return searchURL;
+                    onDownload?.Invoke(levelCollection);
+                },
+                percentage: ProgressInterface.Current.UpdateProgress,
+                onError: onError));
         }
 
         /// <summary>
-        /// Builds a search query.
+        /// Gets headers based on the current user.
         /// </summary>
-        /// <param name="searchURL">URL to append.</param>
-        /// <param name="queries">Array of queries.</param>
-        /// <returns>Returns the built query.</returns>
-        public static string BuildQuery(string searchURL, params Query[] queries)
+        /// <returns>Returns a dictionary of headers.</returns>
+        public static Dictionary<string, string> GetUserHeaders()
         {
-            if (!queries.IsEmpty())
-                searchURL += "?";
-
-            for (int i = 0; i < queries.Length; i++)
-            {
-                searchURL += queries[i].ToString();
-                if (i < queries.Length - 1)
-                    searchURL += "&";
-            }
-
-            return searchURL;
+            var headers = new Dictionary<string, string>();
+            if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null)
+                headers["Authorization"] = $"Bearer {LegacyPlugin.authData["access_token"].Value}";
+            return headers;
         }
 
-        public static string BuildQuery(string searchURL, string search, int page = 0, int sort = 0, bool ascend = false)
+        /// <summary>
+        /// Applies the headers from <paramref name="headers"/> to <paramref name="www"/>.
+        /// </summary>
+        /// <param name="www"><see cref="UnityWebRequest"/> to apply the headers to.</param>
+        /// <param name="headers">Headers dictionary.</param>
+        public static void SetHeaders(UnityWebRequest www, Dictionary<string, string> headers)
         {
-            var queries = new List<Query>();
-            if (!string.IsNullOrEmpty(search))
-                queries.Add(new Query("query", search));
-            if (page != 0)
-                queries.Add(new Query("page", page.ToString()));
-
-            if (sort != 0)
-                queries.Add(new Query("sort", sort.ToString()));
-            if (ascend)
-                queries.Add(new Query("ascend", ascend.ToString()));
-
-            return BuildQuery(searchURL, queries);
+            if (headers != null)
+                foreach (var header in headers)
+                    www.SetRequestHeader(header.Key, header.Value);
         }
 
         #endregion
@@ -817,30 +727,6 @@ namespace BetterLegacy.Core
         public class ForceAcceptAll : CertificateHandler
         {
             public override bool ValidateCertificate(byte[] certificateData) => true;
-        }
-
-        /// <summary>
-        /// Query used for search URLs.
-        /// </summary>
-        public class Query
-        {
-            public Query(string name, string variable)
-            {
-                this.name = name;
-                this.variable = variable;
-            }
-
-            /// <summary>
-            /// Name of the query.
-            /// </summary>
-            public string name;
-
-            /// <summary>
-            /// Variable of the query.
-            /// </summary>
-            public string variable;
-
-            public override string ToString() => $"{name}={variable}";
         }
     }
 }

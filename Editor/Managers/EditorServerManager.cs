@@ -405,10 +405,6 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            var headers = new Dictionary<string, string>();
-            if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null)
-                headers["Authorization"] = $"Bearer {LegacyPlugin.authData["access_token"].Value}";
-
             CoroutineHelper.StartCoroutine(AlephNetwork.DownloadJSONFile(Path.Combine(url, uploadable.ServerID),
                 callback: json =>
                 {
@@ -431,11 +427,8 @@ namespace BetterLegacy.Editor.Managers
                     }
                     DoUpload(path, exportPath, url, fileName, uploadable, transfer, saveFile, onUpload);
                 },
-                onError: (string onError, long responseCode, string errorMsg) =>
-                {
-                    DoUpload(path, exportPath, url, fileName, uploadable, transfer, saveFile, onUpload);
-                },
-                headers: headers));
+                onError: (string onError, long responseCode, string errorMsg) => DoUpload(path, exportPath, url, fileName, uploadable, transfer, saveFile, onUpload),
+                headers: AlephNetwork.GetUserHeaders()));
         }
 
         void DoUpload(string path, string exportPath, string url, string fileName, IUploadable uploadable, Action<string> transfer, Action saveFile, Action onUpload)
@@ -456,10 +449,6 @@ namespace BetterLegacy.Editor.Managers
 
                 ZipFile.CreateFromDirectory(tempDirectory, path);
                 RTFile.DeleteDirectory(tempDirectory);
-
-                var headers = new Dictionary<string, string>();
-                if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null)
-                    headers["Authorization"] = $"Bearer {LegacyPlugin.authData["access_token"].Value}";
 
                 var info = new FileInfo(path);
                 if (info.Length > 50 * 1024 * 1024)
@@ -484,7 +473,7 @@ namespace BetterLegacy.Editor.Managers
                 RTEditor.inst.ProgressPopup.Open();
 
                 CoroutineHelper.StartCoroutine(AlephNetwork.UploadBytes(url, File.ReadAllBytes(path), RTEditor.inst.ProgressPopup.UpdateProgress,
-                    id =>
+                    onComplete: id =>
                     {
                         RTEditor.inst.ProgressPopup.Close();
                         uploading = false;
@@ -498,7 +487,7 @@ namespace BetterLegacy.Editor.Managers
 
                         AchievementManager.inst.UnlockAchievement("upload_level");
                     },
-                    (string onError, long responseCode, string errorMsg) =>
+                    onError: (string onError, long responseCode, string errorMsg) =>
                     {
                         RTEditor.inst.ProgressPopup.Close();
                         uploading = false;
@@ -537,7 +526,8 @@ namespace BetterLegacy.Editor.Managers
                         if (errorMsg != null)
                             CoreHelper.LogError($"Error Message: {errorMsg}");
 
-                    }, headers));
+                    },
+                    headers: AlephNetwork.GetUserHeaders()));
             }
             catch (Exception ex)
             {
@@ -570,15 +560,12 @@ namespace BetterLegacy.Editor.Managers
 
                     var id = uploadable.ServerID;
 
-                    var headers = new Dictionary<string, string>();
-                    if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null)
-                        headers["Authorization"] = $"Bearer {LegacyPlugin.authData["access_token"].Value}";
-
                     RTEditor.inst.ProgressPopup.Text = $"Removing {id} from the server, please wait...";
                     RTEditor.inst.ProgressPopup.Open();
 
-                    CoroutineHelper.StartCoroutine(AlephNetwork.Delete(RTFile.CombinePaths(url, id), RTEditor.inst.ProgressPopup.UpdateProgress,
-                        () =>
+                    CoroutineHelper.StartCoroutine(AlephNetwork.Delete(RTFile.CombinePaths(url, id),
+                        percentage: RTEditor.inst.ProgressPopup.UpdateProgress,
+                        onComplete: text =>
                         {
                             RTEditor.inst.ProgressPopup.Close();
                             uploading = false;
@@ -589,7 +576,7 @@ namespace BetterLegacy.Editor.Managers
                             EditorManager.inst.DisplayNotification($"Successfully deleted item off the Arcade server.", 2.5f, EditorManager.NotificationType.Success);
                             onDelete?.Invoke();
                         },
-                        (string onError, long responseCode, string errorMsg) =>
+                        onError: (string onError, long responseCode, string errorMsg) =>
                         {
                             RTEditor.inst.ProgressPopup.Close();
                             uploading = false;
@@ -615,7 +602,8 @@ namespace BetterLegacy.Editor.Managers
                                         break;
                                     }
                             }
-                        }, headers));
+                        },
+                        headers: AlephNetwork.GetUserHeaders()));
                 }
                 catch (Exception ex)
                 {
@@ -650,21 +638,18 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            var headers = new Dictionary<string, string>();
-            if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null)
-                headers["Authorization"] = $"Bearer {LegacyPlugin.authData["access_token"].Value}";
-
             RTEditor.inst.ProgressPopup.Text = $"Verifying {serverID} is on the server, please wait...";
             RTEditor.inst.ProgressPopup.Open();
 
-            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadJSONFile(RTFile.CombinePaths(url, serverID), RTEditor.inst.ProgressPopup.UpdateProgress,
-                json =>
+            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadJSONFile(RTFile.CombinePaths(url, serverID),
+                callback: json =>
                 {
                     RTEditor.inst.ProgressPopup.Close();
                     EditorManager.inst.DisplayNotification($"Item is on server! {serverID}", 3f, EditorManager.NotificationType.Success);
                     onVerify?.Invoke(true);
                 },
-                (string onError, long responseCode, string errorMsg) =>
+                percentage: RTEditor.inst.ProgressPopup.UpdateProgress,
+                onError: (string onError, long responseCode, string errorMsg) =>
                 {
                     RTEditor.inst.ProgressPopup.Close();
                     switch (responseCode)
@@ -706,7 +691,8 @@ namespace BetterLegacy.Editor.Managers
 
                     if (errorMsg != null)
                         CoreHelper.LogError($"Error Message: {errorMsg}");
-                }, headers));
+                },
+                headers: AlephNetwork.GetUserHeaders()));
         }
 
         /// <summary>
@@ -725,19 +711,13 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            var headers = new Dictionary<string, string>();
-            if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null)
-                headers["Authorization"] = $"Bearer {LegacyPlugin.authData["access_token"].Value}";
-
             RTEditor.inst.ProgressPopup.Text = $"Pulling {serverID} from the server, please wait...";
             RTEditor.inst.ProgressPopup.Open();
 
-            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadJSONFile(RTFile.CombinePaths(url, serverID), RTEditor.inst.ProgressPopup.UpdateProgress,
-                json =>
-                {
-                    pull.Invoke(JSON.Parse(json));
-                },
-                (string onError, long responseCode, string errorMsg) =>
+            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadJSONFile(RTFile.CombinePaths(url, serverID),
+                callback: json => pull.Invoke(JSON.Parse(json)),
+                percentage: RTEditor.inst.ProgressPopup.UpdateProgress,
+                onError: (string onError, long responseCode, string errorMsg) =>
                 {
                     RTEditor.inst.ProgressPopup.Close();
                     switch (responseCode)
@@ -763,7 +743,8 @@ namespace BetterLegacy.Editor.Managers
 
                     if (errorMsg != null)
                         CoreHelper.LogError($"Error Message: {errorMsg}");
-                }, headers));
+                },
+                headers: AlephNetwork.GetUserHeaders()));
         }
 
         /// <summary>
@@ -1534,156 +1515,157 @@ namespace BetterLegacy.Editor.Managers
             Dialog.PageField.SetTextWithoutNotify(settings.page.ToString());
             Dialog.UploadedToggle.SetIsOnWithoutNotify(settings.uploaded);
 
-            string query = AlephNetwork.BuildQuery(SearchURL, Dialog.SearchTerm, settings.page, settings.sort, settings.ascend);
+            string query = LinkQuery.BuildQuery(SearchURL, Dialog.SearchTerm, settings.page, settings.sort, settings.ascend);
 
             CoreHelper.Log($"Search query: {query}");
 
-            var headers = new Dictionary<string, string>();
-			if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null)
-				headers["Authorization"] = $"Bearer {LegacyPlugin.authData["access_token"].Value}";
+			yield return CoroutineHelper.StartCoroutine(AlephNetwork.DownloadJSONFile(query,
+                callback: json =>
+			    {
+				    try
+				    {
+					    var jn = JSON.Parse(json);
 
-			yield return CoroutineHelper.StartCoroutine(AlephNetwork.DownloadJSONFile(query, json =>
-			{
-				try
-				{
-					var jn = JSON.Parse(json);
+                        if (jn["items"] == null)
+                            return;
 
-                    if (jn["items"] == null)
-                        return;
-
-					for (int i = 0; i < jn["items"].Count; i++)
-                    {
-						var item = jn["items"][i];
-
-                        string id = item["id"];
-
-                        string artist = item["artist"];
-                        string title = item["title"];
-                        string name = item["name"];
-                        string creator = item["creator"];
-                        string description = item["description"];
-                        var difficulty = item["difficulty"].AsInt;
-                        string datePublished = item["datePublished"];
-                        string fileVersion = item["fileVersion"];
-                        string tags = item["tags"];
-
-                        if (id == null || id == "0")
-                            continue;
-
-                        var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(Dialog.Content, $"Folder [{name}]");
-                        var folderButtonStorage = gameObject.GetComponent<FunctionButtonStorage>();
-                        var folderButtonFunction = gameObject.AddComponent<FolderButtonFunction>();
-
-                        folderButtonStorage.Text =
-                            $"<b>Name</b>: {name}\n" +
-                            $"<b>Song</b>: {artist} - {title}\n" +
-                            $"<b>Description</b>:\n{description}";
-                        RectValues.FullAnchored.AnchorMin(0.15f, 0f).SizeDelta(-32f, -8f).AssignToRectTransform(folderButtonStorage.label.rectTransform);
-
-                        gameObject.transform.AsRT().sizeDelta = new Vector2(0f, 200f);
-
-                        TooltipHelper.AddHoverTooltip(gameObject, name,
-                            $"ID: {id}\n" +
-                            $"Tags: {tags}\n" +
-                            $"Creator: {creator}\n" +
-                            $"Difficulty {(DifficultyType)difficulty}\n" +
-                            $"Date Published: {datePublished}\n" +
-                            $"File Version: {fileVersion}\n" +
-                            $"Upload Version: {item["versionNumber"].AsInt}");
-
-                        //folderButtonStorage.text.horizontalOverflow = horizontalOverflow;
-                        //folderButtonStorage.text.verticalOverflow = verticalOverflow;
-                        //folderButtonStorage.text.fontSize = fontSize;
-
-                        folderButtonStorage.OnClick.ClearAll();
-                        folderButtonFunction.onClick = pointerEventData =>
+					    for (int i = 0; i < jn["items"].Count; i++)
                         {
-                            if (pointerEventData.button == PointerEventData.InputButton.Right)
+						    var item = jn["items"][i];
+
+                            string id = item["id"];
+
+                            string artist = item["artist"];
+                            string title = item["title"];
+                            string name = item["name"];
+                            string creator = item["creator"];
+                            string description = item["description"];
+                            var difficulty = item["difficulty"].AsInt;
+                            string datePublished = item["datePublished"];
+                            string fileVersion = item["fileVersion"];
+                            string tags = item["tags"];
+
+                            if (id == null || id == "0")
+                                continue;
+
+                            var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(Dialog.Content, $"Folder [{name}]");
+                            var folderButtonStorage = gameObject.GetComponent<FunctionButtonStorage>();
+                            var folderButtonFunction = gameObject.AddComponent<FolderButtonFunction>();
+
+                            folderButtonStorage.Text =
+                                $"<b>Name</b>: {name}\n" +
+                                $"<b>Song</b>: {artist} - {title}\n" +
+                                $"<b>Description</b>:\n{description}";
+                            RectValues.FullAnchored.AnchorMin(0.15f, 0f).SizeDelta(-32f, -8f).AssignToRectTransform(folderButtonStorage.label.rectTransform);
+
+                            gameObject.transform.AsRT().sizeDelta = new Vector2(0f, 200f);
+
+                            TooltipHelper.AddHoverTooltip(gameObject, name,
+                                $"ID: {id}\n" +
+                                $"Tags: {tags}\n" +
+                                $"Creator: {creator}\n" +
+                                $"Difficulty {(DifficultyType)difficulty}\n" +
+                                $"Date Published: {datePublished}\n" +
+                                $"File Version: {fileVersion}\n" +
+                                $"Upload Version: {item["versionNumber"].AsInt}");
+
+                            //folderButtonStorage.text.horizontalOverflow = horizontalOverflow;
+                            //folderButtonStorage.text.verticalOverflow = verticalOverflow;
+                            //folderButtonStorage.text.fontSize = fontSize;
+
+                            folderButtonStorage.OnClick.ClearAll();
+                            folderButtonFunction.onClick = pointerEventData =>
                             {
-                                EditorContextMenu.inst.ShowContextMenu(
-                                    new ButtonElement("Download", () => DownloadLevel(item)),
-                                    new SpacerElement(),
-                                    new ButtonElement("Copy Server ID", () =>
+                                if (pointerEventData.button == PointerEventData.InputButton.Right)
+                                {
+                                    EditorContextMenu.inst.ShowContextMenu(
+                                        new ButtonElement("Download", () => DownloadLevel(item)),
+                                        new SpacerElement(),
+                                        new ButtonElement("Copy Server ID", () =>
+                                        {
+                                            LSText.CopyToClipboard(id);
+                                            EditorManager.inst.DisplayNotification($"Copied ID: {id} to your clipboard!", 1.5f, EditorManager.NotificationType.Success);
+                                        }));
+                                    return;
+                                }
+
+                                RTEditor.inst.ShowWarningPopup("Are you sure you want to download this Level to your editor folder?", () => DownloadLevel(item));
+                            };
+
+                            EditorThemeManager.ApplySelectable(folderButtonStorage.button, ThemeGroup.List_Button_1);
+                            EditorThemeManager.ApplyLightText(folderButtonStorage.label);
+
+                            var iconBase = Creator.NewUIObject("icon base", gameObject.transform);
+                            var iconBaseImage = iconBase.AddComponent<Image>();
+                            iconBase.AddComponent<Mask>().showMaskGraphic = false;
+                            iconBase.transform.AsRT().anchoredPosition = new Vector2(-300f, 32f);
+                            iconBase.transform.AsRT().sizeDelta = new Vector2(90f, 90f);
+                            EditorThemeManager.ApplyGraphic(iconBaseImage, ThemeGroup.Null, true);
+
+                            var icon = Creator.NewUIObject("icon", iconBase.transform);
+                            var iconImage = icon.AddComponent<Image>();
+
+                            icon.transform.AsRT().anchoredPosition = Vector3.zero;
+                            icon.transform.AsRT().sizeDelta = new Vector2(90f, 90f);
+
+                            if (OnlineIcons.TryGetValue(id, out Sprite sprite))
+                                iconImage.sprite = sprite;
+                            else
+                            {
+                                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.LevelCoverURL}{id}{FileFormat.JPG.Dot()}?r" + UnityRandom.Range(0, int.MaxValue),
+                                    callback: bytes =>
                                     {
-                                        LSText.CopyToClipboard(id);
-                                        EditorManager.inst.DisplayNotification($"Copied ID: {id} to your clipboard!", 1.5f, EditorManager.NotificationType.Success);
+                                        var sprite = SpriteHelper.LoadSprite(bytes);
+                                        OnlineIcons[id] = sprite;
+                                        if (iconImage)
+                                            iconImage.sprite = sprite;
+                                    },
+                                    onError: (string onError, long responseCode, string errorMsg) =>
+                                    {
+                                        var sprite = LegacyPlugin.AtanPlaceholder;
+                                        OnlineIcons[id] = sprite;
+                                        if (iconImage)
+                                            iconImage.sprite = sprite;
                                     }));
-                                return;
                             }
 
-                            RTEditor.inst.ShowWarningPopup("Are you sure you want to download this Level to your editor folder?", () => DownloadLevel(item));
-                        };
-
-                        EditorThemeManager.ApplySelectable(folderButtonStorage.button, ThemeGroup.List_Button_1);
-                        EditorThemeManager.ApplyLightText(folderButtonStorage.label);
-
-                        var iconBase = Creator.NewUIObject("icon base", gameObject.transform);
-                        var iconBaseImage = iconBase.AddComponent<Image>();
-                        iconBase.AddComponent<Mask>().showMaskGraphic = false;
-                        iconBase.transform.AsRT().anchoredPosition = new Vector2(-300f, 32f);
-                        iconBase.transform.AsRT().sizeDelta = new Vector2(90f, 90f);
-                        EditorThemeManager.ApplyGraphic(iconBaseImage, ThemeGroup.Null, true);
-
-                        var icon = Creator.NewUIObject("icon", iconBase.transform);
-                        var iconImage = icon.AddComponent<Image>();
-
-                        icon.transform.AsRT().anchoredPosition = Vector3.zero;
-                        icon.transform.AsRT().sizeDelta = new Vector2(90f, 90f);
-
-                        if (OnlineIcons.TryGetValue(id, out Sprite sprite))
-                            iconImage.sprite = sprite;
-                        else
-                        {
-                            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.LevelCoverURL}{id}{FileFormat.JPG.Dot()}?r" + UnityRandom.Range(0, int.MaxValue), bytes =>
-                            {
-                                var sprite = SpriteHelper.LoadSprite(bytes);
-                                OnlineIcons[id] = sprite;
-                                if (iconImage)
-                                    iconImage.sprite = sprite;
-                            }, onError =>
-                            {
-                                var sprite = LegacyPlugin.AtanPlaceholder;
-                                OnlineIcons[id] = sprite;
-                                if (iconImage)
-                                    iconImage.sprite = sprite;
-                            }));
                         }
 
+					    if (jn["count"] != null)
+                            itemCount = jn["count"].AsInt;
+				    }
+				    catch (Exception ex)
+				    {
+					    CoreHelper.LogException(ex);
+				    }
+			    },
+                onError: (string onError, long responseCode, string errorMsg) =>
+                {
+                    switch (responseCode)
+                    {
+                        case 404: {
+                                EditorManager.inst.DisplayNotification("404 not found.", 2f, EditorManager.NotificationType.Error);
+                                return;
+                            }
+                        case 401: {
+                                if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null && LegacyPlugin.authData["refresh_token"] != null)
+                                {
+                                    CoroutineHelper.StartCoroutine(RefreshTokens(Search));
+                                    return;
+                                }
+                                ShowLoginPopup(Search);
+                                break;
+                            }
+                        default: {
+                                EditorManager.inst.DisplayNotification($"Level search failed. Error code: {onError}", 2f, EditorManager.NotificationType.Error);
+                                break;
+                            }
                     }
 
-					if (jn["count"] != null)
-                        itemCount = jn["count"].AsInt;
-				}
-				catch (Exception ex)
-				{
-					CoreHelper.LogException(ex);
-				}
-			}, (string onError, long responseCode, string errorMsg) =>
-            {
-                switch (responseCode)
-                {
-                    case 404: {
-                            EditorManager.inst.DisplayNotification("404 not found.", 2f, EditorManager.NotificationType.Error);
-                            return;
-                        }
-                    case 401: {
-                            if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null && LegacyPlugin.authData["refresh_token"] != null)
-                            {
-                                CoroutineHelper.StartCoroutine(RefreshTokens(Search));
-                                return;
-                            }
-                            ShowLoginPopup(Search);
-                            break;
-                        }
-                    default: {
-                            EditorManager.inst.DisplayNotification($"Level search failed. Error code: {onError}", 2f, EditorManager.NotificationType.Error);
-                            break;
-                        }
-                }
-
-                if (errorMsg != null)
-                    CoreHelper.LogError($"Error Message: {errorMsg}");
-            }, headers));
+                    if (errorMsg != null)
+                        CoreHelper.LogError($"Error Message: {errorMsg}");
+                },
+                headers: AlephNetwork.GetUserHeaders()));
 
 			loadingOnlineLevels = false;
 		}
@@ -1722,28 +1704,31 @@ namespace BetterLegacy.Editor.Managers
                 RTEditor.inst.ProgressPopup.Open();
             RTEditor.inst.ProgressPopup.Text = "Downloading level, please wait...";
 
-            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.LevelDownloadURL}{id}.zip?r" + UnityRandom.Range(0, int.MaxValue), RTEditor.inst.ProgressPopup.UpdateProgress, bytes =>
-            {
-                RTFile.DeleteDirectory(directory);
-                Directory.CreateDirectory(directory);
+            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.LevelDownloadURL}{id}.zip?r" + UnityRandom.Range(0, int.MaxValue),
+                callback: bytes =>
+                {
+                    RTFile.DeleteDirectory(directory);
+                    Directory.CreateDirectory(directory);
 
-                File.WriteAllBytes($"{directory}{FileFormat.ZIP.Dot()}", bytes);
+                    File.WriteAllBytes($"{directory}{FileFormat.ZIP.Dot()}", bytes);
 
-                ZipFile.ExtractToDirectory($"{directory}{FileFormat.ZIP.Dot()}", directory);
+                    ZipFile.ExtractToDirectory($"{directory}{FileFormat.ZIP.Dot()}", directory);
 
-                File.Delete($"{directory}{FileFormat.ZIP.Dot()}");
+                    File.Delete($"{directory}{FileFormat.ZIP.Dot()}");
 
-                EditorLevelManager.inst.LoadLevels();
-                EditorManager.inst.DisplayNotification($"Downloaded {name}!", 1.5f, EditorManager.NotificationType.Success);
+                    EditorLevelManager.inst.LoadLevels();
+                    EditorManager.inst.DisplayNotification($"Downloaded {name}!", 1.5f, EditorManager.NotificationType.Success);
 
-                onDownload?.Invoke();
-                RTEditor.inst.ProgressPopup.Close();
-            }, onError =>
-            {
-                EditorManager.inst.DisplayNotification($"Failed to download {name}.", 1.5f, EditorManager.NotificationType.Error);
-                CoreHelper.LogError($"OnError: {onError}");
-                RTEditor.inst.ProgressPopup.Close();
-            }));
+                    onDownload?.Invoke();
+                    RTEditor.inst.ProgressPopup.Close();
+                },
+                percentage: RTEditor.inst.ProgressPopup.UpdateProgress,
+                onError: (string onError, long responseCode, string errorMsg) =>
+                {
+                    EditorManager.inst.DisplayNotification($"Failed to download {name}.", 1.5f, EditorManager.NotificationType.Error);
+                    CoreHelper.LogError($"OnError: {onError}");
+                    RTEditor.inst.ProgressPopup.Close();
+                }));
         }
 
         IEnumerator GetLevelCollections()
@@ -1760,153 +1745,154 @@ namespace BetterLegacy.Editor.Managers
             Dialog.PageField.SetTextWithoutNotify(settings.page.ToString());
             Dialog.UploadedToggle.SetIsOnWithoutNotify(settings.uploaded);
 
-            string query = AlephNetwork.BuildQuery(SearchURL, Dialog.SearchTerm, settings.page, settings.sort, settings.ascend);
+            string query = LinkQuery.BuildQuery(SearchURL, Dialog.SearchTerm, settings.page, settings.sort, settings.ascend);
 
             CoreHelper.Log($"Search query: {query}");
 
-            var headers = new Dictionary<string, string>();
-			if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null)
-				headers["Authorization"] = $"Bearer {LegacyPlugin.authData["access_token"].Value}";
+			yield return CoroutineHelper.StartCoroutine(AlephNetwork.DownloadJSONFile(query,
+                callback: json =>
+			    {
+				    try
+				    {
+					    var jn = JSON.Parse(json);
 
-			yield return CoroutineHelper.StartCoroutine(AlephNetwork.DownloadJSONFile(query, json =>
-			{
-				try
-				{
-					var jn = JSON.Parse(json);
+                        if (jn["items"] == null)
+                            return;
 
-                    if (jn["items"] == null)
-                        return;
-
-					for (int i = 0; i < jn["items"].Count; i++)
-                    {
-						var item = jn["items"][i];
-
-                        string id = item["id"];
-
-                        string name = item["name"];
-                        string creator = item["creator"];
-                        string description = item["description"];
-                        var difficulty = item["difficulty"].AsInt;
-                        string datePublished = item["datePublished"];
-                        string fileVersion = item["fileVersion"];
-                        string tags = item["tags"];
-
-                        if (id == null || id == "0")
-                            continue;
-
-                        var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(Dialog.Content, $"Folder [{name}]");
-                        var folderButtonStorage = gameObject.GetComponent<FunctionButtonStorage>();
-                        var folderButtonFunction = gameObject.AddComponent<FolderButtonFunction>();
-
-                        folderButtonStorage.Text =
-                            $"<b>Name</b>: {name}\n" +
-                            $"<b>Description</b>:\n{description}";
-                        RectValues.FullAnchored.AnchorMin(0.15f, 0f).SizeDelta(-32f, -8f).AssignToRectTransform(folderButtonStorage.label.rectTransform);
-
-                        gameObject.transform.AsRT().sizeDelta = new Vector2(0f, 200f);
-
-                        TooltipHelper.AddHoverTooltip(gameObject, name,
-                            $"ID: {id}\n" +
-                            $"Tags: {tags}\n" +
-                            $"Creator: {creator}\n" +
-                            $"Difficulty {(DifficultyType)difficulty}\n" +
-                            $"Date Published: {datePublished}\n" +
-                            $"File Version: {fileVersion}\n" +
-                            $"Upload Version: {item["versionNumber"].AsInt}");
-
-                        //folderButtonStorage.text.horizontalOverflow = horizontalOverflow;
-                        //folderButtonStorage.text.verticalOverflow = verticalOverflow;
-                        //folderButtonStorage.text.fontSize = fontSize;
-
-                        folderButtonStorage.OnClick.ClearAll();
-                        folderButtonFunction.onClick = pointerEventData =>
+					    for (int i = 0; i < jn["items"].Count; i++)
                         {
-                            if (pointerEventData.button == PointerEventData.InputButton.Right)
+						    var item = jn["items"][i];
+
+                            string id = item["id"];
+
+                            string name = item["name"];
+                            string creator = item["creator"];
+                            string description = item["description"];
+                            var difficulty = item["difficulty"].AsInt;
+                            string datePublished = item["datePublished"];
+                            string fileVersion = item["fileVersion"];
+                            string tags = item["tags"];
+
+                            if (id == null || id == "0")
+                                continue;
+
+                            var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(Dialog.Content, $"Folder [{name}]");
+                            var folderButtonStorage = gameObject.GetComponent<FunctionButtonStorage>();
+                            var folderButtonFunction = gameObject.AddComponent<FolderButtonFunction>();
+
+                            folderButtonStorage.Text =
+                                $"<b>Name</b>: {name}\n" +
+                                $"<b>Description</b>:\n{description}";
+                            RectValues.FullAnchored.AnchorMin(0.15f, 0f).SizeDelta(-32f, -8f).AssignToRectTransform(folderButtonStorage.label.rectTransform);
+
+                            gameObject.transform.AsRT().sizeDelta = new Vector2(0f, 200f);
+
+                            TooltipHelper.AddHoverTooltip(gameObject, name,
+                                $"ID: {id}\n" +
+                                $"Tags: {tags}\n" +
+                                $"Creator: {creator}\n" +
+                                $"Difficulty {(DifficultyType)difficulty}\n" +
+                                $"Date Published: {datePublished}\n" +
+                                $"File Version: {fileVersion}\n" +
+                                $"Upload Version: {item["versionNumber"].AsInt}");
+
+                            //folderButtonStorage.text.horizontalOverflow = horizontalOverflow;
+                            //folderButtonStorage.text.verticalOverflow = verticalOverflow;
+                            //folderButtonStorage.text.fontSize = fontSize;
+
+                            folderButtonStorage.OnClick.ClearAll();
+                            folderButtonFunction.onClick = pointerEventData =>
                             {
-                                EditorContextMenu.inst.ShowContextMenu(
-                                    new ButtonElement("Download", () => DownloadLevelCollection(item)),
-                                    new SpacerElement(),
-                                    new ButtonElement("Copy Server ID", () =>
+                                if (pointerEventData.button == PointerEventData.InputButton.Right)
+                                {
+                                    EditorContextMenu.inst.ShowContextMenu(
+                                        new ButtonElement("Download", () => DownloadLevelCollection(item)),
+                                        new SpacerElement(),
+                                        new ButtonElement("Copy Server ID", () =>
+                                        {
+                                            LSText.CopyToClipboard(id);
+                                            EditorManager.inst.DisplayNotification($"Copied ID: {id} to your clipboard!", 1.5f, EditorManager.NotificationType.Success);
+                                        }));
+                                    return;
+                                }
+
+                                RTEditor.inst.ShowWarningPopup("Are you sure you want to download this Level Collection to your editor folder?", () => DownloadLevelCollection(item));
+                            };
+
+                            EditorThemeManager.ApplySelectable(folderButtonStorage.button, ThemeGroup.List_Button_1);
+                            EditorThemeManager.ApplyLightText(folderButtonStorage.label);
+
+                            var iconBase = Creator.NewUIObject("icon base", gameObject.transform);
+                            var iconBaseImage = iconBase.AddComponent<Image>();
+                            iconBase.AddComponent<Mask>().showMaskGraphic = false;
+                            iconBase.transform.AsRT().anchoredPosition = new Vector2(-300f, 32f);
+                            iconBase.transform.AsRT().sizeDelta = new Vector2(90f, 90f);
+                            EditorThemeManager.ApplyGraphic(iconBaseImage, ThemeGroup.Null, true);
+
+                            var icon = Creator.NewUIObject("icon", iconBase.transform);
+                            var iconImage = icon.AddComponent<Image>();
+
+                            icon.transform.AsRT().anchoredPosition = Vector3.zero;
+                            icon.transform.AsRT().sizeDelta = new Vector2(90f, 90f);
+
+                            if (OnlineIcons.TryGetValue(id, out Sprite sprite))
+                                iconImage.sprite = sprite;
+                            else
+                            {
+                                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.LevelCollectionCoverURL}{id}{FileFormat.JPG.Dot()}r?" + UnityRandom.Range(0, int.MaxValue),
+                                    callback: bytes =>
                                     {
-                                        LSText.CopyToClipboard(id);
-                                        EditorManager.inst.DisplayNotification($"Copied ID: {id} to your clipboard!", 1.5f, EditorManager.NotificationType.Success);
+                                        var sprite = SpriteHelper.LoadSprite(bytes);
+                                        OnlineIcons[id] = sprite;
+                                        if (iconImage)
+                                            iconImage.sprite = sprite;
+                                    },
+                                    onError: (string onError, long responseCode, string errorMsg) =>
+                                    {
+                                        var sprite = LegacyPlugin.AtanPlaceholder;
+                                        OnlineIcons[id] = sprite;
+                                        if (iconImage)
+                                            iconImage.sprite = sprite;
                                     }));
-                                return;
                             }
 
-                            RTEditor.inst.ShowWarningPopup("Are you sure you want to download this Level Collection to your editor folder?", () => DownloadLevelCollection(item));
-                        };
-
-                        EditorThemeManager.ApplySelectable(folderButtonStorage.button, ThemeGroup.List_Button_1);
-                        EditorThemeManager.ApplyLightText(folderButtonStorage.label);
-
-                        var iconBase = Creator.NewUIObject("icon base", gameObject.transform);
-                        var iconBaseImage = iconBase.AddComponent<Image>();
-                        iconBase.AddComponent<Mask>().showMaskGraphic = false;
-                        iconBase.transform.AsRT().anchoredPosition = new Vector2(-300f, 32f);
-                        iconBase.transform.AsRT().sizeDelta = new Vector2(90f, 90f);
-                        EditorThemeManager.ApplyGraphic(iconBaseImage, ThemeGroup.Null, true);
-
-                        var icon = Creator.NewUIObject("icon", iconBase.transform);
-                        var iconImage = icon.AddComponent<Image>();
-
-                        icon.transform.AsRT().anchoredPosition = Vector3.zero;
-                        icon.transform.AsRT().sizeDelta = new Vector2(90f, 90f);
-
-                        if (OnlineIcons.TryGetValue(id, out Sprite sprite))
-                            iconImage.sprite = sprite;
-                        else
-                        {
-                            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.LevelCollectionCoverURL}{id}{FileFormat.JPG.Dot()}r?" + UnityRandom.Range(0, int.MaxValue), bytes =>
-                            {
-                                var sprite = SpriteHelper.LoadSprite(bytes);
-                                OnlineIcons[id] = sprite;
-                                if (iconImage)
-                                    iconImage.sprite = sprite;
-                            }, onError =>
-                            {
-                                var sprite = LegacyPlugin.AtanPlaceholder;
-                                OnlineIcons[id] = sprite;
-                                if (iconImage)
-                                    iconImage.sprite = sprite;
-                            }));
                         }
 
+					    if (jn["count"] != null)
+                            itemCount = jn["count"].AsInt;
+				    }
+				    catch (Exception ex)
+				    {
+					    CoreHelper.LogException(ex);
+				    }
+			    },
+                onError: (string onError, long responseCode, string errorMsg) =>
+                {
+                    switch (responseCode)
+                    {
+                        case 404: {
+                                EditorManager.inst.DisplayNotification("404 not found.", 2f, EditorManager.NotificationType.Error);
+                                return;
+                            }
+                        case 401: {
+                                if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null && LegacyPlugin.authData["refresh_token"] != null)
+                                {
+                                    CoroutineHelper.StartCoroutine(RefreshTokens(Search));
+                                    return;
+                                }
+                                ShowLoginPopup(Search);
+                                break;
+                            }
+                        default: {
+                                EditorManager.inst.DisplayNotification($"Level search failed. Error code: {onError}", 2f, EditorManager.NotificationType.Error);
+                                break;
+                            }
                     }
 
-					if (jn["count"] != null)
-                        itemCount = jn["count"].AsInt;
-				}
-				catch (Exception ex)
-				{
-					CoreHelper.LogException(ex);
-				}
-			}, (string onError, long responseCode, string errorMsg) =>
-            {
-                switch (responseCode)
-                {
-                    case 404: {
-                            EditorManager.inst.DisplayNotification("404 not found.", 2f, EditorManager.NotificationType.Error);
-                            return;
-                        }
-                    case 401: {
-                            if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null && LegacyPlugin.authData["refresh_token"] != null)
-                            {
-                                CoroutineHelper.StartCoroutine(RefreshTokens(Search));
-                                return;
-                            }
-                            ShowLoginPopup(Search);
-                            break;
-                        }
-                    default: {
-                            EditorManager.inst.DisplayNotification($"Level search failed. Error code: {onError}", 2f, EditorManager.NotificationType.Error);
-                            break;
-                        }
-                }
-
-                if (errorMsg != null)
-                    CoreHelper.LogError($"Error Message: {errorMsg}");
-            }, headers));
+                    if (errorMsg != null)
+                        CoreHelper.LogError($"Error Message: {errorMsg}");
+                },
+                headers: AlephNetwork.GetUserHeaders()));
 
 			loadingOnlineLevels = false;
         }
@@ -1945,28 +1931,31 @@ namespace BetterLegacy.Editor.Managers
                 RTEditor.inst.ProgressPopup.Open();
             RTEditor.inst.ProgressPopup.Text = "Downloading level collection, please wait...";
 
-            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.LevelCollectionDownloadURL}{id}.zip?r" + UnityRandom.Range(0, int.MaxValue), RTEditor.inst.ProgressPopup.UpdateProgress, bytes =>
-            {
-                RTFile.DeleteDirectory(directory);
-                Directory.CreateDirectory(directory);
+            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.LevelCollectionDownloadURL}{id}.zip?r" + UnityRandom.Range(0, int.MaxValue),
+                callback: bytes =>
+                {
+                    RTFile.DeleteDirectory(directory);
+                    Directory.CreateDirectory(directory);
 
-                File.WriteAllBytes($"{directory}{FileFormat.ZIP.Dot()}", bytes);
+                    File.WriteAllBytes($"{directory}{FileFormat.ZIP.Dot()}", bytes);
 
-                ZipFile.ExtractToDirectory($"{directory}{FileFormat.ZIP.Dot()}", directory);
+                    ZipFile.ExtractToDirectory($"{directory}{FileFormat.ZIP.Dot()}", directory);
 
-                File.Delete($"{directory}{FileFormat.ZIP.Dot()}");
+                    File.Delete($"{directory}{FileFormat.ZIP.Dot()}");
 
-                EditorLevelManager.inst.LoadLevelCollections();
-                EditorManager.inst.DisplayNotification($"Downloaded {name}!", 1.5f, EditorManager.NotificationType.Success);
+                    EditorLevelManager.inst.LoadLevelCollections();
+                    EditorManager.inst.DisplayNotification($"Downloaded {name}!", 1.5f, EditorManager.NotificationType.Success);
 
-                onDownload?.Invoke();
-                RTEditor.inst.ProgressPopup.Close();
-            }, onError =>
-            {
-                EditorManager.inst.DisplayNotification($"Failed to download {name}.", 1.5f, EditorManager.NotificationType.Error);
-                CoreHelper.LogError($"OnError: {onError}");
-                RTEditor.inst.ProgressPopup.Close();
-            }));
+                    onDownload?.Invoke();
+                    RTEditor.inst.ProgressPopup.Close();
+                },
+                percentage: RTEditor.inst.ProgressPopup.UpdateProgress,
+                onError: (string onError, long responseCode, string errorMsg) =>
+                {
+                    EditorManager.inst.DisplayNotification($"Failed to download {name}.", 1.5f, EditorManager.NotificationType.Error);
+                    CoreHelper.LogError($"OnError: {onError}");
+                    RTEditor.inst.ProgressPopup.Close();
+                }));
         }
 
         IEnumerator GetPrefabs()
@@ -1983,171 +1972,172 @@ namespace BetterLegacy.Editor.Managers
             Dialog.PageField.SetTextWithoutNotify(settings.page.ToString());
             Dialog.UploadedToggle.SetIsOnWithoutNotify(settings.uploaded);
 
-            string query = AlephNetwork.BuildQuery(SearchURL, Dialog.SearchTerm, settings.page, settings.sort, settings.ascend);
+            string query = LinkQuery.BuildQuery(SearchURL, Dialog.SearchTerm, settings.page, settings.sort, settings.ascend);
 
             CoreHelper.Log($"Search query: {query}");
 
-            var headers = new Dictionary<string, string>();
-			if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null)
-				headers["Authorization"] = $"Bearer {LegacyPlugin.authData["access_token"].Value}";
+			yield return CoroutineHelper.StartCoroutine(AlephNetwork.DownloadJSONFile(query,
+                callback: json =>
+			    {
+				    try
+				    {
+					    var jn = JSON.Parse(json);
 
-			yield return CoroutineHelper.StartCoroutine(AlephNetwork.DownloadJSONFile(query, json =>
-			{
-				try
-				{
-					var jn = JSON.Parse(json);
+                        if (jn["items"] == null)
+                            return;
 
-                    if (jn["items"] == null)
-                        return;
-
-					for (int i = 0; i < jn["items"].Count; i++)
-                    {
-						var item = jn["items"][i];
-
-                        string id = item["id"];
-
-                        string name = item["name"];
-                        string creator = item["creator"];
-                        string description = item["description"];
-                        string typeName = item["typeName"];
-                        int typeColor = item["typeColor"].AsInt;
-                        string datePublished = item["datePublished"];
-                        string fileVersion = item["fileVersion"];
-                        string tags = item["tags"];
-
-                        if (id == null || id == "0")
-                            continue;
-
-                        var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(Dialog.Content, $"Folder [{name}]");
-                        var folderButtonStorage = gameObject.GetComponent<FunctionButtonStorage>();
-                        var folderButtonFunction = gameObject.AddComponent<FolderButtonFunction>();
-
-                        folderButtonStorage.Text =
-                            $"<b>Name</b>: {name}\n" +
-                            $"<b>Type</b>: {typeName}\n" +
-                            $"<b>Creator</b>: {creator}\n" +
-                            $"<b>Description</b>:\n{description}";
-                        RectValues.FullAnchored.AnchorMin(0.15f, 0f).SizeDelta(-32f, -8f).AssignToRectTransform(folderButtonStorage.label.rectTransform);
-
-                        gameObject.transform.AsRT().sizeDelta = new Vector2(0f, 200f);
-
-                        TooltipHelper.AddHoverTooltip(gameObject, name,
-                            $"ID: {id}\n" +
-                            $"Tags: {tags}\n" +
-                            $"Creator: {creator}\n" +
-                            $"Date Published: {datePublished}\n" +
-                            $"Upload Version: {fileVersion}\n" +
-                            $"File Version: {fileVersion}\n" +
-                            $"Upload Version: {item["versionNumber"].AsInt}\n" +
-                            $"Object Count: {item["beatmapObjectCount"].AsInt}\n" +
-                            $"Background Layer Count: {item["backgroundLayerCount"].AsInt}\n" +
-                            $"Background Object Count: {item["backgroundObjectCount"].AsInt}\n" +
-                            $"Prefab Object Count: {item["prefabObjectCount"].AsInt}\n" +
-                            $"Prefab Count: {item["prefabCount"].AsInt}\n" +
-                            $"Beatmap Theme Count: {item["beatmapThemeCount"].AsInt}\n" +
-                            $"Modifier Block Count: {item["modifierBlockCount"].AsInt}");
-
-                        //folderButtonStorage.text.horizontalOverflow = horizontalOverflow;
-                        //folderButtonStorage.text.verticalOverflow = verticalOverflow;
-                        //folderButtonStorage.text.fontSize = fontSize;
-
-                        folderButtonStorage.OnClick.ClearAll();
-                        folderButtonFunction.onClick = pointerEventData =>
+					    for (int i = 0; i < jn["items"].Count; i++)
                         {
-                            if (pointerEventData.button == PointerEventData.InputButton.Right)
+						    var item = jn["items"][i];
+
+                            string id = item["id"];
+
+                            string name = item["name"];
+                            string creator = item["creator"];
+                            string description = item["description"];
+                            string typeName = item["typeName"];
+                            int typeColor = item["typeColor"].AsInt;
+                            string datePublished = item["datePublished"];
+                            string fileVersion = item["fileVersion"];
+                            string tags = item["tags"];
+
+                            if (id == null || id == "0")
+                                continue;
+
+                            var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(Dialog.Content, $"Folder [{name}]");
+                            var folderButtonStorage = gameObject.GetComponent<FunctionButtonStorage>();
+                            var folderButtonFunction = gameObject.AddComponent<FolderButtonFunction>();
+
+                            folderButtonStorage.Text =
+                                $"<b>Name</b>: {name}\n" +
+                                $"<b>Type</b>: {typeName}\n" +
+                                $"<b>Creator</b>: {creator}\n" +
+                                $"<b>Description</b>:\n{description}";
+                            RectValues.FullAnchored.AnchorMin(0.15f, 0f).SizeDelta(-32f, -8f).AssignToRectTransform(folderButtonStorage.label.rectTransform);
+
+                            gameObject.transform.AsRT().sizeDelta = new Vector2(0f, 200f);
+
+                            TooltipHelper.AddHoverTooltip(gameObject, name,
+                                $"ID: {id}\n" +
+                                $"Tags: {tags}\n" +
+                                $"Creator: {creator}\n" +
+                                $"Date Published: {datePublished}\n" +
+                                $"Upload Version: {fileVersion}\n" +
+                                $"File Version: {fileVersion}\n" +
+                                $"Upload Version: {item["versionNumber"].AsInt}\n" +
+                                $"Object Count: {item["beatmapObjectCount"].AsInt}\n" +
+                                $"Background Layer Count: {item["backgroundLayerCount"].AsInt}\n" +
+                                $"Background Object Count: {item["backgroundObjectCount"].AsInt}\n" +
+                                $"Prefab Object Count: {item["prefabObjectCount"].AsInt}\n" +
+                                $"Prefab Count: {item["prefabCount"].AsInt}\n" +
+                                $"Beatmap Theme Count: {item["beatmapThemeCount"].AsInt}\n" +
+                                $"Modifier Block Count: {item["modifierBlockCount"].AsInt}");
+
+                            //folderButtonStorage.text.horizontalOverflow = horizontalOverflow;
+                            //folderButtonStorage.text.verticalOverflow = verticalOverflow;
+                            //folderButtonStorage.text.fontSize = fontSize;
+
+                            folderButtonStorage.OnClick.ClearAll();
+                            folderButtonFunction.onClick = pointerEventData =>
                             {
-                                EditorContextMenu.inst.ShowContextMenu(
-                                    new ButtonElement("Download to External", () => DownloadPrefab(item, ObjectSource.External)),
-                                    new ButtonElement("Download to Internal", () => DownloadPrefab(item, ObjectSource.Internal)),
-                                    new SpacerElement(),
-                                    new ButtonElement("Copy Server ID", () =>
+                                if (pointerEventData.button == PointerEventData.InputButton.Right)
+                                {
+                                    EditorContextMenu.inst.ShowContextMenu(
+                                        new ButtonElement("Download to External", () => DownloadPrefab(item, ObjectSource.External)),
+                                        new ButtonElement("Download to Internal", () => DownloadPrefab(item, ObjectSource.Internal)),
+                                        new SpacerElement(),
+                                        new ButtonElement("Copy Server ID", () =>
+                                        {
+                                            LSText.CopyToClipboard(id);
+                                            EditorManager.inst.DisplayNotification($"Copied ID: {id} to your clipboard!", 1.5f, EditorManager.NotificationType.Success);
+                                        }));
+                                    return;
+                                }
+
+                                RTEditor.inst.ShowWarningPopup("Are you sure you want to download this Prefab to your editor folder?", () => DownloadPrefab(item));
+                            };
+
+                            EditorThemeManager.ApplySelectable(folderButtonStorage.button, ThemeGroup.List_Button_1);
+                            EditorThemeManager.ApplyLightText(folderButtonStorage.label);
+
+                            var type = Creator.NewUIObject("type", gameObject.transform);
+                            var typeImage = type.AddComponent<Image>();
+                            type.transform.AsRT().anchoredPosition = new Vector2(-300f, 32f);
+                            type.transform.AsRT().sizeDelta = new Vector2(100f, 100f);
+                            EditorThemeManager.ApplyGraphic(typeImage, ThemeGroup.Null, true);
+                            typeImage.color = RTColors.HexToColor(typeColor.ToString(RTColors.X6));
+
+                            var iconBase = Creator.NewUIObject("icon base", type.transform);
+                            var iconBaseImage = iconBase.AddComponent<Image>();
+                            iconBase.AddComponent<Mask>().showMaskGraphic = false;
+                            iconBase.transform.AsRT().anchoredPosition = new Vector2(0f, 0f);
+                            iconBase.transform.AsRT().sizeDelta = new Vector2(90f, 90f);
+                            EditorThemeManager.ApplyGraphic(iconBaseImage, ThemeGroup.Null, true);
+
+                            var icon = Creator.NewUIObject("icon", iconBase.transform);
+                            var iconImage = icon.AddComponent<Image>();
+
+                            icon.transform.AsRT().anchoredPosition = Vector3.zero;
+                            icon.transform.AsRT().sizeDelta = new Vector2(90f, 90f);
+
+                            if (OnlineIcons.TryGetValue(id, out Sprite sprite))
+                                iconImage.sprite = sprite;
+                            else
+                            {
+                                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.PrefabCoverURL}{id}{FileFormat.JPG.Dot()}?r" + UnityRandom.Range(0, int.MaxValue),
+                                    callback: bytes =>
                                     {
-                                        LSText.CopyToClipboard(id);
-                                        EditorManager.inst.DisplayNotification($"Copied ID: {id} to your clipboard!", 1.5f, EditorManager.NotificationType.Success);
+                                        var sprite = SpriteHelper.LoadSprite(bytes);
+                                        OnlineIcons[id] = sprite;
+                                        if (iconImage)
+                                            iconImage.sprite = sprite;
+                                    },
+                                    onError: (string onError, long responseCode, string errorMsg) =>
+                                    {
+                                        var sprite = LegacyPlugin.AtanPlaceholder;
+                                        OnlineIcons[id] = sprite;
+                                        if (iconImage)
+                                            iconImage.sprite = sprite;
                                     }));
-                                return;
                             }
 
-                            RTEditor.inst.ShowWarningPopup("Are you sure you want to download this Prefab to your editor folder?", () => DownloadPrefab(item));
-                        };
-
-                        EditorThemeManager.ApplySelectable(folderButtonStorage.button, ThemeGroup.List_Button_1);
-                        EditorThemeManager.ApplyLightText(folderButtonStorage.label);
-
-                        var type = Creator.NewUIObject("type", gameObject.transform);
-                        var typeImage = type.AddComponent<Image>();
-                        type.transform.AsRT().anchoredPosition = new Vector2(-300f, 32f);
-                        type.transform.AsRT().sizeDelta = new Vector2(100f, 100f);
-                        EditorThemeManager.ApplyGraphic(typeImage, ThemeGroup.Null, true);
-                        typeImage.color = RTColors.HexToColor(typeColor.ToString(RTColors.X6));
-
-                        var iconBase = Creator.NewUIObject("icon base", type.transform);
-                        var iconBaseImage = iconBase.AddComponent<Image>();
-                        iconBase.AddComponent<Mask>().showMaskGraphic = false;
-                        iconBase.transform.AsRT().anchoredPosition = new Vector2(0f, 0f);
-                        iconBase.transform.AsRT().sizeDelta = new Vector2(90f, 90f);
-                        EditorThemeManager.ApplyGraphic(iconBaseImage, ThemeGroup.Null, true);
-
-                        var icon = Creator.NewUIObject("icon", iconBase.transform);
-                        var iconImage = icon.AddComponent<Image>();
-
-                        icon.transform.AsRT().anchoredPosition = Vector3.zero;
-                        icon.transform.AsRT().sizeDelta = new Vector2(90f, 90f);
-
-                        if (OnlineIcons.TryGetValue(id, out Sprite sprite))
-                            iconImage.sprite = sprite;
-                        else
-                        {
-                            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.PrefabCoverURL}{id}{FileFormat.JPG.Dot()}?r" + UnityRandom.Range(0, int.MaxValue), bytes =>
-                            {
-                                var sprite = SpriteHelper.LoadSprite(bytes);
-                                OnlineIcons[id] = sprite;
-                                if (iconImage)
-                                    iconImage.sprite = sprite;
-                            }, onError =>
-                            {
-                                var sprite = LegacyPlugin.AtanPlaceholder;
-                                OnlineIcons[id] = sprite;
-                                if (iconImage)
-                                    iconImage.sprite = sprite;
-                            }));
                         }
 
+					    if (jn["count"] != null)
+                            itemCount = jn["count"].AsInt;
+				    }
+				    catch (Exception ex)
+				    {
+					    CoreHelper.LogException(ex);
+				    }
+			    },
+                onError: (string onError, long responseCode, string errorMsg) =>
+                {
+                    switch (responseCode)
+                    {
+                        case 404: {
+                                EditorManager.inst.DisplayNotification("404 not found.", 2f, EditorManager.NotificationType.Error);
+                                return;
+                            }
+                        case 401: {
+                                if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null && LegacyPlugin.authData["refresh_token"] != null)
+                                {
+                                    CoroutineHelper.StartCoroutine(RefreshTokens(Search));
+                                    return;
+                                }
+                                ShowLoginPopup(Search);
+                                break;
+                            }
+                        default: {
+                                EditorManager.inst.DisplayNotification($"Level search failed. Error code: {onError}", 2f, EditorManager.NotificationType.Error);
+                                break;
+                            }
                     }
 
-					if (jn["count"] != null)
-                        itemCount = jn["count"].AsInt;
-				}
-				catch (Exception ex)
-				{
-					CoreHelper.LogException(ex);
-				}
-			}, (string onError, long responseCode, string errorMsg) =>
-            {
-                switch (responseCode)
-                {
-                    case 404: {
-                            EditorManager.inst.DisplayNotification("404 not found.", 2f, EditorManager.NotificationType.Error);
-                            return;
-                        }
-                    case 401: {
-                            if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null && LegacyPlugin.authData["refresh_token"] != null)
-                            {
-                                CoroutineHelper.StartCoroutine(RefreshTokens(Search));
-                                return;
-                            }
-                            ShowLoginPopup(Search);
-                            break;
-                        }
-                    default: {
-                            EditorManager.inst.DisplayNotification($"Level search failed. Error code: {onError}", 2f, EditorManager.NotificationType.Error);
-                            break;
-                        }
-                }
-
-                if (errorMsg != null)
-                    CoreHelper.LogError($"Error Message: {errorMsg}");
-            }, headers));
+                    if (errorMsg != null)
+                        CoreHelper.LogError($"Error Message: {errorMsg}");
+                },
+                headers: AlephNetwork.GetUserHeaders()));
 
 			loadingOnlineLevels = false;
         }
@@ -2186,16 +2176,19 @@ namespace BetterLegacy.Editor.Managers
                 RTEditor.inst.ProgressPopup.Open();
             RTEditor.inst.ProgressPopup.Text = "Downloading prefab, please wait...";
 
-            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.PrefabDownloadURL}{id}.lsp?r" + UnityRandom.Range(0, int.MaxValue), RTEditor.inst.ProgressPopup.UpdateProgress, bytes =>
-            {
-                DownloadPrefabType(id, name, bytes, source);
-                onDownload?.Invoke();
-            }, onError =>
-            {
-                EditorManager.inst.DisplayNotification($"Failed to download {name}.", 1.5f, EditorManager.NotificationType.Error);
-                CoreHelper.LogError($"OnError: {onError}");
-                RTEditor.inst.ProgressPopup.Close();
-            }));
+            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.PrefabDownloadURL}{id}.lsp?r" + UnityRandom.Range(0, int.MaxValue),
+                callback: bytes =>
+                {
+                    DownloadPrefabType(id, name, bytes, source);
+                    onDownload?.Invoke();
+                },
+                percentage: RTEditor.inst.ProgressPopup.UpdateProgress,
+                onError: (string onError, long responseCode, string errorMsg) =>
+                {
+                    EditorManager.inst.DisplayNotification($"Failed to download {name}.", 1.5f, EditorManager.NotificationType.Error);
+                    CoreHelper.LogError($"OnError: {onError}");
+                    RTEditor.inst.ProgressPopup.Close();
+                }));
         }
 
         /// <summary>
@@ -2207,26 +2200,29 @@ namespace BetterLegacy.Editor.Managers
         public void DownloadPrefabType(string id, string name, byte[] bytes, ObjectSource source = ObjectSource.External)
         {
             // if the user does not have the Prefab's Prefab Type locally, download it off the server.
-            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.PrefabDownloadURL}{id}_type.lspt?r" + UnityRandom.Range(0, int.MaxValue), RTEditor.inst.ProgressPopup.UpdateProgress, typeBytes =>
-            {
-                var tempFilePath = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, $"{id}.lspt");
-                File.WriteAllBytes(tempFilePath, typeBytes);
-                var tempFile = RTFile.ReadFromFile(tempFilePath);
-                if (string.IsNullOrEmpty(tempFile))
+            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.PrefabDownloadURL}{id}_type.lspt?r" + UnityRandom.Range(0, int.MaxValue),
+                callback: typeBytes =>
                 {
-                    SaveDownloadedPrefab(id, name, bytes, source);
-                    RTFile.DeleteFile(tempFilePath);
-                    return;
-                }
+                    var tempFilePath = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, $"{id}.lspt");
+                    File.WriteAllBytes(tempFilePath, typeBytes);
+                    var tempFile = RTFile.ReadFromFile(tempFilePath);
+                    if (string.IsNullOrEmpty(tempFile))
+                    {
+                        SaveDownloadedPrefab(id, name, bytes, source);
+                        RTFile.DeleteFile(tempFilePath);
+                        return;
+                    }
 
-                var jn = JSON.Parse(tempFile);
-                var typeID = jn["id"];
-                if (!string.IsNullOrEmpty(typeID) && !RTPrefabEditor.inst.prefabTypes.Has(x => x.id == typeID))
-                    RTFile.MoveFile(tempFilePath, RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabTypePath, $"{jn["name"].Value} - {typeID.Value}"));
-                else
-                    RTFile.DeleteFile(tempFilePath);
-                SaveDownloadedPrefab(id, name, bytes, source);
-            }, onError => SaveDownloadedPrefab(id, name, bytes, source)));
+                    var jn = JSON.Parse(tempFile);
+                    var typeID = jn["id"];
+                    if (!string.IsNullOrEmpty(typeID) && !RTPrefabEditor.inst.prefabTypes.Has(x => x.id == typeID))
+                        RTFile.MoveFile(tempFilePath, RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabTypePath, $"{jn["name"].Value} - {typeID.Value}"));
+                    else
+                        RTFile.DeleteFile(tempFilePath);
+                    SaveDownloadedPrefab(id, name, bytes, source);
+                },
+                percentage: RTEditor.inst.ProgressPopup.UpdateProgress,
+                onError: (string onError, long responseCode, string errorMsg) => SaveDownloadedPrefab(id, name, bytes, source)));
         }
 
         void SaveDownloadedPrefab(string id, string name, byte[] bytes, ObjectSource source = ObjectSource.External)
@@ -2302,97 +2298,96 @@ namespace BetterLegacy.Editor.Managers
 
             UserSearchPopup.ClearContent();
 
-            string query = AlephNetwork.BuildQuery(AlephNetwork.UserSearchURL, UserSearchPopup.SearchTerm, UserSearchPopup.Page, 0, false);
+            string query = LinkQuery.BuildQuery(AlephNetwork.UserSearchURL, UserSearchPopup.SearchTerm, UserSearchPopup.Page, 0, false);
 
             CoreHelper.Log($"Search query: {query}");
 
-            var headers = new Dictionary<string, string>();
-            if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null)
-                headers["Authorization"] = $"Bearer {LegacyPlugin.authData["access_token"].Value}";
-
-            yield return CoroutineHelper.StartCoroutine(AlephNetwork.DownloadJSONFile(query, json =>
-            {
-                try
+            yield return CoroutineHelper.StartCoroutine(AlephNetwork.DownloadJSONFile(query,
+                callback: json =>
                 {
-                    var jn = JSON.Parse(json);
-
-                    if (jn["items"] == null)
-                        return;
-
-                    for (int i = 0; i < jn["items"].Count; i++)
+                    try
                     {
-                        var item = jn["items"][i];
+                        var jn = JSON.Parse(json);
 
-                        string id = item["id"];
-                        string steamID = item["steamId"];
-                        string displayName = item["displayName"];
-
-                        if (id == null || id == "0")
-                            continue;
-
-                        var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(UserSearchPopup.Content, $"Folder [{displayName}]");
-                        var folderButtonStorage = gameObject.GetComponent<FunctionButtonStorage>();
-                        var folderButtonFunction = gameObject.AddComponent<FolderButtonFunction>();
-
-                        folderButtonStorage.Text =
-                            $"<b>ID</b>: {id}\n" +
-                            $"<b>Display Name</b>: {displayName}";
-                        RectValues.FullAnchored.SizeDelta(-32f, -8f).AssignToRectTransform(folderButtonStorage.label.rectTransform);
-
-                        gameObject.transform.AsRT().sizeDelta = new Vector2(0f, 200f);
-
-                        //folderButtonStorage.text.horizontalOverflow = horizontalOverflow;
-                        //folderButtonStorage.text.verticalOverflow = verticalOverflow;
-                        //folderButtonStorage.text.fontSize = fontSize;
-
-                        folderButtonStorage.OnClick.ClearAll();
-                        folderButtonFunction.onClick = pointerEventData =>
-                        {
-                            onSelect?.Invoke(new ServerUser
-                            {
-                                ID = id,
-                                SteamID = steamID,
-                                DisplayName = displayName,
-                            });
-                        };
-
-                        EditorThemeManager.ApplySelectable(folderButtonStorage.button, ThemeGroup.List_Button_1);
-                        EditorThemeManager.ApplyLightText(folderButtonStorage.label);
-                    }
-
-                    if (jn["count"] != null)
-                        itemCount = jn["count"].AsInt;
-                }
-                catch (Exception ex)
-                {
-                    CoreHelper.LogException(ex);
-                }
-            }, (string onError, long responseCode, string errorMsg) =>
-            {
-                switch (responseCode)
-                {
-                    case 404: {
-                            EditorManager.inst.DisplayNotification("404 not found.", 2f, EditorManager.NotificationType.Error);
+                        if (jn["items"] == null)
                             return;
-                        }
-                    case 401: {
-                            if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null && LegacyPlugin.authData["refresh_token"] != null)
+
+                        for (int i = 0; i < jn["items"].Count; i++)
+                        {
+                            var item = jn["items"][i];
+
+                            string id = item["id"];
+                            string steamID = item["steamId"];
+                            string displayName = item["displayName"];
+
+                            if (id == null || id == "0")
+                                continue;
+
+                            var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(UserSearchPopup.Content, $"Folder [{displayName}]");
+                            var folderButtonStorage = gameObject.GetComponent<FunctionButtonStorage>();
+                            var folderButtonFunction = gameObject.AddComponent<FolderButtonFunction>();
+
+                            folderButtonStorage.Text =
+                                $"<b>ID</b>: {id}\n" +
+                                $"<b>Display Name</b>: {displayName}";
+                            RectValues.FullAnchored.SizeDelta(-32f, -8f).AssignToRectTransform(folderButtonStorage.label.rectTransform);
+
+                            gameObject.transform.AsRT().sizeDelta = new Vector2(0f, 200f);
+
+                            //folderButtonStorage.text.horizontalOverflow = horizontalOverflow;
+                            //folderButtonStorage.text.verticalOverflow = verticalOverflow;
+                            //folderButtonStorage.text.fontSize = fontSize;
+
+                            folderButtonStorage.OnClick.ClearAll();
+                            folderButtonFunction.onClick = pointerEventData =>
                             {
-                                CoroutineHelper.StartCoroutine(RefreshTokens(() => SearchUsers(onSelect)));
+                                onSelect?.Invoke(new ServerUser
+                                {
+                                    ID = id,
+                                    SteamID = steamID,
+                                    DisplayName = displayName,
+                                });
+                            };
+
+                            EditorThemeManager.ApplySelectable(folderButtonStorage.button, ThemeGroup.List_Button_1);
+                            EditorThemeManager.ApplyLightText(folderButtonStorage.label);
+                        }
+
+                        if (jn["count"] != null)
+                            itemCount = jn["count"].AsInt;
+                    }
+                    catch (Exception ex)
+                    {
+                        CoreHelper.LogException(ex);
+                    }
+                },
+                onError: (string onError, long responseCode, string errorMsg) =>
+                {
+                    switch (responseCode)
+                    {
+                        case 404: {
+                                EditorManager.inst.DisplayNotification("404 not found.", 2f, EditorManager.NotificationType.Error);
                                 return;
                             }
-                            ShowLoginPopup(() => SearchUsers(onSelect));
-                            break;
-                        }
-                    default: {
-                            EditorManager.inst.DisplayNotification($"Level search failed. Error code: {onError}", 2f, EditorManager.NotificationType.Error);
-                            break;
-                        }
-                }
+                        case 401: {
+                                if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null && LegacyPlugin.authData["refresh_token"] != null)
+                                {
+                                    CoroutineHelper.StartCoroutine(RefreshTokens(() => SearchUsers(onSelect)));
+                                    return;
+                                }
+                                ShowLoginPopup(() => SearchUsers(onSelect));
+                                break;
+                            }
+                        default: {
+                                EditorManager.inst.DisplayNotification($"Level search failed. Error code: {onError}", 2f, EditorManager.NotificationType.Error);
+                                break;
+                            }
+                    }
 
-                if (errorMsg != null)
-                    CoreHelper.LogError($"Error Message: {errorMsg}");
-            }, headers));
+                    if (errorMsg != null)
+                        CoreHelper.LogError($"Error Message: {errorMsg}");
+                },
+                headers: AlephNetwork.GetUserHeaders()));
 
             loadingOnlineUsers = false;
 

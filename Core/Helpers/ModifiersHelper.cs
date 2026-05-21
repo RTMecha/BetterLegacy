@@ -2298,9 +2298,7 @@ namespace BetterLegacy.Core.Helpers
                 var audioType = RTFile.GetAudioType(path);
 
                 if (audioType != AudioType.UNKNOWN)
-                    CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip(
-                        path: path, 
-                        audioType: audioType,
+                    CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip(path, audioType,
                         callback: audioClip =>
                         {
                             var audioSource = PlaySound(id, audioClip, pitch, volume, loop, panStereo);
@@ -9307,7 +9305,7 @@ namespace BetterLegacy.Core.Helpers
                     return;
                 }
 
-                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadImageTexture("file://" + path, imageObject.SetTexture, imageObject.SetDefaultSprite));
+                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadImageTexture("file://" + path, callback: imageObject.SetTexture, onError: imageObject.SetDefaultSprite));
             }
             else if (beatmapObject.runtimeObject.visualObject is SolidObject solidObject && solidObject.renderer)
             {
@@ -9446,7 +9444,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     }
                 },
-                onError =>
+                onError: (string onError, long responseCode, string errorMsg) =>
                 {
                     foreach (var bm in list)
                     {

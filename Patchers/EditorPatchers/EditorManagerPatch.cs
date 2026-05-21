@@ -466,19 +466,23 @@ namespace BetterLegacy.Patchers
                 return false;
             }
 
-            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadJSONFile("https://drive.google.com/uc?export=download&id=1QJUeviLerCX1tZXW7QxpBC6K1BjtG1KT", json =>
-            {
-                GameData.Current = GameData.Parse(JSON.Parse(json));
-                ThemeManager.inst.UpdateAllThemes();
-
-                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip("https://drive.google.com/uc?export=download&id=1BDrRqX1IDk7bKo2hhYDqDqWLncMy7FkP", AudioType.OGGVORBIS, audioClip =>
+            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadJSONFile("https://drive.google.com/uc?export=download&id=1QJUeviLerCX1tZXW7QxpBC6K1BjtG1KT",
+                callback: json =>
                 {
-                    EditorLevelManager.inst.SetCurrentAudio(audioClip);
-                    GameManager.inst.gameState = GameManager.State.Playing;
+                    GameData.Current = GameData.Parse(JSON.Parse(json));
+                    ThemeManager.inst.UpdateAllThemes();
 
-                    CoroutineHelper.StartCoroutine(RTLevel.IReinit());
-                }, (string onError, long responseCode, string errorMsg) => AssignGameData()));
-            }, (string onError, long responseCode, string errorMsg) => AssignGameData()));
+                    CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip("https://drive.google.com/uc?export=download&id=1BDrRqX1IDk7bKo2hhYDqDqWLncMy7FkP", AudioType.OGGVORBIS,
+                        callback: audioClip =>
+                        {
+                            EditorLevelManager.inst.SetCurrentAudio(audioClip);
+                            GameManager.inst.gameState = GameManager.State.Playing;
+
+                            CoroutineHelper.StartCoroutine(RTLevel.IReinit());
+                        },
+                        onError: (string onError, long responseCode, string errorMsg) => AssignGameData()));
+                },
+                onError: (string onError, long responseCode, string errorMsg) => AssignGameData()));
 
             return false;
         }

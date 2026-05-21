@@ -567,7 +567,7 @@ namespace BetterLegacy.Editor.Data.Elements
         /// <param name="onLoad">Action to run when the image is loaded.</param>
         /// <returns>Returns a generated coroutine.</returns>
         public Coroutine LoadImageCoroutine(string file, Action<LevelCollectionPanel> onLoad = null) => CoroutineHelper.StartCoroutine(AlephNetwork.DownloadImageTexture($"file://{RTFile.CombinePaths(Path, file)}",
-            cover =>
+            callback: cover =>
             {
                 if (!cover)
                 {
@@ -579,7 +579,7 @@ namespace BetterLegacy.Editor.Data.Elements
                 SetIcon(SpriteHelper.CreateSprite(cover));
                 onLoad?.Invoke(this);
             },
-            (errorMsg, handlerText) =>
+            onError: (string onError, long responseCode, string errorMsg) =>
             {
                 SetDefaultIcon();
                 onLoad?.Invoke(this);
@@ -592,7 +592,7 @@ namespace BetterLegacy.Editor.Data.Elements
         /// <param name="onLoad">Action to run when the image is loaded.</param>
         /// <returns>Returns a generated coroutine.</returns>
         public Coroutine LoadBannerCoroutine(string file, Action<LevelCollectionPanel> onLoad = null) => CoroutineHelper.StartCoroutine(AlephNetwork.DownloadImageTexture($"file://{RTFile.CombinePaths(Path, file)}",
-            cover =>
+            callback: cover =>
             {
                 if (!cover)
                 {
@@ -605,7 +605,7 @@ namespace BetterLegacy.Editor.Data.Elements
                     Item.banner = SpriteHelper.CreateSprite(cover);
                 onLoad?.Invoke(this);
             },
-            (errorMsg, handlerText) =>
+            onError: (string onError, long responseCode, string errorMsg) =>
             {
                 if (Item)
                     Item.banner = null;

@@ -990,22 +990,24 @@ namespace BetterLegacy.Editor.Data.Elements
         /// <param name="file">Image file to load.</param>
         /// <param name="onLoad">Action to run when the image is loaded.</param>
         /// <returns>Returns a generated coroutine.</returns>
-        public Coroutine LoadImageCoroutine(string file, Action<LevelPanel> onLoad = null) => CoroutineHelper.StartCoroutine(AlephNetwork.DownloadImageTexture($"file://{RTFile.CombinePaths(Path, file)}", cover =>
-        {
-            if (!cover)
+        public Coroutine LoadImageCoroutine(string file, Action<LevelPanel> onLoad = null) => CoroutineHelper.StartCoroutine(AlephNetwork.DownloadImageTexture($"file://{RTFile.CombinePaths(Path, file)}",
+            callback: cover =>
+            {
+                if (!cover)
+                {
+                    SetDefaultIcon();
+                    onLoad?.Invoke(this);
+                    return;
+                }
+
+                SetIcon(SpriteHelper.CreateSprite(cover));
+                onLoad?.Invoke(this);
+            },
+            onError: (string onError, long responseCode, string errorMsg) =>
             {
                 SetDefaultIcon();
                 onLoad?.Invoke(this);
-                return;
-            }
-
-            SetIcon(SpriteHelper.CreateSprite(cover));
-            onLoad?.Invoke(this);
-        }, (errorMsg, handlerText) =>
-        {
-            SetDefaultIcon();
-            onLoad?.Invoke(this);
-        }));
+            }));
 
         /// <summary>
         /// Sets the default icon.

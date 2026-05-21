@@ -386,7 +386,7 @@ namespace BetterLegacy.Arcade.Interfaces
             {
                 case 0: {
                         AlephNetwork.DownloadLevel(jn,
-                            level =>
+                            onDownload: level =>
                             {
                                 CurrentItem = null;
                                 InterfaceManager.inst.CloseMenus();
@@ -401,7 +401,7 @@ namespace BetterLegacy.Arcade.Interfaces
                                 if (ArcadeConfig.Instance.OpenOnlineLevelAfterDownload.Value)
                                     PlayLevelInterface.Init(level);
                             },
-                            onError =>
+                            onError: (string onError, long responseCode, string errorMsg) =>
                             {
                                 Close();
                                 CoreHelper.Log($"Failed to download item: {jn}");
@@ -410,7 +410,7 @@ namespace BetterLegacy.Arcade.Interfaces
                     }
                 case 1: {
                         AlephNetwork.DownloadLevelCollection(jn,
-                            levelCollection =>
+                            onDownload: levelCollection =>
                             {
                                 CurrentItem = null;
                                 Type = 0;
@@ -426,7 +426,7 @@ namespace BetterLegacy.Arcade.Interfaces
                                 if (ArcadeConfig.Instance.OpenOnlineLevelAfterDownload.Value)
                                     LevelCollectionInterface.Init(levelCollection);
                             },
-                            onError =>
+                            onError: (string onError, long responseCode, string errorMsg) =>
                             {
                                 Close();
                                 CoreHelper.Log($"Failed to download item: {jn}");

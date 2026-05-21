@@ -3328,7 +3328,7 @@ namespace BetterLegacy.Editor.Managers
                 return;
 
             EditorServerManager.inst.Pull(
-                url: AlephNetwork.PrefabDownloadURL,
+                url: AlephNetwork.PrefabURL,
                 uploadable: prefab,
                 pull: jn => EditorServerManager.inst.DownloadPrefab(jn["id"], jn["name"]));
         }
