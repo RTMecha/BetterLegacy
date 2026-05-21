@@ -30,16 +30,8 @@ namespace BetterLegacy.Arcade.Interfaces
     /// </summary>
     public class LevelListInterface : BaseInterface
     {
-        /// <summary>
-        /// The current <see cref="LevelListInterface"/>.
-        /// </summary>
-        public static LevelListInterface Current { get; set; }
-
-        public static bool ViewOnline { get; set; }
-
-        public static int Page { get; set; }
-        public static string Search { get; set; }
-
+        #region Constructors
+        
         public LevelListInterface() : base()
         {
             name = "Level List";
@@ -345,10 +337,50 @@ namespace BetterLegacy.Arcade.Interfaces
             InterfaceManager.inst.PlayMusic();
         }
 
+        #endregion
+
+        #region Values
+
+        /// <summary>
+        /// The current <see cref="LevelListInterface"/>.
+        /// </summary>
+        public static LevelListInterface Current { get; set; }
+
+        /// <summary>
+        /// If online items should be viewed.
+        /// </summary>
+        public static bool ViewOnline { get; set; }
+
+        /// <summary>
+        /// Page to view.
+        /// </summary>
+        public static int Page { get; set; }
+
+        /// <summary>
+        /// Search term.
+        /// </summary>
+        public static string Search { get; set; }
+
+        /// <summary>
+        /// Function to run on interface closed.
+        /// </summary>
+        public static Action close;
+
         #region Local
 
+        /// <summary>
+        /// List of levels to view.
+        /// </summary>
         public static List<Level> Levels { get; set; }
+
+        /// <summary>
+        /// Local level page count.
+        /// </summary>
         public static int LocalLevelPageCount => LocalLevels.Count / ArcadeInterface.MAX_LEVELS_PER_PAGE;
+
+        /// <summary>
+        /// List of levels to view.
+        /// </summary>
         public static List<Level> LocalLevels => Levels.FindAll(level => !level ||
             RTString.SearchString(Search,
                 new SearchMatcher(level.id, SearchMatchType.Exact),
@@ -360,6 +392,89 @@ namespace BetterLegacy.Arcade.Interfaces
                 level.metadata.song.Difficulty.DisplayName.GetText()
                 ));
 
+        #endregion
+
+        #region Online
+
+        /// <summary>
+        /// Search URL for online items.
+        /// </summary>
+        public static string SearchURL { get; set; } = AlephNetwork.LevelSearchURL;
+
+        /// <summary>
+        /// Online level count.
+        /// </summary>
+        public static int OnlineLevelCount { get; set; }
+
+        /// <summary>
+        /// Cached online level icons.
+        /// </summary>
+        public static Dictionary<string, Sprite> OnlineLevelIcons { get; set; } = new Dictionary<string, Sprite>();
+
+        /// <summary>
+        /// True if online levels are loading.
+        /// </summary>
+        public bool loadingOnlineLevels;
+
+        #endregion
+
+        #endregion
+
+        #region Functions
+        
+        /// <summary>
+        /// Initializes <see cref="LevelListInterface"/> with a list of levels.
+        /// </summary>
+        /// <param name="levels">List of levels to view.</param>
+        public static void Init(List<Level> levels)
+        {
+            InterfaceManager.inst.CloseMenus();
+            ViewOnline = false;
+            Levels = levels;
+            Current = new LevelListInterface();
+        }
+
+        /// <summary>
+        /// Initializes <see cref="LevelListInterface"/> to view online items.
+        /// </summary>
+        /// <param name="url">URL to view.</param>
+        public static void Init(string url)
+        {
+            InterfaceManager.inst.CloseMenus();
+            ViewOnline = true;
+            SearchURL = url;
+            Current = new LevelListInterface();
+        }
+
+        /// <summary>
+        /// Closes the interface.
+        /// </summary>
+        public static void Close()
+        {
+            Levels = null;
+            InterfaceManager.inst.CloseMenus();
+
+            if (close == null)
+                ArcadeInterface.Init();
+            else
+            {
+                close();
+                close = null;
+            }
+        }
+
+        public override void Clear()
+        {
+            Levels = null;
+            base.Clear();
+        }
+
+        #region Local
+
+        /// <summary>
+        /// Searches the local levels.
+        /// </summary>
+        /// <param name="search">Search term.</param>
         public void SearchLocalLevels(string search)
         {
             Search = search;
@@ -368,6 +483,10 @@ namespace BetterLegacy.Arcade.Interfaces
             RefreshLocalLevels(true);
         }
 
+        /// <summary>
+        /// Sets the local levels page.
+        /// </summary>
+        /// <param name="page">Page to set.</param>
         public void SetLocalLevelsPage(int page)
         {
             Page = Mathf.Clamp(page, 0, LocalLevelPageCount);
@@ -377,6 +496,11 @@ namespace BetterLegacy.Arcade.Interfaces
 
         void ClearLocalLevelButtons() => ClearElements(x => x.name == "Level Button" || x.name == "Difficulty" || x.name == "Rank" || x.name.Contains("Shine") || x.name.Contains("Lock"));
 
+        /// <summary>
+        /// Refreshes the local levels view.
+        /// </summary>
+        /// <param name="regenerateUI">If the UI should be regenerated.</param>
+        /// <param name="clear">If the UI should be cleared.</param>
         public void RefreshLocalLevels(bool regenerateUI, bool clear = true)
         {
             if (clear)
@@ -689,29 +813,32 @@ namespace BetterLegacy.Arcade.Interfaces
 
         #region Online
 
-        public static string SearchURL { get; set; } = AlephNetwork.LevelSearchURL;
-
-        public static int OnlineSort { get; set; }
-
-        public static bool OnlineAscend { get; set; }
-
-        public static int OnlineLevelCount { get; set; }
-
-        public static Dictionary<string, Sprite> OnlineLevelIcons { get; set; } = new Dictionary<string, Sprite>();
-
-        public void SetOnlineLevelsPage(int page)
-        {
-            Page = page;
-        }
-
+        /// <summary>
+        /// Searches the online levels.
+        /// </summary>
+        /// <param name="search">Search term.</param>
         public void SearchOnlineLevels(string search)
         {
             Search = search;
             Page = 0;
+            CoroutineHelper.StartCoroutine(RefreshOnlineLevels());
+        }
+
+        /// <summary>
+        /// Sets the online levels page.
+        /// </summary>
+        /// <param name="page">Page to set.</param>
+        public void SetOnlineLevelsPage(int page)
+        {
+            Page = page;
+            CoroutineHelper.StartCoroutine(RefreshOnlineLevels());
         }
 
         void ClearOnlineLevelButtons() => ClearElements(x => x.name == "Level Button" || x.name == "Difficulty");
 
+        /// <summary>
+        /// Refreshes the online levels view.
+        /// </summary>
         public IEnumerator RefreshOnlineLevels()
         {
             if (loadingOnlineLevels)
@@ -771,7 +898,7 @@ namespace BetterLegacy.Arcade.Interfaces
                                 name = "Level Button",
                                 parentLayout = "levels",
                                 selectionPosition = new Vector2Int(column, row),
-                                func = () => { SelectOnlineLevel(item.AsObject); },
+                                func = () => DownloadLevelInterface.Init(item.AsObject),
                                 iconRect = RectValues.Default.AnchoredPosition(-90, 30f),
                                 text = "<size=24>" + name,
                                 textRect = RectValues.FullAnchored.AnchoredPosition(20f, -50f),
@@ -841,48 +968,8 @@ namespace BetterLegacy.Arcade.Interfaces
                 yield return null;
         }
 
-        public bool loadingOnlineLevels;
-
-        public void SelectOnlineLevel(JSONObject onlineLevel) => DownloadLevelInterface.Init(onlineLevel);
-
         #endregion
 
-        public static void Init(List<Level> levels)
-        {
-            InterfaceManager.inst.CloseMenus();
-            ViewOnline = false;
-            Levels = levels;
-            Current = new LevelListInterface();
-        }
-
-        public static void Init(string url)
-        {
-            InterfaceManager.inst.CloseMenus();
-            ViewOnline = true;
-            SearchURL = url;
-            Current = new LevelListInterface();
-        }
-
-        public static void Close()
-        {
-            Levels = null;
-            InterfaceManager.inst.CloseMenus();
-
-            if (close == null)
-                ArcadeInterface.Init();
-            else
-            {
-                close();
-                close = null;
-            }
-        }
-
-        public static Action close;
-
-        public override void Clear()
-        {
-            Levels = null;
-            base.Clear();
-        }
+        #endregion
     }
 }

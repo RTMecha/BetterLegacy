@@ -22,14 +22,8 @@ namespace BetterLegacy.Arcade.Interfaces
     /// </summary>
     public class PlayLevelInterface : BaseInterface
     {
-        /// <summary>
-        /// The current <see cref="PlayLevelInterface"/>.
-        /// </summary>
-        public static PlayLevelInterface Current { get; set; }
-        public static Level CurrentLevel { get; set; }
-        public Action onPlay;
-        public Action onReturn;
-
+        #region Constructors
+        
         public PlayLevelInterface() : base()
         {
             this.name = CurrentLevel?.metadata?.beatmap?.name;
@@ -656,7 +650,6 @@ namespace BetterLegacy.Arcade.Interfaces
 
             var achievements = CurrentLevel.GetAchievements();
             if (!achievements.IsEmpty())
-            {
                 elements.Add(new MenuButton
                 {
                     id = "3525734",
@@ -678,7 +671,6 @@ namespace BetterLegacy.Arcade.Interfaces
                         AchievementListInterface.Init(CurrentLevel, () => Init(currentLevel));
                     },
                 });
-            }
 
             exitFunc = Close;
 
@@ -688,6 +680,38 @@ namespace BetterLegacy.Arcade.Interfaces
             InterfaceManager.inst.SetCurrentInterface(this);
         }
 
+        #endregion
+
+        #region Values
+
+        /// <summary>
+        /// The current <see cref="PlayLevelInterface"/>.
+        /// </summary>
+        public static PlayLevelInterface Current { get; set; }
+
+        /// <summary>
+        /// The current level.
+        /// </summary>
+        public static Level CurrentLevel { get; set; }
+
+        /// <summary>
+        /// Function to run on level play.
+        /// </summary>
+        public Action onPlay;
+
+        /// <summary>
+        /// Function to run on interface return.
+        /// </summary>
+        public Action onReturn;
+
+        #endregion
+
+        #region Functions
+
+        /// <summary>
+        /// Initializes <see cref="PlayLevelInterface"/> with a level.
+        /// </summary>
+        /// <param name="level">Level to view.</param>
         public static void Init(Level level)
         {
             if (!level.music)
@@ -695,7 +719,13 @@ namespace BetterLegacy.Arcade.Interfaces
             else
                 InternalInit(level, null, null);
         }
-        
+
+        /// <summary>
+        /// Initializes <see cref="PlayLevelInterface"/> with a level.
+        /// </summary>
+        /// <param name="level">Level to view.</param>
+        /// <param name="onPlay">Function to run on play.</param>
+        /// <param name="onReturn">Function to run on interface return.</param>
         public static void Init(Level level, Action onPlay = null, Action onReturn = null)
         {
             if (!level.music)
@@ -718,6 +748,9 @@ namespace BetterLegacy.Arcade.Interfaces
             AudioManager.inst.SetPitch(CoreConfig.Instance.GameSpeedSetting.Value.Pitch);
         }
 
+        /// <summary>
+        /// Closes the interface.
+        /// </summary>
         public void Close()
         {
             var onReturn = this.onReturn;
@@ -734,5 +767,7 @@ namespace BetterLegacy.Arcade.Interfaces
             CurrentLevel = null;
             base.Clear();
         }
+
+        #endregion
     }
 }

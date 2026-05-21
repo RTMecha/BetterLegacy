@@ -18,12 +18,8 @@ namespace BetterLegacy.Arcade.Interfaces
     /// </summary>
     public class LevelCollectionInterface : BaseInterface
     {
-        /// <summary>
-        /// The current <see cref="LevelCollectionInterface"/>.
-        /// </summary>
-        public static LevelCollectionInterface Current { get; set; }
-        public static LevelCollection CurrentCollection { get; set; }
-
+        #region Constructors
+        
         public LevelCollectionInterface() : base()
         {
             this.name = CurrentCollection.name;
@@ -279,6 +275,28 @@ namespace BetterLegacy.Arcade.Interfaces
             InterfaceManager.inst.SetCurrentInterface(this);
         }
 
+        #endregion
+
+        #region Values
+
+        /// <summary>
+        /// The current <see cref="LevelCollectionInterface"/>.
+        /// </summary>
+        public static LevelCollectionInterface Current { get; set; }
+
+        /// <summary>
+        /// The current collection.
+        /// </summary>
+        public static LevelCollection CurrentCollection { get; set; }
+
+        #endregion
+
+        #region Functions
+
+        /// <summary>
+        /// Initializes <see cref="LevelCollectionInterface"/>.
+        /// </summary>
+        /// <param name="collection">Level collection to initialize with.</param>
         public static void Init(LevelCollection collection)
         {
             if (!collection.previewAudio && RTFile.FileExists(RTFile.CombinePaths(collection.path, LevelCollection.PREVIEW_OGG)))
@@ -309,6 +327,9 @@ namespace BetterLegacy.Arcade.Interfaces
             Current = new LevelCollectionInterface();
         }
 
+        /// <summary>
+        /// Closes the interface.
+        /// </summary>
         public static void Close()
         {
             LevelManager.CurrentLevelCollection = null;
@@ -322,5 +343,7 @@ namespace BetterLegacy.Arcade.Interfaces
             CurrentCollection = null;
             base.Clear();
         }
+
+        #endregion
     }
 }

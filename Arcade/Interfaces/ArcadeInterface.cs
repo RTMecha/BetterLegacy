@@ -1493,27 +1493,38 @@ namespace BetterLegacy.Arcade.Interfaces
         /// </summary>
         public static ArcadeInterface Current { get; set; }
 
+        /// <summary>
+        /// The current tab.
+        /// </summary>
         public static Tab CurrentTab { get; set; } = Tab.Local;
 
+        /// <summary>
+        /// Max amount of levels to view per page.
+        /// </summary>
         public const int MAX_LEVELS_PER_PAGE = 20;
-        public const int MAX_QUEUED_PER_PAGE = 6;
-        public const int MAX_STEAM_ONLINE_LEVELS_PER_PAGE = 50;
 
-        public static string[] Searches { get; set; } = new string[]
-        {
-            string.Empty, // Local
-            string.Empty, // Online
-            string.Empty, // Browser
-            string.Empty, // Queue
-            string.Empty, // Steam
-        };
+        /// <summary>
+        /// Max amount of queued levels to view per page.
+        /// </summary>
+        public const int MAX_QUEUED_PER_PAGE = 6;
+
+        /// <summary>
+        /// Max amount of Steam Workshop levels to view per page.
+        /// </summary>
+        public const int MAX_STEAM_ONLINE_LEVELS_PER_PAGE = 50;
 
         MenuInputField pageField;
 
         #region Local
 
+        /// <summary>
+        /// Local level page count.
+        /// </summary>
         public static int LocalLevelPageCount => (LocalLevelCollections.Count + LocalLevels.Count) / MAX_LEVELS_PER_PAGE;
 
+        /// <summary>
+        /// List of levels to view.
+        /// </summary>
         public static List<Level> LocalLevels => LevelManager.Levels.FindAll(level => !level.fromCollection &&
             RTString.SearchString(Tab.Local.searchTerm,
                 new SearchMatcher(level.id, SearchMatchType.Exact),
@@ -1525,6 +1536,9 @@ namespace BetterLegacy.Arcade.Interfaces
                 level.metadata?.song?.Difficulty.DisplayName.GetText()
                 ));
 
+        /// <summary>
+        /// List of level collections to view.
+        /// </summary>
         public static List<LevelCollection> LocalLevelCollections => LevelManager.LevelCollections.FindAll(collection => string.IsNullOrEmpty(Tab.Local.searchTerm)
                         || collection.id == Tab.Local.searchTerm
                         || collection.name.ToLower().Contains(Tab.Local.searchTerm.ToLower()));
@@ -1533,20 +1547,38 @@ namespace BetterLegacy.Arcade.Interfaces
 
         #region Online
 
+        /// <summary>
+        /// Online level count.
+        /// </summary>
         public static int OnlineLevelCount { get; set; }
 
+        /// <summary>
+        /// Cached online level icons.
+        /// </summary>
         public static Dictionary<string, Sprite> OnlineLevelIcons { get; set; } = new Dictionary<string, Sprite>();
 
+        /// <summary>
+        /// True if online levels are loading.
+        /// </summary>
         public bool loadingOnlineLevels;
 
         #endregion
 
         #region Browser
 
+        /// <summary>
+        /// File browser page count.
+        /// </summary>
         public static int BrowserPageCount => BrowserFolders.Length / MAX_LEVELS_PER_PAGE;
 
+        /// <summary>
+        /// The current directory for the file browser.
+        /// </summary>
         public static string BrowserCurrentDirectory { get; set; } = RTFile.ApplicationDirectory;
 
+        /// <summary>
+        /// Array of browser folders in <see cref="BrowserCurrentDirectory"/>.
+        /// </summary>
         public static string[] BrowserFolders =>
             Directory.GetDirectories(BrowserCurrentDirectory)
                     .Where(x => string.IsNullOrEmpty(Tab.Browser.searchTerm) || Path.GetFileName(x).ToLower().Contains(Tab.Browser.searchTerm.ToLower()) || Level.TryVerify(x + "/", false, out Level level) &&
@@ -1561,8 +1593,14 @@ namespace BetterLegacy.Arcade.Interfaces
 
         #region Queue
 
+        /// <summary>
+        /// Queued level page count.
+        /// </summary>
         public static int QueuePageCount => QueueLevels.Count / MAX_QUEUED_PER_PAGE;
 
+        /// <summary>
+        /// List of queued levels to view.
+        /// </summary>
         public static List<Level> QueueLevels => LevelManager.ArcadeQueue.FindAll(level => !level.fromCollection &&
             RTString.SearchString(Tab.Queue.searchTerm,
                 new SearchMatcher(level.id, SearchMatchType.Exact),
@@ -1578,8 +1616,14 @@ namespace BetterLegacy.Arcade.Interfaces
 
         #region Steam
 
+        /// <summary>
+        /// Subscribed Steam Workshop level page count.
+        /// </summary>
         public static int SubscribedSteamLevelPageCount => SubscribedSteamLevels.Count / MAX_LEVELS_PER_PAGE;
 
+        /// <summary>
+        /// List of subscribed Steam Workshop levels to view.
+        /// </summary>
         public static List<Level> SubscribedSteamLevels => RTSteamManager.inst.Levels.FindAll(level => !level.fromCollection &&
             RTString.SearchString(Tab.Steam.searchTerm,
                 new SearchMatcher(level.id, SearchMatchType.Exact),
@@ -1591,6 +1635,9 @@ namespace BetterLegacy.Arcade.Interfaces
                 level.metadata.song.Difficulty.DisplayName.GetText()
                 ));
 
+        /// <summary>
+        /// Cached Steam Workshop level icons.
+        /// </summary>
         public static Dictionary<string, Sprite> OnlineSteamLevelIcons { get; set; } = new Dictionary<string, Sprite>();
 
         #endregion

@@ -27,45 +27,8 @@ namespace BetterLegacy.Arcade.Interfaces
     /// </summary>
     public class LoadLevelsInterface : BaseInterface
     {
-        /// <summary>
-        /// The current <see cref="LoadLevelsInterface"/>.
-        /// </summary>
-        public static LoadLevelsInterface Current { get; set; }
-
-        public static void Init() => Init(ArcadeHelper.OnLoadingEnd().Start);
-        public static void Init(string levelsDirectory) => Init(levelsDirectory, ArcadeHelper.OnLoadingEnd().Start);
-
-        public static void Init(Action onLoadingEnd) => Init(RTFile.CombinePaths(RTFile.ApplicationDirectory, LevelManager.ListPath), onLoadingEnd);
-
-        public static void Init(string levelsDirectory, Action onLoadingEnd)
-        {
-            InterfaceManager.inst.CloseMenus();
-            Current = new LoadLevelsInterface();
-            InterfaceManager.inst.CurrentInterface = Current;
-            Current.StartGeneration();
-            CoroutineHelper.StartCoroutine(Current.GetLevelList(levelsDirectory, true, ArcadeConfig.Instance.LoadSteamLevels.Value, onLoadingEnd));
-        }
-
-        public static void InitLocal() => InitLocal(RTFile.CombinePaths(RTFile.ApplicationDirectory, LevelManager.ListPath));
-
-        public static void InitLocal(string levelsDirectory)
-        {
-            InterfaceManager.inst.CloseMenus();
-            Current = new LoadLevelsInterface();
-            InterfaceManager.inst.CurrentInterface = Current;
-            Current.StartGeneration();
-            CoroutineHelper.StartCoroutine(Current.GetLevelList(levelsDirectory, true, false, ArcadeHelper.OnLoadingEnd().Start));
-        }
+        #region Constructors
         
-        public static void InitSteam()
-        {
-            InterfaceManager.inst.CloseMenus();
-            Current = new LoadLevelsInterface();
-            InterfaceManager.inst.CurrentInterface = Current;
-            Current.StartGeneration();
-            CoroutineHelper.StartCoroutine(Current.GetLevelList(string.Empty, false, true, ArcadeHelper.OnLoadingEnd().Start));
-        }
-
         public LoadLevelsInterface()
         {
             name = "Loading Levels";
@@ -137,14 +100,95 @@ namespace BetterLegacy.Arcade.Interfaces
             exitFunc = Exit;
         }
 
+        #endregion
+
+        #region Values
+
+        /// <summary>
+        /// The current <see cref="LoadLevelsInterface"/>.
+        /// </summary>
+        public static LoadLevelsInterface Current { get; set; }
+
         MenuText title;
         MenuImage icon;
         MenuImage progressBar;
 
         int totalLevelCount;
 
+        /// <summary>
+        /// If the levels and level collections are currently loading.
+        /// </summary>
         public static bool currentlyLoading;
+
+        /// <summary>
+        /// If loading has been cancelled.
+        /// </summary>
         public bool cancelled;
+
+        #endregion
+
+        #region Functions
+
+        /// <summary>
+        /// Initializes <see cref="LoadLevelsInterface"/> with the default directory, end function and load settings.
+        /// </summary>
+        public static void Init() => Init(ArcadeHelper.OnLoadingEnd().Start);
+
+        /// <summary>
+        /// Initializes <see cref="LoadLevelsInterface"/> with a set directory and default end function and load settings.
+        /// </summary>
+        /// <param name="levelsDirectory">Directory to load from.</param>
+        public static void Init(string levelsDirectory) => Init(levelsDirectory, ArcadeHelper.OnLoadingEnd().Start);
+
+        /// <summary>
+        /// Initializes <see cref="LoadLevelsInterface"/> with a set end function and default directory and load settings.
+        /// </summary>
+        /// <param name="onLoadingEnd">Function to run when loading has ended.</param>
+        public static void Init(Action onLoadingEnd) => Init(RTFile.CombinePaths(RTFile.ApplicationDirectory, LevelManager.ListPath), onLoadingEnd);
+
+        /// <summary>
+        /// Initializes <see cref="LoadLevelsInterface"/> with a set directory and end function and default load settings.
+        /// </summary>
+        /// <param name="levelsDirectory">Directory to load from.</param>
+        /// <param name="onLoadingEnd">Function to run when loading has ended.</param>
+        public static void Init(string levelsDirectory, Action onLoadingEnd)
+        {
+            InterfaceManager.inst.CloseMenus();
+            Current = new LoadLevelsInterface();
+            InterfaceManager.inst.CurrentInterface = Current;
+            Current.StartGeneration();
+            CoroutineHelper.StartCoroutine(Current.GetLevelList(levelsDirectory, true, ArcadeConfig.Instance.LoadSteamLevels.Value, onLoadingEnd));
+        }
+
+        /// <summary>
+        /// Initializes <see cref="LoadLevelsInterface"/> with a set directory and default end function and only loads local levels.
+        /// </summary>
+        public static void InitLocal() => InitLocal(RTFile.CombinePaths(RTFile.ApplicationDirectory, LevelManager.ListPath));
+
+        /// <summary>
+        /// Initializes <see cref="LoadLevelsInterface"/> with a set directory and default end function and only loads local levels.
+        /// </summary>
+        /// <param name="levelsDirectory">Directory to load from.</param>
+        public static void InitLocal(string levelsDirectory)
+        {
+            InterfaceManager.inst.CloseMenus();
+            Current = new LoadLevelsInterface();
+            InterfaceManager.inst.CurrentInterface = Current;
+            Current.StartGeneration();
+            CoroutineHelper.StartCoroutine(Current.GetLevelList(levelsDirectory, true, false, ArcadeHelper.OnLoadingEnd().Start));
+        }
+
+        /// <summary>
+        /// Initializes <see cref="LoadLevelsInterface"/> with a set directory and default end function and only loads Steam levels.
+        /// </summary>
+        public static void InitSteam()
+        {
+            InterfaceManager.inst.CloseMenus();
+            Current = new LoadLevelsInterface();
+            InterfaceManager.inst.CurrentInterface = Current;
+            Current.StartGeneration();
+            CoroutineHelper.StartCoroutine(Current.GetLevelList(string.Empty, false, true, ArcadeHelper.OnLoadingEnd().Start));
+        }
 
         /// <summary>
         /// Loads the Arcade & Steam levels.
@@ -335,6 +379,13 @@ namespace BetterLegacy.Arcade.Interfaces
             yield break;
         }
 
+        /// <summary>
+        /// Updates the loading info.
+        /// </summary>
+        /// <param name="sprite">Sprite icon to display.</param>
+        /// <param name="status">Status of loading to display.</param>
+        /// <param name="num">Progress of loading.</param>
+        /// <param name="logError">If the status should be logged as an error.</param>
         public void UpdateInfo(Sprite sprite, string status, int num, bool logError = false)
         {
             float e = num / (float)totalLevelCount;
@@ -352,24 +403,14 @@ namespace BetterLegacy.Arcade.Interfaces
             }
 
             if (logError)
-                CoreHelper.LogError($"{status}");
+                CoreHelper.LogError(status);
         }
 
-        public void UpdateInfo(string name, float percentage)
-        {
-            if (progressBar && progressBar.image)
-                progressBar.image.rectTransform.sizeDelta = new Vector2(600f * percentage, 32f);
+        /// <summary>
+        /// Closes the interface.
+        /// </summary>
+        public void Exit() => cancelled = true;
 
-            if (title && title.textUI)
-            {
-                title.textUI.maxVisibleCharacters = 9999;
-                title.textUI.text = "<size=30>" + LSText.ClampString(name, 52);
-            }
-        }
-
-        public void Exit()
-        {
-            cancelled = true;
-        }
+        #endregion
     }
 }

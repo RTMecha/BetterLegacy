@@ -24,15 +24,8 @@ namespace BetterLegacy.Arcade.Interfaces
     /// </summary>
     public class SteamLevelInterface : BaseInterface
     {
-        /// <summary>
-        /// The current <see cref="SteamLevelInterface"/>.
-        /// </summary>
-        public static SteamLevelInterface Current { get; set; }
-
-        public static Item CurrentSteamItem { get; set; }
-
-        public Action<Level> onSubscribedLevel;
-
+        #region Constructors
+        
         public SteamLevelInterface() : base()
         {
             this.name = "Arcade";
@@ -194,7 +187,7 @@ namespace BetterLegacy.Arcade.Interfaces
                 selectedTextColor = 7,
                 length = 0.5f,
                 playBlipSound = true,
-                func = DownloadLevel().Start,
+                func = () => CoroutineHelper.StartCoroutine(ToggleSubscribedState()),
             });
 
             bool foundLevel = false;
@@ -245,22 +238,57 @@ namespace BetterLegacy.Arcade.Interfaces
             InterfaceManager.inst.SetCurrentInterface(this);
         }
 
+        #endregion
+
+        #region Values
+
+        /// <summary>
+        /// The current <see cref="SteamLevelInterface"/>.
+        /// </summary>
+        public static SteamLevelInterface Current { get; set; }
+
+        /// <summary>
+        /// The current Steam Workshop item.
+        /// </summary>
+        public static Item CurrentSteamItem { get; set; }
+
+        /// <summary>
+        /// Function to run on subscribed to Steam Workshop level.
+        /// </summary>
+        public Action<Level> onSubscribedLevel;
+
+        /// <summary>
+        /// True if the Steam Workshop level is downloading.
+        /// </summary>
         public bool downloading;
 
-        public IEnumerator DownloadLevel()
+        #endregion
+
+        #region Functions
+
+        /// <summary>
+        /// Starts downloading the Steam Workshop item.
+        /// </summary>
+        public IEnumerator ToggleSubscribedState()
         {
             downloading = true;
             yield return CoroutineHelper.StartCoroutine(RTSteamManager.inst.ToggleSubscribedState(CurrentSteamItem, onSubscribedLevel));
             downloading = false;
-            CurrentSteamItem = default;
         }
 
+        /// <summary>
+        /// Initializes <see cref="SteamLevelInterface"/> with a Steam Workshop item.
+        /// </summary>
+        /// <param name="item">Steam Workshop item to view.</param>
         public static void Init(Item item)
         {
             CurrentSteamItem = item;
             Current = new SteamLevelInterface();
         }
 
+        /// <summary>
+        /// Closes the interface.
+        /// </summary>
         public static void Close()
         {
             CurrentSteamItem = default;
@@ -274,5 +302,7 @@ namespace BetterLegacy.Arcade.Interfaces
             CurrentSteamItem = default;
             base.Clear();
         }
+
+        #endregion
     }
 }

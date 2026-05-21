@@ -24,18 +24,8 @@ namespace BetterLegacy.Arcade.Interfaces
     /// </summary>
     public class DownloadLevelInterface : BaseInterface
     {
-        /// <summary>
-        /// The current <see cref="DownloadLevelInterface"/>.
-        /// </summary>
-        public static DownloadLevelInterface Current { get; set; }
-
-        public static JSONObject CurrentOnlineLevel { get; set; }
-        public static int Type { get; set; }
-
-        public Action<Level> onDownloadComplete;
-
-        public Action<LevelCollection> onDownloadCollectionComplete;
-
+        #region Constructors
+        
         public DownloadLevelInterface() : base()
         {
             this.name = "Arcade";
@@ -79,7 +69,7 @@ namespace BetterLegacy.Arcade.Interfaces
                 func = Close,
             });
 
-            var jn = CurrentOnlineLevel;
+            var jn = CurrentItem;
 
             elements.Add(new MenuButton
             {
@@ -266,7 +256,7 @@ namespace BetterLegacy.Arcade.Interfaces
                     selectedTextColor = 7,
                     length = 0.5f,
                     playBlipSound = true,
-                    func = DownloadLevel,
+                    func = StartDownloading,
                 });
                 elements.Add(new MenuButton
                 {
@@ -303,7 +293,7 @@ namespace BetterLegacy.Arcade.Interfaces
                     selectedTextColor = 7,
                     length = 0.5f,
                     playBlipSound = true,
-                    func = DownloadLevel,
+                    func = StartDownloading,
                 });
                 elements.Add(new MenuButton
                 {
@@ -340,7 +330,7 @@ namespace BetterLegacy.Arcade.Interfaces
                     selectedTextColor = 7,
                     length = 0.5f,
                     playBlipSound = true,
-                    func = DownloadLevel,
+                    func = StartDownloading,
                 });
             }
 
@@ -352,72 +342,120 @@ namespace BetterLegacy.Arcade.Interfaces
             InterfaceManager.inst.SetCurrentInterface(this);
         }
 
-        public void DownloadLevel()
+        #endregion
+
+        #region Values
+
+        /// <summary>
+        /// The current <see cref="DownloadLevelInterface"/>.
+        /// </summary>
+        public static DownloadLevelInterface Current { get; set; }
+
+        /// <summary>
+        /// The current item.
+        /// </summary>
+        public static JSONObject CurrentItem { get; set; }
+
+        /// <summary>
+        /// Type of the file to download.
+        /// </summary>
+        public static int Type { get; set; }
+
+        /// <summary>
+        /// Function to run on level downloaded.
+        /// </summary>
+        public Action<Level> onDownloadComplete;
+
+        /// <summary>
+        /// Function to run on level collection downloaded.
+        /// </summary>
+        public Action<LevelCollection> onDownloadCollectionComplete;
+
+        #endregion
+
+        #region Functions
+
+        /// <summary>
+        /// Downloads the current file.
+        /// </summary>
+        public void StartDownloading()
         {
-            var jn = CurrentOnlineLevel;
+            var jn = CurrentItem;
 
             switch (Type)
             {
                 case 0: {
-                        AlephNetwork.DownloadLevel(jn, level =>
-                        {
-                            CurrentOnlineLevel = null;
-                            InterfaceManager.inst.CloseMenus();
-
-                            if (onDownloadComplete != null)
+                        AlephNetwork.DownloadLevel(jn,
+                            level =>
                             {
-                                onDownloadComplete(level);
-                                onDownloadComplete = null;
-                                return;
-                            }
+                                CurrentItem = null;
+                                InterfaceManager.inst.CloseMenus();
 
-                            if (ArcadeConfig.Instance.OpenOnlineLevelAfterDownload.Value)
-                                PlayLevelInterface.Init(level);
-                        }, onError =>
-                        {
-                            Close();
-                            CoreHelper.Log($"Failed to download item: {jn}");
-                        });
+                                if (onDownloadComplete != null)
+                                {
+                                    onDownloadComplete(level);
+                                    onDownloadComplete = null;
+                                    return;
+                                }
+
+                                if (ArcadeConfig.Instance.OpenOnlineLevelAfterDownload.Value)
+                                    PlayLevelInterface.Init(level);
+                            },
+                            onError =>
+                            {
+                                Close();
+                                CoreHelper.Log($"Failed to download item: {jn}");
+                            });
                         break;
                     }
                 case 1: {
-                        AlephNetwork.DownloadLevelCollection(jn, levelCollection =>
-                        {
-                            CurrentOnlineLevel = null;
-                            Type = 0;
-                            InterfaceManager.inst.CloseMenus();
-
-                            if (onDownloadCollectionComplete != null)
+                        AlephNetwork.DownloadLevelCollection(jn,
+                            levelCollection =>
                             {
-                                onDownloadCollectionComplete(levelCollection);
-                                onDownloadCollectionComplete = null;
-                                return;
-                            }
+                                CurrentItem = null;
+                                Type = 0;
+                                InterfaceManager.inst.CloseMenus();
 
-                            if (ArcadeConfig.Instance.OpenOnlineLevelAfterDownload.Value)
-                                LevelCollectionInterface.Init(levelCollection);
-                        }, onError =>
-                        {
-                            Close();
-                            CoreHelper.Log($"Failed to download item: {jn}");
-                        });
+                                if (onDownloadCollectionComplete != null)
+                                {
+                                    onDownloadCollectionComplete(levelCollection);
+                                    onDownloadCollectionComplete = null;
+                                    return;
+                                }
+
+                                if (ArcadeConfig.Instance.OpenOnlineLevelAfterDownload.Value)
+                                    LevelCollectionInterface.Init(levelCollection);
+                            },
+                            onError =>
+                            {
+                                Close();
+                                CoreHelper.Log($"Failed to download item: {jn}");
+                            });
                         break;
                     }
             }
         }
 
+        /// <summary>
+        /// Initializes <see cref="DownloadLevelInterface"/>.
+        /// </summary>
+        /// <param name="level">JSON reference.</param>
+        /// <param name="type">Type of the file to download.</param>
         public static void Init(JSONObject level, int type = 0)
         {
             RTBeatmap.Current?.Pause();
-            CurrentOnlineLevel = level;
+            CurrentItem = level;
             Type = type;
             Current = new DownloadLevelInterface();
         }
 
+        /// <summary>
+        /// Closes the interface.
+        /// </summary>
         public static void Close()
         {
             RTBeatmap.Current?.Resume();
-            CurrentOnlineLevel = null;
+            CurrentItem = null;
             Type = 0;
             InterfaceManager.inst.CloseMenus();
 
@@ -426,8 +464,10 @@ namespace BetterLegacy.Arcade.Interfaces
 
         public override void Clear()
         {
-            CurrentOnlineLevel = null;
+            CurrentItem = null;
             base.Clear();
         }
+
+        #endregion
     }
 }
