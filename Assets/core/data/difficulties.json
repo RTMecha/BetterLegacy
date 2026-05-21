@@ -1,0 +1,50 @@
+﻿[
+  {
+    "index": -1,
+    "name": "Unknown",
+    "color": "424242",
+    "valid": false
+  },
+  {
+    "index": 6,
+    "name": "Animation",
+    "color": "999999",
+    "desc": "Only for levels with nothing that can hurt the player, basically for \"animation levels\""
+  },
+  {
+    "index": 0,
+    "name": "Easy",
+    "color": "29B6F6",
+    "desc": "Very easily no hit but a hit can occur."
+  },
+  {
+    "index": 1,
+    "name": "Normal",
+    "color": "9CCC65",
+    "desc": "At least one hit / death can occur."
+  },
+  {
+    "index": 2,
+    "name": "Hard",
+    "color": "FFB039",
+    "desc": "Several deaths can occur."
+  },
+  {
+    "index": 3,
+    "name": "Expert",
+    "color": "E47272",
+    "desc": "Challenges what the player is capable of with the game."
+  },
+  {
+    "index": 4,
+    "name": "Expert+",
+    "color": "373737",
+    "desc": "Same as above, but harder."
+  },
+  {
+    "index": 5,
+    "name": "Master",
+    "color": "3F0202",
+    "desc": "Reserved for the most difficult of all levels (e.g. hardest levels on the workshop). This difficulty can involve a specific mechanic that makes the level harder, like no rewinds, memory-based attacks, etc."
+  }
+]
