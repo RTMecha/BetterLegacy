@@ -1206,7 +1206,7 @@ namespace BetterLegacy.Editor.Managers
                         foreach (var toggle in ui.ShapeOptionToggles[type])
                         {
                             int index = num;
-                            if (index >= Shape.unmoddedMaxShapes[type])
+                            if (!Shape.unmoddedMaxShapes.InRange(type) || index >= Shape.unmoddedMaxShapes[type])
                                 EditorHelper.SetComplexity(toggle.gameObject, "extra_shapes", Complexity.Advanced);
                             toggle.SetIsOnWithoutNotify(option == index);
                             toggle.onValueChanged.NewListener(_val =>
