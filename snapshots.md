@@ -1,8 +1,13 @@
-﻿# snapshot-2026.?.? - (Story Playtest) [???]
+﻿# snapshot-2026.5.6 - (Story Playtest) [May 22, 2026]
 ## Changes
 ### Core
 - Link types now exist as asset files.
 - Cleaned up interface code and networking code.
+
+## Fixes
+- Fixed window position resetting all time even if it isn't necessary.
+- Fixed Render Depth being limited on all complexities.
+- Fixed shape UI being broken on Misc shapes.
 
 -------------------------------------------------------------------
 
