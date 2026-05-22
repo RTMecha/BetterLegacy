@@ -940,7 +940,6 @@ namespace BetterLegacy.Core.Runtime.Events
                     windowFlags: forceWindow ? 0 : 1);
 
                 windowHasChanged = true;
-                ProjectArrhythmia.Window.positionResolutionChanged = true;
             }
 
             if (forceWindow && !allowWindowPositioning && ProjectArrhythmia.State.InEditorPreview && !LevelManager.LevelEnded)
@@ -948,7 +947,6 @@ namespace BetterLegacy.Core.Runtime.Events
                 setWindow = true;
                 ProjectArrhythmia.Window.SetResolution((int)(windowResolution.x * screenScale), (int)(windowResolution.y * screenScale), false);
                 windowHasChanged = true;
-                ProjectArrhythmia.Window.positionResolutionChanged = true;
             }
 
             if (ProjectArrhythmia.State.InEditor && EditorManager.inst.isEditing)

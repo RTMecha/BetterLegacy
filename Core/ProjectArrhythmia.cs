@@ -129,7 +129,7 @@ namespace BetterLegacy.Core
             /// <summary>
             /// Position or resolution changed.
             /// </summary>
-            public static bool positionResolutionChanged;
+            public static bool positionChanged;
 
             /// <summary>
             /// If the window is currently borderless.
@@ -180,6 +180,7 @@ namespace BetterLegacy.Core
             /// <param name="y">Position Y to set.</param>
             public static void SetPosition(int x, int y)
             {
+                positionChanged = true;
                 CurrentPosition = new Vector2Int(x, y);
                 SetWindowPos(Handle, 0, x, y, 0, 0, 1);
             }
@@ -226,8 +227,12 @@ namespace BetterLegacy.Core
             /// </summary>
             public static void ResetPosition()
             {
+                if (!positionChanged)
+                    return;
+
                 var windowOrigin = WindowOrigin;
                 SetPosition(windowOrigin.x, windowOrigin.y);
+                positionChanged = false;
             }
 
             /// <summary>
