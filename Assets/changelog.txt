@@ -1,9 +1,10 @@
-# snapshot-2026.5.5 - (Story Playtest) [May 17, 2026]
-## Features
-### Editor
-- Added Open Folder button to the screenshots view.
-- Screenshots in the screenshots view now have a context menu.
+# snapshot-2026.5.6 - (Story Playtest) [May 22, 2026]
+## Changes
+### Core
+- Link types now exist as asset files.
+- Cleaned up interface code and networking code.
 
 ## Fixes
-- Fixed Prefab Object random toggles not displaying if the random value is set to 0.
-- Fixed Use Hex Color not converting the hex colors properly in some cases.
+- Fixed window position resetting all time even if it isn't necessary.
+- Fixed Render Depth being limited on all complexities.
+- Fixed shape UI being broken on Misc shapes.
