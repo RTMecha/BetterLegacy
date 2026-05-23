@@ -70,6 +70,8 @@ namespace BetterLegacy.Patchers
             {
                 RTLevel.Current.previousAudioTime = val;
                 RTLevel.Current.audioTimeVelocity = 0f;
+                if (RTLevel.Current.eventEngine)
+                    RTLevel.Current.eventEngine.shakeTime = val;
             }
 
             try
