@@ -1,4 +1,8 @@
-﻿# snapshot-2026.5.6 - (Story Playtest) [May 22, 2026]
+﻿# snapshot-2026.5.7 - (Story Playtest) [???]
+## Fixes
+- Fixed shake breaking in some cases, again.
+
+# snapshot-2026.5.6 - (Story Playtest) [May 22, 2026]
 ## Changes
 ### Core
 - Link types now exist as asset files.
