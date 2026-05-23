@@ -1241,6 +1241,29 @@ namespace BetterLegacy
         //Node,
     }
 
+    /// <summary>
+    /// Source of an objects' axis.
+    /// </summary>
+    public enum AxisSource
+    {
+        /// <summary>
+        /// Object sequence.
+        /// </summary>
+        Sequence,
+        /// <summary>
+        /// Unity object transforms.
+        /// </summary>
+        Visual,
+        /// <summary>
+        /// Object transform offsets.
+        /// </summary>
+        Offset,
+        /// <summary>
+        /// Object sequence + object transform offsets.
+        /// </summary>
+        SequenceOffset,
+    }
+
     public enum HomingPriority
     {
         Closest,

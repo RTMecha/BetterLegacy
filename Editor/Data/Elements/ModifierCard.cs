@@ -1917,18 +1917,6 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierFunctions.getEasing): {
-                        StringGenerator(modifier, reference, "Variable Name", 0, renderVariables: false);
-                        EaseGenerator(modifier, reference, 1);
-
-                        break;
-                    }
-                case nameof(ModifierFunctions.getEasingName): {
-                        StringGenerator(modifier, reference, "Variable Name", 0, renderVariables: false);
-                        EaseGenerator(modifier, reference, 1);
-
-                        break;
-                    }
                 case nameof(ModifierFunctions.getTag): {
                         StringGenerator(modifier, reference, "Variable Name", 0, renderVariables: false);
                         IntegerGenerator(modifier, reference, "Index", 1, 0);
@@ -1936,93 +1924,6 @@ namespace BetterLegacy.Editor.Data.Elements
                         break;
                     }
 
-                case nameof(ModifierFunctions.getAxis): {
-                        StringGenerator(modifier, reference, "Variable Name", 0, renderVariables: false);
-
-                        PrefabGroupOnly(modifier, reference);
-                        var str = StringGenerator(modifier, reference, "Object Group", 10);
-                        EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
-
-                        DropdownGenerator(modifier, reference, "Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
-                        DropdownGenerator(modifier, reference, "Axis", 2, CoreHelper.StringToOptionData("X", "Y", "Z"));
-
-                        SingleGenerator(modifier, reference, "Delay", 3, 0f);
-
-                        SingleGenerator(modifier, reference, "Multiply", 4, 1f);
-                        SingleGenerator(modifier, reference, "Offset", 5, 0f);
-                        SingleGenerator(modifier, reference, "Min", 6, -99999f);
-                        SingleGenerator(modifier, reference, "Max", 7, 99999f);
-                        SingleGenerator(modifier, reference, "Loop", 9, 99999f);
-                        BoolGenerator(modifier, reference, "Use Visual", 8, false);
-                        BoolGenerator(modifier, reference, "Offset Audio", 11, true);
-
-                        if (modifier.version == 0)
-                            AddGenerator(modifier, reference, "Update", () =>
-                            {
-                                if (modifier.GetInt(1, 0) == 2 && modifier.GetInt(2, 0) == 0 && !modifier.GetBool(8, false))
-                                    modifier.SetValue(2, "2");
-                                modifier.version = 1;
-                            });
-
-                        break;
-                    }
-                case nameof(ModifierFunctions.getAxisMath): {
-                        StringGenerator(modifier, reference, "Variable Name", 0, renderVariables: false);
-
-                        PrefabGroupOnly(modifier, reference);
-                        var str = StringGenerator(modifier, reference, "Object Group", 5);
-                        EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
-
-                        DropdownGenerator(modifier, reference, "Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
-                        DropdownGenerator(modifier, reference, "Axis", 2, CoreHelper.StringToOptionData("X", "Y", "Z"));
-
-                        SingleGenerator(modifier, reference, "Delay", 3, 0f);
-
-                        BoolGenerator(modifier, reference, "Use Visual", 4, false);
-
-                        StringGenerator(modifier, reference, "Expression", 6);
-                        BoolGenerator(modifier, reference, "Offset Audio", 7, true);
-
-                        if (modifier.version == 0)
-                            AddGenerator(modifier, reference, "Update", () =>
-                            {
-                                if (modifier.GetInt(1, 0) == 2 && modifier.GetInt(2, 0) == 0 && !modifier.GetBool(4, false))
-                                    modifier.SetValue(2, "2");
-                                modifier.version = 1;
-                            });
-
-                        break;
-                    }
-                case nameof(ModifierFunctions.getAnimateVariable): {
-                        StringGenerator(modifier, reference, "Variable Name", 1, renderVariables: false);
-
-                        SingleGenerator(modifier, reference, "Time", 0, 1f);
-
-                        SingleGenerator(modifier, reference, "Value", 2, 0f);
-
-                        BoolGenerator(modifier, reference, "Relative", 3, true);
-
-                        EaseGenerator(modifier, reference, 4);
-
-                        BoolGenerator(modifier, reference, "Apply Delta Time", 5, true);
-
-                        break;
-                    }
-                case nameof(ModifierFunctions.getAnimateVariableMath): {
-                        StringGenerator(modifier, reference, "Variable Name", 1, renderVariables: false);
-
-                        StringGenerator(modifier, reference, "Time", 0);
-
-                        StringGenerator(modifier, reference, "Value", 2);
-
-                        BoolGenerator(modifier, reference, "Relative", 3, true);
-
-                        EaseGenerator(modifier, reference, 4);
-
-                        BoolGenerator(modifier, reference, "Apply Delta Time", 5, true);
-
-                        break;
-                    }
                 case nameof(ModifierFunctions.getPitch): {
                         StringGenerator(modifier, reference, "Variable Name", 0, renderVariables: false);
 
@@ -2409,16 +2310,6 @@ namespace BetterLegacy.Editor.Data.Elements
                     }
                 case nameof(ModifierFunctions.getObjectName): {
                         StringGenerator(modifier, reference, "Variable Name", 0, renderVariables: false);
-
-                        break;
-                    }
-                case nameof(ModifierFunctions.getKeyframeValue): {
-                        StringGenerator(modifier, reference, "Variable Name", 0, renderVariables: false);
-
-                        DropdownGenerator(modifier, reference, "Source", 1, CoreHelper.StringToOptionData("Normal", "Random"));
-                        DropdownGenerator(modifier, reference, "Type", 2, CoreHelper.StringToOptionData("Position", "Scale", "Rotation", "Color"));
-                        IntegerGenerator(modifier, reference, "Value Index", 3);
-                        SingleGenerator(modifier, reference, "Time", 4);
 
                         break;
                     }
@@ -3609,6 +3500,126 @@ namespace BetterLegacy.Editor.Data.Elements
                 #endregion
 
                 #region Animation
+                    
+                case nameof(ModifierFunctions.getAxis): {
+                        StringGenerator(modifier, reference, "Variable Name", 0, renderVariables: false);
+
+                        PrefabGroupOnly(modifier, reference);
+                        var str = StringGenerator(modifier, reference, "Object Group", 10);
+                        EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
+
+                        DropdownGenerator(modifier, reference, "Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
+                        DropdownGenerator(modifier, reference, "Axis", 2, CoreHelper.StringToOptionData("X", "Y", "Z"));
+
+                        SingleGenerator(modifier, reference, "Delay", 3, 0f);
+
+                        SingleGenerator(modifier, reference, "Multiply", 4, 1f);
+                        SingleGenerator(modifier, reference, "Offset", 5, 0f);
+                        SingleGenerator(modifier, reference, "Min", 6, -99999f);
+                        SingleGenerator(modifier, reference, "Max", 7, 99999f);
+                        SingleGenerator(modifier, reference, "Loop", 9, 99999f);
+                        var axisSourceRaw = modifier.GetValue(8);
+                        if (!string.IsNullOrEmpty(axisSourceRaw) && axisSourceRaw.ToLower() == "false")
+                            modifier.SetValue(8, "0");
+                        if (!string.IsNullOrEmpty(axisSourceRaw) && axisSourceRaw.ToLower() == "true")
+                            modifier.SetValue(8, "1");
+                        DropdownGenerator(modifier, reference, "Axis Source", 8, CoreHelper.ToOptionData<AxisSource>());
+                        BoolGenerator(modifier, reference, "Offset Audio", 11, true);
+
+                        if (modifier.version == 0)
+                            AddGenerator(modifier, reference, "Update", () =>
+                            {
+                                if (modifier.GetInt(1, 0) == 2 && modifier.GetInt(2, 0) == 0 && !modifier.GetBool(8, false))
+                                    modifier.SetValue(2, "2");
+                                modifier.version = 1;
+                            });
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.getAxisMath): {
+                        StringGenerator(modifier, reference, "Variable Name", 0, renderVariables: false);
+
+                        PrefabGroupOnly(modifier, reference);
+                        var str = StringGenerator(modifier, reference, "Object Group", 5);
+                        EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
+
+                        DropdownGenerator(modifier, reference, "Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
+                        DropdownGenerator(modifier, reference, "Axis", 2, CoreHelper.StringToOptionData("X", "Y", "Z"));
+
+                        SingleGenerator(modifier, reference, "Delay", 3, 0f);
+
+                        var axisSourceRaw = modifier.GetValue(4);
+                        if (!string.IsNullOrEmpty(axisSourceRaw) && axisSourceRaw.ToLower() == "false")
+                            modifier.SetValue(4, "0");
+                        if (!string.IsNullOrEmpty(axisSourceRaw) && axisSourceRaw.ToLower() == "true")
+                            modifier.SetValue(4, "1");
+                        DropdownGenerator(modifier, reference, "Axis Source", 4, CoreHelper.ToOptionData<AxisSource>());
+
+                        StringGenerator(modifier, reference, "Expression", 6);
+                        BoolGenerator(modifier, reference, "Offset Audio", 7, true);
+
+                        if (modifier.version == 0)
+                            AddGenerator(modifier, reference, "Update", () =>
+                            {
+                                if (modifier.GetInt(1, 0) == 2 && modifier.GetInt(2, 0) == 0 && !modifier.GetBool(4, false))
+                                    modifier.SetValue(2, "2");
+                                modifier.version = 1;
+                            });
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.getAnimateVariable): {
+                        StringGenerator(modifier, reference, "Variable Name", 1, renderVariables: false);
+
+                        SingleGenerator(modifier, reference, "Time", 0, 1f);
+
+                        SingleGenerator(modifier, reference, "Value", 2, 0f);
+
+                        BoolGenerator(modifier, reference, "Relative", 3, true);
+
+                        EaseGenerator(modifier, reference, 4);
+
+                        BoolGenerator(modifier, reference, "Apply Delta Time", 5, true);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.getAnimateVariableMath): {
+                        StringGenerator(modifier, reference, "Variable Name", 1, renderVariables: false);
+
+                        StringGenerator(modifier, reference, "Time", 0);
+
+                        StringGenerator(modifier, reference, "Value", 2);
+
+                        BoolGenerator(modifier, reference, "Relative", 3, true);
+
+                        EaseGenerator(modifier, reference, 4);
+
+                        BoolGenerator(modifier, reference, "Apply Delta Time", 5, true);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.getEasing): {
+                        StringGenerator(modifier, reference, "Variable Name", 0, renderVariables: false);
+                        EaseGenerator(modifier, reference, 1);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.getEasingName): {
+                        StringGenerator(modifier, reference, "Variable Name", 0, renderVariables: false);
+                        EaseGenerator(modifier, reference, 1);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.getKeyframeValue): {
+                        StringGenerator(modifier, reference, "Variable Name", 0, renderVariables: false);
+
+                        DropdownGenerator(modifier, reference, "Source", 1, CoreHelper.StringToOptionData("Normal", "Random"));
+                        DropdownGenerator(modifier, reference, "Type", 2, CoreHelper.StringToOptionData("Position", "Scale", "Rotation", "Color"));
+                        IntegerGenerator(modifier, reference, "Value Index", 3);
+                        SingleGenerator(modifier, reference, "Time", 4);
+
+                        break;
+                    }
 
                 case nameof(ModifierFunctions.animateObject): {
                         SingleGenerator(modifier, reference, "Time", 0, 1f);
@@ -3826,7 +3837,12 @@ namespace BetterLegacy.Editor.Data.Elements
                         SingleGenerator(modifier, reference, "Max", 9, 99999f);
 
                         SingleGenerator(modifier, reference, "Loop", 10, 99999f);
-                        BoolGenerator(modifier, reference, "Use Visual", 11, false);
+                        var axisSourceRaw = modifier.GetValue(11);
+                        if (!string.IsNullOrEmpty(axisSourceRaw) && axisSourceRaw.ToLower() == "false")
+                            modifier.SetValue(11, "0");
+                        if (!string.IsNullOrEmpty(axisSourceRaw) && axisSourceRaw.ToLower() == "true")
+                            modifier.SetValue(11, "1");
+                        DropdownGenerator(modifier, reference, "Axis Source", 11, CoreHelper.ToOptionData<AxisSource>());
                         BoolGenerator(modifier, reference, "Offset Audio", 12, true);
 
                         if (modifier.version == 0)
@@ -3854,7 +3870,12 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         SingleGenerator(modifier, reference, "Min", 6, -99999f);
                         SingleGenerator(modifier, reference, "Max", 7, 99999f);
-                        BoolGenerator(modifier, reference, "Use Visual", 9, false);
+                        var axisSourceRaw = modifier.GetValue(9);
+                        if (!string.IsNullOrEmpty(axisSourceRaw) && axisSourceRaw.ToLower() == "false")
+                            modifier.SetValue(9, "0");
+                        if (!string.IsNullOrEmpty(axisSourceRaw) && axisSourceRaw.ToLower() == "true")
+                            modifier.SetValue(9, "1");
+                        DropdownGenerator(modifier, reference, "Axis Source", 9, CoreHelper.ToOptionData<AxisSource>());
                         StringGenerator(modifier, reference, "Expression", 8);
                         BoolGenerator(modifier, reference, "Offset Audio", 10, true);
 
@@ -3896,7 +3917,12 @@ namespace BetterLegacy.Editor.Data.Elements
                             SingleGenerator(modifier, reference, "Delay", i + 4, 0f);
                             SingleGenerator(modifier, reference, "Min", i + 5, -9999f);
                             SingleGenerator(modifier, reference, "Max", i + 6, 9999f);
-                            BoolGenerator(modifier, reference, "Use Visual", 7, false);
+                            var axisSourceRaw = modifier.GetValue(i + 7);
+                            if (!string.IsNullOrEmpty(axisSourceRaw) && axisSourceRaw.ToLower() == "false")
+                                modifier.SetValue(i + 7, "0");
+                            if (!string.IsNullOrEmpty(axisSourceRaw) && axisSourceRaw.ToLower() == "true")
+                                modifier.SetValue(i + 7, "1");
+                            DropdownGenerator(modifier, reference, "Axis Source", i + 7, CoreHelper.ToOptionData<AxisSource>());
 
                             a++;
                         }
@@ -3912,7 +3938,7 @@ namespace BetterLegacy.Editor.Data.Elements
                             modifier.values.Add("0");
                             modifier.values.Add("-9999");
                             modifier.values.Add("9999");
-                            modifier.values.Add("False");
+                            modifier.values.Add("0");
                         });
 
                         if (modifier.version == 0)
@@ -5038,7 +5064,12 @@ namespace BetterLegacy.Editor.Data.Elements
                         SingleGenerator(modifier, reference, "Min", 6, -99999f);
                         SingleGenerator(modifier, reference, "Max", 7, 99999f);
                         SingleGenerator(modifier, reference, "Loop", 10, 99999f);
-                        BoolGenerator(modifier, reference, "Use Visual", 9, false);
+                        var axisSourceRaw = modifier.GetValue(9);
+                        if (!string.IsNullOrEmpty(axisSourceRaw) && axisSourceRaw.ToLower() == "false")
+                            modifier.SetValue(9, "0");
+                        if (!string.IsNullOrEmpty(axisSourceRaw) && axisSourceRaw.ToLower() == "true")
+                            modifier.SetValue(9, "1");
+                        DropdownGenerator(modifier, reference, "Axis Source", 9, CoreHelper.ToOptionData<AxisSource>());
                         BoolGenerator(modifier, reference, "Offset Audio", 11, true);
 
                         SingleGenerator(modifier, reference, "Equals", 8, 1f);
