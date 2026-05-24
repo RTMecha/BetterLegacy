@@ -405,6 +405,30 @@ namespace BetterLegacy.Editor.Managers
             Popup.ClearContent();
             Popup.SearchField.onValueChanged.NewListener(_val => RenderPopup(animations, onPlay, onSelect, currentObject, onReturn));
 
+            EditorContextMenu.AddContextMenu(Popup.GameObject,
+                new ButtonElement("Create Animation", () =>
+                {
+                    animations.Add(CreateAnimation());
+                    RenderPopup(animations, onPlay, onSelect, currentObject, onReturn);
+                }),
+                new ButtonElement("Copy All", () =>
+                {
+                    copiedAnimations = new List<PAAnimation>(animations.Select(x => x.Copy()));
+                    EditorManager.inst.DisplayNotification($"Copied all animations.", 2f, EditorManager.NotificationType.Success);
+                }),
+                new ButtonElement("Paste", () =>
+                {
+                    if (copiedAnimations.IsEmpty())
+                    {
+                        EditorManager.inst.DisplayNotification($"No copied animations yet!", 2f, EditorManager.NotificationType.Warning);
+                        return;
+                    }
+
+                    animations.AddRange(copiedAnimations.Select(x => x.Copy()));
+                    RenderPopup(animations, onPlay, onSelect, currentObject, onReturn);
+                    EditorManager.inst.DisplayNotification($"Pasted animations.", 2f, EditorManager.NotificationType.Success);
+                }));
+
             var add = EditorPrefabHolder.Instance.CreateAddButton(Popup.Content);
             add.Text = "Add new Animation";
             add.OnClick.ClearAll();
@@ -446,7 +470,7 @@ namespace BetterLegacy.Editor.Managers
                         {
                             if (copiedAnimations.IsEmpty())
                             {
-                                EditorManager.inst.DisplayNotification($"No copied animations yet!", 2F, EditorManager.NotificationType.Warning);
+                                EditorManager.inst.DisplayNotification($"No copied animations yet!", 2f, EditorManager.NotificationType.Warning);
                                 return;
                             }
 
@@ -542,7 +566,7 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 if (copiedAnimations.IsEmpty())
                                 {
-                                    EditorManager.inst.DisplayNotification($"No copied animations yet!", 2F, EditorManager.NotificationType.Warning);
+                                    EditorManager.inst.DisplayNotification($"No copied animations yet!", 2f, EditorManager.NotificationType.Warning);
                                     return;
                                 }
 

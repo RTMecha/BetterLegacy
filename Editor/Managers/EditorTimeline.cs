@@ -186,6 +186,11 @@ namespace BetterLegacy.Editor.Managers
         public ContentPopup EditorGroupPopup { get; set; }
 
         /// <summary>
+        /// List of copied editor groups.
+        /// </summary>
+        public List<EditorGroup> copiedEditorGroups = new List<EditorGroup>();
+
+        /// <summary>
         /// Function to run on timeline object created.<br></br>
         /// Param 0 = <see cref="TimelineObject"/> reference.<br></br>
         /// Param 1 = index of the timeline object.<br></br>
@@ -1411,6 +1416,14 @@ namespace BetterLegacy.Editor.Managers
                                 }
                             }),
                             new SpacerElement(),
+                            new ButtonElement("Copy", () =>
+                            {
+                                copiedEditorGroups.Clear();
+                                copiedEditorGroups.Add(editorGroup);
+                                EditorManager.inst.DisplayNotification($"Copied editor group!", 2f, EditorManager.NotificationType.Success);
+                            }),
+                            new ButtonElement("Copy All", CopyAllEditorGroups),
+                            new ButtonElement("Paste", PasteEditorGroups),
                             new ButtonElement("Delete", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to remove this editor group?", () =>
                             {
                                 RTEditor.inst.editorInfo.editorGroups.RemoveAt(index);
@@ -1424,21 +1437,27 @@ namespace BetterLegacy.Editor.Managers
 
             var add = EditorPrefabHolder.Instance.CreateAddButton(EditorGroupPopup.Content);
             add.Text = "Add Editor Group";
-            add.OnClick.NewListener(() =>
-            {
-                var name = "New Group";
-                int num = 1;
-                while (RTEditor.inst.editorInfo.editorGroups.Has(x => x.name == name))
-                {
-                    name = $"New Group [{num}]";
-                    num++;
-                }
+            add.OnClick.NewListener(CreateEditorGroup);
+        }
 
-                var editorGroup = new EditorGroup(name);
-                editorGroup.Layer = Layer;
-                RTEditor.inst.editorInfo.editorGroups.Add(editorGroup);
+        /// <summary>
+        /// Creates a new editor group.
+        /// </summary>
+        public void CreateEditorGroup()
+        {
+            var name = "New Group";
+            int num = 1;
+            while (RTEditor.inst.editorInfo.editorGroups.Has(x => x.name == name))
+            {
+                name = $"New Group [{num}]";
+                num++;
+            }
+
+            var editorGroup = new EditorGroup(name);
+            editorGroup.Layer = Layer;
+            RTEditor.inst.editorInfo.editorGroups.Add(editorGroup);
+            if (EditorGroupPopup.IsOpen)
                 RenderEditorGroupsPopup();
-            });
         }
 
         /// <summary>
@@ -1452,6 +1471,33 @@ namespace BetterLegacy.Editor.Managers
                 timelineObject.Group = editorGroup.name;
                 timelineObject.Render();
             }
+        }
+
+        /// <summary>
+        /// Copies all editor groups from the level.
+        /// </summary>
+        public void CopyAllEditorGroups()
+        {
+            copiedEditorGroups.Clear();
+            copiedEditorGroups.AddRange(RTEditor.inst.editorInfo.editorGroups);
+            EditorManager.inst.DisplayNotification($"Copied all editor groups!", 2f, EditorManager.NotificationType.Success);
+        }
+
+        /// <summary>
+        /// Pastes the copied editor groups into the level.
+        /// </summary>
+        public void PasteEditorGroups()
+        {
+            if (copiedEditorGroups.IsEmpty())
+            {
+                EditorManager.inst.DisplayNotification($"No copied editor groups yet!", 2f, EditorManager.NotificationType.Warning);
+                return;
+            }
+
+            RTEditor.inst.editorInfo.editorGroups.AddRange(copiedEditorGroups.Select(x => x.Copy()));
+            if (EditorGroupPopup.IsOpen)
+                RenderEditorGroupsPopup();
+            EditorManager.inst.DisplayNotification($"Pasted editor groups!", 2f, EditorManager.NotificationType.Success);
         }
 
         #endregion

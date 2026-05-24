@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -94,14 +95,15 @@ namespace BetterLegacy.Editor.Managers
                 }
             };
 
+            EditorContextMenu.AddContextMenu(Popup.GameObject,
+                new ButtonElement("Pin Current Editor Layer", PinCurrentEditorLayer),
+                new ButtonElement("Copy All", CopyAll),
+                new ButtonElement("Paste", Paste));
+
             Dialog = new PinnedLayerEditorDialog();
             Dialog.Init();
 
-            EditorHelper.AddEditorDropdown("View Pinned Layers", string.Empty, EditorHelper.VIEW_DROPDOWN, EditorSprites.SearchSprite, () =>
-            {
-                Popup.Open();
-                RenderPopup();
-            });
+            EditorHelper.AddEditorDropdown("View Pinned Layers", string.Empty, EditorHelper.VIEW_DROPDOWN, SpriteHelper.LoadSprite(AssetPack.GetFile("core/sprites/icons/pin.png")), OpenPopup);
         }
 
         /// <summary>
@@ -120,6 +122,18 @@ namespace BetterLegacy.Editor.Managers
             Dialog.Open();
             RenderDialog();
             EditorTimeline.inst.RenderLayerInput(EditorTimeline.inst.Layer, EditorTimeline.inst.layerType);
+            if (Popup.IsOpen)
+                RenderPopup();
+            EditorManager.inst.DisplayNotification($"Pinned editor layer [{EditorTimeline.GetLayerString(pinnedEditorLayer.layer)}, {pinnedEditorLayer.layerType}]", 2f, EditorManager.NotificationType.Success);
+        }
+
+        /// <summary>
+        /// Opens the Pinned Editor Layers popup.
+        /// </summary>
+        public void OpenPopup()
+        {
+            Popup.Open();
+            RenderPopup();
         }
 
         /// <summary>
@@ -131,11 +145,7 @@ namespace BetterLegacy.Editor.Managers
 
             var add = EditorPrefabHolder.Instance.CreateAddButton(Popup.Content);
             add.Text = "Pin Current Editor Layer";
-            add.OnClick.NewListener(() =>
-            {
-                PinCurrentEditorLayer();
-                RenderPopup();
-            });
+            add.OnClick.NewListener(PinCurrentEditorLayer);
 
             int num = 0;
             foreach (var pinnedEditorLayer in RTEditor.inst.editorInfo.pinnedEditorLayers)
@@ -197,17 +207,10 @@ namespace BetterLegacy.Editor.Managers
                     {
                         copiedPinnedEditorLayers.Clear();
                         copiedPinnedEditorLayers.Add(pinnedEditorLayer);
+                        EditorManager.inst.DisplayNotification($"Copied pinned editor layer!", 2f, EditorManager.NotificationType.Success);
                     }),
-                    new ButtonElement("Copy All", () =>
-                    {
-                        copiedPinnedEditorLayers.Clear();
-                        copiedPinnedEditorLayers.AddRange(RTEditor.inst.editorInfo.pinnedEditorLayers);
-                    }),
-                    new ButtonElement("Paste", () =>
-                    {
-                        RTEditor.inst.editorInfo.pinnedEditorLayers.AddRange(copiedPinnedEditorLayers);
-                        RenderPopup();
-                    }),
+                    new ButtonElement("Copy All", CopyAll),
+                    new ButtonElement("Paste", Paste),
                     new SpacerElement(),
                 };
                 buttonFunctions.AddRange(EditorContextMenu.GetMoveIndexFunctions(RTEditor.inst.editorInfo.pinnedEditorLayers, index, RenderPopup));
@@ -338,6 +341,33 @@ namespace BetterLegacy.Editor.Managers
                 var currentHexColor = Dialog.ColorField.text;
                 EditorContextMenu.inst.ShowContextMenu(EditorContextMenu.GetEditorColorFunctions(Dialog.ColorField, () => currentHexColor));
             };
+        }
+
+        /// <summary>
+        /// Copies all pinned editor layers from the level.
+        /// </summary>
+        public void CopyAll()
+        {
+            copiedPinnedEditorLayers.Clear();
+            copiedPinnedEditorLayers.AddRange(RTEditor.inst.editorInfo.pinnedEditorLayers);
+            EditorManager.inst.DisplayNotification($"Copied all pinned editor layers!", 2f, EditorManager.NotificationType.Success);
+        }
+
+        /// <summary>
+        /// Pastes the copied pinned editor layers into the level.
+        /// </summary>
+        public void Paste()
+        {
+            if (copiedPinnedEditorLayers.IsEmpty())
+            {
+                EditorManager.inst.DisplayNotification($"No copied pinned editor layers yet!", 2f, EditorManager.NotificationType.Warning);
+                return;
+            }
+
+            RTEditor.inst.editorInfo.pinnedEditorLayers.AddRange(copiedPinnedEditorLayers.Select(x => x.Copy()));
+            if (Popup.IsOpen)
+                RenderPopup();
+            EditorManager.inst.DisplayNotification($"Pasted pinned editor layers!", 2f, EditorManager.NotificationType.Success);
         }
 
         #endregion

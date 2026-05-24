@@ -228,6 +228,78 @@ namespace BetterLegacy.Editor.Managers
 
         void Setup()
         {
+            #region Open Level Popup setup
+
+            OpenLevelPopup.InitTopElementsParent();
+            OpenLevelPopup.InitPath(
+                getValue: () => RTEditor.inst.EditorPath,
+                setValue: _val => RTEditor.inst.EditorPath = _val,
+                onEndEdit: _val => RTEditor.inst.UpdateEditorPath(false));
+            OpenLevelPopup.InitReload(() =>
+            {
+                RTEditor.inst.LoadLevelPanelUI(false);
+                LoadLevels();
+            });
+            OpenLevelPopup.InitAscendToggle(
+                getValue: () => RTEditor.inst.levelAscend,
+                setValue: _val =>
+                {
+                    RTEditor.inst.levelAscend = _val;
+                    RenderLevels();
+                    RTEditor.inst.SaveGlobalSettings();
+                });
+            OpenLevelPopup.InitSortDropdown(
+                getValue: () => (int)RTEditor.inst.levelSort,
+                setValue: _val =>
+                {
+                    RTEditor.inst.levelSort = (LevelSort)_val;
+                    RenderLevels();
+                    RTEditor.inst.SaveGlobalSettings();
+                },
+                options: CoreHelper.StringToOptionData("Cover", "Artist", "Creator", "Folder", "Title", "Difficulty", "Date Edited", "Date Created"));
+            OpenLevelPopup.TopElements.sizeDelta = new Vector2(90f, 32f);
+
+            TooltipHelper.RemoveTooltip(OpenLevelPopup.SortDropdown.gameObject);
+            TooltipHelper.AssignTooltip(OpenLevelPopup.SortDropdown.gameObject, "Level Sort Dropdown");
+
+            EditorHelper.SetComplexity(OpenLevelPopup.SortDropdown.gameObject, "level/sort", Complexity.Normal);
+
+            TooltipHelper.RemoveTooltip(OpenLevelPopup.AscendToggle.gameObject);
+            TooltipHelper.AssignTooltip(OpenLevelPopup.AscendToggle.gameObject, "Level Ascend Toggle");
+
+            EditorHelper.SetComplexity(OpenLevelPopup.AscendToggle.gameObject, "level/ascend", Complexity.Normal);
+
+            EditorContextMenu.AddContextMenu(OpenLevelPopup.GameObject,
+                new ButtonElement("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.EditorPath), () => { LoadLevels(); RTEditor.inst.HideNameEditor(); })),
+                new ButtonElement("Create level", EditorManager.inst.OpenNewLevelPopup),
+                new ButtonElement("Paste", PasteLevel),
+                new ButtonElement("Open in File Explorer", RTEditor.inst.OpenLevelListFolder));
+
+            TooltipHelper.AssignTooltip(OpenLevelPopup.PathField.gameObject, "Editor Path", 3f);
+            EditorHelper.SetComplexity(OpenLevelPopup.PathField.gameObject, "level/path", Complexity.Advanced);
+
+            EditorContextMenu.AddContextMenu(OpenLevelPopup.PathField.gameObject,
+                new ButtonElement("Set folder", () =>
+                {
+                    RTFileBrowser.inst.Popup.Open();
+                    RTFileBrowser.inst.UpdateBrowserFolder(_val =>
+                    {
+                        if (!_val.Replace("\\", "/").Contains(RTFile.ApplicationDirectory + "beatmaps/"))
+                        {
+                            EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
+                            return;
+                        }
+
+                        OpenLevelPopup.PathField.text = _val.Replace("\\", "/").Remove(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/");
+                        EditorManager.inst.DisplayNotification($"Set Editor path to {RTEditor.inst.EditorPath}!", 2f, EditorManager.NotificationType.Success);
+                        RTFileBrowser.inst.Popup.Close();
+                        RTEditor.inst.UpdateEditorPath(false);
+                    });
+                }),
+                new ButtonElement("Open in File Explorer", RTEditor.inst.OpenLevelListFolder));
+
+            #endregion
+
             AutosavePopup = RTEditor.inst.GeneratePopup(EditorPopup.AUTOSAVES_POPUP, "Open / Backup an Autosave", new Vector2(572f, 0f), new Vector2(460f, 350f), placeholderText: "Search autosaves...");
             AutosavePopup.onRender = () =>
             {
@@ -263,6 +335,8 @@ namespace BetterLegacy.Editor.Managers
                         AutosavePopup.Dragger.mode = (DraggableUI.DragMode)jn["drag_mode"].AsInt;
                 }
             };
+
+            #region Level Collection Popup setup
 
             LevelCollectionPopup = RTEditor.inst.GeneratePopup(EditorPopup.LEVEL_COLLECTION_POPUP, "Level Collections", Vector2.zero, new Vector2(600f, 400f),
                 _val => RenderLevelCollections(),
@@ -348,6 +422,8 @@ namespace BetterLegacy.Editor.Managers
                 LevelCollectionPopup.Open();
                 RenderLevelCollections();
             }, 2);
+
+            #endregion
 
             LevelCollectionDialog = new LevelCollectionEditorDialog();
             LevelCollectionDialog.Init();

@@ -1341,7 +1341,6 @@ namespace BetterLegacy.Editor.Managers
             SetupCreateObjects();
             SetupTitleBar();
             SetupDoggo();
-            SetupPaths();
             SetupTimelinePreview();
             SetupTimelineElements();
             SetupGrid();
@@ -1505,6 +1504,10 @@ namespace BetterLegacy.Editor.Managers
                         EditorTimeline.inst.EditorGroupPopup.Dragger.mode = (DraggableUI.DragMode)jn["drag_mode"].AsInt;
                 }
             };
+            EditorContextMenu.AddContextMenu(EditorTimeline.inst.EditorGroupPopup.GameObject,
+                new ButtonElement("Create Editor Group", EditorTimeline.inst.CreateEditorGroup),
+                new ButtonElement("Copy All", EditorTimeline.inst.CopyAllEditorGroups),
+                new ButtonElement("Paste", EditorTimeline.inst.PasteEditorGroups));
 
             var viewEditorGroups = EditorHelper.AddEditorDropdown("View Editor Groups", string.Empty, EditorHelper.VIEW_DROPDOWN, EditorSprites.OpenSprite, EditorTimeline.inst.OpenEditorGroupsPopup);
             EditorHelper.SetComplexity(viewEditorGroups, "timeline_object/editor_group", Complexity.Advanced);
@@ -4147,79 +4150,6 @@ namespace BetterLegacy.Editor.Managers
             InfoPopup.Doggo.sprite = EditorManager.inst.loadingImage.sprite;
 
             InfoPopup.RenderSize(new Vector2(500f, 320f));
-        }
-
-        void SetupPaths()
-        {
-            EditorLevelManager.inst.OpenLevelPopup.InitTopElementsParent();
-            EditorLevelManager.inst.OpenLevelPopup.InitPath(
-                getValue: () => EditorPath,
-                setValue: _val => EditorPath = _val,
-                onEndEdit: _val => UpdateEditorPath(false));
-            EditorLevelManager.inst.OpenLevelPopup.InitReload(() =>
-            {
-                LoadLevelPanelUI(false);
-                EditorLevelManager.inst.LoadLevels();
-            });
-            EditorLevelManager.inst.OpenLevelPopup.InitAscendToggle(
-                getValue: () => levelAscend,
-                setValue: _val =>
-                {
-                    levelAscend = _val;
-                    EditorLevelManager.inst.RenderLevels();
-                    SaveGlobalSettings();
-                });
-            EditorLevelManager.inst.OpenLevelPopup.InitSortDropdown(
-                getValue: () => (int)levelSort,
-                setValue: _val =>
-                {
-                    levelSort = (LevelSort)_val;
-                    EditorLevelManager.inst.RenderLevels();
-                    SaveGlobalSettings();
-                },
-                options: CoreHelper.StringToOptionData("Cover", "Artist", "Creator", "Folder", "Title", "Difficulty", "Date Edited", "Date Created"));
-            EditorLevelManager.inst.OpenLevelPopup.TopElements.sizeDelta = new Vector2(90f, 32f);
-
-            var panel = EditorLevelManager.inst.OpenLevelPopup.TopPanel;
-
-            TooltipHelper.RemoveTooltip(EditorLevelManager.inst.OpenLevelPopup.SortDropdown.gameObject);
-            TooltipHelper.AssignTooltip(EditorLevelManager.inst.OpenLevelPopup.SortDropdown.gameObject, "Level Sort Dropdown");
-
-            EditorHelper.SetComplexity(EditorLevelManager.inst.OpenLevelPopup.SortDropdown.gameObject, "level/sort", Complexity.Normal);
-
-            TooltipHelper.RemoveTooltip(EditorLevelManager.inst.OpenLevelPopup.AscendToggle.gameObject);
-            TooltipHelper.AssignTooltip(EditorLevelManager.inst.OpenLevelPopup.AscendToggle.gameObject, "Level Ascend Toggle");
-
-            EditorHelper.SetComplexity(EditorLevelManager.inst.OpenLevelPopup.AscendToggle.gameObject, "level/ascend", Complexity.Normal);
-
-            EditorContextMenu.AddContextMenu(EditorLevelManager.inst.OpenLevelPopup.GameObject,
-                new ButtonElement("Create folder", () => ShowFolderCreator(RTFile.CombinePaths(BeatmapsPath, EditorPath), () => { EditorLevelManager.inst.LoadLevels(); HideNameEditor(); })),
-                new ButtonElement("Create level", EditorManager.inst.OpenNewLevelPopup),
-                new ButtonElement("Paste", EditorLevelManager.inst.PasteLevel),
-                new ButtonElement("Open in File Explorer", OpenLevelListFolder));
-
-            TooltipHelper.AssignTooltip(EditorLevelManager.inst.OpenLevelPopup.PathField.gameObject, "Editor Path", 3f);
-            EditorHelper.SetComplexity(EditorLevelManager.inst.OpenLevelPopup.PathField.gameObject, "level/path", Complexity.Advanced);
-
-            EditorContextMenu.AddContextMenu(EditorLevelManager.inst.OpenLevelPopup.PathField.gameObject,
-                new ButtonElement("Set folder", () =>
-                {
-                    RTFileBrowser.inst.Popup.Open();
-                    RTFileBrowser.inst.UpdateBrowserFolder(_val =>
-                    {
-                        if (!_val.Replace("\\", "/").Contains(RTFile.ApplicationDirectory + "beatmaps/"))
-                        {
-                            EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
-                            return;
-                        }
-
-                        EditorLevelManager.inst.OpenLevelPopup.PathField.text = _val.Replace("\\", "/").Remove(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/");
-                        EditorManager.inst.DisplayNotification($"Set Editor path to {EditorPath}!", 2f, EditorManager.NotificationType.Success);
-                        RTFileBrowser.inst.Popup.Close();
-                        UpdateEditorPath(false);
-                    });
-                }),
-                new ButtonElement("Open in File Explorer", OpenLevelListFolder));
         }
 
         void SetupFileBrowser()
