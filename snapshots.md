@@ -1,4 +1,4 @@
-﻿# snapshot-2026.5.7 - (Story Playtest) [???]
+﻿# snapshot-2026.5.7 - (Story Playtest) [May 24, 2026]
 ## Changes
 ### Core
 - The "Use Visual" toggle on axis related modifiers has been changed to a dropdown to include more options:
@@ -6,6 +6,9 @@
   - Visual > takes the direct Unity object transform values regardless of parent chain
   - Offset > takes object transform offsets (what copyAxis, animateObject, etc apply to)
   - SequenceOffset > takes both object sequence and object transform offsets (accounts for modifiers like copyAxis, could be layered)
+
+### Editor
+- Made copying and pasting more consistent for Animations, Editor Groups and Pinned Editor Layers.
 
 ## Fixes
 - Fixed shake breaking in some cases, again.
