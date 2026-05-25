@@ -394,6 +394,38 @@ namespace BetterLegacy.Configs
 
         #endregion
 
+        public Vector2Int ParseTab(string input)
+        {
+            if (RTString.RegexMatch(input, new System.Text.RegularExpressions.Regex(@"Config Manager > (.*?) > (.*?)"), out System.Text.RegularExpressions.Match match))
+            {
+                var matchTabName = match.Groups[1].ToString();
+                var matchSubTabName = match.Groups[2].ToString();
+                var configIndex = LegacyPlugin.configs.FindIndex(x => x.TabName == matchTabName);
+                if (configIndex < 0)
+                    return Vector2Int.zero;
+                var config = LegacyPlugin.configs[configIndex];
+                var subTabSections = new List<string>();
+                var index = 0;
+                for (int i = 0; i < config.Settings.Count; i++)
+                {
+                    var setting = config.Settings[i];
+                    if (subTabSections.Any(x => x == setting.Section))
+                        continue;
+                    subTabSections.Add(setting.Section);
+                    if (setting.Section == matchSubTabName)
+                        return new Vector2Int(configIndex, index);
+                    index++;
+                }
+            }
+            return Vector2Int.zero;
+        }
+
+        public void SetTab(string path)
+        {
+            var p = ParseTab(path);
+            SetTab(p.x, p.y);
+        }
+
         public void SetTab(int tabIndex)
         {
             if (currentTab != tabIndex)
@@ -402,6 +434,12 @@ namespace BetterLegacy.Configs
                 currentSubTabPage = 0;
             }
 
+            SetTab(tabIndex, currentSubTab);
+        }
+
+        public void SetTab(int tabIndex, int subTab)
+        {
+            currentSubTab = subTab;
             lastTab = currentTab;
             currentTab = tabIndex;
             LSHelpers.DeleteChildren(subTabs);
@@ -412,10 +450,11 @@ namespace BetterLegacy.Configs
             int index = 0;
             for (int i = 0; i < config.Settings.Count; i++)
             {
-                if (subTabSections.Any(x => x == config.Settings[i].Section))
+                var setting = config.Settings[i];
+                if (subTabSections.Any(x => x == setting.Section))
                     continue;
 
-                subTabSections.Add(config.Settings[i].Section);
+                subTabSections.Add(setting.Section);
 
                 int currentIndex = index;
 
