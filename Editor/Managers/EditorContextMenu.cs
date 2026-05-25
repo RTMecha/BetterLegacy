@@ -6,6 +6,9 @@ using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+
+using LSFunctions;
+
 using Crosstales.FB;
 
 using BetterLegacy.Configs;
@@ -762,6 +765,16 @@ namespace BetterLegacy.Editor.Managers
                 editorPanel.RenderTooltip();
                 EditorManager.inst.DisplayNotification("Deleted info file!", 1.5f, EditorManager.NotificationType.Success);
             }))
+        };
+
+        public static List<EditorElement> GetLinkFunctions(string url) => new List<EditorElement>
+        {
+            new ButtonElement("Open Link", () =>
+            {
+                if (!string.IsNullOrEmpty(url))
+                    Application.OpenURL(url);
+            }),
+            new ButtonElement("Copy Link", () => LSText.CopyToClipboard(url))
         };
 
         public static List<EditorElement> GetObjectTimeFunctions(Func<float> getObjectTime, Action<float> setTime) => new List<EditorElement>

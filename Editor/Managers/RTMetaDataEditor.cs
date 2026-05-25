@@ -17,6 +17,7 @@ using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
+using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
 using BetterLegacy.Editor.Managers.Settings;
 
@@ -189,6 +190,7 @@ namespace BetterLegacy.Editor.Managers
                 if (!string.IsNullOrEmpty(metadata.artist.URL))
                     Application.OpenURL(metadata.artist.URL);
             });
+            EditorContextMenu.AddContextMenu(Dialog.OpenArtistURLButton.gameObject, EditorContextMenu.GetLinkFunctions(metadata.artist.URL));
 
             Dialog.ArtistLinkField.SetTextWithoutNotify(metadata.artist.link);
             Dialog.ArtistLinkField.onEndEdit.NewListener(_val =>
@@ -244,6 +246,7 @@ namespace BetterLegacy.Editor.Managers
                 if (!string.IsNullOrEmpty(metadata.creator.URL))
                     Application.OpenURL(metadata.creator.URL);
             });
+            EditorContextMenu.AddContextMenu(Dialog.OpenCreatorURLButton.gameObject, EditorContextMenu.GetLinkFunctions(metadata.creator.URL));
 
             Dialog.CreatorLinkField.SetTextWithoutNotify(metadata.creator.link);
             Dialog.CreatorLinkField.onEndEdit.NewListener(_val =>
@@ -293,6 +296,7 @@ namespace BetterLegacy.Editor.Managers
                 if (!string.IsNullOrEmpty(metadata.SongURL))
                     Application.OpenURL(metadata.SongURL);
             });
+            EditorContextMenu.AddContextMenu(Dialog.OpenSongURLButton.gameObject, EditorContextMenu.GetLinkFunctions(metadata.SongURL));
 
             Dialog.SongLinkField.SetTextWithoutNotify(metadata.song.link);
             Dialog.SongLinkField.onEndEdit.NewListener(_val =>
@@ -345,6 +349,7 @@ namespace BetterLegacy.Editor.Managers
                 if (!string.IsNullOrEmpty(metadata.beatmap.VideoURL))
                     Application.OpenURL(metadata.beatmap.VideoURL);
             });
+            EditorContextMenu.AddContextMenu(Dialog.OpenVideoURLButton.gameObject, EditorContextMenu.GetLinkFunctions(metadata.beatmap.VideoURL));
 
             Dialog.VideoLinkField.SetTextWithoutNotify(metadata.beatmap.videoLink);
             Dialog.VideoLinkField.onEndEdit.NewListener(_val =>
