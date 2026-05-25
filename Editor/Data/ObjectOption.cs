@@ -20,6 +20,8 @@ namespace BetterLegacy.Editor.Data
     /// </summary>
     public class ObjectOption : PAObject<ObjectOption>
     {
+        #region Constructors
+
         public ObjectOption() { }
 
         public ObjectOption(string name, string hint, Action<TimelineObject> action)
@@ -28,6 +30,10 @@ namespace BetterLegacy.Editor.Data
             this.hint = hint;
             this.action = action;
         }
+
+        #endregion
+
+        #region Values
 
         /// <summary>
         /// Name of the option.
@@ -58,6 +64,10 @@ namespace BetterLegacy.Editor.Data
         /// Icon reference.
         /// </summary>
         public string iconReference;
+
+        #endregion
+
+        #region Functions
 
         public override void CopyData(ObjectOption orig, bool newID = true)
         {
@@ -112,6 +122,9 @@ namespace BetterLegacy.Editor.Data
                         var beatmapObject = timelineObject.GetData<BeatmapObject>();
                         beatmapObject.ReadJSON(obj);
                         beatmapObject.id = GetStringID(); // refresh ID so it's always random
+
+                        if (obj["d"] == null)
+                            beatmapObject.Depth = EditorConfig.Instance.CreateObjectRenderDepthDefault.Value;
 
                         var time = AudioManager.inst.CurrentAudioSource.time;
                         if (RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsCreated.Value && EditorConfig.Instance.BPMSnapsObjects.Value)
@@ -176,5 +189,7 @@ namespace BetterLegacy.Editor.Data
 
             return icon;
         }
+
+        #endregion
     }
 }
