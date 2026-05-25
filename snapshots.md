@@ -1,4 +1,11 @@
-﻿# snapshot-2026.5.7 - (Story Playtest) [May 24, 2026]
+﻿# snapshot-2026.5.8 - (Story Playtest) [???]
+## Features
+- Added context menu to the render depth slider and input field.
+- Added "Object Render Depth Default" setting to Config Manager > Editor > Creation.
+
+-------------------------------------------------------------------
+
+# snapshot-2026.5.7 - (Story Playtest) [May 24, 2026]
 ## Changes
 ### Core
 - The "Use Visual" toggle on axis related modifiers has been changed to a dropdown to include more options:
