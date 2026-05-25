@@ -225,6 +225,11 @@ namespace BetterLegacy.Configs
         public Setting<bool> SmoothReactive { get; set; }
 
         /// <summary>
+        /// If the level should fade in at the start.
+        /// </summary>
+        public Setting<bool> ShowIntroFade { get; set; }
+
+        /// <summary>
         /// If on, the old video BG feature returns, though somewhat buggy. Requires a bg.mp4 or bg.mov file to exist in the level folder.
         /// </summary>
         public Setting<bool> EnableVideoBackground { get; set; }
@@ -273,6 +278,11 @@ namespace BetterLegacy.Configs
         /// If recently opened / saved levels in the editor / arcade are saved to a stats.json file. Good for remembering what you did recently.
         /// </summary>
         public Setting<bool> StoreRecentLevels { get; set; }
+
+        /// <summary>
+        /// If the level intro should replay on level restart.
+        /// </summary>
+        public Setting<bool> ReplayIntro { get; set; }
 
         #endregion
 
@@ -425,6 +435,7 @@ namespace BetterLegacy.Configs
             ShowBackgroundObjects = Bind(this, LEVEL, "Show Background Objects", true, "If enabled, the Background Objects will render. Otherwise, they will be hidden and will boost performance.");
             ShowBackgroundFade = Bind(this, LEVEL, "Show Background Fade", true, "If enabled, the Background Objects will render a fade effect. Otherwise they will render as a single object and will boost performance.");
             SmoothReactive = Bind(this, LEVEL, "Smooth Reactive", false, "If enabled, anything that is automatically reactive to the music will be smoother.");
+            ShowIntroFade = Bind(this, LEVEL, "Show Intro Fade", true, "If the level should fade in at the start.");
             EnableVideoBackground = Bind(this, LEVEL, "Video Backgrounds", true, "If on, the old video BG feature returns, though somewhat buggy. Requires a bg.mp4 or bg.mov file to exist in the level folder.");
             UseNewUpdateMethod = Bind(this, LEVEL, "Use New Update Method", true, "Possibly releases the fixed framerate of the game.");
             ReplayLevel = Bind(this, LEVEL, "Replay Level in Background After Completion", true, "When completing a level, having this on will replay the level with no players in the background of the end screen.");
@@ -435,6 +446,7 @@ namespace BetterLegacy.Configs
             PlayCheckpointSound = Bind(this, LEVEL, "Play Checkpoint Sound", true, "If the checkpoint sound should play.");
             PlayCheckpointAnimation = Bind(this, LEVEL, "Play Checkpoint Animation", true, "If the checkpoint animation should play.");
             StoreRecentLevels = Bind(this, LEVEL, "Store Recent Levels", false, "If recently opened / saved levels in the editor / arcade are saved to a stats.json file. Good for remembering what you did recently.");
+            ReplayIntro = Bind(this, LEVEL, "Replay Intro", false, "If the level intro should replay on level restart.");
 
             #endregion
 

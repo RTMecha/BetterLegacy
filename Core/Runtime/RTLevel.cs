@@ -80,9 +80,17 @@ namespace BetterLegacy.Core.Runtime
         /// </summary>
         public TickRunner threadedTickRunner;
 
+        /// <summary>
+        /// The current evaluation context.
+        /// </summary>
         public EvaluationContext evaluationContext;
-
+        
+        /// <summary>
+        /// The main modifier loop for the level.
+        /// </summary>
         public ModifierLoop loop;
+
+        public static bool Loaded { get; private set; }
 
         /// <summary>
         /// Initializes the runtime level.
@@ -214,7 +222,7 @@ namespace BetterLegacy.Core.Runtime
             gameData.backgroundObjects.RemoveAll(x => x.fromPrefab);
 
             Load(gameData);
-
+            Loaded = true;
             Debug.Log($"{className}Loaded {objects.Count} objects (original: {gameData.beatmapObjects.Count})");
         }
 
@@ -340,6 +348,8 @@ namespace BetterLegacy.Core.Runtime
 
             threadedTickRunner?.Dispose();
             threadedTickRunner = null;
+
+            Loaded = false;
         }
 
         /// <summary>

@@ -365,15 +365,16 @@ namespace BetterLegacy.Core.Managers
 
             Log($"Loading music...\nMusic is null: {!level.music}");
 
-            if (!level.music)
+            bool reloadLevelMusic = !level.music;
+            if (reloadLevelMusic)
                 yield return CoroutineHelper.StartCoroutine(level.LoadAudioClipRoutine());
 
             Log($"Playing music... music state: {level.music}");
 
             while (!level.music)
                 yield return null;
-
-            AudioManager.inst.PlayMusic(null, level.music, true, songFadeTransition, false);
+            if (reloadLevelMusic)
+                AudioManager.inst.PlayMusic(null, level.music, true, songFadeTransition, false);
             GameManager.inst.songLength = level.music.length;
 
             // preload audio clips
@@ -409,9 +410,11 @@ namespace BetterLegacy.Core.Managers
 
             #endregion
 
-            #region Spawning
+            #region Updating
 
-            Log($"Spawning...");
+            Log($"Updating...");
+
+            RTGameManager.SetIntroBGColor(SceneHelper.BackgroundColor);
 
             if (!storyLevel)
                 PlayersData.Load(level.GetFile(Level.PLAYERS_LSB));
@@ -423,12 +426,9 @@ namespace BetterLegacy.Core.Managers
 
             RTPlayer.GameMode = GameMode.Regular;
 
-            RTGameManager.inst.PlayIntro();
-            PlayerManager.SpawnPlayersOnStart();
-
             RTPlayer.SetGameDataProperties();
 
-            yield return inst.StartCoroutine(RTLevel.IReinit());
+            yield return CoroutineHelper.StartCoroutine(RTLevel.IReinit());
 
             CursorManager.inst.HideCursor();
 
@@ -442,8 +442,19 @@ namespace BetterLegacy.Core.Managers
 
             Log($"Done!");
 
+            while (!RTLevel.Loaded)
+                yield return null;
+
             GameManager.inst.gameState = GameManager.State.Playing;
+            yield return new WaitForSeconds(0.2f);
+
             AudioManager.inst.SetMusicTime(GameData.Current.data.level.LevelStartOffset);
+            if (reloadLevelMusic)
+                SoundManager.inst.FadeTransition(AudioManager.inst.CurrentAudioSource, AudioManager.inst.musicSources[1 - AudioManager.inst.activeMusicSourceIndex], songFadeTransition, SoundManager.inst.MusicVolume);
+            else
+                SoundManager.inst.FadeIn(AudioManager.inst.CurrentAudioSource, songFadeTransition, SoundManager.inst.MusicVolume);
+            RTGameManager.inst.PlayIntro();
+            PlayerManager.SpawnPlayersOnStart();
 
             LoadingFromHere = false;
 

@@ -213,6 +213,31 @@ namespace BetterLegacy.Core.Managers
             }
         }
 
+        /// <summary>
+        /// Fades an audio source in.
+        /// </summary>
+        /// <param name="audioSource">Audio source to fade.</param>
+        /// <param name="duration">Amount of time to fade.</param>
+        /// <param name="volume">The current volume.</param>
+        public void FadeIn(AudioSource audioSource, float duration, float volume) => CoroutineHelper.StartCoroutine(IFadeIn(audioSource, duration, volume));
+
+        /// <summary>
+        /// Fades an audio source in.
+        /// </summary>
+        /// <param name="audioSource">Audio source to fade.</param>
+        /// <param name="duration">Amount of time to fade.</param>
+        /// <param name="volume">The current volume.</param>
+        public IEnumerator IFadeIn(AudioSource audioSource, float duration, float volume)
+        {
+            float percent = 0f;
+            while (percent < 1f)
+            {
+                percent += Time.deltaTime * 1f / duration;
+                audioSource.volume = Mathf.Lerp(volume, 0f, percent);
+                yield return null;
+            }
+        }
+
         #endregion
     }
 }

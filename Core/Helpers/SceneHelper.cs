@@ -17,7 +17,7 @@ namespace BetterLegacy.Core.Helpers
     /// </summary>
     public static class SceneHelper
     {
-        #region Properties
+        #region Values
 
         /// <summary>
         /// The current scene PA is in.
@@ -54,9 +54,18 @@ namespace BetterLegacy.Core.Helpers
         /// </summary>
         public static Action<string> OnSceneLoad { get; set; }
 
+        /// <summary>
+        /// Background color to display while a scene is loading.
+        /// </summary>
+        public static Color BackgroundColor { get; set; } = new Color(0.878f, 0.878f, 0.878f);
+
+        public static Text loadingText;
+        public static Image loadingImage;
+        public static float startLoadTime;
+
         #endregion
 
-        #region Wrapper Methods
+        #region Wrapper Functions
 
         /// <summary>
         /// Loads the Editor scene with a progress screen.
@@ -117,6 +126,11 @@ namespace BetterLegacy.Core.Helpers
         /// <param name="showLoading">If the progress screen should display.</param>
         public static void LoadScene(SceneName sceneName, bool showLoading = true) => SceneManager.inst.LoadScene(sceneName.ToName(), showLoading);
 
+        /// <summary>
+        /// Loads a scene matching the <see cref="SceneName"/> enum value.
+        /// </summary>
+        /// <param name="sceneName">Scene to load.</param>
+        /// <param name="showLoading">If the progress screen should display.</param>
         public static IEnumerator ILoadScene(SceneName sceneName, bool showLoading = true)
         {
             SceneManager.inst.currentLevel = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
@@ -125,7 +139,7 @@ namespace BetterLegacy.Core.Helpers
 
         #endregion
 
-        #region Base Methods
+        #region Base Functions
 
         /// <summary>
         /// Gets the type of a scene.
@@ -194,7 +208,6 @@ namespace BetterLegacy.Core.Helpers
             {
 
             }
-
         }
 
         /// <summary>
@@ -229,7 +242,10 @@ namespace BetterLegacy.Core.Helpers
                 {
                     CoroutineHelper.StartCoroutine(LoopSprite(0.1f));
                     if (SceneManager.inst.background.TryGetComponent(out Image image) && InterfaceManager.inst && InterfaceManager.inst.CurrentTheme is BeatmapTheme beatmapTheme)
+                    {
                         image.color = beatmapTheme.backgroundColor;
+                        BackgroundColor = beatmapTheme.backgroundColor;
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -313,14 +329,6 @@ namespace BetterLegacy.Core.Helpers
                 CoreHelper.LogException(ex);
             }
         }
-
-        #endregion
-
-        #region Fields
-
-        public static Text loadingText;
-        public static Image loadingImage;
-        public static float startLoadTime;
 
         #endregion
     }

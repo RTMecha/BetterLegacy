@@ -318,6 +318,7 @@ namespace BetterLegacy.Arcade.Managers
         public void PlayIntro()
         {
             GameManager.inst.introAnimator.enabled = false;
+            fadeColor = SceneHelper.BackgroundColor;
             levelAnimationController.Play(IntroAnimation);
             doIntroFadeInternal = doIntroFade;
         }
@@ -326,11 +327,18 @@ namespace BetterLegacy.Arcade.Managers
 
         public static bool doIntroFade = true;
         bool doIntroFadeInternal = true;
+        public static Color fadeColor = new Color(0.878f, 0.878f, 0.878f);
+
+        public static void SetIntroBGColor(Color color)
+        {
+            if (GameManager.inst && GameManager.inst.introBG)
+                GameManager.inst.introBG.color = color;
+        }
 
         public static void SetIntroBGOpacity(float x)
         {
             if (GameManager.inst && GameManager.inst.introBG)
-                GameManager.inst.introBG.color = RTColors.FadeColor(GameManager.inst.introBG.color, inst.doIntroFadeInternal ? x : 0f);
+                GameManager.inst.introBG.color = RTColors.FadeColor(fadeColor, CoreConfig.Instance.ShowIntroFade.Value && inst.doIntroFadeInternal ? x : 0f);
         }
 
         public static void SetIntroTitlePosition(Vector2 pos)

@@ -11,6 +11,7 @@ using SimpleJSON;
 using InControl;
 
 using BetterLegacy.Arcade.Interfaces;
+using BetterLegacy.Arcade.Managers;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Level;
@@ -187,6 +188,11 @@ namespace BetterLegacy.Core.Helpers
             PlayerManager.SpawnPlayersOnStart();
 
             AudioManager.inst.SetMusicTime(GameData.Current.data.level.LevelStartOffset);
+            if (CoreConfig.Instance.ReplayIntro.Value)
+            {
+                RTGameManager.doIntroFade = false;
+                RTGameManager.inst.PlayIntro();
+            }
             AudioManager.inst.SetPitch(1f);
             RTBeatmap.Current.ResetCheckpoint();
             InterfaceManager.inst.StopMusic();
