@@ -1,7 +1,17 @@
 ﻿# snapshot-2026.5.8 - (Story Playtest) [???]
 ## Features
+### Core
+- Added "Show Intro Fade" setting to Config Manager > Core > Level. This disables the scene loading fade transition in case you want to record the level without it.
+- Added "Replay Intro" setting to Config Manager > Core > Level. With it on restarting a level will show the intro again.
+
+### Editor
 - Added context menu to the render depth slider and input field.
 - Added "Object Render Depth Default" setting to Config Manager > Editor > Creation.
+- Added context menus to the link buttons in the MetaData Editor.
+
+## Changes
+### Core
+- Tweaked transition between scene loading and playing a level (such as the fade transition now using the interface BG color and level beginning being a little more precise).
 
 -------------------------------------------------------------------
 
