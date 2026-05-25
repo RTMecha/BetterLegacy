@@ -2268,7 +2268,53 @@ namespace BetterLegacy.Editor.Managers
                 beatmapObject.renderLayerType = (BeatmapObject.RenderLayerType)_val;
                 RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.RENDERING);
             });
+
+            EditorContextMenu.AddContextMenu(Dialog.DepthField.inputField.gameObject, GetRenderDepthContextMenuElements(beatmapObject));
+            EditorContextMenu.AddContextMenu(Dialog.DepthSlider.gameObject, GetRenderDepthContextMenuElements(beatmapObject));
         }
+
+        EditorElement[] GetRenderDepthContextMenuElements(BeatmapObject beatmapObject) => new EditorElement[]
+        {
+            new ButtonElement("Above Player", () =>
+            {
+                beatmapObject.Depth = -60;
+                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+                RenderDepth(beatmapObject);
+            }),
+            new ButtonElement("Reset Value", () =>
+            {
+                beatmapObject.Depth = EditorConfig.Instance.CreateObjectRenderDepthDefault.Value;
+                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+                RenderDepth(beatmapObject);
+            }),
+            new SpacerElement(),
+            new ButtonElement("Set Default Range", () =>
+            {
+                EditorConfig.Instance.RenderDepthRange.Value = new Vector2(30, 0);
+                RenderDepth(beatmapObject);
+            }),
+            new ButtonElement("Set Vanilla Max Range", () =>
+            {
+                EditorConfig.Instance.RenderDepthRange.Value = new Vector2(219, -98);
+                RenderDepth(beatmapObject);
+            }),
+            new LabelElement("Max"),
+            new NumberInputElement(EditorConfig.Instance.RenderDepthRange.Value.x.ToString(), _val =>
+            {
+                if (!float.TryParse(_val, out float num))
+                    return;
+                EditorConfig.Instance.RenderDepthRange.Value = new Vector2(num, EditorConfig.Instance.RenderDepthRange.Value.y);
+                RenderDepth(beatmapObject);
+            }),
+            new LabelElement("Min"),
+            new NumberInputElement(EditorConfig.Instance.RenderDepthRange.Value.y.ToString(), _val =>
+            {
+                if (!float.TryParse(_val, out float num))
+                    return;
+                EditorConfig.Instance.RenderDepthRange.Value = new Vector2(EditorConfig.Instance.RenderDepthRange.Value.x, num);
+                RenderDepth(beatmapObject);
+            })
+        };
 
         /// <summary>
         /// Creates and Renders the UnityExplorer GameObject Inspector.
