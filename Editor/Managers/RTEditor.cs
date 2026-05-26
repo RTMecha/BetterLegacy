@@ -123,6 +123,11 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public ShapeableData copiedShapeableData;
 
+        /// <summary>
+        /// List of copied tags.
+        /// </summary>
+        public List<string> copiedTags = new List<string>();
+
         #endregion
 
         #region Preview
@@ -4644,12 +4649,103 @@ namespace BetterLegacy.Editor.Managers
                     RenderTags(modifyable, dialog);
                 });
 
-                EditorHelper.AddInputFieldContextMenu(input);
                 TriggerHelper.InversableField(input, InputFieldSwapper.Type.String);
 
                 EditorThemeManager.ApplyGraphic(gameObject.GetComponent<Image>(), ThemeGroup.Input_Field, true);
                 EditorThemeManager.ApplyInputField(input);
                 EditorThemeManager.ApplyDeleteButton(deleteStorage);
+
+                EditorContextMenu.AddContextMenu(input.gameObject,
+                    new EditorElementGroup(() => true, EditorContextMenu.GetNameFunctions(input)),
+                    new EditorElementGroup(() => true,
+                        new SpacerElement(),
+                        new ButtonElement("Copy to Clipboard", () =>
+                        {
+                            LSText.CopyToClipboard(tag);
+                            EditorManager.inst.DisplayNotification($"Copied the tag to the clipboard!", 2f, EditorManager.NotificationType.Success);
+                        }),
+                        new ButtonElement("Copy Tag List", () =>
+                        {
+                            copiedTags.Clear();
+                            copiedTags.AddRange(modifyable.Tags);
+                            EditorManager.inst.DisplayNotification($"Copied object tags!", 2f, EditorManager.NotificationType.Success);
+                        }),
+                        new ButtonElement("Paste Tag List (Override)", () =>
+                        {
+                            var orig = new List<string>(modifyable.Tags);
+                            modifyable.Tags.Clear();
+                            modifyable.Tags.AddRange(copiedTags);
+                            RenderTags(modifyable, dialog);
+                            EditorManager.inst.history.Add(new History.Command("Paste Tag List",
+                                () =>
+                                {
+                                    modifyable.Tags.Clear();
+                                    modifyable.Tags.AddRange(copiedTags);
+                                    RenderTags(modifyable, dialog);
+                                },
+                                () =>
+                                {
+                                    modifyable.Tags.Clear();
+                                    modifyable.Tags.AddRange(orig);
+                                    RenderTags(modifyable, dialog);
+                                }));
+                            EditorManager.inst.DisplayNotification($"Pasted and overridden object tags!", 2f, EditorManager.NotificationType.Success);
+                        }),
+                        new ButtonElement("Paste Tag List (Add)", () =>
+                        {
+                            var orig = new List<string>(modifyable.Tags);
+                            modifyable.Tags.AddRange(copiedTags);
+                            RenderTags(modifyable, dialog);
+                            EditorManager.inst.history.Add(new History.Command("Paste Tag List",
+                                () =>
+                                {
+                                    modifyable.Tags.AddRange(copiedTags);
+                                    RenderTags(modifyable, dialog);
+                                },
+                                () =>
+                                {
+                                    modifyable.Tags.Clear();
+                                    modifyable.Tags.AddRange(orig);
+                                    RenderTags(modifyable, dialog);
+                                }));
+                            EditorManager.inst.DisplayNotification($"Pasted object tags!", 2f, EditorManager.NotificationType.Success);
+                        }),
+                        new SpacerElement(),
+                        new ButtonElement("Clear Tags", () =>
+                        {
+                            var orig = new List<string>(modifyable.Tags);
+                            modifyable.Tags.Clear();
+                            RenderTags(modifyable, dialog);
+                            EditorManager.inst.history.Add(new History.Command("Clear Tags",
+                                () =>
+                                {
+                                    modifyable.Tags.Clear();
+                                    RenderTags(modifyable, dialog);
+                                },
+                                () =>
+                                {
+                                    modifyable.Tags.Clear();
+                                    modifyable.Tags.AddRange(orig);
+                                    RenderTags(modifyable, dialog);
+                                }));
+                            EditorManager.inst.DisplayNotification($"Cleared tags from the object!", 2f, EditorManager.NotificationType.Success);
+                        }),
+                        new SpacerElement()),
+                    new EditorElementGroup(() => true, EditorContextMenu.GetMoveIndexFunctions(modifyable.Tags, index, movedIndex =>
+                    {
+                        RenderTags(modifyable, dialog);
+                        EditorManager.inst.history.Add(new History.Command("Move Tag",
+                            () =>
+                            {
+                                modifyable.Tags.Move(index, movedIndex);
+                                RenderTags(modifyable, dialog);
+                            },
+                            () =>
+                            {
+                                modifyable.Tags.Move(movedIndex, index);
+                                RenderTags(modifyable, dialog);
+                            }));
+                    })));
 
                 num++;
             }
@@ -4658,9 +4754,82 @@ namespace BetterLegacy.Editor.Managers
             add.Text = "Add Tag";
             add.OnClick.NewListener(() =>
             {
+                var tagIndex = modifyable.Tags.Count;
                 modifyable.Tags.Add("New Tag");
                 RenderTags(modifyable, dialog);
+                EditorManager.inst.history.Add(new History.Command("Add Tag",
+                    () =>
+                    {
+                        modifyable.Tags.Add("New Tag");
+                        RenderTags(modifyable, dialog);
+                    },
+                    () =>
+                    {
+                        modifyable.Tags.RemoveAt(tagIndex);
+                        RenderTags(modifyable, dialog);
+                    }));
             });
+            EditorContextMenu.AddContextMenu(add.gameObject,
+                new ButtonElement("Paste Tag List (Override)", () =>
+                {
+                    var orig = new List<string>(modifyable.Tags);
+                    modifyable.Tags.Clear();
+                    modifyable.Tags.AddRange(copiedTags);
+                    RenderTags(modifyable, dialog);
+                    EditorManager.inst.history.Add(new History.Command("Paste Tag List",
+                        () =>
+                        {
+                            modifyable.Tags.Clear();
+                            modifyable.Tags.AddRange(copiedTags);
+                            RenderTags(modifyable, dialog);
+                        },
+                        () =>
+                        {
+                            modifyable.Tags.Clear();
+                            modifyable.Tags.AddRange(orig);
+                            RenderTags(modifyable, dialog);
+                        }));
+                    EditorManager.inst.DisplayNotification($"Pasted and overridden object tags!", 2f, EditorManager.NotificationType.Success);
+                }),
+                new ButtonElement("Paste Tag List (Add)", () =>
+                {
+                    var orig = new List<string>(modifyable.Tags);
+                    modifyable.Tags.AddRange(copiedTags);
+                    RenderTags(modifyable, dialog);
+                    EditorManager.inst.history.Add(new History.Command("Paste Tag List",
+                        () =>
+                        {
+                            modifyable.Tags.AddRange(copiedTags);
+                            RenderTags(modifyable, dialog);
+                        },
+                        () =>
+                        {
+                            modifyable.Tags.Clear();
+                            modifyable.Tags.AddRange(orig);
+                            RenderTags(modifyable, dialog);
+                        }));
+                    EditorManager.inst.DisplayNotification($"Pasted object tags!", 2f, EditorManager.NotificationType.Success);
+                }),
+                new SpacerElement(),
+                new ButtonElement("Clear Tags", () =>
+                {
+                    var orig = new List<string>(modifyable.Tags);
+                    modifyable.Tags.Clear();
+                    RenderTags(modifyable, dialog);
+                    EditorManager.inst.history.Add(new History.Command("Clear Tags",
+                        () =>
+                        {
+                            modifyable.Tags.Clear();
+                            RenderTags(modifyable, dialog);
+                        },
+                        () =>
+                        {
+                            modifyable.Tags.Clear();
+                            modifyable.Tags.AddRange(orig);
+                            RenderTags(modifyable, dialog);
+                        }));
+                    EditorManager.inst.DisplayNotification($"Cleared tags from the object!", 2f, EditorManager.NotificationType.Success);
+                }));
         }
 
         /// <summary>
