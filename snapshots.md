@@ -8,6 +8,8 @@
 - Added context menu to the render depth slider and input field.
 - Added "Object Render Depth Default" setting to Config Manager > Editor > Creation.
 - Added context menus to the link buttons in the MetaData Editor.
+- Added some more context menu functions to object tags.
+- Added a Sort Indexes button to the Multi Object Editor.
 
 ## Changes
 ### Core
