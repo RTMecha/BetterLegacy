@@ -281,6 +281,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                 rightGreaterArrowClicked = _val => EditorHelper.SetSelectedObjectIndexes(EditorTimeline.inst.timelineObjects.Count),
                             }).Init(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced));
                             ButtonElement.Label1Button("Reverse Indexes", EditorHelper.ReverseSelectedObjectIndexes).Init(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced).Rect(RectValues.Default.SizeDelta(0f, 32f)));
+                            ButtonElement.Label1Button("Sort Indexes", EditorHelper.SortSelectedObjectIndexes).Init(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced).Rect(RectValues.Default.SizeDelta(0f, 32f)));
 
                             #endregion
 

@@ -315,7 +315,7 @@ namespace BetterLegacy.Core.Helpers
             return true;
         }
 
-        public static bool SelectAllObjectsFromGroup(string editorGroup)
+        public static bool SelectAllObjectsFromGroup(EditorGroup editorGroup)
         {
             if (!GameData.Current || !ProjectArrhythmia.State.InEditor || !EditorManager.inst.hasLoadedLevel)
                 return false;
@@ -324,7 +324,7 @@ namespace BetterLegacy.Core.Helpers
             for (int i = 0; i < EditorTimeline.inst.timelineObjects.Count; i++)
             {
                 var timelineObject = EditorTimeline.inst.timelineObjects[i];
-                timelineObject.Selected = timelineObject.EditorData && timelineObject.EditorData.editorGroup == editorGroup;
+                timelineObject.Selected = editorGroup.Matches(timelineObject.Group, timelineObject.Tags, timelineObject.AsPrefabable());
                 if (!timelineObject.Selected)
                     continue;
 
@@ -696,6 +696,23 @@ namespace BetterLegacy.Core.Helpers
 
                 GameData.Current.backgroundObjects.Move(index, Mathf.Clamp(index - selected.Count, 0, GameData.Current.backgroundObjects.Count - 1));
             }
+
+            EditorTimeline.inst.UpdateTransformIndex();
+        }
+
+        public static void SortSelectedObjectIndexes()
+        {
+            var beatmapObjects = new List<BeatmapObject>(GameData.Current.beatmapObjects.Where(x => x.timelineObject && x.timelineObject.Selected).OrderBy(x => x.StartTime).ThenBy(x => x.EditorData.Bin));
+            GameData.Current.beatmapObjects.RemoveAll(x => x.timelineObject && x.timelineObject.Selected);
+            GameData.Current.beatmapObjects.AddRange(beatmapObjects);
+
+            var prefabObjects = new List<PrefabObject>(GameData.Current.prefabObjects.Where(x => x.timelineObject && x.timelineObject.Selected).OrderBy(x => x.StartTime).ThenBy(x => x.EditorData.Bin));
+            GameData.Current.prefabObjects.RemoveAll(x => x.timelineObject && x.timelineObject.Selected);
+            GameData.Current.prefabObjects.AddRange(prefabObjects);
+
+            var backgroundObjects = new List<BackgroundObject>(GameData.Current.backgroundObjects.Where(x => x.timelineObject && x.timelineObject.Selected).OrderBy(x => x.StartTime).ThenBy(x => x.EditorData.Bin));
+            GameData.Current.backgroundObjects.RemoveAll(x => x.timelineObject && x.timelineObject.Selected);
+            GameData.Current.backgroundObjects.AddRange(backgroundObjects);
 
             EditorTimeline.inst.UpdateTransformIndex();
         }
