@@ -1353,10 +1353,11 @@ namespace BetterLegacy.Editor.Managers
                                 },
                             });
 
+                    // temporary editor solution until a dialog is made for this
                     EditorContextMenu.inst.ShowContextMenu(
                         new EditorElementGroup(() => true,
                             new ButtonElement("Assign to Selected", () => AssignEditorGroup(editorGroup)),
-                            new ButtonElement("Select Object Group", () => EditorHelper.SelectAllObjectsFromGroup(editorGroup.name)),
+                            new ButtonElement("Select Object Group", () => EditorHelper.SelectAllObjectsFromGroup(editorGroup)),
                             new LabelElement("Group Name"),
                             new StringInputElement(editorGroup.name,
                                 _val =>
@@ -1377,6 +1378,31 @@ namespace BetterLegacy.Editor.Managers
 
                                     RenderEditorGroupsPopup();
                                 }),
+                            ButtonElement.ToggleButton("Use Tags", () => editorGroup.useTags, () => editorGroup.useTags = !editorGroup.useTags),
+                            new ButtonElement("Assign Prefab", () => RTPrefabEditor.inst.onSelectPrefab = prefabPanel =>
+                            {
+                                if (prefabPanel.IsExternal)
+                                {
+                                    EditorManager.inst.DisplayNotification("Cannot assign an external prefab to the editor group.", 2f, EditorManager.NotificationType.Success);
+                                    return;
+                                }
+
+                                editorGroup.prefabID = prefabPanel.Item.id;
+                                EditorManager.inst.DisplayNotification($"Assigned prefab {prefabPanel.Item.name} to editor group!", 2f, EditorManager.NotificationType.Success);
+                            }),
+                            new ButtonElement("Assign Prefab Instance", () => onSelectTimelineObject = timelineObject =>
+                            {
+                                var prefabable = timelineObject.AsPrefabable();
+                                editorGroup.prefabID = prefabable.PrefabID;
+                                editorGroup.prefabInstanceID = prefabable.PrefabInstanceID;
+                                EditorManager.inst.DisplayNotification($"Assigned prefab object to editor group!", 2f, EditorManager.NotificationType.Success);
+                            }),
+                            new ButtonElement("Remove Prefab Reference", () =>
+                            {
+                                editorGroup.prefabID = null;
+                                editorGroup.prefabInstanceID = null;
+                                EditorManager.inst.DisplayNotification($"Removed prefab reference from editor group!", 2f, EditorManager.NotificationType.Success);
+                            }),
                             new LabelElement("Collapse"),
                             ButtonElement.SelectionButton(() => editorGroup.collapsedType == EditorGroup.CollapsedType.Off, "Off", () =>
                             {

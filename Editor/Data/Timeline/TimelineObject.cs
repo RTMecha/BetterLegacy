@@ -26,6 +26,7 @@ namespace BetterLegacy.Editor.Data.Timeline
         public TimelineObject(IEditable data)
         {
             this.data = data;
+            prefabable = data as IPrefabable;
             TimelineReference = GetTimelineReferenceType(data);
             isBeatmapObject = TimelineReference == TimelineReferenceType.BeatmapObject;
             isPrefabObject = TimelineReference == TimelineReferenceType.PrefabObject;
@@ -235,6 +236,24 @@ namespace BetterLegacy.Editor.Data.Timeline
             set => EditorData.editorGroup = value;
         }
 
+        /// <summary>
+        /// Tags list of the object.
+        /// </summary>
+        public List<string> Tags
+        {
+            get
+            {
+                if (data is Core.Data.Modifiers.IModifyable modifyable)
+                    return modifyable.Tags;
+                return null;
+            }
+            set
+            {
+                if (data is Core.Data.Modifiers.IModifyable modifyable)
+                    modifyable.Tags = value;
+            }
+        }
+
         #endregion
 
         #region Validation
@@ -278,6 +297,7 @@ namespace BetterLegacy.Editor.Data.Timeline
         #region Internal
 
         readonly IEditable data;
+        readonly IPrefabable prefabable;
         int index;
         bool selected;
         string prefabID;
@@ -318,7 +338,7 @@ namespace BetterLegacy.Editor.Data.Timeline
         /// Casts the object data to <see cref="IPrefabable"/>.
         /// </summary>
         /// <returns>Casted data as <see cref="IPrefabable"/>.</returns>
-        public IPrefabable AsPrefabable() => data as IPrefabable;
+        public IPrefabable AsPrefabable() => prefabable;
 
         /// <summary>
         /// Tries to cast the object data into <see cref="IPrefabable"/> and outputs the result.
@@ -1023,7 +1043,7 @@ namespace BetterLegacy.Editor.Data.Timeline
                 editorGroup = null;
                 return false;
             }
-            return RTEditor.inst.editorInfo.TryGetGroup(Group, out editorGroup);
+            return RTEditor.inst.editorInfo.TryGetGroup(Group, Tags, AsPrefabable(), out editorGroup);
         }
 
         /// <summary>

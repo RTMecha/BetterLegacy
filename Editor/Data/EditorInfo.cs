@@ -480,13 +480,13 @@ namespace BetterLegacy.Editor.Data
             // don't apply paths since it's just an override.
         }
 
-        public EditorGroup GetGroup(string name) => editorGroups.Find(x => x.name == name);
+        public EditorGroup GetGroup(string name, List<string> tags, IPrefabable prefabable) => editorGroups.Find(x => x.Matches(name, tags, prefabable));
 
-        public bool TryGetGroup(string name, out EditorGroup editorGroup) => editorGroups.TryFind(x => x.name == name, out editorGroup);
+        public bool TryGetGroup(string name, List<string> tags, IPrefabable prefabable, out EditorGroup editorGroup) => editorGroups.TryFind(x => x.Matches(name, tags, prefabable), out editorGroup);
 
-        public EditorGroup GetGroup(TimelineObject timelineObject) => GetGroup(timelineObject.EditorData.editorGroup);
+        public EditorGroup GetGroup(TimelineObject timelineObject) => GetGroup(timelineObject.Group, timelineObject.Tags, timelineObject.AsPrefabable());
 
-        public bool TryGetGroup(TimelineObject timelineObject, out EditorGroup editorGroup) => TryGetGroup(timelineObject.EditorData.editorGroup, out editorGroup);
+        public bool TryGetGroup(TimelineObject timelineObject, out EditorGroup editorGroup) => TryGetGroup(timelineObject.Group, timelineObject.Tags, timelineObject.AsPrefabable(), out editorGroup);
 
         #endregion
     }

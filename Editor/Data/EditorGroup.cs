@@ -1,9 +1,12 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+
+using UnityEngine;
 
 using SimpleJSON;
 
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Beatmap;
 
 namespace BetterLegacy.Editor.Data
 {
@@ -71,6 +74,21 @@ namespace BetterLegacy.Editor.Data
             set => layer = Mathf.Clamp(value, 0, int.MaxValue);
         }
 
+        /// <summary>
+        /// If tags should be used as well as the editor group value.
+        /// </summary>
+        public bool useTags;
+
+        /// <summary>
+        /// Prefab reference.
+        /// </summary>
+        public string prefabID;
+
+        /// <summary>
+        /// Prefab object reference.
+        /// </summary>
+        public string prefabInstanceID;
+
         #endregion
 
         #region Functions
@@ -81,6 +99,9 @@ namespace BetterLegacy.Editor.Data
             collapsedType = orig.collapsedType;
             Bin = orig.Bin;
             Layer = orig.Layer;
+            useTags = orig.useTags;
+            prefabID = orig.prefabID;
+            prefabInstanceID = orig.prefabInstanceID;
         }
 
         public override void ReadJSON(JSONNode jn)
@@ -91,6 +112,9 @@ namespace BetterLegacy.Editor.Data
                 collapsedType = (CollapsedType)jn["collapse_type"].AsInt;
             Bin = jn["bin"].AsInt;
             Layer = jn["layer"].AsInt;
+            useTags = jn["use_tags"].AsBool;
+            prefabID = jn["pid"];
+            prefabInstanceID = jn["piid"];
         }
 
         public override JSONNode ToJSON()
@@ -105,9 +129,24 @@ namespace BetterLegacy.Editor.Data
                 jn["bin"] = Bin;
             if (Layer != 0)
                 jn["layer"] = Layer;
+            if (useTags)
+                jn["use_tags"] = useTags;
+            if (!string.IsNullOrEmpty(prefabID))
+                jn["pid"] = prefabID;
+            if (!string.IsNullOrEmpty(prefabInstanceID))
+                jn["piid"] = prefabInstanceID;
 
             return jn;
         }
+
+        /// <summary>
+        /// Checks if values matches the group name.
+        /// </summary>
+        /// <param name="name">Name to compare.</param>
+        /// <param name="tags">Tags to check if <see cref="useTags"/> is true.</param>
+        /// <returns>Returns <see langword="true"/> if the parameters match the current editor group.</returns>
+        public bool Matches(string name, List<string> tags, IPrefabable prefabable) => (this.name == name || useTags && tags.Contains(this.name)) &&
+            (string.IsNullOrEmpty(prefabID) || prefabable.PrefabID == prefabID) && (string.IsNullOrEmpty(prefabInstanceID) || prefabable.PrefabInstanceID == prefabInstanceID);
 
         #endregion
     }
