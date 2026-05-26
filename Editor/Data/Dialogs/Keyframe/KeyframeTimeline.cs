@@ -1620,7 +1620,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         RenderDialog(animatable);
                     }));
             else
-                EditorContextMenu.AddContextMenu(dialog.GameObject.transform.parent.gameObject);
+                EditorContextMenu.RemoveContextMenu(dialog.GameObject.transform.parent.gameObject);
         }
 
         void KeyframeRandomHandler(int type, IEnumerable<TimelineKeyframe> selected, TimelineKeyframe firstKF, IAnimatable animatable)

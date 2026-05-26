@@ -82,6 +82,14 @@ namespace BetterLegacy.Editor.Managers
         }
 
         /// <summary>
+        /// Removes the editor context menu from an object.
+        /// </summary>
+        /// <param name="gameObject">Unity game object to remove the context menu from.</param>
+        public static void RemoveContextMenu(GameObject gameObject) => CoreHelper.Destroy(gameObject.GetComponent<ContextClickable>());
+
+        #region Editor Element
+
+        /// <summary>
         /// Adds the editor context menu to an object.
         /// </summary>
         /// <param name="gameObject">Unity game object to add a context menu to.</param>
@@ -182,44 +190,17 @@ namespace BetterLegacy.Editor.Managers
                 }
             };
         }
-        
-        /// <summary>
-        /// Shows the editor context menu.
-        /// </summary>
-        /// <param name="editorElementGroup">The context menus' functions.</param>
-        public void ShowContextMenu(EditorElementGroup editorElementGroup) => ShowContextMenu(DEFAULT_CONTEXT_MENU_WIDTH, editorElementGroup);
-
-        public void ShowContextMenu(List<EditorElementGroup> editorElementGroups) => ShowContextMenu(DEFAULT_CONTEXT_MENU_WIDTH, editorElementGroups);
-
-        public void ShowContextMenu(params EditorElementGroup[] editorElementGroups) => ShowContextMenu(DEFAULT_CONTEXT_MENU_WIDTH, editorElementGroups);
-
-        public void ShowContextMenu(float width, EditorElementGroup editorElementGroup) => ShowContextMenu(width, editorElementGroup.Elements);
-
-        public void ShowContextMenu(float width, List<EditorElementGroup> editorElementGroups) => ShowContextMenu(width, editorElementGroups.ToArray());
-
-        public void ShowContextMenu(float width, params EditorElementGroup[] editorElementGroups)
-        {
-            var list = new List<EditorElement>();
-            for (int i = 0; i < editorElementGroups.Length; i++)
-            {
-                var editorElementGroup = editorElementGroups[i];
-                if (editorElementGroup.ShouldGenerate)
-                    list.AddRange(editorElementGroup.Elements);
-            }
-            if (!list.IsEmpty())
-                ShowContextMenu(width, list);
-        }
 
         /// <summary>
         /// Shows the editor context menu.
         /// </summary>
-        /// <param name="buttonFunctions">The context menus' functions.</param>
+        /// <param name="editorElements">The context menus' functions.</param>
         public void ShowContextMenu(List<EditorElement> editorElements) => ShowContextMenu(DEFAULT_CONTEXT_MENU_WIDTH, editorElements.ToArray());
 
         /// <summary>
         /// Shows the editor context menu.
         /// </summary>
-        /// <param name="buttonFunctions">The context menus' functions.</param>
+        /// <param name="editorElements">The context menus' functions.</param>
         public void ShowContextMenu(params EditorElement[] editorElements) => ShowContextMenu(DEFAULT_CONTEXT_MENU_WIDTH, editorElements);
 
         /// <summary>
@@ -261,6 +242,143 @@ namespace BetterLegacy.Editor.Managers
             contextMenu.transform.AsRT().sizeDelta = new Vector2(width, contextMenuLayout.transform.AsRT().sizeDelta.y);
         }
 
+        #endregion
+
+        #region Editor Element Group
+        
+        /// <summary>
+        /// Adds the editor context menu to an object.
+        /// </summary>
+        /// <param name="gameObject">Unity game object to add a context menu to.</param>
+        /// <param name="editorElements">The context menus' functions.</param>
+        public static void AddContextMenu(GameObject gameObject, params EditorElementGroup[] editorElements) => AddContextMenu(gameObject, null, editorElements);
+
+        /// <summary>
+        /// Adds the editor context menu to an object.
+        /// </summary>
+        /// <param name="gameObject">Unity game object to add a context menu to.</param>
+        /// <param name="leftClick">Function to run when the user left clicks.</param>
+        /// <param name="editorElements">The context menus' functions.</param>
+        public static void AddContextMenu(GameObject gameObject, Action leftClick, params EditorElementGroup[] editorElements)
+        {
+            if (!gameObject)
+                return;
+
+            gameObject.GetOrAddComponent<ContextClickable>().onClick = pointerEventData =>
+            {
+                switch (pointerEventData.button)
+                {
+                    case PointerEventData.InputButton.Left: {
+                            leftClick?.Invoke();
+                            break;
+                        }
+                    case PointerEventData.InputButton.Right: {
+                            inst.ShowContextMenu(editorElements);
+                            break;
+                        }
+                }
+            };
+        }
+
+        /// <summary>
+        /// Adds the editor context menu to an object.
+        /// </summary>
+        /// <param name="gameObject">Unity game object to add a context menu to.</param>
+        /// <param name="editorElements">The context menus' functions.</param>
+        public static void AddContextMenu(GameObject gameObject, List<EditorElementGroup> editorElements) => AddContextMenu(gameObject, null, editorElements);
+
+        /// <summary>
+        /// Adds the editor context menu to an object.
+        /// </summary>
+        /// <param name="gameObject">Unity game object to add a context menu to.</param>
+        /// <param name="leftClick">Function to run when the user left clicks.</param>
+        /// <param name="editorElements">The context menus' functions.</param>
+        public static void AddContextMenu(GameObject gameObject, Action leftClick, List<EditorElementGroup> editorElements)
+        {
+            if (!gameObject)
+                return;
+
+            gameObject.GetOrAddComponent<ContextClickable>().onClick = pointerEventData =>
+            {
+                switch (pointerEventData.button)
+                {
+                    case PointerEventData.InputButton.Left: {
+                            leftClick?.Invoke();
+                            break;
+                        }
+                    case PointerEventData.InputButton.Right: {
+                            inst?.ShowContextMenu(editorElements);
+                            break;
+                        }
+                }
+            };
+        }
+
+        /// <summary>
+        /// Adds the editor context menu to an object.
+        /// </summary>
+        /// <param name="gameObject">Unity game object to add a context menu to.</param>
+        /// <param name="getEditorElements">The context menus' functions.</param>
+        public static void AddContextMenu(GameObject gameObject, Func<List<EditorElementGroup>> getEditorElements) => AddContextMenu(gameObject, null, getEditorElements);
+
+        /// <summary>
+        /// Adds the editor context menu to an object.
+        /// </summary>
+        /// <param name="gameObject">Unity game object to add a context menu to.</param>
+        /// <param name="leftClick">Function to run when the user left clicks.</param>
+        /// <param name="getEditorElements">The context menus' functions.</param>
+        public static void AddContextMenu(GameObject gameObject, Action leftClick, Func<List<EditorElementGroup>> getEditorElements)
+        {
+            if (!gameObject)
+                return;
+
+            gameObject.GetOrAddComponent<ContextClickable>().onClick = pointerEventData =>
+            {
+                switch (pointerEventData.button)
+                {
+                    case PointerEventData.InputButton.Left: {
+                            leftClick?.Invoke();
+                            break;
+                        }
+                    case PointerEventData.InputButton.Right: {
+                            inst?.ShowContextMenu(getEditorElements?.Invoke() ?? new List<EditorElementGroup>());
+                            break;
+                        }
+                }
+            };
+        }
+        
+        /// <summary>
+        /// Shows the editor context menu.
+        /// </summary>
+        /// <param name="editorElementGroup">The context menus' functions.</param>
+        public void ShowContextMenu(EditorElementGroup editorElementGroup) => ShowContextMenu(DEFAULT_CONTEXT_MENU_WIDTH, editorElementGroup);
+
+        public void ShowContextMenu(List<EditorElementGroup> editorElementGroups) => ShowContextMenu(DEFAULT_CONTEXT_MENU_WIDTH, editorElementGroups);
+        
+        public void ShowContextMenu(params EditorElementGroup[] editorElementGroups) => ShowContextMenu(DEFAULT_CONTEXT_MENU_WIDTH, editorElementGroups);
+
+        public void ShowContextMenu(float width, EditorElementGroup editorElementGroup) => ShowContextMenu(width, editorElementGroup.Elements);
+
+        public void ShowContextMenu(float width, List<EditorElementGroup> editorElementGroups) => ShowContextMenu(width, editorElementGroups.ToArray());
+
+        public void ShowContextMenu(float width, params EditorElementGroup[] editorElementGroups)
+        {
+            var list = new List<EditorElement>();
+            for (int i = 0; i < editorElementGroups.Length; i++)
+            {
+                var editorElementGroup = editorElementGroups[i];
+                if (editorElementGroup.ShouldGenerate)
+                    list.AddRange(editorElementGroup.Elements);
+            }
+            if (!list.IsEmpty())
+                ShowContextMenu(width, list);
+        }
+
+        #endregion
+
+        #region Editor Elements
+
         public static List<EditorElement> GetNameFunctions(InputField name) => new List<EditorElement>
         {
             new ButtonElement("Flip Left/Right", () => name.text = RTString.FlipLeftRight(name.text)),
@@ -289,7 +407,7 @@ namespace BetterLegacy.Editor.Managers
             new ButtonElement("To Lower", () => name.text = name.text.ToLower()),
             new ButtonElement("To Upper", () => name.text = name.text.ToUpper()),
         };
-
+        
         public static List<EditorElement> GetMoveIndexFunctions<T>(List<T> list, int index, Action onMove = null) => new List<EditorElement>
         {
             new ButtonElement("Move Up", () =>
@@ -335,6 +453,54 @@ namespace BetterLegacy.Editor.Managers
 
                 list.Move(index, list.Count - 1);
                 onMove?.Invoke();
+            }),
+        };
+        
+        public static List<EditorElement> GetMoveIndexFunctions<T>(List<T> list, int index, Action<int> onMove = null) => new List<EditorElement>
+        {
+            new ButtonElement("Move Up", () =>
+            {
+                if (index <= 0)
+                {
+                    EditorManager.inst.DisplayNotification("Could not move item up since it's already at the start.", 3f, EditorManager.NotificationType.Error);
+                    return;
+                }
+
+                list.Move(index, index - 1);
+                onMove?.Invoke(index - 1);
+            }),
+            new ButtonElement("Move Down", () =>
+            {
+                if (index >= list.Count - 1)
+                {
+                    EditorManager.inst.DisplayNotification("Could not move item down since it's already at the end.", 3f, EditorManager.NotificationType.Error);
+                    return;
+                }
+
+                list.Move(index, index + 1);
+                onMove?.Invoke(index + 1);
+            }),
+            new ButtonElement("Move to Start", () =>
+            {
+                if (index == 0)
+                {
+                    EditorManager.inst.DisplayNotification("Could not move item to the start since it's already at the start.", 3f, EditorManager.NotificationType.Error);
+                    return;
+                }
+
+                list.Move(index, 0);
+                onMove?.Invoke(0);
+            }),
+            new ButtonElement("Move to End", () =>
+            {
+                if (index == list.Count - 1)
+                {
+                    EditorManager.inst.DisplayNotification("Could not move item to the end since it's already at the end.", 3f, EditorManager.NotificationType.Error);
+                    return;
+                }
+
+                list.Move(index, list.Count - 1);
+                onMove?.Invoke(list.Count - 1);
             }),
         };
         
@@ -782,6 +948,8 @@ namespace BetterLegacy.Editor.Managers
             new ButtonElement("Set to Timeline Cursor", () => setTime?.Invoke(AudioManager.inst.CurrentAudioSource.time)),
             new ButtonElement("Snap to BPM", () => setTime?.Invoke(RTEditor.SnapToBPM(getObjectTime?.Invoke() ?? AudioManager.inst.CurrentAudioSource.time)))
         };
+
+        #endregion
 
         public void Test(bool singleTest, bool groupTest)
         {
