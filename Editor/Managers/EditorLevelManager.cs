@@ -939,6 +939,9 @@ namespace BetterLegacy.Editor.Managers
 
             EditorManager.inst.ClearPopups();
             EditorDialog.CurrentDialog?.Close();
+            // close all dialogs in case there was a bug where a dialog didn't close.
+            for (int i = 0; i < RTEditor.inst.editorDialogs.Count; i++)
+                RTEditor.inst.editorDialogs[i].Close();
             RTEditor.inst.InfoPopup.Open();
 
             if (EditorManager.inst.hasLoadedLevel && EditorConfig.Instance.BackupPreviousLoadedLevel.Value && RTFile.FileExists(GameManager.inst.path))
@@ -998,6 +1001,9 @@ namespace BetterLegacy.Editor.Managers
                 GameData.Current = level.IsVG ?
                     GameData.ParseVG(JSON.Parse(rawJSON), MetaData.Current.Version) :
                     GameData.Parse(JSON.Parse(rawJSON));
+
+                MetaData.Current.beatmap.gameVersion = ProjectArrhythmia.GAME_VERSION;
+                MetaData.Current.beatmap.modVersion = LegacyPlugin.ModVersion.ToString();
             }
             catch (Exception ex)
             {
@@ -1186,6 +1192,9 @@ namespace BetterLegacy.Editor.Managers
             }
 
             RTFile.CopyFile(RTFile.CombinePaths(RTFile.BasePath, Level.LEVEL_LSB), RTFile.CombinePaths(RTFile.BasePath, $"level-previous{FileFormat.LSB.Dot()}"));
+
+            // update date edited so it updates the level metadata and the level list if level sort is set to date edited.
+            MetaData.Current.beatmap.dateEdited = DateTime.Now.ToString(LegacyPlugin.DATE_TIME_FORMAT);
 
             MetaData.Current.WriteToFile(RTFile.CombinePaths(RTFile.BasePath, Level.METADATA_LSB));
             CoroutineHelper.StartCoroutine(SaveData());
