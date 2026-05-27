@@ -3217,6 +3217,13 @@
       }, // copyPlayerAxis
       {
         "type": 1,
+        "name": "runAnimation",
+        "values": [ "Anim Name", "Object Group", "1", "0", "True", "True", "True" ],
+        "const": "False",
+        "compat": "level_control"
+      }, // runAnimation
+      {
+        "type": 1,
         "commands": [ "legacyTail" ],
         "value": "200",
         "const": "False",

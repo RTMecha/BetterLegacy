@@ -340,11 +340,25 @@ namespace BetterLegacy.Core.Components.Player
         public Vector3 ScaleOffset { get; set; }
         public Vector3 RotationOffset { get; set; }
 
+        public MathOperation PositionOperation { get; set; }
+
+        public MathOperation ScaleOperation { get; set; }
+
+        public MathOperation RotationOperation { get; set; }
+
         public void ResetOffsets()
         {
             PositionOffset = Vector3.zero;
             ScaleOffset = Vector3.zero;
             RotationOffset = Vector3.zero;
+
+            PositionOperation = MathOperation.Addition;
+            ScaleOperation = MathOperation.Addition;
+            RotationOperation = MathOperation.Addition;
+
+            PositionOperation = MathOperation.Addition;
+            ScaleOperation = MathOperation.Addition;
+            RotationOperation = MathOperation.Addition;
         }
 
         public Vector3 GetFullPosition() => rb.position;
@@ -4121,12 +4135,22 @@ namespace BetterLegacy.Core.Components.Player
 
             public Vector3 RotationOffset { get => rotationOffset; set => rotationOffset = value; }
 
+            public MathOperation PositionOperation { get; set; }
+
+            public MathOperation ScaleOperation { get; set; }
+
+            public MathOperation RotationOperation { get; set; }
+
             public void ResetOffsets()
             {
                 anim = ObjectTransform.Struct.Default;
                 positionOffset = Vector3.zero;
                 scaleOffset = Vector3.zero;
                 rotationOffset = Vector3.zero;
+
+                PositionOperation = MathOperation.Addition;
+                ScaleOperation = MathOperation.Addition;
+                RotationOperation = MathOperation.Addition;
             }
 
             public Vector3 GetTransformOffset(int type) => type switch

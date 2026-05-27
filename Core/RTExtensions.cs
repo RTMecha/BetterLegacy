@@ -2125,7 +2125,7 @@ namespace BetterLegacy.Core
                 if (events.IsEmpty())
                     continue;
 
-                if (i == 2)
+                if (i == 2 && events[0].values.Length != 3)
                 {
                     transformable.SetTransform(i, 2, animation.Interpolate(i, 0, t));
                     continue;

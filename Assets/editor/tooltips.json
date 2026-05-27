@@ -5441,6 +5441,16 @@
             ]
           }, // legacyTail
           {
+            "name": "Object Modifier - runAnimation (Action)",
+            "tooltips": [
+              {
+                "desc": "runAnimation (Action)",
+                "hint": "Runs an animation onto a group of objects. Regular animations and/or animation groups can be used.",
+                "lang": 0
+              }
+            ]
+          },
+          {
             "name": "Object Modifier - gravity (Action)",
             "tooltips": [
               {

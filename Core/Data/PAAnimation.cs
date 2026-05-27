@@ -15,8 +15,13 @@ using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Core.Data
 {
+    /// <summary>
+    /// Represents an animation excluded from an object.
+    /// </summary>
     public class PAAnimation : PAObject<PAAnimation>, IAnimatable
     {
+        #region Constructors
+
         public PAAnimation()
         {
             id = LSText.randomNumString(16);
@@ -55,6 +60,8 @@ namespace BetterLegacy.Core.Data
             rotationKeyframes.Add(EventKeyframe.DefaultRotationKeyframe);
             colorKeyframes.Add(EventKeyframe.DefaultColorKeyframe);
         }
+
+        #endregion
 
         #region Values
 
@@ -121,7 +128,7 @@ namespace BetterLegacy.Core.Data
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public float GetLength(bool markers = false)
         {
@@ -514,6 +521,12 @@ namespace BetterLegacy.Core.Data
 
             return x;
         }
+
+        public FullTransform InterpolateTransform(float time) => new FullTransform(
+                position: new Vector3(Interpolate(0, 0, time), Interpolate(0, 1, time), Interpolate(0, 2, time)),
+                scale: new Vector3(Interpolate(1, 0, time), Interpolate(1, 1, time), 1f),
+                rotation: rotationKeyframes[0].values.Length != 3 ? new Vector3(0f, 0f, Interpolate(2, 0, time)) : new Vector3(Interpolate(2, 0, time), Interpolate(2, 1, time), Interpolate(2, 2, time))
+                );
 
         public void SortKeyframes() => SortKeyframes(Events);
 

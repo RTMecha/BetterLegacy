@@ -1261,6 +1261,8 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction(nameof(ModifierFunctions.copyAxisGroup),  ModifierFunctions.copyAxisGroup),
             new ModifierAction(nameof(ModifierFunctions.copyPlayerAxis),  ModifierFunctions.copyPlayerAxis),
 
+            new ModifierAction(nameof(ModifierFunctions.runAnimation),  ModifierFunctions.runAnimation, ModifierCompatibility.LevelControlCompatible),
+
             new ModifierAction(nameof(ModifierFunctions.legacyTail),  ModifierFunctions.legacyTail, ModifierCompatibility.BeatmapObjectCompatible),
 
             new ModifierAction(nameof(ModifierFunctions.gravity),  ModifierFunctions.gravity),
@@ -2243,7 +2245,8 @@ namespace BetterLegacy.Core.Helpers
             name.ToLower().Contains("signal") ||
             name.Contains("Other") ||
             name.Contains("copy") && name != nameof(ModifierFunctions.copyPlayerAxis) ||
-            name.Contains("applyAnimation");
+            name.Contains("applyAnimation") ||
+            name == nameof(ModifierFunctions.runAnimation);
 
         public static bool IsEditorModifier(string name) => name == "comment" || name == "region" || name == "endregion";
 
@@ -2491,16 +2494,22 @@ namespace BetterLegacy.Core.Helpers
                         break;
                     }
                 case AxisSource.Offset: {
-                        return reference.GetTransformOffset(fromType).At(fromAxis);
+                        return fromType switch
+                        {
+                            0 => reference.positionOffset.At(fromAxis) + reference.fullTransform.position.At(fromAxis),
+                            1 => reference.scaleOffset.At(fromAxis) * reference.fullTransform.scale.At(fromAxis),
+                            2 => reference.rotationOffset.At(fromAxis) + reference.fullTransform.rotation.At(fromAxis),
+                            _ => 0f,
+                        };
                     }
                 case AxisSource.SequenceOffset: {
                         if (!reference.cachedSequences)
-                            break;
+                            return reference.GetTransformOffset(fromType).At(fromAxis);
                         return fromType switch
                         {
-                            0 => reference.cachedSequences.PositionSequence.GetValue(t).At(fromAxis) + reference.PositionOffset.At(fromAxis),
-                            1 => reference.cachedSequences.ScaleSequence.GetValue(t).At(fromAxis) + reference.ScaleOffset.At(fromAxis),
-                            2 => reference.cachedSequences.RotationSequence.GetValue(t).At(fromAxis) + reference.RotationOffset.At(fromAxis),
+                            0 => (reference.disablePositionSequence ? 0f : reference.cachedSequences.PositionSequence.GetValue(t).At(fromAxis)) + reference.PositionOffset.At(fromAxis) + reference.fullTransform.position.At(fromAxis),
+                            1 => ((reference.disableScaleSequence ? 1f : reference.cachedSequences.ScaleSequence.GetValue(t).At(fromAxis)) + reference.ScaleOffset.At(fromAxis)) * reference.fullTransform.scale.At(fromAxis),
+                            2 => (reference.disablePositionSequence ? 0f : reference.cachedSequences.RotationSequence.GetValue(t).At(fromAxis)) + reference.RotationOffset.At(fromAxis) + reference.fullTransform.rotation.At(fromAxis),
                             _ => 0f,
                         };
                     }
@@ -2530,16 +2539,22 @@ namespace BetterLegacy.Core.Helpers
                         break;
                     }
                 case AxisSource.Offset: {
-                        return Mathf.Clamp((reference.GetTransformOffset(fromType).At(fromAxis) - offset) * multiply % loop, min, max);
+                        return fromType switch
+                        {
+                            0 => Mathf.Clamp((reference.positionOffset.At(fromAxis) + reference.fullTransform.position.At(fromAxis) - offset) * multiply % loop, min, max),
+                            1 => Mathf.Clamp((reference.scaleOffset.At(fromAxis) * reference.fullTransform.scale.At(fromAxis) - offset) * multiply % loop, min, max),
+                            2 => Mathf.Clamp((reference.rotationOffset.At(fromAxis) + reference.fullTransform.rotation.At(fromAxis) - offset) * multiply % loop, min, max),
+                            _ => 0f,
+                        };
                     }
                 case AxisSource.SequenceOffset: {
                         if (!reference.cachedSequences)
-                            break;
+                            return Mathf.Clamp((reference.GetTransformOffset(fromType).At(fromAxis) - offset) * multiply % loop, min, max);
                         return fromType switch
                         {
-                            0 => Mathf.Clamp((reference.cachedSequences.PositionSequence.GetValue(t).At(fromAxis) + reference.PositionOffset.At(fromAxis) - offset) * multiply % loop, min, max),
-                            1 => Mathf.Clamp((reference.cachedSequences.ScaleSequence.GetValue(t).At(fromAxis) + reference.ScaleOffset.At(fromAxis) - offset) * multiply % loop, min, max),
-                            2 => Mathf.Clamp((reference.cachedSequences.RotationSequence.GetValue(t).At(version == 0 ? 2 : fromAxis) + reference.RotationOffset.At(fromAxis) - offset) * multiply % loop, min, max),
+                            0 => Mathf.Clamp(((reference.disablePositionSequence ? 0f : reference.cachedSequences.PositionSequence.GetValue(t).At(fromAxis)) + reference.PositionOffset.At(fromAxis) + reference.fullTransform.position.At(fromAxis) - offset) * multiply % loop, min, max),
+                            1 => Mathf.Clamp((((reference.disableScaleSequence ? 1f : reference.cachedSequences.ScaleSequence.GetValue(t).At(fromAxis)) + reference.ScaleOffset.At(fromAxis)) * reference.fullTransform.scale.At(fromAxis) - offset) * multiply % loop, min, max),
+                            2 => Mathf.Clamp(((reference.disableRotationSequence ? 0f : reference.cachedSequences.RotationSequence.GetValue(t).At(version == 0 ? 2 : fromAxis)) + reference.RotationOffset.At(fromAxis) + reference.fullTransform.rotation.At(fromAxis) - offset) * multiply % loop, min, max),
                             _ => 0f,
                         };
                     }
@@ -3853,10 +3868,10 @@ namespace BetterLegacy.Core.Helpers
                 int num = modifier.GetInt(0, 0, modifierLoop.variables);
 
                 foreach (var beatmapObject in list)
-                    beatmapObject.integerVariable += num;
+                    beatmapObject.integerVariable = modifier.constant ? Mathf.FloorToInt(beatmapObject.integerVariable + (num * Time.deltaTime)) : num;
             }
             else
-                modifierLoop.reference.IntVariable += modifier.GetInt(0, 0, modifierLoop.variables);
+                modifierLoop.reference.IntVariable = modifier.constant ? Mathf.FloorToInt(modifierLoop.reference.IntVariable + (modifier.GetInt(0, 0, modifierLoop.variables) * Time.deltaTime)) : modifier.GetInt(0, 0, modifierLoop.variables);
         }
 
         public static void addVariableOther(Modifier modifier, ModifierLoop modifierLoop)
@@ -3871,7 +3886,7 @@ namespace BetterLegacy.Core.Helpers
             int num = modifier.GetInt(0, 0, modifierLoop.variables);
 
             foreach (var beatmapObject in list)
-                beatmapObject.integerVariable += num;
+                beatmapObject.integerVariable = modifier.constant ? Mathf.FloorToInt(beatmapObject.integerVariable + (num * Time.deltaTime)) : num;
         }
 
         public static void subVariable(Modifier modifier, ModifierLoop modifierLoop)
@@ -3888,10 +3903,10 @@ namespace BetterLegacy.Core.Helpers
                 int num = modifier.GetInt(0, 0, modifierLoop.variables);
 
                 foreach (var beatmapObject in list)
-                    beatmapObject.integerVariable -= num;
+                    beatmapObject.integerVariable = modifier.constant ? Mathf.FloorToInt(beatmapObject.integerVariable - (num * Time.deltaTime)) : num;
             }
             else
-                modifierLoop.reference.IntVariable -= modifier.GetInt(0, 0, modifierLoop.variables);
+                modifierLoop.reference.IntVariable = modifier.constant ? Mathf.FloorToInt(modifierLoop.reference.IntVariable - (modifier.GetInt(0, 0, modifierLoop.variables) * Time.deltaTime)) : modifier.GetInt(0, 0, modifierLoop.variables);
         }
 
         public static void subVariableOther(Modifier modifier, ModifierLoop modifierLoop)
@@ -3906,7 +3921,7 @@ namespace BetterLegacy.Core.Helpers
             int num = modifier.GetInt(0, 0, modifierLoop.variables);
 
             foreach (var beatmapObject in list)
-                beatmapObject.integerVariable -= num;
+                beatmapObject.integerVariable = modifier.constant ? Mathf.FloorToInt(beatmapObject.integerVariable - (num * Time.deltaTime)) : num;
         }
 
         public static void setVariable(Modifier modifier, ModifierLoop modifierLoop)
@@ -11188,21 +11203,30 @@ namespace BetterLegacy.Core.Helpers
                 case AxisSource.Offset: {
                         transformable.SetTransform(toType, toAxis, fromType switch
                         {
-                            0 => Mathf.Clamp((bm.PositionOffset.At(fromAxis) - offset) * multiply % loop, min, max),
-                            1 => Mathf.Clamp((bm.ScaleOffset.At(fromAxis) - offset) * multiply % loop, min, max),
-                            2 => Mathf.Clamp((bm.RotationOffset.At(modifier.version == 0 ? 2 : fromAxis) - offset) * multiply % loop, min, max),
+                            0 => Mathf.Clamp((bm.PositionOffset.At(fromAxis) + bm.fullTransform.position.At(fromAxis) - offset) * multiply % loop, min, max),
+                            1 => Mathf.Clamp(((bm.ScaleOffset.At(fromAxis) * bm.fullTransform.scale.At(fromAxis)) - offset) * multiply % loop, min, max),
+                            2 => Mathf.Clamp((bm.RotationOffset.At(modifier.version == 0 ? 2 : fromAxis) + bm.fullTransform.rotation.At(fromAxis) - offset) * multiply % loop, min, max),
                             _ => 0f,
                         });
                         break;
                     }
                 case AxisSource.SequenceOffset: {
                         if (!bm.cachedSequences)
+                        {
+                            transformable.SetTransform(toType, toAxis, fromType switch
+                            {
+                                0 => Mathf.Clamp((bm.PositionOffset.At(fromAxis) - offset) * multiply % loop, min, max),
+                                1 => Mathf.Clamp((bm.ScaleOffset.At(fromAxis) - offset) * multiply % loop, min, max),
+                                2 => Mathf.Clamp((bm.RotationOffset.At(modifier.version == 0 ? 2 : fromAxis) - offset) * multiply % loop, min, max),
+                                _ => 0f,
+                            });
                             break;
+                        }
                         transformable.SetTransform(toType, toAxis, fromType switch
                         {
-                            0 => Mathf.Clamp((bm.cachedSequences.PositionSequence.GetValue(t).At(fromAxis) + bm.PositionOffset.At(fromAxis) - offset) * multiply % loop, min, max),
-                            1 => Mathf.Clamp((bm.cachedSequences.ScaleSequence.GetValue(t).At(fromAxis) + bm.ScaleOffset.At(fromAxis) - offset) * multiply % loop, min, max),
-                            2 => Mathf.Clamp((bm.cachedSequences.RotationSequence.GetValue(t).At(fromAxis) + bm.RotationOffset.At(modifier.version == 0 ? 2 : fromAxis) - offset) * multiply % loop, min, max),
+                            0 => Mathf.Clamp(((bm.disablePositionSequence ? 0f : bm.cachedSequences.PositionSequence.GetValue(t).At(fromAxis)) + bm.PositionOffset.At(fromAxis) + bm.fullTransform.position.At(fromAxis) - offset) * multiply % loop, min, max),
+                            1 => Mathf.Clamp(((((bm.disableScaleSequence ? 1f : bm.cachedSequences.ScaleSequence.GetValue(t).At(fromAxis)) + bm.ScaleOffset.At(fromAxis)) * bm.fullTransform.scale.At(fromAxis)) - offset) * multiply % loop, min, max),
+                            2 => Mathf.Clamp(((bm.disableRotationSequence ? 0f : bm.cachedSequences.RotationSequence.GetValue(t).At(modifier.version == 0 ? 2 : fromAxis)) + bm.RotationOffset.At(modifier.version == 0 ? 2 : fromAxis) + bm.fullTransform.rotation.At(fromAxis) - offset) * multiply % loop, min, max),
                             _ => 0f,
                         });
                         break;
@@ -11354,8 +11378,8 @@ namespace BetterLegacy.Core.Helpers
 
                             numberVariables["axis"] = fromType switch
                             {
-                                0 => bm.PositionOffset.At(fromAxis),
-                                1 => bm.ScaleOffset.At(fromAxis),
+                                0 => bm.PositionOffset.At(fromAxis) + bm.fullTransform.position.At(fromAxis),
+                                1 => bm.ScaleOffset.At(fromAxis) * bm.fullTransform.scale.At(fromAxis),
                                 2 => bm.RotationOffset.At(modifier.version == 0 ? 2 : fromAxis),
                                 _ => 0f,
                             };
@@ -11372,9 +11396,9 @@ namespace BetterLegacy.Core.Helpers
 
                             numberVariables["axis"] = fromType switch
                             {
-                                0 => bm.cachedSequences.PositionSequence.GetValue(t).At(fromAxis) + bm.PositionOffset.At(fromAxis),
-                                1 => bm.cachedSequences.ScaleSequence.GetValue(t).At(fromAxis) + bm.ScaleOffset.At(fromAxis),
-                                2 => bm.cachedSequences.RotationSequence.GetValue(t).At(fromAxis) + bm.RotationOffset.At(modifier.version == 0 ? 2 : fromAxis),
+                                0 => (bm.disablePositionSequence || !bm.cachedSequences ? 0f : bm.cachedSequences.PositionSequence.GetValue(t).At(fromAxis)) + bm.PositionOffset.At(fromAxis) + bm.fullTransform.position.At(fromAxis),
+                                1 => ((bm.disableScaleSequence || !bm.cachedSequences ? 1f : bm.cachedSequences.ScaleSequence.GetValue(t).At(fromAxis)) + bm.ScaleOffset.At(fromAxis)) * bm.fullTransform.scale.At(fromAxis),
+                                2 => (bm.disableRotationSequence || !bm.cachedSequences ? 0f : bm.cachedSequences.RotationSequence.GetValue(t).At(fromAxis)) + bm.RotationOffset.At(modifier.version == 0 ? 2 : fromAxis) + bm.fullTransform.rotation.At(fromAxis),
                                 _ => 0f,
                             };
                             bm.SetOtherObjectVariables(numberVariables);
@@ -11499,9 +11523,9 @@ namespace BetterLegacy.Core.Helpers
                         case AxisSource.Offset: {
                                 RTLevel.Current.evaluationContext.RegisterVariable(name, fromType switch
                                 {
-                                    0 => Mathf.Clamp(beatmapObject.PositionOffset.At(fromAxis), min, max),
-                                    1 => Mathf.Clamp(beatmapObject.ScaleOffset.At(fromAxis), min, max),
-                                    2 => Mathf.Clamp(beatmapObject.RotationOffset.At(modifier.version == 0 ? 2 : fromAxis), min, max),
+                                    0 => Mathf.Clamp(beatmapObject.PositionOffset.At(fromAxis) + beatmapObject.fullTransform.position.At(fromAxis), min, max),
+                                    1 => Mathf.Clamp(beatmapObject.ScaleOffset.At(fromAxis) * beatmapObject.fullTransform.scale.At(fromAxis), min, max),
+                                    2 => Mathf.Clamp(beatmapObject.RotationOffset.At(modifier.version == 0 ? 2 : fromAxis) + beatmapObject.fullTransform.rotation.At(fromAxis), min, max),
                                     _ => 0f,
                                 });
                                 break;
@@ -11509,9 +11533,9 @@ namespace BetterLegacy.Core.Helpers
                         case AxisSource.SequenceOffset: {
                                 RTLevel.Current.evaluationContext.RegisterVariable(name, fromType switch
                                 {
-                                    0 => Mathf.Clamp(beatmapObject.cachedSequences.PositionSequence.GetValue(time - beatmapObject.StartTime - delay).At(fromAxis) + beatmapObject.PositionOffset.At(fromAxis), min, max),
-                                    1 => Mathf.Clamp(beatmapObject.cachedSequences.ScaleSequence.GetValue(time - beatmapObject.StartTime - delay).At(fromAxis) + beatmapObject.ScaleOffset.At(fromAxis), min, max),
-                                    2 => Mathf.Clamp(beatmapObject.cachedSequences.RotationSequence.GetValue(time - beatmapObject.StartTime - delay).At(modifier.version == 0 ? 2 : fromAxis) + beatmapObject.RotationOffset.At(modifier.version == 0 ? 2 : fromAxis), min, max),
+                                    0 => Mathf.Clamp((beatmapObject.disablePositionSequence ? 0f : beatmapObject.cachedSequences.PositionSequence.GetValue(time - beatmapObject.StartTime - delay).At(fromAxis)) + beatmapObject.PositionOffset.At(fromAxis) + beatmapObject.fullTransform.position.At(fromAxis), min, max),
+                                    1 => Mathf.Clamp(((beatmapObject.disableScaleSequence ? 1f : beatmapObject.cachedSequences.ScaleSequence.GetValue(time - beatmapObject.StartTime - delay).At(fromAxis)) + beatmapObject.ScaleOffset.At(fromAxis)) * beatmapObject.fullTransform.scale.At(fromAxis), min, max),
+                                    2 => Mathf.Clamp((beatmapObject.disableRotationSequence ? 0f : beatmapObject.cachedSequences.RotationSequence.GetValue(time - beatmapObject.StartTime - delay).At(modifier.version == 0 ? 2 : fromAxis)) + beatmapObject.RotationOffset.At(modifier.version == 0 ? 2 : fromAxis) + beatmapObject.fullTransform.rotation.At(fromAxis), min, max),
                                     _ => 0f,
                                 });
                                 break;
@@ -11532,8 +11556,7 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        // probably won't go with this
-        public static void interpolateObject(Modifier modifier, ModifierLoop modifierLoop)
+        public static void runAnimation(Modifier modifier, ModifierLoop modifierLoop)
         {
             var transformable = modifierLoop.reference.AsTransformable();
             if (transformable == null)
@@ -11542,34 +11565,80 @@ namespace BetterLegacy.Core.Helpers
             if (prefabable == null)
                 return;
 
-            var tag = modifier.GetValue(0, modifierLoop.variables);
-
-            var cache = modifier.GetResultOrDefault(() => GroupBeatmapObjectCache.Get(modifier, prefabable, tag));
-            if (cache.tag != tag)
-            {
-                cache.UpdateCache(modifier, prefabable, tag);
-                modifier.Result = cache;
-            }
-
-            var bm = cache.obj;
-            if (!bm)
+            var name = modifier.GetValue(0, modifierLoop.variables);
+            if (string.IsNullOrEmpty(name))
                 return;
 
-            var time = modifier.GetFloat(1, 0f, modifierLoop.variables);
-            var type = modifier.GetInt(2, 0, modifierLoop.variables);
+            var tag = modifier.GetValue(1, modifierLoop.variables);
+            var time = modifier.GetFloat(2, 0f, modifierLoop.variables);
 
+            string easing = modifier.GetValue(3, modifierLoop.variables);
+            if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
+                easing = Ease.EaseReferences[e].Name;
 
-            //if (modifier.GetBool(2, true, modifierLoop.variables)) // animate pos x
-            //    transformable.PositionOffset = transformable.PositionOffset.X(Mathf.Clamp((bm.Interpolate(0, 0, time) - modifier.GetFloat(3, 0f, modifierLoop.variables)) * modifier.GetFloat(4, 1f, modifierLoop.variables), modifier.GetFloat(5, -9999f, modifierLoop.variables), modifier.GetFloat(6, -9999f, modifierLoop.variables)));
-            //if (modifier.GetBool(7, true, modifierLoop.variables)) // animate pos y
-            //    transformable.PositionOffset = transformable.PositionOffset.Y(Mathf.Clamp((bm.Interpolate(0, 1, time) - modifier.GetFloat(8, 0f, modifierLoop.variables)) * modifier.GetFloat(9, 1f, modifierLoop.variables), modifier.GetFloat(10, -9999f, modifierLoop.variables), modifier.GetFloat(11, -9999f, modifierLoop.variables)));
-            //if (modifier.GetBool(12, true, modifierLoop.variables)) // animate pos z
-            //    transformable.PositionOffset = transformable.PositionOffset.Y(Mathf.Clamp((bm.Interpolate(0, 2, time) - modifier.GetFloat(13, 0f, modifierLoop.variables)) * modifier.GetFloat(14, 1f, modifierLoop.variables), modifier.GetFloat(15, -9999f, modifierLoop.variables), modifier.GetFloat(16, -9999f, modifierLoop.variables)));
+            var disablePositionSequence = modifier.GetBool(4, true, modifierLoop.variables);
+            var disableScaleSequence = modifier.GetBool(5, true, modifierLoop.variables);
+            var disableRotationSequence = modifier.GetBool(6, true, modifierLoop.variables);
 
-            //if (modifier.GetBool(17, true, modifierLoop.variables)) // animate sca x
-            //    transformable.PositionOffset = transformable.PositionOffset.X(Mathf.Clamp((bm.Interpolate(1, 0, time) - modifier.GetFloat(18, 0f, modifierLoop.variables)) * modifier.GetFloat(19, 1f, modifierLoop.variables), modifier.GetFloat(20, -9999f, modifierLoop.variables), modifier.GetFloat(21, -9999f, modifierLoop.variables)));
-            //if (modifier.GetBool(22, true, modifierLoop.variables)) // animate sca y
-            //    transformable.PositionOffset = transformable.PositionOffset.Y(Mathf.Clamp((bm.Interpolate(1, 1, time) - modifier.GetFloat(8, 0f, modifierLoop.variables)) * modifier.GetFloat(9, 1f, modifierLoop.variables), modifier.GetFloat(10, -9999f, modifierLoop.variables), modifier.GetFloat(11, -9999f, modifierLoop.variables)));
+            if (GameData.Current.animationGroups.TryFind(x => x.name == name, out AnimationGroup animationGroup))
+            {
+                if (!modifier.constant)
+                {
+                    var animation = new RTAnimation("Animate Object Offset");
+                    animation.animationHandlers = new List<AnimationHandlerBase>
+                    {
+                        new AnimationHandler<float>(new List<IKeyframe<float>>
+                        {
+                            new FloatKeyframe(0f, 0f, Ease.Linear),
+                            new FloatKeyframe(time == 0f ? animationGroup.AnimLength : Mathf.Clamp(time, 0f, 9999f), animationGroup.AnimLength, Ease.GetEaseFunction(easing, Ease.Linear)),
+                        },
+                        x =>
+                        {
+                            doAnimation(modifier, prefabable, tag, x, animationGroup.animations, disablePositionSequence, disableScaleSequence, disableRotationSequence);
+                        }, interpolateOnComplete: true),
+                    };
+                    animation.SetDefaultOnComplete();
+                    AnimationManager.inst.Play(animation);
+                    return;
+                }
+                doAnimation(modifier, prefabable, tag, time, animationGroup.animations, disablePositionSequence, disableScaleSequence, disableRotationSequence);
+                return;
+            }
+            if (!modifier.constant)
+            {
+                var animation = new RTAnimation("Animate Object Offset");
+                animation.animationHandlers = new List<AnimationHandlerBase>
+                {
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, 0f, Ease.Linear),
+                        new FloatKeyframe(time == 0f ? animationGroup.AnimLength : Mathf.Clamp(time, 0f, 9999f), time, Ease.GetEaseFunction(easing, Ease.Linear)),
+                    },
+                    x => doAnimation(modifier, prefabable, tag, x, GameData.Current.animations, disablePositionSequence, disableScaleSequence, disableRotationSequence), interpolateOnComplete: true),
+                };
+                animation.SetDefaultOnComplete();
+                AnimationManager.inst.Play(animation);
+                return;
+            }
+            doAnimation(modifier, prefabable, tag, time, GameData.Current.animations, disablePositionSequence, disableScaleSequence, disableRotationSequence);
+        }
+
+        static void doAnimation(Modifier modifier, IPrefabable prefabable, string tag, float time, List<PAAnimation> animations,
+            bool disablePositionSequence, bool disableScaleSequence, bool disableRotationSequence)
+        {
+            for (int i = 0; i < animations.Count; i++)
+            {
+                var animation = animations[i];
+                if (!GameData.Current.TryFindObjectWithTag(modifier, prefabable, tag, x => x.animID == animation.ReferenceID, out BeatmapObject beatmapObject))
+                    continue;
+                beatmapObject.disablePositionSequence = disablePositionSequence;
+                beatmapObject.disableScaleSequence = disableScaleSequence;
+                beatmapObject.disableRotationSequence = disableRotationSequence;
+                var fullTransform = animation.InterpolateTransform(time);
+                beatmapObject.fullTransform.position = fullTransform.position;
+                beatmapObject.fullTransform.scale = fullTransform.scale;
+                beatmapObject.fullTransform.rotation = fullTransform.rotation;
+            }
         }
 
         public static void copyPlayerAxis(Modifier modifier, ModifierLoop modifierLoop)
@@ -11594,6 +11663,15 @@ namespace BetterLegacy.Core.Helpers
 
             if (players.TryFind(x => x.RuntimePlayer && x.RuntimePlayer.rb, out PAPlayer player))
                 transformable.SetTransform(toType, toAxis, Mathf.Clamp((player.RuntimePlayer.rb.transform.GetLocalVector(fromType).At(fromAxis) - offset) * multiply, min, max));
+        }
+
+        public static void setOffsetOperation(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
+                return;
+            beatmapObject.PositionOperation = Parser.TryParse(modifier.GetValue(0), true, MathOperation.Addition);
+            beatmapObject.ScaleOperation = Parser.TryParse(modifier.GetValue(1), true, MathOperation.Addition);
+            beatmapObject.RotationOperation = Parser.TryParse(modifier.GetValue(2), true, MathOperation.Addition);
         }
 
         public static void legacyTail(Modifier modifier, ModifierLoop modifierLoop)

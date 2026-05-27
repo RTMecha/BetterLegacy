@@ -249,6 +249,12 @@ namespace BetterLegacy.Core.Data.Beatmap
             }
         }
 
+        public MathOperation PositionOperation { get; set; }
+
+        public MathOperation ScaleOperation { get; set; }
+
+        public MathOperation RotationOperation { get; set; }
+
         #endregion
 
         #region Prefab
@@ -766,6 +772,10 @@ namespace BetterLegacy.Core.Data.Beatmap
             PositionOffset = fullTransformOffset.position;
             ScaleOffset = fullTransformOffset.scale;
             RotationOffset = fullTransformOffset.rotation;
+
+            PositionOperation = MathOperation.Addition;
+            ScaleOperation = MathOperation.Addition;
+            RotationOperation = MathOperation.Addition;
         }
 
         public Vector3 GetTransformOffset(int type) => type switch

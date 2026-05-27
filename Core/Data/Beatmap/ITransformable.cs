@@ -22,6 +22,12 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public Vector3 RotationOffset { get; set; }
 
+        public MathOperation PositionOperation { get; set; }
+
+        public MathOperation ScaleOperation { get; set; }
+
+        public MathOperation RotationOperation { get; set; }
+
         /// <summary>
         /// Resets the transform offsets.
         /// </summary>

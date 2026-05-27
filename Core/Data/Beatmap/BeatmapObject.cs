@@ -509,6 +509,27 @@ namespace BetterLegacy.Core.Data.Beatmap
             }
         }
 
+        public MathOperation PositionOperation { get; set; }
+
+        public MathOperation ScaleOperation { get; set; }
+
+        public MathOperation RotationOperation { get; set; }
+
+        /// <summary>
+        /// If the position sequence should be disabled.
+        /// </summary>
+        public bool disablePositionSequence;
+        
+        /// <summary>
+        /// If the scale sequence should be disabled.
+        /// </summary>
+        public bool disableScaleSequence;
+        
+        /// <summary>
+        /// If the rotation sequence should be disabled.
+        /// </summary>
+        public bool disableRotationSequence;
+
         #endregion
 
         #region Prefab
@@ -1251,13 +1272,6 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (jn["anim_id"] != null)
                 animID = jn["anim_id"];
 
-            if (jn["tf"] != null)
-            {
-                fullTransform.position = Parser.TryParse(jn["tf"]["pos"], Vector3.zero);
-                fullTransform.scale = Parser.TryParse(jn["tf"]["sca"], Vector3.one);
-                fullTransform.rotation = Parser.TryParse(jn["tf"]["rot"], Vector3.zero);
-            }
-
             if (jn["tf_offset"] != null)
             {
                 fullTransformOffset.position = Parser.TryParse(jn["tf_offset"]["pos"], Vector3.zero);
@@ -1483,13 +1497,6 @@ namespace BetterLegacy.Core.Data.Beatmap
             for (int i = 0; i < events[3].Count; i++)
                 jn["events"]["col"][i] = events[3][i].ToJSON(maxValuesToSave: gradientType != GradientType.Normal ? -1 : 5);
 
-            if (fullTransform.position != Vector3.zero)
-                jn["tf"]["pos"] = fullTransform.position.ToJSON();
-            if (fullTransform.scale != Vector3.one)
-                jn["tf"]["sca"] = fullTransform.scale.ToJSON();
-            if (fullTransform.rotation != Vector3.zero)
-                jn["tf"]["rot"] = fullTransform.rotation.ToJSON();
-            
             if (fullTransformOffset.position != Vector3.zero)
                 jn["tf_offset"]["pos"] = fullTransformOffset.position.ToJSON();
             if (fullTransformOffset.scale != Vector3.zero)
@@ -1665,6 +1672,16 @@ namespace BetterLegacy.Core.Data.Beatmap
             PositionOffset = fullTransformOffset.position;
             ScaleOffset = fullTransformOffset.scale;
             RotationOffset = fullTransformOffset.rotation;
+
+            PositionOperation = MathOperation.Addition;
+            ScaleOperation = MathOperation.Addition;
+            RotationOperation = MathOperation.Addition;
+
+            disablePositionSequence = false;
+            disableScaleSequence = false;
+            disableRotationSequence = false;
+
+            fullTransform = FullTransform.Struct.Default;
         }
 
         public Vector3 GetTransformOffset(int type) => type switch
@@ -2146,9 +2163,9 @@ namespace BetterLegacy.Core.Data.Beatmap
 
                 if (includeOffsets)
                 {
-                    result.position += parent.positionOffset;
-                    result.scale = new Vector3(result.scale.x + parent.scaleOffset.x, result.scale.y + parent.scaleOffset.y, result.scale.z + parent.scaleOffset.z);
-                    result.rotation += parent.rotationOffset;
+                    RTMath.Operation(ref result.position, parent.PositionOffset, parent.PositionOperation);
+                    RTMath.Operation(ref result.scale, parent.ScaleOffset, parent.ScaleOperation);
+                    RTMath.Operation(ref result.rotation, parent.RotationOffset, parent.RotationOperation);
                 }
 
                 if (result.scale.x == 0f || result.scale.y == 0f || result.scale.z == 0f) // optimize scaled zero

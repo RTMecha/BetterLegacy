@@ -165,6 +165,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public List<List<EventKeyframe>> events = new List<List<EventKeyframe>>();
 
+        public List<AnimationGroup> animationGroups = new List<AnimationGroup>();
+
         public List<PAAnimation> animations = new List<PAAnimation>();
 
         public List<BeatmapVariable> variables = new List<BeatmapVariable>();
@@ -777,6 +779,11 @@ namespace BetterLegacy.Core.Data.Beatmap
                 for (int i = 0; i < jn["anims"].Count; i++)
                     animations.Add(PAAnimation.Parse(jn["anims"][i]));
 
+            animationGroups.Clear();
+            if (jn["anim_groups"] != null)
+                for (int i = 0; i < jn["anim_groups"].Count; i++)
+                    animationGroups.Add(AnimationGroup.Parse(jn["anim_groups"][i]));
+
             variables.Clear();
             if (jn["vars"] != null)
                 for (int i = 0; i < jn["vars"].Count; i++)
@@ -1140,6 +1147,8 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["bg_objects"][i] = backgroundObjects[i].ToJSON();
 
             CoreHelper.Log("Saving Event Objects");
+            for (int i = 0; i < animationGroups.Count; i++)
+                jn["anim_groups"][i] = animationGroups[i].ToJSON();
             for (int i = 0; i < animations.Count; i++)
                 jn["anims"][i] = animations[i].ToJSON();
 
@@ -1489,6 +1498,37 @@ namespace BetterLegacy.Core.Data.Beatmap
             var beatmap = GetBeatmap(modifier, prefabable);
             var prefabInstanceOnly = modifier.prefabInstanceOnly && !string.IsNullOrEmpty(prefabable.PrefabInstanceID);
             return beatmap.BeatmapObjects.Find(x => (!modifier.groupAlive || x.Alive) && x.tags.Contains(tag) && (!prefabInstanceOnly || x.SamePrefabInstance(prefabable)));
+        }
+
+        /// <summary>
+        /// Tries to get an object with a modifier's tag group.
+        /// </summary>
+        /// <param name="prefabable">Prefabable object.</param>
+        /// <param name="tag">Tag group.</param>
+        /// <param name="predicate">Predicate check.</param>
+        /// <param name="result">Object result.</param>
+        /// <returns>Returns true if an object was found, otherwise returns false.</returns>
+        public bool TryFindObjectWithTag(Modifier modifier, IPrefabable prefabable, string tag, Predicate<BeatmapObject> predicate, out BeatmapObject result)
+        {
+            result = FindObjectWithTag(modifier, prefabable, tag, predicate);
+            return result;
+        }
+
+        /// <summary>
+        /// Gets an object with a modifier's tag group.
+        /// </summary>
+        /// <param name="prefabable">Prefabable object.</param>
+        /// <param name="tag">Tag group.</param>
+        /// <param name="predicate">Predicate check.</param>
+        /// <returns>Returns the found object.</returns>
+        public BeatmapObject FindObjectWithTag(Modifier modifier, IPrefabable prefabable, string tag, Predicate<BeatmapObject> predicate)
+        {
+            if (string.IsNullOrEmpty(tag))
+                return prefabable as BeatmapObject;
+
+            var beatmap = GetBeatmap(modifier, prefabable);
+            var prefabInstanceOnly = modifier.prefabInstanceOnly && !string.IsNullOrEmpty(prefabable.PrefabInstanceID);
+            return beatmap.BeatmapObjects.Find(x => predicate(x) && (!modifier.groupAlive || x.Alive) && x.tags.Contains(tag) && (!prefabInstanceOnly || x.SamePrefabInstance(prefabable)));
         }
 
         /// <summary>

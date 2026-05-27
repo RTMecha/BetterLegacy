@@ -3966,6 +3966,23 @@ namespace BetterLegacy.Editor.Data.Elements
                         break;
                     }
 
+                case nameof(ModifierFunctions.runAnimation): {
+                        PrefabGroupOnly(modifier, reference);
+                        var str = StringGenerator(modifier, reference, "Object Group", 1);
+                        EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
+
+                        StringGenerator(modifier, reference, "Name", 0);
+                        SingleGenerator(modifier, reference, "Time", 2);
+
+                        EaseGenerator(modifier, reference, 3);
+
+                        BoolGenerator(modifier, reference, "Override Pos", 4);
+                        BoolGenerator(modifier, reference, "Override Sca", 5);
+                        BoolGenerator(modifier, reference, "Override Rot", 6);
+
+                        break;
+                    }
+
                 case nameof(ModifierFunctions.legacyTail): {
                         SingleGenerator(modifier, reference, "Total Time", 0, 200f);
 

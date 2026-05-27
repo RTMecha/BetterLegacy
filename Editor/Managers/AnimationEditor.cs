@@ -54,6 +54,21 @@ namespace BetterLegacy.Editor.Managers
         public PAAnimation CurrentAnimation { get; set; }
 
         /// <summary>
+        /// The current list of animation groups.
+        /// </summary>
+        public List<AnimationGroup> CurrentAnimationListGroup { get; set; }
+
+        /// <summary>
+        /// The current list of animations.
+        /// </summary>
+        public List<PAAnimation> CurrentAnimationList { get; set; }
+
+        /// <summary>
+        /// Copied list of animation groups.
+        /// </summary>
+        public List<AnimationGroup> copiedAnimationGroups = new List<AnimationGroup>();
+
+        /// <summary>
         /// Copied list of animations.
         /// </summary>
         public List<PAAnimation> copiedAnimations = new List<PAAnimation>();
@@ -150,7 +165,7 @@ namespace BetterLegacy.Editor.Managers
                 EditorHelper.AddEditorDropdown("View Animations", string.Empty, EditorHelper.VIEW_DROPDOWN, EditorSprites.PlaySprite, () =>
                 {
                     if (EditorLevelManager.inst.HasLoadedLevel())
-                        OpenPopup(GameData.Current.animations);
+                        OpenPopup(GameData.Current.animationGroups, GameData.Current.animations);
                 });
             }
             catch (Exception ex)
@@ -187,8 +202,7 @@ namespace BetterLegacy.Editor.Managers
         public void ApplyAnimationsToSelected(List<PAAnimation> animations)
         {
             foreach (var animation in animations)
-                ApplyAnimationToSelected(animation, false);
-            RTLevel.Current.RecacheAllSequences();
+                ApplyAnimationToSelected(animation);
         }
 
         /// <summary>
@@ -196,7 +210,7 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         /// <param name="animation">Animation to apply.</param>
         /// <param name="update">If sequences should be recached.</param>
-        public void ApplyAnimationToSelected(PAAnimation animation, bool update)
+        public void ApplyAnimationToSelected(PAAnimation animation)
         {
             foreach (var timelineObject in EditorTimeline.inst.SelectedBeatmapObjects)
             {
@@ -205,11 +219,24 @@ namespace BetterLegacy.Editor.Managers
                 {
                     beatmapObject.CopyAnimatableData(animation);
                     timelineObject.RenderPosLength();
+                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                 }
             }
+        }
 
-            if (update)
-                RTLevel.Current.RecacheAllSequences();
+        /// <summary>
+        /// Converts the selected objects to just animations.
+        /// </summary>
+        /// <param name="animationGroup">Animation group reference.</param>
+        public void ConvertSelectedToAnimationGroup(AnimationGroup animationGroup)
+        {
+            foreach (var timelineObject in EditorTimeline.inst.SelectedBeatmapObjects)
+            {
+                var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                if (string.IsNullOrEmpty(beatmapObject.animID))
+                    continue;
+                animationGroup.animations.Add(ConvertToAnimation(beatmapObject));
+            }
         }
 
         /// <summary>
@@ -231,7 +258,7 @@ namespace BetterLegacy.Editor.Managers
         {
             var animation = new PAAnimation(beatmapObject.name, "This is the default description!");
             animation.CopyAnimatableData(beatmapObject);
-            animation.ReferenceID = beatmapObject.animID;
+            animation.ReferenceID = beatmapObject.animID ?? string.Empty;
             return animation;
         }
 
@@ -240,6 +267,12 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         /// <returns>Returns a newly created animation.</returns>
         public PAAnimation CreateAnimation() => new PAAnimation("New Animation", "This is the default description!");
+
+        /// <summary>
+        /// Creates a new animation group.
+        /// </summary>
+        /// <returns>Returns a newly created animation group.</returns>
+        public AnimationGroup CreateAnimationGroup() => new AnimationGroup("New Animation Group", "This is the default description!");
 
         #region Editor
 
@@ -382,6 +415,18 @@ namespace BetterLegacy.Editor.Managers
         /// <summary>
         /// Opens the animation list popup.
         /// </summary>
+        /// <param name="animationGroups">List of animation groups to display.</param>
+        /// <param name="animations">List of animations to display.</param>
+        /// <param name="onPlay">Function to run when the user wants to play the animation.</param>
+        public void OpenPopup(List<AnimationGroup> animationGroups, List<PAAnimation> animations, Action<PAAnimation> onPlay = null, Action<PAAnimation> onSelect = null, ITransformable currentObject = null, Action onReturn = null)
+        {
+            Popup.Open();
+            RenderPopup(animationGroups, animations, onPlay, onSelect, currentObject, onReturn);
+        }
+
+        /// <summary>
+        /// Opens the animation list popup.
+        /// </summary>
         /// <param name="animations">List of animations to display.</param>
         /// <param name="onPlay">Function to run when the user wants to play the animation.</param>
         public void OpenPopup(List<PAAnimation> animations, Action<PAAnimation> onPlay = null, Action<PAAnimation> onSelect = null, ITransformable currentObject = null, Action onReturn = null)
@@ -398,25 +443,83 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="onSelect">Function to run when the animation is selected.</param>
         /// <param name="currentObject">The current transformable object reference to play the animation onto.</param>
         /// <param name="onReturn">Function to run when the user wants to return from the animation editor.</param>
-        public void RenderPopup(List<PAAnimation> animations, Action<PAAnimation> onPlay = null, Action<PAAnimation> onSelect = null, ITransformable currentObject = null, Action onReturn = null)
+        public void RenderPopup(List<PAAnimation> animations, Action<PAAnimation> onPlay = null, Action<PAAnimation> onSelect = null, ITransformable currentObject = null, Action onReturn = null) => RenderPopup(null, animations, onPlay, onSelect, currentObject, onReturn);
+
+        /// <summary>
+        /// Renders the animation list popup.
+        /// </summary>
+        /// <param name="animationGroups">List of animation groups to display.</param>
+        /// <param name="animations">List of animations to display.</param>
+        /// <param name="onPlay">Function to run when the user wants to play the animation.</param>
+        /// <param name="onSelect">Function to run when the animation is selected.</param>
+        /// <param name="currentObject">The current transformable object reference to play the animation onto.</param>
+        /// <param name="onReturn">Function to run when the user wants to return from the animation editor.</param>
+        public void RenderPopup(List<AnimationGroup> animationGroups, List<PAAnimation> animations, Action<PAAnimation> onPlay = null, Action<PAAnimation> onSelect = null, ITransformable currentObject = null, Action onReturn = null)
         {
+            CurrentAnimationListGroup = animationGroups;
+            CurrentAnimationList = animations;
             CurrentObject = currentObject;
 
             Popup.ClearContent();
-            Popup.SearchField.onValueChanged.NewListener(_val => RenderPopup(animations, onPlay, onSelect, currentObject, onReturn));
+            Popup.SearchField.onValueChanged.NewListener(_val => RenderPopup(animationGroups, animations, onPlay, onSelect, currentObject, onReturn));
 
             EditorContextMenu.AddContextMenu(Popup.GameObject,
                 new ButtonElement("Create Animation", () =>
                 {
                     animations.Add(CreateAnimation());
-                    RenderPopup(animations, onPlay, onSelect, currentObject, onReturn);
+                    RenderPopup();
                 }),
-                new ButtonElement("Copy All", () =>
+                new ButtonElement("Create Animation Group", () =>
+                {
+                    if (animationGroups == null)
+                        return;
+                    animationGroups.Add(CreateAnimationGroup());
+                    RenderPopup();
+                }, shouldGenerate: () => animationGroups != null),
+                new ButtonElement("Create Animation From Object", () => EditorTimeline.inst.onSelectTimelineObject = timelineObject =>
+                {
+                    if (!timelineObject.isBeatmapObject)
+                    {
+                        EditorManager.inst.DisplayNotification("Cannot apply animation from non-beatmap object.", 2f, EditorManager.NotificationType.Warning);
+                        return;
+                    }
+
+                    animations.Add(ConvertToAnimation(timelineObject.GetData<BeatmapObject>()));
+                    RenderPopup();
+                }),
+                new ButtonElement("Create Animation From Selected", () =>
+                {
+                    ConvertSelectedToAnimations(animations);
+                    RenderPopup();
+                    EditorManager.inst.DisplayNotification($"Converted all selected objects to an animation!", 2f, EditorManager.NotificationType.Success);
+                }),
+                new ButtonElement("Create Group From Selected", () =>
+                {
+                    if (animationGroups == null)
+                        return;
+                    var animationGroup = CreateAnimationGroup();
+                    ConvertSelectedToAnimationGroup(animationGroup);
+                    if (animationGroup.animations.IsEmpty())
+                    {
+                        EditorManager.inst.DisplayNotification($"No animations could be made.", 2f, EditorManager.NotificationType.Success);
+                        return;
+                    }
+                    animationGroups.Add(animationGroup);
+                    RenderPopup();
+                    EditorManager.inst.DisplayNotification($"Converted all selected objects to an animation!", 2f, EditorManager.NotificationType.Success);
+                }, shouldGenerate: () => animationGroups != null),
+                new SpacerElement(),
+                new ButtonElement("Copy All Animations", () =>
                 {
                     copiedAnimations = new List<PAAnimation>(animations.Select(x => x.Copy()));
                     EditorManager.inst.DisplayNotification($"Copied all animations.", 2f, EditorManager.NotificationType.Success);
                 }),
-                new ButtonElement("Paste", () =>
+                new ButtonElement("Copy All Animation Groups", () =>
+                {
+                    copiedAnimationGroups = new List<AnimationGroup>(animationGroups.Select(x => x.Copy()));
+                    EditorManager.inst.DisplayNotification($"Copied all animation groups.", 2f, EditorManager.NotificationType.Success);
+                }, shouldGenerate: () => animationGroups != null),
+                new ButtonElement("Paste Animations", () =>
                 {
                     if (copiedAnimations.IsEmpty())
                     {
@@ -425,9 +528,36 @@ namespace BetterLegacy.Editor.Managers
                     }
 
                     animations.AddRange(copiedAnimations.Select(x => x.Copy()));
-                    RenderPopup(animations, onPlay, onSelect, currentObject, onReturn);
+                    RenderPopup();
                     EditorManager.inst.DisplayNotification($"Pasted animations.", 2f, EditorManager.NotificationType.Success);
-                }));
+                }),
+                new ButtonElement("Paste Animation Groups", () =>
+                {
+                    if (animationGroups == null)
+                        return;
+                    if (copiedAnimationGroups.IsEmpty())
+                    {
+                        EditorManager.inst.DisplayNotification($"No copied animations yet!", 2f, EditorManager.NotificationType.Warning);
+                        return;
+                    }
+
+                    animationGroups.AddRange(copiedAnimationGroups.Select(x => x.Copy()));
+                    RenderPopup();
+                    EditorManager.inst.DisplayNotification($"Pasted animation groups.", 2f, EditorManager.NotificationType.Success);
+                }, shouldGenerate: () => animationGroups != null),
+                new SpacerElement(),
+                new ButtonElement("Clear Animations", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to clear all animations from the list? This cannot be undone?", () =>
+                {
+                    animations.Clear();
+                    RenderPopup();
+                    EditorManager.inst.DisplayNotification($"Cleared animations.", 2f, EditorManager.NotificationType.Success);
+                })),
+                new ButtonElement("Clear Animation Groups", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to clear all animation groups from the list? This cannot be undone?", () =>
+                {
+                    animationGroups.Clear();
+                    RenderPopup();
+                    EditorManager.inst.DisplayNotification($"Cleared animation groups.", 2f, EditorManager.NotificationType.Success);
+                }), shouldGenerate: () => animationGroups != null));
 
             var add = EditorPrefabHolder.Instance.CreateAddButton(Popup.Content);
             add.Text = "Add new Animation";
@@ -438,12 +568,19 @@ namespace BetterLegacy.Editor.Managers
                 if (pointerEventData.button == PointerEventData.InputButton.Right)
                 {
                     EditorContextMenu.inst.ShowContextMenu(
-                        new ButtonElement("Create New", () =>
+                        new ButtonElement("Create Animation", () =>
                         {
                             animations.Add(CreateAnimation());
-                            RenderPopup(animations, onPlay, onSelect, currentObject, onReturn);
+                            RenderPopup();
                         }),
-                        new ButtonElement("Create From Object", () => EditorTimeline.inst.onSelectTimelineObject = timelineObject =>
+                        new ButtonElement("Create Animation Group", () =>
+                        {
+                            if (animationGroups == null)
+                                return;
+                            animationGroups.Add(CreateAnimationGroup());
+                            RenderPopup();
+                        }, shouldGenerate: () => animationGroups != null),
+                        new ButtonElement("Create Animation From Object", () => EditorTimeline.inst.onSelectTimelineObject = timelineObject =>
                         {
                             if (!timelineObject.isBeatmapObject)
                             {
@@ -452,21 +589,41 @@ namespace BetterLegacy.Editor.Managers
                             }
 
                             animations.Add(ConvertToAnimation(timelineObject.GetData<BeatmapObject>()));
-                            RenderPopup(animations, onPlay, onSelect, currentObject, onReturn);
+                            RenderPopup();
                         }),
-                        new ButtonElement("Create From Selected", () =>
+                        new ButtonElement("Create Animation From Selected", () =>
                         {
                             ConvertSelectedToAnimations(animations);
-                            RenderPopup(animations, onPlay, onSelect, currentObject, onReturn);
+                            RenderPopup();
                             EditorManager.inst.DisplayNotification($"Converted all selected objects to an animation!", 2f, EditorManager.NotificationType.Success);
                         }),
+                        new ButtonElement("Create Group From Selected", () =>
+                        {
+                            if (animationGroups == null)
+                                return;
+                            var animationGroup = CreateAnimationGroup();
+                            ConvertSelectedToAnimationGroup(animationGroup);
+                            if (animationGroup.animations.IsEmpty())
+                            {
+                                EditorManager.inst.DisplayNotification($"No animations could be made.", 2f, EditorManager.NotificationType.Success);
+                                return;
+                            }
+                            animationGroups.Add(animationGroup);
+                            RenderPopup();
+                            EditorManager.inst.DisplayNotification($"Converted all selected objects to an animation!", 2f, EditorManager.NotificationType.Success);
+                        }, shouldGenerate: () => animationGroups != null),
                         new SpacerElement(),
-                        new ButtonElement("Copy All", () =>
+                        new ButtonElement("Copy All Animations", () =>
                         {
                             copiedAnimations = new List<PAAnimation>(animations.Select(x => x.Copy()));
                             EditorManager.inst.DisplayNotification($"Copied all animations.", 2f, EditorManager.NotificationType.Success);
                         }),
-                        new ButtonElement("Paste", () =>
+                        new ButtonElement("Copy All Animation Groups", () =>
+                        {
+                            copiedAnimationGroups = new List<AnimationGroup>(animationGroups.Select(x => x.Copy()));
+                            EditorManager.inst.DisplayNotification($"Copied all animation groups.", 2f, EditorManager.NotificationType.Success);
+                        }, shouldGenerate: () => animationGroups != null),
+                        new ButtonElement("Paste Animations", () =>
                         {
                             if (copiedAnimations.IsEmpty())
                             {
@@ -475,29 +632,146 @@ namespace BetterLegacy.Editor.Managers
                             }
 
                             animations.AddRange(copiedAnimations.Select(x => x.Copy()));
-                            RenderPopup(animations, onPlay, onSelect, currentObject, onReturn);
+                            RenderPopup();
                             EditorManager.inst.DisplayNotification($"Pasted animations.", 2f, EditorManager.NotificationType.Success);
-                        }));
+                        }),
+                        new ButtonElement("Paste Animation Groups", () =>
+                        {
+                            if (animationGroups == null)
+                                return;
+                            if (copiedAnimationGroups.IsEmpty())
+                            {
+                                EditorManager.inst.DisplayNotification($"No copied animations yet!", 2f, EditorManager.NotificationType.Warning);
+                                return;
+                            }
+
+                            animationGroups.AddRange(copiedAnimationGroups.Select(x => x.Copy()));
+                            RenderPopup();
+                            EditorManager.inst.DisplayNotification($"Pasted animation groups.", 2f, EditorManager.NotificationType.Success);
+                        }, shouldGenerate: () => animationGroups != null));
                     return;
                 }
 
                 animations.Add(CreateAnimation());
-                RenderPopup(animations, onPlay, onSelect, currentObject, onReturn);
+                RenderPopup();
             };
 
+            if (animationGroups != null)
+                for (int i = 0; i < animationGroups.Count; i++)
+                {
+                    var index = i;
+                    var animationGroup = animationGroups[i];
+
+                    if (animationGroup.collapse && !RTString.SearchString(Popup.SearchTerm, animationGroup.name))
+                        continue;
+
+                    /// TODO: add AnimationGroupEditorDialog so you can view and edit the name and description correctly
+                    Popup.GenerateListButton(animationGroup.collapse ? $"{animationGroup.name} [...]" : animationGroup.name, EditorSprites.ListSprite, pointerEventData =>
+                    {
+                        if (pointerEventData.button == PointerEventData.InputButton.Right)
+                        {
+                            var elements = new List<EditorElement>
+                            {
+                                new StringInputElement(animationGroup.name,
+                                _val => animationGroup.name = _val,
+                                _val => RenderPopup()),
+                                ButtonElement.ToggleButton("Collapse", () => animationGroup.collapse, () =>
+                                {
+                                    animationGroup.collapse = !animationGroup.collapse;
+                                    RenderPopup();
+                                }),
+                                new ButtonElement("Delete", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this animation group?", () =>
+                                {
+                                    animationGroups.RemoveAt(index);
+                                    RenderPopup();
+                                })),
+                                new SpacerElement(),
+                                new ButtonElement("Apply To Selected", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to apply the current animations to the selected objects? This will check for matching animation IDs.", () =>
+                                {
+                                    ApplyAnimationsToSelected(animationGroup.animations);
+                                    EditorManager.inst.DisplayNotification($"Applied animations to all selected objects!", 2f, EditorManager.NotificationType.Success);
+                                })),
+                                new ButtonElement("Copy From Selected", () =>
+                                {
+                                    foreach (var timelineObject in EditorTimeline.inst.SelectedBeatmapObjects)
+                                    {
+                                        var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                        if (string.IsNullOrEmpty(beatmapObject.animID))
+                                            continue;
+                                        animationGroup.animations.Add(ConvertToAnimation(beatmapObject));
+                                    }
+                                    RenderPopup();
+                                }),
+                                new ButtonElement("Paste Animations", () =>
+                                {
+                                    animationGroup.animations.AddRange(copiedAnimations.Select(x => x.Copy()));
+                                    RenderPopup();
+                                }, shouldGenerate: () => !copiedAnimations.IsEmpty()),
+                                new ButtonElement("Clear Animations", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to clear the animations from this group?", () =>
+                                {
+                                    animationGroup.animations.Clear();
+                                    RenderPopup();
+                                }), shouldGenerate: () => !animationGroup.animations.IsEmpty()),
+                                new SpacerElement(),
+                                new ButtonElement("Copy", () =>
+                                {
+                                    copiedAnimationGroups.Clear();
+                                    copiedAnimationGroups.Add(animationGroup);
+                                    EditorManager.inst.DisplayNotification($"Copied animation group.", 2f, EditorManager.NotificationType.Success);
+                                }),
+                                new ButtonElement("Copy All", () =>
+                                {
+                                    copiedAnimationGroups = new List<AnimationGroup>(animationGroups.Select(x => x.Copy()));
+                                    EditorManager.inst.DisplayNotification($"Copied all animation groups.", 2f, EditorManager.NotificationType.Success);
+                                }),
+                                new ButtonElement("Paste", () =>
+                                {
+                                    if (copiedAnimationGroups.IsEmpty())
+                                    {
+                                        EditorManager.inst.DisplayNotification($"No copied animation groups yet!", 2f, EditorManager.NotificationType.Warning);
+                                        return;
+                                    }
+
+                                    animationGroups.AddRange(copiedAnimationGroups.Select(x => x.Copy()));
+                                    RenderPopup();
+                                    EditorManager.inst.DisplayNotification($"Pasted animation groups.", 2f, EditorManager.NotificationType.Success);
+                                }),
+                                new SpacerElement(),
+                            };
+                            elements.AddRange(EditorContextMenu.GetMoveIndexFunctions(animationGroups, index, RenderPopup));
+
+                            EditorContextMenu.inst.ShowContextMenu(elements);
+                            return;
+                        }
+
+                        animationGroup.collapse = !animationGroup.collapse;
+                        RenderPopup();
+                    });
+
+                    if (animationGroup.collapse)
+                        continue;
+
+                    RenderAnimationList(animationGroup.animations, onPlay, onSelect, onReturn);
+                }
+
+            RenderAnimationList(animations, onPlay, onSelect, onReturn);
+        }
+
+        void RenderAnimationList(List<PAAnimation> animations, Action<PAAnimation> onPlay, Action<PAAnimation> onSelect, Action onReturn)
+        {
             for (int i = 0; i < animations.Count; i++)
             {
                 var index = i;
                 var animation = animations[i];
 
-                if (!RTString.SearchString(Popup.SearchTerm, animation.name, animation.ReferenceID))
+                if (!RTString.SearchString(Popup.SearchTerm, animation.name ?? string.Empty, animation.ReferenceID ?? string.Empty))
                     continue;
 
                 Popup.GenerateListButton($"{animation.name} [ {animation.ReferenceID} ]", EditorSprites.PlaySprite, pointerEventData =>
                 {
                     if (pointerEventData.button == PointerEventData.InputButton.Right)
                     {
-                        var buttonFunctions = new List<EditorElement>()
+                        var elements = new List<EditorElement>
                         {
                             new ButtonElement("Edit", () => OpenDialog(animation, onReturn)),
                             new ButtonElement("Play", () =>
@@ -514,7 +788,7 @@ namespace BetterLegacy.Editor.Managers
                             new ButtonElement("Delete", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this animation?", () =>
                             {
                                 animations.RemoveAt(index);
-                                RenderPopup(animations, onPlay, onSelect, currentObject, onReturn);
+                                RenderPopup();
                             })),
                             new SpacerElement(),
                             new ButtonElement("Apply To Selected", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to apply the current animations to the selected objects? This will check for matching animation IDs.", () =>
@@ -571,16 +845,16 @@ namespace BetterLegacy.Editor.Managers
                                 }
 
                                 animations.AddRange(copiedAnimations.Select(x => x.Copy()));
-                                RenderPopup(animations, onPlay, onSelect, currentObject, onReturn);
+                                RenderPopup();
                                 EditorManager.inst.DisplayNotification($"Pasted animations.", 2f, EditorManager.NotificationType.Success);
                             }),
                             new SpacerElement(),
                             new ButtonElement("Copy Keyframes", () => KeyframeTimeline.CopyAllKeyframes(animation)),
                             new SpacerElement(),
                         };
-                        buttonFunctions.AddRange(EditorContextMenu.GetMoveIndexFunctions(animations, index, () => RenderPopup(animations, onPlay, onSelect, currentObject, onReturn)));
+                        elements.AddRange(EditorContextMenu.GetMoveIndexFunctions(animations, index, RenderPopup));
 
-                        EditorContextMenu.inst.ShowContextMenu(buttonFunctions);
+                        EditorContextMenu.inst.ShowContextMenu(elements);
                         return;
                     }
 

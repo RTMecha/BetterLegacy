@@ -204,8 +204,9 @@ namespace BetterLegacy.Core.Runtime.Objects
                     if (animatePosition)
                     {
                         var value =
-                            parentObject.positionSequence.Interpolate(desync ? syncOffset + prefabOffset - timeOffset - (positionOffset + positionAddedOffset) : localTime - timeOffset - (positionOffset + positionAddedOffset)) +
-                            parentObject.beatmapObject.reactivePositionOffset + parentObject.beatmapObject.PositionOffset + parentObject.beatmapObject.fullTransform.position;
+                            (parentObject.beatmapObject.disablePositionSequence ? Vector3.zero : parentObject.positionSequence.Interpolate(desync ? syncOffset + prefabOffset - timeOffset - (positionOffset + positionAddedOffset) : localTime - timeOffset - (positionOffset + positionAddedOffset))) +
+                            parentObject.beatmapObject.reactivePositionOffset + parentObject.beatmapObject.fullTransform.position;
+                        RTMath.Operation(ref value, parentObject.beatmapObject.PositionOffset, parentObject.beatmapObject.PositionOperation);
 
                         float z = parentChain.Depth * BeatmapObject.DEPTH_MULTIPLY + (value.z / 10f);
 
@@ -215,8 +216,10 @@ namespace BetterLegacy.Core.Runtime.Objects
                     // If last parent is scale parented, animate scale
                     if (animateScale)
                     {
-                        var r = parentObject.beatmapObject.reactiveScaleOffset + parentObject.beatmapObject.scaleOffset;
-                        var value = parentObject.scaleSequence.Interpolate(desync ? syncOffset + prefabOffset - timeOffset - (scaleOffset + scaleAddedOffset) : localTime - timeOffset - (scaleOffset + scaleAddedOffset)) + new Vector2(r.x, r.y);
+                        var r = parentObject.beatmapObject.reactiveScaleOffset;
+                        var value = (parentObject.beatmapObject.disableScaleSequence ? Vector2.one : parentObject.scaleSequence.Interpolate(desync ? syncOffset + prefabOffset - timeOffset - (scaleOffset + scaleAddedOffset) : localTime - timeOffset - (scaleOffset + scaleAddedOffset))) + new Vector2(r.x, r.y);
+                        RTMath.Operation(ref value, parentObject.beatmapObject.ScaleOffset, parentObject.beatmapObject.ScaleOperation);
+
                         var scale = RTMath.Scale(new Vector3(value.x * scaleParallax, value.y * scaleParallax, 1.0f + r.z), parentObject.beatmapObject.fullTransform.scale);
                         parentObject.transform.localScale = scale;
                         totalScale = RTMath.Scale(totalScale, scale);
@@ -225,11 +228,13 @@ namespace BetterLegacy.Core.Runtime.Objects
                     // If last parent is rotation parented, animate rotation
                     if (animateRotation)
                     {
-                        var rot = parentObject.rotationSequence.Interpolate(desync ? syncOffset + prefabOffset - timeOffset - (rotationOffset + rotationAddedOffset) : localTime - timeOffset - (rotationOffset + rotationAddedOffset));
+                        var rot = (parentObject.beatmapObject.disableRotationSequence ? Vector3.zero : parentObject.rotationSequence.Interpolate(desync ? syncOffset + prefabOffset - timeOffset - (rotationOffset + rotationAddedOffset) : localTime - timeOffset - (rotationOffset + rotationAddedOffset)));
                         var value = Quaternion.AngleAxis(
                             (rot.z + parentObject.beatmapObject.reactiveRotationOffset) * rotationParallax,
-                            Vector3.forward);
-                        parentObject.transform.localRotation = Quaternion.Euler(value.eulerAngles + parentObject.beatmapObject.rotationOffset + parentObject.beatmapObject.fullTransform.rotation + new Vector3(rot.x, rot.y));
+                            Vector3.forward).eulerAngles + parentObject.beatmapObject.fullTransform.rotation + new Vector3(rot.x, rot.y);
+                        RTMath.Operation(ref value, parentObject.beatmapObject.RotationOffset, parentObject.beatmapObject.RotationOperation);
+
+                        parentObject.transform.localRotation = Quaternion.Euler(value);
                     }
                 }
 
