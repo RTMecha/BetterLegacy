@@ -1,8 +1,9 @@
-﻿# snapshot-2026.5.8 - (Story Playtest) [???]
+﻿# snapshot-2026.5.8 - (Story Playtest) [May 27, 2026]
 ## Features
 ### Core
 - Added "Show Intro Fade" setting to Config Manager > Core > Level. This disables the scene loading fade transition in case you want to record the level without it.
 - Added "Replay Intro" setting to Config Manager > Core > Level. With it on restarting a level will show the intro again.
+- Added runAnimation modifier. This applies an animation group to a set of objects.
 
 ### Editor
 - Added context menu to the render depth slider and input field.
@@ -10,10 +11,18 @@
 - Added context menus to the link buttons in the MetaData Editor.
 - Added some more context menu functions to object tags.
 - Added a Sort Indexes button to the Multi Object Editor.
+- Added "Animation Groups" to the animation editor. This allows you to take animations from a set of objects (e.g. a character rig) and store them, then reuse them for other sets of objects! (assuming the animation ID is set)
 
 ## Changes
 ### Core
 - Tweaked transition between scene loading and playing a level (such as the fade transition now using the interface BG color and level beginning being a little more precise).
+
+### Editor
+- The levels' game and mod version now updates every time it is loaded.
+- Saving a level now updates the date edited value for the actual metadata object, meaning the Date Edited sort properly updates when viewing the levels.
+
+## Fixes
+- Hopefully fixed the bug where the welcome dialog persists after loading a level.
 
 -------------------------------------------------------------------
 
