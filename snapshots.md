@@ -1,4 +1,22 @@
-﻿# snapshot-2026.5.8 - (Story Playtest) [May 27, 2026]
+﻿# snapshot-2026.5.9 - (Story Playtest) [May 28, 2026]
+## Features
+### Core
+- Added a loop and end time values to the runAnimations modifier.
+- Added getQuickElement variable modifier. This interpolates a Quick Element and passes the interpolated text.
+
+### Editor
+- Animation Groups and Animations can now be added to prefabs.
+- The animation editor cursor now syncs to whatever the animation is animating to.
+- Added "Run Animations Set Cursor Time" setting to Config Manager > Editor > Modifiers. With this on, the animation editor cursor gets fixed to whatever time the runAnimation modifier is animating to. With this off, the runAnimations modifier uses the animation editor cursor time.
+- Added ToggleRunAnimationsSetCursorTime keybind.
+
+## Changes
+### Core
+- Overhauled Quick Element system to specifically use Asset Packs.
+
+-------------------------------------------------------------------
+
+# snapshot-2026.5.8 - (Story Playtest) [May 27, 2026]
 ## Features
 ### Core
 - Added "Show Intro Fade" setting to Config Manager > Core > Level. This disables the scene loading fade transition in case you want to record the level without it.
