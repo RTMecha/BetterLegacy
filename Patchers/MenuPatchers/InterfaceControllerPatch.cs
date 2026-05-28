@@ -43,12 +43,6 @@ namespace BetterLegacy.Patchers
                 CoreHelper.LogError($"Error was had with exception: {ex}");
             }
 
-            foreach (var quickElement in QuickElementManager.AllQuickElements)
-            {
-                if (!__instance.quickElements.ContainsKey(quickElement.Key))
-                    __instance.quickElements.Add(quickElement.Key, quickElement.Value);
-            }
-
             InputDataManager.inst.BindMenuKeys();
             __instance.MainPanel = __instance.transform.Find("Panel");
 

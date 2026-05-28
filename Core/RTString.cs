@@ -526,7 +526,7 @@ namespace BetterLegacy.Core
             if (str.Contains("quickElement"))
                 RegexMatches(str, new Regex(@"<quickElement=(.*?)>"), match =>
                 {
-                    str = str.Replace(match.Groups[0].ToString(), QuickElementManager.ConvertQuickElement(beatmapObject, match.Groups[1].ToString()));
+                    str = str.Replace(match.Groups[0].ToString(), QuickElementManager.inst.Interpolate(beatmapObject, match.Groups[1].ToString()));
                 });
 
             #endregion

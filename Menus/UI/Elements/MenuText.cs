@@ -182,7 +182,7 @@ namespace BetterLegacy.Menus.UI.Elements
 
         string textWithoutFormatting;
 
-        List<Tuple<float, Match, QuickElement>> cachedQuickElements;
+        List<Tuple<float, Match, Core.Data.QuickElement>> cachedQuickElements;
 
         #endregion
 
@@ -452,10 +452,10 @@ namespace BetterLegacy.Menus.UI.Elements
                 var match = (Match)obj;
 
                 if (cachedQuickElements == null)
-                    cachedQuickElements = new List<Tuple<float, Match, QuickElement>>(); // if there aren't any matches, there isn't any need for the cachedQuickElements list.
+                    cachedQuickElements = new List<Tuple<float, Match, Core.Data.QuickElement>>(); // if there aren't any matches, there isn't any need for the cachedQuickElements list.
 
-                if (QuickElementManager.AllQuickElements.TryGetValue(match.Groups[1].ToString(), out QuickElement quickElement))
-                    cachedQuickElements.Add(new Tuple<float, Match, QuickElement>(-1f, match, quickElement));
+                if (QuickElementManager.inst.quickElements.TryGetValue(match.Groups[1].ToString(), out Core.Data.QuickElement quickElement))
+                    cachedQuickElements.Add(new Tuple<float, Match, Core.Data.QuickElement>(-1f, match, quickElement));
             }
 
             if (!interpolateText)
@@ -573,11 +573,11 @@ namespace BetterLegacy.Menus.UI.Elements
 
                 if (textUI.maxVisibleCharacters > match.Index + match.Groups[1].ToString().Length && matchPair.Item1 < 0f)
                 {
-                    cachedQuickElements[i] = new Tuple<float, Match, QuickElement>(this.time, match, quickElement);
+                    cachedQuickElements[i] = new Tuple<float, Match, Core.Data.QuickElement>(this.time, match, quickElement);
                     time = this.time;
                 }
 
-                textUI.text = text.Replace(match.Groups[0].ToString(), QuickElementManager.ConvertQuickElement(quickElement, this.time - time));
+                textUI.text = text.Replace(match.Groups[0].ToString(), QuickElementManager.inst.Interpolate(quickElement, this.time - time));
             }
         }
 
