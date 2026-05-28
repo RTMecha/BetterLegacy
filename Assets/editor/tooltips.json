@@ -1246,6 +1246,16 @@
             ]
           }, // getComparisonMath
           {
+            "name": "Object Modifier - getQuickElement (Action)",
+            "tooltips": [
+              {
+                "desc": "getQuickElement (Action)",
+                "hint": "Gets a quick element, interpolates it and passes the interpolated text value to other modifiers.",
+                "lang": 0
+              }
+            ]
+          }, // getQuickElement
+          {
             "name": "Object Modifier - getEditorBin (Action)",
             "tooltips": [
               {

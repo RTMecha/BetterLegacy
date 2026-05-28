@@ -207,6 +207,12 @@
       }, // getComparisonMath
       {
         "type": 1,
+        "name": "getQuickElement",
+        "values": [ "QE_VAR", "atan_idle", "0" ],
+        "const": "True"
+      }, // getQuickElement
+      {
+        "type": 1,
         "name": "getEditorBin",
         "values": [ "EDITOR_BIN_VAR", "False" ],
         "const": "True",
@@ -3218,7 +3224,7 @@
       {
         "type": 1,
         "name": "runAnimation",
-        "values": [ "Anim Name", "Object Group", "1", "0", "True", "True", "True" ],
+        "values": [ "Anim Name", "Object Group", "1", "0", "True", "True", "True", "False", "0" ],
         "const": "False",
         "compat": "level_control"
       }, // runAnimation

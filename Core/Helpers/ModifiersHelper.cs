@@ -1075,6 +1075,7 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction(nameof(ModifierFunctions.getFormatVariable),  ModifierFunctions.getFormatVariable),
             new ModifierAction(nameof(ModifierFunctions.getComparison),  ModifierFunctions.getComparison),
             new ModifierAction(nameof(ModifierFunctions.getComparisonMath),  ModifierFunctions.getComparisonMath),
+            new ModifierAction(nameof(ModifierFunctions.getQuickElement),  ModifierFunctions.getQuickElement),
             new ModifierAction(nameof(ModifierFunctions.getEditorBin),  ModifierFunctions.getEditorBin),
             new ModifierAction(nameof(ModifierFunctions.getEditorLayer),  ModifierFunctions.getEditorLayer),
             new ModifierAction(nameof(ModifierFunctions.getObjectName),  ModifierFunctions.getObjectName),
@@ -1949,6 +1950,14 @@ namespace BetterLegacy.Core.Helpers
             new ModifierInactive(nameof(ModifierFunctions.copyAxisGroup),
                 (modifier, modifierLoop) =>
                 {
+                    modifier.Result = null;
+                }
+            ),
+            new ModifierInactive(nameof(ModifierFunctions.runAnimation),
+                (modifier, modifierLoop) =>
+                {
+                    if (modifier.TryGetResult(out RTAnimation animation))
+                        AnimationManager.inst.Remove(animation.id);
                     modifier.Result = null;
                 }
             ),
@@ -3743,6 +3752,12 @@ namespace BetterLegacy.Core.Helpers
 
             if (sequence != null)
                 modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = sequence.GetValue(audioTime).ToString();
+        }
+
+        public static void getQuickElement(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (QuickElementManager.inst.quickElements.TryGetValue(modifier.GetValue(1, modifierLoop.variables), out Data.QuickElement quickElement))
+                modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = QuickElementManager.inst.Interpolate(quickElement, modifier.GetFloat(2, 0f, modifierLoop.variables));
         }
 
         public static void getEditorBin(Modifier modifier, ModifierLoop modifierLoop)
@@ -11580,6 +11595,9 @@ namespace BetterLegacy.Core.Helpers
             var disableScaleSequence = modifier.GetBool(5, true, modifierLoop.variables);
             var disableRotationSequence = modifier.GetBool(6, true, modifierLoop.variables);
 
+            var loop = modifier.GetBool(7, false, modifierLoop.variables);
+            var endTime = modifier.GetFloat(8, 0f, modifierLoop.variables);
+
             if (GameData.Current.animationGroups.TryFind(x => x.name == name, out AnimationGroup animationGroup))
             {
                 if (!modifier.constant)
@@ -11590,7 +11608,7 @@ namespace BetterLegacy.Core.Helpers
                         new AnimationHandler<float>(new List<IKeyframe<float>>
                         {
                             new FloatKeyframe(0f, 0f, Ease.Linear),
-                            new FloatKeyframe(time == 0f ? animationGroup.AnimLength : Mathf.Clamp(time, 0f, 9999f), animationGroup.AnimLength, Ease.GetEaseFunction(easing, Ease.Linear)),
+                            new FloatKeyframe(time == 0f ? animationGroup.AnimLength : Mathf.Clamp(time, 0f, 9999f), endTime == 0f ? animationGroup.AnimLength : Mathf.Clamp(endTime, 0f, 9999f), Ease.GetEaseFunction(easing, Ease.Linear)),
                         },
                         x =>
                         {
@@ -11598,10 +11616,22 @@ namespace BetterLegacy.Core.Helpers
                         }, interpolateOnComplete: true),
                     };
                     animation.SetDefaultOnComplete();
+                    if (loop)
+                    {
+                        animation.onComplete += () =>
+                        {
+                            animation.ResetTime();
+                            for (int i = 0; i < animation.animationHandlers.Count; i++)
+                                animation.animationHandlers[i].completed = false;
+                            AnimationManager.inst.Play(animation);
+                        };
+                    }
+                    modifier.Result = animation;
                     AnimationManager.inst.Play(animation);
                     return;
                 }
-                doAnimation(modifier, prefabable, tag, time, animationGroup.animations, disablePositionSequence, disableScaleSequence, disableRotationSequence);
+                var t = loop ? time % (endTime != 0f ? endTime : animationGroup.AnimLength) : endTime != 0f ? RTMath.Clamp(time, 0f, endTime) : time;
+                doAnimation(modifier, prefabable, tag, t, animationGroup.animations, disablePositionSequence, disableScaleSequence, disableRotationSequence);
                 return;
             }
             if (!modifier.constant)
@@ -11612,11 +11642,25 @@ namespace BetterLegacy.Core.Helpers
                     new AnimationHandler<float>(new List<IKeyframe<float>>
                     {
                         new FloatKeyframe(0f, 0f, Ease.Linear),
-                        new FloatKeyframe(time == 0f ? animationGroup.AnimLength : Mathf.Clamp(time, 0f, 9999f), time, Ease.GetEaseFunction(easing, Ease.Linear)),
+                        new FloatKeyframe(time == 0f ? animationGroup.AnimLength : Mathf.Clamp(time, 0f, 9999f), endTime == 0f ? animationGroup.AnimLength : Mathf.Clamp(endTime, 0f, 9999f), Ease.GetEaseFunction(easing, Ease.Linear)),
                     },
-                    x => doAnimation(modifier, prefabable, tag, x, GameData.Current.animations, disablePositionSequence, disableScaleSequence, disableRotationSequence), interpolateOnComplete: true),
+                    x =>
+                    {
+                        doAnimation(modifier, prefabable, tag, x, animationGroup.animations, disablePositionSequence, disableScaleSequence, disableRotationSequence);
+                    }, interpolateOnComplete: true),
                 };
                 animation.SetDefaultOnComplete();
+                if (loop)
+                {
+                    animation.onComplete += () =>
+                    {
+                        animation.ResetTime();
+                        for (int i = 0; i < animation.animationHandlers.Count; i++)
+                            animation.animationHandlers[i].completed = false;
+                        AnimationManager.inst.Play(animation);
+                    };
+                }
+                modifier.Result = animation;
                 AnimationManager.inst.Play(animation);
                 return;
             }
@@ -11629,6 +11673,10 @@ namespace BetterLegacy.Core.Helpers
             for (int i = 0; i < animations.Count; i++)
             {
                 var animation = animations[i];
+                if (EditorConfig.Instance.RunAnimationsSetsCursorTime.Value)
+                    animation.timeOffset = RTMath.Clamp(time, 0f, float.MaxValue);
+                else if (AnimationEditor.inst && AnimationEditor.inst.Dialog && AnimationEditor.inst.Dialog.IsCurrent && AnimationEditor.inst.CurrentAnimation && AnimationEditor.inst.CurrentAnimation.id == animation.id)
+                    time = animation.timeOffset;
                 if (!GameData.Current.TryFindObjectWithTag(modifier, prefabable, tag, x => x.animID == animation.ReferenceID, out BeatmapObject beatmapObject))
                     continue;
                 beatmapObject.disablePositionSequence = disablePositionSequence;

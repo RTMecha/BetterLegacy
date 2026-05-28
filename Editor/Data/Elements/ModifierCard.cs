@@ -2296,6 +2296,13 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
+                case nameof(ModifierFunctions.getQuickElement): {
+                        StringGenerator(modifier, reference, "Variable Name", 0, renderVariables: false);
+                        StringGenerator(modifier, reference, "Quick Element Name", 1);
+                        SingleGenerator(modifier, reference, "Time", 2);
+
+                        break;
+                    }
                 case nameof(ModifierFunctions.getEditorBin): {
                         StringGenerator(modifier, reference, "Variable Name", 0, renderVariables: false);
                         BoolGenerator(modifier, reference, "Use Prefab Object Bin", 1);
@@ -3973,6 +3980,8 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         StringGenerator(modifier, reference, "Name", 0);
                         SingleGenerator(modifier, reference, "Time", 2);
+                        SingleGenerator(modifier, reference, "End Time", 8);
+                        BoolGenerator(modifier, reference, "Loop", 7);
 
                         EaseGenerator(modifier, reference, 3);
 
