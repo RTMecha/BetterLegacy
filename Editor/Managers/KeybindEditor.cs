@@ -1237,7 +1237,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void TogglePlayingSong(Keybind keybind)
         {
-            if (AnimationEditor.inst.Dialog.IsCurrent)
+            if (AnimationEditor.inst.Dialog.IsCurrent && AnimationEditor.inst.CurrentObject != null)
             {
                 AnimationEditor.inst.TogglePlaying();
                 return;
