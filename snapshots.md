@@ -1,4 +1,19 @@
-﻿# snapshot-2026.5.9 - (Story Playtest) [May 28, 2026]
+﻿# snapshot-2026.?.? - (Story Playtest) [???]
+## Features
+### Editor
+- Added Clear Keyframes context menu button to animations.
+
+## Changes
+### Editor
+- TogglePlayingSong keybind function is no longer prevented in the Animation Editor if no associated object exists.
+
+## Fixes
+- Hopefully fixed some text not appearing on things like tags and editor layer fields.
+- Fixed pasting keyframes in the Animation Editor not pasting on the cursor.
+
+-------------------------------------------------------------------
+
+# snapshot-2026.5.9 - (Story Playtest) [May 28, 2026]
 ## Features
 ### Core
 - Added a loop and end time values to the runAnimations modifier.
