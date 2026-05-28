@@ -749,12 +749,18 @@ namespace BetterLegacy.Editor.Managers
                                     {
                                         RTEditor.inst.ShowWarningPopup("The animation group already exists in this prefab, do you wish to update it?", () =>
                                         {
-                                            prefabPanel.Item.animationGroups[animationGroupIndex].CopyData(animationGroup);
+                                            var orig = prefabPanel.Item.animationGroups[animationGroupIndex];
+                                            orig.CopyData(animationGroup);
+                                            orig.PrefabID = prefabPanel.Item.id;
+                                            orig.PrefabInstanceID = string.Empty;
                                             EditorManager.inst.DisplayNotification($"Added animation group to prefab!", 2f, EditorManager.NotificationType.Success);
                                         });
                                         return;
                                     }
-                                    prefabPanel.Item.animationGroups.Add(animationGroup);
+                                    var animationGroupCopy = animationGroup.Copy(false);
+                                    animationGroupCopy.PrefabID = prefabPanel.Item.id;
+                                    animationGroupCopy.PrefabInstanceID = string.Empty;
+                                    prefabPanel.Item.animationGroups.Add(animationGroupCopy);
                                     EditorManager.inst.DisplayNotification($"Added animation group to prefab!", 2f, EditorManager.NotificationType.Success);
                                 }),
                                 new SpacerElement(),
@@ -884,12 +890,18 @@ namespace BetterLegacy.Editor.Managers
                                 {
                                     RTEditor.inst.ShowWarningPopup("The animation already exists in this prefab, do you wish to update it?", () =>
                                     {
-                                        prefabPanel.Item.animations[animationIndex].CopyData(animation);
+                                        var orig = prefabPanel.Item.animations[animationIndex];
+                                        orig.CopyData(animation);
+                                        orig.PrefabID = prefabPanel.Item.id;
+                                        orig.PrefabInstanceID = string.Empty;
                                         EditorManager.inst.DisplayNotification($"Added animation to prefab!", 2f, EditorManager.NotificationType.Success);
                                     });
                                     return;
                                 }
-                                prefabPanel.Item.animations.Add(animation);
+                                var animationCopy = animation.Copy(false);
+                                animationCopy.PrefabID = prefabPanel.Item.id;
+                                animationCopy.PrefabInstanceID = string.Empty;
+                                prefabPanel.Item.animations.Add(animationCopy);
                                 EditorManager.inst.DisplayNotification($"Added animation to prefab!", 2f, EditorManager.NotificationType.Success);
                             }),
                             new SpacerElement(),

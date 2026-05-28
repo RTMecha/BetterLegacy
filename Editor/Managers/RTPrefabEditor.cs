@@ -1651,6 +1651,8 @@ namespace BetterLegacy.Editor.Managers
             RTLevel.Current?.UpdatePrefab(prefabObject);
             RTLevel.Current?.RecalculateObjectStates();
 
+            ApplyAnimations(prefab, prefabObject, false);
+
             EditorTimeline.inst.SetCurrentObject(EditorTimeline.inst.GetTimelineObject(prefabObject));
             EditorTimeline.inst.UpdateTransformIndex();
 
@@ -3300,6 +3302,45 @@ namespace BetterLegacy.Editor.Managers
                 action?.Invoke(prefab, source, i);
                 if (!prefab.prefabs.IsEmpty())
                     ForEachPrefabRecursive(prefab, action);
+            }
+        }
+
+        /// <summary>
+        /// Applies the animations from the prefab to the level.
+        /// </summary>
+        /// <param name="prefab">Prefab reference.</param>
+        /// <param name="prefabObject">Prefab object reference.</param>
+        /// <param name="regen">If the reference should be removed.</param>
+        public void ApplyAnimations(Prefab prefab, PrefabObject prefabObject, bool regen)
+        {
+            for (int i = 0; i < prefab.animationGroups.Count; i++)
+            {
+                var animationGroup = prefab.animationGroups[i];
+
+                if (regen)
+                    animationGroup.RemovePrefabReference();
+                else if (prefabObject)
+                    animationGroup.SetPrefabReference(prefabObject);
+
+                if (GameData.Current.animationGroups.TryFindIndex(x => x.id == animationGroup.id, out int animationGroupIndex))
+                    GameData.Current.animationGroups[animationGroupIndex].CopyData(animationGroup, false);
+                else
+                    GameData.Current.animationGroups.Add(animationGroup.Copy(false));
+            }
+
+            for (int i = 0; i < prefab.animations.Count; i++)
+            {
+                var animation = prefab.animations[i];
+
+                if (regen)
+                    animation.RemovePrefabReference();
+                else if (prefabObject)
+                    animation.SetPrefabReference(prefabObject);
+
+                if (GameData.Current.animations.TryFindIndex(x => x.id == animation.id, out int animationIndex))
+                    GameData.Current.animations[animationIndex].CopyData(animation, false);
+                else
+                    GameData.Current.animations.Add(animation.Copy(false));
             }
         }
 

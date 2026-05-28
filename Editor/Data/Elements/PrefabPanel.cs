@@ -456,6 +456,8 @@ namespace BetterLegacy.Editor.Data.Elements
                                     new ButtonElement("Delete", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this prefab? (This is permanent!)", () => RTPrefabEditor.inst.DeleteInternalPrefab(Item))),
                                     new ButtonElement("Export", () => RTPrefabEditor.inst.SavePrefab(Item.Copy(false)), "Internal Prefab Export"),
                                     new SpacerElement(),
+                                    new ButtonElement("View Animations", () => AnimationEditor.inst.OpenPopup(Item.animationGroups, Item.animations)),
+                                    new SpacerElement(),
                                 };
                                 buttonFunctions.AddRange(EditorContextMenu.GetMoveIndexFunctions(GameData.Current.prefabs, index, RTPrefabEditor.inst.RefreshInternalPrefabs));
 

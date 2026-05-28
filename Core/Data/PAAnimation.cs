@@ -18,7 +18,7 @@ namespace BetterLegacy.Core.Data
     /// <summary>
     /// Represents an animation excluded from an object.
     /// </summary>
-    public class PAAnimation : PAObject<PAAnimation>, IAnimatable
+    public class PAAnimation : PAObject<PAAnimation>, IAnimatable, IPrefabable
     {
         #region Constructors
 
@@ -181,6 +181,22 @@ namespace BetterLegacy.Core.Data
 
         #endregion
 
+        #region Prefab
+
+        public string OriginalID { get; set; }
+
+        public string PrefabID { get; set; }
+
+        public string PrefabInstanceID { get; set; }
+
+        public bool FromPrefab { get; set; }
+
+        public Prefab CachedPrefab { get; set; }
+
+        public PrefabObject CachedPrefabObject { get; set; }
+
+        #endregion
+
         #endregion
 
         #region Functions
@@ -215,6 +231,8 @@ namespace BetterLegacy.Core.Data
             if (!EditorData)
                 EditorData = new ObjectEditorData();
             EditorData.CopyData(orig.EditorData);
+
+            this.SetPrefabReference(orig);
         }
 
         public override void ReadJSON(JSONNode jn)
@@ -269,6 +287,8 @@ namespace BetterLegacy.Core.Data
 
             if (jn["ed"] != null)
                 EditorData = ObjectEditorData.Parse(jn["ed"]);
+
+            this.ReadPrefabJSON(jn);
         }
 
         void ReadKeyframesJSON(JSONNode jn, List<EventKeyframe> eventKeyframes, int type, int valueCount, int randomValueCount, float[] origValues, float[] origRandomValues, bool defaultRelative = false)
@@ -316,6 +336,8 @@ namespace BetterLegacy.Core.Data
 
             if (EditorData && EditorData.ShouldSerialize)
                 jn["ed"] = EditorData.ToJSON();
+
+            this.WritePrefabJSON(jn);
 
             return jn;
         }
@@ -620,6 +642,10 @@ namespace BetterLegacy.Core.Data
         });
 
         public void SortKeyframes(List<EventKeyframe> eventKeyframes) => eventKeyframes.Sort((a, b) => a.time.CompareTo(b.time));
+
+        public float GetObjectLifeLength(float offset = 0f, bool noAutokill = false, bool collapse = false) => AnimLength + offset;
+
+        public IRTObject GetRuntimeObject() => default;
 
         #endregion
     }
