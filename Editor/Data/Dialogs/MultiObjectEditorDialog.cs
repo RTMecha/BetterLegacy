@@ -2745,6 +2745,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                     for (int i = 0; i < bm.events.Count; i++)
                                     {
                                         bm.events[i].Sort((a, b) => a.time.CompareTo(b.time));
+                                        bm.events[i].RemoveAll(x => x.time < 0f);
                                         var firstKF = bm.events[i][0].Copy(false);
                                         bm.events[i].Clear();
                                         bm.events[i].Add(firstKF);

@@ -148,6 +148,7 @@ namespace BetterLegacy.Editor.Managers
                 beatmapObject.TimelineKeyframes.RemoveAt(index);
             });
             beatmapObject.events[type].Sort((a, b) => a.time.CompareTo(b.time));
+            beatmapObject.events[type].RemoveAll(x => x.time < 0f);
             var firstKF = beatmapObject.events[type][0].Copy(false);
             beatmapObject.events[type].Clear();
             beatmapObject.events[type].Add(firstKF);

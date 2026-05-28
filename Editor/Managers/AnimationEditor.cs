@@ -877,6 +877,25 @@ namespace BetterLegacy.Editor.Managers
                             }),
                             new SpacerElement(),
                             new ButtonElement("Copy Keyframes", () => KeyframeTimeline.CopyAllKeyframes(animation)),
+                            new ButtonElement("Clear Keyframes", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to clear the keyframes from this animation?", () =>
+                            {
+                                foreach (var tkf in animation.TimelineKeyframes)
+                                    CoreHelper.Delete(tkf.GameObject);
+                                animation.TimelineKeyframes.Clear();
+                                for (int i = 0; i < animation.events.Count; i++)
+                                {
+                                    animation.events[i].Sort((a, b) => a.time.CompareTo(b.time));
+                                    animation.events[i].RemoveAll(x => x.time < 0f);
+                                    var firstKF = animation.events[i][0].Copy(false);
+                                    animation.events[i].Clear();
+                                    animation.events[i].Add(firstKF);
+                                }
+                                if (EditorTimeline.inst.SelectedObjects.Count == 1)
+                                {
+                                    ObjectEditor.inst.Dialog.Timeline.ResizeKeyframeTimeline(animation);
+                                    ObjectEditor.inst.Dialog.Timeline.RenderKeyframes(animation);
+                                }
+                            })),
                             new SpacerElement(),
                             new ButtonElement("Add to Prefab", () => RTPrefabEditor.inst.onSelectPrefab = prefabPanel =>
                             {
