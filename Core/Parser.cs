@@ -198,8 +198,9 @@ namespace BetterLegacy.Core
         public static List<T> ParseObjectList<T>(JSONNode jn) where T : IJSON, new()
         {
             var list = new List<T>();
-            for (int i = 0; i < jn.Count; i++)
-                list.Add(Parse<T>(jn[i]));
+            if (jn != null)
+                for (int i = 0; i < jn.Count; i++)
+                    list.Add(Parse<T>(jn[i]));
             return list;
         }
 
