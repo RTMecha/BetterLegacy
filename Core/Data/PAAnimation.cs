@@ -31,6 +31,13 @@ namespace BetterLegacy.Core.Data
             scaleKeyframes.Add(EventKeyframe.DefaultScaleKeyframe);
             rotationKeyframes.Add(EventKeyframe.DefaultRotationKeyframe);
             colorKeyframes.Add(EventKeyframe.DefaultColorKeyframe);
+            events = new List<List<EventKeyframe>>
+            {
+                positionKeyframes,
+                scaleKeyframes,
+                rotationKeyframes,
+                colorKeyframes,
+            };
         }
 
         public PAAnimation(string name, string description)
@@ -45,6 +52,13 @@ namespace BetterLegacy.Core.Data
             scaleKeyframes.Add(EventKeyframe.DefaultScaleKeyframe);
             rotationKeyframes.Add(EventKeyframe.DefaultRotationKeyframe);
             colorKeyframes.Add(EventKeyframe.DefaultColorKeyframe);
+            events = new List<List<EventKeyframe>>
+            {
+                positionKeyframes,
+                scaleKeyframes,
+                rotationKeyframes,
+                colorKeyframes,
+            };
         }
         
         public PAAnimation(string name, string description, float startTime)
@@ -59,6 +73,13 @@ namespace BetterLegacy.Core.Data
             scaleKeyframes.Add(EventKeyframe.DefaultScaleKeyframe);
             rotationKeyframes.Add(EventKeyframe.DefaultRotationKeyframe);
             colorKeyframes.Add(EventKeyframe.DefaultColorKeyframe);
+            events = new List<List<EventKeyframe>>
+            {
+                positionKeyframes,
+                scaleKeyframes,
+                rotationKeyframes,
+                colorKeyframes,
+            };
         }
 
         #endregion
@@ -93,32 +114,66 @@ namespace BetterLegacy.Core.Data
         /// </summary>
         public string ReferenceID { get; set; }
 
-        public List<List<EventKeyframe>> Events => new List<List<EventKeyframe>>
-        {
-            positionKeyframes,
-            scaleKeyframes,
-            rotationKeyframes,
-            colorKeyframes,
-        };
+        public List<List<EventKeyframe>> Events => events;
 
         public float AnimLength => GetLength(true);
 
+        /// <summary>
+        /// List of position keyframes.
+        /// </summary>
         public List<EventKeyframe> positionKeyframes = new List<EventKeyframe>();
+
+        /// <summary>
+        /// List of scale keyframes.
+        /// </summary>
         public List<EventKeyframe> scaleKeyframes = new List<EventKeyframe>();
+
+        /// <summary>
+        /// List of rotation keyframes.
+        /// </summary>
         public List<EventKeyframe> rotationKeyframes = new List<EventKeyframe>();
+
+        /// <summary>
+        /// List of color keyframes.
+        /// </summary>
         public List<EventKeyframe> colorKeyframes = new List<EventKeyframe>();
+
+        /// <summary>
+        /// Animation events.
+        /// </summary>
+        public List<List<EventKeyframe>> events;
 
         /// <summary>
         /// If this is on, the values of the first keyframes will be replaced with the transition values.
         /// </summary>
         public bool transition;
 
+        /// <summary>
+        /// If position should be animated.
+        /// </summary>
         public bool animatePosition = true;
+
+        /// <summary>
+        /// If scale should be animated.
+        /// </summary>
         public bool animateScale = true;
+
+        /// <summary>
+        /// If rotation should be animated.
+        /// </summary>
         public bool animateRotation = true;
+
+        /// <summary>
+        /// If color should be animated.
+        /// </summary>
         public bool animateColor;
 
         #region Editor
+
+        /// <summary>
+        /// Time to use in the editor.
+        /// </summary>
+        public float timeOffset;
 
         public ObjectEditorData EditorData { get; set; } = new ObjectEditorData();
 
@@ -130,36 +185,9 @@ namespace BetterLegacy.Core.Data
 
         #region Functions
 
-        public float GetLength(bool markers = false)
-        {
-            var animLength = 0f;
-            for (int i = 0; i < 4; i++)
-            {
-                var length = GetLength(i);
-                if (length > animLength)
-                    animLength = length;
-            }
-
-            if (!markers)
-                return animLength;
-
-            var markersLength = this.markers.IsEmpty() ? 0f : this.markers.Max(x => x.time);
-
-            return animLength > markersLength ? animLength : markersLength;
-        }
-
-        public float GetLength(int type) => type switch
-        {
-            0 => positionKeyframes.IsEmpty() ? 0f : positionKeyframes.Max(x => x.time),
-            1 => scaleKeyframes.IsEmpty() ? 0f : scaleKeyframes.Max(x => x.time),
-            2 => rotationKeyframes.IsEmpty() ? 0f : rotationKeyframes.Max(x => x.time),
-            3 => colorKeyframes.IsEmpty() ? 0f : colorKeyframes.Max(x => x.time),
-            _ => 0f,
-        };
-
         public override void CopyData(PAAnimation orig, bool newID = true)
         {
-            id = newID ? LSText.randomNumString(16) : orig.id;
+            id = newID ? GetNumberID() : orig.id;
             name = orig.name;
             description = orig.description;
             markers = orig.markers.Select(x => x.Copy()).ToList();
@@ -170,6 +198,13 @@ namespace BetterLegacy.Core.Data
             scaleKeyframes = orig.scaleKeyframes.Select(x => x.Copy()).ToList();
             rotationKeyframes = orig.rotationKeyframes.Select(x => x.Copy()).ToList();
             colorKeyframes = orig.colorKeyframes.Select(x => x.Copy()).ToList();
+            events = new List<List<EventKeyframe>>
+            {
+                positionKeyframes,
+                scaleKeyframes,
+                rotationKeyframes,
+                colorKeyframes,
+            };
 
             animatePosition = orig.animatePosition;
             animateScale = orig.animateScale;
@@ -197,6 +232,13 @@ namespace BetterLegacy.Core.Data
             rotationKeyframes.Add(EventKeyframe.DefaultRotationKeyframe);
             colorKeyframes = new List<EventKeyframe>();
             colorKeyframes.Add(EventKeyframe.DefaultColorKeyframe);
+            events = new List<List<EventKeyframe>>
+            {
+                positionKeyframes,
+                scaleKeyframes,
+                rotationKeyframes,
+                colorKeyframes,
+            };
 
             for (int i = 0; i < jn["markers"].Count; i++)
                 markers.Add(Marker.Parse(jn["markers"][i]));
@@ -277,6 +319,33 @@ namespace BetterLegacy.Core.Data
 
             return jn;
         }
+
+        public float GetLength(bool markers = false)
+        {
+            var animLength = 0f;
+            for (int i = 0; i < 4; i++)
+            {
+                var length = GetLength(i);
+                if (length > animLength)
+                    animLength = length;
+            }
+
+            if (!markers)
+                return animLength;
+
+            var markersLength = this.markers.IsEmpty() ? 0f : this.markers.Max(x => x.time);
+
+            return animLength > markersLength ? animLength : markersLength;
+        }
+
+        public float GetLength(int type) => type switch
+        {
+            0 => positionKeyframes.IsEmpty() ? 0f : positionKeyframes.Max(x => x.time),
+            1 => scaleKeyframes.IsEmpty() ? 0f : scaleKeyframes.Max(x => x.time),
+            2 => rotationKeyframes.IsEmpty() ? 0f : rotationKeyframes.Max(x => x.time),
+            3 => colorKeyframes.IsEmpty() ? 0f : colorKeyframes.Max(x => x.time),
+            _ => 0f,
+        };
 
         public RTAnimation ToRTAnimation(Transform transform) => ToRTAnimation(transform, Vector3.zero, Vector2.one, 0f);
 
@@ -522,6 +591,11 @@ namespace BetterLegacy.Core.Data
             return x;
         }
 
+        /// <summary>
+        /// Creates a <see cref="FullTransform"/> based on interpolated values.
+        /// </summary>
+        /// <param name="time">Elapsed time.</param>
+        /// <returns>Returns an interpolated <see cref="FullTransform"/>.</returns>
         public FullTransform InterpolateTransform(float time) => new FullTransform(
                 position: new Vector3(Interpolate(0, 0, time), Interpolate(0, 1, time), Interpolate(0, 2, time)),
                 scale: new Vector3(Interpolate(1, 0, time), Interpolate(1, 1, time), 1f),
