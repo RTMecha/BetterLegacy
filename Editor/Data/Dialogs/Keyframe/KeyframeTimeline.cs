@@ -552,7 +552,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
         {
             var eventKeyframe = timelineKeyframe.eventKeyframe.Copy();
 
-            var time = 0f;
+            float time;
             if (animatable is BeatmapObject)
             {
                 time = RTLevel.Current.FixedTime;
@@ -560,6 +560,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     time = RTEditor.SnapToBPM(time);
                 time -= animatable.StartTime;
             }
+            else
+                time = this.time;
 
             if (animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(timelineKeyframe.Type) + "/force_relative", out float forceRelative))
                 eventKeyframe.relative = forceRelative switch
