@@ -129,6 +129,14 @@ namespace BetterLegacy.Editor.Managers
         /// Selected <see cref="SpriteAsset"/>s for the Prefab Creator.
         /// </summary>
         public List<SpriteAsset> selectedSpriteAssets = new List<SpriteAsset>();
+        /// <summary>
+        /// Selected <see cref="AnimationGroup"/>s for the Prefab Creator.
+        /// </summary>
+        public List<AnimationGroup> selectedAnimationGroups = new List<AnimationGroup>();
+        /// <summary>
+        /// Selected <see cref="PAAnimation"/>s for the Prefab Creator.
+        /// </summary>
+        public List<PAAnimation> selectedAnimations = new List<PAAnimation>();
 
         /// <summary>
         /// List of Prefab types.
@@ -186,6 +194,10 @@ namespace BetterLegacy.Editor.Managers
             /// Selection representing a <see cref="SpriteAsset"/>.
             /// </summary>
             Images,
+            /// <summary>
+            /// Selection representing a <see cref="AnimationGroup"/> or <see cref="PAAnimation"/>.
+            /// </summary>
+            Animations,
         }
 
         #endregion
@@ -2480,6 +2492,8 @@ namespace BetterLegacy.Editor.Managers
             prefab.beatmapThemes = new List<BeatmapTheme>(selectedBeatmapThemes.Select(x => x.Copy(false)));
             prefab.modifierBlocks = new List<ModifierBlock>(selectedModifierBlocks.Select(x => x.Copy(false)));
             prefab.assets.sprites = new List<SpriteAsset>(selectedSpriteAssets.Select(x => x.Copy(false)));
+            prefab.animationGroups = new List<AnimationGroup>(selectedAnimationGroups.Select(x => x.Copy(false)));
+            prefab.animations = new List<PAAnimation>(selectedAnimations.Select(x => x.Copy(false)));
 
             foreach (var beatmapObject in prefab.beatmapObjects)
             {
@@ -2734,6 +2748,8 @@ namespace BetterLegacy.Editor.Managers
             selectedBeatmapThemes.Clear();
             selectedModifierBlocks.Clear();
             selectedSpriteAssets.Clear();
+            selectedAnimationGroups.Clear();
+            selectedAnimations.Clear();
             RenderPrefabCreator();
             Popups.Close();
         }
@@ -2977,6 +2993,53 @@ namespace BetterLegacy.Editor.Managers
                                     selectedSpriteAssets.Remove(x => x.name == spriteAsset.name);
                                 else
                                     selectedSpriteAssets.Add(spriteAsset);
+                            });
+                            EditorThemeManager.ApplyToggle(selectionToggle, graphic: text);
+                        }
+                        break;
+                    }
+                case SelectionType.Animations: {
+                        foreach (var animationGroup in GameData.Current.animationGroups)
+                        {
+                            if (!RTString.SearchString(PrefabCreatorDialog.SelectionSearchTerm, animationGroup.name))
+                                continue;
+
+                            var selection = PrefabEditor.inst.selectionPrefab.Duplicate(PrefabCreatorDialog.SelectionContent, "grid");
+                            var text = selection.transform.Find("text").GetComponent<Text>();
+                            text.text = $"Group: {animationGroup.name}";
+                            text.rectTransform.sizeDelta = new Vector2(300f, 32f);
+
+                            var selectionToggle = selection.GetComponent<Toggle>();
+                            selectionToggle.SetIsOnWithoutNotify(selectedForPrefabCreator.GetValueOrDefault(animationGroup.id, false));
+                            selectionToggle.onValueChanged.NewListener(_val =>
+                            {
+                                selectedForPrefabCreator[animationGroup.id] = _val;
+                                if (!_val)
+                                    selectedAnimationGroups.Remove(x => x.id == animationGroup.id);
+                                else
+                                    selectedAnimationGroups.Add(animationGroup);
+                            });
+                            EditorThemeManager.ApplyToggle(selectionToggle, graphic: text);
+                        }
+                        foreach (var animation in GameData.Current.animations)
+                        {
+                            if (!RTString.SearchString(PrefabCreatorDialog.SelectionSearchTerm, animation.name))
+                                continue;
+
+                            var selection = PrefabEditor.inst.selectionPrefab.Duplicate(PrefabCreatorDialog.SelectionContent, "grid");
+                            var text = selection.transform.Find("text").GetComponent<Text>();
+                            text.text = $"Anim: {animation.name}";
+                            text.rectTransform.sizeDelta = new Vector2(300f, 32f);
+
+                            var selectionToggle = selection.GetComponent<Toggle>();
+                            selectionToggle.SetIsOnWithoutNotify(selectedForPrefabCreator.GetValueOrDefault(animation.id, false));
+                            selectionToggle.onValueChanged.NewListener(_val =>
+                            {
+                                selectedForPrefabCreator[animation.id] = _val;
+                                if (!_val)
+                                    selectedAnimations.Remove(x => x.id == animation.id);
+                                else
+                                    selectedAnimations.Add(animation);
                             });
                             EditorThemeManager.ApplyToggle(selectionToggle, graphic: text);
                         }

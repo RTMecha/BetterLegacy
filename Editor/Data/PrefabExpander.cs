@@ -416,6 +416,24 @@ namespace BetterLegacy.Editor.Data
                 GameData.Current.assets.sprites.OverwriteAdd((orig, index) => orig.name == spriteAsset.name, spriteAsset.Copy());
             }
 
+            for (int i = 0; i < prefab.animationGroups.Count; i++)
+            {
+                var animationGroup = prefab.animationGroups[i];
+                if (GameData.Current.animationGroups.TryFindIndex(x => x.id == animationGroup.id, out int animationGroupIndex))
+                    GameData.Current.animationGroups[animationGroupIndex].CopyData(animationGroup, false);
+                else
+                    GameData.Current.animationGroups.Add(animationGroup);
+            }
+            
+            for (int i = 0; i < prefab.animations.Count; i++)
+            {
+                var animation = prefab.animations[i];
+                if (GameData.Current.animations.TryFindIndex(x => x.id == animation.id, out int animationIndex))
+                    GameData.Current.animations[animationIndex].CopyData(animation, false);
+                else
+                    GameData.Current.animations.Add(animation);
+            }
+
             var elapsed = sw.Elapsed;
 
             RTLevel.Current?.RecalculateObjectStates();

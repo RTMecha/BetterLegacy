@@ -179,6 +179,10 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public List<ModifierBlock> modifierBlocks = new List<ModifierBlock>();
 
+        public List<AnimationGroup> animationGroups = new List<AnimationGroup>();
+
+        public List<PAAnimation> animations = new List<PAAnimation>();
+
         #endregion
 
         #region Server
@@ -267,6 +271,14 @@ namespace BetterLegacy.Core.Data.Beatmap
             modifierBlocks = new List<ModifierBlock>();
             if (!orig.modifierBlocks.IsEmpty())
                 modifierBlocks.AddRange(orig.modifierBlocks.Select(x => x.Copy(false)));
+
+            animationGroups = new List<AnimationGroup>();
+            if (!orig.animationGroups.IsEmpty())
+                animationGroups.AddRange(orig.animationGroups.Select(x => x.Copy(false)));
+            
+            animations = new List<PAAnimation>();
+            if (!orig.animations.IsEmpty())
+                animations.AddRange(orig.animations.Select(x => x.Copy(false)));
 
             if (orig.defaultInstanceData)
                 defaultInstanceData = orig.defaultInstanceData.Copy();
@@ -363,6 +375,9 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             modifierBlocks = Parser.ParseModifierBlocks(jn["modifier_blocks"], ModifierReferenceType.GameData);
 
+            animationGroups = Parser.ParseObjectList<AnimationGroup>(jn["anim_groups"]);
+            animations = Parser.ParseObjectList<PAAnimation>(jn["anims"]);
+
             if (jn["default"] != null)
                 defaultInstanceData = PrefabObject.Parse(jn["default"]);
 
@@ -428,6 +443,12 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             if (!modifierBlocks.IsEmpty())
                 jn["modifier_blocks"] = Parser.ModifierBlocksToJSON(modifierBlocks);
+
+            if (!animationGroups.IsEmpty())
+                jn["anim_groups"] = Parser.ObjectListToJSON(animationGroups);
+            
+            if (!animations.IsEmpty())
+                jn["anims"] = Parser.ObjectListToJSON(animations);
 
             for (int i = 0; i < beatmapThemes.Count; i++)
                 jn["themes"][i] = beatmapThemes[i].ToJSON();

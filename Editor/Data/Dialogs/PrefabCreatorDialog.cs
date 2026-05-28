@@ -118,6 +118,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             SetupTab("Beatmap Themes");
             SetupTab("Modifier Blocks");
             SetupTab("Images");
+            SetupTab("Animations");
 
             var selection = Content.Find("selection");
             EditorHelper.SetComplexity(selection.gameObject, "prefab/creator_selection", Complexity.Advanced);

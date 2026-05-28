@@ -737,6 +737,27 @@ namespace BetterLegacy.Editor.Managers
                                     EditorManager.inst.DisplayNotification($"Pasted animation groups.", 2f, EditorManager.NotificationType.Success);
                                 }),
                                 new SpacerElement(),
+                                new ButtonElement("Add to Prefab", () => RTPrefabEditor.inst.onSelectPrefab = prefabPanel =>
+                                {
+                                    if (prefabPanel.IsExternal)
+                                    {
+                                        EditorManager.inst.DisplayNotification($"Cannot add the animation group to an external prefab!", 2f, EditorManager.NotificationType.Warning);
+                                        return;
+                                    }
+
+                                    if (prefabPanel.Item.animationGroups.TryFindIndex(x => x.id == animationGroup.id, out int animationGroupIndex))
+                                    {
+                                        RTEditor.inst.ShowWarningPopup("The animation group already exists in this prefab, do you wish to update it?", () =>
+                                        {
+                                            prefabPanel.Item.animationGroups[animationGroupIndex].CopyData(animationGroup);
+                                            EditorManager.inst.DisplayNotification($"Added animation group to prefab!", 2f, EditorManager.NotificationType.Success);
+                                        });
+                                        return;
+                                    }
+                                    prefabPanel.Item.animationGroups.Add(animationGroup);
+                                    EditorManager.inst.DisplayNotification($"Added animation group to prefab!", 2f, EditorManager.NotificationType.Success);
+                                }),
+                                new SpacerElement(),
                             };
                             elements.AddRange(EditorContextMenu.GetMoveIndexFunctions(animationGroups, index, RenderPopup));
 
@@ -850,6 +871,27 @@ namespace BetterLegacy.Editor.Managers
                             }),
                             new SpacerElement(),
                             new ButtonElement("Copy Keyframes", () => KeyframeTimeline.CopyAllKeyframes(animation)),
+                            new SpacerElement(),
+                            new ButtonElement("Add to Prefab", () => RTPrefabEditor.inst.onSelectPrefab = prefabPanel =>
+                            {
+                                if (prefabPanel.IsExternal)
+                                {
+                                    EditorManager.inst.DisplayNotification($"Cannot add the animation to an external prefab!", 2f, EditorManager.NotificationType.Warning);
+                                    return;
+                                }
+
+                                if (prefabPanel.Item.animations.TryFindIndex(x => x.id == animation.id, out int animationIndex))
+                                {
+                                    RTEditor.inst.ShowWarningPopup("The animation already exists in this prefab, do you wish to update it?", () =>
+                                    {
+                                        prefabPanel.Item.animations[animationIndex].CopyData(animation);
+                                        EditorManager.inst.DisplayNotification($"Added animation to prefab!", 2f, EditorManager.NotificationType.Success);
+                                    });
+                                    return;
+                                }
+                                prefabPanel.Item.animations.Add(animation);
+                                EditorManager.inst.DisplayNotification($"Added animation to prefab!", 2f, EditorManager.NotificationType.Success);
+                            }),
                             new SpacerElement(),
                         };
                         elements.AddRange(EditorContextMenu.GetMoveIndexFunctions(animations, index, RenderPopup));
