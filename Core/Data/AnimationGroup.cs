@@ -12,9 +12,9 @@ namespace BetterLegacy.Core.Data
     {
         #region Constructors
 
-        public AnimationGroup() { }
+        public AnimationGroup() : base() { }
         
-        public AnimationGroup(string name, string description)
+        public AnimationGroup(string name, string description) : base()
         {
             this.name = name;
             this.description = description;
@@ -66,6 +66,7 @@ namespace BetterLegacy.Core.Data
 
         public override void CopyData(AnimationGroup orig, bool newID = true)
         {
+            id = newID ? GetStringID() : orig.id;
             name = orig.name;
             description = orig.description;
             animations = new List<PAAnimation>(orig.animations.Select(x => x.Copy(false)));
@@ -77,6 +78,9 @@ namespace BetterLegacy.Core.Data
             if (jn == null)
                 return;
 
+            id = jn["id"];
+            if (string.IsNullOrEmpty(id))
+                id = GetStringID();
             name = jn["name"];
             description = jn["desc"];
             if (jn["anims"] != null)
@@ -89,6 +93,7 @@ namespace BetterLegacy.Core.Data
         {
             var jn = Parser.NewJSONObject();
 
+            jn["id"] = !string.IsNullOrEmpty(id) ? id : GetStringID();
             if (!string.IsNullOrEmpty(name))
                 jn["name"] = name;
             if (!string.IsNullOrEmpty(description))
