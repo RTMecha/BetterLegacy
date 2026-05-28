@@ -1116,6 +1116,7 @@ namespace BetterLegacy.Editor.Managers
             if (prefabHolder.DefaultInputField.TryGetComponent(out InputField frick))
             {
                 frick.textComponent.fontSize = 16;
+                frick.textComponent.verticalOverflow = VerticalWrapMode.Overflow;
                 frick.GetPlaceholderText().fontSize = 16;
             }
 
@@ -1244,7 +1245,8 @@ namespace BetterLegacy.Editor.Managers
                 input.transform.AsRT().sizeDelta = new Vector2(136f, 32f);
                 var text = input.transform.Find("Text").GetComponent<Text>();
                 text.alignment = TextAnchor.MiddleCenter;
-                text.fontSize = 17;
+                text.fontSize = 16;
+                text.verticalOverflow = VerticalWrapMode.Overflow;
 
                 var delete = prefabHolder.DeleteButton.Duplicate(prefabHolder.Tag.transform, "Delete");
                 new RectValues(Vector2.zero, Vector2.one, Vector2.one, Vector2.one, new Vector2(32f, 32f)).AssignToRectTransform(delete.transform.AsRT());
@@ -3298,10 +3300,12 @@ namespace BetterLegacy.Editor.Managers
             timeObj.SetActive(true);
             timeField.textComponent.alignment = TextAnchor.MiddleLeft;
             timeField.textComponent.fontSize = 16;
+            timeField.textComponent.verticalOverflow = VerticalWrapMode.Overflow;
             timeField.GetPlaceholderText().text = "Set time...";
             timeField.GetPlaceholderText().alignment = TextAnchor.MiddleLeft;
             timeField.GetPlaceholderText().fontSize = 16;
             timeField.GetPlaceholderText().horizontalOverflow = HorizontalWrapMode.Overflow;
+            timeField.GetPlaceholderText().verticalOverflow = VerticalWrapMode.Overflow;
             timeField.characterValidation = InputField.CharacterValidation.Decimal;
 
             timeField.onValueChanged.AddListener(_val =>
@@ -3329,11 +3333,13 @@ namespace BetterLegacy.Editor.Managers
 
             EditorTimeline.inst.EditorLayerField.textComponent.alignment = TextAnchor.MiddleCenter;
             EditorTimeline.inst.EditorLayerField.textComponent.fontSize = 16;
+            EditorTimeline.inst.EditorLayerField.textComponent.verticalOverflow = VerticalWrapMode.Overflow;
             EditorTimeline.inst.EditorLayerField.characterValidation = InputField.CharacterValidation.None;
             EditorTimeline.inst.EditorLayerField.contentType = InputField.ContentType.Standard;
             EditorTimeline.inst.EditorLayerField.GetPlaceholderText().text = "Set layer...";
             EditorTimeline.inst.EditorLayerField.GetPlaceholderText().alignment = TextAnchor.MiddleLeft;
             EditorTimeline.inst.EditorLayerField.GetPlaceholderText().fontSize = 16;
+            EditorTimeline.inst.EditorLayerField.GetPlaceholderText().verticalOverflow = VerticalWrapMode.Overflow;
             EditorTimeline.inst.EditorLayerField.GetPlaceholderText().horizontalOverflow = HorizontalWrapMode.Overflow;
             EditorTimeline.inst.EditorLayerField.onValueChanged.NewListener(_val =>
             {
@@ -3358,6 +3364,7 @@ namespace BetterLegacy.Editor.Managers
             pitchField = pitchObj.GetComponent<InputField>();
             pitchField.textComponent.alignment = TextAnchor.MiddleCenter;
             pitchField.textComponent.fontSize = 16;
+            pitchField.textComponent.verticalOverflow = VerticalWrapMode.Overflow;
             pitchField.GetPlaceholderText().text = "Pitch";
             pitchField.GetPlaceholderText().alignment = TextAnchor.MiddleLeft;
             pitchField.GetPlaceholderText().fontSize = 16;
