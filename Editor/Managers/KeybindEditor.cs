@@ -171,6 +171,8 @@ namespace BetterLegacy.Editor.Managers
                     new KeybindFunction(nameof(RemoveTimelineBin), RemoveTimelineBin),
                     new KeybindFunction(nameof(SetTimelineBin), SetTimelineBin, new Keybind.Setting("Count", "60", ValueType.Int)),
 
+                    new KeybindFunction(nameof(ToggleRunAnimationsSetCursorTime), ToggleRunAnimationsSetCursorTime),
+
                     #endregion
 
                     #region Object
@@ -1380,6 +1382,12 @@ namespace BetterLegacy.Editor.Managers
         {
             if (keybind.TryGetSetting("Count", out string str) && int.TryParse(str, out int count))
                 EditorTimeline.inst.SetBinCount(count);
+        }
+
+        public void ToggleRunAnimationsSetCursorTime(Keybind keybind)
+        {
+            EditorConfig.Instance.RunAnimationsSetsCursorTime.Value = !EditorConfig.Instance.RunAnimationsSetsCursorTime.Value;
+            NotifySettingChanged(EditorConfig.Instance.RunAnimationsSetsCursorTime);
         }
 
         #endregion

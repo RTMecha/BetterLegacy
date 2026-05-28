@@ -381,6 +381,11 @@ namespace BetterLegacy.Configs
         /// </summary>
         public Setting<bool> ModifiersDisplayAchievements { get; set; }
 
+        /// <summary>
+        /// If the runAnimation modifier should force the animation editor cursor time to the time it is interpolating to.
+        /// </summary>
+        public Setting<bool> RunAnimationsSetsCursorTime { get; set; }
+
         #endregion
 
         #region Creation
@@ -921,6 +926,7 @@ namespace BetterLegacy.Configs
             ModifiersCanLoadLevels = Bind(this, MODIFIERS, "Modifiers Can Load Levels", true, "Any modifiers with the \"loadLevel\" function will load the level whilst in the editor. This is only to prevent the loss of progress.");
             ModifiersSavesBackup = Bind(this, MODIFIERS, "Modifiers Saves Backup", true, "The current level will have a backup saved before a level is loaded using a loadLevel modifier or before the game has been quit.");
             ModifiersDisplayAchievements = Bind(this, MODIFIERS, "Modifiers Display Achievements", true, "If the achievement modifiers display the achievement they unlock in the editor regardless of unlock state.");
+            RunAnimationsSetsCursorTime = Bind(this, MODIFIERS, "Run Animations Set Cursor Time", false, "If the runAnimation modifier should force the animation editor cursor time to the time it is interpolating to.");
 
             #endregion
 

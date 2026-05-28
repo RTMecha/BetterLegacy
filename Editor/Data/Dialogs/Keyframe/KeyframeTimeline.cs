@@ -252,6 +252,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     return;
 
                 time = _val;
+                if (AnimationEditor.inst && AnimationEditor.inst.Dialog && AnimationEditor.inst.Dialog.IsCurrent && AnimationEditor.inst.CurrentAnimation)
+                    AnimationEditor.inst.CurrentAnimation.timeOffset = time;
                 if (setTime)
                     AudioManager.inst.SetMusicTime(Mathf.Clamp(_val, 0f, AudioManager.inst.CurrentAudioSource.clip.length));
             });
@@ -339,13 +341,21 @@ namespace BetterLegacy.Editor.Data.Dialogs
         /// </summary>
         public void Tick()
         {
-            if (!changingTime && setTime && EditorTimeline.inst.CurrentSelection && EditorTimeline.inst.CurrentSelection.isBeatmapObject)
+            if (!changingTime)
             {
                 // Sets new audio time using the Object Keyframe timeline cursor.
-                time = Mathf.Clamp(AudioManager.inst.CurrentAudioSource.time,
-                    EditorTimeline.inst.CurrentSelection.Time,
-                    EditorTimeline.inst.CurrentSelection.Time + EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>().GetObjectLifeLength(ObjEditor.inst.ObjectLengthOffset));
-                Cursor.SetValueWithoutNotify(time);
+                if (EditorTimeline.inst.CurrentSelection && EditorTimeline.inst.CurrentSelection.isBeatmapObject && setTime)
+                {
+                    time = Mathf.Clamp(AudioManager.inst.CurrentAudioSource.time,
+                        EditorTimeline.inst.CurrentSelection.Time,
+                        EditorTimeline.inst.CurrentSelection.Time + EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>().GetObjectLifeLength(ObjEditor.inst.ObjectLengthOffset));
+                    Cursor.SetValueWithoutNotify(time);
+                }
+                else if (AnimationEditor.inst && AnimationEditor.inst.Dialog && AnimationEditor.inst.Dialog.IsCurrent && AnimationEditor.inst.CurrentAnimation)
+                {
+                    time = AnimationEditor.inst.CurrentAnimation.timeOffset;
+                    Cursor.SetValueWithoutNotify(time);
+                }
             }
 
             try
