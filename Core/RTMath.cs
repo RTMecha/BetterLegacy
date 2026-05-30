@@ -647,6 +647,14 @@ namespace BetterLegacy.Core
             return Angle(pos, target);
         }
 
+        /// <summary>
+        /// Converts a <see cref="Vector2"/> to a <see cref="Vector3"/>.
+        /// </summary>
+        /// <param name="vector">Vector to convert.</param>
+        /// <param name="z">Z axis value.</param>
+        /// <returns>Returns a new <see cref="Vector3"/> based on <paramref name="vector"/>.</returns>
+        public static Vector3 ToVector3(this Vector2 vector, float z) => new Vector3(vector.x, vector.y, z);
+
         #endregion
 
         #region Operations
