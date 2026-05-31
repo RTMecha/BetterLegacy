@@ -2820,15 +2820,25 @@
             ]
           }, // setDepthOffset
           {
-            "name": "Object Modifier - setStencil (Action)",
+            "name": "Object Modifier - setMask (Action)",
             "tooltips": [
               {
-                "desc": "setStencil (Action)",
+                "desc": "setMask (Action)",
                 "hint": "Modifies the stencil values of the object, allowing for masking.",
                 "lang": 0
               }
             ]
-          } // setMask
+          }, // setMask
+          {
+            "name": "Object Modifier - setMaskOther (Action)",
+            "tooltips": [
+              {
+                "desc": "setMaskOther (Action)",
+                "hint": "Modifies the stencil values of a group of objects, allowing for masking.",
+                "lang": 0
+              }
+            ]
+          } // setMaskOther
         ],
 
         // Player
@@ -4086,6 +4096,38 @@
               }
             ]
           }, // setPlayerJumpIntensityAll
+
+          {
+            "name": "Object Modifier - setPlayerMask (Action)",
+            "tooltips": [
+              {
+                "desc": "setPlayerMask (Action)",
+                "hint": "Sets the masking of the player closest to the object.",
+                "lang": 0
+              }
+            ]
+          }, // setPlayerMask
+          {
+            "name": "Object Modifier - setPlayerMaskIndex (Action)",
+            "tooltips": [
+              {
+                "desc": "setPlayerMaskIndex (Action)",
+                "hint": "Sets the masking of the player at an index.",
+                "lang": 0
+              }
+            ]
+          }, // setPlayerMaskIndex
+          {
+            "name": "Object Modifier - setPlayerMaskAll (Action)",
+            "tooltips": [
+              {
+                "desc": "setPlayerMaskAll (Action)",
+                "hint": "Sets the masking of all players.",
+                "lang": 0
+              }
+            ]
+          }, // setPlayerMaskAll
+
           {
             "name": "Object Modifier - setGameMode (Action)",
             "tooltips": [

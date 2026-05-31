@@ -884,6 +884,7 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction(nameof(ModifierFunctions.setOutlineHexOther),  ModifierFunctions.setOutlineHexOther, ModifierCompatibility.FullBeatmapCompatible),
             new ModifierAction(nameof(ModifierFunctions.setDepthOffset),  ModifierFunctions.setDepthOffset, ModifierCompatibility.BackgroundObjectCompatible),
             new ModifierAction(nameof(ModifierFunctions.setMask), ModifierFunctions.setMask, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierFunctions.setMaskOther), ModifierFunctions.setMaskOther, ModifierCompatibility.FullBeatmapCompatible),
 
             #endregion
 
@@ -1000,6 +1001,9 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction(nameof(ModifierFunctions.setPlayerJumpIntensity),  ModifierFunctions.setPlayerJumpIntensity, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierFunctions.setPlayerJumpIntensityIndex),  ModifierFunctions.setPlayerJumpIntensityIndex, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierFunctions.setPlayerJumpIntensityAll),  ModifierFunctions.setPlayerJumpIntensityAll, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.setPlayerMask),  ModifierFunctions.setPlayerMask, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierFunctions.setPlayerMaskIndex),  ModifierFunctions.setPlayerMaskIndex, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.setPlayerMaskAll),  ModifierFunctions.setPlayerMaskAll, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierFunctions.setPlayerModel),  ModifierFunctions.setPlayerModel, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierFunctions.setGameMode),  ModifierFunctions.setGameMode, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierFunctions.gameMode),  ModifierFunctions.setGameMode, ModifierCompatibility.LevelControlCompatible),
@@ -4851,7 +4855,7 @@ namespace BetterLegacy.Core.Helpers
 
             var gameObject = runtimeObject.visualObject.gameObject;
 
-            if (modifier.Result is not ParticleSystem a || !a)
+            Func<ParticleSystemCache> getCache = () =>
             {
                 //var solidObject = runtimeObject.visualObject as SolidObject;
                 var ps = gameObject.GetOrAddComponent<ParticleSystem>();
@@ -4865,7 +4869,7 @@ namespace BetterLegacy.Core.Helpers
 
                 psr.mesh = ObjectManager.inst.objectPrefabs[s == 4 ? 0 : s == 6 ? 0 : s].options[so].GetComponentInChildren<MeshFilter>().mesh;
 
-                psr.material = GameManager.inst.PlayerPrefabs[0].transform.GetChild(0).GetChild(0).GetComponent<TrailRenderer>().material;
+                psr.material = LegacyResources.trailMaterial;
                 //psr.material = LegacyResources.GetObjectMaterial(solidObject && solidObject.doubleSided, solidObject?.gradientType ?? 0, solidObject?.colorBlendMode ?? 0);
                 psr.material.color = Color.white;
                 psr.trailMaterial = psr.material;
@@ -4887,70 +4891,78 @@ namespace BetterLegacy.Core.Helpers
 
                 modifier.Result = ps;
                 gameObject.AddComponent<DestroyModifierResult>().Modifier = modifier;
-            }
-
-            if (modifier.Result is ParticleSystem particleSystem && particleSystem)
+                return new ParticleSystemCache(ps, psr);
+            };
+            var particleSystemCache = modifier.GetResultOrDefault(getCache);
+            if (!particleSystemCache.ps)
             {
-                var ps = particleSystem;
-
-                var psMain = ps.main;
-                var psEmission = ps.emission;
-
-                psMain.startSpeed = modifier.GetFloat(9, 5f, modifierLoop.variables);
-
-                psMain.loop = modifier.constant;
-                ps.emissionRate = modifier.GetFloat(10, 1f, modifierLoop.variables);
-                //psEmission.burstCount = modifier.GetInt(16, 1, modifierLoop.variables);
-                psMain.duration = modifier.GetFloat(11, 1f, modifierLoop.variables);
-
-                var rotationOverLifetime = ps.rotationOverLifetime;
-                rotationOverLifetime.zMultiplier = modifier.GetFloat(8, 0f, modifierLoop.variables);
-
-                var forceOverLifetime = ps.forceOverLifetime;
-                forceOverLifetime.xMultiplier = modifier.GetFloat(12, 0f, modifierLoop.variables);
-                forceOverLifetime.yMultiplier = modifier.GetFloat(13, 0f, modifierLoop.variables);
-
-                var particlesTrail = ps.trails;
-                particlesTrail.enabled = modifier.GetBool(14, true, modifierLoop.variables);
-
-                var colorOverLifetime = ps.colorOverLifetime;
-                colorOverLifetime.enabled = true;
-                var psCol = colorOverLifetime.color;
-
-                float alphaStart = modifier.GetFloat(4, 1f, modifierLoop.variables);
-                float alphaEnd = modifier.GetFloat(5, 0f, modifierLoop.variables);
-
-                psCol.gradient.alphaKeys = new GradientAlphaKey[2] { new GradientAlphaKey(alphaStart, 0f), new GradientAlphaKey(alphaEnd, 1f) };
-                psCol.gradient.colorKeys = new GradientColorKey[2] { new GradientColorKey(Color.white, 0f), new GradientColorKey(Color.white, 1f) };
-                psCol.gradient.mode = GradientMode.Blend;
-
-                colorOverLifetime.color = psCol;
-
-                var sizeOverLifetime = ps.sizeOverLifetime;
-                sizeOverLifetime.enabled = true;
-
-                var ssss = sizeOverLifetime.size;
-
-                var sizeStart = modifier.GetFloat(6, 0f, modifierLoop.variables);
-                var sizeEnd = modifier.GetFloat(7, 0f, modifierLoop.variables);
-
-                var curve = new AnimationCurve(new Keyframe[2] { new Keyframe(0f, sizeStart), new Keyframe(1f, sizeEnd) });
-
-                ssss.curve = curve;
-
-                sizeOverLifetime.size = ssss;
-
-                psMain.startLifetime = modifier.GetFloat(0, 1f, modifierLoop.variables);
-                psEmission.enabled = !(gameObject.transform.lossyScale.x < 0.001f && gameObject.transform.lossyScale.x > -0.001f || gameObject.transform.lossyScale.y < 0.001f && gameObject.transform.lossyScale.y > -0.001f) && gameObject.activeSelf && gameObject.activeInHierarchy;
-
-                psMain.startColor = CoreHelper.CurrentBeatmapTheme.GetObjColor(modifier.GetInt(3, 0, modifierLoop.variables));
-
-                var shape = ps.shape;
-                shape.angle = modifier.GetFloat(15, 90f, modifierLoop.variables);
-
-                if (!modifier.constant)
-                    RTLevel.Current.postTick.Enqueue(() => ps.Emit(modifier.GetInt(16, 1, modifierLoop.variables)));
+                particleSystemCache = getCache.Invoke();
+                modifier.Result = particleSystemCache;
             }
+
+            var ps = particleSystemCache.ps;
+            var psr = particleSystemCache.psr;
+
+            var psMain = ps.main;
+            var psEmission = ps.emission;
+
+            psMain.startSpeed = modifier.GetFloat(9, 5f, modifierLoop.variables);
+
+            psMain.loop = modifier.constant;
+            ps.emissionRate = modifier.GetFloat(10, 1f, modifierLoop.variables);
+            //psEmission.burstCount = modifier.GetInt(16, 1, modifierLoop.variables);
+            psMain.duration = modifier.GetFloat(11, 1f, modifierLoop.variables);
+
+            var rotationOverLifetime = ps.rotationOverLifetime;
+            rotationOverLifetime.zMultiplier = modifier.GetFloat(8, 0f, modifierLoop.variables);
+
+            var forceOverLifetime = ps.forceOverLifetime;
+            forceOverLifetime.xMultiplier = modifier.GetFloat(12, 0f, modifierLoop.variables);
+            forceOverLifetime.yMultiplier = modifier.GetFloat(13, 0f, modifierLoop.variables);
+
+            var particlesTrail = ps.trails;
+            particlesTrail.enabled = modifier.GetBool(14, true, modifierLoop.variables);
+
+            var colorOverLifetime = ps.colorOverLifetime;
+            colorOverLifetime.enabled = true;
+            var psCol = colorOverLifetime.color;
+
+            float alphaStart = modifier.GetFloat(4, 1f, modifierLoop.variables);
+            float alphaEnd = modifier.GetFloat(5, 0f, modifierLoop.variables);
+
+            psCol.gradient.alphaKeys = new GradientAlphaKey[2] { new GradientAlphaKey(alphaStart, 0f), new GradientAlphaKey(alphaEnd, 1f) };
+            psCol.gradient.colorKeys = new GradientColorKey[2] { new GradientColorKey(Color.white, 0f), new GradientColorKey(Color.white, 1f) };
+            psCol.gradient.mode = GradientMode.Blend;
+
+            colorOverLifetime.color = psCol;
+
+            var sizeOverLifetime = ps.sizeOverLifetime;
+            sizeOverLifetime.enabled = true;
+
+            var ssss = sizeOverLifetime.size;
+
+            var sizeStart = modifier.GetFloat(6, 0f, modifierLoop.variables);
+            var sizeEnd = modifier.GetFloat(7, 0f, modifierLoop.variables);
+
+            var curve = new AnimationCurve(new Keyframe[2] { new Keyframe(0f, sizeStart), new Keyframe(1f, sizeEnd) });
+
+            ssss.curve = curve;
+
+            sizeOverLifetime.size = ssss;
+
+            psMain.startLifetime = modifier.GetFloat(0, 1f, modifierLoop.variables);
+            psEmission.enabled = !(gameObject.transform.lossyScale.x < 0.001f && gameObject.transform.lossyScale.x > -0.001f || gameObject.transform.lossyScale.y < 0.001f && gameObject.transform.lossyScale.y > -0.001f) && gameObject.activeSelf && gameObject.activeInHierarchy;
+
+            psMain.startColor = CoreHelper.CurrentBeatmapTheme.GetObjColor(modifier.GetInt(3, 0, modifierLoop.variables));
+
+            var shape = ps.shape;
+            shape.angle = modifier.GetFloat(15, 90f, modifierLoop.variables);
+
+            if (!modifier.constant)
+                RTLevel.Current.postTick.Enqueue(() => ps.Emit(modifier.GetInt(16, 1, modifierLoop.variables)));
+
+            if (runtimeObject.visualObject.HasStencilProperties && runtimeObject.visualObject is SolidObject solidObject)
+                solidObject.GetStencilProperties().ApplyToMaterial(psr.material);
         }
 
         public static void particleSystemHex(Modifier modifier, ModifierLoop modifierLoop)
@@ -4964,9 +4976,8 @@ namespace BetterLegacy.Core.Helpers
 
             var gameObject = runtimeObject.visualObject.gameObject;
 
-            if (modifier.Result is not ParticleSystem a || !a)
+            Func<ParticleSystemCache> getCache = () =>
             {
-                //var solidObject = runtimeObject.visualObject as SolidObject;
                 var ps = gameObject.GetOrAddComponent<ParticleSystem>();
                 var psr = gameObject.GetComponent<ParticleSystemRenderer>();
 
@@ -4978,7 +4989,7 @@ namespace BetterLegacy.Core.Helpers
 
                 psr.mesh = ObjectManager.inst.objectPrefabs[s == 4 ? 0 : s == 6 ? 0 : s].options[so].GetComponentInChildren<MeshFilter>().mesh;
 
-                psr.material = GameManager.inst.PlayerPrefabs[0].transform.GetChild(0).GetChild(0).GetComponent<TrailRenderer>().material;
+                psr.material = LegacyResources.trailMaterial;
                 //psr.material = LegacyResources.GetObjectMaterial(solidObject && solidObject.doubleSided, solidObject?.gradientType ?? 0, solidObject?.colorBlendMode ?? 0);
                 psr.material.color = Color.white;
                 psr.trailMaterial = psr.material;
@@ -5000,70 +5011,78 @@ namespace BetterLegacy.Core.Helpers
 
                 modifier.Result = ps;
                 gameObject.AddComponent<DestroyModifierResult>().Modifier = modifier;
-            }
-
-            if (modifier.Result is ParticleSystem particleSystem && particleSystem)
+                return new ParticleSystemCache(ps, psr);
+            };
+            var particleSystemCache = modifier.GetResultOrDefault(getCache);
+            if (!particleSystemCache.ps)
             {
-                var ps = particleSystem;
-
-                var psMain = ps.main;
-                var psEmission = ps.emission;
-
-                psMain.startSpeed = modifier.GetFloat(9, 5f, modifierLoop.variables);
-
-                psMain.loop = modifier.constant;
-                ps.emissionRate = modifier.GetFloat(10, 1f, modifierLoop.variables);
-                //psEmission.burstCount = modifier.GetInt(16, 1, modifierLoop.variables);
-                psMain.duration = modifier.GetFloat(11, 1f, modifierLoop.variables);
-
-                var rotationOverLifetime = ps.rotationOverLifetime;
-                rotationOverLifetime.zMultiplier = modifier.GetFloat(8, 0f, modifierLoop.variables);
-
-                var forceOverLifetime = ps.forceOverLifetime;
-                forceOverLifetime.xMultiplier = modifier.GetFloat(12, 0f, modifierLoop.variables);
-                forceOverLifetime.yMultiplier = modifier.GetFloat(13, 0f, modifierLoop.variables);
-
-                var particlesTrail = ps.trails;
-                particlesTrail.enabled = modifier.GetBool(14, true, modifierLoop.variables);
-
-                var colorOverLifetime = ps.colorOverLifetime;
-                colorOverLifetime.enabled = true;
-                var psCol = colorOverLifetime.color;
-
-                float alphaStart = modifier.GetFloat(4, 1f, modifierLoop.variables);
-                float alphaEnd = modifier.GetFloat(5, 0f, modifierLoop.variables);
-
-                psCol.gradient.alphaKeys = new GradientAlphaKey[2] { new GradientAlphaKey(alphaStart, 0f), new GradientAlphaKey(alphaEnd, 1f) };
-                psCol.gradient.colorKeys = new GradientColorKey[2] { new GradientColorKey(Color.white, 0f), new GradientColorKey(Color.white, 1f) };
-                psCol.gradient.mode = GradientMode.Blend;
-
-                colorOverLifetime.color = psCol;
-
-                var sizeOverLifetime = ps.sizeOverLifetime;
-                sizeOverLifetime.enabled = true;
-
-                var ssss = sizeOverLifetime.size;
-
-                var sizeStart = modifier.GetFloat(6, 0f, modifierLoop.variables);
-                var sizeEnd = modifier.GetFloat(7, 0f, modifierLoop.variables);
-
-                var curve = new AnimationCurve(new Keyframe[2] { new Keyframe(0f, sizeStart), new Keyframe(1f, sizeEnd) });
-
-                ssss.curve = curve;
-
-                sizeOverLifetime.size = ssss;
-
-                psMain.startLifetime = modifier.GetFloat(0, 1f, modifierLoop.variables);
-                psEmission.enabled = !(gameObject.transform.lossyScale.x < 0.001f && gameObject.transform.lossyScale.x > -0.001f || gameObject.transform.lossyScale.y < 0.001f && gameObject.transform.lossyScale.y > -0.001f) && gameObject.activeSelf && gameObject.activeInHierarchy;
-
-                psMain.startColor = RTColors.HexToColor(ModifiersHelper.FormatStringVariables(modifier.GetValue(3, modifierLoop.variables), modifierLoop.variables));
-
-                var shape = ps.shape;
-                shape.angle = modifier.GetFloat(15, 90f, modifierLoop.variables);
-
-                if (!modifier.constant)
-                    RTLevel.Current.postTick.Enqueue(() => ps.Emit(modifier.GetInt(16, 1, modifierLoop.variables)));
+                particleSystemCache = getCache.Invoke();
+                modifier.Result = particleSystemCache;
             }
+
+            var ps = particleSystemCache.ps;
+            var psr = particleSystemCache.psr;
+
+            var psMain = ps.main;
+            var psEmission = ps.emission;
+
+            psMain.startSpeed = modifier.GetFloat(9, 5f, modifierLoop.variables);
+
+            psMain.loop = modifier.constant;
+            ps.emissionRate = modifier.GetFloat(10, 1f, modifierLoop.variables);
+            //psEmission.burstCount = modifier.GetInt(16, 1, modifierLoop.variables);
+            psMain.duration = modifier.GetFloat(11, 1f, modifierLoop.variables);
+
+            var rotationOverLifetime = ps.rotationOverLifetime;
+            rotationOverLifetime.zMultiplier = modifier.GetFloat(8, 0f, modifierLoop.variables);
+
+            var forceOverLifetime = ps.forceOverLifetime;
+            forceOverLifetime.xMultiplier = modifier.GetFloat(12, 0f, modifierLoop.variables);
+            forceOverLifetime.yMultiplier = modifier.GetFloat(13, 0f, modifierLoop.variables);
+
+            var particlesTrail = ps.trails;
+            particlesTrail.enabled = modifier.GetBool(14, true, modifierLoop.variables);
+
+            var colorOverLifetime = ps.colorOverLifetime;
+            colorOverLifetime.enabled = true;
+            var psCol = colorOverLifetime.color;
+
+            float alphaStart = modifier.GetFloat(4, 1f, modifierLoop.variables);
+            float alphaEnd = modifier.GetFloat(5, 0f, modifierLoop.variables);
+
+            psCol.gradient.alphaKeys = new GradientAlphaKey[2] { new GradientAlphaKey(alphaStart, 0f), new GradientAlphaKey(alphaEnd, 1f) };
+            psCol.gradient.colorKeys = new GradientColorKey[2] { new GradientColorKey(Color.white, 0f), new GradientColorKey(Color.white, 1f) };
+            psCol.gradient.mode = GradientMode.Blend;
+
+            colorOverLifetime.color = psCol;
+
+            var sizeOverLifetime = ps.sizeOverLifetime;
+            sizeOverLifetime.enabled = true;
+
+            var ssss = sizeOverLifetime.size;
+
+            var sizeStart = modifier.GetFloat(6, 0f, modifierLoop.variables);
+            var sizeEnd = modifier.GetFloat(7, 0f, modifierLoop.variables);
+
+            var curve = new AnimationCurve(new Keyframe[2] { new Keyframe(0f, sizeStart), new Keyframe(1f, sizeEnd) });
+
+            ssss.curve = curve;
+
+            sizeOverLifetime.size = ssss;
+
+            psMain.startLifetime = modifier.GetFloat(0, 1f, modifierLoop.variables);
+            psEmission.enabled = !(gameObject.transform.lossyScale.x < 0.001f && gameObject.transform.lossyScale.x > -0.001f || gameObject.transform.lossyScale.y < 0.001f && gameObject.transform.lossyScale.y > -0.001f) && gameObject.activeSelf && gameObject.activeInHierarchy;
+
+            psMain.startColor = RTColors.HexToColor(ModifiersHelper.FormatStringVariables(modifier.GetValue(3, modifierLoop.variables), modifierLoop.variables));
+
+            var shape = ps.shape;
+            shape.angle = modifier.GetFloat(15, 90f, modifierLoop.variables);
+
+            if (!modifier.constant)
+                RTLevel.Current.postTick.Enqueue(() => ps.Emit(modifier.GetInt(16, 1, modifierLoop.variables)));
+
+            if (runtimeObject.visualObject.HasStencilProperties && runtimeObject.visualObject is SolidObject solidObject)
+                solidObject.GetStencilProperties().ApplyToMaterial(psr.material);
         }
 
         public static void trailRenderer(Modifier modifier, ModifierLoop modifierLoop)
@@ -5081,25 +5100,26 @@ namespace BetterLegacy.Core.Helpers
             {
                 beatmapObject.trailRenderer = gameObject.GetOrAddComponent<TrailRenderer>();
 
-                beatmapObject.trailRenderer.material = GameManager.inst.PlayerPrefabs[0].transform.GetChild(0).GetChild(0).GetComponent<TrailRenderer>().material;
+                beatmapObject.trailRenderer.material = LegacyResources.trailMaterial;
                 beatmapObject.trailRenderer.material.color = Color.white;
             }
-            else
-            {
-                var tr = beatmapObject.trailRenderer;
 
-                tr.time = modifier.GetFloat(0, 1f, modifierLoop.variables);
-                tr.emitting = !(gameObject.transform.lossyScale.x < 0.001f && gameObject.transform.lossyScale.x > -0.001f || gameObject.transform.lossyScale.y < 0.001f && gameObject.transform.lossyScale.y > -0.001f) && gameObject.activeSelf && gameObject.activeInHierarchy;
+            var tr = beatmapObject.trailRenderer;
 
-                var t = gameObject.transform.lossyScale.magnitude * 0.576635f;
-                tr.startWidth = modifier.GetFloat(1, 1f, modifierLoop.variables) * t;
-                tr.endWidth = modifier.GetFloat(2, 1f, modifierLoop.variables) * t;
+            tr.time = modifier.GetFloat(0, 1f, modifierLoop.variables);
+            tr.emitting = !(gameObject.transform.lossyScale.x < 0.001f && gameObject.transform.lossyScale.x > -0.001f || gameObject.transform.lossyScale.y < 0.001f && gameObject.transform.lossyScale.y > -0.001f) && gameObject.activeSelf && gameObject.activeInHierarchy;
 
-                var beatmapTheme = CoreHelper.CurrentBeatmapTheme;
+            var t = gameObject.transform.lossyScale.magnitude * 0.576635f;
+            tr.startWidth = modifier.GetFloat(1, 1f, modifierLoop.variables) * t;
+            tr.endWidth = modifier.GetFloat(2, 1f, modifierLoop.variables) * t;
 
-                tr.startColor = RTColors.FadeColor(beatmapTheme.GetObjColor(modifier.GetInt(3, 0, modifierLoop.variables)), modifier.GetFloat(4, 1f, modifierLoop.variables));
-                tr.endColor = RTColors.FadeColor(beatmapTheme.GetObjColor(modifier.GetInt(5, 0, modifierLoop.variables)), modifier.GetFloat(6, 1f, modifierLoop.variables));
-            }
+            var beatmapTheme = CoreHelper.CurrentBeatmapTheme;
+
+            tr.startColor = RTColors.FadeColor(beatmapTheme.GetObjColor(modifier.GetInt(3, 0, modifierLoop.variables)), modifier.GetFloat(4, 1f, modifierLoop.variables));
+            tr.endColor = RTColors.FadeColor(beatmapTheme.GetObjColor(modifier.GetInt(5, 0, modifierLoop.variables)), modifier.GetFloat(6, 1f, modifierLoop.variables));
+
+            if (runtimeObject.visualObject.HasStencilProperties && runtimeObject.visualObject is SolidObject solidObject)
+                solidObject.GetStencilProperties().ApplyToMaterial(tr.material);
         }
 
         public static void trailRendererHex(Modifier modifier, ModifierLoop modifierLoop)
@@ -5117,23 +5137,24 @@ namespace BetterLegacy.Core.Helpers
             {
                 beatmapObject.trailRenderer = gameObject.GetOrAddComponent<TrailRenderer>();
 
-                beatmapObject.trailRenderer.material = GameManager.inst.PlayerPrefabs[0].transform.GetChild(0).GetChild(0).GetComponent<TrailRenderer>().material;
+                beatmapObject.trailRenderer.material = LegacyResources.trailMaterial;
                 beatmapObject.trailRenderer.material.color = Color.white;
             }
-            else
-            {
-                var tr = beatmapObject.trailRenderer;
 
-                tr.time = modifier.GetFloat(0, 1f, modifierLoop.variables);
-                tr.emitting = !(gameObject.transform.lossyScale.x < 0.001f && gameObject.transform.lossyScale.x > -0.001f || gameObject.transform.lossyScale.y < 0.001f && gameObject.transform.lossyScale.y > -0.001f) && gameObject.activeSelf && gameObject.activeInHierarchy;
+            var tr = beatmapObject.trailRenderer;
 
-                var t = gameObject.transform.lossyScale.magnitude * 0.576635f;
-                tr.startWidth = modifier.GetFloat(1, 1f, modifierLoop.variables) * t;
-                tr.endWidth = modifier.GetFloat(2, 1f, modifierLoop.variables) * t;
+            tr.time = modifier.GetFloat(0, 1f, modifierLoop.variables);
+            tr.emitting = !(gameObject.transform.lossyScale.x < 0.001f && gameObject.transform.lossyScale.x > -0.001f || gameObject.transform.lossyScale.y < 0.001f && gameObject.transform.lossyScale.y > -0.001f) && gameObject.activeSelf && gameObject.activeInHierarchy;
 
-                tr.startColor = RTColors.HexToColor(ModifiersHelper.FormatStringVariables(modifier.GetValue(3, modifierLoop.variables), modifierLoop.variables));
-                tr.endColor = RTColors.HexToColor(ModifiersHelper.FormatStringVariables(modifier.GetValue(4, modifierLoop.variables), modifierLoop.variables));
-            }
+            var t = gameObject.transform.lossyScale.magnitude * 0.576635f;
+            tr.startWidth = modifier.GetFloat(1, 1f, modifierLoop.variables) * t;
+            tr.endWidth = modifier.GetFloat(2, 1f, modifierLoop.variables) * t;
+
+            tr.startColor = RTColors.HexToColor(ModifiersHelper.FormatStringVariables(modifier.GetValue(3, modifierLoop.variables), modifierLoop.variables));
+            tr.endColor = RTColors.HexToColor(ModifiersHelper.FormatStringVariables(modifier.GetValue(4, modifierLoop.variables), modifierLoop.variables));
+
+            if (runtimeObject.visualObject.HasStencilProperties && runtimeObject.visualObject is SolidObject solidObject)
+                solidObject.GetStencilProperties().ApplyToMaterial(tr.material);
         }
 
         public static void rigidbody(Modifier modifier, ModifierLoop modifierLoop)
@@ -5567,6 +5588,33 @@ namespace BetterLegacy.Core.Helpers
                 (byte)modifier.GetInt(4, 0, modifierLoop.variables),
                 (byte)modifier.GetInt(5, 255, modifierLoop.variables),
                 (byte)modifier.GetInt(6, 255, modifierLoop.variables));
+        }
+
+        public static void setMaskOther(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (modifierLoop.reference is not IPrefabable prefabable)
+                return;
+
+            List<BeatmapObject> list = modifier.GetResultOrDefault(() => GameData.Current.FindObjectsWithTag(modifier, prefabable, ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables)));
+
+            if (list.IsEmpty())
+                return;
+
+            var comparison = Parser.TryParse(modifier.GetValue(1, modifierLoop.variables), true, UnityEngine.Rendering.CompareFunction.Always);
+            var pass = Parser.TryParse(modifier.GetValue(2, modifierLoop.variables), true, UnityEngine.Rendering.StencilOp.Keep);
+            var fail = Parser.TryParse(modifier.GetValue(3, modifierLoop.variables), true, UnityEngine.Rendering.StencilOp.Keep);
+            var zFail = Parser.TryParse(modifier.GetValue(4, modifierLoop.variables), true, UnityEngine.Rendering.StencilOp.Keep);
+            var id = (byte)modifier.GetInt(5, 0, modifierLoop.variables);
+            var writeMask = (byte)modifier.GetInt(6, 255, modifierLoop.variables);
+            var readMask = (byte)modifier.GetInt(7, 255, modifierLoop.variables);
+
+            foreach (var beatmapObject in list)
+            {
+                if (!beatmapObject.runtimeObject || beatmapObject.runtimeObject.visualObject is not SolidObject solidObject || !solidObject.gameObject)
+                    continue;
+
+                solidObject.SetStencil(comparison, pass, fail, zFail, id, writeMask, readMask);
+            }
         }
 
         #endregion
@@ -7310,6 +7358,68 @@ namespace BetterLegacy.Core.Helpers
             {
                 if (player.RuntimePlayer)
                     player.RuntimePlayer.modifiedJumpIntensity = intensity;
+            }
+        }
+
+        public static void setPlayerMask(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
+                return;
+
+            var comparison = Parser.TryParse(modifier.GetValue(0, modifierLoop.variables), true, UnityEngine.Rendering.CompareFunction.Always);
+            var pass = Parser.TryParse(modifier.GetValue(1, modifierLoop.variables), true, UnityEngine.Rendering.StencilOp.Keep);
+            var fail = Parser.TryParse(modifier.GetValue(2, modifierLoop.variables), true, UnityEngine.Rendering.StencilOp.Keep);
+            var zFail = Parser.TryParse(modifier.GetValue(3, modifierLoop.variables), true, UnityEngine.Rendering.StencilOp.Keep);
+            var id = (byte)modifier.GetInt(4, 0, modifierLoop.variables);
+            var writeMask = (byte)modifier.GetInt(5, 255, modifierLoop.variables);
+            var readMask = (byte)modifier.GetInt(6, 255, modifierLoop.variables);
+
+            // queue post tick so the position of the object is accurate.
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var pos = beatmapObject.GetFullPosition();
+                var player = PlayerManager.GetClosestPlayer(pos);
+
+                if (!player || !player.RuntimePlayer)
+                    return;
+
+                for (int i = 0; i < player.RuntimePlayer.playerObjects.Count; i++)
+                    player.RuntimePlayer.playerObjects[i].SetStencil(comparison, pass, fail, zFail, id, writeMask, readMask);
+            });
+        }
+
+        public static void setPlayerMaskIndex(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            var comparison = Parser.TryParse(modifier.GetValue(1, modifierLoop.variables), true, UnityEngine.Rendering.CompareFunction.Always);
+            var pass = Parser.TryParse(modifier.GetValue(2, modifierLoop.variables), true, UnityEngine.Rendering.StencilOp.Keep);
+            var fail = Parser.TryParse(modifier.GetValue(3, modifierLoop.variables), true, UnityEngine.Rendering.StencilOp.Keep);
+            var zFail = Parser.TryParse(modifier.GetValue(4, modifierLoop.variables), true, UnityEngine.Rendering.StencilOp.Keep);
+            var id = (byte)modifier.GetInt(5, 0, modifierLoop.variables);
+            var writeMask = (byte)modifier.GetInt(6, 255, modifierLoop.variables);
+            var readMask = (byte)modifier.GetInt(7, 255, modifierLoop.variables);
+
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, modifierLoop.variables), out PAPlayer player) && player.RuntimePlayer)
+                for (int i = 0; i < player.RuntimePlayer.playerObjects.Count; i++)
+                    player.RuntimePlayer.playerObjects[i].SetStencil(comparison, pass, fail, zFail, id, writeMask, readMask);
+        }
+
+        public static void setPlayerMaskAll(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            var comparison = Parser.TryParse(modifier.GetValue(0, modifierLoop.variables), true, UnityEngine.Rendering.CompareFunction.Always);
+            var pass = Parser.TryParse(modifier.GetValue(1, modifierLoop.variables), true, UnityEngine.Rendering.StencilOp.Keep);
+            var fail = Parser.TryParse(modifier.GetValue(2, modifierLoop.variables), true, UnityEngine.Rendering.StencilOp.Keep);
+            var zFail = Parser.TryParse(modifier.GetValue(3, modifierLoop.variables), true, UnityEngine.Rendering.StencilOp.Keep);
+            var id = (byte)modifier.GetInt(4, 0, modifierLoop.variables);
+            var writeMask = (byte)modifier.GetInt(5, 255, modifierLoop.variables);
+            var readMask = (byte)modifier.GetInt(6, 255, modifierLoop.variables);
+
+            foreach (var player in PlayerManager.Players)
+            {
+                if (!player.RuntimePlayer)
+                    continue;
+
+                for (int i = 0; i < player.RuntimePlayer.playerObjects.Count; i++)
+                    player.RuntimePlayer.playerObjects[i].SetStencil(comparison, pass, fail, zFail, id, writeMask, readMask);
             }
         }
 
@@ -16521,6 +16631,20 @@ namespace BetterLegacy.Core.Helpers
     public class CopyAxisGroupCache : MathCache
     {
         public List<BeatmapObject> objs = new List<BeatmapObject>();
+    }
+
+    public class ParticleSystemCache
+    {
+        public ParticleSystemCache() { }
+
+        public ParticleSystemCache(ParticleSystem ps, ParticleSystemRenderer psr)
+        {
+            this.ps = ps;
+            this.psr = psr;
+        }
+
+        public ParticleSystem ps;
+        public ParticleSystemRenderer psr;
     }
 
     #endregion

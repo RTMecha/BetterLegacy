@@ -1294,7 +1294,14 @@
         "values": [ "8", "0", "0", "0", "0", "255", "255" ],
         "const": "True",
         "compat": "obj"
-      } // setMask
+      }, // setMask
+      {
+        "type": 1,
+        "name": "setMaskOther",
+        "values": [ "Object Group", "8", "0", "0", "0", "0", "255", "255" ],
+        "const": "True",
+        "compat": "obj"
+      } // setMaskOther
     ],
 
     // Player
@@ -2213,6 +2220,28 @@
         "const": "True",
         "compat": "level_control"
       }, // setPlayerJumpIntensityAll
+
+      {
+        "type": 1,
+        "name": "setPlayerMask",
+        "values": [ "8", "0", "0", "0", "0", "255", "255" ],
+        "const": "True",
+        "compat": "obj"
+      }, // setPlayerMask
+      {
+        "type": 1,
+        "name": "setPlayerMaskIndex",
+        "values": [ "0", "8", "0", "0", "0", "0", "255", "255" ],
+        "const": "True",
+        "compat": "level_control"
+      }, // setPlayerMaskIndex
+      {
+        "type": 1,
+        "name": "setPlayerMaskAll",
+        "values": [ "8", "0", "0", "0", "0", "255", "255" ],
+        "const": "True",
+        "compat": "level_control"
+      }, // setPlayerMaskAll
 
       {
         "type": 1,

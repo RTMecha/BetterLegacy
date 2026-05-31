@@ -53,6 +53,8 @@ namespace BetterLegacy
 
         public static MaterialGroup blurColoredMaterial;
 
+        public static MaterialGroup trailMaterial;
+
         public static Dictionary<string, MaterialGroup> materials = new Dictionary<string, MaterialGroup>();
 
         static AssetBundle objectMaterialsAssetBundle;
@@ -156,6 +158,10 @@ namespace BetterLegacy
                         }
                     case "blur_colored.shader": {
                             blurColoredMaterial = materialGroup;
+                            break;
+                        }
+                    case "trail.shader": {
+                            trailMaterial = materialGroup;
                             break;
                         }
                 }

@@ -1104,7 +1104,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         break;
                     }
                 case nameof(ModifierFunctions.setMask): {
-                        DropdownGenerator(modifier, reference, "Comp", 0, CoreHelper.ToOptionData<UnityEngine.Rendering.CompareFunction>());
+                        DropdownGenerator(modifier, reference, "Comparison", 0, CoreHelper.ToOptionData<UnityEngine.Rendering.CompareFunction>());
                         DropdownGenerator(modifier, reference, "Pass", 1, CoreHelper.ToOptionData<UnityEngine.Rendering.StencilOp>());
                         DropdownGenerator(modifier, reference, "Fail", 2, CoreHelper.ToOptionData<UnityEngine.Rendering.StencilOp>());
                         DropdownGenerator(modifier, reference, "ZFail", 3, CoreHelper.ToOptionData<UnityEngine.Rendering.StencilOp>());
@@ -1112,6 +1112,22 @@ namespace BetterLegacy.Editor.Data.Elements
                         IntegerGenerator(modifier, reference, "ID", 4, max: 255);
                         IntegerGenerator(modifier, reference, "Write Mask", 5, max: 255);
                         IntegerGenerator(modifier, reference, "Read Mask", 6, max: 255);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.setMaskOther): {
+                        PrefabGroupOnly(modifier, reference);
+                        var str = StringGenerator(modifier, reference, "Object Group", 0);
+                        EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
+
+                        DropdownGenerator(modifier, reference, "Comparison", 1, CoreHelper.ToOptionData<UnityEngine.Rendering.CompareFunction>());
+                        DropdownGenerator(modifier, reference, "Pass", 2, CoreHelper.ToOptionData<UnityEngine.Rendering.StencilOp>());
+                        DropdownGenerator(modifier, reference, "Fail", 3, CoreHelper.ToOptionData<UnityEngine.Rendering.StencilOp>());
+                        DropdownGenerator(modifier, reference, "ZFail", 4, CoreHelper.ToOptionData<UnityEngine.Rendering.StencilOp>());
+
+                        IntegerGenerator(modifier, reference, "ID", 5, max: 255);
+                        IntegerGenerator(modifier, reference, "Write Mask", 6, max: 255);
+                        IntegerGenerator(modifier, reference, "Read Mask", 7, max: 255);
 
                         break;
                     }
@@ -1718,6 +1734,45 @@ namespace BetterLegacy.Editor.Data.Elements
                     }
                 case nameof(ModifierFunctions.setPlayerJumpIntensityAll): {
                         SingleGenerator(modifier, reference, "Intensity", 0, 1f);
+
+                        break;
+                    }
+
+                case nameof(ModifierFunctions.setPlayerMask): {
+                        DropdownGenerator(modifier, reference, "Comparison", 0, CoreHelper.ToOptionData<UnityEngine.Rendering.CompareFunction>());
+                        DropdownGenerator(modifier, reference, "Pass", 1, CoreHelper.ToOptionData<UnityEngine.Rendering.StencilOp>());
+                        DropdownGenerator(modifier, reference, "Fail", 2, CoreHelper.ToOptionData<UnityEngine.Rendering.StencilOp>());
+                        DropdownGenerator(modifier, reference, "ZFail", 3, CoreHelper.ToOptionData<UnityEngine.Rendering.StencilOp>());
+
+                        IntegerGenerator(modifier, reference, "ID", 4, max: 255);
+                        IntegerGenerator(modifier, reference, "Write Mask", 5, max: 255);
+                        IntegerGenerator(modifier, reference, "Read Mask", 6, max: 255);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.setPlayerMaskIndex): {
+                        IntegerGenerator(modifier, reference, "Player Index", 0, 0);
+
+                        DropdownGenerator(modifier, reference, "Comparison", 1, CoreHelper.ToOptionData<UnityEngine.Rendering.CompareFunction>());
+                        DropdownGenerator(modifier, reference, "Pass", 2, CoreHelper.ToOptionData<UnityEngine.Rendering.StencilOp>());
+                        DropdownGenerator(modifier, reference, "Fail", 3, CoreHelper.ToOptionData<UnityEngine.Rendering.StencilOp>());
+                        DropdownGenerator(modifier, reference, "ZFail", 4, CoreHelper.ToOptionData<UnityEngine.Rendering.StencilOp>());
+
+                        IntegerGenerator(modifier, reference, "ID", 5, max: 255);
+                        IntegerGenerator(modifier, reference, "Write Mask", 6, max: 255);
+                        IntegerGenerator(modifier, reference, "Read Mask", 7, max: 255);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.setPlayerMaskAll): {
+                        DropdownGenerator(modifier, reference, "Comparison", 0, CoreHelper.ToOptionData<UnityEngine.Rendering.CompareFunction>());
+                        DropdownGenerator(modifier, reference, "Pass", 1, CoreHelper.ToOptionData<UnityEngine.Rendering.StencilOp>());
+                        DropdownGenerator(modifier, reference, "Fail", 2, CoreHelper.ToOptionData<UnityEngine.Rendering.StencilOp>());
+                        DropdownGenerator(modifier, reference, "ZFail", 3, CoreHelper.ToOptionData<UnityEngine.Rendering.StencilOp>());
+
+                        IntegerGenerator(modifier, reference, "ID", 4, max: 255);
+                        IntegerGenerator(modifier, reference, "Write Mask", 5, max: 255);
+                        IntegerGenerator(modifier, reference, "Read Mask", 6, max: 255);
 
                         break;
                     }

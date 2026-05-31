@@ -40,6 +40,11 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
         public virtual bool HasCollision { get; }
 
         /// <summary>
+        /// If the material has stencil properties assigned.
+        /// </summary>
+        public bool HasStencilProperties { get; set; }
+
+        /// <summary>
         /// The current render layer type.
         /// </summary>
         public int renderType;

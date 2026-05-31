@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.UI;
 
 using LSFunctions;
@@ -1171,10 +1172,13 @@ namespace BetterLegacy.Core.Components.Player
             if (ProjectArrhythmia.State.InEditor)
                 rb.AddComponent<PlayerSelector>().player = this;
 
+            var mat = LegacyResources.objectMaterial;
+
             var head = transform.Find("Player/Player").gameObject;
 
             var headMesh = head.GetComponent<MeshFilter>();
             var headRenderer = head.GetComponent<MeshRenderer>();
+            headRenderer.material = mat;
 
             polygonCollider.CreateCollider(headMesh);
 
@@ -1194,14 +1198,12 @@ namespace BetterLegacy.Core.Components.Player
             death = head.transform.Find("death-explosion").GetComponent<ParticleSystem>();
             spawn = head.transform.Find("spawn-implosion").GetComponent<ParticleSystem>();
 
-            var mat = death.GetComponent<ParticleSystemRenderer>().trailMaterial;
-
             var headTrail = Creator.NewGameObject("super-trail", head.transform);
             headTrail.transform.localPosition = Vector3.zero;
             headTrail.layer = 8;
 
             var headTrailRenderer = headTrail.AddComponent<TrailRenderer>();
-            headTrailRenderer.material = mat;
+            headTrailRenderer.material = LegacyResources.trailMaterial;
 
             var headParticles = Creator.NewGameObject("super-particles", head.transform);
             headParticles.transform.localPosition = Vector3.zero;
@@ -1260,6 +1262,8 @@ namespace BetterLegacy.Core.Components.Player
 
             var boost = transform.Find("Player/boost").gameObject;
             boost.transform.localScale = Vector3.zero;
+            var boostRenderer = boost.GetComponent<MeshRenderer>();
+            boostRenderer.material = mat;
 
             var boostBase = Creator.NewGameObject("Boost Base", transform.Find("Player"));
             boostBase.transform.localPosition = Vector3.zero;
@@ -1274,7 +1278,7 @@ namespace BetterLegacy.Core.Components.Player
             boostTrail.layer = 8;
 
             var boostTrailRenderer = boostTrail.AddComponent<TrailRenderer>();
-            boostTrailRenderer.material = mat;
+            boostTrailRenderer.material = LegacyResources.trailMaterial;
 
             var boostParticles = Creator.NewGameObject("boost-particles", boost.transform.parent);
             boostParticles.transform.localPosition = Vector3.zero;
@@ -1302,7 +1306,7 @@ namespace BetterLegacy.Core.Components.Player
                 parent = boostBase.transform,
                 gameObject = boost,
                 meshFilter = boost.GetComponent<MeshFilter>(),
-                renderer = boost.GetComponent<MeshRenderer>(),
+                renderer = boostRenderer,
                 trailRenderer = boostTrailRenderer,
                 particleSystem = boostParticleSystem,
                 particleSystemRenderer = boostParticleSystemRenderer,
@@ -1344,9 +1348,15 @@ namespace BetterLegacy.Core.Components.Player
                 tail.SetParent(tailBase.transform);
                 tailBase.layer = 8;
 
+                var tailRenderer = tail.GetComponent<MeshRenderer>();
+                tailRenderer.material = mat;
+
                 var playerDelayTracker = tailBase.AddComponent<PlayerDelayTracker>();
                 playerDelayTracker.player = this;
                 playerDelayTracker.leader = tailTracker.transform;
+
+                var tailTrailRenderer = tail.GetComponent<TrailRenderer>();
+                tailTrailRenderer.material = LegacyResources.trailMaterial;
 
                 var tailParticles = Creator.NewGameObject("tail-particles", tailBase.transform);
                 tailParticles.transform.localPosition = Vector3.zero;
@@ -1372,9 +1382,9 @@ namespace BetterLegacy.Core.Components.Player
                     parent = tailBase.transform,
                     gameObject = tail.gameObject,
                     meshFilter = tail.GetComponent<MeshFilter>(),
-                    renderer = tail.GetComponent<MeshRenderer>(),
+                    renderer = tailRenderer,
                     delayTracker = playerDelayTracker,
-                    trailRenderer = tail.GetComponent<TrailRenderer>(),
+                    trailRenderer = tailTrailRenderer,
                     particleSystem = tailParticleSystem,
                     particleSystemRenderer = tailParticleSystemRenderer,
                 };
@@ -3412,6 +3422,7 @@ namespace BetterLegacy.Core.Components.Player
 
                 var renderer = customObj.gameObject.GetComponentInChildren<Renderer>();
                 renderer.enabled = true;
+                renderer.material = LegacyResources.objectMaterial;
                 customObj.renderer = renderer;
 
                 UpdateCustomAnimations(customObj);
@@ -4255,6 +4266,8 @@ namespace BetterLegacy.Core.Components.Player
                 CustomActive = active;
                 this.active = active;
             }
+
+            public override string ToString() => reference ? reference.name : base.ToString();
         }
 
         /// <summary>
@@ -4292,6 +4305,31 @@ namespace BetterLegacy.Core.Components.Player
 
             public RTPlayer Player { get; set; }
             public RTPlayerObject Parent { get; set; }
+
+            public void SetStencil(CompareFunction comparison, StencilOp pass, StencilOp fail, StencilOp zFail, byte id, byte writeMask, byte readMask)
+            {
+                if (renderer)
+                    SetStencil(renderer.material, comparison, pass, fail, zFail, id, writeMask, readMask);
+                if (trailRenderer)
+                    SetStencil(trailRenderer.material, comparison, pass, fail, zFail, id, writeMask, readMask);
+                if (particleSystemRenderer)
+                    SetStencil(particleSystemRenderer.material, comparison, pass, fail, zFail, id, writeMask, readMask);
+            }
+
+            public void SetStencil(Material material, CompareFunction comparison, StencilOp pass, StencilOp fail, StencilOp zFail, byte id, byte writeMask, byte readMask)
+            {
+                if (!material)
+                    return;
+                material.SetFloat("_StencilComp", (float)comparison);
+                material.SetFloat("_Stencil", id);
+                material.SetFloat("_StencilOp", (float)pass);
+                material.SetFloat("_StencilFail", (float)fail);
+                material.SetFloat("_StencilZFail", (float)zFail);
+                material.SetFloat("_StencilWriteMask", writeMask);
+                material.SetFloat("_StencilReadMask", readMask);
+            }
+
+            public override string ToString() => gameObject ? gameObject.ToString() : id ?? base.ToString();
         }
 
         /// <summary>

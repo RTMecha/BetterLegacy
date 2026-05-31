@@ -337,6 +337,15 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
         }
 
         /// <summary>
+        /// Resets the stencil properties.
+        /// </summary>
+        public void ResetStencil()
+        {
+            HasStencilProperties = false;
+            SetStencil(CompareFunction.Always, StencilOp.Keep, StencilOp.Keep, StencilOp.Keep, 0, 255, 255);
+        }
+
+        /// <summary>
         /// Sets the stencil properties.
         /// </summary>
         /// <param name="comparison">Compare function.</param>
@@ -348,14 +357,24 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
         /// <param name="readMask">Stencil read mask.</param>
         public void SetStencil(CompareFunction comparison, StencilOp pass, StencilOp fail, StencilOp zFail, byte id, byte writeMask, byte readMask)
         {
-            material.SetFloat("_StencilComp", (float)comparison);
-            material.SetFloat("_Stencil", id);
-            material.SetFloat("_StencilOp", (float)pass);
-            material.SetFloat("_StencilFail", (float)fail);
-            material.SetFloat("_StencilZFail", (float)zFail);
-            material.SetFloat("_StencilWriteMask", writeMask);
-            material.SetFloat("_StencilReadMask", readMask);
+            HasStencilProperties = true;
+            StencilProperties.ApplyToMaterial(material, comparison, pass, fail, zFail, id, writeMask, readMask);
         }
+
+        /// <summary>
+        /// Gets the <see cref="StencilProperties"/> from the material.
+        /// </summary>
+        /// <returns>Returns the <see cref="StencilProperties"/> from the material.</returns>
+        public StencilProperties GetStencilProperties() => new StencilProperties
+        {
+            compare = (CompareFunction)material.GetFloat("_StencilComp"),
+            id = (byte)material.GetFloat("_Stencil"),
+            pass = (StencilOp)material.GetFloat("_StencilOp"),
+            fail = (StencilOp)material.GetFloat("_StencilFail"),
+            zFail = (StencilOp)material.GetFloat("_StencilZFail"),
+            writeMask = (byte)material.GetFloat("_StencilWriteMask"),
+            readMask = (byte)material.GetFloat("_StencilReadMask"),
+        };
 
         #endregion
 
