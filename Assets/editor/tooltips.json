@@ -2616,6 +2616,70 @@
         // Component
         [
           {
+            "name": "Object Modifier - particleSystem (Action)",
+            "tooltips": [
+              {
+                "desc": "particleSystem (Action)",
+                "hint": "Makes the object emit particles.",
+                "lang": 0
+              }
+            ]
+          }, // particleSystem
+          {
+            "name": "Object Modifier - particleSystemHex (Action)",
+            "tooltips": [
+              {
+                "desc": "particleSystemHex (Action)",
+                "hint": "Makes the object emit particles.",
+                "lang": 0
+              }
+            ]
+          }, // particleSystemHex
+          {
+            "name": "Object Modifier - trailRenderer (Action)",
+            "tooltips": [
+              {
+                "desc": "trailRenderer (Action)",
+                "hint": "Makes the object leave behind a trail when it moves.",
+                "lang": 0
+              }
+            ]
+          }, // trailRenderer
+          {
+            "name": "Object Modifier - trailRendererHex (Action)",
+            "tooltips": [
+              {
+                "desc": "trailRendererHex (Action)",
+                "hint": "Makes the object leave behind a trail when it moves. Allows for hex color codes.",
+                "lang": 0
+              }
+            ]
+          }, // trailRendererHex
+          {
+            "name": "Object Modifier - rigidbody (Action)",
+            "tooltips": [
+              {
+                "desc": "rigidbody (Action)",
+                "hint": "Gives the visual object a Rigididbody2D component, allowing for other objects to detect colliion from this one. Gravity does not work with parenting.",
+                "lang": 0
+              }
+            ]
+          }, // rigidbody
+          {
+            "name": "Object Modifier - rigidbodyOther (Action)",
+            "tooltips": [
+              {
+                "desc": "rigidbodyOther (Action)",
+                "hint": "Gives a group of visual objects a Rigididbody2D component, allowing for other objects to detect colliion from this one. Gravity does not work with parenting.",
+                "lang": 0
+              }
+            ]
+          } // rigidbodyOther
+        ],
+
+        // Rendering
+        [
+          {
             "name": "Object Modifier - blur (Action)",
             "tooltips": [
               {
@@ -2686,66 +2750,6 @@
             ]
           }, // doubleSided
           {
-            "name": "Object Modifier - particleSystem (Action)",
-            "tooltips": [
-              {
-                "desc": "particleSystem (Action)",
-                "hint": "Makes the object emit particles.",
-                "lang": 0
-              }
-            ]
-          }, // particleSystem
-          {
-            "name": "Object Modifier - particleSystemHex (Action)",
-            "tooltips": [
-              {
-                "desc": "particleSystemHex (Action)",
-                "hint": "Makes the object emit particles.",
-                "lang": 0
-              }
-            ]
-          }, // particleSystemHex
-          {
-            "name": "Object Modifier - trailRenderer (Action)",
-            "tooltips": [
-              {
-                "desc": "trailRenderer (Action)",
-                "hint": "Makes the object leave behind a trail when it moves.",
-                "lang": 0
-              }
-            ]
-          }, // trailRenderer
-          {
-            "name": "Object Modifier - trailRendererHex (Action)",
-            "tooltips": [
-              {
-                "desc": "trailRendererHex (Action)",
-                "hint": "Makes the object leave behind a trail when it moves. Allows for hex color codes.",
-                "lang": 0
-              }
-            ]
-          }, // trailRendererHex
-          {
-            "name": "Object Modifier - rigidbody (Action)",
-            "tooltips": [
-              {
-                "desc": "rigidbody (Action)",
-                "hint": "Gives the visual object a Rigididbody2D component, allowing for other objects to detect colliion from this one. Gravity does not work with parenting.",
-                "lang": 0
-              }
-            ]
-          }, // rigidbody
-          {
-            "name": "Object Modifier - rigidbodyOther (Action)",
-            "tooltips": [
-              {
-                "desc": "rigidbodyOther (Action)",
-                "hint": "Gives a group of visual objects a Rigididbody2D component, allowing for other objects to detect colliion from this one. Gravity does not work with parenting.",
-                "lang": 0
-              }
-            ]
-          }, // rigidbodyOther
-          {
             "name": "Object Modifier - setRenderType (Action)",
             "tooltips": [
               {
@@ -2814,7 +2818,17 @@
                 "lang": 0
               }
             ]
-          } // setDepthOffset
+          }, // setDepthOffset
+          {
+            "name": "Object Modifier - setStencil (Action)",
+            "tooltips": [
+              {
+                "desc": "setStencil (Action)",
+                "hint": "Modifies the stencil values of the object, allowing for masking.",
+                "lang": 0
+              }
+            ]
+          } // setMask
         ],
 
         // Player

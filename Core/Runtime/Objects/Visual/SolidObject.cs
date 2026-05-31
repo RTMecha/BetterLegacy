@@ -1,9 +1,9 @@
 ﻿using UnityEngine;
+using UnityEngine.Rendering;
 
 using LSFunctions;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Data;
-using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Core.Runtime.Objects.Visual
 {
@@ -334,6 +334,27 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
 
             SetOutline(outlineData.color, outlineData.width);
             SetEditorOutline(editorOutlineData.color, editorOutlineData.width);
+        }
+
+        /// <summary>
+        /// Sets the stencil properties.
+        /// </summary>
+        /// <param name="comparison">Compare function.</param>
+        /// <param name="pass">Stencil pass operation.</param>
+        /// <param name="fail">Stencil fail operation.</param>
+        /// <param name="zFail">Stencil Z fail operation.</param>
+        /// <param name="id">Stencil ID.</param>
+        /// <param name="writeMask">Stencil write mask.</param>
+        /// <param name="readMask">Stencil read mask.</param>
+        public void SetStencil(CompareFunction comparison, StencilOp pass, StencilOp fail, StencilOp zFail, byte id, byte writeMask, byte readMask)
+        {
+            material.SetFloat("_StencilComp", (float)comparison);
+            material.SetFloat("_Stencil", id);
+            material.SetFloat("_StencilOp", (float)pass);
+            material.SetFloat("_StencilFail", (float)fail);
+            material.SetFloat("_StencilZFail", (float)zFail);
+            material.SetFloat("_StencilWriteMask", writeMask);
+            material.SetFloat("_StencilReadMask", readMask);
         }
 
         #endregion

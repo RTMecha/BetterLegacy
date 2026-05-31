@@ -4,6 +4,14 @@ Shader"Unlit/NoCullNormalTransparentShader"
     {
         _MainTex ("Texture", 2D) = "white" {}
         _Color ("Main Color", COLOR) = (1,1,1,1)
+
+        _StencilComp("Stencil Comparison", Float) = 8
+        _Stencil("Stencil ID", Float) = 0
+        _StencilOp("Stencil Pass", Float) = 0
+        _StencilFail("Stencil Fail", Float) = 0
+        _StencilZFail("Stencil Z Fail", Float) = 0
+        _StencilWriteMask("Stencil Write Mask", Float) = 255
+        _StencilReadMask("Stencil Read Mask", Float) = 255
     }
     SubShader
     {
@@ -15,6 +23,17 @@ Shader"Unlit/NoCullNormalTransparentShader"
         Blend SrcAlpha OneMinusSrcAlpha
         LOD 100
         Cull Off
+
+        Stencil
+        {
+            Ref[_Stencil]
+            Comp[_StencilComp]
+            Pass[_StencilOp]
+            Fail[_StencilFail]
+            ZFail[_StencilZFail]
+            ReadMask[_StencilReadMask]
+            WriteMask[_StencilWriteMask]
+        }
 
         Pass
         {

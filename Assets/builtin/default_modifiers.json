@@ -1139,6 +1139,52 @@
     [
       {
         "type": 1,
+        "commands": [ "particleSystem", "0", "0", "0", "1", "0", "1", "0", "0", "5", "1", "1", "0", "0", "True", "90", "1" ],
+        "value": "5",
+        "const": "True",
+        "compat": "obj"
+      }, // particleSystem
+      {
+        "type": 1,
+        "name": "particleSystemHex",
+        "values": [ "5", "0", "0", "FFFFFF", "1", "0", "1", "0", "0", "5", "1", "1", "0", "0", "True", "90", "1" ],
+        "const": "True",
+        "compat": "obj"
+      }, // particleSystemHex
+      {
+        "type": 1,
+        "commands": [ "trailRenderer", "1", "0", "0", "1", "0", "0" ],
+        "value": "1",
+        "const": "True",
+        "compat": "obj"
+      }, // trailRenderer
+      {
+        "type": 1,
+        "commands": [ "trailRendererHex", "1", "0", "FFFFFF", "FFFFFF00" ],
+        "value": "1",
+        "const": "True",
+        "compat": "obj"
+      }, // trailRendererHex
+      {
+        "type": 1,
+        "commands": [ "rigidbody", "0", "0", "0", "0", "0", "0" ],
+        "value": "0",
+        "const": "False",
+        "compat": "obj"
+      }, // rigidbody
+      {
+        "type": 1,
+        "commands": [ "rigidbodyOther", "0", "0", "0", "0", "0", "0" ],
+        "value": "Object Group",
+        "const": "False",
+        "compat": "obj"
+      } // rigidbodyOther
+    ],
+
+    // Rendering
+    [
+      {
+        "type": 1,
         "commands": [ "blur", "False", "False" ],
         "value": "0.5",
         "const": "True",
@@ -1186,48 +1232,6 @@
         "const": "False",
         "compat": "obj"
       }, // doubleSided
-      {
-        "type": 1,
-        "commands": [ "particleSystem", "0", "0", "0", "1", "0", "1", "0", "0", "5", "1", "1", "0", "0", "True", "90", "1" ],
-        "value": "5",
-        "const": "True",
-        "compat": "obj"
-      }, // particleSystem
-      {
-        "type": 1,
-        "name": "particleSystemHex",
-        "values": [ "5", "0", "0", "FFFFFF", "1", "0", "1", "0", "0", "5", "1", "1", "0", "0", "True", "90", "1" ],
-        "const": "True",
-        "compat": "obj"
-      }, // particleSystemHex
-      {
-        "type": 1,
-        "commands": [ "trailRenderer", "1", "0", "0", "1", "0", "0" ],
-        "value": "1",
-        "const": "True",
-        "compat": "obj"
-      }, // trailRenderer
-      {
-        "type": 1,
-        "commands": [ "trailRendererHex", "1", "0", "FFFFFF", "FFFFFF00" ],
-        "value": "1",
-        "const": "True",
-        "compat": "obj"
-      }, // trailRendererHex
-      {
-        "type": 1,
-        "commands": [ "rigidbody", "0", "0", "0", "0", "0", "0" ],
-        "value": "0",
-        "const": "False",
-        "compat": "obj"
-      }, // rigidbody
-      {
-        "type": 1,
-        "commands": [ "rigidbodyOther", "0", "0", "0", "0", "0", "0" ],
-        "value": "Object Group",
-        "const": "False",
-        "compat": "obj"
-      }, // rigidbodyOther
       {
         "type": 1,
         "commands": [ "setRenderType" ],
@@ -1283,7 +1287,14 @@
         "values": [ "0", "False" ],
         "const": "True",
         "compat": "bg_obj"
-      } // setDepthOffset
+      }, // setDepthOffset
+      {
+        "type": 1,
+        "name": "setMask",
+        "values": [ "8", "0", "0", "0", "0", "255", "255" ],
+        "const": "True",
+        "compat": "obj"
+      } // setMask
     ],
 
     // Player

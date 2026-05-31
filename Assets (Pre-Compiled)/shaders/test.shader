@@ -88,12 +88,12 @@
                 // overlay
                 if (_BlendMode == 7.0) {
                     //return (target > 0.5) * (1 - (1 - 2 * (target - 0.5)) * (1 - blend)) + (target <= 0.5) * ((2 * target) * blend);
-                    if (blend < 0.5) {
-                        return 2 * target * blend;
-                    }
-                    else {
-                        return 2 * blend * (1 - target) + sqrt(blend) * (2 * target - 1);
-                    }
+                    //if (blend < 0.5) {
+                    //    return 2 * target * blend;
+                    //}
+                    //else {
+                    //    return 2 * blend * (1 - target) + sqrt(blend) * (2 * target - 1);
+                    //}
                 }
                 // difference
                 if (_BlendMode == 7.0) {

@@ -820,56 +820,6 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 #region Component
 
-                case nameof(ModifierFunctions.blur): {
-                        SingleGenerator(modifier, reference, "Amount", 0, 0.5f);
-                        BoolGenerator(modifier, reference, "Use Opacity", 1, false);
-                        BoolGenerator(modifier, reference, "Set Back to Normal", 2, false);
-
-                        break;
-                    }
-                case nameof(ModifierFunctions.blurOther): {
-                        PrefabGroupOnly(modifier, reference);
-                        SingleGenerator(modifier, reference, "Amount", 0, 0.5f);
-                        var str = StringGenerator(modifier, reference, "Object Group", 1);
-                        EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
-                        BoolGenerator(modifier, reference, "Set Back to Normal", 2, false);
-
-                        break;
-                    }
-                case nameof(ModifierFunctions.blurVariable): {
-                        SingleGenerator(modifier, reference, "Amount", 0, 0.5f);
-                        BoolGenerator(modifier, reference, "Set Back to Normal", 1, false);
-
-                        break;
-                    }
-                case nameof(ModifierFunctions.blurVariableOther): {
-                        PrefabGroupOnly(modifier, reference);
-                        SingleGenerator(modifier, reference, "Amount", 0, 0.5f);
-                        var str = StringGenerator(modifier, reference, "Object Group", 1);
-                        EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
-                        BoolGenerator(modifier, reference, "Set Back to Normal", 2, false);
-
-                        break;
-                    }
-                case nameof(ModifierFunctions.blurColored): {
-                        SingleGenerator(modifier, reference, "Amount", 0, 0.5f);
-                        BoolGenerator(modifier, reference, "Use Opacity", 1, false);
-                        BoolGenerator(modifier, reference, "Set Back to Normal", 2, false);
-
-                        break;
-                    }
-                case nameof(ModifierFunctions.blurColoredOther): {
-                        PrefabGroupOnly(modifier, reference);
-                        SingleGenerator(modifier, reference, "Amount", 0, 0.5f);
-                        var str = StringGenerator(modifier, reference, "Object Group", 1);
-                        EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
-                        BoolGenerator(modifier, reference, "Set Back to Normal", 2, false);
-
-                        break;
-                    }
-                //case "doubleSided): {
-                //        break;
-                //    }
                 case nameof(ModifierFunctions.particleSystem): {
                         SingleGenerator(modifier, reference, "Life Time", 0, 5f);
 
@@ -1016,6 +966,61 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
+
+                #endregion
+
+                #region Rendering
+                    
+                case nameof(ModifierFunctions.blur): {
+                        SingleGenerator(modifier, reference, "Amount", 0, 0.5f);
+                        BoolGenerator(modifier, reference, "Use Opacity", 1, false);
+                        BoolGenerator(modifier, reference, "Set Back to Normal", 2, false);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.blurOther): {
+                        PrefabGroupOnly(modifier, reference);
+                        SingleGenerator(modifier, reference, "Amount", 0, 0.5f);
+                        var str = StringGenerator(modifier, reference, "Object Group", 1);
+                        EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
+                        BoolGenerator(modifier, reference, "Set Back to Normal", 2, false);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.blurVariable): {
+                        SingleGenerator(modifier, reference, "Amount", 0, 0.5f);
+                        BoolGenerator(modifier, reference, "Set Back to Normal", 1, false);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.blurVariableOther): {
+                        PrefabGroupOnly(modifier, reference);
+                        SingleGenerator(modifier, reference, "Amount", 0, 0.5f);
+                        var str = StringGenerator(modifier, reference, "Object Group", 1);
+                        EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
+                        BoolGenerator(modifier, reference, "Set Back to Normal", 2, false);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.blurColored): {
+                        SingleGenerator(modifier, reference, "Amount", 0, 0.5f);
+                        BoolGenerator(modifier, reference, "Use Opacity", 1, false);
+                        BoolGenerator(modifier, reference, "Set Back to Normal", 2, false);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.blurColoredOther): {
+                        PrefabGroupOnly(modifier, reference);
+                        SingleGenerator(modifier, reference, "Amount", 0, 0.5f);
+                        var str = StringGenerator(modifier, reference, "Object Group", 1);
+                        EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
+                        BoolGenerator(modifier, reference, "Set Back to Normal", 2, false);
+
+                        break;
+                    }
+                //case "doubleSided): {
+                //        break;
+                //    }
                 case nameof(ModifierFunctions.setRenderType): {
                         DropdownGenerator(modifier, reference, "Render Type", 0, CoreHelper.ToOptionData<BeatmapObject.RenderLayerType>());
                         break;
@@ -1095,6 +1100,18 @@ namespace BetterLegacy.Editor.Data.Elements
                 case nameof(ModifierFunctions.setDepthOffset): {
                         IntegerGenerator(modifier, reference, "Depth Offset", 0, max: int.MaxValue);
                         BoolGenerator(modifier, reference, "Inverse", 1);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.setMask): {
+                        DropdownGenerator(modifier, reference, "Comp", 0, CoreHelper.ToOptionData<UnityEngine.Rendering.CompareFunction>());
+                        DropdownGenerator(modifier, reference, "Pass", 1, CoreHelper.ToOptionData<UnityEngine.Rendering.StencilOp>());
+                        DropdownGenerator(modifier, reference, "Fail", 2, CoreHelper.ToOptionData<UnityEngine.Rendering.StencilOp>());
+                        DropdownGenerator(modifier, reference, "ZFail", 3, CoreHelper.ToOptionData<UnityEngine.Rendering.StencilOp>());
+
+                        IntegerGenerator(modifier, reference, "ID", 4, max: 255);
+                        IntegerGenerator(modifier, reference, "Write Mask", 5, max: 255);
+                        IntegerGenerator(modifier, reference, "Read Mask", 6, max: 255);
 
                         break;
                     }

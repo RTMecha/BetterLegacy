@@ -857,6 +857,17 @@ namespace BetterLegacy.Core.Helpers
 
             #region Component
 
+            new ModifierAction(nameof(ModifierFunctions.particleSystem),  ModifierFunctions.particleSystem, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierFunctions.particleSystemHex),  ModifierFunctions.particleSystemHex, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierFunctions.trailRenderer),  ModifierFunctions.trailRenderer, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierFunctions.trailRendererHex),  ModifierFunctions.trailRendererHex, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierFunctions.rigidbody),  ModifierFunctions.rigidbody, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierFunctions.rigidbodyOther),  ModifierFunctions.rigidbodyOther, ModifierCompatibility.BeatmapObjectCompatible),
+
+            #endregion
+
+            #region Rendering
+            
             new ModifierAction(nameof(ModifierFunctions.blur),  ModifierFunctions.blur, ModifierCompatibility.BeatmapObjectCompatible),
             new ModifierAction(nameof(ModifierFunctions.blurOther),  ModifierFunctions.blurOther, ModifierCompatibility.BeatmapObjectCompatible),
             new ModifierAction(nameof(ModifierFunctions.blurVariable),  ModifierFunctions.blurVariable, ModifierCompatibility.BeatmapObjectCompatible),
@@ -864,12 +875,6 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction(nameof(ModifierFunctions.blurColored),  ModifierFunctions.blurColored, ModifierCompatibility.BeatmapObjectCompatible),
             new ModifierAction(nameof(ModifierFunctions.blurColoredOther),  ModifierFunctions.blurColoredOther, ModifierCompatibility.BeatmapObjectCompatible),
             new ModifierAction(nameof(ModifierFunctions.doubleSided),  ModifierFunctions.doubleSided, ModifierCompatibility.BeatmapObjectCompatible),
-            new ModifierAction(nameof(ModifierFunctions.particleSystem),  ModifierFunctions.particleSystem, ModifierCompatibility.BeatmapObjectCompatible),
-            new ModifierAction(nameof(ModifierFunctions.particleSystemHex),  ModifierFunctions.particleSystemHex, ModifierCompatibility.BeatmapObjectCompatible),
-            new ModifierAction(nameof(ModifierFunctions.trailRenderer),  ModifierFunctions.trailRenderer, ModifierCompatibility.BeatmapObjectCompatible),
-            new ModifierAction(nameof(ModifierFunctions.trailRendererHex),  ModifierFunctions.trailRendererHex, ModifierCompatibility.BeatmapObjectCompatible),
-            new ModifierAction(nameof(ModifierFunctions.rigidbody),  ModifierFunctions.rigidbody, ModifierCompatibility.BeatmapObjectCompatible),
-            new ModifierAction(nameof(ModifierFunctions.rigidbodyOther),  ModifierFunctions.rigidbodyOther, ModifierCompatibility.BeatmapObjectCompatible),
             new ModifierAction(nameof(ModifierFunctions.setRenderType),  ModifierFunctions.setRenderType, ModifierCompatibility.BeatmapObjectCompatible),
             new ModifierAction(nameof(ModifierFunctions.setRenderTypeOther),  ModifierFunctions.setRenderTypeOther, ModifierCompatibility.BeatmapObjectCompatible),
             new ModifierAction(nameof(ModifierFunctions.setRendering),  ModifierFunctions.setRendering, ModifierCompatibility.BeatmapObjectCompatible),
@@ -878,11 +883,12 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction(nameof(ModifierFunctions.setOutlineHex),  ModifierFunctions.setOutlineHex, ModifierCompatibility.BeatmapObjectCompatible),
             new ModifierAction(nameof(ModifierFunctions.setOutlineHexOther),  ModifierFunctions.setOutlineHexOther, ModifierCompatibility.FullBeatmapCompatible),
             new ModifierAction(nameof(ModifierFunctions.setDepthOffset),  ModifierFunctions.setDepthOffset, ModifierCompatibility.BackgroundObjectCompatible),
+            new ModifierAction(nameof(ModifierFunctions.setMask), ModifierFunctions.setMask, ModifierCompatibility.BeatmapObjectCompatible),
 
             #endregion
 
             #region Player
-            
+
             new ModifierAction(nameof(ModifierFunctions.forLoopPlayer), ModifierFunctions.forLoopPlayer),
 
             // hit
@@ -4834,177 +4840,6 @@ namespace BetterLegacy.Core.Helpers
 
         #region Component
 
-        public static void blur(Modifier modifier, ModifierLoop modifierLoop)
-        {
-            if (modifierLoop.reference is not BeatmapObject beatmapObject)
-                return;
-
-            if (beatmapObject.objectType == BeatmapObject.ObjectType.Empty)
-                return;
-
-            var runtimeObject = beatmapObject.runtimeObject;
-
-            if (!runtimeObject || runtimeObject.visualObject is not SolidObject solidObject || !runtimeObject.visualObject.renderer)
-                return;
-
-            var amount = modifier.GetFloat(0, 0f, modifierLoop.variables);
-            var renderer = runtimeObject.visualObject.renderer;
-
-            if (!modifier.HasResult())
-            {
-                DestroyModifierResult.Init(runtimeObject.visualObject.gameObject, modifier);
-                modifier.Result = runtimeObject.visualObject.gameObject;
-                solidObject.SetMaterial(LegacyResources.blurMaterial);
-            }
-
-            if (modifier.GetBool(1, false, modifierLoop.variables))
-                renderer.material.SetFloat("_blurSizeXY", -(beatmapObject.Interpolate(3, 1) - 1f) * amount);
-            else
-                renderer.material.SetFloat("_blurSizeXY", amount);
-        }
-
-        public static void blurOther(Modifier modifier, ModifierLoop modifierLoop)
-        {
-            if (modifierLoop.reference is not IPrefabable prefabable)
-                return;
-
-            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables));
-            if (list.IsEmpty())
-                return;
-
-            var amount = modifier.GetFloat(0, 0f, modifierLoop.variables);
-
-            foreach (var beatmapObject in list)
-            {
-                var runtimeObject = beatmapObject.runtimeObject;
-                if (beatmapObject.objectType == BeatmapObject.ObjectType.Empty || !runtimeObject || runtimeObject.visualObject is not SolidObject solidObject || !runtimeObject.visualObject.renderer)
-                    continue;
-
-                var renderer = runtimeObject.visualObject.renderer;
-
-                if (renderer.material != LegacyResources.blurMaterial.material)
-                    solidObject.SetMaterial(LegacyResources.blurMaterial);
-                renderer.material.SetFloat("_blurSizeXY", -(beatmapObject.Interpolate(3, 1) - 1f) * amount);
-            }
-        }
-
-        public static void blurVariable(Modifier modifier, ModifierLoop modifierLoop)
-        {
-            if (modifierLoop.reference is not BeatmapObject beatmapObject)
-                return;
-
-            if (beatmapObject.objectType == BeatmapObject.ObjectType.Empty)
-                return;
-
-            var runtimeObject = beatmapObject.runtimeObject;
-
-            if (!runtimeObject || runtimeObject.visualObject is not SolidObject solidObject || !runtimeObject.visualObject.renderer)
-                return;
-
-            var amount = modifier.GetFloat(0, 0f, modifierLoop.variables);
-            var renderer = runtimeObject.visualObject.renderer;
-
-            if (!modifier.HasResult())
-            {
-                var onDestroy = runtimeObject.visualObject.gameObject.AddComponent<DestroyModifierResult>();
-                onDestroy.Modifier = modifier;
-                modifier.Result = runtimeObject.visualObject.gameObject;
-                solidObject.SetMaterial(LegacyResources.blurMaterial);
-            }
-
-            renderer.material.SetFloat("_blurSizeXY", beatmapObject.integerVariable * amount);
-        }
-
-        public static void blurVariableOther(Modifier modifier, ModifierLoop modifierLoop)
-        {
-            if (modifierLoop.reference is not IPrefabable prefabable)
-                return;
-
-            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables));
-            if (list.IsEmpty())
-                return;
-
-            var amount = modifier.GetFloat(0, 0f, modifierLoop.variables);
-
-            foreach (var beatmapObject in list)
-            {
-                var runtimeObject = beatmapObject.runtimeObject;
-                if (beatmapObject.objectType == BeatmapObject.ObjectType.Empty || !runtimeObject || runtimeObject.visualObject is not SolidObject solidObject || !runtimeObject.visualObject.renderer)
-                    continue;
-
-                var renderer = solidObject.renderer;
-
-                if (renderer.material != LegacyResources.blurMaterial.material)
-                    solidObject.SetMaterial(LegacyResources.blurMaterial);
-                renderer.material.SetFloat("_blurSizeXY", beatmapObject.integerVariable * amount);
-            }
-        }
-
-        public static void blurColored(Modifier modifier, ModifierLoop modifierLoop)
-        {
-            if (modifierLoop.reference is not BeatmapObject beatmapObject)
-                return;
-
-            if (beatmapObject.objectType == BeatmapObject.ObjectType.Empty)
-                return;
-
-            var runtimeObject = beatmapObject.runtimeObject;
-
-            if (!runtimeObject || runtimeObject.visualObject is not SolidObject solidObject || !solidObject.renderer)
-                return;
-
-            var amount = modifier.GetFloat(0, 0f, modifierLoop.variables);
-            var renderer = runtimeObject.visualObject.renderer;
-
-            if (!modifier.HasResult())
-            {
-                var onDestroy = runtimeObject.visualObject.gameObject.AddComponent<DestroyModifierResult>();
-                onDestroy.Modifier = modifier;
-                modifier.Result = runtimeObject.visualObject.gameObject;
-                solidObject.SetMaterial(LegacyResources.blurColoredMaterial);
-            }
-
-            if (modifier.GetBool(1, false, modifierLoop.variables))
-                renderer.material.SetFloat("_Size", -(beatmapObject.Interpolate(3, 1) - 1f) * amount);
-            else
-                renderer.material.SetFloat("_Size", amount);
-        }
-
-        public static void blurColoredOther(Modifier modifier, ModifierLoop modifierLoop)
-        {
-            if (modifierLoop.reference is not IPrefabable prefabable)
-                return;
-
-            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables));
-            if (list.IsEmpty())
-                return;
-
-            var amount = modifier.GetFloat(0, 0f, modifierLoop.variables);
-
-            foreach (var beatmapObject in list)
-            {
-                var runtimeObject = beatmapObject.runtimeObject;
-                if (beatmapObject.objectType == BeatmapObject.ObjectType.Empty || !runtimeObject || runtimeObject.visualObject is not SolidObject solidObject || !runtimeObject.visualObject.renderer)
-                    continue;
-
-                var renderer = solidObject.renderer;
-
-                if (renderer.material != LegacyResources.blurColoredMaterial.material)
-                    solidObject.SetMaterial(LegacyResources.blurColoredMaterial);
-                renderer.material.SetFloat("_Size", -(beatmapObject.Interpolate(3, 1) - 1f) * amount);
-            }
-        }
-
-        public static void doubleSided(Modifier modifier, ModifierLoop modifierLoop)
-        {
-            if (modifierLoop.reference is not BeatmapObject beatmapObject)
-                return;
-
-            var runtimeObject = beatmapObject.runtimeObject;
-            if (runtimeObject && runtimeObject.visualObject is SolidObject solidObject && solidObject.gameObject)
-                solidObject.UpdateRendering((int)beatmapObject.gradientType, (int)beatmapObject.renderLayerType, true, beatmapObject.gradientScale, beatmapObject.gradientRotation, (int)beatmapObject.colorBlendMode);
-        }
-
         public static void particleSystem(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (modifierLoop.reference is not BeatmapObject beatmapObject)
@@ -5364,6 +5199,181 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
+        #endregion
+
+        #region Rendering
+        
+        public static void blur(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
+                return;
+
+            if (beatmapObject.objectType == BeatmapObject.ObjectType.Empty)
+                return;
+
+            var runtimeObject = beatmapObject.runtimeObject;
+
+            if (!runtimeObject || runtimeObject.visualObject is not SolidObject solidObject || !runtimeObject.visualObject.renderer)
+                return;
+
+            var amount = modifier.GetFloat(0, 0f, modifierLoop.variables);
+            var renderer = runtimeObject.visualObject.renderer;
+
+            if (!modifier.HasResult())
+            {
+                DestroyModifierResult.Init(runtimeObject.visualObject.gameObject, modifier);
+                modifier.Result = runtimeObject.visualObject.gameObject;
+                solidObject.SetMaterial(LegacyResources.blurMaterial);
+            }
+
+            if (modifier.GetBool(1, false, modifierLoop.variables))
+                renderer.material.SetFloat("_blurSizeXY", -(beatmapObject.Interpolate(3, 1) - 1f) * amount);
+            else
+                renderer.material.SetFloat("_blurSizeXY", amount);
+        }
+
+        public static void blurOther(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (modifierLoop.reference is not IPrefabable prefabable)
+                return;
+
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables));
+            if (list.IsEmpty())
+                return;
+
+            var amount = modifier.GetFloat(0, 0f, modifierLoop.variables);
+
+            foreach (var beatmapObject in list)
+            {
+                var runtimeObject = beatmapObject.runtimeObject;
+                if (beatmapObject.objectType == BeatmapObject.ObjectType.Empty || !runtimeObject || runtimeObject.visualObject is not SolidObject solidObject || !runtimeObject.visualObject.renderer)
+                    continue;
+
+                var renderer = runtimeObject.visualObject.renderer;
+
+                if (renderer.material != LegacyResources.blurMaterial.material)
+                    solidObject.SetMaterial(LegacyResources.blurMaterial);
+                renderer.material.SetFloat("_blurSizeXY", -(beatmapObject.Interpolate(3, 1) - 1f) * amount);
+            }
+        }
+
+        public static void blurVariable(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
+                return;
+
+            if (beatmapObject.objectType == BeatmapObject.ObjectType.Empty)
+                return;
+
+            var runtimeObject = beatmapObject.runtimeObject;
+
+            if (!runtimeObject || runtimeObject.visualObject is not SolidObject solidObject || !runtimeObject.visualObject.renderer)
+                return;
+
+            var amount = modifier.GetFloat(0, 0f, modifierLoop.variables);
+            var renderer = runtimeObject.visualObject.renderer;
+
+            if (!modifier.HasResult())
+            {
+                var onDestroy = runtimeObject.visualObject.gameObject.AddComponent<DestroyModifierResult>();
+                onDestroy.Modifier = modifier;
+                modifier.Result = runtimeObject.visualObject.gameObject;
+                solidObject.SetMaterial(LegacyResources.blurMaterial);
+            }
+
+            renderer.material.SetFloat("_blurSizeXY", beatmapObject.integerVariable * amount);
+        }
+
+        public static void blurVariableOther(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (modifierLoop.reference is not IPrefabable prefabable)
+                return;
+
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables));
+            if (list.IsEmpty())
+                return;
+
+            var amount = modifier.GetFloat(0, 0f, modifierLoop.variables);
+
+            foreach (var beatmapObject in list)
+            {
+                var runtimeObject = beatmapObject.runtimeObject;
+                if (beatmapObject.objectType == BeatmapObject.ObjectType.Empty || !runtimeObject || runtimeObject.visualObject is not SolidObject solidObject || !runtimeObject.visualObject.renderer)
+                    continue;
+
+                var renderer = solidObject.renderer;
+
+                if (renderer.material != LegacyResources.blurMaterial.material)
+                    solidObject.SetMaterial(LegacyResources.blurMaterial);
+                renderer.material.SetFloat("_blurSizeXY", beatmapObject.integerVariable * amount);
+            }
+        }
+
+        public static void blurColored(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
+                return;
+
+            if (beatmapObject.objectType == BeatmapObject.ObjectType.Empty)
+                return;
+
+            var runtimeObject = beatmapObject.runtimeObject;
+
+            if (!runtimeObject || runtimeObject.visualObject is not SolidObject solidObject || !solidObject.renderer)
+                return;
+
+            var amount = modifier.GetFloat(0, 0f, modifierLoop.variables);
+            var renderer = runtimeObject.visualObject.renderer;
+
+            if (!modifier.HasResult())
+            {
+                var onDestroy = runtimeObject.visualObject.gameObject.AddComponent<DestroyModifierResult>();
+                onDestroy.Modifier = modifier;
+                modifier.Result = runtimeObject.visualObject.gameObject;
+                solidObject.SetMaterial(LegacyResources.blurColoredMaterial);
+            }
+
+            if (modifier.GetBool(1, false, modifierLoop.variables))
+                renderer.material.SetFloat("_Size", -(beatmapObject.Interpolate(3, 1) - 1f) * amount);
+            else
+                renderer.material.SetFloat("_Size", amount);
+        }
+
+        public static void blurColoredOther(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (modifierLoop.reference is not IPrefabable prefabable)
+                return;
+
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables));
+            if (list.IsEmpty())
+                return;
+
+            var amount = modifier.GetFloat(0, 0f, modifierLoop.variables);
+
+            foreach (var beatmapObject in list)
+            {
+                var runtimeObject = beatmapObject.runtimeObject;
+                if (beatmapObject.objectType == BeatmapObject.ObjectType.Empty || !runtimeObject || runtimeObject.visualObject is not SolidObject solidObject || !runtimeObject.visualObject.renderer)
+                    continue;
+
+                var renderer = solidObject.renderer;
+
+                if (renderer.material != LegacyResources.blurColoredMaterial.material)
+                    solidObject.SetMaterial(LegacyResources.blurColoredMaterial);
+                renderer.material.SetFloat("_Size", -(beatmapObject.Interpolate(3, 1) - 1f) * amount);
+            }
+        }
+
+        public static void doubleSided(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
+                return;
+
+            var runtimeObject = beatmapObject.runtimeObject;
+            if (runtimeObject && runtimeObject.visualObject is SolidObject solidObject && solidObject.gameObject)
+                solidObject.UpdateRendering((int)beatmapObject.gradientType, (int)beatmapObject.renderLayerType, true, beatmapObject.gradientScale, beatmapObject.gradientRotation, (int)beatmapObject.colorBlendMode);
+        }
+
         public static void setRenderType(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (modifierLoop.reference is BeatmapObject beatmapObject && beatmapObject.runtimeObject && beatmapObject.runtimeObject.visualObject)
@@ -5543,6 +5553,20 @@ namespace BetterLegacy.Core.Helpers
         {
             if (modifierLoop.reference is BackgroundObject backgroundObject)
                 backgroundObject.runtimeObject?.SetDepthOffset(modifier.GetBool(1, false, modifierLoop.variables) ? -(modifier.GetInt(0, 0, modifierLoop.variables) - (backgroundObject.iterations - 1)) : modifier.GetInt(0, 0, modifierLoop.variables));
+        }
+
+        public static void setMask(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (modifierLoop.reference is not BeatmapObject beatmapObject || !beatmapObject.runtimeObject || beatmapObject.runtimeObject.visualObject is not SolidObject solidObject)
+                return;
+            solidObject.SetStencil(
+                Parser.TryParse(modifier.GetValue(0, modifierLoop.variables), true, UnityEngine.Rendering.CompareFunction.Always),
+                Parser.TryParse(modifier.GetValue(1, modifierLoop.variables), true, UnityEngine.Rendering.StencilOp.Keep),
+                Parser.TryParse(modifier.GetValue(2, modifierLoop.variables), true, UnityEngine.Rendering.StencilOp.Keep),
+                Parser.TryParse(modifier.GetValue(3, modifierLoop.variables), true, UnityEngine.Rendering.StencilOp.Keep),
+                (byte)modifier.GetInt(4, 0, modifierLoop.variables),
+                (byte)modifier.GetInt(5, 255, modifierLoop.variables),
+                (byte)modifier.GetInt(6, 255, modifierLoop.variables));
         }
 
         #endregion
