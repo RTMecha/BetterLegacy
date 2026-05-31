@@ -1,7 +1,8 @@
 ﻿# snapshot-2026.?.? - (Story Playtest) [???]
 ## Features
 ### Core
-- Added setMask modifier. This can make objects only appear over other objects or not appear over other objects depending on the set values.
+- Added setMask and setMaskOther modifiers. This can make objects only appear over other objects or not appear over other objects depending on the set values.
+- Added setPlayerMask modifiers. Similar to setMask, but for players.
 
 ### Editor
 - Added Clear Keyframes context menu button to animations.
