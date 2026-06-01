@@ -561,7 +561,7 @@ namespace BetterLegacy
                 for (int i = 0; i < RecentArcadeLevels.Count; i++)
                     jn["recent_arcade_levels"][i] = RecentArcadeLevels[i].ToJSON();
 
-                RTFile.WriteToFile(RTFile.CombinePaths(RTFile.ApplicationDirectory, "stats.json"), jn.ToString(3));
+                RTFile.WriteToFile(RTFile.CombinePaths(RTFile.ApplicationDirectory, "profile", "stats.json"), jn.ToString(3));
             }
             catch (Exception ex)
             {
@@ -576,7 +576,8 @@ namespace BetterLegacy
         {
             try
             {
-                if (!RTFile.TryReadFromFile(RTFile.CombinePaths(RTFile.ApplicationDirectory, "stats.json"), out string file))
+                string file;
+                if (!RTFile.TryReadFromFile(RTFile.CombinePaths(RTFile.ApplicationDirectory, "stats.json"), out file) && !RTFile.TryReadFromFile(RTFile.CombinePaths(RTFile.ApplicationDirectory, "profile", "stats.json"), out file))
                     return;
 
                 var jn = JSON.Parse(file);
