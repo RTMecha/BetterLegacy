@@ -1,7 +1,14 @@
 ﻿# snapshot-2026.6.2 - (Story Playtest) [???]
 ## Features
 ### Editor
-- QOL for prefab picker, you can now select a timeline object that represents the prefab.
+- QOL for prefab picker, you can now select a timeline object that represents the prefab. This works for adding themes and animations to a prefab.
+- Added "Reset Editor Camera On Update Everything" setting to Config Manager > Editor > Freecam. This resets the freecam values to the default when the UpdateEverything keybind occurs.
+- Animation ID field can now have the left / right text swapped on scrollwheel clicked and it also now has a context menu.
+- Animations from an animation group can now be pasted to selected objects.
+
+## Changes
+### Editor
+- Editor freecam values now save & load per level.
 
 ## Fixes
 - Fixed animations and animation groups not retaining their ID if overridden.
