@@ -14,6 +14,7 @@
 ## Fixes
 - Fixed animations and animation groups not retaining their ID if overridden.
 - Fixed animating scale for runAnimation modifier not working as intended.
+- Fixed Server Visibility label in the MetaData Editor dialog appearing above the Server / Arcade section label.
 
 -------------------------------------------------------------------
 
