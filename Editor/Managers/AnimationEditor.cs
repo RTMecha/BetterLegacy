@@ -750,7 +750,7 @@ namespace BetterLegacy.Editor.Managers
                                         RTEditor.inst.ShowWarningPopup("The animation group already exists in this prefab, do you wish to update it?", () =>
                                         {
                                             var orig = prefabPanel.Item.animationGroups[animationGroupIndex];
-                                            orig.CopyData(animationGroup);
+                                            orig.CopyData(animationGroup, false);
                                             orig.PrefabID = prefabPanel.Item.id;
                                             orig.PrefabInstanceID = string.Empty;
                                             EditorManager.inst.DisplayNotification($"Added animation group to prefab!", 2f, EditorManager.NotificationType.Success);
@@ -910,7 +910,7 @@ namespace BetterLegacy.Editor.Managers
                                     RTEditor.inst.ShowWarningPopup("The animation already exists in this prefab, do you wish to update it?", () =>
                                     {
                                         var orig = prefabPanel.Item.animations[animationIndex];
-                                        orig.CopyData(animation);
+                                        orig.CopyData(animation, false);
                                         orig.PrefabID = prefabPanel.Item.id;
                                         orig.PrefabInstanceID = string.Empty;
                                         EditorManager.inst.DisplayNotification($"Added animation to prefab!", 2f, EditorManager.NotificationType.Success);
