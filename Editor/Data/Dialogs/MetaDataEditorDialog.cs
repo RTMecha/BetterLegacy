@@ -586,7 +586,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             changelogLayoutElement.preferredHeight = 140f;
             EditorThemeManager.ApplyInputField(ChangelogField);
 
-            new Labels(Labels.InitSettings.Default.Parent(settings.transform), new Label("Server Visibility"));
+            new Labels(Labels.InitSettings.Default.Parent(server.transform), new Label("Server Visibility"));
             ServerVisibilityDropdown = GenerateDropdown(server.transform, "Server Visibility", CoreHelper.ToOptionData<ServerVisibility>());
 
             new Labels(Labels.InitSettings.Default.Parent(server.transform), "Collaborators");
