@@ -1,4 +1,4 @@
-﻿# snapshot-2026.?.? - (Story Playtest) [???]
+﻿# snapshot-2026.6.1 - (Story Playtest) [Jun 2, 2026]
 ## Features
 ### Core
 - Added setMask and setMaskOther modifiers. This can make objects only appear over other objects or not appear over other objects depending on the set values.
@@ -14,6 +14,7 @@
 ## Fixes
 - Hopefully fixed some text not appearing on things like tags and editor layer fields.
 - Fixed pasting keyframes in the Animation Editor not pasting on the cursor.
+- Fixed the playerVelocityXAll modifier being invalid.
 
 -------------------------------------------------------------------
 
