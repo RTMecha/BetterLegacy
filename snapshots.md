@@ -9,6 +9,7 @@
 ## Changes
 ### Editor
 - Editor freecam values now save & load per level.
+- Animations should now copy the custom keyframe UI.
 
 ## Fixes
 - Fixed animations and animation groups not retaining their ID if overridden.
