@@ -1,4 +1,14 @@
-﻿# snapshot-2026.6.1 - (Story Playtest) [Jun 2, 2026]
+﻿# snapshot-2026.6.2 - (Story Playtest) [???]
+## Features
+### Editor
+- QOL for prefab picker, you can now select a timeline object that represents the prefab.
+
+## Fixes
+- Fixed animations and animation groups not retaining their ID if overridden.
+
+-------------------------------------------------------------------
+
+# snapshot-2026.6.1 - (Story Playtest) [Jun 2, 2026]
 ## Features
 ### Core
 - Added setMask and setMaskOther modifiers. This can make objects only appear over other objects or not appear over other objects depending on the set values.
