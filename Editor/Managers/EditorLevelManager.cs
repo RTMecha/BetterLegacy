@@ -1027,6 +1027,8 @@ namespace BetterLegacy.Editor.Managers
 
             yield return CoroutineHelper.StartCoroutine(AssetEditor.inst.ILoadAssets());
 
+            RTPrefabEditor.inst.RefreshInternalPrefabs();
+
             CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
 
             AchievementEditor.inst.LoadAchievements();
