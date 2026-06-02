@@ -452,7 +452,7 @@ namespace BetterLegacy.Editor.Managers
             if (!CurrentProfile)
                 return;
 
-            if (!CoreHelper.IsUsingInputField && EditorManager.inst.isEditing && Application.isFocused && (EditorConfig.Instance.AllowEditorKeybindsWithEditorCam.Value || !RTEditor.inst.Freecam))
+            if (!CoreHelper.IsUsingInputField && EditorManager.inst.isEditing && Application.isFocused && (EditorConfig.Instance.AllowEditorKeybindsWithEditorCam.Value || !RTEditor.inst.editorInfo.freecamEnabled))
             {
                 var keybinds = CurrentProfile.keybinds;
                 foreach (var keybind in keybinds)
@@ -1446,6 +1446,9 @@ namespace BetterLegacy.Editor.Managers
             PlayerManager.RespawnPlayers();
 
             RTEventManager.inst?.datamosh?.Reset();
+
+            if (EditorConfig.Instance.ResetFreecamOnUpdateEverything.Value)
+                RTEditor.inst.editorInfo?.ResetFreecam();
         }
 
         public void UpdateObject(Keybind keybind)

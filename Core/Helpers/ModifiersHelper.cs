@@ -9310,14 +9310,14 @@ namespace BetterLegacy.Core.Helpers
                     camera.transform.localEulerAngles = Vector3.zero;
                 }
 
-                var editorCam = RTEditor.inst && RTEditor.inst.Freecam;
+                var editorCam = RTEditor.inst && RTEditor.inst.editorInfo.freecamEnabled;
 
                 RTLevel.Current.eventEngine.SetCameraRotation(editorCam ?
-                    new Vector3(RTLevel.Current.eventEngine.editorCamPerRotate.x, RTLevel.Current.eventEngine.editorCamPerRotate.y, RTLevel.Current.eventEngine.editorCamRotate) :
+                    new Vector3(RTEditor.inst.editorInfo.freecamPerRotate.x, RTEditor.inst.editorInfo.freecamPerRotate.y, RTEditor.inst.editorInfo.freecamRotate) :
                     new Vector3(RTLevel.Current.eventEngine.camRotOffset.x, RTLevel.Current.eventEngine.camRotOffset.y, EventManager.inst.camRot));
 
                 RTLevel.Current.eventEngine.SetCameraPosition(editorCam ?
-                    RTLevel.Current.eventEngine.editorCamPosition :
+                    RTEditor.inst.editorInfo.freecamPosition :
                     EventManager.inst.camPos);
 
                 // fixes bg camera position being offset if rotated for some reason...
@@ -9325,7 +9325,7 @@ namespace BetterLegacy.Core.Helpers
                 RTLevel.Cameras.BG.transform.SetLocalPositionY(0f);
 
                 RTLevel.Current.eventEngine.SetZoom(editorCam ?
-                    RTLevel.Current.eventEngine.editorCamZoom :
+                    RTEditor.inst.editorInfo.freecamZoom :
                     EventManager.inst.camZoom);
 
                 RTLevel.Current.eventEngine.UpdateShake();
@@ -9418,14 +9418,14 @@ namespace BetterLegacy.Core.Helpers
                 camera.transform.localPosition = Vector3.zero;
                 camera.transform.localEulerAngles = Vector3.zero;
 
-                var editorCam = RTEditor.inst && RTEditor.inst.Freecam;
+                var editorCam = RTEditor.inst && RTEditor.inst.editorInfo.freecamEnabled;
 
                 RTLevel.Current.eventEngine.SetCameraRotation(editorCam ?
-                    new Vector3(RTLevel.Current.eventEngine.editorCamPerRotate.x, RTLevel.Current.eventEngine.editorCamPerRotate.y, RTLevel.Current.eventEngine.editorCamRotate) :
+                    new Vector3(RTEditor.inst.editorInfo.freecamPerRotate.x, RTEditor.inst.editorInfo.freecamPerRotate.y, RTEditor.inst.editorInfo.freecamRotate) :
                     new Vector3(RTLevel.Current.eventEngine.camRotOffset.x, RTLevel.Current.eventEngine.camRotOffset.y, EventManager.inst.camRot));
 
                 RTLevel.Current.eventEngine.SetCameraPosition(editorCam ?
-                    RTLevel.Current.eventEngine.editorCamPosition :
+                    RTEditor.inst.editorInfo.freecamPosition :
                     EventManager.inst.camPos);
 
                 // fixes bg camera position being offset if rotated for some reason...
@@ -9433,7 +9433,7 @@ namespace BetterLegacy.Core.Helpers
                 RTLevel.Cameras.BG.transform.SetLocalPositionY(0f);
 
                 RTLevel.Current.eventEngine.SetZoom(editorCam ?
-                    RTLevel.Current.eventEngine.editorCamZoom :
+                    RTEditor.inst.editorInfo.freecamZoom :
                     EventManager.inst.camZoom);
 
                 RTLevel.Current.eventEngine.UpdateShake();

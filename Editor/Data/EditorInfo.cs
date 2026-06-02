@@ -132,6 +132,35 @@ namespace BetterLegacy.Editor.Data
 
         #endregion
 
+        #region Freecam
+
+        /// <summary>
+        /// If the editor freecam is enabled.
+        /// </summary>
+        public bool freecamEnabled;
+
+        /// <summary>
+        /// Freecam position.
+        /// </summary>
+        public Vector2 freecamPosition = Vector2.zero;
+
+        /// <summary>
+        /// Freecam zoom.
+        /// </summary>
+        public float freecamZoom = 20f;
+
+        /// <summary>
+        /// Freecam rotation.
+        /// </summary>
+        public float freecamRotate = 0f;
+
+        /// <summary>
+        /// Freecam perspective rotation.
+        /// </summary>
+        public Vector2 freecamPerRotate = Vector2.zero;
+
+        #endregion
+
         float progress;
         /// <summary>
         /// Completion progress of the level in the editor.
@@ -228,6 +257,11 @@ namespace BetterLegacy.Editor.Data
             cutscene = orig.cutscene;
             cutsceneDestination = orig.cutsceneDestination;
             customLocation = orig.customLocation;
+            freecamEnabled = orig.freecamEnabled;
+            freecamPosition = orig.freecamPosition;
+            freecamZoom = orig.freecamZoom;
+            freecamRotate = orig.freecamRotate;
+            freecamPerRotate = orig.freecamPerRotate;
             Progress = orig.Progress;
             time = orig.time;
             prefabPath = orig.prefabPath;
@@ -335,14 +369,24 @@ namespace BetterLegacy.Editor.Data
                 CoreHelper.LogException(ex);
             }
 
+            if (jn["freecam"] != null)
+            {
+                if (jn["freecam"]["enabled"] != null)
+                    freecamEnabled = jn["freecam"]["enabled"].AsBool;
+                if (jn["freecam"]["pos"] != null)
+                    freecamPosition = jn["freecam"]["pos"].AsVector2();
+                if (jn["freecam"]["zoom"] != null)
+                    freecamZoom = jn["freecam"]["zoom"].AsFloat;
+                if (jn["freecam"]["rot"] != null)
+                    freecamRotate = jn["freecam"]["rot"].AsFloat;
+                if (jn["freecam"]["per_rot"] != null)
+                    freecamPerRotate = jn["freecam"]["per_rot"].AsVector2();
+            }
+
             if (jn["misc"] != null)
             {
                 if (jn["misc"]["capture_settings"] != null)
                     captureSettings?.ReadJSON(jn["misc"]["capture_settings"]);
-                if (jn["capture"] != null)
-                    captureSettings?.ReadJSON(jn["capture"]);
-                if (jn["annotation"] != null)
-                    annotationSettings?.ReadJSON(jn["annotation"]);
 
                 if (jn["misc"]["bpm_analyzed"] != null)
                     analyzedBPM = jn["misc"]["bpm_analyzed"].AsBool;
@@ -371,6 +415,11 @@ namespace BetterLegacy.Editor.Data
                 if (jn["misc"]["prefab_object_data"] != null && RTPrefabEditor.inst)
                     RTPrefabEditor.inst.copiedInstanceData = PrefabObject.Parse(jn["misc"]["prefab_object_data"]);
             }
+
+            if (jn["capture"] != null)
+                captureSettings?.ReadJSON(jn["capture"]);
+            if (jn["annotation"] != null)
+                annotationSettings?.ReadJSON(jn["annotation"]);
         }
 
         public override JSONNode ToJSON()
@@ -413,6 +462,17 @@ namespace BetterLegacy.Editor.Data
                         jn["story"]["cutscene_destination"] = cutsceneDestination.ToString().ToLower();
                 }
             }
+
+            if (freecamEnabled)
+                jn["freecam"]["enabled"] = freecamEnabled;
+            if (freecamPosition != Vector2.zero)
+                jn["freecam"]["pos"] = freecamPosition.ToJSON();
+            if (freecamZoom != 20f)
+                jn["freecam"]["zoom"] = freecamZoom;
+            if (freecamRotate != 0f)
+                jn["freecam"]["rot"] = freecamRotate;
+            if (freecamPerRotate != Vector2.zero)
+                jn["freecam"]["per_rot"] = freecamPerRotate.ToJSON();
 
             if (captureSettings)
                 jn["capture"] = captureSettings.ToJSON();
@@ -480,13 +540,63 @@ namespace BetterLegacy.Editor.Data
             // don't apply paths since it's just an override.
         }
 
+        /// <summary>
+        /// Gets an editor group.
+        /// </summary>
+        /// <param name="name">Name of the group.</param>
+        /// <param name="tags">Object tags.</param>
+        /// <param name="prefabable">Prefabable object reference.</param>
+        /// <returns>Returns an <see cref="EditorGroup"/> if a matching one is found, otherwise returns <see langword="null"/></returns>
         public EditorGroup GetGroup(string name, List<string> tags, IPrefabable prefabable) => editorGroups.Find(x => x.Matches(name, tags, prefabable));
 
+        /// <summary>
+        /// Tries to get an editor group.
+        /// </summary>
+        /// <param name="name">Name of the group.</param>
+        /// <param name="tags">Object tags.</param>
+        /// <param name="prefabable">Prefabable object reference.</param>
+        /// <param name="editorGroup"><see cref="EditorGroup"/> result.</param>
+        /// <returns>Returns <see langword="true"/> if an editor group was found, otherwise returns <see langword="false"/></returns>
         public bool TryGetGroup(string name, List<string> tags, IPrefabable prefabable, out EditorGroup editorGroup) => editorGroups.TryFind(x => x.Matches(name, tags, prefabable), out editorGroup);
 
+        /// <summary>
+        /// Gets an editor group.
+        /// </summary>
+        /// <param name="timelineObject">Timeline Object reference.</param>
+        /// <returns>Returns an <see cref="EditorGroup"/> if a matching one is found, otherwise returns <see langword="null"/></returns>
         public EditorGroup GetGroup(TimelineObject timelineObject) => GetGroup(timelineObject.Group, timelineObject.Tags, timelineObject.AsPrefabable());
 
+        /// <summary>
+        /// Tries to get an editor group.
+        /// </summary>
+        /// <param name="timelineObject">Timeline Object reference.</param>
+        /// <param name="editorGroup"><see cref="EditorGroup"/> result.</param>
+        /// <returns>Returns <see langword="true"/> if an editor group was found, otherwise returns <see langword="false"/></returns>
         public bool TryGetGroup(TimelineObject timelineObject, out EditorGroup editorGroup) => TryGetGroup(timelineObject.Group, timelineObject.Tags, timelineObject.AsPrefabable(), out editorGroup);
+
+        /// <summary>
+        /// Resets the editor freecam values to the default.
+        /// </summary>
+        public void ResetFreecam()
+        {
+            freecamPosition = Vector2.zero;
+            freecamZoom = 20f;
+            freecamRotate = 0f;
+            freecamPerRotate = Vector2.zero;
+        }
+
+        /// <summary>
+        /// Resets the editor freecam values to the current values.
+        /// </summary>
+        public void ResetFreecamToCurrent()
+        {
+            freecamPosition = EventManager.inst.camPos;
+            if (!float.IsNaN(EventManager.inst.camZoom))
+                freecamZoom = EventManager.inst.camZoom;
+            if (!float.IsNaN(EventManager.inst.camRot))
+                freecamRotate = EventManager.inst.camRot;
+            freecamPerRotate = Core.Runtime.RTLevel.Current?.eventEngine?.camRotOffset ?? Vector2.zero;
+        }
 
         #endregion
     }

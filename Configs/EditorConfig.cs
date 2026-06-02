@@ -498,6 +498,11 @@ namespace BetterLegacy.Configs
         /// </summary>
         public Setting<bool> ShowCameraArea { get; set; }
 
+        /// <summary>
+        /// If freecam should be reset when the runtime is updated.
+        /// </summary>
+        public Setting<bool> ResetFreecamOnUpdateEverything { get; set; }
+
         #endregion
 
         #region Project Planner
@@ -1008,6 +1013,7 @@ namespace BetterLegacy.Configs
             EditorCamUseKeys = Bind(this, FREECAM, "Editor Camera Use Keys", false, "If the editor camera can use your keyboard or not.");
             EditorCamResetValues = Bind(this, FREECAM, "Editor Camera Reset Values", true, "If the offset values should reset when the editor camera is disabled.");
             ShowCameraArea = Bind(this, FREECAM, "Show Camera Area", true, "If the camera area should display when the editor camera is on.");
+            ResetFreecamOnUpdateEverything = Bind(this, FREECAM, "Reset Editor Camera On Update Everything", false, "If freecam should be reset when the runtime is updated.");
 
             #endregion
 

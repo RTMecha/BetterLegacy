@@ -780,17 +780,17 @@ namespace BetterLegacy.Core.Runtime.Events
             if (float.IsNaN(EventManager.inst.camZoom) || EventManager.inst.camZoom == 0f)
                 EventManager.inst.camZoom = 20f;
 
-            var editorCam = RTEditor.inst && RTEditor.inst.Freecam;
+            var editorCam = RTEditor.inst && RTEditor.inst.editorInfo.freecamEnabled;
 
-            SetCameraRotation(editorCam ? new Vector3(editorCamPerRotate.x, editorCamPerRotate.y, editorCamRotate) : new Vector3(camRotOffset.x, camRotOffset.y, EventManager.inst.camRot));
+            SetCameraRotation(editorCam ? new Vector3(RTEditor.inst.editorInfo.freecamPerRotate.x, RTEditor.inst.editorInfo.freecamPerRotate.y, RTEditor.inst.editorInfo.freecamRotate) : new Vector3(camRotOffset.x, camRotOffset.y, EventManager.inst.camRot));
 
-            SetCameraPosition(editorCam ? editorCamPosition : EventManager.inst.camPos);
+            SetCameraPosition(editorCam ? RTEditor.inst.editorInfo.freecamPosition : EventManager.inst.camPos);
 
             // fixes bg camera position being offset if rotated for some reason...
             RTLevel.Cameras.BG.transform.SetLocalPositionX(0f);
             RTLevel.Cameras.BG.transform.SetLocalPositionY(0f);
 
-            SetZoom(editorCam ? editorCamZoom : EventManager.inst.camZoom);
+            SetZoom(editorCam ? RTEditor.inst.editorInfo.freecamZoom : EventManager.inst.camZoom);
 
             #endregion
 
@@ -2259,16 +2259,16 @@ namespace BetterLegacy.Core.Runtime.Events
         /// </summary>
         public void UpdateEditorCamera()
         {
-            if (!EditorManager.inst)
+            if (!EditorManager.inst || !RTEditor.inst || !RTEditor.inst.editorInfo)
                 return;
 
             var editorCamera = RTEventManager.inst.editorCamera;
             var editorSpeed = EditorConfig.Instance.EditorCamSpeed.Value;
 
             if (editorCamera.Activate.WasPressed)
-                RTEditor.inst.Freecam = !RTEditor.inst.Freecam;
+                RTEditor.inst.editorInfo.freecamEnabled = !RTEditor.inst.editorInfo.freecamEnabled;
 
-            if (RTEditor.inst.Freecam)
+            if (RTEditor.inst.editorInfo.freecamEnabled)
             {
                 float multiplyController = 1f;
 
@@ -2284,18 +2284,18 @@ namespace BetterLegacy.Core.Runtime.Events
                 if (vector.magnitude > 1f)
                     vector = vector.normalized;
 
-                editorCamPosition.x += vector.x;
-                editorCamPosition.y += vector.y;
+                RTEditor.inst.editorInfo.freecamPosition.x += vector.x;
+                RTEditor.inst.editorInfo.freecamPosition.y += vector.y;
 
                 if (editorCamera.ZoomOut.IsPressed)
-                    editorCamZoom += 0.5f * editorSpeed * multiplyController;
+                    RTEditor.inst.editorInfo.freecamZoom += 0.5f * editorSpeed * multiplyController;
                 if (editorCamera.ZoomIn.IsPressed)
-                    editorCamZoom -= 0.5f * editorSpeed * multiplyController;
+                    RTEditor.inst.editorInfo.freecamZoom -= 0.5f * editorSpeed * multiplyController;
 
                 if (editorCamera.RotateAdd.IsPressed)
-                    editorCamRotate += 0.1f * editorSpeed * multiplyController;
+                    RTEditor.inst.editorInfo.freecamRotate += 0.1f * editorSpeed * multiplyController;
                 if (editorCamera.RotateSub.IsPressed)
-                    editorCamRotate -= 0.1f * editorSpeed * multiplyController;
+                    RTEditor.inst.editorInfo.freecamRotate -= 0.1f * editorSpeed * multiplyController;
 
                 var xRot = editorCamera.Rotate.Vector.x;
                 var yRot = editorCamera.Rotate.Vector.y;
@@ -2303,18 +2303,11 @@ namespace BetterLegacy.Core.Runtime.Events
                 if (vectorRot.magnitude > 1f)
                     vectorRot = vectorRot.normalized;
 
-                editorCamPerRotate.x += vectorRot.x;
-                editorCamPerRotate.y += vectorRot.y;
+                RTEditor.inst.editorInfo.freecamPerRotate.x += vectorRot.x;
+                RTEditor.inst.editorInfo.freecamPerRotate.y += vectorRot.y;
 
                 if (editorCamera.ResetOffsets.WasPressed)
-                {
-                    editorCamPosition = EventManager.inst.camPos;
-                    if (!float.IsNaN(EventManager.inst.camZoom))
-                        editorCamZoom = EventManager.inst.camZoom;
-                    if (!float.IsNaN(EventManager.inst.camRot))
-                        editorCamRotate = EventManager.inst.camRot;
-                    editorCamPerRotate = Vector2.zero;
-                }
+                    RTEditor.inst.editorInfo.ResetFreecamToCurrent();
 
                 if (CoreHelper.IsUsingInputField || !EditorConfig.Instance.EditorCamUseKeys.Value)
                     return;
@@ -2327,74 +2320,40 @@ namespace BetterLegacy.Core.Runtime.Events
                     multiply = 2f;
 
                 if (Input.GetKey(KeyCode.A))
-                    editorCamPosition.x -= 0.1f * editorSpeed * multiply;
+                    RTEditor.inst.editorInfo.freecamPosition.x -= 0.1f * editorSpeed * multiply;
                 if (Input.GetKey(KeyCode.D))
-                    editorCamPosition.x += 0.1f * editorSpeed * multiply;
+                    RTEditor.inst.editorInfo.freecamPosition.x += 0.1f * editorSpeed * multiply;
                 if (Input.GetKey(KeyCode.W))
-                    editorCamPosition.y += 0.1f * editorSpeed * multiply;
+                    RTEditor.inst.editorInfo.freecamPosition.y += 0.1f * editorSpeed * multiply;
                 if (Input.GetKey(KeyCode.S))
-                    editorCamPosition.y -= 0.1f * editorSpeed * multiply;
+                    RTEditor.inst.editorInfo.freecamPosition.y -= 0.1f * editorSpeed * multiply;
 
                 if (Input.GetKey(KeyCode.KeypadPlus) || Input.GetKey(KeyCode.Equals))
-                    editorCamZoom += 0.1f * editorSpeed * multiply;
+                    RTEditor.inst.editorInfo.freecamZoom += 0.1f * editorSpeed * multiply;
                 if (Input.GetKey(KeyCode.KeypadMinus) || Input.GetKey(KeyCode.Minus))
-                    editorCamZoom -= 0.1f * editorSpeed * multiply;
+                    RTEditor.inst.editorInfo.freecamZoom -= 0.1f * editorSpeed * multiply;
 
                 if (Input.GetKey(KeyCode.Keypad4))
-                    editorCamRotate += 0.1f * editorSpeed * multiply;
+                    RTEditor.inst.editorInfo.freecamRotate += 0.1f * editorSpeed * multiply;
                 if (Input.GetKey(KeyCode.Keypad6))
-                    editorCamRotate -= 0.1f * editorSpeed * multiply;
+                    RTEditor.inst.editorInfo.freecamRotate -= 0.1f * editorSpeed * multiply;
 
                 if (Input.GetKey(KeyCode.LeftArrow))
-                    editorCamPerRotate.y += 0.1f * editorSpeed * multiply;
+                    RTEditor.inst.editorInfo.freecamPerRotate.y += 0.1f * editorSpeed * multiply;
                 if (Input.GetKey(KeyCode.RightArrow))
-                    editorCamPerRotate.y -= 0.1f * editorSpeed * multiply;
+                    RTEditor.inst.editorInfo.freecamPerRotate.y -= 0.1f * editorSpeed * multiply;
 
                 if (Input.GetKey(KeyCode.UpArrow))
-                    editorCamPerRotate.x += 0.1f * editorSpeed * multiply;
+                    RTEditor.inst.editorInfo.freecamPerRotate.x += 0.1f * editorSpeed * multiply;
                 if (Input.GetKey(KeyCode.DownArrow))
-                    editorCamPerRotate.x -= 0.1f * editorSpeed * multiply;
+                    RTEditor.inst.editorInfo.freecamPerRotate.x -= 0.1f * editorSpeed * multiply;
 
                 if (Input.GetKeyDown(KeyCode.Keypad5))
-                {
-                    editorCamPosition = EventManager.inst.camPos;
-                    if (!float.IsNaN(EventManager.inst.camZoom))
-                        editorCamZoom = EventManager.inst.camZoom;
-                    if (!float.IsNaN(EventManager.inst.camRot))
-                        editorCamRotate = EventManager.inst.camRot;
-                    editorCamPerRotate = Vector2.zero;
-                }
+                    RTEditor.inst.editorInfo.ResetFreecamToCurrent();
             }
             else if (EditorConfig.Instance.EditorCamResetValues.Value)
-            {
-                editorCamPosition = EventManager.inst.camPos;
-                if (!float.IsNaN(EventManager.inst.camZoom))
-                    editorCamZoom = EventManager.inst.camZoom;
-                if (!float.IsNaN(EventManager.inst.camRot))
-                    editorCamRotate = EventManager.inst.camRot;
-                editorCamPerRotate = Vector2.zero;
-            }
+                RTEditor.inst.editorInfo.ResetFreecamToCurrent();
         }
-
-        /// <summary>
-        /// Editor offset camera position.
-        /// </summary>
-        public Vector2 editorCamPosition = Vector2.zero;
-
-        /// <summary>
-        /// Editor offset camera zoom.
-        /// </summary>
-        public float editorCamZoom = 20f;
-
-        /// <summary>
-        /// Editor offset camera rotation.
-        /// </summary>
-        public float editorCamRotate = 0f;
-
-        /// <summary>
-        /// Editor offset camera perspective rotation.
-        /// </summary>
-        public Vector2 editorCamPerRotate = Vector2.zero;
 
         #endregion
 

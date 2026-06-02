@@ -52,7 +52,7 @@ namespace BetterLegacy.Editor.Components
                 .Pivot(1f, 1f)
                 .SizeDelta(400f, 32f)));
             indicatorParent = parent.GameObject.transform.AsRT();
-            AddIndicator(new Indicator(SpriteHelper.LoadSprite(AssetPack.GetFile("core/sprites/icons/camera.png")), "Freecam Indicator", () => RTEditor.inst.Freecam));
+            AddIndicator(new Indicator(SpriteHelper.LoadSprite(AssetPack.GetFile("core/sprites/icons/camera.png")), "Freecam Indicator", () => RTEditor.inst.editorInfo.freecamEnabled));
             AddIndicator(new Indicator(SpriteHelper.LoadSprite(AssetPack.GetFile("core/sprites/icons/operations/flag_start.png")), "Marker Looping Indicator", () => RTMarkerEditor.inst.markerLooping));
             AddIndicator(new Indicator(SpriteHelper.LoadSprite(AssetPack.GetFile("core/sprites/icons/no_pointer.png")), "Disabled Preview Selection Indicator", () => !EditorConfig.Instance.SelectObjectsInPreview.Value));
         }

@@ -133,11 +133,6 @@ namespace BetterLegacy.Editor.Managers
         #region Preview
 
         /// <summary>
-        /// If the editor freecam is enabled.
-        /// </summary>
-        public bool Freecam { get; set; }
-
-        /// <summary>
         /// If the mouse cursor is over the level preview.
         /// </summary>
         public static bool MouseOverPreview => RTLevel.Cameras.FG.rect.Contains(new Vector2(Input.mousePosition.x / Screen.width, Input.mousePosition.y / Screen.height));
@@ -1653,24 +1648,24 @@ namespace BetterLegacy.Editor.Managers
                     {
                         draggingCamera = true;
                         startDragPos = Input.mousePosition;
-                        cachePos = RTLevel.Current.eventEngine.editorCamPosition;
+                        cachePos = editorInfo.freecamPosition;
 
                         if (EditorConfig.Instance.EnableEditorCameraOnDrag.Value)
-                            Freecam = true;
+                            editorInfo.freecamEnabled = true;
                     }
 
-                    if (Freecam)
+                    if (editorInfo.freecamEnabled)
                     {
                         var amount = Input.GetKey(EditorConfig.Instance.ScrollwheelLargeAmountKey.Value) ? 10f : Input.GetKey(EditorConfig.Instance.ScrollwheelSmallAmountKey.Value) ? 1f : 5f;
 
                         if (Input.mouseScrollDelta.y > 0f)
-                            RTLevel.Current.eventEngine.editorCamZoom -= amount;
+                            editorInfo.freecamZoom -= amount;
                         if (Input.mouseScrollDelta.y < 0f)
-                            RTLevel.Current.eventEngine.editorCamZoom += amount;
+                            editorInfo.freecamZoom += amount;
                     }
                 }
 
-                if (!Input.GetMouseButton((int)PointerEventData.InputButton.Middle) || !Freecam)
+                if (!Input.GetMouseButton((int)PointerEventData.InputButton.Middle) || !editorInfo.freecamEnabled)
                     draggingCamera = false;
 
                 if (draggingCamera)
@@ -1679,18 +1674,18 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var amount = Input.GetKey(EditorConfig.Instance.ScrollwheelLargeAmountKey.Value) ? 40f : Input.GetKey(EditorConfig.Instance.ScrollwheelSmallAmountKey.Value) ? 500f : 100f;
 
-                        var val = RTLevel.Current.eventEngine.editorCamZoom / amount;
+                        var val = editorInfo.freecamZoom / amount;
                         var mousePosition = (startDragPos - (Vector2)Input.mousePosition) * val;
-                        RTLevel.Current.eventEngine.editorCamRotate += mousePosition.x;
+                        editorInfo.freecamRotate += mousePosition.x;
                         startDragPos = Input.mousePosition;
                     }
                     else
                     {
                         var amount = Input.GetKey(EditorConfig.Instance.ScrollwheelLargeAmountKey.Value) ? 40f : Input.GetKey(EditorConfig.Instance.ScrollwheelSmallAmountKey.Value) ? 500f : 100f;
 
-                        var val = RTLevel.Current.eventEngine.editorCamZoom / amount;
+                        var val = editorInfo.freecamZoom / amount;
                         var mousePosition = (startDragPos - (Vector2)Input.mousePosition) * val;
-                        RTLevel.Current.eventEngine.editorCamPosition += mousePosition;
+                        editorInfo.freecamPosition += mousePosition;
                         startDragPos = Input.mousePosition;
                     }
                 }
@@ -1759,7 +1754,7 @@ namespace BetterLegacy.Editor.Managers
 
         void UpdateCameraArea()
         {
-            var enabled = Freecam && EditorConfig.Instance.ShowCameraArea.Value && EditorManager.inst.hasLoadedLevel;
+            var enabled = editorInfo.freecamEnabled && EditorConfig.Instance.ShowCameraArea.Value && EditorManager.inst.hasLoadedLevel;
             if (editorCameraEnabled != enabled)
             {
                 editorCameraEnabled = enabled;

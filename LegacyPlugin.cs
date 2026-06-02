@@ -262,8 +262,8 @@ namespace BetterLegacy
 
             if (ProjectArrhythmia.State.InEditor && Input.GetKeyDown(EditorConfig.Instance.EditorCamToggle.Value))
             {
-                RTEditor.inst.Freecam = !RTEditor.inst.Freecam; // Enables / disables editor camera via the custom keybind.
-                EditorManager.inst.DisplayNotification($"{(RTEditor.inst.Freecam ? "Enabled" : "Disabled")} editor freecam.", 2f);
+                RTEditor.inst.editorInfo.freecamEnabled = !RTEditor.inst.editorInfo.freecamEnabled; // Enables / disables editor camera via the custom keybind.
+                EditorManager.inst.DisplayNotification($"{(RTEditor.inst.editorInfo.freecamEnabled ? "Enabled" : "Disabled")} editor freecam.", 2f);
             }
 
             if (Input.GetKeyDown(EventsConfig.Instance.ShowGUIToggle.Value))
