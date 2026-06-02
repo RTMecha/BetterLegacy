@@ -1401,6 +1401,9 @@ namespace BetterLegacy.Editor.Managers
             EditorHelper.SetComplexity(Dialog.AnimIDField.gameObject, "beatmap_object/animation_id", Complexity.Advanced);
             Dialog.AnimIDField.SetTextWithoutNotify(beatmapObject.animID);
             Dialog.AnimIDField.onValueChanged.NewListener(_val => beatmapObject.animID = _val);
+            Dialog.AnimIDField.gameObject.GetOrAddComponent<InputFieldSwapper>().Init(Dialog.AnimIDField, InputFieldSwapper.Type.String);
+            EditorContextMenu.AddContextMenu(Dialog.AnimIDField.gameObject,
+                EditorContextMenu.GetNameFunctions(Dialog.AnimIDField));
 
             CoroutineHelper.StartCoroutine(Dialog.ModifiersDialog.RenderModifiers(beatmapObject));
         }
