@@ -1146,31 +1146,17 @@ namespace BetterLegacy.Editor.Managers
             if (prefabable != null && prefabable.FromPrefab && prefabable.TryGetPrefabObject(out PrefabObject result) && result.fromModifier)
                 return;
 
-            //if (timelineObject.isBeatmapObject)
-            //{
-            //    var beatmapObject = timelineObject.GetData<BeatmapObject>();
-            //    if (beatmapObject.fromPrefab && beatmapObject.TryGetPrefabObject(out PrefabObject result) && result.fromModifier)
-            //        return;
-            //}
-            
-            //if (timelineObject.isBackgroundObject)
-            //{
-            //    var backgroundObject = timelineObject.GetData<BackgroundObject>();
-            //    if (backgroundObject.fromPrefab && backgroundObject.TryGetPrefabObject(out PrefabObject result) && result.fromModifier)
-            //        return;
-            //}
-            
-            //if (timelineObject.isPrefabObject)
-            //{
-            //    var prefabObject = timelineObject.GetData<PrefabObject>();
-            //    if (prefabObject.fromPrefab && prefabObject.TryGetPrefabObject(out PrefabObject result) && result.fromModifier)
-            //        return;
-            //}
-
             if (onSelectTimelineObject != null)
             {
                 onSelectTimelineObject(timelineObject);
                 onSelectTimelineObject = null;
+                return;
+            }
+
+            if (RTPrefabEditor.inst.onSelectPrefab != null && prefabable != null && !string.IsNullOrEmpty(prefabable.PrefabID) && prefabable.GetPrefab() is Prefab prefab && prefab.prefabPanel)
+            {
+                RTPrefabEditor.inst.onSelectPrefab.Invoke(prefab.prefabPanel);
+                RTPrefabEditor.inst.onSelectPrefab = null;
                 return;
             }
 
