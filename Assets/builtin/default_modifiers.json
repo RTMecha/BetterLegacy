@@ -2062,7 +2062,7 @@
       }, // playerVelocityXIndex
       {
         "type": 1,
-        "value": "playerVelocityXAll",
+        "name": "playerVelocityXAll",
         "values": [ "10" ],
         "const": "False",
         "compat": "level_control"
