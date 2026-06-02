@@ -304,6 +304,7 @@ namespace BetterLegacy.Editor.Managers
         {
             var animation = new PAAnimation(beatmapObject.name, "This is the default description!");
             animation.CopyAnimatableData(beatmapObject);
+            animation.EditorData.CopyData(beatmapObject.EditorData);
             animation.ReferenceID = beatmapObject.animID ?? string.Empty;
             return animation;
         }
