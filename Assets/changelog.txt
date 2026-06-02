@@ -1,15 +1,17 @@
-# snapshot-2026.5.9 - (Story Playtest) [May 28, 2026]
+# snapshot-2026.6.1 - (Story Playtest) [Jun 2, 2026]
 ## Features
 ### Core
-- Added a loop and end time values to the runAnimations modifier.
-- Added getQuickElement variable modifier. This interpolates a Quick Element and passes the interpolated text.
+- Added setMask and setMaskOther modifiers. This can make objects only appear over other objects or not appear over other objects depending on the set values.
+- Added setPlayerMask modifiers. Similar to setMask, but for players.
 
 ### Editor
-- Animation Groups and Animations can now be added to prefabs.
-- The animation editor cursor now syncs to whatever the animation is animating to.
-- Added "Run Animations Set Cursor Time" setting to Config Manager > Editor > Modifiers. With this on, the animation editor cursor gets fixed to whatever time the runAnimation modifier is animating to. With this off, the runAnimations modifier uses the animation editor cursor time.
-- Added ToggleRunAnimationsSetCursorTime keybind.
+- Added Clear Keyframes context menu button to animations.
 
 ## Changes
-### Core
-- Overhauled Quick Element system to specifically use Asset Packs.
+### Editor
+- TogglePlayingSong keybind function is no longer prevented in the Animation Editor if no associated object exists.
+
+## Fixes
+- Hopefully fixed some text not appearing on things like tags and editor layer fields.
+- Fixed pasting keyframes in the Animation Editor not pasting on the cursor.
+- Fixed the playerVelocityXAll modifier being invalid.
