@@ -209,7 +209,6 @@ namespace BetterLegacy.Editor.Managers
         /// Applies an animation to selected objects that match the animation ID.
         /// </summary>
         /// <param name="animation">Animation to apply.</param>
-        /// <param name="update">If sequences should be recached.</param>
         public void ApplyAnimationToSelected(PAAnimation animation)
         {
             foreach (var timelineObject in EditorTimeline.inst.SelectedBeatmapObjects)
@@ -222,6 +221,53 @@ namespace BetterLegacy.Editor.Managers
                     RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                 }
             }
+        }
+
+        /// <summary>
+        /// Pastes animations to the selected objects.
+        /// </summary>
+        /// <param name="animations">List of animations to paste.</param>
+        public void PasteAnimationsToSelected(List<PAAnimation> animations)
+        {
+            foreach (var animation in animations)
+                PasteAnimationToSelected(animation, false);
+            if (ObjectEditor.inst && ObjectEditor.inst.Dialog && ObjectEditor.inst.Dialog.IsCurrent)
+                ObjectEditor.inst.RenderDialog(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>());
+        }
+
+        /// <summary>
+        /// Pastes an animation to selected objects that match the animation ID.
+        /// </summary>
+        /// <param name="animation">Animation to paste.</param>
+        public void PasteAnimationToSelected(PAAnimation animation, bool renderDialog = true)
+        {
+            var time = AudioManager.inst.CurrentAudioSource.time;
+            foreach (var timelineObject in EditorTimeline.inst.SelectedBeatmapObjects)
+            {
+                var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                if (beatmapObject.animID == animation.ReferenceID)
+                {
+                    if (!beatmapObject.TimelineKeyframes.IsEmpty())
+                        beatmapObject.TimelineKeyframes.ForLoop(timelineKeyframe => CoreHelper.Delete(timelineKeyframe.GameObject));
+                    beatmapObject.TimelineKeyframes.Clear();
+
+                    for (int i = 0; i < animation.Events.Count; i++)
+                    {
+                        for (int j = 0; j < animation.Events[i].Count; j++)
+                        {
+                            var eventKeyframe = animation.Events[i][j].Copy();
+                            eventKeyframe.time += time - beatmapObject.StartTime;
+                            if (!beatmapObject.events[i].Has(x => x.time == eventKeyframe.time))
+                                beatmapObject.events[i].Add(eventKeyframe);
+                        }
+                        beatmapObject.SortKeyframes(i);
+                    }
+                    timelineObject.RenderPosLength();
+                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                }
+            }
+            if (renderDialog && ObjectEditor.inst && ObjectEditor.inst.Dialog && ObjectEditor.inst.Dialog.IsCurrent)
+                ObjectEditor.inst.RenderDialog(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>());
         }
 
         /// <summary>
@@ -690,6 +736,11 @@ namespace BetterLegacy.Editor.Managers
                                 {
                                     ApplyAnimationsToSelected(animationGroup.animations);
                                     EditorManager.inst.DisplayNotification($"Applied animations to all selected objects!", 2f, EditorManager.NotificationType.Success);
+                                })),
+                                new ButtonElement("Paste To Selected", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to paste the current animations to the selected objects? This will check for matching animation IDs.", () =>
+                                {
+                                    PasteAnimationsToSelected(animationGroup.animations);
+                                    EditorManager.inst.DisplayNotification($"Pasted animations to all selected objects!", 2f, EditorManager.NotificationType.Success);
                                 })),
                                 new ButtonElement("Copy From Selected", () =>
                                 {
