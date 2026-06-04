@@ -1240,7 +1240,8 @@ namespace BetterLegacy.Editor.Managers
                 input.transform.AsRT().sizeDelta = new Vector2(136f, 32f);
                 var text = input.transform.Find("Text").GetComponent<Text>();
                 text.alignment = TextAnchor.MiddleCenter;
-                text.fontSize = 16;
+                text.fontSize = 15;
+                text.horizontalOverflow = HorizontalWrapMode.Overflow;
                 text.verticalOverflow = VerticalWrapMode.Overflow;
 
                 var delete = prefabHolder.DeleteButton.Duplicate(prefabHolder.Tag.transform, "Delete");

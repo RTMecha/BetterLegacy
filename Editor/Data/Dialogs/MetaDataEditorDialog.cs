@@ -639,7 +639,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             var convert = EditorPrefabHolder.Instance.Function1Button.Duplicate(buttons.transform, "convert");
             var convertStorage = convert.GetComponent<FunctionButtonStorage>();
-            convertStorage.Text = "Convert";
+            convertStorage.Text = "Convert to VG";
             ConvertButton = convertStorage.button;
             ConvertContextMenu = convert.GetOrAddComponent<ContextClickable>();
             EditorThemeManager.ApplyGraphic(convertStorage.button.image, ThemeGroup.Function_1, true);
