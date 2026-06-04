@@ -99,10 +99,22 @@
       }, // getFloat
       {
         "type": 1,
-        "commands": [ "getInt", "0" ],
-        "value": "INT_VAR",
+        "name": "getInt",
+        "values": [ "INT_VAR", "0" ],
         "const": "True"
       }, // getInt
+      {
+        "type": 1,
+        "name": "getIncrementFloat",
+        "values": [ "FLOAT_VAR", "0", "1" ],
+        "const": "True"
+      }, // getIncrementFloat
+      {
+        "type": 1,
+        "name": "getIncrementInt",
+        "values": [ "INT_VAR", "0", "1" ],
+        "const": "True"
+      }, // getIncrementInt
       {
         "type": 1,
         "commands": [ "getString", "Text" ],
@@ -3255,6 +3267,13 @@
         "values": [ "var + 0", "0", "0", "var", "Object Group", "0", "0", "0", "-99999", "99999", "0" ],
         "const": "True"
       }, // copyAxisGroup
+      {
+        "v": 1,
+        "type": 1,
+        "name": "copyAxisChain",
+        "values": [ "1", "0", "0", "0", "0", "0", "1", "0", "-99999", "99999", "99999", "0", "True", "0.1", "True", "", "False" ],
+        "const": "True"
+      }, // copyAxisChain
       {
         "type": 1,
         "name": "copyPlayerAxis",

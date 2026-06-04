@@ -1016,6 +1016,26 @@
             ]
           }, // getInt
           {
+            "name": "Object Modifier - getIncrementFloat (Action)",
+            "tooltips": [
+              {
+                "desc": "getIncrementFloat (Action)",
+                "hint": "Gets an incremented float value and passes it to other modifiers.",
+                "lang": 0
+              }
+            ]
+          }, // getIncrementFloat
+          {
+            "name": "Object Modifier - getIncrementInt (Action)",
+            "tooltips": [
+              {
+                "desc": "getIncrementInt (Action)",
+                "hint": "Gets an incremented int value and passes it to other modifiers.",
+                "lang": 0
+              }
+            ]
+          }, // getIncrementInt
+          {
             "name": "Object Modifier - getString (Action)",
             "tooltips": [
               {
@@ -5466,6 +5486,16 @@
               }
             ]
           }, // copyAxis
+          {
+            "name": "Object Modifier - copyAxisChain (Action)",
+            "tooltips": [
+              {
+                "desc": "copyAxisChain (Action)",
+                "hint": "Iterates through the parent chain within a set amount, copies the axis (E.G. position X, scale Y, etc) of the parent object and applies it to an axis of the next object with set limits and offsets. Basically, works like secondary parenting.",
+                "lang": 0
+              }
+            ]
+          }, // copyAxisChain
           {
             "name": "Object Modifier - copyAxisMath (Action)",
             "tooltips": [

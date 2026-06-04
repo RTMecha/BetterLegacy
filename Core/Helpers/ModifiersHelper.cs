@@ -1031,6 +1031,8 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction(nameof(ModifierFunctions.getToggle),  ModifierFunctions.getToggle),
             new ModifierAction(nameof(ModifierFunctions.getFloat),  ModifierFunctions.getFloat),
             new ModifierAction(nameof(ModifierFunctions.getInt),  ModifierFunctions.getInt),
+            new ModifierAction(nameof(ModifierFunctions.getIncrementFloat),  ModifierFunctions.getIncrementFloat),
+            new ModifierAction(nameof(ModifierFunctions.getIncrementInt),  ModifierFunctions.getIncrementInt),
             new ModifierAction(nameof(ModifierFunctions.getString),  ModifierFunctions.getString),
             new ModifierAction(nameof(ModifierFunctions.getStringLower),  ModifierFunctions.getStringLower),
             new ModifierAction(nameof(ModifierFunctions.getStringUpper),  ModifierFunctions.getStringUpper),
@@ -1270,6 +1272,7 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction(nameof(ModifierFunctions.copyAxis),  ModifierFunctions.copyAxis),
             new ModifierAction(nameof(ModifierFunctions.copyAxisMath),  ModifierFunctions.copyAxisMath),
             new ModifierAction(nameof(ModifierFunctions.copyAxisGroup),  ModifierFunctions.copyAxisGroup),
+            new ModifierAction(nameof(ModifierFunctions.copyAxisChain),  ModifierFunctions.copyAxisChain),
             new ModifierAction(nameof(ModifierFunctions.copyPlayerAxis),  ModifierFunctions.copyPlayerAxis),
 
             new ModifierAction(nameof(ModifierFunctions.runAnimation),  ModifierFunctions.runAnimation, ModifierCompatibility.LevelControlCompatible),
@@ -2492,18 +2495,20 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static float GetAnimation(BeatmapObject reference, int fromType, int fromAxis, float t, AxisSource axisSource)
+        public static float GetAnimation(BeatmapObject reference, int fromType, int fromAxis, float t, AxisSource axisSource, int version = 1)
         {
             switch (axisSource)
             {
                 case AxisSource.Sequence: {
                         if (!reference.cachedSequences)
                             break;
+                        if (version == 0 && fromType == 2)
+                            fromAxis = 2;
                         return fromType switch
                         {
-                            0 => reference.cachedSequences.PositionSequence.GetValue(t).At(fromAxis),
-                            1 => reference.cachedSequences.ScaleSequence.GetValue(t).At(fromAxis),
-                            2 => reference.cachedSequences.RotationSequence.GetValue(t).At(fromAxis),
+                            0 => (reference.disablePositionSequence ? 0f : reference.cachedSequences.PositionSequence.GetValue(t).At(fromAxis)) + reference.fullTransform.position.At(fromAxis),
+                            1 => (reference.disableScaleSequence ? 1f : reference.cachedSequences.ScaleSequence.GetValue(t).At(fromAxis)) * reference.fullTransform.scale.At(fromAxis),
+                            2 => (reference.disableRotationSequence ? 0f : reference.cachedSequences.RotationSequence.GetValue(t).At(fromAxis)) + reference.fullTransform.rotation.At(fromAxis),
                             _ => 0f,
                         };
                     }
@@ -2513,15 +2518,19 @@ namespace BetterLegacy.Core.Helpers
                         break;
                     }
                 case AxisSource.Offset: {
+                        if (version == 0 && fromType == 2)
+                            fromAxis = 2;
                         return fromType switch
                         {
-                            0 => reference.positionOffset.At(fromAxis) + reference.fullTransform.position.At(fromAxis),
-                            1 => reference.scaleOffset.At(fromAxis) * reference.fullTransform.scale.At(fromAxis),
-                            2 => reference.rotationOffset.At(fromAxis) + reference.fullTransform.rotation.At(fromAxis),
+                            0 => reference.positionOffset.At(fromAxis),
+                            1 => reference.scaleOffset.At(fromAxis),
+                            2 => reference.rotationOffset.At(fromAxis),
                             _ => 0f,
                         };
                     }
                 case AxisSource.SequenceOffset: {
+                        if (version == 0 && fromType == 2)
+                            fromAxis = 2;
                         if (!reference.cachedSequences)
                             return reference.GetTransformOffset(fromType).At(fromAxis);
                         return fromType switch
@@ -2544,11 +2553,13 @@ namespace BetterLegacy.Core.Helpers
                 case AxisSource.Sequence: {
                         if (!reference.cachedSequences)
                             break;
+                        if (version == 0 && fromType == 2)
+                            fromAxis = 2;
                         return fromType switch
                         {
-                            0 => Mathf.Clamp((reference.cachedSequences.PositionSequence.GetValue(t).At(fromAxis) - offset) * multiply % loop, min, max),
-                            1 => Mathf.Clamp((reference.cachedSequences.ScaleSequence.GetValue(t).At(fromAxis) - offset) * multiply % loop, min, max),
-                            2 => Mathf.Clamp((reference.cachedSequences.RotationSequence.GetValue(t).At(version == 0 ? 2 : fromAxis) - offset) * multiply % loop, min, max),
+                            0 => Mathf.Clamp(((reference.disablePositionSequence ? 0f : reference.cachedSequences.PositionSequence.GetValue(t).At(fromAxis)) + reference.fullTransform.position.At(fromAxis) - offset) * multiply % loop, min, max),
+                            1 => Mathf.Clamp((((reference.disableScaleSequence ? 1f : reference.cachedSequences.ScaleSequence.GetValue(t).At(fromAxis)) * reference.fullTransform.scale.At(fromAxis)) - offset) * multiply % loop, min, max),
+                            2 => Mathf.Clamp(((reference.disableRotationSequence ? 0f : reference.cachedSequences.RotationSequence.GetValue(t).At(fromAxis)) + reference.fullTransform.rotation.At(fromAxis) - offset) * multiply % loop, min, max),
                             _ => 0f,
                         };
                     }
@@ -2558,22 +2569,26 @@ namespace BetterLegacy.Core.Helpers
                         break;
                     }
                 case AxisSource.Offset: {
+                        if (version == 0 && fromType == 2)
+                            fromAxis = 2;
                         return fromType switch
                         {
-                            0 => Mathf.Clamp((reference.positionOffset.At(fromAxis) + reference.fullTransform.position.At(fromAxis) - offset) * multiply % loop, min, max),
-                            1 => Mathf.Clamp((reference.scaleOffset.At(fromAxis) * reference.fullTransform.scale.At(fromAxis) - offset) * multiply % loop, min, max),
-                            2 => Mathf.Clamp((reference.rotationOffset.At(fromAxis) + reference.fullTransform.rotation.At(fromAxis) - offset) * multiply % loop, min, max),
+                            0 => Mathf.Clamp((reference.positionOffset.At(fromAxis) - offset) * multiply % loop, min, max),
+                            1 => Mathf.Clamp((reference.scaleOffset.At(fromAxis) - offset) * multiply % loop, min, max),
+                            2 => Mathf.Clamp((reference.rotationOffset.At(fromAxis) - offset) * multiply % loop, min, max),
                             _ => 0f,
                         };
                     }
                 case AxisSource.SequenceOffset: {
+                        if (version == 0 && fromType == 2)
+                            fromAxis = 2;
                         if (!reference.cachedSequences)
                             return Mathf.Clamp((reference.GetTransformOffset(fromType).At(fromAxis) - offset) * multiply % loop, min, max);
                         return fromType switch
                         {
                             0 => Mathf.Clamp(((reference.disablePositionSequence ? 0f : reference.cachedSequences.PositionSequence.GetValue(t).At(fromAxis)) + reference.PositionOffset.At(fromAxis) + reference.fullTransform.position.At(fromAxis) - offset) * multiply % loop, min, max),
                             1 => Mathf.Clamp((((reference.disableScaleSequence ? 1f : reference.cachedSequences.ScaleSequence.GetValue(t).At(fromAxis)) * reference.fullTransform.scale.At(fromAxis)) + reference.ScaleOffset.At(fromAxis) - offset) * multiply % loop, min, max),
-                            2 => Mathf.Clamp(((reference.disableRotationSequence ? 0f : reference.cachedSequences.RotationSequence.GetValue(t).At(version == 0 ? 2 : fromAxis)) + reference.fullTransform.rotation.At(version == 0 ? 2 : fromAxis) + reference.RotationOffset.At(fromAxis) - offset) * multiply % loop, min, max),
+                            2 => Mathf.Clamp(((reference.disableRotationSequence ? 0f : reference.cachedSequences.RotationSequence.GetValue(t).At(fromAxis)) + reference.fullTransform.rotation.At(fromAxis) + reference.RotationOffset.At(fromAxis) - offset) * multiply % loop, min, max),
                             _ => 0f,
                         };
                     }
@@ -2957,6 +2972,16 @@ namespace BetterLegacy.Core.Helpers
         public static void getInt(Modifier modifier, ModifierLoop modifierLoop)
         {
             modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = modifier.GetInt(1, 0, modifierLoop.variables).ToString();
+        }
+
+        public static void getIncrementFloat(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = (modifier.GetFloat(1, 0f, modifierLoop.variables) + modifier.GetFloat(2, 0f, modifierLoop.variables)).ToString();
+        }
+        
+        public static void getIncrementInt(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = (modifier.GetInt(1, 0, modifierLoop.variables) + modifier.GetInt(2, 0, modifierLoop.variables)).ToString();
         }
 
         public static void getString(Modifier modifier, ModifierLoop modifierLoop)
@@ -11311,76 +11336,7 @@ namespace BetterLegacy.Core.Helpers
             if (toType < 0 || toType > 3)
                 return;
 
-            switch (axisSource)
-            {
-                case AxisSource.Sequence: {
-                        if (!bm.cachedSequences)
-                            break;
-                        if (fromType == 3)
-                        {
-                            if (toType == 3 && toAxis == 0 && bm.cachedSequences.ColorSequence != null && modifierLoop.reference is BeatmapObject beatmapObject && beatmapObject.runtimeObject && beatmapObject.runtimeObject.visualObject)
-                                RTLevel.Current.postTick.Enqueue(() =>
-                                {
-                                    var sequence = bm.cachedSequences.ColorSequence.GetValue(t);
-                                    var visualObject = beatmapObject.runtimeObject.visualObject;
-                                    visualObject.SetColor(RTMath.Lerp(visualObject.GetPrimaryColor(), sequence, multiply));
-                                });
-                            return;
-                        }
-                        transformable.SetTransform(toType, toAxis, fromType switch
-                        {
-                            0 => Mathf.Clamp((bm.cachedSequences.PositionSequence.GetValue(t).At(fromAxis) - offset) * multiply % loop, min, max),
-                            1 => Mathf.Clamp((bm.cachedSequences.ScaleSequence.GetValue(t).At(fromAxis) - offset) * multiply % loop, min, max),
-                            2 => Mathf.Clamp((bm.cachedSequences.RotationSequence.GetValue(t).At(modifier.version == 0 ? 2 : fromAxis) - offset) * multiply % loop, min, max),
-                            _ => 0f,
-                        });
-                        break;
-                    }
-                case AxisSource.Visual: {
-                        if (bm.runtimeObject is RTBeatmapObject runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject)
-                            transformable.SetTransform(toType, toAxis, Mathf.Clamp((runtimeObject.visualObject.gameObject.transform.GetVector(fromType).At(fromAxis) - offset) * multiply % loop, min, max));
-                        else
-                            transformable.SetTransform(toType, toAxis, Mathf.Clamp(fromType switch
-                            {
-                                0 => bm.InterpolateChainPosition(t).At(fromAxis),
-                                1 => bm.InterpolateChainScale(t).At(fromAxis),
-                                2 => bm.InterpolateChainRotation(t).At(modifier.version == 0 ? 2 : fromAxis),
-                                _ => 0f,
-                            }, min, max));
-                        break;
-                    }
-                case AxisSource.Offset: {
-                        transformable.SetTransform(toType, toAxis, fromType switch
-                        {
-                            0 => Mathf.Clamp((bm.PositionOffset.At(fromAxis) + bm.fullTransform.position.At(fromAxis) - offset) * multiply % loop, min, max),
-                            1 => Mathf.Clamp(((bm.ScaleOffset.At(fromAxis) * bm.fullTransform.scale.At(fromAxis)) - offset) * multiply % loop, min, max),
-                            2 => Mathf.Clamp((bm.RotationOffset.At(modifier.version == 0 ? 2 : fromAxis) + bm.fullTransform.rotation.At(fromAxis) - offset) * multiply % loop, min, max),
-                            _ => 0f,
-                        });
-                        break;
-                    }
-                case AxisSource.SequenceOffset: {
-                        if (!bm.cachedSequences)
-                        {
-                            transformable.SetTransform(toType, toAxis, fromType switch
-                            {
-                                0 => Mathf.Clamp((bm.PositionOffset.At(fromAxis) - offset) * multiply % loop, min, max),
-                                1 => Mathf.Clamp((bm.ScaleOffset.At(fromAxis) - offset) * multiply % loop, min, max),
-                                2 => Mathf.Clamp((bm.RotationOffset.At(modifier.version == 0 ? 2 : fromAxis) - offset) * multiply % loop, min, max),
-                                _ => 0f,
-                            });
-                            break;
-                        }
-                        transformable.SetTransform(toType, toAxis, fromType switch
-                        {
-                            0 => Mathf.Clamp(((bm.disablePositionSequence ? 0f : bm.cachedSequences.PositionSequence.GetValue(t).At(fromAxis)) + bm.fullTransform.position.At(fromAxis) + bm.PositionOffset.At(fromAxis) - offset) * multiply % loop, min, max),
-                            1 => Mathf.Clamp((((bm.disableScaleSequence ? 1f : bm.cachedSequences.ScaleSequence.GetValue(t).At(fromAxis)) * bm.fullTransform.scale.At(fromAxis)) + bm.ScaleOffset.At(fromAxis) - offset) * multiply % loop, min, max),
-                            2 => Mathf.Clamp(((bm.disableRotationSequence ? 0f : bm.cachedSequences.RotationSequence.GetValue(t).At(modifier.version == 0 ? 2 : fromAxis)) + bm.fullTransform.rotation.At(modifier.version == 0 ? 2 : fromAxis) + bm.RotationOffset.At(modifier.version == 0 ? 2 : fromAxis) - offset) * multiply % loop, min, max),
-                            _ => 0f,
-                        });
-                        break;
-                    }
-            }
+            transformable.SetTransform(toType, toAxis, ModifiersHelper.GetAnimation(bm, fromType, fromAxis, min, max, offset, multiply, t, loop, axisSource, modifier.version));
         }
 
         public static void copyAxisMath(Modifier modifier, ModifierLoop modifierLoop)
@@ -11433,131 +11389,12 @@ namespace BetterLegacy.Core.Helpers
                 if (toType < 0 || toType > 3)
                     return;
 
-                switch (axisSource)
-                {
-                    case AxisSource.Sequence: {
-                            if (!bm.cachedSequences)
-                                return;
+                var numberVariables = evaluatable.GetObjectVariables();
+                ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
 
-                            if (fromType == 3)
-                            {
-                                if (toType == 3 && toAxis == 0 && bm.cachedSequences.ColorSequence != null &&
-                                    modifierLoop.reference is BeatmapObject beatmapObject && beatmapObject.runtimeObject && beatmapObject.runtimeObject.visualObject &&
-                                    beatmapObject.runtimeObject.visualObject.renderer)
-                                {
-                                    // queue post tick so the color overrides the sequence color
-                                    RTLevel.Current.postTick.Enqueue(() =>
-                                    {
-                                        var sequence = bm.cachedSequences.ColorSequence.GetValue(t);
-
-                                        var renderer = beatmapObject.runtimeObject.visualObject.renderer;
-
-                                        var numberVariables = beatmapObject.GetObjectVariables();
-                                        ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
-
-                                        numberVariables["colorR"] = sequence.r;
-                                        numberVariables["colorG"] = sequence.g;
-                                        numberVariables["colorB"] = sequence.b;
-                                        numberVariables["colorA"] = sequence.a;
-                                        bm.SetOtherObjectVariables(numberVariables);
-
-                                        float value = RTMath.Parse(evaluation, RTLevel.Current?.evaluationContext, numberVariables);
-
-                                        renderer.material.color = RTMath.Lerp(renderer.material.color, sequence, Mathf.Clamp(value, min, max));
-                                    });
-                                }
-                                return;
-                            }
-
-                            var numberVariables = evaluatable.GetObjectVariables();
-                            ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
-
-                            numberVariables["axis"] = fromType switch
-                            {
-                                0 => bm.cachedSequences.PositionSequence.GetValue(t).At(fromAxis),
-                                1 => bm.cachedSequences.ScaleSequence.GetValue(t).At(fromAxis),
-                                2 => bm.cachedSequences.RotationSequence.GetValue(t).At(modifier.version == 0 ? 2 : fromAxis),
-                                _ => 0f,
-                            };
-                            bm.SetOtherObjectVariables(numberVariables);
-
-                            float value = RTMath.Parse(evaluation, RTLevel.Current?.evaluationContext, numberVariables);
-
-                            transformable.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
-                            break;
-                        }
-                    case AxisSource.Visual: {
-                            if (bm.runtimeObject is RTBeatmapObject runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject)
-                            {
-                                var axis = runtimeObject.visualObject.gameObject.transform.GetVector(fromType).At(fromAxis);
-
-                                var numberVariables = evaluatable.GetObjectVariables();
-                                ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
-
-                                numberVariables["axis"] = axis;
-                                bm.SetOtherObjectVariables(numberVariables);
-
-                                float value = RTMath.Parse(evaluation, RTLevel.Current?.evaluationContext, numberVariables);
-
-                                transformable.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
-                            }
-                            else
-                            {
-                                var numberVariables = evaluatable.GetObjectVariables();
-                                ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
-
-                                numberVariables["axis"] = fromType switch
-                                {
-                                    0 => bm.InterpolateChainPosition(t).At(fromAxis),
-                                    1 => bm.InterpolateChainScale(t).At(fromAxis),
-                                    2 => bm.InterpolateChainRotation(t).At(modifier.version == 0 ? 2 : fromAxis),
-                                    _ => 0f,
-                                };
-                                bm.SetOtherObjectVariables(numberVariables);
-
-                                float value = RTMath.Parse(evaluation, RTLevel.Current?.evaluationContext, numberVariables);
-
-                                transformable.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
-                            }
-                            break;
-                        }
-                    case AxisSource.Offset: {
-                            var numberVariables = evaluatable.GetObjectVariables();
-                            ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
-
-                            numberVariables["axis"] = fromType switch
-                            {
-                                0 => bm.PositionOffset.At(fromAxis) + bm.fullTransform.position.At(fromAxis),
-                                1 => bm.ScaleOffset.At(fromAxis) * bm.fullTransform.scale.At(fromAxis),
-                                2 => bm.RotationOffset.At(modifier.version == 0 ? 2 : fromAxis),
-                                _ => 0f,
-                            };
-                            bm.SetOtherObjectVariables(numberVariables);
-
-                            float value = RTMath.Parse(evaluation, RTLevel.Current?.evaluationContext, numberVariables);
-
-                            transformable.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
-                            break;
-                        }
-                    case AxisSource.SequenceOffset: {
-                            var numberVariables = evaluatable.GetObjectVariables();
-                            ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
-
-                            numberVariables["axis"] = fromType switch
-                            {
-                                0 => (bm.disablePositionSequence || !bm.cachedSequences ? 0f : bm.cachedSequences.PositionSequence.GetValue(t).At(fromAxis)) + bm.fullTransform.position.At(fromAxis) + bm.PositionOffset.At(fromAxis),
-                                1 => ((bm.disableScaleSequence || !bm.cachedSequences ? 1f : bm.cachedSequences.ScaleSequence.GetValue(t).At(fromAxis)) * bm.fullTransform.scale.At(fromAxis)) + bm.ScaleOffset.At(fromAxis),
-                                2 => (bm.disableRotationSequence || !bm.cachedSequences ? 0f : bm.cachedSequences.RotationSequence.GetValue(t).At(modifier.version == 0 ? 2 : fromAxis)) + bm.fullTransform.rotation.At(modifier.version == 0 ? 2 : fromAxis) + bm.RotationOffset.At(modifier.version == 0 ? 2 : fromAxis),
-                                _ => 0f,
-                            };
-                            bm.SetOtherObjectVariables(numberVariables);
-
-                            float value = RTMath.Parse(evaluation, RTLevel.Current?.evaluationContext, numberVariables);
-
-                            transformable.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
-                            break;
-                        }
-                }
+                numberVariables["axis"] = ModifiersHelper.GetAnimation(bm, fromType, fromAxis, t, axisSource);
+                bm.SetOtherObjectVariables(numberVariables);
+                transformable.SetTransform(toType, toAxis, Mathf.Clamp(RTMath.Parse(evaluation, RTLevel.Current?.evaluationContext, numberVariables), min, max));
             }
             catch
             {
@@ -11642,57 +11479,7 @@ namespace BetterLegacy.Core.Helpers
                         continue;
                     }
 
-                    switch (axisSource)
-                    {
-                        case AxisSource.Sequence: {
-                                if (!beatmapObject.cachedSequences)
-                                    continue;
-                                RTLevel.Current.evaluationContext.RegisterVariable(name, fromType switch
-                                {
-                                    0 => Mathf.Clamp(beatmapObject.cachedSequences.PositionSequence.GetValue(time - beatmapObject.StartTime - delay).At(fromAxis), min, max),
-                                    1 => Mathf.Clamp(beatmapObject.cachedSequences.ScaleSequence.GetValue(time - beatmapObject.StartTime - delay).At(fromAxis), min, max),
-                                    2 => Mathf.Clamp(beatmapObject.cachedSequences.RotationSequence.GetValue(time - beatmapObject.StartTime - delay).At(modifier.version == 0 ? 2 : fromAxis), min, max),
-                                    _ => 0f,
-                                });
-                                break;
-                            }
-                        case AxisSource.Visual: {
-                                if (beatmapObject.runtimeObject is RTBeatmapObject runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject)
-                                    RTLevel.Current.evaluationContext.RegisterVariable(name, Mathf.Clamp(runtimeObject.visualObject.gameObject.transform.GetVector(fromType).At(fromAxis), min, max));
-                                else
-                                    RTLevel.Current.evaluationContext.RegisterVariable(name, fromType switch
-                                    {
-                                        0 => Mathf.Clamp(beatmapObject.InterpolateChainPosition().At(fromAxis), min, max),
-                                        1 => Mathf.Clamp(beatmapObject.InterpolateChainScale().At(fromAxis), min, max),
-                                        2 => Mathf.Clamp(beatmapObject.InterpolateChainRotation().At(modifier.version == 0 ? 2 : fromAxis), min, max),
-                                        _ => 0f,
-                                    });
-                                break;
-                            }
-                        case AxisSource.Offset: {
-                                RTLevel.Current.evaluationContext.RegisterVariable(name, fromType switch
-                                {
-                                    0 => Mathf.Clamp(beatmapObject.PositionOffset.At(fromAxis) + beatmapObject.fullTransform.position.At(fromAxis), min, max),
-                                    1 => Mathf.Clamp(beatmapObject.ScaleOffset.At(fromAxis) * beatmapObject.fullTransform.scale.At(fromAxis), min, max),
-                                    2 => Mathf.Clamp(beatmapObject.RotationOffset.At(modifier.version == 0 ? 2 : fromAxis) + beatmapObject.fullTransform.rotation.At(fromAxis), min, max),
-                                    _ => 0f,
-                                });
-                                break;
-                            }
-                        case AxisSource.SequenceOffset: {
-                                RTLevel.Current.evaluationContext.RegisterVariable(name, fromType switch
-                                {
-                                    0 => Mathf.Clamp((beatmapObject.disablePositionSequence ? 0f : beatmapObject.cachedSequences.PositionSequence.GetValue(time - beatmapObject.StartTime - delay).At(fromAxis)) + beatmapObject.PositionOffset.At(fromAxis) + beatmapObject.fullTransform.position.At(fromAxis), min, max),
-                                    1 => Mathf.Clamp(((beatmapObject.disableScaleSequence ? 1f : beatmapObject.cachedSequences.ScaleSequence.GetValue(time - beatmapObject.StartTime - delay).At(fromAxis)) * beatmapObject.fullTransform.scale.At(fromAxis)) + beatmapObject.ScaleOffset.At(fromAxis), min, max),
-                                    2 => Mathf.Clamp((beatmapObject.disableRotationSequence ? 0f : beatmapObject.cachedSequences.RotationSequence.GetValue(time - beatmapObject.StartTime - delay).At(modifier.version == 0 ? 2 : fromAxis)) + beatmapObject.fullTransform.rotation.At(modifier.version == 0 ? 2 : fromAxis) + beatmapObject.RotationOffset.At(modifier.version == 0 ? 2 : fromAxis), min, max),
-                                    _ => 0f,
-                                });
-                                break;
-                            }
-                    }
-
-                    if (fromType == 4)
-                        RTLevel.Current.evaluationContext.RegisterVariable(name, Mathf.Clamp(beatmapObject.integerVariable, min, max));
+                    RTLevel.Current.evaluationContext.RegisterVariable(name, ModifiersHelper.GetAnimation(beatmapObject, fromType, fromAxis, time - beatmapObject.StartTime - delay, axisSource, modifier.version));
 
                     groupIndex++;
                 }
@@ -11703,6 +11490,112 @@ namespace BetterLegacy.Core.Helpers
             {
                 CoreHelper.LogError($"{modifierLoop.reference} had an error. Exception: {ex}");
             }
+        }
+        
+        public static void copyAxisChain(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
+                return;
+
+            var parentCount = modifier.GetInt(0, 1, modifierLoop.variables);
+
+            var fromType = modifier.GetInt(1, 0, modifierLoop.variables);
+            var fromAxis = modifier.GetInt(2, 0, modifierLoop.variables);
+            var toType = modifier.GetInt(3, 0, modifierLoop.variables);
+            var toAxis = modifier.GetInt(4, 0, modifierLoop.variables);
+            var delay = modifier.GetFloat(5, 0f, modifierLoop.variables);
+            var multiply = modifier.GetFloat(6, 0f, modifierLoop.variables);
+            var offset = modifier.GetFloat(7, 0f, modifierLoop.variables);
+            var min = modifier.GetFloat(8, -9999f, modifierLoop.variables);
+            var max = modifier.GetFloat(9, 9999f, modifierLoop.variables);
+            var loop = modifier.GetFloat(10, 9999f, modifierLoop.variables);
+            var axisSourceRaw = modifier.GetValue(11, modifierLoop.variables);
+            if (!string.IsNullOrEmpty(axisSourceRaw) && axisSourceRaw.ToLower() == "true")
+                axisSourceRaw = "1";
+            if (!string.IsNullOrEmpty(axisSourceRaw) && axisSourceRaw.ToLower() == "false")
+                axisSourceRaw = "0";
+            var axisSource = Parser.TryParse(axisSourceRaw, true, AxisSource.Sequence);
+            var offsetAudio = modifier.GetBool(12, true, modifierLoop.variables);
+            var delayOffset = modifier.GetFloat(13, 0.1f, modifierLoop.variables);
+            var reverseChain = modifier.GetBool(14, true, modifierLoop.variables);
+            var requiredTag = modifier.GetValue(15, modifierLoop.variables);
+            var searchChildren = modifier.GetBool(16, false, modifierLoop.variables);
+
+            var parents = modifier.GetResultOrDefault(() =>
+            {
+                var self = beatmapObject;
+                var parents = new List<BeatmapObject>();
+                parents.Add(self);
+                if (searchChildren)
+                    parents.AddRange(GetChildTree(self, requiredTag, parentCount));
+                else
+                {
+                    for (int i = 0; i < parentCount; i++)
+                    {
+                        var parent = self.GetParent();
+                        if (!parent)
+                            break;
+                        if (!string.IsNullOrEmpty(requiredTag) && !parent.Tags.Contains(requiredTag))
+                        {
+                            self = parent;
+                            continue;
+                        }
+
+                        parents.Add(parent);
+                        self = parent;
+                    }
+                }
+                if (reverseChain)
+                    parents.Reverse();
+                return parents;
+            });
+            for (int i = 0; i < parentCount; i++)
+            {
+                if (i == 0)
+                {
+                    delay += delayOffset;
+                    continue;
+                }
+
+                var currentParent = parents.GetAtOrDefault(i, null);
+                if (!currentParent)
+                    continue;
+
+                var currentValue = 0f;
+                for (int j = 0; j < RTMath.Clamp(parents.Count, 0, i + 1); j++)
+                {
+                    var parent = parents[j];
+                    var t = !offsetAudio ? delay : ModifiersHelper.GetTime(parent) - parent.StartTime - delay;
+
+                    fromType = Mathf.Clamp(fromType, 0, parent.events.Count);
+
+                    if (toType < 0 || toType > 3)
+                        continue;
+
+                    currentValue += ModifiersHelper.GetAnimation(parent, fromType, fromAxis, min, max, offset, multiply, t, loop, axisSource, 1);
+                }
+                currentParent.SetTransform(toType, toAxis, currentValue);
+                delay += delayOffset;
+            }
+        }
+
+        static List<BeatmapObject> GetChildTree(BeatmapObject self, string requiredTag, int parentCount, int subIndex = 0)
+        {
+            var list = new List<BeatmapObject>();
+            if (subIndex >= parentCount)
+                return list;
+            var children = self.GetChildren();
+            for (int i = 0; i < children.Count; i++)
+            {
+                var child = children[i];
+                if (!string.IsNullOrEmpty(requiredTag) && !child.Tags.Contains(requiredTag))
+                    continue;
+                list.Add(child);
+                var sub = GetChildTree(child, requiredTag, parentCount, subIndex + 1);
+                if (!sub.IsEmpty())
+                    list.AddRange(sub);
+            }
+            return list;
         }
 
         public static void runAnimation(Modifier modifier, ModifierLoop modifierLoop)
@@ -11911,6 +11804,47 @@ namespace BetterLegacy.Core.Helpers
                 tracker.beatmapObject.positionOffset = Vector3.MoveTowards(prevTracker.lastPos, tracker.pos, num);
                 prevTracker.lastPos = tracker.pos;
                 tracker.beatmapObject.rotationOffset = tracker.rot.eulerAngles;
+            }
+        }
+
+        public static void tailChain(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
+                return;
+
+            var parentCount = modifier.GetInt(0, 1, modifierLoop.variables);
+            var axisSourceRaw = modifier.GetValue(1, modifierLoop.variables);
+            if (!string.IsNullOrEmpty(axisSourceRaw) && axisSourceRaw.ToLower() == "true")
+                axisSourceRaw = "1";
+            if (!string.IsNullOrEmpty(axisSourceRaw) && axisSourceRaw.ToLower() == "false")
+                axisSourceRaw = "0";
+            var axisSource = Parser.TryParse(axisSourceRaw, true, AxisSource.Sequence);
+
+            var parents = modifier.GetResultOrDefault(() =>
+            {
+                var self = beatmapObject;
+                var parents = new List<BeatmapObject>();
+                parents.Add(self);
+                for (int i = 0; i < parentCount; i++)
+                {
+                    var parent = self.GetParent();
+                    if (!parent)
+                        break;
+                    parents.Add(parent);
+                }
+                parents.Reverse();
+                return parents;
+            });
+            for (int i = 0; i < parents.Count; i++)
+            {
+                var parent = parents[i];
+                switch (axisSource)
+                {
+                    case AxisSource.Sequence: {
+                            var value = ModifiersHelper.GetAnimation(parent, 2, 2, 0f, 0f, 0f, 1f, 0f, 9999f, axisSource, 1);
+                            break;
+                        }
+                }
             }
         }
 

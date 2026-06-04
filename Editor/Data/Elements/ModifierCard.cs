@@ -1881,6 +1881,20 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
+                case nameof(ModifierFunctions.getIncrementFloat): {
+                        StringGenerator(modifier, reference, "Variable Name", 0, renderVariables: false);
+                        SingleGenerator(modifier, reference, "Value", 1, 0);
+                        SingleGenerator(modifier, reference, "Increment", 2, 0);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.getIncrementInt): {
+                        StringGenerator(modifier, reference, "Variable Name", 0, renderVariables: false);
+                        IntegerGenerator(modifier, reference, "Value", 1, 0);
+                        IntegerGenerator(modifier, reference, "Increment", 2, 0);
+
+                        break;
+                    }
                 case nameof(ModifierFunctions.getString): {
                         StringGenerator(modifier, reference, "Variable Name", 0, renderVariables: false);
                         StringGenerator(modifier, reference, "Value", 1);
@@ -3902,10 +3916,10 @@ namespace BetterLegacy.Editor.Data.Elements
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
-                        DropdownGenerator(modifier, reference, "From Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation", "Color"));
+                        DropdownGenerator(modifier, reference, "From Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
                         DropdownGenerator(modifier, reference, "From Axis", 2, CoreHelper.StringToOptionData("X", "Y", "Z"));
 
-                        DropdownGenerator(modifier, reference, "To Type", 3, CoreHelper.StringToOptionData("Position", "Scale", "Rotation", "Color"));
+                        DropdownGenerator(modifier, reference, "To Type", 3, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
                         DropdownGenerator(modifier, reference, "To Axis (3D)", 4, CoreHelper.StringToOptionData("X", "Y", "Z"));
 
                         SingleGenerator(modifier, reference, "Delay", 5, 0f);
@@ -3939,10 +3953,10 @@ namespace BetterLegacy.Editor.Data.Elements
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
-                        DropdownGenerator(modifier, reference, "From Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation", "Color"));
+                        DropdownGenerator(modifier, reference, "From Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
                         DropdownGenerator(modifier, reference, "From Axis", 2, CoreHelper.StringToOptionData("X", "Y", "Z"));
 
-                        DropdownGenerator(modifier, reference, "To Type", 3, CoreHelper.StringToOptionData("Position", "Scale", "Rotation", "Color"));
+                        DropdownGenerator(modifier, reference, "To Type", 3, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
                         DropdownGenerator(modifier, reference, "To Axis (3D)", 4, CoreHelper.StringToOptionData("X", "Y", "Z"));
 
                         SingleGenerator(modifier, reference, "Delay", 5, 0f);
@@ -3991,7 +4005,7 @@ namespace BetterLegacy.Editor.Data.Elements
                             EditorHelper.AddInputFieldContextMenu(groupName.transform.Find("Input").GetComponent<InputField>());
                             var str = StringGenerator(modifier, reference, "Object Group", i + 1);
                             EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
-                            DropdownGenerator(modifier, reference, "From Type", i + 2, CoreHelper.StringToOptionData("Position", "Scale", "Rotation", "Color", "Variable"));
+                            DropdownGenerator(modifier, reference, "From Type", i + 2, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
                             DropdownGenerator(modifier, reference, "From Axis", i + 3, CoreHelper.StringToOptionData("X", "Y", "Z"));
                             SingleGenerator(modifier, reference, "Delay", i + 4, 0f);
                             SingleGenerator(modifier, reference, "Min", i + 5, -9999f);
@@ -4027,6 +4041,38 @@ namespace BetterLegacy.Editor.Data.Elements
                                     modifier.SetValue(2, "2");
                                 modifier.version = 1;
                             });
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.copyAxisChain): {
+                        IntegerGenerator(modifier, reference, "Parent Count", 0);
+                        DropdownGenerator(modifier, reference, "From Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
+                        DropdownGenerator(modifier, reference, "From Axis", 2, CoreHelper.StringToOptionData("X", "Y", "Z"));
+
+                        DropdownGenerator(modifier, reference, "To Type", 3, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
+                        DropdownGenerator(modifier, reference, "To Axis (3D)", 4, CoreHelper.StringToOptionData("X", "Y", "Z"));
+
+                        SingleGenerator(modifier, reference, "Delay", 5, 0f);
+
+                        SingleGenerator(modifier, reference, "Multiply", 6, 1f);
+                        SingleGenerator(modifier, reference, "Offset", 7, 0f);
+                        SingleGenerator(modifier, reference, "Min", 8, -99999f);
+                        SingleGenerator(modifier, reference, "Max", 9, 99999f);
+
+                        SingleGenerator(modifier, reference, "Loop", 10, 99999f);
+                        var axisSourceRaw = modifier.GetValue(11);
+                        if (!string.IsNullOrEmpty(axisSourceRaw) && axisSourceRaw.ToLower() == "false")
+                            modifier.SetValue(11, "0");
+                        if (!string.IsNullOrEmpty(axisSourceRaw) && axisSourceRaw.ToLower() == "true")
+                            modifier.SetValue(11, "1");
+                        DropdownGenerator(modifier, reference, "Axis Source", 11, CoreHelper.ToOptionData<AxisSource>());
+                        BoolGenerator(modifier, reference, "Offset Audio", 12, true);
+                        SingleGenerator(modifier, reference, "Delay Offset Per Parent", 13, 0.1f);
+                        BoolGenerator(modifier, reference, "Reverse Parent Chain", 14, true);
+
+                        var str = StringGenerator(modifier, reference, "Required Tag", 15);
+                        EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
+                        BoolGenerator(modifier, reference, "Search Child Tree", 16);
 
                         break;
                     }
