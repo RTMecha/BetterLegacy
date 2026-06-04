@@ -1,4 +1,15 @@
-﻿# snapshot-2026.6.2 - (Story Playtest) [Jun 4, 2026]
+﻿# snapshot-2026.6.3 - (Story Playtest) [???]
+## Features
+### Editor
+- Added "Timeline Object Simple Text" and "Timeline Object Render Text On Collapsed" settings to Config Manager > Editor > Timeline. These should help optimize your editor a little.
+
+## Changes
+### Editor
+- Optimized event keyframe dragging.
+
+-------------------------------------------------------------------
+
+# snapshot-2026.6.2 - (Story Playtest) [Jun 4, 2026]
 ## Features
 ### Core
 - Added copyAxisChain modifier. This acts like other copyAxis modifiers, except it iterates through the parent chain until a certain amount and it copies the axis value onto each parent.
