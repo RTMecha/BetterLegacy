@@ -1,5 +1,9 @@
-﻿# snapshot-2026.6.2 - (Story Playtest) [???]
+﻿# snapshot-2026.6.2 - (Story Playtest) [Jun 4, 2026]
 ## Features
+### Core
+- Added copyAxisChain modifier. This acts like other copyAxis modifiers, except it iterates through the parent chain until a certain amount and it copies the axis value onto each parent.
+- Added getIncrementFloat and getIncrementInt variable modifiers.
+
 ### Editor
 - QOL for prefab picker, you can now select a timeline object that represents the prefab. This works for adding themes and animations to a prefab.
 - Added "Reset Editor Camera On Update Everything" setting to Config Manager > Editor > Freecam. This resets the freecam values to the default when the UpdateEverything keybind occurs.
