@@ -1,17 +1,21 @@
-# snapshot-2026.6.1 - (Story Playtest) [Jun 2, 2026]
+# snapshot-2026.6.2 - (Story Playtest) [Jun 4, 2026]
 ## Features
 ### Core
-- Added setMask and setMaskOther modifiers. This can make objects only appear over other objects or not appear over other objects depending on the set values.
-- Added setPlayerMask modifiers. Similar to setMask, but for players.
+- Added copyAxisChain modifier. This acts like other copyAxis modifiers, except it iterates through the parent chain until a certain amount and it copies the axis value onto each parent.
+- Added getIncrementFloat and getIncrementInt variable modifiers.
 
 ### Editor
-- Added Clear Keyframes context menu button to animations.
+- QOL for prefab picker, you can now select a timeline object that represents the prefab. This works for adding themes and animations to a prefab.
+- Added "Reset Editor Camera On Update Everything" setting to Config Manager > Editor > Freecam. This resets the freecam values to the default when the UpdateEverything keybind occurs.
+- Animation ID field can now have the left / right text swapped on scrollwheel clicked and it also now has a context menu.
+- Animations from an animation group can now be pasted to selected objects.
 
 ## Changes
 ### Editor
-- TogglePlayingSong keybind function is no longer prevented in the Animation Editor if no associated object exists.
+- Editor freecam values now save & load per level.
+- Animations should now copy the custom keyframe UI.
 
 ## Fixes
-- Hopefully fixed some text not appearing on things like tags and editor layer fields.
-- Fixed pasting keyframes in the Animation Editor not pasting on the cursor.
-- Fixed the playerVelocityXAll modifier being invalid.
+- Fixed animations and animation groups not retaining their ID if overridden.
+- Fixed animating scale for runAnimation modifier not working as intended.
+- Fixed Server Visibility label in the MetaData Editor dialog appearing above the Server / Arcade section label.
