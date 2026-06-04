@@ -57,6 +57,16 @@ namespace BetterLegacy.Editor.Data.Timeline
         /// </summary>
         public TextMeshProUGUI Text { get; set; }
 
+        /// <summary>
+        /// The name text (simple) of the timeline object.
+        /// </summary>
+        public Text SimpleText { get; set; }
+
+        /// <summary>
+        /// The mark image of the timeline object.
+        /// </summary>
+        public Image SimpleImage { get; set; }
+
         #endregion
 
         #region Data
@@ -303,6 +313,10 @@ namespace BetterLegacy.Editor.Data.Timeline
         string prefabID;
         string prefabInstanceID;
         Prefab cachedPrefab;
+        bool simpleText;
+        bool renderCollapsedText;
+        bool zoomedOut;
+        string displayText = string.Empty;
 
         #endregion
 
@@ -385,21 +399,22 @@ namespace BetterLegacy.Editor.Data.Timeline
             gameObject = ObjEditor.inst.timelineObjectPrefab.Duplicate(EditorTimeline.inst.timelineObjectsParent, "timeline object", Index);
             var storage = gameObject.GetComponent<TimelineObjectStorage>();
 
-            Hover = storage.hoverUI;
             GameObject = gameObject;
+            Hover = storage.hoverUI;
             Image = storage.image;
             Text = storage.text;
+            SimpleText = storage.simpleText;
+            SimpleImage = storage.simpleImage;
 
-            storage.eventTrigger.triggers = new List<UnityEngine.EventSystems.EventTrigger.Entry>(4);
-            storage.eventTrigger.triggers.Add(TriggerHelper.CreateBeatmapObjectTrigger(this));
-            storage.eventTrigger.triggers.Add(TriggerHelper.CreateBeatmapObjectStartDragTrigger(this));
-            storage.eventTrigger.triggers.Add(TriggerHelper.CreateBeatmapObjectEndDragTrigger(this));
+            storage.eventTrigger.triggers = new List<UnityEngine.EventSystems.EventTrigger.Entry>(4)
+            {
+                TriggerHelper.CreateBeatmapObjectTrigger(this),
+                TriggerHelper.CreateBeatmapObjectStartDragTrigger(this),
+                TriggerHelper.CreateBeatmapObjectEndDragTrigger(this),
+            };
 
             if (update)
-            {
                 Render();
-                return;
-            }
         }
 
         /// <summary>
@@ -426,10 +441,11 @@ namespace BetterLegacy.Editor.Data.Timeline
             string name = "object name";
             float startTime = 0f;
             float length = Length;
+            var zoom = EditorManager.inst.Zoom;
 
             var image = Image;
 
-            Prefab prefab = GetPrefab();
+            var prefab = GetPrefab();
 
             if (data != null)
                 data.TimelineObject = this;
@@ -467,9 +483,10 @@ namespace BetterLegacy.Editor.Data.Timeline
                     backgroundObject.RemovePrefabReference();
             }
 
-            RenderText(name);
             RenderIcons(prefab);
-            RenderPosLength(EditorManager.inst.Zoom, length, startTime);
+            DisplayText(true);
+            RenderText(name);
+            RenderPosLength(zoom, length, startTime);
             RenderVisibleState();
         }
 
@@ -569,12 +586,48 @@ namespace BetterLegacy.Editor.Data.Timeline
         /// <param name="name">Name of the timeline object.</param>
         public void RenderText(string name)
         {
+            displayText = name;
+
+            if (SimpleText && EditorConfig.Instance.TimelineObjectSimpleText.Value)
+            {
+                SimpleText.text = name;
+                SimpleText.color = GetTextColor();
+                SimpleImage.color = GetMarkColor();
+                return;
+            }
+
             var textMeshNoob = Text; // ha! take that tmp
             if (!textMeshNoob)
                 return;
 
-            textMeshNoob.text = !string.IsNullOrEmpty(name) ? $"<mark=#{GetMarkColor()}>{name}</mark>" : string.Empty;
+            textMeshNoob.text = !string.IsNullOrEmpty(name) ? $"<mark=#{GetMarkColorHex()}>{name}</mark>" : string.Empty;
             textMeshNoob.color = GetTextColor();
+        }
+
+        /// <summary>
+        /// Sets the simple state of the timeline object text.
+        /// </summary>
+        public void DisplayText(bool forceUpdate = false) => DisplayText(EditorConfig.Instance.TimelineObjectSimpleText.Value, EditorConfig.Instance.TimelineObjectRenderTextOnCollapsed.Value, GetFullLength() < 28f, forceUpdate);
+
+        /// <summary>
+        /// Sets the simple state of the timeline object text.
+        /// </summary>
+        /// <param name="simple">If the text should be simple.</param>
+        public void DisplayText(bool simpleText, bool renderCollapsedText, bool zoomedOut, bool forceUpdate = false)
+        {
+            if (!forceUpdate && this.simpleText == simpleText && this.renderCollapsedText == renderCollapsedText && this.zoomedOut == zoomedOut)
+                return;
+
+            this.simpleText = simpleText;
+            this.renderCollapsedText = renderCollapsedText;
+            this.zoomedOut = zoomedOut;
+
+            var render = (renderCollapsedText || !Collapse) && !zoomedOut;
+            SimpleText.gameObject.SetActive(simpleText && render);
+            SimpleImage.gameObject.SetActive(simpleText && render);
+            var textMeshNoob = Text; // ha! take that tmp
+            if (textMeshNoob)
+                textMeshNoob.gameObject.SetActive(!simpleText && render);
         }
 
         /// <summary>
@@ -613,6 +666,11 @@ namespace BetterLegacy.Editor.Data.Timeline
             rectTransform.anchoredPosition = new Vector2(time * zoom, (-20 * Mathf.Clamp(Bin, 0, EditorTimeline.inst.BinCount)));
             if (Hover)
                 Hover.size = EditorConfig.Instance.TimelineObjectHoverSize.Value;
+
+            if (SimpleImage)
+                SimpleImage.rectTransform.sizeDelta = new Vector2(RTMath.Clamp(displayText.Length * 9f, 0f, rectTransform.sizeDelta.x - 16f), 0f);
+
+            DisplayText(EditorConfig.Instance.TimelineObjectSimpleText.Value, EditorConfig.Instance.TimelineObjectRenderTextOnCollapsed.Value, length < 28f);
         }
 
         /// <summary>
@@ -638,9 +696,7 @@ namespace BetterLegacy.Editor.Data.Timeline
                 typeIcon.transform.Find("type").GetComponent<Image>().sprite = icon;
         }
 
-        public void ShowContextMenu()
-        {
-            EditorContextMenu.inst.ShowContextMenu(
+        public void ShowContextMenu() => EditorContextMenu.inst.ShowContextMenu(
                 new ButtonElement("Select", () => EditorTimeline.inst.SetCurrentObject(this)),
                 new ButtonElement("Add to Selection", () => EditorTimeline.inst.AddSelectedObject(this)),
                 new ButtonElement("Create New", () => ObjectEditor.inst.CreateNewNormalObject()),
@@ -968,7 +1024,6 @@ namespace BetterLegacy.Editor.Data.Timeline
                     }
                 })
                 );
-        }
 
         public void ShowColorContextMenu(InputField inputField, string currentHexColor) => EditorContextMenu.inst.ShowContextMenu(EditorContextMenu.GetEditorColorFunctions(inputField, () => currentHexColor));
 
@@ -990,11 +1045,21 @@ namespace BetterLegacy.Editor.Data.Timeline
             return !editorData || string.IsNullOrEmpty(editorData.textColor) ? EditorConfig.Instance.TimelineObjectTextColor.Value : RTColors.HexToColor(editorData.textColor);
         }
 
-        public string GetMarkColor()
+        public Color GetMarkColor()
+        {
+            var editorData = EditorData;
+            return !editorData || string.IsNullOrEmpty(editorData.markColor) ? EditorConfig.Instance.TimelineObjectMarkColor.Value : RTColors.HexToColor(editorData.markColor);
+        }
+
+        public string GetMarkColorHex()
         {
             var editorData = EditorData;
             return !editorData || string.IsNullOrEmpty(editorData.markColor) ? RTColors.ColorToHex(EditorConfig.Instance.TimelineObjectMarkColor.Value) : editorData.markColor;
         }
+
+        public float GetFullLength() => GetFullLength(Length, EditorManager.inst.Zoom);
+
+        public float GetFullLength(float length, float zoom) => length <= EditorConfig.Instance.TimelineObjectCollapseLength.Value ? EditorConfig.Instance.TimelineObjectCollapseLength.Value * zoom : length * zoom;
 
         Prefab GetPrefab()
         {

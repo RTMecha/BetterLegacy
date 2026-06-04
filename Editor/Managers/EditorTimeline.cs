@@ -373,7 +373,7 @@ namespace BetterLegacy.Editor.Managers
         public void RenderTimeline()
         {
             if (layerType == LayerType.Events)
-                RTEventEditor.inst.RenderTimelineKeyframes();
+                RTEventEditor.inst.RenderTimelineKeyframePositions();
             else
                 RenderTimelineObjectsPositions();
 
@@ -866,10 +866,10 @@ namespace BetterLegacy.Editor.Managers
             if (!timelineObject.GameObject)
             {
                 timelineObject.AddToList();
-                timelineObject.Init(false);
+                timelineObject.Init();
             }
-
-            timelineObject.Render();
+            else
+                timelineObject.Render();
         }
 
         /// <summary>
@@ -938,8 +938,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     timelineObject = GetTimelineObject(editable);
                     timelineObject.verified = true;
-                    timelineObject.Init(false);
-                    timelineObject.Render();
+                    timelineObject.Init();
                     onTimelineObjectCreated?.Invoke(timelineObject, num, editables.Count);
                 }
                 catch (Exception e)
@@ -1017,8 +1016,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     timelineObject = GetTimelineObject(editable);
                     timelineObject.verified = true;
-                    timelineObject.Init(false);
-                    timelineObject.Render();
+                    timelineObject.Init();
                     onTimelineObjectCreated?.Invoke(timelineObject, num, editables.Count);
                 }
                 catch (Exception e)

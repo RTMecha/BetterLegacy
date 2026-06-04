@@ -647,8 +647,19 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                     timelineObjectStorage.hoverUI = hoverUI;
                     timelineObjectStorage.image = gameObject.GetComponent<Image>();
-                    timelineObjectStorage.eventTrigger = gameObject.GetComponent<EventTrigger>() ?? gameObject.AddComponent<EventTrigger>();
+                    timelineObjectStorage.eventTrigger = gameObject.GetOrAddComponent<EventTrigger>();
                     timelineObjectStorage.text = gameObject.transform.GetChild(0).GetComponent<TextMeshProUGUI>();
+                    var simpleText = gameObject.transform.GetChild(0).gameObject.Duplicate(gameObject.transform, "simple text", 1);
+                    CoreHelper.Destroy(simpleText.GetComponent<TextMeshProUGUI>(), true);
+                    var simpleImage = simpleText.Duplicate(gameObject.transform, "mark", 1);
+                    timelineObjectStorage.simpleText = simpleText.AddComponent<Text>();
+                    timelineObjectStorage.simpleText.font = EditorPrefabHolder.Instance.Labels.transform.GetChild(0).GetComponent<Text>().font;
+                    timelineObjectStorage.simpleText.alignment = TextAnchor.MiddleLeft;
+                    timelineObjectStorage.simpleText.fontSize = 18;
+                    timelineObjectStorage.simpleText.fontStyle = FontStyle.Bold;
+                    timelineObjectStorage.simpleImage = simpleImage.AddComponent<Image>();
+                    new RectValues(new Vector2(8f, 0f), new Vector2(0f, 1f), Vector2.zero, new Vector2(0f, 0.5f), new Vector2(0f, 0f)).AssignToRectTransform(timelineObjectStorage.simpleImage.rectTransform);
+                    timelineObjectStorage.text.gameObject.SetActive(false);
                 }
 
                 ObjEditor.inst.timelineObjectPrefab = gameObject;

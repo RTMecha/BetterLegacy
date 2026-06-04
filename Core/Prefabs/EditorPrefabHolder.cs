@@ -657,6 +657,12 @@ namespace BetterLegacy.Core.Prefabs
         public TextMeshProUGUI text;
 
         [SerializeField]
+        public Text simpleText;
+
+        [SerializeField]
+        public Image simpleImage;
+
+        [SerializeField]
         public EventTrigger eventTrigger;
     }
 

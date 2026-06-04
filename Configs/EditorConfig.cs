@@ -99,6 +99,8 @@ namespace BetterLegacy.Configs
         public Setting<float> TimelineObjectCollapseLength { get; set; }
         public Setting<bool> TimelineObjectPrefabTypeIcon { get; set; }
         public Setting<bool> TimelineObjectPrefabIcon { get; set; }
+        public Setting<bool> TimelineObjectSimpleText { get; set; }
+        public Setting<bool> TimelineObjectRenderTextOnCollapsed { get; set; }
         public Setting<bool> EventLabelsRenderLeft { get; set; }
         public Setting<bool> EventKeyframesRenderBinColor { get; set; }
         public Setting<bool> ObjectKeyframesRenderBinColor { get; set; }
@@ -579,6 +581,8 @@ namespace BetterLegacy.Configs
             TimelineObjectCollapseLength = Bind(this, TIMELINE, "Timeline Object Collapse Length", 0.2f, "How small a collapsed timeline object ends up.", 0.05f, 1f);
             TimelineObjectPrefabTypeIcon = Bind(this, TIMELINE, "Timeline Object Prefab Type Icon", true, "Shows the object's Prefab Type's icon.");
             TimelineObjectPrefabIcon = Bind(this, TIMELINE, "Timeline Object Prefab Icon", false, "If the Prefab icon should be prioritized.");
+            TimelineObjectSimpleText = Bind(this, TIMELINE, "Timeline Object Simple Text", true, "If the timeline objects should use simpler text rendering, optimizing levels a little.");
+            TimelineObjectRenderTextOnCollapsed = Bind(this, TIMELINE, "Timeline Object Render Text On Collapsed", false, "If the text on timeline objects should render when it is collapsed.");
             EventLabelsRenderLeft = Bind(this, TIMELINE, "Event Labels Render Left", false, "If the Event Layer labels should render on the left side or not.");
             EventKeyframesRenderBinColor = Bind(this, TIMELINE, "Event Keyframes Use Bin Color", true, "If the Event Keyframes should use the bin color when not selected or not.");
             ObjectKeyframesRenderBinColor = Bind(this, TIMELINE, "Object Keyframes Use Bin Color", true, "If the Object Keyframes should use the bin color when not selected or not.");
@@ -1284,6 +1288,8 @@ namespace BetterLegacy.Configs
             AutosaveLoopTime.SettingChanged += AutosaveChanged;
 
             TimelineObjectCollapseLength.SettingChanged += TimelineCollapseLengthChanged;
+            TimelineObjectSimpleText.SettingChanged += TimelineObjectDisplayTextChanged;
+            TimelineObjectRenderTextOnCollapsed.SettingChanged += TimelineObjectDisplayTextChanged;
 
             PreviewGridEnabled.SettingChanged += PreviewGridChanged;
             PreviewGridSize.SettingChanged += PreviewGridChanged;
@@ -1337,6 +1343,21 @@ namespace BetterLegacy.Configs
         {
             if (EditorTimeline.inst)
                 EditorTimeline.inst.RenderTimelineObjects();
+        }
+
+        void TimelineObjectDisplayTextChanged()
+        {
+            if (!EditorTimeline.inst)
+                return;
+
+            for (int i = 0; i < EditorTimeline.inst.timelineObjects.Count; i++)
+            {
+                var timelineObject = EditorTimeline.inst.timelineObjects[i];
+                if (!timelineObject.IsCurrentLayer)
+                    continue;
+                timelineObject.DisplayText();
+                timelineObject.RenderText(timelineObject.Name);
+            }
         }
 
         void ThemeEventKeyframeChanged()
