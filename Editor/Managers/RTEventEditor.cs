@@ -17,6 +17,7 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Prefabs;
+using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
@@ -169,6 +170,44 @@ namespace BetterLegacy.Editor.Managers
             {
                 CoreHelper.LogException(ex);
             } // init dialog
+        }
+
+        public override void OnTick()
+        {
+            if (Input.GetMouseButtonUp(0))
+            {
+                BaseInstance.eventDrag = false;
+                RTEditor.inst.dragOffset = -1f;
+            }
+
+            if (!BaseInstance.eventDrag)
+                return;
+
+            var selectedKeyframes = SelectedKeyframes;
+            var timelineTime = EditorTimeline.inst.GetTimelineTime(RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsKeyframes.Value);
+            var lockedCount = 0;
+            foreach (var timelineKeyframe in selectedKeyframes)
+            {
+                if (timelineKeyframe.Index == 0 || timelineKeyframe.Locked)
+                {
+                    lockedCount++;
+                    continue;
+                }
+
+                timelineKeyframe.Time =
+                    Mathf.Clamp(timelineTime + BaseInstance.mouseOffsetXForDrag + timelineKeyframe.timeOffset, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
+                timelineKeyframe.RenderPos();
+                if (timelineKeyframe.Type == EventEditor.inst.currentEventType && timelineKeyframe.Index == EventEditor.inst.currentEvent)
+                    RenderDialog();
+            }
+
+            if (selectedKeyframes.Count != lockedCount && RTEditor.inst.dragOffset != timelineTime + BaseInstance.mouseOffsetXForDrag)
+            {
+                if (EditorConfig.Instance.DraggingPlaysSound.Value && (RTEditor.inst.editorInfo.bpmSnapActive || !EditorConfig.Instance.DraggingPlaysSoundOnlyWithBPM.Value))
+                    SoundManager.inst.PlaySound(DefaultSounds.LeftRight, RTEditor.inst.editorInfo.bpmSnapActive ? 0.6f : 0.1f, 0.8f);
+
+                RTEditor.inst.dragOffset = timelineTime + BaseInstance.mouseOffsetXForDrag;
+            }
         }
 
         #region Deleting
@@ -634,6 +673,18 @@ namespace BetterLegacy.Editor.Managers
                 eventKeyframe.timelineKeyframe.Render();
         }
 
+        /// <summary>
+        /// Renders the positions of the timeline keyframes.
+        /// </summary>
+        public void RenderTimelineKeyframePositions()
+        {
+            for (int i = 0; i < EditorTimeline.inst.timelineKeyframes.Count; i++)
+            {
+                var timelineKeyframe = EditorTimeline.inst.timelineKeyframes[i];
+                timelineKeyframe.RenderPos();
+            }
+        }
+
         #endregion
 
         #region Dialogs
@@ -859,7 +910,6 @@ namespace BetterLegacy.Editor.Managers
                 Debug.Log($"{EventEditor.inst.className}Editing {EventLibrary.displayNames[coord.type]}");
                 Dialog.OpenKeyframeDialog(coord.type);
                 RenderDialog();
-                RenderTimelineKeyframes();
             }
             else
                 Debug.LogError($"{EventEditor.inst.className}Keyframe Type {coord.type} does not currently exist.");

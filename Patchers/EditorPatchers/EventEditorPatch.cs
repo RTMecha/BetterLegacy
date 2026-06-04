@@ -7,11 +7,8 @@ using UnityEngine;
 
 using HarmonyLib;
 
-using BetterLegacy.Configs;
 using BetterLegacy.Core;
-using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Editor.Managers;
 
@@ -60,42 +57,7 @@ namespace BetterLegacy.Patchers
 
         [HarmonyPatch(nameof(EventEditor.Update))]
         [HarmonyPrefix]
-        static bool UpdatePrefix()
-        {
-            if (Input.GetMouseButtonUp(0))
-            {
-                Instance.eventDrag = false;
-                RTEditor.inst.dragOffset = -1f;
-            }
-
-            if (Instance.eventDrag)
-            {
-                var timelineTime = EditorTimeline.inst.GetTimelineTime(RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsKeyframes.Value);
-                foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
-                {
-                    if (timelineObject.Index == 0 || timelineObject.Locked)
-                        continue;
-
-                    GameData.Current.events[timelineObject.Type][timelineObject.Index].time =
-                        Mathf.Clamp(timelineTime + Instance.mouseOffsetXForDrag + timelineObject.timeOffset, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
-                }
-
-                if (!RTEventEditor.inst.SelectedKeyframes.All(x => x.Locked) && RTEditor.inst.dragOffset != timelineTime + Instance.mouseOffsetXForDrag)
-                {
-                    if (EditorConfig.Instance.DraggingPlaysSound.Value && (RTEditor.inst.editorInfo.bpmSnapActive || !EditorConfig.Instance.DraggingPlaysSoundOnlyWithBPM.Value))
-                        SoundManager.inst.PlaySound(DefaultSounds.LeftRight, RTEditor.inst.editorInfo.bpmSnapActive ? 0.6f : 0.1f, 0.8f);
-
-                    RTEditor.inst.dragOffset = timelineTime + Instance.mouseOffsetXForDrag;
-
-                    RTEventEditor.inst.RenderTimelineKeyframes();
-                    RTEventEditor.inst.RenderDialog();
-                }
-            }
-
-            return false;
-        }
-
-        public static float preNumber = 0f;
+        static bool UpdatePrefix() => false;
 
         [HarmonyPatch(nameof(EventEditor.CopyAllSelectedEvents))]
         [HarmonyPrefix]
