@@ -1117,7 +1117,6 @@ namespace BetterLegacy
         /// Shape with custom polygon settings.
         /// </summary>
         Polygon = 9,
-        Particles = 10,
     }
 
     /// <summary>

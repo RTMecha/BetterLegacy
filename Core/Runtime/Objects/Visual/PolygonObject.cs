@@ -2,6 +2,7 @@
 
 using UnityEngine;
 
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 
@@ -12,7 +13,7 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
     /// </summary>
     public class PolygonObject : SolidObject
     {
-        public PolygonObject(GameObject gameObject, float opacity, bool hasCollider, bool solid, int renderType, bool opacityCollision, int gradientType, float gradientScale, float gradientRotation, int colorBlendMode, PolygonShape polygonShape) : base(gameObject, opacity, hasCollider, solid, renderType, opacityCollision, gradientType, gradientScale, gradientRotation, colorBlendMode)
+        public PolygonObject(GameObject gameObject, float opacity, bool hasCollider, bool solid, int renderType, bool opacityCollision, int gradientType, float gradientScale, float gradientRotation, int colorBlendMode, PolygonShape polygonShape, ParticleSystemData particleSystemData) : base(gameObject, opacity, hasCollider, solid, renderType, opacityCollision, gradientType, gradientScale, gradientRotation, colorBlendMode, particleSystemData)
         {
             meshFilter = gameObject.GetComponent<MeshFilter>();
 

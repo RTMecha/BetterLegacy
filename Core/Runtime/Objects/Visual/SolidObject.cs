@@ -12,7 +12,7 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
     /// </summary>
     public class SolidObject : VisualObject
     {
-        public SolidObject(GameObject gameObject, float opacity, bool deco, bool solid, int renderType, bool opacityCollision, int gradientType, float gradientScale, float gradientRotation, int colorBlendMode)
+        public SolidObject(GameObject gameObject, float opacity, bool deco, bool solid, int renderType, bool opacityCollision, int gradientType, float gradientScale, float gradientRotation, int colorBlendMode, ParticleSystemData particleSystemData)
         {
             this.gameObject = gameObject;
 
@@ -25,6 +25,8 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
 
             UpdateRendering(gradientType, renderType, false, gradientScale, gradientRotation, colorBlendMode);
             UpdateCollider(deco, solid, opacityCollision);
+
+            particleSystemDataCache = particleSystemData;
         }
         
         #region Values
@@ -110,6 +112,8 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
         /// Outline data for the editor.
         /// </summary>
         public OutlineData editorOutlineData;
+
+        public ParticleSystemData particleSystemDataCache;
 
         Color primaryColor;
         Color secondaryColor;

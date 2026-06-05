@@ -266,13 +266,22 @@ namespace BetterLegacy.Core.Data.Beatmap
             /// <summary>
             /// Like <see cref="ObjectType.Normal"/> except instead of getting hit the player cannot pass through the object.
             /// </summary>
-            Solid
+            Solid,
+            /// <summary>
+            /// Object becomes a particle emitter.
+            /// </summary>
+            Particles,
         }
 
         /// <summary>
         /// If true and objects' opacity is less than 100%, disables collision. Acts the same as modern Project Arrhythmia.
         /// </summary>
         public bool opacityCollision = false;
+
+        /// <summary>
+        /// Data for the particle system.
+        /// </summary>
+        public ParticleSystemData particleSystemData;
 
         #endregion
 
@@ -695,6 +704,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             this.CopyModifyableData(orig);
 
+            particleSystemData = orig.particleSystemData?.Copy();
+
             fullTransform = orig.fullTransform;
 
             editorData.CopyData(orig.editorData);
@@ -714,10 +725,10 @@ namespace BetterLegacy.Core.Data.Beatmap
             {
                 EventKeyframe prevEventKeyframe = null;
                 // Position
-                for (int j = 0; j < jn["e"][0]["k"].Count; j++)
+                for (int i = 0; i < jn["e"][0]["k"].Count; i++)
                 {
                     var eventKeyframe = new EventKeyframe();
-                    var kfjn = jn["e"][0]["k"][j];
+                    var kfjn = jn["e"][0]["k"][i];
 
                     eventKeyframe.id = LSText.randomNumString(8);
 
@@ -734,6 +745,20 @@ namespace BetterLegacy.Core.Data.Beatmap
                         kfjn["ev"][1].AsFloat,
                         // camera parent in alpha is above all other objects for some reason
                         isCameraParented ? -10f : 0f);
+
+                    if (i == 0 && kfjn["ev"].Count > 2)
+                    {
+                        particleSystemData = new ParticleSystemData();
+                        particleSystemData.spawnRatePerSecond = kfjn["ev"][4].AsFloat;
+                        particleSystemData.spawnRatePerUnit = kfjn["ev"][5].AsFloat;
+                        particleSystemData.worldSpace = kfjn["ev"][6].AsFloat > 0.5f;
+                        particleSystemData.autoKillOffset = 0f;
+                        particleSystemData.autoKillType = kfjn["ev"][7].AsFloat > 0.5f ? AutoKillType.LastKeyframe : AutoKillType.NoAutokill;
+                        particleSystemData.emitterShapeType = kfjn["ev"][8].AsFloat != 1 ? ParticleSystemData.EmitterShapeType.Rectangle : ParticleSystemData.EmitterShapeType.Circle;
+                        particleSystemData.emitterArc = kfjn["ev"][9].AsFloat;
+                        particleSystemData.emitterRadius = kfjn["ev"][10].AsFloat;
+                        particleSystemData.startSpeed = kfjn["ev"][11].AsFloat;
+                    }
 
                     eventKeyframe.random = kfjn["r"].AsInt;
 
@@ -1236,6 +1261,9 @@ namespace BetterLegacy.Core.Data.Beatmap
             else if (jn["ot"] != null)
                 objectType = (ObjectType)jn["ot"].AsInt;
 
+            if (objectType == ObjectType.Particles)
+                particleSystemData = ParticleSystemData.Parse(jn["prtcl"]);
+
             if (jn["ldm"] != null)
                 LDM = jn["ldm"].AsBool;
             if (jn["dm"] != null)
@@ -1369,69 +1397,86 @@ namespace BetterLegacy.Core.Data.Beatmap
             // Events
             {
                 // Position
-                for (int j = 0; j < events[0].Count; j++)
+                for (int i = 0; i < events[0].Count; i++)
                 {
-                    var eventKeyframe = events[0][j];
-                    jn["e"][0]["k"][j]["t"] = eventKeyframe.time;
-                    jn["e"][0]["k"][j]["ct"] = eventKeyframe.curve.ToString();
+                    var eventKeyframe = events[0][i];
+                    jn["e"][0]["k"][i]["t"] = eventKeyframe.time;
+                    jn["e"][0]["k"][i]["ct"] = eventKeyframe.curve.ToString();
 
-                    jn["e"][0]["k"][j]["ev"][0] = eventKeyframe.values[0];
-                    jn["e"][0]["k"][j]["ev"][1] = eventKeyframe.values[1];
+                    jn["e"][0]["k"][i]["ev"][0] = eventKeyframe.values[0];
+                    jn["e"][0]["k"][i]["ev"][1] = eventKeyframe.values[1];
 
-                    jn["e"][0]["k"][j]["r"] = eventKeyframe.random;
+                    jn["e"][0]["k"][i]["r"] = eventKeyframe.random;
 
-                    jn["e"][0]["k"][j]["er"][0] = eventKeyframe.randomValues[0];
-                    jn["e"][0]["k"][j]["er"][1] = eventKeyframe.randomValues[1];
-                    jn["e"][0]["k"][j]["er"][2] = eventKeyframe.randomValues[2];
+                    jn["e"][0]["k"][i]["er"][0] = eventKeyframe.randomValues[0];
+                    jn["e"][0]["k"][i]["er"][1] = eventKeyframe.randomValues[1];
+                    jn["e"][0]["k"][i]["er"][2] = eventKeyframe.randomValues[2];
+
+                    if (!particleSystemData)
+                        continue;
+
+                    jn["e"][0]["k"][i]["ev"][2] = 0f; // particle velocity X
+                    jn["e"][0]["k"][i]["ev"][3] = 0f; // particle velocity Y
+                    if (i != 0)
+                        continue;
+
+                    jn["e"][0]["k"][i]["ev"][4] = particleSystemData.spawnRatePerSecond;
+                    jn["e"][0]["k"][i]["ev"][5] = particleSystemData.spawnRatePerUnit;
+                    jn["e"][0]["k"][i]["ev"][6] = particleSystemData.worldSpace ? 1f : 0f;
+                    jn["e"][0]["k"][i]["ev"][7] = particleSystemData.autoKillType == AutoKillType.LastKeyframe ? 1f : 0f;
+                    jn["e"][0]["k"][i]["ev"][8] = (int)particleSystemData.emitterShapeType;
+                    jn["e"][0]["k"][i]["ev"][9] = particleSystemData.emitterArc;
+                    jn["e"][0]["k"][i]["ev"][10] = particleSystemData.emitterRadius;
+                    jn["e"][0]["k"][i]["ev"][11] = particleSystemData.startSpeed;
                 }
 
                 // Scale
-                for (int j = 0; j < events[1].Count; j++)
+                for (int i = 0; i < events[1].Count; i++)
                 {
-                    var eventKeyframe = events[1][j];
-                    jn["e"][1]["k"][j]["t"] = eventKeyframe.time;
-                    jn["e"][1]["k"][j]["ct"] = eventKeyframe.curve.ToString();
+                    var eventKeyframe = events[1][i];
+                    jn["e"][1]["k"][i]["t"] = eventKeyframe.time;
+                    jn["e"][1]["k"][i]["ct"] = eventKeyframe.curve.ToString();
 
-                    jn["e"][1]["k"][j]["ev"][0] = eventKeyframe.values[0];
-                    jn["e"][1]["k"][j]["ev"][1] = eventKeyframe.values[1];
+                    jn["e"][1]["k"][i]["ev"][0] = eventKeyframe.values[0];
+                    jn["e"][1]["k"][i]["ev"][1] = eventKeyframe.values[1];
 
-                    jn["e"][1]["k"][j]["r"] = eventKeyframe.random;
+                    jn["e"][1]["k"][i]["r"] = eventKeyframe.random;
 
-                    jn["e"][1]["k"][j]["er"][0] = eventKeyframe.randomValues[0];
-                    jn["e"][1]["k"][j]["er"][1] = eventKeyframe.randomValues[1];
-                    jn["e"][1]["k"][j]["er"][2] = eventKeyframe.randomValues[2];
+                    jn["e"][1]["k"][i]["er"][0] = eventKeyframe.randomValues[0];
+                    jn["e"][1]["k"][i]["er"][1] = eventKeyframe.randomValues[1];
+                    jn["e"][1]["k"][i]["er"][2] = eventKeyframe.randomValues[2];
                 }
 
                 // Rotation
-                for (int j = 0; j < events[2].Count; j++)
+                for (int i = 0; i < events[2].Count; i++)
                 {
-                    var eventKeyframe = events[2][j];
-                    jn["e"][2]["k"][j]["t"] = eventKeyframe.time;
-                    jn["e"][2]["k"][j]["ct"] = eventKeyframe.curve.ToString();
+                    var eventKeyframe = events[2][i];
+                    jn["e"][2]["k"][i]["t"] = eventKeyframe.time;
+                    jn["e"][2]["k"][i]["ct"] = eventKeyframe.curve.ToString();
 
-                    jn["e"][2]["k"][j]["ev"][0] = eventKeyframe.values[0];
+                    jn["e"][2]["k"][i]["ev"][0] = eventKeyframe.values[0];
 
                     if (!eventKeyframe.relative)
-                        jn["e"][2]["k"][j]["ev"][1] = 1.0f;
+                        jn["e"][2]["k"][i]["ev"][1] = 1.0f; // why...........
 
-                    jn["e"][2]["k"][j]["r"] = eventKeyframe.random;
+                    jn["e"][2]["k"][i]["r"] = eventKeyframe.random;
 
-                    jn["e"][2]["k"][j]["er"][0] = eventKeyframe.randomValues[0];
-                    jn["e"][2]["k"][j]["er"][1] = eventKeyframe.randomValues[1];
-                    jn["e"][2]["k"][j]["er"][2] = eventKeyframe.randomValues[2];
+                    jn["e"][2]["k"][i]["er"][0] = eventKeyframe.randomValues[0];
+                    jn["e"][2]["k"][i]["er"][1] = eventKeyframe.randomValues[1];
+                    jn["e"][2]["k"][i]["er"][2] = eventKeyframe.randomValues[2];
                 }
 
                 // Color
-                for (int j = 0; j < events[3].Count; j++)
+                for (int i = 0; i < events[3].Count; i++)
                 {
-                    var eventKeyframe = events[3][j];
-                    jn["e"][3]["k"][j]["t"] = eventKeyframe.time;
-                    jn["e"][3]["k"][j]["ct"] = eventKeyframe.curve.ToString();
+                    var eventKeyframe = events[3][i];
+                    jn["e"][3]["k"][i]["t"] = eventKeyframe.time;
+                    jn["e"][3]["k"][i]["ct"] = eventKeyframe.curve.ToString();
 
-                    jn["e"][3]["k"][j]["ev"][0] = Mathf.Clamp(eventKeyframe.values[0], 0, 8);
-                    jn["e"][3]["k"][j]["ev"][1] = (-eventKeyframe.values[1] + 1f) * 100f;
+                    jn["e"][3]["k"][i]["ev"][0] = Mathf.Clamp(eventKeyframe.values[0], 0, 8);
+                    jn["e"][3]["k"][i]["ev"][1] = (byte)((-eventKeyframe.values[1] + 1f) * 100f);
                     if (eventKeyframe.values.Length > 5)
-                        jn["e"][3]["k"][j]["ev"][2] = Mathf.Clamp(eventKeyframe.values[5], 0, 8);
+                        jn["e"][3]["k"][i]["ev"][2] = Mathf.Clamp(eventKeyframe.values[5], 0, 8);
                 }
             }
 
@@ -1484,6 +1529,9 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["cbm"] = (int)colorBlendMode;
 
             this.WriteShapeJSON(jn);
+
+            if (particleSystemData)
+                jn["prtcl"] = particleSystemData.ToJSON();
 
             if (origin.x != 0f || origin.y != 0f)
                 jn["o"] = origin.ToJSON();
@@ -1580,6 +1628,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         public IRTObject GetRuntimeObject() => runtimeObject;
 
         public IPrefabable AsPrefabable() => this;
+
         public ITransformable AsTransformable() => this;
 
         public ModifierLoop GetModifierLoop() => runtimeModifiers?.loop;
