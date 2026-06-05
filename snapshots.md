@@ -4,6 +4,9 @@
 - Added "Timeline Object Simple Text" and "Timeline Object Render Text On Collapsed" settings to Config Manager > Editor > Timeline. These should help optimize your editor a little.
 
 ## Changes
+### Core
+- runAnimation modifier now allows for proper 3D axis rotation.
+
 ### Editor
 - Optimized event keyframe dragging.
 
