@@ -28,6 +28,7 @@ using BetterLegacy.Core.Runtime;
 using BetterLegacy.Core.Runtime.Objects;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
+using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Core
 {
@@ -1863,6 +1864,8 @@ namespace BetterLegacy.Core
 
         #region Interfaces
 
+        #region IPrefabable
+
         /// <summary>
         /// Removes the prefab references.
         /// </summary>
@@ -1954,6 +1957,10 @@ namespace BetterLegacy.Core
             return prefabObject.StartTime + prefab.offset;
         }
 
+        #endregion
+
+        #region IEvaluatable
+
         /// <summary>
         /// Gets variables from the evaluatable object.
         /// </summary>
@@ -1986,6 +1993,10 @@ namespace BetterLegacy.Core
             variableContainer.SetObjectFunctions(functions);
             return functions;
         }
+
+        #endregion
+
+        #region IParentable
 
         /// <summary>
         /// Gets the parent toggle value depending on the index.
@@ -2082,32 +2093,17 @@ namespace BetterLegacy.Core
             return parentable.CanParent(obj, GameData.Current.beatmapObjects);
         }
 
-        /// <summary>
-        /// Gets the parent runtime of the object.
-        /// </summary>
-        /// <param name="reference">Modifier object reference.</param>
-        /// <returns>Returns the parent runtime.</returns>
-        public static RTLevelBase GetParentRuntime(this IModifierReference reference) => (reference.ParentRuntime ?? RTLevel.Current);
+        #endregion
 
-        /// <summary>
-        /// Gets the parent runtime of the object.
-        /// </summary>
-        /// <param name="reference">Runtime object reference.</param>
-        /// <returns>Returns the parent runtime.</returns>
-        public static RTLevelBase GetParentRuntime(this IRTObject reference) => (reference.ParentRuntime ?? RTLevel.Current);
-
+        #region ITransformable
+        
         /// <summary>
         /// Gets a <see cref="ObjectTransform.Struct"/> from a transformable object.
         /// </summary>
         /// <param name="transformable">Transformable reference.</param>
         /// <returns>Returns a transform cache.</returns>
         public static ObjectTransform.Struct GetObjectTransform(this ITransformable transformable) => new ObjectTransform.Struct(transformable.GetFullPosition(), transformable.GetFullScale(), transformable.GetFullRotation(true).z);
-
-        /// <summary>
-        /// Updates the modifier functions.
-        /// </summary>
-        public static void UpdateFunctions(this IModifyable modifyable) => modifyable.Modifiers.ForLoop(modifier => ModifiersHelper.AssignModifierFunctions(modifier, modifyable.ReferenceType));
-
+        
         /// <summary>
         /// Interpolates an animation onto the objects' transform offset.
         /// </summary>
@@ -2136,12 +2132,403 @@ namespace BetterLegacy.Core
             }
         }
 
+        #endregion
+
+        #region IAnimatable
+        
         /// <summary>
         /// Gets an event keyframe at an index coordinate.
         /// </summary>
         /// <param name="keyframeCoord">Coordinates of the keyframe to get.</param>
         /// <returns>Returns a found event keyframe.</returns>
         public static EventKeyframe GetEventKeyframe(this IAnimatable animatable, KeyframeCoord keyframeCoord) => animatable.GetEventKeyframes(keyframeCoord.type)[keyframeCoord.index];
+
+        /// <summary>
+        /// Sorts the keyframe list by time.
+        /// </summary>
+        public static void SortKeyframes(this IAnimatable animatable) => animatable.SortKeyframes(animatable.Events);
+
+        /// <summary>
+        /// Sorts the keyframe list by time.
+        /// </summary>
+        /// <param name="events">Events list to sort.</param>
+        public static void SortKeyframes(this IAnimatable animatable, List<List<EventKeyframe>> events)
+        {
+            for (int i = 0; i < events.Count; i++)
+                animatable.SortKeyframes(i);
+        }
+
+        /// <summary>
+        /// Sorts the keyframe list by time.
+        /// </summary>
+        /// <param name="type">Event type to sort.</param>
+        public static void SortKeyframes(this IAnimatable animatable, int type) => animatable.SortKeyframes(animatable.Events[type]);
+
+        /// <summary>
+        /// Sorts the keyframe list by time.
+        /// </summary>
+        /// <param name="eventKeyframes">Event keyframes list to sort.</param>
+        public static void SortKeyframes(this IAnimatable animatable, List<EventKeyframe> eventKeyframes) => eventKeyframes.Sort((a, b) => a.time.CompareTo(b.time));
+
+        /// <summary>
+        /// Gets or creates an Event Keyframe. Used for object dragging.
+        /// </summary>
+        /// <param name="type">Animation event type.</param>
+        /// <param name="createKeyframe">If a keyframe should be created when no keyframe is found.</param>
+        /// <param name="useNearest">If nearest keyframe should be searched for.</param>
+        /// <param name="usePrevious">If the previous keyframe should be searched for.</param>
+        /// <param name="renderEditor">If the editor should be rendered.</param>
+        /// <returns>Returns the found keyframe.</returns>
+        public static EventKeyframe GetOrCreateKeyframe(this IAnimatable animatable, int type, bool createKeyframe, bool useNearest = true, bool usePrevious = true, bool renderEditor = true)
+        {
+            var timeOffset = AudioManager.inst.CurrentAudioSource.time - animatable.StartTime;
+            int nextIndex = animatable.Events[type].FindIndex(x => x.time >= timeOffset);
+            if (nextIndex < 0)
+                nextIndex = animatable.Events[type].Count - 1;
+
+            int index;
+            EventKeyframe selected;
+            if (useNearest && animatable.Events[type].TryFindIndex(x => x.time > timeOffset - 0.1f && x.time < timeOffset + 0.1f, out int sameIndex))
+            {
+                selected = animatable.Events[type][sameIndex];
+                index = sameIndex;
+                AudioManager.inst.SetMusicTime(selected.time + animatable.StartTime);
+            }
+            else if (createKeyframe)
+            {
+                selected = animatable.Events[type][nextIndex].Copy();
+                selected.time = timeOffset;
+                index = animatable.Events[type].Count;
+                animatable.Events[type].Add(selected);
+            }
+            else if (usePrevious)
+            {
+                index = animatable.Events[type].FindLastIndex(x => x.time < timeOffset);
+                selected = animatable.Events[type][index];
+            }
+            else
+            {
+                index = 0;
+                selected = animatable.Events[type][index];
+            }
+
+            if (renderEditor && ObjectEditor.inst)
+            {
+                ObjectEditor.inst.Dialog.Timeline.RenderKeyframes(animatable);
+                ObjectEditor.inst.Dialog.Timeline.SetCurrentKeyframe(animatable, type, index, false, false);
+            }
+
+            return selected;
+        }
+
+        /// <summary>
+        /// Creates the events and sets the default keyframes.
+        /// </summary>
+        public static void InitDefaultEvents(this IAnimatable animatable) => animatable.Events = new List<List<EventKeyframe>>
+        {
+            new List<EventKeyframe>() { EventKeyframe.DefaultPositionKeyframe },
+            new List<EventKeyframe>() { EventKeyframe.DefaultScaleKeyframe },
+            new List<EventKeyframe>() { EventKeyframe.DefaultRotationKeyframe },
+            new List<EventKeyframe>() { EventKeyframe.DefaultColorKeyframe },
+        };
+
+        /// <summary>
+        /// Binary searches the keyframe list for the previous keyframe.
+        /// </summary>
+        /// <param name="type">Type of the event.</param>
+        /// <param name="time">Elapsed time.</param>
+        /// <returns>Returns the index of the event keyframe.</returns>
+        public static int SearchKeyframe(this IAnimatable animatable, int type, float time)
+        {
+            int low = 0;
+            var keyframes = animatable.Events[type];
+            int high = keyframes.Count - 1;
+
+            while (low <= high)
+            {
+                int mid = (low + high) / 2;
+                float midTime = keyframes[mid].time;
+
+                if (time < midTime)
+                    high = mid - 1;
+                else if (time > midTime)
+                    low = mid + 1;
+                else
+                    return mid;
+            }
+
+            return low - 1;
+        }
+
+        /// <summary>
+        /// Interpolates a single value of two keyframes.
+        /// </summary>
+        /// <param name="type">Type of the event.</param>
+        /// <param name="valueIndex">Value index to interpolate.</param>
+        /// <param name="time">Elapsed time.</param>
+        /// <param name="source">Value source.<br/>
+        /// 0 = <see cref="EventKeyframe.values"/><br/>
+        /// 1 = <see cref="EventKeyframe.randomValues"/>.
+        /// </param>
+        /// <returns>Returns the interpolated value.</returns>
+        public static float Interpolate(this IAnimatable animatable, int type, int valueIndex, float time, int source = 0)
+        {
+            if (!animatable.Events.TryGetAt(type, out List<EventKeyframe> list))
+                return 0f;
+
+            var prevKFIndex = RTMath.Clamp(animatable.SearchKeyframe(type, time), 0, list.Count - 1);
+            var nextKFIndex = RTMath.Clamp(prevKFIndex + 1, 0, list.Count - 1);
+
+            var prevKF = list[prevKFIndex];
+            var nextKF = list[nextKFIndex];
+
+            if (time <= 0f)
+                return GetKeyframeValue(animatable, prevKF, valueIndex, 0, source);
+
+            var total = 0f;
+            var prevtotal = 0f;
+            if (prevKF.relative || nextKF.relative)
+            {
+                for (int i = 0; i < nextKFIndex; i++)
+                {
+                    if (list[i + 1].relative)
+                        total += GetKeyframeValue(animatable, list[i], valueIndex, i, source);
+                    else
+                        total = 0f;
+
+                    if (list[i].relative)
+                        prevtotal += GetKeyframeValue(animatable, list[i], valueIndex, i, source);
+                    else
+                        prevtotal = 0f;
+                }
+            }
+
+            var next = GetKeyframeValue(animatable, nextKF, valueIndex, nextKFIndex, source);
+            if (nextKF.relative)
+                next += total;
+            var prev = prevKF.relative || nextKF.relative ? prevtotal : GetKeyframeValue(animatable, prevKF, valueIndex, prevKFIndex, source);
+
+            bool isLerper = type != 3 || valueIndex != 0 || valueIndex != 5;
+
+            if (float.IsNaN(prev) || !isLerper)
+                prev = 0f;
+
+            if (float.IsNaN(next))
+                next = 0f;
+
+            if (!isLerper)
+                next = 1f;
+
+            if (prevKFIndex == nextKFIndex)
+                return next;
+
+            var x = RTMath.Lerp(prev, next, EasedTime(prevKF, nextKF, time));
+
+            if (float.IsNaN(x) || float.IsInfinity(x))
+                x = next;
+
+            return x;
+        }
+
+        /// <summary>
+        /// Interpolates a <see cref="Vector2"/> value of two keyframes.
+        /// </summary>
+        /// <param name="type">Type of the event.</param>
+        /// <param name="valueXIndex">X value index to interpolate.</param>
+        /// <param name="valueYIndex">Y value index to interpolate.</param>
+        /// <param name="time">Elapsed time.</param>
+        /// <param name="source">Value source.<br/>
+        /// 0 = <see cref="EventKeyframe.values"/><br/>
+        /// 1 = <see cref="EventKeyframe.randomValues"/>.
+        /// </param>
+        /// <returns>Returns the interpolated value.</returns>
+        public static Vector2 InterpolateVector2(this IAnimatable animatable, int type, int valueXIndex, int valueYIndex, float time, int source = 0)
+        {
+            if (!animatable.Events.TryGetAt(type, out List<EventKeyframe> list))
+                return Vector2.zero;
+
+            var prevKFIndex = RTMath.Clamp(animatable.SearchKeyframe(type, time), 0, list.Count - 1);
+            var nextKFIndex = RTMath.Clamp(prevKFIndex + 1, 0, list.Count - 1);
+
+            var prevKF = list[prevKFIndex];
+            var nextKF = list[nextKFIndex];
+
+            if (time <= 0f)
+                return GetKeyframeVector2(animatable, prevKF, valueXIndex, valueYIndex, prevKFIndex, source);
+
+            var total = Vector2.zero;
+            var prevtotal = Vector2.zero;
+            if (prevKF.relative || nextKF.relative)
+            {
+                for (int i = 0; i < nextKFIndex; i++)
+                {
+                    if (list[i + 1].relative)
+                        total += GetKeyframeVector2(animatable, list[i], valueXIndex, valueYIndex, i, source);
+                    else
+                        total = Vector2.zero;
+
+                    if (list[i].relative)
+                        prevtotal += GetKeyframeVector2(animatable, list[i], valueXIndex, valueYIndex, i, source);
+                    else
+                        prevtotal = Vector2.zero;
+                }
+            }
+
+            var next = GetKeyframeVector2(animatable, nextKF, valueXIndex, valueYIndex, nextKFIndex, source);
+            if (nextKF.relative)
+                next += total;
+            var prev = prevKF.relative || nextKF.relative ? prevtotal : GetKeyframeVector2(animatable, prevKF, valueXIndex, valueYIndex, prevKFIndex, source);
+
+            if (float.IsNaN(next.x))
+                next.x = 0f;
+            if (float.IsNaN(next.y))
+                next.y = 0f;
+
+            if (prevKFIndex == nextKFIndex)
+                return next;
+
+            var x = RTMath.Lerp(prev, next, EasedTime(prevKF, nextKF, time));
+
+            if (float.IsNaN(x.x) || float.IsNaN(x.y) || float.IsInfinity(x.x) || float.IsInfinity(x.y))
+                x = next;
+
+            return x;
+        }
+
+        /// <summary>
+        /// Interpolates a <see cref="Vector3"/> value of two keyframes.
+        /// </summary>
+        /// <param name="type">Type of the event.</param>
+        /// <param name="valueXIndex">X value index to interpolate.</param>
+        /// <param name="valueYIndex">Y value index to interpolate.</param>
+        /// <param name="valueZIndex">Z value index to interpolate.</param>
+        /// <param name="time">Elapsed time.</param>
+        /// <param name="source">Value source.<br/>
+        /// 0 = <see cref="EventKeyframe.values"/><br/>
+        /// 1 = <see cref="EventKeyframe.randomValues"/>.
+        /// </param>
+        /// <returns>Returns the interpolated value.</returns>
+        public static Vector3 InterpolateVector3(this IAnimatable animatable, int type, int valueXIndex, int valueYIndex, int valueZIndex, float time, int source = 0)
+        {
+            if (!animatable.Events.TryGetAt(type, out List<EventKeyframe> list))
+                return Vector3.zero;
+
+            var prevKFIndex = RTMath.Clamp(animatable.SearchKeyframe(type, time), 0, list.Count - 1);
+            var nextKFIndex = RTMath.Clamp(prevKFIndex + 1, 0, list.Count - 1);
+
+            var prevKF = list[prevKFIndex];
+            var nextKF = list[nextKFIndex];
+
+            if (time <= 0f)
+                return GetKeyframeVector3(animatable, prevKF, valueXIndex, valueYIndex, valueZIndex, type, prevKFIndex, source);
+
+            var total = Vector3.zero;
+            var prevtotal = Vector3.zero;
+            if (prevKF.relative || nextKF.relative)
+            {
+                for (int i = 0; i < nextKFIndex; i++)
+                {
+                    if (list[i + 1].relative)
+                        total += GetKeyframeVector3(animatable, list[i], valueXIndex, valueYIndex, valueZIndex, type, i, source);
+                    else
+                        total = Vector3.zero;
+
+                    if (list[i].relative)
+                        prevtotal += GetKeyframeVector3(animatable, list[i], valueXIndex, valueYIndex, valueZIndex, type, i, source);
+                    else
+                        prevtotal = Vector3.zero;
+                }
+            }
+
+            var next = GetKeyframeVector3(animatable, nextKF, valueXIndex, valueYIndex, valueZIndex, type, nextKFIndex, source);
+            if (nextKF.relative)
+                next += total;
+            var prev = prevKF.relative || nextKF.relative ? prevtotal : GetKeyframeVector3(animatable, prevKF, valueXIndex, valueYIndex, valueZIndex, type, prevKFIndex, source);
+
+            if (float.IsNaN(next.x))
+                next.x = 0f;
+            if (float.IsNaN(next.y))
+                next.y = 0f;
+            if (float.IsNaN(next.z))
+                next.z = 0f;
+
+            if (prevKFIndex == nextKFIndex)
+                return next;
+
+            var x = RTMath.Lerp(prev, next, EasedTime(prevKF, nextKF, time));
+
+            if (float.IsNaN(x.x) || float.IsNaN(x.y) || float.IsNaN(x.z) || float.IsInfinity(x.x) || float.IsInfinity(x.y) || float.IsInfinity(x.z))
+                x = next;
+
+            return x;
+        }
+
+        /// <summary>
+        /// Creates a <see cref="FullTransform"/> based on interpolated values.
+        /// </summary>
+        /// <param name="time">Elapsed time.</param>
+        /// <returns>Returns an interpolated <see cref="FullTransform"/>.</returns>
+        public static FullTransform InterpolateTransform(this IAnimatable animatable, float time)
+        {
+            var position = animatable.InterpolateVector3(0, 0, 1, 2, time);
+            var scale = animatable.InterpolateVector2(1, 0, 1, time);
+            var rotation = animatable.InterpolateVector3(2, 0, 1, 2, time);
+            return new FullTransform(
+                position: position,
+                scale: scale.ToVector3(1f),
+                rotation: rotation
+                );
+        }
+
+        static Vector2 GetKeyframeVector2(IAnimatable animatable, EventKeyframe eventKeyframe, int valueXIndex, int valueYIndex, int kfIndex, int source) => source switch
+        {
+            1 => new Vector2(eventKeyframe.randomValues.GetAtOrDefault(valueXIndex, 0f), eventKeyframe.randomValues.GetAtOrDefault(valueYIndex, 0f)),
+            2 => RandomHelper.KeyframeRandomizer.RandomizeVector2Keyframe(animatable.ID, eventKeyframe, kfIndex),
+            _ => new Vector2(eventKeyframe.values.GetAtOrDefault(valueXIndex, 0f), eventKeyframe.values.GetAtOrDefault(valueYIndex, 0f)),
+        };
+        
+        static Vector3 GetKeyframeVector3(IAnimatable animatable, EventKeyframe eventKeyframe, int valueXIndex, int valueYIndex, int valueZIndex, int type, int kfIndex, int source) => source switch
+        {
+            1 => Vector2.zero,
+            2 => type != 2 || eventKeyframe.values.Length > 2 ?
+                new Vector3(eventKeyframe.values.GetAtOrDefault(valueXIndex, 0f), eventKeyframe.values.GetAtOrDefault(valueYIndex, 0f), GetKeyframeValue(animatable, eventKeyframe, valueZIndex, kfIndex, 2)) :
+                new Vector3(0f, 0f, GetKeyframeValue(animatable, eventKeyframe, valueXIndex, kfIndex, 2)),
+            _ => type != 2 || eventKeyframe.values.Length > 2 ?
+                new Vector3(eventKeyframe.values.GetAtOrDefault(valueXIndex, 0f), eventKeyframe.values.GetAtOrDefault(valueYIndex, 0f), eventKeyframe.values.GetAtOrDefault(valueZIndex, 0f)) :
+                new Vector3(0f, 0f, eventKeyframe.values.GetAtOrDefault(valueXIndex, 0f)),
+        };
+
+        static float GetKeyframeValue(IAnimatable animatable, EventKeyframe eventKeyframe, int valueIndex, int kfIndex, int source) => source switch
+        {
+            1 => eventKeyframe.randomValues.GetAtOrDefault(valueIndex, 0f),
+            2 => eventKeyframe.random != 0 ? RandomHelper.KeyframeRandomizer.RandomizeFloatKeyframe(animatable.ID, eventKeyframe, valueIndex, kfIndex) : eventKeyframe.randomValues.GetAtOrDefault(valueIndex, 0f),
+            _ => eventKeyframe.values.GetAtOrDefault(valueIndex, 0f),
+        };
+
+        static float EasedTime(EventKeyframe prevKF, EventKeyframe nextKF, float time) => Ease.GetEaseFunction(nextKF.curve.ToString())(RTMath.InverseLerp(prevKF.time, nextKF.time, Mathf.Clamp(time, 0f, nextKF.time)));
+
+        #endregion
+
+        #region Misc
+
+        /// <summary>
+        /// Gets the parent runtime of the object.
+        /// </summary>
+        /// <param name="reference">Modifier object reference.</param>
+        /// <returns>Returns the parent runtime.</returns>
+        public static RTLevelBase GetParentRuntime(this IModifierReference reference) => (reference.ParentRuntime ?? RTLevel.Current);
+
+        /// <summary>
+        /// Gets the parent runtime of the object.
+        /// </summary>
+        /// <param name="reference">Runtime object reference.</param>
+        /// <returns>Returns the parent runtime.</returns>
+        public static RTLevelBase GetParentRuntime(this IRTObject reference) => (reference.ParentRuntime ?? RTLevel.Current);
+
+        /// <summary>
+        /// Updates the modifier functions.
+        /// </summary>
+        public static void UpdateFunctions(this IModifyable modifyable) => modifyable.Modifiers.ForLoop(modifier => ModifiersHelper.AssignModifierFunctions(modifier, modifyable.ReferenceType));
 
         /// <summary>
         /// Checks if an object can spawn.
@@ -2155,6 +2542,8 @@ namespace BetterLegacy.Core
             DetailMode.NoDetail => false,
             _ => true,
         };
+
+        #endregion
 
         #region Beatmap
 
@@ -2542,6 +2931,8 @@ namespace BetterLegacy.Core
 
         #endregion
 
+        #region Copy
+
         /// <summary>
         /// Copies parent data from another parentable object.
         /// </summary>
@@ -2603,6 +2994,8 @@ namespace BetterLegacy.Core
             for (int i = 0; i < origEvents.Count; i++)
                 animatable.SetEventKeyframes(i, new List<EventKeyframe>(origEvents[i].Select(x => x.Copy())));
         }
+
+        #endregion
 
         #region JSON
 

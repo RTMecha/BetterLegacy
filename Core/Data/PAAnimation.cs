@@ -114,7 +114,18 @@ namespace BetterLegacy.Core.Data
         /// </summary>
         public string ReferenceID { get; set; }
 
-        public List<List<EventKeyframe>> Events => events;
+        public List<List<EventKeyframe>> Events
+        {
+            get => events;
+            set
+            {
+                events = value;
+                if (events == null)
+                    return;
+                for (int i = 0; i < events.Count; i++)
+                    SetEventKeyframes(i, events[i]);
+            }
+        }
 
         public float AnimLength => GetLength(true);
 
@@ -456,196 +467,11 @@ namespace BetterLegacy.Core.Data
             }
         }
 
-        int SearchKeyframe(int type, float time)
-        {
-            int low = 0;
-            var keyframes = GetEventKeyframes(type);
-            int high = keyframes.Count - 1;
-
-            while (low <= high)
-            {
-                int mid = (low + high) / 2;
-                float midTime = keyframes[mid].time;
-
-                if (time < midTime)
-                    high = mid - 1;
-                else if (time > midTime)
-                    low = mid + 1;
-                else
-                    return mid;
-            }
-
-            return low - 1;
-        }
-
-        public float Interpolate(int type, int valueIndex, float time, int source = 0)
-        {
-            var list = GetEventKeyframes(type);
-            if (list == null)
-                return 0f;
-
-            var prevKFIndex = RTMath.Clamp(SearchKeyframe(type, time), 0, list.Count - 1);
-            var nextKFIndex = RTMath.Clamp(prevKFIndex + 1, 0, list.Count - 1);
-
-            var prevKF = list[prevKFIndex];
-            var prevKFValues = source switch
-            {
-                1 => prevKF.randomValues,
-                _ => prevKF.values,
-            };
-            var nextKF = list[nextKFIndex];
-            var nextKFValues = source switch
-            {
-                1 => nextKF.randomValues,
-                _ => nextKF.values,
-            };
-
-            valueIndex = Mathf.Clamp(valueIndex, 0, (source == 0 ? list[0].values : list[0].randomValues).Length);
-
-            if (prevKFValues.Length <= valueIndex)
-                return 0f;
-
-            if (time <= 0f)
-                return prevKFValues[valueIndex];
-
-            var total = 0f;
-            var prevtotal = 0f;
-            if (prevKF.relative || nextKF.relative)
-            {
-                for (int k = 0; k < nextKFIndex; k++)
-                {
-                    var rv = source switch
-                    {
-                        1 => list[k].randomValues,
-                        _ => list[k].values,
-                    };
-                    if (list[k + 1].relative)
-                        total += rv[valueIndex];
-                    else
-                        total = 0f;
-
-                    if (list[k].relative)
-                        prevtotal += rv[valueIndex];
-                    else
-                        prevtotal = 0f;
-                }
-            }
-
-            var next = nextKF.relative ? total + nextKFValues[valueIndex] : nextKFValues[valueIndex];
-            var prev = prevKF.relative || nextKF.relative ? prevtotal : prevKFValues[valueIndex];
-
-            bool isLerper = type != 3 || valueIndex != 0 || valueIndex != 5;
-
-            if (float.IsNaN(prev) || !isLerper)
-                prev = 0f;
-
-            if (float.IsNaN(next))
-                next = 0f;
-
-            if (!isLerper)
-                next = 1f;
-
-            if (prevKFIndex == nextKFIndex)
-                return next;
-
-            var x = RTMath.Lerp(prev, next, Ease.GetEaseFunction(nextKF.curve.ToString())(RTMath.InverseLerp(prevKF.time, nextKF.time, Mathf.Clamp(time, 0f, nextKF.time))));
-
-            if (float.IsNaN(x) || float.IsInfinity(x))
-                x = next;
-
-            return x;
-        }
-
-        public float Interpolate(EventKeyframe prevKeyframe, EventKeyframe nextKeyframe, int type, int valueIndex, float time)
-        {
-            var list = GetEventKeyframes(type);
-            if (list == null)
-                return 0f;
-
-            valueIndex = Mathf.Clamp(valueIndex, 0, prevKeyframe.values.Length);
-
-            if (prevKeyframe.values.Length <= valueIndex)
-                return 0f;
-
-            var total = 0f;
-            var prevtotal = 0f;
-            if (prevKeyframe.relative || nextKeyframe.relative)
-            {
-                for (int k = 0; k < list.Count; k++)
-                {
-                    if (time >= list[k].time)
-                        break;
-
-                    if (list[k + 1].relative)
-                        total += list[k].values[valueIndex];
-                    else
-                        total = 0f;
-
-                    if (list[k].relative)
-                        prevtotal += list[k].values[valueIndex];
-                    else
-                        prevtotal = 0f;
-                }
-            }
-
-            var next = nextKeyframe.relative ? total + nextKeyframe.values[valueIndex] : nextKeyframe.values[valueIndex];
-            var prev = prevKeyframe.relative || nextKeyframe.relative ? prevtotal : prevKeyframe.values[valueIndex];
-
-            bool isLerper = type != 3 || valueIndex != 0;
-
-            if (float.IsNaN(prev) || !isLerper)
-                prev = 0f;
-
-            if (float.IsNaN(next))
-                next = 0f;
-
-            if (!isLerper)
-                next = 1f;
-
-            if (prevKeyframe == nextKeyframe)
-                return next;
-
-            var x = RTMath.Lerp(prev, next, Ease.GetEaseFunction(nextKeyframe.curve.ToString())(RTMath.InverseLerp(prevKeyframe.time, nextKeyframe.time, Mathf.Clamp(time, 0f, nextKeyframe.time))));
-
-            if (float.IsNaN(x) || float.IsInfinity(x))
-                x = next;
-
-            return x;
-        }
-
-        /// <summary>
-        /// Creates a <see cref="FullTransform"/> based on interpolated values.
-        /// </summary>
-        /// <param name="time">Elapsed time.</param>
-        /// <returns>Returns an interpolated <see cref="FullTransform"/>.</returns>
-        public FullTransform InterpolateTransform(float time) => new FullTransform(
-                position: new Vector3(Interpolate(0, 0, time), Interpolate(0, 1, time), Interpolate(0, 2, time)),
-                scale: new Vector3(Interpolate(1, 0, time), Interpolate(1, 1, time), 1f),
-                rotation: rotationKeyframes[0].values.Length != 3 ? new Vector3(0f, 0f, Interpolate(2, 0, time)) : new Vector3(Interpolate(2, 0, time), Interpolate(2, 1, time), Interpolate(2, 2, time))
-                );
-
-        public void SortKeyframes() => SortKeyframes(Events);
-
-        public void SortKeyframes(List<List<EventKeyframe>> events)
-        {
-            for (int i = 0; i < events.Count; i++)
-                SortKeyframes(i);
-        }
-
-        public void SortKeyframes(int type) => SortKeyframes(type switch
-        {
-            0 => positionKeyframes,
-            1 => scaleKeyframes,
-            2 => rotationKeyframes,
-            3 => colorKeyframes,
-            _ => null,
-        });
-
-        public void SortKeyframes(List<EventKeyframe> eventKeyframes) => eventKeyframes.Sort((a, b) => a.time.CompareTo(b.time));
-
         public float GetObjectLifeLength(float offset = 0f, bool noAutokill = false, bool collapse = false) => AnimLength + offset;
 
         public IRTObject GetRuntimeObject() => default;
+
+        public override string ToString() => $"{id} - {name}";
 
         #endregion
     }

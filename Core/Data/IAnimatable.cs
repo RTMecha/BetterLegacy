@@ -10,10 +10,17 @@ namespace BetterLegacy.Core.Data
     /// </summary>
     public interface IAnimatable
     {
+        #region Values
+
+        /// <summary>
+        /// ID of the animatable.
+        /// </summary>
+        public string ID { get; set; }
+
         /// <summary>
         /// Animation events.
         /// </summary>
-        public List<List<EventKeyframe>> Events { get; }
+        public List<List<EventKeyframe>> Events { get; set; }
 
         /// <summary>
         /// The full length of the animation.
@@ -30,7 +37,14 @@ namespace BetterLegacy.Core.Data
         /// </summary>
         public List<TimelineKeyframe> TimelineKeyframes { get; set; }
 
+        /// <summary>
+        /// Data for the object in the editor.
+        /// </summary>
         public ObjectEditorData EditorData { get; set; }
+
+        #endregion
+
+        #region Functions
 
         /// <summary>
         /// Gets the list of event keyframes.
@@ -46,28 +60,6 @@ namespace BetterLegacy.Core.Data
         /// <param name="eventKeyframes">List of keyframes to set based on the type.</param>
         public void SetEventKeyframes(int type, List<EventKeyframe> eventKeyframes);
 
-        /// <summary>
-        /// Interpolates an animation from the object.
-        /// </summary>
-        /// <param name="type">
-        /// The type of transform value to get.<br></br>
-        /// 0 -> <see cref="positionOffset"/><br></br>
-        /// 1 -> <see cref="scaleOffset"/><br></br>
-        /// 2 -> <see cref="rotationOffset"/>
-        /// </param>
-        /// <param name="valueIndex">Axis index to interpolate.</param>
-        /// <param name="time">Time to interpolate to.</param>
-        /// <returns>Returns a single value based on the event.</returns>
-        public float Interpolate(int type, int valueIndex, float time, int source = 0);
-
-        public float Interpolate(EventKeyframe prevKeyframe, EventKeyframe nextKeyframe, int type, int valueIndex, float time);
-
-        public void SortKeyframes();
-
-        public void SortKeyframes(List<List<EventKeyframe>> events);
-
-        public void SortKeyframes(int type);
-
-        public void SortKeyframes(List<EventKeyframe> eventKeyframes);
+        #endregion
     }
 }

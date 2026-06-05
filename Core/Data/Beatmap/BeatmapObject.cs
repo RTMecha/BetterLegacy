@@ -10,7 +10,6 @@ using ILMath;
 using SimpleJSON;
 
 using BetterLegacy.Configs;
-using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data.Modifiers;
 using BetterLegacy.Core.Helpers;
@@ -28,9 +27,13 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// </summary>
     public class BeatmapObject : PAObject<BeatmapObject>, IPrefabable, ILifetime, IShapeable, ITransformable, IParentable, IEvaluatable, IModifyable, IModifierReference, IEditable, IReactive, IAnimatable
     {
+        #region Constructors
+
         public BeatmapObject() : base() { }
 
         public BeatmapObject(float startTime) : this() => StartTime = startTime;
+
+        #endregion
 
         #region Values
 
@@ -95,7 +98,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             new List<EventKeyframe>(),
             new List<EventKeyframe>()
         };
-        public List<List<EventKeyframe>> Events => events;
+        public List<List<EventKeyframe>> Events { get => events; set => events = value; }
 
         public float AnimLength => GetObjectLifeLength();
 
@@ -688,7 +691,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             for (int i = 0; i < events.Count; i++)
                 events[i] = new List<EventKeyframe>(orig.events[i].Select(x => x.Copy()));
 
-            SortKeyframes(events);
+            this.SortKeyframes(events);
 
             this.CopyModifyableData(orig);
 
@@ -866,7 +869,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                     prevEventKeyframe = eventKeyframe;
                 }
 
-                SortKeyframes(events);
+                this.SortKeyframes(events);
             }
 
             this.events = events;
@@ -1205,12 +1208,12 @@ namespace BetterLegacy.Core.Data.Beatmap
                     events[3].Add(eventKeyframe);
                 }
 
-                SortKeyframes(events);
+                this.SortKeyframes(events);
 
                 this.events = events;
             }
             else if (events == null || events.IsEmpty() || events[0].IsEmpty())
-                InitDefaultEvents();
+                this.InitDefaultEvents();
 
             id = jn["id"] ?? LSText.randomString(16);
 
@@ -1574,80 +1577,6 @@ namespace BetterLegacy.Core.Data.Beatmap
             }
         }
 
-        /// <summary>
-        /// Gets or creates an Event Keyframe. Used for object dragging.
-        /// </summary>
-        /// <param name="type">Animation event type.</param>
-        /// <param name="createKeyframe">If a keyframe should be created when no keyframe is found.</param>
-        /// <param name="useNearest">If nearest keyframe should be searched for.</param>
-        /// <param name="usePrevious">If the previous keyframe should be searched for.</param>
-        /// <param name="renderEditor">If the editor should be rendered.</param>
-        /// <returns>Returns the found keyframe.</returns>
-        public EventKeyframe GetOrCreateKeyframe(int type, bool createKeyframe, bool useNearest = true, bool usePrevious = true, bool renderEditor = true)
-        {
-            var timeOffset = AudioManager.inst.CurrentAudioSource.time - StartTime;
-            int nextIndex = events[type].FindIndex(x => x.time >= timeOffset);
-            if (nextIndex < 0)
-                nextIndex = events[type].Count - 1;
-
-            int index;
-            EventKeyframe selected;
-            if (useNearest && events[type].TryFindIndex(x => x.time > timeOffset - 0.1f && x.time < timeOffset + 0.1f, out int sameIndex))
-            {
-                selected = events[type][sameIndex];
-                index = sameIndex;
-                AudioManager.inst.SetMusicTime(selected.time + StartTime);
-            }
-            else if (createKeyframe)
-            {
-                selected = events[type][nextIndex].Copy();
-                selected.time = timeOffset;
-                index = events[type].Count;
-                events[type].Add(selected);
-            }
-            else if (usePrevious)
-            {
-                index = events[type].FindLastIndex(x => x.time < timeOffset);
-                selected = events[type][index];
-            }
-            else
-            {
-                index = 0;
-                selected = events[type][index];
-            }
-
-            if (renderEditor && ObjectEditor.inst)
-            {
-                ObjectEditor.inst.Dialog.Timeline.RenderKeyframes(this);
-                ObjectEditor.inst.Dialog.Timeline.SetCurrentKeyframe(this, type, index, false, false);
-            }
-
-            return selected;
-        }
-
-        /// <summary>
-        /// Creates the events and sets the default keyframes.
-        /// </summary>
-        public void InitDefaultEvents() => events = new List<List<EventKeyframe>>
-        {
-            new List<EventKeyframe>() { EventKeyframe.DefaultPositionKeyframe },
-            new List<EventKeyframe>() { EventKeyframe.DefaultScaleKeyframe },
-            new List<EventKeyframe>() { EventKeyframe.DefaultRotationKeyframe },
-            new List<EventKeyframe>() { EventKeyframe.DefaultColorKeyframe },
-        };
-
-        public void SortKeyframes() => SortKeyframes(events);
-
-        public void SortKeyframes(List<List<EventKeyframe>> events)
-        {
-            for (int i = 0; i < events.Count; i++)
-                SortKeyframes(i);
-        }
-
-        public void SortKeyframes(int type) => SortKeyframes(events[type]);
-
-        public void SortKeyframes(List<EventKeyframe> eventKeyframes) => eventKeyframes.Sort((a, b) => a.time.CompareTo(b.time));
-
         public IRTObject GetRuntimeObject() => runtimeObject;
 
         public IPrefabable AsPrefabable() => this;
@@ -1773,162 +1702,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </param>
         /// <param name="valueIndex">Axis index to interpolate.</param>
         /// <returns>Returns a single value based on the event.</returns>
-        public float Interpolate(int type, int valueIndex) => Interpolate(type, valueIndex, this.GetParentRuntime().CurrentTime - StartTime);
-
-        int SearchKeyframe(int type, float time)
-        {
-            int low = 0;
-            var keyframes = events[type];
-            int high = keyframes.Count - 1;
-
-            while (low <= high)
-            {
-                int mid = (low + high) / 2;
-                float midTime = keyframes[mid].time;
-
-                if (time < midTime)
-                    high = mid - 1;
-                else if (time > midTime)
-                    low = mid + 1;
-                else
-                    return mid;
-            }
-
-            return low - 1;
-        }
-
-        public float Interpolate(int type, int valueIndex, float time, int source = 0)
-        {
-            if (!events.TryGetAt(type, out List<EventKeyframe> list))
-                return 0f;
-
-            var prevKFIndex = RTMath.Clamp(SearchKeyframe(type, time), 0, list.Count - 1);
-            var nextKFIndex = RTMath.Clamp(prevKFIndex + 1, 0, list.Count - 1);
-
-            var prevKF = list[prevKFIndex];
-            var prevKFValues = source switch
-            {
-                1 => prevKF.randomValues,
-                _ => prevKF.values,
-            };
-            var nextKF = list[nextKFIndex];
-            var nextKFValues = source switch
-            {
-                1 => nextKF.randomValues,
-                _ => nextKF.values,
-            };
-
-            //valueIndex = Mathf.Clamp(valueIndex, 0, (source == 0 ? list[0].values : list[0].randomValues).Length);
-
-            if (time <= 0f)
-                return !prevKFValues.InRange(valueIndex) ? 0f : prevKFValues[valueIndex];
-
-            var total = 0f;
-            var prevtotal = 0f;
-            if (prevKF.relative || nextKF.relative)
-            {
-                for (int k = 0; k < nextKFIndex; k++)
-                {
-                    var rv = source switch
-                    {
-                        1 => list[k].randomValues,
-                        _ => list[k].values,
-                    };
-                    if (list[k + 1].relative)
-                        total += !rv.InRange(valueIndex) ? 0f : rv[valueIndex];
-                    else
-                        total = 0f;
-
-                    if (list[k].relative)
-                        prevtotal += !rv.InRange(valueIndex) ? 0f : rv[valueIndex];
-                    else
-                        prevtotal = 0f;
-                }
-            }
-
-            var next = !nextKFValues.InRange(valueIndex) ? 0f : nextKFValues[valueIndex];
-            if (nextKF.relative)
-                next += total;
-            var prev = prevKF.relative || nextKF.relative ? prevtotal : !prevKFValues.InRange(valueIndex) ? 0f : prevKFValues[valueIndex];
-
-            bool isLerper = type != 3 || valueIndex != 0 || valueIndex != 5;
-
-            if (float.IsNaN(prev) || !isLerper)
-                prev = 0f;
-
-            if (float.IsNaN(next))
-                next = 0f;
-
-            if (!isLerper)
-                next = 1f;
-
-            if (prevKFIndex == nextKFIndex)
-                return next;
-
-            var x = RTMath.Lerp(prev, next, Ease.GetEaseFunction(nextKF.curve.ToString())(RTMath.InverseLerp(prevKF.time, nextKF.time, Mathf.Clamp(time, 0f, nextKF.time))));
-
-            if (float.IsNaN(x) || float.IsInfinity(x))
-                x = next;
-
-            return x;
-        }
-
-        public float Interpolate(EventKeyframe prevKeyframe, EventKeyframe nextKeyframe, int type, int valueIndex, float time)
-        {
-            //valueIndex = Mathf.Clamp(valueIndex, 0, prevKeyframe.values.Length);
-
-            if (time <= 0f)
-                return !prevKeyframe.values.InRange(valueIndex) ? 0f : prevKeyframe.values[valueIndex];
-
-            var total = 0f;
-            var prevtotal = 0f;
-            if (prevKeyframe.relative || nextKeyframe.relative)
-            {
-                var list = events[type];
-                for (int k = 0; k < events[type].Count; k++)
-                {
-                    var kf = list[k];
-                    if (time >= kf.time)
-                        break;
-
-                    if (list[k + 1].relative)
-                        total += !kf.values.InRange(valueIndex) ? 0f : kf.values[valueIndex];
-                    else
-                        total = 0f;
-
-                    if (kf.relative)
-                        prevtotal += !kf.values.InRange(valueIndex) ? 0f : kf.values[valueIndex];
-                    else
-                        prevtotal = 0f;
-                }
-            }
-
-            var next = !nextKeyframe.values.InRange(valueIndex) ? 0f : nextKeyframe.values[valueIndex];
-            if (nextKeyframe.relative)
-                next += total;
-            var prev = prevKeyframe.relative || nextKeyframe.relative ? prevtotal : !prevKeyframe.values.InRange(valueIndex) ? 0f : prevKeyframe.values[valueIndex];
-
-            bool isLerper = type != 3 || valueIndex != 0;
-
-            if (float.IsNaN(prev) || !isLerper)
-                prev = 0f;
-
-            if (float.IsNaN(next))
-                next = 0f;
-
-            if (!isLerper)
-                next = 1f;
-
-            if (prevKeyframe == nextKeyframe)
-                return next;
-
-            var x = RTMath.Lerp(prev, next, Ease.GetEaseFunction(nextKeyframe.curve.ToString())(RTMath.InverseLerp(prevKeyframe.time, nextKeyframe.time, Mathf.Clamp(time, 0f, nextKeyframe.time))));
-
-            if (float.IsNaN(x) || float.IsInfinity(x))
-                x = next;
-
-            return x;
-        }
+        public float Interpolate(int type, int valueIndex) => this.Interpolate(type, valueIndex, this.GetParentRuntime().CurrentTime - StartTime);
 
         /// <summary>
         /// Interpolates an animation from the objects' parent chain.
@@ -2469,10 +2243,6 @@ namespace BetterLegacy.Core.Data.Beatmap
         public void UpdateParentChain() => this.GetParentRuntime()?.UpdateObject(this, ObjectContext.PARENT_CHAIN);
 
         #endregion
-
-        #endregion
-
-        #region Operators
 
         public override bool Equals(object obj) => obj is BeatmapObject paObj && id == paObj.id;
 
