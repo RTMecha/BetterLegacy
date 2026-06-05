@@ -9,6 +9,8 @@ namespace BetterLegacy.Core.Data.Modifiers
     /// </summary>
     public interface IModifierReference
     {
+        #region Values
+
         /// <summary>
         /// The runtime that spawned this object.
         /// </summary>
@@ -23,6 +25,10 @@ namespace BetterLegacy.Core.Data.Modifiers
         /// Variable set and used by modifiers.
         /// </summary>
         public int IntVariable { get; set; }
+
+        #endregion
+
+        #region Functions
 
         /// <summary>
         /// Gets the runtime object for the prefabbed object.
@@ -47,5 +53,7 @@ namespace BetterLegacy.Core.Data.Modifiers
         /// </summary>
         /// <returns>Returns the modifier loop from the object.</returns>
         public ModifierLoop GetModifierLoop();
+
+        #endregion
     }
 }

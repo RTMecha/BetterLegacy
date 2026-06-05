@@ -7,6 +7,8 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// </summary>
     public interface IPrefabable
     {
+        #region Values
+
         /// <summary>
         /// Original ID of the object from the prefab.
         /// </summary>
@@ -42,6 +44,10 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public float StartTime { get; set; }
 
+        #endregion
+
+        #region Functions
+
         /// <summary>
         /// Gets the objects' lifetime based on its autokill type and offset.
         /// </summary>
@@ -56,5 +62,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         /// <returns>Returns the runtime object of the object.</returns>
         public IRTObject GetRuntimeObject();
+
+        #endregion
     }
 }

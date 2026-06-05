@@ -7,6 +7,8 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// </summary>
     public interface ITransformable
     {
+        #region Values
+
         /// <summary>
         /// Dynamic position offset.
         /// </summary>
@@ -22,11 +24,24 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public Vector3 RotationOffset { get; set; }
 
+        /// <summary>
+        /// Operation for position offset.
+        /// </summary>
         public MathOperation PositionOperation { get; set; }
 
+        /// <summary>
+        /// Operation for scale offset.
+        /// </summary>
         public MathOperation ScaleOperation { get; set; }
 
+        /// <summary>
+        /// Operation for rotation offset.
+        /// </summary>
         public MathOperation RotationOperation { get; set; }
+
+        #endregion
+
+        #region Functions
 
         /// <summary>
         /// Resets the transform offsets.
@@ -94,5 +109,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <param name="animation">Animation to apply.</param>
         /// <param name="t">Time to interpolate.</param>
         public void InterpolateAnimation(PAAnimation animation, float t);
+
+        #endregion
     }
 }

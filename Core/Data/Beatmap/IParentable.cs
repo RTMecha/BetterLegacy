@@ -7,6 +7,8 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// </summary>
     public interface IParentable
     {
+        #region Values
+
         /// <summary>
         /// ID of the parentable.
         /// </summary>
@@ -62,6 +64,10 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public BeatmapObject CachedParent { get; set; }
 
+        #endregion
+
+        #region Functions
+
         /// <summary>
         /// Tries to set an objects' parent. If the parent the user is trying to assign an object to a child of the object, then don't set parent.
         /// </summary>
@@ -82,5 +88,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// Updates the runtime objects' parent chain.
         /// </summary>
         public void UpdateParentChain();
+
+        #endregion
     }
 }
