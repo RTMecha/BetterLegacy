@@ -48,6 +48,11 @@ namespace BetterLegacy.Editor.Managers
         public Achievement CurrentAchievement { get; set; }
 
         /// <summary>
+        /// List of current achievements.
+        /// </summary>
+        public List<Achievement> CurrentAchievements { get; set; }
+
+        /// <summary>
         /// List of the current levels' achievements.
         /// </summary>
         public List<Achievement> achievements = new List<Achievement>();
@@ -191,7 +196,7 @@ namespace BetterLegacy.Editor.Managers
                 name = "NEW ACHIEVEMENT",
                 description = "This is the default description!",
             };
-            achievements.Add(achievement);
+            CurrentAchievements.Add(achievement);
             OpenDialog(achievement);
         }
 
@@ -230,7 +235,7 @@ namespace BetterLegacy.Editor.Managers
             }
 
             var newID = copiedLevelID == EditorLevelManager.inst.CurrentLevel.id;
-            achievements.AddRange(copiedAchievements.Select(x => x.Copy(newID)));
+            CurrentAchievements.AddRange(copiedAchievements.Select(x => x.Copy(newID)));
             EditorManager.inst.DisplayNotification("Pasted achievements.", 1f, EditorManager.NotificationType.Success);
             RenderAchievementList();
         }
@@ -244,7 +249,14 @@ namespace BetterLegacy.Editor.Managers
         /// Deletes the currently selected achievement.
         /// </summary>
         /// <param name="achievement">Achievement to delete.</param>
-        public void DeleteAchievement(Achievement achievement)
+        public void DeleteAchievement(Achievement achievement) => DeleteAchievement(achievement, achievements);
+
+        /// <summary>
+        /// Deletes the currently selected achievement.
+        /// </summary>
+        /// <param name="achievement">Achievement to delete.</param>
+        /// <param name="achievements">List of achievements to render.</param>
+        public void DeleteAchievement(Achievement achievement, List<Achievement> achievements)
         {
             if (!achievement)
             {
@@ -255,19 +267,9 @@ namespace BetterLegacy.Editor.Managers
             var index = achievements.IndexOf(achievement);
             achievements.RemoveAt(index);
             EditorManager.inst.DisplayNotification("Deleted achievement.", 1f, EditorManager.NotificationType.Success);
-            OpenDialog(achievements.TryGetAt(index - 1, out Achievement prevAchievement) ? prevAchievement : null);
+            OpenDialog(achievements.TryGetAt(index - 1, out Achievement prevAchievement) ? prevAchievement : null, achievements);
         }
-
-        /// <summary>
-        /// Sets the currently editing achievement.
-        /// </summary>
-        /// <param name="index">Index of the achievement.</param>
-        public void SetCurrentAchievement(int index)
-        {
-            if (achievements.TryGetAt(index, out Achievement achievement))
-                OpenDialog(achievement);
-        }
-
+        
         /// <summary>
         /// Opens the editor dialog.
         /// </summary>
@@ -277,21 +279,37 @@ namespace BetterLegacy.Editor.Managers
         /// Opens the editor dialog.
         /// </summary>
         /// <param name="achievement">Achievement to edit.</param>
-        public void OpenDialog(Achievement achievement)
+        public void OpenDialog(Achievement achievement) => OpenDialog(achievement, achievements);
+
+        /// <summary>
+        /// Opens the editor dialog.
+        /// </summary>
+        /// <param name="achievement">Achievement to edit.</param>
+        /// <param name="achievements">List of achievements to render.</param>
+        public void OpenDialog(Achievement achievement, List<Achievement> achievements)
         {
             CurrentAchievement = achievement;
+            CurrentAchievements = achievements;
 
             Dialog.Open();
-            RenderDialog(achievement);
+            RenderDialog(achievement, achievements);
         }
 
         /// <summary>
         /// Renders the editor dialog.
         /// </summary>
         /// <param name="achievement">Achievement to edit.</param>
-        public void RenderDialog(Achievement achievement)
+        /// <param name="achievements">List of achievements to render.</param>
+        public void RenderDialog(Achievement achievement) => RenderDialog(achievement, achievements);
+
+        /// <summary>
+        /// Renders the editor dialog.
+        /// </summary>
+        /// <param name="achievement">Achievement to edit.</param>
+        /// <param name="achievements">List of achievements to render.</param>
+        public void RenderDialog(Achievement achievement, List<Achievement> achievements)
         {
-            RenderAchievementList();
+            RenderAchievementList(achievements);
 
             Dialog.LeftContent.gameObject.SetActive(achievement);
             if (!achievement)
@@ -320,7 +338,7 @@ namespace BetterLegacy.Editor.Managers
             Dialog.NameField.onValueChanged.NewListener(_val =>
             {
                 achievement.name = _val;
-                RenderAchievementList();
+                RenderAchievementList(achievements);
             });
 
             Dialog.DescriptionField.SetTextWithoutNotify(achievement.description);
@@ -338,7 +356,7 @@ namespace BetterLegacy.Editor.Managers
                             return;
 
                         achievement.icon = SpriteHelper.LoadSprite(imageFile);
-                        RenderDialog(achievement);
+                        RenderDialog(achievement, achievements);
                     }),
                     new ButtonElement($"Select Icon ({RTFileBrowser.EDITOR_BROWSER})", () =>
                     {
@@ -350,7 +368,7 @@ namespace BetterLegacy.Editor.Managers
 
                             RTFileBrowser.inst.Popup.Close();
                             achievement.icon = SpriteHelper.LoadSprite(imageFile);
-                            RenderDialog(achievement);
+                            RenderDialog(achievement, achievements);
                         });
                     }));
             });
@@ -365,7 +383,7 @@ namespace BetterLegacy.Editor.Managers
                             return;
 
                         achievement.lockedIcon = SpriteHelper.LoadSprite(imageFile);
-                        RenderDialog(achievement);
+                        RenderDialog(achievement, achievements);
                     }),
                     new ButtonElement($"Select Icon ({RTFileBrowser.EDITOR_BROWSER})", () =>
                     {
@@ -377,14 +395,14 @@ namespace BetterLegacy.Editor.Managers
 
                             RTFileBrowser.inst.Popup.Close();
                             achievement.lockedIcon = SpriteHelper.LoadSprite(imageFile);
-                            RenderDialog(achievement);
+                            RenderDialog(achievement, achievements);
                         });
                     }));
             });
             Dialog.RemoveLockedIconButton.OnClick.NewListener(() =>
             {
                 achievement.lockedIcon = null;
-                RenderDialog(achievement);
+                RenderDialog(achievement, achievements);
             });
 
             Dialog.HiddenToggle.SetIsOnWithoutNotify(achievement.hidden);
@@ -454,13 +472,24 @@ namespace BetterLegacy.Editor.Managers
         /// <summary>
         /// Renders the achievements list.
         /// </summary>
-        public void RenderAchievementList()
+        public void RenderAchievementList() => RenderAchievementList(achievements);
+
+        /// <summary>
+        /// Renders the achievements list.
+        /// </summary>
+        /// <param name="achievements">List of achievements to render.</param>
+        public void RenderAchievementList(List<Achievement> achievements)
         {
             Dialog.ClearContent();
 
             var add = EditorPrefabHolder.Instance.CreateAddButton(Dialog.Content);
             add.Text = "Add new Achievement";
-            add.OnClick.NewListener(CreateNewAchievement);
+            add.OnClick.NewListener(() =>
+            {
+                var achievement = new Achievement("NEW ACHIEVEMENT", "This is the default description!");
+                achievements.Add(achievement);
+                OpenDialog(achievement, achievements);
+            });
 
             int num = 0;
             foreach (var achievement in achievements)
@@ -483,9 +512,9 @@ namespace BetterLegacy.Editor.Managers
 
                 var button = gameObject.GetComponent<Button>();
                 button.onClick.ClearAll();
-                EditorContextMenu.AddContextMenu(gameObject, leftClick: () => SetCurrentAchievement(index),
-                    new ButtonElement("Edit", () => SetCurrentAchievement(index)),
-                    new ButtonElement("Delete", () => DeleteAchievement(achievement)),
+                EditorContextMenu.AddContextMenu(gameObject, leftClick: () => OpenDialog(achievement, achievements),
+                    new ButtonElement("Edit", () => OpenDialog(achievement, achievements)),
+                    new ButtonElement("Delete", () => DeleteAchievement(achievement, achievements)),
                     new SpacerElement(),
                     new ButtonElement("Copy", () => CopyAchievement(achievement)),
                     new ButtonElement("Copy All", () =>
@@ -498,7 +527,7 @@ namespace BetterLegacy.Editor.Managers
                     new ButtonElement("Paste", PasteAchievements));
 
                 var deleteButton = gameObject.transform.Find("delete").GetComponent<DeleteButtonStorage>();
-                deleteButton.OnClick.NewListener(() => DeleteAchievement(achievement));
+                deleteButton.OnClick.NewListener(() => DeleteAchievement(achievement, achievements));
 
                 EditorThemeManager.ApplyGraphic(button.image, ThemeGroup.List_Button_2_Normal, true);
                 EditorThemeManager.ApplyGraphic(selected, ThemeGroup.List_Button_2_Text);
@@ -521,13 +550,55 @@ namespace BetterLegacy.Editor.Managers
         }
 
         /// <summary>
+        /// Opens the achievement list popup.
+        /// </summary>
+        /// <param name="achievements">List of achievements to render.</param>
+        /// <param name="onSelect">Function to run when the achievement is selected.</param>
+        public void OpenPopup(List<Achievement> achievements, Action<Achievement> onSelect)
+        {
+            Popup.Open();
+            RenderPopup(achievements, onSelect);
+        }
+
+        /// <summary>
         /// Renders the achievement list popup.
         /// </summary>
         /// <param name="onSelect">Function to run when the achievement is selected.</param>
-        public void RenderPopup(Action<Achievement> onSelect)
+        public void RenderPopup(Action<Achievement> onSelect) => RenderPopup(achievements, onSelect);
+
+        /// <summary>
+        /// Renders the achievement list popup.
+        /// </summary>
+        /// <param name="achievements">List of achievements to render.</param>
+        /// <param name="onSelect">Function to run when the achievement is selected.</param>
+        public void RenderPopup(List<Achievement> achievements, Action<Achievement> onSelect)
         {
+            CurrentAchievements = achievements;
             Popup.ClearContent();
             Popup.SearchField.onValueChanged.NewListener(_val => RenderPopup(onSelect));
+            Popup.close += () => CurrentAchievements = this.achievements;
+
+            var add = EditorPrefabHolder.Instance.CreateAddButton(Popup.Content);
+            add.Text = "Add new Achievement";
+            add.OnClick.ClearAll();
+            var addContextMenu = add.gameObject.GetOrAddComponent<ContextClickable>();
+            addContextMenu.onClick = pointerEventData =>
+            {
+                if (pointerEventData.button == PointerEventData.InputButton.Right)
+                {
+                    EditorContextMenu.inst.ShowContextMenu(
+                        new ButtonElement("Create Achievement", () =>
+                        {
+                            var achievement = new Achievement("NEW ACHIEVEMENT", "This is the default description!");
+                            achievements.Add(achievement);
+                            OpenDialog(achievement, achievements);
+                        }));
+                    return;
+                }
+                var achievement = new Achievement("NEW ACHIEVEMENT", "This is the default description!");
+                achievements.Add(achievement);
+                OpenDialog(achievement, achievements);
+            };
 
             for (int i = 0; i < achievements.Count; i++)
             {
@@ -540,7 +611,7 @@ namespace BetterLegacy.Editor.Managers
                     if (pointerEventData.button == PointerEventData.InputButton.Right)
                     {
                         EditorContextMenu.inst.ShowContextMenu(
-                            new ButtonElement("Edit", () => OpenDialog(achievement)));
+                            new ButtonElement("Edit", () => OpenDialog(achievement, achievements)));
                         return;
                     }
 
@@ -550,7 +621,7 @@ namespace BetterLegacy.Editor.Managers
                         return;
                     }
 
-                    OpenDialog(achievement);
+                    OpenDialog(achievement, achievements);
                 });
             }
         }

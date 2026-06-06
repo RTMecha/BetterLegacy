@@ -40,6 +40,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public Button ViewLevelsButton { get; set; }
 
+        public Button ViewAchievementsButton { get; set; }
+
         public Button SaveButton { get; set; }
 
         #region Icon
@@ -302,6 +304,14 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             EditorThemeManager.ApplySelectable(viewLevelsStorage.button, ThemeGroup.Function_2);
             EditorThemeManager.ApplyGraphic(viewLevelsStorage.label, ThemeGroup.Function_2_Text);
+            
+            var viewAchievements = EditorPrefabHolder.Instance.Function2Button.Duplicate(Content, "view achievements");
+            var viewAchievementsStorage = viewAchievements.GetComponent<FunctionButtonStorage>();
+            ViewAchievementsButton = viewAchievementsStorage.button;
+            viewAchievementsStorage.Text = "View Achievements";
+
+            EditorThemeManager.ApplySelectable(viewAchievementsStorage.button, ThemeGroup.Function_2);
+            EditorThemeManager.ApplyGraphic(viewAchievementsStorage.label, ThemeGroup.Function_2_Text);
             
             var save = EditorPrefabHolder.Instance.Function2Button.Duplicate(Content, "save");
             var saveStorage = save.GetComponent<FunctionButtonStorage>();

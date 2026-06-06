@@ -486,14 +486,7 @@ namespace BetterLegacy.Core.Data.Level
         /// Gets the levels' achievements.
         /// </summary>
         /// <returns>Returns a list of the achievements in the level and the levels collection, if it exists.</returns>
-        public List<Achievement> GetAchievements()
-        {
-            var list = achievements;
-            var levelCollection = this.levelCollection ?? LevelManager.CurrentLevelCollection;
-            if (levelCollection && levelCollection.achievements != null)
-                list.AddRange(levelCollection.achievements);
-            return list;
-        }
+        public List<Achievement> GetAchievements() => achievements;
 
         /// <summary>
         /// Gets the preview audio that should play.

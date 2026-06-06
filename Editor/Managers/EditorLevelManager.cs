@@ -2168,6 +2168,11 @@ namespace BetterLegacy.Editor.Managers
             LevelCollectionDialog.EditorPathField.onValueChanged.NewListener(_val => levelCollection.editorPath = _val);
 
             LevelCollectionDialog.ViewLevelsButton.onClick.NewListener(() => LoadLevelCollection(levelCollection));
+            LevelCollectionDialog.ViewLevelsButton.onClick.NewListener(() =>
+            {
+                levelCollection.LoadAchievements();
+                AchievementEditor.inst.OpenPopup(levelCollection.achievements, null);
+            });
             LevelCollectionDialog.SaveButton.onClick.NewListener(() =>
             {
                 levelCollection.Save();
