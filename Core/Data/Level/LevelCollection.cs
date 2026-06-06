@@ -23,6 +23,8 @@ namespace BetterLegacy.Core.Data.Level
     /// </summary>
     public class LevelCollection : Exists, IUploadable
     {
+        #region Constructors
+
         public LevelCollection() => id = PAObjectBase.GetNumberID();
 
         /// <summary>
@@ -39,6 +41,8 @@ namespace BetterLegacy.Core.Data.Level
                 levelInformation.Add(levelInfo);
             }
         }
+
+        #endregion
 
         #region Values
 
@@ -173,6 +177,70 @@ namespace BetterLegacy.Core.Data.Level
         /// </summary>
         public string editorPath;
 
+        /// <summary>
+        /// Path to the interface that overrides the level collection interface.
+        /// </summary>
+        public string interfacePath;
+
+        #region Constants
+
+        /// <summary>
+        /// The collection icon file.
+        /// </summary>
+        public const string ICON_PNG = "icon.png";
+
+        /// <summary>
+        /// The collection icon file.
+        /// </summary>
+        public const string ICON_JPG = "icon.jpg";
+
+        /// <summary>
+        /// The collection banner file.
+        /// </summary>
+        public const string BANNER_PNG = "banner.png";
+
+        /// <summary>
+        /// The collection banner file.
+        /// </summary>
+        public const string BANNER_JPG = "banner.jpg";
+
+        /// <summary>
+        /// The collection file.
+        /// </summary>
+        public const string COLLECTION_LSCO = "collection.lsco";
+
+        /// <summary>
+        /// The collection preview audio file.
+        /// </summary>
+        public const string PREVIEW_OGG = "preview.ogg";
+
+        #endregion
+
+        #region Indexers
+
+        public Level this[int index]
+        {
+            get => levels.GetAtOrDefault(index, null);
+            set
+            {
+                if (levels.InRange(index))
+                    levels[index] = value;
+            }
+        }
+
+        public Level this[string id]
+        {
+            get => levels.Find(x => x.id == id);
+            set
+            {
+                var index = levels.FindIndex(x => x.id == id);
+                if (levels.InRange(index))
+                    levels[index] = value;
+            }
+        }
+
+        #endregion
+
         #region Server
 
         /// <summary>
@@ -213,63 +281,7 @@ namespace BetterLegacy.Core.Data.Level
 
         #endregion
 
-        #region Constants
-
-        /// <summary>
-        /// The collection icon file.
-        /// </summary>
-        public const string ICON_PNG = "icon.png";
-        /// <summary>
-        /// The collection icon file.
-        /// </summary>
-        public const string ICON_JPG = "icon.jpg";
-
-        /// <summary>
-        /// The collection banner file.
-        /// </summary>
-        public const string BANNER_PNG = "banner.png";
-        /// <summary>
-        /// The collection banner file.
-        /// </summary>
-        public const string BANNER_JPG = "banner.jpg";
-
-        /// <summary>
-        /// The collection file.
-        /// </summary>
-        public const string COLLECTION_LSCO = "collection.lsco";
-        /// <summary>
-        /// The collection preview audio file.
-        /// </summary>
-        public const string PREVIEW_OGG = "preview.ogg";
-
-        #endregion
-
-        #region Indexers
-
-        public Level this[int index]
-        {
-            get => levels.GetAtOrDefault(index, null);
-            set
-            {
-                if (levels.InRange(index))
-                    levels[index] = value;
-            }
-        }
-
-        public Level this[string id]
-        {
-            get => levels.Find(x => x.id == id);
-            set
-            {
-                var index = levels.FindIndex(x => x.id == id);
-                if (levels.InRange(index))
-                    levels[index] = value;
-            }
-        }
-
-        #endregion
-
-        #region Methods
+        #region Functions
 
         /// <summary>
         /// Parses a level collection. Levels can be loaded either via path, arcade ID or workshop ID. Ensure this runs after Arcade and/or Steam levels have loaded.
@@ -305,6 +317,8 @@ namespace BetterLegacy.Core.Data.Level
 
             if (jn["editor_path"] != null)
                 collection.editorPath = jn["editor_path"];
+            if (jn["interface_path"] != null)
+                collection.interfacePath = jn["interface_path"];
 
             collection.ReadUploadableJSON(jn);
 
@@ -377,6 +391,28 @@ namespace BetterLegacy.Core.Data.Level
         }
 
         static Level NewCollectionLevel(string path, LevelCollection levelCollection) => new Level(path) { fromCollection = true, levelCollection = levelCollection };
+
+        /// <summary>
+        /// Downloads all levels of the level collection.
+        /// </summary>
+        public void DownloadAllLevels() => DownloadAllLevels(null);
+
+        /// <summary>
+        /// Downloads all levels of the level collection.
+        /// </summary>
+        /// <param name="onDownload">Function to run on download complete.</param>
+        public void DownloadAllLevels(Action onDownload) => DownloadLevelRecursive(0, onDownload);
+
+        void DownloadLevelRecursive(int index, Action onDownload = null)
+        {
+            if (!levelInformation.TryGetAt(index, out LevelInfo levelInfo))
+            {
+                onDownload?.Invoke();
+                return;
+            }
+
+            DownloadLevel(levelInfo, level => DownloadLevelRecursive(index + 1, onDownload));
+        }
 
         /// <summary>
         /// Downloads a level if it doesn't exist.
@@ -600,10 +636,10 @@ namespace BetterLegacy.Core.Data.Level
             for (int i = 0; i < jn["achievements"].Count; i++)
             {
                 var achievement = Achievement.Parse(jn["achievements"][i]);
-                if (jn["achievements"][i]["icon_path"] != null)
-                    achievement.CheckIconPath(RTFile.CombinePaths(path, jn["achievements"][i]["icon_path"]));
-                if (jn["achievements"][i]["locked_icon_path"] != null)
-                    achievement.CheckIconPath(RTFile.CombinePaths(path, jn["achievements"][i]["locked_icon_path"]));
+                if (!string.IsNullOrEmpty(achievement.iconPath))
+                    achievement.CheckIconPath(RTFile.CombinePaths(path, achievement.iconPath));
+                if (!string.IsNullOrEmpty(achievement.lockedIconPath))
+                    achievement.CheckIconPath(RTFile.CombinePaths(path, achievement.lockedIconPath));
                 achievements.Add(achievement);
             }
         }
@@ -642,7 +678,7 @@ namespace BetterLegacy.Core.Data.Level
         /// </summary>
         /// <param name="saveIcons">If icons should be saved.</param>
         /// <param name="jpg">If icons should be saved as JPG.</param>
-        public void Save(bool saveIcons = true, bool jpg = true)
+        public void Save(bool saveIcons = true, bool jpg = true, bool saveAchievements = true)
         {
             var jn = Parser.NewJSONObject();
 
@@ -671,16 +707,44 @@ namespace BetterLegacy.Core.Data.Level
 
             if (!string.IsNullOrEmpty(editorPath))
                 jn["editor_path"] = editorPath;
+            if (!string.IsNullOrEmpty(interfacePath))
+                jn["interface_path"] = interfacePath;
 
             for (int i = 0; i < levelInformation.Count; i++)
                 jn["levels"][i] = levelInformation[i].ToJSON();
 
-            if (saveIcons)
-                SaveIcons(jpg);
-
             RTFile.CreateDirectory(path);
 
+            if (saveIcons)
+                SaveIcons(jpg);
+            if (saveAchievements)
+                SaveAchievements();
+
             RTFile.WriteToFile(RTFile.CombinePaths(path, COLLECTION_LSCO), jn.ToString(3));
+        }
+
+        /// <summary>
+        /// Saves the current level collections' achievements.
+        /// </summary>
+        public void SaveAchievements()
+        {
+            try
+            {
+                if (achievements.IsEmpty())
+                {
+                    RTFile.DeleteFile(RTFile.CombinePaths(path, Level.ACHIEVEMENTS_LSA));
+                    return;
+                }
+
+                var jn = Parser.NewJSONObject();
+                for (int i = 0; i < achievements.Count; i++)
+                    jn["achievements"][i] = achievements[i].ToJSON();
+                RTFile.WriteToFile(RTFile.CombinePaths(path, Level.ACHIEVEMENTS_LSA), jn.ToString());
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Something went wrong with saving achievements. Is something corrupt?\nException: {ex}");
+            }
         }
 
         /// <summary>
@@ -844,6 +908,84 @@ namespace BetterLegacy.Core.Data.Level
                 }
             }
             return LevelManager.GetLevelRank(hits);
+        }
+
+        public void ShowEntryLevel(Action onReturn)
+        {
+            LevelManager.currentLevelIndex = EntryLevelIndex;
+            if (LevelManager.currentLevelIndex < 0)
+                LevelManager.currentLevelIndex = 0;
+
+            while (LevelManager.currentLevelIndex < Count - 1 && levelInformation[LevelManager.currentLevelIndex].skip) // skip the level during normal playthrough
+                LevelManager.currentLevelIndex++;
+
+            if (Count > 1)
+                LevelManager.CurrentLevel = this[LevelManager.currentLevelIndex];
+
+            if (!LevelManager.CurrentLevel)
+            {
+                SoundManager.inst.PlaySound(DefaultSounds.blip);
+                if (levelInformation.TryFind(x => x.index == LevelManager.currentLevelIndex, out LevelInfo levelInfo))
+                {
+                    CoreHelper.Log($"A collection level was not found. It was probably not installed.\n" +
+                        $"Level Name: {levelInfo.name}\n" +
+                        $"Song Title: {levelInfo.songTitle}\n" +
+                        $"Creator: {levelInfo.creator}\n" +
+                        $"Arcade ID: {levelInfo.arcadeID}\n" +
+                        $"Server ID: {levelInfo.serverID}\n" +
+                        $"Workshop ID: {levelInfo.workshopID}");
+                    DownloadLevel(levelInfo);
+                }
+                else
+                    CoreHelper.Log($"Level was not found.");
+
+                return;
+            }
+
+            SoundManager.inst.PlaySound(DefaultSounds.blip);
+            var collection = this;
+            PlayLevelInterface.Init(LevelManager.CurrentLevel, onReturn: onReturn);
+        }
+
+        #endregion
+
+        #region Sub Classes
+
+        public class Functions : JSONFunctionParser<LevelCollection>
+        {
+            public Functions() : base() { }
+
+            public override void RegisterFunctions()
+            {
+                base.RegisterFunctions();
+
+                RegisterAction(ShowEntryLevel);
+                RegisterAction(ViewCollectionLevels);
+            }
+
+            public void ShowEntryLevel(JSONNode parameters, LevelCollection thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                var onReturnFunc = ParseVarFunction(parameters.Get(0, "return_func"), thisElement, customVariables);
+                thisElement?.ShowEntryLevel(onReturnFunc == null ? null : () =>
+                {
+                    if (onReturnFunc != null)
+                        ParseFunction(onReturnFunc, thisElement, customVariables);
+                });
+            }
+
+            public void ViewCollectionLevels(JSONNode parameters, LevelCollection thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (!thisElement)
+                    return;
+
+                var onReturnFunc = ParseVarFunction(parameters.Get(0, "return_func"), thisElement, customVariables);
+                LevelListInterface.close = onReturnFunc == null ? null : () =>
+                {
+                    if (onReturnFunc != null)
+                        ParseFunction(onReturnFunc, thisElement, customVariables);
+                };
+                LevelListInterface.Init(thisElement.levels);
+            }
         }
 
         #endregion
