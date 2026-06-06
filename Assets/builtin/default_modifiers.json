@@ -1098,7 +1098,55 @@
         "name": "clearCurrentLevelVariables",
         "values": [],
         "const": "True"
-      } // clearCurrentLevelVariables
+      }, // clearCurrentLevelVariables
+      {
+        "type": 1,
+        "name": "getCollectionVariable",
+        "values": [ "", "VAR", "", "COLLECTION_VAR" ],
+        "const": "True"
+      }, // getCollectionVariable
+      {
+        "type": 1,
+        "name": "setCollectionVariable",
+        "values": [ "", "VAR", "" ],
+        "const": "True"
+      }, // setCollectionVariable
+      {
+        "type": 1,
+        "name": "removeCollectionVariable",
+        "values": [ "", "VAR" ],
+        "const": "True"
+      }, // removeCollectionVariable
+      {
+        "type": 1,
+        "name": "clearCollectionVariables",
+        "values": [ "" ],
+        "const": "True"
+      }, // clearCollectionVariables
+      {
+        "type": 1,
+        "name": "getCurrentCollectionVariable",
+        "values": [ "VAR", "", "COLLECTION_VAR" ],
+        "const": "True"
+      }, // getCurrentCollectionVariable
+      {
+        "type": 1,
+        "name": "setCurrentCollectionVariable",
+        "values": [ "VAR", "" ],
+        "const": "True"
+      }, // setCurrentCollectionVariable
+      {
+        "type": 1,
+        "name": "removeCurrentCollectionVariable",
+        "values": [ "VAR" ],
+        "const": "True"
+      }, // removeCurrentCollectionVariable
+      {
+        "type": 1,
+        "name": "clearCurrentCollectionVariables",
+        "values": [],
+        "const": "True"
+      } // clearCurrentCollectionVariables
     ],
 
     // Game State

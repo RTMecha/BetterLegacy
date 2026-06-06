@@ -815,6 +815,55 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 //        break;
                 //    }
+                
+                case nameof(ModifierFunctions.getCollectionVariable): {
+                        StringGenerator(modifier, reference, "ID", 0);
+                        StringGenerator(modifier, reference, "Collection Variable Name", 1);
+                        StringGenerator(modifier, reference, "Default Value", 2);
+                        StringGenerator(modifier, reference, "Variable Name", 3, renderVariables: false);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.setCollectionVariable): {
+                        StringGenerator(modifier, reference, "ID", 0);
+                        StringGenerator(modifier, reference, "Collection Variable Name", 1);
+                        StringGenerator(modifier, reference, "Value", 2);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.removeCollectionVariable): {
+                        StringGenerator(modifier, reference, "ID", 0);
+                        StringGenerator(modifier, reference, "Collection Variable Name", 1);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.clearCollectionVariables): {
+                        StringGenerator(modifier, reference, "ID", 0);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.getCurrentCollectionVariable): {
+                        StringGenerator(modifier, reference, "Collection Variable Name", 0);
+                        StringGenerator(modifier, reference, "Default Value", 1);
+                        StringGenerator(modifier, reference, "Variable Name", 2, renderVariables: false);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.setCurrentCollectionVariable): {
+                        StringGenerator(modifier, reference, "Collection Variable Name", 0);
+                        StringGenerator(modifier, reference, "Value", 1);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.removeCurrentCollectionVariable): {
+                        StringGenerator(modifier, reference, "Collection Variable Name", 0);
+
+                        break;
+                    }
+                //case nameof(ModifierFunctions.clearCurrentCollectionVariables): {
+
+                //        break;
+                //    }
 
                 #endregion
 

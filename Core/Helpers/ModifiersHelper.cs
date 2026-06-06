@@ -852,6 +852,14 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction(nameof(ModifierFunctions.setCurrentLevelVariable),  ModifierFunctions.setCurrentLevelVariable, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierFunctions.removeCurrentLevelVariable),  ModifierFunctions.removeCurrentLevelVariable, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierFunctions.clearCurrentLevelVariables),  ModifierFunctions.clearCurrentLevelVariables, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.getCollectionVariable),  ModifierFunctions.getCollectionVariable),
+            new ModifierAction(nameof(ModifierFunctions.setCollectionVariable),  ModifierFunctions.setCollectionVariable, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.removeCollectionVariable),  ModifierFunctions.removeCollectionVariable, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.clearCollectionVariables),  ModifierFunctions.clearCollectionVariables, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.getCurrentCollectionVariable),  ModifierFunctions.getCurrentCollectionVariable),
+            new ModifierAction(nameof(ModifierFunctions.setCurrentCollectionVariable),  ModifierFunctions.setCurrentCollectionVariable, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.removeCurrentCollectionVariable),  ModifierFunctions.removeCurrentCollectionVariable, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.clearCurrentCollectionVariables),  ModifierFunctions.clearCurrentCollectionVariables, ModifierCompatibility.LevelControlCompatible),
 
             #endregion
 
@@ -4863,6 +4871,106 @@ namespace BetterLegacy.Core.Helpers
             if (ProjectArrhythmia.State.InEditor && EditorLevelManager.inst)
                 level = EditorLevelManager.inst.CurrentLevel;
             level?.saveData?.Variables?.Clear();
+        }
+
+        public static void getCollectionVariable(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            var id = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables);
+            var levelVariableName = ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables);
+            var defaultValue = ModifiersHelper.FormatStringVariables(modifier.GetValue(2, modifierLoop.variables), modifierLoop.variables);
+            var variableName = ModifiersHelper.FormatStringVariables(modifier.GetValue(3), modifierLoop.variables);
+            if (string.IsNullOrEmpty(variableName) || string.IsNullOrEmpty(levelVariableName))
+                return;
+
+            var levelCollection = LevelManager.LevelCollections.Find(x => x.id == id);
+
+            var val = levelCollection && levelCollection.saveData && levelCollection.saveData.Variables != null && levelCollection.saveData.Variables.TryGetValue(levelVariableName, out string value) ? value : defaultValue;
+            if (!string.IsNullOrEmpty(val))
+                modifierLoop.variables[variableName] = val;
+        }
+
+        public static void setCollectionVariable(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            var id = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables);
+            var levelCollection = LevelManager.LevelCollections.Find(x => x.id == id);
+            if (!levelCollection || !levelCollection.saveData || levelCollection.saveData.Variables == null)
+                return;
+
+            var levelVariableName = ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables);
+            var value = ModifiersHelper.FormatStringVariables(modifier.GetValue(2, modifierLoop.variables), modifierLoop.variables);
+
+            levelCollection.saveData.Variables[levelVariableName] = value;
+            LevelManager.SaveProgress();
+        }
+
+        public static void removeCollectionVariable(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            var id = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables);
+            var levelCollection = LevelManager.LevelCollections.Find(x => x.id == id);
+            if (!levelCollection || !levelCollection.saveData || levelCollection.saveData.Variables == null)
+                return;
+
+            levelCollection.saveData.Variables.Remove(ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables));
+            LevelManager.SaveProgress();
+        }
+
+        public static void clearCollectionVariables(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            var id = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables);
+            var levelCollection = LevelManager.LevelCollections.Find(x => x.id == id);
+            levelCollection?.saveData?.Variables?.Clear();
+        }
+
+        public static void getCurrentCollectionVariable(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            var levelVariableName = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables);
+            var defaultValue = ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables);
+            var variableName = ModifiersHelper.FormatStringVariables(modifier.GetValue(2), modifierLoop.variables);
+            if (string.IsNullOrEmpty(variableName) || string.IsNullOrEmpty(levelVariableName))
+                return;
+
+            var levelCollection = LevelManager.CurrentLevelCollection;
+            if (ProjectArrhythmia.State.InEditor && EditorLevelManager.inst)
+                levelCollection = EditorLevelManager.inst.CurrentLevelCollection;
+
+            var val = levelCollection && levelCollection.saveData && levelCollection.saveData.Variables != null && levelCollection.saveData.Variables.TryGetValue(levelVariableName, out string value) ? value : defaultValue;
+            if (!string.IsNullOrEmpty(val))
+                modifierLoop.variables[variableName] = val;
+        }
+
+        public static void setCurrentCollectionVariable(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            var levelCollection = LevelManager.CurrentLevelCollection;
+            if (ProjectArrhythmia.State.InEditor && EditorLevelManager.inst)
+                levelCollection = EditorLevelManager.inst.CurrentLevelCollection;
+            if (!levelCollection || !levelCollection.saveData || levelCollection.saveData.Variables == null)
+                return;
+
+            var levelVariableName = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables);
+            var value = ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables);
+
+            levelCollection.saveData.Variables[levelVariableName] = value;
+            LevelManager.SaveProgress();
+        }
+
+        public static void removeCurrentCollectionVariable(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            var levelCollection = LevelManager.CurrentLevelCollection;
+            if (ProjectArrhythmia.State.InEditor && EditorLevelManager.inst)
+                levelCollection = EditorLevelManager.inst.CurrentLevelCollection;
+            if (!levelCollection || !levelCollection.saveData || levelCollection.saveData.Variables == null)
+                return;
+
+            levelCollection.saveData.Variables.Remove(ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables));
+            LevelManager.SaveProgress();
+        }
+
+        public static void clearCurrentCollectionVariables(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            var levelCollection = LevelManager.CurrentLevelCollection;
+            if (ProjectArrhythmia.State.InEditor && EditorLevelManager.inst)
+                levelCollection = EditorLevelManager.inst.CurrentLevelCollection;
+            levelCollection?.saveData?.Variables?.Clear();
         }
 
         #endregion
