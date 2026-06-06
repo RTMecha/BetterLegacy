@@ -92,8 +92,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
         {
             (int)ShapeType.Text,
             (int)ShapeType.Image,
-            //(int)ShapeType.Polygon,
-            (int)ShapeType.Particles,
         };
 
         public ToggleButtonStorage FlatToggle { get; set; }
