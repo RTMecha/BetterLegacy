@@ -214,28 +214,104 @@ namespace BetterLegacy.Arcade.Interfaces
                 },
             });
 
-            elements.Add(new MenuButton
-            {
-                id = "3525734",
-                name = "Levels Button",
-                text = "<size=40><b><align=center>[ LEVELS ]",
-                rect = RectValues.Default.AnchoredPosition(-550f, -310f).SizeDelta(500f, 64f),
-                selectionPosition = new Vector2Int(0, 2),
-                opacity = 0.1f,
-                selectedOpacity = 1f,
-                color = 6,
-                selectedColor = 6,
-                textColor = 6,
-                selectedTextColor = 7,
-                length = 0.5f,
-                playBlipSound = true,
-                func = () =>
+            if (CurrentCollection.levels.IsEmpty() || CurrentCollection.levels.TrueForAll(x => !x))
+                elements.Add(new MenuButton
                 {
-                    var currentCollection = CurrentCollection;
-                    LevelListInterface.close = () => Init(currentCollection);
-                    LevelListInterface.Init(currentCollection.levels);
-                },
-            });
+                    id = "3525734",
+                    name = "Download Button",
+                    text = "<size=40><b><align=center>[ DOWNLOAD LEVELS ]",
+                    rect = RectValues.Default.AnchoredPosition(-550f, -310f).SizeDelta(500f, 64f),
+                    selectionPosition = new Vector2Int(0, 2),
+                    opacity = 0.1f,
+                    selectedOpacity = 1f,
+                    color = 6,
+                    selectedColor = 6,
+                    textColor = 6,
+                    selectedTextColor = 7,
+                    length = 0.5f,
+                    playBlipSound = true,
+                    func = () =>
+                    {
+                        var currentCollection = CurrentCollection;
+                        CurrentCollection.DownloadAllLevels(() => Init(currentCollection));
+                    },
+                });
+            else
+            {
+                elements.Add(new MenuButton
+                {
+                    id = "3525734",
+                    name = "Levels Button",
+                    text = "<size=40><b><align=center>[ LEVELS ]",
+                    rect = RectValues.Default.AnchoredPosition(-600f, -310f).SizeDelta(400f, 64f),
+                    selectionPosition = new Vector2Int(0, 2),
+                    opacity = 0.1f,
+                    selectedOpacity = 1f,
+                    color = 6,
+                    selectedColor = 6,
+                    textColor = 6,
+                    selectedTextColor = 7,
+                    length = 0.5f,
+                    playBlipSound = true,
+                    func = () =>
+                    {
+                        var currentCollection = CurrentCollection;
+                        LevelListInterface.close = () => Init(currentCollection);
+                        LevelListInterface.Init(currentCollection.levels);
+                    },
+                });
+
+                elements.Add(new MenuButton
+                {
+                    id = "264735736",
+                    name = "Download Button",
+                    text = string.Empty,
+                    iconPath = "core/sprites/icons/file/download.png",
+                    rect = RectValues.Default.AnchoredPosition(-332.5f, -310f).SizeDelta(64f, 64f),
+                    iconRect = RectValues.FullAnchored,
+                    selectionPosition = new Vector2Int(1, 2),
+                    opacity = 0.1f,
+                    selectedOpacity = 1f,
+                    color = 6,
+                    selectedColor = 6,
+                    textColor = 6,
+                    selectedTextColor = 7,
+                    applyIconColor = true,
+                    iconColor = 6,
+                    selectedIconColor = 7,
+                    length = 0.5f,
+                    playBlipSound = true,
+                    func = () =>
+                    {
+                        var currentCollection = CurrentCollection;
+                        CurrentCollection.DownloadAllLevels(() => Init(currentCollection), true, false);
+                    },
+                });
+            }
+
+            var achievements = CurrentCollection.achievements;
+            if (!achievements.IsEmpty())
+                elements.Add(new MenuButton
+                {
+                    id = "3525734",
+                    name = "Achievements Button",
+                    text = $"<size=40><b><align=center>[ VIEW ACHIEVEMENTS ]",
+                    rect = RectValues.Default.AnchoredPosition(-550f, -410f).SizeDelta(500f, 64f),
+                    selectionPosition = new Vector2Int(0, 4),
+                    opacity = 0.1f,
+                    selectedOpacity = 1f,
+                    color = 6,
+                    selectedColor = 6,
+                    textColor = 6,
+                    selectedTextColor = 7,
+                    length = 0.5f,
+                    playBlipSound = true,
+                    func = () =>
+                    {
+                        var currentLevelCollection = CurrentCollection;
+                        AchievementListInterface.Init(CurrentCollection, () => Init(currentLevelCollection));
+                    },
+                });
 
             exitFunc = Close;
             allowEffects = false;

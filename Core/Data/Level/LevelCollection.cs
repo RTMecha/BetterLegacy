@@ -401,33 +401,36 @@ namespace BetterLegacy.Core.Data.Level
         /// Downloads all levels of the level collection.
         /// </summary>
         /// <param name="onDownload">Function to run on download complete.</param>
-        public void DownloadAllLevels(Action onDownload) => DownloadLevelRecursive(0, onDownload);
+        public void DownloadAllLevels(Action onDownload, bool forceUpdate = false, bool showConfirm = true) => DownloadLevelRecursive(0, onDownload, forceUpdate, showConfirm);
 
-        void DownloadLevelRecursive(int index, Action onDownload = null)
+        void DownloadLevelRecursive(int index, Action onDownload = null, bool forceUpdate = false, bool showConfirm = true)
         {
             if (!levelInformation.TryGetAt(index, out LevelInfo levelInfo))
             {
+                CoreHelper.Log("Finished downloading.");
                 onDownload?.Invoke();
                 return;
             }
 
-            DownloadLevel(levelInfo, level => DownloadLevelRecursive(index + 1, onDownload));
+            DownloadLevel(levelInfo, level => DownloadLevelRecursive(index + 1, onDownload, forceUpdate, showConfirm), forceUpdate, showConfirm);
         }
 
         /// <summary>
         /// Downloads a level if it doesn't exist.
         /// </summary>
         /// <param name="levelInfo">Level info to obtain a level from.</param>
-        public void DownloadLevel(LevelInfo levelInfo, Action<Level> onDownload = null) => DownloadLevel(this, levelInfo, onDownload);
+        public void DownloadLevel(LevelInfo levelInfo, Action<Level> onDownload = null, bool forceUpdate = false, bool showConfirm = true) => DownloadLevel(this, levelInfo, onDownload, forceUpdate, showConfirm);
 
         /// <summary>
         /// Downloads a level if it doesn't exist.
         /// </summary>
         /// <param name="levelInfo">Level info to obtain a level from.</param>
-        public static void DownloadLevel(LevelCollection collection, LevelInfo levelInfo, Action<Level> onDownload = null)
+        public static void DownloadLevel(LevelCollection collection, LevelInfo levelInfo, Action<Level> onDownload = null, bool forceUpdate = false, bool showConfirm = true)
         {
+            // hell
+
             Level level;
-            if (!string.IsNullOrEmpty(levelInfo.arcadeID) && LevelManager.Levels.TryFind(x => x.id == levelInfo.arcadeID, out level))
+            if (!forceUpdate && !string.IsNullOrEmpty(levelInfo.arcadeID) && LevelManager.Levels.TryFind(x => x.id == levelInfo.arcadeID, out level))
             {
                 levelInfo.level = level;
                 onDownload?.Invoke(level);
@@ -435,46 +438,19 @@ namespace BetterLegacy.Core.Data.Level
                 return;
             }
 
-            if (!string.IsNullOrEmpty(levelInfo.workshopID))
-            {
-                if (!RTSteamManager.inst.Initialized)
-                {
-                    CoreHelper.Log($"Steam was not initialized. Please open Steam.");
-                    ArcadeHelper.QuitToArcade();
-                    return;
-                }
-
-                if (RTSteamManager.inst.Levels.TryFind(x => x.id == levelInfo.workshopID, out level))
-                {
-                    level = NewCollectionLevel(level.path, collection);
-                    levelInfo.Overwrite(level);
-                    if (collection)
-                        collection[levelInfo.index] = level;
-                    levelInfo.level = level;
-
-                    InterfaceManager.inst.CloseMenus();
-                    onDownload?.Invoke(level);
-                    CoreHelper.Log($"Level {level.id} already exists!");
-                    return;
-                }
-
-                ConfirmInterface.Init("Level does not exist in your subscribed Steam items. Do you want to subscribe to the level?", () =>
-                {
-                    CoroutineHelper.StartCoroutine(SubscribeToSteamLevel(collection, levelInfo, onDownload, ArcadeHelper.QuitToArcade));
-                }, ArcadeHelper.QuitToArcade);
-            }
-            else if (!string.IsNullOrEmpty(levelInfo.serverID))
+            if (!string.IsNullOrEmpty(levelInfo.serverID))
             {
                 CoroutineHelper.StartCoroutine(AlephNetwork.DownloadJSONFile($"{AlephNetwork.ArcadeServerURL}api/level/{levelInfo.serverID}", 
                     callback: json =>
                     {
-                        ConfirmInterface.Init("Level does not exist in your level list. Do you want to download it off the Arcade server?", () =>
+                        void confirm()
                         {
                             var jn = JSON.Parse(json);
                             if (jn is JSONObject jsonObject)
                             {
-                                if (ProjectArrhythmia.State.InGame)
+                                if (ProjectArrhythmia.State.InGame || !showConfirm)
                                 {
+                                    InterfaceManager.inst.CloseMenus();
                                     AlephNetwork.DownloadLevel(jsonObject,
                                         onDownload: level =>
                                         {
@@ -537,10 +513,51 @@ namespace BetterLegacy.Core.Data.Level
                                         };
                                     }));
                             }
-                        }, ArcadeHelper.QuitToArcade);
+                        }
+                        if (!showConfirm)
+                        {
+                            confirm();
+                            return;
+                        }
+                        ConfirmInterface.Init("Level does not exist in your level list. Do you want to download it off the Arcade server?", confirm, ArcadeHelper.QuitToArcade);
                     },
                     onError: (string onError, long responseCode, string errorMsg) => ArcadeHelper.QuitToArcade()));
+                return;
             }
+            else if (!string.IsNullOrEmpty(levelInfo.workshopID))
+            {
+                if (!RTSteamManager.inst.Initialized)
+                {
+                    CoreHelper.Log($"Steam was not initialized. Please open Steam.");
+                    onDownload?.Invoke(null);
+                    if (onDownload == null)
+                        ArcadeHelper.QuitToArcade();
+                    return;
+                }
+
+                if (RTSteamManager.inst.Levels.TryFind(x => x.id == levelInfo.workshopID, out level))
+                {
+                    level = NewCollectionLevel(level.path, collection);
+                    levelInfo.Overwrite(level);
+                    if (collection)
+                        collection[levelInfo.index] = level;
+                    levelInfo.level = level;
+
+                    InterfaceManager.inst.CloseMenus();
+                    onDownload?.Invoke(level);
+                    CoreHelper.Log($"Level {level.id} already exists!");
+                    return;
+                }
+
+                ConfirmInterface.Init("Level does not exist in your subscribed Steam items. Do you want to subscribe to the level?", () =>
+                {
+                    CoroutineHelper.StartCoroutine(SubscribeToSteamLevel(collection, levelInfo, onDownload, ArcadeHelper.QuitToArcade));
+                }, ArcadeHelper.QuitToArcade);
+                return;
+            }
+            onDownload?.Invoke(null);
+            if (onDownload == null)
+                ArcadeHelper.QuitToArcade();
         }
 
         static IEnumerator SubscribeToSteamLevel(LevelCollection collection, LevelInfo levelInfo, Action<Level> onDownload = null, Action onFail = null)

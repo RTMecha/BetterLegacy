@@ -297,8 +297,9 @@ namespace BetterLegacy.Core.Helpers
                 return;
             }
 
-            LevelListInterface.close = () => LevelCollectionInterface.Init(currentCollection);
-            LevelListInterface.Init(currentCollection.levels);
+            //LevelListInterface.close = () => LevelCollectionInterface.Init(currentCollection);
+            //LevelListInterface.Init(currentCollection.levels);
+            LevelCollectionInterface.Init(currentCollection);
         }
 
         /// <summary>
