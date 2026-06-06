@@ -21,6 +21,12 @@ namespace BetterLegacy.Core.Data
             id = GetNumberID();
         }
 
+        public Achievement(string name, string description) : base()
+        {
+            this.name = name;
+            this.description = description;
+        }
+
         public Achievement(string id, string name, string description, int difficulty, Sprite icon, bool hidden = false)
         {
             this.id = id;
@@ -71,6 +77,16 @@ namespace BetterLegacy.Core.Data
         public Sprite lockedIcon;
 
         /// <summary>
+        /// Path to the icon.
+        /// </summary>
+        public string iconPath;
+
+        /// <summary>
+        /// Path to the locked icon.
+        /// </summary>
+        public string lockedIconPath;
+
+        /// <summary>
         /// Difficulty of the achievement. Based on metadata difficulty.
         /// </summary>
         public int difficulty;
@@ -111,7 +127,9 @@ namespace BetterLegacy.Core.Data
             description = orig.description;
             difficulty = orig.difficulty;
             icon = orig.icon;
+            iconPath = orig.iconPath;
             lockedIcon = orig.lockedIcon;
+            lockedIconPath = orig.lockedIconPath;
             hidden = orig.hidden;
             hint = orig.hint;
             unlocked = orig.unlocked;
@@ -126,8 +144,12 @@ namespace BetterLegacy.Core.Data
             difficulty = jn["difficulty"].AsInt;
             if (jn["icon"] != null)
                 icon = SpriteHelper.StringToSprite(jn["icon"]);
+            if (jn["icon_path"] != null)
+                iconPath = jn["icon_path"];
             if (jn["locked_icon"] != null)
                 lockedIcon = SpriteHelper.StringToSprite(jn["locked_icon"]);
+            if (jn["locked_icon_path"] != null)
+                lockedIconPath = jn["locked_icon_path"];
             if (jn["hint"] != null)
                 hint = jn["hint"];
             hidden = jn["hidden"].AsBool;
@@ -146,8 +168,12 @@ namespace BetterLegacy.Core.Data
                 jn["difficulty"] = difficulty;
             if (icon)
                 jn["icon"] = SpriteHelper.SpriteToString(icon);
+            if (!string.IsNullOrEmpty(iconPath))
+                jn["icon_path"] = iconPath;
             if (lockedIcon)
                 jn["locked_icon"] = SpriteHelper.SpriteToString(lockedIcon);
+            if (!string.IsNullOrEmpty(lockedIconPath))
+                jn["locked_icon_path"] = lockedIconPath;
             if (hidden)
                 jn["hidden"] = hidden;
             if (!string.IsNullOrEmpty(hint))
