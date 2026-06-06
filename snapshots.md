@@ -1,14 +1,23 @@
 ﻿# snapshot-2026.6.3 - (Story Playtest) [???]
 ## Features
+### Core
+- Added Collection Variable related modifiers. These work like the Level Variable modifiers, except for level collections, allowing for a value to be persistent in a collection.
+- Custom interfaces can now be loaded instead of the regular level collection interface.
+
 ### Editor
 - Added "Timeline Object Simple Text" and "Timeline Object Render Text On Collapsed" settings to Config Manager > Editor > Timeline. These should help optimize your editor a little.
+- You can now view a Level Collections' Achievements in the editor.
 
 ## Changes
 ### Core
 - runAnimation modifier now allows for proper 3D axis rotation.
+- Slightly reworked the JSON function system, though no object structure changes so everything should be fine.
 
 ### Editor
 - Optimized event keyframe dragging.
+
+## Fixes
+- Fixed the keyframe selecting keybinds prioritizing the event timeline even if an object is selected.
 
 -------------------------------------------------------------------
 
