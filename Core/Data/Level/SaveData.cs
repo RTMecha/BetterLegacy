@@ -101,7 +101,7 @@ namespace BetterLegacy.Core.Data.Level
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public override void CopyData(SaveData orig, bool newID = true)
         {
@@ -119,6 +119,119 @@ namespace BetterLegacy.Core.Data.Level
             UnlockedAchievements = new Dictionary<string, bool>(orig.UnlockedAchievements);
             Variables = new Dictionary<string, string>(orig.Variables);
             LastPlayed = orig.LastPlayed;
+        }
+
+        public override void ReadJSON(JSONNode jn)
+        {
+            LevelName = jn["n"];
+            ID = jn["id"];
+            Completed = jn["c"].AsBool;
+            PlayedTimes = jn["pt"].AsInt;
+            TimeInLevel = jn["t"].AsFloat;
+            Percentage = jn["p"].AsFloat;
+            LevelLength = jn["l"].AsFloat;
+            Unlocked = jn["u"].AsBool;
+
+            if (jn["h"] != null)
+                Hits = jn["h"].AsInt;
+            if (jn["d"] != null)
+                Deaths = jn["d"].AsInt;
+            if (jn["b"] != null)
+                Boosts = jn["b"].AsInt;
+
+            if (jn["ach"] != null)
+            {
+                UnlockedAchievements = new Dictionary<string, bool>();
+                for (int i = 0; i < jn["ach"].Count; i++)
+                {
+                    var unlocked = jn["ach"][i]["u"].AsBool;
+                    if (unlocked)
+                        UnlockedAchievements[jn["ach"][i]["id"]] = unlocked;
+                }
+            }
+
+            if (jn["vars"] != null)
+            {
+                Variables = new Dictionary<string, string>();
+                for (int i = 0; i < jn["vars"].Count; i++)
+                {
+                    var jnVar = jn["vars"][i];
+                    if (jnVar["n"] != null)
+                        Variables[jnVar["n"]] = jnVar["v"];
+                }
+            }
+
+            if (jn["lp"] != null)
+                LastPlayed = DateTime.ParseExact(jn["lp"], LegacyPlugin.DATE_TIME_FORMAT, null);
+
+        }
+
+        /// <summary>
+        /// Parses a <see cref="SaveData"/> from a vanilla version JSON.
+        /// </summary>
+        /// <param name="jn">JSON to parse.</param>
+        /// <returns>Returns a parsed player data.</returns>
+        public static SaveData ParseVanilla(JSONNode jn) => new SaveData
+        {
+            ID = jn["level_data"]["id"],
+            Completed = jn["play_data"]["finished"].AsBool,
+            Hits = jn["play_data"]["hits"].AsInt,
+            Deaths = jn["play_data"]["deaths"].AsInt,
+        };
+
+        public override JSONNode ToJSON()
+        {
+            var jn = Parser.NewJSONObject();
+
+            if (!string.IsNullOrEmpty(LevelName))
+                jn["n"] = LevelName;
+            jn["id"] = ID;
+            if (Completed)
+                jn["c"] = Completed;
+            if (Hits >= 0)
+                jn["h"] = Hits;
+            if (Deaths >= 0)
+                jn["d"] = Deaths;
+            if (Boosts >= 0)
+                jn["b"] = Boosts;
+            if (PlayedTimes != 0)
+                jn["pt"] = PlayedTimes;
+            if (TimeInLevel != 0f)
+                jn["t"] = TimeInLevel;
+            if (Percentage != 0f)
+                jn["p"] = Percentage;
+            if (LevelLength != 0f)
+                jn["l"] = LevelLength;
+            if (Unlocked)
+                jn["u"] = Unlocked;
+
+            if (UnlockedAchievements != null)
+            {
+                int num = 0;
+                foreach (var keyValuePair in UnlockedAchievements)
+                {
+                    var ach = Parser.NewJSONObject();
+                    ach["id"] = keyValuePair.Key;
+                    ach["u"] = keyValuePair.Value;
+                    jn["ach"][num] = ach;
+                    num++;
+                }
+            }
+
+            if (Variables != null)
+            {
+                int index = 0;
+                foreach (var variable in Variables)
+                {
+                    jn["vars"][index]["n"] = variable.Key;
+                    jn["vars"][index]["v"] = variable.Value;
+                }
+            }
+
+            if (LastPlayed is DateTime lastPlayed)
+                jn["lp"] = lastPlayed.ToString(LegacyPlugin.DATE_TIME_FORMAT);
+
+            return jn;
         }
 
         #region Updating
@@ -310,123 +423,6 @@ namespace BetterLegacy.Core.Data.Level
             }
 
             return achievement.unlocked;
-        }
-
-        #endregion
-
-        #region JSON
-
-        public override void ReadJSON(JSONNode jn)
-        {
-            LevelName = jn["n"];
-            ID = jn["id"];
-            Completed = jn["c"].AsBool;
-            PlayedTimes = jn["pt"].AsInt;
-            TimeInLevel = jn["t"].AsFloat;
-            Percentage = jn["p"].AsFloat;
-            LevelLength = jn["l"].AsFloat;
-            Unlocked = jn["u"].AsBool;
-
-            if (jn["h"] != null)
-                Hits = jn["h"].AsInt;
-            if (jn["d"] != null)
-                Deaths = jn["d"].AsInt;
-            if (jn["b"] != null)
-                Boosts = jn["b"].AsInt;
-
-            if (jn["ach"] != null)
-            {
-                UnlockedAchievements = new Dictionary<string, bool>();
-                for (int i = 0; i < jn["ach"].Count; i++)
-                {
-                    var unlocked = jn["ach"][i]["u"].AsBool;
-                    if (unlocked)
-                        UnlockedAchievements[jn["ach"][i]["id"]] = unlocked;
-                }
-            }
-
-            if (jn["vars"] != null)
-            {
-                Variables = new Dictionary<string, string>();
-                for (int i = 0; i < jn["vars"].Count; i++)
-                {
-                    var jnVar = jn["vars"][i];
-                    if (jnVar["n"] != null)
-                        Variables[jnVar["n"]] = jnVar["v"];
-                }
-            }
-
-            if (jn["lp"] != null)
-                LastPlayed = DateTime.ParseExact(jn["lp"], LegacyPlugin.DATE_TIME_FORMAT, null);
-
-        }
-
-        /// <summary>
-        /// Parses a <see cref="SaveData"/> from a vanilla version JSON.
-        /// </summary>
-        /// <param name="jn">JSON to parse.</param>
-        /// <returns>Returns a parsed player data.</returns>
-        public static SaveData ParseVanilla(JSONNode jn) => new SaveData
-        {
-            ID = jn["level_data"]["id"],
-            Completed = jn["play_data"]["finished"].AsBool,
-            Hits = jn["play_data"]["hits"].AsInt,
-            Deaths = jn["play_data"]["deaths"].AsInt,
-        };
-
-        public override JSONNode ToJSON()
-        {
-            var jn = Parser.NewJSONObject();
-
-            if (!string.IsNullOrEmpty(LevelName))
-                jn["n"] = LevelName;
-            jn["id"] = ID;
-            if (Completed)
-                jn["c"] = Completed;
-            if (Hits >= 0)
-                jn["h"] = Hits;
-            if (Deaths >= 0)
-                jn["d"] = Deaths;
-            if (Boosts >= 0)
-                jn["b"] = Boosts;
-            if (PlayedTimes != 0)
-                jn["pt"] = PlayedTimes;
-            if (TimeInLevel != 0f)
-                jn["t"] = TimeInLevel;
-            if (Percentage != 0f)
-                jn["p"] = Percentage;
-            if (LevelLength != 0f)
-                jn["l"] = LevelLength;
-            if (Unlocked)
-                jn["u"] = Unlocked;
-
-            if (UnlockedAchievements != null)
-            {
-                int num = 0;
-                foreach (var keyValuePair in UnlockedAchievements)
-                {
-                    var ach = Parser.NewJSONObject();
-                    ach["id"] = keyValuePair.Key;
-                    ach["u"] = keyValuePair.Value;
-                    jn["ach"][num] = ach;
-                    num++;
-                }
-            }
-
-            if (Variables != null)
-            {
-                int index = 0;
-                foreach (var variable in Variables)
-                {
-                    jn["vars"][index]["n"] = variable.Key;
-                    jn["vars"][index]["v"] = variable.Value;
-                }
-            }
-
-            if (LastPlayed is DateTime lastPlayed)
-                jn["lp"] = lastPlayed.ToString(LegacyPlugin.DATE_TIME_FORMAT);
-
-            return jn;
         }
 
         #endregion

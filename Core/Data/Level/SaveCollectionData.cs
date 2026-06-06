@@ -59,7 +59,7 @@ namespace BetterLegacy.Core.Data.Level
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public override void CopyData(SaveCollectionData orig, bool newID = true)
         {
@@ -70,6 +70,75 @@ namespace BetterLegacy.Core.Data.Level
             UnlockedAchievements = new Dictionary<string, bool>(orig.UnlockedAchievements);
             Variables = new Dictionary<string, string>(orig.Variables);
             LastPlayed = orig.LastPlayed;
+        }
+        
+        public override void ReadJSON(JSONNode jn)
+        {
+            LevelCollectionName = jn["n"];
+            ID = jn["id"];
+            Completed = jn["c"].AsBool;
+            PlayedTimes = jn["pt"].AsInt;
+
+            if (jn["ach"] != null)
+            {
+                UnlockedAchievements = new Dictionary<string, bool>();
+                for (int i = 0; i < jn["ach"].Count; i++)
+                {
+                    var unlocked = jn["ach"][i]["u"].AsBool;
+                    if (unlocked)
+                        UnlockedAchievements[jn["ach"][i]["id"]] = unlocked;
+                }
+            }
+
+            if (jn["vars"] != null)
+            {
+                Variables = new Dictionary<string, string>();
+                for (int i = 0; i < jn["vars"].Count; i++)
+                {
+                    var jnVar = jn["vars"][i];
+                    if (jnVar["n"] != null)
+                        Variables[jnVar["n"]] = jnVar["v"];
+                }
+            }
+
+        }
+
+        public override JSONNode ToJSON()
+        {
+            var jn = Parser.NewJSONObject();
+
+            if (!string.IsNullOrEmpty(LevelCollectionName))
+                jn["n"] = LevelCollectionName;
+            jn["id"] = ID;
+            if (Completed)
+                jn["c"] = Completed;
+            if (PlayedTimes != 0)
+                jn["pt"] = PlayedTimes;
+
+            if (UnlockedAchievements != null)
+            {
+                int num = 0;
+                foreach (var keyValuePair in UnlockedAchievements)
+                {
+                    var ach = Parser.NewJSONObject();
+                    ach["id"] = keyValuePair.Key;
+                    ach["u"] = keyValuePair.Value;
+                    jn["ach"][num] = ach;
+                    num++;
+                }
+            }
+
+            if (Variables != null)
+            {
+                int index = 0;
+                foreach (var variable in Variables)
+                {
+                    jn["vars"][index]["n"] = variable.Key;
+                    jn["vars"][index]["v"] = variable.Value;
+                }
+            }
+
+            return jn;
         }
 
         #region Updating
@@ -168,79 +237,6 @@ namespace BetterLegacy.Core.Data.Level
             }
 
             return achievement.unlocked;
-        }
-
-        #endregion
-
-        #region JSON
-
-        public override void ReadJSON(JSONNode jn)
-        {
-            LevelCollectionName = jn["n"];
-            ID = jn["id"];
-            Completed = jn["c"].AsBool;
-            PlayedTimes = jn["pt"].AsInt;
-
-            if (jn["ach"] != null)
-            {
-                UnlockedAchievements = new Dictionary<string, bool>();
-                for (int i = 0; i < jn["ach"].Count; i++)
-                {
-                    var unlocked = jn["ach"][i]["u"].AsBool;
-                    if (unlocked)
-                        UnlockedAchievements[jn["ach"][i]["id"]] = unlocked;
-                }
-            }
-
-            if (jn["vars"] != null)
-            {
-                Variables = new Dictionary<string, string>();
-                for (int i = 0; i < jn["vars"].Count; i++)
-                {
-                    var jnVar = jn["vars"][i];
-                    if (jnVar["n"] != null)
-                        Variables[jnVar["n"]] = jnVar["v"];
-                }
-            }
-
-        }
-
-        public override JSONNode ToJSON()
-        {
-            var jn = Parser.NewJSONObject();
-
-            if (!string.IsNullOrEmpty(LevelCollectionName))
-                jn["n"] = LevelCollectionName;
-            jn["id"] = ID;
-            if (Completed)
-                jn["c"] = Completed;
-            if (PlayedTimes != 0)
-                jn["pt"] = PlayedTimes;
-
-            if (UnlockedAchievements != null)
-            {
-                int num = 0;
-                foreach (var keyValuePair in UnlockedAchievements)
-                {
-                    var ach = Parser.NewJSONObject();
-                    ach["id"] = keyValuePair.Key;
-                    ach["u"] = keyValuePair.Value;
-                    jn["ach"][num] = ach;
-                    num++;
-                }
-            }
-
-            if (Variables != null)
-            {
-                int index = 0;
-                foreach (var variable in Variables)
-                {
-                    jn["vars"][index]["n"] = variable.Key;
-                    jn["vars"][index]["v"] = variable.Value;
-                }
-            }
-
-            return jn;
         }
 
         #endregion
