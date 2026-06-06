@@ -2119,7 +2119,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void SetFirstKeyframeInType(Keybind keybind)
         {
-            if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Objects)
+            if (ObjectEditor.inst.Dialog.IsCurrent && ObjectEditor.inst.Dialog.Timeline.MouseOver)
             {
                 if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
                 {
@@ -2127,6 +2127,7 @@ namespace BetterLegacy.Editor.Managers
                     ObjectEditor.inst.Dialog.Timeline.UpdateKeyframeOrder(bm);
                     ObjectEditor.inst.Dialog.Timeline.SetCurrentKeyframe(bm, ObjectEditor.inst.Dialog.Timeline.currentKeyframeType, 0, true);
                 }
+                return;
             }
             if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
             {
@@ -2137,7 +2138,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void SetLastKeyframeInType(Keybind keybind)
         {
-            if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Objects)
+            if (ObjectEditor.inst.Dialog.IsCurrent && ObjectEditor.inst.Dialog.Timeline.MouseOver)
             {
                 if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
                 {
@@ -2145,6 +2146,7 @@ namespace BetterLegacy.Editor.Managers
                     ObjectEditor.inst.Dialog.Timeline.UpdateKeyframeOrder(bm);
                     ObjectEditor.inst.Dialog.Timeline.SetCurrentKeyframe(bm, ObjectEditor.inst.Dialog.Timeline.currentKeyframeType, bm.events[ObjectEditor.inst.Dialog.Timeline.currentKeyframeType].Count - 1, true);
                 }
+                return;
             }
             if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
             {
@@ -2155,7 +2157,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void SetNextKeyframeInType(Keybind keybind)
         {
-            if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Objects)
+            if (ObjectEditor.inst.Dialog.IsCurrent && ObjectEditor.inst.Dialog.Timeline.MouseOver)
             {
                 if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
                 {
@@ -2163,6 +2165,7 @@ namespace BetterLegacy.Editor.Managers
                     ObjectEditor.inst.Dialog.Timeline.UpdateKeyframeOrder(bm);
                     ObjectEditor.inst.Dialog.Timeline.SetCurrentKeyframe(bm, ObjectEditor.inst.Dialog.Timeline.currentKeyframeType, Mathf.Clamp(ObjectEditor.inst.Dialog.Timeline.currentKeyframeIndex + 1, 0, bm.events[ObjectEditor.inst.Dialog.Timeline.currentKeyframeType].Count - 1), true);
                 }
+                return;
             }
             if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
             {
@@ -2176,7 +2179,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void SetPreviousKeyframeInType(Keybind keybind)
         {
-            if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Objects)
+            if (ObjectEditor.inst.Dialog.IsCurrent && ObjectEditor.inst.Dialog.Timeline.MouseOver)
             {
                 if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
                 {
@@ -2184,6 +2187,7 @@ namespace BetterLegacy.Editor.Managers
                     ObjectEditor.inst.Dialog.Timeline.UpdateKeyframeOrder(bm);
                     ObjectEditor.inst.Dialog.Timeline.SetCurrentKeyframe(bm, ObjectEditor.inst.Dialog.Timeline.currentKeyframeType, Mathf.Clamp(ObjectEditor.inst.Dialog.Timeline.currentKeyframeIndex - 1, 0, bm.events[ObjectEditor.inst.Dialog.Timeline.currentKeyframeType].Count - 1), true);
                 }
+                return;
             }
             if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
             {
