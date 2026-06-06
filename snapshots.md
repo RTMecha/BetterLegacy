@@ -3,6 +3,7 @@
 ### Core
 - Added Collection Variable related modifiers. These work like the Level Variable modifiers, except for level collections, allowing for a value to be persistent in a collection.
 - Custom interfaces can now be loaded instead of the regular level collection interface.
+- All levels in a level collection can now be downloaded / updated in one go.
 
 ### Editor
 - Added "Timeline Object Simple Text" and "Timeline Object Render Text On Collapsed" settings to Config Manager > Editor > Timeline. These should help optimize your editor a little.
