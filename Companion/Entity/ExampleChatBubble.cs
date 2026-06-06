@@ -120,75 +120,69 @@ namespace BetterLegacy.Companion.Entity
 
         public class Functions : JSONFunctionParser<ExampleChatBubble>
         {
-            public override bool IfFunction(JSONNode jn, string name, JSONNode parameters, ExampleChatBubble thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            public Functions() : base() { }
+
+            public override void RegisterFunctions()
             {
-                return base.IfFunction(jn, name, parameters, thisElement, customVariables);
+                base.RegisterFunctions();
+                RegisterAction(SetAttribute);
+                RegisterAction(SetAttributeOperation);
+                RegisterAction(Say);
+                RegisterAction(SayDialogue);
+                RegisterAction(Close);
             }
 
-            public override void Function(JSONNode jn, string name, JSONNode parameters, ExampleChatBubble thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            public void SetAttribute(JSONNode parameters, ExampleChatBubble thisElement = null, Dictionary<string, JSONNode> customVariables = null)
             {
-                switch (name)
-                {
-                    case "SetAttribute": {
-                            if (parameters == null || !thisElement)
-                                return;
+                if (parameters == null || !thisElement)
+                    return;
 
-                            var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables);
-                            if (!Parser.IsCompatibleString(id))
-                                return;
+                var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables);
+                if (!Parser.IsCompatibleString(id))
+                    return;
 
-                            var value = ParseVarFunction(parameters.Get(1, "value"), thisElement, customVariables).AsDouble;
-                            var min = ParseVarFunction(parameters.Get(2, "min"), thisElement, customVariables).AsDouble;
-                            var max = ParseVarFunction(parameters.Get(3, "max"), thisElement, customVariables).AsDouble;
+                var value = ParseVarFunction(parameters.Get(1, "value"), thisElement, customVariables).AsDouble;
+                var min = ParseVarFunction(parameters.Get(2, "min"), thisElement, customVariables).AsDouble;
+                var max = ParseVarFunction(parameters.Get(3, "max"), thisElement, customVariables).AsDouble;
 
-                            thisElement.GetAttribute(id, value, min, max).Value = value;
-                            return;
-                        }
-                    case "SetAttributeOperation": {
-                            if (parameters == null || !thisElement)
-                                return;
-
-                            var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables);
-                            if (!Parser.IsCompatibleString(id))
-                                return;
-
-                            var value = ParseVarFunction(parameters.Get(1, "value"), thisElement, customVariables).AsDouble;
-                            var operation = Parser.TryParse(ParseVarFunction(parameters.Get(2, "operation"), thisElement, customVariables), MathOperation.Addition);
-                            thisElement.SetAttribute(id, value, operation);
-                            return;
-                        }
-
-                    case "Say": {
-                            if (parameters == null)
-                                return;
-
-                            var dialogue = parameters.Get(0, "text");
-                            if (Parser.IsCompatibleString(dialogue))
-                                thisElement?.Say(dialogue.Value);
-                            return;
-                        }
-                    case "SayDialogue": {
-                            if (parameters == null)
-                                return;
-
-                            var dialogue = parameters.Get(0, "dialogue");
-                            if (Parser.IsCompatibleString(dialogue))
-                                thisElement?.SayDialogue(dialogue.Value);
-                            return;
-                        }
-                    case "Close": {
-                            thisElement?.Close();
-                            return;
-                        }
-                }
-
-                base.Function(jn, name, parameters, thisElement, customVariables);
+                thisElement.GetAttribute(id, value, min, max).Value = value;
             }
 
-            public override JSONNode VarFunction(JSONNode jn, string name, JSONNode parameters, ExampleChatBubble thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            public void SetAttributeOperation(JSONNode parameters, ExampleChatBubble thisElement = null, Dictionary<string, JSONNode> customVariables = null)
             {
-                return base.VarFunction(jn, name, parameters, thisElement, customVariables);
+                if (parameters == null || !thisElement)
+                    return;
+
+                var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables);
+                if (!Parser.IsCompatibleString(id))
+                    return;
+
+                var value = ParseVarFunction(parameters.Get(1, "value"), thisElement, customVariables).AsDouble;
+                var operation = Parser.TryParse(ParseVarFunction(parameters.Get(2, "operation"), thisElement, customVariables), MathOperation.Addition);
+                thisElement.SetAttribute(id, value, operation);
             }
+            
+            public void Say(JSONNode parameters, ExampleChatBubble thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (parameters == null)
+                    return;
+
+                var dialogue = parameters.Get(0, "text");
+                if (Parser.IsCompatibleString(dialogue))
+                    thisElement?.Say(dialogue.Value);
+            }
+            
+            public void SayDialogue(JSONNode parameters, ExampleChatBubble thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (parameters == null)
+                    return;
+
+                var dialogue = parameters.Get(0, "dialogue");
+                if (Parser.IsCompatibleString(dialogue))
+                    thisElement?.SayDialogue(dialogue.Value);
+            }
+            
+            public void Close(JSONNode parameters, ExampleChatBubble thisElement = null, Dictionary<string, JSONNode> customVariables = null) => thisElement?.Close();
         }
 
         #endregion

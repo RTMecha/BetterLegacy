@@ -205,39 +205,8 @@ namespace BetterLegacy.Arcade.Interfaces
                 playBlipSound = false,
                 func = () =>
                 {
-                    LevelManager.currentLevelIndex = CurrentCollection.EntryLevelIndex;
-                    if (LevelManager.currentLevelIndex < 0)
-                        LevelManager.currentLevelIndex = 0;
-
-                    while (LevelManager.currentLevelIndex < CurrentCollection.Count - 1 && CurrentCollection.levelInformation[LevelManager.currentLevelIndex].skip) // skip the level during normal playthrough
-                        LevelManager.currentLevelIndex++;
-
-                    if (CurrentCollection.Count > 1)
-                        LevelManager.CurrentLevel = CurrentCollection[LevelManager.currentLevelIndex];
-
-                    if (!LevelManager.CurrentLevel)
-                    {
-                        SoundManager.inst.PlaySound(DefaultSounds.blip);
-                        if (CurrentCollection.levelInformation.TryFind(x => x.index == LevelManager.currentLevelIndex, out LevelInfo levelInfo))
-                        {
-                            CoreHelper.Log($"A collection level was not found. It was probably not installed.\n" +
-                                $"Level Name: {levelInfo.name}\n" +
-                                $"Song Title: {levelInfo.songTitle}\n" +
-                                $"Creator: {levelInfo.creator}\n" +
-                                $"Arcade ID: {levelInfo.arcadeID}\n" +
-                                $"Server ID: {levelInfo.serverID}\n" +
-                                $"Workshop ID: {levelInfo.workshopID}");
-                            CurrentCollection.DownloadLevel(levelInfo);
-                        }
-                        else
-                            CoreHelper.Log($"Level was not found.");
-
-                        return;
-                    }
-
-                    SoundManager.inst.PlaySound(DefaultSounds.blip);
                     var collection = CurrentCollection;
-                    PlayLevelInterface.Init(LevelManager.CurrentLevel, onReturn: () =>
+                    collection.ShowEntryLevel(onReturn: () =>
                     {
                         Init(collection);
                         collection = null;
@@ -324,6 +293,11 @@ namespace BetterLegacy.Arcade.Interfaces
 
             InterfaceManager.inst.CloseMenus();
             CurrentCollection = collection;
+            if (RTFile.FileExists(collection.interfacePath))
+            {
+                InterfaceManager.inst.ParseInterface(RTFile.CombinePaths(collection.path, collection.interfacePath));
+                return;
+            }
             Current = new LevelCollectionInterface();
         }
 

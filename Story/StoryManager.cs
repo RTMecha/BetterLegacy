@@ -905,67 +905,53 @@ namespace BetterLegacy.Story
 
         public class StoryFunctions : JSONFunctionParser<StoryMode>
         {
+            public StoryFunctions() : base() { }
+
             public JSONNode onLevelCompleteFunc;
 
             public bool overrideOnCompleteFunc;
 
-            public override bool IfFunction(JSONNode jn, string name, JSONNode parameters, StoryMode thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            public override void RegisterFunctions()
             {
-                switch (name)
-                {
-                    case "IsCutscene": return inst.isCutscene;
-                }
+                base.RegisterFunctions();
 
-                return base.IfFunction(jn, name, parameters, thisElement, customVariables);
+                RegisterPredicate(IsCutscene);
+
+                RegisterAction(ReturnToStoryInterface);
+                RegisterAction(ReturnToStoryChapterInterface);
+                RegisterAction(StoryCompletion);
             }
 
-            public override void Function(JSONNode jn, string name, JSONNode parameters, StoryMode thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            public bool IsCutscene(JSONNode parameters, StoryMode thisElement = null, Dictionary<string, JSONNode> customVariables = null) => inst.isCutscene;
+
+            public void ReturnToStoryInterface(JSONNode parameters, StoryMode thisElement = null, Dictionary<string, JSONNode> customVariables = null)
             {
-                switch (name)
-                {
-                    case "ReturnToStoryInterface": {
-                            if (!inst || !inst.CurrentLevelSequence)
-                                return;
+                if (!inst || !inst.CurrentLevelSequence)
+                    return;
 
-                            ProjectArrhythmia.State.InStory = true;
-                            LevelManager.OnLevelEnd = null;
-                            InterfaceManager.inst.onReturnToStoryInterface = () => InterfaceManager.inst.ParseInterface(inst.CurrentLevelSequence.returnInterface);
-                            SceneHelper.LoadInterfaceScene();
-
-                            return;
-                        }
-                    case "ReturnToStoryChapterInterface": {
-                            if (!inst || !inst.CurrentLevelSequence)
-                                return;
-
-                            ProjectArrhythmia.State.InStory = true;
-                            LevelManager.OnLevelEnd = null;
-                            InterfaceManager.inst.onReturnToStoryInterface = () => InterfaceManager.inst.ParseInterface(inst.CurrentChapter.interfacePath);
-                            SceneHelper.LoadInterfaceScene();
-
-                            return;
-                        }
-                    case "StoryCompletion": {
-                            SoundManager.inst.PlaySound(DefaultSounds.loadsound);
-                            ProjectArrhythmia.State.InStory = false;
-                            LevelManager.OnLevelEnd = null;
-                            SceneHelper.LoadScene(SceneName.Main_Menu);
-
-                            return;
-                        }
-                }
-
-                base.Function(jn, name, parameters, thisElement, customVariables);
+                ProjectArrhythmia.State.InStory = true;
+                LevelManager.OnLevelEnd = null;
+                InterfaceManager.inst.onReturnToStoryInterface = () => InterfaceManager.inst.ParseInterface(inst.CurrentLevelSequence.returnInterface);
+                SceneHelper.LoadInterfaceScene();
             }
-
-            public override JSONNode VarFunction(JSONNode jn, string name, JSONNode parameters, StoryMode thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            
+            public void ReturnToStoryChapterInterface(JSONNode parameters, StoryMode thisElement = null, Dictionary<string, JSONNode> customVariables = null)
             {
-                //switch (name)
-                //{
+                if (!inst || !inst.CurrentLevelSequence)
+                    return;
 
-                //}
-
-                return base.VarFunction(jn, name, parameters, thisElement, customVariables);
+                ProjectArrhythmia.State.InStory = true;
+                LevelManager.OnLevelEnd = null;
+                InterfaceManager.inst.onReturnToStoryInterface = () => InterfaceManager.inst.ParseInterface(inst.CurrentChapter.interfacePath);
+                SceneHelper.LoadInterfaceScene();
+            }
+            
+            public void StoryCompletion(JSONNode parameters, StoryMode thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                SoundManager.inst.PlaySound(DefaultSounds.loadsound);
+                ProjectArrhythmia.State.InStory = false;
+                LevelManager.OnLevelEnd = null;
+                SceneHelper.LoadScene(SceneName.Main_Menu);
             }
         }
     }

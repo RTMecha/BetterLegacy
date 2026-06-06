@@ -2504,354 +2504,324 @@ namespace BetterLegacy.Companion.Entity
 
         public class Functions : JSONFunctionParser<ExampleModel>
         {
-            public override bool IfFunction(JSONNode jn, string name, JSONNode parameters, ExampleModel thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            public Functions() : base() { }
+
+            public override void RegisterFunctions()
             {
-                return base.IfFunction(jn, name, parameters, thisElement, customVariables);
+                base.RegisterFunctions();
+                RegisterAction(SetAttribute);
+                RegisterAction(SetAttributeOperation);
             }
 
-            public override void Function(JSONNode jn, string name, JSONNode parameters, ExampleModel thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            public void SetAttribute(JSONNode parameters, ExampleModel thisElement = null, Dictionary<string, JSONNode> customVariables = null)
             {
-                switch (name)
-                {
-                    case "SetPose": {
-                            if (!thisElement)
-                                return;
+                if (parameters == null || !thisElement)
+                    return;
 
-                            var pose = ParseVarFunction(parameters.Get(0, "pose"), thisElement, customVariables);
-                            if (!Parser.IsCompatibleString(pose))
-                                return;
+                var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables);
+                if (!Parser.IsCompatibleString(id))
+                    return;
 
-                            thisElement.SetPose(pose);
+                var value = ParseVarFunction(parameters.Get(1, "value"), thisElement, customVariables).AsDouble;
+                var min = ParseVarFunction(parameters.Get(2, "min"), thisElement, customVariables).AsDouble;
+                var max = ParseVarFunction(parameters.Get(3, "max"), thisElement, customVariables).AsDouble;
 
-                            return;
-                        }
-
-                    case "SetAttribute": {
-                            if (parameters == null || !thisElement)
-                                return;
-
-                            var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables);
-                            if (!Parser.IsCompatibleString(id))
-                                return;
-
-                            var value = ParseVarFunction(parameters.Get(1, "value"), thisElement, customVariables).AsDouble;
-                            var min = ParseVarFunction(parameters.Get(2, "min"), thisElement, customVariables).AsDouble;
-                            var max = ParseVarFunction(parameters.Get(3, "max"), thisElement, customVariables).AsDouble;
-
-                            thisElement.GetAttribute(id, value, min, max).Value = value;
-                            return;
-                        }
-                    case "SetAttributeOperation": {
-                            if (parameters == null || !thisElement)
-                                return;
-
-                            var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables);
-                            if (!Parser.IsCompatibleString(id))
-                                return;
-
-                            var value = ParseVarFunction(parameters.Get(1, "value"), thisElement, customVariables).AsDouble;
-                            var operation = Parser.TryParse(ParseVarFunction(parameters.Get(2, "operation"), thisElement, customVariables), MathOperation.Addition);
-                            thisElement.SetAttribute(id, value, operation);
-                            return;
-                        }
-
-                    case "SetFacePosition": {
-                            if (thisElement)
-                                thisElement.facePosition = new Vector2(ParseVarFunction(parameters.Get(0, "x"), thisElement, customVariables).AsFloat, ParseVarFunction(parameters.Get(1, "y"), thisElement, customVariables).AsFloat);
-
-                            return;
-                        }
-
-                }
-
-                base.Function(jn, name, parameters, thisElement, customVariables);
+                thisElement.GetAttribute(id, value, min, max).Value = value;
             }
 
-            public override JSONNode VarFunction(JSONNode jn, string name, JSONNode parameters, ExampleModel thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            public void SetAttributeOperation(JSONNode parameters, ExampleModel thisElement = null, Dictionary<string, JSONNode> customVariables = null)
             {
-                switch (name)
-                {
-                    case "GetAttribute": {
-                            if (parameters == null || !thisElement)
-                                return 0.0;
+                if (parameters == null || !thisElement)
+                    return;
 
-                            var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables);
-                            if (!Parser.IsCompatibleString(id))
-                                return 0.0;
+                var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables);
+                if (!Parser.IsCompatibleString(id))
+                    return;
 
-                            var defaultValue = ParseVarFunction(parameters.Get(1, "default"), thisElement, customVariables).AsDouble;
-                            var min = ParseVarFunction(parameters.Get(2, "min"), thisElement, customVariables).AsDouble;
-                            var max = ParseVarFunction(parameters.Get(3, "max"), thisElement, customVariables).AsDouble;
+                var value = ParseVarFunction(parameters.Get(1, "value"), thisElement, customVariables).AsDouble;
+                var operation = Parser.TryParse(ParseVarFunction(parameters.Get(2, "operation"), thisElement, customVariables), MathOperation.Addition);
+                thisElement.SetAttribute(id, value, operation);
+            }
 
-                            return thisElement.GetAttribute(id, defaultValue, min, max).Value;
-                        }
-                }
+            public void SetPose(JSONNode parameters, ExampleModel thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (!thisElement || parameters == null)
+                    return;
 
-                return base.VarFunction(jn, name, parameters, thisElement, customVariables);
+                var pose = ParseVarFunction(parameters.Get(0, "pose"), thisElement, customVariables);
+                if (!Parser.IsCompatibleString(pose))
+                    return;
+
+                thisElement.SetPose(pose);
+            }
+            
+            public void SetFacePosition(JSONNode parameters, ExampleModel thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (thisElement && parameters != null)
+                    thisElement.facePosition = new Vector2(ParseVarFunction(parameters.Get(0, "x"), thisElement, customVariables).AsFloat, ParseVarFunction(parameters.Get(1, "y"), thisElement, customVariables).AsFloat);
+            }
+
+            public JSONNode GetAttribute(JSONNode parameters, ExampleModel thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (parameters == null || !thisElement)
+                    return 0.0;
+
+                var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables);
+                if (!Parser.IsCompatibleString(id))
+                    return 0.0;
+
+                var defaultValue = ParseVarFunction(parameters.Get(1, "default"), thisElement, customVariables).AsDouble;
+                var min = ParseVarFunction(parameters.Get(2, "min"), thisElement, customVariables).AsDouble;
+                var max = ParseVarFunction(parameters.Get(3, "max"), thisElement, customVariables).AsDouble;
+
+                return thisElement.GetAttribute(id, defaultValue, min, max).Value;
             }
         }
         
         public class PartFunctions : JSONFunctionParser<BasePart>
         {
+            public PartFunctions() : base() { }
+
+            public override void RegisterFunctions()
+            {
+                base.RegisterFunctions();
+
+                #region Predicates
+
+                RegisterPredicate(Transform);
+                RegisterPredicate(CanDrag);
+                RegisterPredicate(CanDragLeftHand);
+                RegisterPredicate(CanDragRightHand);
+                RegisterPredicate(Dragging);
+                RegisterPredicate(DraggingLeftHand);
+                RegisterPredicate(DraggingRightHand);
+                RegisterPredicate(Leaving);
+                RegisterPredicate(CurrentAction);
+
+                #endregion
+
+                #region Actions
+
+                RegisterAction(StartDrag);
+                RegisterAction(Drag);
+                RegisterAction(EndDrag);
+                RegisterAction(StartLeftHandDrag);
+                RegisterAction(EndLeftHandDrag);
+                RegisterAction(StartRightHandDrag);
+                RegisterAction(EndRightHandDrag);
+                RegisterAction(ToggleOptions);
+                RegisterAction(Interact);
+                RegisterAction(SetPartPosition);
+                RegisterAction(SetPartScale);
+                RegisterAction(SetPartRotation);
+                RegisterAction(SetPartImageRotation);
+                RegisterAction(StopCurrentAction);
+                RegisterAction(UpdatePupilsOffset);
+                RegisterAction(UpdateBlinking);
+
+                #endregion
+            }
+
+            #region Predicates
+
+            public bool Transform(JSONNode parameters, BasePart thisElement = null, Dictionary<string, JSONNode> customVariables = null) => thisElement && thisElement.transform;
+            
+            public bool CanDrag(JSONNode parameters, BasePart thisElement = null, Dictionary<string, JSONNode> customVariables = null) => thisElement && thisElement.model && thisElement.model.reference && thisElement.model.reference.canDrag;
+            
+            public bool CanDragLeftHand(JSONNode parameters, BasePart thisElement = null, Dictionary<string, JSONNode> customVariables = null) => thisElement && thisElement.model && thisElement.model.reference && thisElement.model.reference.canDragLeftHand;
+            
+            public bool CanDragRightHand(JSONNode parameters, BasePart thisElement = null, Dictionary<string, JSONNode> customVariables = null) => thisElement && thisElement.model && thisElement.model.reference && thisElement.model.reference.canDragRightHand;
+            
+            public bool Dragging(JSONNode parameters, BasePart thisElement = null, Dictionary<string, JSONNode> customVariables = null) => thisElement && thisElement.model && thisElement.model.reference && thisElement.model.reference.dragging;
+            
+            public bool DraggingLeftHand(JSONNode parameters, BasePart thisElement = null, Dictionary<string, JSONNode> customVariables = null) => thisElement && thisElement.model && thisElement.model.reference && thisElement.model.reference.draggingLeftHand;
+            
+            public bool DraggingRightHand(JSONNode parameters, BasePart thisElement = null, Dictionary<string, JSONNode> customVariables = null) => thisElement && thisElement.model && thisElement.model.reference && thisElement.model.reference.draggingRightHand;
+            
+            public bool Leaving(JSONNode parameters, BasePart thisElement = null, Dictionary<string, JSONNode> customVariables = null) => thisElement && thisElement.model && thisElement.model.reference && thisElement.model.reference.leaving;
+            
+            public bool CurrentAction(JSONNode parameters, BasePart thisElement = null, Dictionary<string, JSONNode> customVariables = null) => thisElement && thisElement.model && thisElement.model.reference && thisElement.model.reference.brain && thisElement.model.reference.brain.CurrentAction;
+
+            #endregion
+
+            #region Actions
+
+            public void StartDrag(JSONNode parameters, BasePart thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (!thisElement || !thisElement.model || !thisElement.model.reference)
+                    return;
+
+                var reference = thisElement.model.reference;
+
+                CompanionManager.inst.animationController.Remove(x => x.name == "End Drag Example" || x.name == "Drag Example" || x.name.ToLower().Contains("movement"));
+
+                reference.startMousePos = new Vector2(Input.mousePosition.x, Input.mousePosition.y) * CoreHelper.ScreenScaleInverse;
+                reference.startDragPos = new Vector2(thisElement.model.position.x, thisElement.model.position.y);
+                reference.dragPos = new Vector3(thisElement.model.position.x, thisElement.model.position.y);
+                reference.dragging = true;
+            }
+            
+            public void Drag(JSONNode parameters, BasePart thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                var reference = thisElement.model.reference;
+                thisElement.model.rotation = (reference.DragTarget.x - reference.dragPos.x) * reference.DragDelay;
+
+                reference.dragPos += (reference.DragTarget - reference.dragPos) * reference.DragDelay;
+
+                thisElement.model.position = new Vector3(Mathf.Clamp(reference.dragPos.x, -970f, 970f), Mathf.Clamp(reference.dragPos.y, -560f, 560f));
+            }
+            
+            public void EndDrag(JSONNode parameters, BasePart thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (!thisElement || !thisElement.model || !thisElement.model.reference)
+                    return;
+
+                var reference = thisElement.model.reference;
+
+                thisElement.model.facePosition = Vector3.zero;
+
+                reference.dragging = false;
+            }
+            
+            public void StartLeftHandDrag(JSONNode parameters, BasePart thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (!thisElement || !thisElement.model || !thisElement.model.reference)
+                    return;
+
+                var reference = thisElement.model.reference;
+
+                reference.startMousePos = new Vector2(Input.mousePosition.x, Input.mousePosition.y) * CoreHelper.ScreenScaleInverse;
+                reference.startDragPos = new Vector2(thisElement.position.x, thisElement.position.y);
+                reference.draggingLeftHand = true;
+            }
+            
+            public void EndLeftHandDrag(JSONNode parameters, BasePart thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (thisElement && thisElement.model && thisElement.model.reference)
+                    thisElement.model.reference.draggingLeftHand = false;
+
+                try
+                {
+                    if (thisElement is ImagePart part)
+                        thisElement?.model?.reference?.brain.SelectObject(part.image);
+                }
+                catch (Exception ex)
+                {
+                    CoreHelper.LogException(ex);
+                }
+            }
+            
+            public void StartRightHandDrag(JSONNode parameters, BasePart thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (!thisElement || !thisElement.model || !thisElement.model.reference)
+                    return;
+
+                var reference = thisElement.model.reference;
+
+                reference.startMousePos = new Vector2(Input.mousePosition.x, Input.mousePosition.y) * CoreHelper.ScreenScaleInverse;
+                reference.startDragPos = new Vector2(thisElement.position.x, thisElement.position.y);
+                reference.draggingRightHand = true;
+            }
+            
+            public void EndRightHandDrag(JSONNode parameters, BasePart thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (thisElement && thisElement.model && thisElement.model.reference)
+                    thisElement.model.reference.draggingRightHand = false;
+
+                try
+                {
+                    if (thisElement is ImagePart part)
+                        thisElement?.model?.reference?.brain.SelectObject(part.image);
+                }
+                catch (Exception ex)
+                {
+                    CoreHelper.LogException(ex);
+                }
+            }
+            
+            public void ToggleOptions(JSONNode parameters, BasePart thisElement = null, Dictionary<string, JSONNode> customVariables = null) => thisElement?.model?.reference?.options?.Toggle();
+
+            public void Interact(JSONNode parameters, BasePart thisElement = null, Dictionary<string, JSONNode> customVariables = null) => thisElement?.model?.reference?.brain?.Interact(ParseVarFunction(parameters.Get(0, "context"), thisElement, customVariables));
+
+            public void SetPartPosition(JSONNode parameters, BasePart thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (parameters == null)
+                    return;
+
+                thisElement?.SetPosition(new Vector2(ParseVarFunction(parameters.Get(0, "x"), thisElement, customVariables).AsFloat, ParseVarFunction(parameters.Get(1, "y"), thisElement, customVariables).AsFloat));
+            }
+            
+            public void SetPartScale(JSONNode parameters, BasePart thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (parameters == null)
+                    return;
+
+                thisElement?.SetScale(new Vector2(ParseVarFunction(parameters.Get(0, "x"), thisElement, customVariables).AsFloat, ParseVarFunction(parameters.Get(1, "y"), thisElement, customVariables).AsFloat));
+            }
+            
+            public void SetPartRotation(JSONNode parameters, BasePart thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (parameters == null)
+                    return;
+
+                thisElement?.SetRotation(ParseVarFunction(parameters.Get(0, "x"), thisElement, customVariables).AsFloat);
+            }
+            
+            public void SetPartImageRotation(JSONNode parameters, BasePart thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (parameters == null || thisElement is not ImagePart imagePart)
+                    return;
+
+                imagePart.imageRotation = ParseVarFunction(parameters.Get(0, "x"), thisElement, customVariables).AsFloat;
+            }
+            
+            public void StopCurrentAction(JSONNode parameters, BasePart thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (thisElement && thisElement.model && thisElement.model.reference && thisElement.model.reference.brain && thisElement.model.reference.brain.CurrentAction)
+                    thisElement.model.reference.brain.StopCurrentAction();
+            }
+            
+            public void UpdatePupilsOffset(JSONNode parameters, BasePart thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (thisElement && thisElement.model)
+                    thisElement.model.pupilsOffset = new Vector2(UnityRandom.Range(0f, 0.5f), UnityRandom.Range(0f, 0.5f));
+            }
+            
+            public void UpdateBlinking(JSONNode parameters, BasePart thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (!thisElement || !thisElement.gameObject || !thisElement.model)
+                    return;
+
+                var reference = thisElement.model.reference;
+
+                float t = reference.timer.time % CompanionManager.BLINK_RATE;
+
+                if (!reference.Dragging && thisElement.model.GetAttribute("ALLOW_BLINKING").Value == 1.0 && thisElement.model.GetAttribute("DANCING").Value == 0.0 && thisElement.model.GetAttribute("POKING_EYES").Value == 0.0)
+                {
+                    var blinkingAttribute = thisElement.model.GetAttribute("IS_BLINKING");
+                    var canUnblinkAttribute = thisElement.model.GetAttribute("CAN_UNBLINK");
+                    if (t > CompanionManager.BLINK_RATE - 0.3f && canUnblinkAttribute.Value == 1.0)
+                        blinkingAttribute.Value = RandomHelper.PercentChance(45) ? 1.0 : 0.0;
+
+                    var active = t > CompanionManager.BLINK_RATE - 0.3f && blinkingAttribute.Value == 1.0;
+                    canUnblinkAttribute.Value = active ? 0.0 : 1.0;
+                    thisElement.gameObject.SetActive(active);
+                }
+                else
+                    thisElement.gameObject.SetActive(true);
+            }
+
+            #endregion
+
             public override bool IfFunction(JSONNode jn, string name, JSONNode parameters, BasePart thisElement = null, Dictionary<string, JSONNode> customVariables = null)
             {
-                switch (name)
-                {
-                    case "Transform": return thisElement && thisElement.transform;
-                    case "CanDrag": return thisElement && thisElement.model && thisElement.model.reference && thisElement.model.reference.canDrag;
-                    case "CanDragLeftHand": return thisElement && thisElement.model && thisElement.model.reference && thisElement.model.reference.canDragLeftHand;
-                    case "CanDragRightHand": return thisElement && thisElement.model && thisElement.model.reference && thisElement.model.reference.canDragRightHand;
-                    case "Dragging": return thisElement && thisElement.model && thisElement.model.reference && thisElement.model.reference.dragging;
-                    case "DraggingLeftHand": return thisElement && thisElement.model && thisElement.model.reference && thisElement.model.reference.draggingLeftHand;
-                    case "DraggingRightHand": return thisElement && thisElement.model && thisElement.model.reference && thisElement.model.reference.draggingRightHand;
-                    case "Leaving": return thisElement && thisElement.model && thisElement.model.reference && thisElement.model.reference.leaving;
-                    case "CurrentAction": return thisElement && thisElement.model && thisElement.model.reference && thisElement.model.reference.brain && thisElement.model.reference.brain.CurrentAction;
-                }
-
                 if (thisElement && thisElement.model)
                     return thisElement.model.functions.IfFunction(jn, name, parameters, thisElement.model, customVariables);
-
                 return base.IfFunction(jn, name, parameters, thisElement, customVariables);
             }
 
             public override void Function(JSONNode jn, string name, JSONNode parameters, BasePart thisElement = null, Dictionary<string, JSONNode> customVariables = null)
             {
-                switch (name)
-                {
-                    case "StartDrag": {
-                            if (!thisElement || !thisElement.model || !thisElement.model.reference)
-                                return;
-
-                            var reference = thisElement.model.reference;
-
-                            CompanionManager.inst.animationController.Remove(x => x.name == "End Drag Example" || x.name == "Drag Example" || x.name.ToLower().Contains("movement"));
-
-                            reference.startMousePos = new Vector2(Input.mousePosition.x, Input.mousePosition.y) * CoreHelper.ScreenScaleInverse;
-                            reference.startDragPos = new Vector2(thisElement.model.position.x, thisElement.model.position.y);
-                            reference.dragPos = new Vector3(thisElement.model.position.x, thisElement.model.position.y);
-                            reference.dragging = true;
-
-                            return;
-                        }
-                    case "Drag": {
-                            var reference = thisElement.model.reference;
-                            thisElement.model.rotation = (reference.DragTarget.x - reference.dragPos.x) * reference.DragDelay;
-
-                            reference.dragPos += (reference.DragTarget - reference.dragPos) * reference.DragDelay;
-
-                            thisElement.model.position = new Vector3(Mathf.Clamp(reference.dragPos.x, -970f, 970f), Mathf.Clamp(reference.dragPos.y, -560f, 560f));
-
-                            break;
-                        }
-                    case "EndDrag": {
-                            if (!thisElement || !thisElement.model || !thisElement.model.reference)
-                                return;
-
-                            var reference = thisElement.model.reference;
-
-                            thisElement.model.facePosition = Vector3.zero;
-
-                            reference.dragging = false;
-
-                            return;
-                        }
-                    case "StartLeftHandDrag": {
-                            if (!thisElement || !thisElement.model || !thisElement.model.reference)
-                                return;
-
-                            var reference = thisElement.model.reference;
-
-                            reference.startMousePos = new Vector2(Input.mousePosition.x, Input.mousePosition.y) * CoreHelper.ScreenScaleInverse;
-                            reference.startDragPos = new Vector2(thisElement.position.x, thisElement.position.y);
-                            reference.draggingLeftHand = true;
-
-                            return;
-                        }
-                    case "EndLeftHandDrag": {
-                            if (thisElement && thisElement.model && thisElement.model.reference)
-                                thisElement.model.reference.draggingLeftHand = false;
-
-                            try
-                            {
-                                if (thisElement is ImagePart part)
-                                    thisElement?.model?.reference?.brain.SelectObject(part.image);
-                            }
-                            catch (Exception ex)
-                            {
-                                CoreHelper.LogException(ex);
-                            }
-
-                            return;
-                        }
-                    case "StartRightHandDrag": {
-                            if (!thisElement || !thisElement.model || !thisElement.model.reference)
-                                return;
-
-                            var reference = thisElement.model.reference;
-
-                            reference.startMousePos = new Vector2(Input.mousePosition.x, Input.mousePosition.y) * CoreHelper.ScreenScaleInverse;
-                            reference.startDragPos = new Vector2(thisElement.position.x, thisElement.position.y);
-                            reference.draggingRightHand = true;
-
-                            return;
-                        }
-                    case "EndRightHandDrag": {
-                            if (thisElement && thisElement.model && thisElement.model.reference)
-                                thisElement.model.reference.draggingRightHand = false;
-
-                            try
-                            {
-                                if (thisElement is ImagePart part)
-                                    thisElement?.model?.reference?.brain.SelectObject(part.image);
-                            }
-                            catch (Exception ex)
-                            {
-                                CoreHelper.LogException(ex);
-                            }
-
-                            return;
-                        }
-
-                    #region PlaySound
-
-                    // Plays a sound. Can either be a default one already loaded in the SoundLibrary or a custom one from the menu's folder.
-                    // Supports both JSON array and JSON object.
-                    //
-                    // - JSON Array Structure -
-                    // 0 = sound
-                    // 1 = volume
-                    // 2 = pitch
-                    // Example:
-                    // [
-                    //   "blip" < plays the blip sound.
-                    //   "0.3" < sound is quiet.
-                    //   "2" < sound is fast.
-                    // ]
-                    //
-                    // - JSON Object Structure -
-                    // "sound"
-                    // "vol"
-                    // "pitch"
-                    // Example:
-                    // {
-                    //   "sound": "some kind of sound.ogg" < since this sound does not exist in the SoundLibrary, search for a file with the name. If it exists, play the sound.
-                    //   "vol": "1" < default
-                    //   "pitch": "0.5" < slow
-                    // }
-                    case "PlaySound": {
-                            if (parameters == null || !thisElement || !thisElement.model)
-                                return;
-
-                            string sound = ParseVarFunction(parameters.Get(0, "sound"));
-                            if (string.IsNullOrEmpty(sound))
-                                return;
-
-                            float volume = 1f;
-                            var volumeJN = ParseVarFunction(parameters.Get(1, "vol"));
-                            if (volumeJN != null)
-                                volume = volumeJN;
-                        
-                            float pitch = 1f;
-                            var pitchJN = ParseVarFunction(parameters.Get(2, "pitch"));
-                            if (pitchJN != null)
-                                pitch = pitchJN;
-
-                            if (SoundManager.inst.TryGetSound(sound, out AudioClip audioClip))
-                            {
-                                SoundManager.inst.PlaySound(thisElement.model.baseCanvas, audioClip, volume, pitch);
-                                return;
-                            }
-
-                            //var filePath = $"{Path.GetDirectoryName(inst.CurrentInterface.filePath)}{sound}";
-                            //if (!RTFile.FileExists(filePath))
-                            //    return;
-
-                            //var audioType = RTFile.GetAudioType(filePath);
-                            //if (audioType == AudioType.MPEG)
-                            //    SoundManager.inst.PlaySound(LSAudio.CreateAudioClipUsingMP3File(filePath), volume, pitch);
-                            //else
-                            //    CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip($"file://{filePath}", audioType, audioClip => SoundManager.inst.PlaySound(audioClip, volume, pitch)));
-
-                            return;
-                        }
-
-                    #endregion
-
-                    case "ToggleOptions": {
-                            thisElement?.model?.reference?.options?.Toggle();
-                            break;
-                        }
-                    case "Interact": {
-                            thisElement?.model?.reference?.brain?.Interact(ParseVarFunction(parameters.Get(0, "context"), thisElement, customVariables));
-                            break;
-                        }
-
-                    case "SetPartPosition": {
-                            if (parameters == null)
-                                return;
-
-                            thisElement?.SetPosition(new Vector2(ParseVarFunction(parameters.Get(0, "x"), thisElement, customVariables).AsFloat, ParseVarFunction(parameters.Get(1, "y"), thisElement, customVariables).AsFloat));
-                            return;
-                        }
-                    case "SetPartScale": {
-                            if (parameters == null)
-                                return;
-
-                            thisElement?.SetScale(new Vector2(ParseVarFunction(parameters.Get(0, "x"), thisElement, customVariables).AsFloat, ParseVarFunction(parameters.Get(1, "y"), thisElement, customVariables).AsFloat));
-                            return;
-                        }
-                    case "SetPartRotation": {
-                            if (parameters == null)
-                                return;
-
-                            thisElement?.SetRotation(ParseVarFunction(parameters.Get(0, "x"), thisElement, customVariables).AsFloat);
-                            return;
-                        }
-
-                    case "SetPartImageRotation": {
-                            if (parameters == null || thisElement is not ImagePart imagePart)
-                                return;
-
-                            imagePart.imageRotation = ParseVarFunction(parameters.Get(0, "x"), thisElement, customVariables).AsFloat;
-                            return;
-                        }
-
-                    case "StopCurrentAction": {
-                            if (thisElement && thisElement.model && thisElement.model.reference && thisElement.model.reference.brain && thisElement.model.reference.brain.CurrentAction)
-                                thisElement.model.reference.brain.StopCurrentAction();
-                            break;
-                        }
-
-                    case "UpdatePupilsOffset": {
-                            if (thisElement && thisElement.model)
-                                thisElement.model.pupilsOffset = new Vector2(UnityRandom.Range(0f, 0.5f), UnityRandom.Range(0f, 0.5f));
-                            return;
-                        }
-                    case "UpdateBlinking": {
-                        if (!thisElement || !thisElement.gameObject || !thisElement.model)
-                            return;
-
-                            var reference = thisElement.model.reference;
-
-                            float t = reference.timer.time % CompanionManager.BLINK_RATE;
-
-                            if (!reference.Dragging && thisElement.model.GetAttribute("ALLOW_BLINKING").Value == 1.0 && thisElement.model.GetAttribute("DANCING").Value == 0.0 && thisElement.model.GetAttribute("POKING_EYES").Value == 0.0)
-                            {
-                                var blinkingAttribute = thisElement.model.GetAttribute("IS_BLINKING");
-                                var canUnblinkAttribute = thisElement.model.GetAttribute("CAN_UNBLINK");
-                                if (t > CompanionManager.BLINK_RATE - 0.3f && canUnblinkAttribute.Value == 1.0)
-                                    blinkingAttribute.Value = RandomHelper.PercentChance(45) ? 1.0 : 0.0;
-
-                                var active = t > CompanionManager.BLINK_RATE - 0.3f && blinkingAttribute.Value == 1.0;
-                                canUnblinkAttribute.Value = active ? 0.0 : 1.0;
-                                thisElement.gameObject.SetActive(active);
-                            }
-                            else
-                                thisElement.gameObject.SetActive(true);
-                            return;
-                        }
-                }
-
                 if (thisElement && thisElement.model)
                 {
                     thisElement.model.functions.Function(jn, name, parameters, thisElement.model, customVariables);
@@ -2863,27 +2833,8 @@ namespace BetterLegacy.Companion.Entity
 
             public override JSONNode VarFunction(JSONNode jn, string name, JSONNode parameters, BasePart thisElement = null, Dictionary<string, JSONNode> customVariables = null)
             {
-                //switch (name)
-                //{
-                //    case "GetAttribute": {
-                //            if (parameters == null || !thisElement || !thisElement.model)
-                //                return 0.0;
-
-                //            var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables);
-                //            if (!Parser.IsCompatibleString(id))
-                //                return 0.0;
-
-                //            var defaultValue = ParseVarFunction(parameters.Get(1, "default"), thisElement, customVariables).AsDouble;
-                //            var min = ParseVarFunction(parameters.Get(2, "min"), thisElement, customVariables).AsDouble;
-                //            var max = ParseVarFunction(parameters.Get(3, "max"), thisElement, customVariables).AsDouble;
-
-                //            return thisElement.model.GetAttribute(id, defaultValue, min, max).Value;
-                //        }
-                //}
-
                 if (thisElement && thisElement.model)
                     return thisElement.model.functions.VarFunction(jn, name, parameters, thisElement.model, customVariables);
-
                 return base.VarFunction(jn, name, parameters, thisElement, customVariables);
             }
         }

@@ -153,6 +153,11 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         public static float songFadeTransition = 0.5f;
 
+        /// <summary>
+        /// JSON functions for level collections.
+        /// </summary>
+        public LevelCollection.Functions levelCollectionFunctions = new LevelCollection.Functions();
+
         #endregion
 
         #region Saves
@@ -767,6 +772,10 @@ namespace BetterLegacy.Core.Managers
             level.LoadAchievements();
         }
 
+        /// <summary>
+        /// Finds and sets the level collections' save data.
+        /// </summary>
+        /// <param name="levelCollection">Level collection to assign to.</param>
         public static void AssignSaveData(LevelCollection levelCollection)
         {
             if (!levelCollection)

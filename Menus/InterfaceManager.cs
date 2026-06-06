@@ -435,6 +435,12 @@ namespace BetterLegacy.Menus
         /// <param name="path">Path to an interface.</param>
         public void ParseInterface(string path, bool load = true, string openInterfaceID = null, List<string> branchChain = null, Dictionary<string, JSONNode> customVariables = null)
         {
+            if (!RTFile.FileExists(path))
+                return;
+
+            if (!path.EndsWith(FileFormat.LSI.Dot()))
+                path += FileFormat.LSI.Dot();
+
             var jn = JSON.Parse(RTFile.ReadFromFile(path));
 
             if (!string.IsNullOrEmpty(jn["type"]) && jn["type"].Value.ToLower() == "list")
@@ -503,7 +509,7 @@ namespace BetterLegacy.Menus
             SceneHelper.LoadedGame = true;
         }
 
-        void OpenChangelog()
+        public void OpenChangelog()
         {
             try
             {
@@ -653,2459 +659,2191 @@ namespace BetterLegacy.Menus
 
         public class MenuImageFunctions : JSONFunctionParser<MenuImage>
         {
-            public override bool IfFunction(JSONNode jn, string name, JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            public MenuImageFunctions() : base() { }
+
+            public override void RegisterFunctions()
             {
-                try
+                base.RegisterFunctions();
+
+                #region Predicates
+
+                #region Main
+
+                RegisterPredicate(CurrentInterfaceGenerating);
+
+                #endregion
+
+                #region Interface List
+
+                RegisterPredicate(LIST_ContainsInterface);
+
+                #endregion
+
+                #region Layout
+
+                RegisterPredicate(LayoutChildCountEquals);
+                RegisterPredicate(LayoutChildCountLesserEquals);
+                RegisterPredicate(LayoutChildCountGreaterEquals);
+                RegisterPredicate(LayoutChildCountLesser);
+                RegisterPredicate(LayoutChildCountGreater);
+                RegisterPredicate(LayoutScrollXEquals);
+                RegisterPredicate(LayoutScrollXLesserEquals);
+                RegisterPredicate(LayoutScrollXGreaterEquals);
+                RegisterPredicate(LayoutScrollXLesser);
+                RegisterPredicate(LayoutScrollXGreater);
+                RegisterPredicate(LayoutScrollYEquals);
+                RegisterPredicate(LayoutScrollYLesserEquals);
+                RegisterPredicate(LayoutScrollYGreaterEquals);
+                RegisterPredicate(LayoutScrollYLesser);
+                RegisterPredicate(LayoutScrollYGreater);
+
+                #endregion
+
+                #endregion
+
+                #region Actions
+
+                #region Interface
+
+                RegisterAction(Close);
+                RegisterAction(SetCurrentInterface);
+                RegisterAction(Reload);
+                RegisterAction(Parse);
+                RegisterAction(ClearInterfaces);
+                RegisterAction(SetCurrentPath);
+                RegisterAction(Confirm);
+                RegisterAction(SetTheme);
+
+                #endregion
+
+                #region Interface List
+
+                RegisterAction(LIST_OpenDefaultInterface);
+                RegisterAction(LIST_ExitInterface);
+                RegisterAction(LIST_SetCurrentInterface);
+                RegisterAction(LIST_AddInterface);
+                RegisterAction(LIST_RemoveInterface);
+                RegisterAction(LIST_ClearInterfaces);
+                RegisterAction(LIST_CloseInterfaces);
+                RegisterAction(LIST_ClearChain);
+
+                #endregion
+
+                #region Audio
+
+                RegisterAction(PlayMusic);
+                RegisterAction(StopMusic);
+                RegisterAction(PauseMusic);
+                RegisterAction(ResumeMusic);
+
+                #endregion
+
+                #region Elements
+
+                RegisterAction(Move);
+                RegisterAction(SetElementActive);
+                RegisterAction(SetLayoutActive);
+                RegisterAction(AnimateID);
+                RegisterAction(AnimateName);
+                RegisterAction(StopAnimations);
+                RegisterAction(SetColor);
+                RegisterAction(SetText);
+                RegisterAction(RemoveElement);
+                RegisterAction(RemoveMultipleElements);
+                RegisterAction(AddElement);
+                RegisterAction(ScrollLayout);
+                RegisterAction(SetElementSelectable);
+                RegisterAction(SetInputFieldText);
+                RegisterAction(ApplyElement);
+
+                #endregion
+
+                #region Effects
+
+                RegisterAction(SetDefaultEvents);
+                RegisterAction(AnimateEvent);
+                RegisterAction(UpdateEvent);
+                RegisterAction(SetEvent);
+
+                #endregion
+
+                #endregion
+
+                #region Variables
+
+                RegisterVariable(ColorSource);
+                RegisterVariable(CurrentInterfacePath);
+
+                #endregion
+            }
+
+            #region Predicates
+
+            #region Main
+
+            public bool CurrentInterfaceGenerating(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null) => inst.CurrentInterface && inst.CurrentInterface.generating;
+
+            #endregion
+
+            #region Interface List
+
+            public bool LIST_ContainsInterface(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (!inst.CurrentInterfaceList || parameters == null)
+                    return false;
+
+                var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables);
+                if (id == null)
+                    return false;
+
+                return inst.CurrentInterfaceList.Contains(id);
+            }
+
+            #endregion
+
+            #region Layout
+
+            public bool LayoutChildCountEquals(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !inst.CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                    return false;
+
+                var isArray = parameters.IsArray;
+
+                return menuLayout.content.childCount == (isArray ? parameters[1].AsInt : parameters["count"].AsInt);
+            }
+            
+            public bool LayoutChildCountLesserEquals(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !inst.CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                    return false;
+
+                var isArray = parameters.IsArray;
+
+                return menuLayout.content.childCount <= (isArray ? parameters[1].AsInt : parameters["count"].AsInt);
+            }
+            
+            public bool LayoutChildCountGreaterEquals(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !inst.CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                    return false;
+
+                var isArray = parameters.IsArray;
+
+                return menuLayout.content.childCount >= (isArray ? parameters[1].AsInt : parameters["count"].AsInt);
+            }
+            
+            public bool LayoutChildCountLesser(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !inst.CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                    return false;
+
+                var isArray = parameters.IsArray;
+
+                return menuLayout.content.childCount < (isArray ? parameters[1].AsInt : parameters["count"].AsInt);
+            }
+            
+            public bool LayoutChildCountGreater(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !inst.CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                    return false;
+
+                var isArray = parameters.IsArray;
+
+                return menuLayout.content.childCount > (isArray ? parameters[1].AsInt : parameters["count"].AsInt);
+            }
+            
+            public bool LayoutScrollXEquals(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !inst.CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                    return false;
+
+                var isArray = parameters.IsArray;
+
+                return menuLayout.content.anchoredPosition.x == (isArray ? parameters[1].AsFloat : parameters["val"].AsFloat);
+            }
+            
+            public bool LayoutScrollXLesserEquals(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !inst.CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                    return false;
+
+                var isArray = parameters.IsArray;
+
+                return menuLayout.content.anchoredPosition.x <= (isArray ? parameters[1].AsFloat : parameters["val"].AsFloat);
+            }
+            
+            public bool LayoutScrollXGreaterEquals(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !inst.CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                    return false;
+
+                var isArray = parameters.IsArray;
+
+                return menuLayout.content.anchoredPosition.x >= (isArray ? parameters[1].AsFloat : parameters["val"].AsFloat);
+            }
+            
+            public bool LayoutScrollXLesser(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !inst.CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                    return false;
+
+                var isArray = parameters.IsArray;
+
+                return menuLayout.content.anchoredPosition.x < (isArray ? parameters[1].AsFloat : parameters["val"].AsFloat);
+            }
+            
+            public bool LayoutScrollXGreater(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !inst.CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                    return false;
+
+                var isArray = parameters.IsArray;
+
+                return menuLayout.content.anchoredPosition.x > (isArray ? parameters[1].AsFloat : parameters["val"].AsFloat);
+            }
+
+            public bool LayoutScrollYEquals(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !inst.CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                    return false;
+
+                var isArray = parameters.IsArray;
+
+                return menuLayout.content.anchoredPosition.y == (isArray ? parameters[1].AsFloat : parameters["val"].AsFloat);
+            }
+
+            public bool LayoutScrollYLesserEquals(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !inst.CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                    return false;
+
+                var isArray = parameters.IsArray;
+
+                return menuLayout.content.anchoredPosition.y <= (isArray ? parameters[1].AsFloat : parameters["val"].AsFloat);
+            }
+
+            public bool LayoutScrollYGreaterEquals(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !inst.CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                    return false;
+
+                var isArray = parameters.IsArray;
+
+                return menuLayout.content.anchoredPosition.y >= (isArray ? parameters[1].AsFloat : parameters["val"].AsFloat);
+            }
+
+            public bool LayoutScrollYLesser(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !inst.CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                    return false;
+
+                var isArray = parameters.IsArray;
+
+                return menuLayout.content.anchoredPosition.y < (isArray ? parameters[1].AsFloat : parameters["val"].AsFloat);
+            }
+
+            public bool LayoutScrollYGreater(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !inst.CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                    return false;
+
+                var isArray = parameters.IsArray;
+
+                return menuLayout.content.anchoredPosition.y > (isArray ? parameters[1].AsFloat : parameters["val"].AsFloat);
+            }
+
+            #endregion
+
+            #endregion
+
+            #region Actions
+
+            #region Interface
+
+            // Closes the interface and returns to the game (if user is in the Game scene).
+            // Function has no parameters.
+            public void Close(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                string id = inst.CurrentInterface?.id;
+                inst.CloseMenus();
+                inst.StopMusic();
+
+                RTBeatmap.Current?.Resume();
+
+                if (ProjectArrhythmia.State.InGame)
+                    inst.interfaces.RemoveAll(x => x.id == id);
+            }
+
+            // Finds an interface with a matching ID and opens it.
+            // Supports both JSON array and JSON object.
+            // 
+            // - JSON Array Structure -
+            // 0 = id
+            // Example:
+            // [
+            //   "0" < main menus' ID is 0, so load that one. No other interface should have this ID.
+            // ]
+            // 
+            // - JSON Object Structure -
+            // "id"
+            // Example:
+            // {
+            //   "id": "0"
+            // }
+            public void SetCurrentInterface(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (parameters == null)
+                    return;
+
+                var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables);
+                if (id == null || !inst.interfaces.TryFind(x => x.id == id, out BaseInterface _interface))
+                    return;
+
+                inst.SetCurrentInterface(_interface);
+                inst.PlayMusic();
+            }
+
+            // Reloads the interface and sets it to the main menu. Only recommended if you want to return to the main menu and unload every other interface.
+            // Function has no parameters.
+            public void Reload(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (ProjectArrhythmia.State.InGame) // don't allow reload in game
+                    return;
+
+                LegacyPlugin.ParseProfile();
+                AssetPack.LoadAssetPacks();
+                Lang.LoadGlobal();
+                LegacyPlugin.LoadSplashText();
+                ChangelogInterface.Seen = false;
+                inst.randomIndex = -1;
+                for (int i = 0; i < LegacyResources.musicClips.Count; i++)
+                    LegacyResources.musicClips[i].Shuffle();
+                inst.StartupInterface();
+            }
+
+            // Loads an interface and opens it, clearing the current interface.
+            // Supports both JSON array and JSON object.
+            // 
+            // - JSON Array Structure -
+            // 0 = file name without extension (files' extension must be lsi).
+            // 1 = if interface should be opened.
+            // 2 = set main directory.
+            // 3 = branch ID to load if the interface that's being loaded is a list type.
+            // 4 = branch chain ID list.
+            // Example:
+            // [
+            //   "story_mode",
+            //   "True",
+            //   "{{BepInExAssetsDirectory}}Interfaces",
+            //   "643284542742",
+            //   [
+            //     "23567353643", < first interface opened
+            //     "643284542742" < second interface opened
+            //   ]
+            // ]
+            //
+            // - JSON Object Structure -
+            // "file"
+            // "load"
+            // "path"
+            // "id"
+            // "chain"
+            // Example:
+            // {
+            //   "file": "some_interface",
+            //   "load": "False",
+            //   "path": "beatmaps/interfaces", < (optional)
+            //   "id": "5325263" < ID of the interface to open if the file is a list
+            //   "chain": [
+            //     "23567353643",
+            //     "643284542742" < when the user exits this interface, they return to the previous
+            //   ]
+            // }
+            public void Parse(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (parameters == null)
+                    return;
+
+                var file = ParseVarFunction(parameters.Get(0, "file"), thisElement, customVariables);
+                if (file == null)
+                    return;
+
+                var mainDirectory = ParseVarFunction(parameters.Get(2, "path"));
+                if (mainDirectory != null)
+                    inst.MainDirectory = mainDirectory;
+
+                if (!inst.MainDirectory.Contains(RTFile.ApplicationDirectory))
+                    inst.MainDirectory = RTFile.CombinePaths(RTFile.ApplicationDirectory, inst.MainDirectory);
+
+                string path = file.Value.Contains(RTFile.ApplicationDirectory) || mainDirectory == null ? file : RTFile.CombinePaths(inst.MainDirectory, file + FileFormat.LSI.Dot());
+
+                if (!path.EndsWith(FileFormat.LSI.Dot()))
+                    path += FileFormat.LSI.Dot();
+
+                if (!RTFile.FileExists(path))
                 {
-                    switch (name)
+                    CoreHelper.LogError($"Interface {file} does not exist!");
+                    return;
+                }
+
+                var branchChain = new List<string>();
+                var jnBranchChain = ParseVarFunction(parameters.Get(4, "chain"), thisElement, customVariables);
+                if (jnBranchChain != null && jnBranchChain.IsArray)
+                {
+                    for (int i = 0; i < jnBranchChain.Count; i++)
                     {
-                        #region Main
-
-                        case "CurrentInterfaceGenerating": {
-                                return inst.CurrentInterface && inst.CurrentInterface.generating;
-                            }
-
-                        #endregion
-
-                        #region Interface List
-
-                        case "LIST_ContainsInterface": {
-                                if (!inst.CurrentInterfaceList || parameters == null)
-                                    break;
-
-                                var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables);
-                                if (id == null)
-                                    break;
-
-                                return inst.CurrentInterfaceList.Contains(id);
-                            }
-
-                        #endregion
-
-                        #region Layout
-
-                        case "LayoutChildCountEquals": {
-                                if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !inst.CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
-                                    break;
-
-                                var isArray = parameters.IsArray;
-
-                                return menuLayout.content.childCount == (isArray ? parameters[1].AsInt : parameters["count"].AsInt);
-                            }
-                        case "LayoutChildCountLesserEquals": {
-                                if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !inst.CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
-                                    break;
-
-                                var isArray = parameters.IsArray;
-
-                                return menuLayout.content.childCount <= (isArray ? parameters[1].AsInt : parameters["count"].AsInt);
-                            }
-                        case "LayoutChildCountGreaterEquals": {
-                                if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !inst.CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
-                                    break;
-
-                                var isArray = parameters.IsArray;
-
-                                return menuLayout.content.childCount >= (isArray ? parameters[1].AsInt : parameters["count"].AsInt);
-                            }
-                        case "LayoutChildCountLesser": {
-                                if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !inst.CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
-                                    break;
-
-                                var isArray = parameters.IsArray;
-
-                                return menuLayout.content.childCount < (isArray ? parameters[1].AsInt : parameters["count"].AsInt);
-                            }
-                        case "LayoutChildCountGreater": {
-                                if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !inst.CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
-                                    break;
-
-                                var isArray = parameters.IsArray;
-
-                                return menuLayout.content.childCount > (isArray ? parameters[1].AsInt : parameters["count"].AsInt);
-                            }
-
-                        case "LayoutScrollXEquals": {
-                                if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !inst.CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
-                                    break;
-
-                                var isArray = parameters.IsArray;
-
-                                return menuLayout.content.anchoredPosition.x == (isArray ? parameters[1].AsFloat : parameters["count"].AsFloat);
-                            }
-                        case "LayoutScrollXLesserEquals": {
-                                if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !inst.CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
-                                    break;
-
-                                var isArray = parameters.IsArray;
-
-                                return menuLayout.content.anchoredPosition.x <= (isArray ? parameters[1].AsFloat : parameters["count"].AsFloat);
-                            }
-                        case "LayoutScrollXGreaterEquals": {
-                                if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !inst.CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
-                                    break;
-
-                                var isArray = parameters.IsArray;
-
-                                return menuLayout.content.anchoredPosition.x >= (isArray ? parameters[1].AsFloat : parameters["count"].AsFloat);
-                            }
-                        case "LayoutScrollXLesser": {
-                                if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !inst.CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
-                                    break;
-
-                                var isArray = parameters.IsArray;
-
-                                return menuLayout.content.anchoredPosition.x < (isArray ? parameters[1].AsFloat : parameters["count"].AsFloat);
-                            }
-                        case "LayoutScrollXGreater": {
-                                if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !inst.CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
-                                    break;
-
-                                var isArray = parameters.IsArray;
-
-                                return menuLayout.content.anchoredPosition.x > (isArray ? parameters[1].AsFloat : parameters["count"].AsFloat);
-                            }
-
-                        case "LayoutScrollYEquals": {
-                                if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !inst.CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
-                                    break;
-
-                                var isArray = parameters.IsArray;
-
-                                return menuLayout.content.anchoredPosition.y == (isArray ? parameters[1].AsFloat : parameters["count"].AsFloat);
-                            }
-                        case "LayoutScrollYLesserEquals": {
-                                if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !inst.CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
-                                    break;
-
-                                var isArray = parameters.IsArray;
-
-                                return menuLayout.content.anchoredPosition.y <= (isArray ? parameters[1].AsFloat : parameters["count"].AsFloat);
-                            }
-                        case "LayoutScrollYGreaterEquals": {
-                                if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !inst.CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
-                                    break;
-
-                                var isArray = parameters.IsArray;
-
-                                return menuLayout.content.anchoredPosition.y >= (isArray ? parameters[1].AsFloat : parameters["count"].AsFloat);
-                            }
-                        case "LayoutScrollYLesser": {
-                                if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !inst.CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
-                                    break;
-
-                                var isArray = parameters.IsArray;
-
-                                return menuLayout.content.anchoredPosition.y < (isArray ? parameters[1].AsFloat : parameters["count"].AsFloat);
-                            }
-                        case "LayoutScrollYGreater": {
-                                if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !inst.CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
-                                    break;
-
-                                var isArray = parameters.IsArray;
-
-                                return menuLayout.content.anchoredPosition.y > (isArray ? parameters[1].AsFloat : parameters["count"].AsFloat);
-                            }
-
-                        #endregion
+                        var branch = ParseVarFunction(jnBranchChain[i], thisElement, customVariables);
+                        if (branch != null && branch.IsString)
+                            branchChain.Add(ParseVarFunction(jnBranchChain[i], thisElement, customVariables).Value);
                     }
                 }
-                catch (Exception ex)
-                {
-                    CoreHelper.LogError($"Had an error with parsing {jn}!\nException: {ex}");
-                }
 
-                return base.IfFunction(jn, name, parameters, thisElement, customVariables);
+                inst.ParseInterface(path, ParseVarFunction(parameters.Get(1, "load"), thisElement, customVariables), ParseVarFunction(parameters.Get(3, "id"), thisElement, customVariables), branchChain, customVariables);
             }
 
-            public override void Function(JSONNode jn, string name, JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            // Clears all interfaces from the interfaces list.
+            // Function has no parameters.
+            public void ClearInterfaces(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null) => inst.interfaces.Clear();
+
+            // Sets the main directory for the menus to use in some cases.
+            // Supports both JSON array and JSON object.
+            //
+            // - JSON Array Structure -
+            // 0 = path
+            // Example:
+            // [
+            //   "beatmaps/interfaces/"
+            // ]
+            //
+            // - JSON Object Structure -
+            // "path"
+            // Example:
+            // {
+            //   "path": "{{BepInExAssetsDirectory}}Interfaces" < doesn't always need to end in a slash. A {{AppDirectory}} variable exists, but not recommended to use here since it's automatically applied to the start of the path.
+            // }
+            public void SetCurrentPath(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
             {
-                switch (name)
+                if (parameters)
+                    return;
+
+                var path = ParseVarFunction(parameters.Get(0, "path"), thisElement, customVariables);
+                if (path == null)
+                    return;
+
+                inst.MainDirectory = path;
+
+                if (!inst.MainDirectory.Contains(RTFile.ApplicationDirectory))
+                    inst.MainDirectory = RTFile.CombinePaths(RTFile.ApplicationDirectory, inst.MainDirectory);
+            }
+
+            // Opens the Confirmation interface, which allows the player to choose whether to do something or not.
+            // Supports both JSON array and JSON object.
+            //
+            // - JSON Array Structure -
+            // 0 = message
+            // 1 = confirm function
+            // 2 = cancel function
+            // Example:
+            // [
+            //   "Are you sure you want to CONFIRM?",
+            //   {
+            //     "name": "Log",
+            //     "params": [ "YES!" ]
+            //   },
+            //   {
+            //     "name": "Log",
+            //     "params": [ "No..." ]
+            //   }
+            // ]
+            //
+            // - JSON Object Structure -
+            // "msg"
+            // "confirm_func"
+            // "cancel_func"
+            // Example:
+            // {
+            //   "msg": "Are you sure you want to CONFIRM?",
+            //   "confirm_func": {
+            //     "name": "Log",
+            //     "params": [ "Yes..." ]
+            //   },
+            //   "cancel_func": {
+            //     "name": "Log",
+            //     "params": [ "NO!" ]
+            //   }
+            // }
+            public void Confirm(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (parameters == null)
+                    return;
+
+                var currentMessage = ParseVarFunction(parameters.Get(0, "msg"), thisElement, customVariables);
+                if (currentMessage == null)
+                    return;
+
+                var confirmFunc = ParseVarFunction(parameters.Get(1, "confirm_func"), thisElement, customVariables);
+                if (confirmFunc == null)
+                    return;
+
+                var cancelFunc = ParseVarFunction(parameters.Get(2, "cancel_func"), thisElement, customVariables);
+                if (cancelFunc == null)
+                    return;
+
+                ConfirmInterface.Init(currentMessage, () => ParseFunction(confirmFunc, thisElement, customVariables), () => ParseFunction(cancelFunc, thisElement, customVariables));
+            }
+
+            // Sets the current interface theme.
+            // Supports both JSON array and JSON object.
+            //
+            // - JSON Array Structure -
+            // 0 = theme JSON.
+            // 1 = game theme override.
+            // Example:
+            // [
+            //   { ... }, < Beatmap Theme JSON.
+            //   true < use the current game theme
+            // ]
+            //
+            // - JSON Object Structure -
+            // "theme"
+            // Example:
+            // {
+            //   "theme": { ... } < Beatmap Theme JSON.
+            //   "game_theme": false < "theme" overrides the interface theme in-game
+            // }
+            public void SetTheme(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (parameters == null)
+                    return;
+
+                if (inst.CurrentInterface is not CustomInterface customMenu)
+                    return;
+
+                customMenu.useGameTheme = parameters.Get(1, "game_theme");
+
+                var theme = ParseVarFunction(parameters.Get(0, "theme"), thisElement, customVariables);
+                if (theme == null)
+                    return;
+
+                customMenu.loadedTheme = BeatmapTheme.Parse(theme);
+            }
+
+            #endregion
+
+            #region Interface List
+
+            public void LIST_OpenDefaultInterface(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null) => inst.CurrentInterfaceList?.OpenDefaultInterface();
+
+            public void LIST_ExitInterface(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null) => inst.CurrentInterfaceList?.ExitInterface();
+
+            public void LIST_SetCurrentInterface(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (parameters == null)
+                    return;
+
+                var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables);
+                if (id == null)
+                    return;
+
+                inst.CurrentInterfaceList?.SetCurrentInterface(id);
+            }
+            
+            public void LIST_AddInterface(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (parameters == null)
+                    return;
+
+                var interfaces = ParseVarFunction(parameters.Get(0, "interfaces"), thisElement, customVariables);
+                var openID = ParseVarFunction(parameters.Get(1, "open_id"), thisElement, customVariables);
+                inst.CurrentInterfaceList?.LoadInterfaces(interfaces);
+                inst.CurrentInterfaceList?.SetCurrentInterface(openID);
+            }
+            
+            public void LIST_RemoveInterface(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (parameters == null)
+                    return;
+
+                var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables);
+                if (id == null)
+                    return;
+
+                inst.CurrentInterfaceList?.Remove(id);
+            }
+            
+            public void LIST_ClearInterfaces(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null) => inst.CurrentInterfaceList?.Clear();
+
+            public void LIST_CloseInterfaces(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null) => inst.CurrentInterfaceList?.CloseMenus();
+
+            public void LIST_ClearChain(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null) => inst.CurrentInterfaceList?.ClearChain();
+
+            #endregion
+
+            #region Audio
+
+            // Plays a music. Can either be a default internal song or one located in the menu path.
+            // Supports both JSON array and JSON object.
+            //
+            // - JSON Array Structure -
+            // 0 = song
+            // 1 = fade duration
+            // 2 = loop
+            // Example:
+            // [
+            //   "distance" < plays the distance song.
+            //   "2" < sets fade duration to 2.
+            //   "False" < doesn't loop
+            // ]
+            //
+            // - JSON Object Structure -
+            // "sound"
+            // Example:
+            // {
+            //   "sound": "some kind of song.ogg" < since this song does not exist in the SoundLibrary, search for a file with the name. If it exists, play the song.
+            // }
+            public void PlayMusic(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (parameters == null)
                 {
-                    #region Interface
+                    inst.PlayMusic();
+                    return;
+                }
 
-                    #region Close
+                string music = ParseVarFunction(parameters.Get(0, "name"), thisElement, customVariables);
 
-                    // Closes the interface and returns to the game (if user is in the Game scene).
-                    // Function has no parameters.
-                    case "Close": {
-                            string id = inst.CurrentInterface?.id;
-                            inst.CloseMenus();
-                            inst.StopMusic();
+                if (string.IsNullOrEmpty(music) || music.ToLower() == "default")
+                {
+                    inst.PlayMusic();
+                    return;
+                }
 
-                            RTBeatmap.Current?.Resume();
+                var fadeDuration = ParseVarFunction(parameters.GetOrDefault(1, "fade_duration", 0.5f), thisElement, customVariables);
 
-                            if (ProjectArrhythmia.State.InGame)
-                                inst.interfaces.RemoveAll(x => x.id == id);
+                var loop = ParseVarFunction(parameters.GetOrDefault(2, "loop", true), thisElement, customVariables);
 
-                            return;
-                        }
+                if (!inst.CurrentInterface || !inst.CurrentInterface.TryGetFile(music, out string filePath))
+                {
+                    inst.PlayMusic(AudioManager.inst.GetMusic(music), fadeDuration: fadeDuration, loop: loop);
+                    return;
+                }
 
-                    #endregion
+                var audioType = RTFile.GetAudioType(filePath);
+                if (audioType == AudioType.MPEG)
+                    inst.PlayMusic(LSAudio.CreateAudioClipUsingMP3File(filePath), fadeDuration: fadeDuration, loop: loop);
+                else
+                    CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip($"file://{filePath}", audioType, audioClip => inst.PlayMusic(audioClip, fadeDuration: fadeDuration, loop: loop)));
+            }
 
-                    #region SetCurrentInterface
+            // Stops the currently playing music. Can be good for moments where we want silence.
+            // Function has no parameters.
+            public void StopMusic(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null) => inst.StopMusic();
 
-                    // Finds an interface with a matching ID and opens it.
-                    // Supports both JSON array and JSON object.
-                    // 
-                    // - JSON Array Structure -
-                    // 0 = id
-                    // Example:
-                    // [
-                    //   "0" < main menus' ID is 0, so load that one. No other interface should have this ID.
-                    // ]
-                    // 
-                    // - JSON Object Structure -
-                    // "id"
-                    // Example:
-                    // {
-                    //   "id": "0"
-                    // }
-                    case "SetCurrentInterface": {
-                            if (parameters == null)
-                                return;
+            // Pauses the current music if it's currently playing.
+            public void PauseMusic(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (ProjectArrhythmia.State.InGame && parameters != null && (parameters.IsArray && !parameters[0].AsBool || parameters.IsObject && !parameters["game_audio"].AsBool))
+                    inst.CurrentAudioSource.Pause();
+                else
+                    AudioManager.inst.CurrentAudioSource.Pause();
+            }
 
-                            var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables);
-                            if (id == null || !inst.interfaces.TryFind(x => x.id == id, out BaseInterface _interface))
-                                return;
+            // Resumes the current music if it was paused.
+            public void ResumeMusic(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (ProjectArrhythmia.State.InGame && parameters != null && (parameters.IsArray && !parameters[0].AsBool || parameters.IsObject && !parameters["game_audio"].AsBool))
+                    inst.CurrentAudioSource.UnPause();
+                else
+                    AudioManager.inst.CurrentAudioSource.UnPause();
+            }
 
-                            inst.SetCurrentInterface(_interface);
-                            inst.PlayMusic();
+            #endregion
 
-                            return;
-                        }
+            #region Elements
 
-                    #endregion
+            public void Move(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (!thisElement.gameObject || parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && (parameters["x"] == null || parameters["y"] == null))
+                    return;
 
-                    #region Reload
+                var jnX = ParseVarFunction(parameters.Get(0, "x"), thisElement, customVariables);
+                var jnY = ParseVarFunction(parameters.Get(1, "y"), thisElement, customVariables);
 
-                    // Reloads the interface and sets it to the main menu. Only recommended if you want to return to the main menu and unload every other interface.
-                    // Function has no parameters.
-                    case "Reload": {
-                            if (ProjectArrhythmia.State.InGame) // don't allow reload in game
-                                return;
+                var variables = new Dictionary<string, float>
+                {
+                    { "elementPosX", thisElement.gameObject.transform.localPosition.x },
+                    { "elementPosY", thisElement.gameObject.transform.localPosition.y },
+                };
 
-                            LegacyPlugin.ParseProfile();
-                            AssetPack.LoadAssetPacks();
-                            Lang.LoadGlobal();
-                            LegacyPlugin.LoadSplashText();
-                            ChangelogInterface.Seen = false;
-                            inst.randomIndex = -1;
-                            for (int i = 0; i < LegacyResources.musicClips.Count; i++)
-                                LegacyResources.musicClips[i].Shuffle();
-                            inst.StartupInterface();
+                var x = string.IsNullOrEmpty(jnX) ? thisElement.gameObject.transform.localPosition.x : RTMath.Parse(jnX, variables);
+                var y = string.IsNullOrEmpty(jnY) ? thisElement.gameObject.transform.localPosition.y : RTMath.Parse(jnX, variables);
 
-                            return;
-                        }
+                thisElement.gameObject.transform.localPosition = new Vector3(x, y, thisElement.gameObject.transform.localPosition.z);
+            }
 
-                    #endregion
+            // Sets an element active or inactive.
+            // Supports both JSON array and JSON object.
+            //
+            // - JSON Array Structure -
+            // 0 = id
+            // 1 = actiive
+            // Example:
+            // [
+            //   "525778246", < finds an element with this ID.
+            //   "False" < sets the element inactive.
+            // ]
+            //
+            // - JSON Object Structure -
+            // "id"
+            // "active"
+            // Example:
+            // {
+            //   "id": "525778246",
+            //   "active": "True" < sets the element active
+            // }
+            public void SetElementActive(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (parameters == null || !inst.CurrentInterface)
+                    return;
 
-                    #region Parse
+                var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables);
+                if (id == null)
+                    return;
 
-                    // Loads an interface and opens it, clearing the current interface.
-                    // Supports both JSON array and JSON object.
-                    // 
-                    // - JSON Array Structure -
-                    // 0 = file name without extension (files' extension must be lsi).
-                    // 1 = if interface should be opened.
-                    // 2 = set main directory.
-                    // 3 = branch ID to load if the interface that's being loaded is a list type.
-                    // 4 = branch chain ID list.
-                    // Example:
-                    // [
-                    //   "story_mode",
-                    //   "True",
-                    //   "{{BepInExAssetsDirectory}}Interfaces",
-                    //   "643284542742",
-                    //   [
-                    //     "23567353643", < first interface opened
-                    //     "643284542742" < second interface opened
-                    //   ]
-                    // ]
-                    //
-                    // - JSON Object Structure -
-                    // "file"
-                    // "load"
-                    // "path"
-                    // "id"
-                    // "chain"
-                    // Example:
-                    // {
-                    //   "file": "some_interface",
-                    //   "load": "False",
-                    //   "path": "beatmaps/interfaces", < (optional)
-                    //   "id": "5325263" < ID of the interface to open if the file is a list
-                    //   "chain": [
-                    //     "23567353643",
-                    //     "643284542742" < when the user exits this interface, they return to the previous
-                    //   ]
-                    // }
-                    case "Parse": {
-                            if (parameters == null)
-                                return;
+                var active = ParseVarFunction(parameters.Get(1, "active"), thisElement, customVariables);
 
-                            var file = ParseVarFunction(parameters.Get(0, "file"), thisElement, customVariables);
-                            if (file == null)
-                                return;
+                if (inst.CurrentInterface.elements.TryFind(x => x.id == id, out MenuImage menuImage) && menuImage.gameObject)
+                    menuImage.gameObject.SetActive(active);
+            }
 
-                            var mainDirectory = ParseVarFunction(parameters.Get(2, "path"));
-                            if (mainDirectory != null)
-                                inst.MainDirectory = mainDirectory;
+            // Sets a layout active or inactive.
+            // Supports both JSON array and JSON object.
+            //
+            // - JSON Array Structure -
+            // 0 = name
+            // 1 = active
+            // Example:
+            // [
+            //   "layout_name", < finds a layout with this ID.
+            //   "False" < sets the layout inactive.
+            // ]
+            //
+            // - JSON Object Structure -
+            // "name"
+            // "active"
+            // Example:
+            // {
+            //   "id": "layout_name",
+            //   "active": "True" < sets the layout active
+            // }
+            public void SetLayoutActive(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (parameters == null || !inst.CurrentInterface)
+                    return;
 
-                            if (!inst.MainDirectory.Contains(RTFile.ApplicationDirectory))
-                                inst.MainDirectory = RTFile.CombinePaths(RTFile.ApplicationDirectory, inst.MainDirectory);
+                var layoutName = ParseVarFunction(parameters.Get(0, "name"), thisElement, customVariables);
+                if (layoutName == null)
+                    return;
 
-                            string path = file.Value.Contains(RTFile.ApplicationDirectory) || mainDirectory == null ? file : RTFile.CombinePaths(inst.MainDirectory, file + FileFormat.LSI.Dot());
+                var active = ParseVarFunction(parameters.Get(1, "active"), thisElement, customVariables);
 
-                            if (!path.EndsWith(FileFormat.LSI.Dot()))
-                                path += FileFormat.LSI.Dot();
+                if (inst.CurrentInterface.layouts.TryGetValue(layoutName, out MenuLayoutBase layout) && layout.gameObject)
+                    layout.gameObject.SetActive(active);
+            }
 
-                            if (!RTFile.FileExists(path))
+            // Finds an element with a matching ID and animates it.
+            // Supports both JSON array and JSON object.
+            //
+            // - JSON Array Structure -
+            // 0 = ID
+            // 1 = type (integer, 0 = position, 1 = scale, 2 = rotation)
+            // 2 = looping (boolean true or false)
+            // 3 = keyframes
+            // 4 = anim done func
+            // Example:
+            // [
+            //   "0", < ID
+            //   "0", < type
+            //   "True", < looping
+            //   {
+            //     "x": [
+            //       {
+            //         "t": "0", < usually a good idea to have the first keyframes' start time set to 0.
+            //         "val": "0",
+            //         "rel": "True", < if true and the keyframe is the first keyframe, offset from current transform value.
+            //         "ct": "Linear" < Easing / Curve Type.
+            //       },
+            //       {
+            //         "t": "1",
+            //         "val": "10", < moves X somewhere.
+            //         "rel": "True" < if true, adds to previous keyframe value.
+            //         // ct doesn't always need to exist. If it doesn't, then it'll automatically be Linear easing.
+            //       }
+            //     ],
+            //     "y": [
+            //       {
+            //         "t": "0",
+            //         "val": "0",
+            //         // relative is false by default, so no need to do "rel": "False". With it set to false, the objects' Y position will be snapped to 0 instead of offsetting from its original position.
+            //       }
+            //     ],
+            //     "z": [
+            //       {
+            //         "t": "0",
+            //         "val": "0",
+            //       }
+            //     ]
+            //   }, < keyframes
+            //   {
+            //     "name": "Log",
+            //     "params": [
+            //       "Animation done!"
+            //     ]
+            //   } < function to run when animation is complete.
+            // ]
+            // 
+            // - JSON Object Structure -
+            // "id"
+            // "type"
+            // "loop"
+            // "events" ("x", "y", "z")
+            // Example:
+            // {
+            //   "id": "0",
+            //   "type": "1", < animates scale
+            //   "loop": "False", < loop doesn't need to exist.
+            //   "events": {
+            //     "x": [
+            //       {
+            //         "t": "0",
+            //         "val": "0"
+            //       }
+            //     ],
+            //     "y": [
+            //       {
+            //         "t": "0",
+            //         "val": "0"
+            //       }
+            //     ],
+            //     "y": [
+            //       {
+            //         "t": "0",
+            //         "val": "0"
+            //       }
+            //     ]
+            //   },
+            //   "done_func": { < function code here
+            //   }
+            // }
+            public void AnimateID(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["id"] == null || !thisElement)
+                    return;
+
+                var isArray = parameters.IsArray;
+                string id = isArray ? parameters[0] : parameters["id"]; // ID of an object to animate
+                var type = Parser.TryParse(isArray ? parameters[1] : parameters["type"], 0); // which type to animate (e.g. 0 = position, 1 = scale, 2 = rotation)
+                var isColor = type == 3;
+
+                if (!inst.CurrentInterface.elements.TryFind(x => x.id == id, out MenuImage element))
+                    return;
+
+                var animation = new RTAnimation($"Interface Element Animation {element.id}"); // no way element animation reference :scream:
+
+                animation.loop = isArray ? parameters[2].AsBool : parameters["loop"].AsBool;
+
+                var events = isArray ? parameters[3] : parameters["events"];
+
+                JSONNode lastX = null;
+                float x = 0f;
+                if (!isColor && events["x"] != null)
+                {
+                    List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
+                    for (int i = 0; i < events["x"].Count; i++)
+                    {
+                        var kf = events["x"][i];
+                        var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? element.GetTransform(type, 0) : 0f);
+                        x = kf["rel"].AsBool ? x + val : val;
+                        keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, x, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
+
+                        lastX = kf["val"];
+                    }
+                    animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, x => { element.SetTransform(type, 0, x); }));
+                }
+                if (isColor && events["x"] != null)
+                {
+                    List<IKeyframe<Color>> keyframes = new List<IKeyframe<Color>>();
+                    for (int i = 0; i < events["x"].Count; i++)
+                    {
+                        var kf = events["x"][i];
+                        var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? element.GetTransform(type, 0) : 0f);
+                        x = kf["rel"].AsBool ? x + val : val;
+                        keyframes.Add(new ThemeKeyframe(kf["t"].AsFloat, (int)x, 0.0f, 0.0f, 0.0f, 0.0f, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
+
+                        lastX = kf["val"];
+                    }
+                    animation.animationHandlers.Add(new AnimationHandler<Color>(keyframes, x =>
+                    {
+                        element.useOverrideColor = true;
+                        element.overrideColor = x;
+                    }));
+                }
+
+                JSONNode lastY = null;
+                float y = 0f;
+                if (!isColor && events["y"] != null)
+                {
+                    List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
+                    for (int i = 0; i < events["y"].Count; i++)
+                    {
+                        var kf = events["y"][i];
+                        var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? element.GetTransform(type, 1) : 0f);
+                        y = kf["rel"].AsBool ? y + val : val;
+                        keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, y, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
+
+                        lastY = kf["val"];
+                    }
+                    animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, x => { element.SetTransform(type, 1, x); }));
+                }
+
+                JSONNode lastZ = null;
+                float z = 0f;
+                if (!isColor && events["z"] != null)
+                {
+                    List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
+                    for (int i = 0; i < events["z"].Count; i++)
+                    {
+                        var kf = events["z"][i];
+                        var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? element.GetTransform(type, 2) : 0f);
+                        z = kf["rel"].AsBool ? z + val : val;
+                        keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, z, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
+
+                        lastZ = kf["val"];
+                    }
+                    animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, x => { element.SetTransform(type, 2, x); }));
+                }
+
+                animation.onComplete = () =>
+                {
+                    if (animation.loop)
+                    {
+                        if (isArray && parameters.Count > 4 && parameters[4] != null || parameters["done_func"] != null)
+                            ParseFunction(isArray ? parameters[4] : parameters["done_func"]);
+
+                        return;
+                    }
+
+                    AnimationManager.inst.Remove(animation.id);
+                    thisElement.animations.RemoveAll(x => x.id == animation.id);
+
+                    if (!isColor && lastX != null)
+                        element.SetTransform(type, 0, x);
+                    if (!isColor && lastY != null)
+                        element.SetTransform(type, 1, y);
+                    if (!isColor && lastZ != null)
+                        element.SetTransform(type, 2, z);
+                    if (isColor && lastX != null)
+                        element.overrideColor = CoreHelper.CurrentBeatmapTheme.GetObjColor((int)x);
+
+                    if (isArray && parameters.Count > 4 && parameters[4] != null || parameters["done_func"] != null)
+                        ParseFunction(isArray ? parameters[4] : parameters["done_func"]);
+                };
+
+                thisElement.animations.Add(animation);
+                AnimationManager.inst.Play(animation);
+            }
+
+            // Same as animate ID, except instead of searching for an elements' ID, you search for a name. In case you'd rather find an objects' name instead of ID.
+            // No example needed.
+            public void AnimateName(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (parameters == null || parameters.Count < 1 || !thisElement)
+                    return;
+
+                var elementName = parameters[0]; // Name of an object to animate
+                var type = Parser.TryParse(parameters[1], 0); // which type to animate (e.g. 0 = position, 1 = scale, 2 = rotation)
+
+                if (!inst.CurrentInterface.elements.TryFind(x => x.name == elementName, out MenuImage element))
+                    return;
+
+                var animation = new RTAnimation("Interface Element Animation"); // no way element animation reference :scream:
+
+                animation.loop = parameters[2].AsBool;
+
+                JSONNode lastX = null;
+                float x = 0f;
+                if (parameters[3]["x"] != null)
+                {
+                    List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
+                    for (int i = 0; i < parameters[3]["x"].Count; i++)
+                    {
+                        var kf = parameters[3]["x"][i];
+                        var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? element.GetTransform(type, 0) : 0f);
+                        x = kf["rel"].AsBool ? x + val : val;
+                        keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, x, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
+
+                        lastX = kf["val"];
+                    }
+                    animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, x => { element.SetTransform(type, 0, x); }));
+                }
+
+                JSONNode lastY = null;
+                float y = 0f;
+                if (parameters[3]["y"] != null)
+                {
+                    List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
+                    for (int i = 0; i < parameters[3]["y"].Count; i++)
+                    {
+                        var kf = parameters[3]["y"][i];
+                        var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? element.GetTransform(type, 1) : 0f);
+                        y = kf["rel"].AsBool ? y + val : val;
+                        keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, y, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
+
+                        lastY = kf["val"];
+                    }
+                    animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, x => { element.SetTransform(type, 1, x); }));
+                }
+
+                JSONNode lastZ = null;
+                float z = 0f;
+                if (parameters[3]["z"] != null)
+                {
+                    List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
+                    for (int i = 0; i < parameters[3]["z"].Count; i++)
+                    {
+                        var kf = parameters[3]["z"][i];
+                        var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? element.GetTransform(type, 2) : 0f);
+                        z = kf["rel"].AsBool ? z + val : val;
+                        keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, z, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
+
+                        lastZ = kf["val"];
+                    }
+                    animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, x => { element.SetTransform(type, 2, x); }));
+                }
+
+                animation.onComplete = () =>
+                {
+                    if (animation.loop)
+                    {
+                        if (parameters.Count > 4 && parameters[4] != null)
+                            ParseFunction(parameters[4]);
+                        return;
+                    }
+
+                    AnimationManager.inst.Remove(animation.id);
+                    thisElement.animations.RemoveAll(x => x.id == animation.id);
+
+                    if (lastX != null)
+                        element.SetTransform(type, 0, x);
+                    if (lastY != null)
+                        element.SetTransform(type, 1, y);
+                    if (lastZ != null)
+                        element.SetTransform(type, 2, z);
+
+                    if (parameters.Count <= 4 || parameters[4] == null)
+                        return;
+
+                    ParseFunction(parameters[4]);
+                };
+
+                thisElement.animations.Add(animation);
+                AnimationManager.inst.Play(animation);
+            }
+
+            // Stops all local animations created from the element.
+            // Supports both JSON array and JSON object.
+            //
+            // - JSON Array Structure -
+            // 0 = stop (runs onComplete method)
+            // 1 = id
+            // 2 = name
+            // Example:
+            // [
+            //   "True", < makes the animation run its on complete function.
+            //   "0", < makes the animation run its on complete function.
+            //   "0" < makes the animation run its on complete function.
+            // ]
+            //
+            // - JSON Object Structure -
+            // "stop"
+            // "id"
+            // "name"
+            // Example:
+            // {
+            //   "run_done_func": "False", < doesn't run on complete functions.
+            //   "id": "0", < tries to find an element with the matching ID.
+            //   "name": "355367" < checks if the animations' name contains this. If it does, then stop the animation. (name is based on the element ID it animates)
+            // }
+            public void StopAnimations(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["run_done_func"] == null || !thisElement)
+                    return;
+
+                var stop = parameters.IsArray ? parameters[0].AsBool : parameters["run_done_func"].AsBool;
+
+                var animations = thisElement.animations;
+                string id = parameters.IsArray && parameters.Count > 1 ? parameters[1] : parameters.IsObject && parameters["id"] != null ? parameters["id"] : string.Empty;
+                if (!string.IsNullOrEmpty(id) && inst.CurrentInterface.elements.TryFind(x => x.id == id, out MenuImage menuImage))
+                    animations = menuImage.animations;
+
+                string animName = parameters.IsArray && parameters.Count > 2 ? parameters[2] : parameters.IsObject && parameters["name"] != null ? parameters["name"] : string.Empty;
+
+                for (int i = 0; i < animations.Count; i++)
+                {
+                    var animation = animations[i];
+                    if (!string.IsNullOrEmpty(animName) && !animation.name.Remove("Interface Element Animation ").Contains(animName))
+                        continue;
+
+                    if (stop)
+                        animation.onComplete?.Invoke();
+
+                    animation.Pause();
+                    AnimationManager.inst.Remove(animation.id);
+                }
+            }
+
+            // Sets the elements' color slot.
+            // Supports both JSON array and JSON object.
+            //
+            // - JSON Array Structure -
+            // 0 = color
+            // Example:
+            // [
+            //   "2"
+            // ]
+            //
+            // - JSON Object Structure -
+            // "col"
+            // Example:
+            // {
+            //   "col": "17" < uses Beatmap Theme object color slots, so max should be 17 (including 0).
+            // }
+            public void SetColor(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["col"] == null || !thisElement)
+                    return;
+
+                thisElement.color = parameters.IsArray ? parameters[0].AsInt : parameters["col"].AsInt;
+            }
+
+            // Sets an objects' text.
+            // Supports both JSON array and JSON object.
+            // 
+            // - JSON Array Structure -
+            // 0 = id
+            // 0 = text
+            // Example:
+            // [
+            //   "100",
+            //   "This is a text example!"
+            // ]
+            // 
+            // - JSON Object Structure -
+            // "id"
+            // "text"
+            // Example:
+            // {
+            //   "id": "100",
+            //   "text": "This is a text example!"
+            // }
+            public void SetText(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && (parameters["id"] == null || parameters["text"] == null) || !inst.CurrentInterface)
+                    return;
+
+                var text = ParseVarFunction(parameters.Get(0, "text"), thisElement, customVariables);
+                if (text == null || !text.IsString)
+                    return;
+
+                var id = ParseVarFunction(parameters.Get(1, "id"), thisElement, customVariables);
+
+                var element = id == null ? thisElement : inst.CurrentInterface.elements.Find(x => x.id == id);
+                if (element is not MenuText menuText)
+                    return;
+
+                menuText.text = text;
+                menuText.textUI.maxVisibleCharacters = text.Value.Length;
+                menuText.textUI.text = text;
+            }
+
+            // Finds an element with a matching ID, destroys its object and removes it.
+            // Supports both JSON array and JSON object.
+            // 
+            // - JSON Array Structure -
+            // 0 = id
+            // Example:
+            // [
+            //   "522666" < ID to find
+            // ]
+            // 
+            // - JSON Object Structure -
+            // "id"
+            // Example:
+            // {
+            //   "id": "85298259"
+            // }
+            public void RemoveElement(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["id"] == null)
+                    return;
+
+                var id = parameters.IsArray ? parameters[0] : parameters["id"];
+                if (inst.CurrentInterface.elements.TryFind(x => x.id == id, out MenuImage element))
+                {
+                    element.Clear();
+                    if (element.gameObject)
+                        CoreHelper.Destroy(element.gameObject);
+                    inst.CurrentInterface.elements.Remove(element);
+                }
+            }
+
+            // Finds an element with a matching ID, destroys its object and removes it.
+            // Supports both JSON array and JSON object.
+            // 
+            // - JSON Array Structure -
+            // 0 = ids
+            // Example:
+            // [
+            //   [
+            //     "522666",
+            //     "2672",
+            //     "824788",
+            //   ]
+            // ]
+            // 
+            // - JSON Object Structure -
+            // "ids"
+            // Example:
+            // {
+            //   "ids": [
+            //     "522666",
+            //     "2672",
+            //     "824788",
+            //   ]
+            // }
+            public void RemoveMultipleElements(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["ids"] == null)
+                    return;
+
+                var ids = parameters.IsArray ? parameters[0] : parameters["ids"];
+                if (ids == null)
+                    return;
+
+                for (int i = 0; i < ids.Count; i++)
+                {
+                    var id = ids[i];
+                    if (inst.CurrentInterface.elements.TryFind(x => x.id == id, out MenuImage element))
+                    {
+                        element.Clear();
+                        if (element.gameObject)
+                            CoreHelper.Destroy(element.gameObject);
+                        inst.CurrentInterface.elements.Remove(element);
+                    }
+                }
+            }
+
+            // Adds a list of elements to the interface.
+            // Supports both JSON array and JSON object.
+            // 
+            // - JSON Array Structure -
+            // 0 = elements
+            // Example:
+            // [
+            //   {
+            //     "type": "Image",
+            //     "id": "5343663626",
+            //     "name": "BG",
+            //     "rect": {
+            //       "anc_pos": {
+            //         "x": "0",
+            //         "y": "0"
+            //       }
+            //     }
+            //   }
+            // ]
+            // 
+            // - JSON Object Structure -
+            // "elements"
+            // Example:
+            // {
+            //   "type": "Image",
+            //   "id": "5343663626",
+            //   "name": "BG",
+            //   "rect": {
+            //     "anc_pos": {
+            //       "x": "0",
+            //       "y": "0"
+            //     }
+            //   }
+            // }
+            public void AddElement(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["elements"] == null)
+                    return;
+
+                var customMenu = inst.CurrentInterface;
+                customMenu.elements.AddRange(CustomInterface.ParseElements(parameters.IsArray ? parameters[0] : parameters["elements"], customMenu.prefabs, customMenu.spriteAssets));
+
+                customMenu.StartGeneration();
+            }
+            
+            public void ScrollLayout(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (parameters == null)
+                    return;
+
+                var layoutName = ParseVarFunction(parameters.Get(0, "layout"), thisElement, customVariables);
+                if (layoutName == null || !layoutName.IsString)
+                    return;
+
+                if (!inst.CurrentInterface.layouts.TryGetValue(layoutName, out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                    return;
+
+                if (menuLayout is MenuGridLayout menuGridLayout)
+                    menuGridLayout.Scroll(ParseVarFunction(parameters.Get(1, "x"), thisElement, customVariables), ParseVarFunction(parameters.Get(2, "y"), thisElement, customVariables), ParseVarFunction(parameters.Get(3, "x_additive"), thisElement, customVariables), ParseVarFunction(parameters.Get(4, "y_additive"), thisElement, customVariables));
+
+                if (menuLayout is MenuHorizontalOrVerticalLayout menuHorizontalLayout)
+                    menuHorizontalLayout.Scroll(ParseVarFunction(parameters.Get(1, "value"), thisElement, customVariables), ParseVarFunction(parameters.Get(2, "additive"), thisElement, customVariables));
+            }
+
+            // Sets an element selectable value. Buttons will deselect when selectable is turned off.
+            // Supports both JSON array and JSON object.
+            //
+            // - JSON Array Structure -
+            // 0 = id
+            // 1 = actiive
+            // Example:
+            // [
+            //   "525778246", < finds an element with this ID.
+            //   "False" < disables element selection.
+            // ]
+            //
+            // - JSON Object Structure -
+            // "id"
+            // "active"
+            // Example:
+            // {
+            //   "id": "525778246",
+            //   "selectable": "True" < sets the element as selectable.
+            // }
+            public void SetElementSelectable(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (parameters == null || !inst.CurrentInterface)
+                    return;
+
+                var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables);
+                if (id == null)
+                    return;
+
+                var selectable = ParseVarFunction(parameters.Get(1, "selectable"), thisElement, customVariables);
+
+                if (inst.CurrentInterface.elements.TryFind(x => x.id == id, out MenuImage menuImage))
+                    menuImage.selectable = selectable;
+            }
+
+            // Sets an input field elements' text.
+            // Supports both JSON array and JSON object.
+            //
+            // - JSON Array Structure -
+            // 0 = id
+            // 1 = text
+            // 2 = trigger (optional)
+            // Example:
+            // [
+            //   "525778246", < finds an element with this ID.
+            //   "Text!" < sets the text
+            //   "True" < triggers the input field value changed function
+            // ]
+            //
+            // - JSON Object Structure -
+            // "id"
+            // "text"
+            // "trigger" (optional)
+            // Example:
+            // {
+            //   "id": "525778246",
+            //   "text": "What" < sets the text
+            //   "trigger": "False" < only sets the display text, does not trigger the input field value changed function
+            // }
+            public void SetInputFieldText(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (parameters == null || !inst.CurrentInterface)
+                    return;
+
+                var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables);
+                if (id == null)
+                    return;
+
+                var text = ParseVarFunction(parameters.Get(1, "text"), thisElement, customVariables);
+
+                if (inst.CurrentInterface.elements.TryFind(x => x.id == id, out MenuImage menuImage) && menuImage is MenuInputField menuInputField && menuInputField.inputField)
+                {
+                    if (ParseVarFunction(parameters.GetOrDefault(2, "trigger", true), thisElement, customVariables).AsBool)
+                        menuInputField.inputField.text = text;
+                    else
+                        menuInputField.inputField.SetTextWithoutNotify(text);
+                }
+            }
+
+            // Overrides an elements' values.
+            // Supports both JSON array and JSON object.
+            //
+            // - JSON Array Structure -
+            // 0 = element JSON
+            // 1 = id
+            // Example:
+            // [
+            //   {
+            //     ... < JSON object representing element values
+            //   },
+            //   "525778246" < finds an element with this ID.
+            // ]
+            //
+            // - JSON Object Structure -
+            // "element"
+            // "id"
+            // Example:
+            // {
+            //   "element": {
+            //     ...
+            //   },
+            //   "id": null < id can be left null to specify the element this function runs from
+            // }
+            public void ApplyElement(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (parameters == null)
+                    return;
+
+                var jnElement = ParseVarFunction(parameters.Get(0, "element"), thisElement, customVariables);
+                var id = ParseVarFunction(parameters.Get(1, "id"), thisElement, customVariables);
+
+                var element = id == null ? thisElement : inst.CurrentInterface.elements.Find(x => x.id == id);
+                if (!element)
+                    return;
+
+                element.Read(jnElement, 0, 0, inst.CurrentInterface.spriteAssets, customVariables);
+            }
+
+            #endregion
+
+            #region Effects
+
+            public void SetDefaultEvents(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (ProjectArrhythmia.State.InGame || !MenuEffectsManager.inst)
+                    return;
+
+                MenuEffectsManager.inst.SetDefaultEffects();
+            }
+
+            // Animates a specific type of event (e.g. camera).
+            // Supports both JSON array and JSON object.
+            //
+            // - JSON Array Structure -
+            // 0 = type (name, "MoveCamera", "ZoomCamera", "RotateCamera")
+            // 1 = looping (boolean true or false)
+            // 2 = keyframes
+            // 3 = anim done func
+            // Example:
+            // [
+            //   "MoveCamera",
+            //   "False",
+            //   {
+            //     "x": [
+            //       {
+            //         "t": "0",
+            //         "val": "0"
+            //       }
+            //     ],
+            //     "y": [
+            //       {
+            //         "t": "0",
+            //         "val": "0"
+            //       }
+            //     ]
+            //   }
+            // ]
+            // 
+            // - JSON Object Structure -
+            // "type"
+            // "loop"
+            // "events"
+            // "done_func"
+            // Example: (zooms the camera in and out)
+            // {
+            //   "type": "ZoomCamera",
+            //   "loop": "True",
+            //   "events": {
+            //     "x": [
+            //       {
+            //         "t": "0",
+            //         "val": "5" < 5 is the default camera zoom.
+            //       },
+            //       {
+            //         "t": "1",
+            //         "val": "7",
+            //         "ct": "InOutSine"
+            //       },
+            //       {
+            //         "t": "2",
+            //         "val": "5",
+            //         "ct": "InOutSine"
+            //       }
+            //     ]
+            //   }
+            // }
+            public void AnimateEvent(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["type"] == null || !thisElement)
+                    return;
+
+                var isArray = parameters.IsArray;
+                var type = isArray ? parameters[0] : parameters["type"];
+
+                if (type.IsNumber)
+                    return;
+
+                var events = isArray ? parameters[2] : parameters["events"];
+                var animation = new RTAnimation($"Interface Element Animation {thisElement.id}"); // no way element animation reference :scream:
+
+                animation.loop = isArray ? parameters[1].AsBool : parameters["loop"].AsBool;
+
+                switch (type.Value)
+                {
+                    case "MoveCamera": {
+                            JSONNode lastX = null;
+                            float x = 0f;
+                            if (events["x"] != null)
                             {
-                                CoreHelper.LogError($"Interface {file} does not exist!");
-                                return;
+                                List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
+                                for (int i = 0; i < events["x"].Count; i++)
+                                {
+                                    var kf = events["x"][i];
+                                    var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? Camera.main.transform.localPosition.x : 0f);
+                                    x = kf["rel"].AsBool ? x + val : val;
+                                    keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, x, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
+
+                                    lastX = kf["val"];
+                                }
+                                animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, MenuEffectsManager.inst.MoveCameraX));
                             }
 
-                            var branchChain = new List<string>();
-                            var jnBranchChain = ParseVarFunction(parameters.Get(4, "chain"), thisElement, customVariables);
-                            if (jnBranchChain != null && jnBranchChain.IsArray)
+                            JSONNode lastY = null;
+                            float y = 0f;
+                            if (events["y"] != null)
                             {
-                                for (int i = 0; i < jnBranchChain.Count; i++)
+                                List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
+                                for (int i = 0; i < events["y"].Count; i++)
                                 {
-                                    var branch = ParseVarFunction(jnBranchChain[i], thisElement, customVariables);
-                                    if (branch != null && branch.IsString)
-                                        branchChain.Add(ParseVarFunction(jnBranchChain[i], thisElement, customVariables).Value);
+                                    var kf = events["y"][i];
+                                    var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? Camera.main.transform.localPosition.y : 0f);
+                                    y = kf["rel"].AsBool ? y + val : val;
+                                    keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, y, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
+
+                                    lastY = kf["val"];
                                 }
+                                animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, MenuEffectsManager.inst.MoveCameraY));
                             }
 
-                            inst.ParseInterface(path, ParseVarFunction(parameters.Get(1, "load"), thisElement, customVariables), ParseVarFunction(parameters.Get(3, "id"), thisElement, customVariables), branchChain, customVariables);
-
-                            return;
-                        }
-
-                    #endregion
-
-                    #region ClearInterfaces
-
-                    // Clears all interfaces from the interfaces list.
-                    // Function has no parameters.
-                    case "ClearInterfaces": {
-                            inst.interfaces.Clear();
-                            return;
-                        }
-
-                    #endregion
-
-                    #region SetCurrentPath
-
-                    // Sets the main directory for the menus to use in some cases.
-                    // Supports both JSON array and JSON object.
-                    //
-                    // - JSON Array Structure -
-                    // 0 = path
-                    // Example:
-                    // [
-                    //   "beatmaps/interfaces/"
-                    // ]
-                    //
-                    // - JSON Object Structure -
-                    // "path"
-                    // Example:
-                    // {
-                    //   "path": "{{BepInExAssetsDirectory}}Interfaces" < doesn't always need to end in a slash. A {{AppDirectory}} variable exists, but not recommended to use here since it's automatically applied to the start of the path.
-                    // }
-                    case "SetCurrentPath": {
-                            if (parameters)
-                                return;
-
-                            var path = ParseVarFunction(parameters.Get(0, "path"), thisElement, customVariables);
-                            if (path == null)
-                                return;
-
-                            inst.MainDirectory = path;
-
-                            if (!inst.MainDirectory.Contains(RTFile.ApplicationDirectory))
-                                inst.MainDirectory = RTFile.CombinePaths(RTFile.ApplicationDirectory, inst.MainDirectory);
-
-                            return;
-                        }
-
-                    #endregion
-
-                    #region Confirm
-
-                    // Opens the Confirmation interface, which allows the player to choose whether to do something or not.
-                    // Supports both JSON array and JSON object.
-                    //
-                    // - JSON Array Structure -
-                    // 0 = message
-                    // 1 = confirm function
-                    // 2 = cancel function
-                    // Example:
-                    // [
-                    //   "Are you sure you want to CONFIRM?",
-                    //   {
-                    //     "name": "Log",
-                    //     "params": [ "YES!" ]
-                    //   },
-                    //   {
-                    //     "name": "Log",
-                    //     "params": [ "No..." ]
-                    //   }
-                    // ]
-                    //
-                    // - JSON Object Structure -
-                    // "msg"
-                    // "confirm_func"
-                    // "cancel_func"
-                    // Example:
-                    // {
-                    //   "msg": "Are you sure you want to CONFIRM?",
-                    //   "confirm_func": {
-                    //     "name": "Log",
-                    //     "params": [ "Yes..." ]
-                    //   },
-                    //   "cancel_func": {
-                    //     "name": "Log",
-                    //     "params": [ "NO!" ]
-                    //   }
-                    // }
-                    case "Confirm": {
-                            if (parameters == null)
-                                return;
-
-                            var currentMessage = ParseVarFunction(parameters.Get(0, "msg"), thisElement, customVariables);
-                            if (currentMessage == null)
-                                return;
-
-                            var confirmFunc = ParseVarFunction(parameters.Get(1, "confirm_func"), thisElement, customVariables);
-                            if (confirmFunc == null)
-                                return;
-
-                            var cancelFunc = ParseVarFunction(parameters.Get(2, "cancel_func"), thisElement, customVariables);
-                            if (cancelFunc == null)
-                                return;
-
-                            ConfirmInterface.Init(currentMessage, () => ParseFunction(confirmFunc, thisElement, customVariables), () => ParseFunction(cancelFunc, thisElement, customVariables));
-
-                            return;
-                        }
-
-                    #endregion
-
-                    #region SetTheme
-
-                    // Sets the current interface theme.
-                    // Supports both JSON array and JSON object.
-                    //
-                    // - JSON Array Structure -
-                    // 0 = theme JSON.
-                    // 1 = game theme override.
-                    // Example:
-                    // [
-                    //   { ... }, < Beatmap Theme JSON.
-                    //   true < use the current game theme
-                    // ]
-                    //
-                    // - JSON Object Structure -
-                    // "theme"
-                    // Example:
-                    // {
-                    //   "theme": { ... } < Beatmap Theme JSON.
-                    //   "game_theme": false < "theme" overrides the interface theme in-game
-                    // }
-                    case "SetTheme": {
-                            if (parameters == null)
-                                return;
-
-                            if (inst.CurrentInterface is not CustomInterface customMenu)
-                                return;
-
-                            customMenu.useGameTheme = parameters.Get(1, "game_theme");
-
-                            var theme = ParseVarFunction(parameters.Get(0, "theme"), thisElement, customVariables);
-                            if (theme == null)
-                                return;
-
-                            customMenu.loadedTheme = BeatmapTheme.Parse(theme);
-
-                            return;
-                        }
-
-                    #endregion
-
-                    #endregion
-
-                    #region Interface List
-
-                    case "LIST_OpenDefaultInterface": {
-                            inst.CurrentInterfaceList?.OpenDefaultInterface();
-                            return;
-                        }
-                    case "LIST_ExitInterface": {
-                            inst.CurrentInterfaceList?.ExitInterface();
-                            return;
-                        }
-                    case "LIST_SetCurrentInterface": {
-                            if (parameters == null)
-                                return;
-
-                            var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables);
-                            if (id == null)
-                                return;
-
-                            inst.CurrentInterfaceList?.SetCurrentInterface(id);
-                            return;
-                        }
-                    case "LIST_AddInterface": {
-                            if (parameters == null)
-                                return;
-
-                            var interfaces = ParseVarFunction(parameters.Get(0, "interfaces"), thisElement, customVariables);
-                            var openID = ParseVarFunction(parameters.Get(1, "open_id"), thisElement, customVariables);
-                            inst.CurrentInterfaceList?.LoadInterfaces(interfaces);
-                            inst.CurrentInterfaceList?.SetCurrentInterface(openID);
-                            return;
-                        }
-                    case "LIST_RemoveInterface": {
-                            if (parameters == null)
-                                return;
-
-                            var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables);
-                            if (id == null)
-                                return;
-
-                            inst.CurrentInterfaceList?.Remove(id);
-                            return;
-                        }
-                    case "LIST_ClearInterfaces": {
-                            inst.CurrentInterfaceList?.Clear();
-                            return;
-                        }
-                    case "LIST_CloseInterfaces": {
-                            inst.CurrentInterfaceList?.CloseMenus();
-                            return;
-                        }
-                    case "LIST_ClearChain": {
-                            inst.CurrentInterfaceList?.ClearChain();
-                            return;
-                        }
-
-                    #endregion
-
-                    #region Audio
-
-                    #region PlaySound
-
-                    // Plays a sound. Can either be a default one already loaded in the SoundLibrary or a custom one from the menu's folder.
-                    // Supports both JSON array and JSON object.
-                    //
-                    // - JSON Array Structure -
-                    // 0 = sound
-                    // 1 = volume
-                    // 2 = pitch
-                    // Example:
-                    // [
-                    //   "blip" < plays the blip sound.
-                    //   "0.3" < sound is quiet.
-                    //   "2" < sound is fast.
-                    // ]
-                    //
-                    // - JSON Object Structure -
-                    // "sound"
-                    // "vol"
-                    // "pitch"
-                    // Example:
-                    // {
-                    //   "sound": "some kind of sound.ogg" < since this sound does not exist in the SoundLibrary, search for a file with the name. If it exists, play the sound.
-                    //   "vol": "1" < default
-                    //   "pitch": "0.5" < slow
-                    // }
-                    case "PlaySound": {
-                            if (parameters == null || !inst.CurrentInterface)
-                                return;
-
-                            string sound = ParseVarFunction(parameters.Get(0, "sound"));
-                            if (string.IsNullOrEmpty(sound))
-                                return;
-
-                            float volume = 1f;
-                            var volumeJN = ParseVarFunction(parameters.Get(1, "vol"));
-                            if (volumeJN != null)
-                                volume = volumeJN;
-                        
-                            float pitch = 1f;
-                            var pitchJN = ParseVarFunction(parameters.Get(2, "pitch"));
-                            if (pitchJN != null)
-                                pitch = pitchJN;
-
-                            if (SoundManager.inst.TryGetSound(sound, out AudioClip audioClip))
+                            animation.onComplete = () =>
                             {
-                                SoundManager.inst.PlaySound(audioClip, volume, pitch);
-                                return;
-                            }
-
-                            var filePath = $"{Path.GetDirectoryName(inst.CurrentInterface.filePath)}{sound}";
-                            if (!RTFile.FileExists(filePath))
-                                return;
-
-                            var audioType = RTFile.GetAudioType(filePath);
-                            if (audioType == AudioType.MPEG)
-                                SoundManager.inst.PlaySound(LSAudio.CreateAudioClipUsingMP3File(filePath), volume, pitch);
-                            else
-                                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip($"file://{filePath}", audioType, audioClip => SoundManager.inst.PlaySound(audioClip, volume, pitch)));
-
-                            return;
-                        }
-
-                    #endregion
-
-                    #region PlayMusic
-
-                    // Plays a music. Can either be a default internal song or one located in the menu path.
-                    // Supports both JSON array and JSON object.
-                    //
-                    // - JSON Array Structure -
-                    // 0 = song
-                    // 1 = fade duration
-                    // 2 = loop
-                    // Example:
-                    // [
-                    //   "distance" < plays the distance song.
-                    //   "2" < sets fade duration to 2.
-                    //   "False" < doesn't loop
-                    // ]
-                    //
-                    // - JSON Object Structure -
-                    // "sound"
-                    // Example:
-                    // {
-                    //   "sound": "some kind of song.ogg" < since this song does not exist in the SoundLibrary, search for a file with the name. If it exists, play the song.
-                    // }
-                    case "PlayMusic": {
-                            if (parameters == null)
-                            {
-                                inst.PlayMusic();
-                                return;
-                            }
-
-                            string music = ParseVarFunction(parameters.Get(0, "name"), thisElement, customVariables);
-
-                            if (string.IsNullOrEmpty(music) || music.ToLower() == "default")
-                            {
-                                inst.PlayMusic();
-                                return;
-                            }
-
-                            var fadeDuration = ParseVarFunction(parameters.GetOrDefault(1, "fade_duration", 0.5f), thisElement, customVariables);
-
-                            var loop = ParseVarFunction(parameters.GetOrDefault(2, "loop", true), thisElement, customVariables);
-
-                            var filePath = $"{Path.GetDirectoryName(inst.CurrentInterface.filePath)}{music}";
-                            if (!RTFile.FileExists(filePath))
-                            {
-                                inst.PlayMusic(AudioManager.inst.GetMusic(music), fadeDuration: fadeDuration, loop: loop);
-                                return;
-                            }
-
-                            var audioType = RTFile.GetAudioType(filePath);
-                            if (audioType == AudioType.MPEG)
-                                inst.PlayMusic(LSAudio.CreateAudioClipUsingMP3File(filePath), fadeDuration: fadeDuration, loop: loop);
-                            else
-                                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip($"file://{filePath}", audioType, audioClip => inst.PlayMusic(audioClip, fadeDuration: fadeDuration, loop: loop)));
-
-                            return;
-                        }
-
-                    #endregion
-
-                    #region StopMusic
-
-                    // Stops the currently playing music. Can be good for moments where we want silence.
-                    // Function has no parameters.
-                    case "StopMusic": {
-                            inst.StopMusic();
-                            return;
-                        }
-
-                    #endregion
-
-                    #region PauseMusic
-
-                    // Pauses the current music if it's currently playing.
-                    case "PauseMusic": {
-                            if (ProjectArrhythmia.State.InGame && parameters != null && (parameters.IsArray && !parameters[0].AsBool || parameters.IsObject && !parameters["game_audio"].AsBool))
-                                inst.CurrentAudioSource.Pause();
-                            else
-                                AudioManager.inst.CurrentAudioSource.Pause();
-
-                            return;
-                        }
-
-                    #endregion
-
-                    #region ResumeMusic
-
-                    // Resumes the current music if it was paused.
-                    case "ResumeMusic": {
-                            if (ProjectArrhythmia.State.InGame && parameters != null && (parameters.IsArray && !parameters[0].AsBool || parameters.IsObject && !parameters["game_audio"].AsBool))
-                                inst.CurrentAudioSource.UnPause();
-                            else
-                                AudioManager.inst.CurrentAudioSource.UnPause();
-
-                            return;
-                        }
-
-                    #endregion
-
-                    #endregion
-
-                    #region Elements
-
-                    #region Move
-
-                    case "Move": {
-                            if (!thisElement.gameObject || parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && (parameters["x"] == null || parameters["y"] == null))
-                                return;
-
-                            var jnX = ParseVarFunction(parameters.Get(0, "x"), thisElement, customVariables);
-                            var jnY = ParseVarFunction(parameters.Get(1, "y"), thisElement, customVariables);
-
-                            var variables = new Dictionary<string, float>
-                            {
-                                { "elementPosX", thisElement.gameObject.transform.localPosition.x },
-                                { "elementPosY", thisElement.gameObject.transform.localPosition.y },
-                            };
-
-                            var x = string.IsNullOrEmpty(jnX) ? thisElement.gameObject.transform.localPosition.x : RTMath.Parse(jnX, variables);
-                            var y = string.IsNullOrEmpty(jnY) ? thisElement.gameObject.transform.localPosition.y : RTMath.Parse(jnX, variables);
-
-                            thisElement.gameObject.transform.localPosition = new Vector3(x, y, thisElement.gameObject.transform.localPosition.z);
-
-                            return;
-                        }
-
-                    #endregion
-
-                    #region SetElementActive
-
-                    // Sets an element active or inactive.
-                    // Supports both JSON array and JSON object.
-                    //
-                    // - JSON Array Structure -
-                    // 0 = id
-                    // 1 = actiive
-                    // Example:
-                    // [
-                    //   "525778246", < finds an element with this ID.
-                    //   "False" < sets the element inactive.
-                    // ]
-                    //
-                    // - JSON Object Structure -
-                    // "id"
-                    // "active"
-                    // Example:
-                    // {
-                    //   "id": "525778246",
-                    //   "active": "True" < sets the element active
-                    // }
-                    case "SetElementActive": {
-                            if (parameters == null || !inst.CurrentInterface)
-                                return;
-
-                            var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables);
-                            if (id == null)
-                                return;
-
-                            var active = ParseVarFunction(parameters.Get(1, "active"), thisElement, customVariables);
-
-                            if (inst.CurrentInterface.elements.TryFind(x => x.id == id, out MenuImage menuImage) && menuImage.gameObject)
-                                menuImage.gameObject.SetActive(active);
-
-                            return;
-                        }
-
-                    #endregion
-
-                    #region SetLayoutActive
-
-                    // Sets a layout active or inactive.
-                    // Supports both JSON array and JSON object.
-                    //
-                    // - JSON Array Structure -
-                    // 0 = name
-                    // 1 = active
-                    // Example:
-                    // [
-                    //   "layout_name", < finds a layout with this ID.
-                    //   "False" < sets the layout inactive.
-                    // ]
-                    //
-                    // - JSON Object Structure -
-                    // "name"
-                    // "active"
-                    // Example:
-                    // {
-                    //   "id": "layout_name",
-                    //   "active": "True" < sets the layout active
-                    // }
-                    case "SetLayoutActive": {
-                            if (parameters == null || !inst.CurrentInterface)
-                                return;
-
-                            var layoutName = ParseVarFunction(parameters.Get(0, "name"), thisElement, customVariables);
-                            if (layoutName == null)
-                                return;
-
-                            var active = ParseVarFunction(parameters.Get(1, "active"), thisElement, customVariables);
-
-                            if (inst.CurrentInterface.layouts.TryGetValue(layoutName, out MenuLayoutBase layout) && layout.gameObject)
-                                layout.gameObject.SetActive(active);
-
-                            return;
-                        }
-
-                    #endregion
-
-                    #region AnimateID
-
-                    // Finds an element with a matching ID and animates it.
-                    // Supports both JSON array and JSON object.
-                    //
-                    // - JSON Array Structure -
-                    // 0 = ID
-                    // 1 = type (integer, 0 = position, 1 = scale, 2 = rotation)
-                    // 2 = looping (boolean true or false)
-                    // 3 = keyframes
-                    // 4 = anim done func
-                    // Example:
-                    // [
-                    //   "0", < ID
-                    //   "0", < type
-                    //   "True", < looping
-                    //   {
-                    //     "x": [
-                    //       {
-                    //         "t": "0", < usually a good idea to have the first keyframes' start time set to 0.
-                    //         "val": "0",
-                    //         "rel": "True", < if true and the keyframe is the first keyframe, offset from current transform value.
-                    //         "ct": "Linear" < Easing / Curve Type.
-                    //       },
-                    //       {
-                    //         "t": "1",
-                    //         "val": "10", < moves X somewhere.
-                    //         "rel": "True" < if true, adds to previous keyframe value.
-                    //         // ct doesn't always need to exist. If it doesn't, then it'll automatically be Linear easing.
-                    //       }
-                    //     ],
-                    //     "y": [
-                    //       {
-                    //         "t": "0",
-                    //         "val": "0",
-                    //         // relative is false by default, so no need to do "rel": "False". With it set to false, the objects' Y position will be snapped to 0 instead of offsetting from its original position.
-                    //       }
-                    //     ],
-                    //     "z": [
-                    //       {
-                    //         "t": "0",
-                    //         "val": "0",
-                    //       }
-                    //     ]
-                    //   }, < keyframes
-                    //   {
-                    //     "name": "Log",
-                    //     "params": [
-                    //       "Animation done!"
-                    //     ]
-                    //   } < function to run when animation is complete.
-                    // ]
-                    // 
-                    // - JSON Object Structure -
-                    // "id"
-                    // "type"
-                    // "loop"
-                    // "events" ("x", "y", "z")
-                    // Example:
-                    // {
-                    //   "id": "0",
-                    //   "type": "1", < animates scale
-                    //   "loop": "False", < loop doesn't need to exist.
-                    //   "events": {
-                    //     "x": [
-                    //       {
-                    //         "t": "0",
-                    //         "val": "0"
-                    //       }
-                    //     ],
-                    //     "y": [
-                    //       {
-                    //         "t": "0",
-                    //         "val": "0"
-                    //       }
-                    //     ],
-                    //     "y": [
-                    //       {
-                    //         "t": "0",
-                    //         "val": "0"
-                    //       }
-                    //     ]
-                    //   },
-                    //   "done_func": { < function code here
-                    //   }
-                    // }
-                    case "AnimateID": {
-                            if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["id"] == null || !thisElement)
-                                return;
-
-                            var isArray = parameters.IsArray;
-                            string id = isArray ? parameters[0] : parameters["id"]; // ID of an object to animate
-                            var type = Parser.TryParse(isArray ? parameters[1] : parameters["type"], 0); // which type to animate (e.g. 0 = position, 1 = scale, 2 = rotation)
-                            var isColor = type == 3;
-
-                            if (inst.CurrentInterface.elements.TryFind(x => x.id == id, out MenuImage element))
-                            {
-                                var animation = new RTAnimation($"Interface Element Animation {element.id}"); // no way element animation reference :scream:
-
-                                animation.loop = isArray ? parameters[2].AsBool : parameters["loop"].AsBool;
-
-                                var events = isArray ? parameters[3] : parameters["events"];
-
-                                JSONNode lastX = null;
-                                float x = 0f;
-                                if (!isColor && events["x"] != null)
+                                if (animation.loop)
                                 {
-                                    List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
-                                    for (int i = 0; i < events["x"].Count; i++)
-                                    {
-                                        var kf = events["x"][i];
-                                        var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? element.GetTransform(type, 0) : 0f);
-                                        x = kf["rel"].AsBool ? x + val : val;
-                                        keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, x, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
+                                    if (isArray && parameters.Count > 3 && parameters[3] != null || parameters["done_func"] != null)
+                                        ParseFunction(isArray ? parameters[3] : parameters["done_func"]);
 
-                                        lastX = kf["val"];
-                                    }
-                                    animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, x => { element.SetTransform(type, 0, x); }));
-                                }
-                                if (isColor && events["x"] != null)
-                                {
-                                    List<IKeyframe<Color>> keyframes = new List<IKeyframe<Color>>();
-                                    for (int i = 0; i < events["x"].Count; i++)
-                                    {
-                                        var kf = events["x"][i];
-                                        var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? element.GetTransform(type, 0) : 0f);
-                                        x = kf["rel"].AsBool ? x + val : val;
-                                        keyframes.Add(new ThemeKeyframe(kf["t"].AsFloat, (int)x, 0.0f, 0.0f, 0.0f, 0.0f, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
-
-                                        lastX = kf["val"];
-                                    }
-                                    animation.animationHandlers.Add(new AnimationHandler<Color>(keyframes, x =>
-                                    {
-                                        element.useOverrideColor = true;
-                                        element.overrideColor = x;
-                                    }));
+                                    return;
                                 }
 
-                                JSONNode lastY = null;
-                                float y = 0f;
-                                if (!isColor && events["y"] != null)
-                                {
-                                    List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
-                                    for (int i = 0; i < events["y"].Count; i++)
-                                    {
-                                        var kf = events["y"][i];
-                                        var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? element.GetTransform(type, 1) : 0f);
-                                        y = kf["rel"].AsBool ? y + val : val;
-                                        keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, y, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
-
-                                        lastY = kf["val"];
-                                    }
-                                    animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, x => { element.SetTransform(type, 1, x); }));
-                                }
-
-                                JSONNode lastZ = null;
-                                float z = 0f;
-                                if (!isColor && events["z"] != null)
-                                {
-                                    List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
-                                    for (int i = 0; i < events["z"].Count; i++)
-                                    {
-                                        var kf = events["z"][i];
-                                        var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? element.GetTransform(type, 2) : 0f);
-                                        z = kf["rel"].AsBool ? z + val : val;
-                                        keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, z, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
-
-                                        lastZ = kf["val"];
-                                    }
-                                    animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, x => { element.SetTransform(type, 2, x); }));
-                                }
-
-                                animation.onComplete = () =>
-                                {
-                                    if (animation.loop)
-                                    {
-                                        if (isArray && parameters.Count > 4 && parameters[4] != null || parameters["done_func"] != null)
-                                            ParseFunction(isArray ? parameters[4] : parameters["done_func"]);
-
-                                        return;
-                                    }
-
-                                    AnimationManager.inst.Remove(animation.id);
-                                    thisElement.animations.RemoveAll(x => x.id == animation.id);
-
-                                    if (!isColor && lastX != null)
-                                        element.SetTransform(type, 0, x);
-                                    if (!isColor && lastY != null)
-                                        element.SetTransform(type, 1, y);
-                                    if (!isColor && lastZ != null)
-                                        element.SetTransform(type, 2, z);
-                                    if (isColor && lastX != null)
-                                        element.overrideColor = CoreHelper.CurrentBeatmapTheme.GetObjColor((int)x);
-
-                                    if (isArray && parameters.Count > 4 && parameters[4] != null || parameters["done_func"] != null)
-                                        ParseFunction(isArray ? parameters[4] : parameters["done_func"]);
-                                };
-
-                                thisElement.animations.Add(animation);
-                                AnimationManager.inst.Play(animation);
-                            }
-
-                            return;
-                        }
-
-                    #endregion
-
-                    #region AnimateName
-
-                    // Same as animate ID, except instead of searching for an elements' ID, you search for a name. In case you'd rather find an objects' name instead of ID.
-                    // No example needed.
-                    case "AnimateName": {
-                            if (parameters == null || parameters.Count < 1 || !thisElement)
-                                return;
-
-                            var elementName = parameters[0]; // Name of an object to animate
-                            var type = Parser.TryParse(parameters[1], 0); // which type to animate (e.g. 0 = position, 1 = scale, 2 = rotation)
-
-                            if (inst.CurrentInterface.elements.TryFind(x => x.name == elementName, out MenuImage element))
-                            {
-                                var animation = new RTAnimation("Interface Element Animation"); // no way element animation reference :scream:
-
-                                animation.loop = parameters[2].AsBool;
-
-                                JSONNode lastX = null;
-                                float x = 0f;
-                                if (parameters[3]["x"] != null)
-                                {
-                                    List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
-                                    for (int i = 0; i < parameters[3]["x"].Count; i++)
-                                    {
-                                        var kf = parameters[3]["x"][i];
-                                        var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? element.GetTransform(type, 0) : 0f);
-                                        x = kf["rel"].AsBool ? x + val : val;
-                                        keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, x, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
-
-                                        lastX = kf["val"];
-                                    }
-                                    animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, x => { element.SetTransform(type, 0, x); }));
-                                }
-
-                                JSONNode lastY = null;
-                                float y = 0f;
-                                if (parameters[3]["y"] != null)
-                                {
-                                    List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
-                                    for (int i = 0; i < parameters[3]["y"].Count; i++)
-                                    {
-                                        var kf = parameters[3]["y"][i];
-                                        var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? element.GetTransform(type, 1) : 0f);
-                                        y = kf["rel"].AsBool ? y + val : val;
-                                        keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, y, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
-
-                                        lastY = kf["val"];
-                                    }
-                                    animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, x => { element.SetTransform(type, 1, x); }));
-                                }
-
-                                JSONNode lastZ = null;
-                                float z = 0f;
-                                if (parameters[3]["z"] != null)
-                                {
-                                    List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
-                                    for (int i = 0; i < parameters[3]["z"].Count; i++)
-                                    {
-                                        var kf = parameters[3]["z"][i];
-                                        var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? element.GetTransform(type, 2) : 0f);
-                                        z = kf["rel"].AsBool ? z + val : val;
-                                        keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, z, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
-
-                                        lastZ = kf["val"];
-                                    }
-                                    animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, x => { element.SetTransform(type, 2, x); }));
-                                }
-
-                                animation.onComplete = () =>
-                                {
-                                    if (animation.loop)
-                                    {
-                                        if (parameters.Count > 4 && parameters[4] != null)
-                                            ParseFunction(parameters[4]);
-                                        return;
-                                    }
-
-                                    AnimationManager.inst.Remove(animation.id);
-                                    thisElement.animations.RemoveAll(x => x.id == animation.id);
-
-                                    if (lastX != null)
-                                        element.SetTransform(type, 0, x);
-                                    if (lastY != null)
-                                        element.SetTransform(type, 1, y);
-                                    if (lastZ != null)
-                                        element.SetTransform(type, 2, z);
-
-                                    if (parameters.Count <= 4 || parameters[4] == null)
-                                        return;
-
-                                    ParseFunction(parameters[4]);
-                                };
-
-                                thisElement.animations.Add(animation);
-                                AnimationManager.inst.Play(animation);
-                            }
-
-                            return;
-                        }
-
-                    #endregion
-
-                    #region StopAnimations
-
-                    // Stops all local animations created from the element.
-                    // Supports both JSON array and JSON object.
-                    //
-                    // - JSON Array Structure -
-                    // 0 = stop (runs onComplete method)
-                    // 1 = id
-                    // 2 = name
-                    // Example:
-                    // [
-                    //   "True", < makes the animation run its on complete function.
-                    //   "0", < makes the animation run its on complete function.
-                    //   "0" < makes the animation run its on complete function.
-                    // ]
-                    //
-                    // - JSON Object Structure -
-                    // "stop"
-                    // "id"
-                    // "name"
-                    // Example:
-                    // {
-                    //   "run_done_func": "False", < doesn't run on complete functions.
-                    //   "id": "0", < tries to find an element with the matching ID.
-                    //   "name": "355367" < checks if the animations' name contains this. If it does, then stop the animation. (name is based on the element ID it animates)
-                    // }
-                    case "StopAnimations": {
-                            if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["run_done_func"] == null || !thisElement)
-                                return;
-
-                            var stop = parameters.IsArray ? parameters[0].AsBool : parameters["run_done_func"].AsBool;
-
-                            var animations = thisElement.animations;
-                            string id = parameters.IsArray && parameters.Count > 1 ? parameters[1] : parameters.IsObject && parameters["id"] != null ? parameters["id"] : string.Empty;
-                            if (!string.IsNullOrEmpty(id) && inst.CurrentInterface.elements.TryFind(x => x.id == id, out MenuImage menuImage))
-                                animations = menuImage.animations;
-
-                            string animName = parameters.IsArray && parameters.Count > 2 ? parameters[2] : parameters.IsObject && parameters["name"] != null ? parameters["name"] : string.Empty;
-
-                            for (int i = 0; i < animations.Count; i++)
-                            {
-                                var animation = animations[i];
-                                if (!string.IsNullOrEmpty(animName) && !animation.name.Remove("Interface Element Animation ").Contains(animName))
-                                    continue;
-
-                                if (stop)
-                                    animation.onComplete?.Invoke();
-
-                                animation.Pause();
                                 AnimationManager.inst.Remove(animation.id);
-                            }
-
-                            return;
-                        }
-
-                    #endregion
-
-                    #region SetColor
-
-                    // Sets the elements' color slot.
-                    // Supports both JSON array and JSON object.
-                    //
-                    // - JSON Array Structure -
-                    // 0 = color
-                    // Example:
-                    // [
-                    //   "2"
-                    // ]
-                    //
-                    // - JSON Object Structure -
-                    // "col"
-                    // Example:
-                    // {
-                    //   "col": "17" < uses Beatmap Theme object color slots, so max should be 17 (including 0).
-                    // }
-                    case "SetColor": {
-                            if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["col"] == null || !thisElement)
-                                return;
-
-                            thisElement.color = parameters.IsArray ? parameters[0].AsInt : parameters["col"].AsInt;
-
-                            return;
-                        }
-
-                    #endregion
-
-                    #region SetText
-
-                    // Sets an objects' text.
-                    // Supports both JSON array and JSON object.
-                    // 
-                    // - JSON Array Structure -
-                    // 0 = id
-                    // 0 = text
-                    // Example:
-                    // [
-                    //   "100",
-                    //   "This is a text example!"
-                    // ]
-                    // 
-                    // - JSON Object Structure -
-                    // "id"
-                    // "text"
-                    // Example:
-                    // {
-                    //   "id": "100",
-                    //   "text": "This is a text example!"
-                    // }
-                    case "SetText": {
-                            if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && (parameters["id"] == null || parameters["text"] == null) || !inst.CurrentInterface)
-                                return;
-
-                            var text = ParseVarFunction(parameters.Get(0, "text"), thisElement, customVariables);
-                            if (text == null || !text.IsString)
-                                return;
-
-                            var id = ParseVarFunction(parameters.Get(1, "id"), thisElement, customVariables);
-
-                            var element = id == null ? thisElement : inst.CurrentInterface.elements.Find(x => x.id == id);
-                            if (element is not MenuText menuText)
-                                return;
-
-                            menuText.text = text;
-                            menuText.textUI.maxVisibleCharacters = text.Value.Length;
-                            menuText.textUI.text = text;
-
-                            return;
-                        }
-
-                    #endregion
-
-                    #region RemoveElement
-
-                    // Finds an element with a matching ID, destroys its object and removes it.
-                    // Supports both JSON array and JSON object.
-                    // 
-                    // - JSON Array Structure -
-                    // 0 = id
-                    // Example:
-                    // [
-                    //   "522666" < ID to find
-                    // ]
-                    // 
-                    // - JSON Object Structure -
-                    // "id"
-                    // Example:
-                    // {
-                    //   "id": "85298259"
-                    // }
-                    case "RemoveElement": {
-                            if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["id"] == null)
-                                return;
-
-                            var id = parameters.IsArray ? parameters[0] : parameters["id"];
-                            if (inst.CurrentInterface.elements.TryFind(x => x.id == id, out MenuImage element))
-                            {
-                                element.Clear();
-                                if (element.gameObject)
-                                    CoreHelper.Destroy(element.gameObject);
-                                inst.CurrentInterface.elements.Remove(element);
-                            }
-
-                            return;
-                        }
-
-                    #endregion
-
-                    #region RemoveMultipleElements
-
-                    // Finds an element with a matching ID, destroys its object and removes it.
-                    // Supports both JSON array and JSON object.
-                    // 
-                    // - JSON Array Structure -
-                    // 0 = ids
-                    // Example:
-                    // [
-                    //   [
-                    //     "522666",
-                    //     "2672",
-                    //     "824788",
-                    //   ]
-                    // ]
-                    // 
-                    // - JSON Object Structure -
-                    // "ids"
-                    // Example:
-                    // {
-                    //   "ids": [
-                    //     "522666",
-                    //     "2672",
-                    //     "824788",
-                    //   ]
-                    // }
-                    case "RemoveMultipleElements": {
-                            if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["ids"] == null)
-                                return;
-
-                            var ids = parameters.IsArray ? parameters[0] : parameters["ids"];
-                            if (ids == null)
-                                return;
-
-                            for (int i = 0; i < ids.Count; i++)
-                            {
-                                var id = ids[i];
-                                if (inst.CurrentInterface.elements.TryFind(x => x.id == id, out MenuImage element))
-                                {
-                                    element.Clear();
-                                    if (element.gameObject)
-                                        CoreHelper.Destroy(element.gameObject);
-                                    inst.CurrentInterface.elements.Remove(element);
-                                }
-                            }
-
-                            return;
-                        }
-
-                    #endregion
-
-                    #region AddElement
-
-                    // Adds a list of elements to the interface.
-                    // Supports both JSON array and JSON object.
-                    // 
-                    // - JSON Array Structure -
-                    // 0 = elements
-                    // Example:
-                    // [
-                    //   {
-                    //     "type": "Image",
-                    //     "id": "5343663626",
-                    //     "name": "BG",
-                    //     "rect": {
-                    //       "anc_pos": {
-                    //         "x": "0",
-                    //         "y": "0"
-                    //       }
-                    //     }
-                    //   }
-                    // ]
-                    // 
-                    // - JSON Object Structure -
-                    // "elements"
-                    // Example:
-                    // {
-                    //   "type": "Image",
-                    //   "id": "5343663626",
-                    //   "name": "BG",
-                    //   "rect": {
-                    //     "anc_pos": {
-                    //       "x": "0",
-                    //       "y": "0"
-                    //     }
-                    //   }
-                    // }
-                    case "AddElement": {
-                            if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["elements"] == null)
-                                return;
-
-                            var customMenu = inst.CurrentInterface;
-                            customMenu.elements.AddRange(CustomInterface.ParseElements(parameters.IsArray ? parameters[0] : parameters["elements"], customMenu.prefabs, customMenu.spriteAssets));
-
-                            customMenu.StartGeneration();
-
-                            return;
-                        }
-
-                    #endregion
-
-                    #region ScrollLayout
-
-                    case "ScrollLayout": {
-                            if (parameters == null)
-                                return;
-
-                            var layoutName = ParseVarFunction(parameters.Get(0, "layout"), thisElement, customVariables);
-                            if (layoutName == null || !layoutName.IsString)
-                                return;
-
-                            if (!inst.CurrentInterface.layouts.TryGetValue(layoutName, out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
-                                return;
-
-                            if (menuLayout is MenuGridLayout menuGridLayout)
-                                menuGridLayout.Scroll(ParseVarFunction(parameters.Get(1, "x"), thisElement, customVariables), ParseVarFunction(parameters.Get(2, "y"), thisElement, customVariables), ParseVarFunction(parameters.Get(3, "x_additive"), thisElement, customVariables), ParseVarFunction(parameters.Get(4, "y_additive"), thisElement, customVariables));
-
-                            if (menuLayout is MenuHorizontalOrVerticalLayout menuHorizontalLayout)
-                                menuHorizontalLayout.Scroll(ParseVarFunction(parameters.Get(1, "value"), thisElement, customVariables), ParseVarFunction(parameters.Get(2, "additive"), thisElement, customVariables));
-
-                            return;
-                        }
-
-                    #endregion
-
-                    #region SetElementSelectable
-
-                    // Sets an element selectable value. Buttons will deselect when selectable is turned off.
-                    // Supports both JSON array and JSON object.
-                    //
-                    // - JSON Array Structure -
-                    // 0 = id
-                    // 1 = actiive
-                    // Example:
-                    // [
-                    //   "525778246", < finds an element with this ID.
-                    //   "False" < disables element selection.
-                    // ]
-                    //
-                    // - JSON Object Structure -
-                    // "id"
-                    // "active"
-                    // Example:
-                    // {
-                    //   "id": "525778246",
-                    //   "selectable": "True" < sets the element as selectable.
-                    // }
-                    case "SetElementSelectable": {
-                            if (parameters == null || !inst.CurrentInterface)
-                                return;
-
-                            var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables);
-                            if (id == null)
-                                return;
-
-                            var selectable = ParseVarFunction(parameters.Get(1, "selectable"), thisElement, customVariables);
-
-                            if (inst.CurrentInterface.elements.TryFind(x => x.id == id, out MenuImage menuImage))
-                                menuImage.selectable = selectable;
-
-                            return;
-                        }
-
-                    #endregion
-
-                    #region SetInputFieldText
-
-                    // Sets an input field elements' text.
-                    // Supports both JSON array and JSON object.
-                    //
-                    // - JSON Array Structure -
-                    // 0 = id
-                    // 1 = text
-                    // 2 = trigger (optional)
-                    // Example:
-                    // [
-                    //   "525778246", < finds an element with this ID.
-                    //   "Text!" < sets the text
-                    //   "True" < triggers the input field value changed function
-                    // ]
-                    //
-                    // - JSON Object Structure -
-                    // "id"
-                    // "text"
-                    // "trigger" (optional)
-                    // Example:
-                    // {
-                    //   "id": "525778246",
-                    //   "text": "What" < sets the text
-                    //   "trigger": "False" < only sets the display text, does not trigger the input field value changed function
-                    // }
-                    case "SetInputFieldText": {
-                            if (parameters == null || !inst.CurrentInterface)
-                                return;
-
-                            var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables);
-                            if (id == null)
-                                return;
-
-                            var text = ParseVarFunction(parameters.Get(1, "text"), thisElement, customVariables);
-
-                            if (inst.CurrentInterface.elements.TryFind(x => x.id == id, out MenuImage menuImage) && menuImage is MenuInputField menuInputField && menuInputField.inputField)
-                            {
-                                if (ParseVarFunction(parameters.GetOrDefault(2, "trigger", true), thisElement, customVariables).AsBool)
-                                    menuInputField.inputField.text = text;
-                                else
-                                    menuInputField.inputField.SetTextWithoutNotify(text);
-                            }
-
-                            return;
-                        }
-
-                    #endregion
-
-                    #region ApplyElement
-
-                    // Sets an input field elements' text.
-                    // Supports both JSON array and JSON object.
-                    //
-                    // - JSON Array Structure -
-                    // 0 = element JSON
-                    // 1 = id
-                    // Example:
-                    // [
-                    //   {
-                    //     ... < JSON object representing element values
-                    //   },
-                    //   "525778246" < finds an element with this ID.
-                    // ]
-                    //
-                    // - JSON Object Structure -
-                    // "element"
-                    // "id"
-                    // Example:
-                    // {
-                    //   "element": {
-                    //     ...
-                    //   },
-                    //   "id": null < id can be left null to specify the element this function runs from
-                    // }
-                    case "ApplyElement": {
-                            if (parameters == null)
-                                return;
-
-                            var jnElement = ParseVarFunction(parameters.Get(0, "element"), thisElement, customVariables);
-                            var id = ParseVarFunction(parameters.Get(1, "id"), thisElement, customVariables);
-
-                            var element = id == null ? thisElement : inst.CurrentInterface.elements.Find(x => x.id == id);
-                            if (!element)
-                                return;
-
-                            element.Read(jnElement, 0, 0, inst.CurrentInterface.spriteAssets, customVariables);
-
-                            return;
-                        }
-
-                    #endregion
-
-                    #endregion
-
-                    #region Effects
-
-                    #region SetDefaultEvents
-
-                    case "SetDefaultEvents": {
-                            if (ProjectArrhythmia.State.InGame || !MenuEffectsManager.inst)
-                                return;
-
-                            MenuEffectsManager.inst.SetDefaultEffects();
-
-                            return;
-                        }
-
-                    #endregion
-
-                    #region AnimateEvent
-
-                    // Animates a specific type of event (e.g. camera).
-                    // Supports both JSON array and JSON object.
-                    //
-                    // - JSON Array Structure -
-                    // 0 = type (name, "MoveCamera", "ZoomCamera", "RotateCamera")
-                    // 1 = looping (boolean true or false)
-                    // 2 = keyframes
-                    // 3 = anim done func
-                    // Example:
-                    // [
-                    //   "MoveCamera",
-                    //   "False",
-                    //   {
-                    //     "x": [
-                    //       {
-                    //         "t": "0",
-                    //         "val": "0"
-                    //       }
-                    //     ],
-                    //     "y": [
-                    //       {
-                    //         "t": "0",
-                    //         "val": "0"
-                    //       }
-                    //     ]
-                    //   }
-                    // ]
-                    // 
-                    // - JSON Object Structure -
-                    // "type"
-                    // "loop"
-                    // "events"
-                    // "done_func"
-                    // Example: (zooms the camera in and out)
-                    // {
-                    //   "type": "ZoomCamera",
-                    //   "loop": "True",
-                    //   "events": {
-                    //     "x": [
-                    //       {
-                    //         "t": "0",
-                    //         "val": "5" < 5 is the default camera zoom.
-                    //       },
-                    //       {
-                    //         "t": "1",
-                    //         "val": "7",
-                    //         "ct": "InOutSine"
-                    //       },
-                    //       {
-                    //         "t": "2",
-                    //         "val": "5",
-                    //         "ct": "InOutSine"
-                    //       }
-                    //     ]
-                    //   }
-                    // }
-                    case "AnimateEvent": {
-                            if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["type"] == null || !thisElement)
-                                return;
-
-                            var isArray = parameters.IsArray;
-                            var type = isArray ? parameters[0] : parameters["type"];
-
-                            if (type.IsNumber)
-                                return;
-
-                            var events = isArray ? parameters[2] : parameters["events"];
-                            var animation = new RTAnimation($"Interface Element Animation {thisElement.id}"); // no way element animation reference :scream:
-
-                            animation.loop = isArray ? parameters[1].AsBool : parameters["loop"].AsBool;
-
-                            switch (type.Value)
-                            {
-                                case "MoveCamera": {
-                                        JSONNode lastX = null;
-                                        float x = 0f;
-                                        if (events["x"] != null)
-                                        {
-                                            List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
-                                            for (int i = 0; i < events["x"].Count; i++)
-                                            {
-                                                var kf = events["x"][i];
-                                                var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? Camera.main.transform.localPosition.x : 0f);
-                                                x = kf["rel"].AsBool ? x + val : val;
-                                                keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, x, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
-
-                                                lastX = kf["val"];
-                                            }
-                                            animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, MenuEffectsManager.inst.MoveCameraX));
-                                        }
-
-                                        JSONNode lastY = null;
-                                        float y = 0f;
-                                        if (events["y"] != null)
-                                        {
-                                            List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
-                                            for (int i = 0; i < events["y"].Count; i++)
-                                            {
-                                                var kf = events["y"][i];
-                                                var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? Camera.main.transform.localPosition.y : 0f);
-                                                y = kf["rel"].AsBool ? y + val : val;
-                                                keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, y, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
-
-                                                lastY = kf["val"];
-                                            }
-                                            animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, MenuEffectsManager.inst.MoveCameraY));
-                                        }
-
-                                        animation.onComplete = () =>
-                                        {
-                                            if (animation.loop)
-                                            {
-                                                if (isArray && parameters.Count > 3 && parameters[3] != null || parameters["done_func"] != null)
-                                                    ParseFunction(isArray ? parameters[3] : parameters["done_func"]);
-
-                                                return;
-                                            }
-
-                                            AnimationManager.inst.Remove(animation.id);
-                                            thisElement.animations.RemoveAll(x => x.id == animation.id);
-
-                                            if (lastX != null)
-                                                MenuEffectsManager.inst.MoveCameraX(x);
-                                            if (lastY != null)
-                                                MenuEffectsManager.inst.MoveCameraY(y);
-
-                                            if (isArray && parameters.Count > 3 && parameters[3] != null || parameters["done_func"] != null)
-                                                ParseFunction(isArray ? parameters[3] : parameters["done_func"]);
-                                        };
-
-                                        return;
-                                    }
-                                case "ZoomCamera": {
-                                        JSONNode lastX = null;
-                                        float x = 0f;
-                                        if (events["x"] != null)
-                                        {
-                                            List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
-                                            for (int i = 0; i < events["x"].Count; i++)
-                                            {
-                                                var kf = events["x"][i];
-                                                var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? Camera.main.orthographicSize : 0f);
-                                                x = kf["rel"].AsBool ? x + val : val;
-                                                keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, x, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
-
-                                                lastX = kf["val"];
-                                            }
-                                            animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, MenuEffectsManager.inst.ZoomCamera));
-                                        }
-
-                                        animation.onComplete = () =>
-                                        {
-                                            if (animation.loop)
-                                            {
-                                                if (isArray && parameters.Count > 3 && parameters[3] != null || parameters["done_func"] != null)
-                                                    ParseFunction(isArray ? parameters[3] : parameters["done_func"]);
-
-                                                return;
-                                            }
-
-                                            AnimationManager.inst.Remove(animation.id);
-                                            thisElement.animations.RemoveAll(x => x.id == animation.id);
-
-                                            if (lastX != null)
-                                                MenuEffectsManager.inst.ZoomCamera(x);
-
-                                            if (isArray && parameters.Count > 3 && parameters[3] != null || parameters["done_func"] != null)
-                                                ParseFunction(isArray ? parameters[3] : parameters["done_func"]);
-                                        };
-
-                                        return;
-                                    }
-                                case "RotateCamera": {
-                                        JSONNode lastX = null;
-                                        float x = 0f;
-                                        if (events["x"] != null)
-                                        {
-                                            List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
-                                            for (int i = 0; i < events["x"].Count; i++)
-                                            {
-                                                var kf = events["x"][i];
-                                                var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? Camera.main.transform.localEulerAngles.z : 0f);
-                                                x = kf["rel"].AsBool ? x + val : val;
-                                                keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, x, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
-
-                                                lastX = kf["val"];
-                                            }
-                                            animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, MenuEffectsManager.inst.RotateCamera));
-                                        }
-
-                                        animation.onComplete = () =>
-                                        {
-                                            if (animation.loop)
-                                            {
-                                                if (isArray && parameters.Count > 3 && parameters[3] != null || parameters["done_func"] != null)
-                                                    ParseFunction(isArray ? parameters[3] : parameters["done_func"]);
-
-                                                return;
-                                            }
-
-                                            AnimationManager.inst.Remove(animation.id);
-                                            thisElement.animations.RemoveAll(x => x.id == animation.id);
-
-                                            if (lastX != null)
-                                                MenuEffectsManager.inst.RotateCamera(x);
-
-                                            if (isArray && parameters.Count > 3 && parameters[3] != null || parameters["done_func"] != null)
-                                                ParseFunction(isArray ? parameters[3] : parameters["done_func"]);
-                                        };
-
-                                        return;
-                                    }
-                                case "Chroma":
-                                case "Chromatic": {
-                                        JSONNode lastX = null;
-                                        float x = 0f;
-                                        if (events["x"] != null)
-                                        {
-                                            List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
-                                            for (int i = 0; i < events["x"].Count; i++)
-                                            {
-                                                var kf = events["x"][i];
-                                                var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? Camera.main.transform.localEulerAngles.z : 0f);
-                                                x = kf["rel"].AsBool ? x + val : val;
-                                                keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, x, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
-
-                                                lastX = kf["val"];
-                                            }
-                                            animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, MenuEffectsManager.inst.UpdateChroma));
-                                        }
-
-                                        animation.onComplete = () =>
-                                        {
-                                            if (animation.loop)
-                                            {
-                                                if (isArray && parameters.Count > 3 && parameters[3] != null || parameters["done_func"] != null)
-                                                    ParseFunction(isArray ? parameters[3] : parameters["done_func"]);
-
-                                                return;
-                                            }
-
-                                            AnimationManager.inst.Remove(animation.id);
-                                            thisElement.animations.RemoveAll(x => x.id == animation.id);
-
-                                            if (lastX != null)
-                                                MenuEffectsManager.inst.UpdateChroma(x);
-
-                                            if (isArray && parameters.Count > 3 && parameters[3] != null || parameters["done_func"] != null)
-                                                ParseFunction(isArray ? parameters[3] : parameters["done_func"]);
-                                        };
-
-                                        return;
-                                    }
-                                case "Bloom": {
-                                        JSONNode lastX = null;
-                                        float x = 0f;
-                                        if (events["x"] != null)
-                                        {
-                                            List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
-                                            for (int i = 0; i < events["x"].Count; i++)
-                                            {
-                                                var kf = events["x"][i];
-                                                var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? Camera.main.transform.localEulerAngles.z : 0f);
-                                                x = kf["rel"].AsBool ? x + val : val;
-                                                keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, x, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
-
-                                                lastX = kf["val"];
-                                            }
-                                            animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, MenuEffectsManager.inst.UpdateBloomIntensity));
-                                        }
-
-                                        JSONNode lastY = null;
-                                        float y = 0f;
-                                        if (events["y"] != null)
-                                        {
-                                            List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
-                                            for (int i = 0; i < events["y"].Count; i++)
-                                            {
-                                                var kf = events["y"][i];
-                                                var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? Camera.main.transform.localEulerAngles.z : 0f);
-                                                y = kf["rel"].AsBool ? y + val : val;
-                                                keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, y, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
-
-                                                lastY = kf["val"];
-                                            }
-                                            animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, MenuEffectsManager.inst.UpdateBloomDiffusion));
-                                        }
-
-                                        JSONNode lastZ = null;
-                                        float z = 0f;
-                                        if (events["z"] != null)
-                                        {
-                                            List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
-                                            for (int i = 0; i < events["z"].Count; i++)
-                                            {
-                                                var kf = events["z"][i];
-                                                var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? Camera.main.transform.localEulerAngles.z : 0f);
-                                                z = kf["rel"].AsBool ? z + val : val;
-                                                keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, z, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
-
-                                                lastZ = kf["val"];
-                                            }
-                                            animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, MenuEffectsManager.inst.UpdateBloomThreshold));
-                                        }
-
-                                        JSONNode lastX2 = null;
-                                        float x2 = 0f;
-                                        if (events["x2"] != null)
-                                        {
-                                            List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
-                                            for (int i = 0; i < events["x2"].Count; i++)
-                                            {
-                                                var kf = events["x2"][i];
-                                                var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? Camera.main.transform.localEulerAngles.z : 0f);
-                                                x2 = kf["rel"].AsBool ? x2 + val : val;
-                                                keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, x2, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
-
-                                                lastX2 = kf["val"];
-                                            }
-                                            animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, MenuEffectsManager.inst.UpdateBloomAnamorphicRatio));
-                                        }
-
-                                        animation.onComplete = () =>
-                                        {
-                                            if (animation.loop)
-                                            {
-                                                if (isArray && parameters.Count > 3 && parameters[3] != null || parameters["done_func"] != null)
-                                                    ParseFunction(isArray ? parameters[3] : parameters["done_func"]);
-
-                                                return;
-                                            }
-
-                                            AnimationManager.inst.Remove(animation.id);
-                                            thisElement.animations.RemoveAll(x => x.id == animation.id);
-
-                                            if (lastX != null)
-                                                MenuEffectsManager.inst.UpdateBloomIntensity(x);
-                                            if (lastY != null)
-                                                MenuEffectsManager.inst.UpdateBloomIntensity(y);
-                                            if (lastZ != null)
-                                                MenuEffectsManager.inst.UpdateBloomThreshold(z);
-                                            if (lastX2 != null)
-                                                MenuEffectsManager.inst.UpdateBloomAnamorphicRatio(x2);
-
-                                            if (isArray && parameters.Count > 3 && parameters[3] != null || parameters["done_func"] != null)
-                                                ParseFunction(isArray ? parameters[3] : parameters["done_func"]);
-                                        };
-
-                                        return;
-                                    }
-                                case "Lens":
-                                case "LensDistort": {
-                                        JSONNode lastX = null;
-                                        float x = 0f;
-                                        if (events["x"] != null)
-                                        {
-                                            List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
-                                            for (int i = 0; i < events["x"].Count; i++)
-                                            {
-                                                var kf = events["x"][i];
-                                                var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? Camera.main.transform.localEulerAngles.z : 0f);
-                                                x = kf["rel"].AsBool ? x + val : val;
-                                                keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, x, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
-
-                                                lastX = kf["val"];
-                                            }
-                                            animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, MenuEffectsManager.inst.UpdateLensDistortIntensity));
-                                        }
-
-                                        JSONNode lastY = null;
-                                        float y = 0f;
-                                        if (events["y"] != null)
-                                        {
-                                            List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
-                                            for (int i = 0; i < events["y"].Count; i++)
-                                            {
-                                                var kf = events["y"][i];
-                                                var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? Camera.main.transform.localEulerAngles.z : 0f);
-                                                y = kf["rel"].AsBool ? y + val : val;
-                                                keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, y, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
-
-                                                lastY = kf["val"];
-                                            }
-                                            animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, MenuEffectsManager.inst.UpdateLensDistortCenterX));
-                                        }
-
-                                        JSONNode lastZ = null;
-                                        float z = 0f;
-                                        if (events["z"] != null)
-                                        {
-                                            List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
-                                            for (int i = 0; i < events["z"].Count; i++)
-                                            {
-                                                var kf = events["z"][i];
-                                                var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? Camera.main.transform.localEulerAngles.z : 0f);
-                                                z = kf["rel"].AsBool ? z + val : val;
-                                                keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, z, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
-
-                                                lastZ = kf["val"];
-                                            }
-                                            animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, MenuEffectsManager.inst.UpdateLensDistortCenterY));
-                                        }
-
-                                        JSONNode lastX2 = null;
-                                        float x2 = 0f;
-                                        if (events["x2"] != null)
-                                        {
-                                            List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
-                                            for (int i = 0; i < events["x2"].Count; i++)
-                                            {
-                                                var kf = events["x2"][i];
-                                                var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? Camera.main.transform.localEulerAngles.z : 0f);
-                                                x2 = kf["rel"].AsBool ? x2 + val : val;
-                                                keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, x2, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
-
-                                                lastX2 = kf["val"];
-                                            }
-                                            animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, MenuEffectsManager.inst.UpdateLensDistortIntensityX));
-                                        }
-
-                                        JSONNode lastY2 = null;
-                                        float y2 = 0f;
-                                        if (events["y2"] != null)
-                                        {
-                                            List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
-                                            for (int i = 0; i < events["y2"].Count; i++)
-                                            {
-                                                var kf = events["y2"][i];
-                                                var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? Camera.main.transform.localEulerAngles.z : 0f);
-                                                y2 = kf["rel"].AsBool ? y2 + val : val;
-                                                keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, y2, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
-
-                                                lastY2 = kf["val"];
-                                            }
-                                            animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, MenuEffectsManager.inst.UpdateLensDistortIntensityY));
-                                        }
-
-                                        JSONNode lastZ2 = null;
-                                        float z2 = 0f;
-                                        if (events["z2"] != null)
-                                        {
-                                            List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
-                                            for (int i = 0; i < events["z2"].Count; i++)
-                                            {
-                                                var kf = events["z2"][i];
-                                                var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? Camera.main.transform.localEulerAngles.z : 0f);
-                                                z2 = kf["rel"].AsBool ? z2 + val : val;
-                                                keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, z2, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
-
-                                                lastZ2 = kf["val"];
-                                            }
-                                            animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, MenuEffectsManager.inst.UpdateLensDistortScale));
-                                        }
-
-                                        animation.onComplete = () =>
-                                        {
-                                            if (animation.loop)
-                                            {
-                                                if (isArray && parameters.Count > 3 && parameters[3] != null || parameters["done_func"] != null)
-                                                    ParseFunction(isArray ? parameters[3] : parameters["done_func"]);
-
-                                                return;
-                                            }
-
-                                            AnimationManager.inst.Remove(animation.id);
-                                            thisElement.animations.RemoveAll(x => x.id == animation.id);
-
-                                            if (lastX != null)
-                                                MenuEffectsManager.inst.UpdateLensDistortIntensity(x);
-                                            if (lastY != null)
-                                                MenuEffectsManager.inst.UpdateLensDistortCenterX(y);
-                                            if (lastZ != null)
-                                                MenuEffectsManager.inst.UpdateLensDistortCenterY(z);
-                                            if (lastX2 != null)
-                                                MenuEffectsManager.inst.UpdateLensDistortIntensityX(x2);
-                                            if (lastY2 != null)
-                                                MenuEffectsManager.inst.UpdateLensDistortIntensityY(y2);
-                                            if (lastZ2 != null)
-                                                MenuEffectsManager.inst.UpdateLensDistortScale(z2);
-
-                                            if (isArray && parameters.Count > 3 && parameters[3] != null || parameters["done_func"] != null)
-                                                ParseFunction(isArray ? parameters[3] : parameters["done_func"]);
-                                        };
-
-                                        return;
-                                    }
-                            }
-
-                            thisElement.animations.Add(animation);
-                            AnimationManager.inst.Play(animation);
-
-                            return;
-                        }
-
-                    #endregion
-
-                    #region UpdateEvent
-
-                    case "UpdateEvent": {
-                            if (parameters == null)
-                                return;
-
-                            var effect = ParseVarFunction(parameters.Get(0, "effect"), thisElement, customVariables);
-                            if (effect == null || !effect.IsString || !MenuEffectsManager.inst || !MenuEffectsManager.inst.functions.TryGetValue(effect, out Action<float> action))
-                                return;
-
-                            action?.Invoke(ParseVarFunction(parameters.Get(1, "amount").AsFloat, thisElement, customVariables));
-
-                            return;
-                        }
-
-                    #endregion
-
-                    #region SetEvent
-
-                    case "SetEvent": {
-                            if (parameters == null)
-                                return;
-
-                            var type = parameters.Get(0, "type");
-
-                            if (type == null || !type.IsString)
-                                return;
-
-                            var values = parameters.Get(1, "values");
-
-                            switch (type.Value)
-                            {
-                                case "MoveCamera": {
-                                        var x = ParseVarFunction(values["x"], thisElement, customVariables);
-                                        if (x != null)
-                                            MenuEffectsManager.inst.MoveCameraX(x.AsFloat);
-
-                                        var y = ParseVarFunction(values["x"], thisElement, customVariables);
-                                        if (y != null)
-                                            MenuEffectsManager.inst.MoveCameraX(y.AsFloat);
-
-                                        return;
-                                    }
-                                case "ZoomCamera": {
-                                        var amount = ParseVarFunction(values["amount"], thisElement, customVariables);
-                                        if (amount != null)
-                                            MenuEffectsManager.inst.ZoomCamera(amount.AsFloat);
-
-                                        return;
-                                    }
-                                case "RotateCamera": {
-                                        var amount = ParseVarFunction(values["amount"], thisElement, customVariables);
-                                        if (amount != null)
-                                            MenuEffectsManager.inst.RotateCamera(amount.AsFloat);
-
-                                        return;
-                                    }
-                                case "Chroma":
-                                case "Chromatic": {
-                                        var intensity = ParseVarFunction(values["intensity"], thisElement, customVariables);
-                                        if (intensity != null)
-                                            MenuEffectsManager.inst.UpdateChroma(intensity.AsFloat);
-
-                                        return;
-                                    }
-                                case "Bloom": {
-                                        var intensity = ParseVarFunction(values["intensity"], thisElement, customVariables);
-                                        if (intensity != null)
-                                            MenuEffectsManager.inst.UpdateBloomIntensity(intensity.AsFloat);
-
-                                        var diffusion = ParseVarFunction(values["diffusion"], thisElement, customVariables);
-                                        if (diffusion != null)
-                                            MenuEffectsManager.inst.UpdateBloomDiffusion(diffusion.AsFloat);
-
-                                        var threshold = ParseVarFunction(values["threshold"], thisElement, customVariables);
-                                        if (threshold != null)
-                                            MenuEffectsManager.inst.UpdateBloomThreshold(threshold.AsFloat);
-
-                                        var anamorphicRatio = ParseVarFunction(values["anamorphic_ratio"], thisElement, customVariables);
-                                        if (anamorphicRatio != null)
-                                            MenuEffectsManager.inst.UpdateBloomAnamorphicRatio(anamorphicRatio.AsFloat);
-
-                                        var col = ParseVarFunction(values["col"], thisElement, customVariables);
-                                        if (col != null)
-                                            MenuEffectsManager.inst.UpdateBloomColor(col.IsString ? RTColors.HexToColor(col) : inst.CurrentInterface.Theme.GetFXColor(col.AsInt));
-
-                                        return;
-                                    }
-                                case "Lens":
-                                case "LensDistort": {
-                                        var intensity = ParseVarFunction(values["intensity"], thisElement, customVariables);
-                                        if (intensity != null)
-                                            MenuEffectsManager.inst.UpdateLensDistortIntensity(intensity.AsFloat);
-
-                                        var centerX = ParseVarFunction(values["center_x"], thisElement, customVariables);
-                                        if (centerX != null)
-                                            MenuEffectsManager.inst.UpdateLensDistortCenterX(centerX.AsFloat);
-
-                                        var centerY = ParseVarFunction(values["center_y"], thisElement, customVariables);
-                                        if (centerY != null)
-                                            MenuEffectsManager.inst.UpdateLensDistortCenterY(centerY.AsFloat);
-
-                                        var intensityX = ParseVarFunction(values["intensity_x"], thisElement, customVariables);
-                                        if (intensityX != null)
-                                            MenuEffectsManager.inst.UpdateLensDistortIntensityX(intensityX.AsFloat);
-
-                                        var intensityY = ParseVarFunction(values["intensity_x"], thisElement, customVariables);
-                                        if (intensityY != null)
-                                            MenuEffectsManager.inst.UpdateLensDistortIntensityY(intensityY.AsFloat);
-
-                                        var scale = ParseVarFunction(values["scale"], thisElement, customVariables);
-                                        if (scale != null)
-                                            MenuEffectsManager.inst.UpdateLensDistortScale(scale.AsFloat);
-
-                                        return;
-                                    }
-                                case "Vignette": {
-                                        var intensity = ParseVarFunction(values["intensity"], thisElement, customVariables);
-                                        if (intensity != null)
-                                            MenuEffectsManager.inst.UpdateVignetteIntensity(intensity.AsFloat);
-
-                                        var centerX = ParseVarFunction(values["center_x"], thisElement, customVariables);
-                                        if (centerX != null)
-                                            MenuEffectsManager.inst.UpdateVignetteCenterX(centerX.AsFloat);
-
-                                        var centerY = ParseVarFunction(values["center_y"], thisElement, customVariables);
-                                        if (centerY != null)
-                                            MenuEffectsManager.inst.UpdateVignetteCenterY(centerY.AsFloat);
-
-                                        var smoothness = ParseVarFunction(values["smoothness"], thisElement, customVariables);
-                                        if (smoothness != null)
-                                            MenuEffectsManager.inst.UpdateVignetteSmoothness(smoothness.AsFloat);
-
-                                        var roundness = ParseVarFunction(values["roundness"], thisElement, customVariables);
-                                        if (roundness != null)
-                                            MenuEffectsManager.inst.UpdateVignetteRoundness(roundness.AsFloat);
-
-                                        var rounded = ParseVarFunction(values["rounded"], thisElement, customVariables);
-                                        if (rounded != null)
-                                            MenuEffectsManager.inst.UpdateVignetteRounded(rounded.AsBool);
-
-                                        var col = ParseVarFunction(values["col"], thisElement, customVariables);
-                                        if (col != null)
-                                            MenuEffectsManager.inst.UpdateVignetteColor(col.IsString ? RTColors.HexToColor(col) : inst.CurrentInterface.Theme.GetFXColor(col.AsInt));
-
-                                        return;
-                                    }
-                                case "AnalogGlitch": {
-                                        var enabled = ParseVarFunction(values["enabled"], thisElement, customVariables);
-                                        if (enabled != null)
-                                            MenuEffectsManager.inst.UpdateAnalogGlitchEnabled(enabled.AsBool);
-
-                                        var scanLineJitter = ParseVarFunction(values["scan_line_jitter"], thisElement, customVariables);
-                                        if (scanLineJitter != null)
-                                            MenuEffectsManager.inst.UpdateAnalogGlitchScanLineJitter(scanLineJitter.AsFloat);
-
-                                        var verticalJump = ParseVarFunction(values["vertical_jump"], thisElement, customVariables);
-                                        if (verticalJump != null)
-                                            MenuEffectsManager.inst.UpdateAnalogGlitchVerticalJump(verticalJump.AsFloat);
-
-                                        var horizontalShake = ParseVarFunction(values["horizontal_shake"], thisElement, customVariables);
-                                        if (horizontalShake != null)
-                                            MenuEffectsManager.inst.UpdateAnalogGlitchHorizontalShake(horizontalShake.AsFloat);
-
-                                        var colorDrift = ParseVarFunction(values["color_drift"], thisElement, customVariables);
-                                        if (colorDrift != null)
-                                            MenuEffectsManager.inst.UpdateAnalogGlitchColorDrift(colorDrift.AsFloat);
-
-                                        return;
-                                    }
-                                case "DigitalGlitch": {
-                                        var intensity = ParseVarFunction(values["intensity"], thisElement, customVariables);
-                                        if (intensity != null)
-                                            MenuEffectsManager.inst.UpdateDigitalGlitch(intensity.AsFloat);
-
-                                        return;
-                                    }
-                            }
-
-                            return;
-                        }
-
-                    #endregion
-
-                    #endregion
-
-                    #region Levels
-
-                    #region InitLevelMenu
-
-                    // Initializes the level list menu from a specific path.
-                    // Supports both JSON array and JSON object.
-                    // 
-                    // - JSON Array Structure -
-                    // 0 = directory
-                    // Example:
-                    // [
-                    //   "{{AppDirectory}}beatmaps/editor" < must contain levels with ".lsb" format.
-                    // ]
-                    // 
-                    // - JSON Object Structure -
-                    // "directory"
-                    // Example:
-                    // {
-                    //   "directory": "" < if left empty, will use the interfaces' directory.
-                    // }
-                    case "InitLevelMenu": {
-                            var directory = inst.MainDirectory;
-
-                            if (parameters != null)
-                            {
-                                var directoryJN = parameters.Get(0, "directory");
-                                if (directoryJN != null)
-                                    directory = directoryJN;
-                            }
-
-                            if (string.IsNullOrEmpty(directory))
-                                directory = inst.MainDirectory;
-
-                            LevelListInterface.Init(Directory.GetDirectories(directory).Where(x => Level.Verify(x)).Select(x => new Level(RTFile.ReplaceSlash(x))).ToList());
-                            return;
-                        }
-
-                    #endregion
-
-                    #endregion
-
-                    #region Online
-
-                    #region ModderDiscord
-
-                    // Opens the System Error Discord server link.
-                    // Function has no parameters.
-                    case "ModderDiscord": {
-                            Application.OpenURL(AlephNetwork.MOD_DISCORD_URL);
-
-                            return;
-                        }
-
-                    #endregion
-
-                    #region SourceCode
-
-                    // Opens the GitHub Source Code link.
-                    // Function has no parameters.
-                    case "SourceCode": {
-                            Application.OpenURL(AlephNetwork.OPEN_SOURCE_URL);
-
-                            return;
-                        }
-
-                    #endregion
-
-                    #endregion
-
-                    #region Specific
-
-                    #region OpenChangelog
-
-                    case "OpenChangelog": {
-                            inst.OpenChangelog();
-                            return;
-                        }
-
-                    #endregion
-
-                    #region LoadLevels
-
-                    case "LoadLevels": {
-                            LoadLevelsInterface.Init(() =>
-                            {
-                                if (parameters["on_loading_end"] != null)
-                                    ParseFunction(parameters["on_loading_end"], thisElement, customVariables);
-                            });
-                            return;
-                        }
-
-                    #endregion
-
-                    #region OnInputsSelected
-
-                    case "OnInputsSelected": {
-                            InputSelectInterface.OnInputsSelected = () =>
-                            {
-                                if (parameters["continue"] != null)
-                                    ParseFunction(parameters["continue"], thisElement, customVariables);
+                                thisElement.animations.RemoveAll(x => x.id == animation.id);
+
+                                if (lastX != null)
+                                    MenuEffectsManager.inst.MoveCameraX(x);
+                                if (lastY != null)
+                                    MenuEffectsManager.inst.MoveCameraY(y);
+
+                                if (isArray && parameters.Count > 3 && parameters[3] != null || parameters["done_func"] != null)
+                                    ParseFunction(isArray ? parameters[3] : parameters["done_func"]);
                             };
-                            return;
-                        }
-
-                    #endregion
-
-                    #region Profile
-
-                    case "Profile": {
-                            ProfileInterface.Init();
 
                             return;
                         }
-
-                    #endregion
-
-                    #region BeginStoryMode
-
-                    // Begins the BetterLegacy story mode.
-                    // Function has no parameters.
-                    case "BeginStoryMode": {
-                            LevelManager.IsArcade = false;
-                            SceneHelper.LoadInputSelect(SceneHelper.LoadInterfaceScene);
-
-                            return;
-                        }
-
-                    #endregion
-
-                    #region LoadCurrentStoryInterface
-
-                    case "LoadCurrentStoryInterface": {
-                            inst.StartupStoryInterface();
-
-                            return;
-                        }
-
-                    #endregion
-
-                    #region LoadStoryInterface
-
-                    case "LoadStoryInterface": {
-                            inst.StartupStoryInterface(ParseVarFunction(parameters.Get(0, "chapter"), thisElement, customVariables).AsInt, ParseVarFunction(parameters.Get(1, "bonus"), thisElement, customVariables).AsBool);
-
-                            return;
-                        }
-
-                    #endregion
-
-                    #endregion
-                }
-
-                base.Function(jn, name, parameters, thisElement, customVariables);
-            }
-
-            public override JSONNode VarFunction(JSONNode jn, string name, JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
-            {
-                switch (name)
-                {
-                    #region ColorSource
-
-                    // Parses a variable from a color source.
-                    // Supports both JSON array and JSON object.
-                    // 
-                    // - JSON Array Structure -
-                    // 0 = color source.
-                    // 1 = index of the color slot. (optional)
-                    // Example:
-                    // [
-                    //   "obj",
-                    //   "2" < returns the object color slot at index 2
-                    // ]
-                    // 
-                    // - JSON Object Structure -
-                    // "source"
-                    // "index" (optional)
-                    // Example:
-                    // {
-                    //   "source": "bg" < index is optional
-                    // }
-                    case "ColorSource": {
-                            var source = ParseVarFunction(parameters.Get(0, "source"), thisElement, customVariables).Value;
-                            var index = ParseVarFunction(parameters.Get(1, "index"), thisElement, customVariables);
-                            return (source switch
+                    case "ZoomCamera": {
+                            JSONNode lastX = null;
+                            float x = 0f;
+                            if (events["x"] != null)
                             {
-                                "gui_accent" => inst.CurrentTheme.guiAccentColor,
-                                "bg" => inst.CurrentTheme.backgroundColor,
-                                "player" => inst.CurrentTheme.playerColors.GetAt(index.AsInt),
-                                "obj" => inst.CurrentTheme.objectColors.GetAt(index.AsInt),
-                                "bgs" => inst.CurrentTheme.backgroundColors.GetAt(index.AsInt),
-                                "fx" => inst.CurrentTheme.effectColors.GetAt(index.AsInt),
-                                _ => inst.CurrentTheme.guiColor,
-                            }).ToString();
+                                List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
+                                for (int i = 0; i < events["x"].Count; i++)
+                                {
+                                    var kf = events["x"][i];
+                                    var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? Camera.main.orthographicSize : 0f);
+                                    x = kf["rel"].AsBool ? x + val : val;
+                                    keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, x, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
+
+                                    lastX = kf["val"];
+                                }
+                                animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, MenuEffectsManager.inst.ZoomCamera));
+                            }
+
+                            animation.onComplete = () =>
+                            {
+                                if (animation.loop)
+                                {
+                                    if (isArray && parameters.Count > 3 && parameters[3] != null || parameters["done_func"] != null)
+                                        ParseFunction(isArray ? parameters[3] : parameters["done_func"]);
+
+                                    return;
+                                }
+
+                                AnimationManager.inst.Remove(animation.id);
+                                thisElement.animations.RemoveAll(x => x.id == animation.id);
+
+                                if (lastX != null)
+                                    MenuEffectsManager.inst.ZoomCamera(x);
+
+                                if (isArray && parameters.Count > 3 && parameters[3] != null || parameters["done_func"] != null)
+                                    ParseFunction(isArray ? parameters[3] : parameters["done_func"]);
+                            };
+
+                            return;
                         }
+                    case "RotateCamera": {
+                            JSONNode lastX = null;
+                            float x = 0f;
+                            if (events["x"] != null)
+                            {
+                                List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
+                                for (int i = 0; i < events["x"].Count; i++)
+                                {
+                                    var kf = events["x"][i];
+                                    var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? Camera.main.transform.localEulerAngles.z : 0f);
+                                    x = kf["rel"].AsBool ? x + val : val;
+                                    keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, x, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
 
-                    #endregion
+                                    lastX = kf["val"];
+                                }
+                                animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, MenuEffectsManager.inst.RotateCamera));
+                            }
 
-                    case "CurrentInterfacePath": {
-                            return inst.CurrentInterface.filePath;
+                            animation.onComplete = () =>
+                            {
+                                if (animation.loop)
+                                {
+                                    if (isArray && parameters.Count > 3 && parameters[3] != null || parameters["done_func"] != null)
+                                        ParseFunction(isArray ? parameters[3] : parameters["done_func"]);
+
+                                    return;
+                                }
+
+                                AnimationManager.inst.Remove(animation.id);
+                                thisElement.animations.RemoveAll(x => x.id == animation.id);
+
+                                if (lastX != null)
+                                    MenuEffectsManager.inst.RotateCamera(x);
+
+                                if (isArray && parameters.Count > 3 && parameters[3] != null || parameters["done_func"] != null)
+                                    ParseFunction(isArray ? parameters[3] : parameters["done_func"]);
+                            };
+
+                            return;
+                        }
+                    case "Chroma":
+                    case "Chromatic": {
+                            JSONNode lastX = null;
+                            float x = 0f;
+                            if (events["x"] != null)
+                            {
+                                List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
+                                for (int i = 0; i < events["x"].Count; i++)
+                                {
+                                    var kf = events["x"][i];
+                                    var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? Camera.main.transform.localEulerAngles.z : 0f);
+                                    x = kf["rel"].AsBool ? x + val : val;
+                                    keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, x, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
+
+                                    lastX = kf["val"];
+                                }
+                                animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, MenuEffectsManager.inst.UpdateChroma));
+                            }
+
+                            animation.onComplete = () =>
+                            {
+                                if (animation.loop)
+                                {
+                                    if (isArray && parameters.Count > 3 && parameters[3] != null || parameters["done_func"] != null)
+                                        ParseFunction(isArray ? parameters[3] : parameters["done_func"]);
+
+                                    return;
+                                }
+
+                                AnimationManager.inst.Remove(animation.id);
+                                thisElement.animations.RemoveAll(x => x.id == animation.id);
+
+                                if (lastX != null)
+                                    MenuEffectsManager.inst.UpdateChroma(x);
+
+                                if (isArray && parameters.Count > 3 && parameters[3] != null || parameters["done_func"] != null)
+                                    ParseFunction(isArray ? parameters[3] : parameters["done_func"]);
+                            };
+
+                            return;
+                        }
+                    case "Bloom": {
+                            JSONNode lastX = null;
+                            float x = 0f;
+                            if (events["x"] != null)
+                            {
+                                List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
+                                for (int i = 0; i < events["x"].Count; i++)
+                                {
+                                    var kf = events["x"][i];
+                                    var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? Camera.main.transform.localEulerAngles.z : 0f);
+                                    x = kf["rel"].AsBool ? x + val : val;
+                                    keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, x, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
+
+                                    lastX = kf["val"];
+                                }
+                                animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, MenuEffectsManager.inst.UpdateBloomIntensity));
+                            }
+
+                            JSONNode lastY = null;
+                            float y = 0f;
+                            if (events["y"] != null)
+                            {
+                                List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
+                                for (int i = 0; i < events["y"].Count; i++)
+                                {
+                                    var kf = events["y"][i];
+                                    var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? Camera.main.transform.localEulerAngles.z : 0f);
+                                    y = kf["rel"].AsBool ? y + val : val;
+                                    keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, y, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
+
+                                    lastY = kf["val"];
+                                }
+                                animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, MenuEffectsManager.inst.UpdateBloomDiffusion));
+                            }
+
+                            JSONNode lastZ = null;
+                            float z = 0f;
+                            if (events["z"] != null)
+                            {
+                                List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
+                                for (int i = 0; i < events["z"].Count; i++)
+                                {
+                                    var kf = events["z"][i];
+                                    var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? Camera.main.transform.localEulerAngles.z : 0f);
+                                    z = kf["rel"].AsBool ? z + val : val;
+                                    keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, z, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
+
+                                    lastZ = kf["val"];
+                                }
+                                animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, MenuEffectsManager.inst.UpdateBloomThreshold));
+                            }
+
+                            JSONNode lastX2 = null;
+                            float x2 = 0f;
+                            if (events["x2"] != null)
+                            {
+                                List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
+                                for (int i = 0; i < events["x2"].Count; i++)
+                                {
+                                    var kf = events["x2"][i];
+                                    var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? Camera.main.transform.localEulerAngles.z : 0f);
+                                    x2 = kf["rel"].AsBool ? x2 + val : val;
+                                    keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, x2, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
+
+                                    lastX2 = kf["val"];
+                                }
+                                animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, MenuEffectsManager.inst.UpdateBloomAnamorphicRatio));
+                            }
+
+                            animation.onComplete = () =>
+                            {
+                                if (animation.loop)
+                                {
+                                    if (isArray && parameters.Count > 3 && parameters[3] != null || parameters["done_func"] != null)
+                                        ParseFunction(isArray ? parameters[3] : parameters["done_func"]);
+
+                                    return;
+                                }
+
+                                AnimationManager.inst.Remove(animation.id);
+                                thisElement.animations.RemoveAll(x => x.id == animation.id);
+
+                                if (lastX != null)
+                                    MenuEffectsManager.inst.UpdateBloomIntensity(x);
+                                if (lastY != null)
+                                    MenuEffectsManager.inst.UpdateBloomIntensity(y);
+                                if (lastZ != null)
+                                    MenuEffectsManager.inst.UpdateBloomThreshold(z);
+                                if (lastX2 != null)
+                                    MenuEffectsManager.inst.UpdateBloomAnamorphicRatio(x2);
+
+                                if (isArray && parameters.Count > 3 && parameters[3] != null || parameters["done_func"] != null)
+                                    ParseFunction(isArray ? parameters[3] : parameters["done_func"]);
+                            };
+
+                            return;
+                        }
+                    case "Lens":
+                    case "LensDistort": {
+                            JSONNode lastX = null;
+                            float x = 0f;
+                            if (events["x"] != null)
+                            {
+                                List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
+                                for (int i = 0; i < events["x"].Count; i++)
+                                {
+                                    var kf = events["x"][i];
+                                    var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? Camera.main.transform.localEulerAngles.z : 0f);
+                                    x = kf["rel"].AsBool ? x + val : val;
+                                    keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, x, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
+
+                                    lastX = kf["val"];
+                                }
+                                animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, MenuEffectsManager.inst.UpdateLensDistortIntensity));
+                            }
+
+                            JSONNode lastY = null;
+                            float y = 0f;
+                            if (events["y"] != null)
+                            {
+                                List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
+                                for (int i = 0; i < events["y"].Count; i++)
+                                {
+                                    var kf = events["y"][i];
+                                    var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? Camera.main.transform.localEulerAngles.z : 0f);
+                                    y = kf["rel"].AsBool ? y + val : val;
+                                    keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, y, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
+
+                                    lastY = kf["val"];
+                                }
+                                animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, MenuEffectsManager.inst.UpdateLensDistortCenterX));
+                            }
+
+                            JSONNode lastZ = null;
+                            float z = 0f;
+                            if (events["z"] != null)
+                            {
+                                List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
+                                for (int i = 0; i < events["z"].Count; i++)
+                                {
+                                    var kf = events["z"][i];
+                                    var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? Camera.main.transform.localEulerAngles.z : 0f);
+                                    z = kf["rel"].AsBool ? z + val : val;
+                                    keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, z, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
+
+                                    lastZ = kf["val"];
+                                }
+                                animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, MenuEffectsManager.inst.UpdateLensDistortCenterY));
+                            }
+
+                            JSONNode lastX2 = null;
+                            float x2 = 0f;
+                            if (events["x2"] != null)
+                            {
+                                List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
+                                for (int i = 0; i < events["x2"].Count; i++)
+                                {
+                                    var kf = events["x2"][i];
+                                    var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? Camera.main.transform.localEulerAngles.z : 0f);
+                                    x2 = kf["rel"].AsBool ? x2 + val : val;
+                                    keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, x2, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
+
+                                    lastX2 = kf["val"];
+                                }
+                                animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, MenuEffectsManager.inst.UpdateLensDistortIntensityX));
+                            }
+
+                            JSONNode lastY2 = null;
+                            float y2 = 0f;
+                            if (events["y2"] != null)
+                            {
+                                List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
+                                for (int i = 0; i < events["y2"].Count; i++)
+                                {
+                                    var kf = events["y2"][i];
+                                    var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? Camera.main.transform.localEulerAngles.z : 0f);
+                                    y2 = kf["rel"].AsBool ? y2 + val : val;
+                                    keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, y2, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
+
+                                    lastY2 = kf["val"];
+                                }
+                                animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, MenuEffectsManager.inst.UpdateLensDistortIntensityY));
+                            }
+
+                            JSONNode lastZ2 = null;
+                            float z2 = 0f;
+                            if (events["z2"] != null)
+                            {
+                                List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
+                                for (int i = 0; i < events["z2"].Count; i++)
+                                {
+                                    var kf = events["z2"][i];
+                                    var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? Camera.main.transform.localEulerAngles.z : 0f);
+                                    z2 = kf["rel"].AsBool ? z2 + val : val;
+                                    keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, z2, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
+
+                                    lastZ2 = kf["val"];
+                                }
+                                animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, MenuEffectsManager.inst.UpdateLensDistortScale));
+                            }
+
+                            animation.onComplete = () =>
+                            {
+                                if (animation.loop)
+                                {
+                                    if (isArray && parameters.Count > 3 && parameters[3] != null || parameters["done_func"] != null)
+                                        ParseFunction(isArray ? parameters[3] : parameters["done_func"]);
+
+                                    return;
+                                }
+
+                                AnimationManager.inst.Remove(animation.id);
+                                thisElement.animations.RemoveAll(x => x.id == animation.id);
+
+                                if (lastX != null)
+                                    MenuEffectsManager.inst.UpdateLensDistortIntensity(x);
+                                if (lastY != null)
+                                    MenuEffectsManager.inst.UpdateLensDistortCenterX(y);
+                                if (lastZ != null)
+                                    MenuEffectsManager.inst.UpdateLensDistortCenterY(z);
+                                if (lastX2 != null)
+                                    MenuEffectsManager.inst.UpdateLensDistortIntensityX(x2);
+                                if (lastY2 != null)
+                                    MenuEffectsManager.inst.UpdateLensDistortIntensityY(y2);
+                                if (lastZ2 != null)
+                                    MenuEffectsManager.inst.UpdateLensDistortScale(z2);
+
+                                if (isArray && parameters.Count > 3 && parameters[3] != null || parameters["done_func"] != null)
+                                    ParseFunction(isArray ? parameters[3] : parameters["done_func"]);
+                            };
+
+                            return;
                         }
                 }
 
-                return base.VarFunction(jn, name, parameters, thisElement, customVariables);
+                thisElement.animations.Add(animation);
+                AnimationManager.inst.Play(animation);
             }
+            
+            public void UpdateEvent(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (parameters == null)
+                    return;
+
+                var effect = ParseVarFunction(parameters.Get(0, "effect"), thisElement, customVariables);
+                if (effect == null || !effect.IsString || !MenuEffectsManager.inst || !MenuEffectsManager.inst.functions.TryGetValue(effect, out Action<float> action))
+                    return;
+
+                action?.Invoke(ParseVarFunction(parameters.Get(1, "amount").AsFloat, thisElement, customVariables));
+            }
+            
+            public void SetEvent(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                if (parameters == null)
+                    return;
+
+                var type = parameters.Get(0, "type");
+
+                if (type == null || !type.IsString)
+                    return;
+
+                var values = parameters.Get(1, "values");
+
+                switch (type.Value)
+                {
+                    case "MoveCamera": {
+                            var x = ParseVarFunction(values["x"], thisElement, customVariables);
+                            if (x != null)
+                                MenuEffectsManager.inst.MoveCameraX(x.AsFloat);
+
+                            var y = ParseVarFunction(values["x"], thisElement, customVariables);
+                            if (y != null)
+                                MenuEffectsManager.inst.MoveCameraX(y.AsFloat);
+
+                            return;
+                        }
+                    case "ZoomCamera": {
+                            var amount = ParseVarFunction(values["amount"], thisElement, customVariables);
+                            if (amount != null)
+                                MenuEffectsManager.inst.ZoomCamera(amount.AsFloat);
+
+                            return;
+                        }
+                    case "RotateCamera": {
+                            var amount = ParseVarFunction(values["amount"], thisElement, customVariables);
+                            if (amount != null)
+                                MenuEffectsManager.inst.RotateCamera(amount.AsFloat);
+
+                            return;
+                        }
+                    case "Chroma":
+                    case "Chromatic": {
+                            var intensity = ParseVarFunction(values["intensity"], thisElement, customVariables);
+                            if (intensity != null)
+                                MenuEffectsManager.inst.UpdateChroma(intensity.AsFloat);
+
+                            return;
+                        }
+                    case "Bloom": {
+                            var intensity = ParseVarFunction(values["intensity"], thisElement, customVariables);
+                            if (intensity != null)
+                                MenuEffectsManager.inst.UpdateBloomIntensity(intensity.AsFloat);
+
+                            var diffusion = ParseVarFunction(values["diffusion"], thisElement, customVariables);
+                            if (diffusion != null)
+                                MenuEffectsManager.inst.UpdateBloomDiffusion(diffusion.AsFloat);
+
+                            var threshold = ParseVarFunction(values["threshold"], thisElement, customVariables);
+                            if (threshold != null)
+                                MenuEffectsManager.inst.UpdateBloomThreshold(threshold.AsFloat);
+
+                            var anamorphicRatio = ParseVarFunction(values["anamorphic_ratio"], thisElement, customVariables);
+                            if (anamorphicRatio != null)
+                                MenuEffectsManager.inst.UpdateBloomAnamorphicRatio(anamorphicRatio.AsFloat);
+
+                            var col = ParseVarFunction(values["col"], thisElement, customVariables);
+                            if (col != null)
+                                MenuEffectsManager.inst.UpdateBloomColor(col.IsString ? RTColors.HexToColor(col) : inst.CurrentInterface.Theme.GetFXColor(col.AsInt));
+
+                            return;
+                        }
+                    case "Lens":
+                    case "LensDistort": {
+                            var intensity = ParseVarFunction(values["intensity"], thisElement, customVariables);
+                            if (intensity != null)
+                                MenuEffectsManager.inst.UpdateLensDistortIntensity(intensity.AsFloat);
+
+                            var centerX = ParseVarFunction(values["center_x"], thisElement, customVariables);
+                            if (centerX != null)
+                                MenuEffectsManager.inst.UpdateLensDistortCenterX(centerX.AsFloat);
+
+                            var centerY = ParseVarFunction(values["center_y"], thisElement, customVariables);
+                            if (centerY != null)
+                                MenuEffectsManager.inst.UpdateLensDistortCenterY(centerY.AsFloat);
+
+                            var intensityX = ParseVarFunction(values["intensity_x"], thisElement, customVariables);
+                            if (intensityX != null)
+                                MenuEffectsManager.inst.UpdateLensDistortIntensityX(intensityX.AsFloat);
+
+                            var intensityY = ParseVarFunction(values["intensity_x"], thisElement, customVariables);
+                            if (intensityY != null)
+                                MenuEffectsManager.inst.UpdateLensDistortIntensityY(intensityY.AsFloat);
+
+                            var scale = ParseVarFunction(values["scale"], thisElement, customVariables);
+                            if (scale != null)
+                                MenuEffectsManager.inst.UpdateLensDistortScale(scale.AsFloat);
+
+                            return;
+                        }
+                    case "Vignette": {
+                            var intensity = ParseVarFunction(values["intensity"], thisElement, customVariables);
+                            if (intensity != null)
+                                MenuEffectsManager.inst.UpdateVignetteIntensity(intensity.AsFloat);
+
+                            var centerX = ParseVarFunction(values["center_x"], thisElement, customVariables);
+                            if (centerX != null)
+                                MenuEffectsManager.inst.UpdateVignetteCenterX(centerX.AsFloat);
+
+                            var centerY = ParseVarFunction(values["center_y"], thisElement, customVariables);
+                            if (centerY != null)
+                                MenuEffectsManager.inst.UpdateVignetteCenterY(centerY.AsFloat);
+
+                            var smoothness = ParseVarFunction(values["smoothness"], thisElement, customVariables);
+                            if (smoothness != null)
+                                MenuEffectsManager.inst.UpdateVignetteSmoothness(smoothness.AsFloat);
+
+                            var roundness = ParseVarFunction(values["roundness"], thisElement, customVariables);
+                            if (roundness != null)
+                                MenuEffectsManager.inst.UpdateVignetteRoundness(roundness.AsFloat);
+
+                            var rounded = ParseVarFunction(values["rounded"], thisElement, customVariables);
+                            if (rounded != null)
+                                MenuEffectsManager.inst.UpdateVignetteRounded(rounded.AsBool);
+
+                            var col = ParseVarFunction(values["col"], thisElement, customVariables);
+                            if (col != null)
+                                MenuEffectsManager.inst.UpdateVignetteColor(col.IsString ? RTColors.HexToColor(col) : inst.CurrentInterface.Theme.GetFXColor(col.AsInt));
+
+                            return;
+                        }
+                    case "AnalogGlitch": {
+                            var enabled = ParseVarFunction(values["enabled"], thisElement, customVariables);
+                            if (enabled != null)
+                                MenuEffectsManager.inst.UpdateAnalogGlitchEnabled(enabled.AsBool);
+
+                            var scanLineJitter = ParseVarFunction(values["scan_line_jitter"], thisElement, customVariables);
+                            if (scanLineJitter != null)
+                                MenuEffectsManager.inst.UpdateAnalogGlitchScanLineJitter(scanLineJitter.AsFloat);
+
+                            var verticalJump = ParseVarFunction(values["vertical_jump"], thisElement, customVariables);
+                            if (verticalJump != null)
+                                MenuEffectsManager.inst.UpdateAnalogGlitchVerticalJump(verticalJump.AsFloat);
+
+                            var horizontalShake = ParseVarFunction(values["horizontal_shake"], thisElement, customVariables);
+                            if (horizontalShake != null)
+                                MenuEffectsManager.inst.UpdateAnalogGlitchHorizontalShake(horizontalShake.AsFloat);
+
+                            var colorDrift = ParseVarFunction(values["color_drift"], thisElement, customVariables);
+                            if (colorDrift != null)
+                                MenuEffectsManager.inst.UpdateAnalogGlitchColorDrift(colorDrift.AsFloat);
+
+                            return;
+                        }
+                    case "DigitalGlitch": {
+                            var intensity = ParseVarFunction(values["intensity"], thisElement, customVariables);
+                            if (intensity != null)
+                                MenuEffectsManager.inst.UpdateDigitalGlitch(intensity.AsFloat);
+
+                            return;
+                        }
+                }
+            }
+
+            #endregion
+
+            #endregion
+
+            // Parses a variable from a color source.
+            // Supports both JSON array and JSON object.
+            // 
+            // - JSON Array Structure -
+            // 0 = color source.
+            // 1 = index of the color slot. (optional)
+            // Example:
+            // [
+            //   "obj",
+            //   "2" < returns the object color slot at index 2
+            // ]
+            // 
+            // - JSON Object Structure -
+            // "source"
+            // "index" (optional)
+            // Example:
+            // {
+            //   "source": "bg" < index is optional
+            // }
+            public JSONNode ColorSource(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                var source = ParseVarFunction(parameters.Get(0, "source"), thisElement, customVariables).Value;
+                var index = ParseVarFunction(parameters.Get(1, "index"), thisElement, customVariables);
+                return (source switch
+                {
+                    "gui_accent" => inst.CurrentTheme.guiAccentColor,
+                    "bg" => inst.CurrentTheme.backgroundColor,
+                    "player" => inst.CurrentTheme.playerColors.GetAt(index.AsInt),
+                    "obj" => inst.CurrentTheme.objectColors.GetAt(index.AsInt),
+                    "bgs" => inst.CurrentTheme.backgroundColors.GetAt(index.AsInt),
+                    "fx" => inst.CurrentTheme.effectColors.GetAt(index.AsInt),
+                    _ => inst.CurrentTheme.guiColor,
+                }).ToString();
+            }
+            
+            public JSONNode CurrentInterfacePath(JSONNode parameters, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null) => inst.CurrentInterface.filePath;
         }
     }
 }

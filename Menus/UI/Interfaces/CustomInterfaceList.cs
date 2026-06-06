@@ -408,19 +408,20 @@ namespace BetterLegacy.Menus.UI.Interfaces
             if (!InterfaceManager.inst.MainDirectory.Contains(RTFile.ApplicationDirectory))
                 InterfaceManager.inst.MainDirectory = RTFile.CombinePaths(RTFile.ApplicationDirectory, InterfaceManager.inst.MainDirectory);
 
-            var path = RTFile.CombinePaths(InterfaceManager.inst.MainDirectory, file + FileFormat.LSI.Dot());
+            var path = RTFile.CombinePaths(InterfaceManager.inst.MainDirectory, file);
+            if (!path.EndsWith(FileFormat.LSI.Dot()))
+                path += FileFormat.LSI.Dot();
 
             if (!RTFile.FileExists(path))
             {
-                CoreHelper.LogError($"Interface {jn["file"]} does not exist!");
+                CoreHelper.LogError($"Interface {file} does not exist!");
 
                 return null;
             }
 
-            var menu = CustomInterface.Parse(JSON.Parse(RTFile.ReadFromFile(path)), customVariables);
-            menu.filePath = path;
-
-            return menu;
+            var _interface = CustomInterface.Parse(JSON.Parse(RTFile.ReadFromFile(path)), customVariables);
+            _interface.filePath = path;
+            return _interface;
         }
 
         public override string ToString() => string.IsNullOrEmpty(id) ? name : $"{id} - {name}";

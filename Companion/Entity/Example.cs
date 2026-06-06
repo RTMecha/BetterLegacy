@@ -350,20 +350,7 @@ namespace BetterLegacy.Companion.Entity
 
         public class Functions : JSONFunctionParser<Example>
         {
-            public override bool IfFunction(JSONNode jn, string name, JSONNode parameters, Example thisElement = null, Dictionary<string, JSONNode> customVariables = null)
-            {
-                return base.IfFunction(jn, name, parameters, thisElement, customVariables);
-            }
-
-            public override void Function(JSONNode jn, string name, JSONNode parameters, Example thisElement = null, Dictionary<string, JSONNode> customVariables = null)
-            {
-                base.Function(jn, name, parameters, thisElement, customVariables);
-            }
-
-            public override JSONNode VarFunction(JSONNode jn, string name, JSONNode parameters, Example thisElement = null, Dictionary<string, JSONNode> customVariables = null)
-            {
-                return base.VarFunction(jn, name, parameters, thisElement, customVariables);
-            }
+            public Functions() : base() { }
         }
 
         #endregion

@@ -125,6 +125,11 @@ namespace BetterLegacy.Menus.UI.Interfaces
         public string filePath;
 
         /// <summary>
+        /// The folder location of the interface file.
+        /// </summary>
+        public string FolderPath => !string.IsNullOrEmpty(filePath) ? filePath.EndsWith(FileFormat.LSI.Dot()) ? RTFile.GetDirectory(filePath) : filePath : null;
+
+        /// <summary>
         /// Looping animation to be used for all events.
         /// </summary>
         public RTAnimation loopingEvents;
@@ -358,10 +363,10 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 CoreHelper.Log($"Playing from music clip groups {musicName}");
                 InterfaceManager.inst.PlayMusic(audioClip);
             }
-            else if (RTFile.FileExists(RTFile.CombinePaths(filePath, $"{musicName}{FileFormat.OGG.Dot()}")))
+            else if (RTFile.FileExists(RTFile.CombinePaths(FolderPath, $"{musicName}{FileFormat.OGG.Dot()}")))
             {
                 CoreHelper.Log($"Playing from music ogg file");
-                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip($"file://{RTFile.CombinePaths(filePath, $"{musicName}{FileFormat.OGG.Dot()}")}", AudioType.OGGVORBIS, audioClip =>
+                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip($"file://{RTFile.CombinePaths(FolderPath, $"{musicName}{FileFormat.OGG.Dot()}")}", AudioType.OGGVORBIS, audioClip =>
                 {
                     CoreHelper.Log($"Attempting to play music: {musicName}");
                     music = audioClip;
@@ -889,8 +894,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
             if (menuImage.icon)
                 menuImage.image.sprite = menuImage.icon;
-            else if (RTFile.FileExists(menuImage.iconPath))
-                menuImage.image.sprite = SpriteHelper.LoadSprite(menuImage.iconPath);
+            else if (TryGetFile(menuImage.iconPath, out string iconPath))
+                menuImage.image.sprite = SpriteHelper.LoadSprite(iconPath);
             else if (MenuConfig.Instance.RoundedUI.Value)
                 SpriteHelper.SetRoundedSprite(menuImage.image, menuImage.rounded, menuImage.roundedSide);
 
@@ -956,12 +961,12 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 menuText.iconUI.sprite = menuText.icon;
                 menuText.iconRect.AssignToRectTransform(menuText.iconUI.rectTransform);
             }
-            else if (RTFile.FileExists(menuText.iconPath))
+            else if (TryGetFile(menuText.iconPath, out string iconPath))
             {
                 var icon = Creator.NewUIObject("Icon", menuText.gameObject.transform);
                 icon.layer = 5;
                 menuText.iconUI = icon.AddComponent<Image>();
-                menuText.iconUI.sprite = SpriteHelper.LoadSprite(menuText.iconPath);
+                menuText.iconUI.sprite = SpriteHelper.LoadSprite(iconPath);
                 menuText.iconRect.AssignToRectTransform(menuText.iconUI.rectTransform);
             }
 
@@ -1034,12 +1039,12 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 menuButton.iconUI.sprite = menuButton.icon;
                 menuButton.iconRect.AssignToRectTransform(menuButton.iconUI.rectTransform);
             }
-            else if (RTFile.FileExists(menuButton.iconPath))
+            else if (TryGetFile(menuButton.iconPath, out string iconPath))
             {
                 var icon = Creator.NewUIObject("Icon", menuButton.gameObject.transform);
                 icon.layer = 5;
                 menuButton.iconUI = icon.AddComponent<Image>();
-                menuButton.iconUI.sprite = SpriteHelper.LoadSprite(menuButton.iconPath);
+                menuButton.iconUI.sprite = SpriteHelper.LoadSprite(iconPath);
                 menuButton.iconRect.AssignToRectTransform(menuButton.iconUI.rectTransform);
             }
 
@@ -1058,6 +1063,36 @@ namespace BetterLegacy.Menus.UI.Interfaces
             menuButton.spawnFunc?.Invoke();
 
             menuButton.Spawn();
+        }
+
+        /// <summary>
+        /// Tries to get a file relative to the main interface directory, an asset pack, the interface folder or the full path itself.
+        /// </summary>
+        /// <param name="path">Path to the file.</param>
+        /// <param name="result">Path result.</param>
+        /// <returns>Returns true if the file was found, otherwise returns false.</returns>
+        public bool TryGetFile(string path, out string result)
+        {
+            if (AssetPack.TryGetFile(path, out result))
+                return true;
+            if (RTFile.FileExists(RTFile.CombinePaths(FolderPath, path)))
+            {
+                result = RTFile.CombinePaths(FolderPath, path);
+                return true;
+            }
+            if (RTFile.FileExists(RTFile.CombinePaths(InterfaceManager.inst.MainDirectory, path)))
+            {
+                result = RTFile.CombinePaths(InterfaceManager.inst.MainDirectory, path);
+                return true;
+            }
+            if (RTFile.FileExists(path))
+            {
+                result = path;
+                return true;
+            }
+
+            result = null;
+            return false;
         }
 
         /// <summary>
