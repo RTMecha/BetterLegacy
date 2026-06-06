@@ -56,6 +56,7 @@ namespace BetterLegacy.Menus.UI.Elements
         public float selectedVal;
 
         public bool useOverrideSelectedColor;
+
         public Color overrideSelectedColor;
 
         /// <summary>
@@ -79,7 +80,32 @@ namespace BetterLegacy.Menus.UI.Elements
         public float selectedTextVal;
 
         public bool useOverrideSelectedTextColor;
+
         public Color overrideSelectedTextColor;
+
+        /// <summary>
+        /// Color of the icon when the element is selected.
+        /// </summary>
+        public int selectedIconColor;
+
+        /// <summary>
+        /// Icons' hue color offset when the element is selected.
+        /// </summary>
+        public float selectedIconHue;
+
+        /// <summary>
+        /// Icons' saturation color offset when the element is selected.
+        /// </summary>
+        public float selectedIconSat;
+
+        /// <summary>
+        /// Icons' value color offset when the element is selected.
+        /// </summary>
+        public float selectedIconVal;
+
+        public bool useOverrideSelectedIconColor;
+
+        public Color overrideSelectedIconColor;
 
         /// <summary>
         /// Function JSON to parse when the mouse enters the element.

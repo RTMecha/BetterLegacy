@@ -90,6 +90,41 @@ namespace BetterLegacy.Menus.UI.Elements
         public Color overrideTextColor;
 
         /// <summary>
+        /// If color should be applied to the icon.
+        /// </summary>
+        public bool applyIconColor;
+
+        /// <summary>
+        /// Theme color slot for the icon to use.
+        /// </summary>
+        public int iconColor;
+
+        /// <summary>
+        /// Hue color offset.
+        /// </summary>
+        public float iconHue;
+
+        /// <summary>
+        /// Saturation color offset.
+        /// </summary>
+        public float iconSat;
+
+        /// <summary>
+        /// Value color offset.
+        /// </summary>
+        public float iconVal;
+
+        /// <summary>
+        /// If the current icon color should use <see cref="overrideIconColor"/> instead of a color slot based on <see cref="iconColor"/>.
+        /// </summary>
+        public bool useOverrideIconColor;
+
+        /// <summary>
+        /// Custom color to use.
+        /// </summary>
+        public Color overrideIconColor;
+
+        /// <summary>
         /// The elements' text.
         /// </summary>
         public string text = string.Empty;

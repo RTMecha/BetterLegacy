@@ -1352,6 +1352,18 @@ namespace BetterLegacy.Menus.UI.Interfaces
                             button.textHue,
                             button.textSat,
                             button.textVal);
+                    if (button.applyIconColor && button.iconUI)
+                        button.iconUI.color = isSelected ?
+                            RTColors.ChangeColorHSV(
+                                button.useOverrideSelectedIconColor ? button.overrideSelectedIconColor : Theme.GetObjColor(button.selectedIconColor),
+                                button.selectedIconHue,
+                                button.selectedIconSat,
+                                button.selectedIconVal) :
+                            RTColors.ChangeColorHSV(
+                                button.useOverrideIconColor ? button.overrideIconColor : Theme.GetObjColor(button.iconColor),
+                                button.iconHue,
+                                button.iconSat,
+                                button.iconVal);
                     continue;
                 }
 
@@ -1363,6 +1375,13 @@ namespace BetterLegacy.Menus.UI.Interfaces
                             text.textHue,
                             text.textSat,
                             text.textVal);
+                    if (text.applyIconColor && text.iconUI)
+                        text.iconUI.color =
+                            RTColors.ChangeColorHSV(
+                                text.useOverrideIconColor ? text.overrideIconColor : Theme.GetObjColor(text.iconColor),
+                                text.textHue,
+                                text.textSat,
+                                text.textVal);
                     text.UpdateText();
                 }
 
