@@ -53,7 +53,7 @@ namespace BetterLegacy.Core.Data
             ShapeOption = shapeable.ShapeOption,
             Text = shapeable.Text,
             AutoTextAlign = shapeable.AutoTextAlign,
-            Polygon = shapeable.Polygon,
+            Polygon = shapeable.Polygon?.Copy(),
         };
 
         /// <summary>
@@ -66,7 +66,7 @@ namespace BetterLegacy.Core.Data
             shapeable.ShapeOption = ShapeOption;
             shapeable.Text = Text;
             shapeable.AutoTextAlign = AutoTextAlign;
-            shapeable.Polygon = Polygon;
+            shapeable.Polygon = Polygon?.Copy();
         }
     }
 }
