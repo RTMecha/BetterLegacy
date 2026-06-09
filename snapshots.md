@@ -20,6 +20,7 @@
 ## Fixes
 - Fixed the keyframe selecting keybinds prioritizing the event timeline even if an object is selected.
 - Fixed copied shape data sharing polygon settings.
+- Fixed prefab icon not updating fully when a new icon is captured.
 
 -------------------------------------------------------------------
 
