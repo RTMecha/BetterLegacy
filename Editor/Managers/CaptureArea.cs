@@ -707,7 +707,7 @@ namespace BetterLegacy.Editor.Managers
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         /// <summary>
         /// Sets the capture active.
@@ -734,6 +734,7 @@ namespace BetterLegacy.Editor.Managers
                             break;
 
                         RTPrefabEditor.inst.CurrentPrefabPanel.Item.icon = Capture();
+                        RTPrefabEditor.inst.CurrentPrefabPanel.Item.iconData = SpriteHelper.SpriteToString(RTPrefabEditor.inst.CurrentPrefabPanel.Item.icon);
                         RTPrefabEditor.inst.CurrentPrefabPanel.RenderPrefabType();
                         RTPrefabEditor.inst.UpdatePrefabFile(RTPrefabEditor.inst.CurrentPrefabPanel);
                         RTPrefabEditor.inst.RenderPrefabEditorDialog(RTPrefabEditor.inst.CurrentPrefabPanel);
