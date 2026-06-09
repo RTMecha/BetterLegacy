@@ -64,10 +64,24 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
         /// </summary>
         public Sequence<Color> secondaryColorSequence;
 
+        public Sequence<Vector2> particleVelocitySequence;
+        public Sequence<Vector2> particleSizeSequence;
+        public Sequence<float> particleRotationSequence;
+
         /// <summary>
         /// If the object renders as a gradient.
         /// </summary>
         public bool isGradient;
+
+        /// <summary>
+        /// The visual objects' particle system if it is a particle object.
+        /// </summary>
+        public ParticleSystem particleSystem;
+
+        /// <summary>
+        /// The visual objects' particle system renderer if it is a particle object.
+        /// </summary>
+        public ParticleSystemRenderer particleSystemRenderer;
 
         #endregion
 
@@ -96,6 +110,18 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
             gameObject = null;
             renderer = null;
             collider = null;
+        }
+
+        public virtual void SetupParticles(Mesh particleMesh) { }
+
+        public virtual void InterpolateParticles(float t) { }
+
+        public void SetParticleScale(Vector2 scale)
+        {
+            if (!particleSystem)
+                return;
+            var shape = particleSystem.shape;
+            shape.scale = scale;
         }
 
         #region Origin

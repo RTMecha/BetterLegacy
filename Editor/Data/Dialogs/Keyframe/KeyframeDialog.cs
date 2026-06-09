@@ -87,6 +87,16 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         #endregion
 
+        #region Particle Keyframe Values
+
+        public GameObject ParticleEventValueLabels { get; set; }
+
+        public GameObject ParticleEventValueParent { get; set; }
+
+        public List<InputFieldStorage> ParticleEventValueFields { get; set; }
+
+        #endregion
+
         /// <summary>
         /// The type of the keyframe. (e.g. position, scale, etc)
         /// </summary>
@@ -307,6 +317,33 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                     if (Content.transform.TryFind("r_axis", out Transform rAxisTransform))
                         RandomAxisDropdown = rAxisTransform.GetComponent<Dropdown>();
+                }
+
+                try
+                {
+                    if (content.TryFind("particle_values_label", out Transform particleValuesLabelTransform))
+                    {
+                        ParticleEventValueLabels = particleValuesLabelTransform.gameObject;
+                        for (int i = 0; i < particleValuesLabelTransform.childCount; i++)
+                            EditorThemeManager.ApplyLightText(particleValuesLabelTransform.GetChild(i).GetComponent<Text>());
+                    }
+
+                    if (content.TryFind("particle_values", out Transform particleValuesTransform))
+                    {
+                        ParticleEventValueParent = particleValuesTransform.gameObject;
+                        ParticleEventValueFields = new List<InputFieldStorage>();
+                        for (int i = 0; i < particleValuesTransform.childCount; i++)
+                        {
+                            var eventValueField = particleValuesTransform.GetChild(i).gameObject.GetOrAddComponent<InputFieldStorage>();
+                            eventValueField.Assign(eventValueField.gameObject);
+                            EditorThemeManager.ApplyInputField(eventValueField);
+                            ParticleEventValueFields.Add(eventValueField);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    CoreHelper.LogError($"Failed to set particles: {ex}");
                 }
 
                 var curvesLabel = CurvesLabel.transform.GetChild(0).GetComponent<Text>();

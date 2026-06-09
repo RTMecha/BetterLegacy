@@ -8,51 +8,38 @@
       "name": "Normal",
       "collide_type": 1,
       "render": true,
-      "opacity": 1.0,
-      "editor": {
-        "complexity": 0,
-        "only_this": false
-      }
+      "opacity": 1.0
     },
     {
       "name": "Helper",
       "collide_type": 0,
       "render": true,
-      "opacity": 0.35,
-      "editor": {
-        "complexity": 0,
-        "only_this": false
-      }
+      "opacity": 0.35
     },
     {
       "name": "Decoration",
       "collide_type": 0,
       "render": true,
-      "opacity": 1.0,
-      "editor": {
-        "complexity": 0,
-        "only_this": false
-      }
+      "opacity": 1.0
     },
     {
       "name": "Empty",
       "collide_type": 0,
       "render": false,
-      "opacity": 0.0,
-      "editor": {
-        "complexity": 0,
-        "only_this": false
-      }
+      "opacity": 0.0
     },
     {
       "name": "Solid",
       "collide_type": 2,
       "render": true,
-      "opacity": 1.0,
-      "editor": {
-        "complexity": 2,
-        "only_this": false
-      }
-    }
+      "opacity": 1.0
+    }//,
+    //{
+    //  "name": "Particles",
+    //  "collide_type": 0,
+    //  "special": true,
+    //  "render": true,
+    //  "opacity": 1.0
+    //}
   ]
 }

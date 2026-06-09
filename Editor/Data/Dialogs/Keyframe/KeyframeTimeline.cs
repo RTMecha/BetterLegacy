@@ -1439,6 +1439,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         for (int i = 0; i < 2; i++)
                             KeyframeRandomValueHandler(type, i, selected, firstKF, animatable);
 
+                        dialog.ParticleEventValueLabels.SetActive(beatmapObject && beatmapObject.objectType == BeatmapObject.ObjectType.Particles);
+                        dialog.ParticleEventValueParent.SetActive(beatmapObject && beatmapObject.objectType == BeatmapObject.ObjectType.Particles);
+                        if (beatmapObject)
+                            for (int i = 0; i < dialog.ParticleEventValueFields.Count; i++)
+                                ParticleKeyframeHandler(type, i, selected, firstKF, beatmapObject);
+
                         var flipX = kfdialog.Find("flipx").gameObject;
                         var flipY = kfdialog.Find("flipy").gameObject;
                         var flipZ = kfdialog.Find("flipz").gameObject;
@@ -1474,6 +1480,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         for (int i = 0; i < 2; i++)
                             KeyframeRandomValueHandler(type, i, selected, firstKF, animatable);
 
+                        dialog.ParticleEventValueLabels.SetActive(beatmapObject && beatmapObject.objectType == BeatmapObject.ObjectType.Particles);
+                        dialog.ParticleEventValueParent.SetActive(beatmapObject && beatmapObject.objectType == BeatmapObject.ObjectType.Particles);
+                        if (beatmapObject)
+                            for (int i = 0; i < dialog.ParticleEventValueFields.Count; i++)
+                                ParticleKeyframeHandler(type, i, selected, firstKF, beatmapObject);
+
                         var flipX = kfdialog.Find("flipx").gameObject;
                         var flipY = kfdialog.Find("flipy").gameObject;
                         EditorContextMenu.AddContextMenu(flipX,
@@ -1500,6 +1512,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         KeyframeRandomHandler(type, selected, firstKF, animatable);
                         for (int i = 0; i < 2; i++)
                             KeyframeRandomValueHandler(type, i, selected, firstKF, animatable);
+
+                        dialog.ParticleEventValueLabels.SetActive(beatmapObject && beatmapObject.objectType == BeatmapObject.ObjectType.Particles);
+                        dialog.ParticleEventValueParent.SetActive(beatmapObject && beatmapObject.objectType == BeatmapObject.ObjectType.Particles);
+                        if (beatmapObject)
+                            for (int i = 0; i < dialog.ParticleEventValueFields.Count; i++)
+                                ParticleKeyframeHandler(type, i, selected, firstKF, beatmapObject);
 
                         var flipX = kfdialog.Find("flipx").gameObject;
                         var flipY = kfdialog.Find("flipy").gameObject;
@@ -2763,6 +2781,97 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     animatable.EditorData.miscDisplayValues.Remove(IntToType(type) + "/force_relative");
                     RenderRelative(type, selected, firstKF, animatable, beatmapObject, dialog);
                 }));
+        }
+
+        void ParticleKeyframeHandler(int type, int valueIndex, IEnumerable<TimelineKeyframe> selected, TimelineKeyframe firstKF, BeatmapObject beatmapObject)
+        {
+            var dialog = Dialog.KeyframeDialogs[type];
+            var inputFieldStorage = dialog.ParticleEventValueFields[valueIndex];
+
+            inputFieldStorage.inputField.characterValidation = InputField.CharacterValidation.None;
+            inputFieldStorage.inputField.contentType = InputField.ContentType.Standard;
+            inputFieldStorage.inputField.keyboardType = TouchScreenKeyboardType.Default;
+
+            inputFieldStorage.SetTextWithoutNotify(selected.Count() == 1 ? firstKF.eventKeyframe.GetSecondaryValue(valueIndex).ToString() : type == 2 ? "15" : "1");
+            inputFieldStorage.OnValueChanged.NewListener(_val =>
+            {
+                if (float.TryParse(_val, out float num) && selected.Count() == 1)
+                {
+                    firstKF.eventKeyframe.SetSecondaryValue(valueIndex, num);
+                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                }
+            });
+
+            inputFieldStorage.leftButton.onClick.NewListener(() =>
+            {
+                if (float.TryParse(inputFieldStorage.Text, out float x))
+                {
+                    if (selected.Count() == 1)
+                    {
+                        inputFieldStorage.Text = (x - (type == 2 ? 15f : 1f)).ToString();
+                        return;
+                    }
+
+                    foreach (var keyframe in selected)
+                        keyframe.eventKeyframe.secondaryValues[valueIndex] -= x;
+                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                }
+            });
+            inputFieldStorage.rightButton.onClick.NewListener(() =>
+            {
+                if (float.TryParse(inputFieldStorage.Text, out float x))
+                {
+                    if (selected.Count() == 1)
+                    {
+                        inputFieldStorage.Text = (x + (type == 2 ? 15f : 1f)).ToString();
+                        return;
+                    }
+
+                    foreach (var keyframe in selected)
+                        keyframe.eventKeyframe.secondaryValues[valueIndex] += x;
+                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                }
+            });
+
+            if (type != 2)
+            {
+                TriggerHelper.AddEventTriggers(inputFieldStorage.gameObject,
+                    TriggerHelper.ScrollDelta(inputFieldStorage.inputField, multi: true),
+                    TriggerHelper.ScrollDeltaVector2(dialog.ParticleEventValueFields[0].inputField, dialog.ParticleEventValueFields[1].inputField));
+            }
+            else
+            {
+                TriggerHelper.AddEventTriggers(inputFieldStorage.gameObject,
+                    TriggerHelper.ScrollDelta(inputFieldStorage.inputField, 15f, 3f, multi: true));
+            }
+
+            TriggerHelper.InversableField(inputFieldStorage);
+
+            if (inputFieldStorage.middleButton)
+            {
+                inputFieldStorage.middleButton.gameObject.SetActive(selected.Count() != 1);
+                inputFieldStorage.middleButton.onClick.NewListener(() =>
+                {
+                    if (float.TryParse(inputFieldStorage.Text, out float x))
+                    {
+                        foreach (var keyframe in selected)
+                            keyframe.eventKeyframe.values[valueIndex] = x;
+                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                    }
+                    else
+                    {
+                        var variables = new Dictionary<string, float>
+                        {
+                            { "eventTime", firstKF.eventKeyframe.time },
+                            { "currentValue", firstKF.eventKeyframe.values[valueIndex] }
+                        };
+
+                        if (RTMath.TryParse(inputFieldStorage.Text, firstKF.eventKeyframe.values[valueIndex], variables, out float calc))
+                            foreach (var keyframe in selected)
+                                keyframe.eventKeyframe.values[valueIndex] = calc;
+                    }
+                });
+            }
         }
 
         List<TimelineMarker> timelineMarkers = new List<TimelineMarker>();

@@ -1517,9 +1517,7 @@ namespace BetterLegacy.Editor.Managers
             //    CoreHelper.StringToOptionData("Normal", "Helper", "Decoration", "Empty", "Solid") :
             //    CoreHelper.StringToOptionData("Normal", "Helper", "Decoration", "Empty"); // don't show solid object type 
 
-            Dialog.ObjectTypeDropdown.options = CustomObjectType.objectTypes
-                .Where(x => x.editor && EditorHelper.CheckComplexity(x.editor.complexity, x.editor.onlySpecificComplexity))
-                .Select(x => new Dropdown.OptionData(x.name)).ToList();
+            Dialog.ObjectTypeDropdown.options = new List<Dropdown.OptionData>(CustomObjectType.objectTypes.Select(x => new Dropdown.OptionData(x.name)));
 
             var hideOptions = Dialog.ObjectTypeDropdown.gameObject.GetOrAddComponent<HideDropdownOptions>();
             hideOptions.DisabledOptions = new List<bool>();
@@ -1530,16 +1528,7 @@ namespace BetterLegacy.Editor.Managers
             }
 
             Dialog.ObjectTypeDropdown.SetValueWithoutNotify(Mathf.Clamp((int)beatmapObject.objectType, 0, Dialog.ObjectTypeDropdown.options.Count - 1));
-            Dialog.ObjectTypeDropdown.onValueChanged.NewListener(_val =>
-            {
-                beatmapObject.objectType = (BeatmapObject.ObjectType)_val;
-                RenderGameObjectInspector(beatmapObject);
-                // ObjectType affects both physical object and timeline object.
-                EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
-                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.OBJECT_TYPE);
-
-                RenderDialog(beatmapObject);
-            });
+            Dialog.ObjectTypeDropdown.onValueChanged.NewListener(_val => SetObjectType(beatmapObject, (BeatmapObject.ObjectType)_val));
         }
 
         /// <summary>
@@ -2607,6 +2596,33 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         /// <param name="beatmapObject">The BeatmapObject to set.</param>
         public void RenderPrefabReference(BeatmapObject beatmapObject) => RTEditor.inst.RenderPrefabable(beatmapObject, Dialog);
+
+        #endregion
+
+        #region Editing
+
+        public void SetObjectType(BeatmapObject beatmapObject, BeatmapObject.ObjectType objectType)
+        {
+            var changedToParticles = beatmapObject.objectType != BeatmapObject.ObjectType.Particles && objectType == BeatmapObject.ObjectType.Particles;
+            if (objectType == BeatmapObject.ObjectType.Particles)
+            {
+                if (!beatmapObject.particleSystemData)
+                    beatmapObject.particleSystemData = new ParticleSystemData();
+                for (int type = 0; type < beatmapObject.events.Count; type++)
+                    for (int index = 0; index < beatmapObject.events[type].Count; index++)
+                        beatmapObject.events[type][index].SetSecondaryValues(new float[type == 2 ? 1 : 2]);
+            }
+
+            beatmapObject.objectType = objectType;
+            // ObjectType affects both physical object and timeline object.
+            EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
+            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.OBJECT_TYPE);
+            if (changedToParticles)
+                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+
+            if (Dialog.IsCurrent)
+                RenderDialog(beatmapObject);
+        }
 
         #endregion
 

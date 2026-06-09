@@ -118,6 +118,12 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
         Color primaryColor;
         Color secondaryColor;
 
+        const int PARTICLE_EASE_SAMPLES = 16;
+        const float PARTICLE_LOGICAL_END_BUFFER = 0.02f;
+        const float PARTICLE_SCRUB_MIN_DELTA = 0.016666668f;
+        const float PARTICLE_SCRUB_STEP = 0.06666667f;
+        const float PARTICLE_TIME_SYNC_TOLERANCE = 0.05f;
+
         #endregion
 
         #region Functions
@@ -487,6 +493,152 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
 
             material.SetColor("_OutlineColor", outlineColor);
             material.SetFloat("_OutlineWidth", outlineWidth);
+        }
+
+        #endregion
+
+        #region Particles
+
+        // genuinely hate dealing with particles
+
+        public override void SetupParticles(Mesh particleMesh)
+        {
+            if (!particleSystemDataCache)
+                return;
+
+            particleSystem = gameObject.GetComponent<ParticleSystem>();
+            if (!particleSystem)
+                return;
+
+            particleSystemRenderer = gameObject.GetComponent<ParticleSystemRenderer>();
+
+            var main = particleSystem.main;
+            main.simulationSpace = (particleSystemDataCache.worldSpace ? ParticleSystemSimulationSpace.World : ParticleSystemSimulationSpace.Local);
+            main.playOnAwake = false;
+
+            var shape = particleSystem.shape;
+            if (particleSystemDataCache.emitterShapeType == ParticleSystemData.EmitterShapeType.Circle)
+            {
+                shape.shapeType = ParticleSystemShapeType.Circle;
+                float num = Mathf.Clamp(particleSystemDataCache.emitterArc, 0f, 360f);
+                shape.arc = num;
+                if (Mathf.Approximately(num, 0f) || Mathf.Approximately(num, 360f))
+                {
+                    float num2 = (Mathf.Approximately(num, 0f) ? 0.0001f : 359.9999f);
+                    shape.arc = num2;
+                    shape.arc = num;
+                }
+                shape.radiusThickness = Mathf.Clamp01(particleSystemDataCache.emitterRadius);
+            }
+            else
+                shape.shapeType = ParticleSystemShapeType.Box;
+            if (particleSystemRenderer)
+            {
+                particleSystemRenderer.renderMode = particleMesh != null ? ParticleSystemRenderMode.Mesh : ParticleSystemRenderMode.Billboard;
+                particleSystemRenderer.mesh = particleMesh;
+
+                particleSystemRenderer.alignment = particleSystemDataCache.worldSpace ? ParticleSystemRenderSpace.World : ParticleSystemRenderSpace.Local;
+                main.scalingMode = particleSystemDataCache.worldSpace ? ParticleSystemScalingMode.Local : ParticleSystemScalingMode.Hierarchy;
+            }
+            main.startSpeed = particleSystemDataCache.startSpeed;
+            var emission = particleSystem.emission;
+            emission.rateOverTime = new ParticleSystem.MinMaxCurve(particleSystemDataCache.spawnRatePerSecond);
+            emission.rateOverDistance = new ParticleSystem.MinMaxCurve(particleSystemDataCache.spawnRatePerUnit);
+            emission.SetBursts(System.Array.Empty<ParticleSystem.Burst>());
+
+            var velocityOverLifetime = particleSystem.velocityOverLifetime;
+            velocityOverLifetime.enabled = true;
+            velocityOverLifetime.space = ParticleSystemSimulationSpace.Local;
+            velocityOverLifetime.x = new ParticleSystem.MinMaxCurve(0f);
+            velocityOverLifetime.y = new ParticleSystem.MinMaxCurve(0f);
+            velocityOverLifetime.z = new ParticleSystem.MinMaxCurve(0f);
+            velocityOverLifetime.xMultiplier = 1f;
+            velocityOverLifetime.yMultiplier = 1f;
+            velocityOverLifetime.zMultiplier = 0f;
+            var sizeOverLifetime = particleSystem.sizeOverLifetime;
+            sizeOverLifetime.enabled = true;
+            sizeOverLifetime.separateAxes = true;
+            sizeOverLifetime.x = new ParticleSystem.MinMaxCurve(0f);
+            sizeOverLifetime.y = new ParticleSystem.MinMaxCurve(0f);
+            sizeOverLifetime.z = new ParticleSystem.MinMaxCurve(0f);
+            sizeOverLifetime.xMultiplier = 1f;
+            sizeOverLifetime.yMultiplier = 1f;
+            sizeOverLifetime.zMultiplier = 1f;
+            var rotationOverLifetime = particleSystem.rotationOverLifetime;
+            rotationOverLifetime.enabled = true;
+            rotationOverLifetime.separateAxes = true;
+            rotationOverLifetime.x = new ParticleSystem.MinMaxCurve(0f);
+            rotationOverLifetime.y = new ParticleSystem.MinMaxCurve(0f);
+            rotationOverLifetime.z = new ParticleSystem.MinMaxCurve(0f);
+            rotationOverLifetime.xMultiplier = 0f;
+            rotationOverLifetime.yMultiplier = 0f;
+            rotationOverLifetime.zMultiplier = 1f;
+        }
+
+        public override void InterpolateParticles(float t)
+        {
+            if (!particleSystemDataCache || !particleSystem)
+                return;
+
+            var isPlaying = AudioManager.inst.CurrentAudioSource.isPlaying;
+            var pitch = AudioManager.inst.CurrentAudioSource.pitch;
+            var main = particleSystem.main;
+            var resync = RTMath.Distance(particleSystem.time, t) > PARTICLE_TIME_SYNC_TOLERANCE;
+            if (resync)
+            {
+                main.simulationSpeed = 1f;
+                if (t > PARTICLE_SCRUB_STEP)
+                {
+                    particleSystem.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+                    InterpolateParticlesValues(0f);
+                    var calc = 0f;
+                    var start = true;
+                    while (calc < t)
+                    {
+                        var particleTime = Mathf.Min(PARTICLE_SCRUB_STEP, t - calc);
+                        calc += particleTime;
+                        InterpolateParticlesValues(particleTime);
+                        particleSystem.Simulate(particleTime, true, start);
+                        start = false;
+                    }
+                }
+                else
+                {
+                    particleSystem.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+                    particleSystem.Simulate(t, true, true, true);
+                }
+            }
+            else
+                InterpolateParticlesValues(t);
+            main.simulationSpeed = Mathf.Max(0f, pitch);
+            if (isPlaying)
+            {
+                if (!particleSystem.isPlaying || resync)
+                {
+                    particleSystem.Play(true);
+                    return;
+                }
+            }
+            else
+                particleSystem.Pause(true);
+        }
+
+        public void InterpolateParticlesValues(float t)
+        {
+            if (!particleSystemDataCache || !particleSystem)
+                return;
+
+            var velocityOverLifetime = particleSystem.velocityOverLifetime;
+            var velocity = particleVelocitySequence.Interpolate(t);
+            velocityOverLifetime.x = velocity.x;
+            velocityOverLifetime.y = velocity.y;
+            var sizeOverLifetime = particleSystem.sizeOverLifetime;
+            var size = particleSizeSequence.Interpolate(t);
+            sizeOverLifetime.x = size.x;
+            sizeOverLifetime.y = size.y;
+            var rotationOverLifetime = particleSystem.rotationOverLifetime;
+            var rotation = particleRotationSequence.Interpolate(t);
+            rotationOverLifetime.z = rotation;
         }
 
         #endregion

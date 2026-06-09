@@ -14,6 +14,11 @@ namespace BetterLegacy.Core.Prefabs
 
             NumberInputField = new GameObject("Input Field");
             NumberInputField.transform.SetParent(PrefabParent);
+
+            Particles = Creator.NewGameObject("Particles", PrefabParent);
+            var visualObject = Creator.NewGameObject("visual", Particles.transform);
+            var particleSystem = visualObject.AddComponent<ParticleSystem>();
+            var particleSystemRenderer = visualObject.GetComponent<ParticleSystemRenderer>();
         }
 
         public static void Init() => Instance = new CorePrefabHolder();
@@ -21,5 +26,7 @@ namespace BetterLegacy.Core.Prefabs
         public Transform PrefabParent { get; set; }
 
         public GameObject NumberInputField { get; set; }
+
+        public GameObject Particles { get; set; }
     }
 }

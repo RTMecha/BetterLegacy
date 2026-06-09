@@ -231,7 +231,16 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public float Length => events.Max(x => x.Max(x => x.time));
 
-        public float SpawnDuration => GetObjectLifeLength(0.0f, true);
+        public float SpawnDuration
+        {
+            get
+            {
+                var length = GetObjectLifeLength(0.0f, true);
+                if (objectType == ObjectType.Particles && particleSystemData && particleSystemData.autoKillType == AutoKillType.NoAutokill)
+                    length += 0.02f;
+                return length;
+            }
+        }
 
         #endregion
 
@@ -746,18 +755,25 @@ namespace BetterLegacy.Core.Data.Beatmap
                         // camera parent in alpha is above all other objects for some reason
                         isCameraParented ? -10f : 0f);
 
-                    if (i == 0 && kfjn["ev"].Count > 2)
+                    if (kfjn["ev"].Count > 2)
                     {
-                        particleSystemData = new ParticleSystemData();
-                        particleSystemData.spawnRatePerSecond = kfjn["ev"][4].AsFloat;
-                        particleSystemData.spawnRatePerUnit = kfjn["ev"][5].AsFloat;
-                        particleSystemData.worldSpace = kfjn["ev"][6].AsFloat > 0.5f;
-                        particleSystemData.autoKillOffset = 0f;
-                        particleSystemData.autoKillType = kfjn["ev"][7].AsFloat > 0.5f ? AutoKillType.LastKeyframe : AutoKillType.NoAutokill;
-                        particleSystemData.emitterShapeType = kfjn["ev"][8].AsFloat != 1 ? ParticleSystemData.EmitterShapeType.Rectangle : ParticleSystemData.EmitterShapeType.Circle;
-                        particleSystemData.emitterArc = kfjn["ev"][9].AsFloat;
-                        particleSystemData.emitterRadius = kfjn["ev"][10].AsFloat;
-                        particleSystemData.startSpeed = kfjn["ev"][11].AsFloat;
+                        eventKeyframe.SetSecondaryValues(
+                            kfjn["ev"][2].AsFloat,
+                            kfjn["ev"][3].AsFloat);
+
+                        if (i == 0)
+                        {
+                            particleSystemData = new ParticleSystemData();
+                            particleSystemData.spawnRatePerSecond = kfjn["ev"][4].AsFloat;
+                            particleSystemData.spawnRatePerUnit = kfjn["ev"][5].AsFloat;
+                            particleSystemData.worldSpace = kfjn["ev"][6].AsFloat > 0.5f;
+                            particleSystemData.autoKillOffset = 0f;
+                            particleSystemData.autoKillType = kfjn["ev"][7].AsFloat > 0.5f ? AutoKillType.LastKeyframe : AutoKillType.NoAutokill;
+                            particleSystemData.emitterShapeType = kfjn["ev"][8].AsFloat != 1 ? ParticleSystemData.EmitterShapeType.Rectangle : ParticleSystemData.EmitterShapeType.Circle;
+                            particleSystemData.emitterArc = kfjn["ev"][9].AsFloat;
+                            particleSystemData.emitterRadius = kfjn["ev"][10].AsFloat;
+                            particleSystemData.startSpeed = kfjn["ev"][11].AsFloat;
+                        }
                     }
 
                     eventKeyframe.random = kfjn["r"].AsInt;
@@ -801,6 +817,13 @@ namespace BetterLegacy.Core.Data.Beatmap
                         kfjn["er"][1].AsFloat,
                         kfjn["er"][2].AsFloat);
 
+                    if (kfjn["ev"].Count > 2)
+                    {
+                        eventKeyframe.SetSecondaryValues(
+                            kfjn["ev"][2].AsFloat,
+                            kfjn["ev"][3].AsFloat);
+                    }
+
                     eventKeyframe.relative = false;
                     events[1].Add(eventKeyframe);
                     prevEventKeyframe = eventKeyframe;
@@ -833,6 +856,12 @@ namespace BetterLegacy.Core.Data.Beatmap
                         kfjn["er"][0].AsFloat,
                         kfjn["er"][1].AsFloat,
                         kfjn["er"][2].AsFloat);
+
+                    if (kfjn["ev"].Count > 2)
+                    {
+                        eventKeyframe.SetSecondaryValues(
+                            kfjn["ev"][2].AsFloat);
+                    }
 
                     eventKeyframe.relative = true;
                     if (version >= new Version(ProjectArrhythmia.Versions.FIXED_ROTATION_SHAKE) && kfjn["ev"].Count > 1 && !kfjn["ev"][1].IsNull && kfjn["ev"][1].AsFloat == 1)
@@ -1073,6 +1102,8 @@ namespace BetterLegacy.Core.Data.Beatmap
                     // rx2 = random axis
                     eventKeyframe.SetRandomValues(kfjn["rx"].AsFloat, kfjn["ry"].AsFloat, kfjn["rz"].AsFloat, kfjn["rx2"].AsFloat);
 
+                    eventKeyframe.SetSecondaryValues(kfjn["sx"].AsFloat, kfjn["sy"].AsFloat);
+
                     eventKeyframe.relative = kfjn["rel"].AsBool;
                     eventKeyframe.flee = kfjn["flee"].AsBool;
                     eventKeyframe.homingPriority = (HomingPriority)kfjn["hop"].AsInt;
@@ -1111,6 +1142,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
                     eventKeyframe.random = kfjn["r"].AsInt;
                     eventKeyframe.SetRandomValues(kfjn["rx"].AsFloat, kfjn["ry"].AsFloat, kfjn["rz"].AsFloat);
+
+                    eventKeyframe.SetSecondaryValues(kfjn["sx"].AsFloat, kfjn["sy"].AsFloat);
 
                     eventKeyframe.relative = kfjn["rel"].AsBool;
                     eventKeyframe.locked = kfjn["l"].AsBool;
@@ -1151,6 +1184,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
                     eventKeyframe.random = kfjn["r"].AsInt;
                     eventKeyframe.SetRandomValues(kfjn["rx"].AsFloat, kfjn["ry"].AsFloat, kfjn["rz"].AsFloat);
+
+                    eventKeyframe.SetSecondaryValues(kfjn["sx"].AsFloat);
 
                     eventKeyframe.relative = kfjn["rel"] == null || kfjn["rel"].AsBool;
                     eventKeyframe.flee = kfjn["flee"].AsBool;
@@ -1530,7 +1565,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             this.WriteShapeJSON(jn);
 
-            if (particleSystemData)
+            if (particleSystemData && objectType == ObjectType.Particles)
                 jn["prtcl"] = particleSystemData.ToJSON();
 
             if (origin.x != 0f || origin.y != 0f)
@@ -1540,11 +1575,11 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["ed"] = editorData.ToJSON();
 
             for (int i = 0; i < events[0].Count; i++)
-                jn["events"]["pos"][i] = events[0][i].ToJSON();
+                jn["events"]["pos"][i] = events[0][i].ToJSON(saveSecondaryValues: objectType == ObjectType.Particles);
             for (int i = 0; i < events[1].Count; i++)
-                jn["events"]["sca"][i] = events[1][i].ToJSON();
+                jn["events"]["sca"][i] = events[1][i].ToJSON(saveSecondaryValues: objectType == ObjectType.Particles);
             for (int i = 0; i < events[2].Count; i++)
-                jn["events"]["rot"][i] = events[2][i].ToJSON(true);
+                jn["events"]["rot"][i] = events[2][i].ToJSON(true, saveSecondaryValues: objectType == ObjectType.Particles);
             for (int i = 0; i < events[3].Count; i++)
                 jn["events"]["col"][i] = events[3][i].ToJSON(maxValuesToSave: gradientType != GradientType.Normal ? -1 : 5);
 

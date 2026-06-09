@@ -114,7 +114,7 @@ namespace BetterLegacy.Core.Runtime.Objects
             var shapeOption = Mathf.Clamp(beatmapObject.ShapeOption, 0, ObjectManager.inst.objectPrefabs[shape].options.Count - 1);
             var shapeType = (ShapeType)shape;
 
-            GameObject baseObject = UnityObject.Instantiate(ObjectManager.inst.objectPrefabs[shape].options[shapeOption], parent ? parent.transform : runtimeLevel.SpawnParent);
+            GameObject baseObject = UnityObject.Instantiate(beatmapObject.objectType == ObjectType.Particles ? Prefabs.CorePrefabHolder.Instance.Particles : ObjectManager.inst.objectPrefabs[shape].options[shapeOption], parent ? parent.transform : runtimeLevel.SpawnParent);
             
             baseObject.transform.localScale = Vector3.one;
 
@@ -169,6 +169,14 @@ namespace BetterLegacy.Core.Runtime.Objects
 
             visual.colorSequence = beatmapObject.cachedSequences.ColorSequence;
             visual.secondaryColorSequence = beatmapObject.cachedSequences.SecondaryColorSequence;
+            visual.particleVelocitySequence = beatmapObject.cachedSequences.ParticlesVelocitySequence;
+            visual.particleSizeSequence = beatmapObject.cachedSequences.ParticlesSizeSequence;
+            visual.particleRotationSequence = beatmapObject.cachedSequences.ParticlesRotationSequence;
+
+            if (beatmapObject.objectType == ObjectType.Particles)
+            {
+                visual.SetupParticles(ShapeManager.inst.GetShape(beatmapObject.Shape, beatmapObject.ShapeOption)?.mesh);
+            }
 
             var runtimeObject = new RTBeatmapObject(beatmapObject, parentObjects, visual, runtimeLevel);
 
@@ -698,6 +706,13 @@ namespace BetterLegacy.Core.Runtime.Objects
                 collection.ColorSequence = null;
                 collection.SecondaryColorSequence = null;
             }
+
+            if (beatmapObject.objectType != ObjectType.Particles)
+                return;
+
+            collection.ParticlesVelocitySequence = new Sequence<Vector2>(GetParticleVector2Keyframes(beatmapObject.events[0], Vector2.zero, new Vector2Keyframe(0f, Vector2.zero, Ease.Linear)));
+            collection.ParticlesSizeSequence = new Sequence<Vector2>(GetParticleVector2Keyframes(beatmapObject.events[1], Vector2.one, new Vector2Keyframe(0f, Vector2.one, Ease.Linear)));
+            collection.ParticlesRotationSequence = new Sequence<float>(GetParticleFloatKeyframes(beatmapObject.events[2], 0f, new FloatKeyframe(0f, 0f, Ease.Linear)));
         }
 
         public static Sequence<Vector3> GetVector3Sequence(PAObjectBase obj, List<EventKeyframe> eventKeyframes, Vector3Keyframe defaultKeyframe) => new Sequence<Vector3>(GetVector3Keyframes(obj, eventKeyframes, defaultKeyframe));
@@ -766,6 +781,58 @@ namespace BetterLegacy.Core.Runtime.Objects
                     continue;
 
                 keyframes.Add(new Vector2Keyframe(eventKeyframe.time, currentValue, Ease.GetEaseFunction(eventKeyframe.curve.ToString())));
+                num++;
+            }
+
+            // If there is no keyframe, add default
+            if (keyframes.IsEmpty())
+                keyframes.Add(defaultKeyframe);
+
+            return keyframes;
+        }
+
+        public static List<IKeyframe<Vector2>> GetParticleVector2Keyframes(List<EventKeyframe> eventKeyframes, Vector2 defaultValue, Vector2Keyframe defaultKeyframe)
+        {
+            List<IKeyframe<Vector2>> keyframes = new List<IKeyframe<Vector2>>(eventKeyframes.Count);
+
+            var currentValue = Vector2.zero;
+            int num = 0;
+            foreach (var eventKeyframe in eventKeyframes)
+            {
+                var value = new Vector2(eventKeyframe.GetSecondaryValue(0, defaultValue.x), eventKeyframe.GetSecondaryValue(1, defaultValue.y));
+
+                currentValue = eventKeyframe.relative ? currentValue + value : value;
+
+                if (keyframes.Has(x => x.Time == eventKeyframe.time))
+                    continue;
+
+                keyframes.Add(new Vector2Keyframe(eventKeyframe.time, currentValue, Ease.GetEaseFunction(eventKeyframe.curve.ToString())));
+                num++;
+            }
+
+            // If there is no keyframe, add default
+            if (keyframes.IsEmpty())
+                keyframes.Add(defaultKeyframe);
+
+            return keyframes;
+        }
+
+        public static List<IKeyframe<float>> GetParticleFloatKeyframes(List<EventKeyframe> eventKeyframes, float defaultValue, FloatKeyframe defaultKeyframe)
+        {
+            List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>(eventKeyframes.Count);
+
+            var currentValue = 0f;
+            int num = 0;
+            foreach (var eventKeyframe in eventKeyframes)
+            {
+                var value = eventKeyframe.GetSecondaryValue(0, defaultValue);
+
+                currentValue = eventKeyframe.relative ? currentValue + value : value;
+
+                if (keyframes.Has(x => x.Time == eventKeyframe.time))
+                    continue;
+
+                keyframes.Add(new FloatKeyframe(eventKeyframe.time, currentValue, Ease.GetEaseFunction(eventKeyframe.curve.ToString())));
                 num++;
             }
 

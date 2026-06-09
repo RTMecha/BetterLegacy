@@ -1089,6 +1089,38 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     EditorThemeManager.ApplyGraphic(paste.GetComponent<Image>(), ThemeGroup.Paste, true);
                     EditorThemeManager.ApplyGraphic(pasteText, ThemeGroup.Paste_Text);
                     EditorHelper.SetComplexity(paste, "keyframe/edit_paste", Complexity.Normal);
+
+                    if (i == 3)
+                        continue;
+
+                    // Particle Values
+                    var label = i switch
+                    {
+                        1 => "Size",
+                        2 => "Rotation",
+                        _ => "Velocity",
+                    };
+                    var labels = i == 2 ? new LabelsElement("Rotation") :  new LabelsElement(label + " X", label + " Y");
+                    labels.Init(EditorElement.InitSettings.Default.Parent(parent).Name("particle_values_label"));
+                    labels.GameObject.SetActive(false);
+                    var values = parent.Find(i switch
+                    {
+                        1 => "scale",
+                        2 => "rotation",
+                        _ => "position",
+                    }).gameObject.Duplicate(parent, "particle_values");
+                    CoreHelper.DestroyChildren(values.transform);
+                    if (values.TryGetComponent(out GridLayoutGroup particleValuesGLG))
+                        particleValuesGLG.cellSize = new Vector2(180f, 40f);
+                    for (int j = 0; j < (i == 2 ? 1 : 2); j++)
+                    {
+                        var particleValueObject = EditorPrefabHolder.Instance.NumberInputField.Duplicate(values.transform, j == 0 ? "x" : "y");
+                        var particleValueField = particleValueObject.GetComponent<InputFieldStorage>();
+                        CoreHelper.Delete(particleValueField.leftGreaterButton);
+                        CoreHelper.Delete(particleValueField.rightGreaterButton);
+                        EditorThemeManager.ApplyInputField(particleValueField);
+                    }
+                    values.SetActive(false);
                 }
             }
 

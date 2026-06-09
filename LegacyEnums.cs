@@ -1312,9 +1312,9 @@ namespace BetterLegacy
                     index = i,
                     name = jnType["name"],
                     colliderType = (ColliderType)jnType["collide_type"].AsInt,
+                    special = jnType["special"].AsBool,
                     render = jnType["render"].AsBool,
                     opacity = jnType["opacity"].AsFloat,
-                    editor = new Editor((Complexity)jnType["editor"]["complexity"].AsInt, jnType["editor"]["only_this"].AsBool)
                 });
             }
         }
@@ -1331,10 +1331,9 @@ namespace BetterLegacy
             Damage,
             Solid,
         }
+        public bool special;
         public bool render;
         public float opacity;
-
-        public Editor editor;
 
         public static CustomObjectType GetNormal() => objectTypes.Find(x => x.colliderType == ColliderType.Damage && x.opacity == 1.0f);
 

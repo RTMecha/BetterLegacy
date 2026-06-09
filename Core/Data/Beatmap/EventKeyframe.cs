@@ -116,6 +116,28 @@ namespace BetterLegacy.Core.Data.Beatmap
             "ry5",
             "rz5",
         };
+        
+        /// <summary>
+        /// JSON secondary value names.
+        /// </summary>
+        public static readonly string[] saxis = new string[]
+        {
+            "sx",
+            "sy",
+            "sz",
+            "sx2",
+            "sy2",
+            "sz2",
+            "sx3",
+            "sy3",
+            "sz3",
+            "sx4",
+            "sy4",
+            "sz4",
+            "sx5",
+            "sy5",
+            "sz5",
+        };
 
         #endregion
 
@@ -133,6 +155,11 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// Keyframe string values, used for cases where strings are needed.
         /// </summary>
         public string[] stringValues;
+
+        /// <summary>
+        /// Secondary keyframe values.
+        /// </summary>
+        public float[] secondaryValues;
 
         /// <summary>
         /// Keyframe random type.
@@ -200,10 +227,6 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Functions
 
-        /// <summary>
-        /// Copies data from another EventKeyframe.
-        /// </summary>
-        /// <param name="orig">Original object to copy data from.</param>
         public override void CopyData(EventKeyframe orig, bool newID = true)
         {
             id = newID ? LSText.randomNumString(8) : orig.id;
@@ -214,6 +237,8 @@ namespace BetterLegacy.Core.Data.Beatmap
             random = orig.random;
             if (orig.stringValues != null)
                 stringValues = orig.stringValues.Copy();
+            if (orig.secondaryValues != null)
+                secondaryValues = orig.secondaryValues.Copy();
             flee = orig.flee;
             relative = orig.relative;
             locked = orig.locked;
@@ -251,6 +276,13 @@ namespace BetterLegacy.Core.Data.Beatmap
                 eventRandomValues.RemoveAt(eventRandomValues.Count - 1);
 
             eventKeyframe.SetRandomValues(eventRandomValues.ToArray());
+            
+            var secondaryValues = new List<float>();
+            for (int i = 0; i < raxis.Length; i++)
+                if (jn[saxis[i]] != null)
+                    secondaryValues.Add(jn[saxis[i]].AsFloat);
+
+            eventKeyframe.SetSecondaryValues(secondaryValues.IsEmpty() ? null : secondaryValues.ToArray());
 
             if (jn["str"] != null)
             {
@@ -269,7 +301,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             return eventKeyframe;
         }
 
-        public JSONNode ToJSON(bool defaultRelative = false, int maxValuesToSave = -1)
+        public JSONNode ToJSON(bool defaultRelative = false, int maxValuesToSave = -1, bool saveSecondaryValues = true)
         {
             JSONNode jn = Parser.NewJSONObject();
             jn["t"] = time;
@@ -293,10 +325,12 @@ namespace BetterLegacy.Core.Data.Beatmap
             }
 
             if (stringValues != null)
-            {
                 for (int i = 0; i < stringValues.Length; i++)
                     jn["str"][i] = stringValues[i];
-            }
+
+            if (secondaryValues != null && saveSecondaryValues)
+                for (int i = 0; i < secondaryValues.Length; i++)
+                    jn[saxis[i]] = secondaryValues[i];
 
             if (relative != defaultRelative)
                 jn["rel"] = relative;
@@ -369,6 +403,20 @@ namespace BetterLegacy.Core.Data.Beatmap
         }
 
         /// <summary>
+        /// Sets the <see cref="secondaryValues"/> array.
+        /// </summary>
+        /// <param name="secondaryValues">Values to set.</param>
+        public void SetSecondaryValues(params float[] secondaryValues)
+        {
+            if (secondaryValues == null)
+                return;
+
+            this.secondaryValues = new float[secondaryValues.Length];
+            for (int i = 0; i < secondaryValues.Length; i++)
+                this.secondaryValues[i] = secondaryValues[i];
+        }
+
+        /// <summary>
         /// Sets a value at an index.
         /// </summary>
         /// <param name="index">Index of the value to set.</param>
@@ -412,6 +460,17 @@ namespace BetterLegacy.Core.Data.Beatmap
         }
 
         /// <summary>
+        /// Sets a secondary value at an index.
+        /// </summary>
+        /// <param name="index">Index of the value to set.</param>
+        /// <param name="value">Value to set.</param>
+        public void SetSecondaryValue(int index, float value)
+        {
+            if (secondaryValues != null && secondaryValues.InRange(index))
+                secondaryValues[index] = value;
+        }
+
+        /// <summary>
         /// Gets a value at an index.
         /// </summary>
         /// <param name="index">Index of the value to get.</param>
@@ -434,6 +493,14 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <param name="defaultValue">Default value to return if the index is out of the range of the array.</param>
         /// <returns>Returns the specified entry in <see cref="stringValues"/> if <paramref name="index"/> is in the range of the array, otherwise returns <paramref name="defaultValue"/>.</returns>
         public string GetStringValue(int index, string defaultValue = null) => stringValues != null && stringValues.TryGetAt(index, out string result) ? result : defaultValue;
+
+        /// <summary>
+        /// Gets a secondary value at an index.
+        /// </summary>
+        /// <param name="index">Index of the value to get.</param>
+        /// <param name="defaultValue">Default value to return if the index is out of the range of the array.</param>
+        /// <returns>Returns the specified entry in <see cref="secondaryValues"/> if <paramref name="index"/> is in the range of the array, otherwise returns <paramref name="defaultValue"/>.</returns>
+        public float GetSecondaryValue(int index, float defaultValue = 0f) => secondaryValues == null ? defaultValue : secondaryValues.TryGetAt(index, out float result) ? result : defaultValue;
 
         /// <summary>
         /// Checks if the keyframe is a homing keyframe.

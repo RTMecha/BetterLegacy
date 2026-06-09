@@ -299,6 +299,9 @@ namespace BetterLegacy.Core.Runtime
             {
                 runtimeObject.visualObject.colorSequence = collection.ColorSequence;
                 runtimeObject.visualObject.secondaryColorSequence = collection.SecondaryColorSequence;
+                runtimeObject.visualObject.particleVelocitySequence = collection.ParticlesVelocitySequence;
+                runtimeObject.visualObject.particleSizeSequence = collection.ParticlesSizeSequence;
+                runtimeObject.visualObject.particleRotationSequence = collection.ParticlesRotationSequence;
             }
 
             if (updateParents)
@@ -901,7 +904,7 @@ namespace BetterLegacy.Core.Runtime
             var shapeOption = Mathf.Clamp(beatmapObject.ShapeOption, 0, ObjectManager.inst.objectPrefabs[shape].options.Count - 1);
             var shapeType = (ShapeType)shape;
 
-            GameObject baseObject = UnityObject.Instantiate(ObjectManager.inst.objectPrefabs[shape].options[shapeOption], parent ? parent.transform : SpawnParent);
+            GameObject baseObject = UnityObject.Instantiate(beatmapObject.objectType == BeatmapObject.ObjectType.Particles ? Prefabs.CorePrefabHolder.Instance.Particles : ObjectManager.inst.objectPrefabs[shape].options[shapeOption], parent ? parent.transform : SpawnParent);
 
             baseObject.transform.localScale = Vector3.one;
 
@@ -948,6 +951,14 @@ namespace BetterLegacy.Core.Runtime
 
             visual.colorSequence = beatmapObject.cachedSequences.ColorSequence;
             visual.secondaryColorSequence = beatmapObject.cachedSequences.SecondaryColorSequence;
+            visual.particleVelocitySequence = beatmapObject.cachedSequences.ParticlesVelocitySequence;
+            visual.particleSizeSequence = beatmapObject.cachedSequences.ParticlesSizeSequence;
+            visual.particleRotationSequence = beatmapObject.cachedSequences.ParticlesRotationSequence;
+
+            if (beatmapObject.objectType == BeatmapObject.ObjectType.Particles)
+            {
+                visual.SetupParticles(ShapeManager.inst.GetShape(beatmapObject.Shape, beatmapObject.ShapeOption)?.mesh);
+            }
 
             runtimeObject.visualObject = visual;
 
