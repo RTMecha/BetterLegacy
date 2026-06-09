@@ -116,7 +116,7 @@ namespace BetterLegacy.Core.Helpers
         /// <param name="polygonCollider">Polygon Collider to draw collider path to.</param>
         /// <param name="radius">Size of the polygon.</param>
         /// <param name="cornerCount">Amount of corners the polygon has.</param>
-        public static void FilledMesh(MeshFilter meshFilter, PolygonCollider2D polygonCollider, float radius, int cornerCount, float rotation = 0f, float alternate = 1f)
+        public static Mesh FilledMesh(MeshFilter meshFilter, PolygonCollider2D polygonCollider, float radius, int cornerCount, float rotation = 0f, float alternate = 1f)
         {
             cornerCount = Mathf.Clamp(cornerCount, 3, MAX_VERTEX_COUNT);
 
@@ -132,13 +132,14 @@ namespace BetterLegacy.Core.Helpers
 
             if (cache.mesh.vertexCount > 0)
             {
-                meshFilter.sharedMesh = cache.mesh;
+                if (meshFilter)
+                    meshFilter.sharedMesh = cache.mesh;
                 if (polygonCollider)
                 {
                     polygonCollider.pathCount = 1;
                     polygonCollider.SetPath(0, cache.colliderPaths);
                 }
-                return;
+                return cache.mesh;
             }
 
             // Generate vertices
@@ -181,14 +182,16 @@ namespace BetterLegacy.Core.Helpers
             mesh.triangles = triangles;
             mesh.RecalculateNormals();
 
-            meshFilter.sharedMesh = mesh;
+            if (meshFilter)
+                meshFilter.sharedMesh = mesh;
 
             if (!polygonCollider)
-                return;
+                return mesh;
 
             // Set paths on collider
             polygonCollider.pathCount = 1;
             polygonCollider.SetPath(0, outerPoints);
+            return mesh;
         }
 
         /// <summary>
@@ -199,7 +202,7 @@ namespace BetterLegacy.Core.Helpers
         /// <param name="radius">Size of the polygon.</param>
         /// <param name="cornerCount">Amount of corners the polygon has.</param>
         /// <param name="cornerRoundness">How round the polygons' corners are.</param>
-        public static void RoundedPolygonMesh(MeshFilter meshFilter, PolygonCollider2D polygonCollider, float radius, int cornerCount, float cornerRoundness, float rotation = 0f, float alternate = 1f)
+        public static Mesh RoundedPolygonMesh(MeshFilter meshFilter, PolygonCollider2D polygonCollider, float radius, int cornerCount, float cornerRoundness, float rotation = 0f, float alternate = 1f)
         {
             cornerCount = Mathf.Clamp(cornerCount, MIN_VERTEX_COUNT, MAX_VERTEX_COUNT);
             cornerRoundness = Mathf.Clamp01(cornerRoundness);
@@ -219,10 +222,11 @@ namespace BetterLegacy.Core.Helpers
 
             if (cache.mesh.vertexCount > 0)
             {
-                meshFilter.sharedMesh = cache.mesh;
+                if (meshFilter)
+                    meshFilter.sharedMesh = cache.mesh;
                 if (polygonCollider)
                     polygonCollider.SetPath(0, cache.colliderPaths);
-                return;
+                return cache.mesh;
             }
 
             // Generate base corner positions
@@ -286,14 +290,16 @@ namespace BetterLegacy.Core.Helpers
             mesh.triangles = triangles;
             mesh.RecalculateNormals();
 
-            meshFilter.sharedMesh = mesh;
+            if (meshFilter)
+                meshFilter.sharedMesh = mesh;
 
             if (!polygonCollider)
-                return;
+                return mesh;
 
             // Update collider
             polygonCollider.pathCount = 1;
             polygonCollider.SetPath(0, vertices.Select(v => new Vector2(v.x, v.y)).ToArray());
+            return mesh;
         }
 
         /// <summary>
@@ -306,13 +312,10 @@ namespace BetterLegacy.Core.Helpers
         /// <param name="thickness">Outline thickness.</param>
         /// <param name="thicknessOffset">Outline position offset.</param>
         /// <param name="thicknessScale">Outline scale offset.</param>
-        public static void RingMesh(MeshFilter meshFilter, PolygonCollider2D polygonCollider, float radius, int cornerCount, float thickness, Vector2 thicknessOffset = default, Vector2? thicknessScale = null, float rotation = 0f, float thicknessRotation = 0f, float alternate = 1f)
+        public static Mesh RingMesh(MeshFilter meshFilter, PolygonCollider2D polygonCollider, float radius, int cornerCount, float thickness, Vector2 thicknessOffset = default, Vector2? thicknessScale = null, float rotation = 0f, float thicknessRotation = 0f, float alternate = 1f)
         {
             if (thickness >= 1)
-            {
-                FilledMesh(meshFilter, polygonCollider, radius, cornerCount, rotation, alternate);
-                return;
-            }
+                return FilledMesh(meshFilter, polygonCollider, radius, cornerCount, rotation, alternate);
 
             var cache = GetOrCreateMesh(new MeshParams
             {
@@ -327,9 +330,11 @@ namespace BetterLegacy.Core.Helpers
 
             if (cache.mesh.vertexCount > 0)
             {
-                meshFilter.sharedMesh = cache.mesh;
-                polygonCollider.SetPath(0, cache.colliderPaths);
-                return;
+                if (meshFilter)
+                    meshFilter.sharedMesh = cache.mesh;
+                if (polygonCollider)
+                    polygonCollider.SetPath(0, cache.colliderPaths);
+                return cache.mesh;
             }
 
             // Minimum 3 vertices for a circle
@@ -385,12 +390,13 @@ namespace BetterLegacy.Core.Helpers
             mesh.triangles = triangles;
             mesh.RecalculateNormals();
 
-            meshFilter.sharedMesh = mesh;
+            if (meshFilter)
+                meshFilter.sharedMesh = mesh;
 
             // update the collider
 
             if (!polygonCollider)
-                return;
+                return mesh;
 
             // Create outer and inner ring points
             Vector2[] outerPoints = new Vector2[cornerCount];
@@ -415,6 +421,7 @@ namespace BetterLegacy.Core.Helpers
             polygonCollider.pathCount = 2;
             polygonCollider.SetPath(0, paths[0]);
             polygonCollider.SetPath(1, paths[1]);
+            return mesh;
         }
 
         /// <summary>
@@ -428,19 +435,13 @@ namespace BetterLegacy.Core.Helpers
         /// <param name="thickness">Outline thickness.</param>
         /// <param name="thicknessOffset">Outline position offset.</param>
         /// <param name="thicknessScale">Outline scale offset.</param>
-        public static void RoundedRingMesh(MeshFilter meshFilter, PolygonCollider2D polygonCollider, float radius = 0.5f, int cornerCount = 4, float cornerRoundness = 0.25f, float thickness = 0.2f, Vector2 thicknessOffset = default, Vector2? thicknessScale = null, float rotation = 0f, float thicknessRotation = 0f, float alternate = 1f)
+        public static Mesh RoundedRingMesh(MeshFilter meshFilter, PolygonCollider2D polygonCollider, float radius = 0.5f, int cornerCount = 4, float cornerRoundness = 0.25f, float thickness = 0.2f, Vector2 thicknessOffset = default, Vector2? thicknessScale = null, float rotation = 0f, float thicknessRotation = 0f, float alternate = 1f)
         {
             if (thickness >= 1)
-            {
-                RoundedPolygonMesh(meshFilter, polygonCollider, radius, cornerCount, cornerRoundness, rotation, alternate);
-                return;
-            }
+                return RoundedPolygonMesh(meshFilter, polygonCollider, radius, cornerCount, cornerRoundness, rotation, alternate);
 
             if (cornerRoundness <= 0)
-            {
-                RingMesh(meshFilter, polygonCollider, radius, cornerCount, thickness, thicknessOffset, thicknessScale, rotation, thicknessRotation, alternate);
-                return;
-            }
+                return RingMesh(meshFilter, polygonCollider, radius, cornerCount, thickness, thicknessOffset, thicknessScale, rotation, thicknessRotation, alternate);
 
             const int SEGMENTS_PER_CORNER = 4;
             int verticesPerRing = cornerCount * (SEGMENTS_PER_CORNER + 1);
@@ -542,7 +543,7 @@ namespace BetterLegacy.Core.Helpers
             meshFilter.sharedMesh = mesh;
 
             if (!polygonCollider)
-                return;
+                return mesh;
 
             // Update collider
             Vector2[] outerPath = vertices.Take(verticesPerRing).Select(v => new Vector2(v.x, v.y)).ToArray();
@@ -551,9 +552,10 @@ namespace BetterLegacy.Core.Helpers
             polygonCollider.pathCount = 2;
             polygonCollider.SetPath(0, outerPath);
             polygonCollider.SetPath(1, innerPath);
+            return mesh;
         }
 
-        public static void RoundedRingMesh(GameObject _go, float radius = 0.5f, int cornerCount = 4, float cornerRoundness = 0.25f, float thickness = 0.2f, int sliceCount = -1, Vector2 thicknessOffset = default, Vector2? thicknessScale = null, float rotation = 0f, float thicknessRotation = 0f, float alternate = 1f) => RoundedRingMesh(_go.GetComponent<MeshFilter>(), _go.GetComponent<PolygonCollider2D>(), radius, cornerCount, cornerRoundness, thickness, sliceCount, thicknessOffset, thicknessScale, rotation, thicknessRotation, alternate);
+        public static Mesh RoundedRingMesh(GameObject _go, float radius = 0.5f, int cornerCount = 4, float cornerRoundness = 0.25f, float thickness = 0.2f, int sliceCount = -1, Vector2 thicknessOffset = default, Vector2? thicknessScale = null, float rotation = 0f, float thicknessRotation = 0f, float alternate = 1f) => RoundedRingMesh(_go.GetComponent<MeshFilter>(), _go.GetComponent<PolygonCollider2D>(), radius, cornerCount, cornerRoundness, thickness, sliceCount, thicknessOffset, thicknessScale, rotation, thicknessRotation, alternate);
 
         /// <summary>
         /// Generates a custom polygon shape.
@@ -567,7 +569,7 @@ namespace BetterLegacy.Core.Helpers
         /// <param name="sliceCount">Amount of slices. -1 draws the full shape.</param>
         /// <param name="thicknessOffset">Outline position offset.</param>
         /// <param name="thicknessScale">Outline scale offset.</param>
-        public static void RoundedRingMesh(MeshFilter meshFilter, PolygonCollider2D polygonCollider, float radius = 0.5f, int cornerCount = 4, float cornerRoundness = 0.25f, float thickness = 0.2f, int sliceCount = -1, Vector2 thicknessOffset = default, Vector2? thicknessScale = null, float rotation = 0f, float thicknessRotation = 0f, float alternate = 1f)
+        public static Mesh RoundedRingMesh(MeshFilter meshFilter, PolygonCollider2D polygonCollider, float radius = 0.5f, int cornerCount = 4, float cornerRoundness = 0.25f, float thickness = 0.2f, int sliceCount = -1, Vector2 thicknessOffset = default, Vector2? thicknessScale = null, float rotation = 0f, float thicknessRotation = 0f, float alternate = 1f)
         {
             cornerCount = Mathf.Clamp(cornerCount, MIN_VERTEX_COUNT, MAX_VERTEX_COUNT);
             sliceCount = sliceCount < 0 ? cornerCount : Mathf.Clamp(sliceCount, 0, cornerCount);
@@ -579,16 +581,10 @@ namespace BetterLegacy.Core.Helpers
             thickness = Mathf.Clamp01(thickness);
 
             if (thickness >= 1 && cornerCount == sliceCount)
-            {
-                RoundedPolygonMesh(meshFilter, polygonCollider, radius, cornerCount, cornerRoundness, rotation, alternate);
-                return;
-            }
+                return RoundedPolygonMesh(meshFilter, polygonCollider, radius, cornerCount, cornerRoundness, rotation, alternate);
 
             if (cornerCount == sliceCount)
-            {
-                RoundedRingMesh(meshFilter, polygonCollider, radius, cornerCount, cornerRoundness, thickness, thicknessOffset, thicknessScale, rotation, thicknessRotation, alternate);
-                return;
-            }
+                return RoundedRingMesh(meshFilter, polygonCollider, radius, cornerCount, cornerRoundness, thickness, thicknessOffset, thicknessScale, rotation, thicknessRotation, alternate);
 
             const int SEGMENTS_PER_CORNER = 4;
             int verticesPerRing = 0;
@@ -711,10 +707,11 @@ namespace BetterLegacy.Core.Helpers
             mesh.triangles = triangles;
             mesh.RecalculateNormals();
 
-            meshFilter.sharedMesh = mesh;
+            if (meshFilter)
+                meshFilter.sharedMesh = mesh;
 
             if (!polygonCollider)
-                return;
+                return mesh;
 
             // Update collider
             // Get outer and inner vertices
@@ -736,13 +733,14 @@ namespace BetterLegacy.Core.Helpers
             // Set single closed path
             polygonCollider.pathCount = 1;
             polygonCollider.SetPath(0, colliderPath);
+            return mesh;
         }
 
         // code from Project Arrhythmia 1.0.0 demo
-        public static void PolygonMesh(MeshFilter meshFilter, PolygonCollider2D polygonCollider, List<Vector2> vertices2D)
+        public static Mesh PolygonMesh(MeshFilter meshFilter, PolygonCollider2D polygonCollider, List<Vector2> vertices2D)
         {
             var points = vertices2D.ToArray();
-            Mesh mesh = (meshFilter.mesh = new Mesh());
+            var mesh = new Mesh();
             Vector3[] array2 = new Vector3[points.Length];
             for (int i = 0; i < points.Length; i++)
                 array2[i] = new Vector3(points[i].x, points[i].y, 0f);
@@ -751,8 +749,11 @@ namespace BetterLegacy.Core.Helpers
             mesh.triangles = triangles;
             mesh.RecalculateNormals();
             mesh.RecalculateBounds();
+            if (meshFilter)
+                meshFilter.mesh = mesh;
             if (polygonCollider)
                 polygonCollider.SetPath(0, points);
+            return mesh;
         }
 
         static int[] Triangulate(Vector2[] points)

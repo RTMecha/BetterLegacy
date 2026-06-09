@@ -109,6 +109,16 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
         /// </summary>
         public void UpdatePolygon()
         {
+            if (particleSystemRenderer)
+            {
+                var particleMesh =  type == PolygonType.Vector && points != null ?
+                    VGShapes.PolygonMesh(meshFilter, polygonCollider, points) : 
+                    VGShapes.RoundedRingMesh(meshFilter, polygonCollider, radius, sides, roundness, thickness, slices, thicknessOffset, thicknessScale, angle, thicknessRotation, alternate);
+                particleSystemRenderer.renderMode = particleMesh != null ? ParticleSystemRenderMode.Mesh : ParticleSystemRenderMode.Billboard;
+                particleSystemRenderer.mesh = particleMesh;
+                return;
+            }
+
             if (!meshFilter)
             {
                 CoreHelper.LogError($"Mesh Filter doesn't exist!");
