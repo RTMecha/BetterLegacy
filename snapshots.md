@@ -1,9 +1,10 @@
-﻿# snapshot-2026.6.3 - (Story Playtest) [???]
+﻿# snapshot-2026.6.3 - (Story Playtest) [Jun 11, 2026]
 ## Features
 ### Core
 - Added Collection Variable related modifiers. These work like the Level Variable modifiers, except for level collections, allowing for a value to be persistent in a collection.
 - Custom interfaces can now be loaded instead of the regular level collection interface.
 - All levels in a level collection can now be downloaded / updated in one go.
+- Ported particle object type. Major difference is the despawn on end toggle has been replaced with full autokill values, so you can precisely control the particle despawn behavior.
 
 ### Editor
 - Added "Timeline Object Simple Text" and "Timeline Object Render Text On Collapsed" settings to Config Manager > Editor > Timeline. These should help optimize your editor a little.
@@ -16,6 +17,7 @@
 
 ### Editor
 - Optimized event keyframe dragging.
+- Render depth in the mutli object editor now supports decimal values.
 
 ## Fixes
 - Fixed the keyframe selecting keybinds prioritizing the event timeline even if an object is selected.
