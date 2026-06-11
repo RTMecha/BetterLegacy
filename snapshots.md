@@ -1,4 +1,10 @@
-﻿# snapshot-2026.6.3 - (Story Playtest) [Jun 11, 2026]
+﻿# snapshot-2026.6.4 - (Story Playtest) [???]
+## Fixes
+- Fixed a major issue with the last snapshot where the object editor broke.
+
+-------------------------------------------------------------------
+
+# snapshot-2026.6.3 - (Story Playtest) [Jun 11, 2026]
 ## Features
 ### Core
 - Added Collection Variable related modifiers. These work like the Level Variable modifiers, except for level collections, allowing for a value to be persistent in a collection.
