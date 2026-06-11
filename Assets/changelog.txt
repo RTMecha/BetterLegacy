@@ -1,21 +1,25 @@
-# snapshot-2026.6.2 - (Story Playtest) [Jun 4, 2026]
+# snapshot-2026.6.3 - (Story Playtest) [Jun 11, 2026]
 ## Features
 ### Core
-- Added copyAxisChain modifier. This acts like other copyAxis modifiers, except it iterates through the parent chain until a certain amount and it copies the axis value onto each parent.
-- Added getIncrementFloat and getIncrementInt variable modifiers.
+- Added Collection Variable related modifiers. These work like the Level Variable modifiers, except for level collections, allowing for a value to be persistent in a collection.
+- Custom interfaces can now be loaded instead of the regular level collection interface.
+- All levels in a level collection can now be downloaded / updated in one go.
+- Ported particle object type. Major difference is the despawn on end toggle has been replaced with full autokill values, so you can precisely control the particle despawn behavior.
 
 ### Editor
-- QOL for prefab picker, you can now select a timeline object that represents the prefab. This works for adding themes and animations to a prefab.
-- Added "Reset Editor Camera On Update Everything" setting to Config Manager > Editor > Freecam. This resets the freecam values to the default when the UpdateEverything keybind occurs.
-- Animation ID field can now have the left / right text swapped on scrollwheel clicked and it also now has a context menu.
-- Animations from an animation group can now be pasted to selected objects.
+- Added "Timeline Object Simple Text" and "Timeline Object Render Text On Collapsed" settings to Config Manager > Editor > Timeline. These should help optimize your editor a little.
+- You can now view a Level Collections' Achievements in the editor.
 
 ## Changes
+### Core
+- runAnimation modifier now allows for proper 3D axis rotation.
+- Slightly reworked the JSON function system, though no object structure changes so everything should be fine.
+
 ### Editor
-- Editor freecam values now save & load per level.
-- Animations should now copy the custom keyframe UI.
+- Optimized event keyframe dragging.
+- Render depth in the mutli object editor now supports decimal values.
 
 ## Fixes
-- Fixed animations and animation groups not retaining their ID if overridden.
-- Fixed animating scale for runAnimation modifier not working as intended.
-- Fixed Server Visibility label in the MetaData Editor dialog appearing above the Server / Arcade section label.
+- Fixed the keyframe selecting keybinds prioritizing the event timeline even if an object is selected.
+- Fixed copied shape data sharing polygon settings.
+- Fixed prefab icon not updating fully when a new icon is captured.
