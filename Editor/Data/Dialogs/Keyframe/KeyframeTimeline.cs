@@ -3034,7 +3034,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
             if (beatmapObject && particlesEnd)
             {
                 particlesEnd.transform.AsRT().sizeDelta = new Vector2(4f, 122f);
-                particlesEnd.transform.AsRT().anchoredPosition = new Vector2(beatmapObject.GetObjectLifeLength(beatmapObject.particleSystemData.autoKillType, beatmapObject.particleSystemData.autoKillOffset) * ObjEditor.inst.Zoom * 14f, 0f);
+                particlesEnd.SetActive(beatmapObject.particleSystemData);
+                if (beatmapObject.particleSystemData)
+                    particlesEnd.transform.AsRT().anchoredPosition = new Vector2(beatmapObject.GetObjectLifeLength(beatmapObject.particleSystemData.autoKillType, beatmapObject.particleSystemData.autoKillOffset) * ObjEditor.inst.Zoom * 14f, 0f);
             }
         }
 
